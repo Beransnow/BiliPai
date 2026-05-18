@@ -1786,6 +1786,7 @@ fun iOSHomeHeader(
         )
     }
     val topAtmosphereImagePath = uiSkinDecoration?.topAtmosphereImagePath
+    val topTabBackgroundImagePath = uiSkinDecoration?.topTabBackgroundImagePath
     val topTabsContent: @Composable () -> Unit = {
         HomeTopTabChrome(
             currentTabHeight = currentTabHeight,
@@ -1847,6 +1848,31 @@ fun iOSHomeHeader(
                 !useUnifiedTopPanel &&
                 drawTopTabOuterChromeSurface
         ) {
+            if (!topTabBackgroundImagePath.isNullOrBlank()) {
+                AsyncImage(
+                    model = File(topTabBackgroundImagePath),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .alpha(0.72f)
+                        .clearAndSetSemantics {}
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(
+                                    headerChromeColors.containerColor.copy(alpha = 0.22f),
+                                    Color.Transparent,
+                                    headerChromeColors.containerColor.copy(alpha = 0.18f)
+                                )
+                            )
+                        )
+                        .clearAndSetSemantics {}
+                )
+            }
             CategoryTabRow(
                 categories = topCategories,
                 categoryKeys = topCategoryKeys,

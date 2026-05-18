@@ -145,6 +145,11 @@ def build_manifest_and_asset_sources(
             target = f"assets/{Path(top).name}"
             assets[target] = ZipAsset(package_zip, top)
             manifest_assets["topAtmosphere"] = target
+        top_tab = first_existing_package_asset(package_names, ["head_tab_bg.jpg", "head_tab_bg.png"])
+        if top_tab and top_tab != top:
+            target = f"assets/{Path(top_tab).name}"
+            assets[target] = ZipAsset(package_zip, top_tab)
+            manifest_assets["homeTopTabBackground"] = target
         if side:
             target = f"assets/{Path(side).name}"
             assets[target] = ZipAsset(package_zip, side)

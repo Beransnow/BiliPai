@@ -243,6 +243,9 @@ object UiSkinImportPackageResolver {
         firstExisting(packageEntries, "head_bg.jpg", "head_tab_bg.jpg", "side_bg.jpg")?.let { (path, bytes) ->
             assetBytes["assets/${path.substringAfterLast("/")}"] = bytes
         }
+        firstExisting(packageEntries, "head_tab_bg.jpg", "head_tab_bg.png")?.let { (path, bytes) ->
+            assetBytes["assets/${path.substringAfterLast("/")}"] = bytes
+        }
         firstExisting(packageEntries, "side_bg.jpg", "side_bg.png")?.let { (path, bytes) ->
             assetBytes["assets/${path.substringAfterLast("/")}"] = bytes
         }
@@ -311,6 +314,13 @@ object UiSkinImportPackageResolver {
                 },
                 topAtmosphere = assetPaths.firstOrNull {
                     it.endsWith("head_bg.jpg") || it.endsWith("head_tab_bg.jpg")
+                },
+                homeTopTabBackground = assetPaths.firstOrNull {
+                    it.endsWith("head_tab_bg.jpg") || it.endsWith("head_tab_bg.png")
+                }?.takeUnless { path ->
+                    path == assetPaths.firstOrNull {
+                        it.endsWith("head_bg.jpg") || it.endsWith("head_tab_bg.jpg")
+                    }
                 },
                 homeSideBackground = assetPaths.firstOrNull {
                     it.endsWith("side_bg.jpg") || it.endsWith("side_bg.png")

@@ -53,6 +53,7 @@ data class HomeUiSkinDecoration(
     val topAtmosphereTint: Color,
     val searchCapsuleTint: Color,
     val topAtmosphereImagePath: String? = null,
+    val topTabBackgroundImagePath: String? = null,
     val sideBackgroundImagePath: String? = null,
     val profileBackgroundImagePath: String? = null,
     val profileSquaredBackgroundImagePath: String? = null
@@ -135,6 +136,7 @@ fun resolveHomeUiSkinDecoration(uiSkinState: UiSkinState): HomeUiSkinDecoration?
         val hasTopDecoration = UiSkinSurface.HOME_TOP_CHROME in manifest.surfaces &&
             (
                 manifest.assets.topAtmosphere != null ||
+                    manifest.assets.homeTopTabBackground != null ||
                     manifest.assets.homeSideBackground != null ||
                     manifest.assets.homeProfileBackground != null ||
                     manifest.assets.homeProfileSquaredBackground != null ||
@@ -153,6 +155,7 @@ fun resolveHomeUiSkinDecoration(uiSkinState: UiSkinState): HomeUiSkinDecoration?
                 fallback = Color.White
             ),
             topAtmosphereImagePath = activeSkin.assetFilePath(manifest.assets.topAtmosphere),
+            topTabBackgroundImagePath = activeSkin.assetFilePath(manifest.assets.homeTopTabBackground),
             sideBackgroundImagePath = activeSkin.assetFilePath(manifest.assets.homeSideBackground),
             profileBackgroundImagePath = activeSkin.assetFilePath(manifest.assets.homeProfileBackground),
             profileSquaredBackgroundImagePath = activeSkin.assetFilePath(

@@ -205,6 +205,7 @@ class BottomBarUiSkinDecorationTest {
                 surfaces = setOf(UiSkinSurface.HOME_TOP_CHROME),
                 assets = UiSkinAssets(
                     topAtmosphere = "assets/head_bg.jpg",
+                    homeTopTabBackground = "assets/head_tab_bg.jpg",
                     homeSideBackground = "assets/side_bg.jpg",
                     homeProfileBackground = "assets/head_myself_bg.jpg",
                     homeProfileSquaredBackground = "assets/head_myself_squared_bg.jpg"
@@ -219,6 +220,7 @@ class BottomBarUiSkinDecorationTest {
             installedAtMillis = 42L,
             assetFiles = mapOf(
                 "assets/head_bg.jpg" to "/tmp/head_bg.jpg",
+                "assets/head_tab_bg.jpg" to "/tmp/head_tab_bg.jpg",
                 "assets/side_bg.jpg" to "/tmp/side_bg.jpg",
                 "assets/head_myself_bg.jpg" to "/tmp/head_myself_bg.jpg",
                 "assets/head_myself_squared_bg.jpg" to "/tmp/head_myself_squared_bg.jpg"
@@ -231,6 +233,7 @@ class BottomBarUiSkinDecorationTest {
 
         assertEquals("dev.example.atmosphere", decoration?.skinId)
         assertEquals("/tmp/head_bg.jpg", decoration?.topAtmosphereImagePath)
+        assertEquals("/tmp/head_tab_bg.jpg", decoration?.topTabBackgroundImagePath)
         assertEquals("/tmp/side_bg.jpg", decoration?.sideBackgroundImagePath)
         assertEquals("/tmp/head_myself_bg.jpg", decoration?.profileBackgroundImagePath)
         assertEquals("/tmp/head_myself_squared_bg.jpg", decoration?.profileSquaredBackgroundImagePath)

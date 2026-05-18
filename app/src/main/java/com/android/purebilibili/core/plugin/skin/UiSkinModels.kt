@@ -35,6 +35,7 @@ data class UiSkinManifest(
 data class UiSkinAssets(
     val bottomBarTrim: String? = null,
     val topAtmosphere: String? = null,
+    val homeTopTabBackground: String? = null,
     val searchCapsuleBackground: String? = null,
     val homeSideBackground: String? = null,
     val homeProfileBackground: String? = null,
@@ -47,6 +48,7 @@ data class UiSkinAssets(
         return buildList {
             bottomBarTrim?.let(::add)
             topAtmosphere?.let(::add)
+            homeTopTabBackground?.let(::add)
             searchCapsuleBackground?.let(::add)
             homeSideBackground?.let(::add)
             homeProfileBackground?.let(::add)

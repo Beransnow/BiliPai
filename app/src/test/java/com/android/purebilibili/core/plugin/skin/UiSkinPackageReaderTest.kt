@@ -406,6 +406,7 @@ class UiSkinPackageReaderTest {
         val bytes = skinPackage(
             "tail_bg.png" to pngBytes(),
             "head_bg.jpg" to jpegBytes(),
+            "head_tab_bg.jpg" to jpegBytes(),
             "side_bg.jpg" to jpegBytes(),
             "head_myself_bg.jpg" to jpegBytes(),
             "head_myself_squared_bg.jpg" to jpegBytes(),
@@ -424,6 +425,7 @@ class UiSkinPackageReaderTest {
         assertEquals("本地装扮资源包", preview.manifest.displayName)
         assertEquals("assets/tail_bg.png", preview.manifest.assets.bottomBarTrim)
         assertEquals("assets/head_bg.jpg", preview.manifest.assets.topAtmosphere)
+        assertEquals("assets/head_tab_bg.jpg", preview.manifest.assets.homeTopTabBackground)
         assertEquals("assets/side_bg.jpg", preview.manifest.assets.homeSideBackground)
         assertEquals("assets/head_myself_bg.jpg", preview.manifest.assets.homeProfileBackground)
         assertEquals("assets/head_myself_squared_bg.jpg", preview.manifest.assets.homeProfileSquaredBackground)
