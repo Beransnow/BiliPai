@@ -42,6 +42,20 @@ class SpaceScreenStructureTest {
         assertTrue(source.contains("resolveSpaceContributionToolbarSpec("))
     }
 
+    @Test
+    fun `contribution toolbar long press expands full horizontal tab rail`() {
+        val source = loadSource("app/src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt")
+
+        assertTrue(source.contains("SpaceContributionCollapsedTab("))
+        assertTrue(source.contains("SpaceContributionExpandedTabRail("))
+        assertTrue(source.contains(".combinedClickable("))
+        assertTrue(source.contains("onExpand = { expanded = true }"))
+        assertTrue(source.contains("onLongClick = onExpand"))
+        assertTrue(source.contains("AnimatedVisibility("))
+        assertTrue(source.contains("horizontalScroll(scrollState)"))
+        assertTrue(source.contains("if (toolbarSpec.collapseAfterTabSelection) expanded = false"))
+    }
+
     private fun loadSource(path: String): String {
         val normalizedPath = path.removePrefix("app/")
         val sourceFile = listOf(

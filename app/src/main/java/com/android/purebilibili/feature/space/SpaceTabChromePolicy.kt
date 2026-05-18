@@ -20,11 +20,14 @@ internal data class SpaceSegmentedTabChromeSpec(
 internal data class SpaceContributionToolbarSpec(
     val tabHeightDp: Int,
     val tabIndicatorHeightDp: Int,
+    val collapsedTabWidthDp: Int,
+    val expandedTabRailHeightDp: Int,
     val horizontalPaddingDp: Int,
     val showVideoActions: Boolean,
     val showTotalText: Boolean,
     val showPlayAllText: Boolean,
-    val showSortText: Boolean
+    val showSortText: Boolean,
+    val collapseAfterTabSelection: Boolean
 )
 
 private const val SPACE_SEGMENTED_TAB_HORIZONTAL_PADDING_DP = 16
@@ -78,7 +81,8 @@ internal fun resolveSpaceContributionTabChromeSpec(
 internal fun resolveSpaceContributionToolbarSpec(
     widthDp: Int,
     selectedSubTab: SpaceSubTab,
-    tabCount: Int
+    tabCount: Int,
+    selectedTitle: String = ""
 ): SpaceContributionToolbarSpec {
     val showVideoActions = selectedSubTab == SpaceSubTab.VIDEO ||
         selectedSubTab == SpaceSubTab.CHARGING_VIDEO
@@ -87,12 +91,28 @@ internal fun resolveSpaceContributionToolbarSpec(
     return SpaceContributionToolbarSpec(
         tabHeightDp = 40,
         tabIndicatorHeightDp = 34,
+        collapsedTabWidthDp = resolveSpaceContributionCollapsedTabWidthDp(selectedTitle, widthDp),
+        expandedTabRailHeightDp = 40,
         horizontalPaddingDp = 12,
         showVideoActions = showVideoActions,
         showTotalText = showVideoActions && roomy,
         showPlayAllText = showVideoActions && !compactActions,
-        showSortText = showVideoActions && !compactActions
+        showSortText = showVideoActions && !compactActions,
+        collapseAfterTabSelection = true
     )
+}
+
+internal fun resolveSpaceContributionCollapsedTabWidthDp(title: String, widthDp: Int): Int {
+    val normalizedTitle = title.trim()
+    val minimumWidth = if (normalizedTitle.length <= 2) 88 else 104
+    val maximumWidth = minOf(156, (widthDp * 0.45f).roundToInt().coerceAtLeast(minimumWidth))
+    val containsWideText = normalizedTitle.any { it.code > 127 }
+    val estimatedWidth = if (containsWideText) {
+        estimateSpaceContributionTabTitleWidthDp(normalizedTitle)
+    } else {
+        minimumWidth
+    }
+    return estimatedWidth.coerceIn(minimumWidth, maximumWidth)
 }
 
 internal fun resolveSpaceVideoSortCompactLabel(order: VideoSortOrder): String {

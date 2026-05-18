@@ -183,15 +183,19 @@ class SpaceTabChromePolicyTest {
         val spec = resolveSpaceContributionToolbarSpec(
             widthDp = 412,
             selectedSubTab = SpaceSubTab.VIDEO,
-            tabCount = 2
+            tabCount = 2,
+            selectedTitle = "视频"
         )
 
         assertEquals(40, spec.tabHeightDp)
         assertEquals(34, spec.tabIndicatorHeightDp)
+        assertEquals(40, spec.expandedTabRailHeightDp)
+        assertEquals(88, spec.collapsedTabWidthDp)
         assertTrue(spec.showVideoActions)
         assertFalse(spec.showTotalText)
         assertFalse(spec.showPlayAllText)
         assertFalse(spec.showSortText)
+        assertTrue(spec.collapseAfterTabSelection)
     }
 
     @Test
@@ -205,6 +209,13 @@ class SpaceTabChromePolicyTest {
         assertFalse(spec.showVideoActions)
         assertFalse(spec.showPlayAllText)
         assertFalse(spec.showSortText)
+    }
+
+    @Test
+    fun `collapsed contribution tab width stays compact for short and long titles`() {
+        assertEquals(88, resolveSpaceContributionCollapsedTabWidthDp("视频", widthDp = 412))
+        assertEquals(104, resolveSpaceContributionCollapsedTabWidthDp("season_video", widthDp = 412))
+        assertEquals(156, resolveSpaceContributionCollapsedTabWidthDp("合集 · 美食对决合集视频", widthDp = 412))
     }
 
     @Test

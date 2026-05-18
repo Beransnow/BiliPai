@@ -2,6 +2,7 @@ package com.android.purebilibili.feature.space
 
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SizeTransform
@@ -12,6 +13,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -1961,43 +1963,70 @@ private fun SpaceContributionToolbar(
     onOrderClick: (VideoSortOrder) -> Unit,
     onLayoutModeClick: () -> Unit
 ) {
+    var expanded by remember(selectedTabId) { mutableStateOf(false) }
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 5.dp)
     ) {
-        val toolbarSpec = remember(maxWidth, selectedSubTab, tabs.size) {
+        val selectedTitle = remember(tabs, selectedTabId, selectedSubTab) {
+            tabs.firstOrNull { it.id == selectedTabId }?.title
+                ?: tabs.firstOrNull { it.subTab == selectedSubTab }?.title
+                ?: tabs.firstOrNull()?.title
+                ?: ""
+        }
+        val toolbarSpec = remember(maxWidth, selectedSubTab, tabs.size, selectedTitle) {
             resolveSpaceContributionToolbarSpec(
                 widthDp = maxWidth.value.toInt(),
                 selectedSubTab = selectedSubTab,
-                tabCount = tabs.size
+                tabCount = tabs.size,
+                selectedTitle = selectedTitle
             )
         }
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = toolbarSpec.horizontalPaddingDp.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                .padding(horizontal = toolbarSpec.horizontalPaddingDp.dp)
         ) {
-            SpaceContributionCompactTabs(
-                tabs = tabs,
-                selectedTabId = selectedTabId,
-                selectedSubTab = selectedSubTab,
-                toolbarSpec = toolbarSpec,
-                onSelect = onSelect,
-                modifier = Modifier.weight(1f, fill = true)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                SpaceContributionCollapsedTab(
+                    title = selectedTitle,
+                    toolbarSpec = toolbarSpec,
+                    onExpand = { expanded = true }
+                )
 
-            if (toolbarSpec.showVideoActions) {
-                SpaceContributionVideoToolbarActions(
-                    totalVideos = totalVideos,
-                    currentOrder = currentOrder,
-                    layoutMode = layoutMode,
-                    spec = toolbarSpec,
-                    onPlayAllClick = onPlayAllClick,
-                    onOrderClick = onOrderClick,
-                    onLayoutModeClick = onLayoutModeClick
+                Spacer(modifier = Modifier.weight(1f))
+
+                if (toolbarSpec.showVideoActions) {
+                    SpaceContributionVideoToolbarActions(
+                        totalVideos = totalVideos,
+                        currentOrder = currentOrder,
+                        layoutMode = layoutMode,
+                        spec = toolbarSpec,
+                        onPlayAllClick = onPlayAllClick,
+                        onOrderClick = onOrderClick,
+                        onLayoutModeClick = onLayoutModeClick
+                    )
+                }
+            }
+
+            AnimatedVisibility(visible = expanded) {
+                SpaceContributionExpandedTabRail(
+                    tabs = tabs,
+                    selectedTabId = selectedTabId,
+                    selectedSubTab = selectedSubTab,
+                    toolbarSpec = toolbarSpec,
+                    onSelect = { tabId ->
+                        onSelect(tabId)
+                        if (toolbarSpec.collapseAfterTabSelection) expanded = false
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 6.dp)
                 )
             }
         }
@@ -2005,7 +2034,42 @@ private fun SpaceContributionToolbar(
 }
 
 @Composable
-private fun SpaceContributionCompactTabs(
+private fun SpaceContributionCollapsedTab(
+    title: String,
+    toolbarSpec: SpaceContributionToolbarSpec,
+    onExpand: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .width(toolbarSpec.collapsedTabWidthDp.dp)
+            .height(toolbarSpec.tabHeightDp.dp)
+    ) {
+        BottomBarLiquidSegmentedControl(
+            items = listOf(title.ifBlank { "投稿" }),
+            selectedIndex = 0,
+            onSelected = {},
+            modifier = Modifier.matchParentSize(),
+            height = toolbarSpec.tabHeightDp.dp,
+            indicatorHeight = toolbarSpec.tabIndicatorHeightDp.dp,
+            labelFontSize = 13.sp,
+            containerHorizontalPadding = 3.dp,
+            containerVerticalPadding = 3.dp,
+            liquidGlassEffectsEnabled = true,
+            dragSelectionEnabled = false
+        )
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+            .combinedClickable(
+                onClick = {},
+                onLongClick = onExpand
+            )
+        )
+    }
+}
+
+@Composable
+private fun SpaceContributionExpandedTabRail(
     tabs: List<SpaceContributionTab>,
     selectedTabId: String,
     selectedSubTab: SpaceSubTab,
@@ -2024,7 +2088,7 @@ private fun SpaceContributionCompactTabs(
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
 
-    BoxWithConstraints(modifier = modifier.height(toolbarSpec.tabHeightDp.dp)) {
+    BoxWithConstraints(modifier = modifier.height(toolbarSpec.expandedTabRailHeightDp.dp)) {
         val viewportWidth = maxWidth
 
         LaunchedEffect(tabSpec.scrollable, safeSelectedIndex, tabSpec.itemWidthDp, viewportWidth) {
@@ -2053,7 +2117,7 @@ private fun SpaceContributionCompactTabs(
                 },
                 modifier = Modifier.fillMaxWidth(),
                 itemWidth = if (tabSpec.scrollable) tabSpec.itemWidthDp?.dp else null,
-                height = toolbarSpec.tabHeightDp.dp,
+                height = toolbarSpec.expandedTabRailHeightDp.dp,
                 indicatorHeight = toolbarSpec.tabIndicatorHeightDp.dp,
                 labelFontSize = 13.sp,
                 containerHorizontalPadding = 3.dp,
