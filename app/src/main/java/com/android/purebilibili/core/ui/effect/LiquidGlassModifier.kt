@@ -4,15 +4,12 @@ import android.graphics.RenderEffect
 import android.graphics.RuntimeShader
 import android.os.Build
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.composed
 
@@ -81,20 +78,6 @@ fun Modifier.liquidGlass(
             // refract_length is in pixels (based on size/thickness).
             // So intensity should be small scalar. Default 0.5f is okay.
             shader.setFloatUniform("refract_intensity", refractIntensity)
-            
-            // [New] Optical Uniforms
-            shader.setFloatUniform("aberration_strength", aberrationStrength)
-            shader.setFloatUniform("specular_alpha", specularAlpha)
-            // Fixed top-left light source direction (normalized)
-            shader.setFloatUniform("light_dir", -0.35f, -0.6f, 0.72f)
-            
-            // [New] Background Tint
-            val bgArgb = backgroundColor.toArgb()
-            val bgA = android.graphics.Color.alpha(bgArgb) / 255f
-            val bgR = android.graphics.Color.red(bgArgb) / 255f * bgA
-            val bgG = android.graphics.Color.green(bgArgb) / 255f * bgA
-            val bgB = android.graphics.Color.blue(bgArgb) / 255f * bgA
-            shader.setFloatUniform("background_color", bgR, bgG, bgB, bgA)
              
             // uniform float4 foreground_color_premultiplied;
             val argb = color.toArgb()
@@ -105,6 +88,61 @@ fun Modifier.liquidGlass(
             shader.setFloatUniform("foreground_color_premultiplied", r, g, b, a)
 
             // Apply as RenderEffect
+            renderEffect = RenderEffect.createRuntimeShaderEffect(shader, "img")
+                .asComposeRenderEffect()
+        }
+    }
+}
+
+/**
+ * NagramX 原版 Liquid Glass shader 的 Compose 接入层。
+ *
+ * 源码来自 NagramX:
+ * https://github.com/risin42/NagramX/blob/dev/TMessagesProj/src/main/java/org/telegram/ui/Components/blur3/LiquidGlassEffect.java
+ *
+ * 这里保留 BiliPai 的 Compose/Backdrop 管线，只把 NagramX 原始 AGSL 作为最终 RenderEffect
+ * 叠到通透玻璃表面；不额外设置 NagramX shader 中不存在的 uniform。
+ */
+fun Modifier.nagramLiquidGlass(
+    radius: Dp,
+    refractIndex: Float = 1.5f,
+    refractIntensity: Float = 0.75f,
+    thickness: Dp = 11.dp,
+    foregroundColor: Color = Color.Transparent
+): Modifier = composed {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+        this
+    } else {
+        val density = LocalDensity.current
+        this.graphicsLayer {
+            val shader = RuntimeShader(LiquidGlassShader.SHADER)
+            val radiusPx = with(density) { radius.toPx() }
+            val thicknessPx = with(density) { thickness.toPx() }
+            val width = size.width.coerceAtLeast(1f)
+            val height = size.height.coerceAtLeast(1f)
+            val resolvedRadius = radiusPx.coerceAtMost(minOf(width, height) / 2f)
+
+            shader.setFloatUniform("resolution", width, height)
+            shader.setFloatUniform("center", width / 2f, height / 2f)
+            shader.setFloatUniform("size", width / 2f, height / 2f)
+            shader.setFloatUniform(
+                "radius",
+                resolvedRadius,
+                resolvedRadius,
+                resolvedRadius,
+                resolvedRadius
+            )
+            shader.setFloatUniform("thickness", thicknessPx)
+            shader.setFloatUniform("refract_index", refractIndex)
+            shader.setFloatUniform("refract_intensity", refractIntensity)
+
+            val argb = foregroundColor.toArgb()
+            val a = android.graphics.Color.alpha(argb) / 255f
+            val r = android.graphics.Color.red(argb) / 255f * a
+            val g = android.graphics.Color.green(argb) / 255f * a
+            val b = android.graphics.Color.blue(argb) / 255f * a
+            shader.setFloatUniform("foreground_color_premultiplied", r, g, b, a)
+
             renderEffect = RenderEffect.createRuntimeShaderEffect(shader, "img")
                 .asComposeRenderEffect()
         }

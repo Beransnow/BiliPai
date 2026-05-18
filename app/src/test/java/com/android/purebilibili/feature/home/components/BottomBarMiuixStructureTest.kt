@@ -92,7 +92,12 @@ class BottomBarMiuixStructureTest {
         )
         assertTrue(kernelSuRendererSource.contains("scaleX = edgeCompressionScaleX"))
         assertTrue(kernelSuRendererSource.contains("chromaticAberration = true"))
-        assertTrue(kernelSuRendererSource.contains("val backdropPresetProgress = resolveBottomBarBackdropPresetProgress("))
+        assertTrue(
+            kernelSuRendererSource.contains(
+                "val backdropPresetProgress = resolveBottomBarEffectiveBackdropPresetProgress("
+            )
+        )
+        assertTrue(kernelSuRendererSource.contains("preset = liquidGlassPreset"))
         assertTrue(kernelSuRendererSource.contains("motionProgress = motionProgress"))
         assertTrue(kernelSuRendererSource.contains("verticalProgress = verticalGlassProfile.progress"))
         assertTrue(kernelSuRendererSource.contains("pressProgress = dampedDragState.pressProgress"))

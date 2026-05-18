@@ -701,6 +701,52 @@ class BottomBarIndicatorPolicyTest {
     }
 
     @Test
+    fun `transparent glass vertical scroll activates fixed indicator refraction`() {
+        val tuned = resolveBottomBarEffectiveBackdropPresetProgress(
+            preset = BottomBarLiquidGlassPreset.BILIPAI_TUNED,
+            motionProgress = 0f,
+            verticalProgress = 1f,
+            pressProgress = 0f
+        )
+        val transparent = resolveBottomBarEffectiveBackdropPresetProgress(
+            preset = BottomBarLiquidGlassPreset.BACKDROP_NATIVE,
+            motionProgress = 0f,
+            verticalProgress = 1f,
+            pressProgress = 0f
+        )
+        val transparentIndicator = resolveBottomBarBackdropPresetIndicatorLens(
+            progress = transparent.indicatorProgress
+        )
+
+        assertEquals(0f, tuned.indicatorProgress, 0.001f)
+        assertEquals(1f, transparent.indicatorProgress, 0.001f)
+        assertTrue(transparentIndicator.refractionHeightDp > 0f)
+        assertTrue(transparentIndicator.refractionAmountDp > 0f)
+    }
+
+    @Test
+    fun `transparent glass vertical scroll can render indicator backdrop while idle`() {
+        assertFalse(
+            shouldRenderBottomBarIndicatorBackdrop(
+                glassEnabled = true,
+                hasContentBackdrop = true,
+                indicatorProgress = 1f,
+                isBottomBarInteractionActive = false,
+                allowIdleGlassEffect = false
+            )
+        )
+        assertTrue(
+            shouldRenderBottomBarIndicatorBackdrop(
+                glassEnabled = true,
+                hasContentBackdrop = true,
+                indicatorProgress = 1f,
+                isBottomBarInteractionActive = false,
+                allowIdleGlassEffect = true
+            )
+        )
+    }
+
+    @Test
     fun `indicator layer transform uses android native motion spec`() {
         val transform = resolveBottomBarIndicatorLayerTransform(
             motionProgress = 1f,

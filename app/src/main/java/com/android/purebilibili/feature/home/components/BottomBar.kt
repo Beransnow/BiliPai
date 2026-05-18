@@ -148,7 +148,7 @@ import com.kyant.backdrop.shadow.Shadow
 import androidx.compose.foundation.shape.RoundedCornerShape as RoundedCornerShapeAlias
 import androidx.compose.ui.Modifier.Companion.then
 import dev.chrisbanes.haze.hazeSource
-import com.android.purebilibili.core.ui.effect.liquidGlass
+import com.android.purebilibili.core.ui.effect.nagramLiquidGlass
 import com.android.purebilibili.core.store.BottomBarLiquidGlassPreset
 import com.android.purebilibili.core.store.BottomBarSearchAutoExpandMode
 import com.android.purebilibili.core.store.LiquidGlassStyle // [New] Top-level enum
@@ -771,6 +771,11 @@ internal fun Modifier.kernelSuFloatingDockSurface(
                                 )
                             )
                         }
+                    ).nagramLiquidGlass(
+                        radius = 28.dp,
+                        refractIndex = 1.5f,
+                        refractIntensity = 0.75f,
+                        foregroundColor = Color.Transparent
                     )
                     BottomBarLiquidGlassPreset.BILIPAI_TUNED -> drawBackdrop(
                         backdrop = backdrop,
@@ -1270,6 +1275,28 @@ internal fun resolveBottomBarBackdropPresetProgress(
         captureProgress = maxOf(clampedMotion, clampedPress * 0.72f),
         indicatorProgress = maxOf(clampedMotion, clampedPress)
     )
+}
+
+internal fun resolveBottomBarEffectiveBackdropPresetProgress(
+    preset: BottomBarLiquidGlassPreset,
+    motionProgress: Float,
+    verticalProgress: Float,
+    pressProgress: Float
+): BottomBarBackdropPresetProgress {
+    val base = resolveBottomBarBackdropPresetProgress(
+        motionProgress = motionProgress,
+        verticalProgress = verticalProgress,
+        pressProgress = pressProgress
+    )
+    return when (preset) {
+        BottomBarLiquidGlassPreset.BILIPAI_TUNED -> base
+        BottomBarLiquidGlassPreset.BACKDROP_NATIVE -> {
+            val clampedVertical = verticalProgress.coerceIn(0f, 1f)
+            base.copy(
+                indicatorProgress = maxOf(base.indicatorProgress, clampedVertical)
+            )
+        }
+    }
 }
 
 internal fun resolveBottomBarIndicatorLayerTransform(
@@ -2807,7 +2834,8 @@ private fun KernelSuAlignedBottomBar(
             }
             val transparentGlassPreset = liquidGlassPreset == BottomBarLiquidGlassPreset.BACKDROP_NATIVE
             val foregroundAboveIndicator = shouldRenderBottomBarForegroundAboveIndicator(liquidGlassPreset)
-            val backdropPresetProgress = resolveBottomBarBackdropPresetProgress(
+            val backdropPresetProgress = resolveBottomBarEffectiveBackdropPresetProgress(
+                preset = liquidGlassPreset,
                 motionProgress = motionProgress,
                 verticalProgress = verticalGlassProfile.progress,
                 pressProgress = dampedDragState.pressProgress
@@ -2847,7 +2875,9 @@ private fun KernelSuAlignedBottomBar(
                 hasContentBackdrop = backdrop != null,
                 indicatorProgress = effectiveIndicatorProgress,
                 isTransitionRunning = isTransitionRunning,
-                isBottomBarInteractionActive = isBottomBarInteractionActive
+                isBottomBarInteractionActive = isBottomBarInteractionActive,
+                allowIdleGlassEffect = liquidGlassPreset == BottomBarLiquidGlassPreset.BACKDROP_NATIVE &&
+                    verticalGlassProfile.progress > BottomBarTransientAlphaThreshold
             )
             val contentBackdrop = if (shouldRenderIndicatorBackdrop && backdrop != null) {
                 rememberCombinedBackdrop(backdrop, tabsBackdrop)
