@@ -45,6 +45,7 @@ import com.android.purebilibili.feature.video.danmaku.DanmakuManager
 import com.android.purebilibili.feature.video.ui.components.AnimatedGesturePercentText
 import com.android.purebilibili.feature.video.ui.components.SponsorSkipButton
 import com.android.purebilibili.feature.video.ui.components.VideoAspectRatio
+import com.android.purebilibili.feature.video.ui.overlay.PlaybackDebugInfo
 import com.android.purebilibili.feature.video.ui.section.resolveSystemStreamVolumeFromGesture
 import com.android.purebilibili.feature.video.util.captureAndSaveVideoScreenshot
 import com.android.purebilibili.data.model.response.SponsorSegment
@@ -78,6 +79,7 @@ fun BangumiPlayerView(
     coverUrl: String = "",
     currentVideoUrl: String = "",
     currentAudioUrl: String = "",
+    debugInfo: PlaybackDebugInfo = PlaybackDebugInfo(),
     pages: List<Page> = emptyList(),
     currentPageIndex: Int = 0,
     onPageSelect: (Int) -> Unit = {},
@@ -364,6 +366,7 @@ fun BangumiPlayerView(
             coverUrl = coverUrl,
             currentVideoUrl = currentVideoUrl,
             currentAudioUrl = currentAudioUrl,
+            debugInfo = debugInfo,
             isVisible = showControls && gestureMode == BangumiGestureMode.None,
             onToggleVisible = { showControls = !showControls },
             isFullscreen = isFullscreen,

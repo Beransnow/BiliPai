@@ -1,5 +1,26 @@
 # Changelog
 
+## v8.3.3 (2026-05-19)
+
+### 版本信息
+- 版本号从 `8.3.2` 升级到 `8.3.3`，`versionCode` 升级到 `197`。
+- 本次为“播放与空间页反馈、楼中楼体验、设置入口整理、液态玻璃与皮肤视觉修复、番剧历史记录提示”的维护更新，汇总 8.3.2 到 8.3.3 的全部改动。
+
+### 更新内容
+- **播放链路与空间页体验**：补充播放 CDN / 音频异常回退诊断、空间页已看进度与续播策略、空间投稿发布时间和播放量展示、今日推荐 UP 榜跳转、倍速锁定后的长按下滑解锁，以及合集订阅列表发布时间显示。
+- **评论楼中楼**：二级评论首屏不再只依赖根评论预览的 2 条回复，按分页接口加载更多楼中楼内容；补齐楼中楼文本点击展开、逐级展开动画、点击过渡和可选模糊开关，减少必须点“查看更多”才能看到内容的问题。
+- **设置页入口与发布声明**：将 Telegram 频道、Twitter / X 和打赏作者放到设置顶部第一组；发布渠道声明去除重复卡片，完整声明保持同一行可读，减少设置页顶部占位和重复 UI。
+- **UP 空间投稿工具栏**：投稿页“视频 / 图文 / 合集 / 系列”等二级标签与播放全部、单双列、排序入口合并为紧凑 dock；默认只显示当前标签，长按展开可横向滑动选择标签，选择后自动收起；标签指示器改为随文案自适应，不再被等间距拉长。
+- **液态玻璃与皮肤视觉**：修复首页皮肤包资源导入与消费、顶部标签页皮肤背景、首页贴纸与列表氛围、皮肤图标尺寸、顶部标签宿主可读性、贴纸裁切和下划线定位；通透底栏液态玻璃经过多轮折射、静止捕获、前景层级、颜色可读性和滑动对齐校准后，回滚移除不稳定实现，避免影响底栏可读性。
+- **历史记录与番剧播放诊断**：番剧类历史记录不再在缺少 UP 信息时显示“未知UP主”，改为按内容类型展示并隐藏 UP 标识；番剧播放器黑屏诊断接入首帧渲染状态，正常播放时不再误提示黑屏。
+- **版本与文档同步**：版本号升级到 `8.3.3` / `versionCode 197`，README、README_EN 和更新日志同步到 8.3.3。
+- **回归覆盖**：新增或更新播放 CDN 回退、空间播放进度、今日推荐 UP 榜、倍速手势、评论分页、楼中楼展示、设置入口、空间投稿工具栏、历史记录展示和番剧播放诊断等策略与结构测试。
+
+### 验证
+- `./gradlew :app:testDebugUnitTest --tests 'com.android.purebilibili.feature.list.HistoryNavigationPolicyTest' --tests 'com.android.purebilibili.feature.bangumi.BangumiPlayerOverlayPolicyTest' --tests 'com.android.purebilibili.feature.space.SpaceScreenStructureTest' --tests 'com.android.purebilibili.feature.space.SpaceTabChromePolicyTest' --no-daemon`
+- `./gradlew :app:compileDebugKotlin --no-daemon`
+- `git diff --check`
+
 ## v8.3.2 (2026-05-18)
 
 ### 版本信息

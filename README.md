@@ -15,7 +15,7 @@
 </p>
 
 <p>
-  <img src="https://img.shields.io/badge/Version-8.3.2-007AFF?style=flat-square&labelColor=ffffff" alt="Version 8.3.2" />
+  <img src="https://img.shields.io/badge/Version-8.3.3-007AFF?style=flat-square&labelColor=ffffff" alt="Version 8.3.3" />
   <img src="https://img.shields.io/badge/Android-8.0%2B-34C759?style=flat-square&logo=android&logoColor=white" alt="Android 8.0+" />
   <img src="https://img.shields.io/badge/Kotlin-100%25-7F52FF?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin" />
   <img src="https://img.shields.io/badge/License-GPL--3.0-FF3B30?style=flat-square" alt="GPL-3.0" />
@@ -37,7 +37,7 @@
   </a>
 </p>
 
-<sub>README 更新：2026-05-17 · 当前构建版本以 app/build.gradle.kts 为准 · 发布记录以 <a href="CHANGELOG.md">CHANGELOG.md</a> 为准</sub>
+<sub>README 更新：2026-05-19 · 当前构建版本以 app/build.gradle.kts 为准 · 发布记录以 <a href="CHANGELOG.md">CHANGELOG.md</a> 为准</sub>
 
 </div>
 
@@ -179,13 +179,13 @@ cd BiliPai
 
 ## 最近更新
 
-当前仓库版本号已更新到 `8.3.2 / versionCode 196`。公开发布说明请以 [CHANGELOG.md](CHANGELOG.md) 为准；最新完整记录为 `v8.3.2`：
+当前仓库版本号已更新到 `8.3.3 / versionCode 197`。公开发布说明请以 [CHANGELOG.md](CHANGELOG.md) 为准；最新完整记录为 `v8.3.3`：
 
-- 插件 SDK、数据型皮肤包、装扮存档导入和示例皮肤资源补齐闭环，并修复首页顶部、底栏、图标、文字裁切和深色可读性问题。
-- 动态专栏封面、动态富文本链接、视频深链误判和内部链接解析完成修复。
-- 关注列表分页补全并加入更平滑的加载过渡，减少只加载前半段的问题。
-- 横屏音量/亮度数字加入逐位上下渐隐、模糊、非线性恢复和克制触感反馈；竖屏视频返回详情页增加更自然的顶部锚点过渡。
-- 评论区显示、空间页头像预览和视频详情 BGM 发现 Sheet 完成合入与测试修复。
+- 播放链路补充音频/CDN 异常回退诊断，空间页补齐已看进度、续播、发布时间和播放量展示，今日推荐 UP 榜可直接进入 UP 空间。
+- 评论楼中楼首屏加载更多二级回复，补齐文本展开、逐级展开动画和可选模糊开关。
+- 设置顶部集中放置 Telegram 频道、Twitter / X 和打赏作者入口，并整理发布渠道声明，减少重复 UI。
+- UP 空间投稿工具栏改为紧凑 dock，长按当前标签后展开可横向滑动的“视频 / 图文 / 合集 / 系列”标签栏，指示器按文案自适应。
+- 修复皮肤贴纸、首页顶部、底栏液态玻璃实验回退、番剧历史记录“未知UP主”和番剧黑屏误提示等近期反馈。
 
 ## 路线图
 

@@ -135,6 +135,13 @@ class BangumiPlayerOverlayPolicyTest {
     }
 
     @Test
+    fun resolveBangumiPlaybackDebugInfo_marksRenderedFirstFrame() {
+        val info = resolveBangumiPlaybackDebugInfo(firstFrameRendered = true)
+
+        assertEquals("rendered", info.firstFrame)
+    }
+
+    @Test
     fun updateBangumiSuccessInteractionState_replacesInteractionFlags() {
         val updatedState = updateBangumiSuccessInteractionState(
             state = sampleSuccessState(isLiked = false, coinCount = 0),

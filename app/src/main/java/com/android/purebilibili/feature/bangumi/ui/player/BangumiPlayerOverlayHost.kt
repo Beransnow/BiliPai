@@ -12,6 +12,7 @@ import com.android.purebilibili.feature.bangumi.resolveBangumiUnsupportedOverlay
 import com.android.purebilibili.feature.bangumi.shouldShowBangumiOverlayDislikeAction
 import com.android.purebilibili.core.util.ShareUtils
 import com.android.purebilibili.feature.video.ui.components.VideoAspectRatio
+import com.android.purebilibili.feature.video.ui.overlay.PlaybackDebugInfo
 import com.android.purebilibili.feature.video.ui.overlay.SubtitleControlCallbacks
 import com.android.purebilibili.feature.video.ui.overlay.SubtitleControlUiState
 import com.android.purebilibili.feature.video.ui.overlay.VideoPlayerOverlay
@@ -29,6 +30,7 @@ internal fun BangumiPlayerOverlayHost(
     coverUrl: String,
     currentVideoUrl: String,
     currentAudioUrl: String,
+    debugInfo: PlaybackDebugInfo,
     isVisible: Boolean,
     onToggleVisible: () -> Unit,
     isFullscreen: Boolean,
@@ -101,6 +103,7 @@ internal fun BangumiPlayerOverlayHost(
         currentQuality = currentQuality,
         currentVideoUrl = currentVideoUrl,
         currentAudioUrl = currentAudioUrl,
+        debugInfo = debugInfo,
         isVip = isVip,
         isLiked = isLiked,
         isCoined = coinCount > 0,

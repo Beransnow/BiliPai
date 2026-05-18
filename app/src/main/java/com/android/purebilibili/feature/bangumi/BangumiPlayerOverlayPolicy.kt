@@ -2,6 +2,7 @@ package com.android.purebilibili.feature.bangumi
 
 import com.android.purebilibili.data.model.response.BangumiEpisode
 import com.android.purebilibili.data.model.response.Page
+import com.android.purebilibili.feature.video.ui.overlay.PlaybackDebugInfo
 
 internal enum class BangumiOverlayUnsupportedAction {
     LIKE,
@@ -79,6 +80,14 @@ internal fun resolveBangumiOverlayShareTitle(
 }
 
 internal fun shouldShowBangumiOverlayDislikeAction(): Boolean = false
+
+internal fun resolveBangumiPlaybackDebugInfo(
+    firstFrameRendered: Boolean
+): PlaybackDebugInfo {
+    return PlaybackDebugInfo(
+        firstFrame = if (firstFrameRendered) "rendered" else ""
+    )
+}
 
 internal fun updateBangumiSuccessInteractionState(
     state: BangumiPlayerState.Success,

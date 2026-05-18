@@ -5,11 +5,11 @@
 </p>
 
 <p align="center">
-  <sub>Last updated: 2026-05-18 · Synced to v8.3.2 (source of truth: <a href="CHANGELOG.md">CHANGELOG</a> + code)</sub>
+  <sub>Last updated: 2026-05-19 · Synced to v8.3.3 (source of truth: <a href="CHANGELOG.md">CHANGELOG</a> + code)</sub>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-8.3.2-fb7299?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/Version-8.3.3-fb7299?style=flat-square" alt="Version">
   <img src="https://img.shields.io/github/stars/jay3-yy/BiliPai?style=flat-square&color=yellow" alt="Stars">
   <img src="https://img.shields.io/github/forks/jay3-yy/BiliPai?style=flat-square&color=green" alt="Forks">
   <img src="https://img.shields.io/github/last-commit/jay3-yy/BiliPai?style=flat-square&color=purple" alt="Last Commit">
@@ -432,14 +432,14 @@ A lightweight plugin format requiring **no coding**, just a simple JSON file to 
 
 See full changelog: [CHANGELOG.md](CHANGELOG.md)
 
-### Latest (v8.3.2 · 2026-05-18)
+### Latest (v8.3.3 · 2026-05-19)
 
-- Completed more of the plugin SDK and data-driven skin-package flow, including local decoration archive import, sample skin assets, and Home top/bottom skin readability fixes.
-- Fixed dynamic/article cover rendering, rich-text link routing, oversized video deep-link parsing, and internal dynamic link handling.
-- Completed following-list pagination and added smoother loading transitions.
-- Added per-digit blurred fade/slide motion and restrained haptics to landscape volume/brightness numbers, plus a smoother portrait fullscreen return-to-detail transition.
-- Merged the improved comments display, fixed Space avatar preview, and moved video-detail BGM discovery into an inline bottom sheet.
-- Bumped the app to `8.3.2` with `versionCode` `196`.
+- Added more playback/CDN audio fallback diagnostics and improved Space progress, resume, publish-time, play-count, Today Watch UP-rank navigation, and speed-lock unlock behavior.
+- Improved nested comment loading, text expansion, transition motion, and the optional nested-reply blur switch.
+- Moved Telegram channel, Twitter / X, and donation entries to the top Settings group, and cleaned up duplicated publishing-channel statement UI.
+- Reworked the Space contribution toolbar into a compact dock: long-press the current tab to expand the horizontally scrollable Video / Article / Collection / Series tabs, with adaptive indicator width.
+- Fixed skin-sticker and Home-top visuals, removed the unstable transparent bottom-bar liquid-glass experiment, and fixed PGC history cards showing an unknown uploader plus false Bangumi black-screen warnings.
+- Bumped the app to `8.3.3` with `versionCode` `197`.
 
 ---
 

@@ -1331,6 +1331,10 @@ private fun CommonListContent(
                 ) { index, video ->
                     val historyKey = resolveHistoryItemKey(video)
                     val historyItem = resolveHistoryItem?.invoke(video)
+                    val historyCardPresentation = remember(historyItem) {
+                        resolveHistoryCardPresentation(historyItem)
+                    }
+                    val displayedVideo = historyCardPresentation?.videoItem ?: video
                     val supportsHistoryDissolve = onHistoryLongDelete != null && onHistoryDissolveComplete != null
                     val isDissolving = supportsHistoryDissolve &&
                         historyKey in resolveActiveHistoryDeleteKeys(historyDeleteSession)
@@ -1385,7 +1389,7 @@ private fun CommonListContent(
                                 )
                             } else {
                                 ElegantVideoCard(
-                                    video = video,
+                                    video = displayedVideo,
                                     index = index,
                                     animationEnabled = cardAnimationEnabled,
                                     motionTier = cardMotionTier,
@@ -1394,6 +1398,7 @@ private fun CommonListContent(
                                     blurEnabled = videoCardAppearance.blurEnabled,
                                     showCoverGlassBadges = videoCardAppearance.showCoverGlassBadges,
                                     showInfoGlassBadges = videoCardAppearance.showInfoGlassBadges,
+                                    showUpBadge = historyCardPresentation?.showUpBadge ?: true,
                                     showOnlineCount = showOnlineCount,
                                     onClick = { _, _ ->
                                         if (historyBatchMode) {
