@@ -131,6 +131,7 @@ import com.android.purebilibili.navigation3.popBiliPaiNavKey
 import com.android.purebilibili.navigation3.pushBiliPaiNavKey
 import com.android.purebilibili.navigation3.resolveBiliPaiNavMotionDecision
 import com.android.purebilibili.navigation3.resolveBiliPaiNavMotionMode
+import com.android.purebilibili.navigation3.resolveBiliPaiNavEntryContentRole
 import com.android.purebilibili.navigation3.resolveBiliPaiNavSourceMetadata
 import com.android.purebilibili.navigation3.resolveInitialBiliPaiBackStack
 import com.android.purebilibili.navigation3.shouldInterceptSystemBackForNavigation3
@@ -1123,7 +1124,10 @@ fun AppNavigation(
                         onBack = { performSystemBackAction() },
                         modifier = Modifier.fillMaxSize(),
                         sharedTransitionScope = LocalSharedTransitionScope.current
-                    ) { _ -> }
+                    ) { key ->
+                        resolveBiliPaiNavEntryContentRole(key)
+                        Unit
+                    }
                 } else NavHost(
             navController = navController,
             startDestination = startDestination

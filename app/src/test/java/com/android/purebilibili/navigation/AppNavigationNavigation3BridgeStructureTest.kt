@@ -42,6 +42,7 @@ class AppNavigationNavigation3BridgeStructureTest {
         assertTrue(source.contains("shouldUseBiliPaiNavDisplayMainChain()"))
         assertTrue(source.contains("BiliPaiNavDisplayHost("))
         assertTrue(source.contains("sharedTransitionScope = LocalSharedTransitionScope.current"))
+        assertTrue(source.contains("resolveBiliPaiNavEntryContentRole"))
         assertTrue(source.contains("else NavHost("))
     }
 
