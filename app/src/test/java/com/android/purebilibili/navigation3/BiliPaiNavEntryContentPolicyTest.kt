@@ -18,6 +18,12 @@ class BiliPaiNavEntryContentPolicyTest {
         assertEquals(BiliPaiNavEntryContentRole.LOGIN, resolveBiliPaiNavEntryContentRole(BiliPaiNavKey.Login))
         assertEquals(BiliPaiNavEntryContentRole.STORY, resolveBiliPaiNavEntryContentRole(BiliPaiNavKey.Story))
         assertEquals(BiliPaiNavEntryContentRole.PARTITION, resolveBiliPaiNavEntryContentRole(BiliPaiNavKey.Partition))
+        assertEquals(BiliPaiNavEntryContentRole.SPACE, resolveBiliPaiNavEntryContentRole(BiliPaiNavKey.Space(1L)))
+        assertEquals(BiliPaiNavEntryContentRole.WEB, resolveBiliPaiNavEntryContentRole(BiliPaiNavKey.Web("https://example.com")))
+        assertEquals(BiliPaiNavEntryContentRole.DYNAMIC_DETAIL, resolveBiliPaiNavEntryContentRole(BiliPaiNavKey.DynamicDetail("1")))
+        assertEquals(BiliPaiNavEntryContentRole.ARTICLE_DETAIL, resolveBiliPaiNavEntryContentRole(BiliPaiNavKey.ArticleDetail(1L)))
+        assertEquals(BiliPaiNavEntryContentRole.LIVE, resolveBiliPaiNavEntryContentRole(BiliPaiNavKey.Live(1L)))
+        assertEquals(BiliPaiNavEntryContentRole.BANGUMI_DETAIL, resolveBiliPaiNavEntryContentRole(BiliPaiNavKey.BangumiDetail(1L)))
     }
 
     @Test
@@ -33,7 +39,7 @@ class BiliPaiNavEntryContentPolicyTest {
         assertEquals(BiliPaiNavEntryContentRole.CATEGORY, resolveBiliPaiNavEntryContentRole(BiliPaiNavKey.Category(1)))
         assertEquals(
             BiliPaiNavEntryContentRole.DEFERRED_LEGACY_ROUTE,
-            resolveBiliPaiNavEntryContentRole(BiliPaiNavKey.Live(roomId = 1L))
+            resolveBiliPaiNavEntryContentRole(BiliPaiNavKey.Unknown("download"))
         )
     }
 }

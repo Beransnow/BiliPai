@@ -81,6 +81,7 @@ import com.android.purebilibili.core.util.BilibiliNavigationTarget
 import com.android.purebilibili.core.util.BilibiliNavigationTargetParser
 import com.android.purebilibili.core.ui.ProvideAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.SharedTransitionProvider
+import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.LocalSharedTransitionScope
 import com.android.purebilibili.data.model.response.BgmInfo
 
@@ -841,6 +842,12 @@ fun AppNavigation(
         fun pushNavigation3Key(key: BiliPaiNavKey) {
             navigation3BackStack = pushBiliPaiNavKey(
                 currentStack = navigation3BackStack,
+                key = key
+            )
+        }
+        fun replaceNavigation3TopWithKey(key: BiliPaiNavKey) {
+            navigation3BackStack = pushBiliPaiNavKey(
+                currentStack = popBiliPaiNavKey(navigation3BackStack),
                 key = key
             )
         }
@@ -1686,6 +1693,193 @@ fun AppNavigation(
                                     onBack = { performSystemBackAction() },
                                     onVideoClick = { bvid, cid, cover ->
                                         navigateToVideoInNavigation3(bvid, cid, cover)
+                                    }
+                                )
+                            }
+                        BiliPaiNavEntryContentRole.SPACE -> {
+                                val spaceKey = key as BiliPaiNavKey.Space
+                                com.android.purebilibili.feature.space.SpaceScreen(
+                                    mid = spaceKey.mid,
+                                    onBack = { performSystemBackAction() },
+                                    onVideoClick = { bvid, resumePositionMs ->
+                                        navigateToVideoInNavigation3(
+                                            bvid,
+                                            0L,
+                                            "",
+                                            resumePositionMs = resumePositionMs
+                                        )
+                                    },
+                                    onAudioClick = { sid ->
+                                        pushNavigation3Route(ScreenRoutes.MusicDetail.createRoute(sid))
+                                    },
+                                    onBangumiClick = { seasonId ->
+                                        if (seasonId > 0L) {
+                                            pushNavigation3Key(BiliPaiNavKey.BangumiDetail(seasonId = seasonId))
+                                        }
+                                    },
+                                    onWebClick = { url, title ->
+                                        pushNavigation3Key(BiliPaiNavKey.Web(url = url, title = title))
+                                    },
+                                    onPlayAllAudioClick = { bvid, resumePositionMs ->
+                                        navigateToVideoInNavigation3(
+                                            bvid,
+                                            0L,
+                                            "",
+                                            startAudio = true,
+                                            resumePositionMs = resumePositionMs
+                                        )
+                                    },
+                                    onDynamicDetailClick = { dynamicId ->
+                                        pushNavigation3Key(BiliPaiNavKey.DynamicDetail(dynamicId))
+                                    },
+                                    onArticleClick = { articleId, title ->
+                                        if (canNavigate(false)) {
+                                            coroutineScope.launch {
+                                                when (val target = resolveArticleNavigationTarget(articleId)) {
+                                                    is ArticleNavigationTarget.NativeDynamic -> {
+                                                        pushNavigation3Key(
+                                                            BiliPaiNavKey.DynamicDetail(target.dynamicId)
+                                                        )
+                                                    }
+                                                    is ArticleNavigationTarget.NativeArticle -> {
+                                                        pushNavigation3Key(
+                                                            BiliPaiNavKey.ArticleDetail(target.articleId, title)
+                                                        )
+                                                    }
+                                                    null -> Unit
+                                                }
+                                            }
+                                        }
+                                    },
+                                    onViewAllClick = { type, id, mid, title, ownerName ->
+                                        pushNavigation3Route(
+                                            ScreenRoutes.SeasonSeriesDetail.createRoute(
+                                                type = type,
+                                                id = id,
+                                                mid = mid,
+                                                title = title,
+                                                ownerName = ownerName
+                                            )
+                                        )
+                                    },
+                                    sharedTransitionScope = LocalSharedTransitionScope.current,
+                                    animatedVisibilityScope = LocalAnimatedVisibilityScope.current
+                                )
+                            }
+                        BiliPaiNavEntryContentRole.WEB -> {
+                                val webKey = key as BiliPaiNavKey.Web
+                                com.android.purebilibili.feature.web.WebViewScreen(
+                                    url = webKey.url,
+                                    title = webKey.title.ifEmpty { null },
+                                    onBack = { performSystemBackAction() },
+                                    onVideoClick = { bvid ->
+                                        navigation3BackStack = popBiliPaiNavKey(navigation3BackStack)
+                                        navigateToVideoInNavigation3(bvid, 0L, "")
+                                    },
+                                    onSpaceClick = { mid ->
+                                        replaceNavigation3TopWithKey(BiliPaiNavKey.Space(mid))
+                                    },
+                                    onLiveClick = { roomId ->
+                                        replaceNavigation3TopWithKey(BiliPaiNavKey.Live(roomId))
+                                    },
+                                    onDynamicClick = { dynamicId ->
+                                        replaceNavigation3TopWithKey(BiliPaiNavKey.DynamicDetail(dynamicId))
+                                    },
+                                    onBangumiClick = { seasonId, epId ->
+                                        replaceNavigation3TopWithKey(
+                                            BiliPaiNavKey.BangumiDetail(seasonId = seasonId, epId = epId)
+                                        )
+                                    },
+                                    onMusicClick = { musicId ->
+                                        val auSid = musicId.removePrefix("au").removePrefix("AU").toLongOrNull()
+                                        if (auSid != null) {
+                                            replaceNavigation3TopWithKey(
+                                                legacyRouteToBiliPaiNavKey(ScreenRoutes.MusicDetail.createRoute(auSid))
+                                            )
+                                        } else {
+                                            navigation3BackStack = popBiliPaiNavKey(navigation3BackStack)
+                                        }
+                                    }
+                                )
+                            }
+                        BiliPaiNavEntryContentRole.DYNAMIC_DETAIL -> {
+                                val dynamicKey = key as BiliPaiNavKey.DynamicDetail
+                                com.android.purebilibili.feature.dynamic.DynamicDetailScreen(
+                                    dynamicId = dynamicKey.dynamicId,
+                                    onBack = { performSystemBackAction() },
+                                    onVideoClick = { bvid -> navigateToVideoInNavigation3(bvid, 0L, "") },
+                                    onBangumiClick = { seasonId, epId ->
+                                        pushNavigation3Key(
+                                            BiliPaiNavKey.BangumiDetail(seasonId = seasonId, epId = epId)
+                                        )
+                                    },
+                                    onUserClick = { mid -> pushNavigation3Key(BiliPaiNavKey.Space(mid)) },
+                                    onLiveClick = { roomId, title, uname ->
+                                        pushNavigation3Key(
+                                            BiliPaiNavKey.Live(roomId = roomId, title = title, uname = uname)
+                                        )
+                                    }
+                                )
+                            }
+                        BiliPaiNavEntryContentRole.ARTICLE_DETAIL -> {
+                                val articleKey = key as BiliPaiNavKey.ArticleDetail
+                                ArticleDetailScreen(
+                                    articleId = articleKey.articleId,
+                                    initialTitle = articleKey.title,
+                                    transitionEnabled = cardTransitionEnabled,
+                                    onBack = { useSharedReturn ->
+                                        navigation3ReturnSession = if (useSharedReturn) {
+                                            navigation3ReturnSession.markReturning(SystemClock.uptimeMillis())
+                                        } else {
+                                            navigation3ReturnSession.clearReturning()
+                                        }
+                                        navigation3BackStack = popBiliPaiNavKey(navigation3BackStack)
+                                    },
+                                    onUserClick = { mid ->
+                                        if (mid > 0) {
+                                            pushNavigation3Key(BiliPaiNavKey.Space(mid))
+                                        }
+                                    }
+                                )
+                            }
+                        BiliPaiNavEntryContentRole.LIVE -> {
+                                val liveKey = key as BiliPaiNavKey.Live
+                                val activity = context as? android.app.Activity
+                                DisposableEffect(liveKey.roomId, miniPlayerManager) {
+                                    onDispose {
+                                        val isChangingConfigurations = activity?.isChangingConfigurations == true
+                                        if (shouldStopLivePlaybackOnRouteDispose(isChangingConfigurations)) {
+                                            miniPlayerManager?.markLeavingByNavigation(forceStop = true)
+                                        }
+                                    }
+                                }
+
+                                com.android.purebilibili.feature.live.LivePlayerScreen(
+                                    roomId = liveKey.roomId,
+                                    title = liveKey.title,
+                                    uname = liveKey.uname,
+                                    onBack = {
+                                        miniPlayerManager?.markLeavingByNavigation(forceStop = true)
+                                        performSystemBackAction()
+                                    },
+                                    onUserClick = { mid -> pushNavigation3Key(BiliPaiNavKey.Space(mid)) }
+                                )
+                            }
+                        BiliPaiNavEntryContentRole.BANGUMI_DETAIL -> {
+                                val bangumiKey = key as BiliPaiNavKey.BangumiDetail
+                                com.android.purebilibili.feature.bangumi.BangumiDetailScreen(
+                                    seasonId = bangumiKey.seasonId,
+                                    epId = bangumiKey.epId,
+                                    onBack = { performSystemBackAction() },
+                                    onEpisodeClick = { actionSeasonId, episode ->
+                                        pushNavigation3Route(
+                                            ScreenRoutes.BangumiPlayer.createRoute(actionSeasonId, episode.id)
+                                        )
+                                    },
+                                    onSeasonClick = { newSeasonId ->
+                                        replaceNavigation3TopWithKey(
+                                            BiliPaiNavKey.BangumiDetail(seasonId = newSeasonId)
+                                        )
                                     }
                                 )
                             }
