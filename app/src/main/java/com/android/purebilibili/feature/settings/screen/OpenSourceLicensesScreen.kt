@@ -5,10 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-//  Cupertino Icons - iOS SF Symbols 风格图标
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -263,7 +259,7 @@ fun LicenseCard(
                 }
             }
             Icon(
-                CupertinoIcons.Default.ChevronForward,
+                rememberSettingsInlineIcon("open_source_license_open"),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                 modifier = Modifier.size(20.dp)

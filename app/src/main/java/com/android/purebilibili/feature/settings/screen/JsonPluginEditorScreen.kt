@@ -4,10 +4,6 @@ package com.android.purebilibili.feature.settings
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-//  Cupertino Icons - iOS SF Symbols 风格图标
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -59,7 +55,7 @@ fun JsonPluginEditorScreen(
                         )
                         onSave(updated)
                     }) {
-                        Icon(CupertinoIcons.Default.Checkmark, null)
+                        Icon(rememberSettingsInlineIcon("json_plugin_editor_save"), null)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -147,7 +143,11 @@ fun JsonPluginEditorContent(
                 TextButton(onClick = {
                     onRulesChange(rules + Rule(field = "title", op = "contains", value = JsonPrimitive(""), action = "hide"))
                 }) {
-                    Icon(CupertinoIcons.Default.Plus, null, modifier = Modifier.size(16.dp))
+                    Icon(
+                        rememberSettingsInlineIcon("json_plugin_editor_add_rule"),
+                        null,
+                        modifier = Modifier.size(16.dp)
+                    )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("添加规则")
                 }
@@ -242,7 +242,7 @@ private fun RuleEditor(
                 )
                 IconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
                     Icon(
-                        CupertinoIcons.Default.Trash,
+                        rememberSettingsInlineIcon("json_plugin_editor_delete_rule"),
                         contentDescription = "删除",
                         tint = MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(18.dp)

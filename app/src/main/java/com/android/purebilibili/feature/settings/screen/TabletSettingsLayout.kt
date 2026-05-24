@@ -16,8 +16,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -558,7 +556,11 @@ fun TabletSettingsLayout(
                                                 com.android.purebilibili.core.plugin.json.JsonPluginManager.updatePlugin(updated)
                                                 editingPlugin = null
                                             }) {
-                                                Icon(Icons.Filled.CheckCircle, contentDescription = "保存", tint = MaterialTheme.colorScheme.primary)
+                                                Icon(
+                                                    rememberSettingsInlineIcon("tablet_plugin_editor_save"),
+                                                    contentDescription = "保存",
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
                                             }
                                         }
                                         

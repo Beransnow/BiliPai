@@ -14,14 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.UploadFile
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -52,11 +44,13 @@ import com.android.purebilibili.core.theme.iOSPurple
 import com.android.purebilibili.core.ui.IOSAlertDialog
 import com.android.purebilibili.core.ui.IOSDialogAction
 import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
+import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.ui.components.IOSClickableItem
 import com.android.purebilibili.core.ui.components.IOSDivider
 import com.android.purebilibili.core.ui.components.IOSGroup
 import com.android.purebilibili.core.ui.components.IOSSectionTitle
 import com.android.purebilibili.core.ui.iOSLargeTitleBar
+import com.android.purebilibili.feature.settings.rememberSettingsInlineIcon
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 
@@ -133,7 +127,11 @@ fun SettingsShareScreen(
                 IOSSectionTitle("执行状态")
                 IOSGroup {
                     IOSClickableItem(
-                        icon = if (uiState.isBusy) Icons.Filled.Info else Icons.Filled.CheckCircle,
+                        icon = if (uiState.isBusy) {
+                            rememberSettingsInlineIcon("settings_share_status_busy")
+                        } else {
+                            rememberSettingsInlineIcon("settings_share_status_recent")
+                        },
                         title = if (uiState.isBusy) "正在处理" else "最近状态",
                         value = uiState.statusMessage ?: "尚未执行导入导出操作",
                         onClick = if (uiState.statusMessage != null) ({ viewModel.clearStatus() }) else null,
@@ -147,7 +145,7 @@ fun SettingsShareScreen(
                 IOSSectionTitle("说明")
                 IOSGroup {
                     IOSClickableItem(
-                        icon = Icons.Filled.CheckCircle,
+                        icon = rememberSettingsInlineIcon("settings_share_included_content"),
                         title = "会一起分享的内容",
                         subtitle = "外观、播放、手势、弹幕、导航等可交流设置",
                         onClick = null,
@@ -156,7 +154,7 @@ fun SettingsShareScreen(
                     )
                     IOSDivider(startIndent = 66.dp)
                     IOSClickableItem(
-                        icon = Icons.Filled.Lock,
+                        icon = rememberSettingsInlineIcon("settings_share_skipped_content"),
                         title = "会自动跳过的内容",
                         subtitle = "账号、下载路径、WebDAV、隐私与设备相关配置",
                         onClick = null,
@@ -170,7 +168,7 @@ fun SettingsShareScreen(
                 IOSSectionTitle("操作")
                 IOSGroup {
                     IOSClickableItem(
-                        icon = Icons.Filled.Download,
+                        icon = rememberSettingsInlineIcon("settings_share_export_file"),
                         title = "导出到文件",
                         subtitle = "生成可分享的设置文件（JSON）",
                         onClick = {
@@ -185,7 +183,7 @@ fun SettingsShareScreen(
                     )
                     IOSDivider(startIndent = 66.dp)
                     IOSClickableItem(
-                        icon = Icons.Filled.Share,
+                        icon = rememberSettingsInlineIcon("settings_share_export_share"),
                         title = "分享导出文件",
                         subtitle = "导出后直接调起系统分享",
                         onClick = { viewModel.prepareShare() },
@@ -193,7 +191,7 @@ fun SettingsShareScreen(
                     )
                     IOSDivider(startIndent = 66.dp)
                     IOSClickableItem(
-                        icon = Icons.Filled.UploadFile,
+                        icon = rememberSettingsInlineIcon("settings_share_import_file"),
                         title = "从文件导入",
                         subtitle = "预览可导入内容后再一键应用",
                         onClick = { importLauncher.launch(arrayOf("application/json", "text/plain")) },
@@ -206,7 +204,7 @@ fun SettingsShareScreen(
                 IOSSectionTitle("文件格式")
                 IOSGroup {
                     IOSClickableItem(
-                        icon = Icons.Filled.Info,
+                        icon = rememberSettingsInlineIcon("settings_share_file_format"),
                         title = "设置包（JSON）",
                         subtitle = "支持用户查看，也支持应用内一键导入",
                         value = "格式版本 v$SETTINGS_SHARE_SCHEMA_VERSION",
@@ -224,7 +222,7 @@ fun SettingsShareScreen(
             leadingContent = {
                 IconButton(onClick = onBack) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        imageVector = rememberAppBackIcon(),
                         contentDescription = backLabel
                     )
                 }

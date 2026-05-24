@@ -13,18 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Backup
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Cloud
-import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Restore
-import androidx.compose.material.icons.filled.Storage
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -60,6 +48,9 @@ import com.android.purebilibili.core.ui.components.IOSDivider
 import com.android.purebilibili.core.ui.components.IOSGroup
 import com.android.purebilibili.core.ui.components.IOSSectionTitle
 import com.android.purebilibili.core.ui.components.IOSSwitchItem
+import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.rememberAppRefreshIcon
+import com.android.purebilibili.feature.settings.rememberSettingsInlineIcon
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 
@@ -133,7 +124,11 @@ fun WebDavBackupScreen(
                         else -> "尚未执行操作"
                     }
                     IOSClickableItem(
-                        icon = if (uiState.restoreRequiresRestart) Icons.Filled.Warning else Icons.Filled.Info,
+                        icon = if (uiState.restoreRequiresRestart) {
+                            rememberSettingsInlineIcon("webdav_status_restart")
+                        } else {
+                            rememberSettingsInlineIcon("webdav_status_info")
+                        },
                         title = if (uiState.restoreRequiresRestart) "需要重启应用" else "执行状态",
                         value = statusText,
                         onClick = if (uiState.statusMessage != null) ({ viewModel.clearStatus() }) else null,
@@ -148,7 +143,7 @@ fun WebDavBackupScreen(
                 IOSGroup {
                     // 配置项图标按“能力/服务器/账号/目录”映射，降低识别成本。
                     IOSSwitchItem(
-                        icon = Icons.Filled.Cloud,
+                        icon = rememberSettingsInlineIcon("webdav_enable"),
                         title = "启用 WebDAV 云备份",
                         subtitle = "开启后每天自动备份，同时保留手动备份能力",
                         checked = uiState.config.enabled,
@@ -157,7 +152,7 @@ fun WebDavBackupScreen(
                     )
                     IOSDivider(startIndent = 66.dp)
                     IOSClickableItem(
-                        icon = Icons.Filled.Storage,
+                        icon = rememberSettingsInlineIcon("webdav_server"),
                         title = "服务器",
                         value = uiState.config.baseUrl.ifBlank { "未配置" },
                         onClick = {
@@ -168,7 +163,7 @@ fun WebDavBackupScreen(
                     )
                     IOSDivider(startIndent = 66.dp)
                     IOSClickableItem(
-                        icon = Icons.Filled.Person,
+                        icon = rememberSettingsInlineIcon("webdav_username"),
                         title = "用户名",
                         value = uiState.config.username.ifBlank { "未配置" },
                         onClick = {
@@ -179,7 +174,7 @@ fun WebDavBackupScreen(
                     )
                     IOSDivider(startIndent = 66.dp)
                     IOSClickableItem(
-                        icon = Icons.Filled.Folder,
+                        icon = rememberSettingsInlineIcon("webdav_remote_dir"),
                         title = "远端目录",
                         value = uiState.config.remoteDir,
                         onClick = {
@@ -195,7 +190,7 @@ fun WebDavBackupScreen(
                 IOSSectionTitle("操作")
                 IOSGroup {
                     IOSClickableItem(
-                        icon = Icons.Filled.CheckCircle,
+                        icon = rememberSettingsInlineIcon("webdav_test_connection"),
                         title = "测试连接",
                         subtitle = "验证账号与目录可用性",
                         onClick = { viewModel.testConnection() },
@@ -203,7 +198,7 @@ fun WebDavBackupScreen(
                     )
                     IOSDivider(startIndent = 66.dp)
                     IOSClickableItem(
-                        icon = Icons.Filled.Backup,
+                        icon = rememberSettingsInlineIcon("webdav_backup_now"),
                         title = "立即备份",
                         subtitle = "上传当前设置与插件配置",
                         onClick = { viewModel.backupNow() },
@@ -211,7 +206,7 @@ fun WebDavBackupScreen(
                     )
                     IOSDivider(startIndent = 66.dp)
                     IOSClickableItem(
-                        icon = Icons.Filled.Restore,
+                        icon = rememberSettingsInlineIcon("webdav_restore_latest"),
                         title = "恢复最新备份",
                         subtitle = "会覆盖本地设置，建议先手动备份",
                         onClick = { showRestoreConfirm = true },
@@ -219,7 +214,7 @@ fun WebDavBackupScreen(
                     )
                     IOSDivider(startIndent = 66.dp)
                     IOSClickableItem(
-                        icon = Icons.Filled.Refresh,
+                        icon = rememberSettingsInlineIcon("webdav_refresh_remote"),
                         title = "刷新远端列表",
                         subtitle = "读取 WebDAV 目录中的备份文件",
                         onClick = { viewModel.refreshRemoteBackups() },
@@ -233,7 +228,7 @@ fun WebDavBackupScreen(
                 IOSGroup {
                     if (uiState.remoteBackups.isEmpty()) {
                         IOSClickableItem(
-                            icon = Icons.Filled.Folder,
+                            icon = rememberSettingsInlineIcon("webdav_empty_remote"),
                             title = "暂无备份",
                             value = "可先点击“立即备份”生成第一份快照",
                             onClick = null,
@@ -243,7 +238,7 @@ fun WebDavBackupScreen(
                     } else {
                         uiState.remoteBackups.take(10).forEachIndexed { index, entry ->
                             IOSClickableItem(
-                                icon = Icons.Filled.Folder,
+                                icon = rememberSettingsInlineIcon("webdav_remote_file_$index"),
                                 title = entry.fileName,
                                 value = "${entry.sizeBytes} B",
                                 onClick = null,
@@ -265,7 +260,7 @@ fun WebDavBackupScreen(
             leadingContent = {
                 IconButton(onClick = onBack) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        imageVector = rememberAppBackIcon(),
                         contentDescription = backLabel
                     )
                 }
@@ -273,7 +268,7 @@ fun WebDavBackupScreen(
             trailingContent = {
                 IconButton(onClick = { viewModel.refreshRemoteBackups() }) {
                     Icon(
-                        imageVector = Icons.Filled.Refresh,
+                        imageVector = rememberAppRefreshIcon(),
                         contentDescription = refreshLabel
                     )
                 }

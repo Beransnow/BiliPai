@@ -15,6 +15,7 @@ import com.android.purebilibili.core.store.home.HomeSettingsStore
 import com.android.purebilibili.core.store.navigation.NavigationSettingsStore
 import com.android.purebilibili.core.store.player.PlayerSettingsStore
 import com.android.purebilibili.core.theme.AppFontSizePreset
+import com.android.purebilibili.core.theme.AppIconStyle
 import com.android.purebilibili.core.theme.AppUiScalePreset
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
@@ -478,6 +479,10 @@ internal fun resolveAndroidNativeVariantPreferenceValue(rawValue: Int?): Android
     return AndroidNativeVariant.fromValue(rawValue ?: AndroidNativeVariant.MATERIAL3.value)
 }
 
+internal fun resolveAppIconStylePreferenceValue(rawValue: Int?): AppIconStyle {
+    return AppIconStyle.fromValue(rawValue ?: AppIconStyle.LUCIDE.value)
+}
+
 enum class DanmakuPanelWidthMode(val value: Int, val label: String, val widthFraction: Float) {
     FULL(0, "全宽", 1f),
     HALF(1, "半屏", 0.5f),
@@ -789,6 +794,7 @@ object SettingsManager {
     private val KEY_APP_LANGUAGE = intPreferencesKey("app_language_v1")
     private val KEY_UI_PRESET = intPreferencesKey("ui_preset")
     private val KEY_ANDROID_NATIVE_VARIANT = intPreferencesKey("android_native_variant_v1")
+    private val KEY_APP_ICON_STYLE = intPreferencesKey("app_icon_style_v1")
     private val KEY_DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
     private val KEY_THEME_COLOR_STYLE = stringPreferencesKey("theme_color_style")
     private val KEY_THEME_COLOR_SPEC = stringPreferencesKey("theme_color_spec")
@@ -1357,6 +1363,17 @@ object SettingsManager {
     suspend fun setAndroidNativeVariant(context: Context, variant: AndroidNativeVariant) {
         context.settingsDataStore.edit { preferences ->
             preferences[KEY_ANDROID_NATIVE_VARIANT] = variant.value
+        }
+    }
+
+    fun getAppIconStyle(context: Context): Flow<AppIconStyle> =
+        context.settingsDataStore.data.map { preferences ->
+            resolveAppIconStylePreferenceValue(preferences[KEY_APP_ICON_STYLE])
+        }
+
+    suspend fun setAppIconStyle(context: Context, style: AppIconStyle) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_APP_ICON_STYLE] = style.value
         }
     }
 
@@ -4983,6 +5000,7 @@ object SettingsManager {
     private val shareableSettingDefinitions: List<ShareablePreferenceDefinition> by lazy {
         listOf(
             IntShareablePreferenceDefinition(KEY_UI_PRESET, SettingsShareSection.APPEARANCE),
+            IntShareablePreferenceDefinition(KEY_APP_ICON_STYLE, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_THEME_MODE, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_DARK_THEME_STYLE, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_APP_LANGUAGE, SettingsShareSection.APPEARANCE),

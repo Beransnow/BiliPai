@@ -31,8 +31,12 @@ import androidx.compose.material.icons.outlined.Widgets
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.android.purebilibili.core.theme.AppIconStyle
+import com.android.purebilibili.core.theme.LocalAppIconStyle
 import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.ui.IconAssetKey
+import com.android.purebilibili.core.ui.createStyledRoleIcon
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.outlined.ArrowCounterclockwise
 import io.github.alexzhirkevich.cupertino.icons.outlined.ArrowLeftArrowRight
@@ -171,10 +175,63 @@ internal enum class SettingsIconRole {
 @Composable
 internal fun rememberSettingsSemanticIcon(
     role: SettingsIconRole,
-    uiPreset: UiPreset = LocalUiPreset.current
-): ImageVector = remember(role, uiPreset) {
-    resolveSettingsSemanticIcon(role, uiPreset)
+    uiPreset: UiPreset = LocalUiPreset.current,
+    appIconStyle: AppIconStyle = LocalAppIconStyle.current,
+    iconKey: String = role.name
+): ImageVector = remember(role, uiPreset, appIconStyle, iconKey) {
+    resolveSettingsSemanticIcon(role, appIconStyle, iconKey)
 }
+
+@Composable
+internal fun rememberSettingsInlineIcon(
+    iconKey: String,
+    appIconStyle: AppIconStyle = LocalAppIconStyle.current
+): ImageVector = remember(iconKey, appIconStyle) {
+    resolveSettingsInlineIcon(iconKey, appIconStyle)
+}
+
+internal fun resolveSettingsInlineIcon(
+    iconKey: String,
+    style: AppIconStyle
+): ImageVector = createStyledRoleIcon(
+    key = IconAssetKey(
+        style = style,
+        roleName = "SETTINGS_INLINE",
+        assetName = "${style.name.lowercase()}_settings_inline_${iconKey.normalizedIconKey()}",
+        variant = "settings-inline",
+        customName = "${style.name.lowercase()}_settings_inline_${iconKey.normalizedIconKey()}"
+    ),
+    roleOrdinal = iconKey.stableIconOrdinal() + 1_000
+)
+
+private fun String.normalizedIconKey(): String {
+    return lowercase().replace(Regex("[^a-z0-9_]+"), "_").trim('_')
+}
+
+private fun String.stableIconOrdinal(): Int {
+    return fold(0) { acc, char -> (acc * 31 + char.code) and 0x7FFF }
+}
+
+internal fun resolveSettingsSemanticIconAssetKey(
+    role: SettingsIconRole,
+    style: AppIconStyle,
+    iconKey: String = role.name
+): IconAssetKey = IconAssetKey(
+    style = style,
+    roleName = role.name,
+    assetName = "${style.name.lowercase()}_settings_${iconKey.normalizedIconKey()}",
+    variant = "settings-semantic",
+    customName = "${style.name.lowercase()}_settings_${iconKey.normalizedIconKey()}"
+)
+
+internal fun resolveSettingsSemanticIcon(
+    role: SettingsIconRole,
+    style: AppIconStyle,
+    iconKey: String = role.name
+): ImageVector = createStyledRoleIcon(
+    key = resolveSettingsSemanticIconAssetKey(role, style, iconKey),
+    roleOrdinal = iconKey.stableIconOrdinal() + 100
+)
 
 internal fun resolveSettingsSearchTargetIconRole(
     target: SettingsSearchTarget

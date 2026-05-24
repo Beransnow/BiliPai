@@ -287,6 +287,10 @@ dependencies {
     implementation("top.yukonga.miuix.kmp:miuix-preference-android:$miuixVersion")
     // 图标扩展库 (全屏、设置图标等)
     implementation("androidx.compose.material:material-icons-extended")
+    implementation("com.composables:icons-material-symbols-outlined-android:2.2.1")
+    implementation("com.composables:icons-lucide-android:2.2.1")
+    implementation("io.github.dev778g-me:phosphoricon-compose:1.0.2")
+    implementation("dev.seyfarth:tabler-icons-kmp:1.0.0")
     implementation("androidx.compose.animation:animation")
 
     // --- 2. Network (网络请求) ---

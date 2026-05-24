@@ -59,6 +59,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.theme.AndroidNativeVariant
+import com.android.purebilibili.core.theme.AppIconStyle
+import com.android.purebilibili.core.theme.LocalAppIconStyle
 import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.theme.UiPreset
@@ -347,161 +349,224 @@ object AppIcons {
     private var _biliCoin: ImageVector? = null
 }
 
-@Composable
-fun rememberAppBackIcon(): ImageVector {
-    return resolveAppBackIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+enum class AppIconRole {
+    BACK,
+    SETTINGS,
+    MORE,
+    PHOTO,
+    FOLDER,
+    RESTORE,
+    WARNING,
+    CHECK_CIRCLE,
+    REFRESH,
+    DOWNLOAD,
+    UPLOAD_FILE,
+    SEARCH,
+    CLEAR,
+    HISTORY,
+    BOOKMARK,
+    INBOX,
+    TV,
+    LOGOUT,
+    TIMER,
+    MUSIC,
+    FLIP_HORIZONTAL,
+    FLIP_VERTICAL,
+    HEADPHONES,
+    QUALITY,
+    CODEC,
+    SPEED,
+    GESTURE_TAP,
+    WIFI,
+    CHEVRON_FORWARD,
+    CHEVRON_DOWN,
+    CHEVRON_UP,
+    PROFILE_ADD,
+    LOCK,
+    HOME,
+    DYNAMIC,
+    PLAY,
+    COLLECTION,
+    COMMENT,
+    LIKE,
+    LIKE_FILLED,
+    SHARE,
+    VISIBILITY_ON,
+    VISIBILITY_OFF,
+    ANALYTICS,
+    INFO,
+    NOTIFICATION,
+    SPARKLES,
+    WATCH_LATER
 }
 
-@Composable
-fun rememberAppSettingsIcon(): ImageVector {
-    return resolveAppSettingsIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
-}
+fun appIconRolesForDuplicateAudit(): List<AppIconRole> = AppIconRole.entries
+
+fun resolveAppIconAssetKey(
+    role: AppIconRole,
+    style: AppIconStyle
+): IconAssetKey = IconAssetKey(
+    style = style,
+    roleName = role.name,
+    assetName = "${style.name.lowercase()}_${role.name.lowercase()}"
+)
+
+private fun resolveStyledAppIcon(
+    role: AppIconRole,
+    style: AppIconStyle
+): ImageVector = createStyledRoleIcon(
+    key = resolveAppIconAssetKey(role, style),
+    roleOrdinal = role.ordinal
+)
+
+fun resolveAppIconVectorForDuplicateAudit(
+    role: AppIconRole,
+    style: AppIconStyle
+): ImageVector = resolveStyledAppIcon(role, style)
 
 @Composable
-fun rememberAppMoreIcon(): ImageVector {
-    return resolveAppMoreIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
-}
+fun rememberAppBackIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.BACK, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppPhotoIcon(): ImageVector {
-    return resolveAppPhotoIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
-}
+fun rememberAppSettingsIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.SETTINGS, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppFolderIcon(): ImageVector {
-    return resolveAppFolderIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
-}
+fun rememberAppMoreIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.MORE, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppRestoreIcon(): ImageVector {
-    return resolveAppRestoreIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
-}
+fun rememberAppPhotoIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.PHOTO, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppWarningIcon(): ImageVector {
-    return resolveAppWarningIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
-}
+fun rememberAppFolderIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.FOLDER, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppRefreshIcon(): ImageVector {
-    return resolveAppRefreshIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
-}
+fun rememberAppRestoreIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.RESTORE, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppDownloadIcon(): ImageVector {
-    return resolveAppDownloadIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
-}
+fun rememberAppWarningIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.WARNING, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppSearchIcon(): ImageVector = resolveAppSearchIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppCheckCircleIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.CHECK_CIRCLE, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppClearIcon(): ImageVector = resolveAppClearIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppRefreshIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.REFRESH, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppHistoryIcon(): ImageVector = resolveAppHistoryIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppDownloadIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.DOWNLOAD, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppBookmarkIcon(): ImageVector = resolveAppBookmarkIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppUploadFileIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.UPLOAD_FILE, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppInboxIcon(): ImageVector = resolveAppInboxIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppSearchIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.SEARCH, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppTvIcon(): ImageVector = resolveAppTvIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppClearIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.CLEAR, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppLogoutIcon(): ImageVector = resolveAppLogoutIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppHistoryIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.HISTORY, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppTimerIcon(): ImageVector = resolveAppTimerIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppBookmarkIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.BOOKMARK, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppMusicIcon(): ImageVector = resolveAppMusicIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppInboxIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.INBOX, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppFlipHorizontalIcon(): ImageVector = resolveAppFlipHorizontalIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppTvIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.TV, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppFlipVerticalIcon(): ImageVector = resolveAppFlipVerticalIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppLogoutIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.LOGOUT, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppHeadphonesIcon(): ImageVector = resolveAppHeadphonesIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppTimerIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.TIMER, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppQualityIcon(): ImageVector = resolveAppQualityIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppMusicIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.MUSIC, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppCodecIcon(): ImageVector = resolveAppCodecIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppFlipHorizontalIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.FLIP_HORIZONTAL, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppSpeedIcon(): ImageVector = resolveAppSpeedIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppFlipVerticalIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.FLIP_VERTICAL, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppGestureTapIcon(): ImageVector = resolveAppGestureTapIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppHeadphonesIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.HEADPHONES, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppWifiIcon(): ImageVector = resolveAppWifiIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppQualityIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.QUALITY, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppChevronForwardIcon(): ImageVector = resolveAppChevronForwardIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppCodecIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.CODEC, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppChevronDownIcon(): ImageVector = resolveAppChevronDownIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppSpeedIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.SPEED, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppChevronUpIcon(): ImageVector = resolveAppChevronUpIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppGestureTapIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.GESTURE_TAP, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppProfileAddIcon(): ImageVector = resolveAppProfileAddIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppWifiIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.WIFI, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppLockIcon(): ImageVector = resolveAppLockIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppChevronForwardIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.CHEVRON_FORWARD, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppHomeIcon(): ImageVector = resolveAppHomeIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppChevronDownIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.CHEVRON_DOWN, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppDynamicIcon(): ImageVector = resolveAppDynamicIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppChevronUpIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.CHEVRON_UP, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppPlayIcon(): ImageVector = resolveAppPlayIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppProfileAddIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.PROFILE_ADD, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppCollectionIcon(): ImageVector = resolveAppCollectionIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppLockIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.LOCK, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppCommentIcon(): ImageVector = resolveAppCommentIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppHomeIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.HOME, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppLikeIcon(): ImageVector = resolveAppLikeIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppDynamicIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.DYNAMIC, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppLikeFilledIcon(): ImageVector = resolveAppLikeFilledIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppPlayIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.PLAY, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppShareIcon(): ImageVector = resolveAppShareIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppCollectionIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.COLLECTION, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppVisibilityOnIcon(): ImageVector = resolveAppVisibilityOnIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppCommentIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.COMMENT, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppVisibilityOffIcon(): ImageVector = resolveAppVisibilityOffIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppLikeIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.LIKE, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppAnalyticsIcon(): ImageVector = resolveAppAnalyticsIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppLikeFilledIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.LIKE_FILLED, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppInfoIcon(): ImageVector = resolveAppInfoIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppShareIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.SHARE, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppNotificationIcon(): ImageVector = resolveAppNotificationIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppVisibilityOnIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.VISIBILITY_ON, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppSparklesIcon(): ImageVector = resolveAppSparklesIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppVisibilityOffIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.VISIBILITY_OFF, LocalAppIconStyle.current)
 
 @Composable
-fun rememberAppWatchLaterIcon(): ImageVector = resolveAppWatchLaterIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+fun rememberAppAnalyticsIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.ANALYTICS, LocalAppIconStyle.current)
+
+@Composable
+fun rememberAppInfoIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.INFO, LocalAppIconStyle.current)
+
+@Composable
+fun rememberAppNotificationIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.NOTIFICATION, LocalAppIconStyle.current)
+
+@Composable
+fun rememberAppSparklesIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.SPARKLES, LocalAppIconStyle.current)
+
+@Composable
+fun rememberAppWatchLaterIcon(): ImageVector = resolveStyledAppIcon(AppIconRole.WATCH_LATER, LocalAppIconStyle.current)
 
 @Composable
 fun rememberAppCoinIcon(): ImageVector = resolveAppCoinIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)

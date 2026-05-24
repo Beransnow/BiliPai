@@ -39,9 +39,6 @@ import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.theme.*
 import com.android.purebilibili.core.util.EasterEggs
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.filled.*
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import com.android.purebilibili.core.ui.common.copyOnLongPress
 import com.android.purebilibili.core.ui.components.AppAdaptiveSwitch
 import com.android.purebilibili.core.ui.components.rememberAdaptiveSemanticIconTint
@@ -601,9 +598,17 @@ fun SettingsSubpageEntrySection(
     val developerTint = rememberSettingsEntryTint(SettingsEntryTintRole.SECONDARY, iOSTeal, uiPreset)
     val aboutTint = rememberSettingsEntryTint(SettingsEntryTintRole.TERTIARY, iOSOrange, uiPreset)
     val contentAndStorageIcon = rememberSettingsSemanticIcon(SettingsIconRole.DATA_BACKUP, uiPreset)
-    val privacyIcon = rememberSettingsSemanticIcon(SettingsIconRole.PRIVACY_PERMISSION, uiPreset)
+    val privacyIcon = rememberSettingsSemanticIcon(
+        SettingsIconRole.PRIVACY_PERMISSION,
+        uiPreset,
+        iconKey = "settings_sections_privacy"
+    )
     val developerVisual = rememberSettingsEntryVisual(SettingsSearchTarget.DIAGNOSTICS, uiPreset)
-    val aboutIcon = rememberSettingsSemanticIcon(SettingsIconRole.ABOUT_SUPPORT, uiPreset)
+    val aboutIcon = rememberSettingsSemanticIcon(
+        SettingsIconRole.ABOUT_SUPPORT,
+        uiPreset,
+        iconKey = "settings_sections_about"
+    )
     SettingsCardGroup {
         SettingClickableItem(
             icon = contentAndStorageIcon,
@@ -951,7 +956,11 @@ fun PrivacySection(
     val privacyModeTint = rememberSettingsEntryTint(SettingsEntryTintRole.TERTIARY, iOSPurple, uiPreset)
     val permissionVisual = rememberSettingsEntryVisual(SettingsSearchTarget.PERMISSION, uiPreset)
     val blockedListVisual = rememberSettingsEntryVisual(SettingsSearchTarget.BLOCKED_LIST, uiPreset)
-    val visibilityOffIcon = rememberSettingsSemanticIcon(SettingsIconRole.PRIVACY_PERMISSION, uiPreset)
+    val visibilityOffIcon = rememberSettingsSemanticIcon(
+        SettingsIconRole.PRIVACY_PERMISSION,
+        uiPreset,
+        iconKey = "settings_sections_privacy_visibility"
+    )
 
     SettingsCardGroup {
         SettingSwitchItem(
@@ -1154,7 +1163,11 @@ fun AboutSection(
     val releaseNotesVisual = rememberSettingsEntryVisual(SettingsSearchTarget.VIEW_RELEASE_NOTES, uiPreset)
     val replayOnboardingVisual = rememberSettingsEntryVisual(SettingsSearchTarget.REPLAY_ONBOARDING, uiPreset)
     val notificationIcon = rememberSettingsSemanticIcon(SettingsIconRole.AUTO_CHECK_UPDATE, uiPreset)
-    val infoIcon = rememberSettingsSemanticIcon(SettingsIconRole.ABOUT_SUPPORT, uiPreset)
+    val infoIcon = rememberSettingsSemanticIcon(
+        SettingsIconRole.ABOUT_SUPPORT,
+        uiPreset,
+        iconKey = "settings_sections_about_info"
+    )
     val sparklesIcon = rememberSettingsSemanticIcon(SettingsIconRole.EASTER_EGG, uiPreset)
     val verificationIcon = rememberSettingsSemanticIcon(SettingsIconRole.BUILD_VERIFICATION, uiPreset)
     val buildSourceIcon = rememberSettingsSemanticIcon(SettingsIconRole.BUILD_SOURCE, uiPreset)

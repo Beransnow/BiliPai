@@ -66,9 +66,6 @@ import com.android.purebilibili.core.ui.adaptive.resolveEffectiveMotionTier
 import com.android.purebilibili.core.plugin.PluginManager
 
 import dev.chrisbanes.haze.hazeSource
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.filled.*
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import kotlinx.coroutines.launch
 
 import com.android.purebilibili.core.ui.components.IOSSectionTitle
@@ -1479,7 +1476,7 @@ fun DonateDialog(onDismiss: () -> Unit) {
                             .size(32.dp)
                     ) {
                         Icon(
-                            imageVector = CupertinoIcons.Default.Xmark, // Fixed: Filled.Xmark -> Default.Xmark or correct path
+                            imageVector = rememberSettingsInlineIcon("settings_image_preview_close"),
                             contentDescription = "关闭",
                             tint = Color.White,
                             modifier = Modifier.size(20.dp)

@@ -699,6 +699,7 @@ private fun rememberKernelSuStyleColorScheme(
 fun PureBiliBiliTheme(
     uiPreset: UiPreset = UiPreset.IOS,
     androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3,
+    appIconStyle: AppIconStyle = AppIconStyle.LUCIDE,
     themeMode: AppThemeMode = AppThemeMode.FOLLOW_SYSTEM,
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = false,
@@ -816,6 +817,7 @@ fun PureBiliBiliTheme(
     CompositionLocalProvider(
         LocalUiPreset provides uiPreset,
         LocalAndroidNativeVariant provides androidNativeVariant,
+        LocalAppIconStyle provides appIconStyle,
         LocalDynamicColorActive provides isDynamicColorActive,
         LocalCornerRadiusScale provides resolveCornerRadiusScale(
             uiPreset = uiPreset,

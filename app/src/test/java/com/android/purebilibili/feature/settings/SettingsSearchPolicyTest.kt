@@ -324,6 +324,16 @@ class SettingsSearchPolicyTest {
     }
 
     @Test
+    fun queryByGlobalIconStyleKeywords_hitsAppearanceEntry() {
+        listOf("图标库", "全局图标", "Lucide", "Phosphor", "Tabler", "Material Symbols").forEach { query ->
+            assertTrue(
+                resolveSettingsSearchResults(query).any { it.target == SettingsSearchTarget.APPEARANCE },
+                "$query should route to appearance settings"
+            )
+        }
+    }
+
+    @Test
     fun queryByAutoCheckUpdate_hitsCheckUpdateEntry() {
         val results = resolveSettingsSearchResults("自动检查更新")
 
