@@ -137,6 +137,38 @@ class SpaceLoadPolicyTest {
     }
 
     @Test
+    fun resolveSpaceSearchBarGridItemIndex_keepsSearchBarVisibleAfterTopBarClick() {
+        assertEquals(
+            2,
+            resolveSpaceSearchBarGridItemIndex(
+                scope = SpaceSearchScope.DYNAMIC,
+                hasContributionToolbar = false
+            )
+        )
+        assertEquals(
+            3,
+            resolveSpaceSearchBarGridItemIndex(
+                scope = SpaceSearchScope.VIDEO,
+                hasContributionToolbar = true
+            )
+        )
+        assertEquals(
+            2,
+            resolveSpaceSearchBarGridItemIndex(
+                scope = SpaceSearchScope.VIDEO,
+                hasContributionToolbar = false
+            )
+        )
+        assertEquals(
+            null,
+            resolveSpaceSearchBarGridItemIndex(
+                scope = SpaceSearchScope.NONE,
+                hasContributionToolbar = true
+            )
+        )
+    }
+
+    @Test
     fun shouldEnableSpaceLazyGridSharedTransition_requiresBothScopes() {
         assertTrue(
             shouldEnableSpaceLazyGridSharedTransition(

@@ -147,6 +147,47 @@ class DynamicCardClickPolicyTest {
     }
 
     @Test
+    fun dispatchDynamicCardPrimaryClick_prefersOverrideOverDefaultAction() {
+        val item = DynamicItem(
+            id_str = "123",
+            modules = DynamicModules(
+                module_dynamic = DynamicContentModule(
+                    major = DynamicMajor(
+                        archive = ArchiveMajor(bvid = "BV1xx411c7mD")
+                    )
+                )
+            )
+        )
+        val events = mutableListOf<String>()
+
+        dispatchDynamicCardPrimaryClick(
+            item = item,
+            action = DynamicCardPrimaryAction.OpenVideo("BV1xx411c7mD"),
+            onPrimaryClickOverride = { events += "comment:${it.id_str}" },
+            onVideoClick = { events += "video:$it" },
+            onBangumiClick = { seasonId, epId -> events += "bangumi:$seasonId:$epId" },
+            onArticleClick = { articleId, _ -> events += "article:$articleId" },
+            onDynamicDetailClick = { events += "dynamic:$it" },
+            onUserClick = { events += "user:$it" },
+            onLiveClick = { roomId, _, _ -> events += "live:$roomId" }
+        )
+
+        assertEquals(listOf("comment:123"), events)
+    }
+
+    @Test
+    fun shouldEnableDynamicCardPrimaryClick_allowsOverrideWhenDefaultActionIsUnavailable() {
+        assertTrue(
+            shouldEnableDynamicCardPrimaryClick(
+                action = DynamicCardPrimaryAction.None,
+                hasArticleClick = false,
+                hasDynamicDetailClick = false,
+                hasPrimaryClickOverride = true
+            )
+        )
+    }
+
+    @Test
     fun resolveDynamicWatchLaterAid_usesArchiveAidWhenVideoDynamicHasAid() {
         val item = DynamicItem(
             id_str = "123",

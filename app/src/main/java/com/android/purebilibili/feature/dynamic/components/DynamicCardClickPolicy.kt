@@ -277,6 +277,47 @@ internal fun dispatchDynamicCardPrimaryAction(
     }
 }
 
+internal fun shouldEnableDynamicCardPrimaryClick(
+    action: DynamicCardPrimaryAction,
+    hasArticleClick: Boolean,
+    hasDynamicDetailClick: Boolean,
+    hasPrimaryClickOverride: Boolean
+): Boolean {
+    if (hasPrimaryClickOverride) return true
+    return when (action) {
+        is DynamicCardPrimaryAction.OpenArticle -> hasArticleClick
+        is DynamicCardPrimaryAction.OpenDynamicDetail -> hasDynamicDetailClick
+        DynamicCardPrimaryAction.None -> false
+        else -> true
+    }
+}
+
+internal fun dispatchDynamicCardPrimaryClick(
+    item: DynamicItem,
+    action: DynamicCardPrimaryAction,
+    onPrimaryClickOverride: ((DynamicItem) -> Unit)?,
+    onVideoClick: (String) -> Unit,
+    onBangumiClick: (Long, Long) -> Unit,
+    onArticleClick: ((Long, String) -> Unit)? = null,
+    onDynamicDetailClick: ((String) -> Unit)?,
+    onUserClick: (Long) -> Unit,
+    onLiveClick: (Long, String, String) -> Unit
+) {
+    if (onPrimaryClickOverride != null) {
+        onPrimaryClickOverride(item)
+        return
+    }
+    dispatchDynamicCardPrimaryAction(
+        action = action,
+        onVideoClick = onVideoClick,
+        onBangumiClick = onBangumiClick,
+        onArticleClick = onArticleClick,
+        onDynamicDetailClick = onDynamicDetailClick,
+        onUserClick = onUserClick,
+        onLiveClick = onLiveClick
+    )
+}
+
 private val dynamicLiveJson = Json { ignoreUnknownKeys = true }
 
 private fun resolveLivePrimaryAction(

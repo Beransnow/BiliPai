@@ -72,6 +72,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -198,11 +200,28 @@ fun SpaceScreen(
     } ?: SpaceSearchScope.NONE
     val canSearch = currentSearchScope != SpaceSearchScope.NONE
     val isSearchMode = currentSuccessState?.isSearchMode == true
+    val hasContributionToolbarForSearch = currentSuccessState?.let { success ->
+        currentSearchScope == SpaceSearchScope.VIDEO &&
+            resolveDisplayedSpaceContributionTabs(
+                tabs = success.contributionTabs,
+                totalAudios = success.totalAudios
+            ).isNotEmpty()
+    } == true
     val screenTitle = stringResource(R.string.space_title)
     val backLabel = stringResource(R.string.common_back)
     val moreLabel = stringResource(R.string.common_more)
     val blockUserLabel = stringResource(R.string.space_block_user)
     val unblockUserLabel = stringResource(R.string.space_unblock_user)
+
+    LaunchedEffect(isSearchMode, currentSearchScope, hasContributionToolbarForSearch) {
+        if (!isSearchMode) return@LaunchedEffect
+        resolveSpaceSearchBarGridItemIndex(
+            scope = currentSearchScope,
+            hasContributionToolbar = hasContributionToolbarForSearch
+        )?.let { searchBarIndex ->
+            gridState.animateScrollToItem(searchBarIndex)
+        }
+    }
 
     AdaptiveScaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -642,6 +661,7 @@ private fun SpaceContent(
             selectedSubTab = state.selectedSubTab
         )
     }
+    val searchFocusRequester = remember { FocusRequester() }
     val lazyGridSharedTransitionEnabled = remember(sharedTransitionScope, animatedVisibilityScope) {
         shouldEnableSpaceLazyGridSharedTransition(
             hasSharedTransitionScope = sharedTransitionScope != null,
@@ -1032,11 +1052,16 @@ private fun SpaceContent(
             SpaceMainTab.DYNAMIC -> {
                 if (state.isSearchMode && currentSearchScope == SpaceSearchScope.DYNAMIC) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
+                        LaunchedEffect(state.isSearchMode, currentSearchScope) {
+                            searchFocusRequester.requestFocus()
+                        }
                         IOSSearchBar(
                             query = state.searchQuery,
                             onQueryChange = onSearchQueryChange,
                             placeholder = resolveSpaceSearchPlaceholder(currentSearchScope),
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                                .focusRequester(searchFocusRequester)
                         )
                     }
                 }
@@ -1088,6 +1113,7 @@ private fun SpaceContent(
                             },
                             onArticleClick = onArticleClick,
                             onDynamicDetailClick = onDynamicDetailClick,
+                            onPrimaryClickOverride = { onSpaceDynamicCommentClick(dynamic) },
                             gifImageLoader = context.imageLoader,
                             onCommentClick = { onSpaceDynamicCommentClick(dynamic) },
                             onRepostClick = onSpaceDynamicRepostClick,
@@ -1140,11 +1166,16 @@ private fun SpaceContent(
                     selectedContributionTab.subTab in setOf(SpaceSubTab.VIDEO, SpaceSubTab.CHARGING_VIDEO)
                 ) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
+                        LaunchedEffect(state.isSearchMode, currentSearchScope) {
+                            searchFocusRequester.requestFocus()
+                        }
                         IOSSearchBar(
                             query = state.searchQuery,
                             onQueryChange = onSearchQueryChange,
                             placeholder = resolveSpaceSearchPlaceholder(currentSearchScope),
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 4.dp)
+                                .focusRequester(searchFocusRequester)
                         )
                     }
                 }

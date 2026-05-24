@@ -91,6 +91,17 @@ class SpaceScreenStructureTest {
         )
     }
 
+    @Test
+    fun `space search action scrolls to focused search bar and dynamic body opens comments`() {
+        val source = loadSource("app/src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt")
+
+        assertTrue(source.contains("resolveSpaceSearchBarGridItemIndex("))
+        assertTrue(source.contains("gridState.animateScrollToItem(searchBarIndex)"))
+        assertTrue(source.contains("val searchFocusRequester = remember { FocusRequester() }"))
+        assertTrue(source.contains(".focusRequester(searchFocusRequester)"))
+        assertTrue(source.contains("onPrimaryClickOverride = { onSpaceDynamicCommentClick(dynamic) }"))
+    }
+
     private fun loadSource(path: String): String {
         val normalizedPath = path.removePrefix("app/")
         val sourceFile = listOf(

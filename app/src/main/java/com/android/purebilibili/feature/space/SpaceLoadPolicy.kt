@@ -47,6 +47,17 @@ internal fun resolveSpaceSearchPlaceholder(scope: SpaceSearchScope): String {
     }
 }
 
+internal fun resolveSpaceSearchBarGridItemIndex(
+    scope: SpaceSearchScope,
+    hasContributionToolbar: Boolean
+): Int? {
+    return when (scope) {
+        SpaceSearchScope.DYNAMIC -> 2
+        SpaceSearchScope.VIDEO -> if (hasContributionToolbar) 3 else 2
+        SpaceSearchScope.NONE -> null
+    }
+}
+
 internal fun shouldEnableSpaceLazyGridSharedTransition(
     hasSharedTransitionScope: Boolean,
     hasAnimatedVisibilityScope: Boolean

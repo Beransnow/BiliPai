@@ -66,6 +66,7 @@ fun DynamicCardV2(
     onArticleClick: ((articleId: Long, title: String) -> Unit)? = null,
     onDynamicDetailClick: ((dynamicId: String) -> Unit)? = null,
     isDetail: Boolean = false,
+    onPrimaryClickOverride: ((DynamicItem) -> Unit)? = null,
     gifImageLoader: ImageLoader,
     //  [新增] 评论/转发/点赞回调
     onCommentClick: (dynamicId: String) -> Unit = {},
@@ -93,13 +94,13 @@ fun DynamicCardV2(
     val type = DynamicType.fromApiValue(item.type)
     val cardClickAction = remember(item) { resolveDynamicCardPrimaryAction(item) }
     val watchLaterAid = remember(item) { resolveDynamicWatchLaterAid(item) }
-    val isPrimaryClickEnabled = remember(cardClickAction, onArticleClick, onDynamicDetailClick) {
-        when (cardClickAction) {
-            is DynamicCardPrimaryAction.OpenArticle -> onArticleClick != null
-            is DynamicCardPrimaryAction.OpenDynamicDetail -> onDynamicDetailClick != null
-            DynamicCardPrimaryAction.None -> false
-            else -> true
-        }
+    val isPrimaryClickEnabled = remember(cardClickAction, onArticleClick, onDynamicDetailClick, onPrimaryClickOverride) {
+        shouldEnableDynamicCardPrimaryClick(
+            action = cardClickAction,
+            hasArticleClick = onArticleClick != null,
+            hasDynamicDetailClick = onDynamicDetailClick != null,
+            hasPrimaryClickOverride = onPrimaryClickOverride != null
+        )
     }
 
     Column(
@@ -107,8 +108,10 @@ fun DynamicCardV2(
             .fillMaxWidth()
             .padding(horizontal = resolveDynamicCardOuterPadding())
             .clickable(enabled = isPrimaryClickEnabled) {
-                dispatchDynamicCardPrimaryAction(
+                dispatchDynamicCardPrimaryClick(
+                    item = item,
                     action = cardClickAction,
+                    onPrimaryClickOverride = onPrimaryClickOverride,
                     onVideoClick = onVideoClick,
                     onBangumiClick = onBangumiClick,
                     onArticleClick = onArticleClick,
