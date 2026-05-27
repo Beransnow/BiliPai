@@ -104,6 +104,42 @@ class VideoDetailSystemBarsPolicyTest {
     }
 
     @Test
+    fun statusBarInset_usesVisibleInsetWhenStatusBarRemainsVisible() {
+        assertEquals(
+            24f,
+            resolveVideoDetailStableStatusBarHeightDp(
+                visibleStatusBarHeightDp = 24f,
+                statusBarIgnoringVisibilityHeightDp = 24f,
+                hideStatusBars = false
+            )
+        )
+    }
+
+    @Test
+    fun statusBarInset_keepsIgnoringVisibilityInsetWhenStatusBarIsHidden() {
+        assertEquals(
+            24f,
+            resolveVideoDetailStableStatusBarHeightDp(
+                visibleStatusBarHeightDp = 0f,
+                statusBarIgnoringVisibilityHeightDp = 24f,
+                hideStatusBars = true
+            )
+        )
+    }
+
+    @Test
+    fun statusBarInset_clampsInvalidInsets() {
+        assertEquals(
+            0f,
+            resolveVideoDetailStableStatusBarHeightDp(
+                visibleStatusBarHeightDp = Float.NaN,
+                statusBarIgnoringVisibilityHeightDp = -1f,
+                hideStatusBars = true
+            )
+        )
+    }
+
+    @Test
     fun restorePolicy_restoresSystemBarsAsSoonAsExitTransitionStarts() {
         assertTrue(
             shouldRestoreSystemBarsDuringVideoDetailExitTransition(

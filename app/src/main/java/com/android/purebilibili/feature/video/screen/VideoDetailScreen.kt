@@ -325,6 +325,24 @@ internal fun resolveVideoDetailSystemBarsVisibilityPolicy(
     )
 }
 
+internal fun resolveVideoDetailStableStatusBarHeightDp(
+    visibleStatusBarHeightDp: Float,
+    statusBarIgnoringVisibilityHeightDp: Float,
+    hideStatusBars: Boolean
+): Float {
+    fun sanitize(value: Float): Float {
+        return value.takeIf { it.isFinite() }?.coerceAtLeast(0f) ?: 0f
+    }
+
+    val visibleInset = sanitize(visibleStatusBarHeightDp)
+    val stableInset = sanitize(statusBarIgnoringVisibilityHeightDp)
+    return if (hideStatusBars) {
+        stableInset.coerceAtLeast(visibleInset)
+    } else {
+        visibleInset
+    }
+}
+
 internal fun shouldRestoreSystemBarsDuringVideoDetailExitTransition(
     isExitTransitionInProgress: Boolean,
     isActuallyLeaving: Boolean
@@ -908,7 +926,11 @@ private fun PortraitInlineVideoPlayerHost(
 }
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
+@OptIn(
+    ExperimentalSharedTransitionApi::class,
+    ExperimentalMaterial3Api::class,
+    ExperimentalLayoutApi::class
+)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun VideoDetailScreen(
@@ -2876,7 +2898,17 @@ fun VideoDetailScreen(
                     )
                 } else {
                     // 📱 手机竖屏：原有单列布局
-                    val statusBarHeight = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+                    val statusBarHeight = resolveVideoDetailStableStatusBarHeightDp(
+                        visibleStatusBarHeightDp = WindowInsets.statusBars
+                            .asPaddingValues()
+                            .calculateTopPadding()
+                            .value,
+                        statusBarIgnoringVisibilityHeightDp = WindowInsets.statusBarsIgnoringVisibility
+                            .asPaddingValues()
+                            .calculateTopPadding()
+                            .value,
+                        hideStatusBars = systemBarsVisibilityPolicy.hideStatusBars
+                    ).dp
                     val screenWidthDp = configuration.screenWidthDp.dp
                     val screenHeightDp = configuration.screenHeightDp.dp
                     val videoHeight = screenWidthDp * 9f / 16f  // 16:9 比例
@@ -3803,7 +3835,17 @@ fun VideoDetailScreen(
         val isSendingDanmaku by viewModel.isSendingDanmaku.collectAsState(context = kotlin.coroutines.EmptyCoroutineContext)
         val fallbackPlayerBottomPx = with(LocalDensity.current) {
             val fallbackPlayerHeight = configuration.screenWidthDp.dp * 9f / 16f
-            val fallbackStatusBar = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+            val fallbackStatusBar = resolveVideoDetailStableStatusBarHeightDp(
+                visibleStatusBarHeightDp = WindowInsets.statusBars
+                    .asPaddingValues()
+                    .calculateTopPadding()
+                    .value,
+                statusBarIgnoringVisibilityHeightDp = WindowInsets.statusBarsIgnoringVisibility
+                    .asPaddingValues()
+                    .calculateTopPadding()
+                    .value,
+                hideStatusBars = systemBarsVisibilityPolicy.hideStatusBars
+            ).dp
             (fallbackPlayerHeight + fallbackStatusBar).toPx().roundToInt()
         }
         val danmakuDialogTopReservePx = remember(
