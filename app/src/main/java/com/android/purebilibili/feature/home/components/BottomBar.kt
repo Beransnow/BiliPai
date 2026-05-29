@@ -94,6 +94,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.alpha
 import com.android.purebilibili.core.ui.blur.shouldAllowDirectHazeLiquidGlassFallback
 import com.android.purebilibili.core.ui.blur.shouldAllowHomeChromeLiquidGlass
+import com.android.purebilibili.core.ui.blur.shouldAllowRuntimeShaderBackedHazeEffect
 import com.android.purebilibili.core.ui.blur.unifiedBlur
 import com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity
 import com.android.purebilibili.core.ui.blur.BlurStyles
@@ -817,8 +818,12 @@ internal fun resolveAndroidNativeBottomBarGlassEnabled(
 internal fun shouldUseAndroidNativeFloatingHazeBlur(
     blurEnabled: Boolean,
     glassEnabled: Boolean,
-    hasHazeState: Boolean
-): Boolean = blurEnabled && !glassEnabled && hasHazeState
+    hasHazeState: Boolean,
+    sdkInt: Int = Build.VERSION.SDK_INT
+): Boolean = blurEnabled &&
+    !glassEnabled &&
+    hasHazeState &&
+    shouldAllowRuntimeShaderBackedHazeEffect(sdkInt)
 
 internal fun Modifier.kernelSuFloatingDockSurface(
     shape: androidx.compose.ui.graphics.Shape,

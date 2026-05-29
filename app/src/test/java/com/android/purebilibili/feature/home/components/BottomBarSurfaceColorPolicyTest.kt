@@ -127,14 +127,28 @@ class BottomBarSurfaceColorPolicyTest {
             shouldUseAndroidNativeFloatingHazeBlur(
                 blurEnabled = true,
                 glassEnabled = false,
-                hasHazeState = true
+                hasHazeState = true,
+                sdkInt = 33
             )
         )
         assertFalse(
             shouldUseAndroidNativeFloatingHazeBlur(
                 blurEnabled = true,
                 glassEnabled = true,
-                hasHazeState = true
+                hasHazeState = true,
+                sdkInt = 33
+            )
+        )
+    }
+
+    @Test
+    fun `android native floating blur avoids haze before runtime shader support`() {
+        assertFalse(
+            shouldUseAndroidNativeFloatingHazeBlur(
+                blurEnabled = true,
+                glassEnabled = false,
+                hasHazeState = true,
+                sdkInt = 29
             )
         )
     }

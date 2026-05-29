@@ -188,6 +188,7 @@ import com.android.purebilibili.feature.video.ui.overlay.PlayerProgress
 import com.android.purebilibili.feature.video.ui.components.VideoAspectRatio
 import com.android.purebilibili.feature.video.danmaku.rememberDanmakuManager
 import com.android.purebilibili.feature.video.ui.components.BottomInputBar // [New] Bottom Input Bar
+import com.android.purebilibili.core.ui.blur.shouldAllowRuntimeShaderBackedHazeEffect
 import com.android.purebilibili.core.ui.blur.unifiedBlur
 import com.android.purebilibili.core.ui.IOSModalBottomSheet
 import com.android.purebilibili.core.util.CardPositionManager
@@ -4846,13 +4847,20 @@ private fun ExternalPlaylistQueueCollapsedBar(
     modifier: Modifier = Modifier
 ) {
     val shape = RoundedCornerShape(16.dp)
+    val useHazeEffect = shouldAllowRuntimeShaderBackedHazeEffect(Build.VERSION.SDK_INT)
     Surface(
         modifier = modifier
             .fillMaxWidth()
             .clip(shape)
-            .hazeEffect(
-                state = hazeState,
-                style = HazeMaterials.ultraThin()
+            .then(
+                if (useHazeEffect) {
+                    Modifier.hazeEffect(
+                        state = hazeState,
+                        style = HazeMaterials.ultraThin()
+                    )
+                } else {
+                    Modifier
+                }
             )
             .clickable { onClick() },
         shape = shape,
@@ -4919,6 +4927,7 @@ private fun ExternalPlaylistQueueSheet(
     when (presentation) {
         ExternalPlaylistQueueSheetPresentation.INLINE_HAZE -> {
             val interactionSource = remember { MutableInteractionSource() }
+            val useHazeEffect = shouldAllowRuntimeShaderBackedHazeEffect(Build.VERSION.SDK_INT)
             Box(
                 modifier = Modifier.fillMaxSize()
             ) {
@@ -4937,9 +4946,15 @@ private fun ExternalPlaylistQueueSheet(
                         .align(Alignment.BottomCenter)
                         .fillMaxWidth()
                         .clip(sheetShape)
-                        .hazeEffect(
-                            state = hazeState,
-                            style = HazeMaterials.ultraThin()
+                        .then(
+                            if (useHazeEffect) {
+                                Modifier.hazeEffect(
+                                    state = hazeState,
+                                    style = HazeMaterials.ultraThin()
+                                )
+                            } else {
+                                Modifier
+                            }
                         ),
                     shape = sheetShape,
                     color = MaterialTheme.colorScheme.surface.copy(alpha = 0.74f),
