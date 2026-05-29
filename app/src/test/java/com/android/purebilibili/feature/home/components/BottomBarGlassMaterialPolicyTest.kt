@@ -127,24 +127,23 @@ class BottomBarGlassMaterialPolicyTest {
     }
 
     @Test
-    fun `ios26 scroll applies visible accent tint not indicator policy`() {
-        val accent = Color(0xFFFF2D55)
+    fun `ios26 scroll uses neutral lift not theme tint`() {
         val idle = resolveBottomBarGlassMaterialSpec(
             preset = BottomBarLiquidGlassPreset.IOS26_REFINED,
             isDarkTheme = false, isScrolling = false, glassEnabled = true,
-            motionProgress = 0.5f, pressProgress = 0.2f,
-            accentColor = accent
+            motionProgress = 0.5f, pressProgress = 0.2f
         )
         val scrolling = resolveBottomBarGlassMaterialSpec(
             preset = BottomBarLiquidGlassPreset.IOS26_REFINED,
             isDarkTheme = false, isScrolling = true, glassEnabled = true,
-            motionProgress = 0.5f, pressProgress = 0.2f,
-            accentColor = accent
+            motionProgress = 0.5f, pressProgress = 0.2f
         )
 
         assertTrue(scrolling.foregroundTint.alpha > idle.foregroundTint.alpha)
-        assertEquals(0.18f, scrolling.foregroundTint.alpha, 0.001f)
-        assertTrue(scrolling.foregroundTint.red > scrolling.foregroundTint.blue)
+        assertEquals(Color.White.red, scrolling.foregroundTint.red, 0.001f)
+        assertEquals(Color.White.green, scrolling.foregroundTint.green, 0.001f)
+        assertEquals(Color.White.blue, scrolling.foregroundTint.blue, 0.001f)
+        assertEquals(0.08f, scrolling.foregroundTint.alpha, 0.002f)
         assertEquals(idle.shellShader!!.thicknessDp, scrolling.shellShader!!.thicknessDp)
         assertEquals(
             resolveBottomBarEffectiveBackdropPresetProgress(
@@ -159,26 +158,24 @@ class BottomBarGlassMaterialPolicyTest {
     }
 
     @Test
-    fun `ios26 scroll tint keeps accent in dark theme instead of dimming it`() {
-        val accent = Color(0xFFFF2D55)
+    fun `ios26 scroll tint stays neutral in dark theme`() {
         val darkScrolling = resolveBottomBarGlassMaterialSpec(
             preset = BottomBarLiquidGlassPreset.IOS26_REFINED,
             isDarkTheme = true,
             isScrolling = true,
             glassEnabled = true,
             motionProgress = 0f,
-            pressProgress = 0f,
-            accentColor = accent
+            pressProgress = 0f
         )
 
-        assertTrue(darkScrolling.foregroundTint.red > darkScrolling.foregroundTint.blue)
-        assertTrue(darkScrolling.foregroundTint.green < Color.White.green)
-        assertEquals(0.20f, darkScrolling.foregroundTint.alpha, 0.001f)
+        assertEquals(Color.White.red, darkScrolling.foregroundTint.red, 0.001f)
+        assertEquals(Color.White.green, darkScrolling.foregroundTint.green, 0.001f)
+        assertEquals(Color.White.blue, darkScrolling.foregroundTint.blue, 0.001f)
+        assertEquals(0.08f, darkScrolling.foregroundTint.alpha, 0.002f)
     }
 
     @Test
     fun `ios26 scroll material accepts fractional progress to avoid stop flash`() {
-        val accent = Color(0xFFFF2D55)
         val settling = resolveBottomBarGlassMaterialSpec(
             preset = BottomBarLiquidGlassPreset.IOS26_REFINED,
             isDarkTheme = false,
@@ -186,12 +183,11 @@ class BottomBarGlassMaterialPolicyTest {
             scrollProgress = 0.5f,
             glassEnabled = true,
             motionProgress = 0f,
-            pressProgress = 0f,
-            accentColor = accent
+            pressProgress = 0f
         )
 
         assertEquals(6.5f, settling.blurRadiusDp!!, 0.001f)
-        assertEquals(0.09f, settling.foregroundTint.alpha, 0.002f)
+        assertEquals(0.04f, settling.foregroundTint.alpha, 0.002f)
         assertEquals(1.25f, settling.highlightWidthScale, 0.001f)
     }
 
@@ -220,8 +216,8 @@ class BottomBarGlassMaterialPolicyTest {
         )
 
         assertEquals(0.38f, tuned.alpha, 0.005f)
-        assertEquals(0.40f, ios26Light.alpha, 0.005f)
-        assertEquals(0.34f, ios26Dark.alpha, 0.005f)
+        assertEquals(0.32f, ios26Light.alpha, 0.005f)
+        assertEquals(0.24f, ios26Dark.alpha, 0.005f)
     }
 
     @Test

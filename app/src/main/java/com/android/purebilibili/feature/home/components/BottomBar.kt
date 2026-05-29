@@ -860,8 +860,7 @@ internal fun Modifier.kernelSuFloatingDockSurface(
         scrollProgress = materialScrollProgress,
         glassEnabled = glassEnabled,
         motionProgress = materialMotionProgress,
-        pressProgress = materialPressProgress,
-        accentColor = MaterialTheme.colorScheme.primary
+        pressProgress = materialPressProgress
     )
     val useHazeBlur = shouldUseAndroidNativeFloatingHazeBlur(
         blurEnabled = blurEnabled,
@@ -2846,8 +2845,7 @@ private fun KernelSuAlignedBottomBar(
         scrollProgress = materialScrollProgress,
         glassEnabled = glassEnabled,
         motionProgress = motionProgress,
-        pressProgress = effectivePressProgress,
-        accentColor = selectedColor
+        pressProgress = effectivePressProgress
     )
     var searchExpansionOverride by remember {
         mutableStateOf(BottomBarSearchExpansionOverride.FOLLOW_AUTO)

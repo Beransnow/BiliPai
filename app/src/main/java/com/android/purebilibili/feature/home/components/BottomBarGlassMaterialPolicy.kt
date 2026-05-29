@@ -1,7 +1,6 @@
 package com.android.purebilibili.feature.home.components
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.lerp as lerpColor
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.util.lerp
 import com.android.purebilibili.core.store.BottomBarLiquidGlassPreset
@@ -37,8 +36,7 @@ internal fun resolveBottomBarGlassMaterialSpec(
     scrollProgress: Float = if (isScrolling) 1f else 0f,
     glassEnabled: Boolean,
     motionProgress: Float,
-    pressProgress: Float,
-    accentColor: Color = Color.Unspecified
+    pressProgress: Float
 ): BottomBarGlassMaterialSpec {
     if (!glassEnabled) {
         return BottomBarGlassMaterialSpec(
@@ -57,11 +55,9 @@ internal fun resolveBottomBarGlassMaterialSpec(
     return when (preset) {
         BottomBarLiquidGlassPreset.BILIPAI_TUNED -> bilipaiTunedBottomBarGlassMaterial()
         BottomBarLiquidGlassPreset.IOS26_REFINED -> ios26BottomBarGlassMaterial(
-            isDarkTheme = isDarkTheme,
             scrollProgress = scrollProgress,
             motionProgress = motionProgress,
-            pressProgress = pressProgress,
-            accentColor = accentColor
+            pressProgress = pressProgress
         )
     }
 }
@@ -76,7 +72,7 @@ internal fun resolveBottomBarGlassMaterialContainerColor(
     val isDarkSurface = surfaceColor.luminance() < 0.5f
     val alpha = when (preset) {
         BottomBarLiquidGlassPreset.BILIPAI_TUNED -> if (isDarkSurface) 0.30f else 0.38f
-        BottomBarLiquidGlassPreset.IOS26_REFINED -> if (isDarkSurface) 0.34f else 0.40f
+        BottomBarLiquidGlassPreset.IOS26_REFINED -> if (isDarkSurface) 0.24f else 0.32f
     }
     return surfaceColor.copy(alpha = alpha)
 }
@@ -100,11 +96,9 @@ internal fun resolveBottomBarMaterialScrollAnimationDurationMillis(
 ): Int = if (isScrolling) 140 else 420
 
 private fun ios26BottomBarGlassMaterial(
-    isDarkTheme: Boolean,
     scrollProgress: Float,
     motionProgress: Float,
-    pressProgress: Float,
-    accentColor: Color
+    pressProgress: Float
 ): BottomBarGlassMaterialSpec {
     val clampedScrollProgress = scrollProgress.coerceIn(0f, 1f)
     val activity = maxOf(
@@ -112,25 +106,15 @@ private fun ios26BottomBarGlassMaterial(
         motionProgress.coerceIn(0f, 1f) * 0.45f,
         pressProgress.coerceIn(0f, 1f) * 0.35f
     )
-    // iOS26 预设只在滚动回落期间让主题色参与玻璃膜；idle 必须回到原本的黑/白玻璃。
-    val resolvedAccent = if (accentColor == Color.Unspecified) {
-        Color(0xFF0A84FF)
-    } else {
-        accentColor
-    }
-    val tintColor = lerpColor(
-        start = resolvedAccent,
-        stop = Color.White,
-        fraction = if (isDarkTheme) 0.24f else 0.34f
-    )
-    val brightnessAlpha = lerp(0f, if (isDarkTheme) 0.20f else 0.18f, clampedScrollProgress)
+    // iOS26 的颜色应该来自 backdrop 采样；滚动时只加中性提亮，避免主题色镀膜和封面不匹配。
+    val brightnessAlpha = lerp(0f, 0.08f, clampedScrollProgress)
     return BottomBarGlassMaterialSpec(
         blurRadiusDp = lerp(7f, 6f, activity),
         vibrancy = false,
         shellRefractionHeightDp = 0f,
         shellRefractionAmountDp = 0f,
         shellChromaticAberration = false,
-        foregroundTint = tintColor.copy(alpha = brightnessAlpha),
+        foregroundTint = Color.White.copy(alpha = brightnessAlpha),
         highlightWidthScale = lerp(1.2f, 1.3f, activity),
         shadowAlphaScale = 0.72f,
         innerRimGlow = BottomBarInnerRimGlowSpec(radiusDp = 5f, alpha = 0.09f),
