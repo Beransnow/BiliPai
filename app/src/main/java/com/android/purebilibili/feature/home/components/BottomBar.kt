@@ -3290,7 +3290,11 @@ private fun KernelSuAlignedBottomBar(
                 }
 
                 if (shouldRenderIndicatorContentCapture && backdrop != null) {
-                    val rawCaptureWidth = dockWidth + launchAdjustedSearchGap + searchWidth
+                    // 对齐 KSU：tabsBackdrop 只录制 dock 区域的 item 内容供指示器透镜采样。
+                    // 搜索胶囊独立渲染在捕获层 Box 外部（它有自己的 kernelSuFloatingDockSurface），
+                    // 不纳入 tabsBackdrop 录制范围，否则 shellShape 胶囊端帽会超限采样到搜索槽位，
+                    // 导致指示器在最右端折射出 "第二个右边缘"。
+                    val rawCaptureWidth = dockWidth
                     val captureHorizontalOverscan = rawCaptureWidth *
                         ((refractionMotionProfile.exportCaptureWidthScale - 1f) / 2f).coerceAtLeast(0f)
                     val captureWidth = rawCaptureWidth + captureHorizontalOverscan * 2f
@@ -3456,45 +3460,44 @@ private fun KernelSuAlignedBottomBar(
                                 }
                             }
                         }
+                    }
 
-                        if (searchEnabled) {
-                            Box(
-                                modifier = Modifier
-                                    .offset(x = captureHorizontalOverscan + dockWidth + launchAdjustedSearchGap)
-                                    .width(searchWidth)
-                                    .height(searchHeight)
-                                    .align(Alignment.CenterStart)
-                                    .kernelSuFloatingDockSurface(
-                                        shape = shellShape,
-                                        backdrop = backdrop,
-                                        containerColor = containerColor,
-                                        blurEnabled = blurEnabled,
-                                        glassEnabled = glassEnabled,
-                                        blurRadius = tuning.shellBlurRadiusDp.dp,
-                                        hazeState = hazeState,
-                                        motionTier = motionTier,
-                                        isTransitionRunning = isTransitionRunning,
-                                        forceLowBlurBudget = forceLowBlurBudget,
-                                        liquidGlassPreset = liquidGlassPreset,
-                                        isScrolling = isFeedScrollInProgress,
-                                        materialScrollProgress = materialScrollProgress,
-                                        materialMotionProgress = motionProgress,
-                                        materialPressProgress = effectivePressProgress
-                                    ),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                KernelSuBottomBarSearchVisualContent(
-                                    expanded = effectiveSearchExpanded,
-                                    query = searchQuery,
-                                    onQueryChange = {},
-                                    onSubmit = {},
-                                    contentColor = unselectedColor,
-                                    accentColor = selectedColor,
-                                    iconScale = if (effectiveSearchExpanded) 0.92f else 1f,
-                                    fieldAlpha = if (effectiveSearchExpanded) 1f else 0f,
-                                    interactive = false
-                                )
-                            }
+                    if (searchEnabled) {
+                        Box(
+                            modifier = Modifier
+                                .offset(x = dockWidth + launchAdjustedSearchGap)
+                                .width(searchWidth)
+                                .height(searchHeight)
+                                .kernelSuFloatingDockSurface(
+                                    shape = shellShape,
+                                    backdrop = backdrop,
+                                    containerColor = containerColor,
+                                    blurEnabled = blurEnabled,
+                                    glassEnabled = glassEnabled,
+                                    blurRadius = tuning.shellBlurRadiusDp.dp,
+                                    hazeState = hazeState,
+                                    motionTier = motionTier,
+                                    isTransitionRunning = isTransitionRunning,
+                                    forceLowBlurBudget = forceLowBlurBudget,
+                                    liquidGlassPreset = liquidGlassPreset,
+                                    isScrolling = isFeedScrollInProgress,
+                                    materialScrollProgress = materialScrollProgress,
+                                    materialMotionProgress = motionProgress,
+                                    materialPressProgress = effectivePressProgress
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            KernelSuBottomBarSearchVisualContent(
+                                expanded = effectiveSearchExpanded,
+                                query = searchQuery,
+                                onQueryChange = {},
+                                onSubmit = {},
+                                contentColor = unselectedColor,
+                                accentColor = selectedColor,
+                                iconScale = if (effectiveSearchExpanded) 0.92f else 1f,
+                                fieldAlpha = if (effectiveSearchExpanded) 1f else 0f,
+                                interactive = false
+                            )
                         }
                     }
                 }
