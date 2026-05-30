@@ -1,6 +1,7 @@
 package com.android.purebilibili.navigation
 
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -51,19 +52,46 @@ class AppNavigationPlaybackPolicyTest {
         assertTrue(
             shouldDeferBottomBarRevealOnVideoReturn(
                 isReturningFromDetail = true,
-                currentRoute = ScreenRoutes.Home.route,
+                activeBottomTabRoute = ScreenRoutes.Home.route,
                 cardTransitionEnabled = true
             )
         )
     }
 
     @Test
-    fun returningToMainHostWithCardTransition_shouldDeferBottomBarReveal() {
+    fun returningToMainHostHomeTabWithCardTransition_shouldDeferBottomBarReveal() {
         assertTrue(
             shouldDeferBottomBarRevealOnVideoReturn(
                 isReturningFromDetail = true,
-                currentRoute = "main_host",
+                activeBottomTabRoute = ScreenRoutes.Home.route,
                 cardTransitionEnabled = true
+            )
+        )
+    }
+
+    @Test
+    fun returningToMainHostNonHomeTab_shouldDeferBottomBarReveal() {
+        assertTrue(
+            shouldDeferBottomBarRevealOnVideoReturn(
+                isReturningFromDetail = true,
+                activeBottomTabRoute = ScreenRoutes.Dynamic.route,
+                cardTransitionEnabled = true
+            )
+        )
+    }
+
+    @Test
+    fun returningToNonHomeCardTarget_shouldAutoReleaseBottomBarReveal() {
+        assertTrue(
+            shouldAutoReleaseBottomBarRevealOnVideoReturn(
+                isReturningFromDetail = true,
+                activeBottomTabRoute = ScreenRoutes.Dynamic.route
+            )
+        )
+        assertFalse(
+            shouldAutoReleaseBottomBarRevealOnVideoReturn(
+                isReturningFromDetail = true,
+                activeBottomTabRoute = ScreenRoutes.Home.route
             )
         )
     }
@@ -73,7 +101,7 @@ class AppNavigationPlaybackPolicyTest {
         assertFalse(
             shouldDeferBottomBarRevealOnVideoReturn(
                 isReturningFromDetail = true,
-                currentRoute = ScreenRoutes.Home.route,
+                activeBottomTabRoute = ScreenRoutes.Home.route,
                 cardTransitionEnabled = false
             )
         )
@@ -84,7 +112,7 @@ class AppNavigationPlaybackPolicyTest {
         assertFalse(
             shouldDeferBottomBarRevealOnVideoReturn(
                 isReturningFromDetail = false,
-                currentRoute = ScreenRoutes.Home.route,
+                activeBottomTabRoute = ScreenRoutes.Home.route,
                 cardTransitionEnabled = true
             )
         )
@@ -95,8 +123,33 @@ class AppNavigationPlaybackPolicyTest {
         assertFalse(
             shouldDeferBottomBarRevealOnVideoReturn(
                 isReturningFromDetail = true,
-                currentRoute = VideoRoute.route,
+                activeBottomTabRoute = VideoRoute.route,
                 cardTransitionEnabled = true
+            )
+        )
+    }
+
+    @Test
+    fun videoReturnBottomBarRestoreDelay_matchesHomeTiming() {
+        assertEquals(
+            150L,
+            resolveVideoReturnBottomBarRestoreDelayMs(
+                cardTransitionEnabled = false,
+                isQuickReturnFromDetail = false
+            )
+        )
+        assertEquals(
+            340L,
+            resolveVideoReturnBottomBarRestoreDelayMs(
+                cardTransitionEnabled = true,
+                isQuickReturnFromDetail = true
+            )
+        )
+        assertEquals(
+            380L,
+            resolveVideoReturnBottomBarRestoreDelayMs(
+                cardTransitionEnabled = true,
+                isQuickReturnFromDetail = false
             )
         )
     }

@@ -15,13 +15,31 @@ internal fun shouldStopPlaybackEagerlyOnVideoRouteExit(
 
 internal fun shouldDeferBottomBarRevealOnVideoReturn(
     isReturningFromDetail: Boolean,
-    currentRoute: String?,
+    activeBottomTabRoute: String?,
     cardTransitionEnabled: Boolean
 ): Boolean {
-    // 仅在共享缩放路径下延迟显示底栏；card 关闭（横向滑动）时首页连同底栏整体滑入，不应延后弹出。
+    // 仅在共享缩放路径下延迟显示底栏；card 关闭（横向滑动）时内容连同底栏整体滑入，不应延后弹出。
     if (!cardTransitionEnabled) return false
     if (!isReturningFromDetail) return false
-    return currentRoute in setOf(ScreenRoutes.Home.route, "main_host")
+    return isVideoCardReturnTargetRoute(activeBottomTabRoute)
+}
+
+internal fun shouldAutoReleaseBottomBarRevealOnVideoReturn(
+    isReturningFromDetail: Boolean,
+    activeBottomTabRoute: String?
+): Boolean {
+    if (!isReturningFromDetail) return false
+    if (activeBottomTabRoute == ScreenRoutes.Home.route) return false
+    return isVideoCardReturnTargetRoute(activeBottomTabRoute)
+}
+
+internal fun resolveVideoReturnBottomBarRestoreDelayMs(
+    cardTransitionEnabled: Boolean,
+    isQuickReturnFromDetail: Boolean
+): Long {
+    if (!cardTransitionEnabled) return 150L
+    if (isQuickReturnFromDetail) return 340L
+    return 380L
 }
 
 internal fun shouldClearReturningStateWhenDisposingVideoDestination(

@@ -734,7 +734,7 @@ fun AppNavigation(
         )
         val shouldDeferBottomBarReveal = shouldDeferBottomBarRevealOnVideoReturn(
             isReturningFromDetail = navigation3ReturnSession.isReturningFromDetail,
-            currentRoute = currentRoute,
+            activeBottomTabRoute = activeBottomTabRoute,
             cardTransitionEnabled = cardTransitionEnabled
         )
         // 挂载闸门：仅按路由/侧栏/平板判断，不含返回延迟。
@@ -787,6 +787,28 @@ fun AppNavigation(
                 if (isBottomBarVisible != visible) {
                     isBottomBarVisible = visible
                 }
+            }
+        }
+        LaunchedEffect(
+            navigation3ReturnSession.isReturningFromDetail,
+            navigation3ReturnSession.isQuickReturnFromDetail,
+            activeBottomTabRoute,
+            cardTransitionEnabled
+        ) {
+            if (
+                shouldAutoReleaseBottomBarRevealOnVideoReturn(
+                    isReturningFromDetail = navigation3ReturnSession.isReturningFromDetail,
+                    activeBottomTabRoute = activeBottomTabRoute
+                )
+            ) {
+                kotlinx.coroutines.delay(
+                    resolveVideoReturnBottomBarRestoreDelayMs(
+                        cardTransitionEnabled = cardTransitionEnabled,
+                        isQuickReturnFromDetail = navigation3ReturnSession.isQuickReturnFromDetail
+                    )
+                )
+                setBottomBarVisible(true)
+                navigation3ReturnSession = navigation3ReturnSession.clearReturning()
             }
         }
 
