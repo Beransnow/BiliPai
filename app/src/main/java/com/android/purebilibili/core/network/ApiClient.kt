@@ -31,6 +31,7 @@ import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
 internal const val BANGUMI_PLAY_URL_PATH = "pgc/player/web/v2/playurl"
+internal const val BANGUMI_PLAY_URL_LEGACY_PATH = "pgc/player/web/playurl"
 
 private class AppSessionCookieJar : okhttp3.CookieJar {
     private val cookieLock = Any()
@@ -1452,7 +1453,7 @@ interface BangumiApi {
         @Query("spoken_language_type") spokenLanguageType: Int = -1,  // -1=全部
         @Query("area") area: Int = -1,           // -1=全部地区
         @Query("is_finish") isFinish: Int = -1,  // -1=全部
-        @Query("copyright") copyright: Int = -1, // -1=全部
+        @Query("copyright") copyright: String = "-1", // -1=全部
         @Query("season_status") seasonStatus: String = "-1",  // -1=全部，1=免费，4,6=大会员
         @Query("season_month") seasonMonth: Int = -1,    // -1=全部
         @Query("year") year: String = "-1",      // -1=全部
@@ -1473,6 +1474,11 @@ interface BangumiApi {
     // 番剧播放地址 - PiliPlus parity path
     @GET(BANGUMI_PLAY_URL_PATH)
     suspend fun getBangumiPlayUrl(
+        @QueryMap params: Map<String, String>
+    ): ResponseBody
+
+    @GET(BANGUMI_PLAY_URL_LEGACY_PATH)
+    suspend fun getBangumiPlayUrlLegacy(
         @QueryMap params: Map<String, String>
     ): ResponseBody
     

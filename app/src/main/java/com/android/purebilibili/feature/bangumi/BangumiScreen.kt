@@ -68,6 +68,7 @@ import com.android.purebilibili.data.model.response.TimelineDay
 import com.android.purebilibili.data.model.response.TimelineEpisode
 import com.android.purebilibili.data.model.response.resolveBangumiIndexFilterGroups
 import com.android.purebilibili.data.model.response.resolveBangumiIndexFilterKey
+import com.android.purebilibili.data.model.response.resolveBangumiSearchPlaceholder
 // [重构] 使用提取的可复用组件
 import com.android.purebilibili.feature.bangumi.ui.components.BangumiModeTabs
 import com.android.purebilibili.feature.bangumi.ui.components.BangumiIndexFilterRows
@@ -86,6 +87,7 @@ import kotlinx.coroutines.launch
 fun BangumiScreen(
     onBack: () -> Unit,
     onBangumiClick: (Long) -> Unit,  // 点击番剧 -> seasonId
+    onBangumiEpisodeClick: (Long, Long) -> Unit = { seasonId, _ -> onBangumiClick(seasonId) },
     initialType: Int = 1,  // 初始类型：1=番剧 2=电影 等
     viewModel: BangumiViewModel = viewModel()
 ) {
@@ -292,9 +294,11 @@ fun BangumiScreen(
                 BangumiDisplayMode.SEARCH -> {
                     BangumiSearchContent(
                         searchState = searchState,
+                        selectedType = selectedType,
                         onRetry = { viewModel.searchBangumi(searchKeyword) },
                         onLoadMore = { viewModel.loadMoreSearchResults() },
-                        onItemClick = onBangumiClick
+                        onItemClick = onBangumiClick,
+                        onEpisodeClick = onBangumiEpisodeClick
                     )
                 }
             }
@@ -1149,9 +1153,11 @@ private fun BangumiListContent(
 @Composable
 private fun BangumiSearchContent(
     searchState: BangumiSearchState,
+    selectedType: Int,
     onRetry: () -> Unit,
     onLoadMore: () -> Unit,
-    onItemClick: (Long) -> Unit
+    onItemClick: (Long) -> Unit,
+    onEpisodeClick: (Long, Long) -> Unit
 ) {
     when (searchState) {
         is BangumiSearchState.Idle -> {
@@ -1160,7 +1166,7 @@ private fun BangumiSearchContent(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    "输入关键词搜索番剧",
+                    resolveBangumiSearchPlaceholder(selectedType),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -1206,7 +1212,8 @@ private fun BangumiSearchContent(
                     items = searchState.items,
                     hasMore = searchState.hasMore,
                     onLoadMore = onLoadMore,
-                    onItemClick = onItemClick
+                    onItemClick = onItemClick,
+                    onEpisodeClick = onEpisodeClick
                 )
             }
         }
@@ -1218,7 +1225,8 @@ private fun BangumiSearchGrid(
     items: List<BangumiSearchItem>,
     hasMore: Boolean,
     onLoadMore: () -> Unit,
-    onItemClick: (Long) -> Unit
+    onItemClick: (Long) -> Unit,
+    onEpisodeClick: (Long, Long) -> Unit
 ) {
     val gridState = rememberLazyGridState()
     
@@ -1253,7 +1261,13 @@ private fun BangumiSearchGrid(
         ) { _, item ->
             BangumiSearchCardGrid(
                 item = item,
-                onClick = { onItemClick(item.seasonId) }
+                onClick = { onItemClick(item.seasonId.takeIf { it > 0L } ?: item.pgcSeasonId) },
+                onEpisodeClick = item.episodes?.firstOrNull { it.id > 0L }?.let { episode ->
+                    {
+                        val targetSeasonId = item.seasonId.takeIf { it > 0L } ?: item.pgcSeasonId
+                        onEpisodeClick(targetSeasonId, episode.id)
+                    }
+                }
             )
         }
         

@@ -1977,6 +1977,14 @@ fun AppNavigation(
                                     onBangumiClick = { seasonId ->
                                         pushNavigation3Key(BiliPaiNavKey.BangumiDetail(seasonId = seasonId))
                                     },
+                                    onBangumiEpisodeClick = { seasonId, epId ->
+                                        pushNavigation3Key(
+                                            BiliPaiNavKey.BangumiDetail(
+                                                seasonId = seasonId,
+                                                epId = epId
+                                            )
+                                        )
+                                    },
                                     initialType = bangumiKey.initialType
                                 )
                             }

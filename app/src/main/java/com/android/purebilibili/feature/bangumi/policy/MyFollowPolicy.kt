@@ -56,7 +56,9 @@ fun resolveBangumiSearchItemLazyKey(
 ): String {
     val businessKey = when {
         item.seasonId > 0L -> "season_${item.seasonId}"
+        item.pgcSeasonId > 0L -> "season_${item.pgcSeasonId}"
         item.mediaId > 0L -> "media_${item.mediaId}"
+        item.episodes?.firstOrNull { it.id > 0L } != null -> "ep_${item.episodes.first { it.id > 0L }.id}"
         item.gotoUrl.isNotBlank() -> "url_${item.gotoUrl.hashCode()}"
         item.orgTitle.isNotBlank() -> "org_title_${item.orgTitle.hashCode()}"
         item.title.isNotBlank() -> "title_${item.title.hashCode()}"
