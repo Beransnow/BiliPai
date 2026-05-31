@@ -613,6 +613,11 @@ class BottomBarIndicatorPolicyTest {
             highlightModifierSource.indexOf("drawContent()") <
                 highlightModifierSource.indexOf("Brush.radialGradient(")
         )
+        assertFalse(
+            highlightModifierSource.contains("RuntimeShader"),
+            "低版本系统会在 materialize modifier 时解析 RuntimeShader 类，交互高光不能直接引用它"
+        )
+        assertFalse(source.contains("import android.graphics.RuntimeShader"))
     }
 
     @Test

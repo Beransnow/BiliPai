@@ -1,8 +1,6 @@
 // 文件路径: feature/home/components/BottomBar.kt
 package com.android.purebilibili.feature.home.components
 
-// Duplicate import removed
-import android.graphics.RuntimeShader
 import android.os.Build
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateColorAsState
@@ -65,10 +63,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ShaderBrush
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer  //  晃动动画
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.lerp as lerpColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
@@ -1372,33 +1368,12 @@ internal fun resolveBottomBarInteractiveHighlightCenterX(
     return indicatorTranslationXPx + itemWidthPx * 0.5f + panelOffsetPx
 }
 
-private const val BOTTOM_BAR_HIGHLIGHT_SHADER = """
-uniform float2 size;
-layout(color) uniform half4 color;
-uniform float radius;
-uniform float2 position;
-
-half4 main(float2 coord) {
-    float dist = distance(coord, position);
-    float intensity = smoothstep(radius, radius * 0.5, dist);
-    return color * intensity;
-}
-"""
-
 private fun Modifier.bottomBarInteractiveHighlight(
     enabled: Boolean,
     alpha: Float,
     centerXPx: Float
 ): Modifier = composed {
-    // 缓存 RuntimeShader：避免 KSU 风格高光逐帧重建 Brush。
-    // AGSL RuntimeShader 仅 API 33+ 可用，旧系统回退到径向渐变。
-    val highlightShader = remember {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            RuntimeShader(BOTTOM_BAR_HIGHLIGHT_SHADER)
-        } else {
-            null
-        }
-    }
+    // 不直接引用平台着色器类：低版本系统在 Compose materialize modifier 时也可能解析类并崩溃。
     drawWithContent {
         val clampedAlpha = alpha.coerceIn(0f, 1f)
         drawContent()
@@ -1411,31 +1386,17 @@ private fun Modifier.bottomBarInteractiveHighlight(
             color = Color.White.copy(alpha = 0.06f * clampedAlpha),
             blendMode = BlendMode.Plus
         )
-        if (highlightShader != null) {
-            highlightShader.setFloatUniform("size", size.width, size.height)
-            highlightShader.setColorUniform(
-                "color",
-                Color.White.copy(alpha = 0.17f * clampedAlpha).toArgb()
-            )
-            highlightShader.setFloatUniform("radius", size.minDimension * 1.2f)
-            highlightShader.setFloatUniform("position", center.x, center.y)
-            drawRect(
-                brush = ShaderBrush(highlightShader),
-                blendMode = BlendMode.Plus
-            )
-        } else {
-            drawRect(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = 0.17f * clampedAlpha),
-                        Color.Transparent
-                    ),
-                    center = center,
-                    radius = size.minDimension * 1.2f
+        drawRect(
+            brush = Brush.radialGradient(
+                colors = listOf(
+                    Color.White.copy(alpha = 0.17f * clampedAlpha),
+                    Color.Transparent
                 ),
-                blendMode = BlendMode.Plus
-            )
-        }
+                center = center,
+                radius = size.minDimension * 1.2f
+            ),
+            blendMode = BlendMode.Plus
+        )
     }
 }
 

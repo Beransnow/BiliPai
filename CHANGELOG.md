@@ -20,6 +20,7 @@
 - **番剧影视 API 完善**：完善番剧影视 API 功能，扩展内容获取与页面承载能力。
 - **首页下拉刷新修复**：MD3 下拉刷新按完整指示器和提示文字高度预留空间，内容下移更跟手，刷新指示器层级高于视频卡片，避免被视频遮挡。
 - **顶部胶囊点击态修复**：胶囊指示器场景关闭默认矩形水波纹，普通 MD3 下划线标签保留点击反馈，修复点按切换时胶囊周围出现矩形形状的问题。
+- **低版本底栏闪退修复**：移除底栏交互高光对 `RuntimeShader` 的直接引用，避免 Android 10 等低版本系统在解析高光 Modifier 时因缺少类而闪退。
 - **版本与文档同步**：版本号升级到 `9.0.0` / `versionCode 213`，README、README_EN 和更新日志同步到 9.0.0。
 
 ### 已知问题
@@ -29,6 +30,7 @@
 ### 验证
 - `./gradlew :app:testDebugUnitTest --tests 'com.android.purebilibili.feature.home.HomePullRefreshUiPolicyTest'`
 - `./gradlew :app:testDebugUnitTest --tests 'com.android.purebilibili.feature.home.components.TopTabMotionVelocityTest'`
+- `./gradlew :app:testDebugUnitTest --tests 'com.android.purebilibili.feature.home.components.BottomBarIndicatorPolicyTest'`
 - `git diff --check`
 
 ## v8.8.0 (2026-05-31)
