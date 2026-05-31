@@ -15,7 +15,6 @@ fun resolveHomeTopTabsVisible(
     isReturningFromDetail: Boolean,
     topTabsCollapsed: Boolean = false
 ): Boolean {
-    if (isReturningFromDetail && topTabsCollapsed) return false
     if (isReturningFromDetail) return true
     return !isDelayedForCardSettle && !isForwardNavigatingToDetail
 }

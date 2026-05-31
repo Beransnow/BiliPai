@@ -45,6 +45,14 @@ internal fun resolveVideoReturnBottomBarHideSuppressionMs(
     return if (cardTransitionEnabled) 200L else 80L
 }
 
+internal fun shouldSuppressBottomBarHideAfterDeferredReveal(
+    hadDeferredReveal: Boolean,
+    isBottomBarDestination: Boolean,
+    shouldDeferReveal: Boolean
+): Boolean {
+    return hadDeferredReveal && isBottomBarDestination && !shouldDeferReveal
+}
+
 internal fun shouldPrimeBottomBarHiddenBeforeVideoNavigation(
     sourceRoute: String?,
     visibleBottomBarRoutes: Set<String>,

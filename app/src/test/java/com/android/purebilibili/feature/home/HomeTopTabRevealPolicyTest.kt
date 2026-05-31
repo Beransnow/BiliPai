@@ -153,8 +153,8 @@ class HomeTopTabRevealPolicyTest {
     }
 
     @Test
-    fun returningFromDetail_keepsCollapsedTopTabsHidden() {
-        assertFalse(
+    fun returningFromDetail_keepsCollapsedTopTabsHostVisibleForRecovery() {
+        assertTrue(
             resolveHomeTopTabsVisible(
                 isDelayedForCardSettle = false,
                 isForwardNavigatingToDetail = false,

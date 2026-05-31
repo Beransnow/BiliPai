@@ -130,23 +130,23 @@ class AppNavigationPlaybackPolicyTest {
     }
 
     @Test
-    fun videoReturnBottomBarRestoreDelay_matchesHomeTiming() {
+    fun videoReturnBottomBarRestoreDelay_isImmediateForAppNavigationRelease() {
         assertEquals(
-            150L,
+            0L,
             resolveVideoReturnBottomBarRestoreDelayMs(
                 cardTransitionEnabled = false,
                 isQuickReturnFromDetail = false
             )
         )
         assertEquals(
-            340L,
+            0L,
             resolveVideoReturnBottomBarRestoreDelayMs(
                 cardTransitionEnabled = true,
                 isQuickReturnFromDetail = true
             )
         )
         assertEquals(
-            380L,
+            0L,
             resolveVideoReturnBottomBarRestoreDelayMs(
                 cardTransitionEnabled = true,
                 isQuickReturnFromDetail = false
@@ -163,6 +163,38 @@ class AppNavigationPlaybackPolicyTest {
         assertEquals(
             200L,
             resolveVideoReturnBottomBarHideSuppressionMs(cardTransitionEnabled = true)
+        )
+    }
+
+    @Test
+    fun bottomBarHideSuppression_runsOnlyWhenDeferredRevealFinishesOnDestination() {
+        assertTrue(
+            shouldSuppressBottomBarHideAfterDeferredReveal(
+                hadDeferredReveal = true,
+                isBottomBarDestination = true,
+                shouldDeferReveal = false
+            )
+        )
+        assertFalse(
+            shouldSuppressBottomBarHideAfterDeferredReveal(
+                hadDeferredReveal = false,
+                isBottomBarDestination = true,
+                shouldDeferReveal = false
+            )
+        )
+        assertFalse(
+            shouldSuppressBottomBarHideAfterDeferredReveal(
+                hadDeferredReveal = true,
+                isBottomBarDestination = false,
+                shouldDeferReveal = false
+            )
+        )
+        assertFalse(
+            shouldSuppressBottomBarHideAfterDeferredReveal(
+                hadDeferredReveal = true,
+                isBottomBarDestination = true,
+                shouldDeferReveal = true
+            )
         )
     }
 

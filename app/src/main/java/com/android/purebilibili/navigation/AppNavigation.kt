@@ -772,17 +772,36 @@ fun AppNavigation(
         var suppressBottomBarHideRequestsUntilMillis by remember {
             androidx.compose.runtime.mutableLongStateOf(0L)
         }
+        var hadDeferredBottomBarReveal by remember { mutableStateOf(false) }
         
         // 根据模式强制重置状态（防止模式切换后状态卡死）
         LaunchedEffect(bottomBarVisibilityMode) {
             isBottomBarVisible = true
         }
 
-        // [New Fix] 切换到可显示底栏的主入口页面时，强制恢复底栏可见性
-        LaunchedEffect(currentRoute, shouldDeferBottomBarReveal) {
-            if (isBottomBarDestination && !shouldDeferBottomBarReveal) {
-                isBottomBarVisible = true
+        // 切回可显示底栏的主入口时恢复底栏；如果刚结束详情返回延迟，
+        // 短时间忽略首页滚动监听的隐藏请求，避免恢复后立刻被旧偏移再次隐藏。
+        LaunchedEffect(currentRoute, isBottomBarDestination, shouldDeferBottomBarReveal) {
+            if (shouldDeferBottomBarReveal) {
+                hadDeferredBottomBarReveal = true
+                return@LaunchedEffect
             }
+            if (isBottomBarDestination) {
+                isBottomBarVisible = true
+                if (
+                    shouldSuppressBottomBarHideAfterDeferredReveal(
+                        hadDeferredReveal = hadDeferredBottomBarReveal,
+                        isBottomBarDestination = isBottomBarDestination,
+                        shouldDeferReveal = shouldDeferBottomBarReveal
+                    )
+                ) {
+                    suppressBottomBarHideRequestsUntilMillis =
+                        SystemClock.uptimeMillis() + resolveVideoReturnBottomBarHideSuppressionMs(
+                            cardTransitionEnabled = cardTransitionEnabled
+                        )
+                }
+            }
+            hadDeferredBottomBarReveal = false
         }
         
         // 最终决定是否显示：
