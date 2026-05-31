@@ -17,6 +17,7 @@ internal sealed interface MessageLinkNavigationAction {
     data class BangumiSeason(val seasonId: Long) : MessageLinkNavigationAction
     data class BangumiEpisode(val epId: Long) : MessageLinkNavigationAction
     data class Music(val musicId: String) : MessageLinkNavigationAction
+    data class Article(val articleId: Long) : MessageLinkNavigationAction
     data class Web(val url: String) : MessageLinkNavigationAction
 }
 
@@ -48,6 +49,7 @@ internal fun resolveMessageLinkNavigationAction(rawLink: String): MessageLinkNav
         is BilibiliNavigationTarget.BangumiSeason -> MessageLinkNavigationAction.BangumiSeason(target.seasonId)
         is BilibiliNavigationTarget.BangumiEpisode -> MessageLinkNavigationAction.BangumiEpisode(target.epId)
         is BilibiliNavigationTarget.Music -> MessageLinkNavigationAction.Music(target.musicId)
+        is BilibiliNavigationTarget.Article -> MessageLinkNavigationAction.Article(target.articleId)
         else -> MessageLinkNavigationAction.Web(rawLink)
     }
 }
@@ -88,6 +90,7 @@ private fun resolveMessageCommentNavigationAction(rawLink: String): MessageLinkN
     val fallbackLink = queryMap["enterUri"].orEmpty().ifBlank {
         when (businessId) {
             11, 16, 17 -> "bilibili://following/detail/$oid"
+            12 -> "bilibili://read/cv$oid"
             else -> "bilibili://video/$oid"
         }
     }
@@ -106,6 +109,7 @@ private fun resolveMessageCommentNavigationAction(rawLink: String): MessageLinkN
         is BilibiliNavigationTarget.BangumiSeason -> MessageLinkNavigationAction.BangumiSeason(target.seasonId)
         is BilibiliNavigationTarget.BangumiEpisode -> MessageLinkNavigationAction.BangumiEpisode(target.epId)
         is BilibiliNavigationTarget.Music -> MessageLinkNavigationAction.Music(target.musicId)
+        is BilibiliNavigationTarget.Article -> MessageLinkNavigationAction.Article(target.articleId)
         else -> null
     }
 }

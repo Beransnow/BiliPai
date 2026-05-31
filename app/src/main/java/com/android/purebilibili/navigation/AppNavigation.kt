@@ -966,6 +966,9 @@ fun AppNavigation(
                         ?.let { pushNavigation3Key(BiliPaiNavKey.MusicDetail(it)) }
                         ?: pushNavigation3Key(BiliPaiNavKey.Web(rawLink))
                 }
+                is MessageLinkNavigationAction.Article -> {
+                    pushNavigation3Key(BiliPaiNavKey.ArticleDetail(action.articleId))
+                }
                 is MessageLinkNavigationAction.Web -> {
                     pushNavigation3Key(BiliPaiNavKey.Web(action.url))
                 }

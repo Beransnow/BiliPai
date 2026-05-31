@@ -48,6 +48,14 @@ class DynamicApiContractTest {
     }
 
     @Test
+    fun dynamicDetailFeatures_includeOnlyFansDetailFlagsFromApiDocs() {
+        assertTrue(DYNAMIC_DETAIL_FEATURES.contains("commentsNewVersion"))
+        assertTrue(DYNAMIC_DETAIL_FEATURES.contains("onlyfansAssetsV2"))
+        assertTrue(DYNAMIC_DETAIL_FEATURES.contains("onlyfansQaCard"))
+        assertTrue(DYNAMIC_DETAIL_FEATURES.contains("endFooterHidden"))
+    }
+
+    @Test
     fun getDynamicDetailFallback_usesLegacyDetailEndpointAndIdQuery() {
         val method = DynamicApi::class.java.methods.first { it.name == "getDynamicDetailFallback" }
         val get = method.getAnnotation(GET::class.java)

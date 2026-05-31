@@ -1235,8 +1235,8 @@ data class DynamicThumbRequest(
 private const val DYNAMIC_FEED_FEATURES =
     "itemOpusStyle,listOnlyfans"
 
-private const val DYNAMIC_DETAIL_FEATURES =
-    "itemOpusStyle,listOnlyfans,opusBigCover,commentsNewVersion,onlyfansVote,onlyfansAssetsV2,decorationCard,forwardListHidden,ugcDelete,htmlNewStyle"
+internal const val DYNAMIC_DETAIL_FEATURES =
+    "itemOpusStyle,listOnlyfans,opusBigCover,onlyfansVote,endFooterHidden,decorationCard,onlyfansAssetsV2,ugcDelete,onlyfansQaCard,commentsNewVersion,forwardListHidden,htmlNewStyle"
 
 internal const val SPACE_DYNAMIC_FEATURES =
     "itemOpusStyle,listOnlyfans,opusBigCover,commentsNewVersion,onlyfansVote,onlyfansAssetsV2,decorationCard,forwardListHidden,ugcDelete"
