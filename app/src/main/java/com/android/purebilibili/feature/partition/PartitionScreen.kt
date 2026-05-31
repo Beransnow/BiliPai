@@ -149,7 +149,7 @@ private val partitionTabs = listOf(
 
 private val PartitionSideRailItemHeight = 48.dp
 private val PartitionSideRailItemSpacing = 4.dp
-private val PartitionVideoListMaxPush = 8.dp
+private val PartitionVideoListMaxPush = 20.dp
 
 data class PartitionFeedUiState(
     val selectedPartition: PartitionCategory = partitionTabs.first(),

@@ -92,7 +92,9 @@ import com.android.purebilibili.feature.home.policy.resolveHomeHeaderOffsetForSe
 import com.android.purebilibili.feature.home.policy.resolveHomePagerSettledAction
 import com.android.purebilibili.feature.home.policy.shouldAnimateHomePagerToCategory
 import com.android.purebilibili.feature.home.policy.HomePagerSettledAction
+import com.android.purebilibili.feature.home.policy.resolveHomeInitialTopTabPage
 import com.android.purebilibili.feature.home.policy.shouldSkipHomePagerStateDrive
+import com.android.purebilibili.feature.home.policy.shouldTreatInitialHomePagerPageAsSyncedWithState
 import com.android.purebilibili.feature.home.policy.shouldUseInitialHomePagerSnap
 //  从 cards 子包导入卡片组件
 import com.android.purebilibili.feature.home.components.cards.ElegantVideoCard
@@ -314,11 +316,22 @@ fun HomeScreen(
             HomeTopTabEntry.Partition -> resolveHomeTopTabEntryLabel(entry)
         }
     }
-    val initialPage = topTabEntries.indexOf(HomeTopTabEntry.Category(state.currentCategory)).takeIf { it >= 0 } ?: 0
+    val initialPage = resolveHomeInitialTopTabPage(
+        topTabEntries = topTabEntries,
+        currentCategory = state.currentCategory,
+        displayedTabIndex = state.displayedTabIndex
+    )
+    val initialPageSyncedWithState = shouldTreatInitialHomePagerPageAsSyncedWithState(
+        initialEntry = resolveHomeTopTabEntryOrNull(topTabEntries, initialPage),
+        currentCategory = state.currentCategory
+    )
     val pagerState = androidx.compose.foundation.pager.rememberPagerState(initialPage = initialPage) { topTabEntries.size }
-    var hasSyncedPagerWithState by remember(topTabEntries) { mutableStateOf(false) }
-    var lastDrivenPagerCategory by remember(topTabEntries) { mutableStateOf<HomeCategory?>(null) }
+    var hasSyncedPagerWithState by remember(topTabEntries) { mutableStateOf(initialPageSyncedWithState) }
+    var lastDrivenPagerCategory by remember(topTabEntries) {
+        mutableStateOf(if (initialPageSyncedWithState) state.currentCategory else null)
+    }
     var programmaticPageSwitchInProgress by remember { mutableStateOf(false) }
+    val currentDisplayedTabIndex by rememberUpdatedState(state.displayedTabIndex)
     TrackJankStateFlag(
         stateName = "home:pager_swipe",
         isActive = pagerState.isScrollInProgress
@@ -334,6 +347,9 @@ fun HomeScreen(
         snapshotFlow { pagerState.currentPage to pagerState.isScrollInProgress }
             .distinctUntilChanged()
             .collect { (page, scrolling) ->
+                if (!scrolling && currentDisplayedTabIndex != page) {
+                    viewModel.updateDisplayedTabIndex(page)
+                }
                 val currentCategoryIndex = topTabEntries
                     .indexOf(HomeTopTabEntry.Category(state.currentCategory))
                     .takeIf { it >= 0 } ?: 0

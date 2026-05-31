@@ -90,23 +90,23 @@ class PartitionScreenStructureTest {
                 pressProgress = 1f,
                 dragOffsetPx = 0f,
                 itemSlotHeightPx = 52f,
-                maxPushPx = 8f
-            ) == 8f
+                maxPushPx = 20f
+            ) == 20f
         )
         assertTrue(
             resolvePartitionVideoListPushPx(
                 pressProgress = 0f,
                 dragOffsetPx = 52f,
                 itemSlotHeightPx = 52f,
-                maxPushPx = 8f
-            ) > 0f
+                maxPushPx = 20f
+            ) > 16f
         )
         assertTrue(
             resolvePartitionVideoListPushPx(
                 pressProgress = 0f,
                 dragOffsetPx = 0f,
                 itemSlotHeightPx = 52f,
-                maxPushPx = 8f
+                maxPushPx = 20f
             ) == 0f
         )
     }
