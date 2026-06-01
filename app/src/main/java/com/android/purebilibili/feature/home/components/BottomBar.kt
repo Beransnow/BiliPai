@@ -3341,6 +3341,37 @@ private fun KernelSuAlignedBottomBar(
                 1f
             }
 
+            fun handleBottomBarItemClick(index: Int, item: BottomNavItem) {
+                val searchOverride = resolveBottomBarSearchExpansionOverrideOnNavItemClick(
+                    currentItem = currentItem,
+                    clickedItem = item,
+                    bottomBarSearchEnabled = searchEnabled,
+                    effectiveSearchExpanded = effectiveSearchExpanded
+                )
+                if (searchOverride != null) {
+                    haptic(HapticType.LIGHT)
+                    searchExpansionOverride = searchOverride
+                } else {
+                    highlightAnchorIndex = index
+                    dampedDragState.updateIndex(index)
+                    performMaterialBottomBarTap(
+                        haptic = haptic,
+                        onClick = { onItemClick(item) }
+                    )
+                }
+            }
+
+            fun handleBottomBarSidebarClick() {
+                if (onToggleSidebar != null) {
+                    highlightAnchorIndex = visibleItems.size
+                    dampedDragState.updateIndex(visibleItems.size)
+                    performMaterialBottomBarTap(
+                        haptic = haptic,
+                        onClick = onToggleSidebar
+                    )
+                }
+            }
+
             Row(
                 modifier = Modifier
                     .height(shellHeight)
@@ -3403,8 +3434,9 @@ private fun KernelSuAlignedBottomBar(
                                 skinIconPath = uiSkinDecoration?.iconPathFor(item, selected = coverage >= 0.5f),
                                 labelScrimColor = skinContentColors.labelScrimColor,
                                 labelScrimAlpha = skinContentColors.labelScrimAlpha,
-                                onClick = {},
-                                interactive = false,
+                                onClick = { handleBottomBarItemClick(index, item) },
+                                interactive = !effectiveSearchExpanded,
+                                onPressChanged = dampedDragState::setPressed,
                                 selectedIconAlpha = coverage,
                                 scale = 1f
                             )
@@ -3427,8 +3459,9 @@ private fun KernelSuAlignedBottomBar(
                                 iconStyle = iconStyle,
                                 labelScrimColor = skinContentColors.labelScrimColor,
                                 labelScrimAlpha = skinContentColors.labelScrimAlpha,
-                                onClick = {},
-                                interactive = false,
+                                onClick = ::handleBottomBarSidebarClick,
+                                interactive = !effectiveSearchExpanded,
+                                onPressChanged = dampedDragState::setPressed,
                                 selectedIconAlpha = coverage,
                                 scale = 1f
                             )
@@ -3601,48 +3634,9 @@ private fun KernelSuAlignedBottomBar(
                     indicatorLayerScaleProgress = indicatorLayerScaleProgress,
                     indicatorLayerScaleTransform = indicatorLayerScaleTransform,
                     bottomBarMotionSpec = bottomBarMotionSpec,
-                    isDarkTheme = isDarkTheme
-                )
-
-                KernelSuBottomBarInputLayer(
-                    visible = !effectiveSearchExpanded,
-                    visibleItems = visibleItems,
-                    isTablet = isTablet,
-                    hasSidebarToggle = onToggleSidebar != null,
-                    dockContentPadding = dockContentPadding,
-                    visiblePanelOffsetPx = presetPanelOffsets.visiblePanelOffsetPx,
                     dampedDragState = dampedDragState,
                     itemWidthPx = itemWidthPx,
-                    itemWidth = indicatorWidth,
-                    onItemClick = { index, item ->
-                        val searchOverride = resolveBottomBarSearchExpansionOverrideOnNavItemClick(
-                            currentItem = currentItem,
-                            clickedItem = item,
-                            bottomBarSearchEnabled = searchEnabled,
-                            effectiveSearchExpanded = effectiveSearchExpanded
-                        )
-                        if (searchOverride != null) {
-                            haptic(HapticType.LIGHT)
-                            searchExpansionOverride = searchOverride
-                        } else {
-                            highlightAnchorIndex = index
-                            dampedDragState.updateIndex(index)
-                            performMaterialBottomBarTap(
-                                haptic = haptic,
-                                onClick = { onItemClick(item) }
-                            )
-                        }
-                    },
-                    onSidebarClick = {
-                        if (onToggleSidebar != null) {
-                            highlightAnchorIndex = visibleItems.size
-                            dampedDragState.updateIndex(visibleItems.size)
-                            performMaterialBottomBarTap(
-                                haptic = haptic,
-                                onClick = onToggleSidebar
-                            )
-                        }
-                    }
+                    isDarkTheme = isDarkTheme
                 )
 
                 if (searchEnabled) {
@@ -3852,6 +3846,8 @@ private fun BoxScope.KernelSuMiuixBottomBarIndicatorLayer(
     indicatorLayerScaleProgress: Float,
     indicatorLayerScaleTransform: BottomBarIndicatorLayerTransform? = null,
     bottomBarMotionSpec: com.android.purebilibili.core.ui.motion.BottomBarMotionSpec,
+    dampedDragState: DampedDragAnimationState? = null,
+    itemWidthPx: Float = 0f,
     isDarkTheme: Boolean,
     swapMotionAxes: Boolean = false,
     indicatorAlignment: Alignment = Alignment.CenterStart
@@ -3888,6 +3884,17 @@ private fun BoxScope.KernelSuMiuixBottomBarIndicatorLayer(
             .width(indicatorWidth)
             .height(indicatorHeight)
             .align(indicatorAlignment)
+            .zIndex(2f)
+            .then(
+                if (dampedDragState != null && itemWidthPx > 0f) {
+                    Modifier.horizontalDragGesture(
+                        dragState = dampedDragState,
+                        itemWidthPx = itemWidthPx
+                    )
+                } else {
+                    Modifier
+                }
+            )
             .run {
                 val indicatorBackdrop = if (shouldUseBottomBarCombinedIndicatorBackdrop(liquidGlassPreset)) {
                     contentBackdrop
@@ -4076,51 +4083,6 @@ internal fun BoxScope.KernelSuBottomBarIndicatorLayer(
                 }
             }
     )
-}
-
-@Composable
-private fun BoxScope.KernelSuBottomBarInputLayer(
-    visible: Boolean,
-    visibleItems: List<BottomNavItem>,
-    isTablet: Boolean,
-    hasSidebarToggle: Boolean,
-    dockContentPadding: PaddingValues,
-    visiblePanelOffsetPx: Float,
-    dampedDragState: DampedDragAnimationState,
-    itemWidthPx: Float,
-    itemWidth: Dp,
-    onItemClick: (Int, BottomNavItem) -> Unit,
-    onSidebarClick: () -> Unit
-) {
-    if (!visible) return
-    Row(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(dockContentPadding)
-            .alpha(0f)
-            .graphicsLayer { translationX = visiblePanelOffsetPx }
-            .horizontalDragGesture(
-                dragState = dampedDragState,
-                itemWidthPx = itemWidthPx
-            ),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        visibleItems.forEachIndexed { index, item ->
-            BottomBarInputTarget(
-                itemWidth = itemWidth,
-                onClick = { onItemClick(index, item) },
-                onPressChanged = dampedDragState::setPressed
-            )
-        }
-
-        if (isTablet && hasSidebarToggle) {
-            BottomBarInputTarget(
-                itemWidth = itemWidth,
-                onClick = onSidebarClick,
-                onPressChanged = dampedDragState::setPressed
-            )
-        }
-    }
 }
 
 @Composable
@@ -4424,38 +4386,6 @@ private fun KernelSuBottomBarSearchVisualContent(
             }
         }
     }
-}
-
-@Composable
-private fun RowScope.BottomBarInputTarget(
-    itemWidth: Dp,
-    onClick: () -> Unit,
-    onPressChanged: (Boolean) -> Unit
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val currentOnPressChanged by rememberUpdatedState(onPressChanged)
-
-    LaunchedEffect(isPressed) {
-        onPressChanged(isPressed)
-    }
-    DisposableEffect(Unit) {
-        onDispose {
-            currentOnPressChanged(false)
-        }
-    }
-
-    Box(
-        modifier = Modifier
-            .width(itemWidth)
-            .fillMaxHeight()
-            .clip(resolveSharedBottomBarCapsuleShape())
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick
-            )
-    )
 }
 
 @Composable

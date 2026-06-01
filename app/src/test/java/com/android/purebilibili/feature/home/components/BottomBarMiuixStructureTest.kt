@@ -25,7 +25,7 @@ class BottomBarMiuixStructureTest {
         assertTrue(source.contains("KernelSuMiuixBottomBarIndicatorLayer("))
         assertTrue(source.contains("internal fun BoxScope.KernelSuBottomBarIndicatorLayer("))
         assertTrue(source.contains("private fun KernelSuBottomBarSearchSlot("))
-        assertTrue(source.contains("KernelSuBottomBarInputLayer("))
+        assertFalse(source.contains("KernelSuBottomBarInputLayer("))
         assertTrue(source.contains("uiSkinDecoration: BottomBarUiSkinDecoration? = null"))
         assertTrue(source.contains("decoration = uiSkinDecoration"))
         assertTrue(source.contains("BottomBarSkinDecorativeTrim("))
@@ -120,12 +120,18 @@ class BottomBarMiuixStructureTest {
         assertFalse(kernelSuRendererSource.contains("((indicatorLayerHeight - indicatorHeight) / 2f).toPx()"))
         assertTrue(kernelSuRendererSource.contains(".width(indicatorWidth)"))
         assertTrue(kernelSuRendererSource.contains(".height(indicatorHeight)"))
+        assertTrue(kernelSuRendererSource.contains(".zIndex(2f)"))
+        assertTrue(kernelSuRendererSource.contains("Modifier.horizontalDragGesture("))
+        assertTrue(kernelSuRendererSource.contains("dampedDragState = dampedDragState"))
+        assertTrue(kernelSuRendererSource.contains("itemWidthPx = itemWidthPx"))
+        assertTrue(kernelSuRendererSource.contains("interactive = !effectiveSearchExpanded"))
+        assertTrue(kernelSuRendererSource.contains("onPressChanged = dampedDragState::setPressed"))
         assertFalse(kernelSuAlignedBodySource.contains("scaleX = indicatorSettleReboundTransform.scaleX"))
         assertFalse(kernelSuAlignedBodySource.contains("scaleY = indicatorSettleReboundTransform.scaleY"))
         assertTrue(kernelSuRendererSource.contains("dragScaleProgress = indicatorLayerScaleProgress"))
         val indicatorLayerSource = source
             .substringAfter("@Composable\nprivate fun BoxScope.KernelSuMiuixBottomBarIndicatorLayer(")
-            .substringBefore("@Composable\nprivate fun BoxScope.KernelSuBottomBarInputLayer(")
+            .substringBefore("@Composable\nprivate fun KernelSuBottomBarSearchSlot(")
         val backdropLayerBlockSource = indicatorLayerSource
             .substringAfter("layerBlock = {")
             .substringBefore("}")
@@ -266,14 +272,13 @@ class BottomBarMiuixStructureTest {
         )
         val captureIndex = kernelSuRendererSource.indexOf(".miuixLayerBackdrop(tabsBackdrop)")
         val indicatorIndex = kernelSuRendererSource.indexOf("backdrop = indicatorBackdrop")
-        val inputIndex = kernelSuRendererSource.indexOf("KernelSuBottomBarInputLayer(", startIndex = indicatorIndex)
 
         assertTrue(shellIndex >= 0)
         assertTrue(skinIndex > shellIndex)
         assertTrue(visibleContentIndex > skinIndex)
         assertTrue(captureIndex > visibleContentIndex)
         assertTrue(indicatorIndex > captureIndex)
-        assertTrue(inputIndex > indicatorIndex)
+        assertFalse(kernelSuRendererSource.contains("KernelSuBottomBarInputLayer("))
         val capturedSkinIndex = refractionCaptureSource.indexOf("BottomBarSkinDecorativeTrim(")
         val capturedContentIndex = refractionCaptureSource.indexOf("val coverage = itemCoverage(index)")
         assertTrue(capturedSkinIndex >= 0)
@@ -293,7 +298,7 @@ class BottomBarMiuixStructureTest {
     }
 
     @Test
-    fun `skin icons replace only visual icon layer and keep bottom bar input unchanged`() {
+    fun `skin icons replace only visual icon layer and keep clickable hit layer unchanged`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/BottomBar.kt")
         val skinDecorationSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/BottomBarUiSkin.kt")
         val kernelSuRendererSource = source
@@ -302,9 +307,6 @@ class BottomBarMiuixStructureTest {
         val itemRendererSource = source
             .substringAfter("private fun RowScope.AndroidNativeBottomBarItem(")
             .substringBefore("@Composable\nprivate fun KernelSuBottomBarSearchCapsule(")
-        val inputTargetSource = source
-            .substringAfter("private fun RowScope.BottomBarInputTarget(")
-            .substringBefore("@Composable\nprivate fun RowScope.AndroidNativeBottomBarItem(")
 
         assertTrue(skinDecorationSource.contains("fun iconPathFor(item: BottomNavItem, selected: Boolean = false): String?"))
         assertTrue(kernelSuRendererSource.contains("skinIconPath = uiSkinDecoration?.iconPathFor(item, selected = coverage >= 0.5f)"))
@@ -322,11 +324,12 @@ class BottomBarMiuixStructureTest {
         assertTrue(itemRendererSource.contains("verticalArrangement = Arrangement.Center"))
         assertFalse(itemRendererSource.contains("readabilityBackdropColor"))
         assertFalse(itemRendererSource.contains("translationY = -3.dp"))
-        assertFalse(inputTargetSource.contains("skinIconPath"))
+        assertFalse(source.contains("BottomBarInputTarget("))
+        assertFalse(source.contains("KernelSuBottomBarInputLayer("))
     }
 
     @Test
-    fun `sukisu bottom bar item content and input share indicator slot width`() {
+    fun `sukisu bottom bar item content shares indicator slot width`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/BottomBar.kt")
         val kernelSuRendererSource = source
             .substringAfter("private fun KernelSuAlignedBottomBar(")
@@ -334,18 +337,13 @@ class BottomBarMiuixStructureTest {
         val itemRendererSource = source
             .substringAfter("private fun RowScope.AndroidNativeBottomBarItem(")
             .substringBefore("private fun resolveMaterialBottomBarIcon(")
-        val inputTargetSource = source
-            .substringAfter("private fun RowScope.BottomBarInputTarget(")
-            .substringBefore("@Composable\nprivate fun RowScope.AndroidNativeBottomBarItem(")
 
         assertTrue(kernelSuRendererSource.contains("resolveKernelSuBottomBarItemSlotWidth("))
         assertTrue(kernelSuRendererSource.contains("itemWidth = indicatorWidth"))
         assertTrue(itemRendererSource.contains("itemWidth: Dp"))
-        assertTrue(inputTargetSource.contains("itemWidth: Dp"))
         assertTrue(itemRendererSource.contains(".width(itemWidth)"))
-        assertTrue(inputTargetSource.contains(".width(itemWidth)"))
         assertFalse(itemRendererSource.contains(".defaultMinSize(minWidth = 76.dp)"))
-        assertFalse(inputTargetSource.contains(".defaultMinSize(minWidth = 76.dp)"))
+        assertFalse(source.contains("BottomBarInputTarget("))
     }
 
     @Test
@@ -453,7 +451,7 @@ class BottomBarMiuixStructureTest {
     }
 
     @Test
-    fun `sukisu renderer draws visible content below indicator with transparent input overlay`() {
+    fun `sukisu renderer uses clickable content items and indicator-owned drag`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/BottomBar.kt")
         val kernelSuRendererSource = source
             .substringAfter("private fun KernelSuAlignedBottomBar(")
@@ -464,12 +462,13 @@ class BottomBarMiuixStructureTest {
         )
         val tintCaptureIndex = kernelSuRendererSource.indexOf(".miuixLayerBackdrop(tabsBackdrop)")
         val indicatorIndex = kernelSuRendererSource.indexOf("backdrop = indicatorBackdrop")
-        val hitOverlayIndex = kernelSuRendererSource.indexOf("KernelSuBottomBarInputLayer(", startIndex = indicatorIndex)
 
         assertTrue(visibleContentIndex >= 0)
         assertTrue(tintCaptureIndex > visibleContentIndex)
         assertTrue(indicatorIndex > tintCaptureIndex)
-        assertTrue(hitOverlayIndex > indicatorIndex)
+        assertFalse(kernelSuRendererSource.contains("KernelSuBottomBarInputLayer("))
+        assertTrue(kernelSuRendererSource.contains("interactive = !effectiveSearchExpanded"))
+        assertTrue(kernelSuRendererSource.contains("Modifier.horizontalDragGesture("))
     }
 
     @Test
@@ -519,23 +518,20 @@ class BottomBarMiuixStructureTest {
     }
 
     @Test
-    fun `android native input overlay forwards press state to indicator animation`() {
+    fun `android native clickable items forward press state to indicator animation`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/BottomBar.kt")
         val kernelSuRendererSource = source
             .substringAfter("private fun KernelSuAlignedBottomBar(")
             .substringBefore("@Composable\nprivate fun AndroidNativeBottomBarItem(")
-        val inputTargetSource = source.substringAfter("@Composable\nprivate fun RowScope.BottomBarInputTarget(")
+        val itemSource = source.substringAfter("@Composable\nprivate fun RowScope.AndroidNativeBottomBarItem(")
 
         assertTrue(kernelSuRendererSource.contains("onPressChanged = dampedDragState::setPressed"))
-        assertTrue(kernelSuRendererSource.contains("BottomBarInputTarget("))
-        val inputLayerSource = source
-            .substringAfter("private fun BoxScope.KernelSuBottomBarInputLayer(")
-            .substringBefore("@Composable\nprivate fun KernelSuBottomBarSearchSlot(")
-        assertFalse(inputLayerSource.contains("AndroidNativeBottomBarItem("))
-        assertTrue(inputTargetSource.contains("collectIsPressedAsState()"))
-        assertTrue(inputTargetSource.contains("LaunchedEffect(isPressed)"))
-        assertTrue(inputTargetSource.contains("DisposableEffect(Unit)"))
-        assertTrue(inputTargetSource.contains("currentOnPressChanged(false)"))
+        assertFalse(source.contains("BottomBarInputTarget("))
+        assertFalse(source.contains("KernelSuBottomBarInputLayer("))
+        assertTrue(itemSource.contains("collectIsPressedAsState()"))
+        assertTrue(itemSource.contains("LaunchedEffect(isPressed, interactive)"))
+        assertTrue(itemSource.contains("DisposableEffect(interactive)"))
+        assertTrue(itemSource.contains("currentOnPressChanged(false)"))
     }
 
     @Test
