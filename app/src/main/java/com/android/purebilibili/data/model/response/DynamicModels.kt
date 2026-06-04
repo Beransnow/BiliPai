@@ -553,6 +553,7 @@ data class DynamicAuthorModule(
     val face: String = "",
     val pub_time: String = "", // "昨天 18:00"
     val pub_ts: Long = 0, // 时间戳
+    @Serializable(with = FlexibleBooleanSerializer::class)
     val following: Boolean? = null,
     val official_verify: DynamicOfficialVerify? = null,
     val vip: DynamicVipInfo? = null,
