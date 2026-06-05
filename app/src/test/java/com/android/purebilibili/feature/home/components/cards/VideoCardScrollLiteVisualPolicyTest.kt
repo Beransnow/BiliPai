@@ -1,6 +1,7 @@
 package com.android.purebilibili.feature.home.components.cards
 
 import androidx.compose.ui.graphics.Color
+import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -80,6 +81,21 @@ class VideoCardScrollLiteVisualPolicyTest {
 
         assertEquals(0f, policy.coverShadowElevationDp, 0.0001f)
         assertTrue(policy.showSecondaryStatsRow)
+    }
+
+    @Test
+    fun `home video card variants do not attach shadow modifiers`() {
+        listOf(
+            "VideoCard.kt",
+            "StoryVideoCard.kt",
+            "GlassVideoCard.kt",
+            "CinematicVideoCard.kt"
+        ).forEach { fileName ->
+            val source = File("src/main/java/com/android/purebilibili/feature/home/components/cards/$fileName")
+                .readText()
+
+            assertFalse("$fileName should not draw video cover shadows", source.contains(".shadow("))
+        }
     }
 
     @Test
