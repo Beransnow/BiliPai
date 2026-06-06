@@ -1213,6 +1213,8 @@ fun AppNavigation(
                                     pushNavigation3Route(ScreenRoutes.Space.createRoute(mid))
                                 },
                                 globalHazeState = mainHazeState,
+                                isTopLevelActive = currentNavigation3Key == BiliPaiNavKey.MainHost &&
+                                    currentBottomNavItem == BottomNavItem.HOME,
                                 isReturningFromVideoDetail = navigation3ReturnSession.isReturningFromDetail,
                                 isQuickReturningFromVideoDetail = navigation3ReturnSession.isQuickReturnFromDetail,
                                 onVideoDetailReturnAnimationConsumed = {

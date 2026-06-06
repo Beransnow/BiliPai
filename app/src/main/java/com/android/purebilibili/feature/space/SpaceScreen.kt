@@ -2011,17 +2011,35 @@ private fun SpaceHeader(
                 )
             }
 
-            val metaLine = listOfNotNull(
-                "UID: ${userInfo.mid}",
-                userInfo.ipLocation?.takeIf { it.isNotBlank() }?.let { "IP属地：$it" }
-            ).joinToString("   ")
-            if (metaLine.isNotBlank()) {
+            val ipLocation = userInfo.ipLocation?.takeIf { it.isNotBlank() }
+            if (userInfo.mid > 0L || ipLocation != null) {
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = metaLine,
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (userInfo.mid > 0L) {
+                        Text(
+                            text = "UID: ${userInfo.mid}",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    ipLocation?.let { location ->
+                        val locationColors = resolveSpaceLocationChipColors(MaterialTheme.colorScheme)
+                        Surface(
+                            shape = RoundedCornerShape(999.dp),
+                            color = locationColors.backgroundColor
+                        ) {
+                            Text(
+                                text = "IP属地：$location",
+                                modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp),
+                                fontSize = 12.sp,
+                                color = locationColors.textColor
+                            )
+                        }
+                    }
+                }
             }
         }
     }

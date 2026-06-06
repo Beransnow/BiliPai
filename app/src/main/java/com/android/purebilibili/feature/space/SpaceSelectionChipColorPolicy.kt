@@ -46,3 +46,12 @@ internal fun resolveSpaceFollowButtonColors(
         )
     }
 }
+
+internal fun resolveSpaceLocationChipColors(
+    colorScheme: ColorScheme
+): SpaceSelectionChipColors {
+    return SpaceSelectionChipColors(
+        backgroundColor = colorScheme.primary.copy(alpha = 0.12f),
+        textColor = colorScheme.primary
+    )
+}

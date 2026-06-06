@@ -256,7 +256,7 @@ internal fun shouldClearStaleReturningStateOnVideoDetailEnter(
 }
 
 private const val COVER_TAKEOVER_PRE_BACK_DELAY_MILLIS = 16L
-private const val VIDEO_CONTENT_COMMENT_TAB_INDEX = 1
+internal const val VIDEO_CONTENT_COMMENT_TAB_INDEX = 1
 
 internal fun resolveForceCoverOnlyForReturn(
     forceCoverOnlyOnReturn: Boolean,
@@ -472,6 +472,13 @@ internal fun shouldShowExternalPlaylistQueueBarByPolicy(
     return isExternalPlaylist &&
         sourceCanShowQueue &&
         playlistSize > 0
+}
+
+internal fun shouldShowExternalPlaylistQueueBarOnContentTab(
+    queueAvailable: Boolean,
+    selectedTabIndex: Int
+): Boolean {
+    return queueAvailable && selectedTabIndex != VIDEO_CONTENT_COMMENT_TAB_INDEX
 }
 
 internal fun resolveExternalPlaylistQueueTitle(
@@ -3580,6 +3587,11 @@ fun VideoDetailScreen(
                                                 exit = detailContentExitFade
                                             ) {
                                                 Box(modifier = Modifier.fillMaxSize()) {
+                                                    val showExternalPlaylistQueueBarOnCurrentTab =
+                                                        shouldShowExternalPlaylistQueueBarOnContentTab(
+                                                            queueAvailable = shouldShowExternalPlaylistQueueBar,
+                                                            selectedTabIndex = selectedVideoContentTabIndex
+                                                        )
                                                     val showFrozenCommentBar = shouldShowVideoDetailBottomInteractionBar(
                                                         isLiquidGlassEnabled = videoDetailLiquidGlassEnabled,
                                                         useTabletLayout = useTabletLayout,
@@ -3589,7 +3601,8 @@ fun VideoDetailScreen(
                                                         isCommentInputVisible = showCommentInput,
                                                         isCommentThreadVisible = subReplyState.visible,
                                                         isFavoriteFolderDialogVisible = showFavoriteFolderDialog,
-                                                        isExternalPlaylistQueueBarVisible = shouldShowExternalPlaylistQueueBar
+                                                        isExternalPlaylistQueueBarVisible =
+                                                            showExternalPlaylistQueueBarOnCurrentTab
                                                     )
                                                     val videoContentBottomPadding = if (showFrozenCommentBar) {
                                                         96.dp
@@ -3777,7 +3790,7 @@ fun VideoDetailScreen(
                                                         )
                                                     }
 
-                                                    if (shouldShowExternalPlaylistQueueBar) {
+                                                    if (showExternalPlaylistQueueBarOnCurrentTab) {
                                                         ExternalPlaylistQueueCollapsedBar(
                                                             title = externalPlaylistQueueTitle,
                                                             videoCount = playlistItems.size,

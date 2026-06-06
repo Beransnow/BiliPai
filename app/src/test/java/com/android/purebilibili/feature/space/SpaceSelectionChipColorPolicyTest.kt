@@ -83,4 +83,18 @@ class SpaceSelectionChipColorPolicyTest {
         assertEquals(scheme.onPrimary, unfollowed.textColor)
     }
 
+    @Test
+    fun `ip location chip follows theme accent instead of neutral gray`() {
+        val scheme = darkColorScheme(
+            primary = Color(0xFFFF5F96),
+            surfaceVariant = Color(0xFF343036),
+            onSurfaceVariant = Color(0xFFD6CDD8)
+        )
+
+        val colors = resolveSpaceLocationChipColors(scheme)
+
+        assertEquals(scheme.primary.copy(alpha = 0.12f), colors.backgroundColor)
+        assertEquals(scheme.primary, colors.textColor)
+    }
+
 }
