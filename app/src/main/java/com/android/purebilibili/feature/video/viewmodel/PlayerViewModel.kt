@@ -90,7 +90,7 @@ import com.android.purebilibili.feature.video.playback.policy.resolveOnlineCount
 import com.android.purebilibili.feature.video.playback.policy.buildPlaybackPostLoadPlan
 import com.android.purebilibili.feature.video.playback.policy.resolvePlaybackHeartbeatSessionStartTsSec
 import com.android.purebilibili.feature.video.playback.policy.resolvePlaybackHeartbeatSnapshot
-import com.android.purebilibili.feature.video.playback.policy.shouldHoldPlaybackTransitionPosition
+import com.android.purebilibili.feature.video.playback.policy.shouldHoldPlaybackResumeTransitionPosition
 import com.android.purebilibili.feature.video.playback.policy.resolvePluginPollingIntervalMs
 import com.android.purebilibili.feature.video.playback.policy.shouldRefreshOnlineCount
 import com.android.purebilibili.feature.video.playback.policy.shouldSendPlaybackHeartbeat
@@ -5851,7 +5851,7 @@ class PlayerViewModel : ViewModel() {
                 val pendingPositionMs = current.pendingPlaybackTransitionPositionMs ?: return@launch
                 if (pendingPositionMs != targetPositionMs) return@launch
                 val playerPositionMs = playbackUseCase.getCurrentPosition().coerceAtLeast(0L)
-                if (!shouldHoldPlaybackTransitionPosition(playerPositionMs, targetPositionMs)) {
+                if (!shouldHoldPlaybackResumeTransitionPosition(playerPositionMs, targetPositionMs)) {
                     _uiState.update { state ->
                         val success = state as? PlayerUiState.Success ?: return@update state
                         if (success.pendingPlaybackTransitionPositionMs != targetPositionMs) {
