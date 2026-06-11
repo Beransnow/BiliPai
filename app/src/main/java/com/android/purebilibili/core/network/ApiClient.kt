@@ -2199,11 +2199,17 @@ object NetworkModule {
                     }
                     response
                 } catch (e: Exception) {
-                    com.android.purebilibili.core.util.CrashReporter.reportApiError(
-                        endpoint = "${request.method} ${request.url.encodedPath}",
-                        httpCode = -1,
-                        errorMessage = e.message ?: e.javaClass.simpleName
-                    )
+                    if (com.android.purebilibili.core.util.shouldReportApiFailure(
+                            callCanceled = chain.call().isCanceled(),
+                            throwable = e
+                        )
+                    ) {
+                        com.android.purebilibili.core.util.CrashReporter.reportApiError(
+                            endpoint = "${request.method} ${request.url.encodedPath}",
+                            httpCode = -1,
+                            errorMessage = e.message ?: e.javaClass.simpleName
+                        )
+                    }
                     throw e
                 }
             }
@@ -2289,11 +2295,17 @@ object NetworkModule {
                     }
                     response
                 } catch (e: Exception) {
-                    com.android.purebilibili.core.util.CrashReporter.reportApiError(
-                        endpoint = "guest ${request.method} ${request.url.encodedPath}",
-                        httpCode = -1,
-                        errorMessage = e.message ?: e.javaClass.simpleName
-                    )
+                    if (com.android.purebilibili.core.util.shouldReportApiFailure(
+                            callCanceled = chain.call().isCanceled(),
+                            throwable = e
+                        )
+                    ) {
+                        com.android.purebilibili.core.util.CrashReporter.reportApiError(
+                            endpoint = "guest ${request.method} ${request.url.encodedPath}",
+                            httpCode = -1,
+                            errorMessage = e.message ?: e.javaClass.simpleName
+                        )
+                    }
                     throw e
                 }
             }
