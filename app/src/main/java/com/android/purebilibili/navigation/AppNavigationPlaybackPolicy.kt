@@ -71,6 +71,10 @@ internal fun isVideoCardReturnTargetRoute(route: String?): Boolean {
         routeBase.startsWith("space/")
 }
 
+internal fun shouldMarkNavigationLeaveBeforeVideoExit(
+    isMiniMode: Boolean
+): Boolean = !isMiniMode
+
 internal fun isVideoDetailRoute(route: String?): Boolean {
     return route?.startsWith("${VideoRoute.base}/") == true
 }

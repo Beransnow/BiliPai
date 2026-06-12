@@ -6,8 +6,28 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class MiniPlayerMediaControlPolicyTest {
+
+    @Test
+    fun `mini player entry preserves active playback intent`() {
+        assertTrue(
+            shouldResumePlaybackOnMiniPlayerEntry(
+                isPlaying = false,
+                playWhenReady = true,
+                playbackState = Player.STATE_BUFFERING
+            )
+        )
+        assertFalse(
+            shouldResumePlaybackOnMiniPlayerEntry(
+                isPlaying = false,
+                playWhenReady = false,
+                playbackState = Player.STATE_READY
+            )
+        )
+    }
 
     @Test
     fun `pip action remains pause when playback intent is active but isPlaying is stale`() {

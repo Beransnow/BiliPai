@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -66,9 +67,9 @@ private const val AUTO_HIDE_DELAY_MS = 3000L
 fun MiniPlayerOverlay(
     miniPlayerManager: MiniPlayerManager,
     onExpandClick: () -> Unit,
+    onPictureInPictureClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    val context = androidx.compose.ui.platform.LocalContext.current
     val clearIcon = rememberAppClearIcon()
     val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
     val lifecycleState by lifecycleOwner.lifecycle.currentStateAsState()
@@ -95,16 +96,42 @@ fun MiniPlayerOverlay(
         )
     }
 
-    val miniPlayerWidth = layoutPolicy.miniPlayerWidthDp.dp
-    val miniPlayerHeight = layoutPolicy.miniPlayerHeightDp.dp
     val padding = layoutPolicy.outerPaddingDp.dp
     val headerHeight = layoutPolicy.headerHeightDp.dp // 顶部可拖动区域高度
     val touchSlopPx = LocalViewConfiguration.current.touchSlop
+    val resizeBounds = remember(configuration.screenWidthDp, configuration.screenHeightDp, layoutPolicy) {
+        resolveMiniPlayerResizeBounds(
+            defaultWidthDp = layoutPolicy.miniPlayerWidthDp,
+            defaultHeightDp = layoutPolicy.miniPlayerHeightDp,
+            screenWidthDp = configuration.screenWidthDp,
+            screenHeightDp = configuration.screenHeightDp,
+            outerPaddingDp = layoutPolicy.outerPaddingDp,
+            topInsetDp = layoutPolicy.dragTopInsetDp,
+            bottomInsetDp = layoutPolicy.dragBottomInsetDp
+        )
+    }
+    var miniPlayerWidthDp by rememberSaveable(configuration.screenWidthDp) {
+        mutableFloatStateOf(layoutPolicy.miniPlayerWidthDp.toFloat())
+    }
+    LaunchedEffect(resizeBounds) {
+        miniPlayerWidthDp = miniPlayerWidthDp.coerceIn(
+            resizeBounds.minWidthDp,
+            resizeBounds.maxWidthDp
+        )
+    }
+    val miniPlayerAspectRatio = remember(layoutPolicy) {
+        layoutPolicy.miniPlayerWidthDp.toFloat() / layoutPolicy.miniPlayerHeightDp.coerceAtLeast(1)
+    }
+    val miniPlayerHeightDp = miniPlayerWidthDp / miniPlayerAspectRatio
+    val miniPlayerWidth = miniPlayerWidthDp.dp
+    val miniPlayerHeight = miniPlayerHeightDp.dp
 
     val screenWidthPx = with(density) { configuration.screenWidthDp.dp.toPx() }
     val screenHeightPx = with(density) { configuration.screenHeightDp.dp.toPx() }
     val miniPlayerWidthPx = with(density) { miniPlayerWidth.toPx() }
     val miniPlayerHeightPx = with(density) { miniPlayerHeight.toPx() }
+    val defaultMiniPlayerWidthPx = with(density) { layoutPolicy.miniPlayerWidthDp.dp.toPx() }
+    val defaultMiniPlayerHeightPx = with(density) { layoutPolicy.miniPlayerHeightDp.dp.toPx() }
     val paddingPx = with(density) { padding.toPx() }
     val dragTopInsetPx = with(density) { layoutPolicy.dragTopInsetDp.dp.toPx() }
     val dragBottomInsetPx = with(density) { layoutPolicy.dragBottomInsetDp.dp.toPx() }
@@ -119,21 +146,21 @@ fun MiniPlayerOverlay(
         cardBounds,
         screenWidthPx,
         screenHeightPx,
-        miniPlayerWidthPx,
-        miniPlayerHeightPx,
+        defaultMiniPlayerWidthPx,
+        defaultMiniPlayerHeightPx,
         paddingPx,
         dragTopInsetPx,
         dragBottomInsetPx
     ) {
         clampMiniPlayerOverlayOffset(
             offsetX = cardBounds?.left
-                ?: if (entryFromLeft) paddingPx else screenWidthPx - miniPlayerWidthPx - paddingPx,
+                ?: if (entryFromLeft) paddingPx else screenWidthPx - defaultMiniPlayerWidthPx - paddingPx,
             offsetY = cardBounds?.top
-                ?: (screenHeightPx - miniPlayerHeightPx - paddingPx - dragBottomInsetPx),
+                ?: (screenHeightPx - defaultMiniPlayerHeightPx - paddingPx - dragBottomInsetPx),
             screenWidthPx = screenWidthPx,
             screenHeightPx = screenHeightPx,
-            miniPlayerWidthPx = miniPlayerWidthPx,
-            miniPlayerHeightPx = miniPlayerHeightPx,
+            miniPlayerWidthPx = defaultMiniPlayerWidthPx,
+            miniPlayerHeightPx = defaultMiniPlayerHeightPx,
             outerPaddingPx = paddingPx,
             topInsetPx = dragTopInsetPx,
             bottomInsetPx = dragBottomInsetPx
@@ -165,6 +192,7 @@ fun MiniPlayerOverlay(
     
     // 位置拖动状态
     var isDraggingPosition by remember { mutableStateOf(false) }
+    var isResizing by remember { mutableStateOf(false) }
     var contentDragIntent by remember { mutableStateOf(MiniPlayerContentDragIntent.UNDECIDED) }
     var contentDragTotalX by remember { mutableFloatStateOf(0f) }
     var contentDragTotalY by remember { mutableFloatStateOf(0f) }
@@ -209,7 +237,7 @@ fun MiniPlayerOverlay(
     
     // 自动隐藏控制按钮
     LaunchedEffect(showControls, lastInteractionTime) {
-        if (showControls && !isDraggingPosition && !isDraggingProgress) {
+        if (showControls && !isDraggingPosition && !isDraggingProgress && !isResizing) {
             delay(AUTO_HIDE_DELAY_MS)
             if (System.currentTimeMillis() - lastInteractionTime >= AUTO_HIDE_DELAY_MS) {
                 showControls = false
@@ -273,14 +301,23 @@ fun MiniPlayerOverlay(
         clampCurrentOffset()
     }
 
+    LaunchedEffect(
+        miniPlayerWidthPx,
+        miniPlayerHeightPx,
+        screenWidthPx,
+        screenHeightPx
+    ) {
+        clampCurrentOffset()
+    }
+
     val animatedOffsetX by animateFloatAsState(
         targetValue = targetOffsetX,
-        animationSpec = if (isDraggingPosition) snap() else spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        animationSpec = if (isDraggingPosition || isResizing) snap() else spring(dampingRatio = Spring.DampingRatioMediumBouncy),
         label = "offsetX"
     )
     val animatedOffsetY by animateFloatAsState(
         targetValue = targetOffsetY,
-        animationSpec = if (isDraggingPosition) snap() else spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+        animationSpec = if (isDraggingPosition || isResizing) snap() else spring(dampingRatio = Spring.DampingRatioMediumBouncy),
         label = "offsetY"
     )
 
@@ -557,6 +594,25 @@ fun MiniPlayerOverlay(
                         }
 
                         // 展开按钮
+                        if (onPictureInPictureClick != null) {
+                            Surface(
+                                onClick = onPictureInPictureClick,
+                                modifier = Modifier.size(layoutPolicy.headerButtonSizeDp.dp),
+                                shape = CircleShape,
+                                color = Color.Black.copy(alpha = 0.5f)
+                            ) {
+                                Icon(
+                                    imageVector = CupertinoIcons.Outlined.PipEnter,
+                                    contentDescription = "切换到画中画",
+                                    tint = Color.White,
+                                    modifier = Modifier
+                                        .padding(layoutPolicy.headerButtonIconPaddingDp.dp)
+                                        .size(layoutPolicy.headerButtonIconSizeDp.dp)
+                                )
+                            }
+                        }
+
+                        // 展开按钮
                         Surface(
                             onClick = { onExpandClick() },
                             modifier = Modifier.size(layoutPolicy.headerButtonSizeDp.dp),
@@ -705,6 +761,54 @@ fun MiniPlayerOverlay(
                     color = if (isDraggingProgress) Color.Yellow else MaterialTheme.colorScheme.primary,
                     trackColor = Color.White.copy(alpha = 0.3f)
                 )
+                }
+
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .size(48.dp)
+                        .pointerInput(resizeBounds, miniPlayerAspectRatio) {
+                            detectDragGestures(
+                                onDragStart = {
+                                    isResizing = true
+                                    showControls = true
+                                    lastInteractionTime = System.currentTimeMillis()
+                                },
+                                onDragEnd = {
+                                    isResizing = false
+                                    clampCurrentOffset()
+                                },
+                                onDragCancel = {
+                                    isResizing = false
+                                    clampCurrentOffset()
+                                },
+                                onDrag = { change, dragAmount ->
+                                    change.consume()
+                                    val currentWidthPx = with(density) { miniPlayerWidthDp.dp.toPx() }
+                                    val resizedWidthPx = resolveResizedMiniPlayerWidth(
+                                        currentWidthPx = currentWidthPx,
+                                        dragDeltaX = dragAmount.x,
+                                        dragDeltaY = dragAmount.y,
+                                        aspectRatio = miniPlayerAspectRatio,
+                                        minWidthPx = with(density) { resizeBounds.minWidthDp.dp.toPx() },
+                                        maxWidthPx = with(density) { resizeBounds.maxWidthDp.dp.toPx() }
+                                    )
+                                    miniPlayerWidthDp = with(density) { resizedWidthPx.toDp().value }
+                                }
+                            )
+                        },
+                    shape = RoundedCornerShape(
+                        topStart = 16.dp,
+                        bottomEnd = layoutPolicy.cardCornerRadiusDp.dp
+                    ),
+                    color = Color.Black.copy(alpha = 0.35f)
+                ) {
+                    Icon(
+                        imageVector = CupertinoIcons.Default.ArrowUpLeftAndArrowDownRight,
+                        contentDescription = "拖动调整小窗大小",
+                        tint = Color.White.copy(alpha = 0.9f),
+                        modifier = Modifier.padding(15.dp)
+                    )
                 }
             }
         }

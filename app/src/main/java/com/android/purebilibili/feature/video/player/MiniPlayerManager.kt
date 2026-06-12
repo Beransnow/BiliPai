@@ -147,6 +147,18 @@ internal fun shouldHandleNavigationLeaveForBvid(
     return expected == current
 }
 
+internal fun shouldResumePlaybackOnMiniPlayerEntry(
+    isPlaying: Boolean,
+    playWhenReady: Boolean,
+    playbackState: Int
+): Boolean {
+    return isPlaybackActiveForLifecycle(
+        isPlaying = isPlaying,
+        playWhenReady = playWhenReady,
+        playbackState = playbackState
+    )
+}
+
 internal fun shouldContinuePlaybackDuringPause(
     isMiniMode: Boolean,
     isPip: Boolean,
@@ -1458,8 +1470,21 @@ class MiniPlayerManager private constructor(private val context: Context) :
             Logger.w(TAG, "⚠️ Cannot enter mini mode: isActive is false!")
             return
         }
+        val currentPlayer = player
+        val shouldResumePlayback = currentPlayer?.let {
+            shouldResumePlaybackOnMiniPlayerEntry(
+                isPlaying = it.isPlaying,
+                playWhenReady = it.playWhenReady,
+                playbackState = it.playbackState
+            )
+        } == true
         Logger.d(TAG) { "📲 Entering mini mode for video: $currentTitle (forced=$forced)" }
+        isLeavingByNavigation = false
         isMiniMode = true
+        if (shouldResumePlayback) {
+            currentPlayer.playWhenReady = true
+            currentPlayer.play()
+        }
         
         // 🔔 [修复] 进入小窗时更新媒体通知（系统控制中心显示）
         if (currentTitle.isNotEmpty()) {

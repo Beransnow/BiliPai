@@ -7,6 +7,11 @@ internal data class MiniPlayerOverlayOffset(
     val y: Float
 )
 
+internal data class MiniPlayerResizeBounds(
+    val minWidthDp: Float,
+    val maxWidthDp: Float
+)
+
 internal enum class MiniPlayerContentDragIntent {
     UNDECIDED,
     SEEK,
@@ -65,4 +70,38 @@ internal fun resolveMiniPlayerSeekTargetPosition(
 
     val seekDeltaMs = (dragDeltaPx / miniPlayerWidthPx * safeDurationMs).toLong()
     return (safeStartPositionMs + seekDeltaMs).coerceIn(0L, safeDurationMs)
+}
+
+internal fun resolveMiniPlayerResizeBounds(
+    defaultWidthDp: Int,
+    defaultHeightDp: Int,
+    screenWidthDp: Int,
+    screenHeightDp: Int,
+    outerPaddingDp: Int,
+    topInsetDp: Int,
+    bottomInsetDp: Int
+): MiniPlayerResizeBounds {
+    val aspectRatio = defaultWidthDp.toFloat() / defaultHeightDp.coerceAtLeast(1)
+    val availableWidth = (screenWidthDp - outerPaddingDp * 2).coerceAtLeast(defaultWidthDp)
+    val availableHeight =
+        (screenHeightDp - outerPaddingDp * 2 - topInsetDp - bottomInsetDp).coerceAtLeast(defaultHeightDp)
+    val maxWidthByHeight = availableHeight * aspectRatio
+    return MiniPlayerResizeBounds(
+        minWidthDp = (defaultWidthDp * 0.75f).coerceAtLeast(168f),
+        maxWidthDp = minOf(availableWidth.toFloat(), maxWidthByHeight, defaultWidthDp * 1.75f)
+            .coerceAtLeast(defaultWidthDp.toFloat())
+    )
+}
+
+internal fun resolveResizedMiniPlayerWidth(
+    currentWidthPx: Float,
+    dragDeltaX: Float,
+    dragDeltaY: Float,
+    aspectRatio: Float,
+    minWidthPx: Float,
+    maxWidthPx: Float
+): Float {
+    val safeAspectRatio = aspectRatio.coerceAtLeast(0.1f)
+    val projectedWidthDelta = (dragDeltaX + dragDeltaY * safeAspectRatio) / 2f
+    return (currentWidthPx + projectedWidthDelta).coerceIn(minWidthPx, maxWidthPx)
 }

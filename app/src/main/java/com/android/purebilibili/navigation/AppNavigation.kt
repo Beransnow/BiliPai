@@ -1504,7 +1504,13 @@ fun AppNavigation(
                                         activity?.isChangingConfigurations != true &&
                                         !isNavigatingToAudioMode
                                     ) {
-                                        miniPlayerManager?.markLeavingByNavigation(expectedBvid = videoKey.bvid)
+                                        if (
+                                            shouldMarkNavigationLeaveBeforeVideoExit(
+                                                isMiniMode = miniPlayerManager?.isMiniMode == true
+                                            )
+                                        ) {
+                                            miniPlayerManager?.markLeavingByNavigation(expectedBvid = videoKey.bvid)
+                                        }
                                         if (miniPlayerManager?.shouldShowInAppMiniPlayer() == true) {
                                             miniPlayerManager.enterMiniMode()
                                         }
@@ -1548,13 +1554,25 @@ fun AppNavigation(
                                 onBack = {
                                     navigation3ReturnSession =
                                         navigation3ReturnSession.markReturning(SystemClock.uptimeMillis())
-                                    miniPlayerManager?.markLeavingByNavigation(expectedBvid = videoKey.bvid)
+                                    if (
+                                        shouldMarkNavigationLeaveBeforeVideoExit(
+                                            isMiniMode = miniPlayerManager?.isMiniMode == true
+                                        )
+                                    ) {
+                                        miniPlayerManager?.markLeavingByNavigation(expectedBvid = videoKey.bvid)
+                                    }
                                     navigation3BackStack = popBiliPaiNavKey(navigation3BackStack)
                                 },
                                 onHomeClick = {
                                     navigation3ReturnSession =
                                         navigation3ReturnSession.markReturning(SystemClock.uptimeMillis())
-                                    miniPlayerManager?.markLeavingByNavigation(expectedBvid = videoKey.bvid)
+                                    if (
+                                        shouldMarkNavigationLeaveBeforeVideoExit(
+                                            isMiniMode = miniPlayerManager?.isMiniMode == true
+                                        )
+                                    ) {
+                                        miniPlayerManager?.markLeavingByNavigation(expectedBvid = videoKey.bvid)
+                                    }
                                     // 先把 bottom pager 静默切到 HOME（被详情页遮挡，切换不可见），
                                     // 再 pop 至 MainHost 触发与系统返回相同的横向过渡。
                                     val homeIndex = visibleBottomBarItems.indexOf(BottomNavItem.HOME)

@@ -59,8 +59,10 @@ import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.unit.Density
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.ui.PlayerView
 import androidx.window.layout.WindowMetrics
 import androidx.window.layout.WindowMetricsCalculator
 import coil.compose.AsyncImagePainter
@@ -368,12 +370,13 @@ internal fun isPlaybackRouteActive(
 internal fun shouldTriggerPlaybackRoutePip(
     isInVideoDetail: Boolean,
     isInAudioMode: Boolean,
+    isInMiniMode: Boolean,
     audioModeAutoPipEnabled: Boolean,
     shouldEnterPip: Boolean,
     isActuallyPlaying: Boolean
 ): Boolean {
     if (!shouldEnterPip || !isActuallyPlaying) return false
-    if (isInVideoDetail) return true
+    if (isInVideoDetail || isInMiniMode) return true
     return isInAudioMode && audioModeAutoPipEnabled
 }
 
@@ -383,12 +386,13 @@ internal data class MainActivityPlaybackOverlayState(
 )
 
 internal fun resolveMainActivityPlaybackOverlayState(
-    isInPipMode: Boolean
+    isInPipMode: Boolean,
+    isMiniMode: Boolean
 ): MainActivityPlaybackOverlayState {
     return MainActivityPlaybackOverlayState(
         showMiniPlayerOverlay = !isInPipMode,
-        // System PiP should keep using the existing video render target.
-        showDedicatedPipPlayer = false
+        // 从首页小窗进入系统 PiP 时，原详情页已销毁，需要独立渲染面承接同一个 Player。
+        showDedicatedPipPlayer = isInPipMode && isMiniMode
     )
 }
 
@@ -1317,13 +1321,41 @@ open class MainActivity : AppCompatActivity() {
                     }
                     //  小窗全屏状态
                     var showFullscreen by remember { mutableStateOf(false) }
-                    val playbackOverlayState = remember(isInPipMode) {
-                        resolveMainActivityPlaybackOverlayState(isInPipMode = isInPipMode)
+                    val playbackOverlayState = remember(isInPipMode, miniPlayerManager.isMiniMode) {
+                        resolveMainActivityPlaybackOverlayState(
+                            isInPipMode = isInPipMode,
+                            isMiniMode = miniPlayerManager.isMiniMode
+                        )
+                    }
+                    if (playbackOverlayState.showDedicatedPipPlayer) {
+                        miniPlayerManager.player?.let { pipPlayer ->
+                            AndroidView(
+                                factory = { viewContext ->
+                                    PlayerView(viewContext).apply {
+                                        player = pipPlayer
+                                        useController = false
+                                        setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)
+                                    }
+                                },
+                                update = { playerView -> playerView.player = pipPlayer },
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(Color.Black)
+                            )
+                        }
                     }
                     //  小窗播放器覆盖层 (非 PiP 模式下显示)
                     if (playbackOverlayState.showMiniPlayerOverlay) {
                         MiniPlayerOverlay(
                             miniPlayerManager = miniPlayerManager,
+                            onPictureInPictureClick = if (
+                                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                                miniPlayerManager.shouldEnterPip()
+                            ) {
+                                { enterMiniPlayerPictureInPicture() }
+                            } else {
+                                null
+                            },
                             onExpandClick = {
                                 if (miniPlayerManager.isLiveMode) {
                                     // 📺 直播小窗展开：导航回直播间
@@ -1874,6 +1906,7 @@ open class MainActivity : AppCompatActivity() {
         val shouldTriggerPip = shouldTriggerPlaybackRoutePip(
             isInVideoDetail = isInVideoDetail,
             isInAudioMode = isInAudioModeRoute,
+            isInMiniMode = miniPlayerManager.isMiniMode,
             audioModeAutoPipEnabled = audioModeAutoPipEnabled,
             shouldEnterPip = shouldEnterPip,
             isActuallyPlaying = isActuallyPlaying
@@ -1912,6 +1945,32 @@ open class MainActivity : AppCompatActivity() {
             }
         } else {
             Logger.d(TAG, "⏳ 未满足 PiP 条件: API>=${Build.VERSION_CODES.O}=${Build.VERSION.SDK_INT >= Build.VERSION_CODES.O}, shouldTriggerPip=$shouldTriggerPip")
+        }
+    }
+
+    private fun enterMiniPlayerPictureInPicture() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        if (!miniPlayerManager.shouldEnterPip() || miniPlayerManager.player == null) return
+        miniPlayerManager.updatePlaybackRoutePipRequest(true)
+        try {
+            val params = PictureInPictureParams.Builder()
+                .setAspectRatio(Rational(16, 9))
+                .setActions(
+                    buildPipPlaybackRemoteActions(
+                        context = this,
+                        player = miniPlayerManager.player
+                    )
+                )
+                .apply {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        setSeamlessResizeEnabled(true)
+                    }
+                }
+                .build()
+            enterPictureInPictureMode(params)
+        } catch (error: Exception) {
+            miniPlayerManager.updatePlaybackRoutePipRequest(false)
+            Logger.e(TAG, "小窗切换画中画失败", error)
         }
     }
     

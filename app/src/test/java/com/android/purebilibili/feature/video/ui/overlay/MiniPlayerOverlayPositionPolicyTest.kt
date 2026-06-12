@@ -145,4 +145,48 @@ class MiniPlayerOverlayPositionPolicyTest {
             )
         )
     }
+
+    @Test
+    fun resizeBounds_keepMiniPlayerVisibleAndAllowUsefulScaling() {
+        val bounds = resolveMiniPlayerResizeBounds(
+            defaultWidthDp = 220,
+            defaultHeightDp = 130,
+            screenWidthDp = 393,
+            screenHeightDp = 852,
+            outerPaddingDp = 12,
+            topInsetDp = 50,
+            bottomInsetDp = 100
+        )
+
+        assertEquals(168f, bounds.minWidthDp, 0.001f)
+        assertEquals(369f, bounds.maxWidthDp, 0.001f)
+    }
+
+    @Test
+    fun resizeDrag_projectsBothAxesAndClampsWidth() {
+        assertEquals(
+            300.76923f,
+            resolveResizedMiniPlayerWidth(
+                currentWidthPx = 220f,
+                dragDeltaX = 60f,
+                dragDeltaY = 60f,
+                aspectRatio = 220f / 130f,
+                minWidthPx = 168f,
+                maxWidthPx = 360f
+            ),
+            0.001f
+        )
+        assertEquals(
+            168f,
+            resolveResizedMiniPlayerWidth(
+                currentWidthPx = 220f,
+                dragDeltaX = -200f,
+                dragDeltaY = -200f,
+                aspectRatio = 220f / 130f,
+                minWidthPx = 168f,
+                maxWidthPx = 360f
+            ),
+            0.001f
+        )
+    }
 }

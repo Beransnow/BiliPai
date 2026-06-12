@@ -8,6 +8,12 @@ import kotlin.test.assertTrue
 class AppNavigationPlaybackPolicyTest {
 
     @Test
+    fun miniPlayerTransition_doesNotMarkPlaybackAsNavigationLeave() {
+        assertFalse(shouldMarkNavigationLeaveBeforeVideoExit(isMiniMode = true))
+        assertTrue(shouldMarkNavigationLeaveBeforeVideoExit(isMiniMode = false))
+    }
+
+    @Test
     fun leavingVideoToHome_shouldStopPlaybackEagerly() {
         assertTrue(
             shouldStopPlaybackEagerlyOnVideoRouteExit(
