@@ -33,6 +33,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -222,12 +223,49 @@ fun CommonListScreen(
         ?: androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
     val historyIsLoadingMore by historyViewModel?.isLoadingMoreState?.collectAsStateWithLifecycle()
         ?: androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    var historyContentFilter by rememberSaveable { androidx.compose.runtime.mutableStateOf(HistoryContentFilter.ALL) }
     var isHistoryBatchMode by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     var selectedHistoryKeys by rememberSaveable { androidx.compose.runtime.mutableStateOf(setOf<String>()) }
     var showHistoryBatchDeleteConfirm by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     var showHistoryManagementMenu by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     var showHistoryClearConfirm by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     var pendingHistorySingleDeleteKey by rememberSaveable { androidx.compose.runtime.mutableStateOf<String?>(null) }
+    val visibleHistoryItems = remember(state.items, historyContentFilter, historyViewModel) {
+        if (historyViewModel == null) {
+            state.items
+        } else {
+            filterHistoryItemsByContent(
+                items = state.items,
+                filter = historyContentFilter,
+                resolveHistoryItem = { video ->
+                    historyViewModel.getHistoryItem(historyViewModel.resolveHistoryLookupKey(video))
+                }
+            )
+        }
+    }
+
+    LaunchedEffect(
+        historyViewModel,
+        historyContentFilter,
+        state.isLoading,
+        state.items.size,
+        visibleHistoryItems.size,
+        historyHasMore,
+        historyIsLoadingMore
+    ) {
+        if (
+            historyViewModel != null &&
+            !state.isLoading &&
+            shouldLoadMoreHistoryFilterResults(
+                filter = historyContentFilter,
+                filteredItemCount = visibleHistoryItems.size,
+                hasMore = historyHasMore,
+                isLoading = historyIsLoadingMore
+            )
+        ) {
+            historyViewModel.loadMore()
+        }
+    }
 
     LaunchedEffect(state.items, historyViewModel, isHistoryBatchMode) {
         if (historyViewModel == null) return@LaunchedEffect
@@ -711,7 +749,7 @@ fun CommonListScreen(
                     }
 
                     FavoriteContentMode.BASE_LIST -> CommonListContent(
-                        items = state.items,
+                        items = if (historyViewModel != null) visibleHistoryItems else state.items,
                         isLoading = state.isLoading,
                         error = state.error,
                         searchQuery = searchQuery,
@@ -901,14 +939,18 @@ fun CommonListScreen(
                             }
 
                             if (historyViewModel != null) {
-                                if (isHistoryBatchMode && state.items.isNotEmpty()) {
-                                    val allSelected = selectedHistoryKeys.size == state.items.size
+                                if (isHistoryBatchMode && visibleHistoryItems.isNotEmpty()) {
+                                    val visibleHistoryKeys = visibleHistoryItems
+                                        .map(historyViewModel::resolveHistoryRenderKey)
+                                        .toSet()
+                                    val allSelected = visibleHistoryKeys.isNotEmpty() &&
+                                        selectedHistoryKeys.containsAll(visibleHistoryKeys)
                                     TextButton(
                                         onClick = {
                                             selectedHistoryKeys = if (allSelected) {
                                                 emptySet()
                                             } else {
-                                                state.items.map(historyViewModel::resolveHistoryRenderKey).toSet()
+                                                visibleHistoryKeys
                                             }
                                         }
                                     ) {
@@ -995,10 +1037,38 @@ fun CommonListScreen(
                         com.android.purebilibili.core.ui.components.IOSSearchBar(
                             query = searchQuery,
                             onQueryChange = { searchQuery = it },
-                            placeholder = if (isSubscribedBrowse) "搜索追更" else "搜索视频",
+                            placeholder = when {
+                                isSubscribedBrowse -> "搜索追更"
+                                historyViewModel != null -> "搜索历史"
+                                else -> "搜索视频"
+                            },
                             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.22f),
                             heightOverride = favoriteHeaderLayout.searchBarHeightDp.dp
                         )
+                    }
+
+                    if (historyViewModel != null) {
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentPadding = PaddingValues(horizontal = 12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(HistoryContentFilter.entries, key = { it.name }) { filter ->
+                                FilterChip(
+                                    selected = historyContentFilter == filter,
+                                    enabled = !isHistoryBatchMode,
+                                    onClick = {
+                                        historyContentFilter = filter
+                                        selectedHistoryKeys = emptySet()
+                                        scope.launch {
+                                            primaryGridState.scrollToItem(0)
+                                        }
+                                    },
+                                    label = { Text(filter.label) }
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
 
                     if (favoriteViewModel != null && subscribedFoldersState.isNotEmpty()) {

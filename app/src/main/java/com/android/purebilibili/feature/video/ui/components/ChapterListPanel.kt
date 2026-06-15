@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,6 +46,9 @@ fun ChapterListPanel(
         viewPoints.indexOfLast { currentPositionMs >= it.fromMs }
             .coerceAtLeast(0)
     }
+    val listState = rememberLazyListState()
+    val nestedScrollConnection = rememberModalChildScrollConnection(listState)
+    val surfaceInteractionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
     
     // 点击背景关闭
     Box(
@@ -58,7 +63,11 @@ fun ChapterListPanel(
                 .padding(start = 16.dp, bottom = 60.dp)  // 避开进度条
                 .width(280.dp)  // 固定宽度
                 .heightIn(max = 200.dp)  // 最大高度
-                .clickable(enabled = false) {},  // 阻止点击穿透
+                .clickable(
+                    interactionSource = surfaceInteractionSource,
+                    indication = null,
+                    onClick = {}
+                ),
             shape = RoundedCornerShape(12.dp),
             color = Color(0xE6222222),  // 深色半透明
             shadowElevation = 8.dp
@@ -93,7 +102,10 @@ fun ChapterListPanel(
                 
                 // 章节列表 - 简洁设计
                 LazyColumn(
-                    modifier = Modifier.fillMaxWidth(),
+                    state = listState,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .nestedScroll(nestedScrollConnection),
                     contentPadding = PaddingValues(vertical = 4.dp)
                 ) {
                     items(viewPoints.size, key = { it }) { index ->

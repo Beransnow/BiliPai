@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.ExpandMore
@@ -47,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -62,6 +64,7 @@ fun PagesSelector(
     currentPageIndex: Int,
     onPageSelect: (Int) -> Unit,
     forceGridMode: Boolean = false,
+    blockParentVerticalScroll: Boolean = false,
     onDismissRequest: (() -> Unit)? = null
 ) {
     if (pages.isEmpty()) return
@@ -196,6 +199,7 @@ fun PagesSelector(
                 gridItemMinHeightDp = layoutPolicy.gridItemMinHeightDp,
                 emptyMessage = "没有匹配的分集",
                 onPageSelect = onPageSelect,
+                blockParentVerticalScroll = blockParentVerticalScroll,
                 modifier = Modifier.fillMaxWidth()
             )
         } else {
@@ -297,6 +301,7 @@ fun PagesSelector(
                         onPageSelect(index)
                         showExpandedSheet = false
                     },
+                    blockParentVerticalScroll = true,
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
@@ -379,6 +384,7 @@ private fun PagesGrid(
     gridItemMinHeightDp: Int,
     emptyMessage: String,
     onPageSelect: (Int) -> Unit,
+    blockParentVerticalScroll: Boolean,
     modifier: Modifier = Modifier
 ) {
     if (visiblePageIndices.isEmpty()) {
@@ -402,10 +408,17 @@ private fun PagesGrid(
     } else {
         modifier.fillMaxSize()
     }
+    val gridState = rememberLazyGridState()
+    val nestedScrollConnection = rememberModalChildScrollConnection(gridState)
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(gridColumns),
-        modifier = gridModifier,
+        state = gridState,
+        modifier = if (blockParentVerticalScroll) {
+            gridModifier.nestedScroll(nestedScrollConnection)
+        } else {
+            gridModifier
+        },
         contentPadding = PaddingValues(
             start = horizontalPaddingDp.dp,
             end = horizontalPaddingDp.dp,

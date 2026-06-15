@@ -1897,6 +1897,7 @@ fun VideoPlayerOverlay(
                             pages = pages,
                             currentPageIndex = currentPageIndex,
                             forceGridMode = true,
+                            blockParentVerticalScroll = true,
                             onDismissRequest = { showPageSelectorSheet = false },
                             onPageSelect = { index ->
                                 onPageSelect(index)
