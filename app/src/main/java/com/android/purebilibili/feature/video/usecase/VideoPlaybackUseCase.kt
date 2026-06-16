@@ -88,11 +88,7 @@ internal fun resolveVideoLoadDurationMs(
     val safePlayUrlDurationMs = playUrlDurationMs.coerceAtLeast(0L)
     if (safePlayUrlDurationMs > 0L) return safePlayUrlDurationMs
 
-    val pageDurationSeconds = info.pages
-        .firstOrNull { it.cid == info.cid }
-        ?.duration
-        ?: info.pages.firstOrNull()?.duration
-        ?: 0L
+    val pageDurationSeconds = info.pages.firstOrNull { it.cid == info.cid }?.duration ?: 0L
     return pageDurationSeconds.coerceAtLeast(0L) * 1000L
 }
 

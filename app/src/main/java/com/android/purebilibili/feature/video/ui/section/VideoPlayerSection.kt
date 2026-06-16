@@ -459,20 +459,9 @@ fun VideoPlayerSection(
             controlRowHeightDp = bottomControlBarLayoutPolicy.playButtonSizeDp
         )
     }
-    val currentUiDurationMs = (uiState as? PlayerUiState.Success)?.videoDurationMs ?: 0L
-    var lastKnownVideoDurationMs by remember { mutableLongStateOf(0L) }
-    LaunchedEffect(currentUiDurationMs) {
-        if (currentUiDurationMs > 0L) {
-            lastKnownVideoDurationMs = currentUiDurationMs
-        }
+    val gestureSeekFallbackDurationMs = remember(uiState) {
+        (uiState as? PlayerUiState.Success)?.videoDurationMs ?: 0L
     }
-    val videoDurationFallbackMs = remember(currentUiDurationMs, lastKnownVideoDurationMs) {
-        resolveVideoPlayerDurationFallbackMs(
-            currentDurationMs = currentUiDurationMs,
-            lastKnownDurationMs = lastKnownVideoDurationMs
-        )
-    }
-    val gestureSeekFallbackDurationMs = videoDurationFallbackMs
     val pbpRidgeSamples = remember(pbpProgressData, gestureSeekFallbackDurationMs) {
         pbpProgressData
             ?.let { data ->
@@ -4053,7 +4042,7 @@ fun VideoPlayerSection(
                 cid = uiState.info.cid,
                 videoOwnerName = uiState.info.owner.name,
                 videoOwnerFace = uiState.info.owner.face,
-                videoDuration = videoDurationFallbackMs,
+                videoDuration = uiState.videoDurationMs,
                 videoTitle = uiState.info.title,
                 currentAid = uiState.info.aid,
                 currentQuality = uiState.currentQuality,

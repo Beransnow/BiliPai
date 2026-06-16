@@ -93,17 +93,6 @@ internal fun resolveGestureSeekableDurationMs(
     }
 }
 
-internal fun resolveVideoPlayerDurationFallbackMs(
-    currentDurationMs: Long,
-    lastKnownDurationMs: Long
-): Long {
-    return if (currentDurationMs > 0L) {
-        currentDurationMs
-    } else {
-        lastKnownDurationMs.coerceAtLeast(0L)
-    }
-}
-
 internal fun shouldKeepVideoPlaybackAwake(
     playWhenReady: Boolean,
     isPlaying: Boolean,

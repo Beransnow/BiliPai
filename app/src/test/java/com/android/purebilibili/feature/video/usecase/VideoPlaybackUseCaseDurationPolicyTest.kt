@@ -42,19 +42,4 @@ class VideoPlaybackUseCaseDurationPolicyTest {
         )
     }
 
-    @Test
-    fun `video load duration falls back to first page when current cid is missing`() {
-        val info = ViewInfo(
-            cid = 3L,
-            pages = listOf(Page(cid = 1L, duration = 90L))
-        )
-
-        assertEquals(
-            90_000L,
-            resolveVideoLoadDurationMs(
-                playUrlDurationMs = 0L,
-                info = info
-            )
-        )
-    }
 }

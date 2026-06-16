@@ -119,28 +119,6 @@ class VideoLoadRequestPolicyTest {
     }
 
     @Test
-    fun `page switch duration prefers playurl timelength`() {
-        assertEquals(
-            118_000L,
-            resolvePageSwitchVideoDurationMs(
-                playUrlDurationMs = 118_000L,
-                pageDurationSeconds = 120L
-            )
-        )
-    }
-
-    @Test
-    fun `page switch duration falls back to page duration when playurl timelength is missing`() {
-        assertEquals(
-            120_000L,
-            resolvePageSwitchVideoDurationMs(
-                playUrlDurationMs = 0L,
-                pageDurationSeconds = 120L
-            )
-        )
-    }
-
-    @Test
     fun `initial playback quality mode defaults to auto`() {
         assertEquals(
             PlaybackQualityMode.AUTO,

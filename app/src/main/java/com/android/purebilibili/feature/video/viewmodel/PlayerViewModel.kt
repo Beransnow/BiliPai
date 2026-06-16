@@ -504,15 +504,6 @@ internal fun resolvePageSwitchStartPositionMs(
     return safeCachedPositionMs
 }
 
-internal fun resolvePageSwitchVideoDurationMs(
-    playUrlDurationMs: Long,
-    pageDurationSeconds: Long
-): Long {
-    val safePlayUrlDurationMs = playUrlDurationMs.coerceAtLeast(0L)
-    if (safePlayUrlDurationMs > 0L) return safePlayUrlDurationMs
-    return pageDurationSeconds.coerceAtLeast(0L) * 1000L
-}
-
 internal fun resolveInitialPlaybackQualityMode(): PlaybackQualityMode = PlaybackQualityMode.AUTO
 
 internal fun resolvePlaybackQualityModeForQualitySelection(qualityId: Int): PlaybackQualityMode {
@@ -6228,10 +6219,6 @@ class PlayerViewModel : ViewModel() {
                         pageDurationSeconds = page.duration,
                         ignoreSavedProgress = ignoreSavedProgress
                     )
-                    val videoDurationMs = resolvePageSwitchVideoDurationMs(
-                        playUrlDurationMs = playUrlData.timelength,
-                        pageDurationSeconds = page.duration
-                    )
                     
                     if (selection != null) {
                         val cdnSelection = resolvePlaybackCdnCandidateSelection(
@@ -6258,7 +6245,6 @@ class PlayerViewModel : ViewModel() {
                             qualityIds = selection.qualityIds,
                             qualityLabels = selection.qualityLabels,
                             switchableQualityIds = selection.switchableQualityIds,
-                            videoDurationMs = videoDurationMs,
                             cachedDashVideos = selection.cachedDashVideos,
                             cachedDashAudios = selection.cachedDashAudios,
                             currentCdnIndex = 0,

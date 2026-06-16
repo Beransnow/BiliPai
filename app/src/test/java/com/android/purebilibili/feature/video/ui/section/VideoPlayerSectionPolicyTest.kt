@@ -125,39 +125,6 @@ class VideoPlayerSectionPolicyTest {
     }
 
     @Test
-    fun playerDurationFallback_keepsLastKnownDurationDuringVideoReload() {
-        assertEquals(
-            180_000L,
-            resolveVideoPlayerDurationFallbackMs(
-                currentDurationMs = 0L,
-                lastKnownDurationMs = 180_000L
-            )
-        )
-    }
-
-    @Test
-    fun playerDurationFallback_prefersCurrentDurationAfterReload() {
-        assertEquals(
-            240_000L,
-            resolveVideoPlayerDurationFallbackMs(
-                currentDurationMs = 240_000L,
-                lastKnownDurationMs = 180_000L
-            )
-        )
-    }
-
-    @Test
-    fun playerDurationFallback_clampsInvalidLastKnownDuration() {
-        assertEquals(
-            0L,
-            resolveVideoPlayerDurationFallbackMs(
-                currentDurationMs = 0L,
-                lastKnownDurationMs = -1L
-            )
-        )
-    }
-
-    @Test
     fun relativeSeekTarget_clampsBackwardAtZero() {
         assertEquals(
             0L,
