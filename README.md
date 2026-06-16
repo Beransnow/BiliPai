@@ -15,7 +15,7 @@
 </p>
 
 <p>
-  <img src="https://img.shields.io/badge/Version-9.3.1-007AFF?style=flat-square&labelColor=ffffff" alt="Version 9.3.1" />
+  <img src="https://img.shields.io/badge/Version-9.3.2-007AFF?style=flat-square&labelColor=ffffff" alt="Version 9.3.2" />
   <img src="https://img.shields.io/badge/Android-8.0%2B-34C759?style=flat-square&logo=android&logoColor=white" alt="Android 8.0+" />
   <img src="https://img.shields.io/badge/Kotlin-100%25-7F52FF?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin" />
   <img src="https://img.shields.io/badge/License-GPL--3.0-FF3B30?style=flat-square" alt="GPL-3.0" />
@@ -37,7 +37,7 @@
   </a>
 </p>
 
-<sub>README 更新：2026-06-15 · 当前构建版本以 app/build.gradle.kts 为准 · 发布记录以 <a href="CHANGELOG.md">CHANGELOG.md</a> 为准</sub>
+<sub>README 更新：2026-06-16 · 当前构建版本以 app/build.gradle.kts 为准 · 发布记录以 <a href="CHANGELOG.md">CHANGELOG.md</a> 为准</sub>
 
 </div>
 
@@ -182,11 +182,11 @@ cd BiliPai
 
 ## 最近更新
 
-当前仓库版本号已更新到 `9.3.1 / versionCode 230`。公开发布说明请以 [CHANGELOG.md](CHANGELOG.md) 为准；最新完整记录为 `v9.3.1`：
+当前仓库版本号已更新到 `9.3.2 / versionCode 231`。公开发布说明请以 [CHANGELOG.md](CHANGELOG.md) 为准；最新完整记录为 `v9.3.2`：
 
-- 官方首页卡片保持 `4:3` 并缩小横向留白，旧版封面调整为 `16:9`。
-- 隔离竖屏弹幕与评论状态，修复快速切换视频后的内容串台。
-- 修复章节与分集滚动、切集进度、毛玻璃底栏和合集选中态。
+- 首页刷新提示在关闭任一玻璃效果时回退普通 Material 浮层。
+- 首页头像侧栏适配底部栏遮挡和 `safeDrawing` 安全区域。
+- 个人主页背景装扮收纳到底部菜单，个人资料信息改为可展开抽屉。
 
 ## 路线图
 

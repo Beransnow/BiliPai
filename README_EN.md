@@ -5,11 +5,11 @@
 </p>
 
 <p align="center">
-  <sub>Last updated: 2026-06-15 · Synced to v9.3.1 (source of truth: <a href="CHANGELOG.md">CHANGELOG</a> + code)</sub>
+  <sub>Last updated: 2026-06-16 · Synced to v9.3.2 (source of truth: <a href="CHANGELOG.md">CHANGELOG</a> + code)</sub>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Version-9.3.1-fb7299?style=flat-square" alt="Version">
+  <img src="https://img.shields.io/badge/Version-9.3.2-fb7299?style=flat-square" alt="Version">
   <img src="https://img.shields.io/github/stars/jay3-yy/BiliPai?style=flat-square&color=yellow" alt="Stars">
   <img src="https://img.shields.io/github/forks/jay3-yy/BiliPai?style=flat-square&color=green" alt="Forks">
   <img src="https://img.shields.io/github/last-commit/jay3-yy/BiliPai?style=flat-square&color=purple" alt="Last Commit">
@@ -436,11 +436,11 @@ A lightweight plugin format requiring **no coding**, just a simple JSON file to 
 
 See full changelog: [CHANGELOG.md](CHANGELOG.md)
 
-### Latest (v9.3.1 · 2026-06-15)
+### Latest (v9.3.2 · 2026-06-16)
 
-- 官方首页卡片保持 `4:3` 并缩小横向留白，旧版封面调整为 `16:9`。
-- 隔离竖屏弹幕与评论状态，修复快速切换视频后的内容串台。
-- 修复章节与分集滚动、切集进度、毛玻璃底栏和合集选中态。
+- Home refresh hints fall back to a plain Material surface when either glass effect is disabled.
+- The home avatar drawer now reserves bottom-bar space and respects `safeDrawing` insets.
+- Profile background actions moved into one bottom menu, with identity details tucked into an expandable drawer.
 
 ---
 

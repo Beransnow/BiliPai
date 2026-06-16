@@ -80,6 +80,8 @@ import com.android.purebilibili.core.ui.AdaptiveSplitLayout
 import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.ui.rememberAppBookmarkIcon
+import com.android.purebilibili.core.ui.rememberAppChevronDownIcon
+import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
 import com.android.purebilibili.core.ui.rememberAppDownloadIcon
 import com.android.purebilibili.core.ui.rememberAppFolderIcon
 import com.android.purebilibili.core.ui.rememberAppHistoryIcon
@@ -129,8 +131,10 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.ui.input.pointer.pointerInput
@@ -899,6 +903,7 @@ private fun ProfileSpaceContent(
     }
     var showWallpaperSheet by remember { mutableStateOf(false) }
     var showPhotoPickerDialog by remember { mutableStateOf(false) }
+    var showWallpaperActionSheet by remember { mutableStateOf(false) }
 
     if (showEditDialog) {
         ProfileEditAccountDialog(
@@ -924,6 +929,24 @@ private fun ProfileSpaceContent(
     }
     if (showWallpaperSheet) {
         OfficialWallpaperSheet(viewModel = viewModel, onDismiss = { showWallpaperSheet = false })
+    }
+    if (showWallpaperActionSheet) {
+        ProfileWallpaperActionSheet(
+            onDismiss = { showWallpaperActionSheet = false },
+            onOfficialWallpaperClick = {
+                showWallpaperActionSheet = false
+                showWallpaperSheet = true
+            },
+            onLocalAlbumClick = {
+                showWallpaperActionSheet = false
+                showPhotoPickerDialog = true
+            },
+            onResetWallpaperClick = {
+                showWallpaperActionSheet = false
+                viewModel.clearCustomBackground()
+            },
+            isResetEnabled = !customBackgroundUri.isNullOrEmpty()
+        )
     }
     if (showPhotoPickerDialog) {
         AlertDialog(
@@ -980,15 +1003,8 @@ private fun ProfileSpaceContent(
                         editableAccount = editableAccount,
                         compact = true,
                         onEditClick = { showEditDialog = true },
+                        onWallpaperActionClick = { showWallpaperActionSheet = true },
                         onFollowingClick = onFollowingClick
-                    )
-                    ProfileWallpaperActionCard(
-                        isImmersive = false,
-                        hazeState = hazeState,
-                        onOfficialWallpaperClick = { showWallpaperSheet = true },
-                        onLocalAlbumClick = { showPhotoPickerDialog = true },
-                        onResetWallpaperClick = { viewModel.clearCustomBackground() },
-                        isResetEnabled = !customBackgroundUri.isNullOrEmpty()
                     )
                     ProfileSpaceServices(
                         favoriteFolderShortcuts = favoriteFolderShortcuts,
@@ -1038,17 +1054,8 @@ private fun ProfileSpaceContent(
                         user = user,
                         editableAccount = editableAccount,
                         onEditClick = { showEditDialog = true },
+                        onWallpaperActionClick = { showWallpaperActionSheet = true },
                         onFollowingClick = onFollowingClick
-                    )
-                }
-                item {
-                    ProfileWallpaperActionCard(
-                        isImmersive = isImmersive,
-                        hazeState = hazeState,
-                        onOfficialWallpaperClick = { showWallpaperSheet = true },
-                        onLocalAlbumClick = { showPhotoPickerDialog = true },
-                        onResetWallpaperClick = { viewModel.clearCustomBackground() },
-                        isResetEnabled = !customBackgroundUri.isNullOrEmpty()
                     )
                 }
                 item {
@@ -1163,6 +1170,7 @@ private fun ProfileSpaceCoverHeader(
     user: UserState,
     editableAccount: ProfileEditableAccountState,
     onEditClick: () -> Unit,
+    onWallpaperActionClick: () -> Unit,
     onFollowingClick: () -> Unit
 ) {
     val context = LocalContext.current
@@ -1195,6 +1203,7 @@ private fun ProfileSpaceCoverHeader(
             editableAccount = editableAccount,
             compact = false,
             onEditClick = onEditClick,
+            onWallpaperActionClick = onWallpaperActionClick,
             onFollowingClick = onFollowingClick,
             modifier = Modifier
                 .align(Alignment.BottomStart)
@@ -1209,6 +1218,7 @@ private fun ProfileSpaceHeader(
     editableAccount: ProfileEditableAccountState,
     compact: Boolean,
     onEditClick: () -> Unit,
+    onWallpaperActionClick: () -> Unit,
     onFollowingClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -1231,6 +1241,9 @@ private fun ProfileSpaceHeader(
     } else {
         Color.White.copy(alpha = 0.22f)
     }
+    var identityExpanded by remember(user.mid, editableAccount.sign, editableAccount.ipLocation, editableAccount.sex) {
+        mutableStateOf(false)
+    }
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -1252,64 +1265,140 @@ private fun ProfileSpaceHeader(
             ProfileSpaceStat("关注", user.following, textColor, onClick = onFollowingClick)
             ProfileSpaceStat("获赞", user.dynamic, textColor)
         }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = user.name,
-                style = MaterialTheme.typography.titleLarge,
-                color = textColor,
-                fontWeight = FontWeight.Bold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f, fill = false)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            UserLevelBadge(level = user.level)
-            if (user.isVip) {
-                Spacer(modifier = Modifier.width(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = user.vipLabel.ifBlank { "大会员" },
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.White,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(999.dp))
-                        .background(com.android.purebilibili.core.theme.iOSPink)
-                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                    text = user.name,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = textColor,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                UserLevelBadge(level = user.level)
+                if (user.isVip) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = user.vipLabel.ifBlank { "大会员" },
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(999.dp))
+                            .background(com.android.purebilibili.core.theme.iOSPink)
+                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                    )
+                }
+            }
+            IconButton(
+                onClick = { identityExpanded = !identityExpanded },
+                modifier = Modifier.size(36.dp)
+            ) {
+                Icon(
+                    imageVector = if (identityExpanded) rememberAppChevronUpIcon() else rememberAppChevronDownIcon(),
+                    contentDescription = if (identityExpanded) "收起个人资料" else "展开个人资料",
+                    tint = secondaryColor,
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }
-        OutlinedButton(
-            onClick = onEditClick,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = textColor),
-            border = BorderStroke(1.dp, textColor.copy(alpha = 0.42f)),
-            shape = RoundedCornerShape(8.dp)
-        ) {
-            Text("编辑资料")
-        }
-        Text(
-            text = meta.signText,
-            style = MaterialTheme.typography.bodyMedium,
-            color = if (meta.signPlaceholder) secondaryColor else textColor.copy(alpha = 0.86f),
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
+        ProfileIdentityDrawer(
+            meta = meta,
+            expanded = identityExpanded,
+            contentColor = textColor,
+            secondaryColor = secondaryColor,
+            containerColor = metaChipContainer,
+            borderColor = metaChipBorder
         )
         Row(
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            ProfileSpaceMetaChip(
-                text = meta.ipText.orEmpty(),
-                contentColor = textColor.copy(alpha = 0.78f),
-                containerColor = metaChipContainer,
-                borderColor = metaChipBorder
+            OutlinedButton(
+                onClick = onEditClick,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp),
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = textColor),
+                border = BorderStroke(1.dp, textColor.copy(alpha = 0.42f)),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("编辑资料")
+            }
+            ProfileWallpaperMenuButton(
+                contentColor = textColor,
+                borderColor = textColor.copy(alpha = 0.42f),
+                onClick = onWallpaperActionClick
             )
-            meta.sexText?.let { sexText ->
-                ProfileSpaceMetaChip(
-                    text = sexText,
-                    contentColor = textColor.copy(alpha = 0.78f),
-                    containerColor = metaChipContainer,
-                    borderColor = metaChipBorder
+        }
+    }
+}
+
+@Composable
+private fun ProfileIdentityDrawer(
+    meta: ProfileSpaceIdentityMeta,
+    expanded: Boolean,
+    contentColor: Color,
+    secondaryColor: Color,
+    containerColor: Color,
+    borderColor: Color
+) {
+    val shape = RoundedCornerShape(16.dp)
+    AnimatedVisibility(
+        visible = expanded,
+        enter = expandVertically() + fadeIn(),
+        exit = shrinkVertically() + fadeOut()
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(shape),
+            shape = shape,
+            color = containerColor,
+            border = BorderStroke(0.6.dp, borderColor),
+            tonalElevation = 0.dp,
+            shadowElevation = 0.dp
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    text = meta.signText,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (meta.signPlaceholder) secondaryColor else contentColor.copy(alpha = 0.86f),
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
                 )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    ProfileSpaceMetaChip(
+                        text = meta.ipText.orEmpty(),
+                        contentColor = contentColor.copy(alpha = 0.78f),
+                        containerColor = Color.Transparent,
+                        borderColor = borderColor
+                    )
+                    meta.sexText?.let { sexText ->
+                        ProfileSpaceMetaChip(
+                            text = sexText,
+                            contentColor = contentColor.copy(alpha = 0.78f),
+                            containerColor = Color.Transparent,
+                            borderColor = borderColor
+                        )
+                    }
+                }
             }
         }
     }
@@ -2458,10 +2547,29 @@ fun MobileProfileContent(
     // [New] State for Official Wallpaper Sheet
     var showWallpaperSheet by remember { mutableStateOf(false) }
     var showPhotoPickerDialog by remember { mutableStateOf(false) }
+    var showWallpaperActionSheet by remember { mutableStateOf(false) }
     
     // [New] Sheet
     if (showWallpaperSheet) {
         OfficialWallpaperSheet(viewModel = viewModel, onDismiss = { showWallpaperSheet = false })
+    }
+    if (showWallpaperActionSheet) {
+        ProfileWallpaperActionSheet(
+            onDismiss = { showWallpaperActionSheet = false },
+            onOfficialWallpaperClick = {
+                showWallpaperActionSheet = false
+                showWallpaperSheet = true
+            },
+            onLocalAlbumClick = {
+                showWallpaperActionSheet = false
+                showPhotoPickerDialog = true
+            },
+            onResetWallpaperClick = {
+                showWallpaperActionSheet = false
+                viewModel.clearCustomBackground()
+            },
+            isResetEnabled = !customBackgroundUri.isNullOrEmpty()
+        )
     }
 
     if (showPhotoPickerDialog) {
@@ -2575,14 +2683,6 @@ fun MobileProfileContent(
                             {}
                         }
                     )
-                    ProfileWallpaperActionCard(
-                        isImmersive = isImmersive,
-                        hazeState = hazeState,
-                        onOfficialWallpaperClick = { showWallpaperSheet = true },
-                        onLocalAlbumClick = { showPhotoPickerDialog = true },
-                        onResetWallpaperClick = { viewModel.clearCustomBackground() },
-                        isResetEnabled = !customBackgroundUri.isNullOrEmpty()
-                    )
                 }
             }
             if (user.isLogin) {
@@ -2654,6 +2754,9 @@ fun MobileProfileContent(
                 }
             },
             actions = {
+                IconButton(onClick = { showWallpaperActionSheet = true }) {
+                    Icon(rememberAppPhotoIcon(), contentDescription = "背景装扮", tint = contentColor)
+                }
                 IconButton(onClick = onSettingsClick) {
                     Icon(rememberAppSettingsIcon(), contentDescription = "Settings", tint = contentColor)
                 }
@@ -2820,6 +2923,140 @@ fun UserInfoSection(
     if (centered) {
          Column(horizontalAlignment = Alignment.CenterHorizontally) {
             UserInfoText(user, centered = true)
+        }
+    }
+}
+
+@Composable
+private fun ProfileWallpaperMenuButton(
+    contentColor: Color,
+    borderColor: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val shape = RoundedCornerShape(12.dp)
+    Surface(
+        modifier = modifier
+            .size(48.dp)
+            .clip(shape)
+            .clickable(onClick = onClick),
+        shape = shape,
+        color = Color.Transparent,
+        border = BorderStroke(1.dp, borderColor),
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                imageVector = rememberAppPhotoIcon(),
+                contentDescription = "背景装扮",
+                tint = contentColor,
+                modifier = Modifier.size(21.dp)
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ProfileWallpaperActionSheet(
+    onDismiss: () -> Unit,
+    onOfficialWallpaperClick: () -> Unit,
+    onLocalAlbumClick: () -> Unit,
+    onResetWallpaperClick: () -> Unit,
+    isResetEnabled: Boolean
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        containerColor = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Text(
+                text = "背景装扮",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(bottom = 2.dp)
+            )
+            ProfileWallpaperSheetActionRow(
+                title = "官方壁纸",
+                icon = rememberAppPhotoIcon(),
+                onClick = onOfficialWallpaperClick
+            )
+            ProfileWallpaperSheetActionRow(
+                title = "本地相册",
+                icon = rememberAppFolderIcon(),
+                onClick = onLocalAlbumClick
+            )
+            ProfileWallpaperSheetActionRow(
+                title = "恢复默认",
+                icon = rememberAppRestoreIcon(),
+                enabled = isResetEnabled,
+                onClick = onResetWallpaperClick
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProfileWallpaperSheetActionRow(
+    title: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    enabled: Boolean = true
+) {
+    val shape = RoundedCornerShape(16.dp)
+    val contentColor = if (enabled) {
+        MaterialTheme.colorScheme.onSurface
+    } else {
+        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+    }
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .clickable(enabled = enabled, onClick = onClick),
+        shape = shape,
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = if (enabled) 0.54f else 0.30f),
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 54.dp)
+                .padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Surface(
+                modifier = Modifier.size(34.dp),
+                shape = RoundedCornerShape(11.dp),
+                color = MaterialTheme.colorScheme.surface.copy(alpha = if (enabled) 0.82f else 0.46f)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = contentColor,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium,
+                color = contentColor,
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }

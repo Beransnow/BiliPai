@@ -109,3 +109,10 @@ fun resolveMineSideDrawerWidthDp(
     val target = (screenWidthDp * policy.drawerWidthFraction).roundToInt()
     return target.coerceIn(policy.drawerMinWidthDp, policy.drawerMaxWidthDp)
 }
+
+fun resolveMineSideDrawerFooterSpacerHeightDp(
+    policy: MineSideDrawerLayoutPolicy,
+    bottomOverlayHeightDp: Int
+): Int {
+    return policy.footerSpacerHeightDp + bottomOverlayHeightDp.coerceAtLeast(0)
+}

@@ -115,7 +115,7 @@ internal fun resolveHomeRefreshTipAppearance(
     liquidGlassEnabled: Boolean,
     blurEnabled: Boolean
 ): HomeRefreshTipAppearance {
-    return if (!liquidGlassEnabled && !blurEnabled) {
+    return if (!(liquidGlassEnabled && blurEnabled)) {
         HomeRefreshTipAppearance(
             surfaceStyle = HomeRefreshTipSurfaceStyle.PLAIN,
             borderWidthDp = 0f,

@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -92,7 +93,8 @@ fun MineSideDrawer(
     onSettingsClick: () -> Unit,
     onProfileClick: () -> Unit,
     hazeState: HazeState? = null, // 毛玻璃效果状态
-    isBlurEnabled: Boolean = true // [新增] 模糊开关状态
+    isBlurEnabled: Boolean = true, // [新增] 模糊开关状态
+    bottomOverlayHeight: Dp = 0.dp
 ) {
     val uiPreset = LocalUiPreset.current
     val scope = rememberCoroutineScope()
@@ -107,6 +109,12 @@ fun MineSideDrawer(
         resolveMineSideDrawerWidthDp(
             screenWidthDp = configuration.screenWidthDp,
             policy = layoutPolicy
+        ).dp
+    }
+    val footerSpacerHeight = remember(layoutPolicy, bottomOverlayHeight) {
+        resolveMineSideDrawerFooterSpacerHeightDp(
+            policy = layoutPolicy,
+            bottomOverlayHeightDp = bottomOverlayHeight.value.toInt()
         ).dp
     }
     
@@ -225,8 +233,7 @@ fun MineSideDrawer(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
-                    .statusBarsPadding()
-                    .navigationBarsPadding()
+                    .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Vertical))
                     .padding(vertical = layoutPolicy.contentVerticalPaddingDp.dp)
             ) {
             // 1. 用户信息区域 - 可点击进入个人主页
@@ -441,7 +448,7 @@ fun MineSideDrawer(
                 }
             }
             
-            Spacer(modifier = Modifier.height(layoutPolicy.footerSpacerHeightDp.dp))
+            Spacer(modifier = Modifier.height(footerSpacerHeight))
         }
         }
     }

@@ -89,9 +89,35 @@ class HomeGlassVisualPolicyTest {
     }
 
     @Test
-    fun refreshTipKeepsGlassStyleWhenAnyBackdropEffectIsActive() {
+    fun refreshTipUsesPlainMaterialStyleWhenLiquidGlassIsDisabledEvenIfBlurIsActive() {
         val appearance = resolveHomeRefreshTipAppearance(
             liquidGlassEnabled = false,
+            blurEnabled = true
+        )
+
+        assertEquals(HomeRefreshTipSurfaceStyle.PLAIN, appearance.surfaceStyle)
+        assertEquals(0f, appearance.borderWidthDp)
+        assertEquals(1f, appearance.tonalElevationDp)
+        assertEquals(1f, appearance.shadowElevationDp)
+    }
+
+    @Test
+    fun refreshTipUsesPlainMaterialStyleWhenLiquidGlassIsEnabledButBlurIsDisabled() {
+        val appearance = resolveHomeRefreshTipAppearance(
+            liquidGlassEnabled = true,
+            blurEnabled = false
+        )
+
+        assertEquals(HomeRefreshTipSurfaceStyle.PLAIN, appearance.surfaceStyle)
+        assertEquals(0f, appearance.borderWidthDp)
+        assertEquals(1f, appearance.tonalElevationDp)
+        assertEquals(1f, appearance.shadowElevationDp)
+    }
+
+    @Test
+    fun refreshTipKeepsGlassStyleWhenLiquidGlassAndBlurAreEnabled() {
+        val appearance = resolveHomeRefreshTipAppearance(
+            liquidGlassEnabled = true,
             blurEnabled = true
         )
 

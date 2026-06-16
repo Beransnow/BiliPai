@@ -1110,13 +1110,24 @@ fun HomeScreen(
     // [New] State for side drawer
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     var bottomBarVisibleBeforeDrawer by remember { mutableStateOf<Boolean?>(null) }
+    var drawerOpenRequested by remember { mutableStateOf(false) }
     
     // 抽屉打开时隐藏全局底栏，避免覆盖侧边栏底部内容
-    val isDrawerOpenOrOpening = drawerState.currentValue == DrawerValue.Open || drawerState.targetValue == DrawerValue.Open
-    LaunchedEffect(isDrawerOpenOrOpening, isGlobalBottomBarVisible, useSideNavigation) {
-        if (useSideNavigation) return@LaunchedEffect
+    val isDrawerStateOpenOrOpening = drawerState.currentValue == DrawerValue.Open ||
+        drawerState.targetValue == DrawerValue.Open
+    val shouldKeepDrawerBottomBarHidden = drawerOpenRequested || isDrawerStateOpenOrOpening
+    LaunchedEffect(drawerState.currentValue, drawerState.targetValue) {
+        if (drawerState.currentValue == DrawerValue.Closed && drawerState.targetValue == DrawerValue.Closed) {
+            drawerOpenRequested = false
+        }
+    }
+    LaunchedEffect(shouldKeepDrawerBottomBarHidden, isGlobalBottomBarVisible, useSideNavigation) {
+        if (useSideNavigation) {
+            drawerOpenRequested = false
+            return@LaunchedEffect
+        }
         
-        if (isDrawerOpenOrOpening) {
+        if (shouldKeepDrawerBottomBarHidden) {
             if (bottomBarVisibleBeforeDrawer == null) {
                 bottomBarVisibleBeforeDrawer = isGlobalBottomBarVisible
             }
@@ -1129,6 +1140,18 @@ fun HomeScreen(
             }
             bottomBarVisibleBeforeDrawer = null
         }
+    }
+    val openHomeDrawer: () -> Unit = {
+        if (!useSideNavigation) {
+            drawerOpenRequested = true
+            if (bottomBarVisibleBeforeDrawer == null) {
+                bottomBarVisibleBeforeDrawer = isGlobalBottomBarVisible
+            }
+            if (isGlobalBottomBarVisible) {
+                setBottomBarVisible(false)
+            }
+        }
+        coroutineScope.launch { drawerState.open() }
     }
     
     // 选中槽位以 Pager 当前页为准，分区页不写入 currentCategory 也能保持高亮正确。
@@ -1810,7 +1833,7 @@ fun HomeScreen(
                         isHomeDrawerEnabled = isHomeDrawerEnabled
                     )
                 ) {
-                    HomeAvatarAction.OPEN_DRAWER -> coroutineScope.launch { drawerState.open() }
+                    HomeAvatarAction.OPEN_DRAWER -> openHomeDrawer()
                     HomeAvatarAction.OPEN_PROFILE -> onProfileClick()
                     HomeAvatarAction.OPEN_LOGIN -> onAvatarClick()
                 }
@@ -2065,6 +2088,16 @@ fun HomeScreen(
 
     val scaffoldContent: @Composable () -> Unit = {
         if (isHomeDrawerEnabled) {
+            val shouldReserveDrawerBottomOverlay = bottomBarVisibleBeforeDrawer == true || bottomBarVisible
+            val drawerBottomOverlayHeight = if (shouldReserveDrawerBottomOverlay) {
+                if (isBottomBarFloating) {
+                    bottomBarBodyHeight + bottomBarVerticalInset + 16.dp
+                } else {
+                    dockedBarBodyHeight + 12.dp
+                }
+            } else {
+                0.dp
+            }
             ModalNavigationDrawer(
                 drawerState = drawerState,
                 gesturesEnabled = true,
@@ -2087,7 +2120,8 @@ fun HomeScreen(
                         onSettingsClick = onSettingsClick,
                         onProfileClick = onProfileClick,
                         hazeState = hazeState,
-                        isBlurEnabled = isHeaderBlurEnabled
+                        isBlurEnabled = isHeaderBlurEnabled,
+                        bottomOverlayHeight = drawerBottomOverlayHeight
                     )
                 }
             ) {
