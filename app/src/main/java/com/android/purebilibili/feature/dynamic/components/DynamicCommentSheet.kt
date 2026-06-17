@@ -2,6 +2,8 @@
 package com.android.purebilibili.feature.dynamic.components
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -21,11 +23,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
 import com.android.purebilibili.data.model.response.DynamicItem
 import com.android.purebilibili.data.model.response.ReplyItem
 import com.android.purebilibili.feature.dynamic.DynamicViewModel
 import com.android.purebilibili.feature.dynamic.resolveDynamicCommentSheetTotalCount
+import com.android.purebilibili.feature.video.ui.components.CommentPictures
 import com.android.purebilibili.feature.video.ui.components.RichCommentText
 import com.android.purebilibili.feature.video.ui.components.FanGroupDecorationBadge
 import com.android.purebilibili.feature.video.ui.components.resolveFanGroupDecorationCardBgs
@@ -343,6 +347,19 @@ private fun CommentItem(
                 color = MaterialTheme.colorScheme.onSurface,
                 emoteMap = emoteMap
             )
+
+            // 评论图片
+            if (!reply.content.pictures.isNullOrEmpty()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                val context = LocalContext.current
+                CommentPictures(
+                    pictures = reply.content.pictures,
+                    onImageClick = { images, index, _ ->
+                        val url = images.getOrNull(index) ?: return@CommentPictures
+                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                    }
+                )
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
             

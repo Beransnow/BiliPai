@@ -69,6 +69,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.foundation.BorderStroke
 import androidx.activity.compose.BackHandler
@@ -2681,7 +2682,12 @@ fun VideoPlayerSection(
                         )
                     ),
                     animatedVisibilityScope = requireNotNull(animatedVisibilityScope),
-                    boundsTransform = { _, _ -> com.android.purebilibili.core.ui.motion.AppMotionTokens.spatialSpec() },
+                    boundsTransform = { _, _ ->
+                        tween(
+                            durationMillis = com.android.purebilibili.core.ui.transition.HOME_SHARED_TRANSITION_DURATION_MILLIS,
+                            easing = com.android.purebilibili.core.ui.transition.resolveVideoCardSharedTransitionEasing()
+                        )
+                    },
                     clipInOverlayDuringTransition = OverlayClip(coverCardShape)
                 )
             }

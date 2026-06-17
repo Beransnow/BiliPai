@@ -11,9 +11,11 @@ private const val DynamicHorizontalExpandedHeaderReservedHeightDp = 184
 internal fun resolveDynamicListTopPaddingExtraDp(
     isHorizontalMode: Boolean,
     isHorizontalUserListCollapsed: Boolean = false,
-    shouldShowHorizontalUserList: Boolean = true
+    shouldShowHorizontalUserList: Boolean = true,
+    isTopBarCollapsed: Boolean = false
 ): Int {
     return when {
+        isTopBarCollapsed -> 0
         // 横向关注列表展开时，头像下方可能同时有直播标记和 UP 名称两行。
         isHorizontalMode && shouldShowHorizontalUserList && !isHorizontalUserListCollapsed -> DynamicHorizontalExpandedHeaderReservedHeightDp
         isHorizontalMode -> DynamicTopBarReservedHeightDp

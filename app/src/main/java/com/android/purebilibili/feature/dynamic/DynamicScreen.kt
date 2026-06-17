@@ -226,6 +226,14 @@ fun DynamicScreen(
                 )
         }
     }
+    val shouldCollapseTopBar by remember(listState) {
+        derivedStateOf {
+            shouldCollapseDynamicHorizontalUserList(
+                firstVisibleItemIndex = listState.firstVisibleItemIndex,
+                firstVisibleItemScrollOffset = listState.firstVisibleItemScrollOffset
+            )
+        }
+    }
     LaunchedEffect(activeSelectedTab, selectedTab) {
         if (selectedTab != activeSelectedTab) {
             viewModel.setSelectedTab(activeSelectedTab)
@@ -579,7 +587,8 @@ fun DynamicScreen(
                                             listState = listState,
                                             statusBarHeight = statusBarHeight,
                                             topPaddingExtra = resolveDynamicListTopPaddingExtraDp(
-                                                isHorizontalMode = false
+                                                isHorizontalMode = false,
+                                                isTopBarCollapsed = shouldCollapseTopBar
                                             ).dp,
                                             bottomPadding = dynamicListBottomPadding,
                                             oldContentDividerIndex = oldContentDividerIndex,
@@ -616,20 +625,26 @@ fun DynamicScreen(
                                         )
                                     }
 
-                                    // 顶栏
-                                    DynamicTopBarWithTabs(
-                                    selectedTab = selectedVisibleTabIndex,
-                                    tabs = tabTitles,
-                                    onTabSelected = { visibleIndex ->
-                                        visibleTabs.getOrNull(visibleIndex)
-                                            ?.let { viewModel.setSelectedTab(it.logicalIndex) }
-                                    },
-                                    displayMode = displayMode,
-                                    onDisplayModeChange = { viewModel.setDisplayMode(it) },
-                                    hazeState = hazeState, // 传入 hazeState
-                                    backdrop = dynamicChromeBackdrop,
-                                    modifier = Modifier.align(Alignment.TopCenter)
-                                )
+                                    // 顶栏（下滑折叠，回顶复现）
+                                    androidx.compose.animation.AnimatedVisibility(
+                                        visible = !shouldCollapseTopBar,
+                                        enter = expandVertically(animationSpec = tween(180)) + fadeIn(animationSpec = tween(180)),
+                                        exit = shrinkVertically(animationSpec = tween(180)) + fadeOut(animationSpec = tween(140)),
+                                        modifier = Modifier.align(Alignment.TopCenter)
+                                    ) {
+                                        DynamicTopBarWithTabs(
+                                            selectedTab = selectedVisibleTabIndex,
+                                            tabs = tabTitles,
+                                            onTabSelected = { visibleIndex ->
+                                                visibleTabs.getOrNull(visibleIndex)
+                                                    ?.let { viewModel.setSelectedTab(it.logicalIndex) }
+                                            },
+                                            displayMode = displayMode,
+                                            onDisplayModeChange = { viewModel.setDisplayMode(it) },
+                                            hazeState = hazeState,
+                                            backdrop = dynamicChromeBackdrop
+                                        )
+                                    }
                             }
 
                                 // 错误提示
@@ -677,7 +692,8 @@ fun DynamicScreen(
                                          topPaddingExtra = resolveDynamicListTopPaddingExtraDp(
                                              isHorizontalMode = true,
                                              isHorizontalUserListCollapsed = shouldCollapseHorizontalUserList,
-                                             shouldShowHorizontalUserList = shouldShowHorizontalUserList
+                                             shouldShowHorizontalUserList = shouldShowHorizontalUserList,
+                                             isTopBarCollapsed = shouldCollapseTopBar
                                          ).dp,
                                          bottomPadding = dynamicListBottomPadding,
                                          oldContentDividerIndex = oldContentDividerIndex,
@@ -732,7 +748,8 @@ fun DynamicScreen(
                                          height = resolveDynamicListTopPaddingExtraDp(
                                              isHorizontalMode = true,
                                              isHorizontalUserListCollapsed = shouldCollapseHorizontalUserList,
-                                             shouldShowHorizontalUserList = shouldShowHorizontalUserList
+                                             shouldShowHorizontalUserList = shouldShowHorizontalUserList,
+                                             isTopBarCollapsed = shouldCollapseTopBar
                                          ).dp,
                                          surfaceColor = headerColor,
                                          surfaceAlpha = backgroundAlpha,
@@ -740,17 +757,24 @@ fun DynamicScreen(
                                          hazeEnabled = !globalWallpaperVisible
                                      )
                                      Column(modifier = Modifier.fillMaxWidth()) {
-                                         DynamicTopBarWithTabs(
-                                             selectedTab = selectedVisibleTabIndex,
-                                             tabs = tabTitles,
-                                             onTabSelected = { visibleIndex ->
-                                                 visibleTabs.getOrNull(visibleIndex)
-                                                     ?.let { viewModel.setSelectedTab(it.logicalIndex) }
-                                             },
-                                             displayMode = displayMode,
-                                             onDisplayModeChange = { viewModel.setDisplayMode(it) },
-                                             hazeState = null
-                                         )
+                                         // 顶栏（下滑折叠，回顶复现）
+                                         AnimatedVisibility(
+                                             visible = !shouldCollapseTopBar,
+                                             enter = expandVertically(animationSpec = tween(180)) + fadeIn(animationSpec = tween(180)),
+                                             exit = shrinkVertically(animationSpec = tween(180)) + fadeOut(animationSpec = tween(140))
+                                         ) {
+                                             DynamicTopBarWithTabs(
+                                                 selectedTab = selectedVisibleTabIndex,
+                                                 tabs = tabTitles,
+                                                 onTabSelected = { visibleIndex ->
+                                                     visibleTabs.getOrNull(visibleIndex)
+                                                         ?.let { viewModel.setSelectedTab(it.logicalIndex) }
+                                                 },
+                                                 displayMode = displayMode,
+                                                 onDisplayModeChange = { viewModel.setDisplayMode(it) },
+                                                 hazeState = null
+                                             )
+                                         }
 
                                          AnimatedVisibility(
                                              visible = shouldShowHorizontalUserList && !shouldCollapseHorizontalUserList,

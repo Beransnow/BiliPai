@@ -24,7 +24,7 @@ internal enum class VideoSharedTransitionTargetMode {
 
 internal const val VIDEO_SHARED_COVER_ASPECT_RATIO = 16f / 10f
 private const val HOME_SOURCE_ROUTE = "home"
-private const val HOME_SHARED_TRANSITION_DURATION_MILLIS = 360
+internal const val HOME_SHARED_TRANSITION_DURATION_MILLIS = 360
 internal const val FULLSCREEN_SHARED_TRANSITION_DURATION_MILLIS = 420
 private const val HOME_DETAIL_REVEAL_DELAY_MILLIS = 40
 private const val HOME_DETAIL_REVEAL_DURATION_MILLIS = 220
