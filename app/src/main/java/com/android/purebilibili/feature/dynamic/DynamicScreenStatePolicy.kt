@@ -8,6 +8,62 @@ import kotlinx.collections.immutable.toImmutableList
 private const val DynamicTopBarReservedHeightDp = 60
 private const val DynamicHorizontalExpandedHeaderReservedHeightDp = 184
 
+internal data class DynamicPagePresentation(
+    val items: List<DynamicItem>,
+    val isLoading: Boolean,
+    val error: String?,
+    val hasMore: Boolean,
+    val isSelectedUserFeed: Boolean,
+    val incrementalRefreshBoundaryKey: String?,
+    val incrementalPrependedCount: Int
+)
+
+internal fun resolveDynamicPagePresentation(
+    state: DynamicUiState,
+    logicalTab: Int,
+    selectedUserId: Long?
+): DynamicPagePresentation {
+    val isSelectedUserFeed = shouldUseSelectedUserDynamicFeed(logicalTab, selectedUserId)
+    if (logicalTab == 4) {
+        if (!isSelectedUserFeed) {
+            return DynamicPagePresentation(emptyList(), false, null, false, false, null, 0)
+        }
+        val items = resolveSelectedUserVisibleItems(
+            timelineItems = state.timelinePage("all").items,
+            remoteUserItems = state.userItems,
+            selectedUid = selectedUserId
+        ).distinctBy { it.id_str }
+        return DynamicPagePresentation(
+            items = items,
+            isLoading = state.userIsLoading,
+            error = state.userError,
+            hasMore = state.hasUserMore && (
+                state.userItems.isNotEmpty() || state.userIsLoading || !state.userError.isNullOrBlank()
+            ),
+            isSelectedUserFeed = true,
+            incrementalRefreshBoundaryKey = null,
+            incrementalPrependedCount = 0
+        )
+    }
+
+    val page = state.timelinePage(resolveDynamicFeedRequestType(logicalTab))
+    val items = when (logicalTab) {
+        1 -> page.items.filter(::shouldIncludeDynamicItemInVideoTab)
+        2 -> page.items.filter(::shouldIncludeDynamicItemInPgcTab)
+        3 -> page.items.filter(::shouldIncludeDynamicItemInArticleTab)
+        else -> page.items
+    }.distinctBy { it.id_str }
+    return DynamicPagePresentation(
+        items = items,
+        isLoading = page.isLoading,
+        error = page.error,
+        hasMore = page.hasMore,
+        isSelectedUserFeed = false,
+        incrementalRefreshBoundaryKey = page.incrementalRefreshBoundaryKey,
+        incrementalPrependedCount = page.incrementalPrependedCount
+    )
+}
+
 internal fun resolveDynamicListTopPaddingExtraDp(
     isHorizontalMode: Boolean,
     isHorizontalUserListCollapsed: Boolean = false,
@@ -165,8 +221,9 @@ internal fun resolveDynamicStateAfterAuthorUnfollow(
     authorMid: Long
 ): DynamicUiState {
     if (authorMid <= 0L) return currentState
-    return currentState.copy(
-        items = currentState.items.filterNot { it.modules.module_author?.mid == authorMid }.toImmutableList(),
+    return mapDynamicTimelineItems(currentState) { items ->
+        items.filterNot { it.modules.module_author?.mid == authorMid }
+    }.copy(
         userItems = currentState.userItems.filterNot { it.modules.module_author?.mid == authorMid }.toImmutableList()
     )
 }
@@ -196,6 +253,147 @@ enum class DynamicFeedErrorSource {
     INITIAL_LOAD,
     REFRESH,
     APPEND
+}
+
+internal fun DynamicUiState.timelinePage(requestType: String): DynamicTimelinePageState {
+    timelinePages[requestType]?.let { return it }
+    if (timelineRequestType != requestType) return DynamicTimelinePageState()
+    return DynamicTimelinePageState(
+        items = items,
+        isLoading = isLoading,
+        error = error,
+        hasMore = hasMore,
+        incrementalRefreshBoundaryKey = incrementalRefreshBoundaryKey,
+        incrementalPrependedCount = incrementalPrependedCount,
+        errorSource = errorSource
+    )
+}
+
+internal fun updateDynamicTimelinePage(
+    currentState: DynamicUiState,
+    requestType: String,
+    transform: (DynamicTimelinePageState) -> DynamicTimelinePageState
+): DynamicUiState {
+    val updatedPage = transform(currentState.timelinePage(requestType))
+    val updatedState = currentState.copy(
+        timelinePages = currentState.timelinePages.put(requestType, updatedPage)
+    )
+    return if (currentState.timelineRequestType == requestType) {
+        updatedState.copyActiveTimelinePage(requestType, updatedPage)
+    } else {
+        updatedState
+    }
+}
+
+internal fun DynamicUiState.selectTimelinePage(requestType: String): DynamicUiState {
+    return copyActiveTimelinePage(requestType, timelinePage(requestType))
+}
+
+internal fun mapDynamicTimelineItems(
+    currentState: DynamicUiState,
+    transform: (List<DynamicItem>) -> List<DynamicItem>
+): DynamicUiState {
+    val requestTypes = currentState.timelinePages.keys + currentState.timelineRequestType
+    return requestTypes.fold(currentState) { state, requestType ->
+        updateDynamicTimelinePage(state, requestType) { page ->
+            page.copy(items = transform(page.items).toImmutableList())
+        }
+    }
+}
+
+private fun DynamicUiState.copyActiveTimelinePage(
+    requestType: String,
+    page: DynamicTimelinePageState
+): DynamicUiState {
+    return copy(
+        items = page.items,
+        timelineRequestType = requestType,
+        isLoading = page.isLoading,
+        error = page.error,
+        hasMore = page.hasMore,
+        incrementalRefreshBoundaryKey = page.incrementalRefreshBoundaryKey,
+        incrementalPrependedCount = page.incrementalPrependedCount,
+        errorSource = page.errorSource
+    )
+}
+
+internal fun resolveDynamicTimelinePageForLoadStart(
+    currentPage: DynamicTimelinePageState,
+    refresh: Boolean,
+    showLoading: Boolean
+): DynamicTimelinePageState {
+    val basePage = currentPage.copy(
+        error = null,
+        errorSource = DynamicFeedErrorSource.NONE
+    )
+    return when {
+        refresh && showLoading -> basePage.copy(isLoading = true)
+        !refresh -> basePage.copy(isLoading = true)
+        else -> basePage
+    }
+}
+
+internal fun resolveDynamicTimelinePageAfterSuccess(
+    currentPage: DynamicTimelinePageState,
+    incomingItems: List<DynamicItem>,
+    isRefresh: Boolean,
+    incrementalRefreshEnabled: Boolean,
+    hasMore: Boolean
+): DynamicTimelinePageState {
+    val currentItems = currentPage.items
+    val canUseIncrementalRefresh = isRefresh && incrementalRefreshEnabled
+    val mergedItems = when {
+        canUseIncrementalRefresh -> sortDynamicTimelineItemsByPublishTime(
+            prependDistinctByKey(
+                existing = currentItems,
+                incoming = incomingItems,
+                keySelector = ::dynamicFeedItemKey
+            )
+        )
+        isRefresh -> sortDynamicTimelineItemsByPublishTime(incomingItems)
+        else -> appendDistinctByKey(
+            existing = currentItems,
+            incoming = incomingItems,
+            keySelector = ::dynamicFeedItemKey
+        )
+    }
+    val boundary = when {
+        canUseIncrementalRefresh -> resolveIncrementalRefreshBoundary(
+            existingKeys = currentItems.map(::dynamicFeedItemKey),
+            mergedKeys = mergedItems.map(::dynamicFeedItemKey)
+        )
+        isRefresh -> IncrementalRefreshBoundary(null, 0)
+        else -> IncrementalRefreshBoundary(
+            currentPage.incrementalRefreshBoundaryKey,
+            currentPage.incrementalPrependedCount
+        )
+    }
+    return currentPage.copy(
+        items = mergedItems.toImmutableList(),
+        isLoading = false,
+        error = null,
+        hasMore = hasMore,
+        incrementalRefreshBoundaryKey = boundary.boundaryKey,
+        incrementalPrependedCount = boundary.prependedCount,
+        errorSource = DynamicFeedErrorSource.NONE
+    )
+}
+
+internal fun resolveDynamicTimelinePageAfterFailure(
+    currentPage: DynamicTimelinePageState,
+    errorMessage: String,
+    refresh: Boolean
+): DynamicTimelinePageState {
+    val source = when {
+        currentPage.items.isEmpty() -> DynamicFeedErrorSource.INITIAL_LOAD
+        refresh -> DynamicFeedErrorSource.REFRESH
+        else -> DynamicFeedErrorSource.APPEND
+    }
+    return currentPage.copy(
+        isLoading = false,
+        error = errorMessage,
+        errorSource = source
+    )
 }
 
 internal fun resolveDynamicActiveLoadingState(

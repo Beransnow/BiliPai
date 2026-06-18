@@ -43,7 +43,9 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -101,9 +103,8 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
     
     //  [修复] 分离时间线和用户页加载锁，避免互相阻塞
-    private var isTimelineLoadingLocked = false
-    private var activeTimelineRequestToken: Long = 0L
-    private var timelineInFlightRequests: Int = 0
+    private val activeTimelineRequestTokens = mutableMapOf<String, Long>()
+    private val timelineInFlightRequests = mutableMapOf<String, Int>()
     private var isUserLoadingLocked = false
     private var userDynamicsJob: Job? = null
     private var activeUserDynamicsRequestToken: Long = 0L
@@ -204,11 +205,16 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
         runCatching { json.decodeFromString<List<DynamicItem>>(cachedJson) }
             .onSuccess { items ->
                 if (items.isNotEmpty()) {
-                    _uiState.value = _uiState.value.copy(
-                        items = items.toImmutableList(),
-                        isLoading = false,
-                        error = null
-                    )
+                    _uiState.value = updateDynamicTimelinePage(
+                        currentState = _uiState.value,
+                        requestType = "all"
+                    ) { page ->
+                        page.copy(
+                            items = items.toImmutableList(),
+                            isLoading = false,
+                            error = null
+                        )
+                    }
                 }
             }
     }
@@ -244,13 +250,17 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    private suspend fun refreshData(showRefreshIndicator: Boolean) {
+    private suspend fun refreshData(
+        showRefreshIndicator: Boolean,
+        selectedTab: Int = _selectedTab.value
+    ) {
         if (showRefreshIndicator) {
             _isRefreshing.value = true
         }
         try {
+            val requestType = resolveDynamicFeedRequestType(selectedTab)
             val refreshUserId = resolveDynamicRefreshUserId(
-                selectedTab = _selectedTab.value,
+                selectedTab = selectedTab,
                 selectedUserId = _selectedUserId.value
             )
             coroutineScope {
@@ -264,7 +274,8 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
                     } else {
                         loadDynamicFeedInternal(
                             refresh = true,
-                            showLoading = _uiState.value.items.isEmpty()
+                            showLoading = _uiState.value.timelinePage(requestType).items.isEmpty(),
+                            requestType = requestType
                         )
                     }
                 }
@@ -391,7 +402,7 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
 
     private fun rebuildFollowedUsers() {
         val mergedUsers = mergeUsers(
-            extractUsersFromDynamics(_uiState.value.items),
+            extractUsersFromDynamics(_uiState.value.timelinePage("all").items),
             extractUsersFromLive(cachedLiveRooms),
             extractUsersFromFollowings(cachedFollowings)  //  [新增]
         )
@@ -414,7 +425,7 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
             authorMid = authorMid
         )
         rebuildFollowedUsers()
-        saveDynamicCache(_uiState.value.items)
+        saveDynamicCache(_uiState.value.timelinePage("all").items)
     }
     
     /**
@@ -483,7 +494,7 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
         _selectedUserId.value = uid
         
         if (uid != null) {
-            val localMatchCount = _uiState.value.items.count { item ->
+            val localMatchCount = _uiState.value.timelinePage("all").items.count { item ->
                 item.modules.module_author?.mid == uid
             }
             val shouldReload = shouldReloadSelectedUserDynamics(
@@ -675,60 +686,61 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
             selectUser(nextSelectedUserId)
         }
         _selectedTab.value = resolvedTab
+        val requestType = resolveDynamicFeedRequestType(resolvedTab)
+        _uiState.value = _uiState.value.selectTimelinePage(requestType)
         userPrefs.edit()
             .putInt(KEY_SELECTED_TAB, resolvedTab)
             .apply()
         if (nextSelectedUserId == null) {
             DynamicRepository.resetPagination(
                 scope = DynamicFeedScope.DYNAMIC_SCREEN,
-                type = resolveDynamicFeedRequestType(resolvedTab)
+                type = requestType
             )
-            loadDynamicFeed(refresh = true)
+            loadDynamicFeed(refresh = true, requestType = requestType)
         }
     }
     
     /**
      * 加载动态列表
      */
-    fun loadDynamicFeed(refresh: Boolean = false) {
-        if (!refresh && (_uiState.value.isLoading || _isRefreshing.value || isTimelineLoadingLocked)) return
+    fun loadDynamicFeed(
+        refresh: Boolean = false,
+        requestType: String = resolveDynamicFeedRequestType(_selectedTab.value)
+    ) {
+        val page = _uiState.value.timelinePage(requestType)
+        if (!refresh && (page.isLoading || _isRefreshing.value || isTimelineLoading(requestType))) return
         viewModelScope.launch {
             loadDynamicFeedInternal(
                 refresh = refresh,
-                showLoading = refresh && _uiState.value.items.isEmpty()
+                showLoading = refresh && page.items.isEmpty(),
+                requestType = requestType
             )
         }
     }
 
     private suspend fun loadDynamicFeedInternal(
         refresh: Boolean,
-        showLoading: Boolean = false
+        showLoading: Boolean = false,
+        requestType: String
     ) {
-        //  [修复] 使用加载锁防止并发请求
-        if (isTimelineLoadingLocked && !refresh) return
-        val requestType = resolveDynamicFeedRequestType(_selectedTab.value)
-        val requestToken = startTimelineRequest()
-        
-        val requestState = resolveDynamicFeedStateForLoadStart(
-            currentState = _uiState.value,
+        if (isTimelineLoading(requestType) && !refresh) return
+        val requestToken = startTimelineRequest(requestType)
+        val requestPage = resolveDynamicTimelinePageForLoadStart(
+            currentPage = _uiState.value.timelinePage(requestType),
             refresh = refresh,
             showLoading = showLoading
         )
-        _uiState.value = requestState
+        _uiState.value = updateDynamicTimelinePage(_uiState.value, requestType) { requestPage }
         
         try {
             // [新增] 检查登录状态
             if (com.android.purebilibili.core.store.TokenManager.sessDataCache.isNullOrEmpty()) {
-                _uiState.value = requestState.copy(
-                    isLoading = false,
-                    error = "未登录，请先登录",
-                    errorSource = if (refresh && requestState.items.isNotEmpty()) {
-                        DynamicFeedErrorSource.REFRESH
-                    } else {
-                        DynamicFeedErrorSource.INITIAL_LOAD
-                    },
-                    items = emptyList<DynamicItem>().toImmutableList()
+                val failedPage = resolveDynamicTimelinePageAfterFailure(
+                    currentPage = requestPage,
+                    errorMessage = "未登录，请先登录",
+                    refresh = refresh
                 )
+                _uiState.value = updateDynamicTimelinePage(_uiState.value, requestType) { failedPage }
                 return
             }
 
@@ -742,87 +754,100 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
             result.fold(
                 onSuccess = { items ->
                     if (!shouldApplyTimelineFeedResult(
-                            currentRequestType = resolveDynamicFeedRequestType(_selectedTab.value),
+                            activeRequestTokens = activeTimelineRequestTokens,
                             requestType = requestType,
-                            activeRequestToken = activeTimelineRequestToken,
                             requestToken = requestToken
                         )
                     ) {
                         return@fold
                     }
-                    val successState = resolveDynamicFeedStateAfterSuccess(
-                        currentState = requestState,
+                    val successPage = resolveDynamicTimelinePageAfterSuccess(
+                        currentPage = requestPage,
                         incomingItems = items,
                         isRefresh = refresh,
-                        requestType = requestType,
                         incrementalRefreshEnabled = incrementalTimelineRefreshEnabled,
                         hasMore = DynamicRepository.hasMoreData(
                             scope = DynamicFeedScope.DYNAMIC_SCREEN,
                             type = requestType
                         )
                     )
-                    _uiState.value = successState
-                    if (!shouldUseServerFilteredDynamicFeed(_selectedTab.value)) {
-                        saveDynamicCache(successState.items)
+                    _uiState.value = updateDynamicTimelinePage(_uiState.value, requestType) { successPage }
+                    if (requestType == "all") {
+                        saveDynamicCache(successPage.items)
+                        rebuildFollowedUsers()
                     }
-                    rebuildFollowedUsers()
                 },
                 onFailure = { error ->
                     if (!shouldApplyTimelineFeedResult(
-                            currentRequestType = resolveDynamicFeedRequestType(_selectedTab.value),
+                            activeRequestTokens = activeTimelineRequestTokens,
                             requestType = requestType,
-                            activeRequestToken = activeTimelineRequestToken,
                             requestToken = requestToken
                         )
                     ) {
                         return@fold
                     }
-                    _uiState.value = resolveDynamicFeedStateAfterFailure(
-                        currentState = requestState,
+                    val failedPage = resolveDynamicTimelinePageAfterFailure(
+                        currentPage = requestPage,
                         errorMessage = error.message ?: "加载失败",
                         refresh = refresh
                     )
+                    _uiState.value = updateDynamicTimelinePage(_uiState.value, requestType) { failedPage }
                 }
             )
         } finally {
-            finishTimelineRequest()
+            finishTimelineRequest(requestType)
         }
     }
     
-    fun refresh() {
+    fun refresh(selectedTab: Int = _selectedTab.value) {
+        val requestType = resolveDynamicFeedRequestType(selectedTab)
         val refreshUserId = resolveDynamicRefreshUserId(
-            selectedTab = _selectedTab.value,
+            selectedTab = selectedTab,
             selectedUserId = _selectedUserId.value
         )
         val activeSourceLocked = if (refreshUserId != null) {
             isUserLoadingLocked
         } else {
-            isTimelineLoadingLocked
+            isTimelineLoading(requestType)
         }
         if (!shouldStartDynamicRefresh(_isRefreshing.value, activeSourceLocked)) return
-        viewModelScope.launch { refreshData(showRefreshIndicator = true) }
+        viewModelScope.launch {
+            refreshData(
+                showRefreshIndicator = true,
+                selectedTab = selectedTab
+            )
+        }
     }
     
-    fun loadMore() {
-        if (!_uiState.value.hasMore || _uiState.value.isLoading || _isRefreshing.value || isTimelineLoadingLocked) return
-        loadDynamicFeed(refresh = false)
+    fun loadMore(selectedTab: Int = _selectedTab.value) {
+        val requestType = resolveDynamicFeedRequestType(selectedTab)
+        val page = _uiState.value.timelinePage(requestType)
+        if (!page.hasMore || page.isLoading || _isRefreshing.value || isTimelineLoading(requestType)) return
+        loadDynamicFeed(refresh = false, requestType = requestType)
     }
 
     private fun dynamicItemKey(item: DynamicItem): String {
         return dynamicFeedItemKey(item)
     }
 
-    private fun startTimelineRequest(): Long {
-        val nextToken = activeTimelineRequestToken + 1L
-        activeTimelineRequestToken = nextToken
-        timelineInFlightRequests += 1
-        isTimelineLoadingLocked = true
+    private fun startTimelineRequest(requestType: String): Long {
+        val nextToken = (activeTimelineRequestTokens[requestType] ?: 0L) + 1L
+        activeTimelineRequestTokens[requestType] = nextToken
+        timelineInFlightRequests[requestType] = (timelineInFlightRequests[requestType] ?: 0) + 1
         return nextToken
     }
 
-    private fun finishTimelineRequest() {
-        timelineInFlightRequests = (timelineInFlightRequests - 1).coerceAtLeast(0)
-        isTimelineLoadingLocked = timelineInFlightRequests > 0
+    private fun finishTimelineRequest(requestType: String) {
+        val remaining = ((timelineInFlightRequests[requestType] ?: 1) - 1).coerceAtLeast(0)
+        if (remaining == 0) {
+            timelineInFlightRequests.remove(requestType)
+        } else {
+            timelineInFlightRequests[requestType] = remaining
+        }
+    }
+
+    private fun isTimelineLoading(requestType: String): Boolean {
+        return (timelineInFlightRequests[requestType] ?: 0) > 0
     }
 
     override fun onCleared() {
@@ -874,8 +899,12 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
      */
     private fun findDynamicById(dynamicId: String): DynamicItem? {
         _selectedDynamic.value?.takeIf { it.id_str == dynamicId }?.let { return it }
-        // 先在全部动态中搜索
-        _uiState.value.items.find { it.id_str == dynamicId }?.let { return it }
+        val timelineState = _uiState.value
+        (timelineState.timelinePages.keys + timelineState.timelineRequestType).forEach { requestType ->
+            timelineState.timelinePage(requestType).items
+                .find { it.id_str == dynamicId }
+                ?.let { return it }
+        }
         // 再在用户专属动态中搜索
         return _uiState.value.userItems.find { it.id_str == dynamicId }
     }
@@ -1339,13 +1368,14 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
                         _likedDynamics.value - dynamicId
                     }
 
-                    val currentState = _uiState.value
-                    _uiState.value = currentState.copy(
-                        items = applyDynamicLikeCountChange(
-                            items = currentState.items,
+                    val currentState = mapDynamicTimelineItems(_uiState.value) { items ->
+                        applyDynamicLikeCountChange(
+                            items = items,
                             dynamicId = dynamicId,
                             toLiked = toLiked
-                        ).toImmutableList(),
+                        )
+                    }
+                    _uiState.value = currentState.copy(
                         userItems = applyDynamicLikeCountChange(
                             items = currentState.userItems,
                             dynamicId = dynamicId,
@@ -1445,9 +1475,10 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
     }
 
     private fun removeDynamicFromUiState(dynamicId: String) {
-        val currentState = _uiState.value
+        val currentState = mapDynamicTimelineItems(_uiState.value) { items ->
+            items.filterNot { it.id_str == dynamicId }
+        }
         _uiState.value = currentState.copy(
-            items = currentState.items.filterNot { it.id_str == dynamicId }.toImmutableList(),
             userItems = currentState.userItems.filterNot { it.id_str == dynamicId }.toImmutableList()
         )
     }
@@ -1493,6 +1524,17 @@ data class DynamicUiState(
     val userError: String? = null,
     val hasMore: Boolean = true,
     val hasUserMore: Boolean = true, //  [新增] UP主动态是否有更多
+    val incrementalRefreshBoundaryKey: String? = null,
+    val incrementalPrependedCount: Int = 0,
+    val errorSource: DynamicFeedErrorSource = DynamicFeedErrorSource.NONE,
+    val timelinePages: PersistentMap<String, DynamicTimelinePageState> = persistentMapOf()
+)
+
+data class DynamicTimelinePageState(
+    val items: ImmutableList<DynamicItem> = persistentListOf(),
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val hasMore: Boolean = true,
     val incrementalRefreshBoundaryKey: String? = null,
     val incrementalPrependedCount: Int = 0,
     val errorSource: DynamicFeedErrorSource = DynamicFeedErrorSource.NONE

@@ -77,3 +77,10 @@ internal fun isDynamicUserTabVisible(
 ): Boolean {
     return visibleTabs.any { it.logicalIndex == 4 }
 }
+
+internal fun resolveDynamicSettledLogicalTab(
+    settledPage: Int,
+    visibleTabs: List<DynamicTabSpec>
+): Int? {
+    return visibleTabs.getOrNull(settledPage)?.logicalIndex
+}
