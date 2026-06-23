@@ -51,12 +51,4 @@ class SettingsRootCategoryPolicyTest {
         )
     }
 
-    @Test
-    fun `root category name resolves back to category for mobile detail navigation`() {
-        assertEquals(
-            SettingsRootCategory.APPEARANCE_INTERACTION,
-            resolveSettingsRootCategoryByName(SettingsRootCategory.APPEARANCE_INTERACTION.name)
-        )
-        assertEquals(null, resolveSettingsRootCategoryByName("UNKNOWN"))
-    }
 }

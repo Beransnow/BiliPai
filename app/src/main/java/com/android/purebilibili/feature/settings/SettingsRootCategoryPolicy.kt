@@ -79,11 +79,6 @@ internal fun resolveSettingsRootCategoryForSearchTarget(
     SettingsSearchTarget.DONATE -> SettingsRootCategory.SYSTEM_ABOUT
 }
 
-internal fun resolveSettingsRootCategoryByName(name: String?): SettingsRootCategory? {
-    if (name == null) return null
-    return SettingsRootCategory.entries.firstOrNull { it.name == name }
-}
-
 internal fun isSceneSettingsSearchTarget(target: SettingsSearchTarget): Boolean = target in setOf(
     SettingsSearchTarget.INTERFACE_THEME,
     SettingsSearchTarget.HOME_FEED,

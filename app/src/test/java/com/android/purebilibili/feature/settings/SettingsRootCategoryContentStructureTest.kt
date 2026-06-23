@@ -110,7 +110,7 @@ class SettingsRootCategoryContentStructureTest {
 
         assertTrue(rootListBlock.contains("SettingsSearchBarSection("))
         assertTrue(rootListBlock.contains("SupportAuthorCompactSection("))
-        assertTrue(rootListBlock.contains("activeRootCategory == null"))
+        assertFalse(rootListBlock.contains("activeRootCategory == null"), "should NOT use activeRootCategory")
         assertTrue(rootListBlock.indexOf("SettingsSearchBarSection(") < rootListBlock.indexOf("SupportAuthorCompactSection("))
         assertFalse(rootListBlock.contains("FollowAuthorSection("))
     }
@@ -129,8 +129,8 @@ class SettingsRootCategoryContentStructureTest {
         assertTrue(sectionBlock.contains("text = category.title"))
         assertTrue(sectionBlock.contains("text = category.subtitle"))
         assertTrue(sectionBlock.contains("CupertinoIcons.Default.ChevronForward"))
-        assertFalse(sectionBlock.contains("AnimatedVisibility("))
-        assertFalse(sectionBlock.contains("SettingsRootCategoryContent("))
+        assertTrue(sectionBlock.contains("AnimatedVisibility("), "should use AnimatedVisibility for accordion")
+        assertTrue(sectionBlock.contains("SettingsRootCategoryContent("), "should inline SettingsRootCategoryContent")
     }
 
     @Test
@@ -140,8 +140,9 @@ class SettingsRootCategoryContentStructureTest {
             File("src/main/java/com/android/purebilibili/feature/settings/screen/SettingsScreen.kt")
         ).first { it.exists() }.readText()
 
-        assertTrue(source.contains("activeRootCategoryName"))
-        assertTrue(source.contains("SettingsRootCategoryDetailLayout("))
+        assertFalse(source.contains("SettingsRootCategoryDetailLayout("), "should NOT use DetailLayout")
+        assertTrue(source.contains("isExpanded ="), "should use accordion isExpanded")
+        assertTrue(source.contains("onToggle ="), "should use accordion onToggle")
         assertFalse(source.contains("expandedRootCategoryNames"))
     }
 
