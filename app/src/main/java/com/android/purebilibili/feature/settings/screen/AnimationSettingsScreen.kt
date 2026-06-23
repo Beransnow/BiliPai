@@ -336,7 +336,7 @@ fun AnimationSettingsContent(
             // ✨ 视觉效果
             item {
                 Box(modifier = Modifier.entrance()) {
-                    IOSSectionTitle("视觉效果")
+                    IOSSectionTitle("玻璃效果")
                 }
             }
             item {
@@ -498,7 +498,7 @@ fun AnimationSettingsContent(
             // 📐 底栏样式
             item {
                 Box(modifier = Modifier.entrance()) {
-                    IOSSectionTitle("底栏样式")
+                    IOSSectionTitle("底栏入口")
                 }
             }
             item {

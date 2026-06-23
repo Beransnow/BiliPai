@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
@@ -527,7 +528,7 @@ internal fun SettingsRootCategoryContent(
     Column {
         when (category) {
             SettingsRootCategory.APPEARANCE_INTERACTION -> {
-                SettingsDetailGroup(title = "界面") {
+                SettingsDetailGroup(title = "显示与交互") {
                     SettingsDetailEntrySection(
                         entries = listOf(
                             SettingsDetailEntry(
@@ -611,7 +612,7 @@ internal fun SettingsRootCategoryContent(
                     )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
-                SettingsDetailGroup(title = "播放") {
+                SettingsDetailGroup(title = "画质与播放") {
                     SettingsDetailEntrySection(
                         entries = listOf(
                             SettingsDetailEntry(
@@ -650,6 +651,7 @@ internal fun SettingsRootCategoryContent(
                         onClearCacheClick = actions.onClearCacheClick
                     )
                 }
+                Spacer(modifier = Modifier.height(12.dp))
                 SettingsDetailGroup(title = "隐私与安全") {
                     PrivacySection(
                         privacyModeEnabled = state.privacyModeEnabled,
@@ -1508,16 +1510,8 @@ fun AboutSection(
     AboutProjectOverviewCard(versionName = versionName)
     Spacer(modifier = Modifier.height(12.dp))
 
+    SettingsSectionTitle(title = "源码与验证")
     SettingsCardGroup {
-        SettingClickableItem(
-            icon = licensesVisual.icon,
-            iconPainter = licensesVisual.iconResId?.let { painterResource(id = it) },
-            title = "开源许可证",
-            value = "License",
-            onClick = onLicenseClick,
-            iconTint = licensesVisual.iconTint
-        )
-        SettingsDivider(startIndent = 66.dp)
         SettingClickableItem(
             icon = openSourceHomeVisual.icon,
             iconPainter = openSourceHomeVisual.iconResId?.let { painterResource(id = it) },
@@ -1577,6 +1571,19 @@ fun AboutSection(
             iconTint = iOSPurple,
             enableCopy = true
         )
+    }
+    Spacer(modifier = Modifier.height(12.dp))
+
+    SettingsSectionTitle(title = "更新")
+    SettingsCardGroup {
+        SettingClickableItem(
+            icon = licensesVisual.icon,
+            iconPainter = licensesVisual.iconResId?.let { painterResource(id = it) },
+            title = "开源许可证",
+            value = "License",
+            onClick = onLicenseClick,
+            iconTint = licensesVisual.iconTint
+        )
         SettingsDivider(startIndent = 66.dp)
         SettingClickableItem(
             icon = checkUpdateVisual.icon,
@@ -1604,7 +1611,11 @@ fun AboutSection(
             onCheckedChange = onAutoCheckUpdateChange,
             iconTint = autoCheckTint
         )
-        SettingsDivider(startIndent = 66.dp)
+    }
+    Spacer(modifier = Modifier.height(12.dp))
+
+    SettingsSectionTitle(title = "辅助")
+    SettingsCardGroup {
         SettingClickableItem(
             icon = infoIcon,
             title = "版本",
@@ -1636,17 +1647,21 @@ fun AboutSection(
 
 internal data class AboutContributor(
     val name: String,
-    val avatarUrl: String
-)
+    val githubLogin: String
+) {
+    val profileUrl: String get() = "https://github.com/$githubLogin"
+    val avatarUrl: String get() = "$profileUrl.png?size=160"
+}
 
 // ponytail: 静态列表避免关于页每次打开都请求 GitHub；需要实时同步时再接 contributors API。
 internal val AboutContributors = listOf(
-    AboutContributor("Chenx Dust", "https://github.com/chenx-dust.png"),
-    AboutContributor("usontong", "https://github.com/usontong.png"),
-    AboutContributor("Leko", "https://github.com/Leko.png"),
-    AboutContributor("TanakaLun", "https://github.com/TanakaLun.png"),
-    AboutContributor("UsonTong", "https://github.com/UsonTong.png"),
-    AboutContributor("Matt Van Horn", "https://github.com/mvanhorn.png")
+    AboutContributor("jay3-yy", "jay3-yy"),
+    AboutContributor("Chenx Dust", "chenx-dust"),
+    AboutContributor("usontong", "usontong"),
+    AboutContributor("Leko", "Leko"),
+    AboutContributor("TanakaLun", "TanakaLun"),
+    AboutContributor("UsonTong", "UsonTong"),
+    AboutContributor("Matt Van Horn", "mvanhorn")
 )
 
 @Composable
@@ -1706,7 +1721,7 @@ private fun AboutProjectOverviewCard(
             }
             Spacer(modifier = Modifier.height(22.dp))
             Text(
-                text = "其他贡献者",
+                text = "贡献者",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1728,19 +1743,34 @@ private fun AboutProjectOverviewCard(
 private fun AboutContributorItem(
     contributor: AboutContributor
 ) {
+    val uriHandler = LocalUriHandler.current
     Column(
-        modifier = Modifier.width(72.dp),
+        modifier = Modifier
+            .width(76.dp)
+            .clip(AppShapes.container(ContainerLevel.Chip))
+            .clickable { uriHandler.openUri(contributor.profileUrl) }
+            .padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AsyncImage(
-            model = contributor.avatarUrl,
-            contentDescription = "${contributor.name} 头像",
-            contentScale = ContentScale.Crop,
+        Box(
             modifier = Modifier
-                .size(52.dp)
+                .size(56.dp)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-        )
+                .background(MaterialTheme.colorScheme.surfaceVariant),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = contributor.name.take(1).uppercase(),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            AsyncImage(
+                model = contributor.avatarUrl,
+                contentDescription = "${contributor.name} 头像",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.matchParentSize()
+            )
+        }
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = contributor.name,

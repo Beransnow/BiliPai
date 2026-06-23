@@ -510,7 +510,7 @@ fun AppearanceSettingsContent(
         //  主题与颜色
         item { 
             Box(modifier = Modifier.entrance()) {
-                IOSSectionTitle(themeSectionTitle) 
+                IOSSectionTitle("显示模式")
             }
         }
         item {
@@ -900,7 +900,7 @@ fun AppearanceSettingsContent(
 
         item {
             Box(modifier = Modifier.entrance()) {
-                IOSSectionTitle("显示与排版")
+                IOSSectionTitle("字体与密度")
             }
         }
         item {
@@ -1222,7 +1222,7 @@ fun AppearanceSettingsContent(
         //  个性化
         item { 
             Box(modifier = Modifier.entrance()) {
-                IOSSectionTitle("个性化") 
+                IOSSectionTitle("开屏与图标")
             }
         }
         item {

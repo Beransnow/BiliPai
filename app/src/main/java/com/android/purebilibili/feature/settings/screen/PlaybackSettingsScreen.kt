@@ -346,7 +346,7 @@ fun PlaybackSettingsContent(
             //  小窗播放
             item {
                 Box(modifier = Modifier.entrance()) {
-                    IOSSectionTitle("小窗播放")
+                    IOSSectionTitle("小窗与后台")
                 }
             }
             item {
@@ -610,7 +610,7 @@ fun PlaybackSettingsContent(
             //  调试选项
             item {
                 Box(modifier = Modifier.entrance()) {
-                    IOSSectionTitle("调试")
+                    IOSSectionTitle("诊断")
                 }
             }
             item {
@@ -672,32 +672,6 @@ fun PlaybackSettingsContent(
                             iconTint = iOSTeal
                         )
                     }
-                }
-            }
-
-            //  交互设置
-            item {
-                Box(modifier = Modifier.entrance()) {
-                    IOSSectionTitle("互动与评论")
-                }
-            }
-            item {
-                Box(modifier = Modifier.entrance()) {
-                    PlaybackInteractionSettingsSection(
-                        context = context,
-                        state = state,
-                        viewModel = viewModel
-                    )
-                }
-            }
-            item {
-                Box(modifier = Modifier.entrance()) {
-                    IOSSectionTitle("全屏与手势")
-                }
-            }
-            item {
-                Box(modifier = Modifier.entrance()) {
-                    PlaybackFullscreenGestureSettingsSection(context = context)
                 }
             }
 
@@ -928,6 +902,32 @@ fun PlaybackSettingsContent(
                             )
                         }
                     }
+                }
+            }
+
+            //  交互设置
+            item {
+                Box(modifier = Modifier.entrance()) {
+                    IOSSectionTitle("互动与评论")
+                }
+            }
+            item {
+                Box(modifier = Modifier.entrance()) {
+                    PlaybackInteractionSettingsSection(
+                        context = context,
+                        state = state,
+                        viewModel = viewModel
+                    )
+                }
+            }
+            item {
+                Box(modifier = Modifier.entrance()) {
+                    IOSSectionTitle("全屏与手势")
+                }
+            }
+            item {
+                Box(modifier = Modifier.entrance()) {
+                    PlaybackFullscreenGestureSettingsSection(context = context)
                 }
             }
 

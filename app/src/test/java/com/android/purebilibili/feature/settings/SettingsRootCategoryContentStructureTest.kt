@@ -192,8 +192,68 @@ class SettingsRootCategoryContentStructureTest {
         assertTrue(aboutSectionBlock.contains("AboutProjectOverviewCard(versionName = versionName)"))
         assertTrue(aboutSectionBlock.indexOf("AboutProjectOverviewCard(") < aboutSectionBlock.indexOf("SettingsCardGroup {"))
         assertTrue(source.contains("internal val AboutContributors = listOf("))
+        assertTrue(source.contains("AboutContributor(\"jay3-yy\", \"jay3-yy\")"))
         assertTrue(source.contains("AboutContributor(\"Chenx Dust\""))
         assertTrue(source.contains("AboutContributor(\"usontong\""))
+    }
+
+    @Test
+    fun aboutContributors_useGithubProfilesAndClickableAvatars() {
+        val source = listOf(
+            File("app/src/main/java/com/android/purebilibili/feature/settings/ui/SettingsSections.kt"),
+            File("src/main/java/com/android/purebilibili/feature/settings/ui/SettingsSections.kt")
+        ).first { it.exists() }.readText()
+
+        val contributorBlock = source
+            .substringAfter("internal data class AboutContributor(")
+            .substringBefore("// ponytail: 静态列表避免关于页每次打开都请求 GitHub")
+        val overviewBlock = source
+            .substringAfter("private fun AboutProjectOverviewCard(")
+            .substringBefore("@Composable\nprivate fun AboutContributorItem(")
+        val itemBlock = source
+            .substringAfter("private fun AboutContributorItem(")
+
+        assertTrue(contributorBlock.contains("val githubLogin: String"))
+        assertTrue(contributorBlock.contains("\"https://github.com/${'$'}githubLogin\""))
+        assertTrue(contributorBlock.contains("\"${'$'}profileUrl.png?size=160\""))
+        assertTrue(overviewBlock.contains("text = \"贡献者\""))
+        assertFalse(overviewBlock.contains("其他贡献者"))
+        assertTrue(itemBlock.contains("LocalUriHandler.current"))
+        assertTrue(itemBlock.contains("uriHandler.openUri(contributor.profileUrl)"))
+        assertTrue(itemBlock.contains("Box("))
+        assertTrue(itemBlock.contains("contentScale = ContentScale.Crop"))
+    }
+
+    @Test
+    fun settingsSubpages_useNagramStyleSectionNames() {
+        val settingsSections = listOf(
+            File("app/src/main/java/com/android/purebilibili/feature/settings/ui/SettingsSections.kt"),
+            File("src/main/java/com/android/purebilibili/feature/settings/ui/SettingsSections.kt")
+        ).first { it.exists() }.readText()
+        val appearance = listOf(
+            File("app/src/main/java/com/android/purebilibili/feature/settings/screen/AppearanceSettingsScreen.kt"),
+            File("src/main/java/com/android/purebilibili/feature/settings/screen/AppearanceSettingsScreen.kt")
+        ).first { it.exists() }.readText()
+        val playback = listOf(
+            File("app/src/main/java/com/android/purebilibili/feature/settings/screen/PlaybackSettingsScreen.kt"),
+            File("src/main/java/com/android/purebilibili/feature/settings/screen/PlaybackSettingsScreen.kt")
+        ).first { it.exists() }.readText()
+        val animation = listOf(
+            File("app/src/main/java/com/android/purebilibili/feature/settings/screen/AnimationSettingsScreen.kt"),
+            File("src/main/java/com/android/purebilibili/feature/settings/screen/AnimationSettingsScreen.kt")
+        ).first { it.exists() }.readText()
+
+        assertTrue(settingsSections.contains("SettingsDetailGroup(title = \"显示与交互\")"))
+        assertTrue(settingsSections.contains("SettingsDetailGroup(title = \"画质与播放\")"))
+        assertTrue(settingsSections.contains("Spacer(modifier = Modifier.height(12.dp))\n                SettingsDetailGroup(title = \"隐私与安全\")"))
+        assertTrue(appearance.contains("IOSSectionTitle(\"显示模式\")"))
+        assertTrue(appearance.contains("IOSSectionTitle(\"字体与密度\")"))
+        assertTrue(appearance.contains("IOSSectionTitle(\"开屏与图标\")"))
+        assertTrue(playback.contains("IOSSectionTitle(\"小窗与后台\")"))
+        assertTrue(playback.contains("IOSSectionTitle(\"诊断\")"))
+        assertTrue(playback.indexOf("IOSSectionTitle(\"网络与画质\")") < playback.indexOf("IOSSectionTitle(\"互动与评论\")"))
+        assertTrue(animation.contains("IOSSectionTitle(\"玻璃效果\")"))
+        assertTrue(animation.contains("IOSSectionTitle(\"底栏入口\")"))
     }
 
     @Test
