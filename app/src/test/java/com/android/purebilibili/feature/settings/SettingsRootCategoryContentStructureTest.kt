@@ -30,33 +30,20 @@ class SettingsRootCategoryContentStructureTest {
     }
 
     @Test
-    fun sceneShortcutSection_submitsDetailFocusBeforeOpeningShortcut() {
+    fun detailEntrySection_submitsDetailFocusBeforeOpeningEntry() {
         val source = listOf(
             File("app/src/main/java/com/android/purebilibili/feature/settings/ui/SettingsSections.kt"),
             File("src/main/java/com/android/purebilibili/feature/settings/ui/SettingsSections.kt")
         ).first { it.exists() }.readText()
 
         val sectionBlock = source
-            .substringAfter("internal fun SettingsSceneShortcutSection(")
+            .substringAfter("internal fun SettingsDetailEntrySection(")
             .substringBefore("internal fun SettingsRootCategoryContent(")
 
-        assertTrue(sectionBlock.contains("resolveSettingsSceneDetailFocus(shortcut.target)?.let"))
+        assertTrue(sectionBlock.contains("resolveSettingsSceneDetailFocus(entry.target)?.let"))
         assertTrue(sectionBlock.contains("SettingsSearchFocusController.submit(detailFocus.target, detailFocus.focusId)"))
-        assertTrue(sectionBlock.contains("shortcut.onClick()"))
-    }
-
-    @Test
-    fun sceneShortcutSection_rendersLongDescriptionAsSubtitle() {
-        val source = listOf(
-            File("app/src/main/java/com/android/purebilibili/feature/settings/ui/SettingsSections.kt"),
-            File("src/main/java/com/android/purebilibili/feature/settings/ui/SettingsSections.kt")
-        ).first { it.exists() }.readText()
-
-        val sectionBlock = source
-            .substringAfter("internal fun SettingsSceneShortcutSection(")
-            .substringBefore("internal fun SettingsRootCategoryContent(")
-
-        assertTrue(sectionBlock.contains("subtitle = shortcut.value"))
+        assertTrue(sectionBlock.contains("entry.onClick()"))
+        assertTrue(sectionBlock.contains("subtitle = entry.value"))
     }
 
     @Test
@@ -91,7 +78,7 @@ class SettingsRootCategoryContentStructureTest {
     }
 
     @Test
-    fun rootCategoryContent_stacksMultipleCardsInsideAnimatedMobileBox() {
+    fun rootCategoryContent_usesStableDetailGroupsWithoutSceneShortcutRows() {
         val source = listOf(
             File("app/src/main/java/com/android/purebilibili/feature/settings/ui/SettingsSections.kt"),
             File("src/main/java/com/android/purebilibili/feature/settings/ui/SettingsSections.kt")
@@ -102,14 +89,16 @@ class SettingsRootCategoryContentStructureTest {
             .substringBefore("@Composable\nfun SupportToolsSection(")
 
         assertTrue(contentBlock.contains("Column {\n        when (category)"))
-        assertTrue(contentBlock.contains("SettingsRootCategory.INTERFACE_HOME -> SettingsSceneShortcutSection("))
+        assertTrue(contentBlock.contains("SettingsDetailGroup("))
+        assertTrue(contentBlock.contains("SettingsDetailEntrySection("))
+        assertFalse(contentBlock.contains("SettingsSceneShortcutSection("))
         assertTrue(contentBlock.contains("SettingsRootCategory.DYNAMIC_RECOMMEND -> {"))
         assertTrue(contentBlock.contains("SettingsRootCategory.DATA_PRIVACY -> {"))
         assertTrue(contentBlock.contains("SettingsRootCategory.EXTENSION_ABOUT -> {"))
     }
 
     @Test
-    fun mobileSettingsRootPinsFollowAuthorSectionAboveSearchAndCategories() {
+    fun mobileSettingsRootPinsSearchAboveSupportAndCategories() {
         val source = listOf(
             File("app/src/main/java/com/android/purebilibili/feature/settings/screen/SettingsScreen.kt"),
             File("src/main/java/com/android/purebilibili/feature/settings/screen/SettingsScreen.kt")
@@ -119,8 +108,11 @@ class SettingsRootCategoryContentStructureTest {
             .substringAfter("LazyColumn(")
             .substringBefore("sectionOrder.forEachIndexed")
 
-        assertTrue(rootListBlock.contains("FollowAuthorSection("))
-        assertTrue(rootListBlock.indexOf("FollowAuthorSection(") < rootListBlock.indexOf("SettingsSearchBarSection("))
+        assertTrue(rootListBlock.contains("SettingsSearchBarSection("))
+        assertTrue(rootListBlock.contains("SupportAuthorCompactSection("))
+        assertTrue(rootListBlock.contains("activeRootCategory == null"))
+        assertTrue(rootListBlock.indexOf("SettingsSearchBarSection(") < rootListBlock.indexOf("SupportAuthorCompactSection("))
+        assertFalse(rootListBlock.contains("FollowAuthorSection("))
     }
 
     @Test
@@ -132,7 +124,7 @@ class SettingsRootCategoryContentStructureTest {
 
         val sectionBlock = source
             .substringAfter("internal fun SettingsRootCategoryNavigationSection(")
-            .substringBefore("@Composable\ninternal fun SettingsSceneShortcutSection(")
+            .substringBefore("@Composable\ninternal fun SettingsDetailGroup(")
 
         assertTrue(sectionBlock.contains("text = category.title"))
         assertTrue(sectionBlock.contains("text = category.subtitle"))
@@ -154,18 +146,24 @@ class SettingsRootCategoryContentStructureTest {
     }
 
     @Test
-    fun tabletSettingsRootPinsFollowAuthorSectionAboveCategoryContent() {
+    fun tabletSettingsRootUsesCompactSupportInMasterAndKeepsDetailFocused() {
         val source = listOf(
             File("app/src/main/java/com/android/purebilibili/feature/settings/screen/TabletSettingsLayout.kt"),
             File("src/main/java/com/android/purebilibili/feature/settings/screen/TabletSettingsLayout.kt")
         ).first { it.exists() }.readText()
 
+        val masterBlock = source
+            .substringAfter("// Master List")
+            .substringBefore("secondaryContent =")
         val rootDetailBlock = source
             .substringAfter("// Category Root")
             .substringBefore("Spacer(modifier = Modifier\n                                .windowInsetsBottomHeight")
 
-        assertTrue(rootDetailBlock.contains("FollowAuthorSection("))
-        assertTrue(rootDetailBlock.indexOf("FollowAuthorSection(") < rootDetailBlock.indexOf("SettingsRootCategoryContent("))
+        assertTrue(masterBlock.contains("SettingsSearchBarSection("))
+        assertTrue(masterBlock.contains("SupportAuthorCompactSection("))
+        assertTrue(masterBlock.indexOf("SettingsSearchBarSection(") < masterBlock.indexOf("SupportAuthorCompactSection("))
+        assertFalse(rootDetailBlock.contains("FollowAuthorSection("))
+        assertTrue(rootDetailBlock.contains("SettingsRootCategoryContent("))
     }
 
     @Test
@@ -181,6 +179,24 @@ class SettingsRootCategoryContentStructureTest {
 
         assertTrue(aboutBlock.indexOf("AboutSection(") < aboutBlock.indexOf("ReleaseChannelPinnedCard("))
         assertFalse(aboutBlock.contains("FollowAuthorSection("))
+    }
+
+    @Test
+    fun aboutSectionShowsProjectOverviewAndStaticContributorsBeforeRows() {
+        val source = listOf(
+            File("app/src/main/java/com/android/purebilibili/feature/settings/ui/SettingsSections.kt"),
+            File("src/main/java/com/android/purebilibili/feature/settings/ui/SettingsSections.kt")
+        ).first { it.exists() }.readText()
+
+        val aboutSectionBlock = source
+            .substringAfter("fun AboutSection(")
+            .substringBefore("@Composable\nprivate fun AboutProjectOverviewCard(")
+
+        assertTrue(aboutSectionBlock.contains("AboutProjectOverviewCard(versionName = versionName)"))
+        assertTrue(aboutSectionBlock.indexOf("AboutProjectOverviewCard(") < aboutSectionBlock.indexOf("SettingsCardGroup {"))
+        assertTrue(source.contains("internal val AboutContributors = listOf("))
+        assertTrue(source.contains("AboutContributor(\"Chenx Dust\""))
+        assertTrue(source.contains("AboutContributor(\"usontong\""))
     }
 
     @Test

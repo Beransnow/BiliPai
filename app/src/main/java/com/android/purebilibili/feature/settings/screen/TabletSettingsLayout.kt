@@ -267,6 +267,7 @@ fun TabletSettingsLayout(
                     query = searchQuery,
                     onQueryChange = onSearchQueryChange
                 )
+                SupportAuthorCompactSection(onDonateClick = onDonateClick)
 
                 LazyColumn(
                     modifier = Modifier
@@ -634,13 +635,6 @@ fun TabletSettingsLayout(
                                     .height(layoutPolicy.detailPanePaddingDp.dp)
                                     .statusBarsPadding()
                             )
-
-                            FollowAuthorSection(
-                                onTelegramClick = onTelegramClick,
-                                onTwitterClick = onTwitterClick,
-                                onDonateClick = onDonateClick
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
 
                             Text(
                                 text = category.title,

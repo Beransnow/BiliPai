@@ -1432,24 +1432,22 @@ private fun MobileSettingsLayout(
             contentPadding = PaddingValues(bottom = bottomInset)
         ) {
             item {
-                Box(
-                    modifier = Modifier
-                        .padding(top = 8.dp)
-                        .entrance()
-                ) {
-                    FollowAuthorSection(
-                        onTelegramClick = onTelegramClick,
-                        onTwitterClick = onTwitterClick,
-                        onDonateClick = onDonateClick
-                    )
-                }
-            }
-
-            item {
                 SettingsSearchBarSection(
                     query = searchQuery,
                     onQueryChange = onSearchQueryChange
                 )
+            }
+
+            item {
+                if (searchQuery.isBlank() && activeRootCategory == null) {
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 8.dp)
+                            .entrance()
+                    ) {
+                        SupportAuthorCompactSection(onDonateClick = onDonateClick)
+                    }
+                }
             }
 
             if (searchQuery.isNotBlank()) {
