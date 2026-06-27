@@ -30,11 +30,14 @@ internal data class DynamicDetailInteractionModel(
 
 internal fun resolveDynamicCommentPayload(
     data: ReplyData,
-    fallbackCount: Int
+    fallbackCount: Int,
+    includeHotReplies: Boolean = true
 ): DynamicCommentPayload {
     val replies = buildList {
         addAll(data.collectTopReplies())
-        addAll(data.hots.orEmpty())
+        if (includeHotReplies) {
+            addAll(data.hots.orEmpty())
+        }
         addAll(data.replies.orEmpty())
     }.distinctBy { it.rpid }
 
@@ -97,7 +100,8 @@ internal fun resolveDynamicSubReplyStateAfterSuccess(
     newItems: List<ReplyItem>,
     page: Int,
     isEnd: Boolean,
-    totalCount: Int = currentState.totalCount
+    totalCount: Int = currentState.totalCount,
+    grpcNextOffset: String? = currentState.grpcNextOffset
 ): SubReplyUiState {
     val mergedItems = if (page == 1) {
         newItems
@@ -110,7 +114,12 @@ internal fun resolveDynamicSubReplyStateAfterSuccess(
         isLoading = false,
         page = page,
         isEnd = isEnd,
-        error = null
+        error = null,
+        baseItems = mergedItems.toImmutableList(),
+        basePage = page,
+        baseIsEnd = isEnd,
+        grpcNextOffset = grpcNextOffset,
+        baseGrpcNextOffset = grpcNextOffset
     )
 }
 

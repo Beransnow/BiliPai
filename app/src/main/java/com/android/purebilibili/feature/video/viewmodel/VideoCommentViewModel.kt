@@ -445,7 +445,12 @@ class VideoCommentViewModel : ViewModel() {
             page = 1,
             upMid = _commentState.value.upMid  // [修复] 使用正确的 UP 主 mid
         )
-        loadSubReplies(requestSubject, rootReply.rpid, 1, paginationOffset = null)
+        loadSubReplies(
+            subject = requestSubject,
+            rootId = rootReply.rpid,
+            page = 1,
+            paginationOffset = null
+        )
     }
 
     fun openSubReplyFromRoute(rootReplyId: Long, targetReplyId: Long = 0L): Boolean {
@@ -474,8 +479,7 @@ class VideoCommentViewModel : ViewModel() {
                 type = routeSubject.type,
                 rootId = rootReplyId,
                 page = 1,
-                ps = SUB_REPLY_PAGE_SIZE,
-                preferRestPaging = true
+                ps = SUB_REPLY_PAGE_SIZE
             ).onSuccess { data ->
                 if (!shouldApplyCommentSubjectResult(routeSubject, currentSubject)) {
                     return@onSuccess
@@ -705,8 +709,7 @@ class VideoCommentViewModel : ViewModel() {
                 rootId = rootId,
                 page = page,
                 ps = SUB_REPLY_PAGE_SIZE,
-                paginationOffset = paginationOffset,
-                preferRestPaging = true
+                paginationOffset = paginationOffset
             )
             result.onSuccess { data ->
                 val current = _subReplyState.value

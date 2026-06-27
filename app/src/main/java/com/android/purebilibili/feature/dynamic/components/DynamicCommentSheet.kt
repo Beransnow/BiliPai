@@ -30,12 +30,14 @@ import com.android.purebilibili.feature.dynamic.resolveDynamicCommentSheetTotalC
 import com.android.purebilibili.feature.video.ui.components.CommentPictures
 import com.android.purebilibili.feature.video.ui.components.RichCommentText
 import com.android.purebilibili.feature.video.ui.components.FanGroupDecorationBadge
+import com.android.purebilibili.feature.video.ui.components.iOSSegmentedControl
 import com.android.purebilibili.feature.video.ui.components.resolveFanGroupDecorationCardBgs
 import com.android.purebilibili.feature.video.ui.components.resolveFanGroupVisualFromMemberAndSailing
 import com.android.purebilibili.feature.video.ui.components.resolveInlineSubReplyToggleLabel
 import com.android.purebilibili.feature.video.ui.components.resolveReplyPreviewTextContent
 import com.android.purebilibili.feature.video.ui.components.resolveVisibleSubReplies
 import com.android.purebilibili.feature.video.ui.components.shouldShowInlineSubReplyToggle
+import com.android.purebilibili.feature.video.viewmodel.CommentSortMode
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -56,6 +58,7 @@ fun DynamicCommentOverlayHost(
     val commentsLoadingMore by viewModel.commentsLoadingMore.collectAsStateWithLifecycle()
     val subReplyState by viewModel.subReplyState.collectAsStateWithLifecycle()
     val liveCommentCount by viewModel.commentTotalCount.collectAsStateWithLifecycle()
+    val sortMode by viewModel.dynamicCommentSortMode.collectAsStateWithLifecycle()
     val inspectionMode = LocalInspectionMode.current
 
     if (!selectedDynamicId.isNullOrBlank()) {
@@ -75,9 +78,11 @@ fun DynamicCommentOverlayHost(
         DynamicCommentSheet(
             comments = comments,
             totalCount = totalCount,
+            sortMode = sortMode,
             isLoading = commentsLoading,
             isLoadingMore = commentsLoadingMore,
             onDismiss = { viewModel.closeCommentSheet() },
+            onSortModeChange = { viewModel.setDynamicCommentSortMode(it) },
             onPostComment = { message ->
                 viewModel.postComment(dynamicId, message) { _, msg ->
                     if (!inspectionMode) {
@@ -105,9 +110,11 @@ fun DynamicCommentOverlayHost(
 fun DynamicCommentSheet(
     comments: List<ReplyItem>,
     totalCount: Int,  //  [新增] 总评论数
+    sortMode: CommentSortMode = CommentSortMode.HOT,
     isLoading: Boolean,
     isLoadingMore: Boolean,
     onDismiss: () -> Unit,
+    onSortModeChange: (CommentSortMode) -> Unit = {},
     onPostComment: (String) -> Unit,
     onViewReplies: (ReplyItem) -> Unit = {},
     onLoadMore: () -> Unit = {}
@@ -121,6 +128,7 @@ fun DynamicCommentSheet(
     var previewInitialIndex by remember { mutableIntStateOf(0) }
     var previewSourceRect by remember { mutableStateOf<Rect?>(null) }
     var previewTextContent by remember { mutableStateOf<ImagePreviewTextContent?>(null) }
+    val sortModes = remember { listOf(CommentSortMode.HOT, CommentSortMode.NEWEST) }
 
     if (showImagePreview && previewImages.isNotEmpty()) {
         ImagePreviewDialog(
@@ -171,6 +179,14 @@ fun DynamicCommentSheet(
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(modifier = Modifier.weight(1f))
+                iOSSegmentedControl(
+                    items = sortModes.map { it.label },
+                    selectedIndex = sortModes.indexOf(sortMode).coerceAtLeast(0),
+                    onScaleChange = { index ->
+                        sortModes.getOrNull(index)?.let(onSortModeChange)
+                    }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 IconButton(onClick = onDismiss) {
                     Icon(
                         CupertinoIcons.Default.Xmark,

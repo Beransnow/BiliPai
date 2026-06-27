@@ -29,11 +29,30 @@ class DynamicCommentLoadPolicyTest {
 
         val resolved = resolveDynamicCommentPayload(
             data = data,
-            fallbackCount = 29
+            fallbackCount = 29,
+            includeHotReplies = true
         )
 
         assertEquals(listOf(100L, 101L, 102L), resolved.replies.map { it.rpid })
         assertEquals(29, resolved.totalCount)
+    }
+
+    @Test
+    fun `dynamic newest comment payload skips hot replies to preserve time order`() {
+        val data = ReplyData(
+            top = ReplyTop(upper = ReplyItem(rpid = 100L)),
+            hots = listOf(ReplyItem(rpid = 101L)),
+            replies = listOf(ReplyItem(rpid = 102L), ReplyItem(rpid = 103L))
+        )
+
+        val resolved = resolveDynamicCommentPayload(
+            data = data,
+            fallbackCount = 0,
+            includeHotReplies = false
+        )
+
+        assertEquals(listOf(100L, 102L, 103L), resolved.replies.map { it.rpid })
+        assertEquals(3, resolved.totalCount)
     }
 
     @Test

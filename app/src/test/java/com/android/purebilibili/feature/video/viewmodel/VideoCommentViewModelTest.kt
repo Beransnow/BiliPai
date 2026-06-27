@@ -1,5 +1,6 @@
 package com.android.purebilibili.feature.video.viewmodel
 
+import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -92,5 +93,16 @@ class VideoCommentViewModelTest {
                 activeDialogId = 44L
             )
         )
+    }
+
+    @Test
+    fun `sub reply loading should not force rest pagination`() {
+        val source = File("src/main/java/com/android/purebilibili/feature/video/viewmodel/VideoCommentViewModel.kt")
+            .readText()
+
+        assertFalse(source.contains("loadSubReplies(requestSubject, rootReply.rpid, 1, paginationOffset = null)"))
+        assertFalse(source.contains("preferRestPaging = true"))
+        assertTrue(source.contains("paginationOffset = paginationOffset"))
+        assertTrue(source.contains("baseGrpcNextOffset = nextOffset"))
     }
 }

@@ -27,6 +27,7 @@ import com.android.purebilibili.feature.video.viewmodel.resolveRoutedCommentRoot
 import com.android.purebilibili.feature.video.viewmodel.resolveSubReplyLoadedTotalCount
 import com.android.purebilibili.feature.video.viewmodel.resolveSubReplyPageEnd
 import com.android.purebilibili.feature.video.viewmodel.resolveSubReplyRemoteTotalCount
+import com.android.purebilibili.feature.video.viewmodel.CommentSortMode
 import com.android.purebilibili.feature.video.viewmodel.SubReplyUiState
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -873,6 +874,9 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
     private val _comments = MutableStateFlow<List<com.android.purebilibili.data.model.response.ReplyItem>>(emptyList())
     val comments: StateFlow<List<com.android.purebilibili.data.model.response.ReplyItem>> = _comments.asStateFlow()
 
+    private val _dynamicCommentSortMode = MutableStateFlow(CommentSortMode.HOT)
+    val dynamicCommentSortMode: StateFlow<CommentSortMode> = _dynamicCommentSortMode.asStateFlow()
+
     private val _subReplyState = MutableStateFlow(SubReplyUiState())
     val subReplyState: StateFlow<SubReplyUiState> = _subReplyState.asStateFlow()
     
@@ -945,8 +949,22 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
         commentNextPage = 1
         commentsEnd = true
         commentGrpcNextOffset = null
+        _dynamicCommentSortMode.value = CommentSortMode.HOT
         // [新增] 清空计数
         _commentTotalCount.value = 0
+    }
+
+    fun setDynamicCommentSortMode(mode: CommentSortMode) {
+        if (mode != CommentSortMode.HOT && mode != CommentSortMode.NEWEST) return
+        if (_dynamicCommentSortMode.value == mode) return
+        _dynamicCommentSortMode.value = mode
+        val item = _selectedDynamic.value ?: return
+        _comments.value = emptyList()
+        _commentsLoadingMore.value = false
+        commentNextPage = 1
+        commentsEnd = true
+        commentGrpcNextOffset = null
+        loadCommentsForDynamic(item)
     }
     
     /**
@@ -958,6 +976,7 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
         routedTargetReplyId: Long = 0L
     ) {
         viewModelScope.launch {
+            val sortMode = _dynamicCommentSortMode.value
             _commentsLoading.value = true
             _commentsLoadingMore.value = false
             _selectedCommentTarget.value = null
@@ -989,12 +1008,13 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
                         type = target.type,
                         page = 1,
                         ps = 20,
-                        mode = 3
+                        mode = sortMode.apiMode
                     )
                     result.onSuccess { data ->
                         val payload = resolveDynamicCommentPayload(
                             data = data,
-                            fallbackCount = exactCount ?: 0
+                            fallbackCount = exactCount ?: 0,
+                            includeHotReplies = sortMode == CommentSortMode.HOT
                         )
                         attempts += DynamicCommentLoadAttempt(
                             target = target,
@@ -1034,6 +1054,9 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
                     expectedCount = fallbackCount
                 )
                 if (selected != null) {
+                    if (_dynamicCommentSortMode.value != sortMode) {
+                        return@launch
+                    }
                     _selectedCommentTarget.value = selected.target
                     _comments.value = selected.replies
                     _commentTotalCount.value = selected.totalCount
@@ -1067,6 +1090,7 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
         if (_commentsLoading.value || _commentsLoadingMore.value || commentsEnd) return
 
         val pageToLoad = commentNextPage
+        val sortMode = _dynamicCommentSortMode.value
         _commentsLoadingMore.value = true
         viewModelScope.launch {
             CommentRepository.getCommentsForSubject(
@@ -1074,10 +1098,10 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
                 type = target.type,
                 page = pageToLoad,
                 ps = 20,
-                mode = 3,
+                mode = sortMode.apiMode,
                 paginationOffset = commentGrpcNextOffset
             ).onSuccess { data ->
-                if (_selectedCommentTarget.value != target) return@onSuccess
+                if (_selectedCommentTarget.value != target || _dynamicCommentSortMode.value != sortMode) return@onSuccess
 
                 val currentReplies = _comments.value
                 val newReplies = data.replies.orEmpty()
@@ -1182,8 +1206,7 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
                 type = target.type,
                 rootId = rootReplyId,
                 page = 1,
-                ps = 20,
-                preferRestPaging = true
+                ps = 20
             ).onSuccess { data ->
                 showRoutedSubReply(data, rootReplyId, targetReplyId)
             }.onFailure { error ->
@@ -1230,6 +1253,8 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
             basePage = 1,
             isEnd = isEnd,
             baseIsEnd = isEnd,
+            grpcNextOffset = data.grpcNextOffset.takeIf { it.isNotBlank() },
+            baseGrpcNextOffset = data.grpcNextOffset.takeIf { it.isNotBlank() },
             targetReplyId = targetReplyId.takeIf { it != rootReplyId } ?: 0L
         )
     }
@@ -1249,17 +1274,25 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
             oid = target.oid,
             type = target.type,
             rootId = rootReply.rpid,
-            page = nextPage
+            page = nextPage,
+            paginationOffset = state.grpcNextOffset
         )
     }
 
-    private fun loadSubReplies(oid: Long, type: Int, rootId: Long, page: Int) {
+    private fun loadSubReplies(
+        oid: Long,
+        type: Int,
+        rootId: Long,
+        page: Int,
+        paginationOffset: String? = _subReplyState.value.grpcNextOffset
+    ) {
         viewModelScope.launch {
             val result = CommentRepository.getSubCommentsForSubject(
                 oid = oid,
                 type = type,
                 rootId = rootId,
-                page = page
+                page = page,
+                paginationOffset = paginationOffset
             )
             result.onSuccess { data ->
                 val current = _subReplyState.value
@@ -1286,7 +1319,8 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
                     newItems = newItems,
                     page = page,
                     isEnd = isEnd,
-                    totalCount = totalCount
+                    totalCount = totalCount,
+                    grpcNextOffset = data.grpcNextOffset.takeIf { it.isNotBlank() }
                 )
             }.onFailure { error ->
                 _subReplyState.value = resolveDynamicSubReplyStateAfterFailure(
