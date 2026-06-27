@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.store.HomeWallpaperEffectMode
 import com.android.purebilibili.core.theme.LocalCornerRadiusScale
 import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.transition.VIDEO_SHARED_COVER_ASPECT_RATIO
 
 @Composable
 internal fun rememberHomeFeedSkeletonPulse(): Float {
@@ -60,7 +61,7 @@ internal fun HomeFeedSkeletonCard(
     wallpaperTintEnabled: Boolean,
     wallpaperEffectMode: HomeWallpaperEffectMode,
     isDataSaverActive: Boolean,
-    coverAspectRatio: Float = 4f / 3f,
+    coverAspectRatio: Float = VIDEO_SHARED_COVER_ASPECT_RATIO,
     modifier: Modifier = Modifier
 ) {
     val cornerRadiusScale = LocalCornerRadiusScale.current

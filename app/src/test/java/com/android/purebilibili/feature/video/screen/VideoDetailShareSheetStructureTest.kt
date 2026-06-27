@@ -10,6 +10,7 @@ class VideoDetailVideoShareSheetStructureTest {
     @Test
     fun ordinaryVideoDetailShareEntrypoints_openVideoShareSheet() {
         val source = loadVideoDetailSource()
+        val phoneContentSource = loadVideoDetailPhoneContentSource()
 
         assertTrue(
             source.contains("pendingVideoShare"),
@@ -20,24 +21,26 @@ class VideoDetailVideoShareSheetStructureTest {
             "VideoDetailScreen should render the shared video share sheet"
         )
 
-        val detailActionShare = source
+        val detailActionShare = phoneContentSource
             .substringAfter("onDownloadClick = { viewModel.openDownloadDialog() }")
             .substringBefore("//  [新增] 时间戳点击跳转")
-        val bottomInputShare = source
+        val bottomInputShare = phoneContentSource
             .substringAfter("BottomInputBar(")
             .substringBefore("onCommentClick = {")
 
         assertTrue(
-            detailActionShare.contains("pendingVideoShare = buildVideoSharePayload"),
-            "Detail action row share should open VideoShareSheet with unified payload"
+            detailActionShare.contains("onShareVideo(") &&
+                detailActionShare.contains("buildVideoSharePayload"),
+            "Detail action row share should emit unified share payload"
         )
         assertTrue(
             detailActionShare.contains("coverUrl = success.info.pic"),
             "Detail action row share should include the current video cover"
         )
         assertTrue(
-            bottomInputShare.contains("pendingVideoShare = buildVideoSharePayload"),
-            "Bottom input bar share should open VideoShareSheet with unified payload"
+            bottomInputShare.contains("onShareVideo(") &&
+                bottomInputShare.contains("buildVideoSharePayload"),
+            "Bottom input bar share should emit unified share payload"
         )
         assertTrue(
             bottomInputShare.contains("coverUrl = success.info.pic"),
@@ -60,6 +63,16 @@ class VideoDetailVideoShareSheetStructureTest {
         )
         val sourceFile = candidates.firstOrNull { it.exists() }
             ?: error("Cannot locate VideoDetailScreen.kt from ${File(".").absolutePath}")
+        return sourceFile.readText()
+    }
+
+    private fun loadVideoDetailPhoneContentSource(): String {
+        val candidates = listOf(
+            File("src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailPhoneContent.kt"),
+            File("app/src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailPhoneContent.kt")
+        )
+        val sourceFile = candidates.firstOrNull { it.exists() }
+            ?: error("Cannot locate VideoDetailPhoneContent.kt from ${File(".").absolutePath}")
         return sourceFile.readText()
     }
 }

@@ -28,6 +28,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.android.purebilibili.core.ui.AppShapes
+import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.blur.hazeSourceCompat
 import com.android.purebilibili.core.ui.blur.shouldAllowRuntimeShaderBackedHazeEffect
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
@@ -371,7 +374,7 @@ private fun ExternalPlaylistQueueCollapsedBar(
     hazeState: HazeState,
     modifier: Modifier = Modifier
 ) {
-    val shape = RoundedCornerShape(16.dp)
+    val shape = AppShapes.container(ContainerLevel.Dialog)
     val useHazeEffect = shouldAllowRuntimeShaderBackedHazeEffect(Build.VERSION.SDK_INT)
     Surface(
         modifier = modifier
@@ -389,7 +392,7 @@ private fun ExternalPlaylistQueueCollapsedBar(
             )
             .clickable { onClick() },
         shape = shape,
-        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.74f),
+        color = AppSurfaceTokens.cardContainer().copy(alpha = 0.74f),
         tonalElevation = 0.dp,
         border = BorderStroke(
             width = 0.6.dp,

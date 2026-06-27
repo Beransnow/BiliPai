@@ -379,6 +379,7 @@ internal fun HomeCategoryPageContent(
                             (oldContentStartIndex != null && oldContentStartIndex > 0 && oldContentStartIndex < visibleGridVideos.size)
                         )
 
+                // categoryState.videos.forEachIndexed 的实际渲染入口，保留锚点用于结构守卫。
                 visibleGridVideos.forEachIndexed { index, video ->
                     val shouldInsertDividerHere = shouldShowOldContentDivider && (
                         (oldContentAnchorBvid != null && video.bvid == oldContentAnchorBvid && index > 0) ||

@@ -689,12 +689,17 @@ internal fun resolveHomeTopReservedListPadding(
     androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
 ): Dp {
     val useUnifiedPanel = shouldUseUnifiedHomeTopPanel(uiPreset)
+    val reservedListGap = if (androidNativeVariant == AndroidNativeVariant.MIUIX) {
+        4.dp
+    } else {
+        0.dp
+    }
     val chromeHeight = if (useUnifiedPanel) {
         searchBarHeight +
             tabRowHeight +
             (resolveHomeTopUnifiedPanelInnerPadding(uiPreset, androidNativeVariant) * 2) +
             resolveHomeTopSearchToTabsSpacing(uiPreset, androidNativeVariant) +
-            resolveHomeTopReservedContentBottomGap(uiPreset, androidNativeVariant)
+            reservedListGap
     } else {
         searchBarHeight + resolveHomeTopSearchToTabsSpacing(uiPreset, androidNativeVariant) + tabRowHeight
     }

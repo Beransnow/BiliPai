@@ -1009,7 +1009,7 @@ internal fun Modifier.kernelSuFloatingDockSurface(
     materialMotionProgress: Float = 0f,
     materialPressProgress: Float = 0f
 ): Modifier = composed {
-    val isDarkTheme = resolveBottomBarDarkTheme(MaterialTheme.colorScheme.background)
+    val isDarkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.chromeBackground())
     val materialSpec: BottomBarGlassMaterialSpec = resolveBottomBarGlassMaterialSpec(
         preset = liquidGlassPreset,
         isDarkTheme = isDarkTheme,
@@ -1363,7 +1363,7 @@ internal fun resolveAndroidNativeIdleIndicatorSurfaceColor(
 
 internal fun resolveKernelSuBottomBarContainerColor(darkTheme: Boolean): Color {
     val surfaceContainer = if (darkTheme) {
-        Color(0xFF242424)
+        Color(36, 36, 36)
     } else {
         Color.White
     }
@@ -2327,7 +2327,7 @@ fun FrostedBottomBar(
         val glassEnabled = homeSettings.isBottomBarLiquidGlassEnabled
         val tuning = resolveAndroidNativeBottomBarTuning(
             blurEnabled = glassEnabled || hazeState != null,
-            darkTheme = resolveBottomBarDarkTheme(MaterialTheme.colorScheme.background)
+            darkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.chromeBackground())
         )
         val containerColor = resolveAndroidNativeFloatingBottomBarContainerColor(
             surfaceColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -2449,7 +2449,7 @@ private fun MaterialBottomBar(
     )
     val androidNativeTuning = resolveAndroidNativeBottomBarTuning(
         blurEnabled = glassEnabled || blurEnabled,
-        darkTheme = resolveBottomBarDarkTheme(MaterialTheme.colorScheme.background),
+        darkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.chromeBackground()),
         androidNativeVariant = LocalAndroidNativeVariant.current
     )
     val blurIntensity = currentUnifiedBlurIntensity()

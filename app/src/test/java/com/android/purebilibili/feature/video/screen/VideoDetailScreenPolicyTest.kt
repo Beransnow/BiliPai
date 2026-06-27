@@ -124,7 +124,7 @@ class VideoDetailScreenPolicyTest {
 
     @Test
     fun frozenCommentBar_doesNotDependOnLiquidGlassToggle() {
-        val source = File("src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreen.kt")
+        val source = File("src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailPhoneContent.kt")
             .readText()
 
         assertFalse(source.contains("val videoDetailLiquidGlassEnabled"))
@@ -150,7 +150,7 @@ class VideoDetailScreenPolicyTest {
     fun videoCommentTab_removesInlineComposerAndKeepsBottomComposerEntry() {
         val contentSource = File("src/main/java/com/android/purebilibili/feature/video/screen/VideoContentSection.kt")
             .readText()
-        val detailSource = File("src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreen.kt")
+        val detailSource = File("src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailPhoneContent.kt")
             .readText()
         val commentTabSource = contentSource
             .substringAfter("private fun VideoCommentTab(")

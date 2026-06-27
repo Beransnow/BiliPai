@@ -55,6 +55,8 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.android.purebilibili.core.ui.AppShapes
+import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.feature.home.HomeHeroCarouselCardTransform
@@ -161,8 +163,9 @@ private fun HomeHeroCarouselCard(
         }
     }
 
+    val cardShape = AppShapes.container(ContainerLevel.Card)
     Surface(
-        shape = RoundedCornerShape(12.dp),
+        shape = cardShape,
         color = MaterialTheme.colorScheme.surfaceVariant,
         tonalElevation = 0.dp,
         shadowElevation = (transform.shadowElevationFraction * 10f).dp,
@@ -177,7 +180,7 @@ private fun HomeHeroCarouselCard(
                 scaleY = transform.scale
                 alpha = transform.alpha
             }
-            .clip(RoundedCornerShape(12.dp))
+            .clip(cardShape)
             .clickable(onClick = onVideoClick)
     ) {
         Box(modifier = Modifier.fillMaxSize()) {

@@ -150,7 +150,7 @@ internal fun resolveHomeTopPresetStyle(
                     horizontalPadding = 0.dp,
                     innerPadding = 6.dp,
                     cornerRadius = 32.dp,
-                    reservedContentBottomGap = 0.dp
+                    reservedContentBottomGap = 5.dp
                 ),
                 spacing = HomeTopSpacingStyle(
                     edgeControlGap = 6.dp,
@@ -216,7 +216,7 @@ internal fun resolveHomeTopPresetStyle(
                     horizontalPadding = 0.dp,
                     innerPadding = 9.dp,
                     cornerRadius = 18.dp,
-                    reservedContentBottomGap = 4.dp
+                    reservedContentBottomGap = 12.dp
                 ),
                 spacing = HomeTopSpacingStyle(
                     edgeControlGap = 7.dp,
@@ -274,7 +274,7 @@ internal fun resolveHomeTopPresetStyle(
                     horizontalPadding = 0.dp,
                     innerPadding = 10.dp,
                     cornerRadius = 16.dp,
-                    reservedContentBottomGap = 0.dp
+                    reservedContentBottomGap = 5.dp
                 ),
                 spacing = HomeTopSpacingStyle(
                     edgeControlGap = 8.dp,
