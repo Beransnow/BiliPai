@@ -4,6 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -171,7 +173,7 @@ fun AdaptiveScaffold(
     floatingActionButton: @Composable () -> Unit = {},
     snackbarHost: @Composable () -> Unit = {},
     containerColor: Color = MaterialTheme.colorScheme.background,
-    contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
+    contentWindowInsets: WindowInsets = WindowInsets.navigationBars,
     content: @Composable (PaddingValues) -> Unit
 ) {
     val effectiveContainerColor = resolveAdaptiveScaffoldContainerColor(
@@ -291,6 +293,7 @@ fun AdaptiveTopAppBar(
         return
     }
 
+    val topBarWindowInsets = WindowInsets.statusBars
     when (style) {
         AdaptiveTopAppBarStyle.SMALL -> {
             TopAppBar(
@@ -299,7 +302,8 @@ fun AdaptiveTopAppBar(
                 navigationIcon = navigationIcon,
                 actions = actions,
                 colors = topAppBarColors,
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                windowInsets = topBarWindowInsets
             )
         }
 
@@ -310,7 +314,8 @@ fun AdaptiveTopAppBar(
                 navigationIcon = navigationIcon,
                 actions = actions,
                 colors = topAppBarColors,
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                windowInsets = topBarWindowInsets
             )
         }
 
@@ -321,7 +326,8 @@ fun AdaptiveTopAppBar(
                 navigationIcon = navigationIcon,
                 actions = actions,
                 colors = topAppBarColors,
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                windowInsets = topBarWindowInsets
             )
         }
     }

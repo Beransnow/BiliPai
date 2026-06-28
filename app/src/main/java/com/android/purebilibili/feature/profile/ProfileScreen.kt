@@ -1421,9 +1421,8 @@ private fun ProfileSpaceTabs(
 
     Row(
         modifier = tabModifier
-            .height(layoutTokens.tabHeightDp.dp)
-            .horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(24.dp),
+            .height(layoutTokens.tabHeightDp.dp),
+        horizontalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically
     ) {
         tabs.forEach { item ->
