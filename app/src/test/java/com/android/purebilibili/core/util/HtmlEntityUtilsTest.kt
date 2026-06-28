@@ -51,4 +51,25 @@ class HtmlEntityUtilsTest {
     fun `unescape returns empty string for empty input`() {
         assertEquals("", HtmlEntityUtils.unescape(""))
     }
+
+    @Test
+    fun `unescape decodes nbsp entity to space`() {
+        assertEquals("a b", HtmlEntityUtils.unescape("a&nbsp;b"))
+    }
+
+    @Test
+    fun `unescape decodes uppercase hex entity`() {
+        assertEquals("★", HtmlEntityUtils.unescape("&#X2605;"))
+    }
+
+    @Test
+    fun `unescape decodes named entity without trailing semicolon`() {
+        assertEquals("a & b", HtmlEntityUtils.unescape("a &amp b"))
+    }
+
+    @Test
+    fun `unescape preserves a real-world bilibili comment with mixed content`() {
+        val raw = "我说&#39;这&#34;话&amp;那[doge]★"
+        assertEquals("我说'这\"话&那[doge]★", HtmlEntityUtils.unescape(raw))
+    }
 }
