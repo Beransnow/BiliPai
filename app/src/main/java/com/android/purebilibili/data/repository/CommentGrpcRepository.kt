@@ -3,6 +3,7 @@ package com.android.purebilibili.data.repository
 import com.android.purebilibili.core.network.grpc.BiliGrpcClient
 import com.android.purebilibili.core.network.grpc.ProtoWire
 import com.android.purebilibili.core.util.FormatUtils
+import com.android.purebilibili.core.util.HtmlEntityUtils
 import com.android.purebilibili.data.model.response.ReplyCardLabel
 import com.android.purebilibili.data.model.response.ReplyConfig
 import com.android.purebilibili.data.model.response.ReplyContent
@@ -452,7 +453,7 @@ internal object CommentGrpcRepository {
 
         ProtoWire.parseFields(bytes).forEach { field ->
             when (field.number) {
-                1 -> message = ProtoWire.stringValue(field)
+                1 -> message = HtmlEntityUtils.unescape(ProtoWire.stringValue(field))
                 3 -> parseMapEntry(field.bytes) { key, value ->
                     parseEmote(value, key)?.let { emotes[key.ifBlank { it.text }] = it }
                 }
