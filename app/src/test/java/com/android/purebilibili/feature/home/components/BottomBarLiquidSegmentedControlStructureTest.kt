@@ -349,32 +349,9 @@ class BottomBarLiquidSegmentedControlStructureTest {
     }
 
     @Test
-    fun `pager calm follow keeps translation only like tap driven segmented controls`() {
-        assertTrue(resolveSegmentedControlPagerCalmFollow(pagerIndicatorPosition = 0.4f))
-        assertFalse(resolveSegmentedControlPagerCalmFollow(pagerIndicatorPosition = null))
-        assertFalse(shouldAnimateSegmentedControlPagerSettle(pagerCalmFollow = true))
-        assertTrue(shouldAnimateSegmentedControlPagerSettle(pagerCalmFollow = false))
-        assertFalse(
-            shouldApplySegmentedControlPagerMotionEffects(
-                pagerDriven = true,
-                pagerCalmFollow = true,
-                dragIsDragging = false,
-            )
-        )
-        assertTrue(
-            shouldApplySegmentedControlPagerMotionEffects(
-                pagerDriven = true,
-                pagerCalmFollow = false,
-                dragIsDragging = false,
-            )
-        )
-        assertTrue(
-            shouldApplySegmentedControlPagerMotionEffects(
-                pagerDriven = true,
-                pagerCalmFollow = true,
-                dragIsDragging = true,
-            )
-        )
+    fun `pager linked segmented control reuses bottom bar drag state path`() {
+        assertTrue(resolveSegmentedControlPagerLinked(pagerIndicatorPosition = 0.4f))
+        assertFalse(resolveSegmentedControlPagerLinked(pagerIndicatorPosition = null))
     }
 
     @Test
@@ -409,20 +386,18 @@ class BottomBarLiquidSegmentedControlStructureTest {
         )
         assertTrue(source.contains("pagerIndicatorPosition: Float? = null"))
         assertTrue(source.contains("pagerIsScrolling: Boolean = false"))
-        assertTrue(source.contains("resolveSegmentedControlEffectiveIndicatorPosition("))
-        assertTrue(source.contains("resolveTopTabPagerVelocityItemsPerSecond("))
+        assertTrue(source.contains("resolveBottomBarVisualIndicatorPosition("))
+        assertTrue(source.contains("dragState.followValue("))
+        assertTrue(source.contains("snapshotFlow"))
         assertTrue(source.contains("shouldDeformTopTabIndicator("))
-        assertTrue(source.contains("resolveSegmentedControlPagerCalmFollow("))
-        assertTrue(source.contains("shouldApplySegmentedControlPagerMotionEffects("))
-        assertTrue(source.contains("resolveSegmentedControlPagerInteractionProgress("))
+        assertTrue(source.contains("resolveSegmentedControlPagerLinked("))
         assertTrue(source.contains("resolveSegmentedControlIndicatorPressProgress("))
         assertTrue(source.contains("effectiveIndicatorPressProgress"))
-        assertTrue(source.contains("dragState.snapTo(safeSelectedIndex.toFloat())"))
+        assertTrue(source.contains("dragState.updateIndex(index)"))
+        assertTrue(source.contains("dragState.updateIndex(safeSelectedIndex)"))
         assertFalse(
-            source.contains(
-                "LaunchedEffect(pagerIndicatorPosition, pagerIsScrolling, itemCount, dragState)"
-            ),
-            "Pager follow must not async snap drag state every frame; that fights composition-time pager translation and causes indicator twitch"
+            source.contains("effectiveIndicatorPosition"),
+            "Pager-linked tabs must render from dragState like the home bottom bar, not a parallel pager offset path"
         )
     }
 

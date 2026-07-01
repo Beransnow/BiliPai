@@ -72,6 +72,13 @@ class DampedDragAnimationPolicyTest {
         assertTrue(source.contains("Offset(value, 0f)"))
         assertTrue(source.contains("velocityAnimation.animateTo(targetVelocity, velocityAnimationSpec)"))
         assertTrue(dragSource.contains("updateDeformationVelocity(clampedValue)"))
+        assertTrue(source.contains("fun followValue(targetValue: Float)"))
+        assertTrue(source.contains("updateDeformationVelocity(clampedValue)"))
+        assertFalse(
+            source.substringAfter("fun followValue(").substringBefore("fun animateToValue(")
+                .contains("startNewMotion()"),
+            "Continuous pager follow must not restart motion generation every frame"
+        )
         assertTrue(source.contains("velocityTracker.addPosition("))
         assertTrue(source.contains("velocityTracker.calculateVelocity()"))
         // velocityAnimation 仍通过 animateToValue 中的 animateTo(0f) 做释放衰减

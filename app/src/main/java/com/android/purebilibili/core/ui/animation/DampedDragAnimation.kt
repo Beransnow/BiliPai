@@ -196,6 +196,23 @@ internal class DampedDragAnimationState(
         }
     }
 
+    /**
+     * 外部连续跟手（如 Pager 偏移）时复用拖拽同款 snap + 形变速度估算，
+     * 避免每帧 startNewMotion/snapTo 清零速度导致指示器抽搐。
+     */
+    fun followValue(targetValue: Float) {
+        if (itemCount <= 0) return
+        val clampedValue = targetValue.fastCoerceIn(0f, (itemCount - 1).toFloat())
+        desiredValue = clampedValue
+        targetIndex = clampedValue.roundToInt().coerceIn(0, itemCount - 1)
+        valueJob?.cancel()
+        valueJob = scope.launch {
+            valueAnimation.stop()
+            valueAnimation.snapTo(clampedValue)
+            updateDeformationVelocity(clampedValue)
+        }
+    }
+
     fun animateToValue(value: Float, onSettled: (() -> Unit)? = null) {
         scope.launch {
             mutatorMutex.mutate {
