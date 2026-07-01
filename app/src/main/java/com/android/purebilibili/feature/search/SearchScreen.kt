@@ -639,12 +639,14 @@ fun SearchScreen(
     val genericResultCardAppearance = remember(
         liquidGlassEnabled,
         uiPreset,
-        androidNativeLiquidGlassEnabled
+        androidNativeLiquidGlassEnabled,
+        androidNativeVariant
     ) {
         resolveSearchResultCardAppearance(
             liquidGlassEnabled = liquidGlassEnabled,
             uiPreset = uiPreset,
-            androidNativeLiquidGlassEnabled = androidNativeLiquidGlassEnabled
+            androidNativeLiquidGlassEnabled = androidNativeLiquidGlassEnabled,
+            androidNativeVariant = androidNativeVariant
         )
     }
     val cardTransitionEnabled by SettingsManager.getCardTransitionEnabled(context).collectAsStateWithLifecycle(initialValue = false)

@@ -25,29 +25,32 @@ class AppChromeSizeTokensTest {
     }
 
     @Test
-    fun `md3 compact capsule tokens keep normal touch target without oversized pills`() {
+    fun `md3 compact capsule tokens align search bar and touch targets with material3 chrome`() {
         val spec = resolveCompactCapsuleChromeSpec(
             uiPreset = UiPreset.MD3,
             androidNativeVariant = AndroidNativeVariant.MATERIAL3
         )
 
-        assertEquals(44, spec.primaryHeightDp)
-        assertEquals(40, spec.secondaryButtonSizeDp)
-        assertEquals(36, spec.chipHeightDp)
-        assertEquals(32, spec.compactChipHeightDp)
-        assertEquals(22, spec.primaryCornerRadiusDp)
-        assertEquals(20, spec.secondaryButtonCornerRadiusDp)
+        assertEquals(56, spec.primaryHeightDp)
+        assertEquals(48, spec.secondaryButtonSizeDp)
+        assertEquals(32, spec.chipHeightDp)
+        assertEquals(28, spec.compactChipHeightDp)
+        assertEquals(28, spec.primaryCornerRadiusDp)
+        assertEquals(24, spec.secondaryButtonCornerRadiusDp)
+        assertEquals(24, spec.iconSizeDp)
+        assertEquals(12, spec.standardGapDp)
     }
 
     @Test
-    fun `miuix compact capsule tokens keep slightly denser horizontal padding`() {
+    fun `miuix compact capsule tokens keep denser search chrome within material touch bounds`() {
         val spec = resolveCompactCapsuleChromeSpec(
             uiPreset = UiPreset.MD3,
             androidNativeVariant = AndroidNativeVariant.MIUIX
         )
 
-        assertEquals(44, spec.primaryHeightDp)
-        assertEquals(40, spec.secondaryButtonSizeDp)
+        assertEquals(48, spec.primaryHeightDp)
+        assertEquals(48, spec.secondaryButtonSizeDp)
+        assertEquals(22, spec.primaryCornerRadiusDp)
         assertEquals(14, spec.inputHorizontalPaddingDp)
         assertEquals(8, spec.standardGapDp)
     }

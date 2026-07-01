@@ -127,10 +127,10 @@ class CommonListAppearancePolicyTest {
             androidNativeVariant = AndroidNativeVariant.MATERIAL3
         )
 
-        assertEquals(44, layout.searchBarHeightDp)
+        assertEquals(56, layout.searchBarHeightDp)
         assertEquals(30, layout.browseToggleIndicatorHeightDp)
         assertEquals(14, layout.browseToggleLabelFontSizeSp)
-        assertEquals(36, layout.folderChipMinHeightDp)
+        assertEquals(32, layout.folderChipMinHeightDp)
         assertTrue(layout.headerBackgroundAlphaMultiplier < 1f)
     }
 

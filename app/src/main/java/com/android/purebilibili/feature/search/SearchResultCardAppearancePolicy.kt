@@ -1,7 +1,9 @@
 package com.android.purebilibili.feature.search
 
 import com.android.purebilibili.core.store.resolveEffectiveLiquidGlassEnabled
+import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
 
 internal enum class SearchResultCardSurfaceStyle {
     GLASS,
@@ -52,19 +54,22 @@ internal fun resolveSearchVideoCardAppearance(
 internal fun resolveSearchResultCardAppearance(
     liquidGlassEnabled: Boolean,
     uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeLiquidGlassEnabled: Boolean = false
+    androidNativeLiquidGlassEnabled: Boolean = false,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
 ): SearchResultCardAppearance {
     val effectiveLiquidGlassEnabled = resolveEffectiveLiquidGlassEnabled(
         requestedEnabled = liquidGlassEnabled,
         uiPreset = uiPreset,
         androidNativeLiquidGlassEnabled = androidNativeLiquidGlassEnabled
     )
+    val chromeTokens = resolveAndroidNativeChromeTokens(uiPreset, androidNativeVariant)
+    val md3TonalElevationDp = chromeTokens.tonalSurfaceElevationDp
     return if (effectiveLiquidGlassEnabled && uiPreset == UiPreset.MD3) {
         SearchResultCardAppearance(
             surfaceStyle = SearchResultCardSurfaceStyle.GLASS,
             containerAlpha = 0.96f,
             borderAlpha = 0f,
-            tonalElevationDp = 1,
+            tonalElevationDp = md3TonalElevationDp,
             shadowElevationDp = 0
         )
     } else if (effectiveLiquidGlassEnabled) {
@@ -80,7 +85,7 @@ internal fun resolveSearchResultCardAppearance(
             surfaceStyle = SearchResultCardSurfaceStyle.PLAIN,
             containerAlpha = 1f,
             borderAlpha = 0f,
-            tonalElevationDp = 1,
+            tonalElevationDp = md3TonalElevationDp,
             shadowElevationDp = 0
         )
     } else {
@@ -88,7 +93,7 @@ internal fun resolveSearchResultCardAppearance(
             surfaceStyle = SearchResultCardSurfaceStyle.PLAIN,
             containerAlpha = 1f,
             borderAlpha = 0f,
-            tonalElevationDp = 1,
+            tonalElevationDp = chromeTokens.tonalSurfaceElevationDp,
             shadowElevationDp = 1
         )
     }

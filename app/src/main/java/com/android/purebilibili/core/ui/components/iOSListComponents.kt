@@ -50,6 +50,8 @@ import com.android.purebilibili.core.theme.LocalSettingsLiquidGlassEnabled
 import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
+import com.android.purebilibili.core.ui.resolveCompactCapsuleChromeSpec
 import com.android.purebilibili.core.theme.iOSCornerRadius
 import com.android.purebilibili.core.theme.iOSBlue
 import com.android.purebilibili.core.theme.iOSGreen
@@ -117,42 +119,45 @@ internal data class AdaptiveListRowVisualSpec(
     val insideHorizontalPaddingDp: Int,
     val insideVerticalPaddingDp: Int,
     val trailingIconSizeDp: Int,
-    val trailingSpacingDp: Int
+    val trailingSpacingDp: Int,
+    val minTouchTargetHeightDp: Int
 )
 
 internal fun resolveAdaptiveListComponentVisualSpec(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
 ): AdaptiveListComponentVisualSpec {
+    val chromeTokens = resolveAndroidNativeChromeTokens(uiPreset, androidNativeVariant)
+    val compactChrome = resolveCompactCapsuleChromeSpec(uiPreset, androidNativeVariant)
     return if (uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX) {
         AdaptiveListComponentVisualSpec(
-            sectionStartPaddingDp = 18,
-            groupCornerRadiusDp = 20,
-            groupTonalElevationDp = 0,
+            sectionStartPaddingDp = chromeTokens.denseHorizontalSpacingDp,
+            groupCornerRadiusDp = chromeTokens.containerCornerRadiusDp,
+            groupTonalElevationDp = chromeTokens.tonalSurfaceElevationDp,
             iconCornerRadiusDp = 10,
             iconContainerSizeDp = 38,
             iconGlyphSizeDp = 20,
-            iconBackgroundAlpha = 0.12f,
-            gridCornerRadiusDp = 20,
-            searchBarCornerRadiusDp = 22,
-            searchBarHeightDp = 52,
+            iconBackgroundAlpha = chromeTokens.selectedContainerAlpha,
+            gridCornerRadiusDp = chromeTokens.containerCornerRadiusDp,
+            searchBarCornerRadiusDp = compactChrome.primaryCornerRadiusDp,
+            searchBarHeightDp = compactChrome.primaryHeightDp,
             dividerThicknessDp = 0f,
-            dividerStartIndentDp = 18
+            dividerStartIndentDp = chromeTokens.denseHorizontalSpacingDp
         )
     } else if (uiPreset == UiPreset.MD3) {
         AdaptiveListComponentVisualSpec(
-            sectionStartPaddingDp = 20,
-            groupCornerRadiusDp = 24,
-            groupTonalElevationDp = 3,
+            sectionStartPaddingDp = chromeTokens.denseHorizontalSpacingDp,
+            groupCornerRadiusDp = chromeTokens.containerCornerRadiusDp,
+            groupTonalElevationDp = chromeTokens.tonalSurfaceElevationDp,
             iconCornerRadiusDp = 12,
             iconContainerSizeDp = 40,
             iconGlyphSizeDp = 22,
-            iconBackgroundAlpha = 0.14f,
-            gridCornerRadiusDp = 24,
-            searchBarCornerRadiusDp = 28,
-            searchBarHeightDp = 56,
+            iconBackgroundAlpha = chromeTokens.selectedContainerAlpha,
+            gridCornerRadiusDp = chromeTokens.containerCornerRadiusDp,
+            searchBarCornerRadiusDp = compactChrome.primaryCornerRadiusDp,
+            searchBarHeightDp = compactChrome.primaryHeightDp,
             dividerThicknessDp = 0f,
-            dividerStartIndentDp = 20
+            dividerStartIndentDp = chromeTokens.denseHorizontalSpacingDp
         )
     } else {
         AdaptiveListComponentVisualSpec(
@@ -176,26 +181,30 @@ internal fun resolveAdaptiveListRowVisualSpec(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
 ): AdaptiveListRowVisualSpec {
+    val chromeTokens = resolveAndroidNativeChromeTokens(uiPreset, androidNativeVariant)
     return if (uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX) {
         AdaptiveListRowVisualSpec(
             insideHorizontalPaddingDp = 16,
             insideVerticalPaddingDp = 14,
             trailingIconSizeDp = 14,
-            trailingSpacingDp = 6
+            trailingSpacingDp = 6,
+            minTouchTargetHeightDp = chromeTokens.rowMinTouchTargetDp
         )
     } else if (uiPreset == UiPreset.MD3) {
         AdaptiveListRowVisualSpec(
             insideHorizontalPaddingDp = 18,
             insideVerticalPaddingDp = 16,
             trailingIconSizeDp = 16,
-            trailingSpacingDp = 8
+            trailingSpacingDp = 8,
+            minTouchTargetHeightDp = chromeTokens.rowMinTouchTargetDp
         )
     } else {
         AdaptiveListRowVisualSpec(
             insideHorizontalPaddingDp = 16,
             insideVerticalPaddingDp = 14,
             trailingIconSizeDp = 20,
-            trailingSpacingDp = 6
+            trailingSpacingDp = 6,
+            minTouchTargetHeightDp = chromeTokens.rowMinTouchTargetDp
         )
     }
 }
@@ -633,12 +642,8 @@ fun IOSGroup(
             .clip(appliedShape),
         shape = appliedShape,
         color = resolvedContainerColor,
-        shadowElevation = if (uiPreset == UiPreset.MD3) 0.dp else 0.dp,
-        tonalElevation = if (uiPreset == UiPreset.MD3) {
-            0.dp
-        } else {
-            visualSpec.groupTonalElevationDp.dp
-        },
+        shadowElevation = 0.dp,
+        tonalElevation = visualSpec.groupTonalElevationDp.dp,
         border = if (uiPreset == UiPreset.MD3) {
             androidx.compose.foundation.BorderStroke(
                 0.8.dp,
@@ -725,6 +730,7 @@ fun IOSSwitchItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .heightIn(min = rowSpec.minTouchTargetHeightDp.dp)
                 .alpha(if (enabled) 1f else 0.6f)
                 .clickable(enabled = enabled) { onCheckedChange(!checked) }
                 .padding(
@@ -920,6 +926,9 @@ fun IOSClickableItem(
         clickableRenderer == IosClickableItemRenderer.MIUIX_BASIC
     ) {
         BasicComponent(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = rowSpec.minTouchTargetHeightDp.dp),
             title = title,
             summary = subtitle,
             onClick = onClick,

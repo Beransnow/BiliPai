@@ -28,7 +28,8 @@ class AdaptiveListComponentPolicyTest {
         assertEquals(24, spec.groupCornerRadiusDp)
         assertEquals(0.14f, spec.iconBackgroundAlpha, 0.0001f)
         assertEquals(0f, spec.dividerThicknessDp, 0.0001f)
-        assertEquals(20, spec.dividerStartIndentDp)
+        assertEquals(18, spec.dividerStartIndentDp)
+        assertEquals(3, spec.groupTonalElevationDp)
     }
 
     @Test
@@ -38,11 +39,11 @@ class AdaptiveListComponentPolicyTest {
             androidNativeVariant = AndroidNativeVariant.MIUIX
         )
 
-        assertEquals(52, spec.searchBarHeightDp)
+        assertEquals(48, spec.searchBarHeightDp)
         assertEquals(22, spec.searchBarCornerRadiusDp)
         assertEquals(20, spec.groupCornerRadiusDp)
-        assertEquals(18, spec.sectionStartPaddingDp)
-        assertEquals(18, spec.dividerStartIndentDp)
+        assertEquals(16, spec.sectionStartPaddingDp)
+        assertEquals(16, spec.dividerStartIndentDp)
     }
 
     @Test
@@ -69,6 +70,7 @@ class AdaptiveListComponentPolicyTest {
         assertEquals(16, spec.insideVerticalPaddingDp)
         assertEquals(16, spec.trailingIconSizeDp)
         assertEquals(8, spec.trailingSpacingDp)
+        assertEquals(48, spec.minTouchTargetHeightDp)
     }
 
     @Test

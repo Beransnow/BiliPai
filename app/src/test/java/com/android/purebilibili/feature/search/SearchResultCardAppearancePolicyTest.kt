@@ -78,7 +78,7 @@ class SearchResultCardAppearancePolicyTest {
         assertEquals(SearchResultCardSurfaceStyle.PLAIN, md3RequestedGlass.surfaceStyle)
         assertEquals(1f, md3RequestedGlass.containerAlpha)
         assertEquals(0f, md3RequestedGlass.borderAlpha)
-        assertEquals(1, md3RequestedGlass.tonalElevationDp)
+        assertEquals(3, md3RequestedGlass.tonalElevationDp)
     }
 
     @Test
@@ -92,7 +92,7 @@ class SearchResultCardAppearancePolicyTest {
         assertEquals(SearchResultCardSurfaceStyle.GLASS, md3Glass.surfaceStyle)
         assertEquals(0.96f, md3Glass.containerAlpha)
         assertEquals(0f, md3Glass.borderAlpha)
-        assertEquals(1, md3Glass.tonalElevationDp)
+        assertEquals(3, md3Glass.tonalElevationDp)
         assertEquals(0, md3Glass.shadowElevationDp)
     }
 
@@ -129,7 +129,7 @@ class SearchResultCardAppearancePolicyTest {
         assertEquals(SearchResultCardSurfaceStyle.PLAIN, md3Plain.surfaceStyle)
         assertEquals(1f, md3Plain.containerAlpha)
         assertEquals(0f, md3Plain.borderAlpha)
-        assertEquals(1, md3Plain.tonalElevationDp)
+        assertEquals(3, md3Plain.tonalElevationDp)
         assertEquals(0, md3Plain.shadowElevationDp)
     }
 }

@@ -14,12 +14,12 @@ class SearchChromePolicyTest {
     fun `md3 preset should use taller search chrome and filled action`() {
         val spec = resolveSearchChromeVisualSpec(UiPreset.MD3)
 
-        assertEquals(44, spec.inputHeightDp)
-        assertEquals(22, spec.inputCornerRadiusDp)
-        assertEquals(40, spec.clearActionSizeDp)
-        assertEquals(40, spec.submitActionSizeDp)
-        assertEquals(20, spec.actionIconSizeDp)
-        assertEquals(8, spec.horizontalGapDp)
+        assertEquals(56, spec.inputHeightDp)
+        assertEquals(28, spec.inputCornerRadiusDp)
+        assertEquals(48, spec.clearActionSizeDp)
+        assertEquals(48, spec.submitActionSizeDp)
+        assertEquals(24, spec.actionIconSizeDp)
+        assertEquals(12, spec.horizontalGapDp)
         assertTrue(spec.useFilledSearchAction)
         assertEquals(20, spec.suggestionContainerCornerRadiusDp)
     }
@@ -45,10 +45,10 @@ class SearchChromePolicyTest {
             androidNativeVariant = AndroidNativeVariant.MIUIX
         )
 
-        assertEquals(44, spec.inputHeightDp)
+        assertEquals(48, spec.inputHeightDp)
         assertEquals(22, spec.inputCornerRadiusDp)
-        assertEquals(40, spec.clearActionSizeDp)
-        assertEquals(40, spec.submitActionSizeDp)
+        assertEquals(48, spec.clearActionSizeDp)
+        assertEquals(48, spec.submitActionSizeDp)
         assertEquals(14, spec.inputHorizontalPaddingDp)
         assertTrue(spec.useFilledSearchAction)
         assertEquals(18, spec.suggestionContainerCornerRadiusDp)
