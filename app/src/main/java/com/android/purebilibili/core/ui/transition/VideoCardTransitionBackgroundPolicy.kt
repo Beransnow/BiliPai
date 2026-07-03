@@ -24,6 +24,7 @@ internal const val VIDEO_CARD_TRANSITION_BACKGROUND_CANCEL_DURATION_MS = 160
 internal enum class VideoCardTransitionBackgroundPhase {
     IDLE,
     OPENING,
+    HELD,
     RETURNING
 }
 
@@ -66,12 +67,14 @@ internal fun resolveVideoCardTransitionBackgroundFrame(
             VideoCardTransitionBackgroundPhase.OPENING ->
                 VIDEO_CARD_TRANSITION_MAX_SCRIM_ALPHA * clamped
             VideoCardTransitionBackgroundPhase.IDLE,
+            VideoCardTransitionBackgroundPhase.HELD,
             VideoCardTransitionBackgroundPhase.RETURNING -> 0f
         },
         contentScale = when (phase) {
             VideoCardTransitionBackgroundPhase.OPENING ->
                 1f - VIDEO_CARD_TRANSITION_MAX_CONTENT_SCALE_REDUCTION * clamped
             VideoCardTransitionBackgroundPhase.IDLE,
+            VideoCardTransitionBackgroundPhase.HELD,
             VideoCardTransitionBackgroundPhase.RETURNING -> 1f
         }
     )

@@ -119,7 +119,8 @@ internal fun BiliPaiNavDisplayHost(
                         easing = LinearOutSlowInEasing
                     )
                 )
-                videoCardTransitionBackgroundPhase = VideoCardTransitionBackgroundPhase.IDLE
+                // 详情页覆盖期间保持 blur-only 状态，避免返回 pop 后先清晰一帧再补模糊。
+                videoCardTransitionBackgroundPhase = VideoCardTransitionBackgroundPhase.HELD
             }
 
             returnedFromVideoDetail -> {

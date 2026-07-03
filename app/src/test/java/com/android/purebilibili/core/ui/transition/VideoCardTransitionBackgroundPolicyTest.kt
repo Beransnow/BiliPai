@@ -50,7 +50,20 @@ class VideoCardTransitionBackgroundPolicyTest {
     }
 
     @Test
-    fun settledFrameKeepsBackgroundStillAfterOpeningCompletes() {
+    fun heldFrameKeepsBackgroundBlurReadyForReturnWithoutScrimOrScale() {
+        val frame = resolveVideoCardTransitionBackgroundFrame(
+            progress = 1f,
+            phase = VideoCardTransitionBackgroundPhase.HELD,
+            sdkInt = 35
+        )
+
+        assertEquals(36f, frame.blurRadiusPx)
+        assertEquals(0f, frame.scrimAlpha)
+        assertEquals(1f, frame.contentScale)
+    }
+
+    @Test
+    fun idleFrameClearsBackgroundEffect() {
         val frame = resolveVideoCardTransitionBackgroundFrame(
             progress = 1f,
             phase = VideoCardTransitionBackgroundPhase.IDLE,
