@@ -44,6 +44,7 @@ import com.android.purebilibili.core.ui.animation.jiggleOnDissolve
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.performance.TrackScrollJank
 import com.android.purebilibili.core.ui.components.UpBadgeName
+import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
 import com.android.purebilibili.core.util.responsiveContentWidth
 import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
@@ -227,14 +228,17 @@ internal fun HomeCategoryPageContent(
                     .clearAndSetSemantics {}
             )
         }
-        LazyVerticalGrid(
-            state = gridState,
-            columns = GridCells.Fixed(gridColumns),
-            contentPadding = contentPadding,
-            horizontalArrangement = Arrangement.spacedBy(cardLayout.itemSpacingDp.dp),
-            verticalArrangement = Arrangement.spacedBy(cardLayout.verticalItemSpacingDp.dp),
-            modifier = Modifier.fillMaxSize()
+        CompositionLocalProvider(
+            LocalVideoCardSharedElementSourceRoute provides sourceRoute
         ) {
+            LazyVerticalGrid(
+                state = gridState,
+                columns = GridCells.Fixed(gridColumns),
+                contentPadding = contentPadding,
+                horizontalArrangement = Arrangement.spacedBy(cardLayout.itemSpacingDp.dp),
+                verticalArrangement = Arrangement.spacedBy(cardLayout.verticalItemSpacingDp.dp),
+                modifier = Modifier.fillMaxSize()
+            ) {
         if (category == HomeCategory.LIVE) {
             // Live Category Content
             
@@ -534,6 +538,7 @@ internal fun HomeCategoryPageContent(
         // Spacer
         item(span = { GridItemSpan(gridColumns) }) {
             Box(modifier = Modifier.fillMaxWidth().height(20.dp))
+        }
         }
         }
     }

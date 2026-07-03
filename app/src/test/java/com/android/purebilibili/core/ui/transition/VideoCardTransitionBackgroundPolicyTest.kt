@@ -126,4 +126,15 @@ class VideoCardTransitionBackgroundPolicyTest {
             )
         )
     }
+
+    @Test
+    fun routeMatcherTreatsHomeCategoryAsActiveHomePageForRealtimeBlur() {
+        assertTrue(
+            shouldApplyVideoCardTransitionBackgroundToRoute(
+                entryRoute = "main_host",
+                sourceRoute = "home?category=RECOMMEND",
+                activeMainHostRoute = "home"
+            )
+        )
+    }
 }

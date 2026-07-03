@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 
 private const val QUICK_RETURN_THRESHOLD_MS = 500L
+private const val HOME_CATEGORY_SOURCE_PREFIX = "home?category="
 
 internal fun shouldUseQuickReturnSharedTransitionPolicy(
     detailEnterUptimeMs: Long,
@@ -123,7 +124,7 @@ object CardPositionManager {
             bottomBarHeightDp = bottomBarHeightDp
         )
         val normalizedBvid = bvid.trim()
-        val normalizedRoute = sourceRoute?.substringBefore("?")?.takeIf { it.isNotBlank() }
+        val normalizedRoute = normalizeVideoCardSourceRoute(sourceRoute)
         lastClickedVideoSourceKey = if (normalizedBvid.isNotEmpty() && normalizedRoute != null) {
             "$normalizedRoute:$normalizedBvid"
         } else {
@@ -163,7 +164,7 @@ object CardPositionManager {
                 else -> CardHorizontalPosition.MIDDLE
             }
         }
-
+    
     /**
      *  判断最后点击的卡片是否在屏幕左侧
      * 用于小窗入场动画方向
@@ -182,4 +183,13 @@ object CardPositionManager {
             val headerHeightPx = 156 * lastScreenDensity  // 156dp header height
             return bounds.top >= headerHeightPx
         }
+}
+
+private fun normalizeVideoCardSourceRoute(sourceRoute: String?): String? {
+    val normalized = sourceRoute?.trim()?.takeIf { it.isNotBlank() } ?: return null
+    return if (normalized.startsWith(HOME_CATEGORY_SOURCE_PREFIX)) {
+        normalized
+    } else {
+        normalized.substringBefore("?")
+    }
 }

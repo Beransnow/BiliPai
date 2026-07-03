@@ -135,7 +135,10 @@ private fun quantizeVideoCardTransitionBlurRadius(radiusPx: Float): Float {
 }
 
 private fun normalizeVideoCardTransitionRoute(route: String?): String? {
-    return route
-        ?.substringBefore("?")
-        ?.takeIf { it.isNotBlank() }
+    val normalized = route?.trim()?.takeIf { it.isNotBlank() } ?: return null
+    return if (normalized.startsWith("home?category=")) {
+        "home"
+    } else {
+        normalized.substringBefore("?")
+    }
 }

@@ -603,9 +603,7 @@ fun ElegantVideoCard(
         val useCardShellSharedBounds = sharedTransitionOwnership.useCardContainerSharedBounds
         val thisCardVideoSourceKey = remember(video.bvid, effectiveSharedElementSourceRoute) {
             val normalizedBvid = video.bvid.trim()
-            val normalizedRoute = effectiveSharedElementSourceRoute
-                ?.substringBefore("?")
-                ?.takeIf { it.isNotBlank() }
+            val normalizedRoute = normalizeVideoCardSourceRouteForKey(effectiveSharedElementSourceRoute)
             if (normalizedBvid.isNotEmpty() && normalizedRoute != null) {
                 "$normalizedRoute:$normalizedBvid"
             } else {
@@ -1348,6 +1346,15 @@ internal fun HomeVideoBadgePill(
             horizontalArrangement = Arrangement.spacedBy(2.dp),
             content = content
         )
+    }
+}
+
+private fun normalizeVideoCardSourceRouteForKey(sourceRoute: String?): String? {
+    val normalized = sourceRoute?.trim()?.takeIf { it.isNotBlank() } ?: return null
+    return if (normalized.startsWith("home?category=")) {
+        normalized
+    } else {
+        normalized.substringBefore("?")
     }
 }
 

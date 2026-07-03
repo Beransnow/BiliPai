@@ -281,6 +281,26 @@ class AppTopLevelNavigationPolicyTest {
     }
 
     @Test
+    fun videoSourceRoute_preservesHomeCategorySourceWhenNavigationTopIsMainHost() {
+        val sourceRoute = "home?category=FOLLOW"
+
+        assertEquals(
+            sourceRoute,
+            resolveVideoCardSourceRouteForNavigation(
+                currentRoute = "main_host",
+                videoBvid = "BV1xx411c7mD",
+                lastClickedVideoSourceKey = "$sourceRoute:BV1xx411c7mD",
+                visibleBottomBarRoutes = setOf(
+                    ScreenRoutes.Home.route,
+                    ScreenRoutes.Dynamic.route,
+                    ScreenRoutes.History.route,
+                    ScreenRoutes.Profile.route
+                )
+            )
+        )
+    }
+
+    @Test
     fun videoSourceRoute_rejectsMismatchedClickedVideoKey() {
         assertNull(
             resolveVideoCardSourceRouteForNavigation(

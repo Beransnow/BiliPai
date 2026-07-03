@@ -75,6 +75,18 @@ class HomeHeroFlyoutStructureTest {
         assertFalse(partitionPageSource.contains("wrappedOnVideoClick("))
     }
 
+    @Test
+    fun homeCategoryPageProvidesMatchingSourceRouteForSharedElementsAndNavigation() {
+        val source = loadSource("app/src/main/java/com/android/purebilibili/feature/home/HomeCategoryPage.kt")
+        val categoryPageSource = source
+            .substringAfter("val sourceRoute = remember(category)")
+            .substringBefore("// Loading Indicator at bottom")
+
+        assertTrue(categoryPageSource.contains("LocalVideoCardSharedElementSourceRoute provides sourceRoute"))
+        assertTrue(categoryPageSource.contains("sourceRoute = sourceRoute"))
+        assertTrue(categoryPageSource.contains("HomeHeroCarousel("))
+    }
+
     private fun loadSource(path: String): String {
         val normalizedPath = path.removePrefix("app/")
         val sourceFile = listOf(

@@ -89,6 +89,16 @@ class VideoSharedTransitionPolicyTest {
     }
 
     @Test
+    fun homeCategoryVideoCardSourceKeyKeepsCategoryRoute() {
+        val homeCardSource = File(
+            "src/main/java/com/android/purebilibili/feature/home/components/cards/VideoCard.kt"
+        ).readText()
+
+        assertTrue(homeCardSource.contains("normalizeVideoCardSourceRouteForKey(effectiveSharedElementSourceRoute)"))
+        assertFalse(homeCardSource.contains("val normalizedRoute = effectiveSharedElementSourceRoute\n                ?.substringBefore(\"?\")"))
+    }
+
+    @Test
     fun nonHomeVideoTransition_usesWholeCardShellWithoutMetadataBounds() {
         val policy = resolveVideoSharedTransitionOwnership(
             sourceRoute = "search",
