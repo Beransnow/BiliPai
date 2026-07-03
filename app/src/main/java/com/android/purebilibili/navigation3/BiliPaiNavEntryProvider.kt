@@ -253,7 +253,7 @@ internal fun resolveBiliPaiNavEntryPopRouteTransition(
     }
 
     if (cardTransitionEnabled) {
-        val sharedReadyVideoToSourceCard = sourceMetadata.sharedTransitionReady &&
+        val sharedReadyVideoToSourceCard = sourceMetadata.sharedTransitionEntryReady &&
             videoToCardReturnTarget &&
             (
                 normalizedToRoute == normalizedSourceRoute ||

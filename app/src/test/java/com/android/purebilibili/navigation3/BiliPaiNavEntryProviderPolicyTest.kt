@@ -487,6 +487,25 @@ class BiliPaiNavEntryProviderPolicyTest {
     }
 
     @Test
+    fun entryPopToMainHostWithRecordedSourceIgnoresStaleVisibilityForSharedElement() {
+        val transition = resolveBiliPaiNavEntryPopRouteTransition(
+            defaultTransition = BiliPaiNavRouteTransition.FALLBACK,
+            fromRoute = "video",
+            toRoute = "main_host",
+            cardTransitionEnabled = true,
+            sourceMetadata = BiliPaiNavSourceMetadata(
+                sourceKey = "home:BV1",
+                sourceRoute = "home",
+                clickedBoundsRecorded = true,
+                cardFullyVisible = false
+            ),
+            activeMainHostRoute = "home"
+        )
+
+        assertEquals(BiliPaiNavRouteTransition.NO_OP_SHARED_ELEMENT, transition)
+    }
+
+    @Test
     fun entryPopWithDisabledSharedTransition_popToMainHostStillSlidesHorizontally() {
         // 实际栈是 [MainHost, VideoDetail]，pop 时 toRoute = "main_host"，
         // 必须保证 main_host 也算 card-return-target，否则 entry-level 元数据上的

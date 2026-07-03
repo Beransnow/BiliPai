@@ -123,6 +123,23 @@ class BiliPaiNavMotionPolicyTest {
     }
 
     @Test
+    fun navDisplayPop_recordedSourceIgnoresStaleVisibilityForSharedElement() {
+        val transition = resolveBiliPaiNavDisplayPopRouteTransition(
+            cardTransitionEnabled = true,
+            sourceMetadata = BiliPaiNavSourceMetadata(
+                sourceKey = "home:BV1",
+                sourceRoute = "home",
+                clickedBoundsRecorded = true,
+                cardFullyVisible = false
+            ),
+            fromKey = BiliPaiNavKey.VideoDetail("BV1", sourceRoute = "home"),
+            toKey = BiliPaiNavKey.MainHost
+        )
+
+        assertEquals(BiliPaiNavRouteTransition.NO_OP_SHARED_ELEMENT, transition)
+    }
+
+    @Test
     fun navDisplayPop_subscribedFavoriteCollectionReturn_keepsRouteLayerNoOp() {
         val transition = resolveBiliPaiNavDisplayPopRouteTransition(
             cardTransitionEnabled = true,

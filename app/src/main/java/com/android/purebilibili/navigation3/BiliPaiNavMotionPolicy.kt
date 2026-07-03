@@ -136,7 +136,7 @@ internal fun resolveBiliPaiNavDisplayPopRouteTransition(
             normalizedSourceRoute != null &&
             normalizedVideoRoute == normalizedSourceRoute &&
             sourceMetadata.sourceKey == "$normalizedSourceRoute:${fromVideoKey.bvid}"
-        val sharedReadyVideoToSourceCard = sourceMetadata.sharedTransitionReady &&
+        val sharedReadyVideoToSourceCard = sourceMetadata.sharedTransitionEntryReady &&
             sourceMatchesCurrentVideo &&
             toIsCardReturnTarget
         if (sharedReadyVideoToSourceCard) {
