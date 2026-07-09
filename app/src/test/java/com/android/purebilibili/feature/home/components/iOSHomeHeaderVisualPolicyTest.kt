@@ -191,16 +191,17 @@ class iOSHomeHeaderVisualPolicyTest {
     fun `home header trims top chrome heights for better content density`() {
         assertEquals(48.dp, resolveHomeTopSearchBarHeight())
         assertEquals(52.dp, resolveHomeTopSearchBarHeight(UiPreset.MD3))
-        assertEquals(62.dp, resolveHomeTopTabRowHeight(isTabFloating = true))
-        assertEquals(52.dp, resolveHomeTopTabRowHeight(isTabFloating = true, uiPreset = UiPreset.MD3))
-        assertEquals(56.dp, resolveHomeTopTabRowHeight(isTabFloating = false))
-        assertEquals(48.dp, resolveHomeTopTabRowHeight(isTabFloating = false, uiPreset = UiPreset.MD3))
+        // Enlarged top dock (bottom-bar-like capsule fill + drag overflow headroom).
+        assertEquals(56.dp, resolveHomeTopTabRowHeight(isTabFloating = true))
+        assertEquals(56.dp, resolveHomeTopTabRowHeight(isTabFloating = true, uiPreset = UiPreset.MD3))
+        assertEquals(54.dp, resolveHomeTopTabRowHeight(isTabFloating = false))
+        assertEquals(54.dp, resolveHomeTopTabRowHeight(isTabFloating = false, uiPreset = UiPreset.MD3))
     }
 
     @Test
     fun `md3 home header expands top tab row for icon plus text`() {
         assertEquals(
-            60.dp,
+            62.dp,
             resolveHomeTopTabRowHeight(
                 isTabFloating = false,
                 uiPreset = UiPreset.MD3,
@@ -208,7 +209,7 @@ class iOSHomeHeaderVisualPolicyTest {
             )
         )
         assertEquals(
-            62.dp,
+            64.dp,
             resolveHomeTopTabRowHeight(
                 isTabFloating = true,
                 uiPreset = UiPreset.MD3,

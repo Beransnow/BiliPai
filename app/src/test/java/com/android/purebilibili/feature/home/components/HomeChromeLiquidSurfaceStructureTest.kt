@@ -123,15 +123,23 @@ class HomeChromeLiquidSurfaceStructureTest {
             topTabChrome.readText().contains("Modifier.clip(tabShape)")
         )
         assertTrue(
-            "top tab content should be a sibling overlay outside the clipped shell surface",
+            "top tab content should be a sibling overlay outside the clipped shell surface and allow indicator overflow",
             topTabChrome.readText().contains(
-                ".graphicsLayer { alpha = tabContentAlpha },\n" +
+                ".graphicsLayer {\n" +
+                    "                    alpha = tabContentAlpha\n" +
+                    "                    clip = false\n" +
+                    "                },\n" +
                     "            contentAlignment = Alignment.Center\n" +
                     "        ) {\n" +
                     "            content()\n" +
                     "        }\n\n" +
                     "        if (showCollapsedHandle)"
             )
+        )
+        assertTrue(
+            "top tab indicator host should not clip drag-scale overflow past the dock",
+            topBarSource.contains("clip = false") &&
+                topBarSource.contains("drag-scale (88/56) can slightly exceed the dock chrome")
         )
         assertTrue(
             "top tab chrome should center the fixed-height tab row inside the taller shell",

@@ -142,12 +142,12 @@ class TopTabIndicatorGeometryTest {
     @Test
     fun `top tab dock indicator leaves only a small gap with outer chrome`() {
         assertEquals(
-            3f,
+            2f,
             resolveTopTabDockIndicatorHorizontalGapDp(hasOuterChromeSurface = true),
             0.01f
         )
         assertEquals(
-            2f,
+            1f,
             resolveTopTabDockIndicatorVerticalGapDp(hasOuterChromeSurface = true),
             0.01f
         )
@@ -156,12 +156,12 @@ class TopTabIndicatorGeometryTest {
     @Test
     fun `top tab dock indicator uses the same small gap without outer dock`() {
         assertEquals(
-            3f,
+            2f,
             resolveTopTabDockIndicatorHorizontalGapDp(hasOuterChromeSurface = false),
             0.01f
         )
         assertEquals(
-            2f,
+            1f,
             resolveTopTabDockIndicatorVerticalGapDp(hasOuterChromeSurface = false),
             0.01f
         )
@@ -180,23 +180,24 @@ class TopTabIndicatorGeometryTest {
             horizontalGapDp = horizontalGap
         )
         val height = resolveTopTabDockIndicatorHeightDp(
-            rowHeightDp = 52f,
+            rowHeightDp = 56f,
             verticalGapDp = verticalGap,
-            minHeightDp = 2f
+            minHeightDp = 48f
         )
 
-        assertEquals(90f, width, 0.01f)
-        assertEquals(48f, height, 0.01f)
+        assertEquals(92f, width, 0.01f)
+        // Near-full dock fill at rest; drag scale still overflows the chrome.
+        assertEquals(54f, height, 0.01f)
     }
 
     @Test
-    fun `top tab dock indicator keeps bottom bar capsule aspect ratio`() {
+    fun `top tab dock indicator keeps bottom bar capsule aspect ratio with min floor`() {
         assertEquals(
-            33.75f,
+            48f,
             resolveTopTabDockIndicatorHeightDp(
-                rowHeightDp = 52f,
-                verticalGapDp = 2f,
-                minHeightDp = 2f,
+                rowHeightDp = 56f,
+                verticalGapDp = 1f,
+                minHeightDp = 48f,
                 indicatorWidthDp = 54f
             ),
             0.01f
@@ -210,7 +211,7 @@ class TopTabIndicatorGeometryTest {
         )
 
         assertEquals(
-            35f,
+            34f,
             resolveTopTabDockIndicatorOffsetPx(
                 slotTranslationPx = 32f,
                 horizontalGapPx = horizontalGap

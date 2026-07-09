@@ -123,10 +123,12 @@ internal fun resolveTopTabRowHorizontalPaddingDp(
     return if (isFloatingStyle) 0f else 4f
 }
 
+// Slightly tighter than before so rest capsule nearly fills the dock (bottom-bar feel),
+// while drag scale still overflows the chrome edge.
 internal fun resolveTopTabDockIndicatorHorizontalGapDp(hasOuterChromeSurface: Boolean): Float =
-    if (hasOuterChromeSurface) 3f else 3f
+    if (hasOuterChromeSurface) 2f else 2f
 
-internal fun resolveTopTabDockIndicatorVerticalGapDp(hasOuterChromeSurface: Boolean): Float = 2f
+internal fun resolveTopTabDockIndicatorVerticalGapDp(hasOuterChromeSurface: Boolean): Float = 1f
 
 internal fun resolveTopTabDockIndicatorWidthDp(
     itemWidthDp: Float,
@@ -435,9 +437,10 @@ internal fun resolveIosTopTabRowHeight(
     return if (normalizeTopTabLabelMode(labelMode) ==
         com.android.purebilibili.core.store.SettingsManager.TopTabLabelMode.ICON_AND_TEXT
     ) {
-        if (isFloatingStyle) 58.dp else 56.dp
+        if (isFloatingStyle) 62.dp else 58.dp
     } else {
-        52.dp
+        // Text-only / icon-only: still taller so the liquid capsule can fill + overflow on drag.
+        if (isFloatingStyle) 56.dp else 54.dp
     }
 }
 
@@ -1020,7 +1023,8 @@ private fun LightweightHomeTopTabs(
         val dockIndicatorHeight = resolveTopTabDockIndicatorHeightDp(
             rowHeightDp = rowHeight.value,
             verticalGapDp = dockIndicatorVerticalGap.value,
-            minHeightDp = if (hasOuterChromeSurface) 2f else 30f,
+            // Prefer near-full dock fill at rest (bottom-bar like); drag scale overflows.
+            minHeightDp = resolveTopTabVisualTuning().floatingIndicatorHeightDp,
             indicatorWidthDp = md3LiquidCapsuleWidth.value
         ).dp
         val md3LiquidCapsuleTranslationXPx by remember(
@@ -1332,7 +1336,13 @@ private fun LightweightHomeTopTabs(
                     }
                 }
                 // Capsule above labels; panel offset is on parent so do NOT add again here.
-                Box(modifier = Modifier.fillMaxSize().zIndex(1f)) {
+                // clip=false so drag-scale (88/56) can slightly exceed the dock chrome.
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .zIndex(1f)
+                        .graphicsLayer { clip = false }
+                ) {
                     if (shouldUseMovingIosCapsule) {
                         val capsuleShape = resolveSharedBottomBarCapsuleShape()
                         val indicatorWidth = resolveTopTabDockIndicatorWidthDp(
@@ -1640,7 +1650,9 @@ private fun LightweightTopTabItem(
                         imageVector = icon,
                         contentDescription = null,
                         tint = contentColor,
-                        modifier = Modifier.size(resolveTopTabIconSizeDp(if (showText) 0 else 1).dp)
+                        modifier = Modifier.size(
+                            resolveTopTabIconSizeDp(if (showText) 0 else 1).dp
+                        )
                     )
                 }
             }
@@ -1648,12 +1660,17 @@ private fun LightweightTopTabItem(
                 Spacer(modifier = Modifier.height(resolveTopTabIconTextSpacingDp(0).dp))
             }
             if (showText) {
+                val labelMode = when {
+                    showIcon && showText -> 0
+                    showIcon -> 1
+                    else -> 2
+                }
                 Text(
                     text = category,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    fontSize = if (renderer == HomeTopTabRenderer.IOS) 13.sp else 15.sp,
-                    lineHeight = if (renderer == HomeTopTabRenderer.IOS) 17.sp else 20.sp,
+                    fontSize = resolveTopTabLabelTextSizeSp(labelMode).sp,
+                    lineHeight = resolveTopTabLabelLineHeightSp(labelMode).sp,
                     fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
                     color = contentColor
                 )

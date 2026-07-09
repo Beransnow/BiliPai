@@ -214,11 +214,15 @@ internal fun HomeTopTabChrome(
             }
         }
 
+        // Do not clip: liquid capsule drag-scale should slightly overflow the dock like bottom bar.
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = safeTabHorizontalPadding, vertical = safeTabVerticalPadding)
-                .graphicsLayer { alpha = tabContentAlpha },
+                .graphicsLayer {
+                    alpha = tabContentAlpha
+                    clip = false
+                },
             contentAlignment = Alignment.Center
         ) {
             content()

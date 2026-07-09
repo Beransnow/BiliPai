@@ -210,9 +210,9 @@ class TopTabStylePolicyTest {
 
         assertEquals(HomeTopPreset.MIUIX, iconAndText.preset)
         assertEquals(HomeTopTabRenderer.MD3, iconAndText.renderer)
-        assertEquals(56.dp, iconAndText.tabRowHeightDocked)
-        assertEquals(60.dp, iconAndText.tabRowHeightFloating)
-        assertEquals(30.dp, iconAndText.md3VisualSpec.selectedCapsuleHeight)
+        assertEquals(58.dp, iconAndText.tabRowHeightDocked)
+        assertEquals(64.dp, iconAndText.tabRowHeightFloating)
+        assertEquals(34.dp, iconAndText.md3VisualSpec.selectedCapsuleHeight)
         assertEquals(44.dp, iconAndText.actionButtonSizeDocked)
     }
 
@@ -306,27 +306,30 @@ class TopTabStylePolicyTest {
     }
 
     @Test
-    fun `ios top tab tuning uses compact indicator footprint`() {
+    fun `ios top tab tuning uses enlarged bottom-bar-like footprint adapted for top dock`() {
         val tuning = resolveTopTabVisualTuning(UiPreset.IOS)
 
-        assertEquals(40f, tuning.nonFloatingIndicatorHeightDp, 0.001f)
-        assertEquals(20f, tuning.nonFloatingIndicatorCornerDp, 0.001f)
+        assertEquals(48f, tuning.nonFloatingIndicatorHeightDp, 0.001f)
+        assertEquals(24f, tuning.nonFloatingIndicatorCornerDp, 0.001f)
         assertEquals(1.18f, tuning.nonFloatingIndicatorWidthRatio, 0.001f)
-        assertEquals(78f, tuning.nonFloatingIndicatorMinWidthDp, 0.001f)
+        assertEquals(84f, tuning.nonFloatingIndicatorMinWidthDp, 0.001f)
         assertEquals(0f, tuning.nonFloatingIndicatorHorizontalInsetDp, 0.001f)
-        assertEquals(40f, tuning.floatingIndicatorHeightDp, 0.001f)
-        assertEquals(13f, tuning.tabTextSizeSp, 0.001f)
-        assertEquals(17f, tuning.tabTextLineHeightSp, 0.001f)
-        assertEquals(36f, tuning.tabContentMinHeightDp, 0.001f)
+        assertEquals(48f, tuning.floatingIndicatorHeightDp, 0.001f)
+        assertEquals(15f, tuning.tabTextSizeSp, 0.001f)
+        assertEquals(20f, tuning.tabTextLineHeightSp, 0.001f)
+        assertEquals(42f, tuning.tabContentMinHeightDp, 0.001f)
+        assertEquals(20f, tuning.tabIconWithTextSizeDp, 0.001f)
+        assertEquals(24f, tuning.tabIconOnlySizeDp, 0.001f)
     }
 
     @Test
-    fun `md3 capsule top tab tuning also uses compact shape`() {
+    fun `md3 capsule top tab tuning also uses enlarged top dock shape`() {
         val tuning = resolveTopTabVisualTuning(UiPreset.MD3)
 
-        assertEquals(40f, tuning.nonFloatingIndicatorHeightDp, 0.001f)
-        assertEquals(20f, tuning.nonFloatingIndicatorCornerDp, 0.001f)
-        assertEquals(40f, tuning.floatingIndicatorHeightDp, 0.001f)
+        assertEquals(48f, tuning.nonFloatingIndicatorHeightDp, 0.001f)
+        assertEquals(24f, tuning.nonFloatingIndicatorCornerDp, 0.001f)
+        assertEquals(48f, tuning.floatingIndicatorHeightDp, 0.001f)
+        assertEquals(15f, tuning.tabTextSizeSp, 0.001f)
     }
 
     @Test
@@ -415,11 +418,11 @@ class TopTabStylePolicyTest {
 
     @Test
     fun `ios top tab icon modes use readable glyph sizes`() {
-        assertEquals(18f, resolveTopTabIconSizeDp(labelMode = 0), 0.001f)
-        assertEquals(22f, resolveTopTabIconSizeDp(labelMode = 1), 0.001f)
-        assertEquals(2f, resolveTopTabIconTextSpacingDp(labelMode = 0), 0.001f)
-        assertEquals(52.dp, resolveIosTopTabRowHeight(isFloatingStyle = false))
-        assertEquals(52.dp, resolveIosTopTabRowHeight(isFloatingStyle = true))
+        assertEquals(20f, resolveTopTabIconSizeDp(labelMode = 0), 0.001f)
+        assertEquals(24f, resolveTopTabIconSizeDp(labelMode = 1), 0.001f)
+        assertEquals(3f, resolveTopTabIconTextSpacingDp(labelMode = 0), 0.001f)
+        assertEquals(54.dp, resolveIosTopTabRowHeight(isFloatingStyle = false))
+        assertEquals(56.dp, resolveIosTopTabRowHeight(isFloatingStyle = true))
         assertEquals(44.dp, resolveIosTopTabActionButtonSize(isFloatingStyle = false))
         assertEquals(22.dp, resolveIosTopTabActionIconSize(isFloatingStyle = false))
     }
@@ -429,8 +432,8 @@ class TopTabStylePolicyTest {
         val textSize = resolveTopTabLabelTextSizeSp(labelMode = 0)
         val lineHeight = resolveTopTabLabelLineHeightSp(labelMode = 0)
 
-        assertEquals(14f, textSize, 0.001f)
-        assertEquals(18f, lineHeight, 0.001f)
+        assertEquals(15f, textSize, 0.001f)
+        assertEquals(20f, lineHeight, 0.001f)
         assertTrue(lineHeight >= textSize)
     }
 
@@ -438,10 +441,10 @@ class TopTabStylePolicyTest {
     fun `md3 top tabs should use compact text first underline sizing`() {
         val spec = resolveMd3TopTabVisualSpec(isFloatingStyle = false)
 
-        assertEquals(48.dp, spec.rowHeight)
+        assertEquals(54.dp, spec.rowHeight)
         assertEquals(2.dp, spec.selectedCapsuleHeight)
         assertEquals(1.dp, spec.selectedCapsuleCornerRadius)
-        assertEquals(20.dp, spec.iconSize)
+        assertEquals(22.dp, spec.iconSize)
         assertEquals(15.sp, spec.labelTextSize)
         assertEquals(20.sp, spec.labelLineHeight)
         assertEquals(0.dp, spec.iconLabelSpacing)
@@ -457,11 +460,11 @@ class TopTabStylePolicyTest {
             labelMode = 0
         )
 
-        assertEquals(60.dp, spec.rowHeight)
+        assertEquals(62.dp, spec.rowHeight)
         assertEquals(8.dp, spec.itemHorizontalPadding)
         assertEquals(3.dp, spec.iconLabelSpacing)
-        assertEquals(20.dp, spec.iconSize)
-        assertEquals(14.sp, spec.labelTextSize)
+        assertEquals(22.dp, spec.iconSize)
+        assertEquals(15.sp, spec.labelTextSize)
         assertTrue(spec.labelLineHeight >= spec.labelTextSize)
     }
 
@@ -472,11 +475,11 @@ class TopTabStylePolicyTest {
             androidNativeVariant = AndroidNativeVariant.MIUIX
         )
 
-        assertEquals(48.dp, spec.rowHeight)
-        assertEquals(30.dp, spec.selectedCapsuleHeight)
-        assertEquals(15.dp, spec.selectedCapsuleCornerRadius)
+        assertEquals(52.dp, spec.rowHeight)
+        assertEquals(34.dp, spec.selectedCapsuleHeight)
+        assertEquals(17.dp, spec.selectedCapsuleCornerRadius)
         assertEquals(12.dp, spec.itemHorizontalPadding)
-        assertEquals(2.dp, spec.iconLabelSpacing)
+        assertEquals(3.dp, spec.iconLabelSpacing)
         assertEquals(15.sp, spec.labelTextSize)
     }
 

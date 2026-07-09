@@ -161,9 +161,10 @@ internal fun resolveHomeTopPresetStyle(
                 ),
                 tabs = HomeTopTabsStyle(
                     horizontalPadding = HomeTopDpPair(docked = 0.dp, floating = 2.dp),
+                    // Match resolveIosTopTabRowHeight so header chrome and tab row share one height.
                     rowHeight = HomeTopDpPair(
-                        docked = if (isIconAndText) 58.dp else 56.dp,
-                        floating = 62.dp
+                        docked = if (isIconAndText) 58.dp else 54.dp,
+                        floating = if (isIconAndText) 62.dp else 56.dp
                     ),
                     md3VisualSpec = resolveMd3TopTabVisualSpec(
                         false,
@@ -219,9 +220,10 @@ internal fun resolveHomeTopPresetStyle(
                 ),
                 tabs = HomeTopTabsStyle(
                     horizontalPadding = HomeTopDpPair(docked = 2.dp, floating = 2.dp),
+                    // Align with resolveMd3TopTabVisualSpec(MIUIX) used by the tab row.
                     rowHeight = HomeTopDpPair(
-                        docked = if (isIconAndText) 56.dp else 48.dp,
-                        floating = if (isIconAndText) 60.dp else 54.dp
+                        docked = if (isIconAndText) 58.dp else 52.dp,
+                        floating = if (isIconAndText) 64.dp else 56.dp
                     ),
                     md3VisualSpec = resolveMd3TopTabVisualSpec(
                         false,
@@ -277,9 +279,10 @@ internal fun resolveHomeTopPresetStyle(
                 ),
                 tabs = HomeTopTabsStyle(
                     horizontalPadding = HomeTopDpPair(docked = 4.dp, floating = 2.dp),
+                    // Align with resolveMd3TopTabVisualSpec used by the tab row.
                     rowHeight = HomeTopDpPair(
-                        docked = if (isIconAndText) 60.dp else 48.dp,
-                        floating = if (isIconAndText) 62.dp else 52.dp
+                        docked = if (isIconAndText) 62.dp else 54.dp,
+                        floating = if (isIconAndText) 64.dp else 56.dp
                     ),
                     md3VisualSpec = resolveMd3TopTabVisualSpec(
                         false,
@@ -345,26 +348,28 @@ enum class TopTabIndicatorStyle {
     MATERIAL
 }
 
-internal const val CompactTopTabIndicatorHeightDp = 40f
+// Bottom-bar capsule is 56dp; top dock is shorter, so rest height sits near dock fill
+// while drag scale (88/56) still slightly overflows the chrome like the bottom bar.
+internal const val CompactTopTabIndicatorHeightDp = 48f
 internal const val CompactTopTabIndicatorCornerDp = CompactTopTabIndicatorHeightDp / 2f
 
 data class TopTabVisualTuning(
     val nonFloatingIndicatorHeightDp: Float = CompactTopTabIndicatorHeightDp,
     val nonFloatingIndicatorCornerDp: Float = CompactTopTabIndicatorCornerDp,
     val nonFloatingIndicatorWidthRatio: Float = 0.72f,
-    val nonFloatingIndicatorMinWidthDp: Float = 44f,
+    val nonFloatingIndicatorMinWidthDp: Float = 52f,
     val nonFloatingIndicatorHorizontalInsetDp: Float = 18f,
     val floatingIndicatorWidthMultiplier: Float = 1.18f,
-    val floatingIndicatorMinWidthDp: Float = 82f,
-    val floatingIndicatorMaxWidthDp: Float = 112f,
+    val floatingIndicatorMinWidthDp: Float = 88f,
+    val floatingIndicatorMaxWidthDp: Float = 120f,
     val floatingIndicatorMaxWidthToItemRatio: Float = 1.18f,
     val floatingIndicatorHeightDp: Float = CompactTopTabIndicatorHeightDp,
-    val tabTextSizeSp: Float = 13f,
-    val tabTextLineHeightSp: Float = 17f,
-    val tabContentMinHeightDp: Float = 36f,
-    val tabIconWithTextSizeDp: Float = 18f,
-    val tabIconOnlySizeDp: Float = 22f,
-    val tabIconTextSpacingDp: Float = 2f
+    val tabTextSizeSp: Float = 15f,
+    val tabTextLineHeightSp: Float = 20f,
+    val tabContentMinHeightDp: Float = 42f,
+    val tabIconWithTextSizeDp: Float = 20f,
+    val tabIconOnlySizeDp: Float = 24f,
+    val tabIconTextSpacingDp: Float = 3f
 )
 
 data class TopTabVisualState(
@@ -393,19 +398,19 @@ fun resolveTopTabVisualTuning(uiPreset: UiPreset): TopTabVisualTuning {
             nonFloatingIndicatorHeightDp = CompactTopTabIndicatorHeightDp,
             nonFloatingIndicatorCornerDp = CompactTopTabIndicatorCornerDp,
             nonFloatingIndicatorWidthRatio = 1.18f,
-            nonFloatingIndicatorMinWidthDp = 78f,
+            nonFloatingIndicatorMinWidthDp = 84f,
             nonFloatingIndicatorHorizontalInsetDp = 0f,
             floatingIndicatorWidthMultiplier = 1.18f,
-            floatingIndicatorMinWidthDp = 82f,
-            floatingIndicatorMaxWidthDp = 112f,
+            floatingIndicatorMinWidthDp = 88f,
+            floatingIndicatorMaxWidthDp = 120f,
             floatingIndicatorMaxWidthToItemRatio = 1.18f,
             floatingIndicatorHeightDp = CompactTopTabIndicatorHeightDp,
-            tabTextSizeSp = 13f,
-            tabTextLineHeightSp = 17f,
-            tabContentMinHeightDp = 36f,
-            tabIconWithTextSizeDp = 18f,
-            tabIconOnlySizeDp = 22f,
-            tabIconTextSpacingDp = 2f
+            tabTextSizeSp = 15f,
+            tabTextLineHeightSp = 20f,
+            tabContentMinHeightDp = 42f,
+            tabIconWithTextSizeDp = 20f,
+            tabIconOnlySizeDp = 24f,
+            tabIconTextSpacingDp = 3f
         )
         UiPreset.MD3 -> resolveTopTabVisualTuning()
     }
@@ -437,57 +442,57 @@ internal fun resolveMd3TopTabVisualSpec(
     if (androidNativeVariant == AndroidNativeVariant.MIUIX) {
         return if (isFloatingStyle) {
             Md3TopTabVisualSpec(
-                rowHeight = if (showIconAndText) 60.dp else 54.dp,
-                selectedCapsuleHeight = 30.dp,
-                selectedCapsuleCornerRadius = 15.dp,
+                rowHeight = if (showIconAndText) 64.dp else 56.dp,
+                selectedCapsuleHeight = 36.dp,
+                selectedCapsuleCornerRadius = 18.dp,
                 selectedCapsuleTonalElevation = 0.dp,
                 selectedCapsuleShadowElevation = 0.dp,
                 itemHorizontalPadding = 12.dp,
-                iconSize = 22.dp,
-                labelTextSize = 14.sp,
-                labelLineHeight = 18.sp,
+                iconSize = 24.dp,
+                labelTextSize = 15.sp,
+                labelLineHeight = 20.sp,
                 iconLabelSpacing = 3.dp
             )
         } else {
             Md3TopTabVisualSpec(
-                rowHeight = if (showIconAndText) 56.dp else 48.dp,
-                selectedCapsuleHeight = 30.dp,
-                selectedCapsuleCornerRadius = 15.dp,
+                rowHeight = if (showIconAndText) 58.dp else 52.dp,
+                selectedCapsuleHeight = 34.dp,
+                selectedCapsuleCornerRadius = 17.dp,
                 selectedCapsuleTonalElevation = 0.dp,
                 selectedCapsuleShadowElevation = 0.dp,
                 itemHorizontalPadding = 12.dp,
-                iconSize = 20.dp,
+                iconSize = 22.dp,
                 labelTextSize = 15.sp,
                 labelLineHeight = 20.sp,
-                iconLabelSpacing = 2.dp
+                iconLabelSpacing = 3.dp
             )
         }
     }
 
     return if (isFloatingStyle) {
         Md3TopTabVisualSpec(
-            rowHeight = if (showIconAndText) 62.dp else 52.dp,
+            rowHeight = if (showIconAndText) 64.dp else 56.dp,
             selectedCapsuleHeight = 2.dp,
             selectedCapsuleCornerRadius = 1.dp,
             selectedCapsuleTonalElevation = 0.dp,
             selectedCapsuleShadowElevation = 0.dp,
             itemHorizontalPadding = if (showIconAndText) 8.dp else 14.dp,
-            iconSize = 22.dp,
-            labelTextSize = if (showIconAndText) 14.sp else 15.sp,
-            labelLineHeight = if (showIconAndText) 18.sp else 20.sp,
+            iconSize = 24.dp,
+            labelTextSize = 15.sp,
+            labelLineHeight = 20.sp,
             iconLabelSpacing = if (showIconAndText) 3.dp else 0.dp
         )
     } else {
         Md3TopTabVisualSpec(
-            rowHeight = if (showIconAndText) 60.dp else 48.dp,
+            rowHeight = if (showIconAndText) 62.dp else 54.dp,
             selectedCapsuleHeight = 2.dp,
             selectedCapsuleCornerRadius = 1.dp,
             selectedCapsuleTonalElevation = 0.dp,
             selectedCapsuleShadowElevation = 0.dp,
             itemHorizontalPadding = if (showIconAndText) 8.dp else 12.dp,
-            iconSize = 20.dp,
-            labelTextSize = if (showIconAndText) 14.sp else 15.sp,
-            labelLineHeight = if (showIconAndText) 18.sp else 20.sp,
+            iconSize = 22.dp,
+            labelTextSize = 15.sp,
+            labelLineHeight = 20.sp,
             iconLabelSpacing = if (showIconAndText) 3.dp else 0.dp
         )
     }
