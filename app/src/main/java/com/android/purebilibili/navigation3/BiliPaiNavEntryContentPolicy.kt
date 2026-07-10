@@ -3,6 +3,7 @@ package com.android.purebilibili.navigation3
 internal enum class BiliPaiNavEntryContentRole {
     MAIN_HOST,
     HOME,
+    LISTEN_VIDEO,
     DYNAMIC,
     SEARCH,
     SEARCH_TRENDING,
@@ -66,6 +67,7 @@ internal fun resolveBiliPaiNavEntryContentRole(key: BiliPaiNavKey): BiliPaiNavEn
     return when (key) {
         BiliPaiNavKey.MainHost -> BiliPaiNavEntryContentRole.MAIN_HOST
         BiliPaiNavKey.Home -> BiliPaiNavEntryContentRole.HOME
+        BiliPaiNavKey.ListenVideo -> BiliPaiNavEntryContentRole.LISTEN_VIDEO
         BiliPaiNavKey.Dynamic -> BiliPaiNavEntryContentRole.DYNAMIC
         BiliPaiNavKey.Search -> BiliPaiNavEntryContentRole.SEARCH
         BiliPaiNavKey.SearchTrending -> BiliPaiNavEntryContentRole.SEARCH_TRENDING

@@ -736,13 +736,41 @@ data class DanmakuSettings(
 
 data class AppNavigationSettings(
     val bottomBarVisibilityMode: SettingsManager.BottomBarVisibilityMode = SettingsManager.BottomBarVisibilityMode.ALWAYS_VISIBLE,
-    val orderedVisibleTabIds: List<String> = listOf("HOME", "DYNAMIC", "HISTORY", "PROFILE"),
+    val orderedVisibleTabIds: List<String> = listOf("HOME", "DYNAMIC", "HISTORY", "LISTEN_VIDEO", "PROFILE"),
     val bottomBarItemColors: Map<String, Int> = emptyMap(),
     val tabletUseSidebar: Boolean = false,
     val predictiveBackEnabled: Boolean = true,
     val predictiveBackAnimationStyle: String = "scale",
     val predictiveBackExitDirection: String = "auto",
 )
+
+internal data class BottomTabMigrationResult(
+    val order: List<String>,
+    val visible: Set<String>,
+    val markComplete: Boolean
+)
+
+internal fun resolveListenVideoBottomTabMigration(
+    order: List<String>,
+    visible: Set<String>,
+    migrationComplete: Boolean
+): BottomTabMigrationResult {
+    if (migrationComplete) {
+        return BottomTabMigrationResult(order, visible, markComplete = false)
+    }
+    if ("LISTEN_VIDEO" in order || "LISTEN_VIDEO" in visible || visible.size >= 5) {
+        return BottomTabMigrationResult(order, visible, markComplete = true)
+    }
+    val insertionIndex = order.indexOf("PROFILE").takeIf { it >= 0 } ?: order.size
+    val migratedOrder = order.toMutableList().apply {
+        add(insertionIndex, "LISTEN_VIDEO")
+    }
+    return BottomTabMigrationResult(
+        order = migratedOrder,
+        visible = visible + "LISTEN_VIDEO",
+        markComplete = true
+    )
+}
 
 data class HomeTopTabSettings(
     val orderIds: List<String> = listOf("RECOMMEND", "FOLLOW", "POPULAR", "LIVE", "GAME", "PARTITION"),
@@ -1176,8 +1204,8 @@ object SettingsManager {
     private val KEY_BOTTOM_BAR_ORDER = stringPreferencesKey("bottom_bar_order")  // 逗号分隔的项目顺序
     private val KEY_BOTTOM_BAR_VISIBLE_TABS = stringPreferencesKey("bottom_bar_visible_tabs")  // 逗号分隔的可见项目
     private val KEY_BOTTOM_BAR_ITEM_COLORS = stringPreferencesKey("bottom_bar_item_colors")  //  格式: HOME:0,DYNAMIC:1,...
-    private const val DEFAULT_BOTTOM_BAR_ORDER = "HOME,DYNAMIC,HISTORY,PROFILE"
-    private const val DEFAULT_BOTTOM_BAR_VISIBLE_TABS = "HOME,DYNAMIC,HISTORY,PROFILE"
+    private const val DEFAULT_BOTTOM_BAR_ORDER = "HOME,DYNAMIC,HISTORY,LISTEN_VIDEO,PROFILE"
+    private const val DEFAULT_BOTTOM_BAR_VISIBLE_TABS = "HOME,DYNAMIC,HISTORY,LISTEN_VIDEO,PROFILE"
     //  [新增] 评论默认排序（1=回复,2=最新,3=最热,4=点赞）
     private val KEY_COMMENT_DEFAULT_SORT_MODE = intPreferencesKey("comment_default_sort_mode")
     private val KEY_COMMENT_FRAUD_DETECTION_ENABLED =

@@ -10,6 +10,7 @@ internal fun BiliPaiNavKey.toLegacyRoute(): String {
     return when (this) {
         BiliPaiNavKey.MainHost -> "main_host"
         BiliPaiNavKey.Home -> ScreenRoutes.Home.route
+        BiliPaiNavKey.ListenVideo -> ScreenRoutes.ListenVideo.route
         BiliPaiNavKey.Dynamic -> ScreenRoutes.Dynamic.route
         BiliPaiNavKey.Search -> ScreenRoutes.Search.route
         BiliPaiNavKey.SearchTrending -> ScreenRoutes.SearchTrending.route
@@ -106,6 +107,7 @@ internal fun legacyRouteToBiliPaiNavKey(route: String?): BiliPaiNavKey {
     return when {
         normalized == "main_host" -> BiliPaiNavKey.MainHost
         normalized == ScreenRoutes.Home.route -> BiliPaiNavKey.Home
+        normalized == ScreenRoutes.ListenVideo.route -> BiliPaiNavKey.ListenVideo
         normalized == ScreenRoutes.Dynamic.route -> BiliPaiNavKey.Dynamic
         normalized == ScreenRoutes.Search.route -> BiliPaiNavKey.Search
         normalized == ScreenRoutes.SearchTrending.route -> BiliPaiNavKey.SearchTrending

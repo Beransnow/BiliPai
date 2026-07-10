@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets
 
 sealed class ScreenRoutes(val route: String) {
     object Home : ScreenRoutes("home")
+    object ListenVideo : ScreenRoutes("listen_video")
     object Search : ScreenRoutes("search")
     object SearchTrending : ScreenRoutes("search_trending")
     object TopicDetail : ScreenRoutes("topic/{topicId}") {

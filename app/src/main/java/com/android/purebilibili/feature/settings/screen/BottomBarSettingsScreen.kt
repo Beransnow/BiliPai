@@ -7,6 +7,7 @@ import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Lightbulb
+import androidx.compose.material.icons.outlined.LibraryMusic
 import androidx.compose.material.icons.outlined.LiveTv
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PlayCircleOutline
@@ -105,6 +106,7 @@ internal fun resolveBottomBarTabIcon(
             "DYNAMIC" -> resolveAppDynamicIcon(uiPreset)
             "STORY" -> Icons.Outlined.PlayCircleOutline
             "HISTORY" -> Icons.Outlined.History
+            "LISTEN_VIDEO" -> Icons.Outlined.LibraryMusic
             "PROFILE" -> Icons.Outlined.Person
             "FAVORITE" -> Icons.Outlined.StarBorder
             "LIVE" -> resolveAppTvIcon(uiPreset)
@@ -117,6 +119,7 @@ internal fun resolveBottomBarTabIcon(
             "DYNAMIC" -> CupertinoIcons.Default.RectangleStack
             "STORY" -> CupertinoIcons.Default.PlayCircle
             "HISTORY" -> CupertinoIcons.Default.Clock
+            "LISTEN_VIDEO" -> CupertinoIcons.Default.MusicNote
             "PROFILE" -> CupertinoIcons.Default.PersonCircle
             "FAVORITE" -> CupertinoIcons.Default.Star
             "LIVE" -> CupertinoIcons.Default.Video
@@ -167,6 +170,7 @@ internal fun resolveAllBottomBarTabs(uiPreset: UiPreset = UiPreset.IOS): List<Bo
     BottomBarTabConfig("DYNAMIC", "动态", resolveBottomBarTabIcon("DYNAMIC", uiPreset), isDefault = true),
     BottomBarTabConfig("STORY", "短视频", resolveBottomBarTabIcon("STORY", uiPreset), isDefault = false),
     BottomBarTabConfig("HISTORY", "历史", resolveBottomBarTabIcon("HISTORY", uiPreset), isDefault = true),
+    BottomBarTabConfig("LISTEN_VIDEO", "听视频", resolveBottomBarTabIcon("LISTEN_VIDEO", uiPreset), isDefault = true),
     BottomBarTabConfig("PROFILE", "我的", resolveBottomBarTabIcon("PROFILE", uiPreset), isDefault = true),
     BottomBarTabConfig("FAVORITE", "收藏", resolveBottomBarTabIcon("FAVORITE", uiPreset), isDefault = false),
     BottomBarTabConfig("LIVE", "直播", resolveBottomBarTabIcon("LIVE", uiPreset), isDefault = false),
@@ -243,8 +247,8 @@ fun BottomBarSettingsContent(
 
     
     // 读取当前配置
-    val order by SettingsManager.getBottomBarOrder(context).collectAsStateWithLifecycle(initialValue = listOf("HOME", "DYNAMIC", "HISTORY", "PROFILE"))
-    val visibleTabs by SettingsManager.getBottomBarVisibleTabs(context).collectAsStateWithLifecycle(initialValue = setOf("HOME", "DYNAMIC", "HISTORY", "PROFILE"))
+    val order by SettingsManager.getBottomBarOrder(context).collectAsStateWithLifecycle(initialValue = listOf("HOME", "DYNAMIC", "HISTORY", "LISTEN_VIDEO", "PROFILE"))
+    val visibleTabs by SettingsManager.getBottomBarVisibleTabs(context).collectAsStateWithLifecycle(initialValue = setOf("HOME", "DYNAMIC", "HISTORY", "LISTEN_VIDEO", "PROFILE"))
     val topTabOrder by SettingsManager.getTopTabOrder(context).collectAsStateWithLifecycle(initialValue = defaultTopTabIds)
     val topTabVisible by SettingsManager.getTopTabVisibleTabs(context).collectAsStateWithLifecycle(initialValue = defaultTopTabIds.toSet())
     val topTabLabelMode by SettingsManager.getTopTabLabelMode(context)
@@ -1216,8 +1220,8 @@ fun BottomBarSettingsContent(
                         Spacer(modifier = Modifier.height(16.dp))
                         io.github.alexzhirkevich.cupertino.CupertinoButton(
                             onClick = {
-                                localOrder = listOf("HOME", "DYNAMIC", "HISTORY", "PROFILE")
-                                localVisibleTabs = setOf("HOME", "DYNAMIC", "HISTORY", "PROFILE")
+                                localOrder = listOf("HOME", "DYNAMIC", "HISTORY", "LISTEN_VIDEO", "PROFILE")
+                                localVisibleTabs = setOf("HOME", "DYNAMIC", "HISTORY", "LISTEN_VIDEO", "PROFILE")
                                 localTopTabOrder = defaultTopTabIds
                                 localTopTabVisible = defaultTopTabIds.toSet()
                                 saveConfig()

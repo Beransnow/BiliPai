@@ -19,6 +19,11 @@ internal sealed interface BiliPaiNavKey : NavKey {
     }
 
     @Serializable
+    data object ListenVideo : BiliPaiNavKey {
+        override val routeBase: String = "listen_video"
+    }
+
+    @Serializable
     data object Dynamic : BiliPaiNavKey {
         override val routeBase: String = "dynamic"
     }

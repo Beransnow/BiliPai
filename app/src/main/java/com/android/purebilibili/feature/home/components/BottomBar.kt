@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.CollectionsBookmark
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LiveTv
+import androidx.compose.material.icons.filled.LibraryMusic
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayCircle
@@ -41,6 +42,7 @@ import androidx.compose.material.icons.outlined.CollectionsBookmark
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.LiveTv
+import androidx.compose.material.icons.outlined.LibraryMusic
 import androidx.compose.material.icons.outlined.NotificationsNone
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PlayCircleOutline
@@ -291,6 +293,15 @@ enum class BottomNavItem(
         { Icon(CupertinoIcons.Filled.Clock, contentDescription = null) },
         { Icon(CupertinoIcons.Outlined.Clock, contentDescription = null) },
         ScreenRoutes.History.route
+    ),
+    LISTEN_VIDEO(
+        "听视频",
+        R.string.bottom_nav_listen_video,
+        R.string.bottom_nav_listen_video_desc,
+        listOf("音乐"),
+        { Icon(CupertinoIcons.Default.MusicNote, contentDescription = null) },
+        { Icon(CupertinoIcons.Outlined.MusicNote, contentDescription = null) },
+        ScreenRoutes.ListenVideo.route
     ),
     PROFILE(
         "我的",
@@ -2244,7 +2255,13 @@ fun FrostedBottomBar(
     onSearchKeywordSubmit: (String) -> Unit = {},
     searchLaunchKey: Int = 0,
     onSearchLaunchTransitionFinished: (Int) -> Unit = {},
-    visibleItems: List<BottomNavItem> = listOf(BottomNavItem.HOME, BottomNavItem.DYNAMIC, BottomNavItem.HISTORY, BottomNavItem.PROFILE),
+    visibleItems: List<BottomNavItem> = listOf(
+        BottomNavItem.HOME,
+        BottomNavItem.DYNAMIC,
+        BottomNavItem.HISTORY,
+        BottomNavItem.LISTEN_VIDEO,
+        BottomNavItem.PROFILE
+    ),
     itemColorIndices: Map<String, Int> = emptyMap(),
     dynamicUnreadCount: Int = 0,
     onToggleSidebar: (() -> Unit)? = null,
@@ -4797,6 +4814,7 @@ private fun resolveMaterialBottomBarIcon(
     BottomNavItem.DYNAMIC -> if (selected) Icons.Filled.Notifications else Icons.Outlined.NotificationsNone
     BottomNavItem.STORY -> if (selected) Icons.Filled.PlayCircle else Icons.Outlined.PlayCircleOutline
     BottomNavItem.HISTORY -> if (selected) Icons.Filled.History else Icons.Outlined.History
+    BottomNavItem.LISTEN_VIDEO -> if (selected) Icons.Filled.LibraryMusic else Icons.Outlined.LibraryMusic
     BottomNavItem.PROFILE -> if (selected) Icons.Filled.Person else Icons.Outlined.Person
     BottomNavItem.FAVORITE -> if (selected) Icons.Filled.CollectionsBookmark else Icons.Outlined.CollectionsBookmark
     BottomNavItem.LIVE -> if (selected) Icons.Filled.LiveTv else Icons.Outlined.LiveTv

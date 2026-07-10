@@ -138,6 +138,7 @@ import com.android.purebilibili.feature.profile.shouldShowProfileHistoryService
 import com.android.purebilibili.core.store.AppNavigationSettings
 import com.android.purebilibili.core.store.HomeWallpaperEffectScope
 import com.android.purebilibili.core.store.SettingsManager
+import com.android.purebilibili.core.store.navigation.NavigationSettingsStore
 import com.android.purebilibili.core.store.resolveEffectiveHomeSettings
 import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.util.NetworkUtils
@@ -455,6 +456,9 @@ fun AppNavigation(
             previousVideoBvidForStopPolicy = currentVideoBvidForStopPolicy
         }
 
+        LaunchedEffect(Unit) {
+            NavigationSettingsStore.ensureListenVideoBottomTabMigration(context)
+        }
         val appNavigationSettings by SettingsManager.getAppNavigationSettings(context).collectAsStateWithLifecycle(initialValue = AppNavigationSettings(),
             context = kotlin.coroutines.EmptyCoroutineContext
         )
@@ -1293,6 +1297,7 @@ fun AppNavigation(
                         BottomNavItem.DYNAMIC -> BiliPaiNavKey.Dynamic
                         BottomNavItem.STORY -> BiliPaiNavKey.Story()
                         BottomNavItem.HISTORY -> BiliPaiNavKey.History
+                        BottomNavItem.LISTEN_VIDEO -> BiliPaiNavKey.ListenVideo
                         BottomNavItem.PROFILE -> BiliPaiNavKey.Profile
                         BottomNavItem.FAVORITE -> BiliPaiNavKey.Favorite
                         BottomNavItem.LIVE -> BiliPaiNavKey.LiveList
@@ -1503,6 +1508,8 @@ fun AppNavigation(
                                     navigation3ReturnSession = navigation3ReturnSession.clearReturning()
                                 }
                             )
+                        BiliPaiNavEntryContentRole.LISTEN_VIDEO ->
+                            Box(modifier = Modifier.fillMaxSize())
                         BiliPaiNavEntryContentRole.HISTORY -> {
                                 val historyViewModel: HistoryViewModel = viewModel()
                                 val historyNavigationScope = rememberCoroutineScope()
