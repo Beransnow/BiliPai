@@ -2,8 +2,12 @@ package com.android.purebilibili.feature.audio.screen
 
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
+import android.provider.Settings
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDp
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -52,12 +56,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
@@ -115,6 +121,7 @@ internal fun MusicPlayerContent(
     onPipClick: (() -> Unit)? = null,
     isInPipMode: Boolean = false,
     liquidGlassEffectsEnabled: Boolean = false,
+    lyricsBlurEffectsEnabled: Boolean = true,
     reduceMotion: Boolean = false,
     modifier: Modifier = Modifier
 ) {
@@ -124,6 +131,14 @@ internal fun MusicPlayerContent(
     var showQueue by remember { mutableStateOf(false) }
     var showLyricsSearch by remember { mutableStateOf(false) }
     var lyricSearchText by remember(state.title) { mutableStateOf(state.title) }
+    val systemReduceMotion = remember(context) {
+        Settings.Global.getFloat(
+            context.contentResolver,
+            Settings.Global.ANIMATOR_DURATION_SCALE,
+            1f
+        ) == 0f
+    }
+    val effectiveReduceMotion = reduceMotion || systemReduceMotion
 
     LaunchedEffect(state.coverUrl) {
         val result = loadMusicArtwork(context.imageLoader, state.coverUrl, context)
@@ -133,14 +148,14 @@ internal fun MusicPlayerContent(
 
     val backgroundColor by animateColorAsState(
         targetValue = paletteColor,
-        animationSpec = tween(if (reduceMotion) 0 else 400),
+        animationSpec = tween(if (effectiveReduceMotion) 0 else 400),
         label = "music_palette"
     )
     val glassEnabled = resolveMusicLiquidGlassEnabled(
         sdkInt = Build.VERSION.SDK_INT,
         effectsEnabled = liquidGlassEffectsEnabled,
         isAppInBackground = BackgroundManager.isInBackground,
-        reduceMotion = reduceMotion
+        reduceMotion = effectiveReduceMotion
     )
 
     BoxWithConstraints(
@@ -202,7 +217,8 @@ internal fun MusicPlayerContent(
                             onLyricsOffsetChange = onLyricsOffsetChange,
                             onLyricsRetry = onLyricsRetry,
                             onOpenLyricsSearch = { showLyricsSearch = true },
-                            reduceMotion = reduceMotion
+                            blurEffectsEnabled = lyricsBlurEffectsEnabled,
+                            reduceMotion = effectiveReduceMotion
                         )
                     }
                 }
@@ -246,7 +262,8 @@ internal fun MusicPlayerContent(
                     onLyricsOffsetChange = onLyricsOffsetChange,
                     onLyricsRetry = onLyricsRetry,
                     onOpenLyricsSearch = { showLyricsSearch = true },
-                    reduceMotion = reduceMotion,
+                    blurEffectsEnabled = lyricsBlurEffectsEnabled,
+                    reduceMotion = effectiveReduceMotion,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -633,11 +650,17 @@ private fun LyricsPage(
     onLyricsOffsetChange: (Long) -> Unit,
     onLyricsRetry: () -> Unit,
     onOpenLyricsSearch: () -> Unit,
+    blurEffectsEnabled: Boolean,
     reduceMotion: Boolean,
     modifier: Modifier = Modifier
 ) {
     val document = state.lyrics
     val currentIndex = document?.let { resolveCurrentLyricIndex(it, state.positionMs) } ?: -1
+    val blurEnabled = resolveMusicLyricsBlurEnabled(
+        sdkInt = Build.VERSION.SDK_INT,
+        effectsEnabled = blurEffectsEnabled,
+        reduceMotion = reduceMotion
+    )
     val listState = rememberLazyListState()
     var showTranslations by remember { mutableStateOf(true) }
     LaunchedEffect(currentIndex) {
@@ -689,6 +712,8 @@ private fun LyricsPage(
                         isCurrent = index == currentIndex,
                         positionMs = state.positionMs - document.offsetMs,
                         showTranslations = showTranslations,
+                        focusStyle = resolveMusicLyricFocusStyle(index, currentIndex, blurEnabled),
+                        reduceMotion = reduceMotion,
                         onClick = { onSeek(line.startTimeMs + document.offsetMs) }
                     )
                 }
@@ -732,16 +757,34 @@ private fun LyricLineContent(
     isCurrent: Boolean,
     positionMs: Long,
     showTranslations: Boolean,
+    focusStyle: MusicLyricFocusStyle,
+    reduceMotion: Boolean,
     onClick: () -> Unit
 ) {
+    val transition = updateTransition(targetState = focusStyle, label = "lyric_focus")
+    val blurRadius = transition.animateDp(
+        transitionSpec = { tween(if (reduceMotion) 0 else 260) },
+        label = "lyric_blur"
+    ) { it.blurRadiusDp.dp }
+    val alpha = transition.animateFloat(
+        transitionSpec = { tween(if (reduceMotion) 0 else 260) },
+        label = "lyric_alpha"
+    ) { it.alphaPercent / 100f }
+    val focusModifier = if (Build.VERSION.SDK_INT >= 31 && blurRadius.value > 0.dp) {
+        Modifier.blur(blurRadius.value, edgeTreatment = BlurredEdgeTreatment.Unbounded)
+    } else {
+        Modifier
+    }
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .then(focusModifier)
+            .graphicsLayer { this.alpha = alpha.value }
             .clickable(onClick = onClick)
     ) {
         Text(
             text = buildLyricText(line, isCurrent, positionMs),
-            color = MusicContentColor.copy(alpha = if (isCurrent) 1f else 0.38f),
+            color = MusicContentColor,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
             lineHeight = 34.sp
@@ -749,7 +792,7 @@ private fun LyricLineContent(
         line.translations.firstOrNull()?.takeIf { showTranslations && it.isNotBlank() }?.let {
             Text(
                 text = it,
-                color = MusicContentColor.copy(alpha = if (isCurrent) 0.72f else 0.28f),
+                color = MusicContentColor.copy(alpha = 0.72f),
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.padding(top = 5.dp)
             )
@@ -757,7 +800,7 @@ private fun LyricLineContent(
         line.romanization?.takeIf { showTranslations && it.isNotBlank() }?.let {
             Text(
                 text = it,
-                color = MusicContentColor.copy(alpha = if (isCurrent) 0.58f else 0.24f),
+                color = MusicContentColor.copy(alpha = 0.58f),
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(top = 3.dp)
             )

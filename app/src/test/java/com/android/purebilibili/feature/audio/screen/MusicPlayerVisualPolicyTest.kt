@@ -33,4 +33,32 @@ class MusicPlayerVisualPolicyTest {
         assertEquals(1, resolveCurrentLyricIndex(document, positionMs = 3_500L))
         assertEquals(2, resolveCurrentLyricIndex(document, positionMs = 8_000L))
     }
+
+    @Test
+    fun `lyric focus keeps current line sharp and progressively blurs distant lines`() {
+        assertEquals(
+            MusicLyricFocusStyle(blurRadiusDp = 0, alphaPercent = 100),
+            resolveMusicLyricFocusStyle(lineIndex = 4, currentIndex = 4, blurEnabled = true)
+        )
+        assertEquals(
+            MusicLyricFocusStyle(blurRadiusDp = 2, alphaPercent = 46),
+            resolveMusicLyricFocusStyle(lineIndex = 5, currentIndex = 4, blurEnabled = true)
+        )
+        assertEquals(
+            MusicLyricFocusStyle(blurRadiusDp = 7, alphaPercent = 20),
+            resolveMusicLyricFocusStyle(lineIndex = 8, currentIndex = 4, blurEnabled = true)
+        )
+    }
+
+    @Test
+    fun `lyric blur falls back to opacity when renderer or motion policy disables it`() {
+        assertFalse(resolveMusicLyricsBlurEnabled(sdkInt = 30, effectsEnabled = true, reduceMotion = false))
+        assertTrue(resolveMusicLyricsBlurEnabled(sdkInt = 31, effectsEnabled = true, reduceMotion = false))
+        assertFalse(resolveMusicLyricsBlurEnabled(sdkInt = 35, effectsEnabled = false, reduceMotion = false))
+        assertFalse(resolveMusicLyricsBlurEnabled(sdkInt = 35, effectsEnabled = true, reduceMotion = true))
+        assertEquals(
+            MusicLyricFocusStyle(blurRadiusDp = 0, alphaPercent = 46),
+            resolveMusicLyricFocusStyle(lineIndex = 5, currentIndex = 4, blurEnabled = false)
+        )
+    }
 }
