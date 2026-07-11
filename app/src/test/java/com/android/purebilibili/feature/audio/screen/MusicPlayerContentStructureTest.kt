@@ -19,6 +19,8 @@ class MusicPlayerContentStructureTest {
         assertTrue(compactBranch.contains("animateScrollToPage"))
         assertTrue(compactBranch.contains("navigationBarsPadding()"))
         assertTrue(compactBranch.contains("containerColorOverride = backgroundColor.copy("))
+        assertTrue(compactBranch.contains("selectedTextColorOverride = MusicContentColor"))
+        assertTrue(compactBranch.contains("unselectedTextColorOverride = MusicContentColor.copy(alpha = 0.90f)"))
     }
 
     @Test
@@ -65,6 +67,8 @@ class MusicPlayerContentStructureTest {
         assertTrue(lyricsPage.contains("AnimatedVisibility("))
         assertTrue(lyricsPage.contains("LyricsImmersiveProgress("))
         assertTrue(lyricsPage.contains("歌词设置"))
+        assertTrue(lyricsPage.contains("收起"))
+        assertTrue(lyricsPage.contains("onControlsVisibleChange(false)"))
         assertTrue(lyricsPage.contains("bottom = 260.dp"))
         assertTrue(lyricsPage.contains("歌词加载失败"))
         assertTrue(lyricsPage.contains("未找到匹配歌词"))

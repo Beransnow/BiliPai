@@ -283,6 +283,8 @@ internal fun MusicPlayerContent(
                                 alpha = if (glassEnabled) 0.18f else 0.48f
                             ),
                             indicatorIdleSurfaceColorOverride = Color.White.copy(alpha = 0.18f),
+                            selectedTextColorOverride = MusicContentColor,
+                            unselectedTextColorOverride = MusicContentColor.copy(alpha = 0.90f),
                             indicatorPositionProvider = {
                                 resolveMusicPagerIndicatorPosition(
                                     currentPage = pagerState.currentPage,
@@ -928,7 +930,8 @@ private fun LyricsPage(
                 onSeek = onSeek,
                 onPrevious = onPrevious,
                 onNext = onNext,
-                onOpenSettings = { showLyricsSettings = true }
+                onOpenSettings = { showLyricsSettings = true },
+                onHideControls = { onControlsVisibleChange(false) }
             )
         }
         if (!controlsVisible) {
@@ -985,7 +988,8 @@ private fun LyricsPrimaryControls(
     onSeek: (Long) -> Unit,
     onPrevious: (() -> Unit)?,
     onNext: (() -> Unit)?,
-    onOpenSettings: () -> Unit
+    onOpenSettings: () -> Unit,
+    onHideControls: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -1004,6 +1008,9 @@ private fun LyricsPrimaryControls(
             PlaybackControls(state, onPlayPause, onPrevious, onNext, modifier = Modifier.weight(1f))
             TextButton(onClick = onOpenSettings, modifier = Modifier.height(48.dp)) {
                 Text("歌词设置", color = MusicContentColor, fontSize = 12.sp)
+            }
+            TextButton(onClick = onHideControls, modifier = Modifier.height(48.dp)) {
+                Text("收起", color = MusicContentColor, fontSize = 12.sp)
             }
         }
     }
