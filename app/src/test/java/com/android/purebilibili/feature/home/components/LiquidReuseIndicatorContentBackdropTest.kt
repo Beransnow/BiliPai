@@ -37,6 +37,31 @@ class LiquidReuseIndicatorContentBackdropTest {
         ) = Unit
     }
 
+    private object CoordinateDependentPageBackdrop : Backdrop {
+        override val isCoordinatesDependent: Boolean = true
+        override fun androidx.compose.ui.graphics.drawscope.DrawScope.drawBackdrop(
+            density: androidx.compose.ui.unit.Density,
+            coordinates: androidx.compose.ui.layout.LayoutCoordinates?,
+            layerBlock: (androidx.compose.ui.graphics.GraphicsLayerScope.() -> Unit)?,
+            downscaleFactor: Int,
+        ) = Unit
+    }
+
+    @Test
+    fun inContentReuseRejectsCoordinateDependentPageBackdrop() {
+        assertNull(
+            resolveInContentLiquidSamplingBackdrop(CoordinateDependentPageBackdrop)
+        )
+    }
+
+    @Test
+    fun inContentReuseKeepsCoordinateIndependentBackdrop() {
+        assertSame(
+            PageBackdrop,
+            resolveInContentLiquidSamplingBackdrop(PageBackdrop)
+        )
+    }
+
     @Test
     fun prefersCombinedWhenPageExportAndCombinedProvided() {
         val result = resolveLiquidReuseIndicatorContentBackdrop(

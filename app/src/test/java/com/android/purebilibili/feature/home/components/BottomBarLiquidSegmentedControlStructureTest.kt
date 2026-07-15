@@ -378,14 +378,13 @@ class BottomBarLiquidSegmentedControlStructureTest {
             "selectionEmphasis = refractionMotionProfile.visibleSelectionEmphasis"
         )
         assertTrue(indicatorIndex >= 0)
-        // Visible labels must be composed BEFORE the capsule so theme color shows through glass.
+        // Visible labels are composed before the capsule but must be lifted above it explicitly.
         assertTrue(visibleLabelsIndex >= 0)
         assertTrue(visibleLabelsIndex < indicatorIndex)
+        assertTrue(source.contains(".zIndex(LIQUID_REUSE_FOREGROUND_Z_INDEX)"))
+        assertTrue(source.contains("val samplingBackdrop = resolveInContentLiquidSamplingBackdrop(backdrop)"))
+        assertTrue(source.contains("backdrop = samplingBackdrop,"))
         assertTrue(source.contains("contentBackdrop = indicatorContentBackdrop"))
-        assertTrue(
-            source.contains("backdrop = backdrop,"),
-            "Indicator must sample external page backdrop only; never CombinedBackdrop/tabs self-capture"
-        )
         assertFalse(source.contains("val indicatorPolicy = remember(itemCount)"))
         assertFalse(source.contains("resolveBottomBarIndicatorPolicy(itemCount = itemCount)"))
         assertTrue(source.contains("resolveSharedLiquidIndicatorPanelOffsetPx("))

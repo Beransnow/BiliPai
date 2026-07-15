@@ -94,6 +94,7 @@ internal enum class SegmentedControlChromeStyle {
 
 internal const val BOTTOM_BAR_LIQUID_SEGMENTED_CONTROL_HEIGHT_DP = 58
 internal const val BOTTOM_BAR_LIQUID_SEGMENTED_CONTROL_INDICATOR_HEIGHT_DP = 56
+internal const val LIQUID_REUSE_FOREGROUND_Z_INDEX = 3f
 private const val SEGMENTED_CONTROL_MIN_INDICATOR_ASPECT_RATIO = 1.6f
 
 internal fun resolveSegmentedControlChromeStyle(
@@ -217,6 +218,16 @@ internal fun resolveLiquidReuseIndicatorContentBackdrop(
     if (pageBackdrop != null) return pageBackdrop
     return null
 }
+
+/**
+ * Generic in-content chrome cannot assume a coordinate-dependent capture overlaps its bounds.
+ * Miuix draws an out-of-bounds [top.yukonga.miuix.kmp.blur.LayerBackdrop] sample as black, which
+ * happens when a tab bar samples a list that starts below it. Screen-aligned home chrome keeps its
+ * dedicated sampling path; generic reuse accepts only coordinate-independent backdrops.
+ */
+internal fun resolveInContentLiquidSamplingBackdrop(
+    pageBackdrop: Backdrop?,
+): Backdrop? = pageBackdrop?.takeUnless { it.isCoordinatesDependent }
 
 internal fun resolveSegmentedControlMotionProgress(
     pressProgress: Float,
@@ -441,6 +452,7 @@ fun BottomBarLiquidSegmentedControl(
         uiPreset = uiPreset,
         androidNativeLiquidGlassEnabled = effectiveAndroidNativeLiquidGlassEnabled
     )
+    val samplingBackdrop = resolveInContentLiquidSamplingBackdrop(backdrop)
     val blurIntensity = currentUnifiedBlurIntensity()
     val density = LocalDensity.current
     val itemCount = items.size
@@ -634,14 +646,14 @@ fun BottomBarLiquidSegmentedControl(
         val tabsBackdrop = rememberLayerBackdrop()
         // Dock parity: Combined(page, export) as indicator contentBackdrop.
         // Never drawBackdrop(tabsBackdrop) on the same node that layerBackdrop(tabsBackdrop).
-        val hasExternalBackdrop = backdrop != null
-        val combinedIndicatorBackdrop = if (backdrop != null) {
-            rememberCombinedBackdrop(backdrop, tabsBackdrop)
+        val hasExternalBackdrop = samplingBackdrop != null
+        val combinedIndicatorBackdrop = if (samplingBackdrop != null) {
+            rememberCombinedBackdrop(samplingBackdrop, tabsBackdrop)
         } else {
             null
         }
         val indicatorContentBackdrop = resolveLiquidReuseIndicatorContentBackdrop(
-            pageBackdrop = backdrop,
+            pageBackdrop = samplingBackdrop,
             exportBackdrop = tabsBackdrop,
             useCombined = hasExternalBackdrop,
             combinedBackdrop = combinedIndicatorBackdrop,
@@ -659,16 +671,12 @@ fun BottomBarLiquidSegmentedControl(
             progress = lensProgress
         )
         val indicatorIdleSurfaceColor = reuseIdleSurfaceColor
-        val foregroundAboveIndicator = shouldRenderBottomBarForegroundAboveIndicator(
-            homeSettings.bottomBarLiquidGlassPreset
-        )
-
         Box(
             modifier = Modifier
                 .matchParentSize()
                 .kernelSuMiuixFloatingDockSurface(
                     shape = containerShape,
-                    backdrop = backdrop,
+                    backdrop = samplingBackdrop,
                     containerColor = containerColor,
                     blurEnabled = liquidGlassEnabled,
                     glassEnabled = liquidGlassEnabled,
@@ -683,8 +691,7 @@ fun BottomBarLiquidSegmentedControl(
                 )
         )
 
-        // 1) Visible labels BEHIND the capsule (bottom-bar z-order).
-        //    While sliding they stay neutral; theme color is revealed only through glass.
+        // 1) Visible labels stay above the capsule so a missing capture never hides content.
         BottomBarLiquidSegmentedLabels(
             items = items,
             selectedIndex = safeSelectedIndex,
@@ -703,7 +710,7 @@ fun BottomBarLiquidSegmentedControl(
             modifier = Modifier
                 .matchParentSize()
                 .padding(horizontal = contentPadding, vertical = contentVerticalInset)
-                .zIndex(if (foregroundAboveIndicator) 1f else 0f)
+                .zIndex(LIQUID_REUSE_FOREGROUND_Z_INDEX)
                 .graphicsLayer { translationX = panelOffsetPx }
         )
 
@@ -720,10 +727,10 @@ fun BottomBarLiquidSegmentedControl(
                         shouldDrawSegmentedControlExportCaptureBackdrop(
                             liquidGlassEnabled = liquidGlassEnabled,
                             hasExternalBackdrop = hasExternalBackdrop
-                        ) && backdrop != null
+                        ) && samplingBackdrop != null
                     ) {
                         drawBackdrop(
-                            backdrop = backdrop,
+                            backdrop = samplingBackdrop,
                             shape = { containerShape },
                             effects = {
                                 vibrancy()
@@ -785,7 +792,7 @@ fun BottomBarLiquidSegmentedControl(
             shellShape = indicatorShape,
             liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
             contentBackdrop = indicatorContentBackdrop,
-            backdrop = backdrop,
+            backdrop = samplingBackdrop,
             indicatorLensSpec = indicatorLensSpec,
             effectivePressProgress = lensProgress,
             indicatorIdleSurfaceColor = indicatorIdleSurfaceColor,

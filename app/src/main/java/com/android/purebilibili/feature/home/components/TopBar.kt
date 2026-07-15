@@ -1308,7 +1308,7 @@ private fun LightweightHomeTopTabs(
                     state = listState,
                     modifier = Modifier
                         .fillMaxSize()
-                        .zIndex(0f),
+                        .zIndex(LIQUID_REUSE_FOREGROUND_Z_INDEX),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Start,
                     contentPadding = topTabContentPadding

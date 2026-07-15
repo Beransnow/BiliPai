@@ -202,6 +202,10 @@ class HomeChromeLiquidSurfaceStructureTest {
                 topBarSource.contains("indicatorPanelOffsetPx = 0f") &&
                 topBarSource.contains("!shouldUseMd3DockBackedCapsule && !shouldUseMd3LiquidCapsule")
         )
+        assertTrue(
+            "visible top-tab labels and icons must stay above the moving liquid indicator",
+            topBarSource.contains(".zIndex(LIQUID_REUSE_FOREGROUND_Z_INDEX)")
+        )
         assertFalse(
             "top tab row should not keep the old bottom-bar local backdrop capture names",
             topBarSource.contains("backdrop = tabsBackdrop") ||
