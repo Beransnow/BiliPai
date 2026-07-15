@@ -70,7 +70,7 @@ class LiquidReuseGlassSurfacePolicyTest {
         )
         assertEquals(base.alpha, dock.alpha, absoluteTolerance = 0.02f)
         assertTrue(inContent.alpha + 0.001f < dock.alpha)
-        assertTrue(inContent.alpha <= 0.15f)
+        assertTrue(inContent.alpha <= 0.10f)
     }
 
     @Test
@@ -78,13 +78,31 @@ class LiquidReuseGlassSurfacePolicyTest {
         assertEquals(
             1f,
             resolveLiquidReuseIdleSurfaceMaxAlpha(LiquidReuseChromeContext.FLOATING_DOCK),
-            0.001f,
+            absoluteTolerance = 0.001f,
         )
         assertTrue(
-            resolveLiquidReuseIdleSurfaceMaxAlpha(LiquidReuseChromeContext.TOP_TAB) < 1f
+            resolveLiquidReuseIdleSurfaceMaxAlpha(LiquidReuseChromeContext.TOP_TAB) <= 0.30f
         )
         assertTrue(
-            resolveLiquidReuseIdleSurfaceMaxAlpha(LiquidReuseChromeContext.IN_CONTENT_SEGMENTED) < 1f
+            resolveLiquidReuseIdleSurfaceMaxAlpha(LiquidReuseChromeContext.IN_CONTENT_SEGMENTED) <= 0.28f
+        )
+    }
+
+    @Test
+    fun exportSurfaceIsNearlyClearForInContentReuse() {
+        val shell = Color.White.copy(alpha = 0.08f)
+        val export = resolveLiquidReuseExportSurfaceColor(
+            shellContainerColor = shell,
+            chromeContext = LiquidReuseChromeContext.IN_CONTENT_SEGMENTED,
+        )
+        assertTrue(export.alpha <= 0.04f)
+        assertEquals(
+            shell.alpha,
+            resolveLiquidReuseExportSurfaceColor(
+                shellContainerColor = shell,
+                chromeContext = LiquidReuseChromeContext.FLOATING_DOCK,
+            ).alpha,
+            absoluteTolerance = 0.001f,
         )
     }
 }

@@ -301,11 +301,12 @@ internal fun resolveLiquidReuseShellContainerColor(
         return baseColor
     }
     val maxAlpha = when (chromeContext) {
-        LiquidReuseChromeContext.TOP_TAB -> 0.16f
-        LiquidReuseChromeContext.IN_CONTENT_SEGMENTED -> 0.14f
+        // White/on-page chrome: keep shells glassy, not solid gray chips.
+        LiquidReuseChromeContext.TOP_TAB -> 0.10f
+        LiquidReuseChromeContext.IN_CONTENT_SEGMENTED -> 0.08f
         LiquidReuseChromeContext.FLOATING_DOCK -> baseColor.alpha
     }
-    return baseColor.copy(alpha = minOf(baseColor.alpha.coerceAtLeast(0.06f), maxAlpha))
+    return baseColor.copy(alpha = minOf(baseColor.alpha.coerceAtLeast(0.04f), maxAlpha))
 }
 
 internal fun resolveLiquidReuseIndicatorIdleSurfaceColor(
@@ -318,9 +319,9 @@ internal fun resolveLiquidReuseIndicatorIdleSurfaceColor(
         LiquidReuseChromeContext.TOP_TAB,
         LiquidReuseChromeContext.IN_CONTENT_SEGMENTED ->
             if (darkTheme) {
-                Color.White.copy(alpha = 0.06f)
+                Color.White.copy(alpha = 0.04f)
             } else {
-                Color.Black.copy(alpha = 0.05f)
+                Color.Black.copy(alpha = 0.035f)
             }
     }
 }
@@ -330,8 +331,26 @@ internal fun resolveLiquidReuseIdleSurfaceMaxAlpha(
     chromeContext: LiquidReuseChromeContext,
 ): Float = when (chromeContext) {
     LiquidReuseChromeContext.FLOATING_DOCK -> 1f
-    LiquidReuseChromeContext.TOP_TAB -> 0.42f
-    LiquidReuseChromeContext.IN_CONTENT_SEGMENTED -> 0.38f
+    LiquidReuseChromeContext.TOP_TAB -> 0.28f
+    LiquidReuseChromeContext.IN_CONTENT_SEGMENTED -> 0.24f
+}
+
+/**
+ * Export-layer fill under Combined(page, export). Dock keeps full shell tint; in-content
+ * reuse must stay nearly clear so white page samples don't turn into solid gray.
+ */
+internal fun resolveLiquidReuseExportSurfaceColor(
+    shellContainerColor: Color,
+    chromeContext: LiquidReuseChromeContext,
+): Color {
+    return when (chromeContext) {
+        LiquidReuseChromeContext.FLOATING_DOCK -> shellContainerColor
+        LiquidReuseChromeContext.TOP_TAB,
+        LiquidReuseChromeContext.IN_CONTENT_SEGMENTED ->
+            shellContainerColor.copy(
+                alpha = minOf(shellContainerColor.alpha, 0.04f)
+            )
+    }
 }
 
 /** Capture lens strength: full 24dp while interacting, like KernelSu bottom bar capture. */
@@ -658,7 +677,9 @@ fun BottomBarLiquidSegmentedControl(
                     motionTier = MotionTier.Normal,
                     isTransitionRunning = false,
                     forceLowBlurBudget = false,
-                    liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset
+                    liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
+                    // Soft edge on white pages; full dock shadow looks heavy on chips.
+                    dropShadowAlphaScale = if (liquidGlassEnabled) 0.35f else 1f,
                 )
         )
 
@@ -716,7 +737,14 @@ fun BottomBarLiquidSegmentedControl(
                                     )
                                 }
                             },
-                            onDrawSurface = { drawRect(containerColor) }
+                            onDrawSurface = {
+                                drawRect(
+                                    resolveLiquidReuseExportSurfaceColor(
+                                        shellContainerColor = containerColor,
+                                        chromeContext = LiquidReuseChromeContext.IN_CONTENT_SEGMENTED,
+                                    )
+                                )
+                            }
                         )
                     } else {
                         this

@@ -684,6 +684,7 @@ internal fun Modifier.homeTopBottomBarMatchedSurface(
         hazeState = hazeState,
         motionTier = motionTier,
         isTransitionRunning = isTransitionRunning,
+        dropShadowAlphaScale = if (isGlassEnabled) 0.4f else 1f,
         forceLowBlurBudget = forceLowBlurBudget,
         liquidGlassPreset = liquidGlassPreset,
         isScrolling = isScrolling,

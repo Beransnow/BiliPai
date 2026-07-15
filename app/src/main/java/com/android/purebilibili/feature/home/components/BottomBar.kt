@@ -1007,7 +1007,9 @@ internal fun Modifier.kernelSuMiuixFloatingDockSurface(
     isScrolling: Boolean = false,
     materialScrollProgress: Float = 0f,
     materialMotionProgress: Float = 0f,
-    materialPressProgress: Float = 0f
+    materialPressProgress: Float = 0f,
+    /** In-content reuse should keep a softer edge than the floating bottom dock. */
+    dropShadowAlphaScale: Float = 1f,
 ): Modifier = composed {
     val isDarkTheme = resolveBottomBarDarkTheme(MiuixTheme.colorScheme.background)
     val useHazeBlur = shouldUseAndroidNativeFloatingHazeBlur(
@@ -1016,6 +1018,7 @@ internal fun Modifier.kernelSuMiuixFloatingDockSurface(
         hasHazeState = hazeState != null
     )
     val baseHighlight = rememberGravityRotatedHighlight(iosIndicatorSpecular, extraDegrees = -45f)
+    val shadowAlphaScale = dropShadowAlphaScale.coerceIn(0f, 1f)
 
     this
         .then(
@@ -1036,13 +1039,19 @@ internal fun Modifier.kernelSuMiuixFloatingDockSurface(
         .run {
             if (backdrop != null && !useHazeBlur) {
                 this
-                    .dropShadow(
-                        shape = shape,
-                        shadow = ComposeShadow(
-                            radius = 10.dp,
-                            color = Color.Black,
-                            alpha = if (isDarkTheme) 0.2f else 0.1f
-                        )
+                    .then(
+                        if (shadowAlphaScale > 0.001f) {
+                            Modifier.dropShadow(
+                                shape = shape,
+                                shadow = ComposeShadow(
+                                    radius = 10.dp,
+                                    color = Color.Black,
+                                    alpha = (if (isDarkTheme) 0.2f else 0.1f) * shadowAlphaScale
+                                )
+                            )
+                        } else {
+                            Modifier
+                        }
                     )
                     .miuixDrawBackdrop(
                         backdrop = backdrop,
@@ -1063,7 +1072,13 @@ internal fun Modifier.kernelSuMiuixFloatingDockSurface(
                             }
                         },
                         highlight = {
-                            baseHighlight.copy(alpha = if (glassEnabled) 0.75f else 0f)
+                            baseHighlight.copy(
+                                alpha = if (glassEnabled) {
+                                    0.75f * (0.45f + 0.55f * shadowAlphaScale)
+                                } else {
+                                    0f
+                                }
+                            )
                         },
                         layerBlock = if (glassEnabled) {
                             {
