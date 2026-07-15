@@ -48,9 +48,13 @@ class LiquidReuseIndicatorContentBackdropTest {
     }
 
     @Test
-    fun inContentReuseRejectsCoordinateDependentPageBackdrop() {
-        assertNull(
-            resolveInContentLiquidSamplingBackdrop(CoordinateDependentPageBackdrop)
+    fun inContentReuseFallsBackWhenPageBackdropDoesNotOverlap() {
+        assertSame(
+            ExportBackdrop,
+            resolveInContentLiquidSamplingBackdrop(
+                pageBackdrop = CoordinateDependentPageBackdrop,
+                fallbackBackdrop = ExportBackdrop,
+            )
         )
     }
 
@@ -58,7 +62,21 @@ class LiquidReuseIndicatorContentBackdropTest {
     fun inContentReuseKeepsCoordinateIndependentBackdrop() {
         assertSame(
             PageBackdrop,
-            resolveInContentLiquidSamplingBackdrop(PageBackdrop)
+            resolveInContentLiquidSamplingBackdrop(
+                pageBackdrop = PageBackdrop,
+                fallbackBackdrop = ExportBackdrop,
+            )
+        )
+    }
+
+    @Test
+    fun inContentReuseUsesStableFallbackWithoutPageBackdrop() {
+        assertSame(
+            ExportBackdrop,
+            resolveInContentLiquidSamplingBackdrop(
+                pageBackdrop = null,
+                fallbackBackdrop = ExportBackdrop,
+            )
         )
     }
 

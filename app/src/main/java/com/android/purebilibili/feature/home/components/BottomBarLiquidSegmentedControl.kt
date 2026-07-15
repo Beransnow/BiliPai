@@ -223,11 +223,12 @@ internal fun resolveLiquidReuseIndicatorContentBackdrop(
  * Generic in-content chrome cannot assume a coordinate-dependent capture overlaps its bounds.
  * Miuix draws an out-of-bounds [top.yukonga.miuix.kmp.blur.LayerBackdrop] sample as black, which
  * happens when a tab bar samples a list that starts below it. Screen-aligned home chrome keeps its
- * dedicated sampling path; generic reuse accepts only coordinate-independent backdrops.
+ * dedicated sampling path; generic reuse falls back to its coordinate-aligned stable surface.
  */
 internal fun resolveInContentLiquidSamplingBackdrop(
     pageBackdrop: Backdrop?,
-): Backdrop? = pageBackdrop?.takeUnless { it.isCoordinatesDependent }
+    fallbackBackdrop: Backdrop?,
+): Backdrop? = pageBackdrop?.takeUnless { it.isCoordinatesDependent } ?: fallbackBackdrop
 
 internal fun resolveSegmentedControlMotionProgress(
     pressProgress: Float,
@@ -452,7 +453,6 @@ fun BottomBarLiquidSegmentedControl(
         uiPreset = uiPreset,
         androidNativeLiquidGlassEnabled = effectiveAndroidNativeLiquidGlassEnabled
     )
-    val samplingBackdrop = resolveInContentLiquidSamplingBackdrop(backdrop)
     val blurIntensity = currentUnifiedBlurIntensity()
     val density = LocalDensity.current
     val itemCount = items.size
@@ -477,6 +477,19 @@ fun BottomBarLiquidSegmentedControl(
     val indicatorCorner = indicatorHeight / 2
     val isDarkTheme = isSystemInDarkTheme()
     val surfaceColor = AppSurfaceTokens.cardContainer()
+    val localSamplingSurfaceColor = MaterialTheme.colorScheme.surface
+    val localSamplingBackdrop = rememberLayerBackdrop(onDraw = {
+        drawRect(localSamplingSurfaceColor)
+        drawContent()
+    })
+    val samplingBackdrop = if (liquidGlassEnabled) {
+        resolveInContentLiquidSamplingBackdrop(
+            pageBackdrop = backdrop,
+            fallbackBackdrop = localSamplingBackdrop,
+        )
+    } else {
+        null
+    }
     val androidNativeTuning = resolveAndroidNativeBottomBarTuning(
         blurEnabled = liquidGlassEnabled,
         darkTheme = isDarkTheme
@@ -534,6 +547,14 @@ fun BottomBarLiquidSegmentedControl(
             )
             .height(height)
     ) {
+        if (liquidGlassEnabled) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .clearAndSetSemantics {}
+                    .layerBackdrop(localSamplingBackdrop)
+            )
+        }
         val contentPadding = containerHorizontalPadding
         val contentVerticalInset = containerVerticalPadding
         val slotWidth = (maxWidth - (contentPadding * 2)) / itemCount

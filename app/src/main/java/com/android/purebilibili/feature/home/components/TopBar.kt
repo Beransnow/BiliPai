@@ -91,9 +91,13 @@ import com.android.purebilibili.core.ui.animation.DampedDragAnimationState
 import com.android.purebilibili.core.ui.animation.rememberDampedDragAnimationState
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity
+import com.android.purebilibili.feature.home.components.liquid.lens
 import com.android.purebilibili.feature.home.components.liquid.rememberCombinedBackdrop
+import com.android.purebilibili.feature.home.components.liquid.vibrancy
 import top.yukonga.miuix.kmp.blur.Backdrop
 import top.yukonga.miuix.kmp.blur.LayerBackdrop
+import top.yukonga.miuix.kmp.blur.blur
+import top.yukonga.miuix.kmp.blur.drawBackdrop
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import dev.chrisbanes.haze.HazeState
@@ -1138,6 +1142,13 @@ private fun LightweightHomeTopTabs(
             motionProgress = topTabMotionProgress,
             isDragging = topTabDragActive
         )
+        val topTabCaptureLensProgress = resolveSharedLiquidIndicatorCaptureLensProgress(
+            lensProgress = topTabLensProgress,
+            isDragging = topTabDragActive
+        )
+        val topTabCaptureLensSpec = resolveBottomBarBackdropPresetCaptureLens(
+            progress = topTabCaptureLensProgress
+        )
         val topTabIdleSurfaceColor = resolveLiquidReuseIndicatorIdleSurfaceColor(
             darkTheme = isDarkTheme,
             chromeContext = LiquidReuseChromeContext.TOP_TAB,
@@ -1261,6 +1272,28 @@ private fun LightweightHomeTopTabs(
                             .graphicsLayer {
                                 // Only mirror LazyRow content origin (padding - scroll). No extra panel offset.
                                 translationX = topTabHorizontalPaddingPx - topTabListScrollOffsetPx
+                            }
+                            .run {
+                                if (backdrop != null && shouldUseLiquidGlassIndicator) {
+                                    drawBackdrop(
+                                        backdrop = backdrop,
+                                        shape = { resolveSharedBottomBarCapsuleShape() },
+                                        effects = {
+                                            vibrancy()
+                                            blur(4.dp.toPx(), 4.dp.toPx())
+                                            if (topTabCaptureLensProgress > 0.001f) {
+                                                lens(
+                                                    refractionHeight = topTabCaptureLensSpec.refractionHeightDp.dp.toPx(),
+                                                    refractionAmount = topTabCaptureLensSpec.refractionAmountDp.dp.toPx(),
+                                                    depthEffect = true,
+                                                    chromaticAberration = 0.5f
+                                                )
+                                            }
+                                        }
+                                    )
+                                } else {
+                                    this
+                                }
                             },
                         contentAlignment = Alignment.CenterStart
                     ) {
