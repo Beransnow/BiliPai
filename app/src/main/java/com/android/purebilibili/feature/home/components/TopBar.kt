@@ -1138,14 +1138,6 @@ private fun LightweightHomeTopTabs(
             motionProgress = topTabMotionProgress,
             isDragging = topTabDragActive
         )
-        val useTopTabGlassColorPath = resolveSharedLiquidIndicatorUseGlassColorPath(
-            liquidGlassEnabled = shouldUseLiquidGlassIndicator,
-            lensProgress = topTabLensProgress,
-            // Idle selected tab must stay theme primary; export refraction only while moving.
-            requireActiveMotion = true,
-            isDragging = topTabDragActive,
-            motionProgress = topTabMotionProgress,
-        )
         val topTabIdleSurfaceColor = resolveLiquidReuseIndicatorIdleSurfaceColor(
             darkTheme = isDarkTheme,
             chromeContext = LiquidReuseChromeContext.TOP_TAB,
@@ -1308,7 +1300,7 @@ private fun LightweightHomeTopTabs(
                     state = listState,
                     modifier = Modifier
                         .fillMaxSize()
-                        .zIndex(0f),
+                        .zIndex(LIQUID_REUSE_FOREGROUND_Z_INDEX),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Start,
                     contentPadding = topTabContentPadding
@@ -1365,11 +1357,9 @@ private fun LightweightHomeTopTabs(
                                     shouldUseMd3LiquidCapsule ||
                                     shouldUseMd3DockBackedCapsule
                             ),
-                            colorMode = if (useTopTabGlassColorPath) {
-                                TopTabLiquidColorMode.GLASS_VISIBLE
-                            } else {
-                                TopTabLiquidColorMode.NORMAL
-                            },
+                            // Keep selected-color interpolation visible above the glass. The hidden
+                            // export remains an enhancement, never the only readable content path.
+                            colorMode = TopTabLiquidColorMode.NORMAL,
                             modifier = gestureItemModifier,
                             onClick = {
                                 performHomeTopBarTap(haptic = haptic, onClick = {
@@ -1561,8 +1551,6 @@ private fun LightweightHomeTopTabs(
 internal enum class TopTabLiquidColorMode {
     /** Normal selected/unselected lerp. */
     NORMAL,
-    /** Visible layer while glass is sliding — neutral so theme color lives under glass. */
-    GLASS_VISIBLE,
     /** Hidden export layer monochrome glyphs before theme ColorFilter.tint. */
     GLASS_EXPORT
 }
@@ -1619,7 +1607,6 @@ private fun LightweightTopTabItem(
     }
     val contentColor = when (colorMode) {
         TopTabLiquidColorMode.GLASS_EXPORT -> exportMonochromeColor
-        TopTabLiquidColorMode.GLASS_VISIBLE -> unselectedColor
         TopTabLiquidColorMode.NORMAL -> androidx.compose.ui.graphics.lerp(
             unselectedColor,
             selectedColor,
@@ -1635,7 +1622,6 @@ private fun LightweightTopTabItem(
                 selectionFraction = selectionFraction
             )
         renderer == HomeTopTabRenderer.MD3 -> Color.Transparent
-        colorMode == TopTabLiquidColorMode.GLASS_VISIBLE -> Color.Transparent
         else -> colorScheme.secondaryContainer.copy(alpha = 0.70f * selectionFraction)
     }
     val itemShape = when {

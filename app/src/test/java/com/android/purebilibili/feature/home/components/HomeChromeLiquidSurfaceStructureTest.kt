@@ -189,7 +189,8 @@ class HomeChromeLiquidSurfaceStructureTest {
                 topBarSource.contains("layerBackdrop(topTabContentBackdrop)") &&
                 topBarSource.contains("ColorFilter.tint(topTabExportTintColor)") &&
                 topBarSource.contains("TopTabLiquidColorMode.GLASS_EXPORT") &&
-                topBarSource.contains("TopTabLiquidColorMode.GLASS_VISIBLE") &&
+                topBarSource.contains("colorMode = TopTabLiquidColorMode.NORMAL") &&
+                !topBarSource.contains("TopTabLiquidColorMode.GLASS_VISIBLE") &&
                 topBarSource.contains("resolveSharedLiquidExportMonochromeColor(") &&
                 topBarSource.contains("shouldRenderBottomBarIndicatorBackdrop(") &&
                 topBarSource.contains("val glassLayersAlwaysOn = shouldUseLiquidGlassIndicator") &&
@@ -203,12 +204,12 @@ class HomeChromeLiquidSurfaceStructureTest {
                 topBarSource.contains("!shouldUseMd3DockBackedCapsule && !shouldUseMd3LiquidCapsule")
         )
         assertTrue(
-            "moving top-tab glass must stay above visible neutral labels so tinted export content is revealed through the indicator",
+            "top-tab labels must stay above the indicator and interpolate theme color directly",
             topBarSource.contains(
                 "state = listState,\n" +
                     "                    modifier = Modifier\n" +
                     "                        .fillMaxSize()\n" +
-                    "                        .zIndex(0f),"
+                    "                        .zIndex(LIQUID_REUSE_FOREGROUND_Z_INDEX),"
             ) && topBarSource.contains(
                 ".fillMaxSize()\n" +
                     "                        .zIndex(1f)\n" +
