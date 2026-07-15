@@ -4,7 +4,6 @@ package com.android.purebilibili.feature.bangumi.ui.components
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -19,10 +18,8 @@ import androidx.compose.ui.unit.sp
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.outlined.ChevronDown
 import com.android.purebilibili.core.ui.AppShapes
-import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
-import com.android.purebilibili.core.ui.blur.BlurSurfaceType
-import com.android.purebilibili.core.ui.blur.unifiedBlur
+import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import com.android.purebilibili.data.model.response.BangumiFilter
 import com.android.purebilibili.data.model.response.BangumiIndexFilterGroup
 import com.android.purebilibili.data.model.response.BangumiIndexFilterOption
@@ -31,7 +28,6 @@ import com.android.purebilibili.data.model.response.resolveBangumiIndexSelectedO
 import com.android.purebilibili.feature.bangumi.BangumiDisplayMode
 import com.android.purebilibili.feature.bangumi.resolveBangumiTopModes
 import androidx.compose.ui.text.font.FontWeight
-import dev.chrisbanes.haze.HazeState
 
 /**
  * 模式切换 Tabs (索引/时间表)
@@ -40,11 +36,8 @@ import dev.chrisbanes.haze.HazeState
 fun BangumiModeTabs(
     currentMode: BangumiDisplayMode,
     onModeChange: (BangumiDisplayMode) -> Unit,
-    liquidGlassEnabled: Boolean = false,
-    hazeState: HazeState? = null,
     modifier: Modifier = Modifier
 ) {
-    val chromeShape = AppShapes.container(ContainerLevel.Sheet)
     val modes = resolveBangumiTopModes().map { mode ->
         mode to when (mode) {
             BangumiDisplayMode.LIST -> "索引"
@@ -53,69 +46,19 @@ fun BangumiModeTabs(
         }
     }
     
-    Surface(
+    BottomBarLiquidSegmentedControl(
+        items = modes.map { it.second },
+        selectedIndex = modes.indexOfFirst { it.first == currentMode }.coerceAtLeast(0),
+        onSelected = { index -> modes.getOrNull(index)?.first?.let(onModeChange) },
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 10.dp)
-            .then(
-                if (liquidGlassEnabled && hazeState != null) {
-                    Modifier.unifiedBlur(
-                        hazeState = hazeState,
-                        shape = chromeShape,
-                        surfaceType = BlurSurfaceType.DRAWER_OR_SHEET
-                    )
-                } else {
-                    Modifier
-                }
-            ),
-        shape = chromeShape,
-        color = MaterialTheme.colorScheme.surfaceVariant.copy(
-            alpha = if (liquidGlassEnabled) 0.34f else 0.65f
-        ),
-        border = if (liquidGlassEnabled) {
-            BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.48f))
-        } else {
-            null
-        }
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            modes.forEach { (mode, label) ->
-                val isSelected = currentMode == mode
-                Surface(
-                    modifier = Modifier.weight(1f),
-                    onClick = { onModeChange(mode) },
-                    shape = AppShapes.container(ContainerLevel.Dialog),
-                    color = if (isSelected) {
-                        if (liquidGlassEnabled) {
-                            MaterialTheme.colorScheme.primary.copy(alpha = 0.20f)
-                        } else {
-                            AppSurfaceTokens.cardContainer()
-                        }
-                    } else {
-                        Color.Transparent
-                    },
-                    shadowElevation = if (isSelected) 1.dp else 0.dp
-                ) {
-                    Box(
-                        modifier = Modifier.padding(vertical = 9.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = label,
-                            fontSize = 13.sp,
-                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                            color = if (isSelected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-        }
-    }
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        height = 48.dp,
+        indicatorHeight = 42.dp,
+        labelFontSize = 14.sp,
+        dragSelectionEnabled = true,
+        preferInlineContentStyle = false
+    )
 }
 
 /**
@@ -217,37 +160,15 @@ fun BangumiIndexFilterRows(
     groups: List<BangumiIndexFilterGroup>,
     filter: BangumiFilter,
     onFilterChange: (BangumiFilter) -> Unit,
-    liquidGlassEnabled: Boolean = false,
-    hazeState: HazeState? = null,
     modifier: Modifier = Modifier
 ) {
     if (groups.isEmpty()) return
-    val chromeShape = AppShapes.container(ContainerLevel.Sheet)
 
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .animateContentSize()
-            .then(
-                if (liquidGlassEnabled && hazeState != null) {
-                    Modifier.unifiedBlur(
-                        hazeState = hazeState,
-                        shape = chromeShape,
-                        surfaceType = BlurSurfaceType.DRAWER_OR_SHEET
-                    )
-                } else {
-                    Modifier
-                }
-            ),
-        shape = chromeShape,
-        color = MaterialTheme.colorScheme.surface.copy(
-            alpha = if (liquidGlassEnabled) 0.28f else 1f
-        ),
-        border = if (liquidGlassEnabled) {
-            BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.36f))
-        } else {
-            null
-        }
+            .animateContentSize(),
+        color = MaterialTheme.colorScheme.surface
     ) {
         Column(
             modifier = Modifier.padding(top = 8.dp, bottom = 10.dp),
