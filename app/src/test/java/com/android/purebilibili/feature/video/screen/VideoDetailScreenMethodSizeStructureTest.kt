@@ -79,7 +79,7 @@ class VideoDetailScreenMethodSizeStructureTest {
         assertTrue(source.contains("resolveVideoCardSharedTransitionMotionSpec("))
         assertTrue(source.contains("resolveVideoSharedTransitionVisualSpec("))
         assertTrue(playerContainerSource.contains("homeSharedTransitionMotionSpec.enabled"))
-        assertTrue(playerContainerSource.contains("val duration = if (isFullscreenTarget)"))
+        assertTrue(playerContainerSource.contains("homeSharedTransitionMotionSpec.enabled && isFullscreenTarget"))
         assertTrue(playerContainerSource.contains("homeSharedTransitionMotionSpec.durationMillis"))
         assertTrue(playerContainerSource.contains("durationMillis = duration"))
         assertTrue(playerContainerSource.contains("activeVideoSharedTransitionVisualSpec.targetCornerDp.dp"))
