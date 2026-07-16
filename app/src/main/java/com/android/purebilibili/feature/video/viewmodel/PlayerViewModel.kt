@@ -877,11 +877,43 @@ internal fun shouldRestoreAttachedPlayerFromLoadedUi(
     loadedAdaptiveDashSourceAvailable: Boolean,
     attachedPlayerMediaItemCount: Int,
 ): Boolean {
+    return shouldKeepLoadedVideoDetailUiWithoutSkeletonReload(
+        force = force,
+        requestBvid = requestBvid,
+        requestCid = requestCid,
+        requestAudioLang = requestAudioLang,
+        ignoreSavedProgress = ignoreSavedProgress,
+        videoCodecOverride = videoCodecOverride,
+        loadedBvid = loadedBvid,
+        loadedCid = loadedCid,
+        loadedAudioLang = loadedAudioLang,
+        loadedDirectPlayUrlAvailable = loadedDirectPlayUrlAvailable,
+        loadedAdaptiveDashSourceAvailable = loadedAdaptiveDashSourceAvailable,
+    ) && attachedPlayerMediaItemCount == 0
+}
+
+/**
+ * 父详情 → 相关视频 → 返回父详情时，ViewModel 往往仍持有 Success，
+ * 但播放器被换新实例。此时禁止再走 Loading.Initial 骨架，否则简介/相关列表
+ * 被卸掉，滚动位置无法按直觉恢复。
+ */
+internal fun shouldKeepLoadedVideoDetailUiWithoutSkeletonReload(
+    force: Boolean,
+    requestBvid: String,
+    requestCid: Long,
+    requestAudioLang: String?,
+    ignoreSavedProgress: Boolean,
+    videoCodecOverride: String?,
+    loadedBvid: String?,
+    loadedCid: Long,
+    loadedAudioLang: String?,
+    loadedDirectPlayUrlAvailable: Boolean = true,
+    loadedAdaptiveDashSourceAvailable: Boolean = false,
+): Boolean {
     return !force &&
         !ignoreSavedProgress &&
         videoCodecOverride == null &&
         (loadedDirectPlayUrlAvailable || loadedAdaptiveDashSourceAvailable) &&
-        attachedPlayerMediaItemCount == 0 &&
         loadedBvid == requestBvid &&
         (requestCid <= 0L || loadedCid == requestCid) &&
         (requestAudioLang == null || loadedAudioLang == requestAudioLang)
@@ -2541,7 +2573,8 @@ class PlayerViewModel : ViewModel() {
             currentSuccess.info.bvid == playbackRequest.bvid &&
             (playbackRequest.cid <= 0L || currentSuccess.info.cid == playbackRequest.cid)
 
-        if (currentSuccess != null && player != null && shouldRestoreAttachedPlayerFromLoadedUi(
+        val keepLoadedUi = currentSuccess != null &&
+            shouldKeepLoadedVideoDetailUiWithoutSkeletonReload(
                 force = playbackRequest.force,
                 requestBvid = playbackRequest.bvid,
                 requestCid = playbackRequest.cid,
@@ -2553,23 +2586,74 @@ class PlayerViewModel : ViewModel() {
                 loadedAudioLang = currentSuccess.currentAudioLang,
                 loadedDirectPlayUrlAvailable = currentSuccess.playUrl.isNotBlank(),
                 loadedAdaptiveDashSourceAvailable = currentSuccess.adaptiveDashSource != null,
-                attachedPlayerMediaItemCount = player.mediaItemCount,
             )
-        ) {
+        Logger.w(
+            "VideoReturnTrace",
+            "load request=${playbackRequest.bvid}/${playbackRequest.cid}, " +
+                "loaded=${currentSuccess?.info?.bvid}/${currentSuccess?.info?.cid}, " +
+                "keepLoadedUi=$keepLoadedUi, playerAttached=${player != null}"
+        )
+
+        if (keepLoadedUi) {
+            Logger.w("VideoReturnTrace", "keep Success UI for ${playbackRequest.bvid}")
             currentBvid = playbackRequest.bvid
-            currentCid = currentSuccess.info.cid
-            val restorePositionMs = playbackUseCase.getCachedPosition(currentBvid, currentCid)
-            val shouldAutoPlay = playbackRequest.autoPlay ?: appContext?.let {
-                com.android.purebilibili.core.store.SettingsManager.getClickToPlaySync(it)
-            } ?: true
-            playResolvedPlayback(
-                videoUrl = currentSuccess.playUrl,
-                audioUrl = currentSuccess.audioUrl,
-                adaptiveDashSource = currentSuccess.adaptiveDashSource,
-                startPositionMs = restorePositionMs,
-                playWhenReady = shouldAutoPlay,
-            )
-            Logger.d("PlayerVM", "Restored attached player for ${playbackRequest.bvid} without reloading detail UI")
+            if (currentCid <= 0L && currentSuccess.info.cid > 0L) {
+                currentCid = currentSuccess.info.cid
+            } else if (currentSuccess.info.cid > 0L) {
+                currentCid = currentSuccess.info.cid
+            }
+            if (player != null) {
+                val shouldSoftRestorePlayer =
+                    shouldRestoreAttachedPlayerFromLoadedUi(
+                        force = playbackRequest.force,
+                        requestBvid = playbackRequest.bvid,
+                        requestCid = playbackRequest.cid,
+                        requestAudioLang = playbackRequest.audioLang,
+                        ignoreSavedProgress = playbackRequest.ignoreSavedProgress,
+                        videoCodecOverride = playbackRequest.videoCodecOverride,
+                        loadedBvid = currentSuccess.info.bvid,
+                        loadedCid = currentSuccess.info.cid,
+                        loadedAudioLang = currentSuccess.currentAudioLang,
+                        loadedDirectPlayUrlAvailable = currentSuccess.playUrl.isNotBlank(),
+                        loadedAdaptiveDashSourceAvailable = currentSuccess.adaptiveDashSource != null,
+                        attachedPlayerMediaItemCount = player.mediaItemCount,
+                    ) ||
+                        // 已有 media 但会话不健康（从子详情返回常见）：仍保留 Success UI，只重绑播放器
+                        !isPlayerHealthy ||
+                        !isPlayerPlayingSameVideo
+
+                if (shouldSoftRestorePlayer) {
+                    val restorePositionMs = playbackUseCase.getCachedPosition(currentBvid, currentCid)
+                    val shouldAutoPlay = playbackRequest.autoPlay ?: appContext?.let {
+                        com.android.purebilibili.core.store.SettingsManager.getClickToPlaySync(it)
+                    } ?: true
+                    playResolvedPlayback(
+                        videoUrl = currentSuccess.playUrl,
+                        audioUrl = currentSuccess.audioUrl,
+                        adaptiveDashSource = currentSuccess.adaptiveDashSource,
+                        startPositionMs = restorePositionMs,
+                        playWhenReady = shouldAutoPlay,
+                    )
+                    Logger.d(
+                        "PlayerVM",
+                        "Restored player for ${playbackRequest.bvid} keeping loaded detail UI (no skeleton)"
+                    )
+                } else {
+                    com.android.purebilibili.core.player.PlayerVolumeController.applyPreferredVolume(player)
+                    if (!player.isPlaying) {
+                        player.play()
+                    }
+                    Logger.d(
+                        "PlayerVM",
+                        "🎯 ${playbackRequest.bvid} UI already loaded and player healthy, skip reload"
+                    )
+                }
+            } else {
+                Logger.d(
+                    "PlayerVM",
+                    "Keep loaded detail UI for ${playbackRequest.bvid}; player not attached yet"
+                )
+            }
             return
         }
 
@@ -2639,6 +2723,7 @@ class PlayerViewModel : ViewModel() {
                 Logger.d("PlayerVM", "⏭️ Skip stale load request before start: bvid=${playbackRequest.bvid} token=$requestToken")
                 return@launch
             }
+            Logger.w("VideoReturnTrace", "show Loading.Initial for ${playbackRequest.bvid}")
             _uiState.value = PlayerUiState.Loading.Initial
             
                 val isLoggedIn = resolveVideoPlaybackAuthState(

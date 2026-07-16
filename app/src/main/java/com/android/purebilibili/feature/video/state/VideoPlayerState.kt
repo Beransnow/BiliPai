@@ -1262,6 +1262,10 @@ fun rememberVideoPlayerState(
         
         // 3️⃣ 如果没有恢复成功，则调用 loadVideo
         if (!restored) {
+            Logger.w(
+                "VideoReturnTrace",
+                "player state requests load: $bvid/$cid, entryFinished=$entryTransitionFinished"
+            )
             com.android.purebilibili.core.util.Logger.d("VideoPlayerState", "SUB_DBG call loadVideo: request=$bvid/$cid")
             viewModel.loadVideo(
                 bvid = bvid,

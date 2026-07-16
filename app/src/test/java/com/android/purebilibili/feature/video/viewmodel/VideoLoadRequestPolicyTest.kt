@@ -74,6 +74,60 @@ class VideoLoadRequestPolicyTest {
     }
 
     @Test
+    fun `return keeps loaded detail ui when the player must be rebound`() {
+        assertTrue(
+            shouldKeepLoadedVideoDetailUiWithoutSkeletonReload(
+                force = false,
+                requestBvid = "BV-parent",
+                requestCid = 0L,
+                requestAudioLang = null,
+                ignoreSavedProgress = false,
+                videoCodecOverride = null,
+                loadedBvid = "BV-parent",
+                loadedCid = 123L,
+                loadedAudioLang = null,
+                loadedDirectPlayUrlAvailable = true,
+                loadedAdaptiveDashSourceAvailable = false,
+            )
+        )
+        assertFalse(
+            shouldRestoreAttachedPlayerFromLoadedUi(
+                force = false,
+                requestBvid = "BV-parent",
+                requestCid = 0L,
+                requestAudioLang = null,
+                ignoreSavedProgress = false,
+                videoCodecOverride = null,
+                loadedBvid = "BV-parent",
+                loadedCid = 123L,
+                loadedAudioLang = null,
+                loadedDirectPlayUrlAvailable = true,
+                loadedAdaptiveDashSourceAvailable = false,
+                attachedPlayerMediaItemCount = 1,
+            )
+        )
+    }
+
+    @Test
+    fun `forced reload does not preserve the existing detail ui`() {
+        assertFalse(
+            shouldKeepLoadedVideoDetailUiWithoutSkeletonReload(
+                force = true,
+                requestBvid = "BV-parent",
+                requestCid = 0L,
+                requestAudioLang = null,
+                ignoreSavedProgress = false,
+                videoCodecOverride = null,
+                loadedBvid = "BV-parent",
+                loadedCid = 123L,
+                loadedAudioLang = null,
+                loadedDirectPlayUrlAvailable = true,
+                loadedAdaptiveDashSourceAvailable = false,
+            )
+        )
+    }
+
+    @Test
     fun `accepts result when request token and bvid both match current`() {
         assertTrue(
             shouldApplyVideoLoadResult(
