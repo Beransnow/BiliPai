@@ -45,11 +45,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -228,11 +231,14 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 @Stable
-private class InlinePortraitPlayerCollapseState {
-    var offsetPx by mutableFloatStateOf(0f)
+private class InlinePortraitPlayerCollapseState(
+    initialOffsetPx: Float = 0f,
+    initialRestoreRequested: Boolean = false
+) {
+    var offsetPx by mutableFloatStateOf(initialOffsetPx)
         private set
 
-    var restoreRequested by mutableStateOf(false)
+    var restoreRequested by mutableStateOf(initialRestoreRequested)
         private set
 
     fun updateOffset(value: Float) {
@@ -252,11 +258,25 @@ private class InlinePortraitPlayerCollapseState {
         offsetPx = 0f
         restoreRequested = true
     }
+
+    companion object {
+        val Saver = listSaver<InlinePortraitPlayerCollapseState, Any>(
+            save = { listOf(it.offsetPx, it.restoreRequested) },
+            restore = {
+                InlinePortraitPlayerCollapseState(
+                    initialOffsetPx = it[0] as Float,
+                    initialRestoreRequested = it[1] as Boolean
+                )
+            }
+        )
+    }
 }
 
 @Composable
-private fun rememberInlinePortraitPlayerCollapseState() =
-    remember { InlinePortraitPlayerCollapseState() }
+private fun rememberInlinePortraitPlayerCollapseState(videoBvid: String) =
+    rememberSaveable(videoBvid, saver = InlinePortraitPlayerCollapseState.Saver) {
+        InlinePortraitPlayerCollapseState()
+    }
 
 internal fun shouldHandleVideoDetailDisposeAsNavigationExit(
     isNavigatingToAudioMode: Boolean,
@@ -1317,6 +1337,15 @@ fun VideoDetailScreen(
     // 🔄 [Seamless Playback] Internal BVID state to support seamless switching in portrait mode
     var currentBvid by rememberSaveable(bvid) { mutableStateOf(bvid) }
     var currentBvidCid by rememberSaveable { mutableLongStateOf(0L) }
+    val introListState = rememberSaveable(currentBvid, saver = LazyListState.Saver) {
+        LazyListState()
+    }
+    val commentListState = rememberSaveable(currentBvid, saver = LazyListState.Saver) {
+        LazyListState()
+    }
+    val videoContentPagerState: PagerState = key(currentBvid) {
+        rememberPagerState(pageCount = { 2 })
+    }
 
     val entryRootAnimatedVisibilityScope = LocalAnimatedVisibilityScope.current
     val entryRootSharedTransitionScope = LocalSharedTransitionScope.current
@@ -3477,8 +3506,15 @@ fun VideoDetailScreen(
                             isPlaybackPaused = isPlaybackPaused
                         )
                         // 父层只关心折叠阈值，避免列表每个像素的滚动都触发整页重组。
-                        var introScrollPastCollapseThreshold by remember { mutableStateOf(false) }
-                        val inlinePlayerCollapseState = rememberInlinePortraitPlayerCollapseState()
+                        var introScrollPastCollapseThreshold by rememberSaveable(currentBvid) {
+                            mutableStateOf(
+                                isVideoDetailIntroScrollPastCollapseThreshold(
+                                    firstVisibleItemIndex = introListState.firstVisibleItemIndex,
+                                    firstVisibleItemScrollOffset = introListState.firstVisibleItemScrollOffset
+                                )
+                            )
+                        }
+                        val inlinePlayerCollapseState = rememberInlinePortraitPlayerCollapseState(currentBvid)
                         val compactInlinePlayerForCommentTab =
                             shouldUseCompactInlinePortraitPlayerForCommentTab(
                                 useOfficialInlinePortraitDetailExperience = useOfficialInlinePortraitDetailExperience,
@@ -3941,6 +3977,9 @@ fun VideoDetailScreen(
                                     val downloadProgress by viewModel.downloadProgress.collectAsStateWithLifecycle()
                                     VideoDetailPhoneSuccessContentLayer(
                                         success = success,
+                                        introListState = introListState,
+                                        commentListState = commentListState,
+                                        videoContentPagerState = videoContentPagerState,
                                         commentState = commentState,
                                         commentMemberDecorationsEnabled = commentMemberDecorationsEnabled,
                                         viewModel = viewModel,
