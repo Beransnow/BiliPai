@@ -15,14 +15,18 @@ import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.navigation.isVideoCardReturnTargetRoute
 import kotlin.math.roundToInt
 
-private const val VIDEO_CARD_TRANSITION_MAX_BLUR_RADIUS_PX = 36f
+// 景深标定（对齐 iOS App 开合观感）：
+// - 背景下沉约 7%（0.93），比旧 4.5% 更有“被压住”的层次
+// - 峰值 blur 28px：靠 scale+scrim 补深度，降低整页实时模糊 GPU 成本
+// - 压暗全程保留（含 HELD），避免打开完成后景深断裂
+private const val VIDEO_CARD_TRANSITION_MAX_BLUR_RADIUS_PX = 28f
 private const val VIDEO_CARD_TRANSITION_BLUR_QUANTUM_PX = 2f
-private const val VIDEO_CARD_TRANSITION_MAX_SCRIM_ALPHA_DARK = 0.22f
-private const val VIDEO_CARD_TRANSITION_MAX_SCRIM_ALPHA_LIGHT = 0.10f
-private const val VIDEO_CARD_TRANSITION_RETURN_SCRIM_ALPHA_DARK = 0.10f
-private const val VIDEO_CARD_TRANSITION_RETURN_SCRIM_ALPHA_LIGHT = 0.05f
-private const val VIDEO_CARD_TRANSITION_LIGHT_REDUCED_OPENING_SCRIM_ALPHA = 0.06f
-private const val VIDEO_CARD_TRANSITION_MAX_CONTENT_SCALE_REDUCTION = 0.045f
+private const val VIDEO_CARD_TRANSITION_MAX_SCRIM_ALPHA_DARK = 0.28f
+private const val VIDEO_CARD_TRANSITION_MAX_SCRIM_ALPHA_LIGHT = 0.14f
+private const val VIDEO_CARD_TRANSITION_RETURN_SCRIM_ALPHA_DARK = 0.16f
+private const val VIDEO_CARD_TRANSITION_RETURN_SCRIM_ALPHA_LIGHT = 0.08f
+private const val VIDEO_CARD_TRANSITION_LIGHT_REDUCED_OPENING_SCRIM_ALPHA = 0.08f
+private const val VIDEO_CARD_TRANSITION_MAX_CONTENT_SCALE_REDUCTION = 0.07f
 private val VIDEO_CARD_TRANSITION_LIGHT_SCRIM_TINT = Color(0xFF8E8E93)
 
 // 开场与返回时长由共享元素速度设置提供；取消仍固定为短恢复动画。
@@ -98,8 +102,9 @@ internal fun resolveVideoCardTransitionContentScale(
     if (phase == VideoCardTransitionBackgroundPhase.IDLE || motionTier == MotionTier.Reduced) {
         return 1f
     }
-    val clamped = progress.coerceIn(0f, 1f)
-    return 1f - VIDEO_CARD_TRANSITION_MAX_CONTENT_SCALE_REDUCTION * clamped
+    // 下沉进度略前倾：卡片一开始放大时背景就明显“退进景深”，更像 iOS 主屏被压住。
+    val depthProgress = resolveVideoCardTransitionDepthProgress(progress)
+    return 1f - VIDEO_CARD_TRANSITION_MAX_CONTENT_SCALE_REDUCTION * depthProgress
 }
 
 internal fun resolveVideoCardTransitionBackgroundFrame(
@@ -126,7 +131,8 @@ internal fun resolveVideoCardTransitionBackgroundFrame(
     return VideoCardTransitionBackgroundFrame(
         blurRadiusPx = quantizeVideoCardTransitionBlurRadius(rawBlurRadiusPx),
         scrimAlpha = when (phase) {
-            VideoCardTransitionBackgroundPhase.OPENING ->
+            VideoCardTransitionBackgroundPhase.OPENING,
+            VideoCardTransitionBackgroundPhase.HELD ->
                 resolveVideoCardTransitionOpeningScrimAlpha(
                     progress = clamped,
                     isLightBackground = isLightBackground,
@@ -137,8 +143,7 @@ internal fun resolveVideoCardTransitionBackgroundFrame(
                     blurStrength = blurStrength,
                     isLightBackground = isLightBackground,
                 )
-            VideoCardTransitionBackgroundPhase.IDLE,
-            VideoCardTransitionBackgroundPhase.HELD -> 0f
+            VideoCardTransitionBackgroundPhase.IDLE -> 0f
         },
         contentScale = resolveVideoCardTransitionContentScale(
             progress = clamped,
@@ -391,10 +396,17 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
     }
 }
 
-private fun resolveVideoCardTransitionBlurStrength(progress: Float): Float {
+/**
+ * 景深进度：ease-in（前倾），让 scale/模糊在开合前半段就建立层次。
+ */
+internal fun resolveVideoCardTransitionDepthProgress(progress: Float): Float {
     val clamped = progress.coerceIn(0f, 1f)
-    // 模糊要比 scrim 更早进入可感知区，否则 160ms 内肉眼很难看出背景虚化。
     return 1f - (1f - clamped) * (1f - clamped)
+}
+
+private fun resolveVideoCardTransitionBlurStrength(progress: Float): Float {
+    // 与景深进度同源：模糊与背景下沉同步建立，避免“先糊后沉”的分层错位。
+    return resolveVideoCardTransitionDepthProgress(progress)
 }
 
 private fun quantizeVideoCardTransitionBlurRadius(radiusPx: Float): Float {

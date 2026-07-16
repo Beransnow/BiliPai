@@ -1,6 +1,5 @@
 package com.android.purebilibili.core.ui.transition
 
-import com.android.purebilibili.core.ui.motion.AppMotionEasing
 import androidx.compose.ui.geometry.Rect
 import java.io.File
 import kotlin.test.Test
@@ -12,14 +11,18 @@ import kotlin.test.assertTrue
 class VideoSharedTransitionPolicyTest {
 
     @Test
-    fun videoSharedTransitionUsesResponsiveEnterAndBalancedReturnEasing() {
+    fun videoSharedTransitionUsesIosLikeEnterAndReturnEasing() {
         val enter = resolveVideoCardSharedTransitionEnterEasing()
         val returning = resolveVideoCardSharedTransitionReturnEasing()
 
-        assertSame(AppMotionEasing.EmphasizedEnter, enter)
-        assertTrue(returning.transform(0.1f) in 0.03f..0.06f)
-        assertTrue(returning.transform(0.35f) in 0.54f..0.58f)
-        assertTrue(returning.transform(0.75f) in 0.95f..0.97f)
+        // 进场：快起软落（约 35% 进度已接近落位）
+        assertTrue(enter.transform(0.1f) in 0.45f..0.55f)
+        assertTrue(enter.transform(0.35f) in 0.88f..0.95f)
+        assertTrue(enter.transform(0.75f) > 0.99f)
+        // 返回：中段更决断，末端软着陆
+        assertTrue(returning.transform(0.1f) in 0.07f..0.12f)
+        assertTrue(returning.transform(0.35f) in 0.64f..0.72f)
+        assertTrue(returning.transform(0.75f) in 0.95f..0.98f)
     }
 
     @Test
@@ -271,10 +274,9 @@ class VideoSharedTransitionPolicyTest {
         assertEquals(276, motion.contentDurationMillis)
         assertEquals(14, motion.contentSlideOffsetDp)
         assertEquals(0.985f, motion.contentInitialScale, 0.0001f)
-        assertTrue(motion.enterEasing.transform(0.35f) > 0.7f)
-        assertTrue(motion.enterEasing.transform(0.35f) < 0.9f)
-        assertTrue(motion.enterEasing.transform(0.75f) > 0.96f)
-        assertTrue(motion.returnEasing.transform(0.35f) in 0.54f..0.58f)
+        assertTrue(motion.enterEasing.transform(0.35f) in 0.88f..0.95f)
+        assertTrue(motion.enterEasing.transform(0.75f) > 0.99f)
+        assertTrue(motion.returnEasing.transform(0.35f) in 0.64f..0.72f)
     }
 
     @Test

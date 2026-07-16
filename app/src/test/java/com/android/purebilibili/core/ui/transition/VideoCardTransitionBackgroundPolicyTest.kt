@@ -51,11 +51,11 @@ class VideoCardTransitionBackgroundPolicyTest {
             sdkInt = 35
         )
 
-        assertEquals(36f, frame.blurRadiusPx)
+        assertEquals(28f, frame.blurRadiusPx)
         assertEquals(0f, frame.blurRadiusPx % 2f)
-        assertEquals(0.22f, frame.scrimAlpha)
+        assertEquals(0.28f, frame.scrimAlpha)
         assertFalse(frame.useLightScrimTint)
-        assertTrue(frame.contentScale < 1f)
+        assertEquals(0.93f, frame.contentScale, 0.0001f)
     }
 
     @Test
@@ -67,8 +67,8 @@ class VideoCardTransitionBackgroundPolicyTest {
             sdkInt = 35
         )
 
-        assertEquals(36f, frame.blurRadiusPx)
-        assertEquals(0.10f, frame.scrimAlpha)
+        assertEquals(28f, frame.blurRadiusPx)
+        assertEquals(0.14f, frame.scrimAlpha)
         assertTrue(frame.useLightScrimTint)
     }
 
@@ -83,7 +83,7 @@ class VideoCardTransitionBackgroundPolicyTest {
         )
 
         assertEquals(0f, frame.blurRadiusPx)
-        assertEquals(0.06f, frame.scrimAlpha)
+        assertEquals(0.08f, frame.scrimAlpha)
         assertTrue(frame.useLightScrimTint)
     }
 
@@ -99,8 +99,8 @@ class VideoCardTransitionBackgroundPolicyTest {
         )
 
         assertTrue(light < dark)
-        assertEquals(0.05f, light)
-        assertEquals(0.10f, dark)
+        assertEquals(0.08f, light)
+        assertEquals(0.16f, dark)
     }
 
     @Test
@@ -121,14 +121,15 @@ class VideoCardTransitionBackgroundPolicyTest {
             sdkInt = 35
         )
 
-        assertEquals(36f, start.blurRadiusPx)
+        assertEquals(28f, start.blurRadiusPx)
         assertTrue(middle.blurRadiusPx in 1f..<start.blurRadiusPx)
         assertEquals(0f, end.blurRadiusPx)
         assertTrue(start.scrimAlpha > middle.scrimAlpha)
         assertTrue(middle.scrimAlpha > 0f)
         assertEquals(0f, end.scrimAlpha)
-        assertEquals(0.955f, start.contentScale, 0.0001f)
-        assertEquals(0.9775f, middle.contentScale, 0.0001f)
+        // depthProgress(1)=1 → 0.93; depthProgress(0.5)=0.75 → 0.9475
+        assertEquals(0.93f, start.contentScale, 0.0001f)
+        assertEquals(0.9475f, middle.contentScale, 0.0001f)
         assertEquals(1f, end.contentScale)
     }
 
@@ -144,16 +145,18 @@ class VideoCardTransitionBackgroundPolicyTest {
     }
 
     @Test
-    fun heldFrameKeepsBackgroundBlurAndDepthReadyForReturnWithoutScrim() {
+    fun heldFrameKeepsBackgroundBlurDepthAndScrimForStableIosLikeStack() {
         val frame = resolveVideoCardTransitionBackgroundFrame(
             progress = 1f,
             phase = VideoCardTransitionBackgroundPhase.HELD,
+            isLightBackground = false,
             sdkInt = 35
         )
 
-        assertEquals(36f, frame.blurRadiusPx)
-        assertEquals(0f, frame.scrimAlpha)
-        assertEquals(0.955f, frame.contentScale, 0.0001f)
+        assertEquals(28f, frame.blurRadiusPx)
+        // HELD 保留与满进度开场一致的压暗，避免详情停留时景深断裂。
+        assertEquals(0.28f, frame.scrimAlpha)
+        assertEquals(0.93f, frame.contentScale, 0.0001f)
     }
 
     @Test
@@ -171,8 +174,8 @@ class VideoCardTransitionBackgroundPolicyTest {
             isGestureRestoreInProgress = true,
         )
 
-        assertEquals(0.955f, openingScale, 0.0001f)
-        assertEquals(0.9775f, restoreScale, 0.0001f)
+        assertEquals(0.93f, openingScale, 0.0001f)
+        assertEquals(0.9475f, restoreScale, 0.0001f)
     }
 
     @Test
@@ -217,7 +220,8 @@ class VideoCardTransitionBackgroundPolicyTest {
 
         assertTrue(frame.blurRadiusPx > 0f)
         assertTrue(frame.scrimAlpha > 0f)
-        assertEquals(0.98875f, frame.contentScale, 0.0001f)
+        // depthProgress(0.25)=0.4375 → scale = 1 - 0.07*0.4375 = 0.969375
+        assertEquals(0.969375f, frame.contentScale, 0.0001f)
     }
 
     @Test
@@ -413,9 +417,9 @@ class VideoCardTransitionBackgroundPolicyTest {
             isLightBackground = false,
         )
 
-        assertEquals(0.10f, heldFull.scrimAlpha)
+        assertEquals(0.14f, heldFull.scrimAlpha)
         assertTrue(heldHalf.scrimAlpha < heldFull.scrimAlpha)
-        assertEquals(0.22f, openingFull.scrimAlpha)
+        assertEquals(0.28f, openingFull.scrimAlpha)
         assertTrue(heldFull.useLightScrimTint)
         assertFalse(openingFull.useLightScrimTint)
     }

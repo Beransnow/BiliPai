@@ -46,9 +46,9 @@ class VideoDetailRouteSheetPolicyTest {
             assertEquals(28f, motion.initialCornerDp)
             assertTrue(motion.settleScaleDelta in 0f..0.002f)
             assertTrue(motion.settleTranslationDp in 0f..2f)
-            assertTrue(motion.enterEasing.transform(0.35f) > 0.7f)
-            assertTrue(motion.enterEasing.transform(0.75f) > 0.96f)
-            assertTrue(motion.returnEasing.transform(0.35f) in 0.54f..0.58f)
+            assertTrue(motion.enterEasing.transform(0.35f) in 0.88f..0.95f)
+            assertTrue(motion.enterEasing.transform(0.75f) > 0.99f)
+            assertTrue(motion.returnEasing.transform(0.35f) in 0.64f..0.72f)
         }
     }
 

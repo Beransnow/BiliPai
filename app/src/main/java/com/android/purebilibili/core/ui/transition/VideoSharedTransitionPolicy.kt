@@ -5,7 +5,6 @@ import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.geometry.Rect
-import com.android.purebilibili.core.ui.motion.AppMotionEasing
 import com.android.purebilibili.navigation.isVideoCardReturnTargetRoute
 import kotlin.math.roundToInt
 
@@ -74,8 +73,9 @@ private const val DEFAULT_VIDEO_CARD_CORNER_DP = 12
 private const val DEFAULT_VIDEO_PLAYER_CORNER_DP = 12
 private const val DYNAMIC_VIDEO_CARD_CORNER_DP = 10
 private const val WATCH_LATER_VIDEO_CARD_CORNER_DP = 8
-private val VIDEO_CARD_ENTER_EASING = AppMotionEasing.EmphasizedEnter
-private val VIDEO_CARD_RETURN_EASING = CubicBezierEasing(0.32f, 0f, 0.20f, 1f)
+// iOS App 开合近似曲线：进场快起软落；返回更决断、末端软着陆（仍保留时长可控的 tween）。
+private val VIDEO_CARD_ENTER_EASING = CubicBezierEasing(0.16f, 1.00f, 0.30f, 1.00f)
+private val VIDEO_CARD_RETURN_EASING = CubicBezierEasing(0.22f, 0.00f, 0.12f, 1.00f)
 
 enum class VideoSharedTransitionSpeed(val value: Int, val label: String) {
     FAST(0, "快速"),
