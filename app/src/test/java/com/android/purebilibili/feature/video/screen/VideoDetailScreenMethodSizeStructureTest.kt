@@ -202,6 +202,22 @@ class VideoDetailScreenMethodSizeStructureTest {
         assertTrue(holder.contains("VideoDetailCommentFraudOverlayAdapter("))
     }
 
+    @Test
+    fun favoriteFolderDataIsCollectedOnlyByItsVisibleOverlayAdapter() {
+        val holder = loadSource("VideoDetailScreenStateHolder.kt")
+        val phoneContent = loadSource("VideoDetailPhoneContent.kt")
+        val contentSection = loadSource("VideoContentSection.kt")
+        val adapter = loadSource("VideoDetailFavoriteFolderOverlayAdapter.kt")
+
+        assertTrue(adapter.lineSequence().count() <= 350)
+        assertTrue(adapter.contains("if (!visible) return"))
+        assertTrue(adapter.contains("favoriteFolders.collectAsStateWithLifecycle()"))
+        assertFalse(holder.contains("viewModel.favoriteFolders.collectAsStateWithLifecycle()"))
+        assertFalse(phoneContent.contains("favoriteFolders: List"))
+        assertFalse(contentSection.contains("favoriteFolderDialogVisible:"))
+        assertTrue(holder.contains("VideoDetailFavoriteFolderOverlayAdapter("))
+    }
+
     private fun loadSource(name: String): String {
         val candidates = listOf(
             File("src/main/java/com/android/purebilibili/feature/video/screen/$name"),

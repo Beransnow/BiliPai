@@ -35,7 +35,6 @@ import com.android.purebilibili.core.ui.blur.hazeSourceCompat
 import com.android.purebilibili.core.ui.blur.shouldAllowRuntimeShaderBackedHazeEffect
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
 import com.android.purebilibili.data.model.response.BgmInfo
-import com.android.purebilibili.data.model.response.FavFolder
 import com.android.purebilibili.feature.video.share.VideoSharePayload
 import com.android.purebilibili.feature.video.share.buildVideoSharePayload
 import com.android.purebilibili.feature.video.state.VideoPlayerState
@@ -92,10 +91,6 @@ internal fun VideoDetailPhoneSuccessContentLayer(
     isQuickReturnLimitedForSharedElements: Boolean,
     transitionEnabled: Boolean,
     sourceRouteForSharedElement: String?,
-    favoriteFolders: List<FavFolder>,
-    isFavoriteFoldersLoading: Boolean,
-    selectedFavoriteFolderIds: Set<Long>,
-    isSavingFavoriteFolders: Boolean,
     isPlayerCollapsed: Boolean,
     onRestorePlayer: () -> Unit,
     onBgmClick: (BgmInfo) -> Unit,
@@ -285,22 +280,7 @@ internal fun VideoDetailPhoneSuccessContentLayer(
                                 relatedVideoTransitionEnabled = relatedVideoTransitionEnabled,
                                 isQuickReturnLimitedForSharedElements = isQuickReturnLimitedForSharedElements,
                                 sourceRouteForSharedElement = sourceRouteForSharedElement,
-                                favoriteFolderDialogVisible = showFavoriteFolderDialog,
-                                favoriteFolders = favoriteFolders,
-                                isFavoriteFoldersLoading = isFavoriteFoldersLoading,
                                 onFavoriteLongClick = playbackActions.showFavoriteFolderDialog,
-                                selectedFavoriteFolderIds = selectedFavoriteFolderIds,
-                                isSavingFavoriteFolders = isSavingFavoriteFolders,
-                                onFavoriteFolderToggle = { folder ->
-                                    playbackActions.toggleFavoriteFolderSelection(folder)
-                                },
-                                onSaveFavoriteFolders = playbackActions.saveFavoriteFolderSelection,
-                                onDismissFavoriteFolderDialog = {
-                                    playbackActions.dismissFavoriteFolderDialog()
-                                },
-                                onCreateFavoriteFolder = { title, intro, isPrivate ->
-                                    playbackActions.createFavoriteFolder(title, intro, isPrivate)
-                                },
                                 isPlayerCollapsed = isPlayerCollapsed,
                                 onRestorePlayer = onRestorePlayer,
                                 aiSummary = success.aiSummary,

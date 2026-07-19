@@ -748,10 +748,6 @@ internal fun VideoDetailScreenStateHolder(
         )
     val showFavoriteFolderDialog by viewModel.favoriteFolderDialogVisible.collectAsStateWithLifecycle()
     val showCommentInput by viewModel.showCommentDialog.collectAsStateWithLifecycle()
-    val favoriteFolders by viewModel.favoriteFolders.collectAsStateWithLifecycle()
-    val isFavoriteFoldersLoading by viewModel.isFavoriteFoldersLoading.collectAsStateWithLifecycle()
-    val selectedFavoriteFolderIds by viewModel.favoriteSelectedFolderIds.collectAsStateWithLifecycle()
-    val isSavingFavoriteFolders by viewModel.isSavingFavoriteFolders.collectAsStateWithLifecycle()
     // [Blur] Haze State
     val hazeState = rememberRecoverableHazeState()
 
@@ -2829,10 +2825,6 @@ internal fun VideoDetailScreenStateHolder(
                                             isReturningFromDetail && isQuickReturningFromDetail,
                                         transitionEnabled = detailChildTransitionEnabled,
                                         sourceRouteForSharedElement = sourceRouteForSharedElement,
-                                        favoriteFolders = favoriteFolders,
-                                        isFavoriteFoldersLoading = isFavoriteFoldersLoading,
-                                        selectedFavoriteFolderIds = selectedFavoriteFolderIds,
-                                        isSavingFavoriteFolders = isSavingFavoriteFolders,
                                         isPlayerCollapsed = isPlayerCollapsed,
                                         onRestorePlayer = inlinePlayerCollapseState::restore,
                                         onBgmClick = onBgmClick,
@@ -3122,21 +3114,10 @@ internal fun VideoDetailScreenStateHolder(
             }
         )
 
-        // 📁 收藏夹选择弹窗
-        if (showFavoriteFolderDialog) {
-            com.android.purebilibili.feature.video.ui.components.FavoriteFolderSheet(
-                folders = favoriteFolders,
-                isLoading = isFavoriteFoldersLoading,
-                selectedFolderIds = selectedFavoriteFolderIds,
-                isSaving = isSavingFavoriteFolders,
-                onFolderToggle = { folder -> viewModel.toggleFavoriteFolderSelection(folder) },
-                onSaveClick = { viewModel.saveFavoriteFolderSelection() },
-                onDismissRequest = { viewModel.dismissFavoriteFolderDialog() },
-                onCreateFolder = { title, intro, isPrivate ->
-                    viewModel.createFavoriteFolder(title, intro, isPrivate)
-                }
-            )
-        }
+        VideoDetailFavoriteFolderOverlayAdapter(
+            visible = showFavoriteFolderDialog,
+            viewModel = viewModel,
+        )
 
         VideoDetailFeedbackOverlayAdapter(
             playbackViewModel = viewModel,
