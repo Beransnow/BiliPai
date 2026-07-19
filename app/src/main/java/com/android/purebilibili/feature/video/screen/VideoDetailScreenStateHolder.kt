@@ -729,46 +729,13 @@ internal fun VideoDetailScreenStateHolder(
     val preferredCommentSortMode = remember(commentDefaultSortMode) {
         CommentSortMode.fromApiMode(commentDefaultSortMode)
     }
-    LaunchedEffect(commentFraudDetectionEnabled, uiState) {
-        val success = uiState as? VideoPlaybackUiState.Success ?: return@LaunchedEffect
-        viewModel.commentSentEvent.collect { reply ->
-            commentViewModel.onExternalCommentSent(
-                aid = success.info.aid,
-                newReply = reply,
-                fraudDetectionEnabled = commentFraudDetectionEnabled
-            )
-        }
-    }
-    var fraudDialogStatus by remember { mutableStateOf<CommentFraudStatus?>(null) }
-    LaunchedEffect(Unit) {
-        commentViewModel.fraudEvent.collect { status ->
-            val lightMessage = resolveCommentFraudLightMessage(status)
-            if (lightMessage != null) {
-                Toast.makeText(context, lightMessage, Toast.LENGTH_SHORT).show()
-            } else if (shouldShowCommentFraudResultDialog(status)) {
-                fraudDialogStatus = status
-            }
-        }
-    }
-    fraudDialogStatus?.let { status ->
-        CommentFraudResultDialog(
-            status = status,
-            onDismiss = {
-                fraudDialogStatus = null
-                commentViewModel.dismissFraudResult()
-            },
-            onDeleteComment = if (status == CommentFraudStatus.SHADOW_BANNED) {
-                {
-                    val rpid = commentViewModel.commentState.value.fraudDetectRpid
-                    if (rpid > 0L) {
-                        commentViewModel.startDissolve(rpid)
-                    }
-                }
-            } else {
-                null
-            }
-        )
-    }
+    VideoDetailCommentFraudOverlayAdapter(
+        context = context,
+        playbackViewModel = viewModel,
+        commentViewModel = commentViewModel,
+        aid = (uiState as? VideoPlaybackUiState.Success)?.info?.aid,
+        fraudDetectionEnabled = commentFraudDetectionEnabled,
+    )
     val sortPreferenceScope = rememberCoroutineScope()
     val danmakuEnabledForDetail by com.android.purebilibili.core.store.SettingsManager
         .getDanmakuEnabled(

@@ -188,6 +188,20 @@ class VideoDetailScreenMethodSizeStructureTest {
         assertTrue(holder.contains("VideoDetailFeedbackOverlayAdapter("))
     }
 
+    @Test
+    fun commentFraudEventsUseAKeyedBoundedAdapter() {
+        val holder = loadSource("VideoDetailScreenStateHolder.kt")
+        val adapter = loadSource("VideoDetailCommentFraudOverlayAdapter.kt")
+
+        assertTrue(adapter.lineSequence().count() <= 350)
+        assertTrue(adapter.contains("LaunchedEffect(playbackViewModel, commentViewModel, aid, fraudDetectionEnabled)"))
+        assertTrue(adapter.contains("LaunchedEffect(commentViewModel, context.applicationContext)"))
+        assertTrue(adapter.contains("CommentFraudResultDialog("))
+        assertFalse(adapter.contains("LaunchedEffect(Unit)"))
+        assertFalse(holder.contains("commentViewModel.fraudEvent.collect"))
+        assertTrue(holder.contains("VideoDetailCommentFraudOverlayAdapter("))
+    }
+
     private fun loadSource(name: String): String {
         val candidates = listOf(
             File("src/main/java/com/android/purebilibili/feature/video/screen/$name"),
