@@ -1331,7 +1331,7 @@ internal fun VideoDetailScreenStateHolder(
     val shouldAnimatePortraitPager = remember(useSharedPortraitPlayer) {
         shouldAnimateStandalonePortraitPager(useSharedPlayer = useSharedPortraitPlayer)
     }
-    val inlinePlayerAlpha by animateFloatAsState(
+    val inlinePlayerAlpha = animateFloatAsState(
         targetValue = if (isPortraitFullscreen) 0f else 1f,
         animationSpec = tween(
             durationMillis = if (shouldAnimatePortraitPager) {
@@ -1343,7 +1343,7 @@ internal fun VideoDetailScreenStateHolder(
         ),
         label = "inline-player-alpha"
     )
-    val inlinePlayerScale by animateFloatAsState(
+    val inlinePlayerScale = animateFloatAsState(
         targetValue = if (isPortraitFullscreen) {
             portraitPagerMotionSpec.inlineReturnInitialScale
         } else {

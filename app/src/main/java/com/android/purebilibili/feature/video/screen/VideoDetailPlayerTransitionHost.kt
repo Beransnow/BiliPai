@@ -4,8 +4,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
@@ -22,8 +22,8 @@ internal fun PortraitInlineVideoPlayerHost(
     modifier: Modifier,
     animatedViewportWidth: Dp,
     animatedViewportHeight: Dp,
-    inlinePlayerAlpha: Float,
-    inlinePlayerScale: Float,
+    inlinePlayerAlpha: State<Float>,
+    inlinePlayerScale: State<Float>,
     playerState: VideoPlayerState,
     uiState: VideoPlaybackUiState,
     isPipMode: Boolean,
@@ -64,10 +64,10 @@ internal fun PortraitInlineVideoPlayerHost(
         modifier = modifier
             .fillMaxWidth()
             .height(animatedViewportHeight)
-            .alpha(inlinePlayerAlpha)
             .graphicsLayer {
-                scaleX = inlinePlayerScale
-                scaleY = inlinePlayerScale
+                alpha = inlinePlayerAlpha.value
+                scaleX = inlinePlayerScale.value
+                scaleY = inlinePlayerScale.value
                 transformOrigin = TransformOrigin(0.5f, 0f)
             }
     ) {
