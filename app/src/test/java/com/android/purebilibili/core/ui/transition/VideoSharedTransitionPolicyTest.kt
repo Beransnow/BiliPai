@@ -68,9 +68,10 @@ class VideoSharedTransitionPolicyTest {
         val returnSpring = returning as SpringSpec<*>
         assertEquals(motion.returnSpatialDampingRatio, returnSpring.dampingRatio, 0.001f)
         assertEquals(motion.spatialStiffness, returnSpring.stiffness, 0.001f)
-        assertTrue(returnSpring.dampingRatio in 0.75f..0.85f)
+        assertTrue(returnSpring.dampingRatio in 0.85f..0.9f)
         assertTrue(returnSpring.dampingRatio < 1f)
-        assertEquals(0.82f, motion.returnSpatialDampingRatio, 0.001f)
+        assertEquals(0.86f, motion.returnSpatialDampingRatio, 0.001f)
+        assertEquals(300f, motion.spatialStiffness, 0.001f)
         assertEquals(140L, resolveVideoCardReturnSpringSettleBufferMs())
     }
 
@@ -323,10 +324,10 @@ class VideoSharedTransitionPolicyTest {
         )
 
         assertTrue(motion.enabled)
-        assertEquals(400, motion.durationMillis)
-        assertEquals(480, motion.fullscreenDurationMillis)
+        assertEquals(320, motion.durationMillis)
+        assertEquals(320, motion.fullscreenDurationMillis)
         assertEquals(40, motion.contentDelayMillis)
-        assertEquals(240, motion.contentDurationMillis)
+        assertEquals(220, motion.contentDurationMillis)
         assertEquals(14, motion.contentSlideOffsetDp)
         assertEquals(0.985f, motion.contentInitialScale, 0.0001f)
         assertSame(motion.enterAlphaEasing, motion.returnAlphaEasing)
@@ -360,8 +361,8 @@ class VideoSharedTransitionPolicyTest {
             speedSettings = VideoSharedTransitionSpeedSettings(VideoSharedTransitionSpeed.FAST)
         )
 
-        assertEquals(320, motion.durationMillis)
-        assertEquals(400, motion.fullscreenDurationMillis)
+        assertEquals(260, motion.durationMillis)
+        assertEquals(260, motion.fullscreenDurationMillis)
         assertEquals(220, motion.contentDurationMillis)
     }
 
@@ -373,10 +374,10 @@ class VideoSharedTransitionPolicyTest {
             isQuickReturn = true,
         )
 
-        assertEquals(400, motion.durationMillis)
+        assertEquals(320, motion.durationMillis)
         assertEquals(0, motion.contentDelayMillis)
-        assertEquals(240, motion.contentDurationMillis)
-        assertEquals(480, motion.fullscreenDurationMillis)
+        assertEquals(220, motion.contentDurationMillis)
+        assertEquals(320, motion.fullscreenDurationMillis)
     }
 
     @Test
@@ -387,9 +388,9 @@ class VideoSharedTransitionPolicyTest {
             speedSettings = VideoSharedTransitionSpeedSettings(VideoSharedTransitionSpeed.SLOW)
         )
 
-        assertEquals(520, motion.durationMillis)
-        assertEquals(600, motion.fullscreenDurationMillis)
-        assertEquals(312, motion.contentDurationMillis)
+        assertEquals(440, motion.durationMillis)
+        assertEquals(440, motion.fullscreenDurationMillis)
+        assertEquals(264, motion.contentDurationMillis)
     }
 
     @Test
@@ -419,9 +420,9 @@ class VideoSharedTransitionPolicyTest {
             )
         )
 
-        assertEquals(280, low.durationMillis)
+        assertEquals(240, low.durationMillis)
         assertEquals(620, custom.durationMillis)
-        assertEquals(700, custom.fullscreenDurationMillis)
+        assertEquals(620, custom.fullscreenDurationMillis)
         assertEquals(360, custom.contentDurationMillis)
         assertEquals(900, high.durationMillis)
     }
@@ -504,7 +505,7 @@ class VideoSharedTransitionPolicyTest {
         )
 
         assertTrue(motion.enabled)
-        assertEquals(400, motion.durationMillis)
+        assertEquals(320, motion.durationMillis)
     }
 
     @Test

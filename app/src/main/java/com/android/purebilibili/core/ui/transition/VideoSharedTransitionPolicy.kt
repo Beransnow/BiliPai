@@ -56,10 +56,10 @@ internal enum class VideoSharedTransitionTargetMode {
 
 internal const val VIDEO_SHARED_COVER_ASPECT_RATIO = 16f / 10f
 private const val HOME_SOURCE_ROUTE = "home"
-internal const val VIDEO_SHARED_TRANSITION_FAST_DURATION_MILLIS = 320
-internal const val VIDEO_SHARED_TRANSITION_STANDARD_DURATION_MILLIS = 400
-internal const val VIDEO_SHARED_TRANSITION_SLOW_DURATION_MILLIS = 520
-internal const val VIDEO_SHARED_TRANSITION_CUSTOM_MIN_MILLIS = 280
+internal const val VIDEO_SHARED_TRANSITION_FAST_DURATION_MILLIS = 260
+internal const val VIDEO_SHARED_TRANSITION_STANDARD_DURATION_MILLIS = 320
+internal const val VIDEO_SHARED_TRANSITION_SLOW_DURATION_MILLIS = 440
+internal const val VIDEO_SHARED_TRANSITION_CUSTOM_MIN_MILLIS = 240
 internal const val VIDEO_SHARED_TRANSITION_CUSTOM_MAX_MILLIS = 900
 internal const val VIDEO_SHARED_TRANSITION_CUSTOM_DEFAULT_MILLIS =
     VIDEO_SHARED_TRANSITION_STANDARD_DURATION_MILLIS
@@ -79,10 +79,10 @@ private const val DYNAMIC_VIDEO_CARD_CORNER_DP = 10
 private const val WATCH_LATER_VIDEO_CARD_CORNER_DP = 8
 // 进场仍用 Continuity tween；返回用 soft spring，保留一次轻回弹并天然支持打断续传。
 private const val VIDEO_CARD_HERO_ENTER_SPRING_DAMPING_RATIO = 0.86f
-// 略低于临界阻尼：一次优雅过冲后贴回；0.82 比 0.80 更早收敛，降低 overlay 卸层后的封面闪。
-private const val VIDEO_CARD_RETURN_SPRING_DAMPING_RATIO = 0.82f
-private const val VIDEO_CARD_HERO_SPRING_REFERENCE_STIFFNESS = 280f
-private const val VIDEO_CARD_HERO_SPRING_REFERENCE_DURATION_MILLIS = 400f
+// 略低于临界阻尼：只保留一次轻微过冲，并在更短的标准时间轴内稳定落位。
+private const val VIDEO_CARD_RETURN_SPRING_DAMPING_RATIO = 0.86f
+private const val VIDEO_CARD_HERO_SPRING_REFERENCE_STIFFNESS = 300f
+private const val VIDEO_CARD_HERO_SPRING_REFERENCE_DURATION_MILLIS = 320f
 private const val VIDEO_CARD_HERO_SPRING_MIN_STIFFNESS = 50f
 private const val VIDEO_CARD_HERO_SPRING_MAX_STIFFNESS = 500f
 // spring 过冲收束余量：suppression / 景深 IDLE 需盖过参考 duration，避免卸层后状态抢跑。
@@ -234,7 +234,7 @@ internal fun resolveVideoSharedTransitionDurationMillis(
 }
 
 internal fun resolveVideoSharedTransitionFullscreenDurationMillis(durationMillis: Int): Int {
-    return durationMillis + 80
+    return durationMillis
 }
 
 internal fun resolveVideoSharedTransitionContentDurationMillis(durationMillis: Int): Int {
