@@ -261,8 +261,21 @@ internal fun shouldApplyVideoCardTransitionBackgroundToRoute(
     val normalizedSourceRoute = normalizeVideoCardTransitionRoute(sourceRoute) ?: return false
     if (!isVideoCardReturnTargetRoute(normalizedSourceRoute)) return false
     if (normalizedEntryRoute == normalizedSourceRoute) return true
-    return normalizedEntryRoute == "main_host" &&
-        normalizeVideoCardTransitionRoute(activeMainHostRoute) == normalizedSourceRoute
+    val normalizedActiveMainHostRoute = normalizeVideoCardTransitionRoute(activeMainHostRoute)
+    if (
+        normalizedEntryRoute == "main_host" &&
+        normalizedActiveMainHostRoute == normalizedSourceRoute
+    ) {
+        return true
+    }
+    // 首页顶栏内嵌分区：共享元素 source 是 partition，视觉宿主仍是 home / main_host(home)。
+    if (normalizedSourceRoute == "partition") {
+        if (normalizedEntryRoute == "home") return true
+        if (normalizedEntryRoute == "main_host" && normalizedActiveMainHostRoute == "home") {
+            return true
+        }
+    }
+    return false
 }
 
 /**

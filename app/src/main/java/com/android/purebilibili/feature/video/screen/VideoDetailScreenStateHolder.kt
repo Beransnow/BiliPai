@@ -243,6 +243,7 @@ internal fun VideoDetailScreenStateHolder(
     startAudioFromRoute: Boolean = false,
     autoEnterPortraitFromRoute: Boolean = false,
     initialVerticalFromRoute: Boolean = false,
+    directPortraitEntryFromRoute: Boolean = false,
     resumePositionMsFromRoute: Long = 0L,
     openCommentRootRpidFromRoute: Long = 0L,
     openCommentTargetRpidFromRoute: Long = 0L,
@@ -414,6 +415,7 @@ internal fun VideoDetailScreenStateHolder(
             autoEnterPortraitFromRoute = autoEnterPortraitFromRoute,
             startAudioFromRoute = startAudioFromRoute,
             initialVerticalFromRoute = initialVerticalFromRoute,
+            directPortraitEntryFromRoute = directPortraitEntryFromRoute,
         ),
         initialPipMode = isInPipMode,
     )
@@ -422,6 +424,26 @@ internal fun VideoDetailScreenStateHolder(
     var isNavigatingToMiniMode by presentationState.navigatingToMiniModeState
     var hasAutoEnteredAudioMode by rememberSaveable { mutableStateOf(false) }
     var hasAutoEnteredPortraitFromRoute by rememberSaveable(bvid) { mutableStateOf(false) }
+    // 路由要求直达竖屏全屏时，立刻盖过可能被 saveable 复写的详情态。
+    LaunchedEffect(
+        bvid,
+        autoEnterPortraitFromRoute,
+        initialVerticalFromRoute,
+        directPortraitEntryFromRoute,
+        startAudioFromRoute,
+    ) {
+        if (
+            shouldStartInPortraitFullscreenFromRouteHint(
+                autoEnterPortraitFromRoute = autoEnterPortraitFromRoute,
+                startAudioFromRoute = startAudioFromRoute,
+                initialVerticalFromRoute = initialVerticalFromRoute,
+                directPortraitEntryFromRoute = directPortraitEntryFromRoute,
+            )
+        ) {
+            presentationState.setPortraitFullscreen(true)
+            hasAutoEnteredPortraitFromRoute = true
+        }
+    }
     var hasHandledCommentRootFromRoute by rememberSaveable(
         bvid,
         openCommentRootRpidFromRoute,
@@ -1037,6 +1059,14 @@ internal fun VideoDetailScreenStateHolder(
         motionSpec = homeSharedTransitionMotionSpec,
         clipShape = detailShellShape,
         role = VideoCardShellSharedBoundsRole.DetailShell,
+        // 竖屏全屏（点赞/关注/发弹幕那套）：整卡展开到全屏，不要按顶部横屏播放器 TopCenter 落点。
+        fillFullscreenShell = isPortraitFullscreen ||
+            shouldStartInPortraitFullscreenFromRouteHint(
+                autoEnterPortraitFromRoute = autoEnterPortraitFromRoute,
+                startAudioFromRoute = startAudioFromRoute,
+                initialVerticalFromRoute = initialVerticalFromRoute,
+                directPortraitEntryFromRoute = directPortraitEntryFromRoute,
+            ),
     )
     val coverTakeoverBeforeBackDelayMillis = remember {
         resolveCoverTakeoverDelayBeforeBackNavigationMillis()
@@ -1760,7 +1790,9 @@ internal fun VideoDetailScreenStateHolder(
         isCurrentRouteVideoLoaded,
         isVerticalVideo,
         isPortraitFullscreen,
-        hasAutoEnteredPortraitFromRoute
+        hasAutoEnteredPortraitFromRoute,
+        initialVerticalFromRoute,
+        directPortraitEntryFromRoute,
     ) {
         if (
             shouldAutoEnterPortraitFullscreenFromRoute(
@@ -1773,7 +1805,9 @@ internal fun VideoDetailScreenStateHolder(
                 isCurrentRouteVideoLoaded = isCurrentRouteVideoLoaded,
                 isVerticalVideo = isVerticalVideo,
                 isPortraitFullscreen = isPortraitFullscreen,
-                hasAutoEnteredPortraitFromRoute = hasAutoEnteredPortraitFromRoute
+                hasAutoEnteredPortraitFromRoute = hasAutoEnteredPortraitFromRoute,
+                initialVerticalFromRoute = initialVerticalFromRoute,
+                directPortraitEntryFromRoute = directPortraitEntryFromRoute,
             )
         ) {
             enterPortraitFullscreen()
@@ -2920,6 +2954,7 @@ internal fun VideoDetailScreenStateHolder(
                                         navigateToUserSpaceFromVideo = navigateToUserSpaceFromVideo,
                                         navigateToRelatedVideo = navigateToRelatedVideo,
                                         openCommentUrl = openCommentUrl,
+                                        onSearchKeywordClick = navigateToSearchKeywordFromVideo,
                                         onOpenBilibiliLink = onOpenBilibiliLink,
                                         onShareVideo = { payload -> pendingVideoShare = payload },
                                         externalPlaylistQueueTitle = externalPlaylistQueueTitle,
@@ -3028,6 +3063,7 @@ internal fun VideoDetailScreenStateHolder(
             motionSpec = portraitPagerMotionSpec,
             initialBvidOverride = pendingMainReloadBvidAfterPortrait,
             initialStartPositionMs = portraitSyncSnapshotPositionMs,
+            entryCoverUrl = coverUrl,
             playbackViewModel = viewModel,
             engagementViewModel = engagementViewModel,
             sharedPlayer = if (useSharedPortraitPlayer) playerState.player else null,

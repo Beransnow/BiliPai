@@ -124,6 +124,11 @@ internal fun Modifier.videoCardShellSharedBoundsOrEmpty(
     motionSpec: VideoSharedTransitionMotionSpec,
     clipShape: Shape,
     role: VideoCardShellSharedBoundsRole = VideoCardShellSharedBoundsRole.SourceCard,
+    /**
+     * 详情页顶部播放器：FillWidth + TopCenter。
+     * 竖屏直达 Story 全屏：FillBounds + Center，卡片从列表位整卡展开。
+     */
+    fillFullscreenShell: Boolean = false,
 ): Modifier {
     if (!enabled || sharedTransitionScope == null || animatedVisibilityScope == null || bvid.isBlank()) {
         return this
@@ -148,6 +153,14 @@ internal fun Modifier.videoCardShellSharedBoundsOrEmpty(
             transitionDurationMillis = motionSpec.durationMillis,
         )
     }
+    val resizeMode = remember(fillFullscreenShell) {
+        if (fillFullscreenShell) {
+            scaleToBounds(ContentScale.Crop, Alignment.Center)
+        } else {
+            // 默认 Center 会让卡片在飞行中往屏幕中心缩放，与详情页顶部播放器落点错位。
+            scaleToBounds(ContentScale.FillWidth, Alignment.TopCenter)
+        }
+    }
     return then(
         with(sharedTransitionScope) {
             Modifier.sharedBounds(
@@ -171,8 +184,7 @@ internal fun Modifier.videoCardShellSharedBoundsOrEmpty(
                         com.android.purebilibili.core.ui.motion.AppMotionTokens.spatialSpec()
                     }
                 },
-                // 默认 Center 会让卡片在飞行中往屏幕中心缩放，与详情页顶部播放器落点错位。
-                resizeMode = scaleToBounds(ContentScale.FillWidth, Alignment.TopCenter),
+                resizeMode = resizeMode,
                 clipInOverlayDuringTransition = OverlayClip(clipShape)
             )
         }

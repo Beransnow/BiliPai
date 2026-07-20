@@ -388,6 +388,38 @@ class VideoCardTransitionBackgroundPolicyTest {
     }
 
     @Test
+    fun routeMatcherAppliesHomeHostDepthForInlinePartitionSource() {
+        assertTrue(
+            shouldApplyVideoCardTransitionBackgroundToRoute(
+                entryRoute = "home",
+                sourceRoute = "partition",
+                activeMainHostRoute = "home"
+            )
+        )
+        assertTrue(
+            shouldApplyVideoCardTransitionBackgroundToRoute(
+                entryRoute = "main_host",
+                sourceRoute = "partition",
+                activeMainHostRoute = "home"
+            )
+        )
+        assertTrue(
+            shouldApplyVideoCardTransitionBackgroundToRoute(
+                entryRoute = "partition",
+                sourceRoute = "partition",
+                activeMainHostRoute = "home"
+            )
+        )
+        assertFalse(
+            shouldApplyVideoCardTransitionBackgroundToRoute(
+                entryRoute = "main_host",
+                sourceRoute = "partition",
+                activeMainHostRoute = "dynamic"
+            )
+        )
+    }
+
+    @Test
     fun gestureProgressMapsBackGestureToDecreasingBlurStartingFromFull() {
         // 手势起点保持满虚化，与 HELD 衔接；拖到底背景清晰；中途单调递减。
         assertEquals(1f, resolveVideoCardTransitionBackgroundGestureProgress(0f))

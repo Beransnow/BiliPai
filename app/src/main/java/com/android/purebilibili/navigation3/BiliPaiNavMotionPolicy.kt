@@ -171,16 +171,23 @@ internal fun resolveBiliPaiNavDisplayPopRouteTransition(
             return BiliPaiNavRouteTransition.LIGHT_SIBLING_POP
         }
 
+        // Story 直达返回：没有 sharedBounds 对端，必须走普通过渡，否则黑底悬浮卡。
+        if (fromKey is BiliPaiNavKey.Story) {
+            return BiliPaiNavRouteTransition.FALLBACK
+        }
+
+        val morphSourceRoute = resolveCardMorphDestinationSourceRoute(fromKey)
         val normalizedSourceRoute = sourceMetadata.sourceRoute?.substringBefore("?")
-        val normalizedVideoRoute = fromVideoKey?.sourceRoute?.substringBefore("?")
-        val sourceMatchesCurrentVideo = fromVideoKey != null &&
+        val normalizedMorphRoute = morphSourceRoute?.substringBefore("?")
+        val morphBvid = (fromKey as? BiliPaiNavKey.VideoDetail)?.bvid
+        val sourceMatchesCurrentMorph = morphBvid != null &&
             normalizedSourceRoute != null &&
-            normalizedVideoRoute == normalizedSourceRoute &&
-            sourceMetadata.sourceKey == "$normalizedSourceRoute:${fromVideoKey.bvid}"
-        val sharedReadyVideoToSourceCard = sourceMetadata.sharedTransitionEntryReady &&
-            sourceMatchesCurrentVideo &&
+            normalizedMorphRoute == normalizedSourceRoute &&
+            sourceMetadata.sourceKey == "$normalizedSourceRoute:$morphBvid"
+        val sharedReadyMorphToSourceCard = sourceMetadata.sharedTransitionEntryReady &&
+            sourceMatchesCurrentMorph &&
             toIsCardReturnTarget
-        if (sharedReadyVideoToSourceCard) {
+        if (sharedReadyMorphToSourceCard) {
             return BiliPaiNavRouteTransition.NO_OP_SHARED_ELEMENT
         }
         return BiliPaiNavRouteTransition.CLASSIC_CARD

@@ -359,6 +359,7 @@ fun VideoContentSection(
     likedComments: Set<Long> = emptySet(),
     onCommentUrlClick: (String) -> Unit = {},
     onDescriptionUrlClick: ((String) -> Unit)? = null,
+    onSearchKeywordClick: (String) -> Unit = {},
     onReportComment: (Long, Int) -> Unit = { _, _ -> },
     onToggleTopComment: (ReplyItem) -> Unit = {},
     // 🔗 [新增] 共享元素过渡开关
@@ -604,6 +605,7 @@ fun VideoContentSection(
                         onTimestampClick = onTimestampClick,
                         onBgmClick = onBgmClick,
                         onDescriptionUrlClick = onDescriptionUrlClick,
+                        onSearchKeywordClick = onSearchKeywordClick,
                         showInteractionActions = showInteractionActions,
                         animateVideoDetailLayout = animateVideoDetailLayout
                     )
@@ -742,6 +744,7 @@ private fun VideoIntroTab(
     onWatchLaterClick: () -> Unit,
     onShareClick: () -> Unit = {},
     onDescriptionUrlClick: ((String) -> Unit)? = null,
+    onSearchKeywordClick: (String) -> Unit = {},
     contentPadding: PaddingValues,
     transitionEnabled: Boolean = false,  // 🔗 共享元素过渡开关
     relatedVideoTransitionEnabled: Boolean = transitionEnabled,
@@ -835,6 +838,7 @@ private fun VideoIntroTab(
                 onBgmClick = onBgmClick,
                 onDescriptionUrlClick = onDescriptionUrlClick,
                 onRelatedVideoClick = onRelatedVideoClick,
+                onSearchKeywordClick = onSearchKeywordClick,
                 showInteractionActions = showInteractionActions,
                 animateVideoDetailLayout = animateVideoDetailLayout
             )
@@ -1146,6 +1150,7 @@ private fun VideoHeaderContent(
     onBgmClick: (BgmInfo) -> Unit = {},
     onDescriptionUrlClick: ((String) -> Unit)? = null,
     onRelatedVideoClick: (String, android.os.Bundle?) -> Unit = { _, _ -> },
+    onSearchKeywordClick: (String) -> Unit = {},
     onlineCount: String = "",
     showOnlineCount: Boolean = true,
     showInteractionActions: Boolean = true,
@@ -1200,7 +1205,8 @@ private fun VideoHeaderContent(
             onBgmClick = onBgmClick,
             onDescriptionUrlClick = onDescriptionUrlClick,
             onRelatedVideoClick = onRelatedVideoClick,
-            animateLayout = animateVideoDetailLayout
+            animateLayout = animateVideoDetailLayout,
+            onTagClick = onSearchKeywordClick
         )
 
         // [新增] AI Summary
@@ -1616,7 +1622,10 @@ internal fun resolveFirstRelatedItemIndex(hasPages: Boolean): Int {
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun VideoTagsRow(tags: List<VideoTag>) {
+fun VideoTagsRow(
+    tags: List<VideoTag>,
+    onTagClick: (String) -> Unit = {}
+) {
     FlowRow(
         modifier = Modifier
             .fillMaxWidth()
@@ -1625,7 +1634,10 @@ fun VideoTagsRow(tags: List<VideoTag>) {
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         tags.take(10).forEach { tag ->
-            VideoTagChip(tagName = tag.tag_name)
+            VideoTagChip(
+                tagName = tag.tag_name,
+                onClick = onTagClick
+            )
         }
     }
 }
@@ -1634,8 +1646,12 @@ fun VideoTagsRow(tags: List<VideoTag>) {
  * 视频标签芯片
  */
 @Composable
-fun VideoTagChip(tagName: String) {
+fun VideoTagChip(
+    tagName: String,
+    onClick: (String) -> Unit = {}
+) {
     Surface(
+        onClick = { onClick(tagName) },
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f),
         shape = RoundedCornerShape(14.dp)
     ) {

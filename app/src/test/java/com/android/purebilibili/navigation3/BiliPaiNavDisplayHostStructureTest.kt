@@ -95,7 +95,7 @@ class BiliPaiNavDisplayHostStructureTest {
             .substringBefore("returnedFromVideoDetail -> {")
         val returnBranch = source
             .substringAfter("returnedFromVideoDetail -> {")
-            .substringBefore("currentTop !is BiliPaiNavKey.VideoDetail")
+            .substringBefore("!isCardMorphDestinationNavKey(currentTop)")
 
         assertTrue(openingBranch.contains("videoCardTransitionBackgroundProgress.snapTo(0f)"))
         assertTrue(openingBranch.contains("targetValue = 1f"))
@@ -111,6 +111,7 @@ class BiliPaiNavDisplayHostStructureTest {
         assertTrue(returnBranch.contains("parentSourceRoute"))
         assertTrue(source.contains("safeBackStack.size > previousStack.size"))
         assertTrue(source.contains("safeBackStack.size < previousStack.size"))
+        assertTrue(source.contains("isCardMorphDestinationNavKey("))
         assertFalse(source.contains("mutableStateOf(sourceMetadata.sourceRoute)"))
     }
 

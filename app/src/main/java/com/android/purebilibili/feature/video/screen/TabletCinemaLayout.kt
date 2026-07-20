@@ -318,6 +318,7 @@ internal fun TabletCinemaLayout(
                         onOpenBilibiliLink = onOpenBilibiliLink,
                         onBgmClick = onBgmClick,
                         onRelatedVideoClick = onRelatedVideoClick,
+                        onSearchKeywordClick = onSearchKeywordClick,
                         onRetryAiSummary = playbackActions.retryAiSummary,
                         onCreateNoteDraftFromAiSummary = playbackActions.createVideoNoteDraftFromAiSummary,
                         onOpenVideoNoteEditor = playbackActions.openVideoNoteEditor,
@@ -547,6 +548,7 @@ private fun CinemaMetaPanel(
     onOpenBilibiliLink: ((String) -> Unit)?,
     onBgmClick: (BgmInfo) -> Unit = {},
     onRelatedVideoClick: (String, android.os.Bundle?) -> Unit = { _, _ -> },
+    onSearchKeywordClick: (String) -> Unit = {},
     onRetryAiSummary: () -> Unit,
     onCreateNoteDraftFromAiSummary: () -> Unit,
     onOpenVideoNoteEditor: () -> Unit,
@@ -719,6 +721,7 @@ private fun CinemaMetaPanel(
                             onOpenBilibiliLink = onOpenBilibiliLink,
                             onBgmClick = onBgmClick,
                             onRelatedVideoClick = onRelatedVideoClick,
+                            onSearchKeywordClick = onSearchKeywordClick,
                             onRetryAiSummary = onRetryAiSummary,
                             onCreateNoteDraftFromAiSummary = onCreateNoteDraftFromAiSummary,
                             onOpenVideoNoteEditor = onOpenVideoNoteEditor,
@@ -845,6 +848,7 @@ private fun CinemaVideoIntroSection(
     onBgmClick: (BgmInfo) -> Unit = {},
     onOpenBilibiliLink: ((String) -> Unit)? = null,
     onRelatedVideoClick: (String, android.os.Bundle?) -> Unit = { _, _ -> },
+    onSearchKeywordClick: (String) -> Unit = {},
     onRetryAiSummary: () -> Unit = {},
     onCreateNoteDraftFromAiSummary: () -> Unit = {},
     onOpenVideoNoteEditor: () -> Unit = {},
@@ -877,7 +881,8 @@ private fun CinemaVideoIntroSection(
                     bgmInfoList = success.bgmInfoList
                 ),
                 onBgmClick = onBgmClick,
-                onRelatedVideoClick = onRelatedVideoClick
+                onRelatedVideoClick = onRelatedVideoClick,
+                onTagClick = onSearchKeywordClick
             )
         }
         if (shouldShowAiSummaryEntry(

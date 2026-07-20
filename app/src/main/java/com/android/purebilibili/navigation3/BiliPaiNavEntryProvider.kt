@@ -340,11 +340,7 @@ internal fun resolveBiliPaiNavEntryRouteTransitions(
     cardTransitionEnabled: Boolean = true,
     sourceMetadata: BiliPaiNavSourceMetadata
 ): BiliPaiNavEntryRouteTransitions {
-    val recordedMatchingVideoSource = key is BiliPaiNavKey.VideoDetail &&
-        sourceMetadata.clickedBoundsRecorded &&
-        sourceMetadata.sourceRoute != null &&
-        sourceMetadata.sourceRoute == key.sourceRoute &&
-        sourceMetadata.sourceKey == "${sourceMetadata.sourceRoute}:${key.bvid}"
+    val recordedMatchingVideoSource = isSharedReadyCardMorphPush(key, sourceMetadata)
     val sharedReadyVideoPush = recordedMatchingVideoSource &&
         sourceMetadata.sharedTransitionEntryReady
     val directionalVideoPushReady = recordedMatchingVideoSource &&
@@ -370,6 +366,7 @@ internal fun resolveBiliPaiNavEntryRouteTransitions(
             BiliPaiNavRouteTransition.NO_OP_SHARED_ELEMENT
         cardTransitionEnabled && sharedReadyFavoriteCollection ->
             BiliPaiNavRouteTransition.LIGHT_SIBLING_POP
+        // Story 返回不用 NO_OP shared：没有 sharedBounds 对端，NO_OP 会黑底卡死。
         else -> BiliPaiNavRouteTransition.FALLBACK
     }
     return BiliPaiNavEntryRouteTransitions(

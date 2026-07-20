@@ -230,14 +230,12 @@ internal fun BiliPaiNavDisplayHost(
         val previousStack = previousVideoCardTransitionBackStack
         val previousTop = previousStack.lastOrNull()
         val currentTop = safeBackStack.lastOrNull()
-        val openingSourceRoute = (currentTop as? BiliPaiNavKey.VideoDetail)?.sourceRoute
-        val returningSourceRoute = (previousTop as? BiliPaiNavKey.VideoDetail)?.sourceRoute
-        val openedVideoDetail = currentTop is BiliPaiNavKey.VideoDetail &&
-            safeBackStack.size > previousStack.size &&
-            isVideoCardReturnTargetRoute(openingSourceRoute)
-        val returnedFromVideoDetail = previousTop is BiliPaiNavKey.VideoDetail &&
-            safeBackStack.size < previousStack.size &&
-            isVideoCardReturnTargetRoute(returningSourceRoute)
+        val openingSourceRoute = resolveCardMorphDestinationSourceRoute(currentTop)
+        val returningSourceRoute = resolveCardMorphDestinationSourceRoute(previousTop)
+        val openedVideoDetail = isCardMorphDestinationNavKey(currentTop) &&
+            safeBackStack.size > previousStack.size
+        val returnedFromVideoDetail = isCardMorphDestinationNavKey(previousTop) &&
+            safeBackStack.size < previousStack.size
         previousVideoCardTransitionBackStack = safeBackStack
 
         if (!cardTransitionEnabled) {
@@ -312,7 +310,7 @@ internal fun BiliPaiNavDisplayHost(
                                 ),
                             )
                             val parentSourceRoute =
-                                (currentTop as? BiliPaiNavKey.VideoDetail)?.sourceRoute
+                                resolveCardMorphDestinationSourceRoute(currentTop)
                             if (isVideoCardReturnTargetRoute(parentSourceRoute)) {
                                 videoCardTransitionSourceRoute = parentSourceRoute
                                 videoCardTransitionBackgroundProgress.snapTo(1f)
@@ -330,7 +328,7 @@ internal fun BiliPaiNavDisplayHost(
                 }
             }
 
-            currentTop !is BiliPaiNavKey.VideoDetail -> {
+            !isCardMorphDestinationNavKey(currentTop) -> {
                 launchVideoCardDepthAnimation {
                     videoCardTransitionBackgroundProgress.animateTo(
                         targetValue = 0f,
@@ -393,9 +391,9 @@ internal fun BiliPaiNavDisplayHost(
     val gestureReturningVideoCard = predictiveBackEnabled &&
         cardTransitionEnabled &&
         isVideoCardTransitionBackgroundGesturePhase(videoCardTransitionBackgroundPhase) &&
-        currentBackKey is BiliPaiNavKey.VideoDetail &&
+        isCardMorphDestinationNavKey(currentBackKey) &&
         targetBackKey != null &&
-        isVideoCardReturnTargetRoute(currentBackKey.sourceRoute)
+        isVideoCardReturnTargetRoute(resolveCardMorphDestinationSourceRoute(currentBackKey))
     val predictiveBackGestureBlurEnabled = shouldApplyPredictiveBackGestureBlur(
         routeTransition = popRouteTransition,
         predictiveBackEnabled = predictiveBackEnabled,
@@ -457,14 +455,13 @@ internal fun BiliPaiNavDisplayHost(
                     videoCardTransitionBackgroundPhase == VideoCardTransitionBackgroundPhase.HELD ||
                         videoCardTransitionBackgroundPhase == VideoCardTransitionBackgroundPhase.OPENING
                     ) &&
-                currentBackKey is BiliPaiNavKey.VideoDetail &&
-                isVideoCardReturnTargetRoute(currentBackKey.sourceRoute)
+                isCardMorphDestinationNavKey(currentBackKey)
             // 先切断 OPENING Job，禁止进场补完后写入 HELD。
             if (isVideoCardActiveReturn) {
                 cancelVideoCardDepthAnimation()
             }
             val videoBlurFadeJob = if (isVideoCardActiveReturn) {
-                videoCardTransitionSourceRoute = currentBackKey.sourceRoute
+                videoCardTransitionSourceRoute = resolveCardMorphDestinationSourceRoute(currentBackKey)
                 val quickReturnForDepthClear = onPrepareVideoCardSharedReturn()
                 if (
                     shouldSnapClearVideoCardDepthBlurOnQuickReturn(
@@ -495,7 +492,7 @@ internal fun BiliPaiNavDisplayHost(
                             ),
                         )
                         val parentSourceRoute =
-                            (targetBackKey as? BiliPaiNavKey.VideoDetail)?.sourceRoute
+                            resolveCardMorphDestinationSourceRoute(targetBackKey)
                         if (isVideoCardReturnTargetRoute(parentSourceRoute)) {
                             videoCardTransitionSourceRoute = parentSourceRoute
                             videoCardTransitionBackgroundProgress.snapTo(1f)
@@ -724,8 +721,8 @@ internal fun BiliPaiNavDisplayHost(
     val showVideoCardNavBackdrop = shouldShowVideoCardTransitionNavBackdrop(
         cardTransitionEnabled = cardTransitionEnabled,
         phase = videoCardTransitionBackgroundPhase,
-        isVideoDetailOnStack = currentBackKey is BiliPaiNavKey.VideoDetail,
-        isReturningToVideoDetail = targetBackKey is BiliPaiNavKey.VideoDetail,
+        isVideoDetailOnStack = isCardMorphDestinationNavKey(currentBackKey),
+        isReturningToVideoDetail = isCardMorphDestinationNavKey(targetBackKey),
     )
 
     Box(modifier = modifier.fillMaxSize()) {

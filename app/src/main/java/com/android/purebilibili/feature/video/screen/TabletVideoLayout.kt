@@ -307,9 +307,9 @@ internal fun TabletVideoLayout(
                         secondaryPaneModeName = nextTabletSecondaryPaneMode(secondaryPaneMode).name
                     },
                     onRelatedVideoClick = onRelatedVideoClick,
+                    onSearchKeywordClick = onSearchKeywordClick,
                     showUpBadge = showUpBadge,
                     showIdentityDecorations = commentMemberDecorationsEnabled,
-                    onSearchKeywordClick = onSearchKeywordClick,
                     onOpenBilibiliLink = onOpenBilibiliLink
                 )
             }
@@ -799,6 +799,7 @@ private fun ScrollableVideoInfoSection(
     onDownloadClick: () -> Unit,
     onWatchLaterClick: () -> Unit,
     onRelatedVideoClick: (String, android.os.Bundle?) -> Unit,
+    onSearchKeywordClick: (String) -> Unit = {},
     onOpenBilibiliLink: ((String) -> Unit)?,
     relatedVideos: List<com.android.purebilibili.data.model.response.RelatedVideo> = emptyList(),
     modifier: Modifier = Modifier
@@ -846,7 +847,8 @@ private fun ScrollableVideoInfoSection(
                 ),
                 onBgmClick = onBgmClick,
                 onRelatedVideoClick = onRelatedVideoClick,
-                onDescriptionUrlClick = onOpenBilibiliLink
+                onDescriptionUrlClick = onOpenBilibiliLink,
+                onTagClick = onSearchKeywordClick
             )
             Spacer(modifier = Modifier.height(12.dp))
         }

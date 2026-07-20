@@ -947,6 +947,60 @@ class VideoDetailLayoutModePolicyTest {
         )
     }
 
+    @Test
+    fun autoPortraitRoutePolicy_entersStandalone_whenRouteRequestsInitialVerticalDespiteInline() {
+        assertTrue(
+            shouldAutoEnterPortraitFullscreenFromRoute(
+                autoEnterPortraitFromRoute = true,
+                startAudioFromRoute = false,
+                portraitExperienceEnabled = true,
+                useOfficialInlinePortraitDetailExperience = true,
+                isCurrentRouteVideoLoaded = true,
+                isVerticalVideo = true,
+                isPortraitFullscreen = false,
+                hasAutoEnteredPortraitFromRoute = false,
+                initialVerticalFromRoute = true,
+            )
+        )
+    }
+
+    @Test
+    fun autoPortraitRoutePolicy_entersStandalone_whenDirectPortraitEntryDespiteInline() {
+        assertTrue(
+            shouldAutoEnterPortraitFullscreenFromRoute(
+                autoEnterPortraitFromRoute = false,
+                startAudioFromRoute = false,
+                portraitExperienceEnabled = true,
+                useOfficialInlinePortraitDetailExperience = true,
+                isCurrentRouteVideoLoaded = true,
+                isVerticalVideo = true,
+                isPortraitFullscreen = false,
+                hasAutoEnteredPortraitFromRoute = false,
+                directPortraitEntryFromRoute = true,
+            )
+        )
+    }
+
+    @Test
+    fun startPortraitHint_directPortraitEntryIgnoresAutoPortraitPairing() {
+        assertTrue(
+            shouldStartInPortraitFullscreenFromRouteHint(
+                autoEnterPortraitFromRoute = false,
+                startAudioFromRoute = false,
+                initialVerticalFromRoute = false,
+                directPortraitEntryFromRoute = true,
+            )
+        )
+        assertFalse(
+            shouldStartInPortraitFullscreenFromRouteHint(
+                autoEnterPortraitFromRoute = true,
+                startAudioFromRoute = false,
+                initialVerticalFromRoute = false,
+                directPortraitEntryFromRoute = false,
+            )
+        )
+    }
+
     private fun shouldShowFrozenCommentBar(
         useTabletLayout: Boolean = false,
         selectedTabIndex: Int = 1,
