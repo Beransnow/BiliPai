@@ -62,10 +62,11 @@ class TopTabLayoutPolicyTest {
     }
 
     @Test
-    fun `md3 text-only top tabs keep leading edge instead of centering leftover`() {
+    fun `md3 and miuix multi-tab rows keep leading edge for all label modes`() {
         val itemWidth = resolveMd3TopTabItemWidthDp(containerWidthDp = 400f, visibleSlots = 5)
 
         assertEquals(72f, itemWidth, 0.001f)
+        // Text-only and icon+text: lead-align (leftover must not center-push "推荐")
         assertEquals(
             0f,
             resolveMd3TopTabContentPaddingDp(
@@ -77,12 +78,52 @@ class TopTabLayoutPolicyTest {
             0.001f
         )
         assertEquals(
-            20f,
+            0f,
             resolveMd3TopTabContentPaddingDp(
                 containerWidthDp = 400f,
                 itemWidthDp = itemWidth,
                 categoryCount = 5,
                 labelMode = 0
+            ),
+            0.001f
+        )
+        // Sparse 1–2 tabs still center residual so a lone tab is not glued left
+        // 2 × 120 on 360 → leftover 120 → padding 60
+        assertEquals(
+            60f,
+            resolveMd3TopTabContentPaddingDp(
+                containerWidthDp = 360f,
+                itemWidthDp = 120f,
+                categoryCount = 2,
+                labelMode = 0
+            ),
+            0.001f
+        )
+    }
+
+    @Test
+    fun `md3 indicator translation at index zero sits at leading edge when padding is zero`() {
+        // position 0, no content padding: indicator left = (item - indicator) / 2 (slot center)
+        assertEquals(
+            2f,
+            resolveMd3TopTabIndicatorTranslationPx(
+                absolutePagerPosition = 0f,
+                itemWidthPx = 72f,
+                rowScrollOffsetPx = 0f,
+                indicatorWidthPx = 68f, // item - 2*2dp gap
+                contentPaddingPx = 0f
+            ),
+            0.001f
+        )
+        // With leftover centered (old bug): first indicator jumps right by padding
+        assertEquals(
+            22f,
+            resolveMd3TopTabIndicatorTranslationPx(
+                absolutePagerPosition = 0f,
+                itemWidthPx = 72f,
+                rowScrollOffsetPx = 0f,
+                indicatorWidthPx = 68f,
+                contentPaddingPx = 20f
             ),
             0.001f
         )

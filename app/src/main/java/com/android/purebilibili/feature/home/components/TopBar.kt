@@ -228,9 +228,13 @@ internal fun resolveMd3TopTabContentPaddingDp(
     if (containerWidthDp <= 0f || itemWidthDp <= 0f || categoryCount <= 0) return 0f
     val contentWidth = itemWidthDp * categoryCount
     val leftover = (containerWidthDp - contentWidth).coerceAtLeast(0f)
-    // Text-only MD3/Miuix: keep the first indicator near the leading edge. Centering the
-    // leftover (from the 72dp item-width cap) pushes "推荐" too far from the left.
-    return if (normalizeTopTabLabelMode(labelMode) == 2) {
+    // Multi-tab rows (MD3 / MIUIX / all label modes): lead-align so the first indicator
+    // sits at the leading edge. The 72dp item-width cap on 4–6 tabs creates leftover;
+    // centering it pushes "推荐" away from the left of the dock.
+    // Sparse rows (1–2 tabs): keep residual centered so a single tab is not glued left.
+    @Suppress("UNUSED_PARAMETER")
+    val ignoredLabelMode = labelMode
+    return if (categoryCount >= 3) {
         0f
     } else {
         leftover / 2f
@@ -858,7 +862,10 @@ private fun LightweightHomeTopTabs(
         }
         val density = LocalDensity.current
         val isDarkTheme = isSystemInDarkTheme()
-        val md3ContentPadding = if (effectiveRenderer == HomeTopTabRenderer.MD3) {
+        val md3ContentPadding = if (
+            effectiveRenderer == HomeTopTabRenderer.MD3 ||
+            effectiveRenderer == HomeTopTabRenderer.MIUIX
+        ) {
             resolveMd3TopTabContentPaddingDp(
                 containerWidthDp = maxWidth.value,
                 itemWidthDp = itemWidth.value,
