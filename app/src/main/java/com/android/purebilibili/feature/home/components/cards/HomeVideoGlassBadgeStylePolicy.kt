@@ -13,53 +13,62 @@ internal data class HomeVideoGlassBadgeStylePolicy(
 )
 
 /**
- * Resolved runtime look for card badges.
+ * Runtime look for card badges.
  *
- * - [glassEnabled]/[blurEnabled] drive [resolveHomeGlassPillStyle] alphas
- * - Soft glass: glass on, blur off → denser translucent pill
- * - Light blur: glass+blur on → more frosted; degraded to soft glass while scrolling
+ * Light blur uses the same Haze path as the bottom bar ([unifiedBlur] + BOTTOM_BAR budget).
+ * Scroll does **not** fall back to soft glass — matching bottom bar (blur stays on, budget only).
  */
 internal data class HomeCardBadgeEffectVisual(
     val coverStyle: HomeVideoBadgeStyle,
     val infoStyle: HomeVideoBadgeStyle,
     val glassEnabled: Boolean,
     val blurEnabled: Boolean,
+    /** Real Haze sampling (same stack as bottom bar). */
+    val useRealtimeHaze: Boolean,
     val effectiveMode: HomeCardBadgeEffectMode
 )
 
+/**
+ * @param hasHazeState whether [LocalMainHazeState] is available (bottom-bar source).
+ * @param scrollLiteModeEnabled unused for mode demotion; kept for call-site stability.
+ *   Realtime path follows bottom bar: keep haze while scrolling.
+ */
 internal fun resolveHomeCardBadgeEffectVisual(
     mode: HomeCardBadgeEffectMode,
-    scrollLiteModeEnabled: Boolean
+    scrollLiteModeEnabled: Boolean,
+    hasHazeState: Boolean = false
 ): HomeCardBadgeEffectVisual {
-    val effective = when {
-        mode == HomeCardBadgeEffectMode.OFF -> HomeCardBadgeEffectMode.OFF
-        // Real-time-ish frosted look is expensive in a dense LazyGrid; keep soft glass while scrolling.
-        mode == HomeCardBadgeEffectMode.LIGHT_BLUR && scrollLiteModeEnabled ->
-            HomeCardBadgeEffectMode.SOFT_GLASS
-        else -> mode
-    }
-    return when (effective) {
+    @Suppress("UNUSED_PARAMETER")
+    val unusedScroll = scrollLiteModeEnabled
+    return when (mode) {
         HomeCardBadgeEffectMode.OFF -> HomeCardBadgeEffectVisual(
             coverStyle = HomeVideoBadgeStyle.PLAIN,
             infoStyle = HomeVideoBadgeStyle.PLAIN,
             glassEnabled = false,
             blurEnabled = false,
-            effectiveMode = effective
+            useRealtimeHaze = false,
+            effectiveMode = HomeCardBadgeEffectMode.OFF
         )
         HomeCardBadgeEffectMode.SOFT_GLASS -> HomeCardBadgeEffectVisual(
             coverStyle = HomeVideoBadgeStyle.GLASS,
             infoStyle = HomeVideoBadgeStyle.GLASS,
             glassEnabled = true,
             blurEnabled = false,
-            effectiveMode = effective
+            useRealtimeHaze = false,
+            effectiveMode = HomeCardBadgeEffectMode.SOFT_GLASS
         )
-        HomeCardBadgeEffectMode.LIGHT_BLUR -> HomeCardBadgeEffectVisual(
-            coverStyle = HomeVideoBadgeStyle.GLASS,
-            infoStyle = HomeVideoBadgeStyle.GLASS,
-            glassEnabled = true,
-            blurEnabled = true,
-            effectiveMode = effective
-        )
+        HomeCardBadgeEffectMode.LIGHT_BLUR -> {
+            // Prefer real bottom-bar Haze; without source keep frosted soft glass (same glass shell).
+            val realtime = hasHazeState
+            HomeCardBadgeEffectVisual(
+                coverStyle = HomeVideoBadgeStyle.GLASS,
+                infoStyle = HomeVideoBadgeStyle.GLASS,
+                glassEnabled = true,
+                blurEnabled = true,
+                useRealtimeHaze = realtime,
+                effectiveMode = HomeCardBadgeEffectMode.LIGHT_BLUR
+            )
+        }
     }
 }
 
@@ -77,7 +86,8 @@ internal fun resolveHomeVideoGlassBadgeStylePolicy(
     }
     val visual = resolveHomeCardBadgeEffectVisual(
         mode = mode,
-        scrollLiteModeEnabled = false
+        scrollLiteModeEnabled = false,
+        hasHazeState = false
     )
     return HomeVideoGlassBadgeStylePolicy(
         coverStyle = if (showCoverGlassBadges) visual.coverStyle else HomeVideoBadgeStyle.PLAIN,

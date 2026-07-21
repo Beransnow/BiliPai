@@ -399,8 +399,8 @@ enum class HomeCardBadgeEffectMode(
     val subtitle: String
 ) {
     OFF(0, "关闭", "纯文字标签，性能最好"),
-    SOFT_GLASS(1, "软玻璃", "半透明描边拟态，默认推荐"),
-    LIGHT_BLUR(2, "轻模糊", "更通透；滚动时自动降为软玻璃");
+    SOFT_GLASS(1, "软玻璃", "半透明描边拟态，无实时采样"),
+    LIGHT_BLUR(2, "实时模糊", "与底栏同款 Haze 采样壁纸/背景；滚动保持模糊不关效果");
 
     companion object {
         fun fromValue(value: Int): HomeCardBadgeEffectMode =

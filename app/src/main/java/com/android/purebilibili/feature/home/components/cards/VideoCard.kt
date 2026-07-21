@@ -50,6 +50,9 @@ import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.core.theme.BiliPink
 import com.android.purebilibili.core.store.HomeCardBadgeEffectMode
 import com.android.purebilibili.core.store.HomeDurationStyle
+import com.android.purebilibili.core.ui.LocalMainHazeState
+import com.android.purebilibili.core.ui.blur.BlurSurfaceType
+import com.android.purebilibili.core.ui.blur.unifiedBlur
 import com.android.purebilibili.core.theme.LocalCornerRadiusScale
 import com.android.purebilibili.core.theme.iOSCornerRadius
 import com.android.purebilibili.core.util.HapticType
@@ -390,10 +393,12 @@ fun ElegantVideoCard(
     }
     val showDurationOutside = homeDurationStyle == HomeDurationStyle.OUTSIDE_COVER
     val inlinePillBaseColor = AppSurfaceTokens.cardContainer()
-    val badgeEffectVisual = remember(badgeEffectMode, scrollLiteModeEnabled) {
+    val mainHazeState = LocalMainHazeState.current
+    val badgeEffectVisual = remember(badgeEffectMode, scrollLiteModeEnabled, mainHazeState != null) {
         resolveHomeCardBadgeEffectVisual(
             mode = badgeEffectMode,
-            scrollLiteModeEnabled = scrollLiteModeEnabled
+            scrollLiteModeEnabled = scrollLiteModeEnabled,
+            hasHazeState = mainHazeState != null
         )
     }
     val effectiveGlassEnabled = badgeEffectVisual.glassEnabled && glassEnabled
@@ -763,6 +768,7 @@ fun ElegantVideoCard(
             if (premiumBadgeLabel != null) {
                 HomeVideoBadgePill(
                     style = badgeStylePolicy.coverStyle,
+                    useRealtimeHaze = badgeEffectVisual.useRealtimeHaze,
                     shape = RoundedCornerShape(smallCornerRadius),
                     containerColor = BiliPink.copy(alpha = if (badgeStylePolicy.coverStyle == HomeVideoBadgeStyle.GLASS) 0.78f else 1f),
                     borderColor = Color.White.copy(alpha = 0.24f),
@@ -861,6 +867,7 @@ fun ElegantVideoCard(
                         HomeVideoBadgePill(
                             modifier = compactViewsModifier,
                             style = badgeStylePolicy.coverStyle,
+                            useRealtimeHaze = badgeEffectVisual.useRealtimeHaze,
                             shape = AppShapes.container(ContainerLevel.Pill),
                             containerColor = coverPillColors.containerColor,
                             borderColor = coverPillColors.borderColor
@@ -888,6 +895,7 @@ fun ElegantVideoCard(
                             HomeVideoBadgePill(
                                 modifier = compactDanmakuModifier,
                                 style = badgeStylePolicy.coverStyle,
+                                useRealtimeHaze = badgeEffectVisual.useRealtimeHaze,
                                 shape = AppShapes.container(ContainerLevel.Pill),
                                 containerColor = coverPillColors.containerColor,
                                 borderColor = coverPillColors.borderColor
@@ -915,6 +923,7 @@ fun ElegantVideoCard(
                             HomeVideoBadgePill(
                                 modifier = Modifier.weight(1f, fill = false),
                                 style = badgeStylePolicy.coverStyle,
+                                useRealtimeHaze = badgeEffectVisual.useRealtimeHaze,
                                 shape = AppShapes.container(ContainerLevel.Pill),
                                 containerColor = coverPillColors.containerColor,
                                 borderColor = coverPillColors.borderColor
@@ -1232,6 +1241,7 @@ fun ElegantVideoCard(
                 Box(modifier = viewsRowModifier) {
                     HomeVideoBadgePill(
                         style = badgeStylePolicy.infoStyle,
+                        useRealtimeHaze = badgeEffectVisual.useRealtimeHaze,
                         shape = AppShapes.container(ContainerLevel.Pill),
                         containerColor = inlinePillColors.containerColor,
                         borderColor = inlinePillColors.borderColor
@@ -1256,6 +1266,7 @@ fun ElegantVideoCard(
                     HomeVideoBadgePill(
                         modifier = danmakuModifier,
                         style = badgeStylePolicy.infoStyle,
+                        useRealtimeHaze = badgeEffectVisual.useRealtimeHaze,
                         shape = AppShapes.container(ContainerLevel.Pill),
                         containerColor = inlinePillColors.containerColor,
                         borderColor = inlinePillColors.borderColor
@@ -1278,6 +1289,7 @@ fun ElegantVideoCard(
                 if (onlineCount.isNotEmpty()) {
                     HomeVideoBadgePill(
                         style = badgeStylePolicy.infoStyle,
+                        useRealtimeHaze = badgeEffectVisual.useRealtimeHaze,
                         shape = AppShapes.container(ContainerLevel.Pill),
                         containerColor = inlinePillColors.containerColor,
                         borderColor = inlinePillColors.borderColor
@@ -1398,13 +1410,36 @@ internal fun HomeVideoBadgePill(
     containerColor: Color,
     borderColor: Color,
     modifier: Modifier = Modifier,
+    /** When true, sample [LocalMainHazeState] like the bottom bar (realtime blur). */
+    useRealtimeHaze: Boolean = false,
     content: @Composable RowScope.() -> Unit
 ) {
     if (style == HomeVideoBadgeStyle.GLASS) {
+        val hazeState = LocalMainHazeState.current
+        // Match bottom bar: keep blur on while scrolling (isScrolling=false → full visual path).
+        val glassModifier = if (useRealtimeHaze && hazeState != null) {
+            modifier.unifiedBlur(
+                hazeState = hazeState,
+                shape = shape,
+                surfaceType = BlurSurfaceType.BOTTOM_BAR,
+                // Bottom bar intentionally does not zero blur on feed scroll.
+                isScrolling = false,
+                isTransitionRunning = false,
+                forceLowBudget = false
+            )
+        } else {
+            modifier
+        }
+        // Slightly clearer fill when realtime haze already provides frosted backdrop.
+        val surfaceColor = if (useRealtimeHaze && hazeState != null) {
+            containerColor.copy(alpha = (containerColor.alpha * 0.55f).coerceIn(0.08f, 0.45f))
+        } else {
+            containerColor
+        }
         Surface(
-            modifier = modifier,
+            modifier = glassModifier,
             shape = shape,
-            color = containerColor,
+            color = surfaceColor,
             border = BorderStroke(0.8.dp, borderColor)
         ) {
             Row(

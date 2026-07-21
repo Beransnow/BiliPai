@@ -1,6 +1,8 @@
 package com.android.purebilibili.core.ui
 
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.staticCompositionLocalOf
+import dev.chrisbanes.haze.HazeState
 
 /**
  * 用于控制全局底栏可见性的 CompositionLocal
@@ -21,3 +23,9 @@ val LocalBottomBarVisible = compositionLocalOf<Boolean> { true }
  * 由 [com.android.purebilibili.navigation.AppNavigation] 从用户偏好提供。
  */
 val LocalPredictiveBackGestureEnabled = compositionLocalOf { true }
+
+/**
+ * App-shell Haze state shared with the bottom bar (wallpaper + page content as source).
+ * Card badges use the same source so scroll-time glass matches bottom-bar rendering.
+ */
+val LocalMainHazeState = staticCompositionLocalOf<HazeState?> { null }

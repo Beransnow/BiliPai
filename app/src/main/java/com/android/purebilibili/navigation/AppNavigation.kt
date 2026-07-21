@@ -1331,6 +1331,7 @@ fun AppNavigation(
             LocalBottomBarVisible provides finalBottomBarVisible,
             LocalGlobalWallpaperBackdropVisible provides exposeGlobalHomeWallpaperChrome,
             LocalPredictiveBackGestureEnabled provides predictiveBackEnabled,
+            com.android.purebilibili.core.ui.LocalMainHazeState provides mainHazeState,
             com.android.purebilibili.feature.home.LocalHomeScrollChannel provides homeScrollChannel,
             LocalDynamicScrollChannel provides dynamicScrollChannel,
             com.android.purebilibili.feature.home.LocalHomeScrollOffset provides scrollOffsetState,

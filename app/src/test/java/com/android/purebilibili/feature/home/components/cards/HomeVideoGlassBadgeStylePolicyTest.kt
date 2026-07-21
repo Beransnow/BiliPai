@@ -9,45 +9,63 @@ import kotlin.test.assertTrue
 class HomeVideoGlassBadgeStylePolicyTest {
 
     @Test
-    fun softGlass_usesGlassStyleWithoutBlurFlag() {
+    fun softGlass_usesGlassStyleWithoutRealtimeHaze() {
         val visual = resolveHomeCardBadgeEffectVisual(
             mode = HomeCardBadgeEffectMode.SOFT_GLASS,
-            scrollLiteModeEnabled = false
+            scrollLiteModeEnabled = false,
+            hasHazeState = true
         )
         assertEquals(HomeVideoBadgeStyle.GLASS, visual.coverStyle)
-        assertEquals(HomeVideoBadgeStyle.GLASS, visual.infoStyle)
         assertTrue(visual.glassEnabled)
         assertFalse(visual.blurEnabled)
+        assertFalse(visual.useRealtimeHaze)
         assertEquals(HomeCardBadgeEffectMode.SOFT_GLASS, visual.effectiveMode)
     }
 
     @Test
-    fun lightBlur_degradesToSoftGlassWhileScrolling() {
+    fun lightBlur_keepsRealtimeHazeWhileScrolling_whenSourceAvailable() {
         val idle = resolveHomeCardBadgeEffectVisual(
             mode = HomeCardBadgeEffectMode.LIGHT_BLUR,
-            scrollLiteModeEnabled = false
+            scrollLiteModeEnabled = false,
+            hasHazeState = true
         )
         val scrolling = resolveHomeCardBadgeEffectVisual(
             mode = HomeCardBadgeEffectMode.LIGHT_BLUR,
-            scrollLiteModeEnabled = true
+            scrollLiteModeEnabled = true,
+            hasHazeState = true
         )
+        assertTrue(idle.useRealtimeHaze)
         assertTrue(idle.blurEnabled)
         assertEquals(HomeCardBadgeEffectMode.LIGHT_BLUR, idle.effectiveMode)
-        assertFalse(scrolling.blurEnabled)
-        assertTrue(scrolling.glassEnabled)
-        assertEquals(HomeCardBadgeEffectMode.SOFT_GLASS, scrolling.effectiveMode)
+        // Match bottom bar: do not demote to soft glass while scrolling.
+        assertTrue(scrolling.useRealtimeHaze)
+        assertTrue(scrolling.blurEnabled)
+        assertEquals(HomeCardBadgeEffectMode.LIGHT_BLUR, scrolling.effectiveMode)
+    }
+
+    @Test
+    fun lightBlur_withoutHazeFallsBackToFrostedSoftShell() {
+        val visual = resolveHomeCardBadgeEffectVisual(
+            mode = HomeCardBadgeEffectMode.LIGHT_BLUR,
+            scrollLiteModeEnabled = false,
+            hasHazeState = false
+        )
+        assertTrue(visual.glassEnabled)
+        assertTrue(visual.blurEnabled)
+        assertFalse(visual.useRealtimeHaze)
+        assertEquals(HomeCardBadgeEffectMode.LIGHT_BLUR, visual.effectiveMode)
     }
 
     @Test
     fun off_usesPlainBadges() {
         val visual = resolveHomeCardBadgeEffectVisual(
             mode = HomeCardBadgeEffectMode.OFF,
-            scrollLiteModeEnabled = false
+            scrollLiteModeEnabled = false,
+            hasHazeState = true
         )
         assertEquals(HomeVideoBadgeStyle.PLAIN, visual.coverStyle)
-        assertEquals(HomeVideoBadgeStyle.PLAIN, visual.infoStyle)
         assertFalse(visual.glassEnabled)
-        assertFalse(visual.blurEnabled)
+        assertFalse(visual.useRealtimeHaze)
     }
 
     @Test
@@ -61,8 +79,6 @@ class HomeVideoGlassBadgeStylePolicyTest {
             showInfoGlassBadges = false
         )
         assertEquals(HomeVideoBadgeStyle.GLASS, on.coverStyle)
-        assertEquals(HomeVideoBadgeStyle.GLASS, on.infoStyle)
         assertEquals(HomeVideoBadgeStyle.PLAIN, off.coverStyle)
-        assertEquals(HomeVideoBadgeStyle.PLAIN, off.infoStyle)
     }
 }
