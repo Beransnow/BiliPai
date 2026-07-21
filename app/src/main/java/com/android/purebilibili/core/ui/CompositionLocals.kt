@@ -25,7 +25,13 @@ val LocalBottomBarVisible = compositionLocalOf<Boolean> { true }
 val LocalPredictiveBackGestureEnabled = compositionLocalOf { true }
 
 /**
- * App-shell Haze state shared with the bottom bar (wallpaper + page content as source).
- * Card badges use the same source so scroll-time glass matches bottom-bar rendering.
+ * App-shell Haze state for the bottom bar (wallpaper + page content as source).
+ * Must not be used by nodes that live *inside* that source tree (causes prepareTree SO).
  */
 val LocalMainHazeState = staticCompositionLocalOf<HazeState?> { null }
+
+/**
+ * Wallpaper-only Haze source. Card badge frosted glass samples this state so effects
+ * are not descendants of the bottom-bar content source (avoids HWUI stack overflow).
+ */
+val LocalWallpaperHazeState = staticCompositionLocalOf<HazeState?> { null }

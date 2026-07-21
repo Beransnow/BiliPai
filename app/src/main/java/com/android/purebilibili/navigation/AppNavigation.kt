@@ -1325,6 +1325,16 @@ fun AppNavigation(
         // Capture the wallpaper and navigation content together so transparent wallpaper-aware
         // pages feed the same background into the floating dock as Home.
         val bottomBarBackdrop = rememberMiuixLayerBackdrop()
+        // Wallpaper-only Haze source for card badge frosted glass. Must stay separate from
+        // mainHazeState: badges live inside the main content source tree, and reusing that
+        // state for hazeEffect causes HWUI prepareTree stack overflow.
+        val wallpaperHazeState = if (mainHazeState != null) {
+            com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState(
+                initialBlurEnabled = true
+            )
+        } else {
+            null
+        }
 
         CompositionLocalProvider(
             LocalSetBottomBarVisible provides setBottomBarVisible,
@@ -1332,6 +1342,7 @@ fun AppNavigation(
             LocalGlobalWallpaperBackdropVisible provides exposeGlobalHomeWallpaperChrome,
             LocalPredictiveBackGestureEnabled provides predictiveBackEnabled,
             com.android.purebilibili.core.ui.LocalMainHazeState provides mainHazeState,
+            com.android.purebilibili.core.ui.LocalWallpaperHazeState provides wallpaperHazeState,
             com.android.purebilibili.feature.home.LocalHomeScrollChannel provides homeScrollChannel,
             LocalDynamicScrollChannel provides dynamicScrollChannel,
             com.android.purebilibili.feature.home.LocalHomeScrollOffset provides scrollOffsetState,
@@ -1438,17 +1449,32 @@ fun AppNavigation(
                         // 必须添加 hazeSource，否则底栏的 hazeEffect 无法获取背景内容，导致模糊失效
                         .then(if (mainHazeState != null) Modifier.hazeSourceCompat(mainHazeState) else Modifier)
                 ) {
-                    DepthSyncedGlobalHomeWallpaperBackdrop(
-                        wallpaperUri = globalHomeWallpaperUri,
-                        appearance = globalHomeWallpaperAppearance,
-                        baseColor = backgroundColor,
-                        depthProgress = globalWallpaperDepthProgress,
-                        depthPhase = globalWallpaperDepthPhase,
-                        depthGestureRestore = globalWallpaperDepthGestureRestore,
-                        isDataSaverActive = isDataSaverActiveForGlobalWallpaper,
-                        isLightBackground = isLightBackground,
-                        realtimeBlurEnabled = videoTransitionRealtimeBlurEnabled,
-                    )
+                    // Wallpaper-only source for card badge realtime blur (not nested under
+                    // the badge effect). Bottom bar still samples via mainHazeState above.
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .then(
+                                if (wallpaperHazeState != null) {
+                                    Modifier.hazeSourceCompat(wallpaperHazeState)
+                                } else {
+                                    Modifier
+                                }
+                            )
+                    ) {
+                        DepthSyncedGlobalHomeWallpaperBackdrop(
+                            wallpaperUri = globalHomeWallpaperUri,
+                            appearance = globalHomeWallpaperAppearance,
+                            baseColor = backgroundColor,
+                            depthProgress = globalWallpaperDepthProgress,
+                            depthPhase = globalWallpaperDepthPhase,
+                            depthGestureRestore = globalWallpaperDepthGestureRestore,
+                            isDataSaverActive = isDataSaverActiveForGlobalWallpaper,
+                            isLightBackground = isLightBackground,
+                            // Transition depth blur is independent of badge haze sampling.
+                            realtimeBlurEnabled = videoTransitionRealtimeBlurEnabled,
+                        )
+                    }
                 fun bottomPagerNavKeyForItem(item: BottomNavItem): BiliPaiNavKey {
                     return when (item) {
                         BottomNavItem.HOME -> BiliPaiNavKey.Home

@@ -50,7 +50,7 @@ import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.core.theme.BiliPink
 import com.android.purebilibili.core.store.HomeCardBadgeEffectMode
 import com.android.purebilibili.core.store.HomeDurationStyle
-import com.android.purebilibili.core.ui.LocalMainHazeState
+import com.android.purebilibili.core.ui.LocalWallpaperHazeState
 import com.android.purebilibili.core.ui.blur.BlurSurfaceType
 import com.android.purebilibili.core.ui.blur.unifiedBlur
 import com.android.purebilibili.core.theme.LocalCornerRadiusScale
@@ -393,12 +393,12 @@ fun ElegantVideoCard(
     }
     val showDurationOutside = homeDurationStyle == HomeDurationStyle.OUTSIDE_COVER
     val inlinePillBaseColor = AppSurfaceTokens.cardContainer()
-    val mainHazeState = LocalMainHazeState.current
-    val badgeEffectVisual = remember(badgeEffectMode, scrollLiteModeEnabled, mainHazeState != null) {
+    val wallpaperHazeState = LocalWallpaperHazeState.current
+    val badgeEffectVisual = remember(badgeEffectMode, scrollLiteModeEnabled, wallpaperHazeState != null) {
         resolveHomeCardBadgeEffectVisual(
             mode = badgeEffectMode,
             scrollLiteModeEnabled = scrollLiteModeEnabled,
-            hasHazeState = mainHazeState != null
+            hasHazeState = wallpaperHazeState != null
         )
     }
     val effectiveGlassEnabled = badgeEffectVisual.glassEnabled && glassEnabled
@@ -1415,7 +1415,9 @@ internal fun HomeVideoBadgePill(
     content: @Composable RowScope.() -> Unit
 ) {
     if (style == HomeVideoBadgeStyle.GLASS) {
-        val hazeState = LocalMainHazeState.current
+        // Wallpaper-only HazeState (sibling source), never main content HazeState —
+        // badges live inside the main hazeSource and would SO the render tree otherwise.
+        val hazeState = LocalWallpaperHazeState.current
         // Match bottom bar: keep blur on while scrolling (isScrolling=false → full visual path).
         val glassModifier = if (useRealtimeHaze && hazeState != null) {
             modifier.unifiedBlur(
