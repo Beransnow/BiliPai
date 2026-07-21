@@ -811,6 +811,8 @@ data class PlayerInteractionSettings(
     val longPressSpeedLockEnabled: Boolean = false,
     val longPressSpeedLockHintShown: Boolean = false,
     val subtitleVerticalOffsetFraction: Float = 0.0f,
+    /** Vertical offset for portrait immersive / story subtitles (independent of landscape). */
+    val subtitlePortraitVerticalOffsetFraction: Float = 0.0f,
     val twoFingerVerticalSpeedEnabled: Boolean = false,
     val twoFingerHorizontalSpeedEnabled: Boolean = false,
     val hiResLongPressCompatHintShown: Boolean = false,
@@ -1060,6 +1062,8 @@ object SettingsManager {
         booleanPreferencesKey("hi_res_long_press_compat_hint_shown")
     private val KEY_SUBTITLE_VERTICAL_OFFSET_FRACTION =
         floatPreferencesKey("subtitle_vertical_offset_fraction")
+    private val KEY_SUBTITLE_PORTRAIT_VERTICAL_OFFSET_FRACTION =
+        floatPreferencesKey("subtitle_portrait_vertical_offset_fraction")
     //  [新增] 默认播放速度/记忆上次播放速度
     private val KEY_DEFAULT_PLAYBACK_SPEED = floatPreferencesKey("default_playback_speed")
     private val KEY_REMEMBER_LAST_PLAYBACK_SPEED = booleanPreferencesKey("remember_last_playback_speed")
@@ -1409,6 +1413,9 @@ object SettingsManager {
             longPressSpeedLockHintShown = preferences[KEY_LONG_PRESS_SPEED_LOCK_HINT_SHOWN] ?: false,
             subtitleVerticalOffsetFraction = normalizeSubtitleVerticalOffsetFraction(
                 preferences[KEY_SUBTITLE_VERTICAL_OFFSET_FRACTION] ?: 0.0f
+            ),
+            subtitlePortraitVerticalOffsetFraction = normalizeSubtitleVerticalOffsetFraction(
+                preferences[KEY_SUBTITLE_PORTRAIT_VERTICAL_OFFSET_FRACTION] ?: 0.0f
             ),
             twoFingerVerticalSpeedEnabled = preferences[KEY_TWO_FINGER_VERTICAL_SPEED_ENABLED] ?: false,
             twoFingerHorizontalSpeedEnabled = preferences[KEY_TWO_FINGER_HORIZONTAL_SPEED_ENABLED] ?: false,
@@ -2165,6 +2172,21 @@ object SettingsManager {
     suspend fun setSubtitleVerticalOffsetFraction(context: Context, value: Float) {
         context.settingsDataStore.edit { preferences ->
             preferences[KEY_SUBTITLE_VERTICAL_OFFSET_FRACTION] =
+                normalizeSubtitleVerticalOffsetFraction(value)
+        }
+    }
+
+    fun getSubtitlePortraitVerticalOffsetFraction(context: Context): Flow<Float> =
+        context.settingsDataStore.data
+            .map { preferences ->
+                normalizeSubtitleVerticalOffsetFraction(
+                    preferences[KEY_SUBTITLE_PORTRAIT_VERTICAL_OFFSET_FRACTION] ?: 0.0f
+                )
+            }
+
+    suspend fun setSubtitlePortraitVerticalOffsetFraction(context: Context, value: Float) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_SUBTITLE_PORTRAIT_VERTICAL_OFFSET_FRACTION] =
                 normalizeSubtitleVerticalOffsetFraction(value)
         }
     }
@@ -6132,6 +6154,10 @@ object SettingsManager {
             BooleanShareablePreferenceDefinition(KEY_LONG_PRESS_SPEED_LOCK_ENABLED, SettingsShareSection.GESTURE),
             FloatShareablePreferenceDefinition(
                 KEY_SUBTITLE_VERTICAL_OFFSET_FRACTION,
+                SettingsShareSection.GESTURE
+            ),
+            FloatShareablePreferenceDefinition(
+                KEY_SUBTITLE_PORTRAIT_VERTICAL_OFFSET_FRACTION,
                 SettingsShareSection.GESTURE
             ),
             BooleanShareablePreferenceDefinition(KEY_PIP_NO_DANMAKU, SettingsShareSection.GESTURE),

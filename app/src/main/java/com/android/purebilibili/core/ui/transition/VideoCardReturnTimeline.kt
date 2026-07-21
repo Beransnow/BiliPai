@@ -15,16 +15,16 @@ package com.android.purebilibili.core.ui.transition
 
 /**
  * 源卡 sharedBounds Enter 延后淡入起点（占 morph 总时长）。
- * 低于此值源卡（含标题结构）仍不可见；过大会导致快速返回「先封面后字」。
- * 与 [VIDEO_CARD_RETURN_CHROME_REVEAL_START] 对齐：字略晚于壳出现、早于旧 0.62 末段。
+ * 略延后避免封面一上来盖住 live 画面，但不宜过晚——过大会像「壳先落位、封面再弹一下」。
+ * 与 [VIDEO_CARD_RETURN_CHROME_REVEAL_START] 对齐：字略晚于壳出现。
  */
-internal const val VIDEO_CARD_RETURN_SOURCE_ENTER_FADE_DELAY_RATIO = 0.38f
+internal const val VIDEO_CARD_RETURN_SOURCE_ENTER_FADE_DELAY_RATIO = 0.16f
 
 /**
  * 源卡 chrome（标题/UP）在返回 settle 进度上的淡入起点。
- * 略高于 source enter delay，让壳/封面先露一拍；live 正文在此点起让位，避免字叠实时画面。
+ * 略高于 source enter delay；live 正文在此点起让位，避免字叠实时画面。
  */
-internal const val VIDEO_CARD_RETURN_CHROME_REVEAL_START = 0.42f
+internal const val VIDEO_CARD_RETURN_CHROME_REVEAL_START = 0.22f
 
 /**
  * live morph 详情次要内容（简介/推荐等）开始让位的 settle 进度。

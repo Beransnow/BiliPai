@@ -423,8 +423,8 @@ class VideoSharedTransitionPolicyTest {
                 delaySourceCardEnterForLiveReturn = true,
             ) != EnterTransition.None
         )
-        // 360 * 0.38 = 136.8 → 136
-        assertEquals(136, resolveVideoCardShellSourceEnterFadeDelayMillis(360))
+        // 360 * 0.16 = 57.6 → 57
+        assertEquals(57, resolveVideoCardShellSourceEnterFadeDelayMillis(360))
         assertEquals(
             ExitTransition.None,
             resolveVideoCardShellSharedBoundsExit(

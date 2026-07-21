@@ -17,19 +17,21 @@ import androidx.compose.ui.graphics.layer.drawLayer
 import androidx.compose.ui.graphics.rememberGraphicsLayer
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.navigation.isVideoCardReturnTargetRoute
+import kotlin.math.pow
 import kotlin.math.roundToInt
 
 // 景深标定（Hero 氛围，非完整 App 开合）：
-// - 背景下沉 4%（0.96），跟放大可读、又不抢 Hero
+// - 背景下沉约 2.2%，跟放大可读、又不抢 Hero；过大返回时像列表回弹
 // - 峰值 blur 20px：冻结层上进度驱动 BlurEffect（动态模糊观感，避免 live 重录掉帧）
 // - 压暗全程保留（含 HELD），避免打开完成后景深断裂
-// - 返回：SoftClear 时间曲线 + soft-clear remapping，模糊→清晰不硬切
+// - 返回：轻度 SoftClear，避免二次方中段滞留造成落位回弹感
 private const val VIDEO_CARD_TRANSITION_MAX_BLUR_RADIUS_PX = 20f
 private const val VIDEO_CARD_TRANSITION_BLUR_QUANTUM_PX = 1f
 private const val VIDEO_CARD_TRANSITION_MAX_SCRIM_ALPHA_DARK = 0.22f
 private const val VIDEO_CARD_TRANSITION_MAX_SCRIM_ALPHA_LIGHT = 0.11f
 private const val VIDEO_CARD_TRANSITION_LIGHT_REDUCED_OPENING_SCRIM_ALPHA = 0.07f
-private const val VIDEO_CARD_TRANSITION_MAX_CONTENT_SCALE_REDUCTION = 0.04f
+// 返回落位时首页略缩再回 1.0 的幅度；过大 + soft-clear 会像封面/列表「回弹」。
+private const val VIDEO_CARD_TRANSITION_MAX_CONTENT_SCALE_REDUCTION = 0.022f
 /** 景深缩放露出的边缘：至少压到这个 tint 强度，避免浅色主题读成「白条」。 */
 private const val VIDEO_CARD_TRANSITION_SCALE_GAP_MIN_TINT_LIGHT = 0.34f
 private const val VIDEO_CARD_TRANSITION_SCALE_GAP_MIN_TINT_DARK = 0.42f
@@ -624,12 +626,14 @@ internal fun resolveVideoCardTransitionDepthProgress(
 }
 
 /**
- * progress 仍为「剩余景深」1→0；映射成先留住再柔化：
- * depth = 1 - (1 - p)²，p=0.5 时仍约 0.75。
+ * progress 仍为「剩余景深」1→0；轻微 ease-out，避免二次方中段滞留造成「先停再弹开」的回弹感。
+ * depth = 1 - (1 - p)^1.2，p=0.5 时约 0.56（接近线性 0.5）。
  */
 internal fun softClearVideoCardTransitionDepth(progress: Float): Float {
     val remaining = (1f - progress.coerceIn(0f, 1f))
-    return (1f - remaining * remaining).coerceIn(0f, 1f)
+    // remaining^1.2 keeps a mild hold without the old ^2 mid-return stall.
+    val easedRemaining = remaining.toDouble().pow(1.2).toFloat()
+    return (1f - easedRemaining).coerceIn(0f, 1f)
 }
 
 private fun resolveVideoCardTransitionBlurStrength(progress: Float): Float {

@@ -3457,41 +3457,36 @@ fun VideoPlayerSection(
                     .padding(horizontal = 10.dp)
                     .padding(bottom = subtitleBottomPadding)
                     .padding(horizontal = 12.dp, vertical = 8.dp)
-                    .then(
-                        if (isFullscreen) {
-                            Modifier.pointerInput(configuration.screenHeightDp) {
-                                detectDragGestures(
-                                    onDragStart = {
-                                        isDraggingSubtitleOffset = true
-                                    },
-                                    onDragEnd = {
-                                        isDraggingSubtitleOffset = false
-                                        settingsScope.launch {
-                                            SettingsManager.setSubtitleVerticalOffsetFraction(
-                                                context,
-                                                subtitleVerticalOffsetFraction
-                                            )
-                                        }
-                                    },
-                                    onDragCancel = {
-                                        isDraggingSubtitleOffset = false
-                                    },
-                                    onDrag = { change, dragAmount ->
-                                        val screenHeightPx = with(localDensity) {
-                                            configuration.screenHeightDp.dp.toPx()
-                                        }.coerceAtLeast(1f)
-                                        subtitleVerticalOffsetFraction =
-                                            normalizeSubtitleVerticalOffsetFraction(
-                                                subtitleVerticalOffsetFraction + dragAmount.y / screenHeightPx
-                                            )
-                                        change.consume()
-                                    }
-                                )
+                    // 横屏全屏 / 详情播放器均可拖动字幕纵向位置，松手写入偏好。
+                    .pointerInput(configuration.screenHeightDp) {
+                        detectDragGestures(
+                            onDragStart = {
+                                isDraggingSubtitleOffset = true
+                            },
+                            onDragEnd = {
+                                isDraggingSubtitleOffset = false
+                                settingsScope.launch {
+                                    SettingsManager.setSubtitleVerticalOffsetFraction(
+                                        context,
+                                        subtitleVerticalOffsetFraction
+                                    )
+                                }
+                            },
+                            onDragCancel = {
+                                isDraggingSubtitleOffset = false
+                            },
+                            onDrag = { change, dragAmount ->
+                                val screenHeightPx = with(localDensity) {
+                                    configuration.screenHeightDp.dp.toPx()
+                                }.coerceAtLeast(1f)
+                                subtitleVerticalOffsetFraction =
+                                    normalizeSubtitleVerticalOffsetFraction(
+                                        subtitleVerticalOffsetFraction + dragAmount.y / screenHeightPx
+                                    )
+                                change.consume()
                             }
-                        } else {
-                            Modifier
-                        }
-                    ),
+                        )
+                    },
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 val subtitleShadow = Shadow(

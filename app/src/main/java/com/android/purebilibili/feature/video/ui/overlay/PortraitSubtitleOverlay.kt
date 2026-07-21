@@ -2,6 +2,7 @@ package com.android.purebilibili.feature.video.ui.overlay
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,12 +20,15 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -31,17 +36,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.exoplayer.ExoPlayer
+import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.feature.video.subtitle.SubtitleDisplayMode
 import com.android.purebilibili.feature.video.subtitle.SubtitleTrackOption
 import com.android.purebilibili.feature.video.subtitle.buildSubtitleTrackOptions
 import com.android.purebilibili.feature.video.subtitle.isSubtitleFeatureEnabledForUser
 import com.android.purebilibili.feature.video.subtitle.normalizeSubtitleDisplayMode
+import com.android.purebilibili.feature.video.subtitle.normalizeSubtitleVerticalOffsetFraction
 import com.android.purebilibili.feature.video.subtitle.resolveStickySubtitleText
 import com.android.purebilibili.feature.video.subtitle.resolveSubtitleControlAvailability
 import com.android.purebilibili.feature.video.subtitle.resolveSubtitleDisplayModeByAutoPreference
@@ -58,6 +70,8 @@ import com.android.purebilibili.feature.video.ui.section.resolveSubtitleLanguage
 import com.android.purebilibili.feature.video.viewmodel.VideoPlaybackUiState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+
 
 /**
  * Bottom padding for portrait subtitle text relative to chrome visibility.
@@ -277,16 +291,66 @@ fun PortraitSubtitleHost(
         controlsVisible = controlsVisible,
         commentExpansionProgress = commentExpansionProgress
     )
+    val context = LocalContext.current
+    val density = LocalDensity.current
+    val scope = rememberCoroutineScope()
+    val storedPortraitOffset by SettingsManager
+        .getSubtitlePortraitVerticalOffsetFraction(context)
+        .collectAsStateWithLifecycle(initialValue = 0f)
+    var subtitleVerticalOffsetFraction by rememberSaveable(pageBvid) {
+        mutableFloatStateOf(storedPortraitOffset)
+    }
+    var isDraggingSubtitleOffset by remember { mutableStateOf(false) }
+    LaunchedEffect(storedPortraitOffset, pageBvid) {
+        if (!isDraggingSubtitleOffset) {
+            subtitleVerticalOffsetFraction = storedPortraitOffset
+        }
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         if (keepMounted) {
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
+                    .offset {
+                        IntOffset(
+                            x = 0,
+                            y = with(density) {
+                                (configuration.screenHeightDp * subtitleVerticalOffsetFraction)
+                                    .dp
+                                    .roundToPx()
+                            }
+                        )
+                    }
                     .fillMaxWidth(0.92f)
                     .padding(horizontal = 12.dp)
                     .padding(bottom = bottomPaddingDp.dp)
-                    .padding(vertical = 6.dp),
+                    .padding(vertical = 6.dp)
+                    .pointerInput(configuration.screenHeightDp) {
+                        detectDragGestures(
+                            onDragStart = { isDraggingSubtitleOffset = true },
+                            onDragEnd = {
+                                isDraggingSubtitleOffset = false
+                                scope.launch {
+                                    SettingsManager.setSubtitlePortraitVerticalOffsetFraction(
+                                        context,
+                                        subtitleVerticalOffsetFraction
+                                    )
+                                }
+                            },
+                            onDragCancel = { isDraggingSubtitleOffset = false },
+                            onDrag = { change, dragAmount ->
+                                val screenHeightPx = with(density) {
+                                    configuration.screenHeightDp.dp.toPx()
+                                }.coerceAtLeast(1f)
+                                subtitleVerticalOffsetFraction =
+                                    normalizeSubtitleVerticalOffsetFraction(
+                                        subtitleVerticalOffsetFraction + dragAmount.y / screenHeightPx
+                                    )
+                                change.consume()
+                            }
+                        )
+                    },
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 val shadow = Shadow(
@@ -337,6 +401,7 @@ fun PortraitSubtitleHost(
                 secondaryAvailable = availability.secondarySelectable,
                 trackOptions = trackOptions,
                 largeTextEnabled = largeTextEnabled,
+                canResetPosition = kotlin.math.abs(subtitleVerticalOffsetFraction) > 0.001f,
                 onDismiss = { onShowSubtitlePanelChange(false) },
                 onDisplayModeChange = { mode ->
                     displayModePreference = mode
@@ -348,6 +413,12 @@ fun PortraitSubtitleHost(
                     onShowSubtitlePanelChange(false)
                 },
                 onLargeTextChange = { largeTextEnabled = it },
+                onResetPosition = {
+                    subtitleVerticalOffsetFraction = 0f
+                    scope.launch {
+                        SettingsManager.setSubtitlePortraitVerticalOffsetFraction(context, 0f)
+                    }
+                },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = 12.dp, bottom = (bottomPaddingDp + 8).dp)
@@ -365,10 +436,12 @@ private fun PortraitSubtitlePanel(
     secondaryAvailable: Boolean,
     trackOptions: List<SubtitleTrackOption>,
     largeTextEnabled: Boolean,
+    canResetPosition: Boolean = false,
     onDismiss: () -> Unit,
     onDisplayModeChange: (SubtitleDisplayMode) -> Unit,
     onTrackSelected: (String) -> Unit,
     onLargeTextChange: (Boolean) -> Unit,
+    onResetPosition: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -480,6 +553,28 @@ private fun PortraitSubtitlePanel(
                         checked = largeTextEnabled,
                         onCheckedChange = onLargeTextChange
                     )
+                }
+                Text(
+                    text = "上下拖动字幕可调整位置",
+                    color = Color.White.copy(alpha = 0.55f),
+                    fontSize = 11.sp,
+                    modifier = Modifier.padding(start = 4.dp, top = 2.dp)
+                )
+                if (canResetPosition) {
+                    Surface(
+                        onClick = onResetPosition,
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color.White.copy(alpha = 0.10f),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "重置位置",
+                            color = Color.White.copy(alpha = 0.9f),
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)
+                        )
+                    }
                 }
             }
         }
