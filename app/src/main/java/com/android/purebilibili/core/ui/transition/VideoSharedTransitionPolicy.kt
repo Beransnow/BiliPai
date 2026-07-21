@@ -58,9 +58,12 @@ internal enum class VideoSharedTransitionTargetMode {
 }
 
 /**
- * 与官方粉版 / CDN 投稿封面一致：16:9。
- * 列表框用 [ContentScale.Crop] 居中裁切；标准 16:9 封面几乎不裁，
- * 仅非标准比例（竖图等）会裁边——与官方 App 相同。
+ * 共享元素 / 部分卡片默认封面框比例。
+ *
+ * 注意两套官方语义不要混：
+ * - **CDN/投稿源图**多为 16:9
+ * - **粉版双列列表框**偏 4:3（居中 Crop，会裁左右）——见 [HomeFeedCardStyle.OFFICIAL]
+ * - 此处 16:9 用于「当前样式」与播放器视口更一致的壳；首页官方样式由 layout 单独传 4:3
  */
 internal const val VIDEO_SHARED_COVER_ASPECT_RATIO = 16f / 9f
 private const val HOME_SOURCE_ROUTE = "home"

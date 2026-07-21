@@ -333,7 +333,8 @@ fun ElegantVideoCard(
     wallpaperEffectMode: HomeWallpaperEffectMode = HomeWallpaperEffectMode.SOFT_BLUR,
     showUpBadge: Boolean = true,
     homeDurationStyle: HomeDurationStyle = HomeDurationStyle.OUTSIDE_COVER,
-    coverAspectRatio: Float = com.android.purebilibili.core.ui.transition.VIDEO_SHARED_COVER_ASPECT_RATIO,
+    // 默认跟官方双列 4:3；首页会传入 resolveHomeFeedCardLayout 的比例覆盖
+    coverAspectRatio: Float = 4f / 3f,
     compactMetadata: Boolean = true,
     titleMinLines: Int = 2,
     highlightedTitle: AnnotatedString? = null,

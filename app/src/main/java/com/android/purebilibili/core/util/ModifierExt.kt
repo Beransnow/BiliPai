@@ -137,9 +137,7 @@ fun <T> rememberDebounceCallback(
  * 一个假的视频卡片组件 (用于 Loading 时占位)
  */
 @Composable
-fun VideoGridItemSkeleton(
-    coverAspectRatio: Float = com.android.purebilibili.core.ui.transition.VIDEO_SHARED_COVER_ASPECT_RATIO,
-) {
+fun VideoGridItemSkeleton(coverAspectRatio: Float = 4f / 3f) {
     Column(
         modifier = Modifier
             .fillMaxWidth()

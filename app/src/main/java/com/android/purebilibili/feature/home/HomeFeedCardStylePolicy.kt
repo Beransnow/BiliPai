@@ -1,7 +1,6 @@
 package com.android.purebilibili.feature.home
 
 import com.android.purebilibili.core.store.HomeFeedCardStyle
-import com.android.purebilibili.core.ui.transition.VIDEO_SHARED_COVER_ASPECT_RATIO
 
 internal data class HomeFeedCardLayout(
     val coverAspectRatio: Float,
@@ -12,11 +11,21 @@ internal data class HomeFeedCardLayout(
     val compactMetadata: Boolean
 )
 
+/**
+ * 官方粉版双列首页封面框比例（偏高的横图框，约 4:3）。
+ * 注意：投稿/CDN 源图多为 16:9；列表用 4:3 框 + 居中 Crop 时会裁左右，这是本家行为。
+ */
+internal const val HOME_FEED_OFFICIAL_COVER_ASPECT_RATIO = 4f / 3f
+
+/**
+ * 「当前样式」更宽的封面框（16:9），与 CDN 源比例一致，标准封面几乎不裁。
+ */
+internal const val HOME_FEED_CURRENT_COVER_ASPECT_RATIO = 16f / 9f
+
 internal fun resolveHomeFeedCardLayout(style: HomeFeedCardStyle): HomeFeedCardLayout {
     return when (style) {
         HomeFeedCardStyle.CURRENT -> HomeFeedCardLayout(
-            // 与官方 CDN 封面 16:9 + Crop 一致，避免 4:3 框大幅左右裁切
-            coverAspectRatio = VIDEO_SHARED_COVER_ASPECT_RATIO,
+            coverAspectRatio = HOME_FEED_CURRENT_COVER_ASPECT_RATIO,
             outerPaddingDp = 8,
             itemSpacingDp = 8,
             verticalItemSpacingDp = 8,
@@ -25,8 +34,8 @@ internal fun resolveHomeFeedCardLayout(style: HomeFeedCardStyle): HomeFeedCardLa
         )
 
         HomeFeedCardStyle.OFFICIAL -> HomeFeedCardLayout(
-            // 官方粉版双列：16:9 框 + 居中 Crop（与投稿封面同比例，标准封面几乎完整显示）
-            coverAspectRatio = VIDEO_SHARED_COVER_ASPECT_RATIO,
+            // 对齐官方粉版双列：4:3 框 + 居中 Crop（见用户截图）
+            coverAspectRatio = HOME_FEED_OFFICIAL_COVER_ASPECT_RATIO,
             outerPaddingDp = 4,
             itemSpacingDp = 4,
             verticalItemSpacingDp = 6,

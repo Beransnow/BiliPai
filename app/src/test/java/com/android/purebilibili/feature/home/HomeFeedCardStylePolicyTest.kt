@@ -10,6 +10,7 @@ class HomeFeedCardStylePolicyTest {
     fun currentStyle_usesSixteenByNineAndExistingSpacing() {
         val layout = resolveHomeFeedCardLayout(HomeFeedCardStyle.CURRENT)
 
+        assertEquals(HOME_FEED_CURRENT_COVER_ASPECT_RATIO, layout.coverAspectRatio, 0.0001f)
         assertEquals(16f / 9f, layout.coverAspectRatio, 0.0001f)
         assertEquals(8, layout.outerPaddingDp)
         assertEquals(8, layout.itemSpacingDp)
@@ -19,11 +20,12 @@ class HomeFeedCardStylePolicyTest {
     }
 
     @Test
-    fun officialStyle_usesSixteenByNineLikeOfficialClientWithCompactSpacing() {
+    fun officialStyle_usesFourByThreeLikeOfficialDualColumnFeed() {
         val layout = resolveHomeFeedCardLayout(HomeFeedCardStyle.OFFICIAL)
 
-        // 官方粉版 / CDN 投稿封面 16:9 + Crop，不再用 4:3 大幅左右裁切
-        assertEquals(16f / 9f, layout.coverAspectRatio, 0.0001f)
+        // 粉版双列列表框 4:3 + 居中 Crop（CDN 源 16:9 会裁左右，与本家截图一致）
+        assertEquals(HOME_FEED_OFFICIAL_COVER_ASPECT_RATIO, layout.coverAspectRatio, 0.0001f)
+        assertEquals(4f / 3f, layout.coverAspectRatio, 0.0001f)
         assertEquals(4, layout.outerPaddingDp)
         assertEquals(4, layout.itemSpacingDp)
         assertEquals(6, layout.verticalItemSpacingDp)
