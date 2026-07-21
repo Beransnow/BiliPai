@@ -259,15 +259,16 @@ class VideoCardReturnTimelineTest {
         assertEquals(0f, quick.chromeRevealStart)
         assertEquals(0f, quick.sourceEnterFadeDelayRatio)
         assertFalse(shouldDelaySourceCardEnterOnReturn(isQuickReturnFromDetail = true))
-        assertTrue(shouldDelaySourceCardEnterOnReturn(isQuickReturnFromDetail = false))
+        assertFalse(shouldDelaySourceCardEnterOnReturn(isQuickReturnFromDetail = false))
+        assertTrue(canCoexistLiveSurfaceStableCoverAndChromeOnReturn())
     }
 
     @Test
     fun liveMorphSecondaryContent_yieldsNearSettleForTitle() {
-        // settle 0.2：尚未到 yield
+        // settle 0.1 < yieldStart(0.18)：尚未让位
         assertEquals(
             1f,
-            resolveVideoCardLiveMorphSecondaryContentAlpha(transitionProgress = 0.8f),
+            resolveVideoCardLiveMorphSecondaryContentAlpha(transitionProgress = 0.9f),
             0.001f,
         )
         // settle 1：完全让位

@@ -14,17 +14,19 @@ package com.android.purebilibili.core.ui.transition
  */
 
 /**
- * 源卡 sharedBounds Enter 延后淡入起点（占 morph 总时长）。
- * 略延后避免封面一上来盖住 live 画面，但不宜过晚——过大会像「壳先落位、封面再弹一下」。
- * 与 [VIDEO_CARD_RETURN_CHROME_REVEAL_START] 对齐：字略晚于壳出现。
+ * 源卡 sharedBounds Enter 延后淡入比例（遗留字段）。
+ *
+ * **当前策略：始终 0 / 不延后整壳 Enter。**
+ * 封面在列表位全程待命；标题/UP 仅靠 [VIDEO_CARD_RETURN_CHROME_REVEAL_START]。
+ * 整壳 delayed fadeIn 会在 overlay 卸层瞬间与封面二次叠化，是落位闪烁主因。
  */
-internal const val VIDEO_CARD_RETURN_SOURCE_ENTER_FADE_DELAY_RATIO = 0.16f
+internal const val VIDEO_CARD_RETURN_SOURCE_ENTER_FADE_DELAY_RATIO = 0f
 
 /**
  * 源卡 chrome（标题/UP）在返回 settle 进度上的淡入起点。
- * 略高于 source enter delay；live 正文在此点起让位，避免字叠实时画面。
+ * live 正文在此点起让位；封面始终可见，与实时画面/稳定封面共存。
  */
-internal const val VIDEO_CARD_RETURN_CHROME_REVEAL_START = 0.22f
+internal const val VIDEO_CARD_RETURN_CHROME_REVEAL_START = 0.18f
 
 /**
  * live morph 详情次要内容（简介/推荐等）开始让位的 settle 进度。
@@ -97,20 +99,34 @@ internal fun resolveVideoCardReturnTimeline(
         } else {
             VIDEO_CARD_RETURN_CHROME_REVEAL_START
         },
-        sourceEnterFadeDelayRatio = if (isQuickReturn) {
-            0f
-        } else {
-            VIDEO_CARD_RETURN_SOURCE_ENTER_FADE_DELAY_RATIO
-        },
+        // 整壳 Enter 永不延后；快速/普通返回一致。
+        sourceEnterFadeDelayRatio = VIDEO_CARD_RETURN_SOURCE_ENTER_FADE_DELAY_RATIO,
     )
 }
 
 /**
- * 快速返回：源卡 Enter 不延后，标题/UP 与封面同步落位，避免「先占位后出字」。
+ * 源卡 shell sharedBounds 是否延后 Enter（整壳 fadeIn）。
+ *
+ * 一律 **false**：封面必须在列表位待命，卸层时零叠化；
+ * 文字过渡只走 [resolveHomeCardChromeAlphaDuringShellReturnMorph] / chrome reveal。
+ * [isQuickReturnFromDetail] 保留签名兼容。
  */
+@Suppress("UNUSED_PARAMETER")
 internal fun shouldDelaySourceCardEnterOnReturn(
     isQuickReturnFromDetail: Boolean,
-): Boolean = !isQuickReturnFromDetail
+): Boolean = false
+
+/**
+ * 预测返回 / 普通返回：实时画面 + 稳定封面 + 文字能否共存。
+ *
+ * **可以，且应始终共存**，分工如下：
+ * - **LIVE_SURFACE**（详情壳 overlay）：一镜到底缩回，跟手/seek
+ * - **列表封面**：列表位 alpha=1 待命，不 crossfade、不藏封面，卸层瞬间接住
+ * - **标题/UP**：仅 chrome alpha 按 settle 末段淡入，不跟整壳 fade
+ *
+ * 禁止：整壳 delayed Enter、中途 LIVE↔RESIDENT 切换、卸层瞬间改 Coil 请求。
+ */
+internal fun canCoexistLiveSurfaceStableCoverAndChromeOnReturn(): Boolean = true
 
 /**
  * 统一返回 settle 进度 0→1（刚开始缩回 → 完全落位）。

@@ -394,13 +394,11 @@ class VideoSharedTransitionPolicyTest {
                 transitionDurationMillis = 360,
             )
         )
-        assertTrue(shouldDelaySourceCardEnterForLiveReturnMorph("home"))
-        assertTrue(shouldDelaySourceCardEnterForLiveReturnMorph("dynamic"))
-        // 分区竖卡与首页一样：返回延后淡入源卡。
-        assertTrue(shouldDelaySourceCardEnterForLiveReturnMorph("partition"))
-        // 相关推荐竖卡与首页一样：返回延后淡入源卡。
-        assertTrue(shouldDelaySourceCardEnterForLiveReturnMorph("video/BV_A"))
-        // 快速返回：不延后，标题/UP 与封面同步落位。
+        // 整壳 Enter 永不延后：封面列表位待命，文字只靠 chrome alpha，消除卸层闪烁。
+        assertFalse(shouldDelaySourceCardEnterForLiveReturnMorph("home"))
+        assertFalse(shouldDelaySourceCardEnterForLiveReturnMorph("dynamic"))
+        assertFalse(shouldDelaySourceCardEnterForLiveReturnMorph("partition"))
+        assertFalse(shouldDelaySourceCardEnterForLiveReturnMorph("video/BV_A"))
         assertFalse(
             shouldDelaySourceCardEnterForLiveReturnMorph(
                 sourceRoute = "home",
@@ -415,7 +413,7 @@ class VideoSharedTransitionPolicyTest {
                 delaySourceCardEnterForLiveReturn = false,
             ),
         )
-        // 竖卡：源卡返回 Enter 延后淡入，避免封面盖住实时画面。
+        // delay 标志为 true 时仍可算出 fadeIn（API 保留）；默认接线 delay=false → None。
         assertTrue(
             resolveVideoCardShellSharedBoundsEnter(
                 role = VideoCardShellSharedBoundsRole.SourceCard,
@@ -423,8 +421,9 @@ class VideoSharedTransitionPolicyTest {
                 delaySourceCardEnterForLiveReturn = true,
             ) != EnterTransition.None
         )
-        // 360 * 0.16 = 57.6 → 57
-        assertEquals(57, resolveVideoCardShellSourceEnterFadeDelayMillis(360))
+        // ratio 已为 0 → delay ms 为 0
+        assertEquals(0, resolveVideoCardShellSourceEnterFadeDelayMillis(360))
+        assertTrue(canCoexistLiveSurfaceStableCoverAndChromeOnReturn())
         assertEquals(
             ExitTransition.None,
             resolveVideoCardShellSharedBoundsExit(

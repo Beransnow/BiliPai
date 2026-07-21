@@ -24,12 +24,17 @@ import kotlin.math.roundToInt
 // - 背景下沉约 2.2%，跟放大可读、又不抢 Hero；过大返回时像列表回弹
 // - 峰值 blur 按 MotionTier 分档：Enhanced 20px / Normal 12px / Reduced 0
 //   （冻结层上进度驱动 BlurEffect，避免 live 重录掉帧；低端只保留 scrim）
+// - 开场前几帧禁止 GraphicsLayer.record：与 sharedBounds 首帧错开，消除点击首帧卡顿
 // - 压暗全程保留（含 HELD），避免打开完成后景深断裂
 // - 返回：轻度 SoftClear，避免二次方中段滞留造成落位回弹感
 private const val VIDEO_CARD_TRANSITION_MAX_BLUR_RADIUS_ENHANCED_PX = 20f
 private const val VIDEO_CARD_TRANSITION_MAX_BLUR_RADIUS_NORMAL_PX = 12f
 private const val VIDEO_CARD_TRANSITION_BLUR_QUANTUM_ENHANCED_PX = 1f
 private const val VIDEO_CARD_TRANSITION_BLUR_QUANTUM_NORMAL_PX = 2f
+/** OPENING 预热帧数：只画 scrim，不 record 全页 feed。 */
+internal const val VIDEO_CARD_TRANSITION_OPENING_WARMUP_FRAMES = 3
+/** OPENING 进度低于此值时不加 BlurEffect（仅 scrim/轻 scale），减轻点击后前几帧。 */
+internal const val VIDEO_CARD_TRANSITION_OPENING_BLUR_START_PROGRESS = 0.14f
 private const val VIDEO_CARD_TRANSITION_MAX_SCRIM_ALPHA_DARK = 0.22f
 private const val VIDEO_CARD_TRANSITION_MAX_SCRIM_ALPHA_LIGHT = 0.11f
 private const val VIDEO_CARD_TRANSITION_LIGHT_REDUCED_OPENING_SCRIM_ALPHA = 0.07f
@@ -124,7 +129,10 @@ internal fun resolveVideoCardTransitionBackgroundFrame(
         progress = clamped,
         phase = phase,
     )
-    val blurStrength = resolveVideoCardTransitionBlurStrength(depthProgress)
+    val blurStrength = resolveVideoCardTransitionBlurStrength(
+        progress = depthProgress,
+        phase = phase,
+    )
     val maxBlurRadiusPx = resolveVideoCardTransitionMaxBlurRadiusPx(motionTier)
     // 低端/省电/无障碍减弱动画(Reduced)时跳过整帧 GPU 实时模糊与景深缩放，仅保留 scrim。
     val rawBlurRadiusPx = if (
@@ -400,6 +408,17 @@ internal fun shouldUseVideoCardTransitionSnapshotBlur(
 }
 
 /**
+ * OPENING 预热期：允许景深 modifier 挂上，但 **禁止** GraphicsLayer.record。
+ * 点击后首帧 sharedBounds + 全页 record 叠在一起是「点卡第一帧很卡」的主因。
+ */
+internal fun shouldWarmUpVideoCardTransitionWithoutRecording(
+    phase: VideoCardTransitionBackgroundPhase,
+    freezeRecording: Boolean,
+): Boolean {
+    return phase == VideoCardTransitionBackgroundPhase.OPENING && !freezeRecording
+}
+
+/**
  * 每帧内多次读取同一 frame 时，用 (progress, phase, …) 缓存避免重复纯函数计算。
  */
 private class VideoCardTransitionBackgroundFrameCache {
@@ -508,11 +527,10 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
         }
         when (phase) {
             VideoCardTransitionBackgroundPhase.OPENING -> {
-                // 多等 1～2 帧再冻结：减少源卡封面与 overlay 双影。
+                // 预热：只 scrim、不 record，把首帧预算留给 sharedBounds morph。
                 snapshotState.freezeRecording = false
                 snapshotState.hasRecordedContent = false
-                withFrameNanos { }
-                if (!snapshotState.hasRecordedContent) {
+                repeat(VIDEO_CARD_TRANSITION_OPENING_WARMUP_FRAMES) {
                     withFrameNanos { }
                 }
                 snapshotState.freezeRecording = true
@@ -572,8 +590,27 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
             return@drawWithContent
         }
 
-        // 未冻结或尚未成功 record：录制来源页；冻结后只更新 blur/scale，不再重绘 feed。
-        if (!snapshotState.freezeRecording || !snapshotState.hasRecordedContent) {
+        // OPENING 预热：禁止 record 全页 feed（点击首帧卡顿主因），只叠轻 scrim。
+        if (
+            shouldWarmUpVideoCardTransitionWithoutRecording(
+                phase = activePhase,
+                freezeRecording = snapshotState.freezeRecording,
+            )
+        ) {
+            drawContent()
+            if (frame.scrimAlpha > 0.001f) {
+                val scrimColor = if (frame.useLightScrimTint) {
+                    VIDEO_CARD_TRANSITION_LIGHT_SCRIM_TINT
+                } else {
+                    Color.Black
+                }
+                drawRect(scrimColor.copy(alpha = frame.scrimAlpha))
+            }
+            return@drawWithContent
+        }
+
+        // 冻结后：最多 record 一次；之后只更新 blur/scale，不再重绘 feed。
+        if (!snapshotState.hasRecordedContent) {
             contentLayer.record {
                 this@drawWithContent.drawContent()
             }
@@ -644,9 +681,19 @@ internal fun softClearVideoCardTransitionDepth(progress: Float): Float {
     return (1f - easedRemaining).coerceIn(0f, 1f)
 }
 
-private fun resolveVideoCardTransitionBlurStrength(progress: Float): Float {
+private fun resolveVideoCardTransitionBlurStrength(
+    progress: Float,
+    phase: VideoCardTransitionBackgroundPhase,
+): Float {
+    val clamped = progress.coerceIn(0f, 1f)
+    // OPENING 前段不加 blur：与预热 no-record 对齐，点击后前几帧只 scrim。
+    if (phase == VideoCardTransitionBackgroundPhase.OPENING) {
+        val start = VIDEO_CARD_TRANSITION_OPENING_BLUR_START_PROGRESS
+        if (clamped <= start) return 0f
+        return ((clamped - start) / (1f - start)).coerceIn(0f, 1f)
+    }
     // 与景深进度同源：模糊与背景下沉同步建立/消退，避免“先糊后沉”的分层错位。
-    return progress.coerceIn(0f, 1f)
+    return clamped
 }
 
 /**

@@ -259,6 +259,8 @@ internal fun BiliPaiNavDisplayHost(
                 videoCardTransitionBackgroundProgress.snapTo(0f)
                 // 进场动画跑在独立 Job：返回/打断时可 cancel，禁止补完后强行 HELD。
                 launchVideoCardDepthAnimation {
+                    // 让 sharedBounds 先占首帧，再拉景深，降低点击当帧卡顿。
+                    withFrameNanos { }
                     videoCardTransitionBackgroundProgress.animateTo(
                         targetValue = 1f,
                         animationSpec = tween(

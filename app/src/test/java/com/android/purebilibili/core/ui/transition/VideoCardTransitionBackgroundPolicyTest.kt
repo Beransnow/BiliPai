@@ -122,6 +122,43 @@ class VideoCardTransitionBackgroundPolicyTest {
     }
 
     @Test
+    fun openingEarlyProgressSkipsBlurToProtectClickFirstFrames() {
+        val early = resolveVideoCardTransitionBackgroundFrame(
+            progress = 0.1f,
+            phase = VideoCardTransitionBackgroundPhase.OPENING,
+            motionTier = MotionTier.Enhanced,
+            sdkInt = 35,
+        )
+        val late = resolveVideoCardTransitionBackgroundFrame(
+            progress = 0.5f,
+            phase = VideoCardTransitionBackgroundPhase.OPENING,
+            motionTier = MotionTier.Enhanced,
+            sdkInt = 35,
+        )
+        assertEquals(0f, early.blurRadiusPx)
+        assertTrue(early.scrimAlpha > 0f)
+        assertTrue(late.blurRadiusPx > 0f)
+        assertTrue(
+            shouldWarmUpVideoCardTransitionWithoutRecording(
+                phase = VideoCardTransitionBackgroundPhase.OPENING,
+                freezeRecording = false,
+            )
+        )
+        assertFalse(
+            shouldWarmUpVideoCardTransitionWithoutRecording(
+                phase = VideoCardTransitionBackgroundPhase.OPENING,
+                freezeRecording = true,
+            )
+        )
+        assertFalse(
+            shouldWarmUpVideoCardTransitionWithoutRecording(
+                phase = VideoCardTransitionBackgroundPhase.HELD,
+                freezeRecording = false,
+            )
+        )
+    }
+
+    @Test
     fun normalMotionTierUsesLowerBlurBudgetThanEnhanced() {
         val normal = resolveVideoCardTransitionBackgroundFrame(
             progress = 1f,
