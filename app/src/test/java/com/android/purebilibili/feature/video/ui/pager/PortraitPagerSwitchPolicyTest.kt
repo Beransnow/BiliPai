@@ -457,6 +457,23 @@ class PortraitPagerSwitchPolicyTest {
     }
 
     @Test
+    fun externalRecommendationAppend_keepsOnlyNewBvidsInOrder() {
+        val appendItems = resolvePortraitExternalRecommendationAppendItems(
+            currentInitialBvid = "BV_SEED",
+            existingBvids = setOf("BV_SEED", "BV_A"),
+            externalRecommendations = listOf(
+                related("BV_SEED"),
+                related("BV_A"),
+                related("BV_B"),
+                related("BV_C"),
+                related("BV_B")
+            )
+        )
+
+        assertEquals(listOf("BV_B", "BV_C"), appendItems.map { it.bvid })
+    }
+
+    @Test
     fun mergePortraitRecommendationAppendItems_filtersNearDuplicateContentAgainstExistingRecommendations() {
         val appendItems = mergePortraitRecommendationAppendItems(
             currentBvid = "BV_CURRENT",

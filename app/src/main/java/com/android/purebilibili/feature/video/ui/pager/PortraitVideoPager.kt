@@ -328,30 +328,22 @@ fun PortraitVideoPager(
         )
     }
 
-    val baseRecommendations = remember(recommendations, recommendationShuffleSeed) {
-        shufflePortraitRecommendations(
-            seed = recommendationShuffleSeed,
-            recommendations = recommendations
-        )
-    }
-    val initialPageIndex = remember(initialBvid, initialInfo.bvid, baseRecommendations) {
+    val initialPageIndex = remember(initialBvid, initialInfo.bvid, recommendations) {
         resolvePortraitInitialPageIndex(
             initialBvid = initialBvid,
             initialInfoBvid = initialInfo.bvid,
-            recommendations = baseRecommendations
+            recommendations = recommendations
         )
     }
-    val recommendationItems = remember(initialInfo.bvid, baseRecommendations) {
-        mutableStateListOf<RelatedVideo>().apply {
-            addAll(baseRecommendations)
-        }
+    // Stable lists: seed once, then only append (Story load-more / discovery / watch-later).
+    // Do not recreate on every parent recommendations update — that resets page order mid-swipe.
+    val recommendationItems = remember(initialInfo.bvid) {
+        mutableStateListOf<RelatedVideo>()
     }
-    val pageItems = remember(initialInfo.bvid, baseRecommendations) {
-        mutableStateListOf<Any>().apply {
-            add(initialInfo)
-            addAll(baseRecommendations)
-        }
+    val pageItems = remember(initialInfo.bvid) {
+        mutableStateListOf<Any>(initialInfo)
     }
+    var seededInitialRecommendations by remember(initialInfo.bvid) { mutableStateOf(false) }
     val knownVideoAspectRatios = remember(initialInfo.bvid) {
         mutableStateMapOf<String, Float>().apply {
             resolveAspectRatioFromDimension(initialInfo.dimension)?.let { aspectRatio ->
@@ -363,6 +355,38 @@ fun PortraitVideoPager(
     var isLoadingMoreRecommendations by remember { mutableStateOf(false) }
     val appendedRecommendationSeeds = remember { mutableStateListOf<String>() }
     var recommendationFeedCursor by rememberSaveable(initialInfo.bvid) { mutableIntStateOf(0) }
+
+    LaunchedEffect(initialInfo.bvid, recommendations) {
+        if (!seededInitialRecommendations) {
+            val seeded = shufflePortraitRecommendations(
+                seed = recommendationShuffleSeed,
+                recommendations = recommendations
+            )
+            recommendationItems.clear()
+            recommendationItems.addAll(seeded)
+            pageItems.clear()
+            pageItems.add(initialInfo)
+            pageItems.addAll(seeded)
+            seededInitialRecommendations = true
+            return@LaunchedEffect
+        }
+        val existingBvids = snapshotPortraitPageBvids(pageItems)
+        val appendItems = resolvePortraitExternalRecommendationAppendItems(
+            currentInitialBvid = initialInfo.bvid,
+            existingBvids = existingBvids,
+            externalRecommendations = recommendations
+        )
+        if (appendItems.isEmpty()) return@LaunchedEffect
+        val shuffledAppend = shufflePortraitRecommendations(
+            seed = resolvePortraitRecommendationAppendSeed(
+                baseSeed = recommendationShuffleSeed,
+                currentBvid = initialInfo.bvid
+            ),
+            recommendations = appendItems
+        )
+        recommendationItems.addAll(shuffledAppend)
+        pageItems.addAll(shuffledAppend)
+    }
 
     LaunchedEffect(Unit) {
         if (TokenManager.sessDataCache.isNullOrEmpty()) {

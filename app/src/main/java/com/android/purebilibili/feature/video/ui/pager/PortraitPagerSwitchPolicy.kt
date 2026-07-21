@@ -189,6 +189,26 @@ internal fun mergePortraitRecommendationAppendItems(
     }
 }
 
+/**
+ * Append parent-owned recommendation updates (e.g. Story feed load-more) without reshuffling
+ * or recreating the pager list. Preserves the user's current page.
+ */
+internal fun resolvePortraitExternalRecommendationAppendItems(
+    currentInitialBvid: String,
+    existingBvids: Set<String>,
+    externalRecommendations: List<RelatedVideo>
+): List<RelatedVideo> {
+    val seen = existingBvids.toMutableSet()
+    val append = mutableListOf<RelatedVideo>()
+    externalRecommendations.forEach { candidate ->
+        val bvid = candidate.bvid.trim()
+        if (bvid.isEmpty() || bvid == currentInitialBvid || bvid in seen) return@forEach
+        append += candidate
+        seen += bvid
+    }
+    return append
+}
+
 internal fun resolvePortraitRecommendationShuffleSeed(
     initialBvid: String,
     initialAid: Long
