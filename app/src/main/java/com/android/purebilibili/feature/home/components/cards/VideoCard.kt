@@ -589,20 +589,24 @@ fun ElegantVideoCard(
         resolveHomeCardEnterAnimationEnabledAtMount(
             baseAnimationEnabled = animationEnabled,
             isReturningFromDetail = isReturningFromVideoDetail,
-            isSwitchingCategory = CardPositionManager.isSwitchingCategory
+            isSwitchingCategory = CardPositionManager.isSwitchingCategory,
+            isScrollInProgress = scrollLiteModeEnabled
         )
+    }
+    val coordinateEnterWithTransition = remember(animationEnabled, transitionEnabled) {
+        animationEnabled && transitionEnabled
     }
     Box(
         modifier = Modifier
             .then(modifier)
             .fillMaxWidth()
-            //  [修复] 进场动画 - 使用 Unit 作为 key，只在首次挂载时播放
-            // 原问题：使用 video.bvid 作为 key，分类切换时所有卡片重新触发动画（缩放收缩效果）
+            // 进场动画：挂载门控已含滚动/返回/切分类；与过渡并存时仅淡入不改几何
             .animateEnter(
-                index = index, 
-                key = Unit, 
+                index = index,
+                key = Unit,
                 animationEnabled = enterAnimationEnabledAtMount,
-                motionTier = motionTier
+                motionTier = motionTier,
+                coordinateWithSharedTransition = coordinateEnterWithTransition
             )
             //  [新增] 记录卡片位置（仅存引用，boundsInRoot() 在交互时惰性计算）
             .onGloballyPositioned { coordinates ->
