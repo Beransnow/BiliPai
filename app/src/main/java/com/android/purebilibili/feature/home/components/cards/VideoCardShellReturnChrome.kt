@@ -11,7 +11,7 @@ import com.android.purebilibili.core.util.CardPositionManager
 
 /**
  * 源卡信息区（标题/UP 等）在 shell morph 时的 chrome alpha。
- * 整卡 shell 时标题与封面同拍：进场/返回均为 1，禁止「封面先落位、字晚出」。
+ * 进场：随进度让位给详情元素；返回：与封面同拍满显（详情侧先让位）。
  * 绘制阶段读 progress，避免整卡重组。
  */
 @OptIn(ExperimentalSharedTransitionApi::class)

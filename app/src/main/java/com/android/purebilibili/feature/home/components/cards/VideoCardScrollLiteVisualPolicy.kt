@@ -92,17 +92,13 @@ internal fun shouldHideHomeCardCoverDuringShellMorph(
 internal const val HOME_CARD_CHROME_EARLY_REVEAL_SETTLE_START =
     VIDEO_CARD_RETURN_CHROME_REVEAL_START
 
-/**
- * 进场 OPENING：标题在进度到达此前仍保持满显，避免「一点击就挖空」。
- * 约 8% 缓冲，等封面已明显启动 morph。
- */
-internal const val HOME_CARD_CHROME_OPEN_FADE_START = 0.08f
+/** @see com.android.purebilibili.core.ui.transition.VIDEO_CARD_ENTER_CHROME_YIELD_START */
+internal const val HOME_CARD_CHROME_OPEN_FADE_START =
+    com.android.purebilibili.core.ui.transition.VIDEO_CARD_ENTER_CHROME_YIELD_START
 
-/**
- * 进场 OPENING：标题在进度达到此后完全透明，避免字叠在详情播放器上。
- * 中段 smoothstep 淡出，观感连续。
- */
-internal const val HOME_CARD_CHROME_OPEN_FADE_END = 0.52f
+/** @see com.android.purebilibili.core.ui.transition.VIDEO_CARD_ENTER_CHROME_YIELD_END */
+internal const val HOME_CARD_CHROME_OPEN_FADE_END =
+    com.android.purebilibili.core.ui.transition.VIDEO_CARD_ENTER_CHROME_YIELD_END
 
 /**
  * 源卡 chrome 在返回落位进度上的淡入曲线。
@@ -132,15 +128,11 @@ internal fun resolveHomeCardChromeOpenFadeAlpha(
     fadeStart: Float = HOME_CARD_CHROME_OPEN_FADE_START,
     fadeEnd: Float = HOME_CARD_CHROME_OPEN_FADE_END,
 ): Float {
-    val p = openProgress.coerceIn(0f, 1f)
-    val start = fadeStart.coerceIn(0f, 1f)
-    val end = fadeEnd.coerceIn(start, 1f)
-    if (p <= start) return 1f
-    if (p >= end) return 0f
-    val t = ((p - start) / (end - start)).coerceIn(0f, 1f)
-    // Hermite smoothstep：比线性更「先慢后快再收」，点击不跳、中段不拖泥带水
-    val smooth = t * t * (3f - 2f * t)
-    return (1f - smooth).coerceIn(0f, 1f)
+    return com.android.purebilibili.core.ui.transition.resolveVideoCardEnterChromeAlpha(
+        openProgress = openProgress,
+        yieldStart = fadeStart,
+        yieldEnd = fadeEnd,
+    )
 }
 
 /**
@@ -164,12 +156,10 @@ internal fun resolveHomeCardChromeOpenProgress(
  * shell morph 期间源卡 **chrome**（标题/UP/信息区）的 alpha。
  *
  * 整卡 shell（封面+标题）一起飞/一起落：
- * - morph 未进行 / 结束后：始终 1
- * - 进场 / 返回 morph 中：始终 1（标题是壳的一部分，禁止单独晚一拍）
+ * - morph 未进行：1
+ * - 进场：标题随进度让位给详情元素（整卡先飞，中段收干净）
+ * - 返回：1（与封面同拍）；详情侧 yield，禁止叠层
  * - 快速返回：1
- *
- * 旧策略「返回末段才 reveal 标题」会造成预测返回落位时封面先到位、字后出；
- * 详情侧叠字改由 live content yield（[VIDEO_CARD_RETURN_LIVE_CONTENT_YIELD_START]=0）承担。
  */
 internal fun resolveHomeCardChromeAlphaDuringShellReturnMorph(
     useCardContainerSharedBounds: Boolean,
@@ -182,20 +172,25 @@ internal fun resolveHomeCardChromeAlphaDuringShellReturnMorph(
     transitionBackgroundProgress: Float = 0f,
     isQuickReturnFromDetail: Boolean = false,
 ): Float {
-    @Suppress("UNUSED_PARAMETER")
-    val ignoredPhase = transitionBackgroundPhase
-    @Suppress("UNUSED_PARAMETER")
-    val ignoredReturning = isReturningFromDetail
-    @Suppress("UNUSED_PARAMETER")
-    val ignoredGesture = isVideoCardReturnGestureInProgress
-    @Suppress("UNUSED_PARAMETER")
-    val ignoredActive = isSharedTransitionActive
-    @Suppress("UNUSED_PARAMETER")
-    val ignoredProgress = transitionBackgroundProgress
-    @Suppress("UNUSED_PARAMETER")
-    val ignoredQuick = isQuickReturnFromDetail
     if (!useCardContainerSharedBounds || !isSharedMorphSourceCard) return 1f
-    return 1f
+    if (isQuickReturnFromDetail) return 1f
+
+    val morphActive = isSharedTransitionActive || isVideoCardReturnGestureInProgress
+    if (!morphActive) return 1f
+
+    val isReturnMorph = isReturningFromDetail ||
+        isVideoCardReturnGestureInProgress ||
+        transitionBackgroundPhase == VideoCardTransitionBackgroundPhase.RETURNING
+    if (isReturnMorph) {
+        return 1f
+    }
+
+    return resolveHomeCardChromeOpenFadeAlpha(
+        openProgress = resolveHomeCardChromeOpenProgress(
+            transitionBackgroundPhase = transitionBackgroundPhase,
+            transitionBackgroundProgress = transitionBackgroundProgress,
+        )
+    )
 }
 
 /**

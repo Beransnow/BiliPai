@@ -2929,6 +2929,10 @@ internal fun VideoDetailScreenStateHolder(
                                         liveReturnMorph = liveReturnMorph,
                                         depthBlurProgress =
                                             videoCardDepthBackgroundState.progressProvider(),
+                                        // 进场 shell：详情元素等列表标题让位后再出，禁止叠层
+                                        enterShellMorphHandoff = detailShellSharedBoundsEnabled &&
+                                            !isLeaving &&
+                                            !liveReturnMorph,
                                     )
                                 }
                                 // .nestedScroll(nestedScrollConnection) // [Remove] 移除嵌套滚动，确保 Tabs 正常滑动
