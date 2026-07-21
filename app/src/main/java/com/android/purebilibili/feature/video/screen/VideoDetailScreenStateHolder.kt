@@ -156,6 +156,7 @@ import com.android.purebilibili.feature.video.usecase.seekPlayerFromUserAction
 import com.android.purebilibili.feature.video.policy.reduceVideoDetailPostScroll
 import com.android.purebilibili.feature.video.policy.reduceVideoDetailPreScroll
 import com.android.purebilibili.feature.video.policy.resolveVideoDetailCollapseProgress
+import com.android.purebilibili.feature.video.policy.shouldSkipGesturePlayerCollapseForLayout
 import com.android.purebilibili.feature.video.subtitle.resolveSubtitlePreferenceSession
 import io.github.alexzhirkevich.cupertino.CupertinoActivityIndicator
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
@@ -2549,10 +2550,24 @@ internal fun VideoDetailScreenStateHolder(
                             if (!inlinePortraitScrollEnabled) inlinePlayerCollapseState.reset()
                         }
 
+                        // 简介/相关列表过阈值或评论页已把播放器压扁时，手势 nestedScroll 不得再消费位移，
+                        // 否则相关推荐上滑会先空吃一整段折叠距离，表现为不跟手、突然回弹。
+                        val skipGesturePlayerCollapse = shouldSkipGesturePlayerCollapseForLayout(
+                            compactForIntroScroll = compactInlinePlayerForIntroScroll,
+                            compactForCommentTab = compactInlinePlayerForCommentTab,
+                        )
+                        LaunchedEffect(skipGesturePlayerCollapse, collapseRangePx) {
+                            if (skipGesturePlayerCollapse && collapseRangePx > 0f) {
+                                // 与视觉折叠对齐，避免之后阈值解除时 offset 仍停在半途。
+                                inlinePlayerCollapseState.updateOffset(-collapseRangePx)
+                            }
+                        }
                         val nestedScrollConnection = remember(
                             inlinePortraitScrollEnabled,
                             isPortraitFullscreen,
-                            inlinePlayerCollapseState
+                            inlinePlayerCollapseState,
+                            skipGesturePlayerCollapse,
+                            collapseRangePx,
                         ) {
                             object : NestedScrollConnection {
                                 override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
@@ -2562,7 +2577,8 @@ internal fun VideoDetailScreenStateHolder(
                                         deltaPx = available.y,
                                         minOffsetPx = -collapseRangePx,
                                         inlinePortraitScrollEnabled = inlinePortraitScrollEnabled,
-                                        isPortraitFullscreen = isPortraitFullscreen
+                                        isPortraitFullscreen = isPortraitFullscreen,
+                                        layoutAlreadyCollapsed = skipGesturePlayerCollapse,
                                     ) ?: return Offset.Zero
                                     inlinePlayerCollapseState.updateOffset(scrollUpdate.nextOffsetPx)
                                     return Offset(0f, scrollUpdate.consumedDeltaPx)
@@ -2575,7 +2591,8 @@ internal fun VideoDetailScreenStateHolder(
                                         deltaPx = available.y,
                                         minOffsetPx = -collapseRangePx,
                                         inlinePortraitScrollEnabled = inlinePortraitScrollEnabled,
-                                        isPortraitFullscreen = isPortraitFullscreen
+                                        isPortraitFullscreen = isPortraitFullscreen,
+                                        layoutAlreadyCollapsed = skipGesturePlayerCollapse,
                                     ) ?: return Offset.Zero
                                     inlinePlayerCollapseState.updateOffset(scrollUpdate.nextOffsetPx)
                                     return Offset(0f, scrollUpdate.consumedDeltaPx)
