@@ -31,6 +31,7 @@ object PlayerSettingsStore {
     private const val cacheKeyPreferredPlayerVolume = "preferred_player_volume"
     private const val legacyAppPrefs = "app_prefs"
     private const val legacyShowStatsKey = "show_stats"
+    private const val cachePlayerInsightModeKey = "player_insight_mode_cache"
 
     const val PLAYER_VOLUME_STEP = 0.02f
 
@@ -147,9 +148,12 @@ object PlayerSettingsStore {
 
     fun getPlayerInsightMode(context: Context): Flow<PlayerInsightMode> = context.settingsDataStore.data
         .map { preferences ->
-            preferences[keyPlayerInsightMode]
-                ?.let { stored -> PlayerInsightMode.entries.firstOrNull { it.name == stored } }
-                ?: resolveLegacyPlayerInsightMode(context)
+            val legacyPreferences = context.getSharedPreferences(legacyAppPrefs, Context.MODE_PRIVATE)
+            resolvePlayerInsightMode(
+                storedMode = preferences[keyPlayerInsightMode],
+                legacyPreferencePresent = legacyPreferences.contains(legacyShowStatsKey),
+                legacyStatsEnabled = legacyPreferences.getBoolean(legacyShowStatsKey, false)
+            )
         }
 
     suspend fun setPlayerInsightMode(context: Context, mode: PlayerInsightMode) {
@@ -158,14 +162,28 @@ object PlayerSettingsStore {
         }
         context.getSharedPreferences(legacyAppPrefs, Context.MODE_PRIVATE)
             .edit()
+            .putString(cachePlayerInsightModeKey, mode.name)
             .putBoolean(legacyShowStatsKey, mode != PlayerInsightMode.OFF)
             .apply()
     }
 
-    private fun resolveLegacyPlayerInsightMode(context: Context): PlayerInsightMode {
-        val legacyPreferences = context.getSharedPreferences(legacyAppPrefs, Context.MODE_PRIVATE)
-        if (!legacyPreferences.contains(legacyShowStatsKey)) return PlayerInsightMode.SMART
-        return if (legacyPreferences.getBoolean(legacyShowStatsKey, false)) {
+    fun getPlayerInsightModeSync(context: Context): PlayerInsightMode {
+        val preferences = context.getSharedPreferences(legacyAppPrefs, Context.MODE_PRIVATE)
+        return resolvePlayerInsightMode(
+            storedMode = preferences.getString(cachePlayerInsightModeKey, null),
+            legacyPreferencePresent = preferences.contains(legacyShowStatsKey),
+            legacyStatsEnabled = preferences.getBoolean(legacyShowStatsKey, false)
+        )
+    }
+
+    internal fun resolvePlayerInsightMode(
+        storedMode: String?,
+        legacyPreferencePresent: Boolean,
+        legacyStatsEnabled: Boolean
+    ): PlayerInsightMode {
+        PlayerInsightMode.entries.firstOrNull { it.name == storedMode }?.let { return it }
+        if (!legacyPreferencePresent) return PlayerInsightMode.SMART
+        return if (legacyStatsEnabled) {
             PlayerInsightMode.ALWAYS
         } else {
             PlayerInsightMode.OFF

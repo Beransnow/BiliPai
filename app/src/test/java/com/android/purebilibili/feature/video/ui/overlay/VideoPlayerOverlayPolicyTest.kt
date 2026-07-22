@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.video.ui.overlay
 
+import com.android.purebilibili.core.store.player.PlayerSettingsStore
+
 import androidx.media3.common.Player
 import com.android.purebilibili.data.model.response.SponsorCategory
 import com.android.purebilibili.data.model.response.SponsorProgressMarker
@@ -564,6 +566,19 @@ class VideoPlayerOverlayPolicyTest {
         assertEquals(PlaybackInsightLevel.UNAVAILABLE, insight.level)
         assertEquals("等待播放器数据", insight.summary)
         assertTrue(insight.sections.isEmpty())
+    }
+
+    @Test
+    fun playbackInsightHud_respectsModeControlsAttentionAndLock() {
+        val smartMode = PlayerSettingsStore.PlayerInsightMode.SMART
+        val alwaysMode = PlayerSettingsStore.PlayerInsightMode.ALWAYS
+
+        assertFalse(shouldShowPlaybackInsightHud(smartMode, true, false, false, PlaybackInsightLevel.LIVE))
+        assertTrue(shouldShowPlaybackInsightHud(smartMode, true, true, false, PlaybackInsightLevel.LIVE))
+        assertTrue(shouldShowPlaybackInsightHud(smartMode, true, false, false, PlaybackInsightLevel.ATTENTION))
+        assertTrue(shouldShowPlaybackInsightHud(alwaysMode, true, false, false, PlaybackInsightLevel.LIVE))
+        assertFalse(shouldShowPlaybackInsightHud(alwaysMode, true, true, true, PlaybackInsightLevel.ATTENTION))
+        assertFalse(shouldShowPlaybackInsightHud(alwaysMode, false, true, false, PlaybackInsightLevel.LIVE))
     }
 
     @Test

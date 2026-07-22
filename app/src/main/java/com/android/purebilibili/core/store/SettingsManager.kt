@@ -2381,6 +2381,9 @@ object SettingsManager {
         PlayerSettingsStore.setPlayerInsightMode(context, mode)
     }
 
+    fun getPlayerInsightModeSync(context: Context): PlayerSettingsStore.PlayerInsightMode =
+        PlayerSettingsStore.getPlayerInsightModeSync(context)
+
     //  [新增] --- 主题色索引 (默认 0 = 经典蓝) ---
     fun getThemeColorIndex(context: Context): Flow<Int> = context.settingsDataStore.data
         .map { preferences -> normalizeThemeColorIndex(preferences[KEY_THEME_COLOR_INDEX] ?: 0) }

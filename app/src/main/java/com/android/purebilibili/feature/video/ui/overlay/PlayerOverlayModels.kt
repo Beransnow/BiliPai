@@ -2,6 +2,7 @@ package com.android.purebilibili.feature.video.ui.overlay
 
 import androidx.compose.ui.graphics.Color
 import com.android.purebilibili.core.util.FormatUtils
+import com.android.purebilibili.core.store.player.PlayerSettingsStore
 import com.android.purebilibili.data.model.response.SponsorCategory
 import com.android.purebilibili.data.model.response.SponsorProgressMarker
 import java.text.SimpleDateFormat
@@ -180,6 +181,24 @@ internal fun resolvePlaybackInsightPresentation(
         statusText = statusText,
         sections = sections
     )
+}
+
+internal fun shouldShowPlaybackInsightHud(
+    mode: PlayerSettingsStore.PlayerInsightMode,
+    hasMeasuredData: Boolean,
+    controlsVisible: Boolean,
+    screenLocked: Boolean,
+    level: PlaybackInsightLevel
+): Boolean {
+    if (mode == PlayerSettingsStore.PlayerInsightMode.OFF ||
+        !hasMeasuredData ||
+        screenLocked
+    ) {
+        return false
+    }
+    return controlsVisible ||
+        mode == PlayerSettingsStore.PlayerInsightMode.ALWAYS ||
+        level == PlaybackInsightLevel.ATTENTION
 }
 
 internal fun appendPlaybackDiagnosticEvent(

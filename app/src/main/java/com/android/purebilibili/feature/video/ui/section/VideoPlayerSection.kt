@@ -512,10 +512,12 @@ fun VideoPlayerSection(
     val audioManager = remember { context.getSystemService(Context.AUDIO_SERVICE) as AudioManager }
     val settingsScope = rememberCoroutineScope()
 
-    // --- 新增：读取设置中的"详细统计信息"开关 ---
-    val prefs = remember { context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE) }
-    // 使用 rememberUpdatedState 确保重组时获取最新值（虽然在单一 Activity 生命周期内可能需要重启生效，但简单场景够用）
-    val showStats by remember { mutableStateOf(prefs.getBoolean("show_stats", false)) }
+    val playerInsightMode by com.android.purebilibili.core.store.SettingsManager
+        .getPlayerInsightMode(context)
+        .collectAsStateWithLifecycle(
+            initialValue = com.android.purebilibili.core.store.SettingsManager.getPlayerInsightModeSync(context),
+            lifecycle = lifecycleOwner.lifecycle
+        )
 
     val playerInteractionSettings by com.android.purebilibili.core.store.SettingsManager
         .getPlayerInteractionSettings(context)
@@ -4021,7 +4023,7 @@ fun VideoPlayerSection(
                 isScreenLocked = isScreenLocked,
                 onLockToggle = { isScreenLocked = !isScreenLocked },
                 //  [关键] 传入设置状态和调试信息
-                showStats = showStats,
+                insightMode = playerInsightMode,
                 debugInfo = debugInfo,
                 diagnosticEvents = diagnosticEvents,
                 pendingUserAction = pendingUserAction,
