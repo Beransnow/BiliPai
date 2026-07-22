@@ -40,27 +40,30 @@ class MainActivityAppCompatContractTest {
     }
 
     @Test
-    fun splashTheme_shouldReuseLauncherMipmapAssets() {
+    fun maidSplashTheme_shouldUseRoundedLayeredDrawables() {
         val lightThemes = loadResourceText("values/themes.xml")
         val nightThemes = loadResourceText("values-night/themes.xml")
 
         assertTrue(
-            lightThemes.contains("""<item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_blue_snow_maid</item>"""),
-            "Light splash theme should reuse the launcher mipmap instead of packaging duplicate splash bitmaps"
+            lightThemes.contains("""<item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon_blue_snow_maid</item>"""),
+            "Light splash theme should use the rounded layered maid drawable"
         )
         assertTrue(
-            nightThemes.contains("""<item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_blue_snow_maid</item>"""),
-            "Night splash theme should reuse the launcher mipmap instead of packaging duplicate splash bitmaps"
+            nightThemes.contains("""<item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon_blue_snow_maid</item>"""),
+            "Night splash theme should use the rounded layered maid drawable"
         )
         assertTrue(
             lightThemes.contains("""<item name="windowSplashScreenIconBackgroundColor">@android:color/transparent</item>"""),
             "Light splash theme should not add a second icon background around the adaptive icon"
         )
-        assertTrue(
-            !lightThemes.contains("""windowSplashScreenAnimatedIcon">@drawable/splash_icon_""") &&
-                !nightThemes.contains("""windowSplashScreenAnimatedIcon">@drawable/splash_icon_"""),
-            "Splash themes should not reference duplicate drawable-nodpi splash assets"
-        )
+        listOf("drawable", "drawable-night").forEach { directory ->
+            listOf("splash_icon_blue_snow_maid.xml", "splash_icon_blue_snow_maid_front.xml")
+                .forEach { fileName ->
+                    val drawable = loadResourceText("$directory/$fileName")
+                    assertTrue(drawable.contains("""<corners android:radius="26dp" />"""))
+                    assertTrue(drawable.contains("""@mipmap/ic_launcher_blue_snow_maid"""))
+                }
+        }
         assertTrue(
             !splashDrawableVectorExists(),
             "Splash theme should not keep the hand-drawn drawable foreground vector"
@@ -348,9 +351,9 @@ class MainActivityAppCompatContractTest {
     fun splashFlyout_shouldReuseLauncherIconForSelectedLauncherComponent() {
         mapOf(
             "com.android.purebilibili.MainActivityAliasBlueSnowMaid" to R.mipmap.ic_launcher_blue_snow_maid,
-            "com.android.purebilibili.MainActivitySplashBlueSnowMaid" to R.mipmap.ic_launcher_blue_snow_maid,
+            "com.android.purebilibili.MainActivitySplashBlueSnowMaid" to R.drawable.splash_icon_blue_snow_maid,
             "com.android.purebilibili.MainActivityAliasBlueSnowMaidFront" to R.mipmap.ic_launcher_blue_snow_maid_front,
-            "com.android.purebilibili.MainActivitySplashBlueSnowMaidFront" to R.mipmap.ic_launcher_blue_snow_maid_front,
+            "com.android.purebilibili.MainActivitySplashBlueSnowMaidFront" to R.drawable.splash_icon_blue_snow_maid_front,
             "com.android.purebilibili.MainActivityAlias3DLauncher" to R.mipmap.ic_launcher_3d,
             "com.android.purebilibili.MainActivitySplashIcon3D" to R.mipmap.ic_launcher_3d,
             "com.android.purebilibili.MainActivityAliasBiliPai" to R.mipmap.ic_launcher_bilipai,
