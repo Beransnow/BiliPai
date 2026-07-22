@@ -11,6 +11,10 @@ class AppIconAliasMappingTest {
         val packageName = "com.android.purebilibili"
 
         assertEquals(
+            "com.android.purebilibili.MainActivityAliasBlueSnowMaid",
+            resolveAppIconLauncherAlias(packageName, "icon_blue_snow_maid")
+        )
+        assertEquals(
             "com.android.purebilibili.MainActivityAliasBiliPai",
             resolveAppIconLauncherAlias(packageName, "icon_bilipai")
         )
@@ -31,11 +35,11 @@ class AppIconAliasMappingTest {
             resolveAppIconLauncherAlias(packageName, "BiliPai Monet")
         )
         assertEquals(
-            "com.android.purebilibili.MainActivityAlias3DLauncher",
+            "com.android.purebilibili.MainActivityAliasBlueSnowMaid",
             resolveAppIconLauncherAlias(packageName, "icon_headphone")
         )
         assertEquals(
-            "com.android.purebilibili.MainActivityAlias3DLauncher",
+            "com.android.purebilibili.MainActivityAliasBlueSnowMaid",
             resolveAppIconLauncherAlias(packageName, "unknown")
         )
         assertEquals(
@@ -43,7 +47,7 @@ class AppIconAliasMappingTest {
             resolveAppIconLauncherAlias(packageName, "icon_bilipai", splashIconVisible = false)
         )
         assertEquals(
-            "com.android.purebilibili.MainActivityAlias3DNoIcon",
+            "com.android.purebilibili.MainActivityAliasBlueSnowMaidNoIcon",
             resolveAppIconLauncherAlias(packageName, "unknown", splashIconVisible = false)
         )
     }
@@ -59,6 +63,8 @@ class AppIconAliasMappingTest {
     @Test
     fun allManagedAppIconLauncherAliases_containsBiliPaiAndHeadphone_withoutRemovedAliases() {
         val aliases = allManagedAppIconLauncherAliases("com.android.purebilibili")
+        assertTrue(aliases.contains("com.android.purebilibili.MainActivityAliasBlueSnowMaid"))
+        assertTrue(aliases.contains("com.android.purebilibili.MainActivityAliasBlueSnowMaidNoIcon"))
         assertTrue(aliases.contains("com.android.purebilibili.MainActivityAliasBiliPai"))
         assertTrue(aliases.contains("com.android.purebilibili.MainActivityAliasBiliPaiPink"))
         assertTrue(aliases.contains("com.android.purebilibili.MainActivityAliasBiliPaiWhite"))

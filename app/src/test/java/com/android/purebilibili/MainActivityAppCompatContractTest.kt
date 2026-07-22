@@ -45,11 +45,11 @@ class MainActivityAppCompatContractTest {
         val nightThemes = loadResourceText("values-night/themes.xml")
 
         assertTrue(
-            lightThemes.contains("""<item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_bilipai</item>"""),
+            lightThemes.contains("""<item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_blue_snow_maid</item>"""),
             "Light splash theme should reuse the launcher mipmap instead of packaging duplicate splash bitmaps"
         )
         assertTrue(
-            nightThemes.contains("""<item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_bilipai</item>"""),
+            nightThemes.contains("""<item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_blue_snow_maid</item>"""),
             "Night splash theme should reuse the launcher mipmap instead of packaging duplicate splash bitmaps"
         )
         assertTrue(
@@ -141,6 +141,8 @@ class MainActivityAppCompatContractTest {
     @Test
     fun legacyLauncherBitmaps_shouldBeRgbaPngWithTransparentCorners() {
         val iconNames = listOf(
+            "ic_launcher_blue_snow_maid.png",
+            "ic_launcher_blue_snow_maid_round.png",
             "ic_launcher_3d.png",
             "ic_launcher_3d_round.png",
             "ic_launcher_bilipai.png",
@@ -170,6 +172,7 @@ class MainActivityAppCompatContractTest {
         val manifest = loadResourceText("../AndroidManifest.xml")
 
         mapOf(
+            "MainActivityAliasBlueSnowMaid" to SplashAliasContract("MainActivitySplashBlueSnowMaid", "Theme.PureBiliBili.Splash.BlueSnowMaid", "ic_launcher_blue_snow_maid"),
             "MainActivityAlias3DLauncher" to SplashAliasContract("MainActivitySplashIcon3D", "Theme.PureBiliBili.Splash.Icon3D", "ic_launcher_3d"),
             "MainActivityAlias3D" to SplashAliasContract("MainActivitySplashIcon3D", "Theme.PureBiliBili.Splash.Icon3D", "ic_launcher_3d"),
             "MainActivityAliasBiliPai" to SplashAliasContract("MainActivitySplashBiliPai", "Theme.PureBiliBili.Splash.BiliPai", "ic_launcher_bilipai"),
@@ -227,6 +230,7 @@ class MainActivityAppCompatContractTest {
         )
 
         listOf(
+            "MainActivityAliasBlueSnowMaidNoIcon" to "ic_launcher_blue_snow_maid",
             "MainActivityAlias3DNoIcon" to "ic_launcher_3d",
             "MainActivityAliasBiliPaiNoIcon" to "ic_launcher_bilipai",
             "MainActivityAliasBiliPaiPinkNoIcon" to "ic_launcher_bilipai_pink",
@@ -257,6 +261,8 @@ class MainActivityAppCompatContractTest {
     @Test
     fun splashFlyout_shouldReuseLauncherIconForSelectedLauncherComponent() {
         mapOf(
+            "com.android.purebilibili.MainActivityAliasBlueSnowMaid" to R.mipmap.ic_launcher_blue_snow_maid,
+            "com.android.purebilibili.MainActivitySplashBlueSnowMaid" to R.mipmap.ic_launcher_blue_snow_maid,
             "com.android.purebilibili.MainActivityAlias3DLauncher" to R.mipmap.ic_launcher_3d,
             "com.android.purebilibili.MainActivitySplashIcon3D" to R.mipmap.ic_launcher_3d,
             "com.android.purebilibili.MainActivityAliasBiliPai" to R.mipmap.ic_launcher_bilipai,
@@ -270,6 +276,7 @@ class MainActivityAppCompatContractTest {
             "com.android.purebilibili.MainActivityAliasYuki" to R.mipmap.ic_launcher_3d,
             "com.android.purebilibili.MainActivityAliasAnime" to R.mipmap.ic_launcher_3d,
             "com.android.purebilibili.MainActivityAliasHeadphone" to R.mipmap.ic_launcher_3d,
+            "com.android.purebilibili.MainActivityAliasBlueSnowMaidNoIcon" to R.mipmap.ic_launcher_blue_snow_maid,
             "com.android.purebilibili.MainActivityAlias3DNoIcon" to R.mipmap.ic_launcher_3d
         ).forEach { (className, iconResId) ->
             assertTrue(
@@ -277,6 +284,30 @@ class MainActivityAppCompatContractTest {
                 "$className should resolve to the matching launcher mipmap"
             )
         }
+    }
+
+    @Test
+    fun blueSnowMaid_shouldBeManifestDefaultAndPlayStoreAssetShouldBeValid() {
+        val manifest = loadResourceText("../AndroidManifest.xml")
+        val defaultAliasBlock = Regex(
+            """<activity-alias\b(?=[^>]*android:name="\.MainActivityAliasBlueSnowMaid")[\s\S]*?</activity-alias>"""
+        ).find(manifest)?.value.orEmpty()
+        val legacyDefaultAliasBlock = Regex(
+            """<activity-alias\b(?=[^>]*android:name="\.MainActivityAlias3DLauncher")[\s\S]*?</activity-alias>"""
+        ).find(manifest)?.value.orEmpty()
+        val playStoreIcon = listOf(
+            File("app/src/main/ic_launcher-playstore.png"),
+            File("src/main/ic_launcher-playstore.png")
+        ).firstOrNull { it.exists() } ?: error("Cannot locate ic_launcher-playstore.png")
+        val playStoreHeader = readPngHeader(playStoreIcon)
+
+        assertTrue(manifest.contains("""android:icon="@mipmap/ic_launcher_blue_snow_maid"""))
+        assertTrue(manifest.contains("""android:roundIcon="@mipmap/ic_launcher_blue_snow_maid_round"""))
+        assertTrue(defaultAliasBlock.contains("""android:enabled="true"""))
+        assertTrue(legacyDefaultAliasBlock.contains("""android:enabled="false"""))
+        assertTrue(playStoreHeader.width == 512 && playStoreHeader.height == 512)
+        assertTrue(playStoreHeader.colorType == 6, "Play Store icon should be an RGBA PNG")
+        assertTrue(playStoreIcon.length() <= 1_024L * 1_024L, "Play Store icon should stay within 1 MB")
     }
 
     @Test

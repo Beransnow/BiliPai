@@ -11,6 +11,7 @@ class IconGroupsTest {
 
         assertEquals(
             setOf(
+                "icon_blue_snow_maid",
                 "icon_3d",
                 "icon_bilipai",
                 "icon_bilipai_pink",

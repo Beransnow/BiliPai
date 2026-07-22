@@ -428,6 +428,9 @@ internal fun shouldUseRealtimeSplashBlur(sdkInt: Int): Boolean =
 
 internal fun resolveSplashIconResIdForComponentClassName(className: String?): Int {
     return when (className?.substringAfterLast('.')) {
+        "MainActivityAliasBlueSnowMaid",
+        "MainActivityAliasBlueSnowMaidNoIcon",
+        "MainActivitySplashBlueSnowMaid" -> R.mipmap.ic_launcher_blue_snow_maid
         "MainActivityAlias3DLauncher",
         "MainActivityAlias3D",
         "MainActivityAlias3DNoIcon",

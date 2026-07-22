@@ -27,6 +27,7 @@ import com.android.purebilibili.core.store.DEFAULT_CRASH_TRACKING_ENABLED
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.TokenManager
 import com.android.purebilibili.core.store.allManagedAppIconLauncherAliases
+import com.android.purebilibili.core.store.DEFAULT_APP_ICON_KEY
 import com.android.purebilibili.core.store.normalizeAppIconKey
 import com.android.purebilibili.core.store.resolveAppIconLauncherAlias
 import com.android.purebilibili.core.util.AnalyticsHelper
@@ -360,7 +361,7 @@ class PureApplication : Application(), ImageLoaderFactory, ComponentCallbacks2 {
             try {
                 val pm = packageManager
                 val packageName = this@PureApplication.packageName
-                val defaultLauncherAlias = resolveAppIconLauncherAlias(packageName, "icon_3d")
+                val defaultLauncherAlias = resolveAppIconLauncherAlias(packageName, DEFAULT_APP_ICON_KEY)
                 
                 // 读取用户保存的图标偏好
                 val currentIcon = normalizeAppIconKey(
@@ -384,13 +385,13 @@ class PureApplication : Application(), ImageLoaderFactory, ComponentCallbacks2 {
                 val targetAliasComponent = android.content.ComponentName(packageName, targetAlias)
                 val targetState = pm.getComponentEnabledSetting(targetAliasComponent)
 
-                // 如果目标alias是disabled（说明之前被禁用了，可能是重装），强制重置为默认(icon_3d)
-                if (currentIcon != "icon_3d" && targetState == android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED) {
-                    Logger.d(PureApplicationRuntimeConfig.TAG, " Detected reinstall: target icon '$currentIcon' is disabled, resetting to 'icon_3d'")
+                // 如果目标 alias 是 disabled（说明之前被禁用了，可能是重装），强制重置为默认图标。
+                if (currentIcon != DEFAULT_APP_ICON_KEY && targetState == android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED) {
+                    Logger.d(PureApplicationRuntimeConfig.TAG, " Detected reinstall: target icon '$currentIcon' is disabled, resetting to '$DEFAULT_APP_ICON_KEY'")
                     
-                    SettingsManager.setAppIcon(this@PureApplication, "icon_3d")
+                    SettingsManager.setAppIcon(this@PureApplication, DEFAULT_APP_ICON_KEY)
                     
-                    // 确保 3D 图标被启用
+                    // 确保默认图标被启用
                     val aliasDefault = android.content.ComponentName(packageName, defaultLauncherAlias)
                     pm.setComponentEnabledSetting(
                         aliasDefault,
@@ -405,7 +406,7 @@ class PureApplication : Application(), ImageLoaderFactory, ComponentCallbacks2 {
                             android.content.pm.PackageManager.DONT_KILL_APP
                         )
                     }
-                    Logger.d(PureApplicationRuntimeConfig.TAG, " Reset to default 3D icon")
+                    Logger.d(PureApplicationRuntimeConfig.TAG, " Reset to default icon: $DEFAULT_APP_ICON_KEY")
                     return@launch
                 }
                 
