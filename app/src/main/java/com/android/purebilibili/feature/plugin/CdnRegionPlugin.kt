@@ -599,15 +599,14 @@ class CdnRegionPlugin : PlaybackCdnPlugin {
                 location = location,
                 catalog = loadedCatalog
             )
-            val next = CdnRegionPluginCache(
+            val next = current.copy(
                 location = location,
                 selectedRegion = selection.region,
                 selectedHosts = selection.hosts,
                 fallbackRegion = "",
                 fallbackUsed = selection.fallbackUsed,
                 refreshedAtMs = System.currentTimeMillis(),
-                lastError = null,
-                healthByHost = current.healthByHost
+                lastError = null
             )
             cache = next
             CdnRegionPluginStore.write(context, next)
