@@ -260,6 +260,74 @@ class VideoCardTransitionBackgroundPolicyTest {
             ).readText()
             assertFalse(source.contains("videoCardSiblingDepthScale("), fileName)
         }
+        val backgroundSource = File(
+            "src/main/java/com/android/purebilibili/core/ui/transition/" +
+                "VideoCardTransitionBackgroundPolicy.kt"
+        ).readText()
+        assertFalse(backgroundSource.contains("translationX ="))
+        assertFalse(backgroundSource.contains("translationY ="))
+    }
+
+    @Test
+    fun sharedCardDepthShadowPeaksMidMorphAndOnlyUsesTheMovingDetailShell() {
+        fun shadow(
+            progress: Float,
+            phase: VideoCardTransitionBackgroundPhase =
+                VideoCardTransitionBackgroundPhase.OPENING,
+            role: VideoCardShellSharedBoundsRole =
+                VideoCardShellSharedBoundsRole.DetailShell,
+            motionTier: MotionTier = MotionTier.Normal,
+        ): Float = resolveVideoCardShellDepthShadowElevationDp(
+            depthProgress = progress,
+            phase = phase,
+            role = role,
+            motionTier = motionTier,
+        )
+
+        assertEquals(0f, shadow(0f), 0.0001f)
+        assertEquals(12f, shadow(0.5f), 0.0001f)
+        assertEquals(0f, shadow(1f), 0.0001f)
+        assertEquals(
+            shadow(0.5f),
+            shadow(0.5f, phase = VideoCardTransitionBackgroundPhase.RETURNING),
+            0.0001f,
+        )
+        assertEquals(
+            0f,
+            shadow(0.5f, role = VideoCardShellSharedBoundsRole.SourceCard),
+            0.0001f,
+        )
+        assertEquals(
+            0f,
+            shadow(0.5f, phase = VideoCardTransitionBackgroundPhase.HELD),
+            0.0001f,
+        )
+        assertEquals(0f, shadow(0.5f, motionTier = MotionTier.Reduced), 0.0001f)
+    }
+
+    @Test
+    fun sharedCardDepthShadowUsesDeferredSingleClockLayerWithoutIndependentAnimation() {
+        val source = File(
+            "src/main/java/com/android/purebilibili/core/ui/transition/" +
+                "VideoCardShellSharedBounds.kt"
+        ).readText()
+
+        assertTrue(source.contains("bgState.progressProvider()"))
+        assertTrue(source.contains("bgState.phaseProvider()"))
+        assertTrue(source.contains("bgState.motionTierProvider()"))
+        assertTrue(source.contains("sharedTransitionScope.isTransitionActive"))
+        assertTrue(source.contains("sharedContentState.isMatchFound"))
+        assertTrue(source.contains(".graphicsLayer {"))
+        assertTrue(source.contains("shadowElevation ="))
+        assertTrue(source.contains("shape = clipShape"))
+        assertTrue(source.contains("clip = isMatchedTransitionActive"))
+        assertTrue(source.contains("VideoCardShellNoOverlayClip"))
+        assertTrue(source.contains("OverlayClip(clipShape)"))
+        assertFalse(source.contains("translationX ="))
+        assertFalse(source.contains("translationY ="))
+        assertTrue(source.indexOf(".sharedBounds(") < source.indexOf(".graphicsLayer {"))
+        assertFalse(source.contains("animateFloatAsState"))
+        assertFalse(source.contains("Animatable"))
     }
 
     @Test

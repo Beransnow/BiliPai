@@ -27,9 +27,10 @@ import kotlin.math.roundToInt
 
 // 景深层（与 Hero 卡片放大配合，progress 0→1 同源）：
 // 1) **页面与 sibling 均不缩放**：共享卡片是唯一空间运动主体
-// 2) blur：空间纵深（冻结层 + BlurEffect）。半径按 **dp** 定义、按密度换算
-// 3) scrim 压暗：聚焦/可读
-// 4) 页面圆角：仅在整页缩放开启时启用；当前关闭，避免四角啃边
+// 2) shared shell 投影：仅飞行中段抬起，反向读成背景层下沉
+// 3) blur：空间纵深（冻结层 + BlurEffect）。半径按 **dp** 定义、按密度换算
+// 4) scrim 压暗：聚焦/可读
+// 5) 页面圆角：仅在整页缩放开启时启用；当前关闭，避免四角啃边
 // - 冻结层：首帧 record 一次后只改 BlurEffect，禁止 live 重录
 // - 压暗全程保留（含 HELD），避免打开完成后景深断裂
 // - 返回：景深 progress 与 shared morph 同墙钟、同 Linear
