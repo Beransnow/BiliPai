@@ -99,6 +99,21 @@ class HomeFeedScrollStatePersistenceStructureTest {
     }
 
     @Test
+    fun `category initial load is owned and cancelled by home view model`() {
+        val source = loadSource("app/src/main/java/com/android/purebilibili/feature/home/HomeViewModel.kt")
+        val switchSource = source
+            .substringAfter("fun switchCategory(category: HomeCategory)")
+            .substringBefore("fun updateDisplayedTabIndex")
+
+        assertTrue(source.contains("private var categoryInitialLoadJob: Job? = null"))
+        assertTrue(switchSource.contains("categoryInitialLoadJob?.cancel()"))
+        assertTrue(switchSource.contains("fetchData(isLoadMore = false, category = category)"))
+        assertTrue(switchSource.contains("catch (error: CancellationException)"))
+        assertTrue(switchSource.contains("throw error"))
+        assertFalse(source.contains("sessionSeenBvids"))
+    }
+
+    @Test
     fun `home follow refresh preserves dynamic update baseline for incremental content`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/home/HomeViewModel.kt")
         val followFeedSource = source

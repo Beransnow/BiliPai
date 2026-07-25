@@ -1031,6 +1031,26 @@ fun HomeScreen(
     }
 
     val density = LocalDensity.current
+    val homeCoverRequestSpec = remember(
+        contentWidth,
+        gridColumns,
+        homeFeedCardLayout,
+        density.density,
+        isDataSaverActive,
+        homeSettings.lowQualityHomeCoverInDataSaver,
+    ) {
+        val cardWidthDp = (
+            contentWidth.value -
+                homeFeedCardLayout.outerPaddingDp * 2f -
+                homeFeedCardLayout.itemSpacingDp * (gridColumns - 1).coerceAtLeast(0)
+            ) / gridColumns.coerceAtLeast(1)
+        resolveHomeCoverRequestSpec(
+            cardWidthDp = cardWidthDp,
+            density = density.density,
+            useLowQualityCover =
+                isDataSaverActive && homeSettings.lowQualityHomeCoverInDataSaver,
+        )
+    }
     val navBarHeight = WindowInsets.navigationBars.getBottom(density).let { with(density) { it.toDp() } }
 
     //  [修复] 动态计算内容顶部边距，防止被头部遮挡
@@ -1785,6 +1805,7 @@ fun HomeScreen(
                                      dissolvingVideos = dissolvingVideos,
                                      followingMids = followingMids,
                                      showOnlineCount = showOnlineCount,
+                                     coverRequestSpec = homeCoverRequestSpec,
                                      onVideoClick = wrappedOnVideoClick,
                                      onUpClick = onHomeFeedUpClick,
                                      onLiveClick = onLiveClickCallback,
