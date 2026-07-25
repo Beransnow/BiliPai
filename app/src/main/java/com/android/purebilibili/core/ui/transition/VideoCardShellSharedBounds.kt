@@ -6,7 +6,6 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.SharedTransitionScope.OverlayClip
-import androidx.compose.animation.SharedTransitionScope.SharedContentState
 import androidx.compose.animation.SharedTransitionScope.ResizeMode.Companion.scaleToBounds
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -15,15 +14,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
-import com.android.purebilibili.core.ui.adaptive.MotionTier
 
 /**
  * shell sharedBounds 角色。
@@ -50,44 +42,6 @@ internal const val VIDEO_CARD_SHELL_SOURCE_ENTER_FADE_DELAY_RATIO =
 
 /** 横条卡进场源卡淡出时长（占 morph 总时长比例）。 */
 internal const val VIDEO_CARD_SHELL_SOURCE_EXIT_FADE_RATIO = 0.28f
-
-/** 共享壳飞行中段的峰值投影；背景层本身始终保持 1:1 几何。 */
-internal const val VIDEO_CARD_SHELL_MAX_DEPTH_SHADOW_ELEVATION_DP = 12f
-
-private val VideoCardShellNoOverlayClip = object : OverlayClip {
-    override fun getClipPath(
-        sharedContentState: SharedContentState,
-        bounds: Rect,
-        layoutDirection: LayoutDirection,
-        density: Density,
-    ): Path? = null
-}
-
-/**
- * 共享卡片的相对 Z 轴分离：两端为 0，中段为峰值。
- *
- * 只让详情壳承担投影，避免 source / target 在 overlay 内叠出双重阴影。
- */
-internal fun resolveVideoCardShellDepthShadowElevationDp(
-    depthProgress: Float,
-    phase: VideoCardTransitionBackgroundPhase,
-    role: VideoCardShellSharedBoundsRole,
-    motionTier: MotionTier,
-): Float {
-    if (role != VideoCardShellSharedBoundsRole.DetailShell) return 0f
-    if (motionTier == MotionTier.Reduced) return 0f
-    if (
-        phase != VideoCardTransitionBackgroundPhase.OPENING &&
-        phase != VideoCardTransitionBackgroundPhase.RETURNING
-    ) {
-        return 0f
-    }
-    val progress = depthProgress.coerceIn(0f, 1f)
-    return VIDEO_CARD_SHELL_MAX_DEPTH_SHADOW_ELEVATION_DP *
-        4f *
-        progress *
-        (1f - progress)
-}
 
 /**
  * 源卡 shell 是否延后 Enter。
@@ -218,14 +172,13 @@ internal fun Modifier.videoCardShellSharedBoundsOrEmpty(
     }
     return then(
         with(sharedTransitionScope) {
-            val sharedContentState = rememberSharedContentState(
-                key = videoCardShellSharedElementKey(
-                    bvid = bvid,
-                    sourceRoute = sourceRoute
-                )
-            )
             Modifier.sharedBounds(
-                sharedContentState = sharedContentState,
+                sharedContentState = rememberSharedContentState(
+                    key = videoCardShellSharedElementKey(
+                        bvid = bvid,
+                        sourceRoute = sourceRoute
+                    )
+                ),
                 animatedVisibilityScope = animatedVisibilityScope,
                 enter = enter,
                 exit = exit,
@@ -244,39 +197,8 @@ internal fun Modifier.videoCardShellSharedBoundsOrEmpty(
                     }
                 },
                 resizeMode = resizeMode,
-                clipInOverlayDuringTransition = if (
-                    role == VideoCardShellSharedBoundsRole.DetailShell
-                ) {
-                    VideoCardShellNoOverlayClip
-                } else {
-                    OverlayClip(clipShape)
-                },
+                clipInOverlayDuringTransition = OverlayClip(clipShape)
             )
-                .then(
-                    if (role == VideoCardShellSharedBoundsRole.DetailShell) {
-                        // 只有详情目标壳创建投影层；source cards 保留原 OverlayClip，
-                        // 避免列表里的每张卡在转场时都创建额外硬件层。
-                        Modifier.graphicsLayer {
-                            val isMatchedTransitionActive =
-                                sharedTransitionScope.isTransitionActive &&
-                                    sharedContentState.isMatchFound
-                            shadowElevation = if (isMatchedTransitionActive) {
-                                resolveVideoCardShellDepthShadowElevationDp(
-                                    depthProgress = bgState.progressProvider(),
-                                    phase = bgState.phaseProvider(),
-                                    role = role,
-                                    motionTier = bgState.motionTierProvider(),
-                                ).dp.toPx()
-                            } else {
-                                0f
-                            }
-                            shape = clipShape
-                            clip = isMatchedTransitionActive
-                        }
-                    } else {
-                        Modifier
-                    }
-                )
         }
     )
 }

@@ -21,7 +21,7 @@ import kotlin.math.roundToInt
  * - **0** = 落在列表源卡（景深清晰）
  * - **1** = 落在详情全屏（景深满糊）
  *
- * 景深 blur / scrim、shared shell 投影、chrome settle、壁纸 depth **只读** [depthProgress]，
+ * 背景 scale / blur / scrim、chrome settle、壁纸 depth **只读** [depthProgress]，
  * 不再各自 Animatable 并行。
  *
  * ## 驱动优先级（高 → 低）
