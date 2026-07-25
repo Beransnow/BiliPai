@@ -2273,7 +2273,20 @@ fun VideoPlayerSection(
         }
         //  直接加载弹幕，不再等待 duration；仓库层会回退到 metadata/fallback 段数。
         LaunchedEffect(cid, aid, danmakuEnabled, hostLifecycleStarted) {
-            danmakuManager.isEnabled = danmakuLoadPolicy.shouldEnable
+            when (
+                resolveVideoPlayerDanmakuEngineSyncAction(
+                    danmakuEnabled = danmakuEnabled,
+                    cid = cid
+                )
+            ) {
+                VideoPlayerDanmakuEngineSyncAction.Enable -> {
+                    danmakuManager.isEnabled = true
+                }
+                VideoPlayerDanmakuEngineSyncAction.DisableAndClear -> {
+                    danmakuManager.isEnabled = false
+                    danmakuManager.clear()
+                }
+            }
             if (!shouldLoadDanmakuForForegroundHost(
                     hostLifecycleStarted = hostLifecycleStarted,
                     shouldLoadImmediately = danmakuLoadPolicy.shouldLoadImmediately
@@ -3405,6 +3418,11 @@ fun VideoPlayerSection(
                             }
                         }
                     },
+                    onRelease = {
+                        danmakuManager.hide()
+                        danmakuManager.clear()
+                        danmakuManager.detachView()
+                    },
                     modifier = danmakuSurfaceModifier
                 )
             }
@@ -4189,6 +4207,10 @@ fun VideoPlayerSection(
                 danmakuEnabled = danmakuEnabled,
                 onDanmakuToggle = {
                     val newState = !danmakuEnabled
+                    danmakuManager.isEnabled = newState
+                    if (!newState) {
+                        danmakuManager.clear()
+                    }
                     scope.launch {
                         com.android.purebilibili.core.store.SettingsManager.setDanmakuEnabled(
                             context,
