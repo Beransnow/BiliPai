@@ -624,6 +624,11 @@ fun HomeScreen(
     val homeSettings by SettingsManager.getHomeSettings(context).collectAsStateWithLifecycle(initialValue = com.android.purebilibili.core.store.HomeSettings(),
         context = kotlin.coroutines.EmptyCoroutineContext
     )
+    val dissolvingVideos by viewModel.dissolvingVideos.collectAsStateWithLifecycle()
+    val followingMids by viewModel.followingMids.collectAsStateWithLifecycle()
+    val showOnlineCount by SettingsManager
+        .getShowOnlineCount(context)
+        .collectAsStateWithLifecycle(initialValue = false)
     val homeFeedCardStyle by SettingsManager
         .getHomeFeedCardStyle(context)
         .collectAsStateWithLifecycle(initialValue = com.android.purebilibili.core.store.HomeFeedCardStyle.OFFICIAL,
@@ -1757,8 +1762,6 @@ fun HomeScreen(
                                      PopularSubCategory,
                                      () -> Unit
                                  ) -> Unit = { pageCategoryState, contentGridState, selectedPopularSubCategory, onPageLoadMore ->
-                                 val pageDissolvingVideos by viewModel.dissolvingVideos.collectAsStateWithLifecycle()
-                                 val pageFollowingMids by viewModel.followingMids.collectAsStateWithLifecycle()
                                  val pageShowsHeroCarousel = shouldShowHomeHeroCarousel(
                                      enabled = homeSettings.homeHeroCarouselEnabled,
                                      category = category,
@@ -1779,8 +1782,9 @@ fun HomeScreen(
                                      gridState = contentGridState,
                                      gridColumns = gridColumns,
                                      contentPadding = pageContentPadding,
-                                     dissolvingVideos = pageDissolvingVideos,
-                                     followingMids = pageFollowingMids,
+                                     dissolvingVideos = dissolvingVideos,
+                                     followingMids = followingMids,
+                                     showOnlineCount = showOnlineCount,
                                      onVideoClick = wrappedOnVideoClick,
                                      onUpClick = onHomeFeedUpClick,
                                      onLiveClick = onLiveClickCallback,

@@ -118,9 +118,9 @@ fun StoryVideoCard(
         TextStyle(shadow = resolveVideoCardCoverOverlayTextShadow())
     }
     val showDurationOutside = homeDurationStyle == HomeDurationStyle.OUTSIDE_COVER
-    val scrollLitePolicy = remember(scrollLiteModeEnabled) {
+    val scrollLitePolicy = remember {
         resolveStoryVideoCardScrollLiteVisualPolicy(
-            scrollLiteModeEnabled = scrollLiteModeEnabled
+            scrollLiteModeEnabled = false
         )
     }
     val badgeStylePolicy = remember(showCoverGlassBadges, showInfoGlassBadges) {

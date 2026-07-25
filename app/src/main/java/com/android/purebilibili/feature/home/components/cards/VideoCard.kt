@@ -402,10 +402,10 @@ fun ElegantVideoCard(
     val inlinePillBaseColor = AppSurfaceTokens.cardContainer()
     val wallpaperHazeState = LocalWallpaperHazeState.current
     val homeLayerBackdrop = LocalHomeLayerBackdrop.current
-    val badgeEffectVisual = remember(badgeEffectMode, scrollLiteModeEnabled, wallpaperHazeState != null) {
+    val badgeEffectVisual = remember(badgeEffectMode, wallpaperHazeState != null) {
         resolveHomeCardBadgeEffectVisual(
             mode = badgeEffectMode,
-            scrollLiteModeEnabled = scrollLiteModeEnabled,
+            scrollLiteModeEnabled = false,
             hasHazeState = wallpaperHazeState != null
         )
     }
@@ -442,9 +442,9 @@ fun ElegantVideoCard(
             blurEnabled = blurEnabled
         )
     }
-    val scrollLitePolicy = remember(scrollLiteModeEnabled, compactStatsOnCover) {
+    val scrollLitePolicy = remember(compactStatsOnCover) {
         resolveVideoCardScrollLiteVisualPolicy(
-            scrollLiteModeEnabled = scrollLiteModeEnabled,
+            scrollLiteModeEnabled = false,
             compactStatsOnCover = compactStatsOnCover
         )
     }
