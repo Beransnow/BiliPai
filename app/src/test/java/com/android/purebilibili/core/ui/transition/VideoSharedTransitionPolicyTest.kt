@@ -666,6 +666,7 @@ class VideoSharedTransitionPolicyTest {
         assertTrue(singleColumnCardSource.contains("videoCardShellSharedBoundsOrEmpty("))
         assertFalse(singleColumnCardSource.contains("videoCoverSharedBoundsOrEmpty("))
         assertTrue(singleColumnCardSource.contains("videoCardShellReturnChromeAlpha("))
+        assertTrue(singleColumnCardSource.contains("followShellMotion = true"))
         assertTrue(singleColumnCardSource.contains("HOME_STYLE_SINGLE_COLUMN_COVER_WIDTH = 144.dp"))
         assertFalse(partitionSource.contains("videoTitleSharedElementKey("))
         assertTrue(cinematicCardSource.contains("videoCardShellSharedBoundsOrEmpty("))

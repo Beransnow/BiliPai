@@ -401,4 +401,54 @@ class VideoCardScrollLiteVisualPolicyTest {
             )
         )
     }
+
+    @Test
+    fun horizontalCardChrome_followsOpeningAndReturnProgress() {
+        val openingStart = resolveHorizontalCardChromeMotionFrame(
+            useCardContainerSharedBounds = true,
+            isSharedMorphSourceCard = true,
+            transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.OPENING,
+            transitionBackgroundProgress = 0f,
+        )
+        assertEquals(1f, openingStart.alpha, 0.001f)
+        assertEquals(0f, openingStart.translationProgress, 0.001f)
+
+        val openingMid = resolveHorizontalCardChromeMotionFrame(
+            useCardContainerSharedBounds = true,
+            isSharedMorphSourceCard = true,
+            transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.OPENING,
+            transitionBackgroundProgress = 0.14f,
+        )
+        assertEquals(0.5f, openingMid.alpha, 0.001f)
+        assertEquals(0.5f, openingMid.translationProgress, 0.001f)
+
+        val openingFinished = resolveHorizontalCardChromeMotionFrame(
+            useCardContainerSharedBounds = true,
+            isSharedMorphSourceCard = true,
+            transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.OPENING,
+            transitionBackgroundProgress = 0.28f,
+        )
+        assertEquals(0f, openingFinished.alpha, 0.001f)
+        assertEquals(1f, openingFinished.translationProgress, 0.001f)
+
+        val returnReveal = resolveHorizontalCardChromeMotionFrame(
+            useCardContainerSharedBounds = true,
+            isSharedMorphSourceCard = true,
+            isReturningFromDetail = true,
+            transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
+            transitionBackgroundProgress = 0.16f,
+        )
+        assertEquals(0.5f, returnReveal.alpha, 0.001f)
+        assertEquals(0.16f, returnReveal.translationProgress, 0.001f)
+
+        val landed = resolveHorizontalCardChromeMotionFrame(
+            useCardContainerSharedBounds = true,
+            isSharedMorphSourceCard = true,
+            isReturningFromDetail = true,
+            transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
+            transitionBackgroundProgress = 0f,
+        )
+        assertEquals(1f, landed.alpha, 0.001f)
+        assertEquals(0f, landed.translationProgress, 0.001f)
+    }
 }

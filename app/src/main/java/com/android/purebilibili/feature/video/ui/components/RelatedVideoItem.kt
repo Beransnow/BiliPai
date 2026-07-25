@@ -309,6 +309,7 @@ fun RelatedVideoItem(
                         enabled = useCardShellSharedBounds,
                         bvid = video.bvid,
                         sourceRoute = sourceRoute,
+                        followShellMotion = true,
                     )
             )
             if (onMoreClick != null) {
@@ -324,6 +325,7 @@ fun RelatedVideoItem(
                             enabled = useCardShellSharedBounds,
                             bvid = video.bvid,
                             sourceRoute = sourceRoute,
+                            followShellMotion = true,
                         )
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
@@ -353,6 +355,7 @@ fun RelatedVideoItem(
                     enabled = useCardShellSharedBounds,
                     bvid = video.bvid,
                     sourceRoute = sourceRoute,
+                    followShellMotion = true,
                 ),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {

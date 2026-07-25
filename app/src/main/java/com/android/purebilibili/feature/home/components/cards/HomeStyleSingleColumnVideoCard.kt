@@ -202,6 +202,7 @@ internal fun HomeStyleSingleColumnVideoCard(
                         enabled = useCardShellSharedBounds,
                         bvid = video.bvid,
                         sourceRoute = sourceRoute,
+                        followShellMotion = true,
                     ),
             )
         }
@@ -214,6 +215,7 @@ internal fun HomeStyleSingleColumnVideoCard(
                     enabled = useCardShellSharedBounds,
                     bvid = video.bvid,
                     sourceRoute = sourceRoute,
+                    followShellMotion = true,
                 ),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
