@@ -247,7 +247,7 @@ private fun RelatedVideoGridRowSkeleton() {
     ) {
         RelatedVideoItemSkeleton(
             modifier = Modifier.fillMaxWidth(),
-            coverAspectRatio = RELATED_VIDEO_CARD_COVER_ASPECT_RATIO,
+            coverAspectRatio = cardLayout.coverAspectRatio,
         )
     }
 }
@@ -257,20 +257,27 @@ private fun RelatedVideoItemSkeleton(
     modifier: Modifier = Modifier,
     coverAspectRatio: Float = RELATED_VIDEO_CARD_COVER_ASPECT_RATIO,
 ) {
-    Column(
+    val coverWidth = 144.dp
+    val coverHeight = coverWidth / coverAspectRatio.coerceAtLeast(1f)
+    Row(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surface)
+            .padding(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         SkeletonBlock(
             modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(coverAspectRatio),
-            shape = RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)
+                .width(coverWidth)
+                .height(coverHeight),
+            shape = RoundedCornerShape(10.dp),
         )
         Column(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+            modifier = Modifier
+                .weight(1f)
+                .height(coverHeight),
+            verticalArrangement = Arrangement.SpaceBetween,
         ) {
             SkeletonBox(modifier = Modifier.fillMaxWidth(), height = 16.dp, cornerRadius = 8.dp)
             SkeletonBox(modifier = Modifier.fillMaxWidth(0.82f), height = 16.dp, cornerRadius = 8.dp)

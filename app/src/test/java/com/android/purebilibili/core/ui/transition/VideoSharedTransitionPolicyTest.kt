@@ -167,13 +167,12 @@ class VideoSharedTransitionPolicyTest {
     }
 
     @Test
-    fun coverRelayTransition_disabledSoShellOwnsRelatedAndPartition() {
+    fun transparentShellAnchor_ownsHorizontalRelatedAndPartitionCards() {
         val related = resolveVideoSharedTransitionOwnership(
             sourceRoute = "video/BV_A",
             coverSharedEnabled = true,
             isQuickReturnLimited = false
         )
-        // 相关推荐竖卡恢复整卡 shell，与首页同形态。
         assertTrue(related.useCoverSharedBounds)
         assertTrue(related.useCardContainerSharedBounds)
         assertFalse(related.useMetadataSharedBounds)
@@ -247,16 +246,17 @@ class VideoSharedTransitionPolicyTest {
     }
 
     @Test
-    fun videoCoverRelay_isDisabledPendingCoordinateFix() {
-        // 详情套详情下 cover relay 飞位易错；相关/分区暂用 shell + 源卡进场淡出。
+    fun videoCoverRelay_isDisabledToPreserveRealPreviousScreen() {
         assertFalse(shouldUseVideoCoverRelayTransition("partition"))
+        assertFalse(shouldUseVideoCoverRelayTransition("partition?tab=1"))
         assertFalse(shouldUseVideoCoverRelayTransition("video/BV_A"))
         assertFalse(shouldUseVideoCoverRelayTransition("home"))
+        assertFalse(shouldUseVideoCoverRelayTransition("video"))
         assertFalse(shouldUseVideoCoverRelayTransition(null))
     }
 
     @Test
-    fun videoCardShellSharedBounds_includesRelatedAndPartitionSources() {
+    fun videoCardShellSharedBounds_includesHorizontalAnchorSources() {
         assertTrue(shouldUseVideoCardShellSharedBounds("home", transitionEnabled = true))
         assertTrue(shouldUseVideoCardShellSharedBounds("dynamic", transitionEnabled = true))
         assertTrue(shouldUseVideoCardShellSharedBounds("watch_later", transitionEnabled = true))
@@ -430,7 +430,7 @@ class VideoSharedTransitionPolicyTest {
                 role = VideoCardShellSharedBoundsRole.DetailShell,
             )
         )
-        // 首页 / 相关 / 分区竖卡进场：源卡不淡出。
+        // shell 竖卡进场：源卡不淡出。
         assertEquals(
             ExitTransition.None,
             resolveVideoCardShellSharedBoundsExit(
@@ -623,7 +623,7 @@ class VideoSharedTransitionPolicyTest {
     }
 
     @Test
-    fun videoCardSources_useWholeCardShellSharedBoundsWithoutMetadataKeys() {
+    fun videoCardSources_useShellSharedBoundsWithoutMetadataKeys() {
         val homeCardSource = File(
             "src/main/java/com/android/purebilibili/feature/home/components/cards/VideoCard.kt"
         ).readText()
@@ -632,6 +632,9 @@ class VideoSharedTransitionPolicyTest {
         ).readText()
         val partitionSource = File(
             "src/main/java/com/android/purebilibili/feature/partition/PartitionScreen.kt"
+        ).readText()
+        val singleColumnCardSource = File(
+            "src/main/java/com/android/purebilibili/feature/home/components/cards/HomeStyleSingleColumnVideoCard.kt"
         ).readText()
         val cinematicCardSource = File(
             "src/main/java/com/android/purebilibili/feature/home/components/cards/CinematicVideoCard.kt"
@@ -655,11 +658,15 @@ class VideoSharedTransitionPolicyTest {
         assertTrue(homeCardSource.contains("videoCardShellSharedBoundsOrEmpty("))
         assertFalse(homeCardSource.contains("videoTitleSharedElementKey("))
         assertTrue(detailInfoSource.contains("useCardContainerSharedBounds = useCardContainerSharedBounds"))
-        // 分区复用首页 ElegantVideoCard（shell 在 VideoCard.kt），单列来源边界由整卡实测。
-        assertTrue(partitionSource.contains("ElegantVideoCard("))
+        // 分区横卡只在左侧封面内放置透明 shell 锚点。
+        assertTrue(partitionSource.contains("HomeStyleSingleColumnVideoCard("))
         assertTrue(partitionSource.contains("items = state.videos"))
-        assertTrue(partitionSource.contains("coverAspectRatio = VIDEO_SHARED_COVER_ASPECT_RATIO"))
+        assertTrue(partitionSource.contains("coverAspectRatio = cardLayout.coverAspectRatio"))
         assertFalse(partitionSource.contains("state.videos.chunked(2)"))
+        assertTrue(singleColumnCardSource.contains("videoCardShellSharedBoundsOrEmpty("))
+        assertFalse(singleColumnCardSource.contains("videoCoverSharedBoundsOrEmpty("))
+        assertTrue(singleColumnCardSource.contains("videoCardShellReturnChromeAlpha("))
+        assertTrue(singleColumnCardSource.contains("HOME_STYLE_SINGLE_COLUMN_COVER_WIDTH = 144.dp"))
         assertFalse(partitionSource.contains("videoTitleSharedElementKey("))
         assertTrue(cinematicCardSource.contains("videoCardShellSharedBoundsOrEmpty("))
         assertFalse(cinematicCardSource.contains("videoTitleSharedElementKey("))

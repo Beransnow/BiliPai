@@ -20,11 +20,10 @@ import androidx.compose.ui.layout.ContentScale
 /**
  * shell sharedBounds 角色。
  *
- * - 进场（首页等大卡）：源卡 Exit.None、详情壳 Enter.None，整卡跟手放大。
- * - 进场（相关/分区横条卡）：源卡短淡出，避免横条卡内容叠在详情播放器上。
+ * - 进场：首页等大卡由源卡 Exit.None、详情壳 Enter.None，整卡跟手放大。
  * - 返回（首页等大卡）：详情壳 Exit.None 保住实时画面；源卡 Enter 延后淡入，
  *   避免封面一开始盖住直播画面。
- * - 返回（相关/分区横条卡）：源卡 Enter.None，标题与封面同步落位。
+ * - 相关/分区横条卡用封面尺寸的透明 shell 锚点，真实上一页不进入 overlay。
  */
 internal enum class VideoCardShellSharedBoundsRole {
     /** 列表源卡片 */
@@ -57,9 +56,7 @@ internal fun shouldDelaySourceCardEnterForLiveReturnMorph(
     return shouldDelaySourceCardEnterOnReturn(isQuickReturnFromDetail)
 }
 
-/**
- * 竖卡进场 Exit.None；不再对横条做特判淡出。
- */
+/** shell 竖卡进场保持 Exit.None。 */
 internal fun shouldFadeOutShellSourceCardOnOpen(sourceRoute: String?): Boolean {
     @Suppress("UNUSED_PARAMETER")
     val ignored = sourceRoute

@@ -61,18 +61,20 @@ class RelatedVideoItemPolicyTest {
     }
 
     @Test
-    fun `related detail uses single column vertical card shell`() {
+    fun `related detail uses single column horizontal card with transparent shell anchor`() {
         val source = File("src/main/java/com/android/purebilibili/feature/video/ui/components/RelatedVideoItem.kt")
             .readText()
 
         assertTrue(source.contains("RELATED_VIDEO_CARD_COVER_ASPECT_RATIO"))
         assertTrue(source.contains("coverAspectRatio: Float = RELATED_VIDEO_CARD_COVER_ASPECT_RATIO"))
-        assertTrue(source.contains("aspectRatio(coverAspectRatio)"))
+        assertTrue(source.contains("val coverWidth = 144.dp"))
+        assertTrue(source.contains("val coverHeight = coverWidth / coverAspectRatio.coerceAtLeast(1f)"))
         assertTrue(source.contains("resolveHomeFeedCardLayout(homeFeedCardStyle)"))
         assertTrue(source.contains("RELATED_VIDEO_GRID_COLUMNS = 1"))
-        assertTrue(source.contains("coverAspectRatio = RELATED_VIDEO_CARD_COVER_ASPECT_RATIO"))
+        assertTrue(source.contains("coverAspectRatio = cardLayout.coverAspectRatio"))
         assertTrue(source.contains("modifier = Modifier.fillMaxWidth()"))
         assertTrue(source.contains("videoCardShellSharedBoundsOrEmpty("))
+        assertFalse(source.contains("videoCoverSharedBoundsOrEmpty("))
         assertTrue(source.contains("RelatedVideoGridRow("))
         assertTrue(source.contains("chunkRelatedVideosForHomeStyleGrid("))
         assertFalse(source.contains("relatedCoverWidth = 130.dp"))
@@ -104,7 +106,7 @@ class RelatedVideoItemPolicyTest {
             .substringAfter("private fun RelatedVideoGridRowSkeleton()")
             .substringBefore("private fun RelatedVideoItemSkeleton(")
 
-        assertTrue(relatedSkeleton.contains("coverAspectRatio = RELATED_VIDEO_CARD_COVER_ASPECT_RATIO"))
+        assertTrue(relatedSkeleton.contains("coverAspectRatio = cardLayout.coverAspectRatio"))
         assertTrue(relatedSkeleton.contains("RelatedVideoItemSkeleton("))
         assertFalse(relatedSkeleton.contains("repeat(2)"))
     }

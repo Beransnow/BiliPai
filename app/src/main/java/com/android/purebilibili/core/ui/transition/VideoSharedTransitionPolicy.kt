@@ -331,9 +331,7 @@ internal fun shouldEnableVideoCoverSharedTransition(
         hasAnimatedVisibilityScope
 }
 
-/**
- * 详情套详情曾因横条卡飞卡漂浮而跳过 morph；相关推荐已改为首页同款竖卡，恢复 shell。
- */
+/** 所有已支持的视频来源都保留共享 morph。 */
 internal fun shouldSkipVideoCardSharedBoundsMorph(sourceRoute: String?): Boolean {
     @Suppress("UNUSED_PARAMETER")
     val ignored = sourceRoute
@@ -341,7 +339,8 @@ internal fun shouldSkipVideoCardSharedBoundsMorph(sourceRoute: String?): Boolean
 }
 
 /**
- * 封面位进退（cover relay）在详情套详情下易出现飞位错乱，暂不启用。
+ * cover relay 会让预测返回只剩孤立封面，无法保留真实上一页。
+ * 横条卡改用封面尺寸的透明 shell 锚点，因此仍由 shell 保持页面所有权。
  */
 internal fun shouldUseVideoCoverRelayTransition(sourceRoute: String?): Boolean {
     @Suppress("UNUSED_PARAMETER")

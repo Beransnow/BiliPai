@@ -60,17 +60,18 @@ import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
 import com.android.purebilibili.core.util.responsiveContentWidth
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.store.HomeSettings
+import com.android.purebilibili.core.store.HomeFeedCardStyle
 import com.android.purebilibili.core.store.BottomBarLiquidGlassPreset
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.resolveSharedLiquidGlassChromeEnabled
 import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
-import com.android.purebilibili.core.ui.transition.VIDEO_SHARED_COVER_ASPECT_RATIO
 import com.android.purebilibili.data.model.response.BangumiType
 import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.data.repository.VideoRepository
 import com.android.purebilibili.feature.common.resolveIndexedVideoLazyKey
-import com.android.purebilibili.feature.home.components.cards.ElegantVideoCard
+import com.android.purebilibili.feature.home.components.cards.HomeStyleSingleColumnVideoCard
+import com.android.purebilibili.feature.home.resolveHomeFeedCardLayout
 import com.android.purebilibili.feature.home.components.BottomBarClickPulseTransform
 import com.android.purebilibili.feature.home.components.BottomBarIndicatorLayerTransform
 import com.android.purebilibili.feature.home.components.KernelSuBottomBarIndicatorLayer
@@ -839,6 +840,13 @@ private fun PartitionVideoList(
     contentPadding: PaddingValues,
     onVideoClick: (VideoItem) -> Unit
 ) {
+    val context = LocalContext.current
+    val homeFeedCardStyle by SettingsManager
+        .getHomeFeedCardStyle(context)
+        .collectAsStateWithLifecycle(initialValue = HomeFeedCardStyle.OFFICIAL)
+    val cardLayout = remember(homeFeedCardStyle) {
+        resolveHomeFeedCardLayout(homeFeedCardStyle)
+    }
     val sharedTransitionEnabled = LocalSharedTransitionEnabled.current
     val sharedElementSourceRoute = LocalVideoCardSharedElementSourceRoute.current
         ?.takeIf { it.isNotBlank() }
@@ -876,16 +884,14 @@ private fun PartitionVideoList(
                             cid = video.cid
                         )
                     }
-                ) { index, video ->
-                    ElegantVideoCard(
+                ) { _, video ->
+                    HomeStyleSingleColumnVideoCard(
                         video = video,
-                        index = index,
+                        sourceRoute = sharedElementSourceRoute,
+                        coverAspectRatio = cardLayout.coverAspectRatio,
                         transitionEnabled = sharedTransitionEnabled,
-                        sharedElementSourceRoute = sharedElementSourceRoute,
-                        coverAspectRatio = VIDEO_SHARED_COVER_ASPECT_RATIO,
-                        compactMetadata = false,
                         modifier = Modifier.fillMaxWidth(),
-                        onClick = { _, _ -> onVideoClick(video) }
+                        onClick = { onVideoClick(video) },
                     )
                 }
 
