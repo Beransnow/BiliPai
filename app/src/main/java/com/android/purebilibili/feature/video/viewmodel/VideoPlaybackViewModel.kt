@@ -131,7 +131,7 @@ import com.android.purebilibili.feature.video.subtitle.mapPlayerInfoSubtitleTrac
 import com.android.purebilibili.feature.video.subtitle.normalizeBilibiliSubtitleUrl
 import com.android.purebilibili.feature.video.subtitle.resolveDefaultSubtitleLanguages
 
-private const val PLAYBACK_CDN_FIRST_FRAME_FALLBACK_TIMEOUT_MS = 5_000L
+private const val PLAYBACK_CDN_FIRST_FRAME_FALLBACK_TIMEOUT_MS = 2_500L
 
 data class CommentMentionSearchUiState(
     val query: String = "",
