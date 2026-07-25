@@ -1443,11 +1443,15 @@ internal fun VideoDetailScreenStateHolder(
         hasRenderedFirstFrame = hasRenderedFirstFrameForReturn,
         forceCoverUi = forceCoverOnlyForReturn,
     )
+    val returnPlaybackIntent = resolveVideoDetailReturnPlaybackIntent(
+        entryPlaybackIntent = videoSharedPlaybackIntent,
+        hasRenderableLiveFrame = hasRenderableLiveFrameForReturn,
+    )
     val candidateReturnCoverOwnership = resolveVideoDetailReturnCoverOwnership(
         transitionEnabled = transitionEnabled,
         sharedBoundsActive = sharedBoundsActive,
         keepLoadedContentForBackPreview = keepLoadedContentForBackPreview,
-        playbackIntent = videoSharedPlaybackIntent,
+        playbackIntent = returnPlaybackIntent,
         detailContentReady = detailContentReadyForLiveReturnMorph,
         hasResidentCover = hasResidentReturnCover,
         hasRenderableLiveFrame = hasRenderableLiveFrameForReturn,
