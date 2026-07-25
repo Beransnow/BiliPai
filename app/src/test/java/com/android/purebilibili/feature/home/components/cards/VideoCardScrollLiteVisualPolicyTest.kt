@@ -297,7 +297,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             ),
             0.001f,
         )
-        // 末段落位：settle=0.8 → 已过 revealStart(0.18)，开始淡入
+        // 最后 32% 落位：settle=0.8 → 已过 revealStart(0.68)，开始淡入
         val midReveal = resolveHomeCardChromeAlphaDuringShellReturnMorph(
             useCardContainerSharedBounds = true,
             isSharedMorphSourceCard = true,
@@ -312,7 +312,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             midReveal,
             0.001f,
         )
-        // 中段 settle=0.1 < 0.18：标题仍藏，避免叠 live
+        // 中段 settle=0.1 < 0.68：标题仍藏，避免叠 live
         assertEquals(
             0f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
@@ -364,7 +364,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             ),
             0.001f,
         )
-        // revealStart=0.18：0.15 仍藏字，1.0 全显
+        // revealStart=0.68：0.15 仍藏字，1.0 全显
         assertEquals(0f, resolveHomeCardChromeEarlyRevealAlpha(settleProgress = 0.15f), 0.001f)
         assertEquals(1f, resolveHomeCardChromeEarlyRevealAlpha(settleProgress = 1f), 0.001f)
         // 快速返回：源卡标题立刻全显（详情正文须同步立刻让位）

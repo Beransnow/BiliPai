@@ -498,10 +498,10 @@ class VideoSharedTransitionPolicyTest {
         assertTrue(motion.enabled)
         assertEquals(360, motion.durationMillis)
         assertEquals(360, motion.fullscreenDurationMillis)
-        assertEquals(40, motion.contentDelayMillis)
-        assertEquals(220, motion.contentDurationMillis)
-        assertEquals(14, motion.contentSlideOffsetDp)
-        assertEquals(0.985f, motion.contentInitialScale, 0.0001f)
+        assertEquals(86, motion.contentDelayMillis)
+        assertEquals(209, motion.contentDurationMillis)
+        assertEquals(8, motion.contentSlideOffsetDp)
+        assertEquals(1f, motion.contentInitialScale, 0.0001f)
         assertSame(motion.enterAlphaEasing, motion.returnAlphaEasing)
         assertEquals(
             AppMotionEasing.Continuity.transform(0.35f),
@@ -536,7 +536,7 @@ class VideoSharedTransitionPolicyTest {
 
         assertEquals(280, motion.durationMillis)
         assertEquals(280, motion.fullscreenDurationMillis)
-        assertEquals(220, motion.contentDurationMillis)
+        assertEquals(162, motion.contentDurationMillis)
     }
 
     @Test
@@ -549,7 +549,7 @@ class VideoSharedTransitionPolicyTest {
 
         assertEquals(360, motion.durationMillis)
         assertEquals(0, motion.contentDelayMillis)
-        assertEquals(220, motion.contentDurationMillis)
+        assertEquals(209, motion.contentDurationMillis)
         assertEquals(360, motion.fullscreenDurationMillis)
     }
 
@@ -563,7 +563,7 @@ class VideoSharedTransitionPolicyTest {
 
         assertEquals(480, motion.durationMillis)
         assertEquals(480, motion.fullscreenDurationMillis)
-        assertEquals(288, motion.contentDurationMillis)
+        assertEquals(278, motion.contentDurationMillis)
     }
 
     @Test

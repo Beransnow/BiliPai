@@ -361,6 +361,7 @@ fun VideoPlayerSection(
     isFullscreen: Boolean,
     isInPipMode: Boolean,
     transitionEnabled: Boolean = true,
+    transitionChromeAlphaProvider: () -> Float = { 1f },
     onToggleFullscreen: () -> Unit,
     onQualityChange: (Int) -> Unit,
     onBack: () -> Unit,
@@ -4759,7 +4760,15 @@ fun VideoPlayerSection(
             )
             }
 
-            RenderVideoPlayerOverlay()
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        alpha = transitionChromeAlphaProvider()
+                    }
+            ) {
+                RenderVideoPlayerOverlay()
+            }
 
             SponsorSkipButton(
                 segment = sponsorSegment,

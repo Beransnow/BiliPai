@@ -72,11 +72,9 @@ internal const val VIDEO_SHARED_TRANSITION_CUSTOM_MIN_MILLIS = 240
 internal const val VIDEO_SHARED_TRANSITION_CUSTOM_MAX_MILLIS = 900
 internal const val VIDEO_SHARED_TRANSITION_CUSTOM_DEFAULT_MILLIS =
     VIDEO_SHARED_TRANSITION_STANDARD_DURATION_MILLIS
-private const val HOME_DETAIL_REVEAL_DELAY_MILLIS = 40
-private const val HOME_DETAIL_REVEAL_MIN_DURATION_MILLIS = 220
-private const val HOME_DETAIL_REVEAL_MAX_DURATION_MILLIS = 360
-private const val HOME_DETAIL_REVEAL_SLIDE_OFFSET_DP = 14
-private const val HOME_DETAIL_REVEAL_INITIAL_SCALE = 0.985f
+private const val HOME_DETAIL_REVEAL_SLIDE_OFFSET_DP =
+    VideoCardTransitionVisualTimeline.SECONDARY_CONTENT_TRANSLATION_DP
+private const val HOME_DETAIL_REVEAL_INITIAL_SCALE = 1f
 private const val VIDEO_METADATA_SHARED_BOUNDS_RATIO = 1f
 private const val VIDEO_METADATA_SHARED_BOUNDS_MIN_MILLIS = 200
 private const val VIDEO_METADATA_SHARED_BOUNDS_MAX_MILLIS = 900
@@ -251,11 +249,16 @@ internal fun resolveVideoSharedTransitionFullscreenDurationMillis(durationMillis
 }
 
 internal fun resolveVideoSharedTransitionContentDurationMillis(durationMillis: Int): Int {
-    return (durationMillis * 0.6f).roundToInt().coerceIn(
-        HOME_DETAIL_REVEAL_MIN_DURATION_MILLIS,
-        HOME_DETAIL_REVEAL_MAX_DURATION_MILLIS
-    )
+    val normalizedDuration = VideoCardTransitionVisualTimeline.SECONDARY_CONTENT_ENTER_END -
+        VideoCardTransitionVisualTimeline.SECONDARY_CONTENT_ENTER_START
+    return (durationMillis.coerceAtLeast(0) * normalizedDuration).roundToInt()
 }
+
+internal fun resolveVideoSharedTransitionContentDelayMillis(durationMillis: Int): Int =
+    (
+        durationMillis.coerceAtLeast(0) *
+            VideoCardTransitionVisualTimeline.SECONDARY_CONTENT_ENTER_START
+        ).roundToInt()
 
 internal fun resolveVideoSharedTransitionSourceCornerDp(
     sourceRoute: String?,
@@ -467,7 +470,11 @@ internal fun resolveVideoCardSharedTransitionMotionSpec(
         enabled = true,
         durationMillis = durationMillis,
         fullscreenDurationMillis = resolveVideoSharedTransitionFullscreenDurationMillis(durationMillis),
-        contentDelayMillis = if (isQuickReturn) 0 else HOME_DETAIL_REVEAL_DELAY_MILLIS,
+        contentDelayMillis = if (isQuickReturn) {
+            0
+        } else {
+            resolveVideoSharedTransitionContentDelayMillis(durationMillis)
+        },
         contentDurationMillis = resolveVideoSharedTransitionContentDurationMillis(durationMillis),
         contentSlideOffsetDp = HOME_DETAIL_REVEAL_SLIDE_OFFSET_DP,
         contentInitialScale = HOME_DETAIL_REVEAL_INITIAL_SCALE,

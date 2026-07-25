@@ -1,6 +1,7 @@
 package com.android.purebilibili.core.ui.transition
 
 import com.android.purebilibili.core.ui.adaptive.MotionTier
+import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -119,7 +120,7 @@ class VideoCardTransitionBackgroundPolicyTest {
         // density=1 时 12dp → 12px；真实机型由 DrawScope.density 换算。
         assertEquals(12f, frame.blurRadiusPx)
         assertEquals(0f, frame.blurRadiusPx % 1f)
-        assertEquals(0.28f, frame.scrimAlpha)
+        assertEquals(0.22f, frame.scrimAlpha)
         assertFalse(frame.useLightScrimTint)
         // 页面层禁止缩放/圆角，避免整页缩进黑边
         assertEquals(1f, frame.contentScale, 0.0001f)
@@ -235,47 +236,30 @@ class VideoCardTransitionBackgroundPolicyTest {
     }
 
     @Test
-    fun siblingCardsShrinkWithDepth_butMorphSourceStaysOne() {
-        assertEquals(
-            0.92f,
-            resolveVideoCardSiblingDepthScale(
-                depthProgress = 1f,
-                phase = VideoCardTransitionBackgroundPhase.OPENING,
-                isSharedMorphSourceCard = false,
-                motionTier = MotionTier.Normal,
-            ),
-            0.0001f,
-        )
-        assertEquals(
-            0.96f,
-            resolveVideoCardSiblingDepthScale(
-                depthProgress = 0.5f,
-                phase = VideoCardTransitionBackgroundPhase.RETURNING,
-                isSharedMorphSourceCard = false,
-                motionTier = MotionTier.Normal,
-            ),
-            0.0001f,
-        )
-        assertEquals(
-            1f,
-            resolveVideoCardSiblingDepthScale(
-                depthProgress = 1f,
-                phase = VideoCardTransitionBackgroundPhase.OPENING,
-                isSharedMorphSourceCard = true,
-                motionTier = MotionTier.Normal,
-            ),
-            0.0001f,
-        )
-        assertEquals(
-            1f,
-            resolveVideoCardSiblingDepthScale(
-                depthProgress = 1f,
-                phase = VideoCardTransitionBackgroundPhase.IDLE,
-                isSharedMorphSourceCard = false,
-                motionTier = MotionTier.Normal,
-            ),
-            0.0001f,
-        )
+    fun pageAndSiblingCardsNeverScaleDuringVideoCardTransition() {
+        VideoCardTransitionBackgroundPhase.entries.forEach { phase ->
+            assertEquals(
+                1f,
+                resolveVideoCardTransitionContentScale(
+                    progress = 1f,
+                    phase = phase,
+                    motionTier = MotionTier.Normal,
+                    isGestureRestoreInProgress = false,
+                ),
+                0.0001f,
+            )
+        }
+        listOf(
+            "VideoCard.kt",
+            "StoryVideoCard.kt",
+            "GlassVideoCard.kt",
+            "CinematicVideoCard.kt",
+        ).forEach { fileName ->
+            val source = File(
+                "src/main/java/com/android/purebilibili/feature/home/components/cards/$fileName"
+            ).readText()
+            assertFalse(source.contains("videoCardSiblingDepthScale("), fileName)
+        }
     }
 
     @Test
@@ -304,7 +288,7 @@ class VideoCardTransitionBackgroundPolicyTest {
         )
 
         assertEquals(12f, frame.blurRadiusPx)
-        assertEquals(0.14f, frame.scrimAlpha)
+        assertEquals(0.10f, frame.scrimAlpha)
         assertTrue(frame.useLightScrimTint)
     }
 
@@ -455,7 +439,7 @@ class VideoCardTransitionBackgroundPolicyTest {
 
         assertEquals(12f, frame.blurRadiusPx)
         // HELD 保留与满进度开场一致的压暗，避免详情停留时景深断裂。
-        assertEquals(0.28f, frame.scrimAlpha)
+        assertEquals(0.22f, frame.scrimAlpha)
         assertEquals(1f, frame.contentScale, 0.0001f)
         assertEquals(0f, frame.cornerRadiusPx, 0.0001f)
     }
@@ -840,9 +824,9 @@ class VideoCardTransitionBackgroundPolicyTest {
             isLightBackground = false,
         )
 
-        assertEquals(0.14f, heldFull.scrimAlpha)
+        assertEquals(0.10f, heldFull.scrimAlpha)
         assertTrue(heldHalf.scrimAlpha < heldFull.scrimAlpha)
-        assertEquals(0.28f, openingFull.scrimAlpha)
+        assertEquals(0.22f, openingFull.scrimAlpha)
         assertTrue(heldFull.useLightScrimTint)
         assertFalse(openingFull.useLightScrimTint)
     }

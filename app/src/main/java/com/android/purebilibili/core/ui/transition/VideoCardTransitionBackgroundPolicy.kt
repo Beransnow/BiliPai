@@ -26,25 +26,21 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 
 // 景深层（与 Hero 卡片放大配合，progress 0→1 同源）：
-// 1) **页面层不缩放**：整页 scale 会把状态栏外框缩进黑边；纵深改由 sibling 卡片承担
+// 1) **页面与 sibling 均不缩放**：共享卡片是唯一空间运动主体
 // 2) blur：空间纵深（冻结层 + BlurEffect）。半径按 **dp** 定义、按密度换算
 // 3) scrim 压暗：聚焦/可读
 // 4) 页面圆角：仅在整页缩放开启时启用；当前关闭，避免四角啃边
-// - sibling 卡片：非飞卡随 depth 缩约 8%，飞卡保持 1（sharedBounds 接管）
 // - 冻结层：首帧 record 一次后只改 BlurEffect，禁止 live 重录
 // - 压暗全程保留（含 HELD），避免打开完成后景深断裂
 // - 返回：景深 progress 与 shared morph 同墙钟、同 Linear
 private const val VIDEO_CARD_TRANSITION_MAX_BLUR_RADIUS_DP = 12f
 private const val VIDEO_CARD_TRANSITION_BLUR_QUANTUM_PX = 1f
-// 压暗：配合 sibling 下沉仍要可读，略强于旧 0.22/0.11，但低于半透明模态（避免脏）。
-private const val VIDEO_CARD_TRANSITION_MAX_SCRIM_ALPHA_DARK = 0.28f
-private const val VIDEO_CARD_TRANSITION_MAX_SCRIM_ALPHA_LIGHT = 0.14f
-private const val VIDEO_CARD_TRANSITION_LIGHT_REDUCED_OPENING_SCRIM_ALPHA = 0.08f
-// 列表下沉：整页缩放会把状态栏/页面外框一起缩进黑边，观感像「整页在抖」。
-// 页面层恒为 1；下沉改由首页其他卡片组件（sibling）跟随 depthProgress。
+// 取消 sibling 收缩后降低遮罩重量，让 shared 卡片保持唯一视觉焦点。
+private const val VIDEO_CARD_TRANSITION_MAX_SCRIM_ALPHA_DARK = 0.22f
+private const val VIDEO_CARD_TRANSITION_MAX_SCRIM_ALPHA_LIGHT = 0.10f
+private const val VIDEO_CARD_TRANSITION_REDUCED_SCRIM_ALPHA = 0.08f
+// 页面层恒为 1，避免状态栏外框缩进黑边。
 private const val VIDEO_CARD_TRANSITION_MAX_CONTENT_SCALE_REDUCTION = 0f
-/** 首页非飞卡组件在满深度时的缩放减量（约 8%），跟随景深、不带动整页。 */
-internal const val VIDEO_CARD_TRANSITION_SIBLING_SCALE_REDUCTION = 0.08f
 /** 景深缩放露出的边缘：至少压到这个 tint 强度，避免浅色主题读成「白条」。 */
 private const val VIDEO_CARD_TRANSITION_SCALE_GAP_MIN_TINT_LIGHT = 0.36f
 private const val VIDEO_CARD_TRANSITION_SCALE_GAP_MIN_TINT_DARK = 0.44f
@@ -103,8 +99,8 @@ internal fun resolveVideoCardTransitionScrimAlpha(
 ): Float {
     val clamped = progress.coerceIn(0f, 1f)
     val maxAlpha = when {
-        isLightBackground && motionTier == MotionTier.Reduced ->
-            VIDEO_CARD_TRANSITION_LIGHT_REDUCED_OPENING_SCRIM_ALPHA
+        motionTier == MotionTier.Reduced ->
+            VIDEO_CARD_TRANSITION_REDUCED_SCRIM_ALPHA
         isLightBackground ->
             VIDEO_CARD_TRANSITION_MAX_SCRIM_ALPHA_LIGHT
         else ->
@@ -120,7 +116,7 @@ internal fun resolveVideoCardTransitionContentScale(
     motionTier: MotionTier,
     isGestureRestoreInProgress: Boolean,
 ): Float {
-    // 页面层禁止缩放：黑边/整页抖动来源。纵深交给 sibling 组件缩放。
+    // 页面层禁止缩放：黑边/整页抖动来源。纵深只由 shared 卡片、模糊与遮罩表达。
     if (VIDEO_CARD_TRANSITION_MAX_CONTENT_SCALE_REDUCTION <= 0f) return 1f
     if (phase == VideoCardTransitionBackgroundPhase.IDLE || motionTier == MotionTier.Reduced) {
         return 1f
@@ -130,25 +126,6 @@ internal fun resolveVideoCardTransitionContentScale(
         phase = phase,
     )
     return 1f - VIDEO_CARD_TRANSITION_MAX_CONTENT_SCALE_REDUCTION * depthProgress
-}
-
-/**
- * 首页其他卡片（非当前飞卡）的景深缩放。
- * 飞卡本身由 sharedBounds 接管几何，这里必须保持 1，避免双重缩放。
- */
-internal fun resolveVideoCardSiblingDepthScale(
-    depthProgress: Float,
-    phase: VideoCardTransitionBackgroundPhase,
-    isSharedMorphSourceCard: Boolean,
-    motionTier: MotionTier,
-    maxReduction: Float = VIDEO_CARD_TRANSITION_SIBLING_SCALE_REDUCTION,
-): Float {
-    if (isSharedMorphSourceCard) return 1f
-    if (phase == VideoCardTransitionBackgroundPhase.IDLE || motionTier == MotionTier.Reduced) {
-        return 1f
-    }
-    if (maxReduction <= 0f) return 1f
-    return 1f - maxReduction * depthProgress.coerceIn(0f, 1f)
 }
 
 internal fun resolveVideoCardTransitionBackgroundFrame(

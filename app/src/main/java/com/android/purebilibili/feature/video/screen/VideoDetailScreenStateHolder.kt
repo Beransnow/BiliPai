@@ -176,6 +176,8 @@ import com.android.purebilibili.core.ui.transition.VideoSharedTransitionPlayback
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedTransitionMotionSpec
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedTransitionEnterEasing
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedTransitionReturnEasing
+import com.android.purebilibili.core.ui.transition.resolveVideoCardDetailChromeAlpha
+import com.android.purebilibili.core.ui.transition.resolveVideoCardSecondaryContentVisualFrame
 import com.android.purebilibili.core.ui.transition.resolveVideoSharedCoverCacheKey
 import com.android.purebilibili.core.ui.transition.resolveVideoSharedTransitionPlaybackIntent
 import com.android.purebilibili.core.ui.transition.resolveVideoSharedTransitionSourceCornerDp
@@ -1480,6 +1482,17 @@ internal fun VideoDetailScreenStateHolder(
         forceCoverOnlyOnReturn = forceCoverOnlyForReturn,
     )
     val videoCardDepthBackgroundState = LocalVideoCardTransitionBackgroundState.current
+    val videoCardTransitionDensity = LocalDensity.current
+    val videoCardDetailChromeAlphaProvider = remember(videoCardDepthBackgroundState) {
+        {
+            resolveVideoCardDetailChromeAlpha(
+                morphDepthProgress = videoCardDepthBackgroundState.progressProvider(),
+                phase = videoCardDepthBackgroundState.phaseProvider(),
+                isReturnGestureInProgress =
+                    videoCardDepthBackgroundState.isReturnGestureInProgressProvider(),
+            )
+        }
+    }
     val routedCommentInteractionActive =
         openCommentRootRpidFromRoute > 0L &&
             (subReplyState.visible || subReplyState.isLoading)
@@ -2897,6 +2910,8 @@ internal fun VideoDetailScreenStateHolder(
                                 uiState = uiState,
                                 isPipMode = isPipMode,
                                 transitionEnabled = detailChildTransitionEnabled,
+                                transitionChromeAlphaProvider =
+                                    videoCardDetailChromeAlphaProvider,
                                 onToggleFullscreen = { toggleFullscreen() },
                                 playbackActions = playbackActions,
                                 onDoubleTapLike = engagementViewModel::toggleLike,
@@ -2962,17 +2977,39 @@ internal fun VideoDetailScreenStateHolder(
                                     }
                                 )
                                 .graphicsLayer {
-                                    alpha = resolveVideoDetailReturnContentAlpha(
-                                        transitionProgress = detailTransitionProgress.value,
-                                        isCommittedCardReturn = isLeaving,
-                                        holdFullyOpaqueAfterBackPreview =
-                                            suppressEnterFadeAfterBackPreview && !isLeaving,
-                                        liveReturnMorph = liveReturnMorph,
-                                        // 与源卡 chrome 同一 clock.depthProgress，禁止双源 max 叠字。
-                                        morphDepthProgress =
-                                            videoCardDepthBackgroundState.progressProvider(),
-                                        isQuickReturn = isQuickReturningFromDetail,
-                                    )
+                                    val holdFullyOpaque =
+                                        suppressEnterFadeAfterBackPreview && !isLeaving
+                                    if (liveReturnMorph && !holdFullyOpaque) {
+                                        val frame = resolveVideoCardSecondaryContentVisualFrame(
+                                            morphDepthProgress =
+                                                videoCardDepthBackgroundState.progressProvider(),
+                                            phase = videoCardDepthBackgroundState.phaseProvider(),
+                                            isReturnGestureInProgress =
+                                                videoCardDepthBackgroundState
+                                                    .isReturnGestureInProgressProvider(),
+                                            motionTier =
+                                                videoCardDepthBackgroundState.motionTierProvider(),
+                                        )
+                                        alpha = if (
+                                            isLeaving && isQuickReturningFromDetail
+                                        ) {
+                                            0f
+                                        } else {
+                                            frame.alpha
+                                        }
+                                        translationY = with(videoCardTransitionDensity) {
+                                            frame.translationYDp.dp.toPx()
+                                        }
+                                    } else {
+                                        alpha = resolveVideoDetailReturnContentAlpha(
+                                            transitionProgress = detailTransitionProgress.value,
+                                            isCommittedCardReturn = isLeaving,
+                                            holdFullyOpaqueAfterBackPreview = holdFullyOpaque,
+                                            liveReturnMorph = false,
+                                            isQuickReturn = isQuickReturningFromDetail,
+                                        )
+                                        translationY = 0f
+                                    }
                                 }
                                 // .nestedScroll(nestedScrollConnection) // [Remove] 移除嵌套滚动，确保 Tabs 正常滑动
                         ) {

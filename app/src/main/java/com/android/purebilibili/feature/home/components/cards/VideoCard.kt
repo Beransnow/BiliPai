@@ -707,10 +707,6 @@ fun ElegantVideoCard(
                 motionSpec = homeSharedTransitionMotionSpec,
                 clipShape = cardShellShape
             )
-            .videoCardSiblingDepthScale(
-                bvid = video.bvid,
-                sourceRoute = effectiveSharedElementSourceRoute,
-            )
         Column(
             modifier = cardContainerModifier
         ) {
