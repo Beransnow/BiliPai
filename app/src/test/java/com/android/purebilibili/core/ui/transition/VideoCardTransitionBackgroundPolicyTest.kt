@@ -60,34 +60,6 @@ class VideoCardTransitionBackgroundPolicyTest {
     }
 
     @Test
-    fun snapshotDepthLayerStaysEnabledWhenRealtimeBlurFallsBack() {
-        assertTrue(
-            shouldUseVideoCardTransitionSnapshotLayer(
-                phase = VideoCardTransitionBackgroundPhase.OPENING,
-                motionTier = MotionTier.Normal,
-            )
-        )
-        assertTrue(
-            shouldUseVideoCardTransitionSnapshotLayer(
-                phase = VideoCardTransitionBackgroundPhase.RETURNING,
-                motionTier = MotionTier.Enhanced,
-            )
-        )
-        assertFalse(
-            shouldUseVideoCardTransitionSnapshotLayer(
-                phase = VideoCardTransitionBackgroundPhase.IDLE,
-                motionTier = MotionTier.Normal,
-            )
-        )
-        assertFalse(
-            shouldUseVideoCardTransitionSnapshotLayer(
-                phase = VideoCardTransitionBackgroundPhase.OPENING,
-                motionTier = MotionTier.Reduced,
-            )
-        )
-    }
-
-    @Test
     fun snapshotBlur_respectsRealtimeBlurSetting() {
         assertFalse(
             shouldUseVideoCardTransitionSnapshotBlur(
@@ -150,9 +122,8 @@ class VideoCardTransitionBackgroundPolicyTest {
         assertEquals(0f, frame.blurRadiusPx % 1f)
         assertEquals(0.22f, frame.scrimAlpha)
         assertFalse(frame.useLightScrimTint)
-        // 来源页统一缩到 94.5%，与飞出的共享卡片形成前后景对比。
-        assertEquals(0.945f, frame.contentScale, 0.0001f)
-        assertEquals(24f, frame.cornerRadiusPx, 0.0001f)
+        assertEquals(1f, frame.contentScale, 0.0001f)
+        assertEquals(0f, frame.cornerRadiusPx, 0.0001f)
     }
 
     @Test
@@ -199,8 +170,8 @@ class VideoCardTransitionBackgroundPolicyTest {
         // 12dp × 2.75 ≈ 33px；12dp × 1.5 = 18px
         assertEquals(33f, phone.blurRadiusPx, 0.51f)
         assertEquals(18f, tablet.blurRadiusPx, 0.51f)
-        assertEquals(24f * 2.75f, phone.cornerRadiusPx, 0.0001f)
-        assertEquals(24f * 1.5f, tablet.cornerRadiusPx, 0.0001f)
+        assertEquals(0f, phone.cornerRadiusPx, 0.0001f)
+        assertEquals(0f, tablet.cornerRadiusPx, 0.0001f)
         assertEquals(
             33f,
             resolveVideoCardTransitionMaxBlurRadiusPx(MotionTier.Normal, density = 2.75f),
@@ -211,7 +182,7 @@ class VideoCardTransitionBackgroundPolicyTest {
     @Test
     fun backgroundCornerUsesDeviceRadiusWhenLargerThanFallback() {
         assertEquals(
-            80f,
+            0f,
             resolveVideoCardTransitionBackgroundCornerRadiusPx(
                 depthProgress = 1f,
                 motionTier = MotionTier.Normal,
@@ -220,7 +191,7 @@ class VideoCardTransitionBackgroundPolicyTest {
             ),
             0.0001f,
         )
-        // 满深度取 max(设备圆角, 24dp 兜底)。
+        // 页面不缩放时不应用圆角；dp 策略保留给纯函数校验。
         assertEquals(
             80f / 2.75f,
             resolveVideoCardTransitionBackgroundCornerRadiusDp(
@@ -262,24 +233,10 @@ class VideoCardTransitionBackgroundPolicyTest {
     }
 
     @Test
-    fun backgroundPageShrinksInLockstepWhileSiblingCardsKeepTheirOwnGeometry() {
-        assertEquals(
-            1f,
-            resolveVideoCardTransitionContentScale(
-                progress = 1f,
-                phase = VideoCardTransitionBackgroundPhase.IDLE,
-                motionTier = MotionTier.Normal,
-                isGestureRestoreInProgress = false,
-            ),
-            0.0001f,
-        )
-        listOf(
-            VideoCardTransitionBackgroundPhase.OPENING,
-            VideoCardTransitionBackgroundPhase.HELD,
-            VideoCardTransitionBackgroundPhase.RETURNING,
-        ).forEach { phase ->
+    fun backgroundPageNeverShrinksDuringVideoCardTransition() {
+        VideoCardTransitionBackgroundPhase.entries.forEach { phase ->
             assertEquals(
-                0.945f,
+                1f,
                 resolveVideoCardTransitionContentScale(
                     progress = 1f,
                     phase = phase,
@@ -288,61 +245,96 @@ class VideoCardTransitionBackgroundPolicyTest {
                 ),
                 0.0001f,
             )
-            assertEquals(
-                0.9725f,
-                resolveVideoCardTransitionContentScale(
-                    progress = 0.5f,
-                    phase = phase,
-                    motionTier = MotionTier.Normal,
-                    isGestureRestoreInProgress = false,
-                ),
-                0.0001f,
-            )
-        }
-        assertEquals(
-            1f,
-            resolveVideoCardTransitionContentScale(
-                progress = 1f,
-                phase = VideoCardTransitionBackgroundPhase.OPENING,
-                motionTier = MotionTier.Reduced,
-                isGestureRestoreInProgress = false,
-            ),
-            0.0001f,
-        )
-        listOf(
-            "VideoCard.kt",
-            "StoryVideoCard.kt",
-            "GlassVideoCard.kt",
-            "CinematicVideoCard.kt",
-        ).forEach { fileName ->
-            val source = File(
-                "src/main/java/com/android/purebilibili/feature/home/components/cards/$fileName"
-            ).readText()
-            assertFalse(source.contains("videoCardSiblingDepthScale("), fileName)
         }
         val backgroundSource = File(
             "src/main/java/com/android/purebilibili/core/ui/transition/" +
                 "VideoCardTransitionBackgroundPolicy.kt"
         ).readText()
-        assertTrue(backgroundSource.contains("contentLayer.scaleX = frame.contentScale"))
-        assertTrue(backgroundSource.contains("contentLayer.scaleY = frame.contentScale"))
         assertFalse(backgroundSource.contains("translationX ="))
         assertFalse(backgroundSource.contains("translationY ="))
     }
 
     @Test
-    fun sharedCardUsesOnlySharedBoundsGeometryAboveTheShrinkingBackground() {
+    fun siblingVideoElementsShrinkWithDepthButTheFlyingCardStaysFullScale() {
+        assertEquals(
+            0.92f,
+            resolveVideoCardSiblingDepthScale(
+                depthProgress = 1f,
+                phase = VideoCardTransitionBackgroundPhase.OPENING,
+                isSharedMorphSourceCard = false,
+                motionTier = MotionTier.Normal,
+            ),
+            0.0001f,
+        )
+        assertEquals(
+            0.96f,
+            resolveVideoCardSiblingDepthScale(
+                depthProgress = 0.5f,
+                phase = VideoCardTransitionBackgroundPhase.RETURNING,
+                isSharedMorphSourceCard = false,
+                motionTier = MotionTier.Normal,
+            ),
+            0.0001f,
+        )
+        assertEquals(
+            1f,
+            resolveVideoCardSiblingDepthScale(
+                depthProgress = 1f,
+                phase = VideoCardTransitionBackgroundPhase.OPENING,
+                isSharedMorphSourceCard = true,
+                motionTier = MotionTier.Normal,
+            ),
+            0.0001f,
+        )
+        assertEquals(
+            1f,
+            resolveVideoCardSiblingDepthScale(
+                depthProgress = 1f,
+                phase = VideoCardTransitionBackgroundPhase.OPENING,
+                isSharedMorphSourceCard = false,
+                motionTier = MotionTier.Reduced,
+            ),
+            0.0001f,
+        )
+        assertEquals(
+            0.92f,
+            resolveVideoCardSiblingDepthScale(
+                depthProgress = 1f,
+                phase = VideoCardTransitionBackgroundPhase.HELD,
+                isSharedMorphSourceCard = false,
+                motionTier = MotionTier.Enhanced,
+            ),
+            0.0001f,
+        )
+        assertEquals(
+            1f,
+            resolveVideoCardSiblingDepthScale(
+                depthProgress = 1f,
+                phase = VideoCardTransitionBackgroundPhase.IDLE,
+                isSharedMorphSourceCard = false,
+                motionTier = MotionTier.Normal,
+            ),
+            0.0001f,
+        )
+    }
+
+    @Test
+    fun sharedShellAppliesSiblingScaleFromTheSingleDepthClockOnlyWhileActive() {
         val source = File(
             "src/main/java/com/android/purebilibili/core/ui/transition/" +
                 "VideoCardShellSharedBounds.kt"
         ).readText()
 
         assertTrue(source.contains("OverlayClip(clipShape)"))
-        assertFalse(source.contains("DepthShadow"))
+        assertTrue(source.contains("sharedContentState.isMatchFound"))
+        assertTrue(source.contains("bgState.progressProvider()"))
+        assertTrue(source.contains("bgState.phaseProvider()"))
+        assertTrue(source.contains("bgState.motionTierProvider()"))
+        assertTrue(source.contains("resolveVideoCardSiblingDepthScale("))
+        assertTrue(source.contains(".graphicsLayer {"))
+        assertTrue(source.contains("scaleX = scale"))
+        assertTrue(source.contains("scaleY = scale"))
         assertFalse(source.contains("shadowElevation"))
-        assertFalse(source.contains(".graphicsLayer {"))
-        assertFalse(source.contains("scaleX ="))
-        assertFalse(source.contains("scaleY ="))
         assertFalse(source.contains("translationX ="))
         assertFalse(source.contains("translationY ="))
         assertFalse(source.contains("animateFloatAsState"))
@@ -361,7 +353,7 @@ class VideoCardTransitionBackgroundPolicyTest {
         assertEquals(1f, early.blurRadiusPx, 1f)
         assertTrue(early.scrimAlpha > 0f)
         assertTrue(early.blurRadiusPx > 0f)
-        assertEquals(2.4f, early.cornerRadiusPx, 0.0001f)
+        assertEquals(0f, early.cornerRadiusPx, 0.0001f)
     }
 
     @Test
@@ -495,11 +487,11 @@ class VideoCardTransitionBackgroundPolicyTest {
         assertTrue(start.scrimAlpha > middle.scrimAlpha)
         assertTrue(middle.scrimAlpha > 0f)
         assertEquals(0f, end.scrimAlpha)
-        assertEquals(0.945f, start.contentScale, 0.0001f)
-        assertEquals(0.9725f, middle.contentScale, 0.0001f)
+        assertEquals(1f, start.contentScale, 0.0001f)
+        assertEquals(1f, middle.contentScale, 0.0001f)
         assertEquals(1f, end.contentScale)
-        assertEquals(24f, start.cornerRadiusPx, 0.0001f)
-        assertEquals(12f, middle.cornerRadiusPx, 0.0001f)
+        assertEquals(0f, start.cornerRadiusPx, 0.0001f)
+        assertEquals(0f, middle.cornerRadiusPx, 0.0001f)
         assertEquals(0f, end.cornerRadiusPx, 0.0001f)
     }
 
@@ -527,8 +519,8 @@ class VideoCardTransitionBackgroundPolicyTest {
         assertEquals(12f, frame.blurRadiusPx)
         // HELD 保留与满进度开场一致的压暗，避免详情停留时景深断裂。
         assertEquals(0.22f, frame.scrimAlpha)
-        assertEquals(0.945f, frame.contentScale, 0.0001f)
-        assertEquals(24f, frame.cornerRadiusPx, 0.0001f)
+        assertEquals(1f, frame.contentScale, 0.0001f)
+        assertEquals(0f, frame.cornerRadiusPx, 0.0001f)
     }
 
     @Test
@@ -546,8 +538,8 @@ class VideoCardTransitionBackgroundPolicyTest {
             isGestureRestoreInProgress = true,
         )
 
-        assertEquals(0.945f, openingScale, 0.0001f)
-        assertEquals(0.9725f, restoreScale, 0.002f)
+        assertEquals(1f, openingScale, 0.0001f)
+        assertEquals(1f, restoreScale, 0.002f)
     }
 
     @Test
@@ -579,10 +571,10 @@ class VideoCardTransitionBackgroundPolicyTest {
 
         assertEquals(0f, opening.blurRadiusPx)
         assertTrue(opening.scrimAlpha > 0f)
-        assertEquals(0.945f, opening.contentScale, 0.0001f)
+        assertEquals(1f, opening.contentScale, 0.0001f)
         assertEquals(0f, returning.blurRadiusPx)
         assertTrue(returning.scrimAlpha > 0f)
-        assertEquals(0.945f, returning.contentScale, 0.0001f)
+        assertEquals(1f, returning.contentScale, 0.0001f)
     }
 
     @Test
@@ -595,8 +587,8 @@ class VideoCardTransitionBackgroundPolicyTest {
 
         assertTrue(frame.blurRadiusPx > 0f)
         assertTrue(frame.scrimAlpha > 0f)
-        assertEquals(0.98625f, frame.contentScale, 0.0001f)
-        assertEquals(6f, frame.cornerRadiusPx, 0.0001f)
+        assertEquals(1f, frame.contentScale, 0.0001f)
+        assertEquals(0f, frame.cornerRadiusPx, 0.0001f)
     }
 
     @Test

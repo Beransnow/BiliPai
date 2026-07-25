@@ -26,21 +26,22 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 
 // 景深层（与 Hero 卡片放大配合，progress 0→1 同源）：
-// 1) scale：来源页整体后撤，shared overlay 中的飞卡不参与缩放
-// 2) blur：空间纵深（冻结层 + BlurEffect）。半径按 **dp** 定义、按密度换算
-// 3) scrim 压暗：聚焦/可读
-// 4) 页面圆角：随来源页缩放建立，配合边缘 gap tint 避免露出亮边
+// 1) **页面层不缩放**：状态栏、顶底栏和屏幕边界保持原位
+// 2) sibling 视频元素缩小后撤；shared overlay 中的飞卡保持 1
+// 3) blur：空间纵深（冻结层 + BlurEffect）。半径按 **dp** 定义、按密度换算
+// 4) scrim 压暗：聚焦/可读
 // - 冻结层：首帧 record 一次后只改 BlurEffect，禁止 live 重录
 // - 压暗全程保留（含 HELD），避免打开完成后景深断裂
 // - 返回：景深 progress 与 shared morph 同墙钟、同 Linear
 private const val VIDEO_CARD_TRANSITION_MAX_BLUR_RADIUS_DP = 12f
 private const val VIDEO_CARD_TRANSITION_BLUR_QUANTUM_PX = 1f
-// 保持遮罩克制，让背景缩小与 shared 卡片放大承担主要层级对比。
+// 保持遮罩克制，让元素缩小与 shared 卡片放大承担主要层级对比。
 private const val VIDEO_CARD_TRANSITION_MAX_SCRIM_ALPHA_DARK = 0.22f
 private const val VIDEO_CARD_TRANSITION_MAX_SCRIM_ALPHA_LIGHT = 0.10f
 private const val VIDEO_CARD_TRANSITION_REDUCED_SCRIM_ALPHA = 0.08f
-// 5.5% 与卡片放大对仗清晰，又不会在返回时读成整页回弹。
-private const val VIDEO_CARD_TRANSITION_MAX_CONTENT_SCALE_REDUCTION = 0.055f
+private const val VIDEO_CARD_TRANSITION_MAX_CONTENT_SCALE_REDUCTION = 0f
+/** 未被点击的视频元素在满深度时缩小 8%。 */
+internal const val VIDEO_CARD_TRANSITION_SIBLING_SCALE_REDUCTION = 0.08f
 /** 景深缩放露出的边缘：至少压到这个 tint 强度，避免浅色主题读成「白条」。 */
 private const val VIDEO_CARD_TRANSITION_SCALE_GAP_MIN_TINT_LIGHT = 0.36f
 private const val VIDEO_CARD_TRANSITION_SCALE_GAP_MIN_TINT_DARK = 0.44f
@@ -116,6 +117,7 @@ internal fun resolveVideoCardTransitionContentScale(
     motionTier: MotionTier,
     isGestureRestoreInProgress: Boolean,
 ): Float {
+    if (VIDEO_CARD_TRANSITION_MAX_CONTENT_SCALE_REDUCTION <= 0f) return 1f
     if (phase == VideoCardTransitionBackgroundPhase.IDLE || motionTier == MotionTier.Reduced) {
         return 1f
     }
@@ -124,6 +126,24 @@ internal fun resolveVideoCardTransitionContentScale(
         phase = phase,
     )
     return 1f - VIDEO_CARD_TRANSITION_MAX_CONTENT_SCALE_REDUCTION * depthProgress
+}
+
+/**
+ * 未被点击的视频元素随景深缩小；飞卡由 sharedBounds 单独负责几何变化。
+ */
+internal fun resolveVideoCardSiblingDepthScale(
+    depthProgress: Float,
+    phase: VideoCardTransitionBackgroundPhase,
+    isSharedMorphSourceCard: Boolean,
+    motionTier: MotionTier,
+    maxReduction: Float = VIDEO_CARD_TRANSITION_SIBLING_SCALE_REDUCTION,
+): Float {
+    if (isSharedMorphSourceCard) return 1f
+    if (phase == VideoCardTransitionBackgroundPhase.IDLE || motionTier == MotionTier.Reduced) {
+        return 1f
+    }
+    if (maxReduction <= 0f) return 1f
+    return 1f - maxReduction * depthProgress.coerceIn(0f, 1f)
 }
 
 internal fun resolveVideoCardTransitionBackgroundFrame(
@@ -240,6 +260,7 @@ internal fun resolveVideoCardTransitionBackgroundCornerRadiusPx(
     deviceCornerRadiusPx: Float = 0f,
 ): Float {
     if (motionTier == MotionTier.Reduced) return 0f
+    if (VIDEO_CARD_TRANSITION_MAX_CONTENT_SCALE_REDUCTION <= 0f) return 0f
     val fullRadiusDp = resolveVideoCardTransitionBackgroundCornerRadiusDp(
         deviceCornerRadiusPx = deviceCornerRadiusPx,
         density = density,
@@ -593,24 +614,12 @@ internal fun shouldLiveRecordVideoCardTransitionSnapshot(
 }
 
 /**
- * 来源页缩放依赖冻结 display list，但不依赖实时模糊能力。
- * API 31 以下或用户关闭实时模糊时仍保留「缩放 + 压暗」。
- */
-internal fun shouldUseVideoCardTransitionSnapshotLayer(
-    phase: VideoCardTransitionBackgroundPhase,
-    motionTier: MotionTier,
-): Boolean {
-    return phase != VideoCardTransitionBackgroundPhase.IDLE &&
-        motionTier != MotionTier.Reduced
-}
-
-/**
  * 卡片开合景深：
- * - OPENING：首帧 record 一次后立刻冻结，BlurEffect/scale/圆角跟进度（完整 12dp 观感）
+ * - OPENING：首帧 record 一次后立刻冻结，BlurEffect 跟进度（完整 12dp 观感）
  * - HELD / RETURNING：复用冻结层，不每帧重录 feed
  * - IDLE：释放并恢复普通绘制
- * - API 31 以下 / 实时模糊关闭：保留 scale + scrim
- * - Reduced：只保留轻 scrim
+ * - API 31 以下 / 实时模糊关闭：保留 scrim 与元素级缩放
+ * - Reduced：只保留轻 scrim，元素不缩放
  */
 @Composable
 internal fun Modifier.videoCardTransitionBackgroundEffect(
@@ -631,18 +640,14 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
     }
     val phase = phaseProvider()
     val motionTier = motionTierProvider()
-    val useSnapshotLayer = shouldUseVideoCardTransitionSnapshotLayer(
-        phase = phase,
-        motionTier = motionTier,
-    )
     val useSnapshotBlur = shouldUseVideoCardTransitionSnapshotBlur(
         phase = phase,
         motionTier = motionTier,
         realtimeBlurEnabled = realtimeBlurEnabledProvider(),
     )
 
-    LaunchedEffect(phase, useSnapshotLayer) {
-        if (!useSnapshotLayer) {
+    LaunchedEffect(phase, useSnapshotBlur) {
+        if (!useSnapshotBlur) {
             snapshotState.reset()
             return@LaunchedEffect
         }
@@ -693,13 +698,8 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
             motionTier = activeMotionTier,
             realtimeBlurEnabled = realtimeBlurEnabledProvider(),
         )
-        val snapshotLayerActive = shouldUseVideoCardTransitionSnapshotLayer(
-            phase = activePhase,
-            motionTier = activeMotionTier,
-        )
-
-        if (!snapshotLayerActive) {
-            // IDLE / Reduced：正常绘制内容；Reduced 只叠轻 scrim。
+        if (!snapshotBlurActive) {
+            // IDLE / Reduced / 低版本：正常绘制页面；元素缩放由各 shared shell 自己承担。
             drawContent()
             if (frame.scrimAlpha > 0.001f) {
                 val scrimColor = if (frame.useLightScrimTint) {
@@ -736,13 +736,12 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
                 contentLayer.clip = false
             }
         }
-        val activeBlurRadiusPx = if (snapshotBlurActive) frame.blurRadiusPx else 0f
-        if (activeBlurRadiusPx != snapshotState.lastBlurRadiusPx) {
-            snapshotState.lastBlurRadiusPx = activeBlurRadiusPx
-            contentLayer.renderEffect = if (activeBlurRadiusPx > 0.01f) {
+        if (frame.blurRadiusPx != snapshotState.lastBlurRadiusPx) {
+            snapshotState.lastBlurRadiusPx = frame.blurRadiusPx
+            contentLayer.renderEffect = if (frame.blurRadiusPx > 0.01f) {
                 BlurEffect(
-                    radiusX = activeBlurRadiusPx,
-                    radiusY = activeBlurRadiusPx,
+                    radiusX = frame.blurRadiusPx,
+                    radiusY = frame.blurRadiusPx,
                     edgeTreatment = TileMode.Clamp,
                 )
             } else {
