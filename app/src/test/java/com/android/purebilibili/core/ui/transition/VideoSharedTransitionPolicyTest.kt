@@ -655,9 +655,11 @@ class VideoSharedTransitionPolicyTest {
         assertTrue(homeCardSource.contains("videoCardShellSharedBoundsOrEmpty("))
         assertFalse(homeCardSource.contains("videoTitleSharedElementKey("))
         assertTrue(detailInfoSource.contains("useCardContainerSharedBounds = useCardContainerSharedBounds"))
-        // 分区复用首页 ElegantVideoCard（shell 在 VideoCard.kt），列表本身走竖卡双列。
+        // 分区复用首页 ElegantVideoCard（shell 在 VideoCard.kt），单列来源边界由整卡实测。
         assertTrue(partitionSource.contains("ElegantVideoCard("))
-        assertTrue(partitionSource.contains("state.videos.chunked(2)"))
+        assertTrue(partitionSource.contains("items = state.videos"))
+        assertTrue(partitionSource.contains("coverAspectRatio = VIDEO_SHARED_COVER_ASPECT_RATIO"))
+        assertFalse(partitionSource.contains("state.videos.chunked(2)"))
         assertFalse(partitionSource.contains("videoTitleSharedElementKey("))
         assertTrue(cinematicCardSource.contains("videoCardShellSharedBoundsOrEmpty("))
         assertFalse(cinematicCardSource.contains("videoTitleSharedElementKey("))

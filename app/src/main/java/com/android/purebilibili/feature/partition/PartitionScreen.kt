@@ -65,6 +65,7 @@ import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.resolveSharedLiquidGlassChromeEnabled
 import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
+import com.android.purebilibili.core.ui.transition.VIDEO_SHARED_COVER_ASPECT_RATIO
 import com.android.purebilibili.data.model.response.BangumiType
 import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.data.repository.VideoRepository
@@ -858,7 +859,6 @@ private fun PartitionVideoList(
             }
         }
         else -> {
-            val videoRows = remember(state.videos) { state.videos.chunked(2) }
             LazyColumn(
                 state = listState,
                 modifier = modifier.fillMaxHeight(),
@@ -866,37 +866,27 @@ private fun PartitionVideoList(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 itemsIndexed(
-                    items = videoRows,
-                    key = { rowIndex, row ->
-                        val first = row.firstOrNull()
+                    items = state.videos,
+                    key = { index, video ->
                         resolveIndexedVideoLazyKey(
-                            namespace = "partition_feed_row",
-                            index = rowIndex,
-                            bvid = first?.bvid.orEmpty(),
-                            aid = first?.aid ?: 0L,
-                            cid = first?.cid ?: 0L
+                            namespace = "partition_feed_item",
+                            index = index,
+                            bvid = video.bvid,
+                            aid = video.aid,
+                            cid = video.cid
                         )
                     }
-                ) { rowIndex, row ->
-                    Row(
+                ) { index, video ->
+                    ElegantVideoCard(
+                        video = video,
+                        index = index,
+                        transitionEnabled = sharedTransitionEnabled,
+                        sharedElementSourceRoute = sharedElementSourceRoute,
+                        coverAspectRatio = VIDEO_SHARED_COVER_ASPECT_RATIO,
+                        compactMetadata = false,
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        row.forEachIndexed { columnIndex, video ->
-                            ElegantVideoCard(
-                                video = video,
-                                index = rowIndex * 2 + columnIndex,
-                                transitionEnabled = sharedTransitionEnabled,
-                                sharedElementSourceRoute = sharedElementSourceRoute,
-                                coverAspectRatio = 4f / 3f,
-                                modifier = Modifier.weight(1f),
-                                onClick = { _, _ -> onVideoClick(video) }
-                            )
-                        }
-                        repeat((2 - row.size).coerceAtLeast(0)) {
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
-                    }
+                        onClick = { _, _ -> onVideoClick(video) }
+                    )
                 }
 
                 if (state.isLoading) {

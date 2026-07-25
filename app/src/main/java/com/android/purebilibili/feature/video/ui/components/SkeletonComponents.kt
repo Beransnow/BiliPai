@@ -243,15 +243,12 @@ private fun RelatedVideoGridRowSkeleton() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = cardLayout.outerPaddingDp.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(cardLayout.itemSpacingDp.dp)
+            .padding(horizontal = cardLayout.outerPaddingDp.dp, vertical = 4.dp)
     ) {
-        repeat(2) {
-            RelatedVideoItemSkeleton(
-                modifier = Modifier.weight(1f),
-                coverAspectRatio = cardLayout.coverAspectRatio,
-            )
-        }
+        RelatedVideoItemSkeleton(
+            modifier = Modifier.fillMaxWidth(),
+            coverAspectRatio = RELATED_VIDEO_CARD_COVER_ASPECT_RATIO,
+        )
     }
 }
 
