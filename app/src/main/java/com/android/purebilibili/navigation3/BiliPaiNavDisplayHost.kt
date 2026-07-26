@@ -722,7 +722,13 @@ internal fun BiliPaiNavDisplayHost(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.TopStart,
             sizeTransform = null,
-            transitionEffects = NavDisplayTransitionEffects(blockInputDuringTransition = false),
+            // 页面自身已经提供了方向、淡入和预测返回效果。关闭 Navigation3 默认的
+            // 圆角裁剪与 dim，可避免转场期间额外的离屏层和整页重绘。
+            transitionEffects = NavDisplayTransitionEffects(
+                enableCornerClip = false,
+                dimAmount = 0f,
+                blockInputDuringTransition = false,
+            ),
             transitionSpec = {
                 with(predictiveBackHandler) {
                     onTransitionSpec()

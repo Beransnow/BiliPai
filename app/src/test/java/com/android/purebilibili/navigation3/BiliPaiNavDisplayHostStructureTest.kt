@@ -21,11 +21,12 @@ class BiliPaiNavDisplayHostStructureTest {
         assertFalse(source.contains("videoCardTransitionController"))
         assertFalse(source.contains("LocalVideoCardTransitionSession"))
         assertTrue(source.contains("predictivePopTransitionSpec"))
-        assertTrue(
-            source.contains(
-                "NavDisplayTransitionEffects(blockInputDuringTransition = false)"
-            )
-        )
+        val transitionEffects = source
+            .substringAfter("transitionEffects = NavDisplayTransitionEffects(")
+            .substringBefore("),")
+        assertTrue(transitionEffects.contains("enableCornerClip = false"))
+        assertTrue(transitionEffects.contains("dimAmount = 0f"))
+        assertTrue(transitionEffects.contains("blockInputDuringTransition = false"))
     }
 
     @Test

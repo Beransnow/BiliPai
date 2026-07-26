@@ -11,6 +11,7 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import com.android.purebilibili.core.ui.motion.AppMotionEasing
 import com.android.purebilibili.core.ui.motion.SETTINGS_IOS_PUSH_DURATION_MS
+import com.android.purebilibili.core.ui.motion.navigationSlideSpring
 import com.android.purebilibili.core.ui.motion.resolveBottomBarLikeHorizontalContentTransform
 import com.android.purebilibili.core.ui.motion.resolveSettingsIosPushForwardContentTransform
 import com.android.purebilibili.core.ui.motion.resolveSettingsIosPushPopContentTransform
@@ -81,12 +82,10 @@ internal fun resolveBiliPaiNavPopContentTransform(
  *                      +1 = source right (enter from right / exit to right)
  */
 private fun disabledVideoDirectionForwardTransform(directionSign: Int): ContentTransform {
+    val spatialSpec = navigationSlideSpring(NAV3_DISABLED_VIDEO_DIRECTION_MILLIS)
     return (
         slideInHorizontally(
-            animationSpec = tween(
-                NAV3_DISABLED_VIDEO_DIRECTION_MILLIS,
-                easing = AppMotionEasing.EmphasizedEnter
-            ),
+            animationSpec = spatialSpec,
             // ~85% width keeps origin readable without a jarring full wipe.
             initialOffsetX = { width -> (directionSign * width * 0.85f).toInt() }
         ) + fadeIn(
@@ -97,10 +96,7 @@ private fun disabledVideoDirectionForwardTransform(directionSign: Int): ContentT
         )
     ) togetherWith (
         slideOutHorizontally(
-            animationSpec = tween(
-                NAV3_DISABLED_VIDEO_DIRECTION_MILLIS,
-                easing = AppMotionEasing.EmphasizedExit
-            ),
+            animationSpec = spatialSpec,
             // Opposite nudge for the list page under the detail.
             targetOffsetX = { width -> (-directionSign * width * 0.18f).toInt() }
         ) + fadeOut(animationSpec = tween(NAV3_DISABLED_VIDEO_DIRECTION_MILLIS))
@@ -108,28 +104,31 @@ private fun disabledVideoDirectionForwardTransform(directionSign: Int): ContentT
 }
 
 private fun spaceForwardTransform(): ContentTransform {
+    val spatialSpec = navigationSlideSpring(NAV3_SPACE_FORWARD_MILLIS)
     return (
         slideInHorizontally(
-            animationSpec = tween(NAV3_SPACE_FORWARD_MILLIS, easing = AppMotionEasing.EmphasizedEnter),
+            animationSpec = spatialSpec,
             initialOffsetX = { width -> width / 8 }
         ) + fadeIn(animationSpec = tween(NAV3_SPACE_FORWARD_MILLIS))
     ) togetherWith fadeOut(animationSpec = tween(NAV3_FALLBACK_FADE_MILLIS))
 }
 
 private fun lightSiblingForwardTransform(): ContentTransform {
+    val spatialSpec = navigationSlideSpring(NAV3_LIGHT_SIBLING_MILLIS)
     return (
         slideInHorizontally(
-            animationSpec = tween(NAV3_LIGHT_SIBLING_MILLIS, easing = AppMotionEasing.EmphasizedEnter),
+            animationSpec = spatialSpec,
             initialOffsetX = { width -> width / 8 }
         ) + fadeIn(animationSpec = tween(NAV3_LIGHT_SIBLING_MILLIS, easing = AppMotionEasing.EmphasizedEnter))
     ) togetherWith fadeOut(animationSpec = tween(NAV3_FALLBACK_FADE_MILLIS))
 }
 
 private fun lightSiblingPopTransform(): ContentTransform {
+    val spatialSpec = navigationSlideSpring(NAV3_LIGHT_SIBLING_MILLIS)
     return EnterTransition.None togetherWith
         (
             slideOutHorizontally(
-                animationSpec = tween(NAV3_LIGHT_SIBLING_MILLIS, easing = AppMotionEasing.EmphasizedExit),
+                animationSpec = spatialSpec,
                 targetOffsetX = { width -> width / 8 }
             ) + fadeOut(animationSpec = tween(NAV3_LIGHT_SIBLING_MILLIS, easing = AppMotionEasing.EmphasizedExit))
         )
@@ -159,12 +158,10 @@ private fun settingsIosPushPopTransform(): ContentTransform =
  * - directionSign +1: detail exits right (right card), list re-enters from the left
  */
 private fun disabledVideoDirectionReturnTransform(directionSign: Int): ContentTransform {
+    val spatialSpec = navigationSlideSpring(NAV3_DISABLED_VIDEO_RETURN_MILLIS)
     return (
         slideInHorizontally(
-            animationSpec = tween(
-                durationMillis = NAV3_DISABLED_VIDEO_RETURN_MILLIS,
-                easing = AppMotionEasing.EmphasizedEnter
-            ),
+            animationSpec = spatialSpec,
             initialOffsetX = { width -> (-directionSign * width * 0.18f).toInt() }
         ) + fadeIn(
             animationSpec = tween(
@@ -174,10 +171,7 @@ private fun disabledVideoDirectionReturnTransform(directionSign: Int): ContentTr
         )
     ) togetherWith (
         slideOutHorizontally(
-            animationSpec = tween(
-                durationMillis = NAV3_DISABLED_VIDEO_RETURN_MILLIS,
-                easing = AppMotionEasing.EmphasizedExit
-            ),
+            animationSpec = spatialSpec,
             // Exit fully toward the card column (left card → left, right card → right).
             targetOffsetX = { width -> (directionSign * width * 0.9f).toInt() }
         ) + fadeOut(
