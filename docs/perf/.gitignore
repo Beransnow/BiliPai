@@ -1,0 +1,2 @@
+# 脚本原始输出体积大且不可比，只保留 baseline/ 与 snapshots/ 下的结构化结果。
+raw/

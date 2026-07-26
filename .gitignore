@@ -99,4 +99,14 @@ docs/*
 !docs/images/screenshot*.png
 !docs/wiki/
 !docs/wiki/*.md
+# 性能基线必须入库，否则采集结果只留在开发者本机，无法回答
+# 「这个版本比上个版本快还是慢」。raw/ 由 docs/perf/.gitignore 单独排除。
+!docs/perf/
+!docs/perf/.gitignore
+!docs/perf/*.md
+!docs/perf/baseline/
+!docs/perf/baseline/*.md
+!docs/perf/baseline/*.json
+!docs/perf/snapshots/
+!docs/perf/snapshots/**
 .omx/

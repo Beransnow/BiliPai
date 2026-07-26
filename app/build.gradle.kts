@@ -7,6 +7,8 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
     // Room 数据库编译插件
     id("com.google.devtools.ksp")
+    // 🔥 Baseline Profile：把 :baselineprofile 采集到的 profile 打进 APK
+    id("androidx.baselineprofile")
     // 🔥 Firebase 相关插件
     // id("com.google.gms.google-services")
     // id("com.google.firebase.crashlytics")
@@ -258,6 +260,17 @@ tasks.matching { task ->
 //     metricsDestination = layout.buildDirectory.dir("compose_metrics")
 // }
 
+baselineProfile {
+    // 产物固定落到 app/src/main/generated/baselineProfiles/，而不是按变体分散。
+    // 4 个 buildType 各存一份近乎相同的大文本进 git 没有意义，且 dev/smooth 本就是
+    // release 的镜像。单一路径也让 CI 校验和 update 脚本各自只需一行。
+    mergeIntoMain = true
+    saveInSrc = true
+    // 不在每次 assembleRelease 时跑 GMD——那会让每次正式构建多出 8 分钟。
+    // profile 由 scripts/update_baseline_profile.sh 显式生成并提交。
+    automaticGenerationDuringBuild = false
+}
+
 dependencies {
     val miuixVersion = "0.9.3"
     val material3Version = "1.5.0-alpha18"
@@ -405,6 +418,9 @@ dependencies {
     
     // --- 10. ProfileInstaller (启动优化) ---
     implementation("androidx.profileinstaller:profileinstaller:1.4.1")
+    // 没有这一行，APK 里就不会有 assets/dexopt/baseline.prof，
+    // PureApplication 里的 ProfileInstaller.writeProfile() 是空转。
+    baselineProfile(project(":baselineprofile"))
     
     // --- 11. Firebase (崩溃追踪和分析) ---
     implementation(platform("com.google.firebase:firebase-bom:34.12.0"))

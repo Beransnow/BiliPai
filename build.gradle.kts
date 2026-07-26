@@ -28,4 +28,8 @@ plugins {
     // 3. Firebase 相关插件
     id("com.google.gms.google-services") version "4.4.2" apply false
     id("com.google.firebase.crashlytics") version "3.0.2" apply false
+
+    // 4. Baseline Profile —— 版本必须与 :baselineprofile 的 benchmark-macro-junit4 一致，
+    //    否则插件会报 version mismatch。
+    id("androidx.baselineprofile") version "1.4.1" apply false
 }
