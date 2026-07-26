@@ -385,11 +385,13 @@ fun HomeScreen(
         currentCategory = currentCategory,
         displayedTabIndex = displayedTabIndexFromState
     )
+    val pagerState = androidx.compose.foundation.pager.rememberPagerState(initialPage = initialPage) { topTabEntries.size }
+    // PagerState 会从 SaveableState 恢复实际页码；不能用 initialPage 判断同步状态，
+    // 否则详情返回后可能把恢复的旧页反向写回当前分类。
     val initialPageSyncedWithState = shouldTreatInitialHomePagerPageAsSyncedWithState(
-        initialEntry = resolveHomeTopTabEntryOrNull(topTabEntries, initialPage),
+        initialEntry = resolveHomeTopTabEntryOrNull(topTabEntries, pagerState.currentPage),
         currentCategory = currentCategory
     )
-    val pagerState = androidx.compose.foundation.pager.rememberPagerState(initialPage = initialPage) { topTabEntries.size }
     // 返回详情页时按标签身份恢复，避免自定义顺序把旧页码解释成另一个分类。
     var retainedTopTabEntry by remember {
         mutableStateOf(resolveHomeTopTabEntryOrNull(topTabEntries, initialPage))
