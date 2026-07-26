@@ -109,11 +109,15 @@ AFTER_PSS="$(pss_kb "$MEM_AFTER_FILE")"
 echo "[home-scroll] result: duration=${ELAPSED_SECONDS}s"
 awk '
   /---PROFILEDATA---/ { exit }
-  /Total frames rendered:|Janky frames:|50th percentile:|90th percentile:|95th percentile:|99th percentile:|Number Missed Vsync|Number Slow UI thread|Number Slow bitmap uploads|Number Slow issue draw commands|Number Frame deadline missed:/ { print "  " $0 }
+  /Total frames rendered:|Janky frames( \(legacy\))?:|50th percentile:|90th percentile:|95th percentile:|99th percentile:|Number Missed Vsync|Number High input latency|Number Slow UI thread|Number Slow bitmap uploads|Number Slow issue draw commands|Number Frame deadline missed( \(legacy\))?:/ {
+    key = $0
+    sub(/:[[:space:]].*/, "", key)
+    if (!seen[key]++) print "  " $0
+  }
 ' "$GFX_FILE"
 if [[ -n "$BEFORE_PSS" && -n "$AFTER_PSS" ]]; then
   awk -v before="$BEFORE_PSS" -v after="$AFTER_PSS" 'BEGIN {
-    printf "  TOTAL PSS: %.1f -> %.1f MiB (%+.1f MiB)\\n", before / 1024, after / 1024, (after - before) / 1024
+    printf "  TOTAL PSS: %.1f -> %.1f MiB (%+.1f MiB)\n", before / 1024, after / 1024, (after - before) / 1024
   }'
 fi
 echo "[home-scroll] raw: $GFX_FILE"
