@@ -5,15 +5,15 @@
 ### 版本信息
 
 - 版本号从 `9.9.8.8` 升级到 `9.9.8.9`，`versionCode` 从 `263` 升级到 `264`。
-- 更新范围：自最近已发布基线 `v9.9.8.7` 至本版本发布前的 64 个提交。
+- 更新范围：自最近已发布基线 `v9.9.8.7` 至本版本发布前的 72 个提交。
 
 ### 相对 v9.9.8.7 的完整更新
 
 #### 播放器、画质与插件
 
-- 新增 Anime4K CNN 视频增强插件，提供适配帧预算的预设、Kazumi 对齐、稳定切换与 surface 重绑；插件版本升级到 `0.2.1`。
+- 新增 Anime4K CNN 视频增强插件，提供适配帧预算的预设、Kazumi 对齐、稳定切换与 surface 重绑；插件版本升级到 `0.2.2`，并支持番剧播放与显示比例保持。
 - 新增严格自定义 CDN 模式，IP 刷新后仍保留用户自定义规则。
-- 修复 TextureView 下 HDR 视频仅以 SDR 渲染、`hvc1` HEVC 流识别和实验性 DASH 忽略编码偏好。
+- 修复 TextureView 下 HDR 视频仅以 SDR 渲染、`hvc1` HEVC 流识别和实验性 DASH 忽略编码偏好；CDN fallback 保留原编码，超时保持 `2.5s`。
 - 修复章节跳转、弹幕开关、长按倍速平滑度与全屏播放队列保持；预测返回时继续保留视频画面。
 
 #### 首页、列表与卡片过渡
@@ -34,6 +34,8 @@
 - [#645](https://github.com/jay3-yy/BiliPai/pull/645) **@maxzrb** — `fix(player): 修正HEVC视频流获取能力漏洞`。
 - [#648](https://github.com/jay3-yy/BiliPai/pull/648) **@Kurarion** — `feat(cdn): 保留自定义规则并新增严格自定义 CDN 模式`。
 - [#655](https://github.com/jay3-yy/BiliPai/pull/655) **@maxzrb** — `feat(player): Anime4K超分辨率插件支持`。
+- [#657](https://github.com/jay3-yy/BiliPai/pull/657) **@maxzrb** — `fix(player): 修复偶发的CDN fallback导致视频编码意外降级`。
+- [#658](https://github.com/jay3-yy/BiliPai/pull/658) **@maxzrb** — `fix(player): 完善 Anime4K 播放场景接入并修复画面比例`。
 
 ### 作者与提交清单
 
@@ -88,7 +90,7 @@
 - `fb941651b` Fix home tab restore after video return
 - `fc5c41b26` Add copy actions to UP spaces
 
-#### @maxzrb（10 个提交；含 PR #639、#645、#655）
+#### @maxzrb（16 个提交；含 PR #639、#645、#655、#657、#658）
 
 - `edf23e150` fix(player): 修复 TextureView 导致 HDR 视频只能以 SDR 渲染到屏幕
 - `c785edc1d` fix(player): recognize hvc1 as HEVC
@@ -100,6 +102,12 @@
 - `cec1c8e76` feat(player): port Kazumi Anime4K CNN chains
 - `f2ce0d0ac` fix(player): align Anime4K presets with Kazumi
 - `753aba3e1` chore(plugin): bump Anime4K version to 0.2.1
+- `7ea3d7043` fix(player): preserve codec across CDN fallback
+- `98eff784c` fix(player): enable Anime4K for bangumi playback
+- `75a3219f4` fix(player): preserve bangumi Anime4K aspect ratio
+- `d85f5da4c` fix(player): preserve Anime4K display aspect ratio
+- `1067d247a` chore(plugin): bump Anime4K version to 0.2.2
+- `c22015361` fix(player): keep CDN fallback timeout at 2.5 seconds
 
 #### @Kurarion（2 个提交；PR #648）
 
@@ -112,6 +120,8 @@
 - `39d34e59f` Merge pull request #645 from maxzrb/fix/hvc1-hevc-selection
 - `fc3b4d3c6` Merge pull request #648 from Kurarion/feature/cdn-strict-custom-mode
 - `25bfd5e4e` Merge pull request #655 from maxzrb/feat/anime4k-cnn-plugin
+- `a2611791e` Merge pull request #657 from maxzrb/fix/cdn-fallback-preserve-codec
+- `3e1a607ce` Merge pull request #658 from maxzrb/fix/anime4k-0.2.2-playback
 
 ## v9.9.8.8 (2026-07-23)
 
