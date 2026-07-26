@@ -17,6 +17,21 @@ internal data class CommonListVideoCardAppearance(
     val showInfoGlassBadges: Boolean
 )
 
+internal fun resolveCommonListSingleColumnMaxWidth(): Dp = 840.dp
+
+internal fun resolveCommonListGridMinColumnWidth(isExpandedScreen: Boolean): Dp =
+    if (isExpandedScreen) 240.dp else 170.dp
+
+internal fun resolveFavoriteSubscribedFolderPreviewWidth(): Dp = 112.dp
+
+internal data class FavoriteProgressBadgeWidthSpec(
+    val minWidth: Dp,
+    val maxWidth: Dp,
+)
+
+internal fun resolveFavoriteProgressBadgeWidthSpec(): FavoriteProgressBadgeWidthSpec =
+    FavoriteProgressBadgeWidthSpec(minWidth = 104.dp, maxWidth = 150.dp)
+
 internal data class CommonListFavoriteHeaderLayout(
     val searchBarHeightDp: Int,
     val searchBarHorizontalPaddingDp: Int,

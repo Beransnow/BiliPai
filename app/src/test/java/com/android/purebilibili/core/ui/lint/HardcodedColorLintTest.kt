@@ -8,8 +8,10 @@ class HardcodedColorLintTest {
     fun migrated_features_use_theme_roles_or_named_palette() {
         val offenders = StyleLintSupport.findOffendersInMigratedFeatures(
             Regex(
-                """Color\(\s*(?:0x[0-9A-Fa-f]+|\d+)\s*\)|""" +
-                    """Color\.(?:Black|White|Red|Blue|Green|Yellow|Gray|LightGray|DarkGray)""",
+                """(?<![A-Za-z0-9_])Color\s*\([^)]*(?:0x[0-9A-Fa-f]+|\d+\s*,|""" +
+                    """(?:red|green|blue|alpha)\s*=\s*\d+(?:\.\d+)?f)[^)]*\)""" +
+                    """|Color\.(?:Black|White|Red|Blue|Green|Yellow|Gray|LightGray|DarkGray)""",
+                setOf(RegexOption.DOT_MATCHES_ALL),
             ),
         )
         assertTrue(

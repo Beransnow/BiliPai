@@ -79,7 +79,7 @@ class StyleLintAllowlistRatchetTest {
         const val MAX_MOTION_HITS = 20
         const val MAX_SURFACE_HITS = 57
 
-        // 只能调大。当前仅 feature/live/ 已完成代币化迁移。
-        const val MIN_MIGRATED_PREFIXES = 1
+        // 只能调大。直播与第一轮信息流模块已完成 token 迁移。
+        const val MIN_MIGRATED_PREFIXES = 6
     }
 }

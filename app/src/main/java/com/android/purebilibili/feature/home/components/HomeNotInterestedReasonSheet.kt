@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.home.components
 
+import com.android.purebilibili.core.ui.AppSpacingTokens
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,13 +38,13 @@ fun HomeNotInterestedReasonSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .navigationBarsPadding()
-                .padding(bottom = 12.dp)
+                .padding(bottom = AppSpacingTokens.Medium)
         ) {
             Text(
                 text = "选择不感兴趣的原因",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                modifier = Modifier.padding(horizontal = AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall, vertical = AppSpacingTokens.Small)
             )
             Text(
                 text = video.title,
@@ -50,7 +52,7 @@ fun HomeNotInterestedReasonSheet(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
+                modifier = Modifier.padding(horizontal = AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall, vertical = AppSpacingTokens.ExtraSmall)
             )
 
             ReasonGroup(
@@ -78,15 +80,15 @@ private fun ReasonGroup(
         text = title,
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(start = 20.dp, top = 16.dp, end = 20.dp, bottom = 4.dp)
+        modifier = Modifier.padding(start = AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall, top = AppSpacingTokens.Large, end = AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall, bottom = AppSpacingTokens.ExtraSmall)
     )
     reasons.forEachIndexed { index, reason ->
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 52.dp)
+                .heightIn(min = AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.ExtraSmall)
                 .clickable { onReasonSelected(reason) }
-                .padding(horizontal = 20.dp, vertical = 12.dp),
+                .padding(horizontal = AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall, vertical = AppSpacingTokens.Medium),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -94,7 +96,7 @@ private fun ReasonGroup(
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.weight(1f)
             )
-            Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+            Spacer(modifier = Modifier.padding(horizontal = AppSpacingTokens.ExtraSmall))
             Text(
                 text = "选择",
                 style = MaterialTheme.typography.labelMedium,
@@ -103,7 +105,7 @@ private fun ReasonGroup(
         }
         if (index != reasons.lastIndex) {
             HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 20.dp),
+                modifier = Modifier.padding(horizontal = AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall),
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f)
             )
         }

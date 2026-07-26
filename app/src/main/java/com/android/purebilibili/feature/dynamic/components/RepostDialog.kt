@@ -1,6 +1,12 @@
 // 文件路径: feature/dynamic/components/RepostDialog.kt
 package com.android.purebilibili.feature.dynamic.components
 
+import com.android.purebilibili.core.ui.AppSpacingTokens
+
+import com.android.purebilibili.core.ui.AppShapes
+import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.ContainerLevel
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -30,11 +36,11 @@ fun RepostDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight(),
-            shape = RoundedCornerShape(16.dp),
-            color = MaterialTheme.colorScheme.surface
+            shape = AppShapes.container(ContainerLevel.Dialog),
+            color = AppSurfaceTokens.cardContainer()
         ) {
             Column(
-                modifier = Modifier.padding(20.dp)
+                modifier = Modifier.padding(AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall)
             ) {
                 // 标题
                 Row(
@@ -44,10 +50,10 @@ fun RepostDialog(
                     Icon(
                         CupertinoIcons.Default.ArrowTurnUpRight,
                         contentDescription = null,
-                        modifier = Modifier.size(24.dp),
+                        modifier = Modifier.size(AppSpacingTokens.ExtraLarge),
                         tint = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
                     Text(
                         "转发动态",
                         style = MaterialTheme.typography.titleMedium,
@@ -55,7 +61,7 @@ fun RepostDialog(
                     )
                 }
                 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(AppSpacingTokens.Large))
                 
                 // 输入框
                 OutlinedTextField(
@@ -63,22 +69,22 @@ fun RepostDialog(
                     onValueChange = { repostText = it },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(120.dp),
+                        .height(AppSpacingTokens.TripleExtraLarge * 2 + AppSpacingTokens.ExtraLarge),
                     placeholder = { 
                         Text(
                             "说点什么吧...(可选)",
-                            fontSize = 14.sp,
+                            fontSize = MaterialTheme.typography.labelMedium.fontSize,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.5f)
                         ) 
                     },
-                    shape = RoundedCornerShape(12.dp),
+                    shape = AppShapes.container(ContainerLevel.Card),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = MaterialTheme.colorScheme.primary,
                         unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
                     )
                 )
                 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall))
                 
                 // 按钮
                 Row(
@@ -92,7 +98,7 @@ fun RepostDialog(
                         Text("取消")
                     }
                     
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
                     
                     Button(
                         onClick = {
@@ -104,12 +110,12 @@ fun RepostDialog(
                             }
                         },
                         enabled = !isPosting,
-                        shape = RoundedCornerShape(20.dp)
+                        shape = AppShapes.container(ContainerLevel.Sheet)
                     ) {
                         if (isPosting) {
                             CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(AppSpacingTokens.Large),
+                                strokeWidth = AppSpacingTokens.Micro,
                                 color = MaterialTheme.colorScheme.onPrimary
                             )
                         } else {

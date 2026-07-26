@@ -1,5 +1,9 @@
 package com.android.purebilibili.feature.home.components
 
+import com.android.purebilibili.core.ui.AppSpacingTokens
+
+import com.android.purebilibili.core.ui.MediaContrastPalette
+
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -102,11 +106,11 @@ internal fun HomeHeroCarousel(
     BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
+            .padding(vertical = AppSpacingTokens.ExtraSmall)
     ) {
         val sidePeek = HOME_HERO_CAROUSEL_SIDE_PEEK_DP.dp
         val carouselWidth = resolveHomeHeroCarouselWidthDp(maxWidth.value).dp
-        val pageWidth = (carouselWidth - sidePeek * 2).coerceAtLeast(0.dp)
+        val pageWidth = (carouselWidth - sidePeek * 2).coerceAtLeast(AppSpacingTokens.None)
         val aspectRatio = resolveHomeHeroCarouselAspectRatio(carouselWidth.value)
         HorizontalPager(
             state = pagerState,
@@ -114,7 +118,7 @@ internal fun HomeHeroCarousel(
                 resolveHomeHeroCarouselItemKey(videos, page, VideoItem::bvid)
             },
             pageSize = PageSize.Fixed(pageWidth),
-            pageSpacing = 0.dp,
+            pageSpacing = AppSpacingTokens.None,
             contentPadding = PaddingValues(horizontal = sidePeek),
             modifier = Modifier
                 .width(carouselWidth)
@@ -143,20 +147,20 @@ internal fun HomeHeroCarousel(
             modifier = Modifier
                 .width(carouselWidth)
                 .align(Alignment.BottomCenter)
-                .padding(start = 28.dp, bottom = 18.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                .padding(start = AppSpacingTokens.ExtraLarge + AppSpacingTokens.ExtraSmall, bottom = AppSpacingTokens.Large + AppSpacingTokens.Micro),
+            horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
             verticalAlignment = Alignment.CenterVertically
         ) {
             videos.forEachIndexed { index, _ ->
                 Box(
                     modifier = Modifier
-                        .size(if (index == pagerState.currentPage) 11.dp else 8.dp)
+                        .size(if (index == pagerState.currentPage) AppSpacingTokens.Medium - AppSpacingTokens.Micro / 2 else AppSpacingTokens.Small)
                         .clip(CircleShape)
                         .background(
                             if (index == pagerState.currentPage) {
-                                Color.White
+                                MediaContrastPalette.Foreground
                             } else {
-                                Color.White.copy(alpha = 0.46f)
+                                MediaContrastPalette.Foreground.copy(alpha = 0.46f)
                             }
                         )
                 )
@@ -182,7 +186,7 @@ private fun HomeHeroCarouselCard(
         }
     }
 
-    // —— ???????? ——
+    // ï¿½ï¿½ ???????? ï¿½ï¿½
     val sharedTransitionScope = LocalSharedTransitionScope.current
     val animatedVisibilityScope = LocalAnimatedVisibilityScope.current
     val sourceRoute = LocalVideoCardSharedElementSourceRoute.current
@@ -245,7 +249,7 @@ private fun HomeHeroCarouselCard(
     Surface(
         shape = cardShape,
         color = MaterialTheme.colorScheme.surfaceVariant,
-        tonalElevation = 0.dp,
+        tonalElevation = AppSpacingTokens.None,
         shadowElevation = (transform.shadowElevationFraction * 10f).dp,
         modifier = Modifier
             .fillMaxWidth()
@@ -305,7 +309,7 @@ private fun HomeHeroCarouselCard(
                         .background(
                             if (transform.edgeShadeStartFromLeft) {
                                 Brush.horizontalGradient(
-                                    0f to Color.Black.copy(alpha = transform.edgeShadeAlpha),
+                                    0f to MediaContrastPalette.Scrim.copy(alpha = transform.edgeShadeAlpha),
                                     0.48f to Color.Transparent,
                                     1f to Color.Transparent
                                 )
@@ -313,7 +317,7 @@ private fun HomeHeroCarouselCard(
                                 Brush.horizontalGradient(
                                     0f to Color.Transparent,
                                     0.52f to Color.Transparent,
-                                    1f to Color.Black.copy(alpha = transform.edgeShadeAlpha)
+                                    1f to MediaContrastPalette.Scrim.copy(alpha = transform.edgeShadeAlpha)
                                 )
                             }
                         )
@@ -326,7 +330,7 @@ private fun HomeHeroCarouselCard(
                         Brush.verticalGradient(
                             0f to Color.Transparent,
                             0.54f to Color.Transparent,
-                            1f to Color.Black.copy(alpha = 0.76f)
+                            1f to MediaContrastPalette.Scrim.copy(alpha = 0.76f)
                         )
                     )
             )
@@ -335,7 +339,7 @@ private fun HomeHeroCarouselCard(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .fillMaxWidth()
-                    .padding(start = 28.dp, end = 28.dp, bottom = 14.dp)
+                    .padding(start = AppSpacingTokens.ExtraLarge + AppSpacingTokens.ExtraSmall, end = AppSpacingTokens.ExtraLarge + AppSpacingTokens.ExtraSmall, bottom = AppSpacingTokens.Medium + AppSpacingTokens.Micro)
                     .videoCardShellReturnChromeAlpha(
                         enabled = useCardShellSharedBounds,
                         bvid = video.bvid,
@@ -351,14 +355,14 @@ private fun HomeHeroCarouselCard(
                         Icon(
                             imageVector = Icons.Rounded.PlayArrow,
                             contentDescription = null,
-                            tint = Color.White.copy(alpha = 0.9f),
-                            modifier = Modifier.size(22.dp)
+                            tint = MediaContrastPalette.Foreground.copy(alpha = 0.9f),
+                            modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro)
                         )
-                        Spacer(modifier = Modifier.width(6.dp))
+                        Spacer(modifier = Modifier.width(AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro))
                     }
                     Text(
                         text = video.title,
-                        color = Color.White,
+                        color = MediaContrastPalette.Foreground,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         maxLines = 1,
@@ -367,7 +371,7 @@ private fun HomeHeroCarouselCard(
                 }
                 // ???????????
                 if (video.duration > 0 || video.stat.view > 0 || video.stat.danmaku > 0) {
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
@@ -378,8 +382,8 @@ private fun HomeHeroCarouselCard(
                     if (video.duration > 0) {
                         Text(
                             text = FormatUtils.formatDuration(video.duration),
-                            color = Color.White.copy(alpha = 0.65f),
-                            fontSize = 12.sp,
+                            color = MediaContrastPalette.Foreground.copy(alpha = 0.65f),
+                            fontSize = MaterialTheme.typography.labelSmall.fontSize,
                             fontWeight = FontWeight.Medium,
                             maxLines = 1,
                             modifier = Modifier.wrapContentSize()
@@ -389,14 +393,14 @@ private fun HomeHeroCarouselCard(
                     // ???
                     if (video.stat.view > 0) {
                         if (separatorNeeded) Text(
-                            " · ",
-                            color = Color.White.copy(alpha = 0.5f),
-                            fontSize = 12.sp
+                            " ï¿½ ",
+                            color = MediaContrastPalette.Foreground.copy(alpha = 0.5f),
+                            fontSize = MaterialTheme.typography.labelSmall.fontSize
                         )
                         Text(
                             text = FormatUtils.formatStat(video.stat.view.toLong()) + "??",
-                            color = Color.White.copy(alpha = 0.65f),
-                            fontSize = 12.sp,
+                            color = MediaContrastPalette.Foreground.copy(alpha = 0.65f),
+                            fontSize = MaterialTheme.typography.labelSmall.fontSize,
                             fontWeight = FontWeight.Normal,
                             maxLines = 1,
                             modifier = Modifier.wrapContentSize()
@@ -406,14 +410,14 @@ private fun HomeHeroCarouselCard(
                     // ??
                     if (video.stat.danmaku > 0) {
                         if (separatorNeeded) Text(
-                            " · ",
-                            color = Color.White.copy(alpha = 0.5f),
-                            fontSize = 12.sp
+                            " ï¿½ ",
+                            color = MediaContrastPalette.Foreground.copy(alpha = 0.5f),
+                            fontSize = MaterialTheme.typography.labelSmall.fontSize
                         )
                         Text(
                             text = FormatUtils.formatStat(video.stat.danmaku.toLong()) + "??",
-                            color = Color.White.copy(alpha = 0.65f),
-                            fontSize = 12.sp,
+                            color = MediaContrastPalette.Foreground.copy(alpha = 0.65f),
+                            fontSize = MaterialTheme.typography.labelSmall.fontSize,
                             fontWeight = FontWeight.Normal,
                             maxLines = 1,
                             modifier = Modifier.wrapContentSize()

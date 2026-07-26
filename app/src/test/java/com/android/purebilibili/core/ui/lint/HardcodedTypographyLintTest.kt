@@ -7,7 +7,7 @@ class HardcodedTypographyLintTest {
     @Test
     fun migrated_features_use_theme_typography_or_named_visual_policy() {
         val offenders = StyleLintSupport.findOffendersInMigratedFeatures(
-            Regex("""(?:fontSize|lineHeight)\s*=\s*\d+(?:\.\d+)?\.sp"""),
+            Regex("""(?<![A-Za-z0-9_])\d+(?:\.\d+)?\.sp\b"""),
         )
         assertTrue(
             offenders.isEmpty(),

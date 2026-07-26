@@ -2,10 +2,16 @@ package com.android.purebilibili.core.ui
 
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
+import androidx.compose.ui.unit.dp
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class AppChromeSizeTokensTest {
+
+    @Test
+    fun `icon actions keep a 48dp outer touch target`() {
+        assertEquals(48.dp, AppChromeSizeTokens.MinimumTouchTarget)
+    }
 
     @Test
     fun `ios compact capsule tokens keep global chrome dense and aligned`() {

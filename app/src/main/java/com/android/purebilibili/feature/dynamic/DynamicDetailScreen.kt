@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.dynamic
 
+import com.android.purebilibili.core.ui.AppSpacingTokens
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -151,7 +153,7 @@ fun DynamicDetailScreen(
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Medium)
                     ) {
                         Text(
                             text = state.message,
@@ -207,7 +209,7 @@ fun DynamicDetailScreen(
                         .fillMaxSize()
                         .padding(paddingValues)
                         .responsiveContentWidth(maxWidth = resolveDynamicFeedMaxWidth()),
-                    contentPadding = PaddingValues(bottom = 20.dp)
+                    contentPadding = PaddingValues(bottom = AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall)
                 ) {
                     item {
                         DynamicCardV2(

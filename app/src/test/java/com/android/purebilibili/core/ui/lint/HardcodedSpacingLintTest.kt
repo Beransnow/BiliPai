@@ -7,12 +7,7 @@ class HardcodedSpacingLintTest {
     @Test
     fun migrated_features_use_app_spacing_tokens() {
         val offenders = StyleLintSupport.findOffendersInMigratedFeatures(
-            Regex(
-                """(?:(?:\.padding\([^\n]*|Arrangement\.spacedBy\(|Spacer\([^\n]*|""" +
-                    """\.size\([^\n]*|\.height(?:In)?\([^\n]*|\.width(?:In)?\([^\n]*|""" +
-                    """\.offset\([^\n]*|\bspace\s*=\s*)\b\d+(?:\.\d+)?\.dp|""" +
-                    """\b\d+(?:\.\d+)?\.dp\.toPx\(\))""",
-            ),
+            Regex("""(?<![A-Za-z0-9_])\d+(?:\.\d+)?\.dp\b"""),
         )
         assertTrue(
             offenders.isEmpty(),

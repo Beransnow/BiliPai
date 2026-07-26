@@ -1,6 +1,12 @@
 // 文件路径: feature/home/components/TopBar.kt
 package com.android.purebilibili.feature.home.components
 
+import com.android.purebilibili.core.ui.AppChromeSizeTokens
+import com.android.purebilibili.core.ui.AppSpacingTokens
+
+import com.android.purebilibili.core.ui.OpticalContrastPalette
+import com.android.purebilibili.feature.home.HomeVisualPalette
+
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.MenuOpen
 import androidx.compose.material.icons.automirrored.outlined.TrendingUp
@@ -17,7 +23,6 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -99,6 +104,8 @@ import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import dev.chrisbanes.haze.HazeState
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.math.sign
@@ -451,30 +458,30 @@ internal fun resolveMd3TopTabActionButtonCorner(
     isFloatingStyle: Boolean,
     androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
 ) = if (androidNativeVariant == AndroidNativeVariant.MIUIX) {
-    if (isFloatingStyle) 18.dp else 14.dp
+    if (isFloatingStyle) AppSpacingTokens.Large + AppSpacingTokens.Micro else AppSpacingTokens.Medium + AppSpacingTokens.Micro
 } else {
-    if (isFloatingStyle) 16.dp else 12.dp
+    if (isFloatingStyle) AppSpacingTokens.Large else AppSpacingTokens.Medium
 }
 
 internal fun resolveMd3TopTabActionButtonSize(
     isFloatingStyle: Boolean,
     androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
 ) = if (androidNativeVariant == AndroidNativeVariant.MIUIX) {
-    if (isFloatingStyle) 50.dp else 44.dp
+    if (isFloatingStyle) AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Micro else AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Medium
 } else {
-    if (isFloatingStyle) 48.dp else 42.dp
+    if (isFloatingStyle) AppSpacingTokens.TripleExtraLarge else AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Small + AppSpacingTokens.Micro
 }
 
 internal fun resolveMd3TopTabActionIconSize(
     isFloatingStyle: Boolean,
     androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
 ) = if (androidNativeVariant == AndroidNativeVariant.MIUIX) {
-    if (isFloatingStyle) 24.dp else 22.dp
+    if (isFloatingStyle) AppSpacingTokens.ExtraLarge else AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro
 } else {
-    if (isFloatingStyle) 24.dp else 22.dp
+    if (isFloatingStyle) AppSpacingTokens.ExtraLarge else AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro
 }
 
-internal fun resolveMd3TopTabActionContentBottomPadding(): Dp = 4.dp
+internal fun resolveMd3TopTabActionContentBottomPadding(): Dp = AppSpacingTokens.ExtraSmall
 
 internal fun resolveMd3TopTabVerticalLiftDp(): Float = 4f
 
@@ -486,20 +493,20 @@ internal fun resolveMd3TopTabRowVerticalTranslationDp(
     return -resolveMd3TopTabVerticalLiftDp()
 }
 
-internal fun resolveMd3TopTabIndicatorBottomPadding(): Dp = 8.dp
+internal fun resolveMd3TopTabIndicatorBottomPadding(): Dp = AppSpacingTokens.Small
 
-internal fun resolveHomeSkinTopTabActionButtonSize(): Dp = 44.dp
+internal fun resolveHomeSkinTopTabActionButtonSize(): Dp = AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Medium
 
-internal fun resolveHomeSkinTopTabActionIconSize(): Dp = 24.dp
+internal fun resolveHomeSkinTopTabActionIconSize(): Dp = AppSpacingTokens.ExtraLarge
 
-internal fun resolveHomeSkinTopTabIndicatorBottomPadding(): Dp = 4.dp
+internal fun resolveHomeSkinTopTabIndicatorBottomPadding(): Dp = AppSpacingTokens.ExtraSmall
 
 internal fun resolveTopTabSkinStickerIconSize(showText: Boolean): Dp =
-    if (showText) 32.dp else 36.dp
+    if (showText) AppSpacingTokens.DoubleExtraLarge else AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall
 
-internal fun resolveTopTabSkinPartitionIconSize(): Dp = 32.dp
+internal fun resolveTopTabSkinPartitionIconSize(): Dp = AppSpacingTokens.DoubleExtraLarge
 
-internal fun resolveTopTabSkinStickerIndicatorWidth(): Dp = 28.dp
+internal fun resolveTopTabSkinStickerIndicatorWidth(): Dp = AppSpacingTokens.ExtraLarge + AppSpacingTokens.ExtraSmall
 
 internal fun resolveTopTabSkinStickerRowHeight(
     baseRowHeight: Dp,
@@ -508,14 +515,14 @@ internal fun resolveTopTabSkinStickerRowHeight(
     showText: Boolean
 ): Dp {
     return if (hasSkinStickerIcons && showIcon && showText) {
-        baseRowHeight.coerceAtLeast(64.dp)
+        baseRowHeight.coerceAtLeast(AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Large)
     } else {
         baseRowHeight
     }
 }
 
 internal fun resolveTopTabSkinStickerItemVerticalPadding(showText: Boolean): Dp =
-    if (showText) 2.dp else 4.dp
+    if (showText) AppSpacingTokens.Micro else AppSpacingTokens.ExtraSmall
 
 internal fun resolveIosTopTabRowHeight(
     isFloatingStyle: Boolean,
@@ -524,21 +531,21 @@ internal fun resolveIosTopTabRowHeight(
     return if (normalizeTopTabLabelMode(labelMode) ==
         com.android.purebilibili.core.store.SettingsManager.TopTabLabelMode.ICON_AND_TEXT
     ) {
-        if (isFloatingStyle) 62.dp else 58.dp
+        if (isFloatingStyle) AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Medium + AppSpacingTokens.Micro else AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Small + AppSpacingTokens.Micro
     } else {
         // Text-only / icon-only: still taller so the liquid capsule can fill + overflow on drag.
-        if (isFloatingStyle) 56.dp else 54.dp
+        if (isFloatingStyle) AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Small else AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro
     }
 }
 
 internal fun resolveIosTopTabActionButtonSize(isFloatingStyle: Boolean): Dp =
-    if (isFloatingStyle) 46.dp else 44.dp
+    if (isFloatingStyle) AppSpacingTokens.TripleExtraLarge - AppSpacingTokens.Micro else AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Medium
 
 internal fun resolveIosTopTabActionButtonCorner(isFloatingStyle: Boolean): Dp =
-    if (isFloatingStyle) 22.dp else 20.dp
+    if (isFloatingStyle) AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro else AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall
 
 internal fun resolveIosTopTabActionIconSize(isFloatingStyle: Boolean): Dp =
-    if (isFloatingStyle) 23.dp else 22.dp
+    if (isFloatingStyle) AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro / 2 else AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro
 
 internal fun performHomeTopBarTap(
     haptic: (HapticType) -> Unit,
@@ -585,57 +592,65 @@ fun FluidHomeTopBar(
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(horizontal = AppSpacingTokens.Large, vertical = AppSpacingTokens.Small),
             shape = AppShapes.borderedContainer(ContainerLevel.Floating),
             color = AppSurfaceTokens.cardContainer(),  //  使用预设感知表面色，适配深色模式
-            shadowElevation = 6.dp,  // 添加阴影增加层次感
-            tonalElevation = 0.dp,
+            shadowElevation = AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro,  // 添加阴影增加层次感
+            tonalElevation = AppSpacingTokens.None,
             border = androidx.compose.foundation.BorderStroke(
-                width = 1.dp,
+                width = AppSpacingTokens.Micro / 2,
                 color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f)
             )
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp) // 稍微减小高度
-                    .padding(horizontal = 12.dp),
+                    .height(AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.ExtraSmall) // 稍微减小高度
+                    .padding(horizontal = AppSpacingTokens.Medium),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 //  左侧：头像
                 Box(
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(AppChromeSizeTokens.MinimumTouchTarget)
                         .clip(CircleShape)
                         .premiumClickable { onAvatarClick() }
-                        .border(1.dp, MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                        .semantics { contentDescription = "个人中心" },
+                    contentAlignment = Alignment.Center
                 ) {
-                    if (user.isLogin && user.face.isNotEmpty()) {
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(FormatUtils.fixImageUrl(user.face))
-                                .crossfade(true).build(),
-                            contentDescription = "Avatar",
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    } else {
-                        Box(
-                            Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("未", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Box(
+                        modifier = Modifier
+                            .size(AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall)
+                            .clip(CircleShape)
+                            .border(AppSpacingTokens.Micro / 2, MaterialTheme.colorScheme.surfaceVariant, CircleShape)
+                    ) {
+                        if (user.isLogin && user.face.isNotEmpty()) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(FormatUtils.fixImageUrl(user.face))
+                                    .crossfade(true).build(),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            Box(
+                                Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("未", fontSize = MaterialTheme.typography.labelSmall.fontSize, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
 
                 //  中间：搜索框
                 val searchClickInteractionSource = remember { MutableInteractionSource() }
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .height(36.dp)
+                        .height(AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall)
                         .clip(AppShapes.container(ContainerLevel.Pill))
                         .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
                         .clickable(
@@ -644,7 +659,7 @@ fun FluidHomeTopBar(
                         ) {
                             onSearchClick()
                         }
-                        .padding(horizontal = 12.dp),
+                        .padding(horizontal = AppSpacingTokens.Medium),
                     contentAlignment = Alignment.CenterStart
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -652,31 +667,31 @@ fun FluidHomeTopBar(
                             CupertinoIcons.Default.MagnifyingGlass,
                             null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.5f),
-                            modifier = Modifier.size(18.dp)
+                            modifier = Modifier.size(AppSpacingTokens.Large + AppSpacingTokens.Micro)
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(AppSpacingTokens.Small))
                         Text(
                             text = "搜索视频、UP主...",
                             style = MaterialTheme.typography.bodyMedium,
-                            fontSize = 13.sp,
+                            fontSize = MaterialTheme.typography.labelMedium.fontSize,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                             maxLines = 1
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(AppSpacingTokens.Small))
                 
                 //  右侧：设置按钮
                 IconButton(
                     onClick = onSettingsClick,
-                    modifier = Modifier.size(36.dp)
+                    modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
                 ) {
                     Icon(
                         CupertinoIcons.Default.Gearshape,
-                        contentDescription = "Settings",
+                        contentDescription = "设置",
                         tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro)
                     )
                 }
             }
@@ -693,9 +708,9 @@ internal fun resolveTopTabUnselectedAlpha(): Float = 0.78f
 
 internal fun resolveTopTabUnselectedColor(isLightMode: Boolean): Color {
     return if (isLightMode) {
-        Color.Black.copy(alpha = 0.72f)
+        OpticalContrastPalette.Shadow.copy(alpha = 0.72f)
     } else {
-        Color.White.copy(alpha = 0.72f)
+        OpticalContrastPalette.Highlight.copy(alpha = 0.72f)
     }
 }
 
@@ -851,7 +866,7 @@ private fun LightweightHomeTopTabs(
         )
     }
     val actionButtonCorner = if (skinPlainStyle) {
-        0.dp
+        AppSpacingTokens.None
     } else when (effectiveRenderer) {
         HomeTopTabRenderer.IOS -> resolveIosTopTabActionButtonCorner(isFloatingStyle)
         HomeTopTabRenderer.MD3 -> resolveMd3TopTabActionButtonCorner(isFloatingStyle)
@@ -976,9 +991,9 @@ private fun LightweightHomeTopTabs(
                 labelMode = normalizedLabelMode
             ).dp
         } else {
-            0.dp
+            AppSpacingTokens.None
         }
-        val md3IndicatorWidth = if (skinPlainStyle) 30.dp else 28.dp
+        val md3IndicatorWidth = if (skinPlainStyle) AppSpacingTokens.DoubleExtraLarge - AppSpacingTokens.Micro else AppSpacingTokens.ExtraLarge + AppSpacingTokens.ExtraSmall
         val dockIndicatorHorizontalGap = resolveTopTabDockIndicatorHorizontalGapDp(
             hasOuterChromeSurface = hasOuterChromeSurface
         ).dp
@@ -1099,7 +1114,7 @@ private fun LightweightHomeTopTabs(
                 val dockWidthPx = with(density) {
                     (itemWidth * categories.size.coerceAtLeast(1)).toPx()
                 }.coerceAtLeast(1f)
-                val maxOffsetPx = with(density) { 4.dp.toPx() }
+                val maxOffsetPx = with(density) { AppSpacingTokens.ExtraSmall.toPx() }
                 resolveSharedLiquidIndicatorPanelOffsetPx(
                     dragOffsetPx = topTabDragState.dragOffset,
                     dockWidthPx = dockWidthPx,
@@ -1281,10 +1296,7 @@ private fun LightweightHomeTopTabs(
         )
         val animatedIosCapsuleTranslationXPx by animateFloatAsState(
             targetValue = iosCapsuleTargetTranslationXPx,
-            animationSpec = spring(
-                dampingRatio = 0.68f,
-                stiffness = Spring.StiffnessMediumLow
-            ),
+            animationSpec = iosTopTabCapsuleMotionSpec(),
             label = "iosTopTabCapsuleTranslation"
         )
         val iosCapsuleTranslationXPx = if (shouldAnimateIosCapsule) {
@@ -1566,9 +1578,9 @@ private fun LightweightHomeTopTabs(
                             indicatorLensSpec = topTabIndicatorLensSpec,
                             effectivePressProgress = topTabLensProgress,
                             indicatorIdleSurfaceColor = if (isDarkTheme) {
-                                Color.White.copy(alpha = 0.1f)
+                                OpticalContrastPalette.Highlight.copy(alpha = 0.1f)
                             } else {
-                                Color.Black.copy(alpha = 0.1f)
+                                OpticalContrastPalette.Shadow.copy(alpha = 0.1f)
                             },
                             glassEnabled = true,
                             motionProgress = topTabMotionProgress,
@@ -1605,7 +1617,7 @@ private fun LightweightHomeTopTabs(
                                     scaleY = topTabIndicatorLayerTransform.scaleY
                                 }
                                 .width(md3IndicatorWidth)
-                                .height(2.dp)
+                                .height(AppSpacingTokens.Micro)
                                 .clip(AppShapes.container(ContainerLevel.Pill))
                                 .background(indicatorColor)
                         )
@@ -1614,7 +1626,7 @@ private fun LightweightHomeTopTabs(
             }
 
             if (showPartitionAction) {
-                Spacer(modifier = Modifier.width(4.dp))
+                Spacer(modifier = Modifier.width(AppSpacingTokens.ExtraSmall))
 
                 Box(
                     modifier = Modifier
@@ -1651,7 +1663,7 @@ private fun LightweightHomeTopTabs(
                     }
                 }
 
-                Spacer(modifier = Modifier.width(6.dp))
+                Spacer(modifier = Modifier.width(AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro))
             }
         }
         }
@@ -1692,7 +1704,7 @@ private fun LightweightTopTabItem(
     hasSkinStickerIcon: Boolean = false,
     useClickIndication: Boolean = true,
     colorMode: TopTabLiquidColorMode = TopTabLiquidColorMode.NORMAL,
-    exportMonochromeColor: Color = Color.White,
+    exportMonochromeColor: Color = OpticalContrastPalette.Highlight,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
@@ -1757,11 +1769,11 @@ private fun LightweightTopTabItem(
             .width(itemWidth)
             .fillMaxHeight()
             .padding(
-                horizontal = 3.dp,
+                horizontal = AppSpacingTokens.ExtraSmall - AppSpacingTokens.Micro / 2,
                 vertical = if (hasSkinStickerIcon) {
                     resolveTopTabSkinStickerItemVerticalPadding(showText = showText)
                 } else {
-                    4.dp
+                    AppSpacingTokens.ExtraSmall
                 }
             )
             .clip(itemShape)
@@ -1776,7 +1788,7 @@ private fun LightweightTopTabItem(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp),
+                .padding(horizontal = AppSpacingTokens.Small),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -1819,11 +1831,11 @@ private fun LightweightTopTabItem(
                 )
             }
             if (hasSkinStickerIcon && showText) {
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(modifier = Modifier.height(AppSpacingTokens.Micro))
                 Box(
                     modifier = Modifier
                         .width(resolveTopTabSkinStickerIndicatorWidth())
-                        .height(2.dp)
+                        .height(AppSpacingTokens.Micro)
                         .clip(AppShapes.container(ContainerLevel.Pill))
                         .background(selectedColor)
                         .alpha(selectionFraction)
@@ -2106,9 +2118,9 @@ internal fun resolveTopTabNeutralIndicatorColor(
     alpha: Float
 ): Color {
     val baseColor = if (isDarkTheme) {
-        Color(0xFFE1E8E5)
+        HomeVisualPalette.SearchFieldDark
     } else {
-        Color(0xFFEAF2EF)
+        HomeVisualPalette.SearchFieldLight
     }
     return baseColor.copy(alpha = alpha)
 }
@@ -2335,7 +2347,7 @@ fun CategoryTabItem(
                      Modifier
                  }
              )
-             .padding(horizontal = 8.dp, vertical = contentVerticalPadding)
+             .padding(horizontal = AppSpacingTokens.Small, vertical = contentVerticalPadding)
              .heightIn(min = contentMinHeight),
          contentAlignment = Alignment.Center
      ) {

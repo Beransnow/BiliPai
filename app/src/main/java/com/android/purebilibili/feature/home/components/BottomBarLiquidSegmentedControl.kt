@@ -1,5 +1,9 @@
 package com.android.purebilibili.feature.home.components
 
+import com.android.purebilibili.core.ui.AppSpacingTokens
+
+import com.android.purebilibili.core.ui.OpticalContrastPalette
+
 import androidx.compose.animation.core.EaseOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,6 +50,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.sp
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.HomeSettings
@@ -260,7 +265,7 @@ internal fun BottomBarLiquidIndicatorSurface(
                     },
                     innerShadow = {
                         InnerShadow(
-                            radius = 8.dp * indicatorGlowAlpha,
+                            radius = AppSpacingTokens.Small * indicatorGlowAlpha,
                             alpha = indicatorGlowAlpha
                         )
                     },
@@ -270,7 +275,7 @@ internal fun BottomBarLiquidIndicatorSurface(
                             color = resolvedIdleSurfaceColor,
                             alpha = 1f - motionProgress
                         )
-                        drawRect(Color.Black.copy(alpha = 0.03f * motionProgress))
+                        drawRect(OpticalContrastPalette.Shadow.copy(alpha = 0.03f * motionProgress))
                     }
                 )
             } else {
@@ -299,7 +304,7 @@ internal fun resolveSegmentedControlMotionSpec(): BottomBarMotionSpec {
 
 /**
  * Same panel-offset formula as [KernelSuAlignedBottomBar]: fraction of full dock width,
- * capped at 4.dp, EaseOut mapped.
+ * capped at AppSpacingTokens.ExtraSmall, EaseOut mapped.
  */
 internal fun resolveSharedLiquidIndicatorPanelOffsetPx(
     dragOffsetPx: Float,
@@ -349,9 +354,9 @@ internal fun resolveSharedLiquidIndicatorCaptureLensProgress(
 internal fun resolveSharedLiquidExportMonochromeColor(
     darkTheme: Boolean
 ): Color = if (darkTheme) {
-    Color.White.copy(alpha = 0.96f)
+    OpticalContrastPalette.Highlight.copy(alpha = 0.96f)
 } else {
-    Color.White
+    OpticalContrastPalette.Highlight
 }
 
 @Composable
@@ -364,9 +369,9 @@ fun BottomBarLiquidSegmentedControl(
     itemWidth: Dp? = null,
     height: Dp = BOTTOM_BAR_LIQUID_SEGMENTED_CONTROL_HEIGHT_DP.dp,
     indicatorHeight: Dp = BOTTOM_BAR_LIQUID_SEGMENTED_CONTROL_INDICATOR_HEIGHT_DP.dp,
-    labelFontSize: TextUnit = 14.sp,
-    containerHorizontalPadding: Dp = 3.dp,
-    containerVerticalPadding: Dp = 3.dp,
+    labelFontSize: TextUnit = TextUnit.Unspecified,
+    containerHorizontalPadding: Dp = AppSpacingTokens.ExtraSmall - AppSpacingTokens.Micro / 2,
+    containerVerticalPadding: Dp = AppSpacingTokens.ExtraSmall - AppSpacingTokens.Micro / 2,
     liquidGlassEffectsEnabled: Boolean = true,
     dragSelectionEnabled: Boolean = true,
     preferInlineContentStyle: Boolean = false,
@@ -382,6 +387,12 @@ fun BottomBarLiquidSegmentedControl(
     onIndicatorPositionChanged: ((Float) -> Unit)? = null
 ) {
     if (items.isEmpty()) return
+
+    val effectiveLabelFontSize = if (labelFontSize.isSpecified) {
+        labelFontSize
+    } else {
+        MaterialTheme.typography.labelMedium.fontSize
+    }
 
     val context = LocalContext.current
     val uiPreset = LocalUiPreset.current
@@ -406,7 +417,7 @@ fun BottomBarLiquidSegmentedControl(
             enabled = enabled,
             itemWidth = itemWidth,
             height = height,
-            labelFontSize = labelFontSize,
+            labelFontSize = effectiveLabelFontSize,
             selectedTextColorOverride = selectedTextColorOverride,
             unselectedTextColorOverride = unselectedTextColorOverride,
             indicatorPositionProvider = indicatorPositionProvider,
@@ -575,7 +586,7 @@ fun BottomBarLiquidSegmentedControl(
         )
         val rawPanelOffsetPx by remember(density, dockWidthPx) {
             derivedStateOf {
-                val maxOffsetPx = with(density) { 4.dp.toPx() }
+                val maxOffsetPx = with(density) { AppSpacingTokens.ExtraSmall.toPx() }
                 resolveSharedLiquidIndicatorPanelOffsetPx(
                     dragOffsetPx = dragState.dragOffset,
                     dockWidthPx = dockWidthPx,
@@ -674,7 +685,7 @@ fun BottomBarLiquidSegmentedControl(
             selectedTextColor = selectedTextColor,
             unselectedTextColor = unselectedTextColor,
             enabled = enabled,
-            labelFontSize = labelFontSize,
+            labelFontSize = effectiveLabelFontSize,
             indicatorCorner = indicatorCorner,
             onSelected = onSelected,
             interactive = false,
@@ -709,7 +720,7 @@ fun BottomBarLiquidSegmentedControl(
                                         shape = { containerShape },
                                         effects = {
                                             miuixVibrancy()
-                                            miuixBlur(4.dp.toPx(), 4.dp.toPx())
+                                            miuixBlur(AppSpacingTokens.ExtraSmall.toPx(), AppSpacingTokens.ExtraSmall.toPx())
                                             if (captureLensProgress > 0.001f) {
                                                 miuixLens(
                                                     refractionHeight = captureLensSpec.refractionHeightDp.dp.toPx(),
@@ -772,7 +783,7 @@ fun BottomBarLiquidSegmentedControl(
                 selectedTextColor = exportMonochromeColor,
                 unselectedTextColor = exportMonochromeColor,
                 enabled = enabled,
-                labelFontSize = labelFontSize,
+                labelFontSize = effectiveLabelFontSize,
                 indicatorCorner = indicatorCorner,
                 onSelected = onSelected,
                 interactive = false,
@@ -847,7 +858,7 @@ fun BottomBarLiquidSegmentedControl(
             selectedTextColor = selectedTextColor,
             unselectedTextColor = unselectedTextColor,
             enabled = enabled,
-            labelFontSize = labelFontSize,
+            labelFontSize = effectiveLabelFontSize,
             indicatorCorner = indicatorCorner,
             onSelected = ::selectFromTap,
             interactive = true,
@@ -908,8 +919,8 @@ internal fun AndroidNativeUnderlinedSegmentedControl(
     ) {
         val segmentWidth = maxWidth / itemCount
         val underlineWidth = (segmentWidth * 0.42f)
-            .coerceAtLeast(28.dp)
-            .coerceAtMost(56.dp)
+            .coerceAtLeast(AppSpacingTokens.ExtraLarge + AppSpacingTokens.ExtraSmall)
+            .coerceAtMost(AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Small)
         val underlineOffsetX = (segmentWidth * indicatorPosition) + ((segmentWidth - underlineWidth) / 2)
         Row(
             modifier = Modifier.fillMaxSize(),
@@ -940,7 +951,7 @@ internal fun AndroidNativeUnderlinedSegmentedControl(
                 .align(Alignment.BottomStart)
                 .offset(x = underlineOffsetX)
                 .width(underlineWidth)
-                .height(3.dp)
+                .height(AppSpacingTokens.ExtraSmall - AppSpacingTokens.Micro / 2)
                 .clip(underlineShape)
                 .background(selectedTextColor)
         )

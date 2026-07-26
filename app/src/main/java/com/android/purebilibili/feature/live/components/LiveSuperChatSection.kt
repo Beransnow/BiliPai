@@ -38,7 +38,7 @@ fun LiveSuperChatSection(
             Surface(
                 shape = AppShapes.borderedContainer(ContainerLevel.Card),
                 color = palette.surfaceElevated,
-                border = androidx.compose.foundation.BorderStroke(1.dp, palette.border)
+            border = androidx.compose.foundation.BorderStroke(AppSpacingTokens.Micro / 2, palette.border)
             ) {
                 Column(
                     modifier = Modifier

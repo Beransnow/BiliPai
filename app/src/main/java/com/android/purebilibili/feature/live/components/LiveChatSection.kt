@@ -567,7 +567,7 @@ private fun UserLevelBadge(level: Int) {
     val color = resolveLiveLevelColor(level)
     
     Surface(
-        border = androidx.compose.foundation.BorderStroke(1.dp, color),
+                border = androidx.compose.foundation.BorderStroke(AppSpacingTokens.Micro / 2, color),
         shape = AppShapes.borderedContainer(ContainerLevel.Tag),
         color = Color.Transparent, // 空心
         modifier = Modifier.padding(top = AppSpacingTokens.Micro)
@@ -607,10 +607,10 @@ private fun ChatInputBar(
     Surface(
         color = if (isOverlay) roomTokens.inputOverlayColor.copy(alpha = roomTokens.inputContainerAlpha) else palette.surfaceElevated,
         shape = if (isOverlay) AppShapes.container(ContainerLevel.Sheet) else RectangleShape,
-        tonalElevation = if (isOverlay) 0.dp else 2.dp,
-        shadowElevation = 0.dp,
+                tonalElevation = if (isOverlay) AppSpacingTokens.None else AppSpacingTokens.Micro,
+                shadowElevation = AppSpacingTokens.None,
         border = androidx.compose.foundation.BorderStroke(
-            1.dp,
+                    AppSpacingTokens.Micro / 2,
             if (isOverlay) roomTokens.inputOverlayColor.copy(alpha = 0.10f) else palette.border
         )
     ) {

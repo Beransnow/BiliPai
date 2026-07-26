@@ -1,9 +1,13 @@
 // 文件路径: feature/home/components/iOSRefreshIndicator.kt
 package com.android.purebilibili.feature.home.components
 
+import com.android.purebilibili.core.ui.AppSpacingTokens
+
+import com.android.purebilibili.core.ui.AppShapes
+import com.android.purebilibili.core.ui.ContainerLevel
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -74,7 +78,7 @@ fun Md3ScreenshotRefreshIndicator(
     )
     val alpha by animateFloatAsState(
         targetValue = if (progress > 0.08f || isRefreshing) 1f else 0f,
-        animationSpec = spring(dampingRatio = 0.82f),
+        animationSpec = md3RefreshAlphaMotionSpec(),
         label = "md3_screenshot_pull_alpha"
     )
     val indicatorScale by animateFloatAsState(
@@ -83,7 +87,7 @@ fun Md3ScreenshotRefreshIndicator(
             progress >= 1f && !state.isAnimating -> 1.04f
             else -> (0.86f + progress.coerceIn(0f, 1f) * 0.14f)
         },
-        animationSpec = spring(dampingRatio = 0.7f, stiffness = 360f),
+        animationSpec = md3RefreshScaleMotionSpec(),
         label = "md3_screenshot_pull_scale"
     )
     val strokeColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.72f)
@@ -100,7 +104,7 @@ fun Md3ScreenshotRefreshIndicator(
         contentAlignment = Alignment.Center
     ) {
         Column(
-            modifier = Modifier.padding(top = 10.dp, bottom = 6.dp),
+            modifier = Modifier.padding(top = AppSpacingTokens.Small + AppSpacingTokens.Micro, bottom = AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
@@ -112,23 +116,23 @@ fun Md3ScreenshotRefreshIndicator(
             } else {
                 Box(
                     modifier = Modifier
-                        .size(width = 26.dp, height = indicatorHeight)
-                        .clip(RoundedCornerShape(15.dp))
+                        .size(width = AppSpacingTokens.ExtraLarge + AppSpacingTokens.Micro, height = indicatorHeight)
+                        .clip(AppShapes.container(ContainerLevel.Pill))
                         .background(Color.Transparent)
                         .border(
-                            width = 3.dp,
+                            width = AppSpacingTokens.ExtraSmall - AppSpacingTokens.Micro / 2,
                             color = strokeColor,
-                            shape = RoundedCornerShape(15.dp)
+                            shape = AppShapes.container(ContainerLevel.Pill)
                         )
                 )
             }
 
             if (hintText.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(AppSpacingTokens.Small + AppSpacingTokens.Micro))
                 Text(
                     text = if (hintText == "松手刷新") "松开刷新" else hintText,
-                    fontSize = 15.sp,
-                    lineHeight = 20.sp,
+                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                    lineHeight = MaterialTheme.typography.bodyMedium.lineHeight,
                     fontWeight = FontWeight.SemiBold,
                     color = textColor
                 )
@@ -173,17 +177,14 @@ fun iOSRefreshIndicator(
     //  箭头只表达阈值状态，使用高阻尼避免松手前后出现夸张回弹。
     val arrowRotation by animateFloatAsState(
         targetValue = if (isOverThreshold) 180f else 0f,
-        animationSpec = spring(
-            dampingRatio = 0.9f,
-            stiffness = 540f
-        ),
+        animationSpec = iosRefreshArrowMotionSpec(),
         label = "arrow_rotation"
     )
     
     //  透明度动画
     val alpha by animateFloatAsState(
         targetValue = if (progress > 0.1f || isRefreshing) 1f else 0f,
-        animationSpec = spring(dampingRatio = 0.92f, stiffness = 620f),
+        animationSpec = iosRefreshAlphaMotionSpec(),
         label = "alpha"
     )
     
@@ -194,10 +195,7 @@ fun iOSRefreshIndicator(
             isOverThreshold -> 1.03f
             else -> (progress.coerceIn(0f, 1f) * 0.28f + 0.72f).coerceAtMost(1f)
         },
-        animationSpec = spring(
-            dampingRatio = 0.9f,
-            stiffness = 620f
-        ),
+        animationSpec = iosRefreshScaleMotionSpec(),
         label = "scale"
     )
     
@@ -216,7 +214,7 @@ fun iOSRefreshIndicator(
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 12.dp)
+                .padding(vertical = AppSpacingTokens.Medium)
         ) {
             if (isRefreshing) {
                 // iOS: Cupertino spinner. MD3: morphing LoadingIndicator.
@@ -224,21 +222,21 @@ fun iOSRefreshIndicator(
                 when (renderer) {
                     IOSRefreshIndicatorRenderer.CUPERTINO_IOS -> {
                         CupertinoActivityIndicator(
-                            modifier = Modifier.size(20.dp),
+                            modifier = Modifier.size(AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall),
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
                     IOSRefreshIndicatorRenderer.MATERIAL3_LOADING -> {
-                        // Compact morphing indicator beside the hint text (default is 48.dp).
+                        // Compact morphing indicator beside the hint text (default is AppSpacingTokens.TripleExtraLarge).
                         AdaptiveLoadingIndicator(
-                            size = 36.dp,
+                            size = AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall,
                             density = com.android.purebilibili.core.ui.AdaptiveLoadingDensity.PAGE,
                         )
                     }
                     IOSRefreshIndicatorRenderer.MIUIX_BRIDGED -> {
                         AdaptiveLoadingIndicator(
-                            size = 22.dp,
-                            strokeWidth = 2.dp,
+                            size = AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro,
+                            strokeWidth = AppSpacingTokens.Micro,
                         )
                     }
                 }
@@ -246,7 +244,7 @@ fun iOSRefreshIndicator(
                 //  箭头图标（旋转表示状态变化）
                 Text(
                     text = "↓",
-                    fontSize = 18.sp,
+                    fontSize = MaterialTheme.typography.titleMedium.fontSize,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.rotate(arrowRotation)
@@ -254,11 +252,11 @@ fun iOSRefreshIndicator(
             }
             
             if (hintText.isNotEmpty()) {
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(AppSpacingTokens.Small))
                 
                 Text(
                     text = hintText,
-                    fontSize = 14.sp,
+                    fontSize = MaterialTheme.typography.labelMedium.fontSize,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

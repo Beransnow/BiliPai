@@ -1,6 +1,13 @@
 // 文件路径: feature/dynamic/components/LiveCard.kt
 package com.android.purebilibili.feature.dynamic.components
 
+import com.android.purebilibili.core.ui.AppSpacingTokens
+
+import com.android.purebilibili.core.ui.MediaContrastPalette
+
+import com.android.purebilibili.core.ui.AppShapes
+import com.android.purebilibili.core.ui.ContainerLevel
+
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -61,7 +68,7 @@ fun LiveCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { onLiveClick(roomId, title, "") },  //  点击跳转直播
-            shape = RoundedCornerShape(8.dp),
+            shape = AppShapes.container(ContainerLevel.Card),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             )
@@ -69,16 +76,16 @@ fun LiveCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(80.dp)
-                    .padding(8.dp),
+                    .height(AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.DoubleExtraLarge)
+                    .padding(AppSpacingTokens.Small),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // 直播封面
                 Box(
                     modifier = Modifier
-                        .width(120.dp)
+                        .width(AppSpacingTokens.TripleExtraLarge * 2 + AppSpacingTokens.ExtraLarge)
                         .fillMaxHeight()
-                        .clip(RoundedCornerShape(6.dp))
+                        .clip(AppShapes.container(ContainerLevel.Chip))
                 ) {
                     liveInfo.live_play_info?.cover?.let { coverUrl ->
                         val url = if (coverUrl.startsWith("http://")) coverUrl.replace("http://", "https://") else coverUrl
@@ -98,15 +105,15 @@ fun LiveCard(
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopStart)
-                            .padding(4.dp)
-                            .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(4.dp))
-                            .padding(horizontal = 4.dp, vertical = 2.dp)
+                            .padding(AppSpacingTokens.ExtraSmall)
+                            .background(MaterialTheme.colorScheme.primary, AppShapes.container(ContainerLevel.Tag))
+                            .padding(horizontal = AppSpacingTokens.ExtraSmall, vertical = AppSpacingTokens.Micro)
                     ) {
-                        Text("直播中", fontSize = 10.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                        Text("直播中", fontSize = MaterialTheme.typography.labelSmall.fontSize, color = MediaContrastPalette.Foreground, fontWeight = FontWeight.Bold)
                     }
                 }
                 
-                Spacer(modifier = Modifier.width(10.dp))
+                Spacer(modifier = Modifier.width(AppSpacingTokens.Small + AppSpacingTokens.Micro))
                 
                 // 直播信息
                 Column(
@@ -115,7 +122,7 @@ fun LiveCard(
                 ) {
                     Text(
                         liveInfo.live_play_info?.title ?: "直播中",
-                        fontSize = 14.sp,
+                        fontSize = MaterialTheme.typography.labelMedium.fontSize,
                         fontWeight = FontWeight.Medium,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
@@ -126,12 +133,12 @@ fun LiveCard(
                         Icon(
                             CupertinoIcons.Default.Play,
                             null,
-                            modifier = Modifier.size(14.dp),
+                            modifier = Modifier.size(AppSpacingTokens.Medium + AppSpacingTokens.Micro),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f)
                         )
                         Text(
                             "${liveInfo.live_play_info?.online ?: 0} 人观看",
-                            fontSize = 12.sp,
+                            fontSize = MaterialTheme.typography.labelSmall.fontSize,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f)
                         )
                     }
@@ -142,27 +149,27 @@ fun LiveCard(
         // 无法解析时显示占位
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(8.dp),
+            shape = AppShapes.container(ContainerLevel.Card),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             )
         ) {
             Row(
-                modifier = Modifier.padding(12.dp),
+                modifier = Modifier.padding(AppSpacingTokens.Medium),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Small)
                         .background(MaterialTheme.colorScheme.primary, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("🔴", fontSize = 18.sp)
+                    Text("🔴", fontSize = MaterialTheme.typography.titleMedium.fontSize)
                 }
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
                 Text(
                     "直播中",
-                    fontSize = 14.sp,
+                    fontSize = MaterialTheme.typography.labelMedium.fontSize,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
