@@ -988,7 +988,9 @@ private fun WatchLaterVideoCard(
                 bvid = item.bvid,
                 sourceRoute = sourceRoute,
                 motionSpec = sharedTransitionMotionSpec,
-                clipShape = cardShellShape
+                clipShape = cardShellShape,
+                // 让播放器接管移动中的整卡，返回时再在 morph 末段接回源卡，避免与播放器重叠。
+                crossfadeSourceContent = true,
             )
             .height(IntrinsicSize.Min)
             .onGloballyPositioned { coordinates ->
