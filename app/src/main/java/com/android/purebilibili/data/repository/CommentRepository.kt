@@ -251,7 +251,7 @@ object CommentRepository {
             // 确保 buvid3 已初始化
             VideoRepository.ensureBuvid3()
 
-            if (shouldTryGrpcMainList(page = page, mode = mode, paginationOffset = paginationOffset)) {
+            if (shouldTryGrpcMainList(type = type, page = page, mode = mode, paginationOffset = paginationOffset)) {
                 val grpcResult = CommentGrpcRepository.getMainList(
                     oid = oid,
                     type = type,
@@ -728,10 +728,12 @@ object CommentRepository {
     }
 
     internal fun shouldTryGrpcMainList(
+        type: Int,
         page: Int,
         mode: Int,
         paginationOffset: String?
     ): Boolean {
+        if (type == 17) return false
         val supportedMode = mode == CommentGrpcRepository.MODE_HOT || mode == CommentGrpcRepository.MODE_TIME
         if (!supportedMode) return false
         return shouldTryGrpcPagedRequest(page = page, paginationOffset = paginationOffset)
