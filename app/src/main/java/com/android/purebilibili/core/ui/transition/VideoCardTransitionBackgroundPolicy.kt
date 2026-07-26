@@ -34,7 +34,9 @@ import kotlin.math.roundToInt
 // - 压暗全程保留（含 HELD），避免打开完成后景深断裂
 // - 返回：景深 progress 与 shared morph 同墙钟、同 Linear
 private const val VIDEO_CARD_TRANSITION_MAX_BLUR_RADIUS_DP = 12f
-private const val VIDEO_CARD_TRANSITION_BLUR_QUANTUM_PX = 1f
+// 同一条景深时间线仅让模糊轻微滞后；峰值不变，减少过渡中段的 GPU 模糊成本。
+private const val VIDEO_CARD_TRANSITION_BLUR_PROGRESS_EXPONENT = 1.15
+private const val VIDEO_CARD_TRANSITION_BLUR_QUANTUM_PX = 2f
 // 保持遮罩克制，让元素缩小与 shared 卡片放大承担主要层级对比。
 private const val VIDEO_CARD_TRANSITION_MAX_SCRIM_ALPHA_DARK = 0.22f
 private const val VIDEO_CARD_TRANSITION_MAX_SCRIM_ALPHA_LIGHT = 0.10f
@@ -775,8 +777,10 @@ internal fun softClearVideoCardTransitionDepth(progress: Float): Float {
 }
 
 private fun resolveVideoCardTransitionBlurStrength(progress: Float): Float {
-    // 与景深进度同源：模糊与背景下沉同步建立/消退，避免“先糊后沉”的分层错位。
-    return progress.coerceIn(0f, 1f)
+    // 与景深进度共用时钟；轻微滞后建立/提前消退，保留峰值而降低平均模糊半径。
+    return progress.coerceIn(0f, 1f).toDouble()
+        .pow(VIDEO_CARD_TRANSITION_BLUR_PROGRESS_EXPONENT)
+        .toFloat()
 }
 
 /**

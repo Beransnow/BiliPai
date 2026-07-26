@@ -146,8 +146,8 @@ class VideoCardTransitionBackgroundPolicyTest {
         assertEquals(12f, resolveVideoCardTransitionMaxBlurRadiusPx(MotionTier.Normal))
         assertEquals(12f, resolveVideoCardTransitionMaxBlurRadiusPx(MotionTier.Enhanced))
         assertEquals(0f, resolveVideoCardTransitionMaxBlurRadiusPx(MotionTier.Reduced))
-        assertEquals(1f, resolveVideoCardTransitionBlurQuantumPx(MotionTier.Normal))
-        assertEquals(1f, resolveVideoCardTransitionBlurQuantumPx(MotionTier.Enhanced))
+        assertEquals(2f, resolveVideoCardTransitionBlurQuantumPx(MotionTier.Normal))
+        assertEquals(2f, resolveVideoCardTransitionBlurQuantumPx(MotionTier.Enhanced))
     }
 
     @Test
@@ -274,15 +274,15 @@ class VideoCardTransitionBackgroundPolicyTest {
     }
 
     @Test
-    fun openingEarlyProgressStillAppliesBlurForVisualQuality() {
+    fun openingBlurBuildsSlightlyLaterButKeepsVisualContinuity() {
         val early = resolveVideoCardTransitionBackgroundFrame(
-            progress = 0.1f,
+            progress = 0.2f,
             phase = VideoCardTransitionBackgroundPhase.OPENING,
             motionTier = MotionTier.Normal,
             sdkInt = 35,
         )
-        // 0.1 × 12dp = 1.2 → 量化到 1px
-        assertEquals(1f, early.blurRadiusPx, 1f)
+        // 0.2^1.15 × 12dp ≈ 1.9 → 量化到 2px。
+        assertEquals(2f, early.blurRadiusPx, 0.01f)
         assertTrue(early.scrimAlpha > 0f)
         assertTrue(early.blurRadiusPx > 0f)
         assertEquals(0f, early.cornerRadiusPx, 0.0001f)
@@ -412,7 +412,7 @@ class VideoCardTransitionBackgroundPolicyTest {
         )
 
         assertEquals(12f, start.blurRadiusPx)
-        // 线性锁步：progress=0.5 → blur 6px（density1）
+        // 同源时间线轻微滞后建立，progress=0.5 仍约为 6px（density1）。
         assertEquals(6f, middle.blurRadiusPx, 1f)
         assertTrue(middle.blurRadiusPx in 1f..<start.blurRadiusPx)
         assertEquals(0f, end.blurRadiusPx)
