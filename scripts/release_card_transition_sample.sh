@@ -50,6 +50,13 @@ adb_cmd() {
   adb -s "$DEVICE" "$@"
 }
 
+require_foreground() {
+  if ! adb_cmd shell dumpsys activity activities | grep -q "topResumedActivity=.* $PKG/"; then
+    echo "[release-transition] keep $PKG in the foreground while starting and stopping" >&2
+    exit 1
+  fi
+}
+
 adb_cmd shell pm path "$PKG" 2>/dev/null | grep -q '^package:' || {
   echo "[release-transition] release package $PKG is not installed on $DEVICE" >&2
   exit 1
@@ -67,6 +74,7 @@ pss_kb() {
 }
 
 if [[ "$MODE" == "start" ]]; then
+  require_foreground
   PID="$(adb_cmd shell pidof "$PKG" 2>/dev/null | tr -d '\r')"
   [[ -n "$PID" ]] || {
     echo "[release-transition] open release Home and wait for a card before starting" >&2
@@ -99,7 +107,12 @@ MEM_BEFORE_FILE="$(sed -n 's/^MEM_BEFORE_FILE=//p' "$STATE_FILE")"
 
 GFX_FILE="$OUT_DIR/release-transition-${DEVICE}-${STAMP}-gfxinfo.txt"
 MEM_AFTER_FILE="$OUT_DIR/release-transition-${DEVICE}-${STAMP}-mem-after.txt"
+require_foreground
 adb_cmd shell dumpsys gfxinfo "$PKG" framestats > "$GFX_FILE"
+if grep -q 'Failure while dumping the app' "$GFX_FILE"; then
+  echo "[release-transition] gfxinfo was unavailable; sample remains active, return to the app and run stop again" >&2
+  exit 1
+fi
 adb_cmd shell dumpsys meminfo "$PKG" > "$MEM_AFTER_FILE"
 rm -f "$STATE_FILE"
 
