@@ -62,6 +62,19 @@ class CommentRepositoryImagePayloadTest {
     }
 
     @Test
+    fun `comment main list uses documented pagination offset before deprecated next`() {
+        val offset = "{\"type\":1,\"direction\":1,\"data\":{\"pn\":2}}"
+
+        val parameters = CommentRepository.resolveCommentMainListPaginationParameters(
+            page = 2,
+            paginationOffset = offset
+        )
+
+        assertEquals("{\"offset\":\"{\\\"type\\\":1,\\\"direction\\\":1,\\\"data\\\":{\\\"pn\\\":2}}\"}", parameters["pagination_str"])
+        assertNull(parameters["next"])
+    }
+
+    @Test
     fun `sub reply detail list keeps rest page size pagination available`() {
         val source = File("src/main/java/com/android/purebilibili/data/repository/CommentRepository.kt").readText()
 

@@ -138,7 +138,13 @@ data class ReplyTop(
 data class ReplyCursor(
     @SerialName("all_count") val allCount: Int = 0,
     @SerialName("is_end") val isEnd: Boolean = false,
-    val next: Int = 0
+    val next: Int = 0,
+    @SerialName("pagination_reply") val paginationReply: ReplyPaginationReply? = null
+)
+
+@Serializable
+data class ReplyPaginationReply(
+    @SerialName("next_offset") val nextOffset: String = ""
 )
 
 //  旧版 API 的分页信息
