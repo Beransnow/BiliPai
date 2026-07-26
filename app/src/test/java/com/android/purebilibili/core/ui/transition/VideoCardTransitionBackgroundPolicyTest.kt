@@ -255,86 +255,17 @@ class VideoCardTransitionBackgroundPolicyTest {
     }
 
     @Test
-    fun siblingVideoElementsShrinkWithDepthButTheFlyingCardStaysFullScale() {
-        assertEquals(
-            0.92f,
-            resolveVideoCardSiblingDepthScale(
-                depthProgress = 1f,
-                phase = VideoCardTransitionBackgroundPhase.OPENING,
-                isSharedMorphSourceCard = false,
-                motionTier = MotionTier.Normal,
-            ),
-            0.0001f,
-        )
-        assertEquals(
-            0.96f,
-            resolveVideoCardSiblingDepthScale(
-                depthProgress = 0.5f,
-                phase = VideoCardTransitionBackgroundPhase.RETURNING,
-                isSharedMorphSourceCard = false,
-                motionTier = MotionTier.Normal,
-            ),
-            0.0001f,
-        )
-        assertEquals(
-            1f,
-            resolveVideoCardSiblingDepthScale(
-                depthProgress = 1f,
-                phase = VideoCardTransitionBackgroundPhase.OPENING,
-                isSharedMorphSourceCard = true,
-                motionTier = MotionTier.Normal,
-            ),
-            0.0001f,
-        )
-        assertEquals(
-            1f,
-            resolveVideoCardSiblingDepthScale(
-                depthProgress = 1f,
-                phase = VideoCardTransitionBackgroundPhase.OPENING,
-                isSharedMorphSourceCard = false,
-                motionTier = MotionTier.Reduced,
-            ),
-            0.0001f,
-        )
-        assertEquals(
-            0.92f,
-            resolveVideoCardSiblingDepthScale(
-                depthProgress = 1f,
-                phase = VideoCardTransitionBackgroundPhase.HELD,
-                isSharedMorphSourceCard = false,
-                motionTier = MotionTier.Enhanced,
-            ),
-            0.0001f,
-        )
-        assertEquals(
-            1f,
-            resolveVideoCardSiblingDepthScale(
-                depthProgress = 1f,
-                phase = VideoCardTransitionBackgroundPhase.IDLE,
-                isSharedMorphSourceCard = false,
-                motionTier = MotionTier.Normal,
-            ),
-            0.0001f,
-        )
-    }
-
-    @Test
-    fun sharedShellAppliesSiblingScaleFromTheSingleDepthClockOnlyWhileActive() {
+    fun sharedShellDoesNotApplyBackgroundScale() {
         val source = File(
             "src/main/java/com/android/purebilibili/core/ui/transition/" +
                 "VideoCardShellSharedBounds.kt"
         ).readText()
 
         assertTrue(source.contains("OverlayClip(clipShape)"))
-        assertTrue(source.contains("sharedContentState.isMatchFound"))
-        assertTrue(source.contains("bgState.progressProvider()"))
-        assertTrue(source.contains("bgState.phaseProvider()"))
-        assertTrue(source.contains("bgState.motionTierProvider()"))
-        assertTrue(source.contains("bgState.isBackgroundSinkEnabledProvider()"))
-        assertTrue(source.contains("resolveVideoCardSiblingDepthScale("))
-        assertTrue(source.contains(".graphicsLayer {"))
-        assertTrue(source.contains("scaleX = scale"))
-        assertTrue(source.contains("scaleY = scale"))
+        assertFalse(source.contains("resolveVideoCardSiblingDepthScale("))
+        assertFalse(source.contains(".graphicsLayer {"))
+        assertFalse(source.contains("scaleX = scale"))
+        assertFalse(source.contains("scaleY = scale"))
         assertFalse(source.contains("shadowElevation"))
         assertFalse(source.contains("translationX ="))
         assertFalse(source.contains("translationY ="))

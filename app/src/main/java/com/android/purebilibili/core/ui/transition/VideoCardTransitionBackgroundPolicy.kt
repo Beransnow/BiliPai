@@ -40,8 +40,6 @@ private const val VIDEO_CARD_TRANSITION_MAX_SCRIM_ALPHA_DARK = 0.22f
 private const val VIDEO_CARD_TRANSITION_MAX_SCRIM_ALPHA_LIGHT = 0.10f
 private const val VIDEO_CARD_TRANSITION_REDUCED_SCRIM_ALPHA = 0.08f
 private const val VIDEO_CARD_TRANSITION_MAX_CONTENT_SCALE_REDUCTION = 0f
-/** 未被点击的视频元素在满深度时缩小 8%。 */
-internal const val VIDEO_CARD_TRANSITION_SIBLING_SCALE_REDUCTION = 0.08f
 /** 景深缩放露出的边缘：至少压到这个 tint 强度，避免浅色主题读成「白条」。 */
 private const val VIDEO_CARD_TRANSITION_SCALE_GAP_MIN_TINT_LIGHT = 0.36f
 private const val VIDEO_CARD_TRANSITION_SCALE_GAP_MIN_TINT_DARK = 0.44f
@@ -87,7 +85,6 @@ internal data class VideoCardTransitionBackgroundState(
     val isQuickReturnFromDetailProvider: () -> Boolean = { false },
     val motionTierProvider: () -> MotionTier = { MotionTier.Normal },
     val isLightBackgroundProvider: () -> Boolean = { false },
-    val isBackgroundSinkEnabledProvider: () -> Boolean = { false },
 )
 
 internal val LocalVideoCardTransitionBackgroundState = compositionLocalOf {
@@ -127,24 +124,6 @@ internal fun resolveVideoCardTransitionContentScale(
         phase = phase,
     )
     return 1f - VIDEO_CARD_TRANSITION_MAX_CONTENT_SCALE_REDUCTION * depthProgress
-}
-
-/**
- * 未被点击的视频元素随景深缩小；飞卡由 sharedBounds 单独负责几何变化。
- */
-internal fun resolveVideoCardSiblingDepthScale(
-    depthProgress: Float,
-    phase: VideoCardTransitionBackgroundPhase,
-    isSharedMorphSourceCard: Boolean,
-    motionTier: MotionTier,
-    maxReduction: Float = VIDEO_CARD_TRANSITION_SIBLING_SCALE_REDUCTION,
-): Float {
-    if (isSharedMorphSourceCard) return 1f
-    if (phase == VideoCardTransitionBackgroundPhase.IDLE || motionTier == MotionTier.Reduced) {
-        return 1f
-    }
-    if (maxReduction <= 0f) return 1f
-    return 1f - maxReduction * depthProgress.coerceIn(0f, 1f)
 }
 
 internal fun resolveVideoCardTransitionBackgroundFrame(
