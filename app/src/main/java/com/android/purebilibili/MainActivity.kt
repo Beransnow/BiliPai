@@ -13,6 +13,7 @@ import android.graphics.Shader
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.util.Rational
 import android.view.Gravity
 import android.view.View
@@ -66,6 +67,7 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.Density
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.PlayerView
+import androidx.metrics.performance.JankStats
 import androidx.window.layout.WindowMetrics
 import androidx.window.layout.WindowMetricsCalculator
 import coil.compose.AsyncImagePainter
@@ -78,6 +80,7 @@ import com.android.purebilibili.core.theme.LocalDisplayMetricsSnapshot
 import com.android.purebilibili.core.theme.PureBiliBiliTheme
 import com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState
 import com.android.purebilibili.core.ui.motion.AppMotionEasing
+import com.android.purebilibili.core.ui.performance.AppRuntimeVisualGuardTracker
 import com.android.purebilibili.core.ui.wallpaper.SplashWallpaperLayout
 import com.android.purebilibili.core.ui.wallpaper.resolveSplashWallpaperLayout
 import com.android.purebilibili.core.util.BilibiliNavigationTarget
@@ -764,6 +767,7 @@ open class MainActivity : AppCompatActivity() {
     private var splashFlyoutEnabledAtCreate = false
     private var splashExitCallbackTriggered = false
     private var systemInDarkThemeSnapshot by mutableStateOf(false)
+    private var runtimeJankStats: JankStats? = null
 
     var windowMetrics: WindowMetrics? by mutableStateOf(null)
 
@@ -1914,12 +1918,33 @@ open class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        val existingJankStats = runtimeJankStats
+        if (existingJankStats != null) {
+            existingJankStats.isTrackingEnabled = true
+        } else {
+            runtimeJankStats = runCatching {
+                JankStats.createAndTrack(window) { frameData ->
+                    AppRuntimeVisualGuardTracker.onFrame(
+                        frameData = frameData,
+                        nowMs = SystemClock.uptimeMillis(),
+                    )
+                }
+            }.onFailure { throwable ->
+                Logger.w(TAG, "无法启动页面转场性能采样", throwable)
+            }.getOrNull()
+        }
         if (shouldLogWarmResume(hasCompletedInitialResume, isChangingConfigurations)) {
             Logger.d(
                 TAG,
                 "🔁 Warm resume path. splash flyout is not expected (Activity already created). flyoutEnabledAtCreate=$splashFlyoutEnabledAtCreate, splashExitCallbackTriggered=$splashExitCallbackTriggered"
             )
         }
+    }
+
+    override fun onStop() {
+        AppRuntimeVisualGuardTracker.discardActiveWindow()
+        runtimeJankStats?.isTrackingEnabled = false
+        super.onStop()
     }
 
     override fun onResume() {
@@ -2185,6 +2210,8 @@ open class MainActivity : AppCompatActivity() {
     }
     
     override fun onDestroy() {
+        runtimeJankStats?.isTrackingEnabled = false
+        runtimeJankStats = null
         super.onDestroy()
     }
 }

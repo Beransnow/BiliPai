@@ -554,7 +554,7 @@ fun AppNavigation(
         LaunchedEffect(visibleBottomBarItems, mainBottomPagerState.selectedPage) {
             val lastPage = visibleBottomBarItems.lastIndex
             if (lastPage >= 0 && mainBottomPagerState.selectedPage > lastPage) {
-                mainBottomPagerState.animateToPage(lastPage)
+                mainBottomPagerState.switchToPage(lastPage)
             }
         }
         val bottomPagerRenderBudget =
@@ -689,7 +689,7 @@ fun AppNavigation(
             val performPagerNavigation = {
                 beforeNavigation?.invoke()
                 navigation3BackStack = listOf(BiliPaiNavKey.MainHost)
-                mainBottomPagerState.animateToPage(page)
+                mainBottomPagerState.switchToPage(page)
             }
             if (
                 shouldRequirePrivacyAuthentication(
@@ -1398,7 +1398,7 @@ fun AppNavigation(
                     AppSystemBackAction.RETURN_TO_HOME_TAB -> {
                         val homeIndex = visibleBottomBarItems.indexOf(BottomNavItem.HOME)
                         if (homeIndex >= 0) {
-                            mainBottomPagerState.animateToPage(homeIndex)
+                            mainBottomPagerState.switchToPage(homeIndex)
                         }
                     }
                     AppSystemBackAction.NAVIGATE_UP -> {
@@ -1597,7 +1597,8 @@ fun AppNavigation(
                 @Composable
                 fun RenderNavigationContent(
                     key: BiliPaiNavKey,
-                    isBottomPagerPageActive: Boolean = true
+                    isBottomPagerPageActive: Boolean = true,
+                    isBottomPagerHosted: Boolean = false,
                 ) {
                     @Composable
                     fun SettingsTabletEntry(content: @Composable () -> Unit) {
@@ -1646,7 +1647,8 @@ fun AppNavigation(
                                                     ) {
                                                         RenderNavigationContent(
                                                             key = pageKey,
-                                                            isBottomPagerPageActive = page == bottomPagerState.settledPage
+                                                            isBottomPagerPageActive = page == bottomPagerState.settledPage,
+                                                            isBottomPagerHosted = true,
                                                         )
                                                     }
                                                 }
@@ -2120,7 +2122,7 @@ fun AppNavigation(
                                         // 再 pop 至 MainHost 触发与系统返回相同的横向过渡。
                                         val homeIndex = visibleBottomBarItems.indexOf(BottomNavItem.HOME)
                                         if (homeIndex >= 0) {
-                                            mainBottomPagerState.snapToPage(homeIndex)
+                                            mainBottomPagerState.switchToPage(homeIndex)
                                         }
                                         navigation3BackStack = popBiliPaiNavKeyToRoot(navigation3BackStack)
                                     }
@@ -2207,6 +2209,7 @@ fun AppNavigation(
                                     onSearchOpen = { pushNavigation3Key(BiliPaiNavKey.SettingsSearch) },
                                     mainHazeState = mainHazeState,
                                     forceSinglePaneContent = true,
+                                    rootEntranceEnabled = !isBottomPagerHosted,
                                 )
                             }
                         BiliPaiNavEntryContentRole.SETTINGS_CATEGORY -> {
@@ -3156,7 +3159,7 @@ fun AppNavigation(
                 onReturnToHomeTab = {
                     val homeIndex = visibleBottomBarItems.indexOf(BottomNavItem.HOME)
                     if (homeIndex >= 0) {
-                        mainBottomPagerState.snapToPage(homeIndex)
+                        mainBottomPagerState.switchToPage(homeIndex)
                     }
                 },
             )

@@ -28,6 +28,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.MutableCreationExtras
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.compose.animation.SharedTransitionScope
 import androidx.navigation3.runtime.NavEntryDecorator
@@ -46,6 +47,9 @@ import androidx.navigationevent.NavigationEventTransitionState
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ProvideAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.adaptive.MotionTier
+import com.android.purebilibili.core.ui.performance.AppRuntimeVisualGuardTracker
+import com.android.purebilibili.core.ui.performance.TrackJankStateValue
+import com.android.purebilibili.core.ui.performance.VIDEO_CARD_TRANSITION_JANK_STATE
 import com.android.purebilibili.core.ui.transition.LocalPredictiveBackBackgroundState
 import com.android.purebilibili.core.ui.transition.LocalVideoCardMorphProgressReporter
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
@@ -178,9 +182,26 @@ internal fun BiliPaiNavDisplayHost(
     val videoCardBackgroundProgressProvider = remember(videoCardClock) {
         { videoCardClock.depthProgress() }
     }
-    // 仅系统减弱动画时降为 scrim-only；不按机型降级，保证完整 12dp 景深观感。
+    val runtimeGuardDecision by
+        AppRuntimeVisualGuardTracker.decision.collectAsStateWithLifecycle()
+    val videoCardTransitionJankState = if (!videoCardDepthEffectEnabled) {
+        null
+    } else {
+        when {
+            videoCardReturnGestureInProgress -> "PredictiveReturn"
+            videoCardClock.gestureRestoreInProgress -> "GestureRestore"
+            videoCardClock.phase == VideoCardTransitionBackgroundPhase.OPENING -> "Opening"
+            videoCardClock.phase == VideoCardTransitionBackgroundPhase.RETURNING -> "Returning"
+            else -> null
+        }
+    }
+    TrackJankStateValue(
+        stateName = VIDEO_CARD_TRANSITION_JANK_STATE,
+        stateValue = videoCardTransitionJankState,
+    )
+    // 默认保留完整 12dp 景深；系统减弱动画或连续转场掉帧时降为 scrim-only。
     val transitionBackgroundMotionTier =
-        if (reduceMotion) MotionTier.Reduced else MotionTier.Normal
+        if (reduceMotion) MotionTier.Reduced else runtimeGuardDecision.effectiveMotionTier
     var previousVideoCardTransitionBackStack by remember {
         mutableStateOf(safeBackStack)
     }

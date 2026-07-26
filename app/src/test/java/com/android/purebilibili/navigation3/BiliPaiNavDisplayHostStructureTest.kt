@@ -242,6 +242,24 @@ class BiliPaiNavDisplayHostStructureTest {
     }
 
     @Test
+    fun navDisplayHostTracksOnlyActiveVideoCardTransitionPhases() {
+        val source = navDisplayHostSource()
+        val trackingBlock = source
+            .substringAfter("val videoCardTransitionJankState =")
+            .substringBefore("TrackJankStateValue(")
+
+        assertTrue(source.contains("AppRuntimeVisualGuardTracker.decision.collectAsStateWithLifecycle()"))
+        assertTrue(source.contains("stateName = VIDEO_CARD_TRANSITION_JANK_STATE"))
+        assertTrue(trackingBlock.contains("PredictiveReturn"))
+        assertTrue(trackingBlock.contains("GestureRestore"))
+        assertTrue(trackingBlock.contains("VideoCardTransitionBackgroundPhase.OPENING"))
+        assertTrue(trackingBlock.contains("VideoCardTransitionBackgroundPhase.RETURNING"))
+        assertFalse(trackingBlock.contains("VideoCardTransitionBackgroundPhase.HELD"))
+        assertTrue(source.contains("runtimeGuardDecision.effectiveMotionTier"))
+        assertTrue(source.contains("stateValue = videoCardTransitionJankState"))
+    }
+
+    @Test
     fun navDisplayHostIntegratesPredictiveBackHandlerDecorator() {
         val source = navDisplayHostSource()
 
