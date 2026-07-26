@@ -530,6 +530,13 @@ fun WatchLaterScreen(
     var showBatchDeleteConfirm by rememberSaveable { mutableStateOf(false) }
     var showManagementMenu by rememberSaveable { mutableStateOf(false) }
     var pendingManagementAction by rememberSaveable { mutableStateOf<WatchLaterManagementAction?>(null) }
+    var savedSortOrder by rememberSaveable { mutableStateOf(WatchLaterSortOrder.FORWARD.name) }
+    val sortOrder = remember(savedSortOrder) {
+        WatchLaterSortOrder.fromSavedValue(savedSortOrder)
+    }
+    val displayedItems = remember(state.items, sortOrder) {
+        sortWatchLaterItems(state.items, sortOrder)
+    }
 
     LaunchedEffect(state.items) {
         val valid = state.items.map { it.bvid }.toSet()
@@ -590,8 +597,8 @@ fun WatchLaterScreen(
                                 IconButton(
                                     onClick = {
                                         val externalPlaylist = buildExternalPlaylistFromWatchLater(
-                                            items = state.items,
-                                            clickedBvid = state.items.firstOrNull()?.bvid
+                                            items = displayedItems,
+                                            clickedBvid = displayedItems.firstOrNull()?.bvid
                                         ) ?: return@IconButton
 
                                         com.android.purebilibili.feature.video.player.PlaylistManager.setExternalPlaylist(
@@ -602,9 +609,9 @@ fun WatchLaterScreen(
                                         com.android.purebilibili.feature.video.player.PlaylistManager
                                             .setPlayMode(com.android.purebilibili.feature.video.player.PlayMode.SEQUENTIAL)
 
-                                        val item = state.items[externalPlaylist.startIndex]
+                                        val item = displayedItems[externalPlaylist.startIndex]
                                         val target = resolveWatchLaterPlaybackTargetOrDefault(
-                                            items = state.items,
+                                            items = displayedItems,
                                             bvid = item.bvid,
                                             fallbackCid = item.cid
                                         )
@@ -616,6 +623,14 @@ fun WatchLaterScreen(
                                         contentDescription = "全部播放",
                                         tint = MaterialTheme.colorScheme.primary
                                     )
+                                }
+
+                                TextButton(
+                                    onClick = {
+                                        savedSortOrder = sortOrder.toggled().name
+                                    }
+                                ) {
+                                    Text(if (sortOrder == WatchLaterSortOrder.FORWARD) "正序" else "倒序")
                                 }
 
                                 Box {
@@ -639,8 +654,8 @@ fun WatchLaterScreen(
                                             onClick = {
                                                 showManagementMenu = false
                                                 val externalPlaylist = buildExternalPlaylistFromWatchLater(
-                                                    items = state.items,
-                                                    clickedBvid = state.items.firstOrNull()?.bvid
+                                                    items = displayedItems,
+                                                    clickedBvid = displayedItems.firstOrNull()?.bvid
                                                 )
                                                 if (externalPlaylist != null) {
                                                     com.android.purebilibili.feature.video.player.PlaylistManager.setExternalPlaylist(
@@ -651,9 +666,9 @@ fun WatchLaterScreen(
                                                     com.android.purebilibili.feature.video.player.PlaylistManager
                                                         .setPlayMode(com.android.purebilibili.feature.video.player.PlayMode.SEQUENTIAL)
 
-                                                    resolveWatchLaterPlayAllStartTarget(state.items)?.let { target ->
+                                                    resolveWatchLaterPlayAllStartTarget(displayedItems)?.let { target ->
                                                         val playbackTarget = resolveWatchLaterPlaybackTargetOrDefault(
-                                                            items = state.items,
+                                                            items = displayedItems,
                                                             bvid = target.first,
                                                             fallbackCid = target.second
                                                         )
@@ -771,7 +786,7 @@ fun WatchLaterScreen(
                         modifier = Modifier.fillMaxSize()
                     ) {
                         itemsIndexed(
-                            items = state.items,
+                            items = displayedItems,
                             key = { index, item ->
                                 resolveIndexedVideoLazyKey(
                                     namespace = "watch_later_video",
@@ -811,7 +826,7 @@ fun WatchLaterScreen(
                                             }
                                         } else {
                                             val externalPlaylist = buildExternalPlaylistFromWatchLater(
-                                                items = state.items,
+                                                items = displayedItems,
                                                 clickedBvid = item.bvid
                                             )
                                             if (externalPlaylist != null) {
@@ -825,7 +840,7 @@ fun WatchLaterScreen(
                                             }
 
                                             val target = resolveWatchLaterPlaybackTargetOrDefault(
-                                                items = state.items,
+                                                items = displayedItems,
                                                 bvid = item.bvid,
                                                 fallbackCid = item.cid
                                             )
