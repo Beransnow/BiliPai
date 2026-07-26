@@ -330,6 +330,7 @@ class VideoCardTransitionBackgroundPolicyTest {
         assertTrue(source.contains("bgState.progressProvider()"))
         assertTrue(source.contains("bgState.phaseProvider()"))
         assertTrue(source.contains("bgState.motionTierProvider()"))
+        assertTrue(source.contains("bgState.isBackgroundSinkEnabledProvider()"))
         assertTrue(source.contains("resolveVideoCardSiblingDepthScale("))
         assertTrue(source.contains(".graphicsLayer {"))
         assertTrue(source.contains("scaleX = scale"))

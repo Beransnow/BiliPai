@@ -636,6 +636,9 @@ class VideoSharedTransitionPolicyTest {
         val singleColumnCardSource = File(
             "src/main/java/com/android/purebilibili/feature/home/components/cards/HomeStyleSingleColumnVideoCard.kt"
         ).readText()
+        val relatedCardSource = File(
+            "src/main/java/com/android/purebilibili/feature/video/ui/components/RelatedVideoItem.kt"
+        ).readText()
         val cinematicCardSource = File(
             "src/main/java/com/android/purebilibili/feature/home/components/cards/CinematicVideoCard.kt"
         ).readText()
@@ -658,16 +661,37 @@ class VideoSharedTransitionPolicyTest {
         assertTrue(homeCardSource.contains("videoCardShellSharedBoundsOrEmpty("))
         assertFalse(homeCardSource.contains("videoTitleSharedElementKey("))
         assertTrue(detailInfoSource.contains("useCardContainerSharedBounds = useCardContainerSharedBounds"))
-        // 分区横卡只在左侧封面内放置透明 shell 锚点。
+        // 分区横卡与相关推荐都由整卡承载 shared bounds，标题/UP/数据与封面一起移动。
         assertTrue(partitionSource.contains("HomeStyleSingleColumnVideoCard("))
         assertTrue(partitionSource.contains("items = state.videos"))
         assertTrue(partitionSource.contains("coverAspectRatio = cardLayout.coverAspectRatio"))
         assertFalse(partitionSource.contains("state.videos.chunked(2)"))
         assertTrue(singleColumnCardSource.contains("videoCardShellSharedBoundsOrEmpty("))
         assertFalse(singleColumnCardSource.contains("videoCoverSharedBoundsOrEmpty("))
-        assertTrue(singleColumnCardSource.contains("videoCardShellReturnChromeAlpha("))
-        assertTrue(singleColumnCardSource.contains("followShellMotion = true"))
+        assertFalse(singleColumnCardSource.contains("videoCardShellReturnChromeAlpha("))
+        assertTrue(
+            singleColumnCardSource.indexOf(".onGloballyPositioned") <
+                singleColumnCardSource.indexOf(".videoCardShellSharedBoundsOrEmpty(")
+        )
+        assertTrue(
+            singleColumnCardSource.indexOf(".videoCardShellSharedBoundsOrEmpty(") <
+                singleColumnCardSource.indexOf(".padding(8.dp)")
+        )
+        assertTrue(singleColumnCardSource.contains("clipShape = cardShape"))
+        assertFalse(singleColumnCardSource.contains("followShellMotion = true"))
         assertTrue(singleColumnCardSource.contains("HOME_STYLE_SINGLE_COLUMN_COVER_WIDTH = 144.dp"))
+        assertTrue(relatedCardSource.contains("videoCardShellSharedBoundsOrEmpty("))
+        assertTrue(
+            relatedCardSource.indexOf(".onGloballyPositioned") <
+                relatedCardSource.indexOf(".videoCardShellSharedBoundsOrEmpty(")
+        )
+        assertTrue(
+            relatedCardSource.indexOf(".videoCardShellSharedBoundsOrEmpty(") <
+                relatedCardSource.indexOf(".padding(8.dp)")
+        )
+        assertTrue(relatedCardSource.contains("clipShape = cardShape"))
+        assertFalse(relatedCardSource.contains("videoCardShellReturnChromeAlpha("))
+        assertFalse(relatedCardSource.contains("followShellMotion = true"))
         assertFalse(partitionSource.contains("videoTitleSharedElementKey("))
         assertTrue(cinematicCardSource.contains("videoCardShellSharedBoundsOrEmpty("))
         assertFalse(cinematicCardSource.contains("videoTitleSharedElementKey("))

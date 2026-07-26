@@ -70,7 +70,6 @@ import com.android.purebilibili.data.model.response.RecommendationFeedbackLocalA
 import com.android.purebilibili.data.model.response.RecommendationFeedbackReason
 import com.android.purebilibili.data.model.response.RelatedVideo
 import com.android.purebilibili.data.repository.ActionRepository
-import com.android.purebilibili.feature.home.components.cards.videoCardShellReturnChromeAlpha
 import com.android.purebilibili.feature.home.resolveHomeFeedCardLayout
 import com.android.purebilibili.feature.video.ui.FollowBadgeTone
 import com.android.purebilibili.feature.video.ui.resolveVideoFollowVisualPolicy
@@ -160,9 +159,7 @@ internal fun chunkRelatedVideosForHomeStyleGrid(
     return videos.chunked(RELATED_VIDEO_GRID_COLUMNS)
 }
 
-/**
- * 相关推荐单列横卡：用封面尺寸的透明 shell 锚点，真实卡片不进入播放器 overlay。
- */
+/** 相关推荐单列横卡：整卡进入 shared overlay，封面、标题与元数据一起移动。 */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
 fun RelatedVideoItem(
@@ -182,7 +179,7 @@ fun RelatedVideoItem(
     val latestOnClick by rememberUpdatedState(onClick)
     val sharedTransitionScope = LocalSharedTransitionScope.current
     val animatedVisibilityScope = LocalAnimatedVisibilityScope.current
-    val coverSharedEnabled = effectiveTransitionEnabled &&
+    val sharedReady = effectiveTransitionEnabled &&
         sharedTransitionScope != null &&
         animatedVisibilityScope != null
     val configuration = LocalConfiguration.current
@@ -205,9 +202,9 @@ fun RelatedVideoItem(
             speedSettings = sharedTransitionSpeedSettings
         )
     }
-    val coverBoundsRef = remember { object { var value: Rect? = null } }
+    val cardBoundsRef = remember { object { var value: Rect? = null } }
     val triggerRelatedVideoClick = {
-        coverBoundsRef.value?.let { bounds ->
+        cardBoundsRef.value?.let { bounds ->
             CardPositionManager.recordVideoCardPosition(
                 bvid = video.bvid,
                 sourceRoute = sourceRoute,
@@ -215,7 +212,7 @@ fun RelatedVideoItem(
                 screenWidth = screenWidthPx,
                 screenHeight = screenHeightPx,
                 density = densityValue,
-                sourceCornerDp = 10
+                sourceCornerDp = 12
             )
         }
         if (shouldDeferRelatedVideoNavigationForSharedTransition(
@@ -241,7 +238,7 @@ fun RelatedVideoItem(
     val coverHeight = coverWidth / coverAspectRatio.coerceAtLeast(1f)
     val useCardShellSharedBounds = shouldUseVideoCardShellSharedBounds(
         sourceRoute = sourceRoute,
-        transitionEnabled = coverSharedEnabled
+        transitionEnabled = sharedReady
     )
     val context = LocalContext.current
     val coverRequest = remember(video.pic, transitionEnabled) {
@@ -254,6 +251,18 @@ fun RelatedVideoItem(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .onGloballyPositioned { coordinates ->
+                cardBoundsRef.value = coordinates.boundsInRoot()
+            }
+            .videoCardShellSharedBoundsOrEmpty(
+                enabled = useCardShellSharedBounds,
+                sharedTransitionScope = sharedTransitionScope,
+                animatedVisibilityScope = animatedVisibilityScope,
+                bvid = video.bvid,
+                sourceRoute = sourceRoute,
+                motionSpec = cardSharedTransitionMotionSpec,
+                clipShape = cardShape
+            )
             .clip(cardShape)
             .background(MaterialTheme.colorScheme.surface)
             .clickable(onClick = triggerRelatedVideoClick)
@@ -265,9 +274,6 @@ fun RelatedVideoItem(
             modifier = Modifier
                 .width(coverWidth)
                 .height(coverHeight)
-                .onGloballyPositioned { coordinates ->
-                    coverBoundsRef.value = coordinates.boundsInRoot()
-                }
                 .clip(coverShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
@@ -277,19 +283,6 @@ fun RelatedVideoItem(
                 contentScale = ContentScale.Crop,
                 alignment = Alignment.Center,
                 modifier = Modifier.fillMaxSize()
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .videoCardShellSharedBoundsOrEmpty(
-                        enabled = useCardShellSharedBounds,
-                        sharedTransitionScope = sharedTransitionScope,
-                        animatedVisibilityScope = animatedVisibilityScope,
-                        bvid = video.bvid,
-                        sourceRoute = sourceRoute,
-                        motionSpec = cardSharedTransitionMotionSpec,
-                        clipShape = coverShape
-                    )
             )
             Text(
                 text = FormatUtils.formatDuration(video.duration),
@@ -305,12 +298,6 @@ fun RelatedVideoItem(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(6.dp)
-                    .videoCardShellReturnChromeAlpha(
-                        enabled = useCardShellSharedBounds,
-                        bvid = video.bvid,
-                        sourceRoute = sourceRoute,
-                        followShellMotion = true,
-                    )
             )
             if (onMoreClick != null) {
                 val moreHaptic = rememberHapticFeedback()
@@ -321,12 +308,6 @@ fun RelatedVideoItem(
                         .size(28.dp)
                         .clip(CircleShape)
                         .background(Color.Black.copy(alpha = 0.38f))
-                        .videoCardShellReturnChromeAlpha(
-                            enabled = useCardShellSharedBounds,
-                            bvid = video.bvid,
-                            sourceRoute = sourceRoute,
-                            followShellMotion = true,
-                        )
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null
@@ -350,13 +331,7 @@ fun RelatedVideoItem(
         Column(
             modifier = Modifier
                 .weight(1f)
-                .height(coverHeight)
-                .videoCardShellReturnChromeAlpha(
-                    enabled = useCardShellSharedBounds,
-                    bvid = video.bvid,
-                    sourceRoute = sourceRoute,
-                    followShellMotion = true,
-                ),
+                .height(coverHeight),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(

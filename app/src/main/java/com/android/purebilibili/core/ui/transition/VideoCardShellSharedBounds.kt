@@ -25,7 +25,7 @@ import com.android.purebilibili.core.ui.adaptive.MotionTier
  * - 进场：首页等大卡由源卡 Exit.None、详情壳 Enter.None，整卡跟手放大。
  * - 返回（首页等大卡）：详情壳 Exit.None 保住实时画面；源卡 Enter 延后淡入，
  *   避免封面一开始盖住直播画面。
- * - 相关/分区横条卡用封面尺寸的透明 shell 锚点，真实上一页不进入 overlay。
+ * - 相关/分区横条卡同样由整卡承载 shared bounds，封面与文字作为一个整体移动。
  */
 internal enum class VideoCardShellSharedBoundsRole {
     /** 列表源卡片 */
@@ -143,6 +143,7 @@ internal fun Modifier.videoCardShellSharedBoundsOrEmpty(
     val bgState = LocalVideoCardTransitionBackgroundState.current
     val siblingDepthScaleActive =
         role == VideoCardShellSharedBoundsRole.SourceCard &&
+            bgState.isBackgroundSinkEnabledProvider() &&
             bgState.phaseProvider() != VideoCardTransitionBackgroundPhase.IDLE &&
             bgState.motionTierProvider() != MotionTier.Reduced
     // 快速返回：源卡 Enter.None，标题/UP 与封面同步落位，避免先占位后出字。

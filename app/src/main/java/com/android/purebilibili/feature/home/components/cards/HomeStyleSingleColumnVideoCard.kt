@@ -106,7 +106,7 @@ internal fun HomeStyleSingleColumnVideoCard(
             speedSettings = motionSettings,
         )
     }
-    val coverBounds = remember { object { var value: Rect? = null } }
+    val cardBounds = remember { object { var value: Rect? = null } }
     val cardShape = remember { RoundedCornerShape(12.dp) }
     val coverShape = remember { RoundedCornerShape(10.dp) }
     val useCardShellSharedBounds = shouldUseVideoCardShellSharedBounds(
@@ -120,7 +120,7 @@ internal fun HomeStyleSingleColumnVideoCard(
             .build()
     }
     val triggerClick = {
-        coverBounds.value?.let { bounds ->
+        cardBounds.value?.let { bounds ->
             CardPositionManager.recordVideoCardPosition(
                 bvid = video.bvid,
                 sourceRoute = sourceRoute,
@@ -128,7 +128,7 @@ internal fun HomeStyleSingleColumnVideoCard(
                 screenWidth = screenWidthPx,
                 screenHeight = screenHeightPx,
                 density = density.density,
-                sourceCornerDp = 10,
+                sourceCornerDp = 12,
             )
         }
         if (sharedTransitionEnabled && !transitionEnabled) {
@@ -148,6 +148,18 @@ internal fun HomeStyleSingleColumnVideoCard(
 
     Row(
         modifier = modifier
+            .onGloballyPositioned { coordinates ->
+                cardBounds.value = coordinates.boundsInRoot()
+            }
+            .videoCardShellSharedBoundsOrEmpty(
+                enabled = useCardShellSharedBounds,
+                sharedTransitionScope = sharedTransitionScope,
+                animatedVisibilityScope = animatedVisibilityScope,
+                bvid = video.bvid,
+                sourceRoute = sourceRoute,
+                motionSpec = motionSpec,
+                clipShape = cardShape,
+            )
             .clip(cardShape)
             .background(MaterialTheme.colorScheme.surface)
             .clickable(onClick = triggerClick)
@@ -159,9 +171,6 @@ internal fun HomeStyleSingleColumnVideoCard(
             modifier = Modifier
                 .width(HOME_STYLE_SINGLE_COLUMN_COVER_WIDTH)
                 .height(coverHeight)
-                .onGloballyPositioned { coordinates ->
-                    coverBounds.value = coordinates.boundsInRoot()
-                }
                 .clip(coverShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant),
         ) {
@@ -170,19 +179,6 @@ internal fun HomeStyleSingleColumnVideoCard(
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize(),
-            )
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .videoCardShellSharedBoundsOrEmpty(
-                        enabled = useCardShellSharedBounds,
-                        sharedTransitionScope = sharedTransitionScope,
-                        animatedVisibilityScope = animatedVisibilityScope,
-                        bvid = video.bvid,
-                        sourceRoute = sourceRoute,
-                        motionSpec = motionSpec,
-                        clipShape = coverShape,
-                    ),
             )
             Text(
                 text = FormatUtils.formatDuration(video.duration),
@@ -197,26 +193,14 @@ internal fun HomeStyleSingleColumnVideoCard(
                 ),
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(6.dp)
-                    .videoCardShellReturnChromeAlpha(
-                        enabled = useCardShellSharedBounds,
-                        bvid = video.bvid,
-                        sourceRoute = sourceRoute,
-                        followShellMotion = true,
-                    ),
+                    .padding(6.dp),
             )
         }
 
         Column(
             modifier = Modifier
                 .weight(1f)
-                .height(coverHeight)
-                .videoCardShellReturnChromeAlpha(
-                    enabled = useCardShellSharedBounds,
-                    bvid = video.bvid,
-                    sourceRoute = sourceRoute,
-                    followShellMotion = true,
-                ),
+                .height(coverHeight),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
             Row(

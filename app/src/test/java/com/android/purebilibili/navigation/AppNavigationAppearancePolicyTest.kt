@@ -168,6 +168,33 @@ class AppNavigationAppearancePolicyTest {
     }
 
     @Test
+    fun backgroundSinkToggleDoesNotDisableTheTransitionBlurClock() {
+        val source = loadSource("app/src/main/java/com/android/purebilibili/navigation/AppNavigation.kt")
+        val navHostSource = loadSource(
+            "app/src/main/java/com/android/purebilibili/navigation3/BiliPaiNavDisplayHost.kt"
+        )
+        val navHostCall = source
+            .substringAfter("BiliPaiNavDisplayHost(")
+            .substringBefore(") { key ->")
+
+        assertTrue(
+            navHostCall.contains("videoCardDepthEffectEnabled = sharedVideoCardTransitionEnabled")
+        )
+        assertTrue(
+            navHostCall.contains(
+                "videoCardBackgroundSinkEnabled = videoTransitionBackgroundSinkEnabled"
+            )
+        )
+        assertFalse(
+            navHostCall.contains(
+                "sharedVideoCardTransitionEnabled && videoTransitionBackgroundSinkEnabled"
+            )
+        )
+        assertTrue(navHostSource.contains("isBackgroundSinkEnabledProvider ="))
+        assertTrue(navHostSource.contains("videoCardBackgroundSinkEnabled"))
+    }
+
+    @Test
     fun appNavigationAppearanceDoesNotExposeRemovedBackPreviewState() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/navigation/AppNavigationAppearancePolicy.kt")
 

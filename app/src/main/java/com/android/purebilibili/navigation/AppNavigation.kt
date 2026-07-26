@@ -3007,8 +3007,8 @@ fun AppNavigation(
                 BiliPaiNavDisplayHost(
                     backStack = navigation3BackStack,
                     cardTransitionEnabled = sharedVideoCardTransitionEnabled,
-                    videoCardDepthEffectEnabled =
-                        sharedVideoCardTransitionEnabled && videoTransitionBackgroundSinkEnabled,
+                    videoCardDepthEffectEnabled = sharedVideoCardTransitionEnabled,
+                    videoCardBackgroundSinkEnabled = videoTransitionBackgroundSinkEnabled,
                     reduceMotion = systemReduceMotion,
                     videoSharedTransitionDurationMillis =
                         effectiveVideoCardTransitionDurationMillis,

@@ -104,6 +104,7 @@ internal fun BiliPaiNavDisplayHost(
     backStack: List<BiliPaiNavKey>,
     cardTransitionEnabled: Boolean = true,
     videoCardDepthEffectEnabled: Boolean = cardTransitionEnabled,
+    videoCardBackgroundSinkEnabled: Boolean = false,
     reduceMotion: Boolean = false,
     videoSharedTransitionDurationMillis: Int,
     videoCardClock: VideoCardTransitionClock,
@@ -503,6 +504,7 @@ internal fun BiliPaiNavDisplayHost(
         predictiveBackBackgroundProgressProvider,
         transitionBackgroundMotionTier,
         isLightBackground,
+        videoCardBackgroundSinkEnabled,
         quickReturnFromDetailProvider,
         morphProgressReporter,
     ) {
@@ -536,6 +538,9 @@ internal fun BiliPaiNavDisplayHost(
                             },
                             isLightBackgroundProvider = {
                                 isLightBackground
+                            },
+                            isBackgroundSinkEnabledProvider = {
+                                videoCardBackgroundSinkEnabled
                             },
                         ),
                         LocalPredictiveBackBackgroundState provides PredictiveBackBackgroundState(

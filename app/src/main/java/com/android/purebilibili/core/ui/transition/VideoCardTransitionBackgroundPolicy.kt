@@ -87,6 +87,7 @@ internal data class VideoCardTransitionBackgroundState(
     val isQuickReturnFromDetailProvider: () -> Boolean = { false },
     val motionTierProvider: () -> MotionTier = { MotionTier.Normal },
     val isLightBackgroundProvider: () -> Boolean = { false },
+    val isBackgroundSinkEnabledProvider: () -> Boolean = { false },
 )
 
 internal val LocalVideoCardTransitionBackgroundState = compositionLocalOf {
