@@ -1220,6 +1220,11 @@ fun VideoPlayerSection(
         onUserSeek(commitResult.committedPositionMs)
     }
 
+    fun applyLongPressPlaybackParameters(parameters: PlaybackParameters) {
+        // 长按倍速是临时手势；不要走手动改倍速的音轨兼容刷新通路，避免按下/松开时重建播放源。
+        playerState.player.playbackParameters = parameters
+    }
+
     fun startLongPressSpeedGesture(startOffset: Offset? = null) {
         if (
             !shouldEnableLongPressSpeedGesture(
@@ -1243,9 +1248,7 @@ fun VideoPlayerSection(
             longPressSpeedLocked = false
         }
         effectiveLongPressSpeed = startDecision.targetPlaybackParameters.speed
-        if (!onPlaybackSpeedChange(effectiveLongPressSpeed)) {
-            player.playbackParameters = startDecision.targetPlaybackParameters
-        }
+        applyLongPressPlaybackParameters(startDecision.targetPlaybackParameters)
         if (!longPressSpeedLockEnabled && !hasShownLongPressSpeedLockHint) {
             hasShownLongPressSpeedLockHintLocally = true
             showLongPressSpeedLockHint = true
@@ -1296,9 +1299,7 @@ fun VideoPlayerSection(
         if (!longPressSpeedLocked) return
         longPressSpeedLocked = false
         lockedLongPressSpeed = originalPlaybackParameters.speed
-        if (!onPlaybackSpeedChange(originalPlaybackParameters.speed)) {
-            playerState.player.playbackParameters = originalPlaybackParameters
-        }
+        applyLongPressPlaybackParameters(originalPlaybackParameters)
         isLongPressing = false
         longPressSpeedFeedbackVisible = false
         longPressSpeedEndedAtMs = android.os.SystemClock.elapsedRealtime()
@@ -1327,9 +1328,7 @@ fun VideoPlayerSection(
                 gestureEnded = gestureEnded
             )
         ) {
-            if (!onPlaybackSpeedChange(originalPlaybackParameters.speed)) {
-                playerState.player.playbackParameters = originalPlaybackParameters
-            }
+            applyLongPressPlaybackParameters(originalPlaybackParameters)
         }
         isLongPressing = false
         longPressSpeedFeedbackVisible = false
