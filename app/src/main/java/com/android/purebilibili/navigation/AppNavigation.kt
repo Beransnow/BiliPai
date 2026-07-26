@@ -125,7 +125,6 @@ import com.android.purebilibili.core.ui.blur.hazeSourceCompat
 import com.android.purebilibili.core.ui.blur.shouldAllowRuntimeShaderBackedHazeEffect
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
-import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
@@ -1364,7 +1363,17 @@ fun AppNavigation(
         // Wallpaper-only Haze source for card badge frosted glass. Must stay separate from
         // mainHazeState: badges live inside the main content source tree, and reusing that
         // state for hazeEffect causes HWUI prepareTree stack overflow.
-        val wallpaperHazeState = if (mainHazeState != null) {
+        //
+        // 条件挂载：这个 state 只有卡片角标实时模糊 / 信息区实时模糊两个消费者，
+        // 两者默认都关闭。为 null 时，本文件与 HomeScreen 里的两处 hazeSourceCompat
+        // 会一并跳过——默认档因此省掉两层全屏 record。判定见
+        // HomeWallpaperHazeSourcePolicy。
+        val wallpaperHazeSourceEnabled = com.android.purebilibili.feature.home
+            .shouldMountWallpaperHazeSource(
+                badgeEffectMode = effectiveHomeSettings.homeCardBadgeEffectMode,
+                infoGlassMode = effectiveHomeSettings.homeCardInfoGlassMode
+            )
+        val wallpaperHazeState = if (mainHazeState != null && wallpaperHazeSourceEnabled) {
             com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState(
                 initialBlurEnabled = true
             )
@@ -1475,10 +1484,11 @@ fun AppNavigation(
                         )
                     }
                 }
-                Box(
-                    modifier = Modifier
-                        .animateContentSize()
-                ) {
+                // 这里原本挂着 animateContentSize()。它在全屏根节点上做两件坏事：
+                // 强制该节点每次都 measure 两遍（一次拿目标尺寸、一次按动画插值），
+                // 并隐式加上 clipToBounds。而这个 Box 的尺寸只随键盘/系统栏/旋转变化，
+                // 对这类变化做尺寸补间没有观感价值，代价却压在每一帧的测量上。
+                Box {
                 // ===== 内容层 (hazeSource) =====
                 // 这个 Box 包裹全局壁纸和所有导航内容，作为底栏模糊/折射的源
                 // [LayerBackdrop] Apply layerBackdrop before the bottom bar sibling so the dock

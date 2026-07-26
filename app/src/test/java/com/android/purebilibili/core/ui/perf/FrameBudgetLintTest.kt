@@ -160,7 +160,23 @@ class FrameBudgetLintTest {
         )
     }
 
-    private fun String.countOf(pattern: Regex): Int = pattern.findAll(this).count()
+    /**
+     * 只统计代码行，跳过注释行。
+     *
+     * 这个过滤是被真实事故逼出来的：给 `homeFeedTopVideoFadeMask` 补了一段解释
+     * 「为什么这里必须保留 CompositingStrategy.Offscreen」的注释之后，
+     * Offscreen 的计数从 2 变成了 3——**写一句解释就让守卫变红**。
+     *
+     * 这类失效很危险：它把「解释清楚为什么」变成了有代价的事，
+     * 长期会训练出「改代码不写注释」的习惯，正好和这些守卫的目的相反。
+     */
+    private fun String.countOf(pattern: Regex): Int =
+        lineSequence()
+            .filterNot { line ->
+                val trimmed = line.trimStart()
+                trimmed.startsWith("//") || trimmed.startsWith("*") || trimmed.startsWith("/*")
+            }
+            .sumOf { pattern.findAll(it).count() }
 
     private fun mainSources(): List<File> = cachedMain
 
@@ -186,7 +202,9 @@ class FrameBudgetLintTest {
         const val MAX_OFFSCREEN = 2
         const val MAX_HAZE_SOURCE = 28
         const val MAX_RUN_BLOCKING_IN_STORE = 1
-        const val MAX_INFINITE_TRANSITION = 17
+        // 17 → 15：删掉 LottieComponents 里两个零调用点的设置页动画头部
+        // （含一个 tween(2000) Reverse 无限动画）后的实测值。
+        const val MAX_INFINITE_TRANSITION = 15
 
         const val MAX_SETTINGS_SYNC_CALL_SITES = 89
 

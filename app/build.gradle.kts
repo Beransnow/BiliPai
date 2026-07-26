@@ -345,10 +345,13 @@ dependencies {
     // --- 3.3 Haze (毛玻璃效果) ---
     implementation("dev.chrisbanes.haze:haze:1.7.2")
     implementation("dev.chrisbanes.haze:haze-materials:1.7.2")
-    
-    // --- 3.4 Shimmer (骨架屏加载) ---
-    implementation("com.valentinilk.shimmer:compose-shimmer:1.4.0")
-    
+
+    // --- 3.4 骨架屏加载 ---
+    // compose-shimmer 已移除：全仓 0 处 import，骨架屏早已改用自研的
+    // core/ui/DesignSystem.kt Modifier.shimmer() 与 core/util/ModifierExt.kt
+    // shimmerEffect()。VideoDetailSkeletonStructureTest 甚至专门断言不再使用它，
+    // 说明迁移是有意为之，只是依赖声明没跟着删。
+
     // --- 3.5 Compose Cupertino (iOS 风格 UI 组件) ---
     // 提供 iOS 风格的 Switch、Button、Picker、Dialog 等组件
     implementation("io.github.alexzhirkevich:cupertino:0.1.0-alpha04")
