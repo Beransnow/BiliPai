@@ -59,6 +59,7 @@ import com.android.purebilibili.core.theme.iOSCornerRadius
 import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
 import com.android.purebilibili.core.ui.LocalSharedTransitionScope
+import com.android.purebilibili.core.ui.FeedTitleHierarchy
 import com.android.purebilibili.core.ui.feedContentTypography
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
@@ -122,7 +123,7 @@ fun CinematicVideoCard(
     onClick: (String, Long) -> Unit
 ) {
     val haptic = rememberHapticFeedback()
-    val contentTypography = feedContentTypography()
+    val contentTypography = feedContentTypography(FeedTitleHierarchy.Prominent)
     
     // 动态圆角 - 略大一点的圆角以适配大图卡片
     val cornerRadiusScale = LocalCornerRadiusScale.current
@@ -397,7 +398,6 @@ fun CinematicVideoCard(
                      .align(Alignment.TopEnd)
                      .padding(AppSpacingTokens.Medium)
                      .size(AppChromeSizeTokens.MinimumTouchTarget)
-                     .background(MediaContrastPalette.Scrim.copy(alpha = 0.3f), CircleShape)
                      .semantics { contentDescription = "更多操作" }
                      .clickable { 
                          haptic(HapticType.LIGHT)
@@ -405,13 +405,20 @@ fun CinematicVideoCard(
                      },
                  contentAlignment = Alignment.Center
              ) {
-                 Text(
-                     text = "⋮",
-                     color = MediaContrastPalette.Foreground,
-                     fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                     fontWeight = FontWeight.Bold,
-                     modifier = Modifier.padding(bottom = AppSpacingTokens.Micro)
-                 )
+                 Box(
+                     modifier = Modifier
+                         .size(AppSpacingTokens.ExtraLarge)
+                         .background(MediaContrastPalette.Scrim.copy(alpha = 0.3f), CircleShape),
+                     contentAlignment = Alignment.Center,
+                 ) {
+                     Text(
+                         text = "⋮",
+                         color = MediaContrastPalette.Foreground,
+                         fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                         fontWeight = FontWeight.Bold,
+                         modifier = Modifier.padding(bottom = AppSpacingTokens.Micro)
+                     )
+                 }
              }
          }
     }

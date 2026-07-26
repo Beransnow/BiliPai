@@ -41,6 +41,6 @@ class SettingsManagerSizeRatchetTest {
 
     private companion object {
         /** 冻结于接入棘轮时的实测值。只能调小。 */
-        const val MAX_LINES = 6525
+        const val MAX_LINES = 6515
     }
 }

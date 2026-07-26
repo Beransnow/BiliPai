@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.text.KeyboardActions
@@ -276,8 +277,8 @@ fun LiveSearchScreen(
                                 onClick = { onLiveClick(room.roomid, room.title, room.uname) },
                             )
                         }
-                        item {
-                            if (liveHasMore || liveLoadingMore) {
+                        if (liveHasMore || liveLoadingMore) {
+                            item(span = { GridItemSpan(maxLineSpan) }) {
                                 Button(
                                     enabled = !liveLoadingMore,
                                     modifier = Modifier.fillMaxWidth(),

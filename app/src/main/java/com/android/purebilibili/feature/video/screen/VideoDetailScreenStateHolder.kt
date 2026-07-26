@@ -157,6 +157,7 @@ import com.android.purebilibili.feature.video.policy.reduceVideoDetailPostScroll
 import com.android.purebilibili.feature.video.policy.reduceVideoDetailPreScroll
 import com.android.purebilibili.feature.video.policy.resolveVideoDetailCollapseProgress
 import com.android.purebilibili.feature.video.policy.shouldSkipGesturePlayerCollapseForLayout
+import com.android.purebilibili.feature.video.policy.shouldTrackVideoDetailCollapseMotion
 import com.android.purebilibili.feature.video.subtitle.resolveSubtitlePreferenceSession
 import io.github.alexzhirkevich.cupertino.CupertinoActivityIndicator
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
@@ -233,6 +234,8 @@ import com.android.purebilibili.feature.video.share.VideoShareSheet
 import com.android.purebilibili.feature.video.viewmodel.PlayerToastPresentation
 import kotlin.math.abs
 import kotlin.math.roundToInt
+
+private const val VIDEO_DETAIL_COLLAPSE_SIGNAL_IDLE_TIMEOUT_MS = 120L
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @OptIn(
@@ -2654,10 +2657,29 @@ internal fun VideoDetailScreenStateHolder(
                                 inlinePlayerCollapseState.reset()
                             }
                         }
+                        var previousTrackedCollapseOffsetPx by remember(currentBvid) {
+                            mutableFloatStateOf(inlinePlayerCollapseState.offsetPx)
+                        }
+                        var collapseMotionSignalActive by remember(currentBvid) {
+                            mutableStateOf(false)
+                        }
+                        LaunchedEffect(inlinePortraitScrollEnabled, inlinePlayerCollapseState.offsetPx) {
+                            val currentOffsetPx = inlinePlayerCollapseState.offsetPx
+                            val offsetMoved = shouldTrackVideoDetailCollapseMotion(
+                                inlinePortraitScrollEnabled = inlinePortraitScrollEnabled,
+                                previousOffsetPx = previousTrackedCollapseOffsetPx,
+                                currentOffsetPx = currentOffsetPx,
+                            )
+                            previousTrackedCollapseOffsetPx = currentOffsetPx
+                            collapseMotionSignalActive = offsetMoved
+                            if (offsetMoved) {
+                                kotlinx.coroutines.delay(VIDEO_DETAIL_COLLAPSE_SIGNAL_IDLE_TIMEOUT_MS)
+                                collapseMotionSignalActive = false
+                            }
+                        }
                         TrackJankStateFlag(
                             stateName = "video_detail:player_swipe_collapse",
-                            isActive = inlinePortraitScrollEnabled &&
-                                abs(inlinePlayerCollapseState.offsetPx) > 0.5f
+                            isActive = collapseMotionSignalActive,
                         )
                         val isPlayerCollapsed by remember(inlinePortraitScrollEnabled, collapseRangePx) {
                             derivedStateOf {

@@ -132,6 +132,7 @@ import com.android.purebilibili.feature.space.SeasonSeriesDetailViewModel
 import com.android.purebilibili.feature.video.player.ExternalPlaylistSource
 import com.android.purebilibili.feature.video.player.PlayMode
 import com.android.purebilibili.feature.video.player.PlaylistManager
+import com.android.purebilibili.feature.video.player.PlaylistSession
 import com.android.purebilibili.core.util.resolveScrollToTopPlan
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -728,32 +729,37 @@ fun CommonListScreen(
 
     val playFavoriteVideo: (List<VideoItem>, String, Long, String, Int?, Boolean) -> Unit =
         { items, bvid, cid, coverUrl, folderIndex, playAllAudio ->
-            fun startPlayback(playlistItems: List<VideoItem>) {
-            val externalPlaylist = buildExternalPlaylistFromFavorite(
-                items = playlistItems,
-                clickedBvid = bvid
-            )
-            if (externalPlaylist != null) {
-                PlaylistManager.setExternalPlaylist(
-                    externalPlaylist.playlistItems,
-                    externalPlaylist.startIndex,
-                    source = ExternalPlaylistSource.FAVORITE
+            fun startPlayback(playlistItems: List<VideoItem>): PlaylistSession? {
+                val externalPlaylist = buildExternalPlaylistFromFavorite(
+                    items = playlistItems,
+                    clickedBvid = bvid
                 )
-                PlaylistManager.setPlayMode(PlayMode.SEQUENTIAL)
-            }
-            val isVertical = playlistItems.firstOrNull { it.bvid == bvid }?.isVertical ?: false
-            if (playAllAudio) {
-                onPlayAllAudioClick?.invoke(bvid, cid)
-                    ?: onVideoClick(bvid, cid, coverUrl, isVertical)
-            } else {
-                onVideoClick(bvid, cid, coverUrl, isVertical)
-            }
+                val playlistSession = externalPlaylist?.let { playlist ->
+                    PlaylistManager.setExternalPlaylist(
+                        playlist.playlistItems,
+                        playlist.startIndex,
+                        source = ExternalPlaylistSource.FAVORITE
+                    ).also { PlaylistManager.setPlayMode(PlayMode.SEQUENTIAL) }
+                }
+                val isVertical = playlistItems.firstOrNull { it.bvid == bvid }?.isVertical ?: false
+                if (playAllAudio) {
+                    onPlayAllAudioClick?.invoke(bvid, cid)
+                        ?: onVideoClick(bvid, cid, coverUrl, isVertical)
+                } else {
+                    onVideoClick(bvid, cid, coverUrl, isVertical)
+                }
+                return playlistSession
             }
             if (favoriteViewModel != null && folderIndex != null) {
-                startPlayback(items)
-                favoriteViewModel.loadAllForPlayback(folderIndex) { allItems ->
-                    buildExternalPlaylistFromFavorite(allItems)?.let { playlist ->
-                        PlaylistManager.addAllToPlaylist(playlist.playlistItems)
+                val playlistSession = startPlayback(items)
+                if (playlistSession != null) {
+                    favoriteViewModel.loadAllForPlayback(folderIndex) { allItems ->
+                        buildExternalPlaylistFromFavorite(allItems)?.let { playlist ->
+                            PlaylistManager.addAllToPlaylistIfCurrent(
+                                items = playlist.playlistItems,
+                                session = playlistSession,
+                            )
+                        }
                     }
                 }
             } else {

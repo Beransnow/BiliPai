@@ -88,6 +88,22 @@ class FeedIconActionStructureTest {
                 )
             }
         }
+
+        val cinematicSource = locate(
+            "src/main/java/com/android/purebilibili/feature/home/components/cards/CinematicVideoCard.kt",
+        ).readText()
+        val touchTargetIndex = cinematicSource.indexOf(".size(AppChromeSizeTokens.MinimumTouchTarget)")
+        val visualContainerIndex = cinematicSource.indexOf(
+            ".size(AppSpacingTokens.ExtraLarge)",
+            startIndex = touchTargetIndex,
+        )
+        val visualBackgroundIndex = cinematicSource.indexOf(
+            ".background(MediaContrastPalette.Scrim.copy(alpha = 0.3f), CircleShape)",
+            startIndex = touchTargetIndex,
+        )
+        assertTrue(touchTargetIndex >= 0)
+        assertTrue(visualContainerIndex > touchTargetIndex)
+        assertTrue(visualBackgroundIndex > visualContainerIndex)
     }
 
     private fun locate(path: String): File = listOf(File(path), File("app/$path"))

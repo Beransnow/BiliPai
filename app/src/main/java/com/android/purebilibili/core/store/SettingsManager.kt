@@ -51,9 +51,8 @@ import com.android.purebilibili.feature.video.ui.gesture.applyHorizontalTwoFinge
 import com.android.purebilibili.feature.video.ui.gesture.applyVerticalTwoFingerSpeedToggle
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
-import com.android.purebilibili.core.coroutines.AppScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -1879,22 +1878,23 @@ object SettingsManager {
 
     suspend fun setThemeMode(context: Context, mode: AppThemeMode) {
         var resolvedDarkThemeStyle = DarkThemeStyle.DEFAULT
-        context.settingsDataStore.edit { preferences ->
-            resolvedDarkThemeStyle = resolveDarkThemeStylePreference(
-                darkThemeStyleValue = preferences[KEY_DARK_THEME_STYLE],
-                legacyThemeModeValue = preferences[KEY_THEME_MODE]
-            )
-            if (preferences[KEY_DARK_THEME_STYLE] == null) {
-                preferences[KEY_DARK_THEME_STYLE] = resolvedDarkThemeStyle.value
+        val success = editSettingsAndCommitPrefs(
+            context, "theme_cache",
+            editSettings = {
+                resolvedDarkThemeStyle = resolveDarkThemeStylePreference(
+                    darkThemeStyleValue = this[KEY_DARK_THEME_STYLE],
+                    legacyThemeModeValue = this[KEY_THEME_MODE]
+                )
+                if (this[KEY_DARK_THEME_STYLE] == null) {
+                    this[KEY_DARK_THEME_STYLE] = resolvedDarkThemeStyle.value
+                }
+                this[KEY_THEME_MODE] = mode.value
+            },
+            editPrefs = {
+                putInt("theme_mode", mode.value)
+                putInt("dark_theme_style", resolvedDarkThemeStyle.value)
             }
-            preferences[KEY_THEME_MODE] = mode.value
-        }
-        //  同步到 SharedPreferences，供 PureApplication 同步读取使用
-        // 使用 commit() 确保立即写入
-        val success = commitPrefs(context, "theme_cache") {
-            putInt("theme_mode", mode.value)
-            putInt("dark_theme_style", resolvedDarkThemeStyle.value)
-        }
+        )
         com.android.purebilibili.core.util.Logger.d("SettingsManager", " Theme mode saved: ${mode.value} (${mode.label}), success=$success")
         
         //  同时应用到 AppCompatDelegate，使当前运行时生效
@@ -1907,10 +1907,11 @@ object SettingsManager {
     }
 
     suspend fun setAppLanguage(context: Context, appLanguage: AppLanguage) {
-        context.settingsDataStore.edit { preferences ->
-            preferences[KEY_APP_LANGUAGE] = appLanguage.value
-        }
-        commitPrefs(context, "theme_cache") { putInt("app_language", appLanguage.value) }
+        editSettingsAndCommitPrefs(
+            context, "theme_cache",
+            editSettings = { this[KEY_APP_LANGUAGE] = appLanguage.value },
+            editPrefs = { putInt("app_language", appLanguage.value) },
+        )
     }
 
     fun getAppLanguageSync(context: Context): AppLanguage {
@@ -1920,8 +1921,11 @@ object SettingsManager {
     }
 
     suspend fun setDarkThemeStyle(context: Context, style: DarkThemeStyle) {
-        context.settingsDataStore.edit { preferences -> preferences[KEY_DARK_THEME_STYLE] = style.value }
-        val success = commitPrefs(context, "theme_cache") { putInt("dark_theme_style", style.value) }
+        val success = editSettingsAndCommitPrefs(
+            context, "theme_cache",
+            editSettings = { this[KEY_DARK_THEME_STYLE] = style.value },
+            editPrefs = { putInt("dark_theme_style", style.value) },
+        )
         com.android.purebilibili.core.util.Logger.d(
             "SettingsManager",
             " Dark theme style saved: ${style.value} (${style.label}), success=$success"
@@ -2741,16 +2745,11 @@ object SettingsManager {
 
     suspend fun setAppIcon(context: Context, iconKey: String) {
         val normalizedKey = normalizeAppIconKey(iconKey)
-        // 1. Write to DataStore (suspends until persisted)
-        context.settingsDataStore.edit { preferences -> 
-            preferences[KEY_APP_ICON] = normalizedKey
-        }
-        
-        // 2. Write to SharedPreferences synchronously using commit()
-        // This is critical because changing the app icon (activity-alias) often kills the process immediately.
-        // apply() is asynchronous and might not finish before the process dies.
-        // commitPrefs 仍会等它落盘才返回，上面这个前提不受影响。
-        val success = commitPrefs(context, "app_icon_cache") { putString("current_icon", normalizedKey) }
+        val success = editSettingsAndCommitPrefs(
+            context, "app_icon_cache",
+            editSettings = { this[KEY_APP_ICON] = normalizedKey },
+            editPrefs = { putString("current_icon", normalizedKey) },
+        )
             
         com.android.purebilibili.core.util.Logger.d("SettingsManager", "App icon saved: $iconKey -> $normalizedKey, persisted to prefs: $success")
     }
@@ -2761,10 +2760,11 @@ object SettingsManager {
         }
 
     suspend fun setAppIconAppearance(context: Context, appearance: AppIconAppearance) {
-        context.settingsDataStore.edit { preferences ->
-            preferences[KEY_APP_ICON_APPEARANCE] = appearance.storedValue
-        }
-        commitPrefs(context, "app_icon_cache") { putInt("appearance", appearance.storedValue) }
+        editSettingsAndCommitPrefs(
+            context, "app_icon_cache",
+            editSettings = { this[KEY_APP_ICON_APPEARANCE] = appearance.storedValue },
+            editPrefs = { putInt("appearance", appearance.storedValue) },
+        )
     }
     
     //  [新增] --- 开屏壁纸 ---
@@ -2874,10 +2874,11 @@ object SettingsManager {
     }
 
     suspend fun setSplashIconAnimationEnabled(context: Context, value: Boolean) {
-        context.settingsDataStore.edit { preferences ->
-            preferences[KEY_SPLASH_ICON_ANIMATION_ENABLED] = value
-        }
-        commitPrefs(context, SPLASH_PREFS) { putBoolean(SPLASH_PREFS_KEY_ICON_ANIMATION_ENABLED, value) }
+        editSettingsAndCommitPrefs(
+            context, SPLASH_PREFS,
+            editSettings = { this[KEY_SPLASH_ICON_ANIMATION_ENABLED] = value },
+            editPrefs = { putBoolean(SPLASH_PREFS_KEY_ICON_ANIMATION_ENABLED, value) },
+        )
     }
 
     fun isSplashIconAnimationEnabledSync(context: Context): Boolean {
@@ -4610,43 +4611,32 @@ object SettingsManager {
         .map { preferences -> preferences[KEY_LAUNCH_TO_PORTRAIT_FEED_ON_STARTUP] ?: false }
 
     suspend fun setLaunchToPortraitFeedOnStartup(context: Context, value: Boolean) {
-        context.settingsDataStore.edit { preferences ->
-            preferences[KEY_LAUNCH_TO_PORTRAIT_FEED_ON_STARTUP] = value
-        }
-        context.getSharedPreferences(PORTRAIT_STARTUP_CACHE_PREFS, Context.MODE_PRIVATE)
-            .edit()
-            .putBoolean(CACHE_KEY_LAUNCH_TO_PORTRAIT_FEED, value)
-            .apply()
+        editSettingsAndCommitPrefs(
+            context = context,
+            name = PORTRAIT_STARTUP_CACHE_PREFS,
+            editSettings = { this[KEY_LAUNCH_TO_PORTRAIT_FEED_ON_STARTUP] = value },
+            editPrefs = { putBoolean(CACHE_KEY_LAUNCH_TO_PORTRAIT_FEED, value) },
+        )
     }
 
     /**
-     * 同步读取「启动直达竖屏流」。调用点在 `AppNavigation` 的 `remember{}` 里决定启动
-     * 目的地，即**首帧路径**；原先未命中缓存时会 `runBlocking` 读 DataStore，
-     * 把冷启下 50–150ms 的首次读盘压在主线程。
-     *
-     * 去掉阻塞可证明安全：设置项由 e441fea5 引入、影子缓存由紧随的 4617f2ec 引入，
-     * 同一天且中间无发版 tag，故不存在「有该设置但无缓存」的已发布状态，而 setter 每次
-     * 都双写缓存。于是**未命中 ⟺ 从没设过 ⟺ DataStore 就是默认 false**，那次阻塞唯一
-     * 能读回的就是 false。后台对账覆盖自动备份恢复这类缓存滞后的极端场景。
+     * 冷启动快速路径。返回 null 表示缓存缺失，调用方必须挂起读取 DataStore 后再决定
+     * 初始导航，不能把 null 当成默认 false；自动备份只恢复 DataStore、不恢复这个缓存。
      */
-    fun isLaunchToPortraitFeedOnStartupSync(context: Context): Boolean {
+    fun getCachedLaunchToPortraitFeedOnStartup(context: Context): Boolean? {
         val prefs = context.getSharedPreferences(PORTRAIT_STARTUP_CACHE_PREFS, Context.MODE_PRIVATE)
-        if (prefs.contains(CACHE_KEY_LAUNCH_TO_PORTRAIT_FEED)) {
-            return prefs.getBoolean(CACHE_KEY_LAUNCH_TO_PORTRAIT_FEED, false)
-        }
-        reconcilePortraitStartupCacheAsync(context.applicationContext)
-        return false
+        return if (prefs.contains(CACHE_KEY_LAUNCH_TO_PORTRAIT_FEED)) {
+            prefs.getBoolean(CACHE_KEY_LAUNCH_TO_PORTRAIT_FEED, false)
+        } else null
     }
 
-    /** 后台把 DataStore 的真值回填进影子缓存，供下次冷启动使用。不阻塞调用方。 */
-    private fun reconcilePortraitStartupCacheAsync(context: Context) {
-        AppScope.ioScope.launch {
-            runCatching {
-                val prefs = context.settingsDataStore.data.first()
-                val value = prefs[KEY_LAUNCH_TO_PORTRAIT_FEED_ON_STARTUP] ?: false
-                context.getSharedPreferences(PORTRAIT_STARTUP_CACHE_PREFS, Context.MODE_PRIVATE)
-                    .edit().putBoolean(CACHE_KEY_LAUNCH_TO_PORTRAIT_FEED, value).apply()
-            }
+    suspend fun resolveLaunchToPortraitFeedOnStartup(context: Context): Boolean {
+        getCachedLaunchToPortraitFeedOnStartup(context)?.let { return it }
+        return withContext(Dispatchers.IO) {
+            val value = context.settingsDataStore.data.first()[KEY_LAUNCH_TO_PORTRAIT_FEED_ON_STARTUP] ?: false
+            context.getSharedPreferences(PORTRAIT_STARTUP_CACHE_PREFS, Context.MODE_PRIVATE)
+                .edit().putBoolean(CACHE_KEY_LAUNCH_TO_PORTRAIT_FEED, value).apply()
+            value
         }
     }
     
@@ -4704,10 +4694,11 @@ object SettingsManager {
         .map { preferences -> preferences[KEY_WIFI_QUALITY] ?: 80 }
 
     suspend fun setWifiQuality(context: Context, value: Int) {
-        context.settingsDataStore.edit { preferences -> preferences[KEY_WIFI_QUALITY] = value }
-        //  同步到 SharedPreferences，供 NetworkUtils 同步读取
-        // 使用 commit() 确保立即写入
-        val success = commitPrefs(context, "quality_settings") { putInt("wifi_quality", value) }
+        val success = editSettingsAndCommitPrefs(
+            context, "quality_settings",
+            editSettings = { this[KEY_WIFI_QUALITY] = value },
+            editPrefs = { putInt("wifi_quality", value) },
+        )
         com.android.purebilibili.core.util.Logger.d("SettingsManager", " WiFi 画质已设置: $value (写入成功: $success)")
     }
     
@@ -4716,10 +4707,11 @@ object SettingsManager {
         .map { preferences -> preferences[KEY_MOBILE_QUALITY] ?: 64 }
 
     suspend fun setMobileQuality(context: Context, value: Int) {
-        context.settingsDataStore.edit { preferences -> preferences[KEY_MOBILE_QUALITY] = value }
-        //  同步到 SharedPreferences，供 NetworkUtils 同步读取
-        // 使用 commit() 确保立即写入
-        val success = commitPrefs(context, "quality_settings") { putInt("mobile_quality", value) }
+        val success = editSettingsAndCommitPrefs(
+            context, "quality_settings",
+            editSettings = { this[KEY_MOBILE_QUALITY] = value },
+            editPrefs = { putInt("mobile_quality", value) },
+        )
         com.android.purebilibili.core.util.Logger.d("SettingsManager", " 流量画质已设置: $value (写入成功: $success)")
     }
     
@@ -4805,9 +4797,11 @@ object SettingsManager {
         .map { preferences -> preferences[KEY_AUTO_HIGHEST_QUALITY] ?: false }  // 默认关闭
     
     suspend fun setAutoHighestQuality(context: Context, value: Boolean) {
-        context.settingsDataStore.edit { preferences -> preferences[KEY_AUTO_HIGHEST_QUALITY] = value }
-        //  同步到 SharedPreferences，供 NetworkUtils 同步读取
-        commitPrefs(context, "quality_settings") { putBoolean("auto_highest_quality", value) }
+        editSettingsAndCommitPrefs(
+            context, "quality_settings",
+            editSettings = { this[KEY_AUTO_HIGHEST_QUALITY] = value },
+            editPrefs = { putBoolean("auto_highest_quality", value) },
+        )
         com.android.purebilibili.core.util.Logger.d("SettingsManager", "🚀 自动最高画质: $value")
     }
     
@@ -4821,10 +4815,11 @@ object SettingsManager {
         .map { preferences -> preferences[KEY_BILI_DIRECTED_TRAFFIC] ?: false }
 
     suspend fun setBiliDirectedTrafficEnabled(context: Context, value: Boolean) {
-        context.settingsDataStore.edit { preferences ->
-            preferences[KEY_BILI_DIRECTED_TRAFFIC] = value
-        }
-        commitPrefs(context, "quality_settings") { putBoolean("bili_directed_traffic", value) }
+        editSettingsAndCommitPrefs(
+            context, "quality_settings",
+            editSettings = { this[KEY_BILI_DIRECTED_TRAFFIC] = value },
+            editPrefs = { putBoolean("bili_directed_traffic", value) },
+        )
         com.android.purebilibili.core.util.Logger.d("SettingsManager", "📶 B站定向流量支持: $value")
     }
 
@@ -4876,12 +4871,14 @@ object SettingsManager {
 
     suspend fun setAudioQuality(context: Context, value: Int) {
         com.android.purebilibili.core.util.Logger.d("SettingsManager", "📻 setAudioQuality called with: $value")
-        context.settingsDataStore.edit { preferences -> 
-            preferences[KEY_AUDIO_QUALITY] = value 
-            com.android.purebilibili.core.util.Logger.d("SettingsManager", "📻 setAudioQuality DataStore written: $value")
-        }
-        // Sync to SharedPreferences for synchronous access - Use commit() to ensure immediate write
-        val result = commitPrefs(context, "quality_settings") { putInt("audio_quality", value) }
+        val result = editSettingsAndCommitPrefs(
+            context, "quality_settings",
+            editSettings = {
+                this[KEY_AUDIO_QUALITY] = value
+                com.android.purebilibili.core.util.Logger.d("SettingsManager", "📻 setAudioQuality DataStore written: $value")
+            },
+            editPrefs = { putInt("audio_quality", value) },
+        )
         com.android.purebilibili.core.util.Logger.d("SettingsManager", "📻 setAudioQuality SharedPrefs committed: $value, success=$result")
     }
 
@@ -5283,15 +5280,13 @@ object SettingsManager {
      * 传入 null 重置为默认路径
      */
     suspend fun setDownloadPath(context: Context, path: String?) {
-        context.settingsDataStore.edit { preferences -> 
-            if (path != null) {
-                preferences[KEY_DOWNLOAD_PATH] = path
-            } else {
-                preferences.remove(KEY_DOWNLOAD_PATH)
-            }
-        }
-        // [修复] 同步写入 SharedPreferences，供 DownloadManager 初始化时同步读取
-        commitPrefs(context, "download_prefs") { putString("path", path) } // 仍是 commit，只是不在主线程
+        editSettingsAndCommitPrefs(
+            context, "download_prefs",
+            editSettings = {
+                if (path != null) this[KEY_DOWNLOAD_PATH] = path else remove(KEY_DOWNLOAD_PATH)
+            },
+            editPrefs = { putString("path", path) },
+        )
     }
 
     fun getDownloadExportTreeUri(context: Context): Flow<String?> = context.settingsDataStore.data
@@ -5300,14 +5295,13 @@ object SettingsManager {
         }
 
     suspend fun setDownloadExportTreeUri(context: Context, uri: String?) {
-        context.settingsDataStore.edit { preferences ->
-            if (uri != null) {
-                preferences[KEY_DOWNLOAD_EXPORT_TREE_URI] = uri
-            } else {
-                preferences.remove(KEY_DOWNLOAD_EXPORT_TREE_URI)
-            }
-        }
-        commitPrefs(context, "download_prefs") { putString("tree_uri", uri) }
+        editSettingsAndCommitPrefs(
+            context, "download_prefs",
+            editSettings = {
+                if (uri != null) this[KEY_DOWNLOAD_EXPORT_TREE_URI] = uri else remove(KEY_DOWNLOAD_EXPORT_TREE_URI)
+            },
+            editPrefs = { putString("tree_uri", uri) },
+        )
     }
     
     /**
@@ -5330,14 +5324,13 @@ object SettingsManager {
         }
 
     suspend fun setImageSaveTreeUri(context: Context, uri: String?) {
-        context.settingsDataStore.edit { preferences ->
-            if (uri != null) {
-                preferences[KEY_IMAGE_SAVE_TREE_URI] = uri
-            } else {
-                preferences.remove(KEY_IMAGE_SAVE_TREE_URI)
-            }
-        }
-        commitPrefs(context, "image_save_prefs") { putString("tree_uri", uri) }
+        editSettingsAndCommitPrefs(
+            context, "image_save_prefs",
+            editSettings = {
+                if (uri != null) this[KEY_IMAGE_SAVE_TREE_URI] = uri else remove(KEY_IMAGE_SAVE_TREE_URI)
+            },
+            editPrefs = { putString("tree_uri", uri) },
+        )
     }
 
     fun getImageSaveTreeUriSync(context: Context): String? {

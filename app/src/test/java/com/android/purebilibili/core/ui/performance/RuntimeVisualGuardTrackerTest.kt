@@ -108,6 +108,53 @@ class RuntimeVisualGuardTrackerTest {
     }
 
     @Test
+    fun staleActivityStop_cannotDiscardNewActivityWindow() {
+        val tracker = RuntimeVisualGuardTracker()
+        val oldActivity = Any()
+        val newActivity = Any()
+        tracker.activateSession(oldActivity)
+        tracker.activateSession(newActivity)
+
+        repeat(12) {
+            tracker.onFrame(
+                session = newActivity,
+                frameData = FrameData(
+                    frameStartNanos = it.toLong(),
+                    frameDurationUiNanos = 20_000_000L,
+                    isJank = true,
+                    states = listOf(StateInfo(VIDEO_CARD_TRANSITION_JANK_STATE, "Opening")),
+                ),
+                nowMs = 100L,
+            )
+        }
+        tracker.discardActiveWindow(oldActivity)
+        tracker.onFrame(
+            session = newActivity,
+            frameData = FrameData(12L, 8_000_000L, false, emptyList()),
+            nowMs = 100L,
+        )
+        repeat(12) { index ->
+            tracker.onFrame(
+                session = newActivity,
+                frameData = FrameData(
+                    frameStartNanos = (20 + index).toLong(),
+                    frameDurationUiNanos = 20_000_000L,
+                    isJank = true,
+                    states = listOf(StateInfo(VIDEO_CARD_TRANSITION_JANK_STATE, "Returning")),
+                ),
+                nowMs = 200L,
+            )
+        }
+        tracker.onFrame(
+            session = newActivity,
+            frameData = FrameData(32L, 8_000_000L, false, emptyList()),
+            nowMs = 200L,
+        )
+
+        assertTrue(tracker.decision.value.downgraded)
+    }
+
+    @Test
     fun stateValueChange_closesPreviousWindowWithoutInactiveFrame() {
         val tracker = RuntimeVisualGuardTracker()
 
@@ -147,6 +194,24 @@ class RuntimeVisualGuardTrackerTest {
         }
 
         assertFalse(tracker.decision.value.downgraded)
+    }
+
+    @Test
+    fun lowJankWindowOnAnotherSignal_recoversExpiredGlobalDowngrade() {
+        val tracker = RuntimeVisualGuardTracker()
+        tracker.finishFrameWindow("home:feed:recommend", 12, 1, 100L)
+        tracker.finishFrameWindow("home:feed:recommend", 12, 1, 200L)
+        assertTrue(tracker.decision.value.downgraded)
+
+        tracker.finishFrameWindow(
+            stateKey = "home:pager_swipe",
+            totalFrames = 20,
+            jankyFrames = 0,
+            nowMs = 200L + RUNTIME_VISUAL_GUARD_DOWNGRADE_COOLDOWN_MS,
+        )
+
+        assertFalse(tracker.decision.value.downgraded)
+        assertEquals(MotionTier.Normal, tracker.decision.value.effectiveMotionTier)
     }
 
     @Test

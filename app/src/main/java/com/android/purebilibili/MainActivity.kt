@@ -769,6 +769,7 @@ open class MainActivity : AppCompatActivity() {
     private var splashExitCallbackTriggered = false
     private var systemInDarkThemeSnapshot by mutableStateOf(false)
     private var runtimeJankStats: JankStats? = null
+    private val runtimeVisualGuardSession = Any()
 
     var windowMetrics: WindowMetrics? by mutableStateOf(null)
 
@@ -1233,7 +1234,9 @@ open class MainActivity : AppCompatActivity() {
                 appFontFileName = appFontFileName,
 
             ) {
-                ProvideRuntimeVisualGuard {
+                ProvideRuntimeVisualGuard(
+                    widthSizeClass = windowSizeClass.widthSizeClass
+                ) {
                 ProvideUnifiedBlurIntensity {
                     //  📐 [平板适配] 提供全局 WindowSizeClass
                     CompositionLocalProvider(
@@ -1921,6 +1924,7 @@ open class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        AppRuntimeVisualGuardTracker.activateSession(runtimeVisualGuardSession)
         val existingJankStats = runtimeJankStats
         if (existingJankStats != null) {
             existingJankStats.isTrackingEnabled = true
@@ -1928,6 +1932,7 @@ open class MainActivity : AppCompatActivity() {
             runtimeJankStats = runCatching {
                 JankStats.createAndTrack(window) { frameData ->
                     AppRuntimeVisualGuardTracker.onFrame(
+                        session = runtimeVisualGuardSession,
                         frameData = frameData,
                         nowMs = SystemClock.uptimeMillis(),
                     )
@@ -1945,7 +1950,7 @@ open class MainActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
-        AppRuntimeVisualGuardTracker.discardActiveWindow()
+        AppRuntimeVisualGuardTracker.discardActiveWindow(runtimeVisualGuardSession)
         runtimeJankStats?.isTrackingEnabled = false
         super.onStop()
     }

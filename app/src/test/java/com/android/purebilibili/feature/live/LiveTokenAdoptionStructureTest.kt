@@ -58,6 +58,32 @@ class LiveTokenAdoptionStructureTest {
     }
 
     @Test
+    fun live_area_filters_remain_available_before_empty_and_error_states() {
+        val source = File(liveRoot, "LiveAreaDetailScreen.kt").readText()
+        val summaryIndex = source.indexOf("text = roomSummary")
+        val filterIndex = source.indexOf("LazyRow(", startIndex = summaryIndex)
+        val stateIndex = source.indexOf("when {", startIndex = summaryIndex)
+
+        assertTrue(summaryIndex >= 0)
+        assertTrue(filterIndex in (summaryIndex + 1) until stateIndex)
+    }
+
+    @Test
+    fun live_search_footer_spans_the_full_adaptive_grid() {
+        val source = File(liveRoot, "LiveSearchScreen.kt").readText()
+
+        assertTrue(source.contains("item(span = { GridItemSpan(maxLineSpan) })"))
+    }
+
+    @Test
+    fun shared_live_room_card_uses_preset_aware_minimum_details_height() {
+        val source = File(liveRoot, "LiveRoomCard.kt").readText()
+
+        assertTrue(source.contains("resolveLiveVisualSpec("))
+        assertTrue(source.contains("heightIn(min = visualSpec.roomCardDetailsMinHeightDp.dp)"))
+    }
+
+    @Test
     fun responsive_width_is_applied_before_fill_constraints() {
         val invalidOrder = Regex(
             """\.fillMax(?:Size|Width)\(\)\s*\.responsiveContentWidth\(""",

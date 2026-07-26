@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
@@ -23,6 +24,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalUiPreset
@@ -50,10 +52,11 @@ internal fun LiveRoomCard(
     onClick: () -> Unit,
     enableSharedCoverTransition: Boolean = false,
 ) {
-    val metrics = resolveLivePiliPlusHomeMetrics(
+    val visualSpec = resolveLiveVisualSpec(
         uiPreset = LocalUiPreset.current,
         androidNativeVariant = LocalAndroidNativeVariant.current,
     )
+    val metrics = visualSpec.homeMetrics
     val sharedTransitionScope = LocalSharedTransitionScope.current
     val animatedVisibilityScope = LocalAnimatedVisibilityScope.current
     val palette = rememberLiveChromePalette()
@@ -138,7 +141,10 @@ internal fun LiveRoomCard(
                 }
             }
             Column(
-                modifier = Modifier.padding(AppSpacingTokens.Medium),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = visualSpec.roomCardDetailsMinHeightDp.dp)
+                    .padding(AppSpacingTokens.Medium),
                 verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
             ) {
                 Text(

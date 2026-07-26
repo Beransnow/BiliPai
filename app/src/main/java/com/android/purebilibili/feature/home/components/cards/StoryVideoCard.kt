@@ -4,6 +4,7 @@ package com.android.purebilibili.feature.home.components.cards
 import com.android.purebilibili.core.ui.AppSpacingTokens
 
 import com.android.purebilibili.core.ui.MediaContrastPalette
+import com.android.purebilibili.core.ui.FeedTitleHierarchy
 import com.android.purebilibili.core.ui.feedContentTypography
 
 import androidx.compose.foundation.background
@@ -112,7 +113,13 @@ internal fun StoryVideoCard(
     onLongClick: ((VideoItem) -> Unit)? = null, // [修复] 长按预览回调
     onClick: (String, Long) -> Unit
 ) {
-    val contentTypography = feedContentTypography()
+    val contentTypography = feedContentTypography(
+        titleHierarchy = if (compactMetadata) {
+            FeedTitleHierarchy.Compact
+        } else {
+            FeedTitleHierarchy.Standard
+        },
+    )
     val haptic = rememberHapticFeedback()
     
     // [新增] 获取圆角缩放比例

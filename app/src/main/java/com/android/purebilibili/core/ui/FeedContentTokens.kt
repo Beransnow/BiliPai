@@ -18,10 +18,26 @@ data class FeedContentTypography(
     val coverBadge: TextStyle,
 )
 
+enum class FeedTitleHierarchy {
+    Compact,
+    Standard,
+    Prominent,
+}
+
 @Composable
-fun feedContentTypography(): FeedContentTypography {
+fun feedContentTypography(
+    titleHierarchy: FeedTitleHierarchy = FeedTitleHierarchy.Compact,
+): FeedContentTypography {
+    val titleStyle = when (titleHierarchy) {
+        FeedTitleHierarchy.Compact ->
+            MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold)
+        FeedTitleHierarchy.Standard ->
+            MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)
+        FeedTitleHierarchy.Prominent ->
+            MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+    }
     return FeedContentTypography(
-        title = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+        title = titleStyle,
         author = MaterialTheme.typography.labelMedium,
         statistic = MaterialTheme.typography.labelSmall,
         coverBadge = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),

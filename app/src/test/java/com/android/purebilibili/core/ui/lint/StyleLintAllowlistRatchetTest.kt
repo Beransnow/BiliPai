@@ -1,6 +1,8 @@
 package com.android.purebilibili.core.ui.lint
 
+import java.security.MessageDigest
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
@@ -11,7 +13,7 @@ import kotlin.test.assertTrue
  * 于是白名单可以无声膨胀，lint 看起来还是绿的。
  *
  * 加上这三个上限后，新增豁免必须同时把数字改大，PR diff 里就会出现
- * 「把上限从 96 提到 97」这个刺眼的动作——这正是文件头注释里
+ * 「把上限增加 1」这个刺眼的动作——这正是文件头注释里
  * 「Adding a new path here is a documented exception, not a default」想要的效果。
  *
  * 迁移完一个文件就把对应数字调小，让棘轮只能往一个方向走。
@@ -61,6 +63,39 @@ class StyleLintAllowlistRatchetTest {
         )
     }
 
+    @Test
+    fun allowlistContentsMatchReviewedSnapshot() {
+        assertEquals(
+            MIGRATED_PREFIXES_SHA256,
+            sha256(StyleLintAllowlist.MIGRATED_TOKEN_PREFIXES),
+            "MIGRATED_TOKEN_PREFIXES 内容发生变化。已迁移模块不能被同数量的其他前缀替换。",
+        )
+        assertEquals(
+            SHAPE_HITS_SHA256,
+            sha256(StyleLintAllowlist.SHAPE_HITS),
+            "SHAPE_HITS 内容发生变化。迁移或新增例外时请审查具体路径并更新摘要。",
+        )
+        assertEquals(
+            MOTION_HITS_SHA256,
+            sha256(StyleLintAllowlist.MOTION_HITS),
+            "MOTION_HITS 内容发生变化。迁移或新增例外时请审查具体路径并更新摘要。",
+        )
+        assertEquals(
+            SURFACE_HITS_SHA256,
+            sha256(StyleLintAllowlist.SURFACE_HITS),
+            "SURFACE_HITS 内容发生变化。迁移或新增例外时请审查具体路径并更新摘要。",
+        )
+    }
+
+    private fun sha256(values: Set<String>): String {
+        val bytes = values.sorted().joinToString("\n").toByteArray(Charsets.UTF_8)
+        return MessageDigest.getInstance("SHA-256")
+            .digest(bytes)
+            .joinToString("") { byte ->
+                (byte.toInt() and 0xff).toString(16).padStart(2, '0')
+            }
+    }
+
     private companion object {
         // 冻结于接入棘轮时的实测值，只能调小。
         //
@@ -75,11 +110,20 @@ class StyleLintAllowlistRatchetTest {
         //   1. 把那些文件迁到 AppShapes / AppMotionTokens / AppSurfaceTokens（推荐）；
         //   2. 确有像素级理由无法迁移，则加进白名单并把这里的上限一并调大。
         // 第 2 条会让上限变大，这正是设计意图——它必须是一个显眼、需要解释的动作。
-        const val MAX_SHAPE_HITS = 96
-        const val MAX_MOTION_HITS = 20
-        const val MAX_SURFACE_HITS = 57
+        const val MAX_SHAPE_HITS = 81
+        const val MAX_MOTION_HITS = 15
+        const val MAX_SURFACE_HITS = 48
 
         // 只能调大。直播与第一轮信息流模块已完成 token 迁移。
         const val MIN_MIGRATED_PREFIXES = 6
+
+        const val MIGRATED_PREFIXES_SHA256 =
+            "9eb8920bc5953589f037ba610fc3a1ec74c98a8a6ce69bb3286f8a31e0501a16"
+        const val SHAPE_HITS_SHA256 =
+            "e83f0e94079189a55f99c4a0dbe28f758fda988e193213b03a4703a1a6f52e05"
+        const val MOTION_HITS_SHA256 =
+            "eb883a77a6e9e2f94733b73408f83d02a551b475b0cfbe119f5ee432a4df4925"
+        const val SURFACE_HITS_SHA256 =
+            "4655ba41f9fd9c1802650eb2ee526ef9633c9bdb872c0e58a8e90a31306bf6e0"
     }
 }

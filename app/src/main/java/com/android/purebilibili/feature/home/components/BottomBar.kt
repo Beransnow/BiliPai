@@ -1004,6 +1004,11 @@ internal fun shouldUseAndroidNativeFloatingHazeBlur(
     hasHazeState &&
     shouldAllowRenderEffectBackedHazeEffect(sdkInt)
 
+internal fun shouldRenderBottomBarLiquidGlassEffects(
+    glassEnabled: Boolean,
+    forceLowBlurBudget: Boolean,
+): Boolean = glassEnabled && !forceLowBlurBudget
+
 internal fun Modifier.kernelSuFloatingDockSurface(
     shape: androidx.compose.ui.graphics.Shape,
     backdrop: Backdrop?,
@@ -1023,18 +1028,22 @@ internal fun Modifier.kernelSuFloatingDockSurface(
     materialPressProgress: Float = 0f
 ): Modifier = composed {
     val isDarkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.chromeBackground())
+    val renderGlassEffects = shouldRenderBottomBarLiquidGlassEffects(
+        glassEnabled = glassEnabled,
+        forceLowBlurBudget = forceLowBlurBudget,
+    )
     val materialSpec: BottomBarGlassMaterialSpec = resolveBottomBarGlassMaterialSpec(
         preset = liquidGlassPreset,
         isDarkTheme = isDarkTheme,
         isScrolling = isScrolling,
         scrollProgress = materialScrollProgress,
-        glassEnabled = glassEnabled,
+        glassEnabled = renderGlassEffects,
         motionProgress = materialMotionProgress,
         pressProgress = materialPressProgress
     )
     val useHazeBlur = shouldUseAndroidNativeFloatingHazeBlur(
         blurEnabled = blurEnabled,
-        glassEnabled = glassEnabled,
+        glassEnabled = renderGlassEffects,
         hasHazeState = hazeState != null
     )
     this
@@ -1058,10 +1067,10 @@ internal fun Modifier.kernelSuFloatingDockSurface(
                 val innerRimGlowProvider: (() -> InnerShadow)? = remember(
                     materialSpec.innerRimGlow,
                     isDarkTheme,
-                    glassEnabled
+                    renderGlassEffects
                 ) {
                     val innerRimGlow = materialSpec.innerRimGlow
-                    if (glassEnabled && innerRimGlow != null) {
+                    if (renderGlassEffects && innerRimGlow != null) {
                         val cached = InnerShadow(
                             radius = innerRimGlow.radiusDp.dp,
                             alpha = innerRimGlow.alpha,
@@ -1077,13 +1086,13 @@ internal fun Modifier.kernelSuFloatingDockSurface(
                     backdrop = backdrop,
                     shape = { shape },
                     effects = {
-                        if (glassEnabled || (blurEnabled && !useHazeBlur)) {
+                        if (renderGlassEffects || (blurEnabled && !useHazeBlur)) {
                             if (materialSpec.vibrancy) {
                                 vibrancy()
                             }
                             blur((materialSpec.blurRadiusDp?.dp ?: blurRadius).toPx())
                             if (
-                                glassEnabled &&
+                                renderGlassEffects &&
                                 drawShellLens &&
                                 materialSpec.shellRefractionHeightDp > 0f &&
                                 materialSpec.shellRefractionAmountDp > 0f
@@ -1094,7 +1103,7 @@ internal fun Modifier.kernelSuFloatingDockSurface(
                                 )
                             }
                             val shellShader = materialSpec.shellShader
-                            if (glassEnabled && drawShellLens && shellShader != null) {
+                            if (renderGlassEffects && drawShellLens && shellShader != null) {
                                 val cornerPx = (size.height.coerceAtMost(size.width)) / 2f
                                 val u = resolveLiquidGlassShaderUniforms(
                                     widthPx = size.width,
@@ -1133,7 +1142,7 @@ internal fun Modifier.kernelSuFloatingDockSurface(
                     highlight = {
                         Highlight(
                             width = AppSpacingTokens.Micro / 2,
-                            alpha = if (glassEnabled) 0.75f else 0f
+                            alpha = if (renderGlassEffects) 0.75f else 0f
                         )
                     },
                     shadow = {
@@ -1144,7 +1153,7 @@ internal fun Modifier.kernelSuFloatingDockSurface(
                         )
                     },
                     innerShadow = innerRimGlowProvider,
-                    layerBlock = if (glassEnabled) {
+                    layerBlock = if (renderGlassEffects) {
                         {
                             val width = size.width.coerceAtLeast(1f)
                             val s = lerp(1f, 1f + AppSpacingTokens.Large.toPx() / width, materialPressProgress)
@@ -1186,8 +1195,12 @@ internal fun Modifier.kernelSuMiuixFloatingDockSurface(
     materialPressProgress: Float = 0f
 ): Modifier = composed {
     val isDarkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.background())
-    val useHazeBlur = shouldUseAndroidNativeFloatingHazeBlur(
+    val renderGlassEffects = shouldRenderBottomBarLiquidGlassEffects(
         glassEnabled = glassEnabled,
+        forceLowBlurBudget = forceLowBlurBudget,
+    )
+    val useHazeBlur = shouldUseAndroidNativeFloatingHazeBlur(
+        glassEnabled = renderGlassEffects,
         blurEnabled = blurEnabled,
         hasHazeState = hazeState != null
     )
@@ -1224,7 +1237,7 @@ internal fun Modifier.kernelSuMiuixFloatingDockSurface(
                         backdrop = backdrop,
                         shape = { shape },
                         effects = {
-                            if (glassEnabled) {
+                            if (renderGlassEffects) {
                                 miuixVibrancy()
                                 miuixBlur(AppSpacingTokens.ExtraSmall.toPx(), AppSpacingTokens.ExtraSmall.toPx())
                                 if (drawShellLens) {
@@ -1239,9 +1252,9 @@ internal fun Modifier.kernelSuMiuixFloatingDockSurface(
                             }
                         },
                         highlight = {
-                            baseHighlight.copy(alpha = if (glassEnabled) 0.75f else 0f)
+                            baseHighlight.copy(alpha = if (renderGlassEffects) 0.75f else 0f)
                         },
-                        layerBlock = if (glassEnabled) {
+                        layerBlock = if (renderGlassEffects) {
                             {
                                 val width = size.width.coerceAtLeast(1f)
                                 val s = lerp(1f, 1f + AppSpacingTokens.Large.toPx() / width, materialPressProgress)
@@ -3037,16 +3050,20 @@ private fun KernelSuAlignedBottomBar(
     val shellShape = resolveSharedBottomBarCapsuleShape()
     val tabsBackdrop = rememberMiuixLayerBackdrop()
     val isDarkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.background())
+    val effectiveGlassEnabled = shouldRenderBottomBarLiquidGlassEffects(
+        glassEnabled = glassEnabled,
+        forceLowBlurBudget = forceLowBlurBudget,
+    )
     val ksuContainerColor = resolveKernelSuBottomBarShellColor(
         containerColor = containerColor,
-        liquidGlassEnabled = glassEnabled,
+        liquidGlassEnabled = effectiveGlassEnabled,
         darkTheme = isDarkTheme
     )
     val shellBlurEnabled = shouldBlurKernelSuBottomBarShell(
         blurEnabled = blurEnabled
     )
     val indicatorEffectsEnabled = resolveBottomBarIndicatorEffectsEnabled(
-        liquidGlassEnabled = glassEnabled,
+        liquidGlassEnabled = effectiveGlassEnabled,
         blurEnabled = blurEnabled
     )
     val density = LocalDensity.current
@@ -3349,7 +3366,7 @@ private fun KernelSuAlignedBottomBar(
                 darkTheme = isDarkTheme
             )
             val shellHighlightAlpha = resolveBottomBarShellHighlightAlpha(
-                glassEnabled = glassEnabled,
+                glassEnabled = effectiveGlassEnabled,
                 pressProgress = effectivePressProgress,
                 motionProgress = effectiveIndicatorEffectProgress,
                 isDragging = dampedDragState.isDragging
@@ -3358,7 +3375,7 @@ private fun KernelSuAlignedBottomBar(
                 dampedDragState.isRunning ||
                 dampedDragState.pressProgress > BottomBarTransientAlphaThreshold
             val shouldRenderRefractionCaptureRaw = shouldRenderBottomBarRefractionCapture(
-                glassEnabled = glassEnabled,
+                glassEnabled = effectiveGlassEnabled,
                 hasBackdrop = miuixBackdrop != null,
                 captureProgress = effectiveCaptureProgress,
                 isTransitionRunning = isTransitionRunning,
@@ -3366,7 +3383,7 @@ private fun KernelSuAlignedBottomBar(
                 isBottomBarInteractionActive = isBottomBarInteractionActive
             )
             val shouldRenderIndicatorBackdropRaw = shouldRenderBottomBarIndicatorBackdrop(
-                glassEnabled = glassEnabled,
+                glassEnabled = effectiveGlassEnabled,
                 hasContentBackdrop = miuixBackdrop != null,
                 indicatorProgress = effectiveIndicatorEffectProgress,
                 isTransitionRunning = isTransitionRunning,
@@ -3380,13 +3397,14 @@ private fun KernelSuAlignedBottomBar(
             // 交互状态增删这些层,切换瞬间 tabsBackdrop 为空,指示器会直接采样到
             // 原始内容(首页视频画面)。常驻后 tabsBackdrop 始终有录制内容,
             // 由 progress 连续驱动 effects/surface,彻底消除该瞬态。
-            val glassLayersAlwaysOn = glassEnabled && miuixBackdrop != null
+            val glassLayersAlwaysOn = effectiveGlassEnabled && miuixBackdrop != null
             val shouldRenderRefractionCapture =
                 glassLayersAlwaysOn || shouldRenderRefractionCaptureRaw
             val shouldRenderIndicatorBackdrop =
                 glassLayersAlwaysOn || shouldRenderIndicatorBackdropRaw
             val shouldRenderIndicatorContentCapture =
-                shouldComposeDockContent &&
+                effectiveGlassEnabled &&
+                    shouldComposeDockContent &&
                     (shouldRenderRefractionCapture || isBottomBarPressActive)
             // InstallerX FloatingBottomBar: CombinedBackdrop(page, tabsCapture).
             // tabsCapture also draws the page backdrop + container tint + icons (AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Small).
@@ -3425,7 +3443,7 @@ private fun KernelSuAlignedBottomBar(
                     unselectedColor = unselectedColor,
                     selectedColor = itemSelectedColor,
                     themeWeight = coverage,
-                    glassEnabled = glassEnabled,
+                    glassEnabled = effectiveGlassEnabled,
                     indicatorProgress = effectiveIndicatorEffectProgress,
                     indicatorBackdropEnabled = shouldRenderIndicatorBackdrop
                 )
@@ -3442,11 +3460,11 @@ private fun KernelSuAlignedBottomBar(
                     unselectedColor = unselectedColor,
                     selectedColor = selectedContentColor(item),
                     themeWeight = coverage,
-                    glassEnabled = glassEnabled
+                    glassEnabled = effectiveGlassEnabled
                 )
             }
 
-            fun sampledItemScale(): Float = if (glassEnabled) {
+            fun sampledItemScale(): Float = if (effectiveGlassEnabled) {
                 resolveBottomBarItemMotionScale(
                     coverage = 1f,
                     motionProgress = effectivePressProgress
@@ -3500,7 +3518,7 @@ private fun KernelSuAlignedBottomBar(
                     miuixBackdrop = miuixBackdrop,
                     containerColor = ksuContainerColor,
                     blurEnabled = shellBlurEnabled,
-                    glassEnabled = glassEnabled,
+                    glassEnabled = effectiveGlassEnabled,
                     blurRadius = tuning.shellBlurRadiusDp.dp,
                     hazeState = hazeState,
                     motionTier = motionTier,
@@ -3601,11 +3619,11 @@ private fun KernelSuAlignedBottomBar(
                                 backdrop = miuixBackdrop,
                                 shape = { shellShape },
                                 effects = {
-                                    if (shouldUseBottomBarCaptureLens(glassEnabled)) {
+                                    if (shouldUseBottomBarCaptureLens(effectiveGlassEnabled)) {
                                         miuixVibrancy()
                                     }
                                     miuixBlur(AppSpacingTokens.ExtraSmall.toPx(), AppSpacingTokens.ExtraSmall.toPx())
-                                    if (shouldUseBottomBarCaptureLens(glassEnabled)) {
+                                    if (shouldUseBottomBarCaptureLens(effectiveGlassEnabled)) {
                                         miuixLens(
                                             refractionHeight = AppSpacingTokens.ExtraLarge.toPx(),
                                             refractionAmount = AppSpacingTokens.ExtraLarge.toPx()
@@ -3733,7 +3751,7 @@ private fun KernelSuAlignedBottomBar(
                     indicatorLensSpec = indicatorLensSpec,
                     effectivePressProgress = effectivePressProgress,
                     indicatorIdleSurfaceColor = indicatorIdleSurfaceColor,
-                    glassEnabled = glassEnabled,
+                    glassEnabled = effectiveGlassEnabled,
                     indicatorEffectsEnabled = indicatorEffectsEnabled,
                     motionProgress = motionProgress,
                     velocityItemsPerSecond = dampedDragState.deformationVelocityItemsPerSecond,
@@ -3861,7 +3879,7 @@ private fun KernelSuAlignedBottomBar(
                     miuixBackdrop = miuixBackdrop,
                     containerColor = ksuContainerColor,
                     blurEnabled = blurEnabled,
-                    glassEnabled = glassEnabled,
+                    glassEnabled = effectiveGlassEnabled,
                     blurRadius = tuning.shellBlurRadiusDp.dp,
                     hazeState = hazeState,
                     motionTier = motionTier,
@@ -4007,7 +4025,9 @@ internal fun BoxScope.KernelSuMiuixBottomBarIndicatorLayer(
         rawIndicatorLayerTransform
     }
     val pillHighlight = rememberGravityRotatedHighlight(iosIndicatorSpecular, extraDegrees = 90f)
-    val indicatorBackdrop = if (shouldUseBottomBarCombinedIndicatorBackdrop(liquidGlassPreset)) {
+    val indicatorBackdrop = if (!glassEnabled) {
+        null
+    } else if (shouldUseBottomBarCombinedIndicatorBackdrop(liquidGlassPreset)) {
         contentBackdrop
     } else {
         backdrop

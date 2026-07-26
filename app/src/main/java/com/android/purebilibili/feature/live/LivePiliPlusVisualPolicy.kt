@@ -17,6 +17,7 @@ internal data class LivePiliPlusHomeMetrics(
 internal data class LiveVisualSpec(
     val homeMetrics: LivePiliPlusHomeMetrics,
     val maxContentWidthDp: Int,
+    val roomCardDetailsMinHeightDp: Int,
     val playerButtonTouchTargetDp: Int,
     val playerButtonVisualSizeDp: Int,
     val playerQualityDialogWidthDp: Int,
@@ -115,6 +116,11 @@ internal fun resolveLiveVisualSpec(
         isMiuix -> 38
         else -> 40
     }
+    val roomCardDetailsMinHeightDp = when {
+        uiPreset == UiPreset.IOS -> 90
+        isMiuix -> 95
+        else -> 88
+    }
     return LiveVisualSpec(
         homeMetrics = LivePiliPlusHomeMetrics(
             safeSpaceDp = safeSpaceDp,
@@ -125,6 +131,7 @@ internal fun resolveLiveVisualSpec(
             followItemExtentDp = 70,
         ),
         maxContentWidthDp = 1200,
+        roomCardDetailsMinHeightDp = roomCardDetailsMinHeightDp,
         playerButtonTouchTargetDp = 48,
         playerButtonVisualSizeDp = playerButtonVisualSizeDp,
         playerQualityDialogWidthDp = 280,

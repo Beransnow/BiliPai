@@ -188,6 +188,44 @@ fun LiveAreaDetailScreen(
                         vertical = AppSpacingTokens.Small,
                     ),
             )
+            LazyRow(
+                modifier = Modifier
+                    .responsiveContentWidth(maxWidth = visualSpec.maxContentWidthDp.dp)
+                    .fillMaxWidth(),
+                contentPadding = PaddingValues(
+                    horizontal = metrics.safeSpaceDp.dp,
+                    vertical = AppSpacingTokens.ExtraSmall,
+                ),
+                horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+            ) {
+                item {
+                    LiveSortChip(
+                        text = "最热",
+                        selected = sortType == "online",
+                        onClick = { sortType = "online" },
+                    )
+                }
+                item {
+                    LiveSortChip(
+                        text = "最新",
+                        selected = sortType == "live_time",
+                        onClick = { sortType = "live_time" },
+                    )
+                }
+                items(siblings, key = { it.id }) { child ->
+                    LiveSortChip(
+                        text = child.name,
+                        selected = child.id.toIntOrNull() == areaId,
+                        onClick = {
+                            onAreaClick(
+                                child.parent_id.toIntOrNull() ?: parentAreaId,
+                                child.id.toIntOrNull() ?: 0,
+                                child.name,
+                            )
+                        },
+                    )
+                }
+            }
             when {
                 isLoading -> LiveAreaDetailState(null, Modifier.weight(1f))
                 error != null -> LiveAreaDetailState(error, Modifier.weight(1f))
@@ -208,40 +246,6 @@ fun LiveAreaDetailScreen(
                     horizontalArrangement = Arrangement.spacedBy(metrics.cardSpaceDp.dp),
                     verticalArrangement = Arrangement.spacedBy(metrics.cardSpaceDp.dp),
                 ) {
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        LazyRow(
-                            contentPadding = PaddingValues(vertical = AppSpacingTokens.ExtraSmall),
-                            horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
-                        ) {
-                            item {
-                                LiveSortChip(
-                                    text = "最热",
-                                    selected = sortType == "online",
-                                    onClick = { sortType = "online" },
-                                )
-                            }
-                            item {
-                                LiveSortChip(
-                                    text = "最新",
-                                    selected = sortType == "live_time",
-                                    onClick = { sortType = "live_time" },
-                                )
-                            }
-                            items(siblings, key = { it.id }) { child ->
-                                LiveSortChip(
-                                    text = child.name,
-                                    selected = child.id.toIntOrNull() == areaId,
-                                    onClick = {
-                                        onAreaClick(
-                                            child.parent_id.toIntOrNull() ?: parentAreaId,
-                                            child.id.toIntOrNull() ?: 0,
-                                            child.name,
-                                        )
-                                    },
-                                )
-                            }
-                        }
-                    }
                     items(rooms, key = { it.roomid }) { room ->
                         LiveRoomCard(
                             model = room.toLiveRoomCardUiModel(),

@@ -2,6 +2,7 @@ package com.android.purebilibili.core.store
 
 import java.io.File
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
@@ -34,6 +35,16 @@ class PreferenceKeyUniquenessTest {
                     appendLine("  \"$key\" -> ${files.sorted().joinToString(", ")}")
                 }
             },
+        )
+    }
+
+    @Test
+    fun duplicatedPreferenceKeyOwnersMatchMigrationSnapshot() {
+        assertEquals(
+            EXPECTED_DUPLICATED_KEY_OWNERS,
+            collectDuplicatedKeys(),
+            "重复 key 的数量没变并不代表所有权没扩散。拆分 store 时必须保留精确的 key -> 文件映射；" +
+                "完成迁移后再有意更新快照。",
         )
     }
 
@@ -92,6 +103,18 @@ class PreferenceKeyUniquenessTest {
          * PlayerSettingsStore / NavigationSettingsStore 之间的重叠。只能调小。
          */
         const val MAX_DUPLICATED_KEYS = 9
+
+        val EXPECTED_DUPLICATED_KEY_OWNERS = mapOf(
+            "bottom_bar_order" to setOf("NavigationSettingsStore.kt", "SettingsManager.kt"),
+            "bottom_bar_visible_tabs" to setOf("NavigationSettingsStore.kt", "SettingsManager.kt"),
+            "default_playback_speed" to setOf("PlayerSettingsStore.kt", "SettingsManager.kt"),
+            "last_playback_speed" to setOf("PlayerSettingsStore.kt", "SettingsManager.kt"),
+            "predictive_back_animation_style" to setOf("NavigationSettingsStore.kt", "SettingsManager.kt"),
+            "predictive_back_enabled" to setOf("NavigationSettingsStore.kt", "SettingsManager.kt"),
+            "predictive_back_exit_direction" to setOf("NavigationSettingsStore.kt", "SettingsManager.kt"),
+            "remember_last_playback_speed" to setOf("PlayerSettingsStore.kt", "SettingsManager.kt"),
+            "tablet_use_sidebar" to setOf("NavigationSettingsStore.kt", "SettingsManager.kt"),
+        )
 
         val CRITICAL_KEYS = listOf(
             "theme_mode_v2",

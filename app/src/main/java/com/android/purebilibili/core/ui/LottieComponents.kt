@@ -148,7 +148,6 @@ fun LottieAnimation(
         modifier = modifier.size(size)
     )
 }
-
 /**
  *  加载动画组件（按 UI 预设分发：iOS 吉祥物 / MD3 LoadingIndicator / Miuix 进度环）
  */
@@ -569,4 +568,3 @@ fun SuccessAnimation(
         modifier = modifier.size(size)
     )
 }
-

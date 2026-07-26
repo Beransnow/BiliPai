@@ -101,9 +101,12 @@ class AdaptivePullToRefreshPolicyTest {
         )
         screens.forEach { path ->
             val source = loadSource(path)
+            // 已迁移到设计 Token 的页面写 AppSpacingTokens.None（= 0.dp），语义等价。
             assertTrue(
-                "$path must set indicatorTopInset = 0.dp for scaffolded/list-region boxes",
-                source.contains("indicatorTopInset = 0.dp")
+                "$path must pin indicatorTopInset to zero (0.dp 或 AppSpacingTokens.None) " +
+                    "for scaffolded/list-region boxes",
+                source.contains("indicatorTopInset = 0.dp") ||
+                    source.contains("indicatorTopInset = AppSpacingTokens.None")
             )
         }
     }

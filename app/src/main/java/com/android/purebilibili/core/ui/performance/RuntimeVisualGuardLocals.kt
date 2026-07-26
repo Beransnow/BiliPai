@@ -14,6 +14,7 @@ import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.adaptive.RuntimeVisualGuardDecision
 import com.android.purebilibili.core.ui.adaptive.resolveDeviceUiProfile
 import com.android.purebilibili.core.util.LocalWindowSizeClass
+import com.android.purebilibili.core.util.WindowWidthSizeClass
 
 private val NormalGuardDecision = RuntimeVisualGuardDecision(
     effectiveMotionTier = MotionTier.Normal,
@@ -34,9 +35,11 @@ internal val LocalRuntimeVisualGuard = staticCompositionLocalOf<State<RuntimeVis
 }
 
 @Composable
-internal fun ProvideRuntimeVisualGuard(content: @Composable () -> Unit) {
+internal fun ProvideRuntimeVisualGuard(
+    widthSizeClass: WindowWidthSizeClass = LocalWindowSizeClass.current.widthSizeClass,
+    content: @Composable () -> Unit,
+) {
     val context = LocalContext.current
-    val widthSizeClass = LocalWindowSizeClass.current.widthSizeClass
     val guardEnabled by SettingsManager.getRuntimeVisualGuardEnabled(context)
         .collectAsStateWithLifecycle(initialValue = true)
 

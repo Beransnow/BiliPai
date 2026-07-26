@@ -38,6 +38,12 @@ internal class RuntimeVisualGuardTracker(
     /** 每个 jank 打点一个独立窗口：竖滑与横滑同帧共存时不会互相污染分母。 */
     private val signals = LinkedHashMap<String, SignalWindow>()
 
+    /**
+     * JankStats 是 Activity 级别的，但守卫决策是进程级别的。Activity 切换时旧页面
+     * 的 onStop 可能晚于新页面的 onStart，必须以会话所有权拒绝旧回调和旧清理。
+     */
+    private var activeSession: Any? = null
+
     private class SignalWindow {
         var activeValue: String? = null
         var frameCount = 0
@@ -70,6 +76,17 @@ internal class RuntimeVisualGuardTracker(
         } else {
             publish(nowMs = null)
         }
+    }
+
+    fun activateSession(session: Any) {
+        if (activeSession === session) return
+        discardActiveWindow()
+        activeSession = session
+    }
+
+    fun onFrame(session: Any, frameData: FrameData, nowMs: Long) {
+        if (activeSession !== session) return
+        onFrame(frameData = frameData, nowMs = nowMs)
     }
 
     fun onFrame(frameData: FrameData, nowMs: Long) {
@@ -120,6 +137,12 @@ internal class RuntimeVisualGuardTracker(
         }
     }
 
+    fun discardActiveWindow(session: Any) {
+        if (activeSession !== session) return
+        discardActiveWindow()
+        activeSession = null
+    }
+
     private fun accumulate(key: String, stateValue: String, isJank: Boolean, nowMs: Long) {
         val window = signals.getOrPut(key) { SignalWindow() }
         // 同一信号内 state 值切换（Opening → Returning）也算一个窗口结束。
@@ -156,36 +179,59 @@ internal class RuntimeVisualGuardTracker(
             if (resolved.downgraded) {
                 window.applyDowngraded(resolved)
             } else {
-                window.lastDowngradeAtMs = null
-                window.consecutiveHighJankWindows = 0
-                window.downgraded = false
-                window.forceLowBlurBudget = false
+                window.clearDowngrade()
             }
-            return
+        } else {
+            window.consecutiveHighJankWindows = if (isRuntimeVisualGuardHighJankWindow(jankPercent)) {
+                window.consecutiveHighJankWindows + 1
+            } else {
+                0
+            }
+            val resolved = resolveRuntimeVisualGuardDecision(
+                enabled = enabled,
+                baseTier = baseTier,
+                rollingJankPercent = jankPercent,
+                consecutiveHighJankWindows = window.consecutiveHighJankWindows,
+                lastDowngradeAtMs = null,
+                nowMs = nowMs,
+            )
+            window.lastDowngradeAtMs = resolved.nextLastDowngradeAtMs
+            window.downgraded = resolved.downgraded
+            window.forceLowBlurBudget = resolved.forceLowBlurBudget
         }
 
-        window.consecutiveHighJankWindows = if (isRuntimeVisualGuardHighJankWindow(jankPercent)) {
-            window.consecutiveHighJankWindows + 1
-        } else {
-            0
-        }
-        val resolved = resolveRuntimeVisualGuardDecision(
-            enabled = enabled,
-            baseTier = baseTier,
-            rollingJankPercent = jankPercent,
-            consecutiveHighJankWindows = window.consecutiveHighJankWindows,
-            lastDowngradeAtMs = null,
-            nowMs = nowMs,
-        )
-        window.lastDowngradeAtMs = resolved.nextLastDowngradeAtMs
-        window.downgraded = resolved.downgraded
-        window.forceLowBlurBudget = resolved.forceLowBlurBudget
+        recoverExpiredSignalsFromCompletedWindow(jankPercent = jankPercent, nowMs = nowMs)
     }
 
     private fun SignalWindow.applyDowngraded(resolved: RuntimeVisualGuardDecision) {
         downgraded = resolved.downgraded
         forceLowBlurBudget = resolved.forceLowBlurBudget
         lastDowngradeAtMs = resolved.nextLastDowngradeAtMs ?: lastDowngradeAtMs
+    }
+
+    private fun SignalWindow.clearDowngrade() {
+        lastDowngradeAtMs = null
+        consecutiveHighJankWindows = 0
+        downgraded = false
+        forceLowBlurBudget = false
+    }
+
+    /**
+     * 触发按信号独立统计，但恢复证据可以来自任意同类交互。否则用户离开一次掉帧的
+     * 首页分类后，那个不再出现的 key 会永久把全局档位锁在 Reduced。
+     */
+    private fun recoverExpiredSignalsFromCompletedWindow(jankPercent: Float, nowMs: Long) {
+        signals.values.filter { it.downgraded }.forEach { candidate ->
+            val resolved = resolveRuntimeVisualGuardDecision(
+                enabled = enabled,
+                baseTier = baseTier,
+                rollingJankPercent = jankPercent,
+                consecutiveHighJankWindows = 0,
+                lastDowngradeAtMs = candidate.lastDowngradeAtMs,
+                nowMs = nowMs,
+            )
+            if (!resolved.downgraded) candidate.clearDowngrade()
+        }
     }
 
     /** 只淘汰没有开着窗口、且最久未更新的信号，避免误删正在统计的交互。 */

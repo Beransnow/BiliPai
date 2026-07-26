@@ -27,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect // 新增
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
@@ -120,6 +121,7 @@ import com.android.purebilibili.data.model.response.BgmInfo
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 import androidx.compose.runtime.rememberCoroutineScope
 import com.android.purebilibili.core.ui.blur.hazeSourceCompat
 import com.android.purebilibili.core.ui.blur.shouldAllowRuntimeShaderBackedHazeEffect
@@ -421,9 +423,25 @@ fun AppNavigation(
         mutableStateOf(!firstLaunchShown && !launchDisclaimerAck)
     }
     val startDestination = if (firstLaunchShown) ScreenRoutes.Home.route else ScreenRoutes.Onboarding.route
-    val launchToPortraitFeedOnStartupAtInit = remember {
-        SettingsManager.isLaunchToPortraitFeedOnStartupSync(context)
+    val cachedPortraitStartupRoute = remember(context) {
+        SettingsManager.getCachedLaunchToPortraitFeedOnStartup(context)
     }
+    val resolvedPortraitStartupRoute by produceState<Boolean?>(
+        initialValue = cachedPortraitStartupRoute,
+        key1 = context,
+    ) {
+        if (value == null) {
+            value = try {
+                SettingsManager.resolveLaunchToPortraitFeedOnStartup(context)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                false
+            }
+        }
+    }
+    // 缓存缺失时等待 DataStore 首值；先用 false 建栈会让恢复备份后的本次启动进错首页。
+    val launchToPortraitFeedOnStartupAtInit = resolvedPortraitStartupRoute ?: return
 
     val videoSharedTransitionSpeedSettings = remember(
         homeSettings.videoSharedTransitionSpeed,
@@ -2217,8 +2235,7 @@ fun AppNavigation(
                                     navigation3BackStack = resolveInitialBiliPaiBackStack(
                                         firstRoute = ScreenRoutes.Home.route,
                                         onboardingRequired = false,
-                                        openPortraitFeedOnStartup = SettingsManager
-                                            .isLaunchToPortraitFeedOnStartupSync(context)
+                                        openPortraitFeedOnStartup = launchToPortraitFeedOnStartupAtInit
                                     )
                                 }
                             )
@@ -2743,13 +2760,13 @@ fun AppNavigation(
                                         seasonSeriesKey.ownerName
                                     )
                                 }
+                                val seasonSeriesSourceRoute =
+                                    com.android.purebilibili.navigation3.normalizeBiliPaiVideoSourceRoute(
+                                        seasonSeriesKey.toLegacyRoute()
+                                    ) ?: seasonSeriesKey.toLegacyRoute()
 
                                 CompositionLocalProvider(
-                                    LocalVideoCardSharedElementSourceRoute provides (
-                                        com.android.purebilibili.navigation3.normalizeBiliPaiVideoSourceRoute(
-                                            seasonSeriesKey.toLegacyRoute()
-                                        ) ?: seasonSeriesKey.toLegacyRoute()
-                                    )
+                                    LocalVideoCardSharedElementSourceRoute provides seasonSeriesSourceRoute
                                 ) {
                                     CommonListScreen(
                                         viewModel = viewModel,
@@ -2768,7 +2785,7 @@ fun AppNavigation(
                                                 cid = cid,
                                                 coverUrl = cover,
                                                 initialVertical = isVertical,
-                                                sourceRoute = seasonSeriesKey.toLegacyRoute()
+                                                sourceRoute = seasonSeriesSourceRoute
                                             )
                                         },
                                         onUpClick = { mid ->

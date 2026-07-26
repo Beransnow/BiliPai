@@ -3,7 +3,12 @@ package com.android.purebilibili.core.store
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.datastore.preferences.core.MutablePreferences
+import androidx.datastore.preferences.core.edit
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 /**
@@ -19,7 +24,7 @@ import kotlinx.coroutines.withContext
  */
 
 /**
- * 把影子缓存的**同步**写入挪到 IO 线程。
+ * 把 DataStore 与影子缓存视作一次有顺序保证的双写。
  *
  * 这些写入原先直接写在 `suspend fun` 体内，而 `suspend` 并不意味着离开主线程——
  * 调用方多是 `viewModelScope.launch { }`（Main 调度器），`settingsDataStore.edit{}`
@@ -29,8 +34,10 @@ import kotlinx.coroutines.withContext
  * 刻意保留 `commit()` 而不是换成 `apply()`：影子缓存存在的意义就是「下次进程启动时
  * 能同步读到」，其中切换应用图标那处还有硬前提——切 activity-alias 往往会立刻杀掉
  * 进程，`apply()` 的异步写入可能来不及落盘。换成 `apply()` 是拿正确性换性能。
- * 挪到 IO 线程则两者兼得：`withContext` 会等它落盘才返回，持久化保证不变，
- * 主线程不再被阻塞。
+ * 只把第二段 `commit()` 丢到 IO 线程并不安全：两个连续 setter 可能让旧的 commit
+ * 最后完成，调用方取消也可能发生在 DataStore 已落盘、影子缓存尚未写入之间。因此这里
+ * 从 DataStore edit 开始串行化；一旦首段开始，两段都在 NonCancellable 中完成。这样
+ * 同步缓存始终与最后一次完整设置一致，同时 `commit()` 仍不阻塞主线程。
  *
  * `ApplySharedPref` 是**纯语法检查**——它只认 `commit()` 这个调用本身，与线程无关，
  * 所以上面的修复并不会让它变绿；而它建议的替代方案在这里是错的。因此就地抑制
@@ -38,10 +45,37 @@ import kotlinx.coroutines.withContext
  * 抑制写在代码旁边，下一个读到的人能立刻看到取舍；写在 baseline 里则没人会看见。
  */
 @SuppressLint("ApplySharedPref")
-internal suspend fun commitPrefs(
+internal suspend fun editSettingsAndCommitPrefs(
     context: Context,
     name: String,
-    edit: SharedPreferences.Editor.() -> Unit,
-): Boolean = withContext(Dispatchers.IO) {
-    context.getSharedPreferences(name, Context.MODE_PRIVATE).edit().apply(edit).commit()
+    editSettings: MutablePreferences.() -> Unit,
+    editPrefs: SharedPreferences.Editor.() -> Unit,
+): Boolean = settingsCacheWriter.write(
+    writeDataStore = {
+        context.settingsDataStore.edit { preferences -> preferences.editSettings() }
+    },
+    writeCache = {
+        withContext(Dispatchers.IO) {
+            context.getSharedPreferences(name, Context.MODE_PRIVATE)
+                .edit()
+                .apply(editPrefs)
+                .commit()
+        }
+    },
+)
+
+internal class SerializedSettingsCacheWriter {
+    private val writeMutex = Mutex()
+
+    suspend fun <T> write(
+        writeDataStore: suspend () -> Unit,
+        writeCache: suspend () -> T,
+    ): T = writeMutex.withLock {
+        withContext(NonCancellable) {
+            writeDataStore()
+            writeCache()
+        }
+    }
 }
+
+private val settingsCacheWriter = SerializedSettingsCacheWriter()
