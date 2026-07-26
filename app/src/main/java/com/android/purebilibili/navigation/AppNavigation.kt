@@ -380,9 +380,6 @@ fun AppNavigation(
     val videoTransitionRealtimeBlurEnabled by SettingsManager
         .getVideoTransitionRealtimeBlurEnabled(context)
         .collectAsStateWithLifecycle(initialValue = true)
-    val videoTransitionBackgroundSinkEnabled by SettingsManager
-        .getVideoTransitionBackgroundSinkEnabled(context)
-        .collectAsStateWithLifecycle(initialValue = false)
     val isBottomBarBlurEnabled = appearance.bottomBarBlurEnabled
     val bottomBarLabelMode = appearance.bottomBarLabelMode
     val isBottomBarFloating = appearance.bottomBarFloating
@@ -2102,6 +2099,9 @@ fun AppNavigation(
                                 coverUrl = videoKey.coverUrl,
                                 cid = videoKey.cid,
                                 onUpClick = { mid -> pushNavigation3Route(ScreenRoutes.Space.createRoute(mid)) },
+                                onUpClickWithVideo = { mid, targetBvid ->
+                                    pushNavigation3Key(BiliPaiNavKey.Space(mid = mid, targetBvid = targetBvid))
+                                },
                                 miniPlayerManager = miniPlayerManager,
                                 isInPipMode = isInPipMode,
                                 isVisible = shouldActivateVideoDetailPlaybackSession(
@@ -2841,6 +2841,7 @@ fun AppNavigation(
                                 val spaceKey = key as BiliPaiNavKey.Space
                                 com.android.purebilibili.feature.space.SpaceScreen(
                                     mid = spaceKey.mid,
+                                    targetBvid = spaceKey.targetBvid,
                                     onBack = { performSystemBackAction() },
                                     onVideoClick = { bvid, cid, resumePositionMs ->
                                         navigateToVideoInNavigation3(
@@ -3046,7 +3047,6 @@ fun AppNavigation(
                     backStack = navigation3BackStack,
                     cardTransitionEnabled = sharedVideoCardTransitionEnabled,
                     videoCardDepthEffectEnabled = sharedVideoCardTransitionEnabled,
-                    videoCardBackgroundSinkEnabled = videoTransitionBackgroundSinkEnabled,
                     reduceMotion = systemReduceMotion,
                     videoSharedTransitionDurationMillis =
                         effectiveVideoCardTransitionDurationMillis,
