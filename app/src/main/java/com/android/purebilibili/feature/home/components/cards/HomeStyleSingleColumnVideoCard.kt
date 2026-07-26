@@ -159,6 +159,7 @@ internal fun HomeStyleSingleColumnVideoCard(
                 sourceRoute = sourceRoute,
                 motionSpec = motionSpec,
                 clipShape = cardShape,
+                crossfadeSourceContent = true,
             )
             .clip(cardShape)
             .background(MaterialTheme.colorScheme.surface)

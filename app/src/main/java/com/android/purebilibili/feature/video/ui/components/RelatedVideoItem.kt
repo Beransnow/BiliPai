@@ -261,7 +261,8 @@ fun RelatedVideoItem(
                 bvid = video.bvid,
                 sourceRoute = sourceRoute,
                 motionSpec = cardSharedTransitionMotionSpec,
-                clipShape = cardShape
+                clipShape = cardShape,
+                crossfadeSourceContent = true
             )
             .clip(cardShape)
             .background(MaterialTheme.colorScheme.surface)

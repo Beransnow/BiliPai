@@ -45,6 +45,16 @@ internal const val VIDEO_CARD_SHELL_SOURCE_ENTER_FADE_DELAY_RATIO =
 /** 横条卡进场源卡淡出时长（占 morph 总时长比例）。 */
 internal const val VIDEO_CARD_SHELL_SOURCE_EXIT_FADE_RATIO = 0.28f
 
+/** 横条卡返回时，源卡内容在最后一段开始接回播放器内容。 */
+internal fun resolveVideoCardShellCrossfadeSourceEnterDelayMillis(
+    transitionDurationMillis: Int,
+): Int {
+    val duration = transitionDurationMillis.coerceAtLeast(0)
+    val fadeDuration = resolveVideoCardShellSourceExitFadeDurationMillis(duration)
+        .coerceAtMost(duration)
+    return (duration - fadeDuration).coerceAtLeast(0)
+}
+
 /**
  * 源卡 shell 是否延后 Enter。
  * 一律 false：封面待命 + chrome 独立淡入，见 [canCoexistLiveSurfaceStableCoverAndChromeOnReturn]。
@@ -83,7 +93,21 @@ internal fun resolveVideoCardShellSharedBoundsEnter(
     role: VideoCardShellSharedBoundsRole,
     transitionDurationMillis: Int,
     delaySourceCardEnterForLiveReturn: Boolean = true,
+    crossfadeSourceContent: Boolean = false,
 ): EnterTransition {
+    if (
+        role == VideoCardShellSharedBoundsRole.SourceCard &&
+        crossfadeSourceContent
+    ) {
+        val duration = transitionDurationMillis.coerceAtLeast(0)
+        val delay = resolveVideoCardShellCrossfadeSourceEnterDelayMillis(duration)
+        return fadeIn(
+            animationSpec = tween(
+                durationMillis = (duration - delay).coerceAtLeast(0),
+                delayMillis = delay,
+            ),
+        )
+    }
     if (
         role == VideoCardShellSharedBoundsRole.SourceCard &&
         delaySourceCardEnterForLiveReturn
@@ -136,6 +160,11 @@ internal fun Modifier.videoCardShellSharedBoundsOrEmpty(
      * 竖屏直达 Story 全屏：FillBounds + Center，卡片从列表位整卡展开。
      */
     fillFullscreenShell: Boolean = false,
+    /**
+     * 横卡整壳：打开前段让源卡内容淡出并由详情播放器接管；
+     * 返回时在落位末段恢复源卡内容。几何仍只由 shared bounds 驱动。
+     */
+    crossfadeSourceContent: Boolean = false,
 ): Modifier {
     if (!enabled || sharedTransitionScope == null || animatedVisibilityScope == null || bvid.isBlank()) {
         return this
@@ -148,18 +177,26 @@ internal fun Modifier.videoCardShellSharedBoundsOrEmpty(
             bgState.motionTierProvider() != MotionTier.Reduced
     // 快速返回：源卡 Enter.None，标题/UP 与封面同步落位，避免先占位后出字。
     val isQuickReturnFromDetail = bgState.isQuickReturnFromDetailProvider()
+    val crossfadeSourceContentOnReturn =
+        crossfadeSourceContent && !isQuickReturnFromDetail
     val delaySourceCardEnter = shouldDelaySourceCardEnterForLiveReturnMorph(
         sourceRoute = sourceRoute,
         isQuickReturnFromDetail = isQuickReturnFromDetail,
     )
-    val fadeOutSourceOnOpen = remember(sourceRoute) {
-        shouldFadeOutShellSourceCardOnOpen(sourceRoute)
+    val fadeOutSourceOnOpen = remember(sourceRoute, crossfadeSourceContent) {
+        crossfadeSourceContent || shouldFadeOutShellSourceCardOnOpen(sourceRoute)
     }
-    val enter = remember(role, motionSpec.durationMillis, delaySourceCardEnter) {
+    val enter = remember(
+        role,
+        motionSpec.durationMillis,
+        delaySourceCardEnter,
+        crossfadeSourceContentOnReturn,
+    ) {
         resolveVideoCardShellSharedBoundsEnter(
             role = role,
             transitionDurationMillis = motionSpec.durationMillis,
             delaySourceCardEnterForLiveReturn = delaySourceCardEnter,
+            crossfadeSourceContent = crossfadeSourceContentOnReturn,
         )
     }
     val exit = remember(role, motionSpec.durationMillis, fadeOutSourceOnOpen) {

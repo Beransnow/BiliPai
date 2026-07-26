@@ -421,6 +421,15 @@ class VideoSharedTransitionPolicyTest {
                 delaySourceCardEnterForLiveReturn = true,
             ) != EnterTransition.None
         )
+        // 横卡打开时源内容让位给播放器；返回只在最后 100ms 接回整卡内容。
+        assertEquals(260, resolveVideoCardShellCrossfadeSourceEnterDelayMillis(360))
+        assertTrue(
+            resolveVideoCardShellSharedBoundsEnter(
+                role = VideoCardShellSharedBoundsRole.SourceCard,
+                transitionDurationMillis = 360,
+                crossfadeSourceContent = true,
+            ) != EnterTransition.None
+        )
         // ratio 已为 0 → delay ms 为 0
         assertEquals(0, resolveVideoCardShellSourceEnterFadeDelayMillis(360))
         assertTrue(canCoexistLiveSurfaceStableCoverAndChromeOnReturn())
@@ -678,6 +687,7 @@ class VideoSharedTransitionPolicyTest {
                 singleColumnCardSource.indexOf(".padding(8.dp)")
         )
         assertTrue(singleColumnCardSource.contains("clipShape = cardShape"))
+        assertTrue(singleColumnCardSource.contains("crossfadeSourceContent = true"))
         assertFalse(singleColumnCardSource.contains("followShellMotion = true"))
         assertTrue(singleColumnCardSource.contains("HOME_STYLE_SINGLE_COLUMN_COVER_WIDTH = 144.dp"))
         assertTrue(relatedCardSource.contains("videoCardShellSharedBoundsOrEmpty("))
@@ -690,6 +700,7 @@ class VideoSharedTransitionPolicyTest {
                 relatedCardSource.indexOf(".padding(8.dp)")
         )
         assertTrue(relatedCardSource.contains("clipShape = cardShape"))
+        assertTrue(relatedCardSource.contains("crossfadeSourceContent = true"))
         assertFalse(relatedCardSource.contains("videoCardShellReturnChromeAlpha("))
         assertFalse(relatedCardSource.contains("followShellMotion = true"))
         assertFalse(partitionSource.contains("videoTitleSharedElementKey("))
