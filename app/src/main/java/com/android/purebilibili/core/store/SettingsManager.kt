@@ -496,7 +496,12 @@ data class HomeSettings(
     val videoSharedTransitionSpeed: VideoSharedTransitionSpeed = VideoSharedTransitionSpeed.STANDARD,
     val videoSharedTransitionCustomDurationMillis: Int =
         VIDEO_SHARED_TRANSITION_CUSTOM_DEFAULT_MILLIS,
-    val smartVisualGuardEnabled: Boolean = false, // [Retired] 智能流畅优先已下线，固定关闭
+    // [Retired] 旧的首页 feed「智能流畅优先」，固定关闭。
+    // 运行时视觉守卫是另一套机制，见 [runtimeVisualGuardEnabled]。
+    val smartVisualGuardEnabled: Boolean = false,
+    // 运行时视觉守卫：连续掉帧时自动降级毛玻璃/液态玻璃/景深。
+    // 影响面覆盖全 App 视觉，必须保留 kill switch——某机型 JankStats 读数异常时可关闭。
+    val runtimeVisualGuardEnabled: Boolean = true,
     val compactVideoStatsOnCover: Boolean = true, //  播放量/评论数显示在封面底部（默认开启）
     val lowQualityHomeCoverInDataSaver: Boolean = false, // 省流量时首页封面使用低清晰度
     val showHomeCoverGlassBadges: Boolean = true, // 兼容旧字段：由 [homeCardBadgeEffectMode] 推导
@@ -1277,6 +1282,9 @@ object SettingsManager {
         booleanPreferencesKey("ui_entrance_animation_enabled")
     // [New] 运行时视觉降级守卫开关
     private val KEY_SMART_VISUAL_GUARD_ENABLED = booleanPreferencesKey("smart_visual_guard_enabled")
+    // 新 key：旧 key 的 false 是「已下线」的产物，不应被迁移成「用户主动关闭」。
+    private val KEY_RUNTIME_VISUAL_GUARD_ENABLED =
+        booleanPreferencesKey("runtime_visual_guard_enabled")
     //  [新增] 视频卡片统计信息贴封面开关
     private val KEY_COMPACT_VIDEO_STATS_ON_COVER = booleanPreferencesKey("compact_video_stats_on_cover")
     private val KEY_LOW_QUALITY_HOME_COVER_IN_DATA_SAVER =
@@ -1411,6 +1419,8 @@ object SettingsManager {
                         ?: VIDEO_SHARED_TRANSITION_CUSTOM_DEFAULT_MILLIS
                 ),
             smartVisualGuardEnabled = false,
+            runtimeVisualGuardEnabled =
+                preferences[KEY_RUNTIME_VISUAL_GUARD_ENABLED] ?: true,
             compactVideoStatsOnCover = preferences[KEY_COMPACT_VIDEO_STATS_ON_COVER] ?: true,
             lowQualityHomeCoverInDataSaver =
                 preferences[KEY_LOW_QUALITY_HOME_COVER_IN_DATA_SAVER] ?: false,
@@ -2574,6 +2584,17 @@ object SettingsManager {
     suspend fun setSmartVisualGuardEnabled(context: Context, value: Boolean) {
         context.settingsDataStore.edit { preferences ->
             preferences[KEY_SMART_VISUAL_GUARD_ENABLED] = false
+        }
+    }
+
+    /** 运行时视觉守卫总开关。默认开启；关闭后 Tracker 立即复位并停止采样判定。 */
+    fun getRuntimeVisualGuardEnabled(context: Context): Flow<Boolean> =
+        context.settingsDataStore.data
+            .map { preferences -> preferences[KEY_RUNTIME_VISUAL_GUARD_ENABLED] ?: true }
+
+    suspend fun setRuntimeVisualGuardEnabled(context: Context, value: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_RUNTIME_VISUAL_GUARD_ENABLED] = value
         }
     }
 

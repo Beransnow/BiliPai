@@ -101,6 +101,7 @@ import com.android.purebilibili.core.theme.buildDisplayMetricsSnapshot
 import com.android.purebilibili.core.ui.IOSAlertDialog
 import com.android.purebilibili.core.ui.IOSDialogAction
 import com.android.purebilibili.core.ui.blur.ProvideUnifiedBlurIntensity
+import com.android.purebilibili.core.ui.performance.ProvideRuntimeVisualGuard
 import com.android.purebilibili.core.util.BilibiliUrlParser
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.calculateWindowSizeClass
@@ -1232,6 +1233,7 @@ open class MainActivity : AppCompatActivity() {
                 appFontFileName = appFontFileName,
 
             ) {
+                ProvideRuntimeVisualGuard {
                 ProvideUnifiedBlurIntensity {
                     //  📐 [平板适配] 提供全局 WindowSizeClass
                     CompositionLocalProvider(
@@ -1904,6 +1906,7 @@ open class MainActivity : AppCompatActivity() {
                     }
 
                     }
+                }
                 }
             }
             }

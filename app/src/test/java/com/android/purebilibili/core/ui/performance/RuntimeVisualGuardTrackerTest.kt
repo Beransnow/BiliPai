@@ -118,6 +118,119 @@ class RuntimeVisualGuardTrackerTest {
         assertTrue(tracker.decision.value.downgraded)
     }
 
+    @Test
+    fun feedScrollSignal_alsoDrivesDowngrade() {
+        // 回归：此前 Tracker 只匹配 VideoCardTransition，首页滚动打点无人消费。
+        val tracker = RuntimeVisualGuardTracker()
+
+        repeat(2) {
+            tracker.finishFrameWindow(
+                stateKey = "home:feed:recommend",
+                totalFrames = 12,
+                jankyFrames = 1,
+                nowMs = 100L * (it + 1),
+            )
+        }
+
+        assertTrue(tracker.decision.value.downgraded)
+        assertTrue(tracker.decision.value.forceLowBlurBudget)
+    }
+
+    @Test
+    fun separateSignals_doNotShareWindows() {
+        // 竖滑与横滑同帧共存；若共用一个窗口，两边各 6 帧会被误判成一个满窗口。
+        val tracker = RuntimeVisualGuardTracker()
+
+        repeat(2) { round ->
+            tracker.finishFrameWindow("home:feed:recommend", 6, 6, 100L * (round + 1))
+            tracker.finishFrameWindow("home:pager_swipe", 6, 6, 100L * (round + 1))
+        }
+
+        assertFalse(tracker.decision.value.downgraded)
+    }
+
+    @Test
+    fun untrackedStateKey_isIgnored() {
+        val tracker = RuntimeVisualGuardTracker()
+
+        repeat(4) { round ->
+            tracker.finishFrameWindow("home:current_category", 24, 24, 100L * (round + 1))
+        }
+
+        assertFalse(tracker.decision.value.downgraded)
+    }
+
+    @Test
+    fun tabletBaseTier_recoversToEnhancedAfterCooldown() {
+        // 回归：baseTier 曾硬编码为 Normal，平板降级一次后永久丢失 Enhanced 档。
+        val tracker = RuntimeVisualGuardTracker()
+        tracker.setBaseTier(MotionTier.Enhanced)
+        assertEquals(MotionTier.Enhanced, tracker.decision.value.effectiveMotionTier)
+
+        tracker.finishWindow(totalFrames = 12, jankyFrames = 1, nowMs = 100L)
+        tracker.finishWindow(totalFrames = 12, jankyFrames = 1, nowMs = 200L)
+        assertEquals(MotionTier.Reduced, tracker.decision.value.effectiveMotionTier)
+
+        tracker.finishWindow(
+            totalFrames = 20,
+            jankyFrames = 0,
+            nowMs = 200L + RUNTIME_VISUAL_GUARD_DOWNGRADE_COOLDOWN_MS,
+        )
+
+        assertFalse(tracker.decision.value.downgraded)
+        assertEquals(MotionTier.Enhanced, tracker.decision.value.effectiveMotionTier)
+    }
+
+    @Test
+    fun disablingGuard_resetsDecisionImmediately() {
+        val tracker = downgradedTracker(downgradedAtMs = 200L)
+        assertTrue(tracker.decision.value.downgraded)
+
+        tracker.setEnabled(false)
+
+        assertFalse(tracker.decision.value.downgraded)
+        assertFalse(tracker.decision.value.forceLowBlurBudget)
+        assertEquals(MotionTier.Normal, tracker.decision.value.effectiveMotionTier)
+    }
+
+    @Test
+    fun disabledGuard_ignoresIncomingFrames() {
+        val tracker = RuntimeVisualGuardTracker(enabled = false)
+
+        tracker.finishWindow(totalFrames = 12, jankyFrames = 12, nowMs = 100L)
+        tracker.finishWindow(totalFrames = 12, jankyFrames = 12, nowMs = 200L)
+
+        assertFalse(tracker.decision.value.downgraded)
+    }
+
+    private fun RuntimeVisualGuardTracker.finishFrameWindow(
+        stateKey: String,
+        totalFrames: Int,
+        jankyFrames: Int,
+        nowMs: Long,
+    ) {
+        repeat(totalFrames) { index ->
+            onFrame(
+                frameData = FrameData(
+                    frameStartNanos = index.toLong(),
+                    frameDurationUiNanos = 20_000_000L,
+                    isJank = index < jankyFrames,
+                    states = listOf(StateInfo(stateKey, "Active")),
+                ),
+                nowMs = nowMs,
+            )
+        }
+        onFrame(
+            frameData = FrameData(
+                frameStartNanos = totalFrames.toLong(),
+                frameDurationUiNanos = 8_000_000L,
+                isJank = false,
+                states = emptyList(),
+            ),
+            nowMs = nowMs,
+        )
+    }
+
     private fun downgradedTracker(downgradedAtMs: Long): RuntimeVisualGuardTracker {
         return RuntimeVisualGuardTracker().also { tracker ->
             tracker.finishWindow(totalFrames = 12, jankyFrames = 1, nowMs = 100L)

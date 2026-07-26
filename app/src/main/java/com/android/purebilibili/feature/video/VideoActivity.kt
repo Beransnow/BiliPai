@@ -101,6 +101,10 @@ class VideoActivity : ComponentActivity() {
 
         setContent {
             MaterialTheme {
+                // 与 MainActivity 对齐：没有这两个 provider 时，overlay 里的每个
+                // unifiedBlur 会各起一个 DataStore 收集器，且完全读不到运行时视觉守卫。
+                com.android.purebilibili.core.ui.performance.ProvideRuntimeVisualGuard {
+                com.android.purebilibili.core.ui.blur.ProvideUnifiedBlurIntensity {
                 // VideoDetailScreen handles its own UI state and player initialization
                 com.android.purebilibili.feature.video.screen.VideoDetailScreen(
                     bvid = bvid,
@@ -117,6 +121,8 @@ class VideoActivity : ComponentActivity() {
                     // VideoPlayerState's reuse logic handles checking MiniPlayerManager if applicable.
                     // For pure Activity launch, it creates/reuses logic internally.
                 )
+                }
+                }
             }
         }
     }
