@@ -54,6 +54,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.dropShadow
@@ -300,8 +301,18 @@ enum class BottomNavItem(
         R.string.bottom_nav_listen_video,
         R.string.bottom_nav_listen_video_desc,
         listOf("音乐"),
-        { Icon(CupertinoIcons.Default.MusicNote, contentDescription = null) },
-        { Icon(CupertinoIcons.Outlined.MusicNote, contentDescription = null) },
+        {
+            Icon(
+                painter = painterResource(R.drawable.ic_bottom_nav_listen_video_selected),
+                contentDescription = null
+            )
+        },
+        {
+            Icon(
+                painter = painterResource(R.drawable.ic_bottom_nav_listen_video),
+                contentDescription = null
+            )
+        },
         ScreenRoutes.ListenVideo.route
     ),
     PROFILE(
