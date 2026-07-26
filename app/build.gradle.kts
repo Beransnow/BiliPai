@@ -254,11 +254,27 @@ tasks.matching { task ->
     dependsOn(prepareKspGeneratedDirs)
 }
 
-// 🔥 Compose 编译器性能指标 (仅在需要分析时启用，会拖慢编译速度)
-// composeCompiler {
-//     reportsDestination = layout.buildDirectory.dir("compose_reports")
-//     metricsDestination = layout.buildDirectory.dir("compose_metrics")
-// }
+composeCompiler {
+    // 稳定性配置无条件生效。data/model 下的模型类构造后不再修改（由
+    // ModelImmutabilityGuardTest 守卫），但 List 是接口、编译器无法自行证明——
+    // 不声明的话 VideoCard 永远不是 skippable，首页每次祖先重组都会重建所有可见卡片。
+    // 详细理由见 compose_stability.conf 的文件头。
+    stabilityConfigurationFiles.add(
+        rootProject.layout.projectDirectory.file("compose_stability.conf")
+    )
+
+    // 🔥 Compose 编译器指标：会显著拖慢编译，所以只在显式要求时打开。
+    //   ./gradlew :app:compileSmoothKotlin -Pbili.compose.metrics=true
+    // 产出 build/compose_metrics/*-classes.txt 与 build/compose_reports/。
+    // 这是**唯一不需要设备就能量化重组行为**的指标——用来回答
+    // 「VideoCard 到底 skippable 了没有」这类过去只能靠猜的问题。
+    //
+    // 之前这段是注释掉的死代码，等于把这个能力关在门外。
+    if (providers.gradleProperty("bili.compose.metrics").orNull == "true") {
+        reportsDestination = layout.buildDirectory.dir("compose_reports")
+        metricsDestination = layout.buildDirectory.dir("compose_metrics")
+    }
+}
 
 baselineProfile {
     // 产物固定落到 app/src/main/generated/baselineProfiles/，而不是按变体分散。
