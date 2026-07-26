@@ -12,6 +12,11 @@ package com.android.purebilibili.core.ui.lint
  */
 internal object StyleLintAllowlist {
 
+    /** Feature prefixes already covered by typography, color, and spacing lint. */
+    val MIGRATED_TOKEN_PREFIXES: Set<String> = setOf(
+        "src/main/java/com/android/purebilibili/feature/live/",
+    )
+
     /** 迁移到 AppShapes / MaterialTheme.shapes 后从本表移除. */
     val SHAPE_HITS: Set<String> = setOf(
         "src/main/java/com/android/purebilibili/feature/article/ArticleDetailScreen.kt",
@@ -39,18 +44,6 @@ internal object StyleLintAllowlist {
         "src/main/java/com/android/purebilibili/feature/home/components/iOSRefreshIndicator.kt",
         "src/main/java/com/android/purebilibili/feature/home/HomeFeedSkeletonCard.kt",
         "src/main/java/com/android/purebilibili/feature/list/CommonListScreen.kt",
-        "src/main/java/com/android/purebilibili/feature/live/components/LandscapeChatOverlay.kt",
-        "src/main/java/com/android/purebilibili/feature/live/components/LiveChatSection.kt",
-        "src/main/java/com/android/purebilibili/feature/live/components/LiveContributionRankSheet.kt",
-        "src/main/java/com/android/purebilibili/feature/live/components/LiveInteractionSheets.kt",
-        "src/main/java/com/android/purebilibili/feature/live/components/LivePlayerControls.kt",
-        "src/main/java/com/android/purebilibili/feature/live/components/LiveSendDanmakuSheet.kt",
-        "src/main/java/com/android/purebilibili/feature/live/components/LiveSuperChatSection.kt",
-        "src/main/java/com/android/purebilibili/feature/live/LiveAreaDetailScreen.kt",
-        "src/main/java/com/android/purebilibili/feature/live/LiveAreaScreen.kt",
-        "src/main/java/com/android/purebilibili/feature/live/LiveListScreen.kt",
-        "src/main/java/com/android/purebilibili/feature/live/LivePlayerScreen.kt",
-        "src/main/java/com/android/purebilibili/feature/live/LiveSearchScreen.kt",
         "src/main/java/com/android/purebilibili/feature/login/LoginComponents.kt",
         "src/main/java/com/android/purebilibili/feature/message/ChatScreen.kt",
         "src/main/java/com/android/purebilibili/feature/message/InboxScreen.kt",
@@ -168,7 +161,6 @@ internal object StyleLintAllowlist {
         "src/main/java/com/android/purebilibili/feature/following/FollowingListScreen.kt",
         "src/main/java/com/android/purebilibili/feature/home/components/cards/GlassVideoCard.kt",
         "src/main/java/com/android/purebilibili/feature/list/CommonListScreen.kt",
-        "src/main/java/com/android/purebilibili/feature/live/LivePlayerScreen.kt",
         "src/main/java/com/android/purebilibili/feature/message/ChatScreen.kt",
         "src/main/java/com/android/purebilibili/feature/onboarding/OnboardingBottomSheet.kt",
         "src/main/java/com/android/purebilibili/feature/onboarding/OnboardingScreen.kt",

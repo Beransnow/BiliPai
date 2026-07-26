@@ -23,7 +23,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.android.purebilibili.core.ui.AppShapes
+import com.android.purebilibili.core.ui.AppSpacingTokens
+import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.data.repository.LiveDanmakuPermission
 import com.android.purebilibili.feature.live.LiveDanmakuItem
 
@@ -41,24 +44,27 @@ fun LiveSendDanmakuSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+                .padding(
+                    horizontal = AppSpacingTokens.ExtraLarge,
+                    vertical = AppSpacingTokens.Small,
+                ),
+            verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Large)
         ) {
             Text(
                 text = if (replyTarget == null) "发弹幕" else "回复 @${replyTarget.uname.ifBlank { replyTarget.uid.toString() }}",
                 color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 22.sp,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
             Surface(
-                color = MaterialTheme.colorScheme.surfaceContainerLow,
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp)
+                color = AppSurfaceTokens.cardContainer(),
+                shape = AppShapes.container(ContainerLevel.Card)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                        .padding(AppSpacingTokens.Large),
+                    verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Medium)
                 ) {
                     OutlinedTextField(
                         value = message,
@@ -90,8 +96,7 @@ fun LiveSendDanmakuSheet(
                             }
                         },
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 12.sp,
-                        lineHeight = 18.sp
+                        style = MaterialTheme.typography.bodySmall,
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),

@@ -17,6 +17,9 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue //  新增
@@ -121,6 +124,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import com.android.purebilibili.core.ui.blur.hazeSourceCompat
 import com.android.purebilibili.core.ui.blur.shouldAllowRuntimeShaderBackedHazeEffect
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
@@ -132,6 +136,8 @@ import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBac
 import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
 import com.android.purebilibili.core.ui.LocalSetBottomBarVisible
 import com.android.purebilibili.core.ui.LocalBottomBarVisible
+import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
+import com.android.purebilibili.core.ui.resolveBottomBarContentPadding
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.core.ui.LocalPredictiveBackGestureEnabled
 import com.android.purebilibili.core.ui.motion.emphasizedEnterTween
@@ -1123,6 +1129,24 @@ fun AppNavigation(
                 bottomBarVisibilityMode == SettingsManager.BottomBarVisibilityMode.ALWAYS_VISIBLE ||
                     isBottomBarVisible
             )
+        val bottomBarVisibilityState = remember { MutableTransitionState(finalBottomBarVisible) }
+        bottomBarVisibilityState.targetState = finalBottomBarVisible
+        val bottomBarCanMount = bottomBarMountGate &&
+            bottomBarVisibilityMode != SettingsManager.BottomBarVisibilityMode.ALWAYS_HIDDEN
+        val bottomBarReservesSpace = bottomBarCanMount &&
+            (bottomBarVisibilityState.currentState || bottomBarVisibilityState.targetState)
+        val bottomBarContentPadding = resolveBottomBarContentPadding(
+            navigationBarsBottom = WindowInsets.navigationBars
+                .asPaddingValues()
+                .calculateBottomPadding(),
+            reserveBottomBar = bottomBarReservesSpace && !useSideNavigation,
+            isBottomBarFloating = isBottomBarFloating,
+            bottomBarLabelMode = bottomBarLabelMode,
+            isTablet = isTabletLayout,
+            uiPreset = uiPreset,
+            androidNativeVariant = androidNativeVariant,
+            hasUiSkinDecoration = bottomBarUiSkinDecoration != null,
+        )
 
         val setBottomBarVisible: (Boolean) -> Unit = remember {
             bottomBarSetter@{ visible: Boolean ->
@@ -1351,6 +1375,7 @@ fun AppNavigation(
         CompositionLocalProvider(
             LocalSetBottomBarVisible provides setBottomBarVisible,
             LocalBottomBarVisible provides finalBottomBarVisible,
+            LocalBottomBarContentPadding provides bottomBarContentPadding,
             LocalGlobalWallpaperBackdropVisible provides exposeGlobalHomeWallpaperChrome,
             LocalPredictiveBackGestureEnabled provides predictiveBackEnabled,
             com.android.purebilibili.core.ui.LocalMainHazeState provides mainHazeState,
@@ -3059,14 +3084,14 @@ fun AppNavigation(
             } // End of Content Box
             } // End of Row
 
-            if (bottomBarMountGate && bottomBarVisibilityMode != SettingsManager.BottomBarVisibilityMode.ALWAYS_HIDDEN) {
+            if (bottomBarCanMount) {
                 val bottomBarModifier = Modifier
                     .align(Alignment.BottomCenter)
                     .zIndex(1f)
 
                 Box(modifier = bottomBarModifier) {
                     AnimatedVisibility(
-                        visible = finalBottomBarVisible,
+                        visibleState = bottomBarVisibilityState,
                         enter = slideInVertically(
                             animationSpec = softLandingSpring(),
                             initialOffsetY = { it }

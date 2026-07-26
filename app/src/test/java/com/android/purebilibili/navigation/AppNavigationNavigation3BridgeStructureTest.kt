@@ -450,7 +450,7 @@ class AppNavigationNavigation3BridgeStructureTest {
             .substringAfter(".miuixLayerBackdrop(bottomBarBackdrop)")
             .substringBefore("} // End of Content Box")
         val bottomBarOverlay = source
-            .substringAfter("if (bottomBarMountGate && bottomBarVisibilityMode")
+            .substringAfter("if (bottomBarCanMount)")
             .substringBefore("MainHostTabBackHandler(")
 
         assertTrue(mainHostBranch.contains("VideoCardTransitionBackgroundRouteContent(bottomPagerNavKeyForItem(currentBottomNavItem))"))
@@ -458,7 +458,9 @@ class AppNavigationNavigation3BridgeStructureTest {
         assertTrue(source.contains("val bottomBarMountRoute = if (isVideoDetailDestination)"))
         assertTrue(source.contains("activeRoute = bottomBarMountRoute"))
         assertTrue(source.contains("!isVideoDetailDestination"))
-        assertTrue(bottomBarOverlay.contains("visible = finalBottomBarVisible"))
+        assertTrue(source.contains("val bottomBarCanMount = bottomBarMountGate"))
+        assertTrue(source.contains("val bottomBarReservesSpace = bottomBarCanMount"))
+        assertTrue(bottomBarOverlay.contains("visibleState = bottomBarVisibilityState"))
         assertTrue(bottomBarOverlay.contains("slideOutVertically("))
         assertTrue(bottomBarOverlay.contains("scaleOut("))
         assertTrue(bottomBarOverlay.contains("TransformOrigin(0.5f, 1f)"))

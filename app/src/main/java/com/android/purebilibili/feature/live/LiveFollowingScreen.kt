@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,6 +18,13 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Refresh
+import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
+import com.android.purebilibili.core.theme.LocalUiPreset
+import com.android.purebilibili.core.ui.AdaptiveScaffold
+import com.android.purebilibili.core.ui.AdaptiveTopAppBar
+import com.android.purebilibili.core.ui.AppSpacingTokens
+import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -40,6 +48,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.android.purebilibili.core.util.LocalWindowSizeClass
+import com.android.purebilibili.core.util.responsiveContentWidth
 import com.android.purebilibili.data.model.response.LiveRoom
 import com.android.purebilibili.data.repository.LiveRepository
 import kotlinx.coroutines.launch
@@ -49,7 +59,24 @@ fun LiveFollowingScreen(
     onBack: () -> Unit,
     onLiveClick: (Long, String, String) -> Unit
 ) {
-    val metrics = resolveLivePiliPlusHomeMetrics()
+    val uiPreset = LocalUiPreset.current
+    val androidNativeVariant = LocalAndroidNativeVariant.current
+    val visualSpec = remember(uiPreset, androidNativeVariant) {
+        resolveLiveVisualSpec(uiPreset, androidNativeVariant)
+    }
+    val metrics = visualSpec.homeMetrics
+    val windowSizeClass = LocalWindowSizeClass.current
+    val contentWidth = if (windowSizeClass.isExpandedScreen) {
+        minOf(windowSizeClass.widthDp, visualSpec.maxContentWidthDp.dp)
+    } else {
+        windowSizeClass.widthDp
+    }
+    val gridColumns = remember(contentWidth, windowSizeClass.isTablet) {
+        resolveLivePiliPlusGridColumns(
+            widthDp = contentWidth.value.toInt(),
+            isTabletLayout = windowSizeClass.isTablet,
+        )
+    }
     val colorScheme = MaterialTheme.colorScheme
     var isLoading by remember { mutableStateOf(true) }
     var isLoadingMore by remember { mutableStateOf(false) }
@@ -82,75 +109,94 @@ fun LiveFollowingScreen(
             }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colorScheme.background)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBack) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                    contentDescription = "返回",
-                    tint = colorScheme.onBackground
-                )
-            }
-            Text(
-                text = if (items.isNotEmpty()) "${items.size}人正在直播" else "关注直播",
-                color = colorScheme.onBackground,
-                fontSize = 20.sp,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
-            )
-            Box(modifier = Modifier.weight(1f))
-            Button(
-                enabled = !isLoading && !isRefreshing,
-                onClick = {
-                    coroutineScope.launch {
-                        isRefreshing = true
-                        error = null
-                        LiveRepository.getFollowedLivePage(page = 1)
-                            .onSuccess { page ->
-                                items = mergeRooms(emptyList(), page.items, refresh = true)
-                                hasMore = page.hasMore
-                                nextPage = page.nextPage
-                            }
-                            .onFailure { error = it.message ?: "刷新关注直播失败" }
-                        isRefreshing = false
+    AdaptiveScaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            AdaptiveTopAppBar(
+                title = if (items.isNotEmpty()) "${items.size}人正在直播" else "关注直播",
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = "返回",
+                        )
                     }
-                }
-            ) {
-                Text(if (isRefreshing) "刷新中" else "刷新")
-            }
-        }
-
+                },
+                actions = {
+                    IconButton(
+                        enabled = !isLoading && !isRefreshing,
+                        onClick = {
+                            coroutineScope.launch {
+                                isRefreshing = true
+                                error = null
+                                LiveRepository.getFollowedLivePage(page = 1)
+                                    .onSuccess { page ->
+                                        items = mergeRooms(emptyList(), page.items, refresh = true)
+                                        hasMore = page.hasMore
+                                        nextPage = page.nextPage
+                                    }
+                                    .onFailure { error = it.message ?: "刷新关注直播失败" }
+                                isRefreshing = false
+                            }
+                        },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Refresh,
+                            contentDescription = if (isRefreshing) "正在刷新" else "刷新",
+                        )
+                    }
+                },
+            )
+        },
+        containerColor = colorScheme.background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+    ) { innerPadding ->
         when {
-            isLoading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            isLoading -> Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center,
+            ) {
                 AdaptiveLoadingIndicator()
             }
-            error != null -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            error != null -> Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center,
+            ) {
                 Text(text = error ?: "", color = colorScheme.onSurfaceVariant)
             }
             else -> {
                 LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier.fillMaxSize(),
+                    columns = GridCells.Fixed(gridColumns),
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .responsiveContentWidth(maxWidth = visualSpec.maxContentWidthDp.dp)
+                        .fillMaxSize(),
                     contentPadding = PaddingValues(
                         start = metrics.safeSpaceDp.dp,
                         end = metrics.safeSpaceDp.dp,
-                        bottom = 100.dp
+                        top = AppSpacingTokens.Small,
+                        bottom = LocalBottomBarContentPadding.current,
                     ),
                     horizontalArrangement = Arrangement.spacedBy(metrics.cardSpaceDp.dp),
-                    verticalArrangement = Arrangement.spacedBy(metrics.cardSpaceDp.dp)
+                    verticalArrangement = Arrangement.spacedBy(metrics.cardSpaceDp.dp),
                 ) {
                     items(items, key = { it.roomid }) { item ->
-                        LiveFollowPiliPlusCard(item = item) {
-                            onLiveClick(item.roomid, item.title, item.uname)
-                        }
+                        LiveRoomCard(
+                            model = LiveRoomCardUiModel(
+                                roomId = item.roomid,
+                                title = item.title,
+                                coverUrl = listOf(item.cover, item.userCover, item.keyframe, item.face)
+                                    .firstOrNull { it.isNotBlank() }.orEmpty(),
+                                hostName = item.uname,
+                                viewerCount = item.online,
+                                areaName = item.areaName,
+                            ),
+                            onClick = { onLiveClick(item.roomid, item.title, item.uname) },
+                        )
                     }
                     item {
                         if (hasMore || isLoadingMore) {
@@ -169,100 +215,13 @@ fun LiveFollowingScreen(
                                             .onFailure { error = it.message ?: "加载更多失败" }
                                         isLoadingMore = false
                                     }
-                                }
+                                },
                             ) {
                                 Text(if (isLoadingMore) "加载中" else "加载更多")
                             }
                         }
                     }
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun LiveFollowPiliPlusCard(
-    item: LiveRoom,
-    onClick: () -> Unit
-) {
-    val metrics = resolveLivePiliPlusHomeMetrics()
-    val colorScheme = MaterialTheme.colorScheme
-    Surface(
-        onClick = onClick,
-        shape = RoundedCornerShape(metrics.cardRadiusDp.dp),
-        color = colorScheme.surface,
-        tonalElevation = 0.dp,
-        shadowElevation = 0.dp
-    ) {
-        Column {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(metrics.coverAspectRatio)
-            ) {
-                AsyncImage(
-                    model = listOf(item.cover, item.userCover, item.keyframe, item.face)
-                        .firstOrNull { it.isNotBlank() },
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .background(
-                            Brush.verticalGradient(
-                                listOf(Color.Transparent, Color.Black.copy(alpha = 0.54f))
-                            )
-                        )
-                )
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .padding(start = 10.dp, end = 10.dp, bottom = 6.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = item.areaName,
-                        color = Color.White,
-                        fontSize = 11.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Text(
-                        text = "${formatLiveViewerCount(item.online)}围观",
-                        color = Color.White,
-                        fontSize = 11.sp
-                    )
-                }
-            }
-            Column(
-                modifier = Modifier
-                    .height(90.dp)
-                    .padding(start = 5.dp, top = 8.dp, end = 5.dp, bottom = 4.dp),
-                verticalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = item.title,
-                    color = colorScheme.onSurface,
-                    fontSize = 16.sp,
-                    lineHeight = 22.sp,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = item.uname,
-                    color = colorScheme.outline,
-                    fontSize = 13.sp,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
             }
         }
     }

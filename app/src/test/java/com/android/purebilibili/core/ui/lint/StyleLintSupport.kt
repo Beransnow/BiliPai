@@ -44,4 +44,28 @@ internal object StyleLintSupport {
         }
         return offenders
     }
+
+    fun findOffendersInMigratedFeatures(pattern: Regex): List<String> {
+        val offenders = mutableListOf<String>()
+        featureKtFiles().forEach { (file, relativePath) ->
+            if (StyleLintAllowlist.MIGRATED_TOKEN_PREFIXES.none(relativePath::startsWith)) {
+                return@forEach
+            }
+            if (
+                relativePath.endsWith("Policy.kt") ||
+                relativePath.endsWith("Spec.kt") ||
+                relativePath.endsWith("Palette.kt")
+            ) {
+                return@forEach
+            }
+            file.useLines { lines ->
+                lines.forEachIndexed { idx, line ->
+                    if (pattern.containsMatchIn(line)) {
+                        offenders.add("$relativePath:${idx + 1}: ${line.trim()}")
+                    }
+                }
+            }
+        }
+        return offenders
+    }
 }

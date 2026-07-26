@@ -1,0 +1,90 @@
+package com.android.purebilibili.feature.live
+
+import com.android.purebilibili.core.ui.lint.StyleLintAllowlist
+import java.io.File
+import kotlin.test.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+
+class LiveTokenAdoptionStructureTest {
+    private val liveRoot = sourceFile("src/main/java/com/android/purebilibili/feature/live")
+
+    @Test
+    fun live_secondary_pages_use_adaptive_chrome_and_shared_room_card() {
+        val secondaryPages = listOf(
+            "LiveFollowingScreen.kt",
+            "LiveAreaScreen.kt",
+            "LiveAreaDetailScreen.kt",
+            "LiveSearchScreen.kt",
+        )
+        secondaryPages.forEach { fileName ->
+            val source = File(liveRoot, fileName).readText()
+            assertTrue(source.contains("AdaptiveScaffold("), "$fileName must use AdaptiveScaffold")
+            assertTrue(source.contains("AdaptiveTopAppBar("), "$fileName must use AdaptiveTopAppBar")
+        }
+
+        val sharedCard = File(liveRoot, "LiveRoomCard.kt").readText()
+        assertTrue(sharedCard.contains("data class LiveRoomCardUiModel"))
+        assertTrue(sharedCard.contains("internal fun LiveRoomCard("))
+        listOf("LiveListScreen.kt", "LiveFollowingScreen.kt", "LiveAreaDetailScreen.kt", "LiveSearchScreen.kt")
+            .forEach { fileName ->
+                assertTrue(File(liveRoot, fileName).readText().contains("LiveRoomCard("))
+            }
+    }
+
+    @Test
+    fun live_grids_share_columns_and_shell_bottom_padding() {
+        listOf("LiveListScreen.kt", "LiveFollowingScreen.kt", "LiveAreaDetailScreen.kt", "LiveSearchScreen.kt")
+            .forEach { fileName ->
+                val source = File(liveRoot, fileName).readText()
+                assertTrue(source.contains("resolveLivePiliPlusGridColumns("), "$fileName column policy")
+                assertTrue(source.contains("windowSizeClass.isTablet"), "$fileName tablet layout")
+                assertTrue(source.contains("LocalBottomBarContentPadding.current"), "$fileName bottom padding")
+            }
+
+        val areaSource = File(liveRoot, "LiveAreaScreen.kt").readText()
+        assertTrue(areaSource.contains("windowSizeClass.isTablet"))
+        assertTrue(areaSource.contains("responsiveContentWidth(maxWidth = visualSpec.maxContentWidthDp.dp)"))
+        assertTrue(areaSource.contains("bottom = LocalBottomBarContentPadding.current"))
+    }
+
+    @Test
+    fun live_area_detail_renders_room_summary_in_all_content_states() {
+        val source = File(liveRoot, "LiveAreaDetailScreen.kt").readText()
+
+        assertTrue(source.contains("val roomSummary = buildString"))
+        assertTrue(source.contains("text = roomSummary"))
+        assertFalse(source.contains("subtitle = buildString"))
+    }
+
+    @Test
+    fun responsive_width_is_applied_before_fill_constraints() {
+        val invalidOrder = Regex(
+            """\.fillMax(?:Size|Width)\(\)\s*\.responsiveContentWidth\(""",
+        )
+        listOf(
+            "LiveListScreen.kt",
+            "LiveFollowingScreen.kt",
+            "LiveAreaScreen.kt",
+            "LiveAreaDetailScreen.kt",
+            "LiveSearchScreen.kt",
+        ).forEach { fileName ->
+            val source = File(liveRoot, fileName).readText()
+            assertFalse(invalidOrder.containsMatchIn(source), "$fileName width modifier order")
+        }
+    }
+
+    @Test
+    fun migrated_live_files_are_not_in_legacy_style_allowlists() {
+        val livePrefix = "src/main/java/com/android/purebilibili/feature/live/"
+        assertFalse(StyleLintAllowlist.SHAPE_HITS.any { it.startsWith(livePrefix) })
+        assertFalse(StyleLintAllowlist.SURFACE_HITS.any { it.startsWith(livePrefix) })
+        assertFalse(StyleLintAllowlist.MOTION_HITS.any { it.startsWith(livePrefix) })
+    }
+
+    private fun sourceFile(relativePath: String): File {
+        return listOf(File(relativePath), File("app/$relativePath"))
+            .firstOrNull(File::exists)
+            ?: error("Cannot find $relativePath from ${File(".").absolutePath}")
+    }
+}
