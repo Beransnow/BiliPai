@@ -674,6 +674,15 @@ fun WatchLaterScreen(
                                         onDismissRequest = { showManagementMenu = false }
                                     ) {
                                         DropdownMenuItem(
+                                            text = { Text("批量删除") },
+                                            enabled = !state.isManaging,
+                                            onClick = {
+                                                showManagementMenu = false
+                                                isBatchMode = true
+                                                selectedBvids = emptySet()
+                                            }
+                                        )
+                                        DropdownMenuItem(
                                             text = { Text("清空已看") },
                                             enabled = !state.isManaging,
                                             onClick = {
@@ -690,15 +699,6 @@ fun WatchLaterScreen(
                                             }
                                         )
                                     }
-                                }
-
-                                TextButton(
-                                    onClick = {
-                                        isBatchMode = true
-                                        selectedBvids = emptySet()
-                                    }
-                                ) {
-                                    Text("批量删除")
                                 }
                             }
                         }
