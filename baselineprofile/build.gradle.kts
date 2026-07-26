@@ -1,16 +1,6 @@
 plugins {
     id("com.android.test")
     id("org.jetbrains.kotlin.android")
-    id("androidx.baselineprofile")
-}
-
-// :app 有 4 个 buildType（debug/release/dev/smooth）。不过滤的话每个都会派生
-// nonMinifiedX + benchmarkX，构建矩阵从 4 膨胀到 12。profile 只需从 release 采集，
-// dev/smooth 本就是 release 的镜像。
-androidComponents {
-    beforeVariants { variant ->
-        variant.enable = variant.buildType == "release"
-    }
 }
 
 android {
@@ -49,12 +39,6 @@ android {
             }
         }
     }
-}
-
-baselineProfile {
-    managedDevices += "pixel6Api31"
-    // 本地默认用真机采集（数据更接近用户设备）；CI 无人值守时改为 false 走 GMD。
-    useConnectedDevices = true
 }
 
 kotlin {
