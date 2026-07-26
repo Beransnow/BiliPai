@@ -744,7 +744,12 @@ fun CommonListScreen(
             }
             }
             if (favoriteViewModel != null && folderIndex != null) {
-                favoriteViewModel.loadAllForPlayback(folderIndex, ::startPlayback)
+                startPlayback(items)
+                favoriteViewModel.loadAllForPlayback(folderIndex) { allItems ->
+                    buildExternalPlaylistFromFavorite(allItems)?.let { playlist ->
+                        PlaylistManager.addAllToPlaylist(playlist.playlistItems)
+                    }
+                }
             } else {
                 startPlayback(items)
             }
