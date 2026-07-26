@@ -618,46 +618,6 @@ fun WatchLaterScreen(
                                     )
                                 }
 
-                                IconButton(
-                                    onClick = {
-                                        val externalPlaylist = buildExternalPlaylistFromWatchLater(
-                                            items = state.items,
-                                            clickedBvid = state.items.firstOrNull()?.bvid
-                                        ) ?: return@IconButton
-
-                                        com.android.purebilibili.feature.video.player.PlaylistManager.setExternalPlaylist(
-                                            externalPlaylist.playlistItems,
-                                            externalPlaylist.startIndex,
-                                            source = com.android.purebilibili.feature.video.player.ExternalPlaylistSource.WATCH_LATER
-                                        )
-                                        com.android.purebilibili.feature.video.player.PlaylistManager
-                                            .setPlayMode(com.android.purebilibili.feature.video.player.PlayMode.SEQUENTIAL)
-
-                                        val target = resolveWatchLaterPlayAllStartTarget(state.items)
-                                            ?: return@IconButton
-                                        val playbackTarget = resolveWatchLaterPlaybackTargetOrDefault(
-                                            items = state.items,
-                                            bvid = target.first,
-                                            fallbackCid = target.second
-                                        )
-                                        onPlayAllAudioClick?.invoke(
-                                            playbackTarget.bvid,
-                                            playbackTarget.cid,
-                                            playbackTarget.resumePositionMs
-                                        ) ?: onVideoClick(
-                                            playbackTarget.bvid,
-                                            playbackTarget.cid,
-                                            playbackTarget.resumePositionMs
-                                        )
-                                    }
-                                ) {
-                                    Icon(
-                                        CupertinoIcons.Outlined.Headphones,
-                                        contentDescription = "全部听",
-                                        tint = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-
                                 Box {
                                     IconButton(
                                         enabled = !state.isManaging,
@@ -673,6 +633,43 @@ fun WatchLaterScreen(
                                         expanded = showManagementMenu,
                                         onDismissRequest = { showManagementMenu = false }
                                     ) {
+                                        DropdownMenuItem(
+                                            text = { Text("全部听") },
+                                            enabled = !state.isManaging,
+                                            onClick = {
+                                                showManagementMenu = false
+                                                val externalPlaylist = buildExternalPlaylistFromWatchLater(
+                                                    items = state.items,
+                                                    clickedBvid = state.items.firstOrNull()?.bvid
+                                                )
+                                                if (externalPlaylist != null) {
+                                                    com.android.purebilibili.feature.video.player.PlaylistManager.setExternalPlaylist(
+                                                        externalPlaylist.playlistItems,
+                                                        externalPlaylist.startIndex,
+                                                        source = com.android.purebilibili.feature.video.player.ExternalPlaylistSource.WATCH_LATER
+                                                    )
+                                                    com.android.purebilibili.feature.video.player.PlaylistManager
+                                                        .setPlayMode(com.android.purebilibili.feature.video.player.PlayMode.SEQUENTIAL)
+
+                                                    resolveWatchLaterPlayAllStartTarget(state.items)?.let { target ->
+                                                        val playbackTarget = resolveWatchLaterPlaybackTargetOrDefault(
+                                                            items = state.items,
+                                                            bvid = target.first,
+                                                            fallbackCid = target.second
+                                                        )
+                                                        onPlayAllAudioClick?.invoke(
+                                                            playbackTarget.bvid,
+                                                            playbackTarget.cid,
+                                                            playbackTarget.resumePositionMs
+                                                        ) ?: onVideoClick(
+                                                            playbackTarget.bvid,
+                                                            playbackTarget.cid,
+                                                            playbackTarget.resumePositionMs
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        )
                                         DropdownMenuItem(
                                             text = { Text("批量删除") },
                                             enabled = !state.isManaging,

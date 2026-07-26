@@ -111,7 +111,12 @@ class WatchLaterRefreshContractTest {
         )
         assertFalse(
             topBarSection.contains("TextButton(\n                                    onClick = {\n                                        isBatchMode = true"),
-            "顶栏操作区不应直接放置批量删除文字按钮"
+                "顶栏操作区不应直接放置批量删除文字按钮"
+        )
+        assertTrue(
+            topBarSection.contains("text = { Text(\"全部听\") }") &&
+                topBarSection.contains("onPlayAllAudioClick?.invoke"),
+            "全部听应放进管理菜单，避免 MIUIX 顶栏操作区挤压标题"
         )
     }
 
