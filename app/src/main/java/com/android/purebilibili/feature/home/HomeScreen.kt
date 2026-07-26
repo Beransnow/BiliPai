@@ -102,6 +102,7 @@ import com.android.purebilibili.feature.home.policy.shouldRestoreHomeFeedScrollA
 import com.android.purebilibili.feature.home.policy.reduceHomeBottomBarListScroll
 import com.android.purebilibili.feature.home.policy.resolveHomeBottomBarBaseVisibility
 import com.android.purebilibili.feature.home.policy.resolveHomeHeaderOffsetForSettledPage
+import com.android.purebilibili.feature.home.policy.resolveHomeRecommendationHeaderCollapseMode
 import com.android.purebilibili.feature.home.policy.resolveHomePagerSettledAction
 import com.android.purebilibili.feature.home.policy.shouldAnimateHomePagerToCategory
 import com.android.purebilibili.feature.home.policy.HomePagerSettledAction
@@ -1297,7 +1298,10 @@ fun HomeScreen(
     
     // Pixels
     val searchCollapseDistancePx = with(density) { searchCollapseDistanceDp.toPx() }
-    val headerCollapseMode = homeSettings.homeHeaderCollapseMode
+    val headerCollapseMode = resolveHomeRecommendationHeaderCollapseMode(
+        homeHeaderCollapseMode = homeSettings.homeHeaderCollapseMode,
+        commonListHeaderCollapseMode = homeSettings.commonListHeaderCollapseMode
+    )
     val collapseSearchOnScroll = headerCollapseMode.collapseSearch
     val collapseTabsOnScroll = headerCollapseMode.collapseTabs
     val isAnyHeaderCollapseEnabled = headerCollapseMode.hasAnyCollapse

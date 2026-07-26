@@ -655,7 +655,7 @@ enum class CommonListHeaderCollapseMode(
     val label: String,
     val description: String
 ) {
-    ALWAYS_VISIBLE(0, "始终显示", "历史记录和收藏夹顶部栏保持展开"),
+    ALWAYS_VISIBLE(0, "始终显示", "首页推荐流、历史记录和收藏夹顶部栏保持展开"),
     SHOW_ON_REVERSE_SCROLL(1, "上滑时显示", "向下浏览时折叠，反向上滑时恢复"),
     SHOW_AT_TOP_ONLY(2, "仅回顶显示", "向下浏览时折叠，仅回到列表顶部时恢复");
 
