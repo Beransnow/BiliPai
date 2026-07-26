@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -180,10 +181,15 @@ private fun ArticleDetailContent(
     val coverTransitionKey = remember(article.articleId) {
         resolveArticleSharedTransitionKey(article.articleId, ArticleSharedElementSlot.COVER)
     }
-    val sharedReturnReady = remember(listState.firstVisibleItemIndex) {
-        shouldEnableArticleSharedReturn(
-            firstVisibleItemIndex = listState.firstVisibleItemIndex
-        )
+    // 用 derivedStateOf 而不是 remember(firstVisibleItemIndex)：
+    // 后者把「每滚过一个 item」都变成一次重组，而这里真正关心的只是一个布尔值，
+    // 它在整个滚动过程中至多翻转一次。derivedStateOf 只在结果变化时才失效。
+    val sharedReturnReady by remember {
+        derivedStateOf {
+            shouldEnableArticleSharedReturn(
+                firstVisibleItemIndex = listState.firstVisibleItemIndex
+            )
+        }
     }
     val bodyImageUrls = remember(article.blocks) {
         collectArticleBodyImageUrls(article.blocks)

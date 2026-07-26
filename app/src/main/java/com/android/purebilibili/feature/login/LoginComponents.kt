@@ -50,6 +50,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -73,6 +74,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -189,7 +191,12 @@ private fun rememberLoginPalette(): LoginPalette {
 fun LoginBackground() {
     val palette = rememberLoginPalette()
     val infiniteTransition = rememberInfiniteTransition(label = "login_bg")
-    val drift by infiniteTransition.animateFloat(
+    // 刻意不用 `by` 解构：那会让 drift 在**组合期**被读取，
+    // 于是这个 7.2 秒的循环动画每一帧都重组整个登录背景，
+    // 而背景里有 4 个 300dp 级别的 Box、每个都挂着 .blur(72~115dp)——
+    // 每次重组都要重建对应的 RenderEffect。
+    // 保持 State 形态，让读取发生在下面 offset{} 的放置阶段。
+    val drift = infiniteTransition.animateFloat(
         initialValue = -16f,
         targetValue = 16f,
         animationSpec = infiniteRepeatable(
@@ -240,7 +247,8 @@ fun LoginBackground() {
 
         Box(
             modifier = Modifier
-                .offset(x = (-132 + drift).dp, y = (-92).dp)
+                // lambda 版 offset 在放置阶段求值，drift 变化不再触发重组与重新测量
+                .offset { IntOffset(x = (-132 + drift.value).dp.roundToPx(), y = (-92).dp.roundToPx()) }
                 .size(300.dp)
                 .blur(100.dp)
                 .background(palette.orbBlue, CircleShape)
@@ -256,7 +264,7 @@ fun LoginBackground() {
         Box(
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .offset(x = (-76 - drift).dp, y = 180.dp)
+                .offset { IntOffset(x = (-76 - drift.value).dp.roundToPx(), y = 180.dp.roundToPx()) }
                 .size(220.dp)
                 .blur(95.dp)
                 .background(palette.orbMint, CircleShape)
@@ -593,7 +601,7 @@ fun PhoneLoginContent(
 
     var phoneNumber by rememberSaveable { mutableStateOf("") }
     var smsCode by rememberSaveable { mutableStateOf("") }
-    var selectedRegionCid by rememberSaveable { mutableStateOf(86) }
+    var selectedRegionCid by rememberSaveable { mutableIntStateOf(86) }
     var captchaManager by remember { mutableStateOf<CaptchaManager?>(null) }
     var regionMenuExpanded by remember { mutableStateOf(false) }
     val phoneRegions = remember { resolveSupportedPhoneRegions() }

@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -65,9 +66,9 @@ fun LiveAreaDetailScreen(
     var rooms by remember { mutableStateOf<List<LiveRoom>>(emptyList()) }
     var siblings by remember { mutableStateOf<List<LiveAreaChild>>(emptyList()) }
     var sortType by remember { mutableStateOf("online") }
-    var page by remember { mutableStateOf(1) }
+    var page by remember { mutableIntStateOf(1) }
     var hasMore by remember { mutableStateOf(false) }
-    var totalCount by remember { mutableStateOf(0) }
+    var totalCount by remember { mutableIntStateOf(0) }
     var isLoadingMore by remember { mutableStateOf(false) }
     val gridState = rememberLazyGridState()
     val uiPreset = LocalUiPreset.current

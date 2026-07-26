@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material3.*
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -161,7 +162,7 @@ fun CommentInputDialog(
     var showEmojiPanel by remember { mutableStateOf(false) }    // 表情面板
     var showMentionPanel by remember { mutableStateOf(false) }
     var mentionSearchText by remember { mutableStateOf("") }
-    var currentTab by remember { mutableStateOf(0) } // 0=Kaomoji, 1=Emoji, 2+=API Packages
+    var currentTab by remember { mutableIntStateOf(0) } // 0=Kaomoji, 1=Emoji, 2+=API Packages
     var selectedImageUris by remember { mutableStateOf(initialImageUris) }
     val text = textFieldValue.text
     

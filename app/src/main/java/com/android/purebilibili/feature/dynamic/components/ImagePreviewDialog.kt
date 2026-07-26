@@ -598,18 +598,21 @@ private fun ImagePreviewOverlayContent(
                         activeZoomScale <= 1.01f,
                     key = { images.getOrElse(it) { "" } }
                 ) { page ->
-                    // 计算当前页面的偏移量（0 = 居中，-1 = 左边，1 = 右边）
-                    val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
-                    
                     // 🎭 3D 立体旋转动画 - Cube 效果
                     // 仅当完全打开时才应用复杂变换，避免动画冲突
                     val apply3D = transitionFrame.visualProgress > 0.92f
-                    
+
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .testTag(IMAGE_PREVIEW_PAGE_TAG)
                             .graphicsLayer {
+                                // 页面偏移（0 = 居中，-1 = 左边，1 = 右边）在这里读取而不是
+                                // 组合期。currentPageOffsetFraction 横滑时每帧都变，
+                                // 在组合期读取等于把每一帧都升级成一次重组；
+                                // 放进 graphicsLayer lambda 后只触发重绘，不触发重组。
+                                val pageOffset =
+                                    (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
                                 if (apply3D) {
                                     if (useCommentPreviewChrome) {
                                         val transform = resolveCommentImagePreviewPageTransform(
@@ -781,9 +784,6 @@ private fun ImagePreviewOverlayContent(
                     safeInsetEnd = safeDrawingPadding.calculateEndPadding(layoutDirection),
                     safeInsetBottom = safeDrawingPadding.calculateBottomPadding()
                 )
-                val textTransform = resolveImagePreviewTextTransform(
-                    pageOffsetFraction = pagerState.currentPageOffsetFraction
-                )
                 val resolvedText = resolveImagePreviewText(
                     textContent = textContent,
                     currentPage = pagerState.currentPage,
@@ -810,10 +810,15 @@ private fun ImagePreviewOverlayContent(
                                 bottom = overlayPadding.bottom + AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Large + AppSpacingTokens.Micro
                             )
                             .graphicsLayer {
+                                // transform 在这里就地求值：它只依赖 currentPageOffsetFraction，
+                                // 而那个值横滑时每帧都变，放在组合期会拖着整段文字浮层一起重组。
+                                val textTransform = resolveImagePreviewTextTransform(
+                                    pageOffsetFraction = pagerState.currentPageOffsetFraction
+                                )
                                 alpha = textTransform.alpha
                                 rotationX = textTransform.rotationX
-                                translationY = with(density) { textTransform.translateYDp.dp.toPx() }
-                                cameraDistance = 10f * density.density
+                                translationY = textTransform.translateYDp.dp.toPx()
+                                cameraDistance = 10f * this.density
                                 transformOrigin = TransformOrigin(0.5f, 1f)
                             }
                             .clickable {
@@ -938,10 +943,13 @@ private fun ImagePreviewOverlayContent(
                     }
                 }
                 
-                val chromeOffset = pagerState.currentPageOffsetFraction.coerceIn(-1f, 1f)
                 val chromeModifier = Modifier.graphicsLayer {
+                    // 同上：横滑期间 currentPageOffsetFraction 每帧变化，
+                    // 原先在组合期读取会让整个 chrome（顶栏 + 底栏 + 页码）每帧重组。
+                    // graphicsLayer 的 lambda 本身就是 Density，不需要外部的 with(density)。
+                    val chromeOffset = pagerState.currentPageOffsetFraction.coerceIn(-1f, 1f)
                     rotationZ = -chromeOffset * 2.8f
-                    translationX = with(density) { (-chromeOffset * 10f).dp.toPx() }
+                    translationX = (-chromeOffset * 10f).dp.toPx()
                     transformOrigin = TransformOrigin.Center
                 }
 
@@ -1001,8 +1009,11 @@ private fun ImagePreviewOverlayContent(
                             resolvedText != null && shouldShowResolvedText && textPlacement == ImagePreviewTextPlacement.TOP_BAR -> {
                                 Box(
                                     modifier = Modifier.graphicsLayer {
+                                        val textTransform = resolveImagePreviewTextTransform(
+                                            pageOffsetFraction = pagerState.currentPageOffsetFraction
+                                        )
                                         alpha = textTransform.alpha
-                                        translationY = with(density) { (textTransform.translateYDp * 0.45f).dp.toPx() }
+                                        translationY = (textTransform.translateYDp * 0.45f).dp.toPx()
                                     }
                                 ) {
                                     AnimatedContent(

@@ -33,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -270,7 +271,7 @@ private fun BiliPaiJsMediaItemRow(
 ) {
     val streams = remember(item) { resolveBiliPaiJsMediaStreams(item) }
     val imageCandidates = remember(item) { resolveBiliPaiJsMediaImageCandidates(item) }
-    var imageCandidateIndex by remember(imageCandidates) { mutableStateOf(0) }
+    var imageCandidateIndex by remember(imageCandidates) { mutableIntStateOf(0) }
     val imageUrl = imageCandidates.getOrNull(imageCandidateIndex)
     val imageState = when {
         imageCandidates.isEmpty() -> PluginMediaImageState.NO_IMAGE

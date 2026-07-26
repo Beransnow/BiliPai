@@ -49,6 +49,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.R
 import com.android.purebilibili.core.store.HomeHeaderBlurMode
@@ -1345,7 +1346,7 @@ private fun BottomBarPreview(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
                             .width(itemWidth)
-                            .offset(x = animatedX)
+                            .offset { IntOffset(x = animatedX.roundToPx(), y = 0) }
                             .zIndex(zIndex)
                             .scale(scale)
                             // 移除单独的 pointerInput

@@ -35,6 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -82,7 +83,7 @@ fun LiveFollowingScreen(
     var isLoadingMore by remember { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
     var hasMore by remember { mutableStateOf(false) }
-    var nextPage by remember { mutableStateOf(1) }
+    var nextPage by remember { mutableIntStateOf(1) }
     var error by remember { mutableStateOf<String?>(null) }
     var items by remember { mutableStateOf<List<LiveRoom>>(emptyList()) }
     val coroutineScope = rememberCoroutineScope()

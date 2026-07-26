@@ -403,8 +403,8 @@ fun AppNavigation(
     }
     var inAppSearchKeyword by remember { mutableStateOf<String?>(null) }
     var searchEntryMotionSource by remember { mutableStateOf(SearchEntryMotionSource.NONE) }
-    var searchEntryMotionKey by remember { mutableStateOf(0) }
-    var bottomBarSearchLaunchKey by remember { mutableStateOf(0) }
+    var searchEntryMotionKey by remember { mutableIntStateOf(0) }
+    var bottomBarSearchLaunchKey by remember { mutableIntStateOf(0) }
     var navigation3ReturnSession by remember { mutableStateOf(BiliPaiReturnSessionState()) }
     val effectiveInitialSearchKeyword = inAppSearchKeyword ?: initialSearchKeyword
     val consumeInitialSearchKeyword: (String) -> Unit = { consumedKeyword ->
@@ -1161,7 +1161,7 @@ fun AppNavigation(
         val dynamicScrollChannel = remember { kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.CONFLATED) }
         val historyScrollChannel = remember { kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.CONFLATED) }
         val favoriteScrollChannel = remember { kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.CONFLATED) }
-        var dynamicUnreadCount by remember { mutableStateOf(0) }
+        var dynamicUnreadCount by remember { mutableIntStateOf(0) }
         val dynamicUnreadPollingEnabled = visibleBottomBarItems.contains(BottomNavItem.DYNAMIC)
         LaunchedEffect(currentBottomNavItem, dynamicUnreadPollingEnabled) {
             if (!dynamicUnreadPollingEnabled || currentBottomNavItem == BottomNavItem.DYNAMIC) {

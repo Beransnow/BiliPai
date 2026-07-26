@@ -1390,6 +1390,12 @@ internal fun ElegantVideoCard(
     }
         
         // 菜单需要挂在一个本地小锚点上，避免 DropdownMenu 在整张卡片根节点右侧 fallback 时反向偏移。
+        //
+        // 这里保留非 lambda 版 offset（lint 的 UseOfNonLambdaOffsetOverload 会报）：
+        // menuOffset 只在每次长按时变一次，不是逐帧动画值，lambda 版没有实际收益；
+        // 而改写形式会打断 VideoCardLongPressPolicyTest 对上面那次回归修复的字面守卫。
+        // 为零收益去动别人的回归守卫不划算。
+        @Suppress("UseOfNonLambdaOffsetOverload")
         Box(
             modifier = Modifier
                 .offset(x = menuOffset.x, y = menuOffset.y)

@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.EmojiEmotions
 import androidx.compose.material.icons.outlined.ThumbUpOffAlt
 import androidx.compose.material3.*
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -730,7 +731,7 @@ private fun LiveLikeButton(
     tint: Color,
     onLike: (Int) -> Unit
 ) {
-    var likeCount by remember { mutableStateOf(0) }
+    var likeCount by remember { mutableIntStateOf(0) }
     var flushJob by remember { mutableStateOf<Job?>(null) }
     val scope = rememberCoroutineScope()
     val palette = rememberLiveChromePalette()

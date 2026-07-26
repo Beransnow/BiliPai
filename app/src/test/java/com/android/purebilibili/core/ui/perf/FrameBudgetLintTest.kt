@@ -111,6 +111,36 @@ class FrameBudgetLintTest {
     }
 
     /**
+     * `SettingsManager.*Sync(context)` 家族的调用点棘轮。
+     *
+     * 这些方法同步读 SharedPreferences。**需要澄清一个常见误解**：`getSharedPreferences`
+     * 返回的是进程内缓存实例，值也驻留在内存 map 里——所以并**不是**「每次调用都读一次盘」。
+     * 真正的成本有两处：① 进程内**首次**调用会真的读盘，如果发生在主线程就是一次卡顿；
+     * ② 之后每次调用是一次 synchronized map 查找，单次极廉价，但放在 composable body
+     * 里就会随重组次数线性增长。
+     *
+     * 因此这条棘轮的目的不是「消灭所有 Sync 调用」，而是**阻止它继续扩散**——
+     * 每多一个调用点，就多一个可能落在主线程首帧路径上的地方。
+     * 具体哪些调用真的踩在主线程，由刚接入的 debug StrictMode 给出事实，
+     * 而不是靠猜。清理时按 StrictMode 的实际报告走，然后把这个数字调小。
+     */
+    @Test
+    fun settingsSyncCallSitesDoNotGrow() {
+        val hits = mainSources()
+            .filterNot { it.invariantPath.contains("/core/store/") }
+            .sumOf { it.readText().countOf(SETTINGS_SYNC_CALL) }
+
+        assertRatchet(
+            actual = hits,
+            limit = MAX_SETTINGS_SYNC_CALL_SITES,
+            what = "core/store 之外的 SettingsManager.*Sync(context) 调用",
+            why = "同步设置读取应当收敛为「进程内缓存优先 + 启动时后台预热」。" +
+                "项目里已有这个模式的先例（PlayerSettingsCache、各 *_cache SharedPreferences 影子缓存），" +
+                "推广即可，不需要发明新机制。",
+        )
+    }
+
+    /**
      * 扫描器自检：确保上面几条不是在空集合上跑绿。
      *
      * 源码文本扫描类守卫最隐蔽的失效方式是「路径变了，一个文件都没扫到，于是全绿」。
@@ -146,12 +176,19 @@ class FrameBudgetLintTest {
         val RADIUS_GUARD = Regex("""last\w*(Blur)?Radius""")
         val INFINITE_TRANSITION = Regex("""rememberInfiniteTransition\s*\(""")
 
+        // 限定第一个实参是 context/ctx/this，这正是 SettingsManager 的 *Sync 约定。
+        // 不加这个限定的话会误伤 queueDanmakuCloudSync / startDriftSync /
+        // blockUpWithBilibiliSync 这类与设置读取无关的方法（实测多 75 处噪声）。
+        val SETTINGS_SYNC_CALL = Regex("""\w+Sync\((context|ctx|this)""")
+
         // ── 冻结于接入棘轮时的实测值，只能调小 ──────────────────────────
         const val MAX_COMPOSED = 23
         const val MAX_OFFSCREEN = 2
         const val MAX_HAZE_SOURCE = 28
         const val MAX_RUN_BLOCKING_IN_STORE = 1
         const val MAX_INFINITE_TRANSITION = 17
+
+        const val MAX_SETTINGS_SYNC_CALL_SITES = 89
 
         // 当前 3 个：PredictiveBackBackgroundPolicy.kt（每帧重建，转场期最热的一条路径）、
         // ImagePreviewDialog.kt、MainActivity.kt（splash 淡出期，峰值半径 70dp）。

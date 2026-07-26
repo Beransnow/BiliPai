@@ -28,6 +28,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -1140,7 +1141,7 @@ private fun OfflineProgressBar(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
                     .size(if (isDragging) 16.dp else 12.dp)
-                    .offset(x = if (isDragging) 8.dp else 6.dp)
+                    .offset { IntOffset(x = (if (isDragging) 8.dp else 6.dp).roundToPx(), y = 0) }
                     .background(primaryColor, CircleShape)
             )
         }
