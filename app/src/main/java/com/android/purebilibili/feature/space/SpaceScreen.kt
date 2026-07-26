@@ -1,10 +1,18 @@
 package com.android.purebilibili.feature.space
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.animation.core.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.horizontalScroll
@@ -484,6 +492,18 @@ fun SpaceScreen(
                     }
                 }
             }
+
+            SpacePlayedVideoLocatePrompt(
+                visible = shouldPromptToLocatePlayedVideo,
+                onDismiss = { playedVideoLocatePromptHandled = true },
+                onConfirm = {
+                    playedVideoLocatePromptHandled = true
+                    viewModel.locatePlayedVideoContribution(playedVideoBvid)
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 16.dp, bottom = 16.dp)
+            )
         }
     }
 
@@ -567,29 +587,6 @@ fun SpaceScreen(
             dismissButton = {
                 TextButton(onClick = { showBlockConfirmDialog = false }) {
                     Text("取消")
-                }
-            }
-        )
-    }
-
-    if (shouldPromptToLocatePlayedVideo) {
-        AlertDialog(
-            onDismissRequest = { playedVideoLocatePromptHandled = true },
-            title = { Text("刚刚看过") },
-            text = { Text("是否定位到视频投稿？") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        playedVideoLocatePromptHandled = true
-                        viewModel.locatePlayedVideoContribution(playedVideoBvid)
-                    }
-                ) {
-                    Text("定位")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { playedVideoLocatePromptHandled = true }) {
-                    Text("暂不")
                 }
             }
         )
@@ -681,6 +678,64 @@ fun SpaceScreen(
                 }
             }
         )
+    }
+}
+
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun SpacePlayedVideoLocatePrompt(
+    visible: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    AnimatedVisibility(
+        visible = visible,
+        modifier = modifier,
+        enter = fadeIn(animationSpec = tween(160)) + scaleIn(
+            initialScale = 0.92f,
+            animationSpec = tween(160)
+        ),
+        exit = fadeOut(animationSpec = tween(120)) + scaleOut(
+            targetScale = 0.92f,
+            animationSpec = tween(120)
+        )
+    ) {
+        Surface(
+            shape = RoundedCornerShape(18.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            tonalElevation = 6.dp,
+            shadowElevation = 8.dp
+        ) {
+            Column(
+                modifier = Modifier
+                    .widthIn(max = 248.dp)
+                    .padding(start = 16.dp, top = 12.dp, end = 8.dp, bottom = 6.dp)
+            ) {
+                Text(
+                    text = "刚刚看过",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = "是否定位到视频投稿",
+                    modifier = Modifier.padding(top = 2.dp),
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text("暂不")
+                    }
+                    TextButton(onClick = onConfirm) {
+                        Text("定位")
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -839,6 +894,8 @@ private fun SpaceContent(
     }
 
     val bangumiTabState = state.tabShellState.tabStates[SpaceMainTab.BANGUMI] ?: SpaceTabContentState()
+    var highlightedLocateBvid by remember { mutableStateOf<String?>(null) }
+    var isLocateHighlightVisible by remember { mutableStateOf(false) }
 
     LaunchedEffect(selectedMainTab, state.hasLoadedDynamicsOnce, state.isLoadingDynamics) {
         if (
@@ -884,14 +941,31 @@ private fun SpaceContent(
         state.pendingLocateBvid,
         selectedMainTab,
         selectedContributionTab,
-        contributionVideoItemStartIndex
+        contributionVideoItemStartIndex,
+        state.videos
     ) {
         val targetBvid = state.pendingLocateBvid ?: return@LaunchedEffect
         if (
             selectedMainTab == SpaceMainTab.CONTRIBUTION &&
             selectedContributionTab.subTab == SpaceSubTab.VIDEO
         ) {
-            gridState.animateScrollToItem(contributionVideoItemStartIndex)
+            val targetVideoIndex = state.videos.indexOfFirst { it.bvid == targetBvid }
+            if (targetVideoIndex < 0) {
+                if (state.isLoadingMore) return@LaunchedEffect
+                gridState.animateScrollToItem(contributionVideoItemStartIndex)
+                onLocateTargetConsumed(targetBvid)
+                return@LaunchedEffect
+            }
+
+            gridState.animateScrollToItem(contributionVideoItemStartIndex + targetVideoIndex)
+            highlightedLocateBvid = targetBvid
+            repeat(3) {
+                isLocateHighlightVisible = true
+                kotlinx.coroutines.delay(220)
+                isLocateHighlightVisible = false
+                kotlinx.coroutines.delay(140)
+            }
+            highlightedLocateBvid = null
             onLocateTargetConsumed(targetBvid)
         }
     }
@@ -1396,6 +1470,8 @@ private fun SpaceContent(
                                             syncedProgress = state.watchProgressByBvid[video.bvid]
                                         ),
                                         badgeLabel = resolveSpaceVideoChargeBadgeLabel(video),
+                                        isLocateHighlight = highlightedLocateBvid == video.bvid &&
+                                            isLocateHighlightVisible,
                                         onClick = { playVideoFromSpace(video.bvid) },
                                         sharedTransitionKey = resolveSpaceArchiveSharedTransitionKey(video.bvid),
                                         sharedTransitionScope = lazyGridSharedTransitionScope,
@@ -1416,6 +1492,8 @@ private fun SpaceContent(
                                             syncedProgress = state.watchProgressByBvid[video.bvid]
                                         ),
                                         badgeLabel = resolveSpaceVideoChargeBadgeLabel(video),
+                                        isLocateHighlight = highlightedLocateBvid == video.bvid &&
+                                            isLocateHighlightVisible,
                                         onClick = { playVideoFromSpace(video.bvid) },
                                         sharedTransitionKey = resolveSpaceArchiveSharedTransitionKey(video.bvid),
                                         sharedTransitionScope = lazyGridSharedTransitionScope,
@@ -2736,12 +2814,22 @@ private fun SpaceHomeVideoCard(
     video: SpaceVideoItem,
     progressState: VideoProgressDisplayState,
     badgeLabel: String? = null,
+    isLocateHighlight: Boolean = false,
     onClick: () -> Unit,
     sharedTransitionKey: String? = null,
     sharedTransitionScope: SharedTransitionScope? = null,
     animatedVisibilityScope: AnimatedVisibilityScope? = null,
     modifier: Modifier = Modifier
 ) {
+    val locateHighlightColor by animateColorAsState(
+        targetValue = if (isLocateHighlight) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            Color.Transparent
+        },
+        animationSpec = tween(120),
+        label = "space-video-locate-highlight"
+    )
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current
     val screenWidthPx = remember(configuration.screenWidthDp, density) {
@@ -2796,6 +2884,7 @@ private fun SpaceHomeVideoCard(
                 motionSpec = cardSharedTransitionMotionSpec,
                 clipShape = coverShape
             )
+            .border(width = 3.dp, color = locateHighlightColor, shape = coverShape)
             .clip(coverShape)
             .clickable {
                 coverBounds?.let { bounds ->
@@ -3209,12 +3298,22 @@ private fun SpaceArchiveListItemRow(
     secondaryCount: Long,
     progressState: VideoProgressDisplayState? = null,
     badgeLabel: String? = null,
+    isLocateHighlight: Boolean = false,
     onClick: () -> Unit,
     sharedTransitionKey: String? = null,
     sharedTransitionScope: SharedTransitionScope? = null,
     animatedVisibilityScope: AnimatedVisibilityScope? = null,
     modifier: Modifier = Modifier
 ) {
+    val locateHighlightColor by animateColorAsState(
+        targetValue = if (isLocateHighlight) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            Color.Transparent
+        },
+        animationSpec = tween(120),
+        label = "space-video-locate-highlight"
+    )
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current
     val screenWidthPx = remember(configuration.screenWidthDp, density) {
@@ -3262,6 +3361,7 @@ private fun SpaceArchiveListItemRow(
                 motionSpec = cardSharedTransitionMotionSpec,
                 clipShape = cardShellShape
             )
+            .border(width = 3.dp, color = locateHighlightColor, shape = cardShellShape)
             .padding(horizontal = 16.dp)
             .clickable {
                 coverBounds?.let { bounds ->
