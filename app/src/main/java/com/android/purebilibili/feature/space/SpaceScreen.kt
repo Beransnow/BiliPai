@@ -151,6 +151,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun SpaceScreen(
     mid: Long,
+    targetBvid: String? = null,
     onBack: () -> Unit,
     onVideoClick: (String, Long, Long) -> Unit,
     onAudioClick: (Long) -> Unit = {},
@@ -202,6 +203,15 @@ fun SpaceScreen(
     }
 
     val currentSuccessState = uiState as? SpaceUiState.Success
+    val playedVideoBvid = targetBvid?.trim().orEmpty()
+    var playedVideoLocatePromptHandled by rememberSaveable(mid, playedVideoBvid) {
+        mutableStateOf(false)
+    }
+    val shouldPromptToLocatePlayedVideo = shouldPromptToLocatePlayedVideo(
+        targetBvid = playedVideoBvid,
+        hasLoadedSpace = currentSuccessState != null,
+        promptHandled = playedVideoLocatePromptHandled
+    )
     val locateMessage = currentSuccessState?.locateMessage
     LaunchedEffect(locateMessage) {
         locateMessage?.let { message ->
@@ -435,7 +445,6 @@ fun SpaceScreen(
                             onLoadMoreArticles = { viewModel.loadSpaceArticles(refresh = false) },
                             onSearchQueryChange = viewModel::updateSearchQuery,
                             onSearchEntryClick = { viewModel.setSearchMode(true) },
-                            onLocateLastWatchedVideo = viewModel::locateLastWatchedVideo,
                             onLocateTargetConsumed = viewModel::consumePendingLocateBvid,
                             onFollowClick = viewModel::toggleFollow,
                             onTopPhotoClick = { showTopPhotoPreview = true },
@@ -563,6 +572,29 @@ fun SpaceScreen(
         )
     }
 
+    if (shouldPromptToLocatePlayedVideo) {
+        AlertDialog(
+            onDismissRequest = { playedVideoLocatePromptHandled = true },
+            title = { Text("刚刚看过") },
+            text = { Text("是否定位到视频投稿？") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        playedVideoLocatePromptHandled = true
+                        viewModel.locatePlayedVideoContribution(playedVideoBvid)
+                    }
+                ) {
+                    Text("定位")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { playedVideoLocatePromptHandled = true }) {
+                    Text("暂不")
+                }
+            }
+        )
+    }
+
     if (followGroupDialogVisible) {
         AlertDialog(
             onDismissRequest = {
@@ -683,7 +715,6 @@ private fun SpaceContent(
     onLoadMoreArticles: () -> Unit,
     onSearchQueryChange: (String) -> Unit,
     onSearchEntryClick: () -> Unit,
-    onLocateLastWatchedVideo: () -> Unit,
     onLocateTargetConsumed: (String) -> Unit,
     onFollowClick: () -> Unit,
     onTopPhotoClick: () -> Unit,
@@ -837,7 +868,6 @@ private fun SpaceContent(
         selectedMainTab,
         displayedContributionTabs,
         selectedContributionTab,
-        state.lastWatchedVideo,
         state.isSearchMode,
         currentSearchScope
     ) {
@@ -846,14 +876,21 @@ private fun SpaceContent(
         } else {
             2 +
                 (if (displayedContributionTabs.isNotEmpty()) 1 else 0) +
-                (if (selectedContributionTab.subTab == SpaceSubTab.VIDEO && state.lastWatchedVideo != null) 1 else 0) +
                 (if (shouldShowSpaceSearchEntry(currentSearchScope, state.isSearchMode)) 1 else 0) +
                 (if (state.isSearchMode && currentSearchScope == SpaceSearchScope.VIDEO) 1 else 0)
         }
     }
-    LaunchedEffect(state.pendingLocateBvid, state.videos, contributionVideoItemStartIndex) {
+    LaunchedEffect(
+        state.pendingLocateBvid,
+        selectedMainTab,
+        selectedContributionTab,
+        contributionVideoItemStartIndex
+    ) {
         val targetBvid = state.pendingLocateBvid ?: return@LaunchedEffect
-        if (state.videos.any { it.bvid == targetBvid }) {
+        if (
+            selectedMainTab == SpaceMainTab.CONTRIBUTION &&
+            selectedContributionTab.subTab == SpaceSubTab.VIDEO
+        ) {
             gridState.animateScrollToItem(contributionVideoItemStartIndex)
             onLocateTargetConsumed(targetBvid)
         }
@@ -1284,12 +1321,6 @@ private fun SpaceContent(
                                     toggleSpaceContributionVideoLayoutMode(contributionVideoLayoutMode)
                             }
                         )
-                    }
-                }
-
-                if (selectedContributionTab.subTab == SpaceSubTab.VIDEO && state.lastWatchedVideo != null) {
-                    item(span = { GridItemSpan(maxLineSpan) }) {
-                        SpaceLocateWatchedVideoChip(onClick = onLocateLastWatchedVideo)
                     }
                 }
 
@@ -2193,45 +2224,6 @@ private fun SpaceSearchEntryChip(
             Text(
                 text = label,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
-    }
-}
-
-@Composable
-private fun SpaceLocateWatchedVideoChip(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        onClick = onClick,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp),
-        shape = AppShapes.borderedContainer(ContainerLevel.Field),
-        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f),
-        border = BorderStroke(
-            1.dp,
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.28f)
-        )
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 11.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Outlined.PlayCircleOutline,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(18.dp)
-            )
-            Text(
-                text = "定位刚看视频",
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 style = MaterialTheme.typography.bodyMedium
             )
         }

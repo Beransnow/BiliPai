@@ -2062,6 +2062,9 @@ fun AppNavigation(
                                 coverUrl = videoKey.coverUrl,
                                 cid = videoKey.cid,
                                 onUpClick = { mid -> pushNavigation3Route(ScreenRoutes.Space.createRoute(mid)) },
+                                onUpClickWithVideo = { mid, targetBvid ->
+                                    pushNavigation3Key(BiliPaiNavKey.Space(mid = mid, targetBvid = targetBvid))
+                                },
                                 miniPlayerManager = miniPlayerManager,
                                 isInPipMode = isInPipMode,
                                 isVisible = shouldActivateVideoDetailPlaybackSession(
@@ -2800,6 +2803,7 @@ fun AppNavigation(
                                 val spaceKey = key as BiliPaiNavKey.Space
                                 com.android.purebilibili.feature.space.SpaceScreen(
                                     mid = spaceKey.mid,
+                                    targetBvid = spaceKey.targetBvid,
                                     onBack = { performSystemBackAction() },
                                     onVideoClick = { bvid, cid, resumePositionMs ->
                                         navigateToVideoInNavigation3(
