@@ -375,6 +375,9 @@ fun AppNavigation(
     val videoTransitionRealtimeBlurEnabled by SettingsManager
         .getVideoTransitionRealtimeBlurEnabled(context)
         .collectAsStateWithLifecycle(initialValue = true)
+    val videoTransitionBackgroundSinkEnabled by SettingsManager
+        .getVideoTransitionBackgroundSinkEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = false)
     val isBottomBarBlurEnabled = appearance.bottomBarBlurEnabled
     val bottomBarLabelMode = appearance.bottomBarLabelMode
     val isBottomBarFloating = appearance.bottomBarFloating
@@ -3004,7 +3007,8 @@ fun AppNavigation(
                 BiliPaiNavDisplayHost(
                     backStack = navigation3BackStack,
                     cardTransitionEnabled = sharedVideoCardTransitionEnabled,
-                    videoCardDepthEffectEnabled = cardTransitionEnabled,
+                    videoCardDepthEffectEnabled =
+                        sharedVideoCardTransitionEnabled && videoTransitionBackgroundSinkEnabled,
                     reduceMotion = systemReduceMotion,
                     videoSharedTransitionDurationMillis =
                         effectiveVideoCardTransitionDurationMillis,
