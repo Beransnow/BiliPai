@@ -4,7 +4,7 @@
 
 ## 执行摘要
 
-现场复跑得到 1058 个生产 Kotlin 文件；101 个引用 `UiPreset|AndroidNativeVariant`，其中 feature 69 个；47 个 feature 文件直接读取 `LocalUiPreset|LocalAndroidNativeVariant`，与任务书基线一致。统一 `resolvePresetPrimitiveRenderer` 仍只见于 9 个生产文件。任务书称 21 个 feature 文件调用“名为 IOS*、内部换肤”的组件；按本报告明确列出的 15 个内部换肤入口复跑，当前为 **42** 个（宽口径 `\bIOS[A-Z]\w*` 为 43），因此采用新值，不硬凑旧值。
+开工现场复跑得到 1058 个生产 Kotlin 文件；101 个引用 `UiPreset|AndroidNativeVariant`，其中 feature 69 个；47 个 feature 文件直接读取 `LocalUiPreset|LocalAndroidNativeVariant`，与任务书基线一致。统一 `resolvePresetPrimitiveRenderer` 仍只见于 9 个生产文件。任务书称 21 个 feature 文件调用“名为 IOS*、内部换肤”的组件；按本报告明确列出的 15 个内部换肤入口复跑，当前为 **42** 个（宽口径 `\bIOS[A-Z]\w*` 为 43），因此采用新值，不硬凑旧值。交付后的同日复核因外部并发工作删除 `BiliPaiMainHostRetention.kt`，生产 Kotlin 总数变为 **1057**，但风格统计仍为 **101/69/47**；命令仍为下文 R1，生产总数用 `(rg --files app/src/main/java -g '*.kt').Count` 复跑。
 
 建议采用“**单一平级 `UiStyle` + 现有语义 `App*` 门面 + 三个 renderer**”：feature 只表达“设置项、顶栏、按钮、卡片、输入、弹窗”等语义；`core/ui` 在边界内选择 iOS、Material 3、MIUIX renderer。保留现有 Theme bridge、token、`PresetPrimitiveRenderer` 和 `Adaptive*` 的实现资产，通过改名/兼容壳收拢，禁止平行造第四套组件系统。第一阶段只加兼容映射与中性入口，渲染仍委托现有实现，外观、交互、设置值和默认值不变。
 
@@ -188,7 +188,7 @@ flowchart LR
 
 | 指标 | 现场值 | 含义 |
 |---|---:|---|
-| 生产 Kotlin | 1058 | `rg --files app/src/main/java -g '*.kt'` |
+| 生产 Kotlin | 开工 1058；并发改动后 1057 | `(rg --files app/src/main/java -g '*.kt').Count`；变化来自范围外文件被删除 |
 | 风格引用生产文件 | 101 | core 与 feature 都含分发逻辑 |
 | 风格引用 feature | 69 | 页面/局部 policy 仍知道两级模型 |
 | 直接读取两个 Local 的 feature | 47 | 最应优先清零的耦合 |
