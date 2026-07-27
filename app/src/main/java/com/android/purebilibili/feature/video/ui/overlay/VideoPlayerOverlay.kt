@@ -65,6 +65,7 @@ import com.android.purebilibili.data.repository.selectCastDashAudio
 import com.android.purebilibili.data.repository.selectCastDashVideo
 import com.android.purebilibili.feature.plugin.CdnLineDiagnostic
 import com.android.purebilibili.feature.video.playback.dash.buildLocalDashManifest
+import com.android.purebilibili.feature.video.playback.audio.AUDIO_QUALITY_DOLBY
 import com.android.purebilibili.feature.video.playback.audio.AUDIO_QUALITY_HI_RES
 import com.android.purebilibili.feature.video.playback.audio.AudioQualityOption
 import com.android.purebilibili.feature.common.resolveIndexedVideoLazyKey
@@ -1417,6 +1418,7 @@ fun VideoPlayerOverlay(
                         }
                         .orEmpty(),
                     isHiResAudioSelected = selectedAudioQuality == AUDIO_QUALITY_HI_RES,
+                    isDolbyAudioSelected = selectedAudioQuality == AUDIO_QUALITY_DOLBY,
                     onAudioQualityClick = { showAudioQualityMenu = true },
                     currentQualityLabel = currentQualityLabel,
                     onQualityClick = { showQualityMenu = true },

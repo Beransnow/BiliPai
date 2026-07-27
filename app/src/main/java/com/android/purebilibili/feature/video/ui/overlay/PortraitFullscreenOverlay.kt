@@ -40,6 +40,7 @@ import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.MoreVert
 import com.android.purebilibili.feature.video.ui.components.PlaybackSpeed
+import com.android.purebilibili.feature.video.ui.components.DolbyBadge
 import com.android.purebilibili.feature.video.ui.components.HiResBadge
 import com.android.purebilibili.feature.video.ui.components.VideoAspectRatio
 import com.android.purebilibili.core.theme.BiliPink
@@ -112,6 +113,7 @@ fun PortraitFullscreenOverlay(
     currentAudioQualityLabel: String,
     showAudioQualityChip: Boolean,
     isHiResAudioSelected: Boolean,
+    isDolbyAudioSelected: Boolean,
     currentRatio: VideoAspectRatio,
     danmakuEnabled: Boolean,
     isStatusBarHidden: Boolean,
@@ -269,6 +271,7 @@ fun PortraitFullscreenOverlay(
                         currentAudioQualityLabel = currentAudioQualityLabel,
                         showAudioQualityChip = showAudioQualityChip,
                         isHiResAudioSelected = isHiResAudioSelected,
+                        isDolbyAudioSelected = isDolbyAudioSelected,
                         currentRatioLabel = currentRatio.displayName,
                         showSubtitleChip = showSubtitleChip,
                         subtitleEnabled = subtitleEnabled,
@@ -422,6 +425,7 @@ private fun PortraitProgressControlStrip(
     currentAudioQualityLabel: String,
     showAudioQualityChip: Boolean,
     isHiResAudioSelected: Boolean,
+    isDolbyAudioSelected: Boolean,
     currentRatioLabel: String,
     showSubtitleChip: Boolean = false,
     subtitleEnabled: Boolean = false,
@@ -456,6 +460,7 @@ private fun PortraitProgressControlStrip(
                 label = currentAudioQualityLabel,
                 highlighted = false,
                 showHiResBadge = isHiResAudioSelected,
+                showDolbyBadge = isDolbyAudioSelected,
                 onClick = onAudioQualityClick
             )
             Spacer(modifier = Modifier.width(8.dp))
@@ -486,7 +491,8 @@ private fun PortraitChromeChip(
     highlighted: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    showHiResBadge: Boolean = false
+    showHiResBadge: Boolean = false,
+    showDolbyBadge: Boolean = false
 ) {
     Surface(
         onClick = onClick,
@@ -513,6 +519,10 @@ private fun PortraitChromeChip(
             if (showHiResBadge) {
                 Spacer(modifier = Modifier.width(4.dp))
                 HiResBadge()
+            }
+            if (showDolbyBadge) {
+                Spacer(modifier = Modifier.width(4.dp))
+                DolbyBadge()
             }
         }
     }
