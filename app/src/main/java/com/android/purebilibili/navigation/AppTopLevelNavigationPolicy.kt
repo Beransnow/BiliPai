@@ -29,6 +29,7 @@ internal data class BottomPagerRenderBudget(
 
 internal const val BOTTOM_TAB_RENDER_BUDGET_HOLD_MILLIS = 220L
 internal const val BOTTOM_BAR_MAX_VISIBLE_ITEMS = 5
+internal const val BOTTOM_PAGER_MAX_PRELOAD_DISTANCE = 1
 
 internal fun resolveTopLevelNavigationAction(
     currentRoute: String?,

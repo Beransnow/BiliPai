@@ -839,7 +839,8 @@ fun HomeScreen(
     // 各功能面自身的开关(此处为卡片动画开关)仍各自独立。与设置页入场动画共用同一 reduce-motion 判定。
     val systemReduceMotion = rememberSystemReduceMotion()
     val cardAnimationEnabled = homePerformanceConfig.cardAnimationEnabled && !systemReduceMotion
-    val cardTransitionEnabled = homePerformanceConfig.cardTransitionEnabled
+    // 视频详情转场正在重新设计；首页不再挂 sharedBounds 或返回期延迟。
+    val cardTransitionEnabled = false
     val isBottomBarLiquidGlassEnabled = homePerformanceConfig.bottomBarLiquidGlassEnabled
     val isLiquidGlassEnabled = homePerformanceConfig.isAnyLiquidGlassEnabled
     val isDataSaverActive = homePerformanceConfig.isDataSaverActive
@@ -1813,9 +1814,10 @@ fun HomeScreen(
                                      smartVisualGuardEnabled = false,
                                      isDataSaverActive = isDataSaverActive,
                                      preferLowQualityCover = homeSettings.lowQualityHomeCoverInDataSaver,
-                                     compactStatsOnCover = homeSettings.compactVideoStatsOnCover,
+                                     compactStatsOnCover = false,
                                      showCoverGlassBadges = homeSettings.showHomeCoverGlassBadges,
-                                     showInfoGlassBadges = homeSettings.showHomeInfoGlassBadges,
+                                     // 统计行位于封面外时保持轻量，避免每个胶囊在滚动期持续采样 Haze。
+                                     showInfoGlassBadges = false,
                                      badgeEffectMode = homeSettings.homeCardBadgeEffectMode,
                                      infoGlassMode = homeSettings.homeCardInfoGlassMode,
                                      wallpaperTintEnabled = homeWallpaperBackdropAppearance.visible,

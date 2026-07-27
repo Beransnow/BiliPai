@@ -379,6 +379,7 @@ fun AppNavigation(
         )
     }
     val cardTransitionEnabled = appearance.cardTransitionEnabled
+    val videoDetailTransitionsEnabled = false
     val videoTransitionRealtimeBlurEnabled by SettingsManager
         .getVideoTransitionRealtimeBlurEnabled(context)
         .collectAsStateWithLifecycle(initialValue = true)
@@ -1045,7 +1046,8 @@ fun AppNavigation(
             activeBottomTabRoute,
         ) {
             resolveBiliPaiBackGestureDecision(
-                cardTransitionEnabled = cardTransitionEnabled,
+                cardTransitionEnabled = sharedVideoCardTransitionEnabled,
+                videoDetailTransitionsEnabled = videoDetailTransitionsEnabled,
                 systemBackAction = systemBackAction,
                 currentKey = currentNavigation3Key,
                 previousKey = previousNavigation3Key,
@@ -1077,7 +1079,7 @@ fun AppNavigation(
         val shouldDeferBottomBarReveal = shouldDeferBottomBarRevealOnVideoReturn(
             isReturningFromDetail = navigation3ReturnSession.isReturningFromDetail,
             activeBottomTabRoute = activeBottomTabRoute,
-            cardTransitionEnabled = cardTransitionEnabled
+            cardTransitionEnabled = videoDetailTransitionsEnabled
         )
         val bottomBarMountGate = shouldShowBottomBarForNavigation(
             activeRoute = bottomBarMountRoute,
@@ -1117,12 +1119,12 @@ fun AppNavigation(
                 shouldDelayBottomBarRevealAfterVideoReturn(
                     isReturningFromDetail = navigation3ReturnSession.isReturningFromDetail,
                     isBottomBarDestination = isBottomBarDestination,
-                    cardTransitionEnabled = cardTransitionEnabled
+                    cardTransitionEnabled = videoDetailTransitionsEnabled
                 )
             ) {
                 kotlinx.coroutines.delay(
                     resolveVideoReturnBottomBarRevealDelayMs(
-                        cardTransitionEnabled = cardTransitionEnabled,
+                        cardTransitionEnabled = videoDetailTransitionsEnabled,
                         isQuickReturnFromDetail = navigation3ReturnSession.isQuickReturnFromDetail
                     )
                 )
@@ -1595,7 +1597,8 @@ fun AppNavigation(
                     val entryRoute = key.toLegacyRoute()
                     val backgroundState = LocalVideoCardTransitionBackgroundState.current
                     val predictiveBackState = LocalPredictiveBackBackgroundState.current
-                    val shouldApplyBackground = cardTransitionEnabled &&
+                    val shouldApplyBackground = videoDetailTransitionsEnabled &&
+                        cardTransitionEnabled &&
                         shouldApplyVideoCardTransitionBackgroundToRoute(
                             entryRoute = entryRoute,
                             sourceRoute = backgroundState.sourceRouteProvider(),
@@ -1673,7 +1676,7 @@ fun AppNavigation(
                                             beyondViewportPageCount = resolveBottomPagerBeyondViewportPageCount(
                                                 pageCount = visibleBottomBarItems.size,
                                                 contentReady = bottomPagerContentReady
-                                            ),
+                                            ).coerceAtMost(BOTTOM_PAGER_MAX_PRELOAD_DISTANCE),
                                             userScrollEnabled = shouldEnableBottomPagerUserScroll()
                                         ) { page ->
                                             val slotItem = visibleBottomBarItems.getOrNull(page) ?: BottomNavItem.HOME
@@ -2157,9 +2160,10 @@ fun AppNavigation(
                                 onClearReturningFromDetail = {
                                     navigation3ReturnSession = navigation3ReturnSession.clearReturning()
                                 },
-                                transitionEnabled = shouldEnableVideoDetailSharedTransition(
-                                    cardTransitionEnabled = sharedVideoCardTransitionEnabled
-                                ),
+                                transitionEnabled = videoDetailTransitionsEnabled &&
+                                    shouldEnableVideoDetailSharedTransition(
+                                        cardTransitionEnabled = sharedVideoCardTransitionEnabled
+                                    ),
                                 transitionEnterDurationMillis = navMotionSpec.slowFadeDurationMillis,
                                 onBack = {
                                     if (!navigation3ProgrammaticBackDispatcher.dispatch()) {
@@ -3063,7 +3067,9 @@ fun AppNavigation(
                 BiliPaiNavDisplayHost(
                     backStack = navigation3BackStack,
                     cardTransitionEnabled = sharedVideoCardTransitionEnabled,
-                    videoCardDepthEffectEnabled = sharedVideoCardTransitionEnabled,
+                    videoDetailTransitionsEnabled = videoDetailTransitionsEnabled,
+                    videoCardDepthEffectEnabled =
+                        videoDetailTransitionsEnabled && sharedVideoCardTransitionEnabled,
                     reduceMotion = systemReduceMotion,
                     videoSharedTransitionDurationMillis =
                         effectiveVideoCardTransitionDurationMillis,

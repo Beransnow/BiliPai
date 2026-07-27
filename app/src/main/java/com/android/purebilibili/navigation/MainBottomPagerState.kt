@@ -1,5 +1,7 @@
 package com.android.purebilibili.navigation
 
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -16,6 +18,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 internal class MainBottomPagerState(
     val pagerState: PagerState,
@@ -52,7 +55,9 @@ internal class MainBottomPagerState(
                 previousJob?.join()
                 awaitScrollIdle()
                 awaitNextFrame()
-                pagerState.scrollToPage(safeTargetIndex)
+                if (!animatePageChange(safeTargetIndex)) {
+                    pagerState.scrollToPage(safeTargetIndex)
+                }
                 delay(BOTTOM_TAB_RENDER_BUDGET_HOLD_MILLIS)
             } catch (_: IllegalStateException) {
                 // Pager 在测量竞争期间可能拒绝切页，保持当前页并避免快速点击闪退。
@@ -73,6 +78,30 @@ internal class MainBottomPagerState(
         }
     }
 
+    private suspend fun animatePageChange(targetIndex: Int): Boolean {
+        val layoutInfo = pagerState.layoutInfo
+        if (layoutInfo.pageSize <= 0) return false
+
+        val currentPage = pagerState.currentPage
+        if (targetIndex == currentPage && abs(pagerState.currentPageOffsetFraction) < 0.001f) {
+            return false
+        }
+
+        val durationMillis = resolveBottomPagerNavigationDurationMillis(
+            pageDistance = abs(targetIndex - currentPage)
+        ).coerceAtMost(BOTTOM_PAGER_ANIMATED_SCROLL_MAX_MILLIS)
+        pagerState.run {
+            animateScrollToPage(
+                page = targetIndex,
+                animationSpec = tween(
+                    durationMillis = durationMillis,
+                    easing = LinearOutSlowInEasing,
+                ),
+            )
+        }
+        return true
+    }
+
     private suspend fun awaitScrollIdle() {
         if (pagerState.isScrollInProgress) {
             snapshotFlow { pagerState.isScrollInProgress }.first { !it }
@@ -83,6 +112,8 @@ internal class MainBottomPagerState(
         withFrameNanos { }
     }
 }
+
+private const val BOTTOM_PAGER_ANIMATED_SCROLL_MAX_MILLIS = 280
 
 @Composable
 internal fun rememberMainBottomPagerState(
