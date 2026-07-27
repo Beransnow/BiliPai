@@ -111,7 +111,6 @@ fun PortraitFullscreenOverlay(
     currentSpeed: Float,
     currentQualityLabel: String,
     currentAudioQualityLabel: String,
-    showAudioQualityChip: Boolean,
     isHiResAudioSelected: Boolean,
     isDolbyAudioSelected: Boolean,
     currentRatio: VideoAspectRatio,
@@ -269,7 +268,6 @@ fun PortraitFullscreenOverlay(
                         currentSpeed = currentSpeed,
                         currentQualityLabel = currentQualityLabel,
                         currentAudioQualityLabel = currentAudioQualityLabel,
-                        showAudioQualityChip = showAudioQualityChip,
                         isHiResAudioSelected = isHiResAudioSelected,
                         isDolbyAudioSelected = isDolbyAudioSelected,
                         currentRatioLabel = currentRatio.displayName,
@@ -423,7 +421,6 @@ private fun PortraitProgressControlStrip(
     currentSpeed: Float,
     currentQualityLabel: String,
     currentAudioQualityLabel: String,
-    showAudioQualityChip: Boolean,
     isHiResAudioSelected: Boolean,
     isDolbyAudioSelected: Boolean,
     currentRatioLabel: String,
@@ -455,16 +452,14 @@ private fun PortraitProgressControlStrip(
             )
             Spacer(modifier = Modifier.width(8.dp))
         }
-        if (showAudioQualityChip) {
-            PortraitChromeChip(
-                label = currentAudioQualityLabel,
-                highlighted = false,
-                showHiResBadge = isHiResAudioSelected,
-                showDolbyBadge = isDolbyAudioSelected,
-                onClick = onAudioQualityClick
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-        }
+        PortraitChromeChip(
+            label = currentAudioQualityLabel,
+            highlighted = false,
+            showHiResBadge = isHiResAudioSelected,
+            showDolbyBadge = isDolbyAudioSelected,
+            onClick = onAudioQualityClick
+        )
+        Spacer(modifier = Modifier.width(8.dp))
         PortraitChromeChip(
             label = currentQualityLabel,
             highlighted = false,
