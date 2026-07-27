@@ -123,6 +123,7 @@ import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.TokenManager
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.repository.VideoRepository
+import com.android.purebilibili.data.model.response.Dash
 import com.android.purebilibili.data.model.response.RelatedVideo
 import com.android.purebilibili.data.model.response.Stat
 import com.android.purebilibili.data.model.response.ViewInfo
@@ -139,8 +140,14 @@ import com.android.purebilibili.feature.video.playback.session.shouldUsePlayback
 import com.android.purebilibili.feature.video.playback.session.startPlaybackSeekInteraction
 import com.android.purebilibili.feature.video.playback.session.syncPlaybackSeekSession
 import com.android.purebilibili.feature.video.playback.session.updatePlaybackSeekInteraction
+import com.android.purebilibili.feature.video.playback.audio.AUDIO_QUALITY_HI_RES
+import com.android.purebilibili.feature.video.playback.audio.AudioQualityOption
+import com.android.purebilibili.feature.video.playback.audio.collectAudioStreamCandidates
+import com.android.purebilibili.feature.video.playback.audio.resolveRequestedAudioQuality
+import com.android.purebilibili.feature.video.playback.policy.shouldRefreshPremiumAudioForPlaybackSpeedChange
 import com.android.purebilibili.feature.video.ui.overlay.PlayerProgress
 import com.android.purebilibili.feature.video.ui.components.AspectRatioMenu
+import com.android.purebilibili.feature.video.ui.components.AudioQualitySelectionMenu
 import com.android.purebilibili.feature.video.ui.components.QualitySelectionMenu
 import com.android.purebilibili.feature.video.ui.components.SpeedSelectionMenuDialog
 import com.android.purebilibili.feature.video.ui.components.UpPreviewSheet
@@ -375,6 +382,25 @@ fun PortraitVideoPager(
     val portraitQualityLabel = remember(portraitDisplayedQuality) {
         resolvePortraitQualityLabel(portraitDisplayedQuality)
     }
+    val portraitInitialRememberedAudioQuality = remember(context) {
+        SettingsManager.getAudioQualitySync(context)
+    }
+    val portraitInitialAudioQuality = remember(context, portraitInitialRememberedAudioQuality) {
+        resolveRequestedAudioQuality(
+            defaultAudioQuality = SettingsManager.getDefaultAudioQualitySync(context),
+            rememberedAudioQuality = portraitInitialRememberedAudioQuality
+        )
+    }
+    var portraitRememberedAudioQuality by remember {
+        mutableIntStateOf(portraitInitialRememberedAudioQuality)
+    }
+    var portraitRequestedAudioQuality by remember {
+        mutableIntStateOf(portraitInitialAudioQuality)
+    }
+    var portraitSelectedAudioQuality by remember { mutableIntStateOf(-1) }
+    var portraitAvailableAudioQualities by remember {
+        mutableStateOf<List<AudioQualityOption>>(emptyList())
+    }
     var portraitAspectRatio by remember { mutableStateOf(VideoAspectRatio.FIT) }
     val isPortraitLoggedIn = !TokenManager.sessDataCache.isNullOrEmpty()
     val isPortraitVip = TokenManager.isVipCache
@@ -587,6 +613,8 @@ fun PortraitVideoPager(
     var currentPlayingAid by remember(initialInfo.aid, useSharedPlayer) {
         mutableStateOf(if (useSharedPlayer) initialInfo.aid else 0L)
     }
+    var portraitCachedDash by remember { mutableStateOf<Dash?>(null) }
+    var portraitCurrentVideoUrl by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var lastCommittedPage by remember(useSharedPlayer) {
         mutableIntStateOf(if (useSharedPlayer) 0 else -1)
@@ -818,6 +846,37 @@ fun PortraitVideoPager(
         }
     }
 
+    fun switchPortraitAudioQuality(
+        audioQuality: Int,
+        persistManualSelection: Boolean
+    ): Boolean {
+        val dash = portraitCachedDash ?: return false
+        val videoUrl = portraitCurrentVideoUrl.takeIf { it.isNotBlank() } ?: return false
+        val activeBvid = currentPlayingBvid?.takeIf { it.isNotBlank() } ?: return false
+        val result = switchPortraitPlaybackAudioSource(
+            player = exoPlayer,
+            mediaSourceFactory = portraitMediaSourceFactory,
+            dash = dash,
+            currentVideoUrl = videoUrl,
+            requestedAudioQuality = audioQuality,
+            targetVideoQuality = resolvePortraitPlaybackTargetQuality(portraitSelectedQuality),
+            mediaId = resolvePortraitMediaId(activeBvid, currentPlayingCid),
+            cdnPlugin = portraitPlaybackCdnPlugin
+        )
+            ?: return false
+        portraitCurrentVideoUrl = result.videoUrl
+        portraitRequestedAudioQuality = audioQuality
+        portraitSelectedAudioQuality = result.selection.selectedPreferenceId
+        portraitAvailableAudioQualities = result.selection.availableOptions
+        if (persistManualSelection) {
+            portraitRememberedAudioQuality = audioQuality
+            scope.launch {
+                SettingsManager.setAudioQuality(context, audioQuality)
+            }
+        }
+        return true
+    }
+
     fun requestPortraitPlaybackForPage(
         targetPage: Int,
         applyInitialSeekOnFirstPage: Boolean,
@@ -830,6 +889,14 @@ fun PortraitVideoPager(
         val aid = playbackIdentity.aid
         val requestedCid = playbackIdentity.cid
         val targetQuality = resolvePortraitPlaybackTargetQuality(portraitSelectedQuality)
+        val targetAudioQuality = if (forceReload) {
+            portraitRequestedAudioQuality
+        } else {
+            resolveRequestedAudioQuality(
+                defaultAudioQuality = SettingsManager.getDefaultAudioQualitySync(context),
+                rememberedAudioQuality = portraitRememberedAudioQuality
+            )
+        }
 
         if (!isPortraitPlaybackAllowed) {
             pendingAutoPlayGeneration = -1
@@ -881,7 +948,9 @@ fun PortraitVideoPager(
                     onSuccess = { (info, playData) ->
                         val streamUrls = resolvePortraitPlaybackStreamUrls(
                             playData = playData,
-                            targetQuality = targetQuality
+                            targetQuality = targetQuality,
+                            requestedAudioQuality = targetAudioQuality,
+                            playbackSpeed = exoPlayer.playbackParameters.speed
                         ) ?: run {
                                 pendingAutoPlayGeneration = -1
                                 if (shouldApplyLoadResult(
@@ -898,7 +967,10 @@ fun PortraitVideoPager(
                         val resolvedUrls = resolvePortraitPlaybackCdnUrls(
                             streamUrls = streamUrls,
                             cachedDashVideos = playData.dash?.video.orEmpty(),
-                            cachedDashAudios = playData.dash?.audio.orEmpty(),
+                            cachedDashAudios = playData.dash
+                                ?.let(::collectAudioStreamCandidates)
+                                ?.map { it.track }
+                                .orEmpty(),
                             targetQuality = targetQuality,
                             cdnPlugin = portraitPlaybackCdnPlugin
                         )
@@ -949,6 +1021,13 @@ fun PortraitVideoPager(
                         resolveAspectRatioFromDimension(info.dimension)?.let { aspectRatio ->
                             knownVideoAspectRatios[bvid] = aspectRatio
                         }
+                        portraitCachedDash = playData.dash
+                        portraitCurrentVideoUrl = resolvedUrls.videoUrl
+                        portraitRequestedAudioQuality = targetAudioQuality
+                        portraitSelectedAudioQuality =
+                            streamUrls.audioSelection?.selectedPreferenceId ?: -1
+                        portraitAvailableAudioQualities =
+                            streamUrls.audioSelection?.availableOptions.orEmpty()
                         currentPlayingCid = resolvedCid
                         currentPlayingAid = info.aid
 
@@ -1353,6 +1432,9 @@ fun PortraitVideoPager(
                 qualityLabel = portraitQualityLabel,
                 selectedQualityId = portraitSelectedQuality,
                 availableQualityIds = portraitAvailableQualityIds,
+                requestedAudioQuality = portraitRequestedAudioQuality,
+                selectedAudioQuality = portraitSelectedAudioQuality,
+                availableAudioQualities = portraitAvailableAudioQualities,
                 aspectRatio = portraitAspectRatio,
                 isLoggedIn = isPortraitLoggedIn,
                 isVip = isPortraitVip,
@@ -1365,6 +1447,28 @@ fun PortraitVideoPager(
                         applyInitialSeekOnFirstPage = false,
                         forceReload = true
                     )
+                },
+                onAudioQualitySelected = { audioQuality ->
+                    switchPortraitAudioQuality(
+                        audioQuality = audioQuality,
+                        persistManualSelection = true
+                    )
+                },
+                onPlaybackSpeedSelected = { speed ->
+                    val previousSpeed = exoPlayer.playbackParameters.speed
+                    val normalizedSpeed = speed.coerceAtLeast(0.1f)
+                    exoPlayer.playbackParameters = PlaybackParameters(normalizedSpeed, 1.0f)
+                    if (shouldRefreshPremiumAudioForPlaybackSpeedChange(
+                            requestedAudioQuality = portraitRequestedAudioQuality,
+                            previousPlaybackSpeed = previousSpeed,
+                            nextPlaybackSpeed = normalizedSpeed
+                        )
+                    ) {
+                        switchPortraitAudioQuality(
+                            audioQuality = portraitRequestedAudioQuality,
+                            persistManualSelection = false
+                        )
+                    }
                 },
                 onAspectRatioChange = { ratio ->
                     // Runtime safety is applied per-page from actual video aspect.
@@ -1489,10 +1593,15 @@ private fun VideoPageItem(
     qualityLabel: String,
     selectedQualityId: Int,
     availableQualityIds: List<Int>,
+    requestedAudioQuality: Int,
+    selectedAudioQuality: Int,
+    availableAudioQualities: List<AudioQualityOption>,
     aspectRatio: VideoAspectRatio,
     isLoggedIn: Boolean,
     isVip: Boolean,
     onQualitySelected: (Int) -> Unit,
+    onAudioQualitySelected: (Int) -> Unit,
+    onPlaybackSpeedSelected: (Float) -> Unit,
     onAspectRatioChange: (VideoAspectRatio) -> Unit,
     hasRenderedFirstFrame: Boolean,
     initialProgressPositionMs: Long,
@@ -1521,8 +1630,7 @@ private fun VideoPageItem(
     val seekBackwardSeconds by SettingsManager
         .getSeekBackwardSeconds(context)
         .collectAsStateWithLifecycle(initialValue = 10)
-    val currentAudioQuality by viewModel.audioQualityPreference.collectAsStateWithLifecycle(initialValue = -1
-        )
+    val currentAudioQuality = requestedAudioQuality
     val bvid = if (item is ViewInfo) item.bvid else (item as RelatedVideo).bvid
     val itemAid = if (item is ViewInfo) item.aid else (item as RelatedVideo).aid
     
@@ -1532,11 +1640,22 @@ private fun VideoPageItem(
         mutableFloatStateOf(exoPlayer.playbackParameters.speed)
     }
     var showSpeedMenu by rememberSaveable(bvid) { mutableStateOf(false) }
+    var showAudioQualityMenu by rememberSaveable(bvid) { mutableStateOf(false) }
     var showQualityMenu by rememberSaveable(bvid) { mutableStateOf(false) }
     var showRatioMenu by rememberSaveable(bvid) { mutableStateOf(false) }
     var showSubtitlePanel by rememberSaveable(bvid) { mutableStateOf(false) }
     var subtitleTrackAvailable by remember(bvid) { mutableStateOf(false) }
     var subtitleOverlayEnabled by remember(bvid) { mutableStateOf(false) }
+    val selectedAudioOption = availableAudioQualities
+        .firstOrNull { it.preferenceId == selectedAudioQuality }
+    val audioQualityChipLabel = when (selectedAudioQuality) {
+        AUDIO_QUALITY_HI_RES -> "无损"
+        30250 -> "杜比"
+        else -> selectedAudioOption?.label.orEmpty()
+    }
+    val showAudioQualityChip = availableAudioQualities.count {
+        it.preferenceId != -1
+    } >= 2
     val subtitleAutoPreference by SettingsManager
         .getSubtitleAutoPreference(context)
         .collectAsStateWithLifecycle(initialValue = SubtitleAutoPreference.OFF)
@@ -1763,6 +1882,7 @@ private fun VideoPageItem(
             showDetailSheet = false
             showUpPreview = false
             showSubtitlePanel = false
+            showAudioQualityMenu = false
             showQualityMenu = false
             showRatioMenu = false
             showSpeedMenu = false
@@ -2722,6 +2842,9 @@ private fun VideoPageItem(
             
             currentSpeed = currentPlaybackSpeed,
             currentQualityLabel = qualityLabel,
+            currentAudioQualityLabel = audioQualityChipLabel,
+            showAudioQualityChip = showAudioQualityChip,
+            isHiResAudioSelected = selectedAudioQuality == AUDIO_QUALITY_HI_RES,
             currentRatio = aspectRatio,
             danmakuEnabled = danmakuEnabled,
             isStatusBarHidden = true,
@@ -2794,6 +2917,7 @@ private fun VideoPageItem(
             onSpeedClick = {
                 if (isCurrentPage) {
                     showSpeedMenu = true
+                    showAudioQualityMenu = false
                     showSubtitlePanel = false
                     onPortraitOverlayVisibleChange(true)
                 }
@@ -2801,6 +2925,15 @@ private fun VideoPageItem(
             onQualityClick = {
                 if (isCurrentPage) {
                     showQualityMenu = true
+                    showAudioQualityMenu = false
+                    showSubtitlePanel = false
+                    onPortraitOverlayVisibleChange(true)
+                }
+            },
+            onAudioQualityClick = {
+                if (isCurrentPage && showAudioQualityChip) {
+                    showAudioQualityMenu = true
+                    showQualityMenu = false
                     showSubtitlePanel = false
                     onPortraitOverlayVisibleChange(true)
                 }
@@ -2808,6 +2941,7 @@ private fun VideoPageItem(
             onRatioClick = {
                 if (isCurrentPage) {
                     showRatioMenu = true
+                    showAudioQualityMenu = false
                     showSubtitlePanel = false
                     onPortraitOverlayVisibleChange(true)
                 }
@@ -2820,6 +2954,7 @@ private fun VideoPageItem(
             onSubtitleClick = {
                 if (isCurrentPage) {
                     showSubtitlePanel = !showSubtitlePanel
+                    showAudioQualityMenu = false
                     showQualityMenu = false
                     showRatioMenu = false
                     showSpeedMenu = false
@@ -2901,6 +3036,18 @@ private fun VideoPageItem(
             )
         }
 
+        if (showAudioQualityMenu && isCurrentPage) {
+            AudioQualitySelectionMenu(
+                options = availableAudioQualities,
+                requestedAudioQuality = requestedAudioQuality,
+                onAudioQualitySelected = { audioQuality ->
+                    onAudioQualitySelected(audioQuality)
+                    showAudioQualityMenu = false
+                },
+                onDismiss = { showAudioQualityMenu = false }
+            )
+        }
+
         if (showRatioMenu && isCurrentPage) {
             Box(
                 modifier = Modifier
@@ -2926,10 +3073,7 @@ private fun VideoPageItem(
                 onSpeedSelected = { speed ->
                     val normalizedSpeed = speed.coerceAtLeast(0.1f)
                     currentPlaybackSpeed = normalizedSpeed
-                    val handledByViewModel = viewModel.applyPlaybackSpeedFromUi(normalizedSpeed)
-                    if (!handledByViewModel || exoPlayer.playbackParameters.speed != normalizedSpeed) {
-                        exoPlayer.playbackParameters = PlaybackParameters(normalizedSpeed, 1.0f)
-                    }
+                    onPlaybackSpeedSelected(normalizedSpeed)
                     scope.launch {
                         SettingsManager.setLastPlaybackSpeed(context, normalizedSpeed)
                     }

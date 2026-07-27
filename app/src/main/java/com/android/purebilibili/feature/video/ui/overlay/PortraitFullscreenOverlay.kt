@@ -40,6 +40,7 @@ import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.MoreVert
 import com.android.purebilibili.feature.video.ui.components.PlaybackSpeed
+import com.android.purebilibili.feature.video.ui.components.HiResBadge
 import com.android.purebilibili.feature.video.ui.components.VideoAspectRatio
 import com.android.purebilibili.core.theme.BiliPink
 import com.android.purebilibili.core.util.FormatUtils
@@ -108,6 +109,9 @@ fun PortraitFullscreenOverlay(
     // 控制状态
     currentSpeed: Float,
     currentQualityLabel: String,
+    currentAudioQualityLabel: String,
+    showAudioQualityChip: Boolean,
+    isHiResAudioSelected: Boolean,
     currentRatio: VideoAspectRatio,
     danmakuEnabled: Boolean,
     isStatusBarHidden: Boolean,
@@ -131,6 +135,7 @@ fun PortraitFullscreenOverlay(
     onSeekDragCancel: () -> Unit = {},
     onSpeedClick: () -> Unit,
     onQualityClick: () -> Unit,
+    onAudioQualityClick: () -> Unit,
     onRatioClick: () -> Unit,
     showSubtitleChip: Boolean = false,
     subtitleEnabled: Boolean = false,
@@ -261,11 +266,15 @@ fun PortraitFullscreenOverlay(
                         timeLabel = progressTimeLabel,
                         currentSpeed = currentSpeed,
                         currentQualityLabel = currentQualityLabel,
+                        currentAudioQualityLabel = currentAudioQualityLabel,
+                        showAudioQualityChip = showAudioQualityChip,
+                        isHiResAudioSelected = isHiResAudioSelected,
                         currentRatioLabel = currentRatio.displayName,
                         showSubtitleChip = showSubtitleChip,
                         subtitleEnabled = subtitleEnabled,
                         onSpeedClick = onSpeedClick,
                         onQualityClick = onQualityClick,
+                        onAudioQualityClick = onAudioQualityClick,
                         onRatioClick = onRatioClick,
                         onSubtitleClick = onSubtitleClick,
                         modifier = Modifier
@@ -410,11 +419,15 @@ private fun PortraitProgressControlStrip(
     timeLabel: String,
     currentSpeed: Float,
     currentQualityLabel: String,
+    currentAudioQualityLabel: String,
+    showAudioQualityChip: Boolean,
+    isHiResAudioSelected: Boolean,
     currentRatioLabel: String,
     showSubtitleChip: Boolean = false,
     subtitleEnabled: Boolean = false,
     onSpeedClick: () -> Unit,
     onQualityClick: () -> Unit,
+    onAudioQualityClick: () -> Unit,
     onRatioClick: () -> Unit,
     onSubtitleClick: () -> Unit = {},
     modifier: Modifier = Modifier
@@ -435,6 +448,15 @@ private fun PortraitProgressControlStrip(
                 label = "字幕",
                 highlighted = subtitleEnabled,
                 onClick = onSubtitleClick
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+        }
+        if (showAudioQualityChip) {
+            PortraitChromeChip(
+                label = currentAudioQualityLabel,
+                highlighted = false,
+                showHiResBadge = isHiResAudioSelected,
+                onClick = onAudioQualityClick
             )
             Spacer(modifier = Modifier.width(8.dp))
         }
@@ -463,7 +485,8 @@ private fun PortraitChromeChip(
     label: String,
     highlighted: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showHiResBadge: Boolean = false
 ) {
     Surface(
         onClick = onClick,
@@ -476,14 +499,22 @@ private fun PortraitChromeChip(
             Color.White
         }
     ) {
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-        )
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = label,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            if (showHiResBadge) {
+                Spacer(modifier = Modifier.width(4.dp))
+                HiResBadge()
+            }
+        }
     }
 }
 

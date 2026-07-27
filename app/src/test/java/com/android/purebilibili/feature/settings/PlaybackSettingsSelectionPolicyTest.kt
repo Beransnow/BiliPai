@@ -414,6 +414,8 @@ class PlaybackSettingsSelectionPolicyTest {
             File(path.removePrefix("app/")),
             File("..", path)
         )
-        return candidates.first { it.exists() }.readText()
+        return candidates.first { it.exists() }
+            .readText()
+            .replace("\r\n", "\n")
     }
 }

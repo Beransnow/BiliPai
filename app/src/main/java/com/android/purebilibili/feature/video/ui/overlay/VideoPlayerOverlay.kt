@@ -1805,7 +1805,7 @@ fun VideoPlayerOverlay(
         if (showAudioQualityMenu) {
             AudioQualitySelectionMenu(
                 options = availableAudioQualities,
-                selectedAudioQuality = selectedAudioQuality,
+                requestedAudioQuality = currentAudioQuality,
                 onAudioQualitySelected = { preferenceId ->
                     onAudioQualityChange(preferenceId)
                     showAudioQualityMenu = false
