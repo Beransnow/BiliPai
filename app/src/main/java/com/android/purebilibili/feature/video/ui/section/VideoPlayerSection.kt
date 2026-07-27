@@ -4676,6 +4676,8 @@ fun VideoPlayerSection(
                 currentSecondCodec = currentSecondCodec,
                 onSecondCodecChange = onSecondCodecChange,
                 currentAudioQuality = currentAudioQuality,
+                selectedAudioQuality = uiState.selectedAudioQuality,
+                availableAudioQualities = uiState.availableAudioQualities,
                 onAudioQualityChange = onAudioQualityChange,
                 anime4kEnabled = anime4kPluginInfo?.enabled == true,
                 anime4kAvailable = anime4kGlesAvailable,

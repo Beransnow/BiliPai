@@ -2,6 +2,7 @@ package com.android.purebilibili.feature.settings
 
 import com.android.purebilibili.core.store.FullscreenAspectRatio
 import com.android.purebilibili.core.store.FullscreenMode
+import com.android.purebilibili.core.store.DEFAULT_AUDIO_QUALITY_FOLLOW_LAST
 import com.android.purebilibili.core.store.PortraitPlayerCollapseMode
 import com.android.purebilibili.core.theme.UiPreset
 import java.io.File
@@ -11,6 +12,20 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class PlaybackSettingsSelectionPolicyTest {
+
+    @Test
+    fun `default audio quality options expose follow last and supported preferences`() {
+        assertEquals(
+            listOf(
+                DEFAULT_AUDIO_QUALITY_FOLLOW_LAST,
+                -1,
+                30280,
+                30250,
+                30251
+            ),
+            resolveDefaultAudioQualityOptions().map { it.value }
+        )
+    }
 
     @Test
     fun `playback interaction and fullscreen blocks should be split into scene composables`() {

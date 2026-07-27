@@ -46,6 +46,7 @@ import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.feature.video.danmaku.DanmakuCloudSyncUiState
 // Import reusable components from standalone files
 import com.android.purebilibili.feature.video.ui.components.QualitySelectionMenu
+import com.android.purebilibili.feature.video.ui.components.AudioQualitySelectionMenu
 import com.android.purebilibili.feature.video.ui.components.SpeedSelectionMenuDialog
 import com.android.purebilibili.feature.video.ui.components.SpeedSelectionMenuPlacement
 import com.android.purebilibili.feature.video.ui.components.DanmakuSettingsPanel
@@ -64,6 +65,8 @@ import com.android.purebilibili.data.repository.selectCastDashAudio
 import com.android.purebilibili.data.repository.selectCastDashVideo
 import com.android.purebilibili.feature.plugin.CdnLineDiagnostic
 import com.android.purebilibili.feature.video.playback.dash.buildLocalDashManifest
+import com.android.purebilibili.feature.video.playback.audio.AUDIO_QUALITY_HI_RES
+import com.android.purebilibili.feature.video.playback.audio.AudioQualityOption
 import com.android.purebilibili.feature.common.resolveIndexedVideoLazyKey
 import com.android.purebilibili.feature.video.progress.PbpRidgeSample
 import io.github.alexzhirkevich.cupertino.CupertinoActivityIndicator
@@ -582,6 +585,8 @@ fun VideoPlayerOverlay(
     currentSecondCodec: String = "avc1",
     onSecondCodecChange: (String) -> Unit = {},
     currentAudioQuality: Int = -1,
+    selectedAudioQuality: Int = -1,
+    availableAudioQualities: List<AudioQualityOption> = emptyList(),
     onAudioQualityChange: (Int) -> Unit = {},
     anime4kEnabled: Boolean = false,
     anime4kAvailable: Boolean = false,
@@ -635,6 +640,7 @@ fun VideoPlayerOverlay(
     drawerHazeState: HazeState? = null,
 ) {
     var showQualityMenu by remember { mutableStateOf(false) }
+    var showAudioQualityMenu by remember { mutableStateOf(false) }
     var showSpeedMenu by remember { mutableStateOf(false) }
     var showRatioMenu by remember { mutableStateOf(false) }
     var showDanmakuSettings by remember { mutableStateOf(false) }
@@ -659,6 +665,7 @@ fun VideoPlayerOverlay(
     LaunchedEffect(bvid, cid) {
         showPageSelectorSheet = false
         showQualityMenu = false
+        showAudioQualityMenu = false
         showSpeedMenu = false
         showRatioMenu = false
         showDanmakuSettings = false
@@ -1393,6 +1400,24 @@ fun VideoPlayerOverlay(
                     anime4kPreset = anime4kPreset,
                     onAnime4kToggle = onAnime4kToggle,
                     onAnime4kPresetChange = onAnime4kPresetChange,
+                    currentAudioQualityLabel = availableAudioQualities
+                        .firstOrNull { it.preferenceId == selectedAudioQuality }
+                        ?.let { option ->
+                            when (option.preferenceId) {
+                                AUDIO_QUALITY_HI_RES -> "音质"
+                                30250 -> "杜比"
+                                else -> option.label
+                            }
+                        }
+                        .orEmpty()
+                        .takeIf {
+                            availableAudioQualities.count { option ->
+                                option.preferenceId != -1
+                            } >= 2
+                        }
+                        .orEmpty(),
+                    isHiResAudioSelected = selectedAudioQuality == AUDIO_QUALITY_HI_RES,
+                    onAudioQualityClick = { showAudioQualityMenu = true },
                     currentQualityLabel = currentQualityLabel,
                     onQualityClick = { showQualityMenu = true },
                     // 🖼️ [新增] 视频预览图数据
@@ -1776,6 +1801,18 @@ fun VideoPlayerOverlay(
                 useDialog = true
             )
         }
+
+        if (showAudioQualityMenu) {
+            AudioQualitySelectionMenu(
+                options = availableAudioQualities,
+                selectedAudioQuality = selectedAudioQuality,
+                onAudioQualitySelected = { preferenceId ->
+                    onAudioQualityChange(preferenceId)
+                    showAudioQualityMenu = false
+                },
+                onDismiss = { showAudioQualityMenu = false }
+            )
+        }
         
         // --- 7.  [新增] 倍速选择菜单 ---
         if (showSpeedMenu) {
@@ -1942,7 +1979,8 @@ fun VideoPlayerOverlay(
                     onSecondCodecChange(codec)
                     showVideoSettings = false
                 },
-                currentAudioQuality = currentAudioQuality,
+                currentAudioQuality = selectedAudioQuality,
+                availableAudioQualities = availableAudioQualities,
                 onAudioQualityChange = { quality ->
                     onAudioQualityChange(quality)
                     showVideoSettings = false
