@@ -42,6 +42,7 @@ import coil.size.Scale
 import coil.transform.RoundedCornersTransformation
 import com.android.purebilibili.R
 import com.android.purebilibili.core.network.NetworkModule
+import com.android.purebilibili.core.player.HiResCompatibleRenderersFactory
 import com.android.purebilibili.core.player.PlaybackMediaCache
 import com.android.purebilibili.core.player.PlayerVolumeController
 import com.android.purebilibili.core.store.SettingsManager
@@ -1632,6 +1633,7 @@ class MiniPlayerManager private constructor(private val context: Context) :
             val audioFocusEnabled = SettingsManager.getAudioFocusEnabledSync(context)
 
             _player = ExoPlayer.Builder(context)
+                .setRenderersFactory(HiResCompatibleRenderersFactory(context))
                 .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
                 .setAudioAttributes(
                     audioAttributes,

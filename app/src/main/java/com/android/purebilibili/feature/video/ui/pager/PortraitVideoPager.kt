@@ -112,6 +112,7 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.network.NetworkModule
+import com.android.purebilibili.core.player.HiResCompatibleRenderersFactory
 import com.android.purebilibili.core.plugin.PluginManager
 import com.android.purebilibili.core.store.DanmakuSettings
 import com.android.purebilibili.core.util.NetworkUtils
@@ -561,6 +562,7 @@ fun PortraitVideoPager(
     val exoPlayer = sharedPlayer ?: remember(context) {
         val audioFocusEnabled = SettingsManager.getAudioFocusEnabledSync(context)
         ExoPlayer.Builder(context)
+            .setRenderersFactory(HiResCompatibleRenderersFactory(context))
             .setAudioAttributes(
                 androidx.media3.common.AudioAttributes.Builder()
                     .setUsage(androidx.media3.common.C.USAGE_MEDIA)
