@@ -785,19 +785,17 @@ fun HomeScreen(
     }
 
     // 解构设置值（避免每次访问都触发重组）
-    val effectiveHomeSettings = remember(homeSettings, uiPreset) {
+    val effectiveHomeSettings = remember(homeSettings) {
         resolveEffectiveHomeSettings(
             homeSettings = homeSettings,
-            uiPreset = uiPreset
         )
     }
     val displayMode = homeSettings.displayMode
     val isBottomBarFloating = homeSettings.isBottomBarFloating
     val bottomBarLabelMode = homeSettings.bottomBarLabelMode
-    val baseIsHeaderBlurEnabled = remember(homeSettings.headerBlurMode, uiPreset) {
+    val baseIsHeaderBlurEnabled = remember(homeSettings.headerBlurMode) {
         resolveHomeHeaderBlurEnabled(
             mode = homeSettings.headerBlurMode,
-            uiPreset = uiPreset
         )
     }
     val baseIsBottomBarBlurEnabled = homeSettings.isBottomBarBlurEnabled

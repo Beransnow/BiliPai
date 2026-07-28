@@ -165,8 +165,6 @@ internal fun resolveHomeTopLinkedBottomBarAppearance(
     val resolvedHomeSettings = homeSettings ?: HomeSettings()
     val navigationAppearance = resolveAppNavigationAppearance(
         homeSettings = resolvedHomeSettings,
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant
     )
     return HomeTopLinkedBottomBarAppearance(
         isFloating = navigationAppearance.bottomBarFloating,
@@ -1467,10 +1465,9 @@ fun iOSHomeHeader(
     val haptic = rememberHapticFeedback()
     val density = LocalDensity.current
     val resolvedHeaderBlurMode = homeSettings?.headerBlurMode ?: HomeHeaderBlurMode.FOLLOW_PRESET
-    val isHeaderBlurEnabled = remember(resolvedHeaderBlurMode, uiPreset) {
+    val isHeaderBlurEnabled = remember(resolvedHeaderBlurMode) {
         resolveHomeHeaderBlurEnabled(
             mode = resolvedHeaderBlurMode,
-            uiPreset = uiPreset
         )
     }
     val linkedBottomBarAppearance = remember(homeSettings, uiPreset, androidNativeVariant) {

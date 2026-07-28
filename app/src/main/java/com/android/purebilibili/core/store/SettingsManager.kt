@@ -194,7 +194,6 @@ enum class HomeHeaderBlurMode(val value: Int, val label: String) {
 
 internal fun resolveHomeHeaderBlurEnabled(
     mode: HomeHeaderBlurMode,
-    uiPreset: UiPreset
 ): Boolean {
     return when (mode) {
         HomeHeaderBlurMode.FOLLOW_PRESET -> true

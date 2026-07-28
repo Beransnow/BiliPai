@@ -666,10 +666,9 @@ fun CommonListScreen(
     }
 
     // [Feature] Header Blur Optimization
-    val isHeaderBlurEnabled = remember(homeSettings, uiPreset) {
+    val isHeaderBlurEnabled = remember(homeSettings) {
         resolveCommonListHeaderBlurEnabled(
             homeSettings = homeSettings,
-            uiPreset = uiPreset
         )
     }
     val videoCardAppearance = remember(homeSettings, uiPreset) {

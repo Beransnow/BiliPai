@@ -362,20 +362,17 @@ fun AppNavigation(
     val homeSettings by SettingsManager.getHomeSettings(context).collectAsStateWithLifecycle(initialValue = com.android.purebilibili.core.store.HomeSettings(),
         context = kotlin.coroutines.EmptyCoroutineContext
     )
-    val effectiveHomeSettings = remember(homeSettings, uiPreset) {
+    val effectiveHomeSettings = remember(homeSettings) {
         resolveEffectiveHomeSettings(
             homeSettings = homeSettings,
-            uiPreset = uiPreset
         )
     }
     val uiSkinState by rememberUiSkinState(context)
     val bottomBarUiSkinDecoration = rememberBottomBarUiSkinDecoration(uiSkinState)
     val androidNativeVariant = com.android.purebilibili.core.theme.LocalAndroidNativeVariant.current
-    val appearance = remember(homeSettings, uiPreset, androidNativeVariant) {
+    val appearance = remember(homeSettings) {
         resolveAppNavigationAppearance(
             homeSettings = homeSettings,
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant
         )
     }
     val cardTransitionEnabled = appearance.cardTransitionEnabled

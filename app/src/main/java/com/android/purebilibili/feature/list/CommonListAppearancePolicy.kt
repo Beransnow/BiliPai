@@ -52,11 +52,9 @@ internal data class CommonListFavoriteHeaderLayout(
 
 internal fun resolveCommonListHeaderBlurEnabled(
     homeSettings: HomeSettings,
-    uiPreset: UiPreset
 ): Boolean {
     return resolveHomeHeaderBlurEnabled(
         mode = homeSettings.headerBlurMode,
-        uiPreset = uiPreset
     )
 }
 
@@ -135,7 +133,6 @@ internal fun resolveCommonListVideoCardAppearance(
 ): CommonListVideoCardAppearance {
     val headerBlurEnabled = resolveCommonListHeaderBlurEnabled(
         homeSettings = homeSettings,
-        uiPreset = uiPreset
     )
     return CommonListVideoCardAppearance(
         glassEnabled = resolveEffectiveLiquidGlassEnabled(

@@ -29,27 +29,25 @@ class CommonListAppearancePolicyTest {
     }
 
     @Test
-    fun md3FollowPreset_keepsHeaderBlurForCommonList() {
+    fun followPreset_keepsHeaderBlurForCommonList() {
         val enabled = resolveCommonListHeaderBlurEnabled(
             homeSettings = HomeSettings(
                 headerBlurMode = HomeHeaderBlurMode.FOLLOW_PRESET
             ),
-            uiPreset = UiPreset.MD3
         )
 
         assertTrue(enabled)
     }
 
     @Test
-    fun iosFollowPreset_keepsHeaderBlurForCommonList() {
+    fun alwaysOff_disablesHeaderBlurForCommonList() {
         val enabled = resolveCommonListHeaderBlurEnabled(
             homeSettings = HomeSettings(
-                headerBlurMode = HomeHeaderBlurMode.FOLLOW_PRESET
+                headerBlurMode = HomeHeaderBlurMode.ALWAYS_OFF
             ),
-            uiPreset = UiPreset.IOS
         )
 
-        assertTrue(enabled)
+        assertFalse(enabled)
     }
 
     @Test
