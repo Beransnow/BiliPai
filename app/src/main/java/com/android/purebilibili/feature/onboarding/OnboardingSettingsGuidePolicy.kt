@@ -4,7 +4,7 @@ import android.content.Context
 import com.android.purebilibili.core.store.BottomBarSearchAutoExpandMode
 import com.android.purebilibili.core.store.HomeTopLayoutOrder
 import com.android.purebilibili.core.store.SettingsManager
-import com.android.purebilibili.core.theme.UiStyle
+import com.android.purebilibili.core.store.applyOnboardingRecommendedUiStyle
 
 enum class OnboardingSettingsProfile(
     val title: String,
@@ -26,7 +26,6 @@ enum class OnboardingSettingsProfile(
 
 data class OnboardingSettingsGuidePreset(
     val profile: OnboardingSettingsProfile,
-    val uiStyle: UiStyle,
     val bottomBarFloating: Boolean,
     val bottomBarLiquidGlassEnabled: Boolean,
     val bottomBarSearchEnabled: Boolean,
@@ -60,7 +59,6 @@ fun resolveOnboardingSettingsGuidePreset(
     return when (profile) {
         OnboardingSettingsProfile.RECOMMENDED -> OnboardingSettingsGuidePreset(
             profile = profile,
-            uiStyle = UiStyle.MATERIAL3,
             bottomBarFloating = true,
             bottomBarLiquidGlassEnabled = false,
             bottomBarSearchEnabled = false,
@@ -76,7 +74,6 @@ fun resolveOnboardingSettingsGuidePreset(
 
         OnboardingSettingsProfile.PERFORMANCE -> OnboardingSettingsGuidePreset(
             profile = profile,
-            uiStyle = UiStyle.MATERIAL3,
             bottomBarFloating = true,
             bottomBarLiquidGlassEnabled = false,
             bottomBarSearchEnabled = false,
@@ -92,7 +89,6 @@ fun resolveOnboardingSettingsGuidePreset(
 
         OnboardingSettingsProfile.DATA_SAVER -> OnboardingSettingsGuidePreset(
             profile = profile,
-            uiStyle = UiStyle.MATERIAL3,
             bottomBarFloating = true,
             bottomBarLiquidGlassEnabled = false,
             bottomBarSearchEnabled = false,
@@ -113,10 +109,7 @@ suspend fun applyOnboardingSettingsGuidePreset(
     profile: OnboardingSettingsProfile
 ) {
     val preset = resolveOnboardingSettingsGuidePreset(profile)
-    SettingsManager.setUiStyle(
-        context = context,
-        uiStyle = preset.uiStyle
-    )
+    applyOnboardingRecommendedUiStyle(context)
     SettingsManager.setBottomBarFloating(context, preset.bottomBarFloating)
     SettingsManager.setBottomBarLiquidGlassEnabled(context, preset.bottomBarLiquidGlassEnabled)
     SettingsManager.setBottomBarSearchEnabled(context, preset.bottomBarSearchEnabled)

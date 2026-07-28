@@ -2,7 +2,13 @@
 package com.android.purebilibili.feature.home.components
 
 import com.android.purebilibili.core.ui.AppSpacingTokens
-import com.android.purebilibili.core.ui.resolveAppTopChromePolicy
+import com.android.purebilibili.core.ui.AppSemanticIconFamily
+import com.android.purebilibili.core.ui.AppTopChromePolicy
+import com.android.purebilibili.core.ui.AppTopTabPresentation
+import com.android.purebilibili.core.ui.resolveAppChromeLiquidGlassEnabled
+import com.android.purebilibili.core.ui.rememberAppSemanticVisualPolicy
+import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
+import com.android.purebilibili.core.ui.rememberContentCardSurfaceSpec
 
 import com.android.purebilibili.core.ui.OpticalContrastPalette
 import com.android.purebilibili.feature.home.HomeVisualPalette
@@ -65,9 +71,7 @@ import com.android.purebilibili.core.ui.blur.BlurIntensity
 import com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity
 import com.android.purebilibili.core.ui.blur.BlurSurfaceType
 import com.android.purebilibili.core.ui.adaptive.MotionTier
-import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
-import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.motion.AppMotionTokens
 import com.android.purebilibili.core.ui.rememberAppInboxIcon
 import com.android.purebilibili.core.ui.rememberAppSettingsIcon
@@ -76,7 +80,6 @@ import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.HomeTopLayoutOrder
 import com.android.purebilibili.core.store.HomeTopRightAction
 import com.android.purebilibili.core.store.BottomBarLiquidGlassPreset
-import com.android.purebilibili.core.store.resolveSharedLiquidGlassChromeEnabled
 import com.android.purebilibili.feature.home.resolveHomeTopCategories
 import com.android.purebilibili.feature.home.resolveHomeTopCollapsedHandleHeight
 import com.android.purebilibili.feature.home.resolveHomeTopTabPresentationHeight
@@ -86,10 +89,6 @@ import com.android.purebilibili.feature.home.rememberHomeGlassPillColors
 import com.android.purebilibili.feature.home.resolveHomeGlassChromeStyle
 import com.android.purebilibili.feature.home.resolveHomeGlassPillStyle
 import com.android.purebilibili.core.store.resolveHomeHeaderBlurEnabled
-import com.android.purebilibili.core.theme.AndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.navigation.resolveAppNavigationAppearance
 import java.io.File
 
@@ -158,19 +157,10 @@ internal enum class HomeTopChromeSurfaceTreatment {
     FLAT_GLASS
 }
 
-internal fun resolveHomeTopPresetStyle(
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant,
-    labelMode: Int,
-): HomeTopPresetStyle = resolveHomeTopPresetStyle(
-    chromePolicy = resolveAppTopChromePolicy(uiPreset, androidNativeVariant),
-    labelMode = labelMode,
-)
-
 internal fun resolveHomeTopLinkedBottomBarAppearance(
     homeSettings: HomeSettings?,
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant
+    presentation: AppTopTabPresentation,
+    supportsIndependentLiquidGlass: Boolean,
 ): HomeTopLinkedBottomBarAppearance {
     val resolvedHomeSettings = homeSettings ?: HomeSettings()
     val navigationAppearance = resolveAppNavigationAppearance(
@@ -179,13 +169,12 @@ internal fun resolveHomeTopLinkedBottomBarAppearance(
     return HomeTopLinkedBottomBarAppearance(
         isFloating = navigationAppearance.bottomBarFloating,
         blurEnabled = navigationAppearance.bottomBarBlurEnabled && !(
-            uiPreset == UiPreset.MD3 &&
-                androidNativeVariant == AndroidNativeVariant.MATERIAL3 &&
+            presentation == AppTopTabPresentation.MATERIAL_UNDERLINE &&
                 !resolvedHomeSettings.androidNativeLiquidGlassEnabled
             ),
         liquidGlassEnabled = resolveHomeTopChromeLiquidGlassEnabled(
             homeSettings = resolvedHomeSettings,
-            uiPreset = uiPreset
+            supportsIndependentLiquidGlass = supportsIndependentLiquidGlass,
         )
     )
 }
@@ -236,33 +225,33 @@ internal fun resolveHomeTopRightActionContentDescription(
 
 internal fun resolveHomeTopChromeLiquidGlassEnabled(
     homeSettings: HomeSettings?,
-    uiPreset: UiPreset
+    supportsIndependentLiquidGlass: Boolean,
 ): Boolean {
     val resolvedHomeSettings = homeSettings ?: HomeSettings()
-    return resolveSharedLiquidGlassChromeEnabled(
+    return resolveAppChromeLiquidGlassEnabled(
+        supportsIndependentLiquidGlass = supportsIndependentLiquidGlass,
         individualEnabled = resolvedHomeSettings.isTopBarLiquidGlassEnabled,
-        uiPreset = uiPreset,
-        androidNativeLiquidGlassEnabled = resolvedHomeSettings.androidNativeLiquidGlassEnabled
+        androidNativeEnabled = resolvedHomeSettings.androidNativeLiquidGlassEnabled,
     )
 }
 
 internal fun resolveHomeTopTabIndicatorLiquidGlassEnabled(
     homeSettings: HomeSettings?,
-    uiPreset: UiPreset
+    supportsIndependentLiquidGlass: Boolean,
 ): Boolean {
     // Indicator glass follows the same shared chrome contract as the top dock shell.
-    return resolveHomeTopChromeLiquidGlassEnabled(homeSettings, uiPreset)
+    return resolveHomeTopChromeLiquidGlassEnabled(homeSettings, supportsIndependentLiquidGlass)
 }
 
 internal fun resolveHomeTopSearchLiquidGlassEnabled(
     homeSettings: HomeSettings?,
-    uiPreset: UiPreset
+    supportsIndependentLiquidGlass: Boolean,
 ): Boolean {
     val resolvedHomeSettings = homeSettings ?: HomeSettings()
-    return resolveSharedLiquidGlassChromeEnabled(
+    return resolveAppChromeLiquidGlassEnabled(
+        supportsIndependentLiquidGlass = supportsIndependentLiquidGlass,
         individualEnabled = resolvedHomeSettings.isHomeSearchLiquidGlassEnabled,
-        uiPreset = uiPreset,
-        androidNativeLiquidGlassEnabled = resolvedHomeSettings.androidNativeLiquidGlassEnabled
+        androidNativeEnabled = resolvedHomeSettings.androidNativeLiquidGlassEnabled,
     )
 }
 
@@ -270,7 +259,6 @@ internal fun resolveHomeTopChromeMaterialMode(
     isHeaderBlurEnabled: Boolean,
     isBottomBarBlurEnabled: Boolean,
     isLiquidGlassEnabled: Boolean,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
 ): TopTabMaterialMode {
     return when {
         isLiquidGlassEnabled -> TopTabMaterialMode.LIQUID_GLASS
@@ -300,12 +288,12 @@ internal fun resolveHomeTopChromeRenderMode(
 }
 
 internal fun shouldDrawHomeTopSearchLegacyHighlight(
-    uiPreset: UiPreset,
+    presentation: AppTopTabPresentation,
     useUnifiedTopPanel: Boolean,
     renderMode: HomeTopChromeRenderMode,
     refractionOverlayAlpha: Float
 ): Boolean {
-    if (uiPreset != UiPreset.IOS || useUnifiedTopPanel) return false
+    if (presentation != AppTopTabPresentation.MOVING_CAPSULE || useUnifiedTopPanel) return false
     if (refractionOverlayAlpha > 0f) return false
     return renderMode != HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP &&
         renderMode != HomeTopChromeRenderMode.LIQUID_GLASS_HAZE
@@ -363,10 +351,9 @@ internal fun resolveHomeTopTabYOffsetDp(isTabFloating: Boolean): Float {
 }
 
 internal fun resolveHomeTopSearchBarHeight(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    chromePolicy: AppTopChromePolicy,
 ): Dp {
-    return resolveHomeTopPresetStyle(uiPreset, androidNativeVariant, labelMode = 2).searchBarHeight
+    return resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).searchBarHeight
 }
 
 internal data class HomeHeaderScrollLayout(
@@ -403,10 +390,9 @@ internal fun resolveHomeTopPinnedChromeLayout(
 }
 
 internal fun resolveHomeTopSearchRevealDeadZone(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    chromePolicy: AppTopChromePolicy,
 ): Dp {
-    return resolveHomeTopPresetStyle(uiPreset, androidNativeVariant, labelMode = 2).searchRevealDeadZone
+    return resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).searchRevealDeadZone
 }
 
 internal fun resolveHomeTopVisibleSearchHeightPx(
@@ -490,11 +476,10 @@ internal fun resolveHomeHeaderScrollLayout(
 
 internal fun resolveHomeTopTabRowHeight(
     isTabFloating: Boolean,
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3,
+    chromePolicy: AppTopChromePolicy,
     labelMode: Int = com.android.purebilibili.core.store.SettingsManager.TopTabLabelMode.TEXT_ONLY
 ): Dp {
-    val style = resolveHomeTopPresetStyle(uiPreset, androidNativeVariant, labelMode)
+    val style = resolveHomeTopPresetStyle(chromePolicy, labelMode)
     return if (isTabFloating) {
         style.tabRowHeightFloating
     } else {
@@ -503,57 +488,46 @@ internal fun resolveHomeTopTabRowHeight(
 }
 
 internal fun resolveHomeTopSearchRowHorizontalPadding(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    chromePolicy: AppTopChromePolicy,
 ): Dp {
-    return resolveHomeTopPresetStyle(uiPreset, androidNativeVariant, labelMode = 2).searchRowHorizontalPadding
+    return resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).searchRowHorizontalPadding
 }
 
 internal fun resolveHomeTopSearchPillHeight(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    chromePolicy: AppTopChromePolicy,
 ): Dp {
-    return resolveHomeTopPresetStyle(uiPreset, androidNativeVariant, labelMode = 2).searchPillHeight
+    return resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).searchPillHeight
 }
 
 internal fun resolveHomeTopSearchContentHorizontalPadding(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    chromePolicy: AppTopChromePolicy,
 ): Dp {
-    return resolveHomeTopPresetStyle(uiPreset, androidNativeVariant, labelMode = 2).searchContentHorizontalPadding
+    return resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).searchContentHorizontalPadding
 }
 
 internal fun resolveHomeTopSearchIconTextGap(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    chromePolicy: AppTopChromePolicy,
 ): Dp {
-    return resolveHomeTopPresetStyle(uiPreset, androidNativeVariant, labelMode = 2).searchIconTextGap
+    return resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).searchIconTextGap
 }
 
 internal fun resolveHomeTopSearchContainerShape(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    chromePolicy: AppTopChromePolicy,
 ): Shape {
-    if (uiPreset == UiPreset.IOS) return resolveSharedBottomBarCapsuleShape()
-    return AppShapes.resolveContainerShape(
-        level = ContainerLevel.Pill,
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant
-    )
+    if (chromePolicy.tabPresentation == AppTopTabPresentation.MOVING_CAPSULE) {
+        return resolveSharedBottomBarCapsuleShape()
+    }
+    return RoundedCornerShape(chromePolicy.compactChromeSpec.primaryCornerRadiusDp.dp)
 }
 
 internal fun resolveHomeTopEdgeButtonShape(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    chromePolicy: AppTopChromePolicy,
 ): Shape {
-    return if (uiPreset == UiPreset.IOS) {
-        CircleShape
-    } else {
-        AppShapes.resolveContainerShape(
-            level = ContainerLevel.Dialog,
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant
-        )
+    return when (chromePolicy.tabPresentation) {
+        AppTopTabPresentation.MOVING_CAPSULE -> CircleShape
+        // Preserve the former semantic Dialog radii: 14dp scaled by each native profile.
+        AppTopTabPresentation.MATERIAL_UNDERLINE -> RoundedCornerShape(12.6.dp)
+        AppTopTabPresentation.TONAL_CAPSULE -> RoundedCornerShape(16.1.dp)
     }
 }
 
@@ -562,65 +536,51 @@ internal fun resolveHomeTopAvatarOuterSize(): Dp = AppSpacingTokens.DoubleExtraL
 internal fun resolveHomeTopAvatarInnerSize(): Dp = AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Small
 
 internal fun resolveHomeTopSettingsButtonSize(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    chromePolicy: AppTopChromePolicy,
 ): Dp {
-    return if (uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX) {
-        resolveHomeTopPresetStyle(uiPreset, androidNativeVariant, labelMode = 2).actionButtonSizeDocked
+    return if (chromePolicy.tabPresentation == AppTopTabPresentation.TONAL_CAPSULE) {
+        resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).actionButtonSizeDocked
     } else {
         AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Small
     }
 }
 
 internal fun resolveHomeTopSettingsIconSize(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    chromePolicy: AppTopChromePolicy,
 ): Dp {
-    return if (uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX) {
-        resolveHomeTopPresetStyle(uiPreset, androidNativeVariant, labelMode = 2).actionIconSizeDocked
+    return if (chromePolicy.tabPresentation == AppTopTabPresentation.TONAL_CAPSULE) {
+        resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).actionIconSizeDocked
     } else {
         AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall
     }
 }
 
 internal fun resolveHomeTopEdgeControlGap(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    chromePolicy: AppTopChromePolicy,
 ): Dp {
-    return resolveHomeTopPresetStyle(uiPreset, androidNativeVariant, labelMode = 2).edgeControlGap
+    return resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).edgeControlGap
 }
 
-internal fun shouldUseUnifiedHomeTopPanel(uiPreset: UiPreset = UiPreset.IOS): Boolean {
-    return resolveHomeTopPresetStyle(
-        uiPreset = uiPreset,
-        androidNativeVariant = AndroidNativeVariant.MATERIAL3,
-        labelMode = 2
-    ).useUnifiedPanel
+internal fun shouldUseUnifiedHomeTopPanel(chromePolicy: AppTopChromePolicy): Boolean {
+    return resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).useUnifiedPanel
 }
 
 internal fun shouldUseDetachedHomeTopTabDock(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    presentation: AppTopTabPresentation,
 ): Boolean {
-    return uiPreset == UiPreset.IOS ||
-        (uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX)
+    return presentation != AppTopTabPresentation.MATERIAL_UNDERLINE
 }
 
-internal fun resolveHomeTopUnifiedPanelHorizontalPadding(uiPreset: UiPreset = UiPreset.IOS): Dp {
-    return resolveHomeTopPresetStyle(
-        uiPreset = uiPreset,
-        androidNativeVariant = AndroidNativeVariant.MATERIAL3,
-        labelMode = 2
-    ).unifiedPanelHorizontalPadding
+internal fun resolveHomeTopUnifiedPanelHorizontalPadding(chromePolicy: AppTopChromePolicy): Dp {
+    return resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).unifiedPanelHorizontalPadding
 }
 
 internal fun resolveHomeTopUnifiedPanelInnerPadding(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3,
+    chromePolicy: AppTopChromePolicy,
     collapsedIntoStatusBar: Boolean = false
 ): Dp {
     if (collapsedIntoStatusBar) return AppSpacingTokens.Micro
-    return resolveHomeTopPresetStyle(uiPreset, androidNativeVariant, labelMode = 2).unifiedPanelInnerPadding
+    return resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).unifiedPanelInnerPadding
 }
 
 internal fun shouldRenderHomeTopUnifiedPanelChrome(
@@ -635,35 +595,28 @@ internal fun shouldRenderHomeTopUnifiedPanelChrome(
 }
 
 internal fun resolveHomeTopUnifiedPanelCornerRadius(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3,
+    chromePolicy: AppTopChromePolicy,
     collapsedIntoStatusBar: Boolean = false
 ): Dp {
     if (collapsedIntoStatusBar) return AppSpacingTokens.None
-    return resolveHomeTopPresetStyle(uiPreset, androidNativeVariant, labelMode = 2).unifiedPanelCornerRadius
+    return resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).unifiedPanelCornerRadius
 }
 
 internal fun resolveHomeTopReservedContentBottomGap(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    chromePolicy: AppTopChromePolicy,
 ): Dp {
-    return resolveHomeTopPresetStyle(uiPreset, androidNativeVariant, labelMode = 2).reservedContentBottomGap
+    return resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).reservedContentBottomGap
 }
 
-internal fun resolveHomeTopEmbeddedTabHorizontalPadding(uiPreset: UiPreset = UiPreset.IOS): Dp {
-    return resolveHomeTopPresetStyle(
-        uiPreset = uiPreset,
-        androidNativeVariant = AndroidNativeVariant.MATERIAL3,
-        labelMode = 2
-    ).embeddedTabHorizontalPadding
+internal fun resolveHomeTopEmbeddedTabHorizontalPadding(chromePolicy: AppTopChromePolicy): Dp {
+    return resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).embeddedTabHorizontalPadding
 }
 
 internal fun resolveHomeTopTabHorizontalPadding(
     isTabFloating: Boolean,
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    chromePolicy: AppTopChromePolicy,
 ): Dp {
-    val style = resolveHomeTopPresetStyle(uiPreset, androidNativeVariant, labelMode = 2)
+    val style = resolveHomeTopPresetStyle(chromePolicy, labelMode = 2)
     return if (isTabFloating) {
         style.tabHorizontalPaddingFloating
     } else {
@@ -672,51 +625,46 @@ internal fun resolveHomeTopTabHorizontalPadding(
 }
 
 internal fun resolveHomeTopSearchToTabsSpacing(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    chromePolicy: AppTopChromePolicy,
 ): Dp {
-    return resolveHomeTopPresetStyle(uiPreset, androidNativeVariant, labelMode = 2).searchToTabsSpacing
+    return resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).searchToTabsSpacing
 }
 
 internal fun resolveHomeTopTabsToContentSpacing(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    chromePolicy: AppTopChromePolicy,
 ): Dp {
-    return resolveHomeTopPresetStyle(uiPreset, androidNativeVariant, labelMode = 2).tabsToContentSpacing
+    return resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).tabsToContentSpacing
 }
 
 internal fun resolveHomeTopSearchCollapseExtraSpacing(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    chromePolicy: AppTopChromePolicy,
 ): Dp {
-    return resolveHomeTopPresetStyle(uiPreset, androidNativeVariant, labelMode = 2).searchCollapseExtraSpacing
+    return resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).searchCollapseExtraSpacing
 }
 
 internal fun resolveHomeTopSearchCollapseDistance(
     searchBarHeight: Dp,
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    chromePolicy: AppTopChromePolicy,
 ): Dp {
     return searchBarHeight +
-        resolveHomeTopSearchToTabsSpacing(uiPreset, androidNativeVariant) +
-        resolveHomeTopSearchCollapseExtraSpacing(uiPreset, androidNativeVariant)
+        resolveHomeTopSearchToTabsSpacing(chromePolicy) +
+        resolveHomeTopSearchCollapseExtraSpacing(chromePolicy)
 }
 
 internal fun shouldUseIntegratedCollapsedHomeTopBar(
     searchRevealFraction: Float,
-    uiPreset: UiPreset = UiPreset.IOS
+    presentation: AppTopTabPresentation,
 ): Boolean {
-    return uiPreset == UiPreset.IOS && searchRevealFraction <= 0.02f
+    return presentation == AppTopTabPresentation.MOVING_CAPSULE && searchRevealFraction <= 0.02f
 }
 
 internal fun resolveHomeTopContinuousSlabOverlap(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    chromePolicy: AppTopChromePolicy,
 ): Dp {
-    return resolveHomeTopPresetStyle(uiPreset, androidNativeVariant, labelMode = 2).continuousSlabOverlap
+    return resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).continuousSlabOverlap
 }
 
-internal fun resolveHomeTopContinuousSlabShape(uiPreset: UiPreset = UiPreset.IOS): Shape {
+internal fun resolveHomeTopContinuousSlabShape(): Shape {
     return RoundedCornerShape(bottomStart = AppSpacingTokens.Medium, bottomEnd = AppSpacingTokens.Medium)
 }
 
@@ -724,20 +672,19 @@ internal fun resolveHomeTopReservedListPadding(
     statusBarHeight: Dp,
     searchBarHeight: Dp,
     tabRowHeight: Dp,
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3,
+    chromePolicy: AppTopChromePolicy,
     isTabFloating: Boolean = false
 ): Dp {
-    val useUnifiedPanel = shouldUseUnifiedHomeTopPanel(uiPreset)
-    val searchToTabs = resolveHomeTopSearchToTabsSpacing(uiPreset, androidNativeVariant)
-    val tabsToContent = resolveHomeTopTabsToContentSpacing(uiPreset, androidNativeVariant)
+    val useUnifiedPanel = shouldUseUnifiedHomeTopPanel(chromePolicy)
+    val searchToTabs = resolveHomeTopSearchToTabsSpacing(chromePolicy)
+    val tabsToContent = resolveHomeTopTabsToContentSpacing(chromePolicy)
     // Floating dock is shifted up via [resolveHomeTopTabYOffsetDp]; fold the same delta into
     // list padding so the visual gap under the dock matches [tabsToContent], not tabsToContent+|offset|.
     val floatingDockLift = resolveHomeTopTabYOffsetDp(isTabFloating).dp
     val chromeHeight = if (useUnifiedPanel) {
         searchBarHeight +
             tabRowHeight +
-            (resolveHomeTopUnifiedPanelInnerPadding(uiPreset, androidNativeVariant) * 2) +
+            (resolveHomeTopUnifiedPanelInnerPadding(chromePolicy) * 2) +
             searchToTabs
     } else {
         searchBarHeight + searchToTabs + tabRowHeight
@@ -770,7 +717,6 @@ internal fun resolveHomeTopBlurSurfaceType(
 
 internal fun resolveHomeTopContinuousSlabRenderMode(
     renderMode: HomeTopChromeRenderMode,
-    uiPreset: UiPreset = UiPreset.IOS
 ): HomeTopChromeRenderMode {
     return when (renderMode) {
         HomeTopChromeRenderMode.BLUR -> HomeTopChromeRenderMode.BLUR
@@ -783,8 +729,6 @@ internal fun resolveHomeTopContinuousSlabHeight(
     searchBarHeight: Dp,
     tabRowHeight: Dp,
     renderMode: HomeTopChromeRenderMode,
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3,
     hasVisibleTopContent: Boolean = true
 ): Dp {
     return resolveHomeTopPinnedChromeLayout(
@@ -799,14 +743,14 @@ internal fun resolveHomeTopContinuousSlabHeight(
 internal fun resolveHomeTopContinuousSlabSurfaceColor(
     baseColor: Color,
     blurAlpha: Float,
-    uiPreset: UiPreset = UiPreset.IOS,
+    usesNativeContainerTreatment: Boolean,
     renderMode: HomeTopChromeRenderMode
 ): Color {
     if (renderMode == HomeTopChromeRenderMode.PLAIN) return Color.Transparent
     if (renderMode != HomeTopChromeRenderMode.BLUR) {
         return baseColor.copy(alpha = maxOf(baseColor.alpha, blurAlpha))
     }
-    return if (uiPreset == UiPreset.MD3) {
+    return if (usesNativeContainerTreatment) {
         baseColor.copy(alpha = maxOf(baseColor.alpha, blurAlpha))
     } else {
         Color.Transparent
@@ -815,31 +759,22 @@ internal fun resolveHomeTopContinuousSlabSurfaceColor(
 
 internal fun resolveHomeTopPanelChromeRenderMode(
     renderMode: HomeTopChromeRenderMode,
-    uiPreset: UiPreset = UiPreset.IOS,
+    usesNativeContainerTreatment: Boolean,
     useUnifiedPanel: Boolean = false
 ): HomeTopChromeRenderMode {
     if (useUnifiedPanel) return HomeTopChromeRenderMode.PLAIN
     return resolveHomeTopLocalChromeRenderMode(
         renderMode = renderMode,
-        uiPreset = uiPreset
+        usesNativeContainerTreatment = usesNativeContainerTreatment,
     )
 }
 
 internal fun resolveHomeTopSearchChromeRenderMode(
     renderMode: HomeTopChromeRenderMode,
-    uiPreset: UiPreset = UiPreset.IOS,
     useUnifiedPanel: Boolean = false,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    usesNativeContainerTreatment: Boolean,
 ): HomeTopChromeRenderMode {
     if (useUnifiedPanel) {
-        if (uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX) {
-            return when (renderMode) {
-                HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP,
-                HomeTopChromeRenderMode.LIQUID_GLASS_HAZE,
-                HomeTopChromeRenderMode.BLUR -> renderMode
-                HomeTopChromeRenderMode.PLAIN -> HomeTopChromeRenderMode.PLAIN
-            }
-        }
         return when (renderMode) {
             HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP,
             HomeTopChromeRenderMode.LIQUID_GLASS_HAZE,
@@ -849,17 +784,16 @@ internal fun resolveHomeTopSearchChromeRenderMode(
     }
     return resolveHomeTopLocalChromeRenderMode(
         renderMode = renderMode,
-        uiPreset = uiPreset
+        usesNativeContainerTreatment = usesNativeContainerTreatment,
     )
 }
 
 internal fun resolveHomeTopUnifiedTabChromeRenderMode(
     localTabChromeRenderMode: HomeTopChromeRenderMode,
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3,
+    usesTonalContainerTreatment: Boolean,
     useUnifiedLiquidChrome: Boolean
 ): HomeTopChromeRenderMode {
-    if (uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX) {
+    if (usesTonalContainerTreatment) {
         return localTabChromeRenderMode
     }
     return if (useUnifiedLiquidChrome) {
@@ -873,13 +807,13 @@ internal fun resolveHomeTopUnifiedTabChromeRenderMode(
 
 internal fun resolveHomeTopUnifiedLocalTabChromeRenderMode(
     renderMode: HomeTopChromeRenderMode,
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    usesNativeContainerTreatment: Boolean,
+    usesTonalContainerTreatment: Boolean,
 ): HomeTopChromeRenderMode {
-    if (uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX) {
+    if (usesTonalContainerTreatment) {
         return resolveHomeTopLocalChromeRenderMode(
             renderMode = renderMode,
-            uiPreset = uiPreset
+            usesNativeContainerTreatment = usesNativeContainerTreatment,
         )
     }
     // 统一面板关闭外层 slab 后，标签行需要保留自己的模糊承托区域。
@@ -888,19 +822,18 @@ internal fun resolveHomeTopUnifiedLocalTabChromeRenderMode(
     }
     return resolveHomeTopLocalChromeRenderMode(
         renderMode = renderMode,
-        uiPreset = uiPreset
+        usesNativeContainerTreatment = usesNativeContainerTreatment,
     )
 }
 
 internal fun resolveHomeTopUnifiedTabSurfaceColor(
     tabContainerColor: Color,
     tabOverlayAlpha: Float,
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3,
+    usesTonalContainerTreatment: Boolean,
     useUnifiedLiquidChrome: Boolean,
     tabChromeRenderMode: HomeTopChromeRenderMode = HomeTopChromeRenderMode.PLAIN
 ): Color {
-    if (uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX) {
+    if (usesTonalContainerTreatment) {
         return tabContainerColor.copy(alpha = tabOverlayAlpha)
     }
     return if (useUnifiedLiquidChrome || tabChromeRenderMode == HomeTopChromeRenderMode.BLUR) {
@@ -1042,9 +975,9 @@ internal fun resolveHomeTopWideChromePreferFlatGlass(
 
 internal fun resolveHomeTopLocalChromeRenderMode(
     renderMode: HomeTopChromeRenderMode,
-    uiPreset: UiPreset = UiPreset.IOS
+    usesNativeContainerTreatment: Boolean,
 ): HomeTopChromeRenderMode {
-    if (uiPreset == UiPreset.MD3 && renderMode == HomeTopChromeRenderMode.BLUR) {
+    if (usesNativeContainerTreatment && renderMode == HomeTopChromeRenderMode.BLUR) {
         return HomeTopChromeRenderMode.BLUR
     }
     return when (renderMode) {
@@ -1187,8 +1120,8 @@ internal fun tuneHomeTopGlassColors(
 }
 
 internal fun resolveHomeTopContainerColors(
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3,
+    usesNativeContainerTreatment: Boolean,
+    usesTonalContainerTreatment: Boolean,
     emphasized: Boolean,
     blurEnabled: Boolean,
     fallbackColors: HomeGlassResolvedColors,
@@ -1196,9 +1129,9 @@ internal fun resolveHomeTopContainerColors(
     surfaceContainerHighColor: Color,
     outlineVariantColor: Color
 ): HomeGlassResolvedColors {
-    if (uiPreset != UiPreset.MD3) return fallbackColors
+    if (!usesNativeContainerTreatment) return fallbackColors
     if (blurEnabled) {
-        val baseColor = if (androidNativeVariant == AndroidNativeVariant.MIUIX) {
+        val baseColor = if (usesTonalContainerTreatment) {
             surfaceContainerColor
         } else if (emphasized) {
             surfaceContainerHighColor
@@ -1209,14 +1142,14 @@ internal fun resolveHomeTopContainerColors(
             containerColor = baseColor.copy(alpha = fallbackColors.containerColor.alpha),
             borderColor = outlineVariantColor.copy(
                 alpha = fallbackColors.borderColor.alpha.coerceAtLeast(
-                    if (androidNativeVariant == AndroidNativeVariant.MIUIX) 0.16f else if (emphasized) 0.18f else 0.14f
+                    if (usesTonalContainerTreatment) 0.16f else if (emphasized) 0.18f else 0.14f
                 )
             ),
             highlightColor = Color.Transparent
         )
     }
     return HomeGlassResolvedColors(
-        containerColor = if (androidNativeVariant == AndroidNativeVariant.MIUIX) {
+        containerColor = if (usesTonalContainerTreatment) {
             surfaceContainerColor
         } else if (emphasized) {
             surfaceContainerHighColor
@@ -1224,7 +1157,7 @@ internal fun resolveHomeTopContainerColors(
             surfaceContainerColor
         },
         borderColor = outlineVariantColor.copy(
-            alpha = if (androidNativeVariant == AndroidNativeVariant.MIUIX) {
+            alpha = if (usesTonalContainerTreatment) {
                 if (emphasized) 0.44f else 0.34f
             } else if (emphasized) {
                 0.55f
@@ -1259,14 +1192,9 @@ internal fun resolveHomeTopUnifiedPanelDividerAlpha(
 }
 
 internal fun shouldShowUnifiedHomeTopPanelDivider(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    chromePolicy: AppTopChromePolicy,
 ): Boolean {
-    return resolveHomeTopPresetStyle(
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant,
-        labelMode = 2
-    ).showUnifiedPanelDivider
+    return resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).showUnifiedPanelDivider
 }
 
 internal fun resolveHomeTopTabContentUnderlayAlpha(
@@ -1469,11 +1397,11 @@ fun iOSHomeHeader(
     interactionBudget: HomeInteractionMotionBudget = HomeInteractionMotionBudget.FULL,
     uiSkinDecoration: HomeUiSkinDecoration? = null
 ) {
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val topChromePolicy = remember(uiPreset, androidNativeVariant) {
-        resolveAppTopChromePolicy(uiPreset, androidNativeVariant)
-    }
+    val topChromePolicy = rememberAppTopChromePolicy()
+    val semanticVisualPolicy = rememberAppSemanticVisualPolicy()
+    val contentCardSurfaceSpec = rememberContentCardSurfaceSpec()
+    val usesNativeContainerTreatment = semanticVisualPolicy.prefersNativeChrome
+    val usesTonalContainerTreatment = contentCardSurfaceSpec.usesTonalContainerTreatment
     val shouldUseSkinPlainTopTabs = shouldUseHomeSkinPlainTopTabs(uiSkinDecoration)
     val haptic = rememberHapticFeedback()
     val density = LocalDensity.current
@@ -1483,16 +1411,24 @@ fun iOSHomeHeader(
             mode = resolvedHeaderBlurMode,
         )
     }
-    val linkedBottomBarAppearance = remember(homeSettings, uiPreset, androidNativeVariant) {
+    val linkedBottomBarAppearance = remember(
+        homeSettings,
+        topChromePolicy.tabPresentation,
+        semanticVisualPolicy.supportsIndependentLiquidGlass,
+    ) {
         resolveHomeTopLinkedBottomBarAppearance(
             homeSettings = homeSettings,
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant
+            presentation = topChromePolicy.tabPresentation,
+            supportsIndependentLiquidGlass = semanticVisualPolicy.supportsIndependentLiquidGlass,
         )
     }
-    val edgeButtonShape = resolveHomeTopEdgeButtonShape(uiPreset, androidNativeVariant)
-    val searchContainerShape = resolveHomeTopSearchContainerShape(uiPreset, androidNativeVariant)
-    val searchIcon = if (uiPreset == UiPreset.MD3) Icons.Outlined.Search else CupertinoIcons.Default.MagnifyingGlass
+    val edgeButtonShape = resolveHomeTopEdgeButtonShape(topChromePolicy)
+    val searchContainerShape = resolveHomeTopSearchContainerShape(topChromePolicy)
+    val searchIcon = if (semanticVisualPolicy.iconFamily == AppSemanticIconFamily.MATERIAL) {
+        Icons.Outlined.Search
+    } else {
+        CupertinoIcons.Default.MagnifyingGlass
+    }
     val topRightAction = homeSettings?.homeTopRightAction ?: HomeTopRightAction.SETTINGS
     val settingsIcon = rememberAppSettingsIcon()
     val inboxIcon = rememberAppInboxIcon()
@@ -1513,7 +1449,7 @@ fun iOSHomeHeader(
     }
     val topChromeLiquidGlassEnabled = resolveHomeTopChromeLiquidGlassEnabled(
         homeSettings = homeSettings,
-        uiPreset = uiPreset
+        supportsIndependentLiquidGlass = semanticVisualPolicy.supportsIndependentLiquidGlass,
     )
 
     // 状态栏高度
@@ -1524,19 +1460,17 @@ fun iOSHomeHeader(
         isHeaderBlurEnabled = isHeaderBlurEnabled,
         isBottomBarBlurEnabled = linkedBottomBarAppearance.blurEnabled,
         isLiquidGlassEnabled = topChromeLiquidGlassEnabled,
-        androidNativeVariant = androidNativeVariant
     )
     val isGlassEnabled = topChromeMaterialMode == TopTabMaterialMode.LIQUID_GLASS
     val isTopChromeBlurEnabled = topChromeMaterialMode != TopTabMaterialMode.PLAIN
     val searchLiquidGlassEnabled = resolveHomeTopSearchLiquidGlassEnabled(
         homeSettings = homeSettings,
-        uiPreset = uiPreset
+        supportsIndependentLiquidGlass = semanticVisualPolicy.supportsIndependentLiquidGlass,
     )
     val searchChromeMaterialMode = resolveHomeTopChromeMaterialMode(
         isHeaderBlurEnabled = isHeaderBlurEnabled,
         isBottomBarBlurEnabled = linkedBottomBarAppearance.blurEnabled,
         isLiquidGlassEnabled = searchLiquidGlassEnabled,
-        androidNativeVariant = androidNativeVariant
     )
     val isSearchGlassEnabled = searchChromeMaterialMode == TopTabMaterialMode.LIQUID_GLASS
     val isSearchBlurEnabled = searchChromeMaterialMode != TopTabMaterialMode.PLAIN
@@ -1613,8 +1547,8 @@ fun iOSHomeHeader(
         isGlassEnabled,
         isTopChromeBlurEnabled,
         blurIntensity,
-        uiPreset,
-        androidNativeVariant
+        usesNativeContainerTreatment,
+        usesTonalContainerTreatment,
     ) {
         val resolved = if (!isGlassEnabled && isTopChromeBlurEnabled) {
             resolveHomeTopBlurContainerColors(
@@ -1626,8 +1560,8 @@ fun iOSHomeHeader(
             rawHeaderChromeColors
         }
         resolveHomeTopContainerColors(
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant,
+            usesNativeContainerTreatment = usesNativeContainerTreatment,
+            usesTonalContainerTreatment = usesTonalContainerTreatment,
             emphasized = false,
             blurEnabled = !isGlassEnabled && isTopChromeBlurEnabled,
             fallbackColors = resolved,
@@ -1651,8 +1585,8 @@ fun iOSHomeHeader(
         isSearchGlassEnabled,
         isSearchBlurEnabled,
         blurIntensity,
-        uiPreset,
-        androidNativeVariant
+        usesNativeContainerTreatment,
+        usesTonalContainerTreatment,
     ) {
         val resolved = if (!isSearchGlassEnabled && isSearchBlurEnabled) {
             resolveHomeTopBlurContainerColors(
@@ -1664,8 +1598,8 @@ fun iOSHomeHeader(
             rawSearchPillColors
         }
         resolveHomeTopContainerColors(
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant,
+            usesNativeContainerTreatment = usesNativeContainerTreatment,
+            usesTonalContainerTreatment = usesTonalContainerTreatment,
             emphasized = true,
             blurEnabled = !isSearchGlassEnabled && isSearchBlurEnabled,
             fallbackColors = resolved,
@@ -1734,12 +1668,12 @@ fun iOSHomeHeader(
         isScrolling = isScrolling,
         isTransitionRunning = isTransitionRunning
     )
-    val useUnifiedTopPanel = shouldUseUnifiedHomeTopPanel(uiPreset)
-    val useDetachedTopTabDock = shouldUseDetachedHomeTopTabDock(uiPreset, androidNativeVariant)
+    val useUnifiedTopPanel = shouldUseUnifiedHomeTopPanel(topChromePolicy)
+    val useDetachedTopTabDock = shouldUseDetachedHomeTopTabDock(topChromePolicy.tabPresentation)
     val embedTopTabsInUnifiedPanel = useUnifiedTopPanel && !useDetachedTopTabDock
     val topPanelChromeRenderMode = resolveHomeTopPanelChromeRenderMode(
         renderMode = topChromeRenderMode,
-        uiPreset = uiPreset,
+        usesNativeContainerTreatment = usesNativeContainerTreatment,
         useUnifiedPanel = useUnifiedTopPanel
     )
     val searchChromeBaseRenderMode = resolveHomeTopChromeRenderMode(
@@ -1751,9 +1685,8 @@ fun iOSHomeHeader(
     )
     val searchChromeRenderMode = resolveHomeTopSearchChromeRenderMode(
         renderMode = searchChromeBaseRenderMode,
-        uiPreset = uiPreset,
         useUnifiedPanel = useUnifiedTopPanel,
-        androidNativeVariant = androidNativeVariant
+        usesNativeContainerTreatment = usesNativeContainerTreatment,
     )
     // 搜索栏液态玻璃必须复用顶部标签 dock 的材质链，避免单独的搜索胶囊渲染分支产生质感偏差。
     val useBottomBarMatchedTopControls =
@@ -1761,15 +1694,14 @@ fun iOSHomeHeader(
             searchChromeRenderMode == HomeTopChromeRenderMode.LIQUID_GLASS_HAZE
     val localTopChromeRenderMode = resolveHomeTopLocalChromeRenderMode(
         renderMode = topChromeRenderMode,
-        uiPreset = uiPreset
+        usesNativeContainerTreatment = usesNativeContainerTreatment,
     )
     val localTabChromeRenderMode = resolveHomeTopLocalChromeRenderMode(
         renderMode = tabChromeRenderMode,
-        uiPreset = uiPreset
+        usesNativeContainerTreatment = usesNativeContainerTreatment,
     )
     val continuousSlabRenderMode = resolveHomeTopContinuousSlabRenderMode(
         renderMode = topChromeRenderMode,
-        uiPreset = uiPreset
     )
 
     val headerOffsetQuantizationPx = with(density) { AppSpacingTokens.ExtraSmall.toPx() }
@@ -1783,20 +1715,18 @@ fun iOSHomeHeader(
         }
     }
     
-    val searchBarHeightDp = resolveHomeTopSearchBarHeight(uiPreset, androidNativeVariant)
+    val searchBarHeightDp = resolveHomeTopSearchBarHeight(topChromePolicy)
     val tabRowHeightDp = resolveHomeTopTabRowHeight(
         isTabFloating = isTabFloating,
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant,
+        chromePolicy = topChromePolicy,
         labelMode = homeSettings?.topTabLabelMode
             ?: com.android.purebilibili.core.store.SettingsManager.TopTabLabelMode.TEXT_ONLY
     )
     val searchCollapseDistanceDp = resolveHomeTopSearchCollapseDistance(
         searchBarHeight = searchBarHeightDp,
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant
+        chromePolicy = topChromePolicy,
     )
-    val searchRevealDeadZoneDp = resolveHomeTopSearchRevealDeadZone(uiPreset, androidNativeVariant)
+    val searchRevealDeadZoneDp = resolveHomeTopSearchRevealDeadZone(topChromePolicy)
     val searchBarHeightPx = with(density) { searchBarHeightDp.toPx() }
     val searchCollapseDistancePx = with(density) { searchCollapseDistanceDp.toPx() }
     val searchRevealDeadZonePx = with(density) { searchRevealDeadZoneDp.toPx() }
@@ -1864,11 +1794,10 @@ fun iOSHomeHeader(
     }
     val integratedCollapsedTopBar = shouldUseIntegratedCollapsedHomeTopBar(
         searchRevealFraction = searchRevealFraction,
-        uiPreset = uiPreset
+        presentation = topChromePolicy.tabPresentation,
     )
     val unifiedPanelCornerRadius = resolveHomeTopUnifiedPanelCornerRadius(
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant,
+        chromePolicy = topChromePolicy,
         collapsedIntoStatusBar = integratedCollapsedTopBar
     )
     val unifiedPanelShape = if (unifiedPanelCornerRadius == AppSpacingTokens.None) {
@@ -1876,21 +1805,19 @@ fun iOSHomeHeader(
     } else {
         RoundedCornerShape(unifiedPanelCornerRadius)
     }
-    val unifiedPanelHorizontalPadding = resolveHomeTopUnifiedPanelHorizontalPadding(uiPreset)
+    val unifiedPanelHorizontalPadding = resolveHomeTopUnifiedPanelHorizontalPadding(topChromePolicy)
     val unifiedPanelInnerPadding = resolveHomeTopUnifiedPanelInnerPadding(
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant,
+        chromePolicy = topChromePolicy,
         collapsedIntoStatusBar = integratedCollapsedTopBar
     )
-    val searchToTabsSpacing = resolveHomeTopSearchToTabsSpacing(uiPreset, androidNativeVariant)
+    val searchToTabsSpacing = resolveHomeTopSearchToTabsSpacing(topChromePolicy)
     val currentSearchToTabsSpacing = searchToTabsSpacing * searchContentRevealFraction
     val currentUnifiedDividerBottomSpacing = AppSpacingTokens.ExtraSmall * searchContentRevealFraction
 
     val tabHorizontalPadding by animateDpAsState(
         targetValue = resolveHomeTopTabHorizontalPadding(
             isTabFloating = isTabFloating,
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant
+            chromePolicy = topChromePolicy,
         ),
         animationSpec = AppMotionTokens.standardSpec(),
         label = "tabHorizontalPadding"
@@ -1906,7 +1833,7 @@ fun iOSHomeHeader(
         label = "tabVerticalOffset"
     )
     val tabShadowElevation by animateDpAsState(
-        targetValue = if (uiPreset == UiPreset.MD3) AppSpacingTokens.None else if (isTabFloating) AppSpacingTokens.Small else AppSpacingTokens.None,
+        targetValue = if (usesNativeContainerTreatment) AppSpacingTokens.None else if (isTabFloating) AppSpacingTokens.Small else AppSpacingTokens.None,
         animationSpec = AppMotionTokens.standardSpec(),
         label = "tabShadowElevation"
     )
@@ -1938,14 +1865,13 @@ fun iOSHomeHeader(
         )
     val unifiedLocalTabChromeRenderMode = resolveHomeTopUnifiedLocalTabChromeRenderMode(
         renderMode = tabChromeRenderMode,
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant
+        usesNativeContainerTreatment = usesNativeContainerTreatment,
+        usesTonalContainerTreatment = usesTonalContainerTreatment,
     )
     val effectiveTabChromeRenderMode = if (useUnifiedTopPanel) {
         resolveHomeTopUnifiedTabChromeRenderMode(
             localTabChromeRenderMode = unifiedLocalTabChromeRenderMode,
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant,
+            usesTonalContainerTreatment = usesTonalContainerTreatment,
             useUnifiedLiquidChrome = useUnifiedLiquidChrome
         )
     } else {
@@ -1969,8 +1895,7 @@ fun iOSHomeHeader(
         resolveHomeTopUnifiedTabSurfaceColor(
             tabContainerColor = tabChromeColors.containerColor,
             tabOverlayAlpha = tabOverlayAlpha,
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant,
+            usesTonalContainerTreatment = usesTonalContainerTreatment,
             useUnifiedLiquidChrome = useUnifiedLiquidChrome,
             tabChromeRenderMode = effectiveTabChromeRenderMode
         )
@@ -1989,7 +1914,7 @@ fun iOSHomeHeader(
         renderUnifiedTopPanelChrome && effectiveTopPanelChromeRenderMode != HomeTopChromeRenderMode.PLAIN
     val drawTopSearchDivider =
         useUnifiedTopPanel &&
-            shouldShowUnifiedHomeTopPanelDivider(uiPreset, androidNativeVariant) &&
+            shouldShowUnifiedHomeTopPanelDivider(topChromePolicy) &&
             drawUnifiedTopPanelChrome &&
             currentSearchHeight > AppSpacingTokens.None &&
             searchRevealFraction > 0f
@@ -2039,7 +1964,7 @@ fun iOSHomeHeader(
             tabContentAlpha = tabContentAlpha,
             containerZIndex = if (useUnifiedTopPanel) 0f else -1f,
             tabHorizontalPadding = if (embedTopTabsInUnifiedPanel) {
-                resolveNonNegativeHomeTopPadding(resolveHomeTopEmbeddedTabHorizontalPadding(uiPreset))
+                resolveNonNegativeHomeTopPadding(resolveHomeTopEmbeddedTabHorizontalPadding(topChromePolicy))
             } else {
                 resolveNonNegativeHomeTopPadding(tabHorizontalPadding)
             },
@@ -2123,7 +2048,7 @@ fun iOSHomeHeader(
                 labelMode = topTabLabelMode,
                 isLiquidGlassEnabled = resolveHomeTopTabIndicatorLiquidGlassEnabled(
                     homeSettings = homeSettings,
-                    uiPreset = uiPreset
+                    supportsIndependentLiquidGlass = semanticVisualPolicy.supportsIndependentLiquidGlass,
                 ) && isGlassSupported,
                 liquidGlassStyle = liquidStyle,
                 liquidGlassTuning = liquidGlassTuning,
@@ -2160,11 +2085,11 @@ fun iOSHomeHeader(
                     .height(continuousSlabHeight)
                     .homeTopChromeSurface(
                         renderMode = effectiveContinuousSlabRenderMode,
-                        shape = resolveHomeTopContinuousSlabShape(uiPreset),
+                        shape = resolveHomeTopContinuousSlabShape(),
                         surfaceColor = resolveHomeTopContinuousSlabSurfaceColor(
                             baseColor = headerChromeColors.containerColor,
                             blurAlpha = backgroundAlpha,
-                            uiPreset = uiPreset,
+                            usesNativeContainerTreatment = usesNativeContainerTreatment,
                             renderMode = effectiveContinuousSlabRenderMode
                         ),
                         hazeState = hazeState,
@@ -2342,7 +2267,7 @@ fun iOSHomeHeader(
 	                                    horizontal = if (embedTopTabsInUnifiedPanel) {
 	                                        AppSpacingTokens.None
 	                                    } else {
-	                                        resolveHomeTopSearchRowHorizontalPadding(uiPreset, androidNativeVariant)
+	                                        resolveHomeTopSearchRowHorizontalPadding(topChromePolicy)
 	                                    }
 	                                ),
                             verticalAlignment = Alignment.CenterVertically
@@ -2351,7 +2276,7 @@ fun iOSHomeHeader(
                                 modifier = Modifier
                                     .size(resolveHomeTopAvatarOuterSize())
                                     .then(
-                                        if (uiPreset == UiPreset.MD3) {
+                                        if (usesNativeContainerTreatment) {
                                             Modifier.clickable {
                                                 performHomeTopBarTap(haptic = haptic, onClick = onAvatarClick)
                                             }
@@ -2427,16 +2352,16 @@ fun iOSHomeHeader(
                                 }
                             }
 
-                            Spacer(modifier = Modifier.width(resolveHomeTopEdgeControlGap(uiPreset, androidNativeVariant)))
+                            Spacer(modifier = Modifier.width(resolveHomeTopEdgeControlGap(topChromePolicy)))
 
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(resolveHomeTopSearchPillHeight(uiPreset, androidNativeVariant)),
+                                    .height(resolveHomeTopSearchPillHeight(topChromePolicy)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 val isTablet = com.android.purebilibili.core.util.LocalWindowSizeClass.current.isTablet
-                                val stableSearchContentColor = if (uiPreset == UiPreset.MD3) {
+                                val stableSearchContentColor = if (usesNativeContainerTreatment) {
                                     MaterialTheme.colorScheme.onSurfaceVariant
                                 } else if (isLightMode) {
                                     topForegroundColor
@@ -2447,7 +2372,7 @@ fun iOSHomeHeader(
                                     HomeTopSearchPillContent(
                                         searchIcon = searchIcon,
                                         contentColor = stableSearchContentColor,
-                                        textFontSize = if (uiPreset == UiPreset.MD3) {
+                                        textFontSize = if (usesNativeContainerTreatment) {
                                             if (isTablet) {
                                                 MaterialTheme.typography.bodyMedium.fontSize
                                             } else {
@@ -2460,7 +2385,7 @@ fun iOSHomeHeader(
                                                 MaterialTheme.typography.bodyMedium.fontSize
                                             }
                                         },
-                                        iconTextGap = resolveHomeTopSearchIconTextGap(uiPreset, androidNativeVariant)
+                                        iconTextGap = resolveHomeTopSearchIconTextGap(topChromePolicy)
                                     )
                                 }
                                 val searchClickInteractionSource = remember { MutableInteractionSource() }
@@ -2481,7 +2406,7 @@ fun iOSHomeHeader(
                                     modifier = Modifier
                                         .widthIn(max = AppSpacingTokens.TripleExtraLarge * 13 + AppSpacingTokens.Large)
                                         .fillMaxWidth()
-                                        .height(resolveHomeTopSearchPillHeight(uiPreset, androidNativeVariant))
+                                        .height(resolveHomeTopSearchPillHeight(topChromePolicy))
                                         .clip(searchContainerShape)
                                         .then(
                                             if (useBottomBarMatchedTopControls) {
@@ -2541,12 +2466,12 @@ fun iOSHomeHeader(
                                             haptic(HapticType.LIGHT)
                                             onSearchClick()
                                         }
-                                        .padding(horizontal = resolveHomeTopSearchContentHorizontalPadding(uiPreset, androidNativeVariant)),
+                                        .padding(horizontal = resolveHomeTopSearchContentHorizontalPadding(topChromePolicy)),
                                     contentAlignment = Alignment.CenterStart
                                 ) {
                                     if (
                                         shouldDrawHomeTopSearchLegacyHighlight(
-                                            uiPreset = uiPreset,
+                                            presentation = topChromePolicy.tabPresentation,
                                             useUnifiedTopPanel = useUnifiedTopPanel,
                                             renderMode = searchChromeRenderMode,
                                             refractionOverlayAlpha = 0f
@@ -2575,9 +2500,9 @@ fun iOSHomeHeader(
                                 }
                             }
 
-                            Spacer(modifier = Modifier.width(resolveHomeTopEdgeControlGap(uiPreset, androidNativeVariant)))
+                            Spacer(modifier = Modifier.width(resolveHomeTopEdgeControlGap(topChromePolicy)))
 
-                            val topRightActionButtonSize = resolveHomeTopSettingsButtonSize(uiPreset, androidNativeVariant)
+                            val topRightActionButtonSize = resolveHomeTopSettingsButtonSize(topChromePolicy)
                             Box(
                                 modifier = Modifier
                                     .fillMaxHeight()
@@ -2648,7 +2573,7 @@ fun iOSHomeHeader(
                                             }
                                         )
                                         .then(
-                                            if (uiPreset == UiPreset.MD3) {
+                                            if (usesNativeContainerTreatment) {
                                                 Modifier.clickable {
                                                     performHomeTopBarTap(haptic = haptic, onClick = onTopRightActionClick)
                                                 }
@@ -2669,7 +2594,7 @@ fun iOSHomeHeader(
                                         } else {
                                             topForegroundColor.copy(alpha = topActionIconAlpha)
                                         },
-                                        modifier = Modifier.size(resolveHomeTopSettingsIconSize(uiPreset, androidNativeVariant))
+                                        modifier = Modifier.size(resolveHomeTopSettingsIconSize(topChromePolicy))
                                     )
                                 }
                                 if (topRightUnreadBadge != null) {

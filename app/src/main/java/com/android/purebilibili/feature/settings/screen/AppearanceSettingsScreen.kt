@@ -227,11 +227,13 @@ fun AppearanceSettingsContent(
     val uiPresetTitle = stringResource(R.string.appearance_ui_preset_title)
     val uiPresetSubtitle = stringResource(R.string.appearance_ui_preset_subtitle)
     val uiPresetIosLabel = stringResource(R.string.ui_preset_ios)
-    val uiPresetAndroidLabel = stringResource(R.string.ui_preset_android_native)
-    val uiPresetOptions = remember(uiPresetIosLabel, uiPresetAndroidLabel) {
-        resolveUiPresetSegmentOptions(
+    val uiStyleMaterialLabel = stringResource(R.string.appearance_android_native_variant_material3)
+    val uiStyleMiuixLabel = stringResource(R.string.appearance_android_native_variant_miuix)
+    val uiStyleOptions = remember(uiPresetIosLabel, uiStyleMaterialLabel, uiStyleMiuixLabel) {
+        resolveUiStyleSegmentOptions(
             iosLabel = uiPresetIosLabel,
-            androidNativeLabel = uiPresetAndroidLabel
+            material3Label = uiStyleMaterialLabel,
+            miuixLabel = uiStyleMiuixLabel,
         )
     }
     val uiPresetIosTitle = stringResource(R.string.appearance_ui_preset_ios_title)
@@ -240,22 +242,8 @@ fun AppearanceSettingsContent(
     val uiPresetAndroidMaterialSummary = stringResource(R.string.appearance_ui_preset_android_material_summary)
     val uiPresetAndroidMiuixTitle = stringResource(R.string.appearance_ui_preset_android_miuix_title)
     val uiPresetAndroidMiuixSummary = stringResource(R.string.appearance_ui_preset_android_miuix_summary)
-    val androidNativeVariantTitle = stringResource(R.string.appearance_android_native_variant_title)
-    val androidNativeVariantSubtitle = stringResource(R.string.appearance_android_native_variant_subtitle)
-    val androidNativeVariantMaterialLabel = stringResource(R.string.appearance_android_native_variant_material3)
-    val androidNativeVariantMiuixLabel = stringResource(R.string.appearance_android_native_variant_miuix)
-    val androidNativeVariantOptions = remember(
-        androidNativeVariantMaterialLabel,
-        androidNativeVariantMiuixLabel
-    ) {
-        resolveAndroidNativeVariantSegmentOptions(
-            material3Label = androidNativeVariantMaterialLabel,
-            miuixLabel = androidNativeVariantMiuixLabel
-        )
-    }
     val uiPresetDescription = remember(
-        state.uiPreset,
-        state.androidNativeVariant,
+        state.uiStyle,
         uiPresetIosTitle,
         uiPresetIosSummary,
         uiPresetAndroidMaterialTitle,
@@ -264,8 +252,7 @@ fun AppearanceSettingsContent(
         uiPresetAndroidMiuixSummary
     ) {
         resolveAppearanceUiPresetDescription(
-            preset = state.uiPreset,
-            androidNativeVariant = state.androidNativeVariant,
+            uiStyle = state.uiStyle,
             iosTitle = uiPresetIosTitle,
             iosSummary = uiPresetIosSummary,
             materialTitle = uiPresetAndroidMaterialTitle,
@@ -274,11 +261,9 @@ fun AppearanceSettingsContent(
             miuixSummary = uiPresetAndroidMiuixSummary
         )
     }
-    val selectedUiPresetLabel =
-        uiPresetOptions.firstOrNull { it.value == state.uiPreset }?.label ?: state.uiPreset.label
-    val selectedAndroidNativeVariantLabel = androidNativeVariantOptions
-        .firstOrNull { it.value == state.androidNativeVariant }
-        ?.label ?: state.androidNativeVariant.label
+    val selectedUiStyleLabel = uiStyleOptions
+        .first { it.value == state.uiStyle }
+        .label
     val themeModeTitle = stringResource(R.string.appearance_theme_mode_title)
     val themeModeSubtitle = stringResource(R.string.appearance_theme_mode_subtitle)
     val themeModeFollowSystemLabel = stringResource(R.string.theme_mode_follow_system)
@@ -519,37 +504,23 @@ fun AppearanceSettingsContent(
                     // 主题模式选择 (横向卡片)
                     Column(modifier = Modifier.padding(16.dp)) {
                         AppSegmentedPreference(
-                            title = "${uiPresetTitle}：$selectedUiPresetLabel",
+                            title = "${uiPresetTitle}：$selectedUiStyleLabel",
                             subtitle = uiPresetSubtitle,
-                            options = uiPresetOptions,
-                            selectedValue = state.uiPreset,
-                            onSelectionChange = { preset ->
-                                viewModel.setUiPreset(preset)
-                            }
+                            options = uiStyleOptions,
+                            selectedValue = state.uiStyle,
+                            onSelectionChange = viewModel::setUiStyle,
                         )
 
                         AnimatedVisibility(
-                            visible = state.uiPreset == UiPreset.MD3,
+                            visible = state.uiStyle != UiStyle.IOS,
                             enter = expandVertically() + fadeIn(),
                             exit = shrinkVertically() + fadeOut()
                         ) {
                             Column(modifier = Modifier.padding(top = 16.dp)) {
                                 AppPreferenceDivider()
                                 Spacer(modifier = Modifier.height(8.dp))
-                                AppSegmentedPreference(
-                                    title = "${androidNativeVariantTitle}：$selectedAndroidNativeVariantLabel",
-                                    subtitle = androidNativeVariantSubtitle,
-                                    options = androidNativeVariantOptions,
-                                    selectedValue = state.androidNativeVariant,
-                                    onSelectionChange = { variant ->
-                                        viewModel.setAndroidNativeVariant(variant)
-                                    }
-                                )
-
-                                Spacer(modifier = Modifier.height(16.dp))
-                                AppPreferenceDivider()
-	                             AppSwitchPreference(
-	                                icon = rememberSettingsSemanticIcon(SettingsIconRole.ANDROID_LIQUID_GLASS),
+                                AppSwitchPreference(
+                                    icon = rememberSettingsSemanticIcon(SettingsIconRole.ANDROID_LIQUID_GLASS),
                                     title = "安卓原生液态玻璃",
                                     subtitle = if (isLiquidGlassAvailable) {
                                         "全局开启后，顶部 Dock、搜索框、底栏、分段控件与评论区统一复用底栏液态玻璃材质"

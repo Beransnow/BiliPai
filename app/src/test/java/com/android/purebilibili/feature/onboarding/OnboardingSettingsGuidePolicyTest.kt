@@ -2,7 +2,6 @@ package com.android.purebilibili.feature.onboarding
 
 import com.android.purebilibili.core.store.HomeTopLayoutOrder
 import com.android.purebilibili.core.store.SettingsManager
-import com.android.purebilibili.core.theme.UiStyle
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -14,7 +13,6 @@ class OnboardingSettingsGuidePolicyTest {
     fun recommendedProfileAppliesRequestedFirstInstallDefaults() {
         val preset = resolveOnboardingSettingsGuidePreset(OnboardingSettingsProfile.RECOMMENDED)
 
-        assertEquals(UiStyle.MATERIAL3, preset.uiStyle)
         assertTrue(preset.bottomBarFloating)
         assertFalse(preset.bottomBarLiquidGlassEnabled)
         assertEquals(SettingsManager.TopTabLabelMode.TEXT_ONLY, preset.topTabLabelMode)

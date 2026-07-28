@@ -8,12 +8,15 @@ import kotlin.test.assertTrue
 class SettingsMiuixSimplificationStructureTest {
 
     @Test
-    fun `appearance settings restore ui preset selection while keeping miuix scaffold`() {
+    fun `appearance settings expose one ui style selection while keeping miuix scaffold`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/settings/screen/AppearanceSettingsScreen.kt")
 
-        assertTrue(source.contains("resolveUiPresetSegmentOptions("))
+        assertTrue(source.contains("resolveUiStyleSegmentOptions("))
         assertTrue(source.contains("resolveAppearanceUiPresetDescription("))
-        assertTrue(source.contains("viewModel.setUiPreset("))
+        assertTrue(source.contains("onSelectionChange = viewModel::setUiStyle"))
+        assertFalse(source.contains("resolveAndroidNativeVariantSegmentOptions("))
+        assertFalse(source.contains("viewModel.setUiPreset("))
+        assertFalse(source.contains("viewModel.setAndroidNativeVariant("))
         assertTrue(source.contains("安卓原生液态玻璃"))
         assertTrue(source.contains("toggleAndroidNativeLiquidGlass("))
         assertTrue(source.contains("SettingsPageScaffold("))

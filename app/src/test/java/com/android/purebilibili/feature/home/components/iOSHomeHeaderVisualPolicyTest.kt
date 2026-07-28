@@ -1817,7 +1817,7 @@ class iOSHomeHeaderVisualPolicyTest {
     fun `home header search capsule reuses top tab dock liquid glass surface`() {
         val headerSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/iOSHomeHeader.kt")
         val searchCapsuleSource = headerSource
-            .substringAfter(".height(resolveHomeTopSearchPillHeight(uiPreset, androidNativeVariant))")
+            .substringAfter(".height(resolveHomeTopSearchPillHeight(topChromePolicy))")
             .substringBefore("val searchFieldContent")
 
         assertTrue(searchCapsuleSource.contains("val skinSearchSurfaceColor = resolveHomeSkinSearchSurfaceColor("))
@@ -1862,9 +1862,9 @@ class iOSHomeHeaderVisualPolicyTest {
     fun `home header settings button uses preset aware sizing`() {
         val headerSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/iOSHomeHeader.kt")
 
-        assertTrue(headerSource.contains("val topRightActionButtonSize = resolveHomeTopSettingsButtonSize(uiPreset, androidNativeVariant)"))
+        assertTrue(headerSource.contains("val topRightActionButtonSize = resolveHomeTopSettingsButtonSize(topChromePolicy)"))
         assertTrue(headerSource.contains(".size(topRightActionButtonSize)"))
-        assertTrue(headerSource.contains("modifier = Modifier.size(resolveHomeTopSettingsIconSize(uiPreset, androidNativeVariant))"))
+        assertTrue(headerSource.contains("modifier = Modifier.size(resolveHomeTopSettingsIconSize(topChromePolicy))"))
         assertFalse(headerSource.contains(".size(resolveHomeTopSettingsButtonSize())"))
     }
 
