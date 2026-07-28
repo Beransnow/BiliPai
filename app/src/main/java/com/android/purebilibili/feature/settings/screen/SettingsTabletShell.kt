@@ -29,7 +29,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.R
-import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.ui.AdaptiveSplitLayout
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -56,8 +55,6 @@ fun SettingsTabletShell(
         resolveSettingsTabletLayoutPolicy(widthDp = configuration.screenWidthDp)
     }
     val categories = remember { resolveSettingsRootCategoryOrder() }
-    val uiPreset = LocalUiPreset.current
-
     AdaptiveSplitLayout(
         modifier = modifier.fillMaxSize(),
         primaryRatio = layoutPolicy.primaryRatio,
@@ -92,7 +89,7 @@ fun SettingsTabletShell(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     items(categories) { category ->
-                        val visual = rememberSettingsEntryVisual(category.searchTarget, uiPreset)
+                        val visual = rememberSettingsEntryVisual(category.searchTarget)
                         val selected = selectedCategory == category
                         NavigationDrawerItem(
                             label = {
