@@ -32,6 +32,20 @@ fun IllegalStyleProbe(preset: UiPreset) = Unit
     }
     Write-Output "SELF_TEST_NEGATIVE_OK"
 
+    $ErrorActionPreference = "Continue"
+    $stageGateOutput = & powershell -NoProfile -File $audit `
+        -RepoRoot $RepoRoot `
+        -StyleFeatureMax 0 `
+        -LocalFeatureMax 0 `
+        -IosFeatureCallersMax 0 2>&1
+    $stageGateExitCode = $LASTEXITCODE
+    $ErrorActionPreference = "Stop"
+    $stageGateText = $stageGateOutput -join [Environment]::NewLine
+    if ($stageGateExitCode -eq 0 -or $stageGateText -notmatch "exceeds baseline maximum") {
+        throw "Strict stage gate unexpectedly passed or did not report its limit.`n$($stageGateOutput -join [Environment]::NewLine)"
+    }
+    Write-Output "SELF_TEST_STAGE_GATE_OK"
+
     Remove-Item -LiteralPath $probe -Force
     $cleanOutput = & powershell -NoProfile -File $audit -RepoRoot $RepoRoot 2>&1
     $cleanOutput | Write-Output

@@ -5,6 +5,9 @@ param(
     [string]$RegistryPath = "docs/UI_COMPONENT_REGISTRY.csv",
     [string]$ExceptionsPath = "docs/UI_COMPONENT_EXCEPTIONS.csv",
     [string]$SyntheticFeatureFile,
+    [Nullable[int]]$StyleFeatureMax,
+    [Nullable[int]]$LocalFeatureMax,
+    [Nullable[int]]$IosFeatureCallersMax,
     [switch]$UpdateRegistry
 )
 
@@ -244,9 +247,25 @@ function Assert-Minimum {
 }
 
 Assert-Maximum "style_production" $metrics.style_production $baseline.gates.style_production_max
-Assert-Maximum "style_feature" $metrics.style_feature $baseline.gates.style_feature_max
-Assert-Maximum "local_feature" $metrics.local_feature $baseline.gates.local_feature_max
-Assert-Maximum "ios_feature_callers" $metrics.ios_feature_callers $baseline.gates.ios_feature_callers_max
+$effectiveStyleFeatureMax = if ($null -ne $StyleFeatureMax) {
+    [int]$StyleFeatureMax
+} else {
+    [int]$baseline.gates.style_feature_max
+}
+$effectiveLocalFeatureMax = if ($null -ne $LocalFeatureMax) {
+    [int]$LocalFeatureMax
+} else {
+    [int]$baseline.gates.local_feature_max
+}
+$effectiveIosFeatureCallersMax = if ($null -ne $IosFeatureCallersMax) {
+    [int]$IosFeatureCallersMax
+} else {
+    [int]$baseline.gates.ios_feature_callers_max
+}
+
+Assert-Maximum "style_feature" $metrics.style_feature $effectiveStyleFeatureMax
+Assert-Maximum "local_feature" $metrics.local_feature $effectiveLocalFeatureMax
+Assert-Maximum "ios_feature_callers" $metrics.ios_feature_callers $effectiveIosFeatureCallersMax
 Assert-Maximum "renderer_feature" $metrics.renderer_feature $baseline.gates.renderer_feature_max
 Assert-Maximum "core_ui_reverse_dependencies" $metrics.core_ui_reverse_dependencies $baseline.gates.core_ui_reverse_dependencies_max
 Assert-Maximum "design_system_boundary_violations" $metrics.design_system_boundary_violations 0
@@ -287,6 +306,7 @@ Write-Output ("R5 DESIGN_SYSTEM_BOUNDARY_VIOLATIONS={0}" -f $metrics.design_syst
 Write-Output ("R6 RELATED_TEST_FILES={0} RELATED_TEST_CASES={1}" -f $metrics.related_test_files, $metrics.related_test_cases)
 Write-Output ("R7 FEATURE_STYLE_TARGET_GAP={0} FEATURE_LOCAL_TARGET_GAP={1} IOS_TARGET_GAP={2}" -f $metrics.style_feature, $metrics.local_feature, $metrics.ios_feature_callers)
 Write-Output ("R8 REGISTRY_TARGET_GAP={0}" -f $metrics.registry_missing)
+Write-Output ("GATE STYLE_FEATURE_MAX={0} LOCAL_FEATURE_MAX={1} IOS_FEATURE_CALLERS_MAX={2}" -f $effectiveStyleFeatureMax, $effectiveLocalFeatureMax, $effectiveIosFeatureCallersMax)
 
 if ($failures.Count -gt 0) {
     foreach ($failure in $failures) { Write-Error $failure }
