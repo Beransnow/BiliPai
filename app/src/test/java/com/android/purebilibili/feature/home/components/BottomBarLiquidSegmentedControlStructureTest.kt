@@ -1,7 +1,7 @@
 package com.android.purebilibili.feature.home.components
 
 import java.io.File
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.UiStyle
 import androidx.compose.ui.graphics.Color
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -11,18 +11,15 @@ import kotlin.test.assertTrue
 class BottomBarLiquidSegmentedControlStructureTest {
 
     @Test
-    fun `segmented motion is sampled through a stable reader without press state bounce`() {
+    fun `segmented motion reads stable drag state without duplicate press collection`() {
         val source = loadSource(
             "app/src/main/java/com/android/purebilibili/feature/home/components/BottomBarLiquidSegmentedControl.kt"
         )
 
-        assertTrue(source.contains("class SegmentedControlMotionReader("))
-        assertTrue(source.contains("motionReader: MotionReader"))
-        assertTrue(source.contains("ColorProducer {"))
-        assertTrue(source.contains("PressInteraction.Press"))
-        assertTrue(source.contains("snapshotFlow { motionReader.readPosition() }"))
-        assertFalse(source.contains("collectIsPressedAsState"))
-        assertFalse(source.contains("SideEffect"))
+        assertTrue(source.contains("derivedStateOf { dragState.pressProgress }"))
+        assertTrue(source.contains("Modifier.horizontalDragGesture("))
+        assertTrue(source.contains("resolveSegmentedControlMotionProgress("))
+        assertEquals(1, Regex("""\.collectIsPressedAsState\(\)""").findAll(source).count())
     }
 
     @Test
@@ -264,7 +261,7 @@ class BottomBarLiquidSegmentedControlStructureTest {
         assertEquals(
             SegmentedControlChromeStyle.LIQUID_PILL,
             resolveSegmentedControlChromeStyle(
-                uiPreset = UiPreset.MD3,
+                uiStyle = UiStyle.MATERIAL3,
                 androidNativeLiquidGlassEnabled = true,
                 preferInlineContentStyle = true
             )
@@ -276,7 +273,7 @@ class BottomBarLiquidSegmentedControlStructureTest {
         assertEquals(
             SegmentedControlChromeStyle.LIQUID_PILL,
             resolveSegmentedControlChromeStyle(
-                uiPreset = UiPreset.MD3,
+                uiStyle = UiStyle.MATERIAL3,
                 androidNativeLiquidGlassEnabled = true,
                 preferInlineContentStyle = false
             )

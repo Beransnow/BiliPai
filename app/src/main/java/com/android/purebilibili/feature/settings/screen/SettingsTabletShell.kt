@@ -30,7 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.R
 import com.android.purebilibili.core.theme.LocalUiStyle
-import com.android.purebilibili.core.ui.AdaptiveSplitLayout
+import com.android.purebilibili.core.ui.AppSplitLayout
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
@@ -58,7 +58,7 @@ fun SettingsTabletShell(
     val categories = remember { resolveSettingsRootCategoryOrder() }
     val uiStyle = LocalUiStyle.current
 
-    AdaptiveSplitLayout(
+    AppSplitLayout(
         modifier = modifier.fillMaxSize(),
         primaryRatio = layoutPolicy.primaryRatio,
         primaryContent = {

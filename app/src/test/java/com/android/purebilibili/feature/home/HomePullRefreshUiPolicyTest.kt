@@ -1,7 +1,6 @@
 package com.android.purebilibili.feature.home
 
-import com.android.purebilibili.core.theme.AndroidNativeVariant
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.UiStyle
 import java.io.File
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertEquals
@@ -15,15 +14,13 @@ class HomePullRefreshUiPolicyTest {
         assertEquals(
             HomePullRefreshMotionStyle.MD3,
             resolveHomePullRefreshMotionStyle(
-                uiPreset = UiPreset.MD3,
-                androidNativeVariant = AndroidNativeVariant.MATERIAL3
+                uiStyle = UiStyle.MATERIAL3
             )
         )
         assertEquals(
             HomePullRefreshMotionStyle.IOS,
             resolveHomePullRefreshMotionStyle(
-                uiPreset = UiPreset.IOS,
-                androidNativeVariant = AndroidNativeVariant.MATERIAL3
+                uiStyle = UiStyle.IOS
             )
         )
     }
@@ -33,8 +30,7 @@ class HomePullRefreshUiPolicyTest {
         assertEquals(
             HomePullRefreshMotionStyle.MD3,
             resolveHomePullRefreshMotionStyle(
-                uiPreset = UiPreset.MD3,
-                androidNativeVariant = AndroidNativeVariant.MIUIX
+                uiStyle = UiStyle.MIUIX
             )
         )
     }
@@ -44,22 +40,19 @@ class HomePullRefreshUiPolicyTest {
         assertEquals(
             HomePullRefreshIndicatorStyle.MATERIAL_DEFAULT,
             resolveHomePullRefreshIndicatorStyle(
-                uiPreset = UiPreset.MD3,
-                androidNativeVariant = AndroidNativeVariant.MATERIAL3
+                uiStyle = UiStyle.MATERIAL3
             )
         )
         assertEquals(
             HomePullRefreshIndicatorStyle.MIUIX_NATIVE,
             resolveHomePullRefreshIndicatorStyle(
-                uiPreset = UiPreset.MD3,
-                androidNativeVariant = AndroidNativeVariant.MIUIX
+                uiStyle = UiStyle.MIUIX
             )
         )
         assertEquals(
             HomePullRefreshIndicatorStyle.IOS,
             resolveHomePullRefreshIndicatorStyle(
-                uiPreset = UiPreset.IOS,
-                androidNativeVariant = AndroidNativeVariant.MATERIAL3
+                uiStyle = UiStyle.IOS
             )
         )
     }
@@ -79,7 +72,7 @@ class HomePullRefreshUiPolicyTest {
     fun `home pull motion does not back write layout state into composition`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/home/HomeScreen.kt")
         val pullSection = source
-            .substringAfter("val pullRefreshState = rememberPullToRefreshState()")
+            .substringAfterLast("val pullRefreshState = rememberPullToRefreshState()")
             .substringBefore("//  每个页面独立的 GridState")
 
         assertFalse(pullSection.contains("stablePullOffsetFraction"))

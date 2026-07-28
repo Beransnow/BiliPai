@@ -355,3 +355,51 @@ fun AdaptiveSplitLayout(
         }
     }
 }
+
+/** Style-neutral responsive navigation container. */
+@OptIn(ExperimentalHazeMaterialsApi::class)
+@Composable
+fun AppNavigation(
+    items: List<AdaptiveNavItem>,
+    selectedItemId: String,
+    onItemSelected: (String) -> Unit,
+    hazeState: HazeState? = null,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) = AdaptiveNavigationContainer(
+    items = items,
+    selectedItemId = selectedItemId,
+    onItemSelected = onItemSelected,
+    hazeState = hazeState,
+    modifier = modifier,
+    content = content,
+)
+
+/** Style-neutral wide-screen navigation rail. */
+@OptIn(ExperimentalHazeMaterialsApi::class)
+@Composable
+fun AppSideNavigationRail(
+    items: List<AdaptiveNavItem>,
+    selectedItemId: String,
+    onItemSelected: (String) -> Unit,
+    hazeState: HazeState? = null,
+) = AdaptiveSideNavigationRail(
+    items = items,
+    selectedItemId = selectedItemId,
+    onItemSelected = onItemSelected,
+    hazeState = hazeState,
+)
+
+/** Style-neutral responsive master/detail layout. */
+@Composable
+fun AppSplitLayout(
+    primaryContent: @Composable () -> Unit,
+    secondaryContent: @Composable () -> Unit,
+    primaryRatio: Float = 0.65f,
+    modifier: Modifier = Modifier,
+) = AdaptiveSplitLayout(
+    primaryContent = primaryContent,
+    secondaryContent = secondaryContent,
+    primaryRatio = primaryRatio,
+    modifier = modifier,
+)

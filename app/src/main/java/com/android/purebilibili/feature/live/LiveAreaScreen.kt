@@ -33,8 +33,8 @@ import androidx.compose.material.icons.outlined.StarBorder
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.ui.AdaptiveScaffold
-import com.android.purebilibili.core.ui.AdaptiveTopAppBar
+import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -124,10 +124,10 @@ fun LiveAreaScreen(
             }
     }
 
-    AdaptiveScaffold(
+    AppScaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            AdaptiveTopAppBar(
+            AppTopBar(
                 title = "全部标签",
                 navigationIcon = {
                     IconButton(onClick = onBack) {

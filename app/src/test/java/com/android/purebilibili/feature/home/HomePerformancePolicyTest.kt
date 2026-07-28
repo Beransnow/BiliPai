@@ -1,6 +1,6 @@
 package com.android.purebilibili.feature.home
 
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.UiStyle
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -12,7 +12,7 @@ class HomePerformancePolicyTest {
     @Test
     fun keepsHomeVisualSettingsWhenDataSaverOff() {
         val config = resolveHomePerformanceConfig(
-            uiPreset = UiPreset.IOS,
+            uiStyle = UiStyle.IOS,
             headerBlurEnabled = true,
             bottomBarBlurEnabled = false,
             topBarLiquidGlassEnabled = true,
@@ -38,7 +38,7 @@ class HomePerformancePolicyTest {
     @Test
     fun dataSaverDisablesPreloadAhead() {
         val config = resolveHomePerformanceConfig(
-            uiPreset = UiPreset.IOS,
+            uiStyle = UiStyle.IOS,
             headerBlurEnabled = true,
             bottomBarBlurEnabled = true,
             topBarLiquidGlassEnabled = true,
@@ -57,7 +57,7 @@ class HomePerformancePolicyTest {
     @Test
     fun smartGuardFlag_noLongerAffectsHomePerformanceConfig() {
         val config = resolveHomePerformanceConfig(
-            uiPreset = UiPreset.IOS,
+            uiStyle = UiStyle.IOS,
             headerBlurEnabled = true,
             bottomBarBlurEnabled = true,
             topBarLiquidGlassEnabled = true,
@@ -77,7 +77,7 @@ class HomePerformancePolicyTest {
     @Test
     fun normalMode_capsPreloadAheadToConservativeBudget() {
         val config = resolveHomePerformanceConfig(
-            uiPreset = UiPreset.IOS,
+            uiStyle = UiStyle.IOS,
             headerBlurEnabled = true,
             bottomBarBlurEnabled = true,
             topBarLiquidGlassEnabled = true,
@@ -135,7 +135,7 @@ class HomePerformancePolicyTest {
     @Test
     fun md3Preset_requiresAndroidNativeGlobalOptInForSharedLiquidGlass() {
         val config = resolveHomePerformanceConfig(
-            uiPreset = UiPreset.MD3,
+            uiStyle = UiStyle.MATERIAL3,
             headerBlurEnabled = true,
             bottomBarBlurEnabled = true,
             topBarLiquidGlassEnabled = true,
@@ -158,7 +158,7 @@ class HomePerformancePolicyTest {
     @Test
     fun md3Preset_globalLiquidGlassReuseEnablesAllSharedChrome() {
         val config = resolveHomePerformanceConfig(
-            uiPreset = UiPreset.MD3,
+            uiStyle = UiStyle.MATERIAL3,
             headerBlurEnabled = true,
             bottomBarBlurEnabled = true,
             topBarLiquidGlassEnabled = false,

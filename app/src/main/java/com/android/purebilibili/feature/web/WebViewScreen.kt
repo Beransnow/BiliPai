@@ -12,8 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
-import com.android.purebilibili.core.ui.AdaptiveScaffold
-import com.android.purebilibili.core.ui.AdaptiveTopAppBar
+import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.util.BilibiliNavigationTarget
 import com.android.purebilibili.core.util.BilibiliNavigationTargetParser
@@ -46,9 +46,9 @@ fun WebViewScreen(
 ) {
     val scope = rememberCoroutineScope()
 
-    AdaptiveScaffold(
+    AppScaffold(
         topBar = {
-            AdaptiveTopAppBar(
+            AppTopBar(
                 title = title ?: "浏览器",
                 navigationIcon = {
                     IconButton(onClick = onBack) {

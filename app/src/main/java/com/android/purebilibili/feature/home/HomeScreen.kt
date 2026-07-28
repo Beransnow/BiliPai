@@ -59,9 +59,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
-import com.android.purebilibili.core.ui.AdaptiveScaffold
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
+import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.theme.LocalUiStyle
+import com.android.purebilibili.core.theme.toRendererStyleBridge
 import com.android.purebilibili.core.theme.BiliPink
 import com.android.purebilibili.feature.settings.GITHUB_URL
 import com.android.purebilibili.core.store.SettingsManager //  引入 SettingsManager
@@ -646,19 +646,13 @@ fun HomeScreen(
     val homeFeedCardLayout = remember(homeFeedCardStyle) {
         resolveHomeFeedCardLayout(homeFeedCardStyle)
     }
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val pullRefreshMotionStyle = remember(uiPreset, androidNativeVariant) {
-        resolveHomePullRefreshMotionStyle(
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant
-        )
+    val uiStyle = LocalUiStyle.current
+    val rendererStyle = remember(uiStyle) { uiStyle.toRendererStyleBridge() }
+    val pullRefreshMotionStyle = remember(uiStyle) {
+        resolveHomePullRefreshMotionStyle(uiStyle)
     }
-    val pullRefreshIndicatorStyle = remember(uiPreset, androidNativeVariant) {
-        resolveHomePullRefreshIndicatorStyle(
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant
-        )
+    val pullRefreshIndicatorStyle = remember(uiStyle) {
+        resolveHomePullRefreshIndicatorStyle(uiStyle)
     }
 
     
@@ -785,19 +779,19 @@ fun HomeScreen(
     }
 
     // 解构设置值（避免每次访问都触发重组）
-    val effectiveHomeSettings = remember(homeSettings, uiPreset) {
+    val effectiveHomeSettings = remember(homeSettings, rendererStyle) {
         resolveEffectiveHomeSettings(
             homeSettings = homeSettings,
-            uiPreset = uiPreset
+            uiPreset = rendererStyle.preset
         )
     }
     val displayMode = homeSettings.displayMode
     val isBottomBarFloating = homeSettings.isBottomBarFloating
     val bottomBarLabelMode = homeSettings.bottomBarLabelMode
-    val baseIsHeaderBlurEnabled = remember(homeSettings.headerBlurMode, uiPreset) {
+    val baseIsHeaderBlurEnabled = remember(homeSettings.headerBlurMode, rendererStyle) {
         resolveHomeHeaderBlurEnabled(
             mode = homeSettings.headerBlurMode,
-            uiPreset = uiPreset
+            uiPreset = rendererStyle.preset
         )
     }
     val baseIsBottomBarBlurEnabled = homeSettings.isBottomBarBlurEnabled
@@ -817,10 +811,10 @@ fun HomeScreen(
         baseCardTransitionEnabled,
         baseIsDataSaverActive,
         homeSettings.androidNativeLiquidGlassEnabled,
-        uiPreset
+        uiStyle
     ) {
         resolveHomePerformanceConfig(
-            uiPreset = uiPreset,
+            uiStyle = uiStyle,
             headerBlurEnabled = baseIsHeaderBlurEnabled,
             bottomBarBlurEnabled = baseIsBottomBarBlurEnabled,
             topBarLiquidGlassEnabled = homeSettings.isTopBarLiquidGlassEnabled,
@@ -1257,26 +1251,26 @@ fun HomeScreen(
         )
     }
     val searchBarHeightDp = resolveHomeTopSearchBarHeight(
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant
+        uiPreset = rendererStyle.preset,
+        androidNativeVariant = rendererStyle.variant
     )
     val tabRowHeightDp = resolveHomeTopTabRowHeight(
         isTabFloating = topTabStyle.floating,
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant,
+        uiPreset = rendererStyle.preset,
+        androidNativeVariant = rendererStyle.variant,
         labelMode = homeSettings.topTabLabelMode
     )
     val searchCollapseDistanceDp = resolveHomeTopSearchCollapseDistance(
         searchBarHeight = searchBarHeightDp,
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant
+        uiPreset = rendererStyle.preset,
+        androidNativeVariant = rendererStyle.variant
     )
     val listTopPadding = resolveHomeTopReservedListPadding(
         statusBarHeight = statusBarHeight,
         searchBarHeight = searchBarHeightDp,
         tabRowHeight = tabRowHeightDp,
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant,
+        uiPreset = rendererStyle.preset,
+        androidNativeVariant = rendererStyle.variant,
         isTabFloating = topTabStyle.floating
     )
     
@@ -1467,7 +1461,7 @@ fun HomeScreen(
 
     //  Scaffold 内容封装 (用于 Panel 左右布局复用)
     val scaffoldLayout: @Composable () -> Unit = {
-        AdaptiveScaffold(
+        AppScaffold(
                 modifier = Modifier
                     .fillMaxSize()
                     .nestedScroll(nestedScrollConnection),

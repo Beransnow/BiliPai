@@ -3,7 +3,7 @@ package com.android.purebilibili.feature.home.components
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import com.android.purebilibili.core.store.BottomBarLiquidGlassPreset
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.UiStyle
 import com.android.purebilibili.core.ui.blur.BlurIntensity
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -308,7 +308,7 @@ class BottomBarSurfaceColorPolicyTest {
         assertEquals(
             SegmentedControlChromeStyle.ANDROID_NATIVE_UNDERLINE,
             resolveSegmentedControlChromeStyle(
-                uiPreset = UiPreset.MD3,
+                uiStyle = UiStyle.MATERIAL3,
                 androidNativeLiquidGlassEnabled = false
             )
         )
@@ -316,7 +316,7 @@ class BottomBarSurfaceColorPolicyTest {
         assertEquals(
             SegmentedControlChromeStyle.LIQUID_PILL,
             resolveSegmentedControlChromeStyle(
-                uiPreset = UiPreset.MD3,
+                uiStyle = UiStyle.MATERIAL3,
                 androidNativeLiquidGlassEnabled = true
             )
         )
@@ -324,7 +324,7 @@ class BottomBarSurfaceColorPolicyTest {
         assertEquals(
             SegmentedControlChromeStyle.LIQUID_PILL,
             resolveSegmentedControlChromeStyle(
-                uiPreset = UiPreset.IOS,
+                uiStyle = UiStyle.IOS,
                 androidNativeLiquidGlassEnabled = false
             )
         )

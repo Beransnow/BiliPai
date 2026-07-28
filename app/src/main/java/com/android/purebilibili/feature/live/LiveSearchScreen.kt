@@ -51,11 +51,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
+import com.android.purebilibili.core.theme.LocalUiStyle
+import com.android.purebilibili.core.theme.toRendererStyleBridge
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
-import com.android.purebilibili.core.ui.AdaptiveScaffold
-import com.android.purebilibili.core.ui.AdaptiveTopAppBar
+import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -77,10 +77,10 @@ fun LiveSearchScreen(
 ) {
     val keyboard = LocalSoftwareKeyboardController.current
     val scope = rememberCoroutineScope()
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val visualSpec = remember(uiPreset, androidNativeVariant) {
-        resolveLiveVisualSpec(uiPreset, androidNativeVariant)
+    val uiStyle = LocalUiStyle.current
+    val rendererStyle = remember(uiStyle) { uiStyle.toRendererStyleBridge() }
+    val visualSpec = remember(rendererStyle) {
+        resolveLiveVisualSpec(rendererStyle.preset, rendererStyle.variant)
     }
     val metrics = visualSpec.homeMetrics
     val windowSizeClass = LocalWindowSizeClass.current
@@ -173,10 +173,10 @@ fun LiveSearchScreen(
         userLoadingMore = false
     }
 
-    AdaptiveScaffold(
+    AppScaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            AdaptiveTopAppBar(
+            AppTopBar(
                 title = "搜索直播",
                 navigationIcon = {
                     IconButton(onClick = onBack) {

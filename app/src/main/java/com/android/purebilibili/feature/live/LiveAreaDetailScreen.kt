@@ -35,11 +35,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
+import com.android.purebilibili.core.theme.LocalUiStyle
+import com.android.purebilibili.core.theme.toRendererStyleBridge
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
-import com.android.purebilibili.core.ui.AdaptiveScaffold
-import com.android.purebilibili.core.ui.AdaptiveTopAppBar
+import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -71,10 +71,10 @@ fun LiveAreaDetailScreen(
     var totalCount by remember { mutableIntStateOf(0) }
     var isLoadingMore by remember { mutableStateOf(false) }
     val gridState = rememberLazyGridState()
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val visualSpec = remember(uiPreset, androidNativeVariant) {
-        resolveLiveVisualSpec(uiPreset, androidNativeVariant)
+    val uiStyle = LocalUiStyle.current
+    val rendererStyle = remember(uiStyle) { uiStyle.toRendererStyleBridge() }
+    val visualSpec = remember(rendererStyle) {
+        resolveLiveVisualSpec(rendererStyle.preset, rendererStyle.variant)
     }
     val metrics = visualSpec.homeMetrics
     val windowSizeClass = LocalWindowSizeClass.current
@@ -154,10 +154,10 @@ fun LiveAreaDetailScreen(
             }
     }
 
-    AdaptiveScaffold(
+    AppScaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            AdaptiveTopAppBar(
+            AppTopBar(
                 title = title,
                 navigationIcon = {
                     IconButton(onClick = onBack) {

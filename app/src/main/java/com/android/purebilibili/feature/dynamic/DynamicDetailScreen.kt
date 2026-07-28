@@ -39,8 +39,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.imageLoader
 import com.android.purebilibili.R
-import com.android.purebilibili.core.ui.AdaptiveScaffold
-import com.android.purebilibili.core.ui.AdaptiveTopAppBar
+import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.util.responsiveContentWidth
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.data.model.response.DynamicItem
@@ -113,9 +113,9 @@ fun DynamicDetailScreen(
     var previewInitialIndex by remember { mutableIntStateOf(0) }
     var previewSourceRect by remember { mutableStateOf<Rect?>(null) }
     var previewTextContent by remember { mutableStateOf<ImagePreviewTextContent?>(null) }
-    AdaptiveScaffold(
+    AppScaffold(
         topBar = {
-            AdaptiveTopAppBar(
+            AppTopBar(
                 title = screenTitle,
                 navigationIcon = {
                     IconButton(onClick = onBack) {

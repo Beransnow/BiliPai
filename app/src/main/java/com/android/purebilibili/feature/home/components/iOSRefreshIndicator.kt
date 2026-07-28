@@ -29,13 +29,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.android.purebilibili.core.theme.AndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.LocalUiStyle
+import com.android.purebilibili.core.theme.UiStyle
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
-import com.android.purebilibili.core.ui.PresetPrimitiveRenderer
-import com.android.purebilibili.core.ui.resolvePresetPrimitiveRenderer
 import com.android.purebilibili.feature.home.resolvePullRefreshHintText
 import io.github.alexzhirkevich.cupertino.CupertinoActivityIndicator
 
@@ -52,14 +48,11 @@ enum class IOSRefreshIndicatorRenderer {
 }
 
 fun resolveRefreshIndicatorRenderer(
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant
-): IOSRefreshIndicatorRenderer = when (
-    resolvePresetPrimitiveRenderer(uiPreset, androidNativeVariant)
-) {
-    PresetPrimitiveRenderer.IOS -> IOSRefreshIndicatorRenderer.CUPERTINO_IOS
-    PresetPrimitiveRenderer.MATERIAL3 -> IOSRefreshIndicatorRenderer.MATERIAL3_LOADING
-    PresetPrimitiveRenderer.MIUIX_BRIDGED -> IOSRefreshIndicatorRenderer.MIUIX_BRIDGED
+    uiStyle: UiStyle,
+): IOSRefreshIndicatorRenderer = when (uiStyle) {
+    UiStyle.IOS -> IOSRefreshIndicatorRenderer.CUPERTINO_IOS
+    UiStyle.MATERIAL3 -> IOSRefreshIndicatorRenderer.MATERIAL3_LOADING
+    UiStyle.MIUIX -> IOSRefreshIndicatorRenderer.MIUIX_BRIDGED
 }
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
@@ -158,8 +151,7 @@ fun iOSRefreshIndicator(
     modifier: Modifier = Modifier
 ) {
     val renderer = resolveRefreshIndicatorRenderer(
-        uiPreset = LocalUiPreset.current,
-        androidNativeVariant = LocalAndroidNativeVariant.current
+        uiStyle = LocalUiStyle.current,
     )
     //  进度值（0.0 ~ 1.0+）
     val progress = state.distanceFraction

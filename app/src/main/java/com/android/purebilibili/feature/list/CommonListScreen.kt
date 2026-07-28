@@ -93,8 +93,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.android.purebilibili.core.ui.AdaptiveScaffold
-import com.android.purebilibili.core.ui.AdaptiveTopAppBar
+import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.feature.home.LocalHomeScrollOffset
 import com.android.purebilibili.feature.home.policy.resolveBottomBarChromeScrollOffset
@@ -767,7 +767,7 @@ fun CommonListScreen(
             }
         }
 
-    AdaptiveScaffold(
+    AppScaffold(
         modifier = Modifier
             .nestedScroll(commonListHeaderScrollConnection)
             .nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -1038,7 +1038,7 @@ fun CommonListScreen(
                     }
             ) {
                 Column {
-                    AdaptiveTopAppBar(
+                    AppTopBar(
                         title = state.title,
                         modifier = Modifier.favoriteCollectionSharedBounds(
                             route = favoriteCollectionSharedElementRoute,

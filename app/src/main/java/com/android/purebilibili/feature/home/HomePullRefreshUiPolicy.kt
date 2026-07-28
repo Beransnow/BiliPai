@@ -1,7 +1,6 @@
 package com.android.purebilibili.feature.home
 
-import com.android.purebilibili.core.theme.AndroidNativeVariant
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.UiStyle
 import kotlin.math.max
 import kotlin.math.min
 
@@ -19,37 +18,16 @@ enum class HomePullRefreshIndicatorStyle {
     MIUIX_NATIVE,
 }
 
-internal fun resolveHomePullRefreshMotionStyle(uiPreset: UiPreset): HomePullRefreshMotionStyle {
-    return resolveHomePullRefreshMotionStyle(
-        uiPreset = uiPreset,
-        androidNativeVariant = AndroidNativeVariant.MATERIAL3
-    )
-}
-
-internal fun resolveHomePullRefreshMotionStyle(
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant
-): HomePullRefreshMotionStyle {
-    return when {
-        uiPreset == UiPreset.MD3 -> HomePullRefreshMotionStyle.MD3
-        else -> HomePullRefreshMotionStyle.IOS
-    }
-}
+internal fun resolveHomePullRefreshMotionStyle(uiStyle: UiStyle): HomePullRefreshMotionStyle =
+    if (uiStyle == UiStyle.IOS) HomePullRefreshMotionStyle.IOS else HomePullRefreshMotionStyle.MD3
 
 internal fun resolveHomePullRefreshIndicatorStyle(
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant
+    uiStyle: UiStyle,
 ): HomePullRefreshIndicatorStyle {
-    return when {
-        uiPreset == UiPreset.MD3 &&
-            androidNativeVariant == AndroidNativeVariant.MATERIAL3 -> {
-            HomePullRefreshIndicatorStyle.MATERIAL_DEFAULT
-        }
-        uiPreset == UiPreset.MD3 &&
-            androidNativeVariant == AndroidNativeVariant.MIUIX -> {
-            HomePullRefreshIndicatorStyle.MIUIX_NATIVE
-        }
-        else -> HomePullRefreshIndicatorStyle.IOS
+    return when (uiStyle) {
+        UiStyle.IOS -> HomePullRefreshIndicatorStyle.IOS
+        UiStyle.MATERIAL3 -> HomePullRefreshIndicatorStyle.MATERIAL_DEFAULT
+        UiStyle.MIUIX -> HomePullRefreshIndicatorStyle.MIUIX_NATIVE
     }
 }
 

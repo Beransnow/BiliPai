@@ -24,12 +24,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.purebilibili.core.theme.AndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.theme.UiPreset
-import com.android.purebilibili.core.ui.AdaptiveScaffold
-import com.android.purebilibili.core.ui.AdaptiveTopAppBar
+import com.android.purebilibili.core.theme.LocalUiStyle
+import com.android.purebilibili.core.theme.UiStyle
+import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.AppTopBar
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
 import com.android.purebilibili.core.ui.rememberAppBackIcon
@@ -60,9 +58,9 @@ fun InboxScreen(
         }
     }
 
-    AdaptiveScaffold(
+    AppScaffold(
         topBar = {
-            AdaptiveTopAppBar(
+            AppTopBar(
                 title = "消息",
                 subtitle = uiState.unreadData?.let { unread ->
                     totalPrivateUnreadCount(unread).takeIf { it > 0 }?.let { "私信 $it 条未读" }
@@ -343,9 +341,7 @@ private fun MessageCenterShortcutCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val isMiuix = uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX
+    val isMiuix = LocalUiStyle.current == UiStyle.MIUIX
     Surface(
         modifier = modifier
             .height(if (isMiuix) 88.dp else 96.dp)
@@ -520,9 +516,7 @@ fun SessionListItem(
     onToggleIntercept: () -> Unit
 ) {
     var showMenu by remember { mutableStateOf(false) }
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val isMiuix = uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX
+    val isMiuix = LocalUiStyle.current == UiStyle.MIUIX
 
     val displayName = InboxUserInfoResolver.resolveDisplayName(
         cached = userInfo,

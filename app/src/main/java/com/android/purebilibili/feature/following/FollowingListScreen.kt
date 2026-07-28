@@ -45,8 +45,8 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.android.purebilibili.core.network.NetworkModule
 import com.android.purebilibili.core.store.FollowingCacheStore
-import com.android.purebilibili.core.ui.AdaptiveScaffold
-import com.android.purebilibili.core.ui.AdaptiveTopAppBar
+import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
 import com.android.purebilibili.core.ui.OfficialVerifyBadge
 import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
@@ -678,10 +678,10 @@ fun FollowingListScreen(
     var groupDialogSelection by remember { mutableStateOf<Set<Long>>(emptySet()) }
     var groupDialogMixed by remember { mutableStateOf(false) }
 
-    AdaptiveScaffold(
+    AppScaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
-            AdaptiveTopAppBar(
+            AppTopBar(
                 title = "我的关注",
                 navigationIcon = {
                     IconButton(onClick = onBack) {

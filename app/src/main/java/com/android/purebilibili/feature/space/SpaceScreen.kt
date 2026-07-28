@@ -101,8 +101,8 @@ import coil.compose.AsyncImage
 import coil.imageLoader
 import coil.size.Scale
 import com.android.purebilibili.R
-import com.android.purebilibili.core.ui.AdaptiveScaffold
-import com.android.purebilibili.core.ui.AdaptiveTopAppBar
+import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
@@ -250,7 +250,7 @@ fun SpaceScreen(
     val blockUserLabel = stringResource(R.string.space_block_user)
     val unblockUserLabel = stringResource(R.string.space_unblock_user)
 
-    AdaptiveScaffold(
+    AppScaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             Box(
@@ -262,7 +262,7 @@ fun SpaceScreen(
                         isScrolling = isSpaceScrolling
                     )
             ) {
-                AdaptiveTopAppBar(
+                AppTopBar(
                     title = screenTitle,
                     navigationIcon = {
                         IconButton(onClick = onBack) {

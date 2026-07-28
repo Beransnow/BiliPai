@@ -72,10 +72,10 @@ import com.android.purebilibili.feature.dynamic.components.ImagePreviewDialog
 import com.android.purebilibili.feature.dynamic.components.ImagePreviewTextContent
 import com.android.purebilibili.core.ui.LoadingAnimation
 import com.android.purebilibili.core.ui.BiliGradientButton
-import com.android.purebilibili.core.ui.AdaptiveScaffold
-import com.android.purebilibili.core.ui.AdaptiveTopAppBar
-import com.android.purebilibili.core.ui.AdaptiveTopAppBarStyle
-import com.android.purebilibili.core.ui.AdaptiveSplitLayout
+import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.AppTopBar
+import com.android.purebilibili.core.ui.AppTopBarStyle
+import com.android.purebilibili.core.ui.AppSplitLayout
 import com.android.purebilibili.core.ui.TopReadabilityChrome
 import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
 import com.android.purebilibili.core.ui.rememberAppBackIcon
@@ -112,7 +112,8 @@ import com.android.purebilibili.core.store.StoredAccountSession
 import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.resolveSharedLiquidGlassChromeEnabled
-import com.android.purebilibili.core.theme.LocalUiPreset
+import com.android.purebilibili.core.theme.LocalUiStyle
+import com.android.purebilibili.core.theme.toRendererStyleBridge
 import com.android.purebilibili.data.model.response.FavFolder
 import com.android.purebilibili.data.model.response.FollowBangumiItem
 import com.android.purebilibili.data.model.response.SpaceAggregateArchiveItem
@@ -435,7 +436,7 @@ fun ProfileScreen(
         }
         is ProfileUiState.Error -> {
             // 🔧 [新增] 离线/错误状态 - 显示错误信息并提供重试和离线缓存入口
-            AdaptiveScaffold(
+            AppScaffold(
                 containerColor = MaterialTheme.colorScheme.background,
                 topBar = {
                     Box {
@@ -444,9 +445,9 @@ fun ProfileScreen(
                             surfaceColor = MaterialTheme.colorScheme.background,
                             surfaceAlpha = 0.86f
                         )
-                        AdaptiveTopAppBar(
+                        AppTopBar(
                             title = "我的",
-                            style = AdaptiveTopAppBarStyle.CENTERED,
+                            style = AppTopBarStyle.CENTERED,
                             navigationIcon = {
                                 IconButton(onClick = onBack) {
                                     Icon(rememberAppBackIcon(), contentDescription = "Back")
@@ -533,7 +534,7 @@ fun ProfileScreen(
                 }
             }
             
-            AdaptiveScaffold(
+            AppScaffold(
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 containerColor = MaterialTheme.colorScheme.background,
                 // [Immersive] Mobile hides default TopBar, Tablet keeps it
@@ -550,10 +551,10 @@ fun ProfileScreen(
                                 hazeState = hazeState,
                                 hazeEnabled = true
                             )
-                            AdaptiveTopAppBar(
+                            AppTopBar(
                                 title = "我的",
                                 largeTitle = "我的",
-                                style = AdaptiveTopAppBarStyle.LARGE,
+                                style = AppTopBarStyle.LARGE,
                                 navigationIcon = {
                                     IconButton(onClick = onBack) {
                                         Icon(rememberAppBackIcon(), contentDescription = "Back", tint = MaterialTheme.colorScheme.primary)
@@ -1408,9 +1409,10 @@ private fun ProfileSpaceTabs(
     val homeSettings by SettingsManager
         .getHomeSettings(context)
         .collectAsStateWithLifecycle(initialValue = HomeSettings())
+    val rendererStyle = LocalUiStyle.current.toRendererStyleBridge()
     val sharedLiquidGlassEnabled = resolveSharedLiquidGlassChromeEnabled(
         individualEnabled = homeSettings.isBottomBarLiquidGlassEnabled,
-        uiPreset = LocalUiPreset.current,
+        uiPreset = rendererStyle.preset,
         androidNativeLiquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled
     )
     val selectedIndex = tabs.indexOfFirst { it.tab == selectedTab }.coerceAtLeast(0)
@@ -2436,7 +2438,7 @@ fun TabletProfileContent(
     onInboxClick: () -> Unit = {},
     paddingValues: PaddingValues
 ) {
-    AdaptiveSplitLayout(
+    AppSplitLayout(
         modifier = Modifier.fillMaxSize().padding(paddingValues),
         primaryRatio = 0.4f,
         primaryContent = {
@@ -2777,9 +2779,9 @@ fun MobileProfileContent(
             // item { IOSGroup { ... } } // Removed
         }
         
-        AdaptiveTopAppBar(
+        AppTopBar(
             title = "我的",
-            style = AdaptiveTopAppBarStyle.CENTERED,
+            style = AppTopBarStyle.CENTERED,
             navigationIcon = {
                 IconButton(onClick = onBack) {
                     Icon(rememberAppBackIcon(), contentDescription = "Back", tint = contentColor)

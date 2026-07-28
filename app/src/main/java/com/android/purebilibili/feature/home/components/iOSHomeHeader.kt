@@ -164,9 +164,7 @@ internal fun resolveHomeTopLinkedBottomBarAppearance(
 ): HomeTopLinkedBottomBarAppearance {
     val resolvedHomeSettings = homeSettings ?: HomeSettings()
     val navigationAppearance = resolveAppNavigationAppearance(
-        homeSettings = resolvedHomeSettings,
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant
+        homeSettings = resolvedHomeSettings
     )
     return HomeTopLinkedBottomBarAppearance(
         isFloating = navigationAppearance.bottomBarFloating,

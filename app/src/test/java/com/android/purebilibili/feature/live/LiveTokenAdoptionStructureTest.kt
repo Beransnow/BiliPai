@@ -19,8 +19,8 @@ class LiveTokenAdoptionStructureTest {
         )
         secondaryPages.forEach { fileName ->
             val source = File(liveRoot, fileName).readText()
-            assertTrue(source.contains("AdaptiveScaffold("), "$fileName must use AdaptiveScaffold")
-            assertTrue(source.contains("AdaptiveTopAppBar("), "$fileName must use AdaptiveTopAppBar")
+            assertTrue(source.contains("AppScaffold("), "$fileName must use AppScaffold")
+            assertTrue(source.contains("AppTopBar("), "$fileName must use AppTopBar")
         }
 
         val sharedCard = File(liveRoot, "LiveRoomCard.kt").readText()

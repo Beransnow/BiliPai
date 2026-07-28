@@ -160,7 +160,8 @@ import com.android.purebilibili.core.store.HomeWallpaperEffectScope
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.navigation.NavigationSettingsStore
 import com.android.purebilibili.core.store.resolveEffectiveHomeSettings
-import com.android.purebilibili.core.theme.LocalUiPreset
+import com.android.purebilibili.core.theme.LocalUiStyle
+import com.android.purebilibili.core.theme.toRendererStyleBridge
 import com.android.purebilibili.core.util.NetworkUtils
 import com.android.purebilibili.navigation3.BiliPaiNavDisplayHost
 import com.android.purebilibili.navigation3.BiliPaiProgrammaticBackDispatcher
@@ -358,24 +359,22 @@ fun AppNavigation(
     val downloadTasks by com.android.purebilibili.feature.download.DownloadManager.tasks.collectAsStateWithLifecycle(
         context = kotlin.coroutines.EmptyCoroutineContext
     )
-    val uiPreset = LocalUiPreset.current
+    val uiStyle = LocalUiStyle.current
+    val rendererStyle = remember(uiStyle) { uiStyle.toRendererStyleBridge() }
     val homeSettings by SettingsManager.getHomeSettings(context).collectAsStateWithLifecycle(initialValue = com.android.purebilibili.core.store.HomeSettings(),
         context = kotlin.coroutines.EmptyCoroutineContext
     )
-    val effectiveHomeSettings = remember(homeSettings, uiPreset) {
+    val effectiveHomeSettings = remember(homeSettings, rendererStyle) {
         resolveEffectiveHomeSettings(
             homeSettings = homeSettings,
-            uiPreset = uiPreset
+            uiPreset = rendererStyle.preset
         )
     }
     val uiSkinState by rememberUiSkinState(context)
     val bottomBarUiSkinDecoration = rememberBottomBarUiSkinDecoration(uiSkinState)
-    val androidNativeVariant = com.android.purebilibili.core.theme.LocalAndroidNativeVariant.current
-    val appearance = remember(homeSettings, uiPreset, androidNativeVariant) {
+    val appearance = remember(homeSettings) {
         resolveAppNavigationAppearance(
             homeSettings = homeSettings,
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant
         )
     }
     val cardTransitionEnabled = appearance.cardTransitionEnabled
@@ -1159,8 +1158,8 @@ fun AppNavigation(
             isBottomBarFloating = isBottomBarFloating,
             bottomBarLabelMode = bottomBarLabelMode,
             isTablet = isTabletLayout,
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant,
+            uiPreset = rendererStyle.preset,
+            androidNativeVariant = rendererStyle.variant,
             hasUiSkinDecoration = bottomBarUiSkinDecoration != null,
         )
 

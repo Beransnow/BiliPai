@@ -51,8 +51,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.purebilibili.R
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
+import com.android.purebilibili.core.theme.LocalUiStyle
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -106,8 +105,7 @@ fun FrostedSideBar(
 ) {
     when (
         resolveSideBarRenderer(
-            uiPreset = LocalUiPreset.current,
-            androidNativeVariant = LocalAndroidNativeVariant.current
+            uiStyle = LocalUiStyle.current,
         )
     ) {
         SideBarRenderer.MIUIX_NAVIGATION_RAIL -> {

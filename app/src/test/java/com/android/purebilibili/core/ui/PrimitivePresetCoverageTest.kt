@@ -2,6 +2,7 @@ package com.android.purebilibili.core.ui
 
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.UiStyle
 import com.android.purebilibili.core.ui.IOSLargeTitleBarRenderer
 import com.android.purebilibili.core.ui.resolveLargeTitleBarRenderer
 import com.android.purebilibili.feature.home.components.IOSRefreshIndicatorRenderer
@@ -53,15 +54,15 @@ class PrimitivePresetCoverageTest {
     fun refreshIndicatorRenderer_swapsToMaterialWhenNotIos() {
         assertEquals(
             IOSRefreshIndicatorRenderer.CUPERTINO_IOS,
-            resolveRefreshIndicatorRenderer(UiPreset.IOS, AndroidNativeVariant.MATERIAL3)
+            resolveRefreshIndicatorRenderer(UiStyle.IOS)
         )
         assertEquals(
             IOSRefreshIndicatorRenderer.MATERIAL3_LOADING,
-            resolveRefreshIndicatorRenderer(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
+            resolveRefreshIndicatorRenderer(UiStyle.MATERIAL3)
         )
         assertEquals(
             IOSRefreshIndicatorRenderer.MIUIX_BRIDGED,
-            resolveRefreshIndicatorRenderer(UiPreset.MD3, AndroidNativeVariant.MIUIX)
+            resolveRefreshIndicatorRenderer(UiStyle.MIUIX)
         )
     }
 

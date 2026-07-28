@@ -1,7 +1,6 @@
 package com.android.purebilibili.feature.home.components
 
-import com.android.purebilibili.core.theme.AndroidNativeVariant
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.UiStyle
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -14,7 +13,7 @@ class SideBarRendererPolicyTest {
     fun miuixVariantRoutesToOfficialNavigationRail() {
         assertEquals(
             SideBarRenderer.MIUIX_NAVIGATION_RAIL,
-            resolveSideBarRenderer(UiPreset.MD3, AndroidNativeVariant.MIUIX)
+            resolveSideBarRenderer(UiStyle.MIUIX)
         )
     }
 
@@ -22,11 +21,11 @@ class SideBarRendererPolicyTest {
     fun materialAndIosKeepFrostedSideBar() {
         assertEquals(
             SideBarRenderer.FROSTED,
-            resolveSideBarRenderer(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
+            resolveSideBarRenderer(UiStyle.MATERIAL3)
         )
         assertEquals(
             SideBarRenderer.FROSTED,
-            resolveSideBarRenderer(UiPreset.IOS, AndroidNativeVariant.MATERIAL3)
+            resolveSideBarRenderer(UiStyle.IOS)
         )
     }
 

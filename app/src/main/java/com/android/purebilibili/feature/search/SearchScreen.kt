@@ -77,7 +77,7 @@ import androidx.compose.ui.util.lerp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.purebilibili.R
-import com.android.purebilibili.core.ui.AdaptiveScaffold
+import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.resolveContentCardSurfaceSpec
@@ -816,7 +816,7 @@ fun SearchScreen(
         extraBottomPadding = 16.dp
     )
 
-    AdaptiveScaffold(
+    AppScaffold(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         containerColor = Color.Transparent,
         //  移除 bottomBar，搜索栏现在位于顶部 Box 中

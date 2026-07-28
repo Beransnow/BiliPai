@@ -26,8 +26,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.LocalUiStyle
+import com.android.purebilibili.core.theme.UiStyle
 import com.android.purebilibili.core.theme.iOSBlue
 import com.android.purebilibili.core.theme.iOSGreen
 import com.android.purebilibili.core.theme.iOSPink
@@ -57,10 +57,10 @@ internal data class MineSideDrawerChromeSpec(
 )
 
 internal fun resolveMineSideDrawerChromeSpec(
-    uiPreset: UiPreset,
+    uiStyle: UiStyle,
     blurEnabled: Boolean
 ): MineSideDrawerChromeSpec {
-    return if (uiPreset == UiPreset.MD3) {
+    return if (uiStyle != UiStyle.IOS) {
         MineSideDrawerChromeSpec(
             useMaterialIcons = true,
             preferOpaqueMd3Container = !blurEnabled,
@@ -98,7 +98,7 @@ fun MineSideDrawer(
     isBlurEnabled: Boolean = true, // [新增] 模糊开关状态
     bottomOverlayHeight: Dp = AppSpacingTokens.None
 ) {
-    val uiPreset = LocalUiPreset.current
+    val uiStyle = LocalUiStyle.current
     val scope = rememberCoroutineScope()
     val configuration = LocalConfiguration.current
     val layoutPolicy = remember(configuration.screenWidthDp) {
@@ -140,9 +140,9 @@ fun MineSideDrawer(
         blurActive = blurActive,
         budget = drawerMotionBudget
     )
-    val chromeSpec = remember(uiPreset, effectiveBlurActive) {
+    val chromeSpec = remember(uiStyle, effectiveBlurActive) {
         resolveMineSideDrawerChromeSpec(
-            uiPreset = uiPreset,
+            uiStyle = uiStyle,
             blurEnabled = effectiveBlurActive
         )
     }

@@ -1,6 +1,6 @@
 package com.android.purebilibili.feature.home.components
 
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.UiStyle
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertEquals
@@ -58,7 +58,7 @@ class MineSideDrawerVisualPolicyTest {
     @Test
     fun `md3 drawer chrome should prefer material icons and opaque containers when blur is off`() {
         val spec = resolveMineSideDrawerChromeSpec(
-            uiPreset = UiPreset.MD3,
+            uiStyle = UiStyle.MATERIAL3,
             blurEnabled = false
         )
 
@@ -70,7 +70,7 @@ class MineSideDrawerVisualPolicyTest {
     @Test
     fun `ios drawer chrome should preserve translucent glass defaults`() {
         val spec = resolveMineSideDrawerChromeSpec(
-            uiPreset = UiPreset.IOS,
+            uiStyle = UiStyle.IOS,
             blurEnabled = true
         )
 

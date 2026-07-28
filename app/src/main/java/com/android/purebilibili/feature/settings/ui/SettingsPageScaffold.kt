@@ -23,8 +23,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.android.purebilibili.core.ui.AdaptiveScaffold
-import com.android.purebilibili.core.ui.AdaptiveTopAppBar
+import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.core.ui.TopReadabilityChrome
@@ -62,7 +62,7 @@ internal fun SettingsPageScaffold(
 
     // InstallerX：设置页用不透明 grouped 底色，避免全局壁纸半透明与多页叠色闪烁。
     CompositionLocalProvider(LocalGlobalWallpaperBackdropVisible provides false) {
-        AdaptiveScaffold(
+        AppScaffold(
             modifier = modifier,
             topBar = {
                 Box {
@@ -73,7 +73,7 @@ internal fun SettingsPageScaffold(
                         hazeState = hazeState,
                         hazeEnabled = topBarBlurEnabled,
                     )
-                    AdaptiveTopAppBar(
+                    AppTopBar(
                         title = title,
                         navigationIcon = {
                             IconButton(onClick = onBack) {

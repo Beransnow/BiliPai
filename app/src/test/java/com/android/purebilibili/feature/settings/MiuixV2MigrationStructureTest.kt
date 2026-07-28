@@ -191,7 +191,7 @@ class MiuixV2MigrationStructureTest {
             .toList()
         assertTrue(
             offenders.isEmpty(),
-            "iOSLargeTitleBar should remain iOS-only chrome; migrate feature screens to AdaptiveScaffold:\n" +
+            "iOSLargeTitleBar should remain iOS-only chrome; migrate feature screens to AppScaffold:\n" +
                 offenders.joinToString("\n")
         )
     }
@@ -201,7 +201,7 @@ class MiuixV2MigrationStructureTest {
         val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/iOSLargeTitleBar.kt")
         assertTrue(source.contains("resolveLargeTitleBarRenderer("))
         assertTrue(source.contains("IOSLargeTitleBarRenderer.ADAPTIVE_TOP_APP_BAR"))
-        assertTrue(source.contains("AdaptiveTopAppBar("))
+        assertTrue(source.contains("AppTopBar("))
     }
 
     @Test
