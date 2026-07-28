@@ -3167,7 +3167,9 @@ fun AppNavigation(
                                     miuixBackdrop = bottomBarBackdrop,
                                     motionTier = com.android.purebilibili.core.ui.adaptive.MotionTier.Normal,
                                     isTransitionRunning = bottomPagerRenderBudget.isTransitionRunning,
-                                    forceLowBlurBudget = bottomPagerRenderBudget.forceLowBlurBudget,
+                                    // 底栏是独立的常驻材质层。栏目切换时保持液态玻璃渲染树，
+                                    // 避免先卸载折射效果、页面落定后再等待 backdrop 重新捕获。
+                                    forceLowBlurBudget = false,
                                     isFeedScrollInProgress = currentBottomNavItem == BottomNavItem.HOME &&
                                         homeFeedScrollInProgressState.value,
                                     uiSkinDecoration = bottomBarUiSkinDecoration,
@@ -3197,7 +3199,8 @@ fun AppNavigation(
                                 miuixBackdrop = bottomBarBackdrop,
                                 motionTier = com.android.purebilibili.core.ui.adaptive.MotionTier.Normal,
                                 isTransitionRunning = bottomPagerRenderBudget.isTransitionRunning,
-                                forceLowBlurBudget = bottomPagerRenderBudget.forceLowBlurBudget,
+                                // 固定底栏同样保持材质连续，切页预算只作用于页面内容。
+                                forceLowBlurBudget = false,
                                 isFeedScrollInProgress = currentBottomNavItem == BottomNavItem.HOME &&
                                     homeFeedScrollInProgressState.value,
                                 uiSkinDecoration = bottomBarUiSkinDecoration,
