@@ -38,7 +38,7 @@ class MiuixV2MigrationStructureTest {
 
     @Test
     fun appSurfaceTokens_exposesMiuixSemanticColors() {
-        val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/AppSurfaceTokens.kt")
+        val source = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/AppSurfaceTokens.kt")
         assertTrue(source.contains("fun onSurfaceVariantSummary()"))
         assertTrue(source.contains("fun onSurfaceVariantActions()"))
         assertTrue(source.contains("MiuixTheme.colorScheme.onSurfaceVariantSummary"))
@@ -105,7 +105,7 @@ class MiuixV2MigrationStructureTest {
 
     @Test
     fun adaptivePullToRefreshBox_routesMiuixVariantToMiuixPullToRefresh() {
-        val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/AdaptivePullToRefreshBox.kt")
+        val source = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/AdaptivePullToRefreshBox.kt")
         assertTrue(source.contains("MiuixPullToRefresh("))
         assertTrue(source.contains("PresetPrimitiveRenderer.MIUIX_BRIDGED"))
         assertTrue(source.contains("ComfortablePullToRefreshBox("))
@@ -156,10 +156,10 @@ class MiuixV2MigrationStructureTest {
     }
 
     @Test
-    fun searchTopBar_routesMiuixVariantToInputField() {
+    fun searchTopBar_usesNeutralSearchField() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/search/SearchScreen.kt")
-        assertTrue(source.contains("InputField("))
-        assertTrue(source.contains("shouldUseNativeMiuixSearchBar("))
+        assertTrue(source.contains("AppSearchField("))
+        assertTrue(source.contains("AppSearchFieldPresentation.TOP_BAR"))
     }
 
     @Test
@@ -170,7 +170,7 @@ class MiuixV2MigrationStructureTest {
 
     @Test
     fun adaptiveScaffold_miuixPathMountsPopupHostForOverlayDialogs() {
-        val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/AdaptiveChrome.kt")
+        val source = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/AdaptiveChrome.kt")
         assertTrue(source.contains("resolveAdaptiveScaffoldRenderer("))
         assertTrue(source.contains("MiuixPopupUtils.MiuixPopupHost()"))
         assertTrue(source.contains("popupHost ="))
@@ -178,7 +178,7 @@ class MiuixV2MigrationStructureTest {
 
     @Test
     fun adaptiveScaffoldPolicy_requiresMiuixPopupHostOnMiuixVariant() {
-        val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/AdaptiveScaffoldPolicy.kt")
+        val source = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/AdaptiveScaffoldPolicy.kt")
         assertTrue(source.contains("shouldMountMiuixPopupHostOnAdaptiveScaffold("))
         assertTrue(source.contains("MIUIX_SCAFFOLD_WITH_POPUP_HOST"))
     }
@@ -216,7 +216,7 @@ class MiuixV2MigrationStructureTest {
 
     @Test
     fun appSurfaceTokens_exposesFullMiuixSemanticPalette() {
-        val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/AppSurfaceTokens.kt")
+        val source = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/AppSurfaceTokens.kt")
         listOf(
             "fun background()",
             "fun surface()",
@@ -236,6 +236,7 @@ class MiuixV2MigrationStructureTest {
         val normalizedPath = path.removePrefix("app/")
         val sourceFile = listOf(
             File(path),
+            File("../$path"),
             File(normalizedPath)
         ).firstOrNull { it.exists() }
         require(sourceFile != null) { "Cannot locate $path from ${File(".").absolutePath}" }
