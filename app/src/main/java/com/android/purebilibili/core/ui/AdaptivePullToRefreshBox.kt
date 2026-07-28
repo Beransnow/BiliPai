@@ -28,7 +28,7 @@ import top.yukonga.miuix.kmp.basic.rememberPullToRefreshState as rememberMiuixPu
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AdaptivePullToRefreshBox(
+fun AppPullToRefreshBox(
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
@@ -95,8 +95,39 @@ fun AdaptivePullToRefreshBox(
     }
 }
 
+/** Compatibility entry point. Feature code should use [AppPullToRefreshBox]. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AdaptivePullToRefreshBox(
+    isRefreshing: Boolean,
+    onRefresh: () -> Unit,
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(),
+    indicatorTopInset: Dp = 0.dp,
+    state: PullToRefreshState = rememberPullToRefreshState(),
+    contentAlignment: Alignment = Alignment.TopStart,
+    indicator: @Composable BoxScope.() -> Unit = {
+        AdaptivePullToRefreshDefaultIndicator(
+            isRefreshing = isRefreshing,
+            state = state,
+            indicatorTopInset = indicatorTopInset,
+        )
+    },
+    content: @Composable BoxScope.() -> Unit,
+) = AppPullToRefreshBox(
+    isRefreshing = isRefreshing,
+    onRefresh = onRefresh,
+    modifier = modifier,
+    contentPadding = contentPadding,
+    indicatorTopInset = indicatorTopInset,
+    state = state,
+    contentAlignment = contentAlignment,
+    indicator = indicator,
+    content = content,
+)
+
 /**
- * Default pull-to-refresh chrome for [AdaptivePullToRefreshBox].
+ * Default pull-to-refresh chrome for [AppPullToRefreshBox].
  *
  * - Material 3: official expressive [PullToRefreshDefaults.LoadingIndicator]
  *   (ContainedLoadingIndicator + dynamic colors).

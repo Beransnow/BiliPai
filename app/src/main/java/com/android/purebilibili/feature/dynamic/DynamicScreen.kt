@@ -33,7 +33,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,7 +52,7 @@ import coil.compose.AsyncImage
 import coil.imageLoader
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.BiliGradientButton
-import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
+import com.android.purebilibili.core.ui.AppPullToRefreshBox
 import com.android.purebilibili.core.ui.EmptyState
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
@@ -261,8 +260,6 @@ fun DynamicScreen(
     val density = LocalDensity.current
     val statusBarHeight = WindowInsets.statusBars.getTop(density).let { with(density) { it.toDp() } }
     val dynamicListBottomPadding = LocalBottomBarContentPadding.current
-    val pullRefreshState = rememberPullToRefreshState()
-
     // GIF 图片加载器
     val gifImageLoader = context.imageLoader
     val shouldShowBackToTop by remember(activeListState) {
@@ -603,10 +600,9 @@ fun DynamicScreen(
                                 // Overlay top bar (not Scaffold-padded) — anchor indicator under chrome.
                                 val dynamicRefreshIndicatorTopInset =
                                     statusBarHeight + pageListTopExtra
-                                AdaptivePullToRefreshBox(
+                                AppPullToRefreshBox(
                                     isRefreshing = isRefreshing,
                                     onRefresh = { viewModel.refresh(tab.logicalIndex) },
-                                    state = pullRefreshState,
                                     indicatorTopInset = dynamicRefreshIndicatorTopInset,
                                     modifier = Modifier.fillMaxSize()
                                 ) {
@@ -735,10 +731,9 @@ fun DynamicScreen(
                             ).dp
                             val dynamicRefreshIndicatorTopInset =
                                 statusBarHeight + pageListTopExtra
-                            AdaptivePullToRefreshBox(
+                            AppPullToRefreshBox(
                                 isRefreshing = isRefreshing,
                                 onRefresh = { viewModel.refresh(tab.logicalIndex) },
-                                state = pullRefreshState,
                                 indicatorTopInset = dynamicRefreshIndicatorTopInset,
                                 modifier = Modifier.fillMaxSize()
                             ) {

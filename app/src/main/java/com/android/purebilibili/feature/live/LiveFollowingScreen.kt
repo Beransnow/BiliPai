@@ -25,7 +25,7 @@ import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
-import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.AppLoadingIndicator
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -159,7 +159,7 @@ fun LiveFollowingScreen(
                     .padding(innerPadding),
                 contentAlignment = Alignment.Center,
             ) {
-                AdaptiveLoadingIndicator()
+                AppLoadingIndicator()
             }
             error != null -> Box(
                 modifier = Modifier

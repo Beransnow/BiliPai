@@ -3,6 +3,7 @@ package com.android.purebilibili.core.ui
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -87,7 +88,7 @@ class AdaptiveLoadingIndicatorPolicyTest {
     }
 
     @Test
-    fun `shared entry points route through adaptive loading`() {
+    fun `app loading entry owns renderer while adaptive api delegates`() {
         val adaptive = loadSource(
             "src/main/java/com/android/purebilibili/core/ui/AdaptiveLoadingIndicator.kt",
         )
@@ -95,11 +96,26 @@ class AdaptiveLoadingIndicatorPolicyTest {
             "src/main/java/com/android/purebilibili/core/ui/LottieComponents.kt",
         )
 
-        assertTrue(adaptive.contains("LoadingIndicator("))
-        assertTrue(adaptive.contains("MiuixInfiniteProgressIndicator("))
-        assertTrue(adaptive.contains("MiuixCircularProgressIndicator("))
-        assertTrue(adaptive.contains("IosCutePersonLoadingIndicator("))
-        assertTrue(lottie.contains("AdaptiveLoadingIndicator("))
+        val appImplementation = adaptive
+            .substringAfter("fun AppLoadingIndicator(")
+            .substringBefore("/** Compatibility entry point.")
+        val adaptiveCompatibility = adaptive
+            .substringAfter("fun AdaptiveLoadingIndicator(")
+            .substringBefore("@Composable\nprivate fun resolveAdaptiveLoadingDefaultColor")
+
+        assertTrue(appImplementation.contains("LoadingIndicator("))
+        assertTrue(appImplementation.contains("MiuixInfiniteProgressIndicator("))
+        assertTrue(appImplementation.contains("MiuixCircularProgressIndicator("))
+        assertTrue(appImplementation.contains("IosCutePersonLoadingIndicator("))
+        assertTrue(adaptiveCompatibility.contains(") = AppLoadingIndicator("))
+        listOf("modifier", "size", "color", "strokeWidth", "density").forEach { parameter ->
+            assertTrue(
+                "AdaptiveLoadingIndicator must forward $parameter",
+                adaptiveCompatibility.contains("$parameter = $parameter"),
+            )
+        }
+        assertTrue(lottie.contains("AppLoadingIndicator("))
+        assertFalse(lottie.contains("AdaptiveLoadingIndicator("))
         assertTrue(lottie.contains("fun CutePersonLoadingIndicator("))
         assertTrue(lottie.contains("internal fun IosCutePersonLoadingIndicator("))
     }

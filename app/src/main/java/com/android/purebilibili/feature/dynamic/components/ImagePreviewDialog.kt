@@ -8,6 +8,7 @@ import com.android.purebilibili.core.ui.MediaContrastPalette
 
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.AppLoadingIndicator
 
 import android.content.ContentValues
 import android.content.Context
@@ -1128,8 +1129,8 @@ private fun ImagePreviewOverlayContent(
                         )
                     ) {
                         if (isSharing) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(AppSpacingTokens.ExtraLarge),
+                            AppLoadingIndicator(
+                                size = AppSpacingTokens.ExtraLarge,
                                 color = MediaContrastPalette.Foreground,
                                 strokeWidth = AppSpacingTokens.Micro
                             )
@@ -1155,8 +1156,8 @@ private fun ImagePreviewOverlayContent(
                         )
                     ) {
                         if (isSaving) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(AppSpacingTokens.ExtraLarge),
+                            AppLoadingIndicator(
+                                size = AppSpacingTokens.ExtraLarge,
                                 color = MediaContrastPalette.Foreground,
                                 strokeWidth = AppSpacingTokens.Micro
                             )
@@ -1247,8 +1248,8 @@ private fun ImagePreviewCommentTopBar(
             modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
         ) {
             if (isSharing) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro),
+                AppLoadingIndicator(
+                    size = AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro,
                     color = MediaContrastPalette.Foreground,
                     strokeWidth = AppSpacingTokens.Micro
                 )
@@ -1399,8 +1400,8 @@ private fun ImagePreviewCommentActionButton(
         verticalArrangement = Arrangement.Center
     ) {
         if (busy) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro),
+            AppLoadingIndicator(
+                size = AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro,
                 color = MediaContrastPalette.Foreground,
                 strokeWidth = AppSpacingTokens.Micro
             )

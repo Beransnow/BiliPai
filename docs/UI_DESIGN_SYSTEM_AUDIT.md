@@ -6,7 +6,7 @@
 
 更新日期：2026-07-28。按“审查 + 阶段 0～5”等权计算：
 
-`[█████████████░░░░░░░] 64%`
+`[█████████████░░░░░░░] 66%`
 
 | 工作项 | 状态 | 已落地内容 |
 |---|---:|---|
@@ -14,7 +14,7 @@
 | 阶段 0：契约与兼容层 | 100% | `UiStyle`、`ui_style_v1`、新旧三键双写、导入导出兼容、Theme bridge、冲突诊断与矩阵测试 |
 | 阶段 1：设置列表试点 | 100% | 中性 `App*` preference/dialog/segmented 入口；设置试点迁移；旧 Local 与 IOS* 调用棘轮达标 |
 | 阶段 2：Chrome 与导航 | 100% | 中性 `AppScaffold/AppTopBar/AppNavigation` 入口；30 个旧调用文件迁移；home/navigation policy 改读 `UiStyle`；棘轮达标 |
-| 阶段 3：普通 feature | 50% | 卡片与输入首批已完成；普通 feature 的 Dialog/Sheet 已全部收口到中性门面，共迁移 24 个调用点 |
+| 阶段 3：普通 feature | 60% | 卡片、输入、Dialog/Sheet 与加载/刷新已分批收口；C9 本批迁移 53 个调用点 |
 | 阶段 4～5 | 0% | 等待后续按播放器/插件、清理边界顺序推进 |
 
 阶段 0 保持渲染行为不变：`LocalUiStyle` 与旧两个 Local 同时提供，旧设置入口继续可用；合法新键优先，缺失或非法新键回退旧两键。iOS 写入保留隐藏的 Android native variant，设置分享同时携带新键和旧两键。兼容层新增 2 个引用旧类型的 core 文件，因此全生产计数为 103；受阶段棘轮约束的 feature/直接 Local/IOS* caller 仍为 **69/47/42**，符合阶段 0“不新增、暂不要求下降”的边界。
@@ -26,6 +26,8 @@
 阶段 3 的卡片/Surface 首批新增 `AppCard` slot API，并用 `STANDARD/MUTED/GLASS` 语义 tone 在 `core/ui` 内选择 Material Surface 或原生 MIUIX Card；feature 只提供业务内容和点击回调。动态玻璃卡、消息 Feed 卡、直播房间卡与直播搜索用户卡已迁移，直播卡所需布局指标改由页面显式传入。输入首批把 `enabled/readOnly`、行数、错误态、IME、前后图标和 visual transformation 收进 `AppTextField`；MIUIX 普通输入使用原生 Miuix TextField。随后新增 `AppSearchField` 的 `STANDARD/TOP_BAR` 语义展示，把提交、清除、焦点和前置图标策略转交既有三路 renderer；搜索首页、空间页和通用列表共 4 个调用点迁移后，阶段 3 普通 feature（排除播放器）直接 `OutlinedTextField/InputField/IOSSearchBar` 搜索调用已归零。
 
 Dialog/Sheet 在既有 `AppAlertDialog/AppDialogAction` 基础上补齐可选 icon slot，并新增直接委托旧 adaptive renderer 的 `AppModalBottomSheet/AppSheetDragHandle`。首批迁移动态、消息、列表、资料与空间页 15 个调用点；本批继续迁移编辑资料、关注分组、账号切换、三连选择以及 5 个资料/壁纸 Sheet。中立 Sheet 现在用 nullable container override 区分“三风格默认 token”和“调用方显式颜色”，且 `dragHandle = null` 在 iOS/M3/MIUIX 三路都保持隐藏。阶段 3 范围内 18 个 Dialog 与 6 个 Sheet 已全部走中性入口，直接 `AlertDialog/ModalBottomSheet/IOSAlertDialog/IOSModalBottomSheet` 由 **24 降至 0**。播放器边界仍有 9 处直接调用（其中 5 处位于只由 `LivePlayerScreen` 挂载的 components），按文档留到阶段 4。阶段中间棘轮保持 **43/24/26**；三路 policy、slot/参数转发、目录级零容忍测试、Kotlin 编译及 19 项壁纸策略窄测通过。后续按加载刷新→图标动效推进，阶段 3 尚未完成。
+
+加载/刷新本批新增 `AppLoadingIndicator` 与 `AppPullToRefreshBox`；对应两个旧 `Adaptive*` 入口保留同签名、全参数转发的兼容壳，其他阶段的调用仍按各自白名单后续迁移。阶段 3 普通 feature 中 23 个文件的 **44 个不确定加载 + 9 个下拉刷新**已全部收口到 App API；page/compact 密度、size/color/stroke、overlay `indicatorTopInset`、content padding/alignment 与状态回调均保留。Space 中 2 处显式 `progress` 的观看进度条属于确定进度，不冒充加载器。目录棘轮同时禁止旧入口、直接不确定 progress renderer 和 Material pull-refresh import，并锁定 **44/9/2** 调用基线。首页自定义 refresh 的 overlay inset、位移和回弹动效不属于本批，留作阶段 3 首页刷新特例尾批。阶段中间棘轮仍为 **43/24/26**；下一批按图标→动效推进。
 
 ### Android/Compose 规范的适用优先级
 
@@ -204,7 +206,7 @@ flowchart LR
 | C6 卡片/Surface | iOS/M3：多为 Surface + 不同 token；MIUIX：列表组已用 MiuixCard，普通 feed 多仍是 Surface bridge。 | container/content/onClick/selected/border/elevation 可共享；只改颜色/圆角的是**仅 token 不同**，每个 feed 重写整棵 card 才是真重复。 | 图片比例、shared bounds、列表稳定 key 与 player preview 性能必须保留。`AppSurfaceTokens.kt:31-76`；`iOSListComponents.kt:618-692`；`DynamicCard.kt:45-47`。涉及 #3/#4/#17/#18/#21-23/#25/#26/#28-31/#34-37/#54。 |
 | C7 输入 | `AppTextField` 已覆盖普通输入：iOS/M3 使用 Material OutlinedTextField，MIUIX 使用原生 Miuix TextField；`AppSearchField` 复用既有搜索 renderer，MIUIX 展开框继续使用 InputField。 | value、onValueChange、label、placeholder、error、enabled/readOnly、行数、IME、图标与 visual transformation 语义共享；搜索提交、清除、焦点和顶部栏展示由中性 API 转发。 | MIUIX InputField 的 expanded/search contract 与普通 TextField 不同，因此保留独立搜索 renderer 而非强行同树。阶段 3 普通 feature（排除播放器）直接输入 renderer 已归零；设置、Following 与视频输入按各自阶段处理。 |
 | C8 Dialog/Sheet | iOS：自绘 local dialog + Material sheet 宿主；M3：Material AlertDialog/Sheet；MIUIX：为避免 popup host 缺失，Dialog 使用安全 window fallback，Sheet 当前仍是 Material 宿主上的 MIUIX token 适配。 | dismiss、icon/title/body/action slots、sheet state/content/progress 可共享；`AppAlertDialog/AppModalBottomSheet` 只委托既有 renderer，不新造第四套。普通 feature 的 24 个调用已全部收口。 | MIUIX OverlayDialog 分支当前不可达；显式隐藏 handle 和显式容器色合同已修复。非空自定义 handle 在 M3/MIUIX 下仍由原生默认 handle 接管；播放器 sheet 的层级、IME 和手势留阶段 4。 |
-| C9 加载/刷新 | iOS：cute person/自定义 refresh；M3：LoadingIndicator 或 Circular；MIUIX：Infinite/Circular 与原生 refresh 文案。 | refreshing/loading、progress、density、onRefresh 可共享；已有 `PresetPrimitiveRenderer`，应直接升级为 App API。 | page/compact 密度、home overlay top inset 与刷新动效必须保留。`AdaptiveLoadingIndicatorPolicy.kt:15-64`；`AdaptivePullToRefreshPolicy.kt:6-18`；`iOSRefreshIndicator.kt:58,161-162`。涉及 #8/#11/#15/#16/#24/#25。 |
+| C9 加载/刷新 | `AppLoadingIndicator/AppPullToRefreshBox` 已集中分发：iOS cute person/自定义 refresh，M3 LoadingIndicator/Circular，MIUIX Infinite/Circular 与原生 refresh 文案。 | 普通 feature 的 44 个不确定加载和 9 个刷新宿主已收口；loading/refreshing、density、size/color/stroke、inset 与 onRefresh 共享。 | 2 处确定观看进度保留；home overlay top inset 与自定义刷新动效进入首页特例尾批。`AdaptiveLoadingIndicatorPolicy.kt:15-72`；`AdaptivePullToRefreshPolicy.kt:6-39`；`iOSRefreshIndicator.kt:58,161-162`。 |
 | C10 图标 | iOS：CupertinoIcons；M3/MIUIX：Material icons（当前 MIUIX 无独立 glyph）。 | semantic name、contentDescription、filled/outlined state 可共享；页面按 `UiPreset` 选 icon 是**真重复**。 | 品牌图标、硬币、自定义播放图标不应强制换皮；未来 MIUIX glyph 可只改 renderer。`AppIcons.kt:149` 起的 `resolvePlatformIcon`/`rememberApp*Icon`；`SettingsSemanticIconPolicy.kt:136,182-183`。涉及 #7/#12/#43/#49/#51/#59。 |
 | C11 动效 | iOS：spring 与较长 sheet motion；M3：Material motion；MIUIX：定制 tween/原生组件内部动效。 | intent（standard/emphasized/expressive/spatial）、reduce-motion、状态与完成回调共享；页面时长字面量是**真重复**。 | shared transition、预测返回、液态折射、播放器手势反馈是性能敏感例外。`AppMotionTokens.kt:110-176,184-229`；`VideoContentSection.kt:282-283`；`TopTabStylePolicy.kt:407-440`。涉及 #6/#7/#13-15/#19/#41/#52/#54/#61/#62。 |
 | C12 液态玻璃/播放器/插件例外 | iOS/可选 Android liquid：Backdrop/haze/自绘；M3：普通 Material chrome；MIUIX：native renderer + bridge。播放器三者还受 AndroidView/Surface 与 overlay 宿主约束；插件 Compose UI跟随 App，JS runtime WebView 不等于可换肤 UI。 | 共享“是否可用、强度、语义 action、状态/回调”，不共享视频 Surface、特效管线或第三方内容 DOM。 | 这是**性能/宿主限制例外**，但 style 决策仍应由 `core/ui` 产出 `AppPlayerChromeProfile/AppEffectCapability`，feature 不读 Local。`VideoPlayerSection.kt:2751,2832,3399`；`FullscreenPlayerOverlay.kt:853,874`；`PluginsScreen.kt:172-186`；`BiliPaiJsRuntime.kt:76-90`。涉及 #1/#2/#6/#7/#14/#20/#27/#32/#53/#55-69。 |
@@ -322,7 +324,7 @@ fun AppDialog(
 | `PresetPrimitiveRenderer` | **保留并改输入**：由 `UiStyle` 一对一解析；最终仅 `core/ui` 引用 | 已是三路最小稳定决策，不另建第四套 registry 概念 |
 | Theme bridge | **保留**，`PureBiliBiliTheme(uiStyle)` 内继续同时挂 Miuix/Material bridge | 支持 MIUIX 原生组件与遗留 Material 组件共存 |
 | `App*Tokens` | **保留并补齐** typography/icon/motion/component tokens；feature 只用语义访问器 | token 差异无需复制渲染树 |
-| `Adaptive*` | 实现保留；公共名逐步改为 `AppScaffold/AppTopBar/AppNavigation/AppLoading/AppPullRefresh/AppTooltip`，旧名临时委托 | “Adaptive” 与风格无关但不够一致，避免平行新增实现 |
+| `Adaptive*` | 实现保留；公共名逐步改为 `AppScaffold/AppTopBar/AppNavigation/AppLoadingIndicator/AppPullToRefreshBox/AppTooltip`，旧名临时委托 | “Adaptive” 与风格无关但不够一致，避免平行新增实现 |
 | 内部换肤 `IOS*` | 先改为 `App*` 的底层实现，旧名做 `@Deprecated` 委托；调用清零后废弃 | 名称误导且让 feature 依赖历史；不能一次性大改 |
 | feature 中 style policy | 把纯视觉分发移入对应 renderer；业务/布局 policy 保留并改用中性参数 | 保持测试性，同时消除 style 泄漏 |
 
@@ -335,7 +337,7 @@ fun AppDialog(
 | 0. 契约与兼容层 | `core/theme/**`、`core/store/SettingsManager.kt`、设置映射/导入导出及对应测试。先加 `UiStyle`/映射 policy，再接 Theme；现有 renderer 不动。 | 第一 PR：feature style 文件 `<=69`、直接 Local `<=47`、IOS* caller `<=42`，且不得新增；四个旧原始组合 round-trip 100%。 | 单测覆盖缺键默认、非法值、4 组合、新旧冲突、双写、导入导出。人工：依次选择 iOS/M3/MIUIX，重启后值不变；降级到旧版本，看到对应旧风格。预期：外观/交互/默认 Material 3 全不变。 | 删除新键读取，恢复旧两键为唯一来源；因旧键未删可立即回滚。 |
 | 1. 设置列表试点 | `core/ui/components/**`、`feature/settings/**`（先 `SettingsSections`/Appearance/Playback/Plugins 使用的列表原语）、对应窄测。先让 `AppPreference/AppSwitchPreference/AppSliderPreference/AppSegmentedControl` 委托现有 IOS*，再迁调用。 | 直接 Local `47→<=39`；style feature `69→<=61`；IOS* caller `42→<=28`；每次只减 allowlist，禁止扩大阈值。 | 现有 lint + 新 API contract/renderer matrix。人工：三风格逐项进入外观、播放、插件设置，切换开关/滑杆/分段、返回并重进；预期值、禁用态、触感策略、滚动位置和原外观一致。 | App* 仍委托旧 IOS*，可逐文件回退调用，不回滚 DataStore。 |
 | 2. Chrome 与导航 | `core/ui/AdaptiveChrome.kt`、`AdaptiveNavigation.kt`、home chrome/navigation、navigation host 与对应 policy test。顺序：Scaffold→TopBar→rail/bottom bar→home 特例。 | 直接 Local `<=28`；style feature `<=48`；所有新/迁移 screen 只能 import `AppScaffold/AppTopBar/AppNavigation`。 | 三 renderer policy、insets、宽屏 rail、导航选择/徽标、预测返回测试。人工：手机与大屏文字步骤走首页/设置/普通页前进返回、切 tab、展开 rail；预期 destination、系统栏、安全区、返回栈不变。 | 每个 App chrome 保留旧实现委托开关；回退到阶段 1 入口。 |
-| 3. 普通 feature | `feature/{dynamic,list,live(非播放器),message,partition,profile,search,space}/**` 与对应 `core/ui/App*`。按卡片→输入→Dialog/Sheet→加载刷新→图标动效迁。 | 直接 Local `<=8`（只暂留播放器/特效清单）；style feature `<=18`；普通 feature 中 style import=0；IOS* caller `<=8`。 | 每类 renderer matrix、现有 feature policy/lint；列表 key/shared bounds 不退化。人工逐类完成加载、空态、刷新、输入、弹窗确认取消；预期数据、滚动、触控和三风格外观均与阶段前一致。 | 小批次按 feature 回退；App API 始终兼容旧 renderer。 |
+| 3. 普通 feature | `feature/{dynamic,list,live(非播放器),message,partition,profile,search,space}/**` 与对应 `core/ui/App*`。按卡片→输入→Dialog/Sheet→加载刷新→图标动效迁；普通 feature 完成后，再以 `feature/home/{HomeScreen.kt,HomeCategoryPage.kt,HomePullRefreshUiPolicy.kt,components/iOSRefreshIndicator.kt,components/HomeRefreshMotionSpec.kt}` 作为首页刷新特例尾批。 | 直接 Local `<=8`（只暂留播放器/特效清单）；style feature `<=18`；普通 feature 中 style import=0；IOS* caller `<=8`。 | 每类 renderer matrix、现有 feature policy/lint；列表 key/shared bounds 不退化。人工逐类完成加载、空态、刷新、输入、弹窗确认取消；首页特例必须保留 overlay inset、手势位移与回弹。预期数据、滚动、触控和三风格外观均与阶段前一致。 | 小批次按 feature 回退；App API 始终兼容旧 renderer。 |
 | 4. 播放器、液态玻璃、插件 | `core/ui/{player,effects}/**`（如需建立则只作为现有实现的中性边界）、`feature/{video,bangumi,download,live,plugin}/**`、插件设置宿主。先 profile/capability，再 overlay/sheet，最后 Surface 邻接代码。 | 全 feature 直接 style Local=0；全 feature `UiPreset|AndroidNativeVariant|UiStyle` 引用=0；IOS* caller=0；三路 `when` 只允许在 `core/ui` 审核清单内。 | player overlay policy、手势、PIP/mini-player、Surface 绑定、特效 capability、插件 Compose host 测试。人工：播放/暂停、全屏、手势、画中画、小窗、弹幕/设置 sheet、插件开关与 JS 内容宿主页；预期视频输出不重绑丢帧、手势无冲突、插件状态不变。不得要求截图。 | 只回退 AppPlayer/AppEffect adapter；绝不改播放器输出路由和插件执行协议来“配合”UI。 |
 | 5. 清理与强制边界 | `core/ui/**`、lint/测试。删除已无调用的 IOS* 兼容壳和旧 Local；旧 DataStore 两键继续保留兼容周期。 | feature style import=0；`IOS*` 公共调用=0；旧 enum 只允许在持久化 adapter；lint 新违规=0，allowlist 单调收缩至例外清单为空。 | 全部窄测、编译、lint；人工重跑阶段 1-4 文字路径。 | 删除兼容壳单独提交，出现回归可恢复该提交，不影响新 App API 或数据兼容。 |
 

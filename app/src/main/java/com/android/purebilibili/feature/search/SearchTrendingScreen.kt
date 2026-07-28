@@ -23,7 +23,7 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.North
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Search
-import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.AppLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,7 +33,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
@@ -49,7 +48,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
+import com.android.purebilibili.core.ui.AppPullToRefreshBox
 import com.android.purebilibili.core.ui.globalWallpaperAwareChromeColor
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,8 +59,6 @@ fun SearchTrendingScreen(
     viewModel: SearchTrendingViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val pullRefreshState = rememberPullToRefreshState()
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -97,7 +94,7 @@ fun SearchTrendingScreen(
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                AdaptiveLoadingIndicator()
+                AppLoadingIndicator()
             }
 
             state.error != null && state.items.isEmpty() -> Box(
@@ -114,10 +111,9 @@ fun SearchTrendingScreen(
             }
 
             // Scaffold padding applied on the box — indicator at content top.
-            else -> AdaptivePullToRefreshBox(
+            else -> AppPullToRefreshBox(
                 isRefreshing = state.isRefreshing,
                 onRefresh = viewModel::refresh,
-                state = pullRefreshState,
                 indicatorTopInset = 0.dp,
                 modifier = Modifier
                     .fillMaxSize()

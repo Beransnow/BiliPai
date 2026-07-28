@@ -32,7 +32,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
-import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
+import com.android.purebilibili.core.ui.AppPullToRefreshBox
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.data.model.response.MessageFeedLikeItem
 import com.android.purebilibili.data.repository.MessageRepository
@@ -200,7 +200,7 @@ fun LikeMeScreen(
                 .padding(paddingValues)
         ) {
             when {
-                uiState.isLoading -> com.android.purebilibili.core.ui.CutePersonLoadingIndicator(
+                uiState.isLoading -> com.android.purebilibili.core.ui.AppLoadingIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
                 uiState.error != null -> MessageFeedError(
@@ -213,7 +213,7 @@ fun LikeMeScreen(
                     modifier = Modifier.fillMaxSize()
                 )
                 // Scaffold already pads out the top bar — indicator at box top (inset 0).
-                else -> AdaptivePullToRefreshBox(
+                else -> AppPullToRefreshBox(
                     isRefreshing = uiState.isRefreshing,
                     onRefresh = viewModel::refresh,
                     indicatorTopInset = 0.dp,

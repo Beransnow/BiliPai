@@ -50,7 +50,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.theme.LocalUiStyle
 import com.android.purebilibili.core.theme.toRendererStyleBridge
-import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.AppLoadingIndicator
 import com.android.purebilibili.core.ui.AppCard
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
@@ -322,7 +322,7 @@ fun LiveSearchScreen(
 private fun LiveSearchState(message: String? = null) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         if (message == null) {
-            AdaptiveLoadingIndicator()
+            AppLoadingIndicator()
         } else {
             Text(
                 text = message,

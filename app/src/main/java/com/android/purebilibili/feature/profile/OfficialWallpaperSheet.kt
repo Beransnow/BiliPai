@@ -28,7 +28,7 @@ import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import androidx.compose.ui.draw.scale
 import android.widget.Toast
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.AppLoadingIndicator
 import com.android.purebilibili.core.ui.AppModalBottomSheet
 
 /**
@@ -109,7 +109,7 @@ fun OfficialWallpaperSheet(
             when {
                 isLoading && officialWallpapers.isEmpty() -> {
                     Box(Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
-                        AdaptiveLoadingIndicator()
+                        AppLoadingIndicator()
                     }
                 }
                 error != null && officialWallpapers.isEmpty() -> {
@@ -308,7 +308,7 @@ fun OfficialWallpaperSheet(
                             )
                         ) {
                             if (saveState is WallpaperSaveState.Loading) {
-                                AdaptiveLoadingIndicator(
+                                AppLoadingIndicator(
                                     size = 20.dp,
                                     strokeWidth = 2.dp
                                 )
@@ -332,9 +332,9 @@ fun OfficialWallpaperSheet(
                             )
                         ) {
                             if (splashSaveState is WallpaperSaveState.Loading) {
-                                CircularProgressIndicator(
+                                AppLoadingIndicator(
                                     color = Color.White,
-                                    modifier = Modifier.size(20.dp),
+                                    size = 20.dp,
                                     strokeWidth = 2.dp
                                 )
                             } else {

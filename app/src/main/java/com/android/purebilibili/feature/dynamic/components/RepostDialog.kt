@@ -6,6 +6,7 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.AppLoadingIndicator
 import com.android.purebilibili.core.ui.components.AppTextField
 
 import androidx.compose.foundation.layout.*
@@ -102,8 +103,8 @@ fun RepostDialog(
                         shape = AppShapes.container(ContainerLevel.Sheet)
                     ) {
                         if (isPosting) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(AppSpacingTokens.Large),
+                            AppLoadingIndicator(
+                                size = AppSpacingTokens.Large,
                                 strokeWidth = AppSpacingTokens.Micro,
                                 color = MaterialTheme.colorScheme.onPrimary
                             )

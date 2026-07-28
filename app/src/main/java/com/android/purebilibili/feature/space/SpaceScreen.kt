@@ -48,8 +48,7 @@ import androidx.compose.material.icons.outlined.ViewAgenda
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
-import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.AppLoadingIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -394,7 +393,7 @@ fun SpaceScreen(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            AdaptiveLoadingIndicator()
+                            AppLoadingIndicator()
                         }
                     }
 
@@ -610,7 +609,7 @@ fun SpaceScreen(
                             .padding(vertical = 16.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        AdaptiveLoadingIndicator()
+                        AppLoadingIndicator()
                     }
                 } else {
                     Column(
@@ -661,8 +660,8 @@ fun SpaceScreen(
                     enabled = !isFollowGroupsLoading && !isSavingFollowGroups
                 ) {
                     if (isSavingFollowGroups) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(16.dp),
+                        AppLoadingIndicator(
+                            size = 16.dp,
                             strokeWidth = 2.dp,
                             color = MaterialTheme.colorScheme.onPrimary
                         )
@@ -4023,7 +4022,7 @@ private fun SpaceLoadingFooter() {
             .padding(vertical = 18.dp),
         contentAlignment = Alignment.Center
     ) {
-        AdaptiveLoadingIndicator(size = 24.dp)
+        AppLoadingIndicator(size = 24.dp)
     }
 }
 

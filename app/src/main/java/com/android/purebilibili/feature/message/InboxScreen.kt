@@ -30,7 +30,7 @@ import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppAlertDialog
 import coil.compose.AsyncImage
-import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
+import com.android.purebilibili.core.ui.AppPullToRefreshBox
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.data.model.response.SessionItem
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -81,7 +81,7 @@ fun InboxScreen(
         ) {
             when {
                 uiState.isLoading -> {
-                    com.android.purebilibili.core.ui.CutePersonLoadingIndicator(
+                    com.android.purebilibili.core.ui.AppLoadingIndicator(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -106,7 +106,7 @@ fun InboxScreen(
                 }
                 else -> {
                     // Scaffold body already below topBar.
-                    AdaptivePullToRefreshBox(
+                    AppPullToRefreshBox(
                         isRefreshing = uiState.isRefreshing,
                         onRefresh = { viewModel.refresh() },
                         indicatorTopInset = 0.dp
@@ -187,7 +187,7 @@ fun InboxScreen(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         if (uiState.isLoadingMore) {
-                                            com.android.purebilibili.core.ui.CutePersonLoadingIndicator(
+                                            com.android.purebilibili.core.ui.AppLoadingIndicator(
                                                 size = 24.dp
                                             )
                                         } else {

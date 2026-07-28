@@ -37,7 +37,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.theme.LocalUiStyle
 import com.android.purebilibili.core.theme.toRendererStyleBridge
-import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.AppLoadingIndicator
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppShapes
@@ -261,7 +261,7 @@ fun LiveAreaDetailScreen(
                                     .padding(vertical = AppSpacingTokens.Medium),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                AdaptiveLoadingIndicator()
+                                AppLoadingIndicator()
                             }
                         }
                     }
@@ -281,7 +281,7 @@ private fun LiveAreaDetailState(
         contentAlignment = Alignment.Center,
     ) {
         if (message == null) {
-            AdaptiveLoadingIndicator()
+            AppLoadingIndicator()
         } else {
             Text(
                 text = message,

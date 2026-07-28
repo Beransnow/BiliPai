@@ -43,13 +43,13 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
+import com.android.purebilibili.core.ui.AppPullToRefreshBox
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
-import com.android.purebilibili.core.ui.CutePersonLoadingIndicator
+import com.android.purebilibili.core.ui.AppLoadingIndicator
 import com.android.purebilibili.core.util.resolveReplaceRefreshPage
 import com.android.purebilibili.core.ui.animation.DampedDragAnimationState
 import com.android.purebilibili.core.ui.animation.MotionReader
@@ -522,7 +522,7 @@ fun PartitionContent(
 
             // Match list content top (status/insets + 8dp) so indicator sits above first row.
             val partitionRefreshIndicatorTopInset = topPadding + 8.dp
-            AdaptivePullToRefreshBox(
+            AppPullToRefreshBox(
                 isRefreshing = state.isRefreshing,
                 onRefresh = viewModel::refresh,
                 indicatorTopInset = partitionRefreshIndicatorTopInset,
@@ -900,7 +900,7 @@ private fun PartitionVideoList(
     when {
         state.videos.isEmpty() && state.isLoading -> {
             Box(modifier = modifier.fillMaxHeight()) {
-                CutePersonLoadingIndicator(modifier = Modifier.align(Alignment.Center))
+                AppLoadingIndicator(modifier = Modifier.align(Alignment.Center))
             }
         }
         state.videos.isEmpty() && state.error != null -> {
@@ -949,7 +949,7 @@ private fun PartitionVideoList(
                                 .padding(16.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            CutePersonLoadingIndicator(size = 24.dp)
+                            AppLoadingIndicator(size = 24.dp)
                         }
                     }
                 }

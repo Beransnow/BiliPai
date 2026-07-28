@@ -50,7 +50,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
-import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.AppLoadingIndicator
 import com.android.purebilibili.core.ui.components.AppTextField
 
 @Composable
@@ -214,7 +214,7 @@ fun DynamicCommentSheet(
                         .fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
-                    AdaptiveLoadingIndicator(size = AppSpacingTokens.DoubleExtraLarge)
+                    AppLoadingIndicator(size = AppSpacingTokens.DoubleExtraLarge)
                 }
             } else if (comments.isEmpty()) {
                 Box(
@@ -267,7 +267,7 @@ fun DynamicCommentSheet(
                                     .padding(vertical = AppSpacingTokens.Small),
                                 contentAlignment = Alignment.Center
                             ) {
-                                AdaptiveLoadingIndicator(size = AppSpacingTokens.ExtraLarge)
+                                AppLoadingIndicator(size = AppSpacingTokens.ExtraLarge)
                             }
                         }
                     }
@@ -359,7 +359,7 @@ fun LazyListScope.dynamicInlineCommentItems(
                     .padding(vertical = AppSpacingTokens.DoubleExtraLarge),
                 contentAlignment = Alignment.Center,
             ) {
-                AdaptiveLoadingIndicator(size = AppSpacingTokens.DoubleExtraLarge)
+                AppLoadingIndicator(size = AppSpacingTokens.DoubleExtraLarge)
             }
         }
 
@@ -391,7 +391,7 @@ fun LazyListScope.dynamicInlineCommentItems(
                     .padding(vertical = AppSpacingTokens.Medium),
                 contentAlignment = Alignment.Center,
             ) {
-                AdaptiveLoadingIndicator(size = AppSpacingTokens.ExtraLarge)
+                AppLoadingIndicator(size = AppSpacingTokens.ExtraLarge)
             }
         }
     }

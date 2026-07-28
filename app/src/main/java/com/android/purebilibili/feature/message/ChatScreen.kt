@@ -167,7 +167,7 @@ fun ChatScreen(
         ) {
             when {
                 uiState.isLoading -> {
-                    com.android.purebilibili.core.ui.CutePersonLoadingIndicator(
+                    com.android.purebilibili.core.ui.AppLoadingIndicator(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -205,7 +205,7 @@ fun ChatScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     if (uiState.isLoadingMore) {
-                                        com.android.purebilibili.core.ui.CutePersonLoadingIndicator(
+                                        com.android.purebilibili.core.ui.AppLoadingIndicator(
                                             size = 24.dp
                                         )
                                     } else {
@@ -435,7 +435,7 @@ fun ChatInputBar(
                 enabled = !isBusy
             ) {
                 if (isBusy) {
-                    com.android.purebilibili.core.ui.CutePersonLoadingIndicator(
+                    com.android.purebilibili.core.ui.AppLoadingIndicator(
                         size = 24.dp,
                         strokeWidth = 2.dp
                     )

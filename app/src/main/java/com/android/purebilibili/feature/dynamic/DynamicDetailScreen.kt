@@ -133,7 +133,7 @@ fun DynamicDetailScreen(
                         .padding(paddingValues),
                     contentAlignment = Alignment.Center
                 ) {
-                    com.android.purebilibili.core.ui.CutePersonLoadingIndicator()
+                    com.android.purebilibili.core.ui.AppLoadingIndicator()
                 }
             }
 
