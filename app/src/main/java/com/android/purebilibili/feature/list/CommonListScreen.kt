@@ -1,5 +1,6 @@
 package com.android.purebilibili.feature.list
 
+import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.AppSpacingTokens
 
 import androidx.compose.animation.AnimatedVisibility
@@ -125,7 +126,6 @@ import com.android.purebilibili.feature.article.ArticleSharedElementSlot
 import com.android.purebilibili.feature.article.resolveHistoryArticleCoverAspectRatio
 import com.android.purebilibili.feature.article.resolveArticleSharedTransitionKey
 import com.android.purebilibili.feature.settings.AppSegmentedControl
-import com.android.purebilibili.feature.settings.PlaybackSegmentOption
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import com.android.purebilibili.feature.space.SeasonSeriesDetailViewModel
 import com.android.purebilibili.feature.video.player.ExternalPlaylistSource
@@ -532,8 +532,8 @@ fun CommonListScreen(
     var searchQuery by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("") }
     val favoriteBrowseOptions = remember {
         listOf(
-            PlaybackSegmentOption(FavoriteBrowseSection.OWNED, "收藏夹"),
-            PlaybackSegmentOption(FavoriteBrowseSection.SUBSCRIBED, "追更")
+            AppSegmentOption(FavoriteBrowseSection.OWNED, "收藏夹"),
+            AppSegmentOption(FavoriteBrowseSection.SUBSCRIBED, "追更")
         )
     }
 

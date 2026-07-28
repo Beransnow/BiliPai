@@ -1,6 +1,7 @@
 // 文件路径: feature/plugin/SponsorBlockPlugin.kt
 package com.android.purebilibili.feature.plugin
 
+import com.android.purebilibili.core.ui.components.AppSegmentOption
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -54,7 +55,6 @@ import com.android.purebilibili.data.model.response.SponsorSegment
 import com.android.purebilibili.data.model.response.SponsorProgressMarker
 import com.android.purebilibili.data.repository.SponsorBlockRepository
 import com.android.purebilibili.feature.settings.AppSegmentedPreference
-import com.android.purebilibili.feature.settings.PlaybackSegmentOption
 import io.github.alexzhirkevich.cupertino.CupertinoSwitch
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -378,7 +378,7 @@ class SponsorBlockPlugin : PlayerPluginApi {
         val aboutItem = remember { resolveSponsorBlockAboutItemModel() }
         val markerOptions = remember {
             SponsorBlockMarkerMode.entries.map { mode ->
-                PlaybackSegmentOption(
+                AppSegmentOption(
                     value = mode,
                     label = mode.label
                 )

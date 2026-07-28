@@ -1,6 +1,7 @@
 // 文件路径: feature/settings/AnimationSettingsScreen.kt
 package com.android.purebilibili.feature.settings
 
+import com.android.purebilibili.core.ui.components.AppSegmentOption
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.lazy.LazyColumn
@@ -135,10 +136,10 @@ fun AnimationSettingsContent(
     val entranceDowngradedBySystem = uiEntranceAnimationEnabled && !effectiveEntranceSpec.animate
     val sharedTransitionSpeedOptions = remember {
         listOf(
-            PlaybackSegmentOption(VideoSharedTransitionSpeed.FAST, "快速"),
-            PlaybackSegmentOption(VideoSharedTransitionSpeed.STANDARD, "标准"),
-            PlaybackSegmentOption(VideoSharedTransitionSpeed.SLOW, "慢速"),
-            PlaybackSegmentOption(VideoSharedTransitionSpeed.CUSTOM, "自定")
+            AppSegmentOption(VideoSharedTransitionSpeed.FAST, "快速"),
+            AppSegmentOption(VideoSharedTransitionSpeed.STANDARD, "标准"),
+            AppSegmentOption(VideoSharedTransitionSpeed.SLOW, "慢速"),
+            AppSegmentOption(VideoSharedTransitionSpeed.CUSTOM, "自定")
         )
     }
     var customTransitionDurationMillis by remember(state.videoSharedTransitionCustomDurationMillis) {

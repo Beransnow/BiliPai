@@ -2,6 +2,8 @@
 
 package com.android.purebilibili.feature.settings
 
+import com.android.purebilibili.core.ui.components.AppSegmentOption
+
 import android.os.Build
 import android.os.SystemClock
 import android.widget.Toast
@@ -384,29 +386,29 @@ fun AppearanceSettingsContent(
         .collectAsStateWithLifecycle(initialValue = HomeWallpaperEffectScope.HOME_ONLY)
     val homeWallpaperEffectOptions = remember {
         listOf(
-            PlaybackSegmentOption(HomeWallpaperEffectMode.OFF, "关闭"),
-            PlaybackSegmentOption(HomeWallpaperEffectMode.SOFT_BLUR, "柔和"),
-            PlaybackSegmentOption(HomeWallpaperEffectMode.STRONG_BLUR, "强模糊"),
-            PlaybackSegmentOption(HomeWallpaperEffectMode.ORIGINAL, "原图")
+            AppSegmentOption(HomeWallpaperEffectMode.OFF, "关闭"),
+            AppSegmentOption(HomeWallpaperEffectMode.SOFT_BLUR, "柔和"),
+            AppSegmentOption(HomeWallpaperEffectMode.STRONG_BLUR, "强模糊"),
+            AppSegmentOption(HomeWallpaperEffectMode.ORIGINAL, "原图")
         )
     }
     val homeWallpaperEffectScopeOptions = remember {
         listOf(
-            PlaybackSegmentOption(HomeWallpaperEffectScope.HOME_ONLY, "仅首页"),
-            PlaybackSegmentOption(HomeWallpaperEffectScope.GLOBAL, "全局")
+            AppSegmentOption(HomeWallpaperEffectScope.HOME_ONLY, "仅首页"),
+            AppSegmentOption(HomeWallpaperEffectScope.GLOBAL, "全局")
         )
     }
     val bottomBarSearchAutoExpandOptions = remember {
         listOf(
-            PlaybackSegmentOption(BottomBarSearchAutoExpandMode.DISABLED, "不自动"),
-            PlaybackSegmentOption(BottomBarSearchAutoExpandMode.EXPAND_WHEN_SCROLLING_DOWN, "下滑展开"),
-            PlaybackSegmentOption(BottomBarSearchAutoExpandMode.EXPAND_AT_HOME_TOP, "顶部展开")
+            AppSegmentOption(BottomBarSearchAutoExpandMode.DISABLED, "不自动"),
+            AppSegmentOption(BottomBarSearchAutoExpandMode.EXPAND_WHEN_SCROLLING_DOWN, "下滑展开"),
+            AppSegmentOption(BottomBarSearchAutoExpandMode.EXPAND_AT_HOME_TOP, "顶部展开")
         )
     }
     val bottomBarSearchLayoutOptions = remember {
         listOf(
-            PlaybackSegmentOption(BottomBarSearchLayoutMode.FULL_DOCK, "完整底栏"),
-            PlaybackSegmentOption(BottomBarSearchLayoutMode.HOME_AND_SEARCH, "首页+搜索")
+            AppSegmentOption(BottomBarSearchLayoutMode.FULL_DOCK, "完整底栏"),
+            AppSegmentOption(BottomBarSearchLayoutMode.HOME_AND_SEARCH, "首页+搜索")
         )
     }
     val homeUpBadgesVisible by SettingsManager
@@ -437,7 +439,7 @@ fun AppearanceSettingsContent(
         )
     val commonListHeaderCollapseOptions = remember {
         CommonListHeaderCollapseMode.entries.map { mode ->
-            PlaybackSegmentOption(mode, mode.label)
+            AppSegmentOption(mode, mode.label)
         }
     }
     val themeRoleOverrides by SettingsManager
@@ -1475,7 +1477,7 @@ fun AppearanceSettingsContent(
                                 title = "卡片封面比例：${homeFeedCardStyle.label}",
                                 subtitle = homeFeedCardStyle.subtitle + "（首页、搜索、列表、相关推荐等同步）",
                                 options = HomeFeedCardStyle.entries.map {
-                                    PlaybackSegmentOption(it, it.label)
+                                    AppSegmentOption(it, it.label)
                                 },
                                 selectedValue = homeFeedCardStyle,
                                 onSelectionChange = {
@@ -1489,7 +1491,7 @@ fun AppearanceSettingsContent(
                                 title = "首页视频时长：${homeDurationStyle.label}",
                                 subtitle = "可移到封面外、仅显示无底色文字或完全隐藏",
                                 options = HomeDurationStyle.entries.map {
-                                    PlaybackSegmentOption(it, it.label)
+                                    AppSegmentOption(it, it.label)
                                 },
                                 selectedValue = homeDurationStyle,
                                 onSelectionChange = {
@@ -1503,7 +1505,7 @@ fun AppearanceSettingsContent(
                                 title = "卡片标签效果：${homeCardBadgeEffectMode.label}",
                                 subtitle = homeCardBadgeEffectMode.subtitle,
                                 options = HomeCardBadgeEffectMode.entries.map {
-                                    PlaybackSegmentOption(it, it.label)
+                                    AppSegmentOption(it, it.label)
                                 },
                                 selectedValue = homeCardBadgeEffectMode,
                                 onSelectionChange = {
@@ -1517,7 +1519,7 @@ fun AppearanceSettingsContent(
                                 title = "卡片信息区：${homeCardInfoGlassMode.label}",
                                 subtitle = homeCardInfoGlassMode.subtitle,
                                 options = HomeCardInfoGlassMode.entries.map {
-                                    PlaybackSegmentOption(it, it.label)
+                                    AppSegmentOption(it, it.label)
                                 },
                                 selectedValue = homeCardInfoGlassMode,
                                 onSelectionChange = {
@@ -2340,7 +2342,7 @@ private fun <T> ThemePresetDropdownSetting(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     title: String,
     selectedLabel: String,
-    options: List<PlaybackSegmentOption<T>>,
+    options: List<AppSegmentOption<T>>,
     onSelectionChange: (T) -> Unit,
     iconTint: Color
 ) {
@@ -2404,21 +2406,21 @@ private fun <T> ThemePresetDropdownSetting(
 
 private const val DEFAULT_APP_DPI_OVERRIDE_PERCENT = 100
 
-private fun resolveAppFontSizeSegmentOptions(): List<PlaybackSegmentOption<AppFontSizePreset>> {
+private fun resolveAppFontSizeSegmentOptions(): List<AppSegmentOption<AppFontSizePreset>> {
     return AppFontSizePreset.entries.map { preset ->
-        PlaybackSegmentOption(value = preset, label = preset.label)
+        AppSegmentOption(value = preset, label = preset.label)
     }
 }
 
-private fun resolveAppUiScaleSegmentOptions(): List<PlaybackSegmentOption<AppUiScalePreset>> {
+private fun resolveAppUiScaleSegmentOptions(): List<AppSegmentOption<AppUiScalePreset>> {
     return AppUiScalePreset.entries.map { preset ->
-        PlaybackSegmentOption(value = preset, label = preset.label)
+        AppSegmentOption(value = preset, label = preset.label)
     }
 }
 
-private fun resolveAppDpiOverrideSegmentOptions(): List<PlaybackSegmentOption<Int>> {
+private fun resolveAppDpiOverrideSegmentOptions(): List<AppSegmentOption<Int>> {
     return listOf(90, 95, 100, 105, 110).map { percent ->
-        PlaybackSegmentOption(value = percent, label = "$percent%")
+        AppSegmentOption(value = percent, label = "$percent%")
     }
 }
 

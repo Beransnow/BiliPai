@@ -1,6 +1,7 @@
 // 文件路径: feature/settings/PlaybackSettingsScreen.kt
 package com.android.purebilibili.feature.settings
 
+import com.android.purebilibili.core.ui.components.AppSegmentOption
 import android.app.AppOpsManager
 import android.content.Context
 import android.content.Intent
@@ -276,9 +277,9 @@ fun PlaybackSettingsContent(
                 Box(modifier = Modifier.entrance()) {
                     val scope = rememberCoroutineScope()
                     val codecOptions = listOf(
-                        PlaybackSegmentOption("avc1", "AVC"),
-                        PlaybackSegmentOption("hev1", "HEVC"),
-                        PlaybackSegmentOption("av01", "AV1")
+                        AppSegmentOption("avc1", "AVC"),
+                        AppSegmentOption("hev1", "HEVC"),
+                        AppSegmentOption("av01", "AV1")
                     )
                     fun codecDescription(codec: String): String = when (codec) {
                         "avc1" -> "兼容性最佳"
@@ -403,10 +404,10 @@ fun PlaybackSettingsContent(
                             miniPlayerMode != com.android.purebilibili.core.store.SettingsManager.MiniPlayerMode.OFF
                     }
                     val miniPlayerOptions = listOf(
-                        PlaybackSegmentOption(com.android.purebilibili.core.store.SettingsManager.MiniPlayerMode.OFF, "默认"),
-                        PlaybackSegmentOption(com.android.purebilibili.core.store.SettingsManager.MiniPlayerMode.IN_APP_ONLY, "小窗"),
-                        PlaybackSegmentOption(com.android.purebilibili.core.store.SettingsManager.MiniPlayerMode.SYSTEM_PIP, "画中画"),
-                        PlaybackSegmentOption(com.android.purebilibili.core.store.SettingsManager.MiniPlayerMode.IN_APP_AND_SYSTEM_PIP, "小窗+PiP")
+                        AppSegmentOption(com.android.purebilibili.core.store.SettingsManager.MiniPlayerMode.OFF, "默认"),
+                        AppSegmentOption(com.android.purebilibili.core.store.SettingsManager.MiniPlayerMode.IN_APP_ONLY, "小窗"),
+                        AppSegmentOption(com.android.purebilibili.core.store.SettingsManager.MiniPlayerMode.SYSTEM_PIP, "画中画"),
+                        AppSegmentOption(com.android.purebilibili.core.store.SettingsManager.MiniPlayerMode.IN_APP_AND_SYSTEM_PIP, "小窗+PiP")
                     )
 
                     AppPreferenceGroup {
@@ -898,9 +899,9 @@ fun PlaybackSettingsContent(
                         .getHomeSettings(context).collectAsStateWithLifecycle(initialValue = com.android.purebilibili.core.store.HomeSettings()
                         )
                     val dataSaverModeOptions = listOf(
-                        PlaybackSegmentOption(com.android.purebilibili.core.store.SettingsManager.DataSaverMode.OFF, "关闭"),
-                        PlaybackSegmentOption(com.android.purebilibili.core.store.SettingsManager.DataSaverMode.MOBILE_ONLY, "仅移动数据"),
-                        PlaybackSegmentOption(com.android.purebilibili.core.store.SettingsManager.DataSaverMode.ALWAYS, "始终开启")
+                        AppSegmentOption(com.android.purebilibili.core.store.SettingsManager.DataSaverMode.OFF, "关闭"),
+                        AppSegmentOption(com.android.purebilibili.core.store.SettingsManager.DataSaverMode.MOBILE_ONLY, "仅移动数据"),
+                        AppSegmentOption(com.android.purebilibili.core.store.SettingsManager.DataSaverMode.ALWAYS, "始终开启")
                     )
 
                     AppPreferenceGroup {
@@ -1125,11 +1126,11 @@ private fun PlaybackInteractionSettingsSection(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             val playbackOrderOptions = listOf(
-                PlaybackSegmentOption(PlaybackCompletionBehavior.STOP_AFTER_CURRENT, "暂停"),
-                PlaybackSegmentOption(PlaybackCompletionBehavior.PLAY_IN_ORDER, "顺序"),
-                PlaybackSegmentOption(PlaybackCompletionBehavior.REPEAT_ONE, "单循"),
-                PlaybackSegmentOption(PlaybackCompletionBehavior.LOOP_PLAYLIST, "列表循"),
-                PlaybackSegmentOption(PlaybackCompletionBehavior.CONTINUE_CURRENT_LOGIC, "自动")
+                AppSegmentOption(PlaybackCompletionBehavior.STOP_AFTER_CURRENT, "暂停"),
+                AppSegmentOption(PlaybackCompletionBehavior.PLAY_IN_ORDER, "顺序"),
+                AppSegmentOption(PlaybackCompletionBehavior.REPEAT_ONE, "单循"),
+                AppSegmentOption(PlaybackCompletionBehavior.LOOP_PLAYLIST, "列表循"),
+                AppSegmentOption(PlaybackCompletionBehavior.CONTINUE_CURRENT_LOGIC, "自动")
             )
             AppSegmentedPreference(
                 title = "选择播放顺序：${playbackCompletionBehavior.label}",
@@ -1162,10 +1163,10 @@ private fun PlaybackInteractionSettingsSection(
                 }",
                 subtitle = subtitlePreferenceDescription,
                 options = listOf(
-                    PlaybackSegmentOption(SubtitleAutoPreference.OFF, "关闭"),
-                    PlaybackSegmentOption(SubtitleAutoPreference.ON, "开启"),
-                    PlaybackSegmentOption(SubtitleAutoPreference.WITHOUT_AI, "无 AI"),
-                    PlaybackSegmentOption(SubtitleAutoPreference.AUTO, "自动")
+                    AppSegmentOption(SubtitleAutoPreference.OFF, "关闭"),
+                    AppSegmentOption(SubtitleAutoPreference.ON, "开启"),
+                    AppSegmentOption(SubtitleAutoPreference.WITHOUT_AI, "无 AI"),
+                    AppSegmentOption(SubtitleAutoPreference.AUTO, "自动")
                 ),
                 selectedValue = subtitleAutoPreference,
                 onSelectionChange = { preference ->
@@ -1268,10 +1269,10 @@ private fun PlaybackInteractionSettingsSection(
             title = "评论回复预览：${commentCollapsedReplyPreviewLimit}条",
             subtitle = "收起楼中楼时保留的回复数量",
             options = listOf(
-                PlaybackSegmentOption(3, "3条"),
-                PlaybackSegmentOption(5, "5条"),
-                PlaybackSegmentOption(8, "8条"),
-                PlaybackSegmentOption(10, "10条")
+                AppSegmentOption(3, "3条"),
+                AppSegmentOption(5, "5条"),
+                AppSegmentOption(8, "8条"),
+                AppSegmentOption(10, "10条")
             ),
             selectedValue = commentCollapsedReplyPreviewLimit,
             onSelectionChange = { limit ->
@@ -1409,11 +1410,11 @@ private fun PlaybackFullscreenGestureSettingsSection(
             }
             if (doubleTapSeekEnabled) {
                 val doubleTapSeekOptions = listOf(
-                    PlaybackSegmentOption(5, "5秒"),
-                    PlaybackSegmentOption(10, "10秒"),
-                    PlaybackSegmentOption(15, "15秒"),
-                    PlaybackSegmentOption(30, "30秒"),
-                    PlaybackSegmentOption(60, "60秒")
+                    AppSegmentOption(5, "5秒"),
+                    AppSegmentOption(10, "10秒"),
+                    AppSegmentOption(15, "15秒"),
+                    AppSegmentOption(30, "30秒"),
+                    AppSegmentOption(60, "60秒")
                 )
                 AppSegmentedPreference(
                     title = "快进秒数（双击右侧）：${seekForwardSeconds} 秒",
@@ -1627,11 +1628,11 @@ private fun PlaybackFullscreenGestureSettingsSection(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             val inlineSeekOptions = listOf(
-                PlaybackSegmentOption(5, "5秒"),
-                PlaybackSegmentOption(10, "10秒"),
-                PlaybackSegmentOption(15, "15秒"),
-                PlaybackSegmentOption(30, "30秒"),
-                PlaybackSegmentOption(60, "60秒")
+                AppSegmentOption(5, "5秒"),
+                AppSegmentOption(10, "10秒"),
+                AppSegmentOption(15, "15秒"),
+                AppSegmentOption(30, "30秒"),
+                AppSegmentOption(60, "60秒")
             )
             AppSegmentedControl(
                 options = inlineSeekOptions,
@@ -1682,10 +1683,10 @@ private fun PlaybackFullscreenGestureSettingsSection(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             val seekStepOptions = listOf(
-                PlaybackSegmentOption(10, "10秒"),
-                PlaybackSegmentOption(15, "15秒"),
-                PlaybackSegmentOption(20, "20秒"),
-                PlaybackSegmentOption(30, "30秒")
+                AppSegmentOption(10, "10秒"),
+                AppSegmentOption(15, "15秒"),
+                AppSegmentOption(20, "20秒"),
+                AppSegmentOption(30, "30秒")
             )
             AppSegmentedControl(
                 options = seekStepOptions,
@@ -1946,11 +1947,11 @@ private fun PlaybackFullscreenGestureSettingsSection(
                 title = "退出时机：${autoExitFullscreenMode.label}",
                 subtitle = autoExitFullscreenMode.subtitle,
                 options = listOf(
-                    PlaybackSegmentOption(
+                    AppSegmentOption(
                         com.android.purebilibili.core.store.AutoExitFullscreenMode.CURRENT_PART,
                         "当前P",
                     ),
-                    PlaybackSegmentOption(
+                    AppSegmentOption(
                         com.android.purebilibili.core.store.AutoExitFullscreenMode.ALL_PARTS,
                         "全部完",
                     ),
@@ -2098,10 +2099,10 @@ private fun PlaybackFullscreenGestureSettingsSection(
             title = "底部进度条展示：${bottomProgressBehavior.label}",
             subtitle = bottomProgressBehavior.description,
             options = listOf(
-                PlaybackSegmentOption(BottomProgressBehavior.ALWAYS_SHOW, "始终展示"),
-                PlaybackSegmentOption(BottomProgressBehavior.ALWAYS_HIDE, "始终隐藏"),
-                PlaybackSegmentOption(BottomProgressBehavior.ONLY_SHOW_FULLSCREEN, "仅全屏展示"),
-                PlaybackSegmentOption(BottomProgressBehavior.ONLY_HIDE_FULLSCREEN, "仅全屏隐藏")
+                AppSegmentOption(BottomProgressBehavior.ALWAYS_SHOW, "始终展示"),
+                AppSegmentOption(BottomProgressBehavior.ALWAYS_HIDE, "始终隐藏"),
+                AppSegmentOption(BottomProgressBehavior.ONLY_SHOW_FULLSCREEN, "仅全屏展示"),
+                AppSegmentOption(BottomProgressBehavior.ONLY_HIDE_FULLSCREEN, "仅全屏隐藏")
             ),
             selectedValue = bottomProgressBehavior,
             onSelectionChange = { behavior ->
@@ -2116,11 +2117,11 @@ private fun PlaybackFullscreenGestureSettingsSection(
             title = "控制栏进度条位置：${playerProgressPlacement.label}",
             subtitle = "可将可拖动进度条放到控制按钮下方的视频最底部",
             options = listOf(
-                PlaybackSegmentOption(
+                AppSegmentOption(
                     com.android.purebilibili.core.store.PlayerProgressPlacement.ABOVE_CONTROLS,
                     "控制栏上方"
                 ),
-                PlaybackSegmentOption(
+                AppSegmentOption(
                     com.android.purebilibili.core.store.PlayerProgressPlacement.BOTTOM_EDGE,
                     "视频最底部"
                 )

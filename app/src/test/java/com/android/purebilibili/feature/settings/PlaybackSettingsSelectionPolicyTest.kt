@@ -1,5 +1,6 @@
 package com.android.purebilibili.feature.settings
 
+import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.AppSegmentedChrome
 import com.android.purebilibili.core.ui.components.resolveAppSegmentedChrome
 import com.android.purebilibili.core.ui.components.resolveAppSegmentedLabelFontSizeSp
@@ -89,9 +90,9 @@ class PlaybackSettingsSelectionPolicyTest {
     @Test
     fun `resolveSelectionIndex should return matched option index`() {
         val options = listOf(
-            PlaybackSegmentOption("avc1", "AVC"),
-            PlaybackSegmentOption("hev1", "HEVC"),
-            PlaybackSegmentOption("av01", "AV1")
+            AppSegmentOption("avc1", "AVC"),
+            AppSegmentOption("hev1", "HEVC"),
+            AppSegmentOption("av01", "AV1")
         )
 
         assertEquals(1, resolveSelectionIndex(options, "hev1"))
@@ -100,9 +101,9 @@ class PlaybackSettingsSelectionPolicyTest {
     @Test
     fun `resolveSelectionIndex should fallback to first option when value missing`() {
         val options = listOf(
-            PlaybackSegmentOption(116, "1080P60"),
-            PlaybackSegmentOption(80, "1080P"),
-            PlaybackSegmentOption(64, "720P")
+            AppSegmentOption(116, "1080P60"),
+            AppSegmentOption(80, "1080P"),
+            AppSegmentOption(64, "720P")
         )
 
         assertEquals(0, resolveSelectionIndex(options, 32))
