@@ -3,7 +3,6 @@ package com.android.purebilibili.feature.settings
 import com.android.purebilibili.core.store.FullscreenAspectRatio
 import com.android.purebilibili.core.store.FullscreenMode
 import com.android.purebilibili.core.store.PortraitPlayerCollapseMode
-import com.android.purebilibili.core.theme.UiPreset
 import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -162,21 +161,21 @@ class PlaybackSettingsSelectionPolicyTest {
         assertEquals(
             IosSlidingSegmentedControlChrome.MD3_SEGMENTED,
             resolveIosSlidingSegmentedControlChrome(
-                uiPreset = UiPreset.MD3,
+                usesMaterialFallback = true,
                 androidNativeLiquidGlassEnabled = false
             )
         )
         assertEquals(
             IosSlidingSegmentedControlChrome.LIQUID_INDICATOR,
             resolveIosSlidingSegmentedControlChrome(
-                uiPreset = UiPreset.MD3,
+                usesMaterialFallback = true,
                 androidNativeLiquidGlassEnabled = true
             )
         )
         assertEquals(
             IosSlidingSegmentedControlChrome.LIQUID_INDICATOR,
             resolveIosSlidingSegmentedControlChrome(
-                uiPreset = UiPreset.IOS,
+                usesMaterialFallback = false,
                 androidNativeLiquidGlassEnabled = false
             )
         )

@@ -275,26 +275,33 @@ class AdaptiveListComponentPolicyTest {
     }
 
     @Test
-    fun `settings search bar uses dedicated ios basic text field`() {
+    fun `settings search bar delegates style rendering to neutral field`() {
         val source = listOf(
             java.io.File("app/src/main/java/com/android/purebilibili/feature/settings/screen/SettingsSearchUi.kt"),
             java.io.File("src/main/java/com/android/purebilibili/feature/settings/screen/SettingsSearchUi.kt"),
         ).first { it.exists() }.readText()
         assertTrue(source.contains("fun SettingsSearchBarSection"))
-        assertTrue(source.contains("BasicTextField("))
+        assertTrue(source.contains("AppSearchField("))
+        assertFalse(source.contains("BasicTextField("))
         assertFalse(source.contains("IOSSearchBar("))
     }
 
     @Test
     fun `settings search bar uses expanded miuix input field`() {
-        val settingsSearchSource = listOf(
-            java.io.File("app/src/main/java/com/android/purebilibili/feature/settings/screen/SettingsSearchUi.kt"),
-            java.io.File("src/main/java/com/android/purebilibili/feature/settings/screen/SettingsSearchUi.kt"),
+        val neutralApiSource = listOf(
+            java.io.File("app/src/main/java/com/android/purebilibili/core/ui/components/AppPreferenceComponents.kt"),
+            java.io.File("src/main/java/com/android/purebilibili/core/ui/components/AppPreferenceComponents.kt"),
         ).first { it.exists() }.readText()
-        assertTrue(settingsSearchSource.contains("InputField("))
-        assertTrue(settingsSearchSource.contains("expanded = true"))
-        assertTrue(settingsSearchSource.contains("OutlinedTextField("))
-        assertTrue(settingsSearchSource.contains("BasicTextField("))
+        val rendererSource = listOf(
+            java.io.File("app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt"),
+            java.io.File("src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt"),
+        ).first { it.exists() }.readText()
+        assertTrue(neutralApiSource.contains("fun AppSearchField("))
+        assertTrue(neutralApiSource.contains("forceExpandedInput = true"))
+        assertTrue(rendererSource.contains("InputField("))
+        assertTrue(rendererSource.contains("expanded = true"))
+        assertTrue(rendererSource.contains("OutlinedTextField("))
+        assertTrue(rendererSource.contains("BasicTextField("))
     }
 
     @Test

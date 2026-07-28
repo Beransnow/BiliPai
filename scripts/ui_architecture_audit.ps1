@@ -211,7 +211,7 @@ $localPattern = '\b(?:LocalUiPreset|LocalAndroidNativeVariant|LocalUiStyle)\b'
 $iosPattern = '\b(?:IOSSectionTitle|IOSGroup|IOSSwitchItem|IOSSliderPreference|IOSClickableItem|IOSDivider|IOSGridItem|IOSSearchBar|IOSAdaptiveTextField|IOSAlertDialog|IOSDialogAction|IOSModalBottomSheet|IOSDragHandle|IOSSlidingSegmentedControl|IOSSlidingSegmentedSetting)\b'
 $rendererPattern = '(?m)^\s*import\s+[^\r\n]*\.renderer(?:\.|\b)|\bresolvePresetPrimitiveRenderer\b|\bLocalAppRenderers\b|\bAppRenderers\b'
 $reverseDependencyPattern = '(?m)^\s*import\s+com\.android\.purebilibili\.(?:feature(?:\.|\b)|core\.store(?:\.|\b))'
-$relatedTestPattern = 'UiPreset|AndroidNativeVariant|UiStyle|PresetPrimitiveRenderer|Adaptive(?:Scaffold|TopAppBar|Navigation|Loading|PullToRefresh)|IOS(?:Group|SwitchItem|SliderPreference|AlertDialog|ModalBottomSheet|AdaptiveTextField)|App(?:Surface|Shape|Motion|Typography|Icon).*Token'
+$relatedTestPattern = 'UiPreset|AndroidNativeVariant|UiStyle|PresetPrimitiveRenderer|Adaptive(?:Scaffold|TopAppBar|Navigation|Loading|PullToRefresh|ListVisual)|IOS(?:Group|SwitchItem|SliderPreference|AlertDialog|ModalBottomSheet|AdaptiveTextField)|App(?:Surface|Shape|Motion|Typography|Icon).*Token|App(?:SemanticVisual|SemanticIcon|Preference|SegmentedControl|SearchField|SearchEntry)'
 $designSystemBoundaryPattern = '(?m)^\s*import\s+com\.android\.purebilibili\.(?:feature|core\.store|data|network|plugin)(?:\.|\b)'
 
 $relatedTests = @($tests | Where-Object { $_.Text -match $relatedTestPattern })

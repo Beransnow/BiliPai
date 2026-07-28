@@ -96,7 +96,9 @@ class MiuixV2MigrationStructureTest {
     @Test
     fun md3SegmentedControl_routesMiuixVariantToTabRow() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/settings/IOSSlidingSegmentedControl.kt")
-        assertTrue(source.contains("resolveMd3SegmentedControlRenderer("))
+        val policySource = loadSource("app/src/main/java/com/android/purebilibili/core/ui/AppSegmentedControlPolicy.kt")
+        assertTrue(policySource.contains("usesNativeTabRow = uiPreset == UiPreset.MD3"))
+        assertTrue(source.contains("segmentedPolicy.usesNativeTabRow"))
         assertTrue(source.contains("MiuixTabRowSegmentedControl("))
         assertTrue(source.contains("MiuixTabRow("))
     }

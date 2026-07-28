@@ -27,13 +27,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.SettingsManager
-import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.rememberAppSegmentedControlPolicy
 import com.android.purebilibili.core.ui.adaptiveSquircleBackground
 import com.android.purebilibili.core.ui.resolveCompactCapsuleChromeSpec
 import com.android.purebilibili.feature.home.components.BOTTOM_BAR_LIQUID_SEGMENTED_CONTROL_HEIGHT_DP
@@ -99,10 +98,10 @@ internal data class IosSlidingSegmentedControlRenderPolicy(
 )
 
 internal fun resolveIosSlidingSegmentedControlChrome(
-    uiPreset: UiPreset,
+    usesMaterialFallback: Boolean,
     androidNativeLiquidGlassEnabled: Boolean
 ): IosSlidingSegmentedControlChrome {
-    return if (uiPreset == UiPreset.MD3 && !androidNativeLiquidGlassEnabled) {
+    return if (usesMaterialFallback && !androidNativeLiquidGlassEnabled) {
         IosSlidingSegmentedControlChrome.MD3_SEGMENTED
     } else {
         IosSlidingSegmentedControlChrome.LIQUID_INDICATOR
@@ -136,7 +135,7 @@ internal fun resolveIosSlidingSegmentedLiquidGlassRequest(
 }
 
 internal fun resolveMd3SegmentedControlColorTokens(
-    androidNativeVariant: AndroidNativeVariant,
+    usesMaterialColorTokens: Boolean,
     materialPrimaryContainer: Color,
     materialOnPrimaryContainer: Color,
     materialSurfaceContainerHigh: Color,
@@ -146,7 +145,7 @@ internal fun resolveMd3SegmentedControlColorTokens(
     miuixSurfaceContainerHigh: Color,
     miuixOnSurfaceVariantSummary: Color
 ): Md3SegmentedControlColorTokens {
-    return if (androidNativeVariant == AndroidNativeVariant.MATERIAL3) {
+    return if (usesMaterialColorTokens) {
         Md3SegmentedControlColorTokens(
             outerContainerColor = materialSurfaceContainerHigh,
             activeContainerColor = materialPrimaryContainer,
@@ -173,7 +172,7 @@ internal fun <T> IOSSlidingSegmentedSetting(
     enabled: Boolean = true,
     onSelectionChange: (T) -> Unit
 ) {
-    val uiPreset = LocalUiPreset.current
+    val segmentedPolicy = rememberAppSegmentedControlPolicy()
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -182,7 +181,7 @@ internal fun <T> IOSSlidingSegmentedSetting(
     ) {
         Text(
             text = title,
-            style = if (uiPreset == UiPreset.MD3) {
+            style = if (segmentedPolicy.usesEmphasizedTitle) {
                 MaterialTheme.typography.titleMedium
             } else {
                 MaterialTheme.typography.bodyLarge
@@ -242,16 +241,16 @@ internal fun <T> IOSSlidingSegmentedControl(
     onSelectionChange: (T) -> Unit
 ) {
     if (options.isEmpty()) return
-    val uiPreset = LocalUiPreset.current
+    val segmentedPolicy = rememberAppSegmentedControlPolicy()
     val context = LocalContext.current
     val homeSettings by SettingsManager
         .getHomeSettings(context)
         .collectAsStateWithLifecycle(initialValue = HomeSettings())
     val effectiveAndroidNativeLiquidGlassEnabled =
         forceLiquidIndicator || homeSettings.androidNativeLiquidGlassEnabled
-    val chrome = remember(uiPreset, effectiveAndroidNativeLiquidGlassEnabled) {
+    val chrome = remember(segmentedPolicy, effectiveAndroidNativeLiquidGlassEnabled) {
         resolveIosSlidingSegmentedControlChrome(
-            uiPreset = uiPreset,
+            usesMaterialFallback = segmentedPolicy.usesMaterialFallback,
             androidNativeLiquidGlassEnabled = effectiveAndroidNativeLiquidGlassEnabled
         )
     }
@@ -322,10 +321,10 @@ private fun <T> Md3SegmentedControl(
     enabled: Boolean = true,
     onSelectionChange: (T) -> Unit
 ) {
-    val androidNativeVariant = LocalAndroidNativeVariant.current
+    val segmentedPolicy = rememberAppSegmentedControlPolicy()
     val materialColorScheme = MaterialTheme.colorScheme
     val colorTokens = resolveMd3SegmentedControlColorTokens(
-        androidNativeVariant = androidNativeVariant,
+        usesMaterialColorTokens = segmentedPolicy.usesMaterialColorTokens,
         materialPrimaryContainer = materialColorScheme.primaryContainer,
         materialOnPrimaryContainer = materialColorScheme.onPrimaryContainer,
         materialSurfaceContainerHigh = materialColorScheme.surfaceContainerHigh,
@@ -335,14 +334,9 @@ private fun <T> Md3SegmentedControl(
         miuixSurfaceContainerHigh = AppSurfaceTokens.surfaceContainerHigh(),
         miuixOnSurfaceVariantSummary = AppSurfaceTokens.onSurfaceVariantSummary()
     )
-    val uiPreset = LocalUiPreset.current
-    val pillCornerRadius = AppShapes.resolveContainerCornerDp(
-        level = ContainerLevel.Pill,
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant
-    )
-    when (resolveMd3SegmentedControlRenderer(androidNativeVariant)) {
-        Md3SegmentedControlRenderer.MIUIX_TAB_ROW -> {
+    val pillCornerRadius = segmentedPolicy.pillCornerRadius
+    when {
+        segmentedPolicy.usesNativeTabRow -> {
             MiuixTabRowSegmentedControl(
                 options = options,
                 selectedValue = selectedValue,
@@ -353,7 +347,7 @@ private fun <T> Md3SegmentedControl(
                 onSelectionChange = onSelectionChange
             )
         }
-        Md3SegmentedControlRenderer.MATERIAL_SEGMENTED_BUTTONS -> {
+        else -> {
             MaterialMd3SegmentedControl(
                 options = options,
                 selectedValue = selectedValue,

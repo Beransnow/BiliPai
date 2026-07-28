@@ -130,6 +130,24 @@ fun AppPreferenceDivider(
 ) = IOSDivider(modifier = modifier, startIndent = startIndent)
 
 @Composable
+fun AppSearchField(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    placeholder: String = "搜索",
+    containerColor: Color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+    heightOverride: Dp? = null,
+) = IOSSearchBar(
+    query = query,
+    onQueryChange = onQueryChange,
+    modifier = modifier,
+    placeholder = placeholder,
+    containerColor = containerColor,
+    heightOverride = heightOverride,
+    forceExpandedInput = true,
+)
+
+@Composable
 fun AppTextField(
     value: String,
     onValueChange: (String) -> Unit,

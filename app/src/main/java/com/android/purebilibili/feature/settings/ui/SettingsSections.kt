@@ -53,7 +53,6 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSemanticAccentRole
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
-import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.theme.*
 import com.android.purebilibili.core.util.EasterEggs
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
@@ -62,8 +61,7 @@ import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import com.android.purebilibili.core.ui.common.copyOnLongPress
 import com.android.purebilibili.core.ui.components.AppAdaptiveSwitch
 import com.android.purebilibili.core.ui.components.rememberAdaptiveSemanticIconTint
-import com.android.purebilibili.core.ui.components.resolveAdaptiveListComponentVisualSpec
-import com.android.purebilibili.core.ui.components.resolveAdaptiveListRowVisualSpec
+import com.android.purebilibili.core.ui.components.rememberAdaptiveListVisualCapabilities
 import androidx.compose.ui.res.stringResource
 import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppDialogAction
@@ -83,7 +81,6 @@ import kotlin.math.roundToInt
 
 // Delegated to core/ui/components/iOSListComponents.kt
 import com.android.purebilibili.core.ui.animation.entrance
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
 import com.android.purebilibili.core.ui.components.AppPreferenceSectionTitle as SettingsSectionTitle
 import com.android.purebilibili.core.ui.components.AppPreferenceGroup as SettingsGroup
 import com.android.purebilibili.core.ui.components.AppSwitchPreference as SettingSwitchItem
@@ -99,11 +96,7 @@ import com.android.purebilibili.core.ui.components.AppSliderPreference as Settin
 
 @Composable
 private fun SettingsAdaptiveDivider() {
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val visualSpec = remember(uiPreset, androidNativeVariant) {
-        resolveAdaptiveListComponentVisualSpec(uiPreset, androidNativeVariant)
-    }
+    val visualSpec = rememberAdaptiveListVisualCapabilities().componentSpec
     SettingsDivider(startIndent = visualSpec.dividerStartIndentDp.dp)
 }
 
@@ -111,7 +104,7 @@ private fun SettingsAdaptiveDivider() {
 private fun SettingsCardGroup(
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val uiPreset = LocalUiPreset.current
+    val listCapabilities = rememberAdaptiveListVisualCapabilities()
     val isDark = AppSurfaceTokens.groupedListContainer().luminance() < 0.45f
     val darkTintBase = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
     val baseCardContainer = AppSurfaceTokens.cardContainer()
@@ -128,11 +121,7 @@ private fun SettingsCardGroup(
 
     SettingsGroup(
         containerColor = containerColor,
-        shape = if (uiPreset == UiPreset.IOS) {
-            null
-        } else {
-            AppShapes.container(ContainerLevel.Dialog)
-        },
+        shape = listCapabilities.adaptGroupShape(AppShapes.container(ContainerLevel.Dialog)),
         border = BorderStroke(0.6.dp, borderColor)
     ) {
         content()
@@ -143,7 +132,6 @@ private fun SettingsCardGroup(
 fun SupportAuthorCompactSection(
     onDonateClick: () -> Unit
 ) {
-    val uiPreset = LocalUiPreset.current
     val donateVisual = rememberSettingsEntryVisual(SettingsSearchTarget.DONATE)
 
     SettingsCardGroup {
@@ -165,7 +153,6 @@ fun GeneralSection(
     onPlaybackClick: () -> Unit,
     onBottomBarClick: () -> Unit
 ) {
-    val uiPreset = LocalUiPreset.current
     val appearanceVisual = rememberSettingsEntryVisual(SettingsSearchTarget.APPEARANCE)
     val playbackVisual = rememberSettingsEntryVisual(SettingsSearchTarget.PLAYBACK)
     val bottomBarVisual = rememberSettingsEntryVisual(SettingsSearchTarget.BOTTOM_BAR)
@@ -291,9 +278,8 @@ internal fun SettingsRootCategoryNavigationSection(
     actions: SettingsRootCategoryActions,
     state: SettingsRootCategoryState
 ) {
-    val uiPreset = LocalUiPreset.current
     val visual = rememberSettingsEntryVisual(category.searchTarget)
-    val effectiveIconTint = rememberAdaptiveSemanticIconTint(visual.iconTint, uiPreset)
+    val effectiveIconTint = rememberAdaptiveSemanticIconTint(visual.iconTint)
     val chevronRotation by animateFloatAsState(
         targetValue = if (isExpanded) 90f else 0f,
         animationSpec = tween(durationMillis = 200),
@@ -382,7 +368,6 @@ internal fun SettingsRootCategoryListSection(
     categories: List<SettingsRootCategory>,
     onCategoryClick: (SettingsRootCategory) -> Unit
 ) {
-    val uiPreset = LocalUiPreset.current
     val visualSpec = resolveSettingsVisualSpec()
 
     SettingsDetailGroup(title = "分类") {
@@ -479,7 +464,6 @@ internal fun SettingsAboutHomeSection(
     onCheckUpdateClick: () -> Unit,
     onDonateClick: () -> Unit
 ) {
-    val uiPreset = LocalUiPreset.current
     val githubVisual = rememberSettingsEntryVisual(SettingsSearchTarget.OPEN_SOURCE_HOME)
     val telegramVisual = rememberSettingsEntryVisual(SettingsSearchTarget.TELEGRAM)
     val updateVisual = rememberSettingsEntryVisual(SettingsSearchTarget.CHECK_UPDATE)
@@ -534,7 +518,6 @@ internal fun SettingsBackupHomeSection(
     onClearCacheClick: () -> Unit,
     cacheSize: String
 ) {
-    val uiPreset = LocalUiPreset.current
     val shareVisual = rememberSettingsEntryVisual(SettingsSearchTarget.SETTINGS_SHARE)
     val webDavVisual = rememberSettingsEntryVisual(SettingsSearchTarget.WEBDAV_BACKUP)
     val cacheVisual = rememberSettingsEntryVisual(SettingsSearchTarget.CLEAR_CACHE)
@@ -586,7 +569,6 @@ internal fun SettingsDetailGroup(
 internal fun SettingsDetailEntrySection(
     entries: List<SettingsDetailEntry>
 ) {
-    val uiPreset = LocalUiPreset.current
     SettingsCardGroup {
         entries.forEachIndexed { index, entry ->
             val visual = rememberSettingsEntryVisual(entry.target)
@@ -868,7 +850,6 @@ fun SupportToolsSection(
     onTipsClick: () -> Unit,
     onOpenLinksClick: () -> Unit
 ) {
-    val uiPreset = LocalUiPreset.current
     val tipsVisual = rememberSettingsEntryVisual(SettingsSearchTarget.TIPS)
     val openLinksVisual = rememberSettingsEntryVisual(SettingsSearchTarget.OPEN_LINKS)
 
@@ -985,7 +966,6 @@ fun SettingsSubpageEntrySection(
     onExtensionsAndDebugClick: () -> Unit,
     onAboutAndSupportClick: () -> Unit
 ) {
-    val uiPreset = LocalUiPreset.current
     val storageTint = rememberSettingsEntryTint(AppSemanticAccentRole.SECONDARY, iOSBlue)
     val privacyTint = rememberSettingsEntryTint(AppSemanticAccentRole.TERTIARY, iOSPurple)
     val developerTint = rememberSettingsEntryTint(AppSemanticAccentRole.SECONDARY, iOSTeal)
@@ -1047,7 +1027,6 @@ fun FeedApiSection(
     homeRefreshCount: Int,
     onHomeRefreshCountChange: (Int) -> Unit
 ) {
-    val uiPreset = LocalUiPreset.current
     val feedTint = rememberSettingsEntryTint(AppSemanticAccentRole.TERTIARY, iOSOrange)
     val incrementalRefreshTint = rememberSettingsEntryTint(AppSemanticAccentRole.SECONDARY, iOSGreen)
     val feedIcon = rememberSettingsSemanticIcon(SettingsIconRole.FEED_API)
@@ -1159,14 +1138,9 @@ private fun FeedDynamicTabVisibilityItem(
     onTabVisibilityChange: (String) -> Unit,
     iconTint: Color
 ) {
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val visualSpec = remember(uiPreset, androidNativeVariant) {
-        resolveAdaptiveListComponentVisualSpec(uiPreset, androidNativeVariant)
-    }
-    val rowSpec = remember(uiPreset, androidNativeVariant) {
-        resolveAdaptiveListRowVisualSpec(uiPreset, androidNativeVariant)
-    }
+    val listCapabilities = rememberAdaptiveListVisualCapabilities()
+    val visualSpec = listCapabilities.componentSpec
+    val rowSpec = listCapabilities.rowSpec
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -1246,7 +1220,6 @@ fun PrivacySection(
     onPermissionClick: () -> Unit,
     onBlockedListClick: () -> Unit // [New]
 ) {
-    val uiPreset = LocalUiPreset.current
     val privacyModeTint = rememberSettingsEntryTint(AppSemanticAccentRole.TERTIARY, iOSPurple)
     val permissionVisual = rememberSettingsEntryVisual(SettingsSearchTarget.PERMISSION)
     val blockedListVisual = rememberSettingsEntryVisual(SettingsSearchTarget.BLOCKED_LIST)
@@ -1305,14 +1278,13 @@ fun DataStorageSection(
     onImageSavePathClick: () -> Unit,
     onClearCacheClick: () -> Unit
 ) {
-    val uiPreset = LocalUiPreset.current
     val settingsShareVisual = rememberSettingsEntryVisual(SettingsSearchTarget.SETTINGS_SHARE)
     val webDavVisual = rememberSettingsEntryVisual(SettingsSearchTarget.WEBDAV_BACKUP)
     val downloadPathVisual = rememberSettingsEntryVisual(SettingsSearchTarget.DOWNLOAD_PATH)
     val imageSavePathVisual = rememberSettingsEntryVisual(SettingsSearchTarget.IMAGE_SAVE_PATH)
     val clearCacheVisual = rememberSettingsEntryVisual(SettingsSearchTarget.CLEAR_CACHE)
-    val useMiuixBasicActionRows =
-        uiPreset == UiPreset.MD3 && LocalAndroidNativeVariant.current == AndroidNativeVariant.MIUIX
+    val showExplicitActionChevron =
+        rememberAdaptiveListVisualCapabilities().showExplicitActionChevron
 
     SettingsCardGroup {
         SettingClickableItem(
@@ -1341,7 +1313,7 @@ fun DataStorageSection(
             value = if (customDownloadPath != null) "自定义" else "默认",
             onClick = onDownloadPathClick,
             iconTint = downloadPathVisual.iconTint,
-            showChevron = !useMiuixBasicActionRows
+            showChevron = showExplicitActionChevron
         )
         SettingsAdaptiveDivider()
         SettingClickableItem(
@@ -1351,7 +1323,7 @@ fun DataStorageSection(
             value = if (customImageSavePath != null) "已选择目录" else "默认",
             onClick = onImageSavePathClick,
             iconTint = imageSavePathVisual.iconTint,
-            showChevron = !useMiuixBasicActionRows
+            showChevron = showExplicitActionChevron
         )
         SettingsAdaptiveDivider()
         SettingClickableItem(
@@ -1361,7 +1333,7 @@ fun DataStorageSection(
             value = cacheSize,
             onClick = onClearCacheClick,
             iconTint = clearCacheVisual.iconTint,
-            showChevron = !useMiuixBasicActionRows
+            showChevron = showExplicitActionChevron
         )
     }
 }
@@ -1376,7 +1348,6 @@ fun DeveloperSection(
     onPluginsClick: () -> Unit,
     onExportLogsClick: () -> Unit
 ) {
-    val uiPreset = LocalUiPreset.current
     val crashTrackingTint = rememberSettingsEntryTint(AppSemanticAccentRole.SECONDARY, iOSTeal)
     val analyticsTint = rememberSettingsEntryTint(AppSemanticAccentRole.PRIMARY, iOSBlue)
     val pluginsVisual = rememberSettingsEntryVisual(SettingsSearchTarget.PLUGINS)
@@ -1452,7 +1423,6 @@ fun AboutSection(
     versionClickThreshold: Int = EasterEggs.VERSION_EASTER_EGG_THRESHOLD
 ) {
     var detailDialogContent by remember { mutableStateOf<AppBuildInfoDialogContent?>(null) }
-    val uiPreset = LocalUiPreset.current
     val autoCheckTint = rememberSettingsEntryTint(AppSemanticAccentRole.PRIMARY, iOSBlue)
     val easterEggTint = rememberSettingsEntryTint(AppSemanticAccentRole.TERTIARY, iOSYellow)
     val licensesVisual = rememberSettingsEntryVisual(SettingsSearchTarget.OPEN_SOURCE_LICENSES)

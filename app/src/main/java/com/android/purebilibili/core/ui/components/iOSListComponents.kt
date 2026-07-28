@@ -129,6 +129,19 @@ internal data class AdaptiveListRowVisualSpec(
     val minTouchTargetHeightDp: Int
 )
 
+/**
+ * Semantic list capabilities consumed by feature screens without exposing the active UI style.
+ */
+internal data class AdaptiveListVisualCapabilities(
+    val componentSpec: AdaptiveListComponentVisualSpec,
+    val rowSpec: AdaptiveListRowVisualSpec,
+    val useComponentDefaultGroupShape: Boolean,
+    val showExplicitActionChevron: Boolean,
+) {
+    fun adaptGroupShape(candidate: Shape): Shape? =
+        if (useComponentDefaultGroupShape) null else candidate
+}
+
 internal fun resolveAdaptiveListComponentVisualSpec(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
@@ -212,6 +225,25 @@ internal fun resolveAdaptiveListRowVisualSpec(
             trailingSpacingDp = 6,
             minTouchTargetHeightDp = chromeTokens.rowMinTouchTargetDp
         )
+    }
+}
+
+internal fun resolveAdaptiveListVisualCapabilities(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3,
+): AdaptiveListVisualCapabilities = AdaptiveListVisualCapabilities(
+    componentSpec = resolveAdaptiveListComponentVisualSpec(uiPreset, androidNativeVariant),
+    rowSpec = resolveAdaptiveListRowVisualSpec(uiPreset, androidNativeVariant),
+    useComponentDefaultGroupShape = uiPreset == UiPreset.IOS,
+    showExplicitActionChevron = !shouldUseNativeMiuixSearchBar(uiPreset, androidNativeVariant),
+)
+
+@Composable
+internal fun rememberAdaptiveListVisualCapabilities(): AdaptiveListVisualCapabilities {
+    val uiPreset = LocalUiPreset.current
+    val androidNativeVariant = LocalAndroidNativeVariant.current
+    return remember(uiPreset, androidNativeVariant) {
+        resolveAdaptiveListVisualCapabilities(uiPreset, androidNativeVariant)
     }
 }
 
@@ -1604,6 +1636,60 @@ fun IOSSearchBar(
             }
         }
     )
+}
+
+@Composable
+fun AppSearchEntry(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    placeholder: String = "搜索",
+    containerColor: Color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+) {
+    val uiPreset = LocalUiPreset.current
+    val androidNativeVariant = LocalAndroidNativeVariant.current
+    val colorScheme = MaterialTheme.colorScheme
+    val visualSpec = rememberAdaptiveListVisualCapabilities().componentSpec
+    val resolvedContainerColor = resolveAdaptiveSearchBarContainerColor(
+        uiPreset = uiPreset,
+        colorScheme = colorScheme,
+        fallbackColor = containerColor,
+        androidNativeVariant = androidNativeVariant,
+        globalWallpaperVisible = LocalGlobalWallpaperBackdropVisible.current,
+    )
+    val cornerRadius = if (uiPreset == UiPreset.MD3) {
+        visualSpec.searchBarCornerRadiusDp.dp
+    } else {
+        iOSCornerRadius.Small * LocalCornerRadiusScale.current
+    }
+    val searchIcon = if (uiPreset == UiPreset.MD3) {
+        Icons.Default.Search
+    } else {
+        CupertinoIcons.Default.MagnifyingGlass
+    }
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .defaultMinSize(minHeight = visualSpec.searchBarHeightDp.dp)
+            .clip(RoundedCornerShape(cornerRadius))
+            .background(resolvedContainerColor)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            imageVector = searchIcon,
+            contentDescription = null,
+            tint = colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(18.dp),
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = placeholder,
+            style = MaterialTheme.typography.bodyMedium,
+            color = colorScheme.onSurfaceVariant,
+        )
+    }
 }
 
 @Composable
