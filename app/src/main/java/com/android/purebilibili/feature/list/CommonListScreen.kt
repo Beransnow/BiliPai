@@ -60,13 +60,8 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.DisposableEffect // [Fix] Missing import
 import kotlinx.coroutines.launch // [Fix] Import
-//  Cupertino Icons - iOS SF Symbols 风格图标
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.RadioButtonUnchecked
 import androidx.compose.runtime.Composable
@@ -100,6 +95,10 @@ import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.feature.home.LocalHomeScrollOffset
 import com.android.purebilibili.feature.home.policy.resolveBottomBarChromeScrollOffset
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
+import com.android.purebilibili.core.ui.rememberAppCollectionIcon
+import com.android.purebilibili.core.ui.rememberAppFolderIcon
+import com.android.purebilibili.core.ui.rememberAppHeadphonesIcon
+import com.android.purebilibili.core.ui.rememberAppMoreIcon
 import com.android.purebilibili.core.ui.resolveGlobalWallpaperChromeColor
 import com.android.purebilibili.core.theme.BiliPink
 import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
@@ -1070,7 +1069,7 @@ fun CommonListScreen(
                                     }
                                 ) {
                                     Icon(
-                                        imageVector = CupertinoIcons.Outlined.Headphones,
+                                        imageVector = rememberAppHeadphonesIcon(),
                                         contentDescription = "全部听"
                                     )
                                 }
@@ -1082,7 +1081,7 @@ fun CommonListScreen(
                                             onClick = { showFavoriteManagementMenu = true }
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Filled.MoreVert,
+                                                imageVector = rememberAppMoreIcon(),
                                                 contentDescription = "更多管理"
                                             )
                                         }
@@ -1173,7 +1172,7 @@ fun CommonListScreen(
                                             onClick = { showHistoryManagementMenu = true }
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Filled.MoreVert,
+                                                imageVector = rememberAppMoreIcon(),
                                                 contentDescription = "更多管理"
                                             )
                                         }
@@ -1593,7 +1592,7 @@ private fun FavoriteFolderChipPreview(
             )
         } else {
             Icon(
-                imageVector = CupertinoIcons.Default.Folder,
+                imageVector = rememberAppFolderIcon(),
                 contentDescription = null,
                 modifier = Modifier.size(AppSpacingTokens.Large - AppSpacingTokens.Micro / 2),
                 tint = if (selected) {
@@ -2176,7 +2175,7 @@ private fun FavoriteSubscribedFolderPreview(
             )
         } else {
             Icon(
-                imageVector = CupertinoIcons.Default.Folder,
+                imageVector = rememberAppFolderIcon(),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary
             )
@@ -2297,7 +2296,7 @@ private fun FavoriteCollectionRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = CupertinoIcons.Default.Folder,
+                imageVector = rememberAppCollectionIcon(),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary
             )

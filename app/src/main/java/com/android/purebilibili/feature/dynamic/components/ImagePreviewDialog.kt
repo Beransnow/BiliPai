@@ -36,10 +36,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-//  Cupertino Icons - iOS SF Symbols 风格图标
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -61,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.android.purebilibili.core.ui.rememberAppCloseIcon
 import coil.compose.AsyncImage
 import coil.imageLoader
 import coil.request.ImageRequest
@@ -81,6 +78,9 @@ import com.android.purebilibili.core.ui.LocalPredictiveBackGestureEnabled
 import com.android.purebilibili.core.ui.rememberAppShareIcon
 import com.android.purebilibili.core.ui.rememberAppLikeFilledIcon
 import com.android.purebilibili.core.ui.rememberAppLikeIcon
+import com.android.purebilibili.core.ui.rememberAppDownloadIcon
+import com.android.purebilibili.core.ui.rememberAppVisibilityOffIcon
+import com.android.purebilibili.core.ui.rememberAppVisibilityOnIcon
 import com.android.purebilibili.core.ui.motion.continuityTween
 import com.android.purebilibili.core.ui.motion.emphasizedEnterTween
 import com.android.purebilibili.core.ui.motion.emphasizedExitTween
@@ -228,6 +228,9 @@ private fun ImagePreviewOverlayContent(
     val shareIcon = rememberAppShareIcon()
     val likeIcon = rememberAppLikeIcon()
     val likeFilledIcon = rememberAppLikeFilledIcon()
+    val downloadIcon = rememberAppDownloadIcon()
+    val visibilityOffIcon = rememberAppVisibilityOffIcon()
+    val visibilityOnIcon = rememberAppVisibilityOnIcon()
     val commentContext = textContent?.commentContext
     val useCommentPreviewChrome = commentContext != null
     var isSaving by remember { mutableStateOf(false) }
@@ -994,7 +997,7 @@ private fun ImagePreviewOverlayContent(
                         )
                     ) {
                         Icon(
-                            imageVector = CupertinoIcons.Default.Xmark,
+                            imageVector = rememberAppCloseIcon(),
                             contentDescription = "关闭",
                             tint = MediaContrastPalette.Foreground
                         )
@@ -1107,9 +1110,9 @@ private fun ImagePreviewOverlayContent(
                         ) {
                             Icon(
                                 imageVector = if (imagePreviewTextVisible) {
-                                    CupertinoIcons.Outlined.EyeSlash
+                                    visibilityOffIcon
                                 } else {
-                                    CupertinoIcons.Outlined.Eye
+                                    visibilityOnIcon
                                 },
                                 contentDescription = if (imagePreviewTextVisible) "隐藏图片文字" else "显示图片文字",
                                 tint = MediaContrastPalette.Foreground
@@ -1163,7 +1166,7 @@ private fun ImagePreviewOverlayContent(
                             )
                         } else {
                             Icon(
-                                imageVector = CupertinoIcons.Default.ArrowDownCircle,
+                                imageVector = downloadIcon,
                                 contentDescription = "保存图片",
                                 tint = MediaContrastPalette.Foreground
                             )
@@ -1219,7 +1222,7 @@ private fun ImagePreviewCommentTopBar(
             modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
         ) {
             Icon(
-                imageVector = CupertinoIcons.Default.Xmark,
+                imageVector = rememberAppCloseIcon(),
                 contentDescription = "关闭",
                 tint = MediaContrastPalette.Foreground,
                 modifier = Modifier.size(AppSpacingTokens.ExtraLarge)

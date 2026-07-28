@@ -13,10 +13,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.NotificationsNone
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -57,6 +53,9 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
 import com.android.purebilibili.core.ui.resolveCompactCapsuleChromeSpec
+import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.rememberAppNotificationIcon
+import com.android.purebilibili.core.ui.rememberAppSearchIcon
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.responsiveContentWidth
 import com.android.purebilibili.data.model.response.LiveAreaParent
@@ -476,7 +475,7 @@ private fun LiveListHeader(
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                        imageVector = rememberAppBackIcon(),
                         contentDescription = "返回",
                         tint = palette.primaryText
                     )
@@ -497,7 +496,7 @@ private fun LiveListHeader(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.Search,
+                        imageVector = rememberAppSearchIcon(),
                         contentDescription = null,
                         tint = palette.secondaryText
                     )
@@ -518,7 +517,7 @@ private fun LiveListHeader(
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            imageVector = Icons.Outlined.NotificationsNone,
+                            imageVector = rememberAppNotificationIcon(),
                             contentDescription = "开播提醒",
                             tint = palette.primaryText
                         )
@@ -843,7 +842,7 @@ private fun EmptyState(
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Outlined.NotificationsNone,
+                imageVector = rememberAppNotificationIcon(),
                 contentDescription = null,
                 tint = palette.secondaryText,
                 modifier = Modifier.size(visualSpec.emptyStateIconSizeDp.dp)

@@ -6,7 +6,7 @@
 
 更新日期：2026-07-28。按“审查 + 阶段 0～5”等权计算：
 
-`[█████████████░░░░░░░] 66%`
+`[█████████████░░░░░░░] 67%`
 
 | 工作项 | 状态 | 已落地内容 |
 |---|---:|---|
@@ -14,7 +14,7 @@
 | 阶段 0：契约与兼容层 | 100% | `UiStyle`、`ui_style_v1`、新旧三键双写、导入导出兼容、Theme bridge、冲突诊断与矩阵测试 |
 | 阶段 1：设置列表试点 | 100% | 中性 `App*` preference/dialog/segmented 入口；设置试点迁移；旧 Local 与 IOS* 调用棘轮达标 |
 | 阶段 2：Chrome 与导航 | 100% | 中性 `AppScaffold/AppTopBar/AppNavigation` 入口；30 个旧调用文件迁移；home/navigation policy 改读 `UiStyle`；棘轮达标 |
-| 阶段 3：普通 feature | 60% | 卡片、输入、Dialog/Sheet 与加载/刷新已分批收口；C9 本批迁移 53 个调用点 |
+| 阶段 3：普通 feature | 70% | 卡片、输入、Dialog/Sheet、加载/刷新与 C10 图标首批已收口；图标本批迁移 68 个调用点 |
 | 阶段 4～5 | 0% | 等待后续按播放器/插件、清理边界顺序推进 |
 
 阶段 0 保持渲染行为不变：`LocalUiStyle` 与旧两个 Local 同时提供，旧设置入口继续可用；合法新键优先，缺失或非法新键回退旧两键。iOS 写入保留隐藏的 Android native variant，设置分享同时携带新键和旧两键。兼容层新增 2 个引用旧类型的 core 文件，因此全生产计数为 103；受阶段棘轮约束的 feature/直接 Local/IOS* caller 仍为 **69/47/42**，符合阶段 0“不新增、暂不要求下降”的边界。
@@ -27,7 +27,9 @@
 
 Dialog/Sheet 在既有 `AppAlertDialog/AppDialogAction` 基础上补齐可选 icon slot，并新增直接委托旧 adaptive renderer 的 `AppModalBottomSheet/AppSheetDragHandle`。首批迁移动态、消息、列表、资料与空间页 15 个调用点；本批继续迁移编辑资料、关注分组、账号切换、三连选择以及 5 个资料/壁纸 Sheet。中立 Sheet 现在用 nullable container override 区分“三风格默认 token”和“调用方显式颜色”，且 `dragHandle = null` 在 iOS/M3/MIUIX 三路都保持隐藏。阶段 3 范围内 18 个 Dialog 与 6 个 Sheet 已全部走中性入口，直接 `AlertDialog/ModalBottomSheet/IOSAlertDialog/IOSModalBottomSheet` 由 **24 降至 0**。播放器边界仍有 9 处直接调用（其中 5 处位于只由 `LivePlayerScreen` 挂载的 components），按文档留到阶段 4。阶段中间棘轮保持 **43/24/26**；三路 policy、slot/参数转发、目录级零容忍测试、Kotlin 编译及 19 项壁纸策略窄测通过。后续按加载刷新→图标动效推进，阶段 3 尚未完成。
 
-加载/刷新本批新增 `AppLoadingIndicator` 与 `AppPullToRefreshBox`；对应两个旧 `Adaptive*` 入口保留同签名、全参数转发的兼容壳，其他阶段的调用仍按各自白名单后续迁移。阶段 3 普通 feature 中 23 个文件的 **44 个不确定加载 + 9 个下拉刷新**已全部收口到 App API；page/compact 密度、size/color/stroke、overlay `indicatorTopInset`、content padding/alignment 与状态回调均保留。Space 中 2 处显式 `progress` 的观看进度条属于确定进度，不冒充加载器。目录棘轮同时禁止旧入口、直接不确定 progress renderer 和 Material pull-refresh import，并锁定 **44/9/2** 调用基线。首页自定义 refresh 的 overlay inset、位移和回弹动效不属于本批，留作阶段 3 首页刷新特例尾批。阶段中间棘轮仍为 **43/24/26**；下一批按图标→动效推进。
+加载/刷新本批新增 `AppLoadingIndicator` 与 `AppPullToRefreshBox`；对应两个旧 `Adaptive*` 入口保留同签名、全参数转发的兼容壳，其他阶段的调用仍按各自白名单后续迁移。阶段 3 普通 feature 中 23 个文件的 **44 个不确定加载 + 9 个下拉刷新**已全部收口到 App API；page/compact 密度、size/color/stroke、overlay `indicatorTopInset`、content padding/alignment 与状态回调均保留。Space 中 2 处显式 `progress` 的观看进度条属于确定进度，不冒充加载器。目录棘轮同时禁止旧入口、直接不确定 progress renderer 和 Material pull-refresh import，并锁定 **44/9/2** 调用基线。首页自定义 refresh 的 overlay inset、位移和回弹动效不属于本批，留作阶段 3 首页刷新特例尾批。阶段中间棘轮仍为 **43/24/26**；后续图标首批见下段。
+
+图标 C10 首批以阶段 3 普通 feature 的 **99 个直接平台 glyph / 24 个文件**和 **77 个 `rememberApp*Icon` / 17 个文件**为基线，收拢返回、搜索、刷新、更多、可见性、通知、文件夹/图片以及分享、评论、点赞和播放等通用语义。新增 `AppCloseIcon`、`AppPlayCircleIcon`、`AppPlayCircleFilledIcon`，分别保留“关闭≠清空输入”和圆形播放的 outlined/filled 状态；迁移后为 **31 个直接 glyph / 13 个文件**与 **145 个中性调用 / 31 个文件**，共迁移 68 处。剩余 31 处按路径、glyph 与次数锁入单调收缩清单，覆盖 delete、link、selection、device、favorite、layout/display、sort、copy、直播状态、菜单、置顶和 send 等尚缺语义；品牌硬币不计入直接 glyph，播放器边界的 35 处直接调用继续留到阶段 4。C10 尚未完成，下一批先补剩余中立语义，再进入 C11 动效；阶段中间棘轮仍为 **43/24/26**。
 
 ### Android/Compose 规范的适用优先级
 
@@ -207,7 +209,7 @@ flowchart LR
 | C7 输入 | `AppTextField` 已覆盖普通输入：iOS/M3 使用 Material OutlinedTextField，MIUIX 使用原生 Miuix TextField；`AppSearchField` 复用既有搜索 renderer，MIUIX 展开框继续使用 InputField。 | value、onValueChange、label、placeholder、error、enabled/readOnly、行数、IME、图标与 visual transformation 语义共享；搜索提交、清除、焦点和顶部栏展示由中性 API 转发。 | MIUIX InputField 的 expanded/search contract 与普通 TextField 不同，因此保留独立搜索 renderer 而非强行同树。阶段 3 普通 feature（排除播放器）直接输入 renderer 已归零；设置、Following 与视频输入按各自阶段处理。 |
 | C8 Dialog/Sheet | iOS：自绘 local dialog + Material sheet 宿主；M3：Material AlertDialog/Sheet；MIUIX：为避免 popup host 缺失，Dialog 使用安全 window fallback，Sheet 当前仍是 Material 宿主上的 MIUIX token 适配。 | dismiss、icon/title/body/action slots、sheet state/content/progress 可共享；`AppAlertDialog/AppModalBottomSheet` 只委托既有 renderer，不新造第四套。普通 feature 的 24 个调用已全部收口。 | MIUIX OverlayDialog 分支当前不可达；显式隐藏 handle 和显式容器色合同已修复。非空自定义 handle 在 M3/MIUIX 下仍由原生默认 handle 接管；播放器 sheet 的层级、IME 和手势留阶段 4。 |
 | C9 加载/刷新 | `AppLoadingIndicator/AppPullToRefreshBox` 已集中分发：iOS cute person/自定义 refresh，M3 LoadingIndicator/Circular，MIUIX Infinite/Circular 与原生 refresh 文案。 | 普通 feature 的 44 个不确定加载和 9 个刷新宿主已收口；loading/refreshing、density、size/color/stroke、inset 与 onRefresh 共享。 | 2 处确定观看进度保留；home overlay top inset 与自定义刷新动效进入首页特例尾批。`AdaptiveLoadingIndicatorPolicy.kt:15-72`；`AdaptivePullToRefreshPolicy.kt:6-39`；`iOSRefreshIndicator.kt:58,161-162`。 |
-| C10 图标 | iOS：CupertinoIcons；M3/MIUIX：Material icons（当前 MIUIX 无独立 glyph）。 | semantic name、contentDescription、filled/outlined state 可共享；页面按 `UiPreset` 选 icon 是**真重复**。 | 品牌图标、硬币、自定义播放图标不应强制换皮；未来 MIUIX glyph 可只改 renderer。`AppIcons.kt:149` 起的 `resolvePlatformIcon`/`rememberApp*Icon`；`SettingsSemanticIconPolicy.kt:136,182-183`。涉及 #7/#12/#43/#49/#51/#59。 |
+| C10 图标 | iOS：CupertinoIcons；M3/MIUIX：Material icons（当前 MIUIX 无独立 glyph）。 | semantic name、contentDescription、filled/outlined state 可共享；普通 feature 首批已把直接 glyph **99→31**、中性调用 **77→145**，并补齐 Close 与圆形播放的 outline/filled renderer。 | 剩余 31 处是精确语义债务，不用近似图标冒充；品牌图标、硬币与播放器边界继续单列，未来 MIUIX glyph 可只改 renderer。`AppIcons.kt` 的 `resolvePlatformIcon`/`rememberApp*Icon`；`PhaseThreeIconBoundaryStructureTest.kt`。涉及 #7/#12/#43/#49/#51/#59。 |
 | C11 动效 | iOS：spring 与较长 sheet motion；M3：Material motion；MIUIX：定制 tween/原生组件内部动效。 | intent（standard/emphasized/expressive/spatial）、reduce-motion、状态与完成回调共享；页面时长字面量是**真重复**。 | shared transition、预测返回、液态折射、播放器手势反馈是性能敏感例外。`AppMotionTokens.kt:110-176,184-229`；`VideoContentSection.kt:282-283`；`TopTabStylePolicy.kt:407-440`。涉及 #6/#7/#13-15/#19/#41/#52/#54/#61/#62。 |
 | C12 液态玻璃/播放器/插件例外 | iOS/可选 Android liquid：Backdrop/haze/自绘；M3：普通 Material chrome；MIUIX：native renderer + bridge。播放器三者还受 AndroidView/Surface 与 overlay 宿主约束；插件 Compose UI跟随 App，JS runtime WebView 不等于可换肤 UI。 | 共享“是否可用、强度、语义 action、状态/回调”，不共享视频 Surface、特效管线或第三方内容 DOM。 | 这是**性能/宿主限制例外**，但 style 决策仍应由 `core/ui` 产出 `AppPlayerChromeProfile/AppEffectCapability`，feature 不读 Local。`VideoPlayerSection.kt:2751,2832,3399`；`FullscreenPlayerOverlay.kt:853,874`；`PluginsScreen.kt:172-186`；`BiliPaiJsRuntime.kt:76-90`。涉及 #1/#2/#6/#7/#14/#20/#27/#32/#53/#55-69。 |
 

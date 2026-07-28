@@ -7,6 +7,7 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.AppLoadingIndicator
+import com.android.purebilibili.core.ui.rememberAppShareIcon
 import com.android.purebilibili.core.ui.components.AppTextField
 
 import androidx.compose.foundation.layout.*
@@ -17,8 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
 
 /**
  *  动态转发对话框
@@ -48,7 +47,7 @@ fun RepostDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        CupertinoIcons.Default.ArrowTurnUpRight,
+                        rememberAppShareIcon(),
                         contentDescription = null,
                         modifier = Modifier.size(AppSpacingTokens.ExtraLarge),
                         tint = MaterialTheme.colorScheme.primary

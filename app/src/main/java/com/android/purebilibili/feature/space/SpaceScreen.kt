@@ -30,20 +30,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.Bolt
-import androidx.compose.material.icons.outlined.ChatBubbleOutline
-import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.ContentCopy
-import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Menu
-import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material.icons.outlined.PlayCircleOutline
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.ViewAgenda
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -106,6 +97,15 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
 import com.android.purebilibili.core.ui.OfficialVerifyBadge
+import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.rememberAppCloseIcon
+import com.android.purebilibili.core.ui.rememberAppCommentIcon
+import com.android.purebilibili.core.ui.rememberAppInboxIcon
+import com.android.purebilibili.core.ui.rememberAppMoreIcon
+import com.android.purebilibili.core.ui.rememberAppPlayCircleIcon
+import com.android.purebilibili.core.ui.rememberAppSearchIcon
+import com.android.purebilibili.core.ui.rememberAppVisibilityOffIcon
+import com.android.purebilibili.core.ui.rememberAppVisibilityOnIcon
 import com.android.purebilibili.core.ui.image.rememberImageRequest
 import com.android.purebilibili.core.ui.OfficialVerifyBadgeSpec
 import com.android.purebilibili.core.ui.blur.BlurSurfaceType
@@ -266,7 +266,7 @@ fun SpaceScreen(
                     navigationIcon = {
                         IconButton(onClick = onBack) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                                imageVector = rememberAppBackIcon(),
                                 contentDescription = backLabel
                             )
                         }
@@ -280,7 +280,7 @@ fun SpaceScreen(
                         if (canSearch) {
                             IconButton(onClick = { viewModel.setSearchMode(!isSearchMode) }) {
                                 Icon(
-                                    imageVector = if (isSearchMode) Icons.Outlined.Close else Icons.Outlined.Search,
+                                    imageVector = if (isSearchMode) rememberAppCloseIcon() else rememberAppSearchIcon(),
                                     contentDescription = if (isSearchMode) "关闭搜索" else "搜索"
                                 )
                             }
@@ -288,7 +288,7 @@ fun SpaceScreen(
                         Box {
                             IconButton(onClick = { showMenu = true }) {
                                 Icon(
-                                    imageVector = Icons.Outlined.MoreVert,
+                                    imageVector = rememberAppMoreIcon(),
                                     contentDescription = moreLabel
                                 )
                             }
@@ -322,9 +322,9 @@ fun SpaceScreen(
                                     leadingIcon = {
                                         Icon(
                                             imageVector = if (isBlocked) {
-                                                Icons.Outlined.Visibility
+                                                rememberAppVisibilityOnIcon()
                                             } else {
-                                                Icons.Outlined.VisibilityOff
+                                                rememberAppVisibilityOffIcon()
                                             },
                                             contentDescription = null,
                                             tint = if (isBlocked) {
@@ -2150,7 +2150,7 @@ private fun SpaceHeader(
                                     }
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Outlined.Email,
+                                        imageVector = rememberAppInboxIcon(),
                                         contentDescription = "私信",
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -2317,7 +2317,7 @@ private fun SpaceSearchEntryChip(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Icon(
-                imageVector = Icons.Outlined.Search,
+                imageVector = rememberAppSearchIcon(),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(18.dp)
@@ -2658,7 +2658,7 @@ private fun SpaceContributionVideoToolbarActions(
                 contentPadding = PaddingValues(horizontal = 8.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.PlayCircleOutline,
+                    imageVector = rememberAppPlayCircleIcon(),
                     contentDescription = null,
                     modifier = Modifier.size(17.dp)
                 )
@@ -2676,7 +2676,7 @@ private fun SpaceContributionVideoToolbarActions(
                 modifier = Modifier.size(40.dp)
             ) {
                 Icon(
-                    imageVector = Icons.Outlined.PlayCircleOutline,
+                    imageVector = rememberAppPlayCircleIcon(),
                     contentDescription = "播放全部",
                     tint = MaterialTheme.colorScheme.primary
                 )
@@ -3495,7 +3495,7 @@ private fun SpaceArchiveListItemRow(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Icon(
-                    imageVector = Icons.Outlined.MoreVert,
+                    imageVector = rememberAppMoreIcon(),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f),
                     modifier = Modifier
@@ -3518,7 +3518,7 @@ private fun SpaceArchiveListItemRow(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.PlayCircleOutline,
+                        imageVector = rememberAppPlayCircleIcon(),
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(16.dp)
@@ -3535,7 +3535,7 @@ private fun SpaceArchiveListItemRow(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.ChatBubbleOutline,
+                        imageVector = rememberAppCommentIcon(),
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(15.dp)
@@ -3598,7 +3598,7 @@ private fun SpaceAudioListItem(
             )
         }
         Icon(
-            imageVector = Icons.Outlined.PlayCircleOutline,
+            imageVector = rememberAppPlayCircleIcon(),
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(28.dp)

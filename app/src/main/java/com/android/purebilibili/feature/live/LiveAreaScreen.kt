@@ -27,7 +27,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.StarBorder
 import com.android.purebilibili.core.ui.AppLoadingIndicator
@@ -40,6 +39,7 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
+import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.responsiveContentWidth
 import androidx.compose.material3.Icon
@@ -132,7 +132,7 @@ fun LiveAreaScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            imageVector = rememberAppBackIcon(),
                             contentDescription = "返回",
                         )
                     }

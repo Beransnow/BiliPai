@@ -16,9 +16,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Refresh
 import com.android.purebilibili.core.theme.LocalUiStyle
 import com.android.purebilibili.core.theme.toRendererStyleBridge
 import com.android.purebilibili.core.ui.AppScaffold
@@ -26,6 +23,8 @@ import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
 import com.android.purebilibili.core.ui.AppLoadingIndicator
+import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.rememberAppRefreshIcon
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -118,7 +117,7 @@ fun LiveFollowingScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            imageVector = rememberAppBackIcon(),
                             contentDescription = "返回",
                         )
                     }
@@ -142,7 +141,7 @@ fun LiveFollowingScreen(
                         },
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.Refresh,
+                            imageVector = rememberAppRefreshIcon(),
                             contentDescription = if (isRefreshing) "正在刷新" else "刷新",
                         )
                     }

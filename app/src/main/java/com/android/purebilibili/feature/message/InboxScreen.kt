@@ -9,8 +9,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,6 +30,7 @@ import com.android.purebilibili.core.ui.AppAlertDialog
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.ui.AppPullToRefreshBox
 import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.rememberAppMoreIcon
 import com.android.purebilibili.data.model.response.SessionItem
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import java.text.SimpleDateFormat
@@ -640,7 +639,7 @@ fun SessionListItem(
                     modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
-                        Icons.Default.MoreVert,
+                        rememberAppMoreIcon(),
                         contentDescription = "更多",
                         modifier = Modifier.size(16.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant

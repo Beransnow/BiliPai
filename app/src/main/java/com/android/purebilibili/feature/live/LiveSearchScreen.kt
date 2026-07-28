@@ -21,9 +21,6 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -56,6 +53,8 @@ import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
+import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.rememberAppSearchIcon
 import com.android.purebilibili.core.ui.components.AppTextField
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.responsiveContentWidth
@@ -177,7 +176,7 @@ fun LiveSearchScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            imageVector = rememberAppBackIcon(),
                             contentDescription = "返回",
                         )
                     }
@@ -217,7 +216,7 @@ fun LiveSearchScreen(
                     singleLine = true,
                     placeholder = "搜索房间或主播",
                     trailingIcon = {
-                        Icon(imageVector = Icons.Outlined.Search, contentDescription = null)
+                        Icon(imageVector = rememberAppSearchIcon(), contentDescription = null)
                     },
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                     keyboardActions = KeyboardActions(onSearch = { scope.launch { submit() } }),
@@ -228,7 +227,7 @@ fun LiveSearchScreen(
                     modifier = Modifier.size(AppSpacingTokens.TripleExtraLarge),
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.Search,
+                        imageVector = rememberAppSearchIcon(),
                         contentDescription = "搜索",
                     )
                 }

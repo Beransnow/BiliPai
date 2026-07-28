@@ -30,6 +30,7 @@ import android.widget.Toast
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.core.ui.AppLoadingIndicator
 import com.android.purebilibili.core.ui.AppModalBottomSheet
+import com.android.purebilibili.core.ui.rememberAppCloseIcon
 
 /**
  * 修复壁纸图片 URL (不添加缩放后缀，保持原图质量)
@@ -91,7 +92,7 @@ fun OfficialWallpaperSheet(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     IconButton(onClick = onDismiss) {
-                        Icon(CupertinoIcons.Default.Xmark, contentDescription = "Close")
+                        Icon(rememberAppCloseIcon(), contentDescription = "Close")
                     }
                     
                     Text(

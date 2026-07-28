@@ -19,11 +19,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.North
-import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material.icons.rounded.Search
 import com.android.purebilibili.core.ui.AppLoadingIndicator
+import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.rememberAppRefreshIcon
+import com.android.purebilibili.core.ui.rememberAppSearchIcon
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -66,7 +66,7 @@ fun SearchTrendingScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                            imageVector = rememberAppBackIcon(),
                             contentDescription = "返回"
                         )
                     }
@@ -74,7 +74,7 @@ fun SearchTrendingScreen(
                 actions = {
                     IconButton(onClick = viewModel::refresh) {
                         Icon(
-                            imageVector = Icons.Rounded.Refresh,
+                            imageVector = rememberAppRefreshIcon(),
                             contentDescription = "刷新"
                         )
                     }
@@ -189,7 +189,7 @@ private fun SearchTrendingHero() {
             }
         }
         Icon(
-            imageVector = Icons.Rounded.Search,
+            imageVector = rememberAppSearchIcon(),
             contentDescription = null,
             tint = Color.White.copy(alpha = 0.18f),
             modifier = Modifier

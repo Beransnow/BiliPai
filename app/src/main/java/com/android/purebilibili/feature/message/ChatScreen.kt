@@ -22,8 +22,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -50,6 +48,8 @@ import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.rememberAppMoreIcon
+import com.android.purebilibili.core.ui.rememberAppPhotoIcon
 import com.android.purebilibili.core.ui.components.AppTextField
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.EmoteInfo
@@ -107,7 +107,7 @@ fun ChatScreen(
                 actions = {
                     Box {
                         IconButton(onClick = { showSessionMenu = true }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = "会话设置")
+                            Icon(rememberAppMoreIcon(), contentDescription = "会话设置")
                         }
                         ChatSessionControlMenu(
                             expanded = showSessionMenu,
@@ -400,6 +400,7 @@ fun ChatInputBar(
 ) {
     val showSendAction = text.isNotBlank()
     val isBusy = isSending || isUploadingImage
+    val photoIcon = rememberAppPhotoIcon()
 
     Surface(
         tonalElevation = 3.dp,
@@ -441,7 +442,7 @@ fun ChatInputBar(
                     )
                 } else {
                     Icon(
-                        imageVector = if (showSendAction) Icons.AutoMirrored.Filled.Send else Icons.Filled.AddCircle,
+                        imageVector = if (showSendAction) Icons.AutoMirrored.Filled.Send else photoIcon,
                         contentDescription = if (showSendAction) "发送" else "图片",
                         tint = if (showSendAction) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                     )

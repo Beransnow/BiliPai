@@ -7,6 +7,7 @@ import androidx.compose.material.icons.automirrored.outlined.ExitToApp
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.outlined.Comment
@@ -41,6 +42,7 @@ import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material.icons.outlined.WatchLater
 import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Wifi
@@ -399,6 +401,9 @@ fun rememberAppSearchIcon(): ImageVector = resolveAppSearchIcon(LocalUiPreset.cu
 fun rememberAppClearIcon(): ImageVector = resolveAppClearIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
 
 @Composable
+fun rememberAppCloseIcon(): ImageVector = resolveAppCloseIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+
+@Composable
 fun rememberAppHistoryIcon(): ImageVector = resolveAppHistoryIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
 
 @Composable
@@ -466,6 +471,12 @@ fun rememberAppDynamicIcon(): ImageVector = resolveAppDynamicIcon(LocalUiPreset.
 
 @Composable
 fun rememberAppPlayIcon(): ImageVector = resolveAppPlayIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+
+@Composable
+fun rememberAppPlayCircleIcon(): ImageVector = resolveAppPlayCircleIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+
+@Composable
+fun rememberAppPlayCircleFilledIcon(): ImageVector = resolveAppPlayCircleFilledIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
 
 @Composable
 fun rememberAppCollectionIcon(): ImageVector = resolveAppCollectionIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
@@ -573,6 +584,11 @@ fun resolveAppClearIcon(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
 ): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Filled.Clear, CupertinoIcons.Outlined.XmarkCircle)
+
+fun resolveAppCloseIcon(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Outlined.Close, CupertinoIcons.Outlined.Xmark)
 
 fun resolveAppHistoryIcon(
     uiPreset: UiPreset,
@@ -688,6 +704,16 @@ fun resolveAppPlayIcon(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
 ): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Outlined.PlayArrow, CupertinoIcons.Outlined.Play)
+
+fun resolveAppPlayCircleIcon(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Outlined.PlayCircleOutline, CupertinoIcons.Outlined.PlayCircle)
+
+fun resolveAppPlayCircleFilledIcon(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Filled.PlayCircle, CupertinoIcons.Filled.PlayCircle)
 
 fun resolveAppCollectionIcon(
     uiPreset: UiPreset,

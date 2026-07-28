@@ -44,13 +44,14 @@ import com.android.purebilibili.feature.video.ui.components.resolveReplyPreviewT
 import com.android.purebilibili.feature.video.ui.components.resolveVisibleSubReplies
 import com.android.purebilibili.feature.video.ui.components.shouldShowInlineSubReplyToggle
 import com.android.purebilibili.feature.video.viewmodel.CommentSortMode
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import com.android.purebilibili.core.ui.AppLoadingIndicator
+import com.android.purebilibili.core.ui.rememberAppCloseIcon
+import com.android.purebilibili.core.ui.rememberAppCommentIcon
+import com.android.purebilibili.core.ui.rememberAppLikeIcon
 import com.android.purebilibili.core.ui.components.AppTextField
 
 @Composable
@@ -197,7 +198,7 @@ fun DynamicCommentSheet(
                 Spacer(modifier = Modifier.width(AppSpacingTokens.Small))
                 IconButton(onClick = onDismiss) {
                     Icon(
-                        CupertinoIcons.Default.Xmark,
+                        rememberAppCloseIcon(),
                         contentDescription = "关闭",
                         modifier = Modifier.size(AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall)
                     )
@@ -225,7 +226,7 @@ fun DynamicCommentSheet(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(
-                            CupertinoIcons.Default.BubbleLeft,
+                            rememberAppCommentIcon(),
                             contentDescription = null,
                             modifier = Modifier.size(AppSpacingTokens.TripleExtraLarge),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.3f)
@@ -530,7 +531,7 @@ private fun CommentItem(
             // 点赞数
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    CupertinoIcons.Default.HandThumbsup,
+                    rememberAppLikeIcon(),
                     contentDescription = null,
                     modifier = Modifier.size(AppSpacingTokens.Medium + AppSpacingTokens.Micro),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.5f)

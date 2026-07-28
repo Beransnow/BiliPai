@@ -44,8 +44,13 @@ import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.common.CopySelectionDialog
+import com.android.purebilibili.core.ui.rememberAppCommentIcon
+import com.android.purebilibili.core.ui.rememberAppLikeFilledIcon
+import com.android.purebilibili.core.ui.rememberAppLikeIcon
 import com.android.purebilibili.core.ui.rememberAppMoreIcon
+import com.android.purebilibili.core.ui.rememberAppShareIcon
 import com.android.purebilibili.core.ui.rememberAppVisibilityOffIcon
+import com.android.purebilibili.core.ui.rememberAppWatchLaterIcon
 import com.android.purebilibili.data.model.response.DynamicDesc
 import com.android.purebilibili.data.model.response.DynamicItem
 import com.android.purebilibili.data.model.response.DrawItem
@@ -111,6 +116,11 @@ fun DynamicCardV2(
     val cardClickAction = remember(item) { resolveDynamicCardPrimaryAction(item) }
     val watchLaterAid = remember(item) { resolveDynamicWatchLaterAid(item) }
     val deleteAction = remember(item) { resolveDynamicDeleteAction(item) }
+    val watchLaterIcon = rememberAppWatchLaterIcon()
+    val shareIcon = rememberAppShareIcon()
+    val commentIcon = rememberAppCommentIcon()
+    val likeIcon = rememberAppLikeIcon()
+    val likeFilledIcon = rememberAppLikeFilledIcon()
     var pendingDeleteAction by remember(item.id_str) { mutableStateOf<DynamicDeleteAction?>(null) }
     val isPrimaryClickEnabled = remember(cardClickAction, onArticleClick, onDynamicDetailClick, onPrimaryClickOverride) {
         shouldEnableDynamicCardPrimaryClick(
@@ -269,7 +279,7 @@ fun DynamicCardV2(
                                 text = { Text("稍后再看", color = MaterialTheme.colorScheme.onSurface) },
                                 leadingIcon = {
                                     Icon(
-                                        CupertinoIcons.Default.Clock,
+                                        watchLaterIcon,
                                         contentDescription = null,
                                         modifier = Modifier.size(AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall),
                                         tint = MaterialTheme.colorScheme.onSurface
@@ -689,7 +699,7 @@ fun DynamicCardV2(
         ) {
             // 转发按钮
             ActionButton(
-                icon = io.github.alexzhirkevich.cupertino.icons.CupertinoIcons.Default.ArrowTurnUpRight,
+                icon = shareIcon,
                 count = statModule.forward.count,
                 label = "转发",
                 enabled = !statModule.forward.forbidden,
@@ -699,7 +709,7 @@ fun DynamicCardV2(
             
             // 评论按钮
             ActionButton(
-                icon = io.github.alexzhirkevich.cupertino.icons.CupertinoIcons.Default.Message,
+                icon = commentIcon,
                 count = statModule.comment.count,
                 label = "评论",
                 enabled = !statModule.comment.forbidden,
@@ -709,8 +719,7 @@ fun DynamicCardV2(
             
             // 点赞按钮
             ActionButton(
-                icon = if (isLiked) io.github.alexzhirkevich.cupertino.icons.CupertinoIcons.Filled.HandThumbsup
-                       else io.github.alexzhirkevich.cupertino.icons.CupertinoIcons.Default.HandThumbsup,
+                icon = if (isLiked) likeFilledIcon else likeIcon,
                 count = statModule.like.count,
                 label = "点赞",
                 isActive = isLiked,

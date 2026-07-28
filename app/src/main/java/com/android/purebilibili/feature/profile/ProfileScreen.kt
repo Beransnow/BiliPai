@@ -82,6 +82,7 @@ import com.android.purebilibili.core.ui.TopReadabilityChrome
 import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.ui.rememberAppBookmarkIcon
+import com.android.purebilibili.core.ui.rememberAppChevronForwardIcon
 import com.android.purebilibili.core.ui.rememberAppChevronDownIcon
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
 import com.android.purebilibili.core.ui.rememberAppDownloadIcon
@@ -3765,7 +3766,7 @@ private fun ProfileServiceRow(
             overflow = TextOverflow.Ellipsis
         )
         Icon(
-            imageVector = CupertinoIcons.Default.ChevronForward,
+            imageVector = rememberAppChevronForwardIcon(),
             contentDescription = null,
             tint = textColor.copy(alpha = 0.46f),
             modifier = Modifier.size(20.dp)

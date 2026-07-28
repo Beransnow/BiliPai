@@ -35,6 +35,8 @@ import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.core.ui.AppLoadingIndicator
 import com.android.purebilibili.core.ui.AppModalBottomSheet
+import com.android.purebilibili.core.ui.rememberAppCloseIcon
+import com.android.purebilibili.core.ui.rememberAppPhotoIcon
 
 /**
  * 🖼️ 开屏壁纸选择器 (用于设置页)
@@ -121,7 +123,7 @@ fun SplashWallpaperPickerSheet(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     IconButton(onClick = onDismiss) {
-                        Icon(CupertinoIcons.Default.Xmark, contentDescription = "关闭")
+                        Icon(rememberAppCloseIcon(), contentDescription = "关闭")
                     }
 
                     Text(
@@ -143,7 +145,7 @@ fun SplashWallpaperPickerSheet(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         OutlinedButton(onClick = openCustomWallpaperPicker) {
-                            Icon(CupertinoIcons.Default.Photo, contentDescription = null)
+                            Icon(rememberAppPhotoIcon(), contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("从相册选择")
                         }
@@ -160,7 +162,7 @@ fun SplashWallpaperPickerSheet(
                         Text(text = error ?: "加载失败", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.height(12.dp))
                         OutlinedButton(onClick = openCustomWallpaperPicker) {
-                            Icon(CupertinoIcons.Default.Photo, contentDescription = null)
+                            Icon(rememberAppPhotoIcon(), contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("从相册选择")
                         }
@@ -179,7 +181,7 @@ fun SplashWallpaperPickerSheet(
                         Text(text = "暂无官方壁纸", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.height(12.dp))
                         OutlinedButton(onClick = openCustomWallpaperPicker) {
-                            Icon(CupertinoIcons.Default.Photo, contentDescription = null)
+                            Icon(rememberAppPhotoIcon(), contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("从相册选择")
                         }
@@ -416,7 +418,7 @@ private fun SplashCustomWallpaperTile(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Icon(
-                    CupertinoIcons.Default.Photo,
+                    rememberAppPhotoIcon(),
                     contentDescription = null,
                     tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(28.dp)

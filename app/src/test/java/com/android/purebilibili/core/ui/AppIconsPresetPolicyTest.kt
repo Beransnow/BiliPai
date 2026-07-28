@@ -6,10 +6,12 @@ import androidx.compose.material.icons.automirrored.outlined.Comment
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.ExitToApp
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.BookmarkBorder
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.FolderCopy
 import androidx.compose.material.icons.outlined.Headphones
 import androidx.compose.material.icons.outlined.History
@@ -40,8 +42,10 @@ import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material.icons.outlined.Wifi
 import androidx.compose.material.icons.outlined.WatchLater
 import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.AndroidNativeVariant
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.filled.Tv
+import io.github.alexzhirkevich.cupertino.icons.filled.PlayCircle as FilledPlayCircleIcon
 import io.github.alexzhirkevich.cupertino.icons.outlined.Bookmark
 import io.github.alexzhirkevich.cupertino.icons.outlined.ChevronBackward
 import io.github.alexzhirkevich.cupertino.icons.outlined.ChevronDown
@@ -58,6 +62,7 @@ import io.github.alexzhirkevich.cupertino.icons.outlined.MagnifyingGlass
 import io.github.alexzhirkevich.cupertino.icons.outlined.Message
 import io.github.alexzhirkevich.cupertino.icons.outlined.PersonCropCircleBadgePlus
 import io.github.alexzhirkevich.cupertino.icons.outlined.Play
+import io.github.alexzhirkevich.cupertino.icons.outlined.PlayCircle as OutlinedPlayCircleIcon
 import io.github.alexzhirkevich.cupertino.icons.outlined.BellBadge
 import io.github.alexzhirkevich.cupertino.icons.outlined.ChartBar
 import io.github.alexzhirkevich.cupertino.icons.outlined.InfoCircle
@@ -66,6 +71,7 @@ import io.github.alexzhirkevich.cupertino.icons.outlined.RectanglePortraitAndArr
 import io.github.alexzhirkevich.cupertino.icons.outlined.ArrowTurnUpRight
 import io.github.alexzhirkevich.cupertino.icons.outlined.Sparkles
 import io.github.alexzhirkevich.cupertino.icons.outlined.XmarkCircle
+import io.github.alexzhirkevich.cupertino.icons.outlined.Xmark
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -76,6 +82,7 @@ class AppIconsPresetPolicyTest {
         assertEquals(Icons.AutoMirrored.Filled.ArrowBack, resolveAppBackIcon(UiPreset.MD3))
         assertEquals(Icons.Filled.Search, resolveAppSearchIcon(UiPreset.MD3))
         assertEquals(Icons.Filled.Clear, resolveAppClearIcon(UiPreset.MD3))
+        assertEquals(Icons.Outlined.Close, resolveAppCloseIcon(UiPreset.MD3))
         assertEquals(Icons.AutoMirrored.Outlined.KeyboardArrowRight, resolveAppChevronForwardIcon(UiPreset.MD3))
         assertEquals(Icons.Outlined.KeyboardArrowDown, resolveAppChevronDownIcon(UiPreset.MD3))
         assertEquals(Icons.Outlined.KeyboardArrowUp, resolveAppChevronUpIcon(UiPreset.MD3))
@@ -113,6 +120,8 @@ class AppIconsPresetPolicyTest {
         assertEquals(Icons.Outlined.Home, resolveAppHomeIcon(UiPreset.MD3))
         assertEquals(Icons.Outlined.DynamicFeed, resolveAppDynamicIcon(UiPreset.MD3))
         assertEquals(Icons.Outlined.PlayArrow, resolveAppPlayIcon(UiPreset.MD3))
+        assertEquals(Icons.Outlined.PlayCircleOutline, resolveAppPlayCircleIcon(UiPreset.MD3))
+        assertEquals(Icons.Filled.PlayCircle, resolveAppPlayCircleFilledIcon(UiPreset.MD3))
         assertEquals(Icons.Outlined.FolderCopy, resolveAppCollectionIcon(UiPreset.MD3))
         assertEquals(Icons.AutoMirrored.Outlined.Comment, resolveAppCommentIcon(UiPreset.MD3))
         assertEquals(Icons.Outlined.ThumbUpOffAlt, resolveAppLikeIcon(UiPreset.MD3))
@@ -126,6 +135,7 @@ class AppIconsPresetPolicyTest {
         assertEquals(CupertinoIcons.Outlined.ChevronBackward, resolveAppBackIcon(UiPreset.IOS))
         assertEquals(CupertinoIcons.Outlined.MagnifyingGlass, resolveAppSearchIcon(UiPreset.IOS))
         assertEquals(CupertinoIcons.Outlined.XmarkCircle, resolveAppClearIcon(UiPreset.IOS))
+        assertEquals(CupertinoIcons.Outlined.Xmark, resolveAppCloseIcon(UiPreset.IOS))
         assertEquals(CupertinoIcons.Outlined.Clock, resolveAppHistoryIcon(UiPreset.IOS))
         assertEquals(CupertinoIcons.Outlined.Bookmark, resolveAppBookmarkIcon(UiPreset.IOS))
         assertEquals(CupertinoIcons.Outlined.Envelope, resolveAppInboxIcon(UiPreset.IOS))
@@ -139,6 +149,8 @@ class AppIconsPresetPolicyTest {
         assertEquals(CupertinoIcons.Outlined.House, resolveAppHomeIcon(UiPreset.IOS))
         assertEquals(CupertinoIcons.Outlined.RectangleStack, resolveAppDynamicIcon(UiPreset.IOS))
         assertEquals(CupertinoIcons.Outlined.Play, resolveAppPlayIcon(UiPreset.IOS))
+        assertEquals(CupertinoIcons.Outlined.OutlinedPlayCircleIcon, resolveAppPlayCircleIcon(UiPreset.IOS))
+        assertEquals(CupertinoIcons.Filled.FilledPlayCircleIcon, resolveAppPlayCircleFilledIcon(UiPreset.IOS))
         assertEquals(CupertinoIcons.Outlined.Bookmark, resolveAppBookmarkIcon(UiPreset.IOS))
         assertEquals(CupertinoIcons.Outlined.Message, resolveAppCommentIcon(UiPreset.IOS))
         assertEquals(CupertinoIcons.Outlined.HandThumbsup, resolveAppLikeIcon(UiPreset.IOS))
@@ -151,5 +163,20 @@ class AppIconsPresetPolicyTest {
         assertEquals(CupertinoIcons.Outlined.Sparkles, resolveAppSparklesIcon(UiPreset.IOS))
         assertEquals(CupertinoIcons.Outlined.Clock, resolveAppWatchLaterIcon(UiPreset.IOS))
         assertEquals(AppIcons.BiliCoin, resolveAppCoinIcon(UiPreset.IOS))
+    }
+
+    @Test
+    fun `new semantic icons should ignore hidden android variant while ios is active`() {
+        AndroidNativeVariant.entries.forEach { variant ->
+            assertEquals(CupertinoIcons.Outlined.Xmark, resolveAppCloseIcon(UiPreset.IOS, variant))
+            assertEquals(CupertinoIcons.Outlined.OutlinedPlayCircleIcon, resolveAppPlayCircleIcon(UiPreset.IOS, variant))
+            assertEquals(CupertinoIcons.Filled.FilledPlayCircleIcon, resolveAppPlayCircleFilledIcon(UiPreset.IOS, variant))
+        }
+        assertEquals(Icons.Outlined.Close, resolveAppCloseIcon(UiPreset.MD3, AndroidNativeVariant.MATERIAL3))
+        assertEquals(Icons.Outlined.Close, resolveAppCloseIcon(UiPreset.MD3, AndroidNativeVariant.MIUIX))
+        assertEquals(Icons.Outlined.PlayCircleOutline, resolveAppPlayCircleIcon(UiPreset.MD3, AndroidNativeVariant.MATERIAL3))
+        assertEquals(Icons.Outlined.PlayCircleOutline, resolveAppPlayCircleIcon(UiPreset.MD3, AndroidNativeVariant.MIUIX))
+        assertEquals(Icons.Filled.PlayCircle, resolveAppPlayCircleFilledIcon(UiPreset.MD3, AndroidNativeVariant.MATERIAL3))
+        assertEquals(Icons.Filled.PlayCircle, resolveAppPlayCircleFilledIcon(UiPreset.MD3, AndroidNativeVariant.MIUIX))
     }
 }
