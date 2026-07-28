@@ -1217,7 +1217,7 @@ fun CommonListScreen(
                                 vertical = favoriteHeaderLayout.searchBarVerticalPaddingDp.dp
                             )
                     ) {
-                        com.android.purebilibili.core.ui.components.IOSSearchBar(
+                        com.android.purebilibili.core.ui.components.AppSearchField(
                             query = searchQuery,
                             onQueryChange = { searchQuery = it },
                             placeholder = when {

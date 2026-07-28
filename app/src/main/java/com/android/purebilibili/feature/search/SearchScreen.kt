@@ -43,8 +43,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 //  Cupertino Icons - iOS SF Symbols 风格图标
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.outlined.*
@@ -56,7 +54,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
@@ -69,7 +66,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
@@ -97,8 +93,9 @@ import com.android.purebilibili.core.ui.rememberAppHistoryIcon
 import com.android.purebilibili.core.ui.rememberAppSearchIcon
 import com.android.purebilibili.core.ui.resolveOfficialVerifyBadge
 import com.android.purebilibili.core.ui.components.UpBadgeName
+import com.android.purebilibili.core.ui.components.AppSearchField
+import com.android.purebilibili.core.ui.components.AppSearchFieldPresentation
 import com.android.purebilibili.core.ui.components.shouldUseNativeMiuixSearchBar
-import top.yukonga.miuix.kmp.basic.InputField
 import com.android.purebilibili.feature.home.components.cards.ElegantVideoCard  //  使用首页卡片
 import com.android.purebilibili.feature.home.resolveHomeFeedCardLayout
 import com.android.purebilibili.feature.home.resolveReturnAnimationSuppressionDurationMs
@@ -154,29 +151,12 @@ internal fun shouldShowSearchHotHeader(
     hotSearchEnabled: Boolean
 ): Boolean = hotItemCount > 0
 
-internal data class SearchTopBarLayoutSpec(
-    val showInlineHotToggle: Boolean,
-    val placeholderMaxLines: Int
-)
-
-internal fun resolveSearchTopBarLayoutSpec(): SearchTopBarLayoutSpec {
-    return SearchTopBarLayoutSpec(
-        showInlineHotToggle = false,
-        placeholderMaxLines = 1
-    )
-}
-
 internal const val SEARCH_TOP_BAR_VERTICAL_PADDING_DP = 16
 
 internal fun resolveSearchTopBarRowMinHeightDp(
     inputHeightDp: Int,
     verticalPaddingDp: Int = SEARCH_TOP_BAR_VERTICAL_PADDING_DP
 ): Int = maxOf(64, inputHeightDp + verticalPaddingDp)
-
-internal fun shouldOmitSearchInputLeadingIcon(
-    uiPreset: UiPreset,
-    usesMiuixSearchInput: Boolean
-): Boolean = uiPreset == UiPreset.MD3 && !usesMiuixSearchInput
 
 internal fun resolveSearchTopBarHeaderColor(
     surfaceColor: Color,
@@ -1691,15 +1671,10 @@ fun SearchTopBar(
 ) {
     val uiPreset = LocalUiPreset.current
     val androidNativeVariant = LocalAndroidNativeVariant.current
-    val layoutSpec = remember { resolveSearchTopBarLayoutSpec() }
     val chromeSpec = remember(uiPreset, androidNativeVariant) {
         resolveSearchChromeVisualSpec(uiPreset, androidNativeVariant)
     }
     val usesMiuixSearchInput = shouldUseNativeMiuixSearchBar(uiPreset, androidNativeVariant)
-    val omitSearchInputLeadingIcon = shouldOmitSearchInputLeadingIcon(
-        uiPreset = uiPreset,
-        usesMiuixSearchInput = usesMiuixSearchInput
-    )
     val topBarRowMinHeightDp = remember(chromeSpec.inputHeightDp) {
         resolveSearchTopBarRowMinHeightDp(chromeSpec.inputHeightDp)
     }
@@ -1713,17 +1688,6 @@ fun SearchTopBar(
     //  Focus 状态追踪
     var isFocused by remember { mutableStateOf(false) }
     
-    //  自动聚焦并弹出键盘（Miuix InputField 在 expanded=true 时自行 requestFocus）
-    LaunchedEffect(autoFocusEnabled, query, usesMiuixSearchInput) {
-        if (!usesMiuixSearchInput && autoFocusEnabled && query.isEmpty()) {
-            kotlinx.coroutines.delay(60)
-            runCatching {
-                focusRequester.requestFocus()
-            }.onFailure { e ->
-                com.android.purebilibili.core.util.Logger.e("SearchScreen", "Failed to auto focus search field", e)
-            }
-        }
-    }
     SideEffect {
         if (usesMiuixSearchInput) {
             isFocused = isSearchFieldFocused
@@ -1812,81 +1776,31 @@ fun SearchTopBar(
 
                 Spacer(modifier = Modifier.width(4.dp))
 
-                if (usesMiuixSearchInput) {
-                    InputField(
-                        query = query,
-                        onQueryChange = onQueryChange,
-                        onSearch = {
-                            if (canSubmit) {
-                                onSearch(resolvedSubmitKeyword)
-                            }
-                        },
-                        expanded = true,
-                        onExpandedChange = {},
-                        modifier = Modifier
-                            .weight(1f)
-                            .defaultMinSize(minHeight = chromeSpec.inputHeightDp.dp),
-                        label = placeholder,
-                        interactionSource = searchInteractionSource,
-                    )
-                } else {
-                    OutlinedTextField(
-                        value = query,
-                        onValueChange = onQueryChange,
-                        modifier = Modifier
-                            .weight(1f)
-                            .defaultMinSize(minHeight = chromeSpec.inputHeightDp.dp)
-                            .focusRequester(focusRequester)
-                            .onFocusChanged { isFocused = it.isFocused },
-                        placeholder = {
-                            Text(
-                                text = placeholder,
-                                maxLines = layoutSpec.placeholderMaxLines,
-                                overflow = TextOverflow.Ellipsis,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        },
-                        leadingIcon = if (omitSearchInputLeadingIcon) {
-                            null
-                        } else {
-                            {
-                                Icon(
-                                    searchIcon,
-                                    contentDescription = searchLabel,
-                                    tint = searchIconColor,
-                                    modifier = Modifier.size(chromeSpec.actionIconSizeDp.dp)
-                                )
-                            }
-                        },
-                        singleLine = true,
-                        textStyle = MaterialTheme.typography.bodyLarge.copy(
-                            color = MaterialTheme.colorScheme.onSurface
-                        ),
-                        shape = RoundedCornerShape(chromeSpec.inputCornerRadiusDp.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            unfocusedBorderColor = Color.Transparent,
-                            focusedContainerColor = if (uiPreset == UiPreset.MD3) {
-                                AppSurfaceTokens.surfaceContainerHigh()
-                            } else {
-                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-                            },
-                            unfocusedContainerColor = if (uiPreset == UiPreset.MD3) {
-                                AppSurfaceTokens.surfaceContainerHigh()
-                            } else {
-                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-                            }
-                        ),
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        keyboardActions = KeyboardActions(
-                            onSearch = {
-                                if (canSubmit) {
-                                    onSearch(resolvedSubmitKeyword)
-                                }
-                            }
-                        )
-                    )
-                }
+                AppSearchField(
+                    query = query,
+                    onQueryChange = onQueryChange,
+                    onSearch = {
+                        if (canSubmit) {
+                            onSearch(resolvedSubmitKeyword)
+                        }
+                    },
+                    onClear = onClearQuery,
+                    presentation = AppSearchFieldPresentation.TOP_BAR,
+                    autoFocusEnabled = autoFocusEnabled && query.isEmpty(),
+                    focusRequester = focusRequester,
+                    modifier = Modifier
+                        .weight(1f)
+                        .defaultMinSize(minHeight = chromeSpec.inputHeightDp.dp)
+                        .onFocusChanged { isFocused = it.isFocused },
+                    placeholder = placeholder,
+                    containerColor = if (uiPreset == UiPreset.MD3) {
+                        AppSurfaceTokens.surfaceContainerHigh()
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                    },
+                    heightOverride = chromeSpec.inputHeightDp.dp,
+                    interactionSource = searchInteractionSource,
+                )
 
                 Spacer(modifier = Modifier.width(chromeSpec.horizontalGapDp.dp))
 

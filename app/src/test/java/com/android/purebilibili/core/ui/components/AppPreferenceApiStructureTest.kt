@@ -92,6 +92,29 @@ class AppPreferenceApiStructureTest {
         }
     }
 
+    @Test
+    fun phaseThreeSearchPilot_usesNeutralSearchField() {
+        val apiSource = loadSource(
+            "app/src/main/java/com/android/purebilibili/core/ui/components/AppPreferenceComponents.kt"
+        )
+        assertTrue(apiSource.contains("fun AppSearchField("))
+        assertTrue(apiSource.contains(") = IOSSearchBar("))
+        assertTrue(apiSource.contains("AppSearchFieldPresentation.TOP_BAR"))
+
+        val pilotPaths = listOf(
+            "app/src/main/java/com/android/purebilibili/feature/search/SearchScreen.kt",
+            "app/src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt",
+            "app/src/main/java/com/android/purebilibili/feature/list/CommonListScreen.kt",
+        )
+        val directSearchRenderer = Regex("""\b(OutlinedTextField|InputField|IOSSearchBar)\s*\(""")
+
+        pilotPaths.forEach { path ->
+            val source = loadSource(path)
+            assertTrue(source.contains("AppSearchField("), "Neutral search input is missing in $path")
+            assertFalse(directSearchRenderer.containsMatchIn(source), "Direct search renderer remains in $path")
+        }
+    }
+
     private fun loadSource(path: String): String {
         val normalizedPath = path.removePrefix("app/")
         return listOf(File(path), File(normalizedPath))

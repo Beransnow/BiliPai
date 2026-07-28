@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -132,6 +133,42 @@ fun AppPreferenceDivider(
     modifier: Modifier = Modifier,
     startIndent: Dp = 66.dp,
 ) = IOSDivider(modifier = modifier, startIndent = startIndent)
+
+enum class AppSearchFieldPresentation {
+    STANDARD,
+    TOP_BAR,
+}
+
+@Composable
+fun AppSearchField(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    placeholder: String = "搜索",
+    onSearch: () -> Unit = {},
+    onClear: () -> Unit = { onQueryChange("") },
+    presentation: AppSearchFieldPresentation = AppSearchFieldPresentation.STANDARD,
+    autoFocusEnabled: Boolean = false,
+    focusRequester: FocusRequester? = null,
+    containerColor: Color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+    heightOverride: Dp? = null,
+    interactionSource: MutableInteractionSource? = null,
+) = IOSSearchBar(
+    query = query,
+    onQueryChange = onQueryChange,
+    modifier = modifier,
+    placeholder = placeholder,
+    containerColor = containerColor,
+    heightOverride = heightOverride,
+    forceExpandedInput = presentation == AppSearchFieldPresentation.TOP_BAR,
+    topBarChrome = presentation == AppSearchFieldPresentation.TOP_BAR,
+    onSearch = onSearch,
+    onClear = onClear,
+    showClearAction = presentation != AppSearchFieldPresentation.TOP_BAR,
+    autoFocusEnabled = autoFocusEnabled,
+    focusRequester = focusRequester,
+    interactionSource = interactionSource,
+)
 
 @Composable
 fun AppTextField(

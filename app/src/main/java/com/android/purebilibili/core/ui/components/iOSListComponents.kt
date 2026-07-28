@@ -51,6 +51,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.input.ImeAction
 import com.android.purebilibili.core.theme.LocalCornerRadiusScale
 import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalDynamicColorActive
@@ -273,6 +274,11 @@ internal fun shouldUseNativeMiuixSearchBar(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant
 ): Boolean = uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX
+
+internal fun shouldShowAdaptiveSearchLeadingIcon(
+    uiPreset: UiPreset,
+    topBarChrome: Boolean,
+): Boolean = !topBarChrome || uiPreset == UiPreset.IOS
 
 internal fun resolveGlobalWallpaperListContainerColor(
     containerColor: Color,
@@ -1393,6 +1399,13 @@ fun IOSSearchBar(
     containerColor: Color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
     heightOverride: Dp? = null,
     forceExpandedInput: Boolean = false,
+    topBarChrome: Boolean = false,
+    onSearch: () -> Unit = {},
+    onClear: () -> Unit = { onQueryChange("") },
+    showClearAction: Boolean = true,
+    autoFocusEnabled: Boolean = forceExpandedInput,
+    focusRequester: FocusRequester? = null,
+    interactionSource: MutableInteractionSource? = null,
 ) {
     val uiPreset = LocalUiPreset.current
     val androidNativeVariant = LocalAndroidNativeVariant.current
@@ -1415,48 +1428,70 @@ fun IOSSearchBar(
     val resolvedHeight = heightOverride ?: visualSpec.searchBarHeightDp.dp
 
     if (forceExpandedInput) {
-        val focusRequester = remember { FocusRequester() }
-        LaunchedEffect(focusRequester) {
-            delay(80)
-            runCatching { focusRequester.requestFocus() }
+        val fallbackFocusRequester = remember { FocusRequester() }
+        val resolvedFocusRequester = focusRequester ?: fallbackFocusRequester
+        LaunchedEffect(resolvedFocusRequester, autoFocusEnabled) {
+            if (autoFocusEnabled) {
+                delay(80)
+                runCatching { resolvedFocusRequester.requestFocus() }
+            }
         }
+        val focusModifier = Modifier.focusRequester(resolvedFocusRequester)
         if (shouldUseNativeMiuixSearchBar(uiPreset, androidNativeVariant)) {
             MiuixAdaptiveSearchBar(
                 query = query,
                 onQueryChange = onQueryChange,
-                modifier = modifier.focusRequester(focusRequester),
+                modifier = modifier.then(focusModifier),
                 placeholder = placeholder,
                 containerColor = resolvedContainerColor,
                 height = resolvedHeight,
                 forceExpandedInput = true,
+                onSearch = onSearch,
+                interactionSource = interactionSource,
             )
             return
         }
-        if (uiPreset == UiPreset.MD3) {
+        if (uiPreset == UiPreset.MD3 || topBarChrome) {
+            val textStyle = if (topBarChrome) {
+                MaterialTheme.typography.bodyLarge
+            } else {
+                MaterialTheme.typography.bodyMedium
+            }
+            val showLeadingIcon = shouldShowAdaptiveSearchLeadingIcon(uiPreset, topBarChrome)
             OutlinedTextField(
                 value = query,
                 onValueChange = onQueryChange,
                 modifier = modifier
                     .fillMaxWidth()
                     .heightIn(min = resolvedHeight)
-                    .focusRequester(focusRequester),
+                    .then(focusModifier),
                 placeholder = {
                     Text(
                         text = placeholder,
-                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        style = textStyle,
                     )
                 },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(18.dp),
-                    )
-                },
-                trailingIcon = if (query.isNotEmpty()) {
+                leadingIcon = if (showLeadingIcon) {
                     {
-                        IconButton(onClick = { onQueryChange("") }) {
+                        Icon(
+                            imageVector = if (uiPreset == UiPreset.IOS) {
+                                CupertinoIcons.Default.MagnifyingGlass
+                            } else {
+                                Icons.Default.Search
+                            },
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    }
+                } else {
+                    null
+                },
+                trailingIcon = if (showClearAction && query.isNotEmpty()) {
+                    {
+                        IconButton(onClick = onClear) {
                             Icon(
                                 imageVector = Icons.Default.Clear,
                                 contentDescription = "Clear",
@@ -1469,18 +1504,25 @@ fun IOSSearchBar(
                     null
                 },
                 singleLine = true,
-                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                textStyle = textStyle.copy(
                     color = MaterialTheme.colorScheme.onSurface,
                 ),
                 shape = RoundedCornerShape(searchBarCornerRadius),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color.Transparent,
+                    focusedBorderColor = if (topBarChrome) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        Color.Transparent
+                    },
                     unfocusedBorderColor = Color.Transparent,
                     disabledBorderColor = Color.Transparent,
                     focusedContainerColor = resolvedContainerColor,
                     unfocusedContainerColor = resolvedContainerColor,
                     disabledContainerColor = resolvedContainerColor,
                 ),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { onSearch() }),
+                interactionSource = interactionSource,
             )
             return
         }
@@ -1492,10 +1534,13 @@ fun IOSSearchBar(
                 .height(resolvedHeight)
                 .clip(RoundedCornerShape(searchBarCornerRadius))
                 .background(resolvedContainerColor)
-                .focusRequester(focusRequester),
+                .then(focusModifier),
             textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
             singleLine = true,
             cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(onSearch = { onSearch() }),
+            interactionSource = interactionSource,
             decorationBox = { innerTextField ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -1518,9 +1563,9 @@ fun IOSSearchBar(
                         }
                         innerTextField()
                     }
-                    if (query.isNotEmpty()) {
+                    if (showClearAction && query.isNotEmpty()) {
                         IconButton(
-                            onClick = { onQueryChange("") },
+                            onClick = onClear,
                             modifier = Modifier.size(20.dp),
                         ) {
                             Icon(
@@ -1546,6 +1591,8 @@ fun IOSSearchBar(
             containerColor = resolvedContainerColor,
             height = resolvedHeight,
             forceExpandedInput = forceExpandedInput,
+            onSearch = { onSearch() },
+            interactionSource = interactionSource,
         )
         return
     }
@@ -1561,6 +1608,9 @@ fun IOSSearchBar(
         textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
         singleLine = true,
         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions = KeyboardActions(onSearch = { onSearch() }),
+        interactionSource = interactionSource,
         decorationBox = { innerTextField ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -1592,9 +1642,9 @@ fun IOSSearchBar(
                     }
                     innerTextField()
                 }
-                if (query.isNotEmpty()) {
+                if (showClearAction && query.isNotEmpty()) {
                     IconButton(
-                        onClick = { onQueryChange("") },
+                        onClick = onClear,
                         modifier = Modifier.size(20.dp)
                     ) {
                         val clearIcon = if (uiPreset == UiPreset.MD3) {
@@ -1698,18 +1748,21 @@ private fun MiuixAdaptiveSearchBar(
     @Suppress("UNUSED_PARAMETER") containerColor: Color,
     height: androidx.compose.ui.unit.Dp,
     forceExpandedInput: Boolean = false,
+    onSearch: () -> Unit = {},
+    interactionSource: MutableInteractionSource? = null,
 ) {
     if (forceExpandedInput) {
         InputField(
             query = query,
             onQueryChange = onQueryChange,
-            onSearch = {},
+            onSearch = { onSearch() },
             expanded = true,
             onExpandedChange = {},
             modifier = modifier
                 .fillMaxWidth()
                 .height(height),
             label = placeholder,
+            interactionSource = interactionSource,
         )
         return
     }
@@ -1719,12 +1772,13 @@ private fun MiuixAdaptiveSearchBar(
     InputField(
         query = query,
         onQueryChange = onQueryChange,
-        onSearch = {},
+        onSearch = { onSearch() },
         expanded = expanded || query.isNotBlank(),
         onExpandedChange = { expanded = it },
         modifier = modifier
             .fillMaxWidth()
             .height(height),
         label = placeholder,
+        interactionSource = interactionSource,
     )
 }
