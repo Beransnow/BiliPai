@@ -4,12 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.android.purebilibili.core.store.SettingsManager
+import com.android.purebilibili.core.ui.LocalAppThemeConfig
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.adaptive.RuntimeVisualGuardDecision
 import com.android.purebilibili.core.ui.adaptive.resolveDeviceUiProfile
@@ -37,12 +35,9 @@ internal val LocalRuntimeVisualGuard = staticCompositionLocalOf<State<RuntimeVis
 @Composable
 internal fun ProvideRuntimeVisualGuard(
     widthSizeClass: WindowWidthSizeClass = LocalWindowSizeClass.current.widthSizeClass,
+    guardEnabled: Boolean = LocalAppThemeConfig.current.runtimeVisualGuardEnabled,
     content: @Composable () -> Unit,
 ) {
-    val context = LocalContext.current
-    val guardEnabled by SettingsManager.getRuntimeVisualGuardEnabled(context)
-        .collectAsStateWithLifecycle(initialValue = true)
-
     // 设备基线档位只能在拿到 window metrics 之后才知道，而 Tracker 是进程单例、
     // 在 Activity 之前就已加载。放在组合根注入还能让折叠屏展开/分屏自动跟随。
     LaunchedEffect(widthSizeClass, guardEnabled) {

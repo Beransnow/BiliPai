@@ -22,6 +22,7 @@ import com.android.purebilibili.core.theme.AppFontSizePreset
 import com.android.purebilibili.core.theme.AppUiScalePreset
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.UiStyle
 import com.android.purebilibili.core.theme.normalizeThemeColorIndex
 import com.android.purebilibili.core.theme.resolveColorSpecPreference
 import com.android.purebilibili.core.theme.resolvePaletteStylePreference
@@ -1942,7 +1943,6 @@ object SettingsManager {
             preferences[KEY_UI_PRESET] = preset.value
         }
     }
-
     fun getAndroidNativeVariant(context: Context): Flow<AndroidNativeVariant> =
         context.settingsDataStore.data.map { preferences ->
             resolveAndroidNativeVariantPreferenceValue(preferences[KEY_ANDROID_NATIVE_VARIANT])
@@ -1951,6 +1951,17 @@ object SettingsManager {
     suspend fun setAndroidNativeVariant(context: Context, variant: AndroidNativeVariant) {
         context.settingsDataStore.edit { preferences ->
             preferences[KEY_ANDROID_NATIVE_VARIANT] = variant.value
+        }
+    }
+    fun getUiStyle(context: Context): Flow<UiStyle> = context.settingsDataStore.data.map {
+        UiStyle.fromLegacyValues(it[KEY_UI_PRESET], it[KEY_ANDROID_NATIVE_VARIANT])
+    }
+
+    suspend fun setUiStyle(context: Context, uiStyle: UiStyle) {
+        val writePlan = uiStyle.legacyWritePlan()
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_UI_PRESET] = writePlan.uiPreset.value
+            writePlan.androidNativeVariant?.let { preferences[KEY_ANDROID_NATIVE_VARIANT] = it.value }
         }
     }
 
@@ -6247,6 +6258,7 @@ object SettingsManager {
     private val shareableSettingDefinitions: List<ShareablePreferenceDefinition> by lazy {
         listOf(
             IntShareablePreferenceDefinition(KEY_UI_PRESET, SettingsShareSection.APPEARANCE),
+            IntShareablePreferenceDefinition(KEY_ANDROID_NATIVE_VARIANT, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_THEME_MODE, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_DARK_THEME_STYLE, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_APP_LANGUAGE, SettingsShareSection.APPEARANCE),

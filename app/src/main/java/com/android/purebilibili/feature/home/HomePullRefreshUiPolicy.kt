@@ -5,8 +5,6 @@ import com.android.purebilibili.core.theme.UiPreset
 import kotlin.math.max
 import kotlin.math.min
 
-internal fun resolvePullRefreshThresholdDp(): Float = 44f
-
 enum class HomePullRefreshMotionStyle {
     IOS,
     MD3

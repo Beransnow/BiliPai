@@ -100,6 +100,9 @@ import com.android.purebilibili.core.theme.resolveEffectiveDynamicColorEnabled
 import com.android.purebilibili.core.theme.buildDisplayMetricsSnapshot
 import com.android.purebilibili.core.ui.IOSAlertDialog
 import com.android.purebilibili.core.ui.IOSDialogAction
+import com.android.purebilibili.core.ui.AppThemeConfig
+import com.android.purebilibili.core.ui.ProvideAppThemeConfig
+import com.android.purebilibili.core.ui.blur.BlurIntensity
 import com.android.purebilibili.core.ui.blur.ProvideUnifiedBlurIntensity
 import com.android.purebilibili.core.ui.performance.ProvideRuntimeVisualGuard
 import com.android.purebilibili.core.util.BilibiliUrlParser
@@ -1148,6 +1151,29 @@ open class MainActivity : AppCompatActivity() {
             val appGestureScreenshotEnabled = appThemeSettings.appGestureScreenshotEnabled
             val appScreenshotGestureMode = appThemeSettings.appScreenshotGestureMode
             val appScreenshotCaptureMode = appThemeSettings.appScreenshotCaptureMode
+            val blurIntensity by SettingsManager.getBlurIntensity(context)
+                .collectAsStateWithLifecycle(initialValue = BlurIntensity.THIN)
+            val hapticFeedbackEnabled by SettingsManager.getHapticFeedbackEnabled(context)
+                .collectAsStateWithLifecycle(initialValue = true)
+            val uiEntranceAnimationEnabled by SettingsManager
+                .getUiEntranceAnimationEnabled(context)
+                .collectAsStateWithLifecycle(initialValue = true)
+            val runtimeVisualGuardEnabled by SettingsManager
+                .getRuntimeVisualGuardEnabled(context)
+                .collectAsStateWithLifecycle(initialValue = true)
+            val appThemeConfig = remember(
+                blurIntensity,
+                hapticFeedbackEnabled,
+                uiEntranceAnimationEnabled,
+                runtimeVisualGuardEnabled,
+            ) {
+                AppThemeConfig(
+                    blurIntensity = blurIntensity,
+                    hapticFeedbackEnabled = hapticFeedbackEnabled,
+                    uiEntranceAnimationEnabled = uiEntranceAnimationEnabled,
+                    runtimeVisualGuardEnabled = runtimeVisualGuardEnabled,
+                )
+            }
             
             // 4. 获取系统当前的深色状态
             val systemInDark = systemInDarkThemeSnapshot
@@ -1234,6 +1260,7 @@ open class MainActivity : AppCompatActivity() {
                 appFontFileName = appFontFileName,
 
             ) {
+                ProvideAppThemeConfig(config = appThemeConfig) {
                 ProvideRuntimeVisualGuard(
                     widthSizeClass = windowSizeClass.widthSizeClass
                 ) {
@@ -1909,6 +1936,7 @@ open class MainActivity : AppCompatActivity() {
                     }
 
                     }
+                }
                 }
                 }
             }

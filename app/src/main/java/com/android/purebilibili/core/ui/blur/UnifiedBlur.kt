@@ -4,17 +4,14 @@ package com.android.purebilibili.core.ui.blur
 import android.os.Build
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import com.android.purebilibili.core.ui.LocalAppThemeConfig
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.adaptive.minMotionTier
 import com.android.purebilibili.core.ui.performance.LocalRuntimeVisualGuard
-import com.android.purebilibili.core.store.SettingsManager
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
 import dev.chrisbanes.haze.HazeState
@@ -41,11 +38,9 @@ internal fun resolveUnifiedBlurredEdgeTreatment(shape: Shape?): BlurredEdgeTreat
 
 @Composable
 fun ProvideUnifiedBlurIntensity(
+    blurIntensity: BlurIntensity = LocalAppThemeConfig.current.blurIntensity,
     content: @Composable () -> Unit
 ) {
-    val context = LocalContext.current
-    val blurIntensity by SettingsManager.getBlurIntensity(context)
-        .collectAsStateWithLifecycle(initialValue = BlurIntensity.THIN)
     CompositionLocalProvider(
         LocalUnifiedBlurIntensity provides blurIntensity,
         content = content
@@ -55,14 +50,7 @@ fun ProvideUnifiedBlurIntensity(
 @Composable
 fun currentUnifiedBlurIntensity(): BlurIntensity {
     val providedBlurIntensity = LocalUnifiedBlurIntensity.current
-    if (providedBlurIntensity != null) {
-        return providedBlurIntensity
-    }
-
-    val context = LocalContext.current
-    val fallbackBlurIntensity by SettingsManager.getBlurIntensity(context)
-        .collectAsStateWithLifecycle(initialValue = BlurIntensity.THIN)
-    return fallbackBlurIntensity
+    return providedBlurIntensity ?: LocalAppThemeConfig.current.blurIntensity
 }
 
 /**

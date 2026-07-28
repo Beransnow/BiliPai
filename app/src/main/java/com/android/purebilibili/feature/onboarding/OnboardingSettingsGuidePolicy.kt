@@ -6,6 +6,7 @@ import com.android.purebilibili.core.store.HomeTopLayoutOrder
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.resolveUiStyle
 
 enum class OnboardingSettingsProfile(
     val title: String,
@@ -118,8 +119,10 @@ suspend fun applyOnboardingSettingsGuidePreset(
     profile: OnboardingSettingsProfile
 ) {
     val preset = resolveOnboardingSettingsGuidePreset(profile)
-    SettingsManager.setUiPreset(context, preset.uiPreset)
-    SettingsManager.setAndroidNativeVariant(context, preset.androidNativeVariant)
+    SettingsManager.setUiStyle(
+        context = context,
+        uiStyle = resolveUiStyle(preset.uiPreset, preset.androidNativeVariant)
+    )
     SettingsManager.setBottomBarFloating(context, preset.bottomBarFloating)
     SettingsManager.setBottomBarLiquidGlassEnabled(context, preset.bottomBarLiquidGlassEnabled)
     SettingsManager.setBottomBarSearchEnabled(context, preset.bottomBarSearchEnabled)

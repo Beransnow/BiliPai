@@ -25,6 +25,47 @@ enum class AndroidNativeVariant(val value: Int, val label: String) {
     }
 }
 
+enum class UiStyle {
+    IOS,
+    MATERIAL3,
+    MIUIX;
+
+    companion object {
+        fun fromLegacyValues(
+            rawUiPreset: Int?,
+            rawAndroidNativeVariant: Int?
+        ): UiStyle = resolveUiStyle(
+            uiPreset = UiPreset.fromValue(rawUiPreset ?: UiPreset.MD3.value),
+            androidNativeVariant = AndroidNativeVariant.fromValue(
+                rawAndroidNativeVariant ?: AndroidNativeVariant.MATERIAL3.value
+            )
+        )
+    }
+
+    internal fun legacyWritePlan(): LegacyUiStyleWritePlan = when (this) {
+        IOS -> LegacyUiStyleWritePlan(UiPreset.IOS, null)
+        MATERIAL3 -> LegacyUiStyleWritePlan(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
+        MIUIX -> LegacyUiStyleWritePlan(UiPreset.MD3, AndroidNativeVariant.MIUIX)
+    }
+}
+
+fun resolveUiStyle(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant
+): UiStyle = when (uiPreset) {
+    UiPreset.IOS -> UiStyle.IOS
+    UiPreset.MD3 -> when (androidNativeVariant) {
+        AndroidNativeVariant.MATERIAL3 -> UiStyle.MATERIAL3
+        AndroidNativeVariant.MIUIX -> UiStyle.MIUIX
+    }
+}
+
+internal data class LegacyUiStyleWritePlan(
+    val uiPreset: UiPreset,
+    // null 表示保留旧键原值，包括旧键原本不存在的情况。
+    val androidNativeVariant: AndroidNativeVariant?
+)
+
 data class UiRenderingProfile(
     val useMaterialChrome: Boolean,
     val useMaterialMotion: Boolean,

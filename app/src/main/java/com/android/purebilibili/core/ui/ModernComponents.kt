@@ -41,7 +41,7 @@ fun BiliGradientButton(
     leadingIcon: ImageVector? = null
 ) {
     val haptic = LocalHapticFeedback.current
-    val context = androidx.compose.ui.platform.LocalContext.current // [Fix] Move outside clickable
+    val hapticFeedbackEnabled = LocalAppThemeConfig.current.hapticFeedbackEnabled
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     
@@ -77,7 +77,7 @@ fun BiliGradientButton(
                 enabled = enabled && !isLoading
             ) {
                 // [新增] 触感反馈开关检查
-                if (com.android.purebilibili.core.store.SettingsManager.isHapticFeedbackEnabledSync(context)) {
+                if (hapticFeedbackEnabled) {
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 }
                 onClick()
@@ -290,7 +290,7 @@ fun Modifier.bouncyClickable(
     onClick: () -> Unit
 ): Modifier = composed {
     val haptic = LocalHapticFeedback.current
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val hapticFeedbackEnabled = LocalAppThemeConfig.current.hapticFeedbackEnabled
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
     
@@ -309,7 +309,7 @@ fun Modifier.bouncyClickable(
             interactionSource = interactionSource,
             indication = null
         ) {
-            if (com.android.purebilibili.core.store.SettingsManager.isHapticFeedbackEnabledSync(context)) {
+            if (hapticFeedbackEnabled) {
                 haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             }
             onClick()

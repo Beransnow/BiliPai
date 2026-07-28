@@ -2,6 +2,7 @@ package com.android.purebilibili.feature.home
 
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.ui.resolvePullRefreshThresholdDp
 import java.io.File
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertEquals

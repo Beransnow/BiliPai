@@ -24,6 +24,8 @@ import com.android.purebilibili.core.theme.AppFontSizePreset
 import com.android.purebilibili.core.theme.AppUiScalePreset
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.UiStyle
+import com.android.purebilibili.core.theme.resolveUiStyle
 import com.android.purebilibili.core.theme.syncThemeRoleControlAccent
 import com.android.purebilibili.core.ui.blur.BlurIntensity
 import com.android.purebilibili.core.ui.transition.VIDEO_SHARED_TRANSITION_CUSTOM_DEFAULT_MILLIS
@@ -127,6 +129,9 @@ data class SettingsUiState(
     val gridColumnCount: Int = 0, // [New]
     val homeFeedCardWidthPreset: HomeFeedCardWidthPreset = HomeFeedCardWidthPreset.AUTO
 ) {
+    val uiStyle: UiStyle
+        get() = resolveUiStyle(uiPreset, androidNativeVariant)
+
     val isLiquidGlassEnabled: Boolean
         get() = bottomBarLiquidGlassEnabled
 }
@@ -731,6 +736,11 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun setAndroidNativeVariant(variant: AndroidNativeVariant) {
         viewModelScope.launch {
             SettingsManager.setAndroidNativeVariant(context, variant)
+        }
+    }
+    fun setUiStyle(uiStyle: UiStyle) {
+        viewModelScope.launch {
+            SettingsManager.setUiStyle(context, uiStyle)
         }
     }
     fun setThemeMode(mode: AppThemeMode) { 

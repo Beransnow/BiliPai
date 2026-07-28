@@ -28,7 +28,7 @@ class IOSGroupSurfaceShapeStructureTest {
             .substringBefore("@Composable\nfun IOSSwitchItem")
         val switchItemSource = source
             .substringAfter("fun IOSSwitchItem(")
-            .substringBefore("@Composable\nfun IOSClickableItem")
+            .substringBefore("@Composable\nfun IOSSliderPreference")
         val clickableItemSource = source
             .substringAfter("fun IOSClickableItem(")
             .substringBefore("@Composable\nfun IOSSearchBar")
@@ -46,7 +46,7 @@ class IOSGroupSurfaceShapeStructureTest {
         val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt")
         val switchItemSource = source
             .substringAfter("fun IOSSwitchItem(")
-            .substringBefore("@Composable\nfun IOSClickableItem")
+            .substringBefore("@Composable\nfun IOSSliderPreference")
 
         assertTrue(switchItemSource.contains("Row("))
         assertTrue(switchItemSource.contains("Column(modifier = Modifier.weight(1f))"))
@@ -59,11 +59,15 @@ class IOSGroupSurfaceShapeStructureTest {
         val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt")
         val switchItemSource = source
             .substringAfter("fun IOSSwitchItem(")
-            .substringBefore("@Composable\nfun IOSClickableItem")
+            .substringBefore("@Composable\nfun IOSSliderPreference")
 
         assertTrue(
-            switchItemSource.contains("SettingsManager.isHapticFeedbackEnabledSync"),
-            "Miuix switch 内部触感必须受应用触感反馈开关控制"
+            switchItemSource.contains("LocalAppThemeConfig.current.hapticFeedbackEnabled"),
+            "Miuix switch 内部触感必须受注入的应用主题配置控制"
+        )
+        assertFalse(
+            switchItemSource.contains("SettingsManager"),
+            "core/ui 组件不得反向读取设置存储"
         )
         assertTrue(
             switchItemSource.contains("NoOpHapticFeedback"),
@@ -78,6 +82,6 @@ class IOSGroupSurfaceShapeStructureTest {
             File(normalizedPath)
         ).firstOrNull { it.exists() }
         require(sourceFile != null) { "Cannot locate $path from ${File(".").absolutePath}" }
-        return sourceFile.readText()
+        return sourceFile.readText().replace("\r\n", "\n")
     }
 }
