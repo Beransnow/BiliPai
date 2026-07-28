@@ -507,6 +507,14 @@ internal fun shouldUseVideoCardTransitionSnapshotBlur(
     return sdkInt >= Build.VERSION_CODES.S
 }
 
+internal fun shouldUseVideoCardTransitionRealtimeBlurForSource(
+    sourceRoute: String?,
+    settingEnabled: Boolean,
+): Boolean {
+    if (!settingEnabled) return false
+    return normalizeVideoCardTransitionRoute(sourceRoute) != "home"
+}
+
 /**
  * 每帧内多次读取同一 frame 时，用 (progress, phase, …) 缓存避免重复纯函数计算。
  */

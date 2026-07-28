@@ -10,6 +10,22 @@ import kotlin.test.assertTrue
 class VideoCardTransitionBackgroundPolicyTest {
 
     @Test
+    fun homeCoverMorphDisablesRealtimeFullscreenBlur() {
+        assertFalse(
+            shouldUseVideoCardTransitionRealtimeBlurForSource(
+                sourceRoute = "home?category=热门",
+                settingEnabled = true,
+            )
+        )
+        assertTrue(
+            shouldUseVideoCardTransitionRealtimeBlurForSource(
+                sourceRoute = "search",
+                settingEnabled = true,
+            )
+        )
+    }
+
+    @Test
     fun snapshotBlur_isEnabledForActivePhasesOnApi31Plus() {
         assertTrue(
             shouldUseVideoCardTransitionSnapshotBlur(

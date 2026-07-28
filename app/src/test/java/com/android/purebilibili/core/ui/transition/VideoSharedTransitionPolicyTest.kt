@@ -154,7 +154,7 @@ class VideoSharedTransitionPolicyTest {
     }
 
     @Test
-    fun homeVideoTransition_usesWholeCardShellWithoutMetadataBounds() {
+    fun homeVideoTransition_usesCoverOnlyWithoutCardShellOrMetadataBounds() {
         val policy = resolveVideoSharedTransitionOwnership(
             sourceRoute = "home",
             coverSharedEnabled = true,
@@ -162,7 +162,7 @@ class VideoSharedTransitionPolicyTest {
         )
 
         assertTrue(policy.useCoverSharedBounds)
-        assertTrue(policy.useCardContainerSharedBounds)
+        assertFalse(policy.useCardContainerSharedBounds)
         assertFalse(policy.useMetadataSharedBounds)
     }
 
@@ -257,7 +257,7 @@ class VideoSharedTransitionPolicyTest {
 
     @Test
     fun videoCardShellSharedBounds_includesHorizontalAnchorSources() {
-        assertTrue(shouldUseVideoCardShellSharedBounds("home", transitionEnabled = true))
+        assertFalse(shouldUseVideoCardShellSharedBounds("home", transitionEnabled = true))
         assertTrue(shouldUseVideoCardShellSharedBounds("dynamic", transitionEnabled = true))
         assertTrue(shouldUseVideoCardShellSharedBounds("watch_later", transitionEnabled = true))
         assertTrue(shouldUseVideoCardShellSharedBounds("space", transitionEnabled = true))
