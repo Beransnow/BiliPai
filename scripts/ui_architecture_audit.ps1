@@ -5,9 +5,7 @@ param(
     [string]$RegistryPath = "docs/UI_COMPONENT_REGISTRY.csv",
     [string]$ExceptionsPath = "docs/UI_COMPONENT_EXCEPTIONS.csv",
     [string]$SyntheticFeatureFile,
-    [Nullable[int]]$StyleFeatureMax,
-    [Nullable[int]]$LocalFeatureMax,
-    [Nullable[int]]$IosFeatureCallersMax,
+    [string]$SyntheticDesignSystemBuildFile,
     [switch]$UpdateRegistry
 )
 
@@ -63,13 +61,140 @@ function Get-FirstMatch {
     return $null
 }
 
+function Get-SourceBody {
+    param([string]$Text)
+
+    $body = [regex]::Replace($Text, '(?m)^\s*(?:package|import)\s+[^\r\n]*\r?$', '')
+    $body = [regex]::Replace($body, '(?m)^\s*//[^\r\n]*\r?$', '')
+    return [regex]::Replace(
+        $body,
+        '(?m)^(\s*(?:(?:public|private|internal|protected|override|suspend|inline|operator|infix|tailrec|external)\s+)*fun\s+)[A-Za-z_][A-Za-z0-9_]*',
+        '${1}__DECLARATION__'
+    )
+}
+
+function Test-ExecutableReference {
+    param(
+        [string]$Text,
+        [string]$Evidence,
+        [switch]$RequireCall
+    )
+
+    if ([string]::IsNullOrWhiteSpace($Evidence)) { return $false }
+    $body = Get-SourceBody $Text
+    $escaped = [regex]::Escape($Evidence)
+    $pattern = if ($RequireCall) { "\b$escaped\s*\(" } else { "\b$escaped\b" }
+    return $body -match $pattern
+}
+
+function Get-VendorComponentEvidence {
+    param([pscustomobject]$Source)
+
+    $materialComponents = @(
+        'AlertDialog', 'BasicAlertDialog', 'AssistChip', 'Badge', 'Button', 'Card',
+        'CenterAlignedTopAppBar', 'Checkbox', 'CircularProgressIndicator',
+        'DropdownMenu', 'DropdownMenuItem', 'ElevatedButton', 'ElevatedCard',
+        'FilledIconButton', 'FilledTonalButton', 'FilterChip', 'FloatingActionButton',
+        'IconButton', 'LinearProgressIndicator', 'LoadingIndicator', 'ModalBottomSheet',
+        'ModalNavigationDrawer', 'NavigationBar', 'NavigationBarItem',
+        'NavigationDrawerItem', 'NavigationRail', 'NavigationRailItem', 'OutlinedButton',
+        'OutlinedCard', 'OutlinedIconButton', 'OutlinedTextField', 'PrimaryScrollableTabRow',
+        'PrimaryTabRow', 'PullToRefreshBox', 'RadioButton', 'Scaffold', 'SegmentedButton',
+        'SingleChoiceSegmentedButtonRow', 'Slider', 'SmallFloatingActionButton', 'Surface',
+        'SuggestionChip', 'Switch', 'Tab', 'TextButton', 'TextField', 'TopAppBar'
+    )
+    $cupertinoComponents = @(
+        'CupertinoActivityIndicator', 'CupertinoAlertDialog', 'CupertinoButton',
+        'CupertinoCheckbox', 'CupertinoNavigationBar', 'CupertinoScaffold',
+        'CupertinoSlider', 'CupertinoSwitch', 'CupertinoTextField'
+    )
+    $miuixComponents = @(
+        'AlertDialog', 'Badge', 'Button', 'Checkbox', 'FloatingActionButton',
+        'NavigationBar', 'NavigationBarItem', 'NavigationRail', 'NavigationRailItem',
+        'Scaffold', 'Slider', 'Switch', 'TabRow', 'TextField'
+    )
+
+    $body = Get-SourceBody $Source.Text
+    $evidence = [Collections.Generic.List[string]]::new()
+    $imports = [regex]::Matches($Source.Text, '(?m)^\s*import\s+([^\r\n]+)\r?$')
+    $materialWildcard = $false
+    foreach ($importMatch in $imports) {
+        $importText = $importMatch.Groups[1].Value.Trim()
+        if ($importText -eq 'androidx.compose.material3.*') {
+            $materialWildcard = $true
+            continue
+        }
+
+        $materialMatch = [regex]::Match(
+            $importText,
+            '^androidx\.compose\.material3(?:\.pulltorefresh)?\.([A-Za-z][A-Za-z0-9]*)(?:\s+as\s+([A-Za-z][A-Za-z0-9]*))?$'
+        )
+        if ($materialMatch.Success -and $materialMatch.Groups[1].Value -in $materialComponents) {
+            $symbol = $materialMatch.Groups[1].Value
+            $localName = if ($materialMatch.Groups[2].Success) {
+                $materialMatch.Groups[2].Value
+            } else {
+                $symbol
+            }
+            if ($body -match ("\b{0}\s*\(" -f [regex]::Escape($localName))) {
+                $evidence.Add("Material3.$symbol")
+            }
+            continue
+        }
+
+        $cupertinoMatch = [regex]::Match(
+            $importText,
+            '^io\.github\.alexzhirkevich\.cupertino\.([A-Za-z][A-Za-z0-9]*)(?:\s+as\s+([A-Za-z][A-Za-z0-9]*))?$'
+        )
+        if ($cupertinoMatch.Success -and $cupertinoMatch.Groups[1].Value -in $cupertinoComponents) {
+            $symbol = $cupertinoMatch.Groups[1].Value
+            $localName = if ($cupertinoMatch.Groups[2].Success) {
+                $cupertinoMatch.Groups[2].Value
+            } else {
+                $symbol
+            }
+            if ($body -match ("\b{0}\s*\(" -f [regex]::Escape($localName))) {
+                $evidence.Add("Cupertino.$symbol")
+            }
+            continue
+        }
+
+        $miuixMatch = [regex]::Match(
+            $importText,
+            '^top\.yukonga\.miuix\.kmp\.(?:basic|extra|overlay)\.([A-Za-z][A-Za-z0-9]*)(?:\s+as\s+([A-Za-z][A-Za-z0-9]*))?$'
+        )
+        if ($miuixMatch.Success -and $miuixMatch.Groups[1].Value -in $miuixComponents) {
+            $symbol = $miuixMatch.Groups[1].Value
+            $localName = if ($miuixMatch.Groups[2].Success) {
+                $miuixMatch.Groups[2].Value
+            } else {
+                $symbol
+            }
+            if ($body -match ("\b{0}\s*\(" -f [regex]::Escape($localName))) {
+                $evidence.Add("Miuix.$symbol")
+            }
+        }
+    }
+
+    if ($materialWildcard) {
+        foreach ($symbol in $materialComponents) {
+            if ($body -match ("\b{0}\s*\(" -f [regex]::Escape($symbol))) {
+                $evidence.Add("Material3.$symbol")
+            }
+        }
+    }
+
+    return @($evidence | Sort-Object -Unique)
+}
+
 function Get-RegistryRow {
     param(
         [pscustomobject]$Source,
         [hashtable]$Exceptions
     )
 
-    $appComponent = Get-FirstMatch $Source.Text '\bApp[A-Z][A-Za-z0-9_]*(?=\s*\()'
+    $body = Get-SourceBody $Source.Text
+    $appComponent = Get-FirstMatch $body '\bApp[A-Z][A-Za-z0-9_]*(?=\s*\()'
     if ($appComponent) {
         return [pscustomobject]@{
             path = $Source.Path
@@ -79,7 +204,7 @@ function Get-RegistryRow {
         }
     }
 
-    $sharedToken = Get-FirstMatch $Source.Text '\b(?:App[A-Za-z0-9_]*(?:Tokens|Metrics|Typography|Spacing|Shapes|Icons|Motion)|LocalApp[A-Za-z0-9_]+|MaterialTheme\.(?:colorScheme|typography|shapes))\b'
+    $sharedToken = Get-FirstMatch $body '\b(?:App[A-Za-z0-9_]*(?:Tokens|Metrics|Typography|Spacing|Shapes|Icons|Motion)|LocalApp[A-Za-z0-9_]+|MaterialTheme\.(?:colorScheme|typography|shapes))\b'
     if ($sharedToken) {
         return [pscustomobject]@{
             path = $Source.Path
@@ -94,15 +219,6 @@ function Get-RegistryRow {
             path = $Source.Path
             mapping_kind = "EXCEPTION"
             evidence = $Exceptions[$Source.Path]
-            implementation_status = "REVIEWED_EXCEPTION"
-        }
-    }
-
-    if ($Source.Text -notmatch '(?m)^\s*@Composable\b') {
-        return [pscustomobject]@{
-            path = $Source.Path
-            mapping_kind = "EXCEPTION"
-            evidence = "Non-render policy, state, contract, or platform-effect helper"
             implementation_status = "REVIEWED_EXCEPTION"
         }
     }
@@ -148,13 +264,20 @@ if (-not (Test-Path -LiteralPath $baselineFile -PathType Leaf)) {
 
 $baseline = Get-Content -Raw -LiteralPath $baselineFile | ConvertFrom-Json
 $exceptions = @{}
+$vendorComponentExceptions = [Collections.Generic.HashSet[string]]::new(
+    [StringComparer]::OrdinalIgnoreCase
+)
 if (Test-Path -LiteralPath $exceptionsFile -PathType Leaf) {
     foreach ($row in @(Import-Csv -LiteralPath $exceptionsFile)) {
         if ([string]::IsNullOrWhiteSpace($row.path)) { continue }
         if ([string]::IsNullOrWhiteSpace($row.rationale)) {
             throw "Exception has no rationale: $($row.path)"
         }
-        $exceptions[$row.path.Replace('\', '/')] = "$($row.scope): $($row.rationale)"
+        $normalizedExceptionPath = $row.path.Replace('\', '/')
+        $exceptions[$normalizedExceptionPath] = "$($row.scope): $($row.rationale)"
+        if ($row.scope -eq 'VENDOR_COMPONENT') {
+            [void]$vendorComponentExceptions.Add($normalizedExceptionPath)
+        }
     }
 }
 
@@ -166,12 +289,26 @@ $testRoots = @(
 )
 $coreUiRoot = Join-Path $RepoRoot "app/src/main/java/com/android/purebilibili/core/ui"
 $designSystemRoot = Join-Path $RepoRoot "design-system"
+$designSystemBuildFile = Join-Path $designSystemRoot "build.gradle.kts"
 
 $production = Get-KotlinSources $productionRoot
 $features = @($production | Where-Object { $_.Path -like "app/src/main/java/com/android/purebilibili/feature/*" })
 $tests = @($testRoots | ForEach-Object { Get-KotlinSources $_ })
 $coreUi = Get-KotlinSources $coreUiRoot
 $designSystem = Get-KotlinSources $designSystemRoot
+$designSystemBuildText = if (Test-Path -LiteralPath $designSystemBuildFile -PathType Leaf) {
+    Get-Content -Raw -LiteralPath $designSystemBuildFile
+} else {
+    ''
+}
+
+if ($SyntheticDesignSystemBuildFile) {
+    $syntheticBuildPath = Resolve-RepoPath $SyntheticDesignSystemBuildFile
+    if (-not (Test-Path -LiteralPath $syntheticBuildPath -PathType Leaf)) {
+        throw "Synthetic design-system build file not found: $syntheticBuildPath"
+    }
+    $designSystemBuildText += "`n" + (Get-Content -Raw -LiteralPath $syntheticBuildPath)
+}
 
 if ($SyntheticFeatureFile) {
     $syntheticPath = Resolve-RepoPath $SyntheticFeatureFile
@@ -208,14 +345,54 @@ $scannedPaths = @($registryRows.path)
 $registeredPaths = @($registered.path)
 $unregisteredPaths = @($scannedPaths | Where-Object { $_ -notin $registeredPaths })
 $stalePaths = @($registeredPaths | Where-Object { $_ -notin $scannedPaths })
+$featureByPath = @{}
+foreach ($source in $features) { $featureByPath[$source.Path] = $source }
+$registryEvidenceViolations = [Collections.Generic.List[string]]::new()
+foreach ($row in $registered) {
+    if (-not $featureByPath.ContainsKey($row.path)) { continue }
+    $source = $featureByPath[$row.path]
+    if ($row.mapping_kind -eq 'APP_COMPONENT' -and $row.implementation_status -eq 'CURRENT') {
+        if (-not (Test-ExecutableReference $source.Text $row.evidence -RequireCall)) {
+            $registryEvidenceViolations.Add(
+                "$($row.path) does not call declared component $($row.evidence)"
+            )
+        }
+    } elseif ($row.mapping_kind -eq 'SHARED_TOKEN' -and $row.implementation_status -eq 'CURRENT') {
+        if (-not (Test-ExecutableReference $source.Text $row.evidence)) {
+            $registryEvidenceViolations.Add(
+                "$($row.path) does not use declared token $($row.evidence)"
+            )
+        }
+    } elseif ($row.mapping_kind -eq 'EXCEPTION') {
+        if ($row.implementation_status -ne 'REVIEWED_EXCEPTION') {
+            $registryEvidenceViolations.Add(
+                "$($row.path) exception is not explicitly REVIEWED_EXCEPTION"
+            )
+        }
+    }
+}
 
 $stylePattern = '\b(?:UiPreset|AndroidNativeVariant|UiStyle)\b'
 $localPattern = '\b(?:LocalUiPreset|LocalAndroidNativeVariant|LocalUiStyle)\b'
 $iosPattern = '\b(?:IOSSectionTitle|IOSGroup|IOSSwitchItem|IOSSliderPreference|IOSClickableItem|IOSDivider|IOSGridItem|IOSSearchBar|IOSAdaptiveTextField|IOSAlertDialog|IOSDialogAction|IOSModalBottomSheet|IOSDragHandle|IOSSlidingSegmentedControl|IOSSlidingSegmentedSetting)\b'
-$rendererPattern = '(?m)^\s*import\s+[^\r\n]*\.renderer(?:\.|\b)|\bresolvePresetPrimitiveRenderer\b|\bLocalAppRenderers\b|\bAppRenderers\b'
+$rendererPattern = '(?m)^\s*import\s+[^\r\n]*\.renderer(?:\.|\b)|\bresolvePresetPrimitiveRenderer\b|\bLocalAppRenderers\b|\bAppRenderers\b|\b(?:Md3|Miuix|IOS|Ios|Material3?|Cupertino|Preset|AppUi|AppTheme)[A-Za-z0-9_]*Renderer\b'
 $reverseDependencyPattern = '(?m)^\s*import\s+com\.android\.purebilibili\.(?:feature(?:\.|\b)|core\.store(?:\.|\b))'
 $relatedTestPattern = 'UiPreset|AndroidNativeVariant|UiStyle|PresetPrimitiveRenderer|supportsIndependentLiquidGlass|Adaptive(?:Scaffold|TopAppBar|Navigation|Loading|PullToRefresh|ListVisual)|IOS(?:Group|SwitchItem|SliderPreference|AlertDialog|ModalBottomSheet|AdaptiveTextField)|App(?:Surface|Shape|Motion|Typography|Icon).*Token|App(?:PlayerChromeProfile|EffectCapability|TopTabPresentation|SemanticVisual|SemanticIcon|Preference|SegmentedControl|SearchField|SearchEntry|PullRefresh)'
 $designSystemBoundaryPattern = '(?m)^\s*import\s+com\.android\.purebilibili\.(?:feature|core\.store|data|network|plugin)(?:\.|\b)'
+$designSystemGradleBoundaryPattern = '(?m)\b(?:api|implementation|compileOnly|runtimeOnly|[A-Za-z][A-Za-z0-9]*(?:Api|Implementation|CompileOnly|RuntimeOnly))\s*\(\s*project\s*\(\s*(?:path\s*=\s*)?["'']:(?:app|settings(?:-core)?|network(?:-core)?|plugin[^"'']*|data[^"'']*)["'']\s*\)'
+
+$vendorComponentOffenders = @($features | ForEach-Object {
+    $evidence = @(Get-VendorComponentEvidence $_)
+    if ($evidence.Count -gt 0 -and -not $vendorComponentExceptions.Contains($_.Path)) {
+        [pscustomobject]@{
+            Path = $_.Path
+            Evidence = $evidence -join ', '
+        }
+    }
+})
+$vendorComponentExceptionCount = @($features | Where-Object {
+    $vendorComponentExceptions.Contains($_.Path) -and @(Get-VendorComponentEvidence $_).Count -gt 0
+}).Count
 
 $relatedTests = @($tests | Where-Object { $_.Text -match $relatedTestPattern })
 $relatedTestCases = 0
@@ -230,14 +407,24 @@ $metrics = [ordered]@{
     local_feature = Get-CountByPattern $features $localPattern
     ios_feature_callers = Get-CountByPattern $features $iosPattern
     renderer_feature = Get-CountByPattern $features $rendererPattern
+    vendor_component_feature = @($vendorComponentOffenders).Count
+    vendor_component_exceptions = $vendorComponentExceptionCount
     core_ui_reverse_dependencies = Get-CountByPattern $coreUi $reverseDependencyPattern
-    design_system_boundary_violations = Get-CountByPattern $designSystem $designSystemBoundaryPattern
+    design_system_kotlin_boundary_violations = Get-CountByPattern $designSystem $designSystemBoundaryPattern
+    design_system_gradle_boundary_violations = [regex]::Matches(
+        $designSystemBuildText,
+        $designSystemGradleBoundaryPattern
+    ).Count
     related_test_files = @($relatedTests).Count
     related_test_cases = $relatedTestCases
     feature_ui_files = @($featureUi).Count
     registry_rows = @($registered).Count
     registry_missing = @($registered | Where-Object { $_.mapping_kind -eq "MISSING" }).Count
+    registry_evidence_violations = $registryEvidenceViolations.Count
 }
+$metrics["design_system_boundary_violations"] =
+    $metrics.design_system_kotlin_boundary_violations +
+    $metrics.design_system_gradle_boundary_violations
 
 $failures = [Collections.Generic.List[string]]::new()
 function Assert-Maximum {
@@ -250,29 +437,15 @@ function Assert-Minimum {
 }
 
 Assert-Maximum "style_production" $metrics.style_production $baseline.gates.style_production_max
-$effectiveStyleFeatureMax = if ($null -ne $StyleFeatureMax) {
-    [int]$StyleFeatureMax
-} else {
-    [int]$baseline.gates.style_feature_max
-}
-$effectiveLocalFeatureMax = if ($null -ne $LocalFeatureMax) {
-    [int]$LocalFeatureMax
-} else {
-    [int]$baseline.gates.local_feature_max
-}
-$effectiveIosFeatureCallersMax = if ($null -ne $IosFeatureCallersMax) {
-    [int]$IosFeatureCallersMax
-} else {
-    [int]$baseline.gates.ios_feature_callers_max
-}
-
-Assert-Maximum "style_feature" $metrics.style_feature $effectiveStyleFeatureMax
-Assert-Maximum "local_feature" $metrics.local_feature $effectiveLocalFeatureMax
-Assert-Maximum "ios_feature_callers" $metrics.ios_feature_callers $effectiveIosFeatureCallersMax
-Assert-Maximum "renderer_feature" $metrics.renderer_feature $baseline.gates.renderer_feature_max
+Assert-Maximum "style_feature" $metrics.style_feature 0
+Assert-Maximum "local_feature" $metrics.local_feature 0
+Assert-Maximum "ios_feature_callers" $metrics.ios_feature_callers 0
+Assert-Maximum "renderer_feature" $metrics.renderer_feature 0
+Assert-Maximum "vendor_component_feature" $metrics.vendor_component_feature ([int]$baseline.gates.vendor_component_feature_max)
 Assert-Maximum "core_ui_reverse_dependencies" $metrics.core_ui_reverse_dependencies $baseline.gates.core_ui_reverse_dependencies_max
 Assert-Maximum "design_system_boundary_violations" $metrics.design_system_boundary_violations 0
 Assert-Maximum "registry_missing" $metrics.registry_missing $baseline.gates.registry_missing_max
+Assert-Maximum "registry_evidence_violations" $metrics.registry_evidence_violations 0
 Assert-Minimum "related_test_files" $metrics.related_test_files $baseline.gates.related_test_files_min
 Assert-Minimum "related_test_cases" $metrics.related_test_cases $baseline.gates.related_test_cases_min
 
@@ -297,22 +470,26 @@ foreach ($row in $registered) {
         $failures.Add("registry has empty implementation_status for $($row.path)")
     }
 }
-if ($SyntheticFeatureFile -and $synthetic.Text -match $stylePattern) {
-    $failures.Add("synthetic feature introduced a forbidden style dependency")
-}
-
 Write-Output ("R1 PRODUCTION_KOTLIN={0} STYLE_PRODUCTION={1} STYLE_FEATURE={2} LOCAL_FEATURE={3}" -f $metrics.production_kotlin, $metrics.style_production, $metrics.style_feature, $metrics.local_feature)
 Write-Output ("R2 FEATURE_FILES={0} REGISTERED={1} MISSING={2} UNREGISTERED={3} STALE={4}" -f $metrics.feature_ui_files, $metrics.registry_rows, $metrics.registry_missing, $unregisteredPaths.Count, $stalePaths.Count)
 Write-Output ("R3 IOS_FEATURE_CALLERS={0} RENDERER_FEATURE={1}" -f $metrics.ios_feature_callers, $metrics.renderer_feature)
 Write-Output ("R4 CORE_UI_REVERSE_DEPENDENCIES={0}" -f $metrics.core_ui_reverse_dependencies)
-Write-Output ("R5 DESIGN_SYSTEM_BOUNDARY_VIOLATIONS={0}" -f $metrics.design_system_boundary_violations)
+Write-Output ("R5 DESIGN_SYSTEM_BOUNDARY_VIOLATIONS={0} DESIGN_SYSTEM_KOTLIN_BOUNDARY_VIOLATIONS={1} DESIGN_SYSTEM_GRADLE_BOUNDARY_VIOLATIONS={2}" -f $metrics.design_system_boundary_violations, $metrics.design_system_kotlin_boundary_violations, $metrics.design_system_gradle_boundary_violations)
 Write-Output ("R6 RELATED_TEST_FILES={0} RELATED_TEST_CASES={1}" -f $metrics.related_test_files, $metrics.related_test_cases)
 Write-Output ("R7 FEATURE_STYLE_TARGET_GAP={0} FEATURE_LOCAL_TARGET_GAP={1} IOS_TARGET_GAP={2}" -f $metrics.style_feature, $metrics.local_feature, $metrics.ios_feature_callers)
 Write-Output ("R8 REGISTRY_TARGET_GAP={0}" -f $metrics.registry_missing)
-Write-Output ("GATE STYLE_FEATURE_MAX={0} LOCAL_FEATURE_MAX={1} IOS_FEATURE_CALLERS_MAX={2}" -f $effectiveStyleFeatureMax, $effectiveLocalFeatureMax, $effectiveIosFeatureCallersMax)
+Write-Output ("R9 VENDOR_COMPONENT_FEATURE={0} VENDOR_COMPONENT_EXCEPTIONS={1}" -f $metrics.vendor_component_feature, $metrics.vendor_component_exceptions)
+Write-Output ("R10 REGISTRY_EVIDENCE_VIOLATIONS={0}" -f $metrics.registry_evidence_violations)
+Write-Output ("GATE STYLE_FEATURE_MAX=0 LOCAL_FEATURE_MAX=0 IOS_FEATURE_CALLERS_MAX=0 RENDERER_FEATURE_MAX=0 VENDOR_COMPONENT_FEATURE_MAX={0}" -f $baseline.gates.vendor_component_feature_max)
 
 if ($failures.Count -gt 0) {
-    foreach ($failure in $failures) { Write-Error $failure }
+    foreach ($offender in $vendorComponentOffenders) {
+        Write-Output ("VENDOR_COMPONENT_VIOLATION path={0} evidence={1}" -f $offender.Path, $offender.Evidence)
+    }
+    foreach ($violation in $registryEvidenceViolations) {
+        Write-Output ("REGISTRY_EVIDENCE_VIOLATION {0}" -f $violation)
+    }
+    foreach ($failure in $failures) { Write-Output ("AUDIT_ERROR {0}" -f $failure) }
     Write-Output "AUDIT_FAILED"
     exit 1
 }
