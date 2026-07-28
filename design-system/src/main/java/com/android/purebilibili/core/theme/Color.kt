@@ -126,7 +126,7 @@ val ThemeColorNames = listOf(
     "晨曦粉"       // 24
 )
 
-internal fun normalizeThemeColorIndex(index: Int): Int =
+fun normalizeThemeColorIndex(index: Int): Int =
     index.coerceIn(0, ThemeColors.lastIndex)
 
 //  --- 底栏项目可选颜色调色板 ---

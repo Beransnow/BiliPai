@@ -7,7 +7,7 @@ import androidx.compose.ui.graphics.luminance
 private const val PRIMARY_TEXT_MIN_CONTRAST = 4.5f
 private const val SECONDARY_TEXT_MIN_CONTRAST = 3.0f
 
-internal fun calculateContrastRatio(
+fun calculateContrastRatio(
     foreground: Color,
     background: Color
 ): Float {
@@ -16,7 +16,7 @@ internal fun calculateContrastRatio(
     return (lighter + 0.05f) / (darker + 0.05f)
 }
 
-internal fun resolveReadableTextColor(
+fun resolveReadableTextColor(
     candidate: Color,
     background: Color,
     fallback: Color,
@@ -44,7 +44,7 @@ internal fun resolveReadableThemeTextColor(
     } ?: candidate
 }
 
-internal fun enforceDynamicLightTextContrast(
+fun enforceDynamicLightTextContrast(
     scheme: ColorScheme
 ): ColorScheme {
     val accentFallbacks = listOf(

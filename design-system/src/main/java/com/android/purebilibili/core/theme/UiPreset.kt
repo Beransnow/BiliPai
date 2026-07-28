@@ -42,7 +42,7 @@ enum class UiStyle {
         )
     }
 
-    internal fun legacyWritePlan(): LegacyUiStyleWritePlan = when (this) {
+    fun legacyWritePlan(): LegacyUiStyleWritePlan = when (this) {
         IOS -> LegacyUiStyleWritePlan(UiPreset.IOS, null)
         MATERIAL3 -> LegacyUiStyleWritePlan(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
         MIUIX -> LegacyUiStyleWritePlan(UiPreset.MD3, AndroidNativeVariant.MIUIX)
@@ -60,7 +60,7 @@ fun resolveUiStyle(
     }
 }
 
-internal data class LegacyUiStyleWritePlan(
+data class LegacyUiStyleWritePlan(
     val uiPreset: UiPreset,
     // null 表示保留旧键原值，包括旧键原本不存在的情况。
     val androidNativeVariant: AndroidNativeVariant?

@@ -4,7 +4,7 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 
-internal data class AdaptiveAccentColors(
+data class AdaptiveAccentColors(
     val backgroundColor: Color,
     val contentColor: Color
 )
@@ -35,7 +35,7 @@ internal fun resolveAdaptiveAccentColors(
     }
 }
 
-internal fun resolveAdaptivePrimaryAccentColors(
+fun resolveAdaptivePrimaryAccentColors(
     colorScheme: ColorScheme,
     minimumContrast: Float = 4.5f
 ): AdaptiveAccentColors = resolveAdaptiveAccentColors(
@@ -47,7 +47,7 @@ internal fun resolveAdaptivePrimaryAccentColors(
     minimumContrast = minimumContrast
 )
 
-internal fun resolveAdaptiveTertiaryAccentColors(
+fun resolveAdaptiveTertiaryAccentColors(
     colorScheme: ColorScheme,
     minimumContrast: Float = 4.5f
 ): AdaptiveAccentColors = resolveAdaptiveAccentColors(

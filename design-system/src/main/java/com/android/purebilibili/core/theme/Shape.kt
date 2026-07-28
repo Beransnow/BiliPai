@@ -4,7 +4,6 @@ package com.android.purebilibili.core.theme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Shapes
 import androidx.compose.runtime.*
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**

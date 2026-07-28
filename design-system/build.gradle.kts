@@ -50,6 +50,7 @@ dependencies {
     api("androidx.compose.foundation:foundation")
     api("androidx.compose.animation:animation")
     api("androidx.compose.material3:material3:1.5.0-alpha18")
+    api("top.yukonga.miuix.kmp:miuix-ui-android:0.9.3")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
