@@ -10,10 +10,10 @@ import com.android.purebilibili.core.theme.iOSPurple
 import com.android.purebilibili.core.theme.iOSRed
 import com.android.purebilibili.core.theme.iOSSystemGray
 import com.android.purebilibili.core.theme.UiPreset
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class AdaptiveListComponentPolicyTest {
 
@@ -234,9 +234,9 @@ class AdaptiveListComponentPolicyTest {
 
     @Test
     fun `miuix search bar implementation uses official input field`() {
-        val source = java.io.File("app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt")
+        val source = java.io.File("design-system/src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt")
             .takeIf { it.exists() }
-            ?: java.io.File("src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt")
+            ?: java.io.File("src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt")
         val text = source.readText()
         val miuixSearchBarStart = text.indexOf("private fun MiuixAdaptiveSearchBar")
         assertTrue(miuixSearchBarStart >= 0)
@@ -249,8 +249,8 @@ class AdaptiveListComponentPolicyTest {
     @Test
     fun `force expanded search bar uses outlined text field on md3`() {
         val source = listOf(
-            java.io.File("app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt"),
-            java.io.File("src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt"),
+            java.io.File("design-system/src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt"),
+            java.io.File("src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt"),
         ).first { it.exists() }.readText()
         val forceExpandedStart = source.indexOf("if (forceExpandedInput) {")
         val outlinedFieldStart = source.indexOf("OutlinedTextField(", forceExpandedStart)
@@ -263,6 +263,7 @@ class AdaptiveListComponentPolicyTest {
     fun `settings search screen pins input in scaffold header`() {
         val source = listOf(
             java.io.File("app/src/main/java/com/android/purebilibili/feature/settings/screen/SettingsSearchScreen.kt"),
+            java.io.File("../app/src/main/java/com/android/purebilibili/feature/settings/screen/SettingsSearchScreen.kt"),
             java.io.File("src/main/java/com/android/purebilibili/feature/settings/screen/SettingsSearchScreen.kt"),
         ).first { it.exists() }.readText()
         assertTrue(source.contains("scrollHost = SettingsPageScrollHost.External"))
@@ -278,6 +279,7 @@ class AdaptiveListComponentPolicyTest {
     fun `settings search bar delegates style rendering to neutral field`() {
         val source = listOf(
             java.io.File("app/src/main/java/com/android/purebilibili/feature/settings/screen/SettingsSearchUi.kt"),
+            java.io.File("../app/src/main/java/com/android/purebilibili/feature/settings/screen/SettingsSearchUi.kt"),
             java.io.File("src/main/java/com/android/purebilibili/feature/settings/screen/SettingsSearchUi.kt"),
         ).first { it.exists() }.readText()
         assertTrue(source.contains("fun SettingsSearchBarSection"))
@@ -289,15 +291,19 @@ class AdaptiveListComponentPolicyTest {
     @Test
     fun `settings search bar uses expanded miuix input field`() {
         val neutralApiSource = listOf(
-            java.io.File("app/src/main/java/com/android/purebilibili/core/ui/components/AppPreferenceComponents.kt"),
+            java.io.File("design-system/src/main/java/com/android/purebilibili/core/ui/components/AppPreferenceComponents.kt"),
             java.io.File("src/main/java/com/android/purebilibili/core/ui/components/AppPreferenceComponents.kt"),
         ).first { it.exists() }.readText()
         val rendererSource = listOf(
-            java.io.File("app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt"),
-            java.io.File("src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt"),
+            java.io.File("design-system/src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt"),
+            java.io.File("src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt"),
         ).first { it.exists() }.readText()
         assertTrue(neutralApiSource.contains("fun AppSearchField("))
-        assertTrue(neutralApiSource.contains("forceExpandedInput = true"))
+        assertTrue(
+            neutralApiSource.contains(
+                "forceExpandedInput = presentation == AppSearchFieldPresentation.TOP_BAR"
+            )
+        )
         assertTrue(rendererSource.contains("InputField("))
         assertTrue(rendererSource.contains("expanded = true"))
         assertTrue(rendererSource.contains("OutlinedTextField("))
@@ -306,9 +312,9 @@ class AdaptiveListComponentPolicyTest {
 
     @Test
     fun `miuix generic search bar does not auto expand before user interaction`() {
-        val source = java.io.File("app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt")
+        val source = java.io.File("design-system/src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt")
             .takeIf { it.exists() }
-            ?: java.io.File("src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt")
+            ?: java.io.File("src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt")
         val text = source.readText()
         val miuixSearchBarStart = text.indexOf("private fun MiuixAdaptiveSearchBar")
         assertTrue(miuixSearchBarStart >= 0)

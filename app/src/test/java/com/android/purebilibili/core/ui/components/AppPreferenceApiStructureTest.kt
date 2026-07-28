@@ -10,7 +10,7 @@ class AppPreferenceApiStructureTest {
     @Test
     fun neutralPreferenceApi_delegatesToExistingAdaptiveRenderers() {
         val source = loadSource(
-            "app/src/main/java/com/android/purebilibili/core/ui/components/AppPreferenceComponents.kt"
+            "design-system/src/main/java/com/android/purebilibili/core/ui/components/AppPreferenceComponents.kt"
         )
 
         assertTrue(source.contains("fun AppPreference("))
@@ -36,7 +36,7 @@ class AppPreferenceApiStructureTest {
         assertTrue(dialogSource.contains(") = AdaptiveDialogAction("))
 
         val listSource = loadSource(
-            "app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt"
+            "design-system/src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt"
         )
         assertTrue(listSource.contains("fun AppSearchEntry("))
     }

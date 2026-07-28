@@ -106,6 +106,7 @@ fun AppPreference(
     chevronTint: Color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f),
     centered: Boolean = false,
     enableCopy: Boolean = false,
+    onCopyRequest: ((text: String, label: String?) -> Unit)? = null,
     showChevron: Boolean = true,
     trailingContent: @Composable (() -> Unit)? = null,
 ) = AdaptivePreferenceContent(
@@ -123,6 +124,7 @@ fun AppPreference(
     chevronTint = chevronTint,
     centered = centered,
     enableCopy = enableCopy,
+    onCopyRequest = onCopyRequest,
     showChevron = showChevron,
     trailingContent = trailingContent,
 )

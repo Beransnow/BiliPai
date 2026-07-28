@@ -71,7 +71,6 @@ import com.android.purebilibili.core.theme.iOSTeal
 import com.android.purebilibili.core.theme.iOSYellow
 import com.android.purebilibili.core.ui.LocalAppThemeConfig
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
-import com.android.purebilibili.core.ui.common.copyOnLongPress
 import io.github.alexzhirkevich.cupertino.CupertinoSwitch
 import io.github.alexzhirkevich.cupertino.CupertinoSwitchDefaults
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
@@ -100,7 +99,7 @@ private object NoOpHapticFeedback : HapticFeedback {
 //  Common iOS List Components (Reused across Settings, Profile, etc.)
 // ═══════════════════════════════════════════════════
 
-internal data class AdaptiveListComponentVisualSpec(
+data class AdaptiveListComponentVisualSpec(
     val sectionStartPaddingDp: Int,
     val groupCornerRadiusDp: Int,
     val groupTonalElevationDp: Int,
@@ -124,7 +123,7 @@ internal data class AdaptiveSwitchVisualSpec(
     val uncheckedBorderColor: Color
 )
 
-internal data class AdaptiveListRowVisualSpec(
+data class AdaptiveListRowVisualSpec(
     val insideHorizontalPaddingDp: Int,
     val insideVerticalPaddingDp: Int,
     val trailingIconSizeDp: Int,
@@ -135,7 +134,7 @@ internal data class AdaptiveListRowVisualSpec(
 /**
  * Semantic list capabilities consumed by feature screens without exposing the active UI style.
  */
-internal data class AdaptiveListVisualCapabilities(
+data class AdaptiveListVisualCapabilities(
     val componentSpec: AdaptiveListComponentVisualSpec,
     val rowSpec: AdaptiveListRowVisualSpec,
     val useComponentDefaultGroupShape: Boolean,
@@ -242,7 +241,7 @@ internal fun resolveAdaptiveListVisualCapabilities(
 )
 
 @Composable
-internal fun rememberAdaptiveListVisualCapabilities(): AdaptiveListVisualCapabilities {
+fun rememberAdaptiveListVisualCapabilities(): AdaptiveListVisualCapabilities {
     val uiPreset = LocalUiPreset.current
     val androidNativeVariant = LocalAndroidNativeVariant.current
     return remember(uiPreset, androidNativeVariant) {
@@ -376,7 +375,7 @@ internal fun resolveAdaptiveSwitchVisualSpec(
 }
 
 @Composable
-internal fun rememberAdaptiveSemanticIconTint(
+fun rememberAdaptiveSemanticIconTint(
     iconTint: Color,
     uiPreset: UiPreset = LocalUiPreset.current,
     dynamicColorActive: Boolean = LocalDynamicColorActive.current
@@ -1020,6 +1019,7 @@ internal fun AdaptivePreferenceContent(
     chevronTint: Color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f),
     centered: Boolean = false,
     enableCopy: Boolean = false,
+    onCopyRequest: ((text: String, label: String?) -> Unit)? = null,
     showChevron: Boolean = true,
     trailingContent: @Composable (() -> Unit)? = null,
 ) {
@@ -1102,11 +1102,10 @@ internal fun AdaptivePreferenceContent(
                         text = value,
                         style = MaterialTheme.typography.bodySmall,
                         color = valueColor,
-                        modifier = if (enableCopy) {
-                            Modifier.copyOnLongPress(copyValue ?: value, title)
-                        } else {
-                            Modifier
-                        }
+                        modifier = Modifier.onLongPressAction(
+                            enabled = enableCopy && onCopyRequest != null,
+                            onLongPress = { onCopyRequest?.invoke(copyValue ?: value, title) },
+                        )
                     )
                 }
             }
@@ -1182,11 +1181,10 @@ internal fun AdaptivePreferenceContent(
                             MaterialTheme.typography.bodyMedium
                         },
                         color = AppSurfaceTokens.onSurfaceVariantSummary(),
-                        modifier = if (enableCopy) {
-                            Modifier.copyOnLongPress(copyValue ?: value, title)
-                        } else {
-                            Modifier
-                        }
+                        modifier = Modifier.onLongPressAction(
+                            enabled = enableCopy && onCopyRequest != null,
+                            onLongPress = { onCopyRequest?.invoke(copyValue ?: value, title) },
+                        )
                     )
                     Spacer(modifier = Modifier.width(rowSpec.trailingSpacingDp.dp))
                 }
@@ -1305,11 +1303,10 @@ internal fun AdaptivePreferenceContent(
                         color = valueColor,
                         maxLines = 1,
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                        modifier = if (enableCopy) {
-                            Modifier.copyOnLongPress(copyValue ?: value, title)
-                        } else {
-                            Modifier
-                        }
+                        modifier = Modifier.onLongPressAction(
+                            enabled = enableCopy && onCopyRequest != null,
+                            onLongPress = { onCopyRequest?.invoke(copyValue ?: value, title) },
+                        )
                     )
                 }
                 if (onClick != null && showChevron) {

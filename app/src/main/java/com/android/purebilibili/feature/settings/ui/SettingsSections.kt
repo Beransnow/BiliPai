@@ -85,6 +85,7 @@ import com.android.purebilibili.core.ui.components.AppPreferenceSectionTitle as 
 import com.android.purebilibili.core.ui.components.AppPreferenceGroup as SettingsGroup
 import com.android.purebilibili.core.ui.components.AppSwitchPreference as SettingSwitchItem
 import com.android.purebilibili.core.ui.components.AppPreference as SettingClickableItem
+import com.android.purebilibili.core.ui.common.rememberClipboardCopyHandler
 import com.android.purebilibili.core.ui.components.AppPreferenceDivider as SettingsDivider
 import com.android.purebilibili.core.ui.components.AppSliderPreference as SettingSliderItem
 
@@ -1522,7 +1523,8 @@ fun AboutSection(
             value = "GitHub",
             onClick = onGithubClick,
             iconTint = openSourceHomeVisual.iconTint,
-            enableCopy = true
+            enableCopy = true,
+            onCopyRequest = rememberClipboardCopyHandler(),
         )
         SettingsAdaptiveDivider()
         SettingClickableItem(
@@ -1555,7 +1557,8 @@ fun AboutSection(
                 )
             },
             iconTint = iOSOrange,
-            enableCopy = true
+            enableCopy = true,
+            onCopyRequest = rememberClipboardCopyHandler(),
         )
         SettingsAdaptiveDivider()
         SettingClickableItem(
@@ -1572,7 +1575,8 @@ fun AboutSection(
                 )
             },
             iconTint = iOSPurple,
-            enableCopy = true
+            enableCopy = true,
+            onCopyRequest = rememberClipboardCopyHandler(),
         )
     }
     Spacer(modifier = Modifier.height(12.dp))
@@ -1625,7 +1629,8 @@ fun AboutSection(
             value = versionValue,
             onClick = onVersionClick,
             iconTint = versionIconTint,
-            enableCopy = true
+            enableCopy = true,
+            onCopyRequest = rememberClipboardCopyHandler(),
         )
         SettingsAdaptiveDivider()
         SettingClickableItem(

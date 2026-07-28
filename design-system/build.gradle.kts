@@ -56,6 +56,7 @@ dependencies {
     implementation("io.github.alexzhirkevich:cupertino:0.1.0-alpha04")
     api("io.github.alexzhirkevich:cupertino-icons-extended:0.1.0-alpha04")
     api("top.yukonga.miuix.kmp:miuix-ui-android:0.9.3")
+    implementation("top.yukonga.miuix.kmp:miuix-preference-android:0.9.3")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")

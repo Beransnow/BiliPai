@@ -9,7 +9,7 @@ class IOSGroupSurfaceShapeStructureTest {
 
     @Test
     fun `ios group passes rounded shape into surface for md3 and miuix borders`() {
-        val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt")
+        val source = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt")
         val iosGroupSource = source
             .substringAfter("fun IOSGroup(")
             .substringBefore("@Composable\ninternal fun AdaptiveSwitchPreferenceContent")
@@ -22,7 +22,7 @@ class IOSGroupSurfaceShapeStructureTest {
 
     @Test
     fun `miuix grouped settings use native card and preference rows`() {
-        val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt")
+        val source = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt")
         val iosGroupSource = source
             .substringAfter("fun IOSGroup(")
             .substringBefore("@Composable\ninternal fun AdaptiveSwitchPreferenceContent")
@@ -43,7 +43,7 @@ class IOSGroupSurfaceShapeStructureTest {
 
     @Test
     fun `switch item uses measured row layout so trailing switch cannot overlap text`() {
-        val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt")
+        val source = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt")
         val switchItemSource = source
             .substringAfter("fun AdaptiveSwitchPreferenceContent(")
             .substringBefore("@Composable\nfun IOSSliderPreference")
@@ -56,7 +56,7 @@ class IOSGroupSurfaceShapeStructureTest {
 
     @Test
     fun `miuix switch item respects app haptic setting`() {
-        val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt")
+        val source = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt")
         val switchItemSource = source
             .substringAfter("fun AdaptiveSwitchPreferenceContent(")
             .substringBefore("@Composable\nfun IOSSliderPreference")
@@ -76,10 +76,11 @@ class IOSGroupSurfaceShapeStructureTest {
     }
 
     private fun loadSource(path: String): String {
-        val normalizedPath = path.removePrefix("app/")
         val sourceFile = listOf(
             File(path),
-            File(normalizedPath)
+            File("../$path"),
+            File(path.removePrefix("design-system/")),
+            File(path.removePrefix("app/")),
         ).firstOrNull { it.exists() }
         require(sourceFile != null) { "Cannot locate $path from ${File(".").absolutePath}" }
         return sourceFile.readText().replace("\r\n", "\n")

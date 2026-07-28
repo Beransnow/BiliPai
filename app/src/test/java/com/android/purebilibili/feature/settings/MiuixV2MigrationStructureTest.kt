@@ -24,7 +24,7 @@ class MiuixV2MigrationStructureTest {
 
     @Test
     fun iosSectionTitle_usesMiuixSmallTitleOnMiuixBranch() {
-        val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt")
+        val source = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt")
         assertTrue(source.contains("SmallTitle("))
         assertTrue(source.contains("androidNativeVariant == AndroidNativeVariant.MIUIX"))
     }
@@ -61,7 +61,7 @@ class MiuixV2MigrationStructureTest {
         val allowed = setOf(
             "app/src/main/java/com/android/purebilibili/core/theme/Theme.kt",
             "app/src/main/java/com/android/purebilibili/core/ui/AppSurfaceTokens.kt",
-            "app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt"
+            "design-system/src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt"
         )
         val offenders = listOf(
             "app/src/main/java/com/android/purebilibili/feature/search/SearchScreen.kt",
@@ -123,14 +123,14 @@ class MiuixV2MigrationStructureTest {
 
     @Test
     fun ioSearchBar_miuixBranchUsesOfficialInputField() {
-        val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt")
+        val source = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt")
         assertTrue(source.contains("InputField("))
         assertTrue(source.contains("shouldUseNativeMiuixSearchBar("))
     }
 
     @Test
     fun iosClickableItem_routesThroughAdaptiveListItemPolicy() {
-        val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt")
+        val source = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt")
         assertTrue(source.contains("resolveIosClickableItemRenderer("))
         assertTrue(source.contains("IosClickableItemRenderer.MIUIX_ARROW"))
         assertTrue(source.contains("IosClickableItemRenderer.MIUIX_BASIC"))
