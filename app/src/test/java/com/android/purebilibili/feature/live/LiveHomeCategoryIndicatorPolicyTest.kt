@@ -1,7 +1,6 @@
 package com.android.purebilibili.feature.live
 
-import com.android.purebilibili.core.theme.AndroidNativeVariant
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.ui.CompactCapsuleChromeSpec
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -38,18 +37,15 @@ class LiveHomeCategoryIndicatorPolicyTest {
     }
 
     @Test
-    fun `live home category control follows each preset`() {
+    fun `live home category control follows each chrome density`() {
         val ios = resolveLiveHomeCategorySegmentedControlSpec(
-            UiPreset.IOS,
-            AndroidNativeVariant.MATERIAL3,
+            compactChrome(primaryHeightDp = 44, compactChipHeightDp = 32),
         )
         val md3 = resolveLiveHomeCategorySegmentedControlSpec(
-            UiPreset.MD3,
-            AndroidNativeVariant.MATERIAL3,
+            compactChrome(primaryHeightDp = 56, compactChipHeightDp = 28),
         )
         val miuix = resolveLiveHomeCategorySegmentedControlSpec(
-            UiPreset.MD3,
-            AndroidNativeVariant.MIUIX,
+            compactChrome(primaryHeightDp = 48, compactChipHeightDp = 28),
         )
 
         assertEquals(44, ios.heightDp)
@@ -70,8 +66,7 @@ class LiveHomeCategoryIndicatorPolicyTest {
     @Test
     fun `all tags parent category uses fixed width so labels are not compressed`() {
         val spec = resolveLiveAreaParentSegmentedControlSpec(
-            UiPreset.MD3,
-            AndroidNativeVariant.MATERIAL3,
+            compactChrome(primaryHeightDp = 56, compactChipHeightDp = 28),
         )
 
         assertEquals(112, spec.itemWidthDp)
@@ -127,4 +122,24 @@ class LiveHomeCategoryIndicatorPolicyTest {
 
         assertEquals(80, target)
     }
+
+    private fun compactChrome(
+        primaryHeightDp: Int,
+        compactChipHeightDp: Int,
+    ) = CompactCapsuleChromeSpec(
+        primaryHeightDp = primaryHeightDp,
+        secondaryButtonSizeDp = 48,
+        chipHeightDp = 32,
+        compactChipHeightDp = compactChipHeightDp,
+        primaryCornerRadiusDp = 16,
+        secondaryButtonCornerRadiusDp = 16,
+        chipCornerRadiusDp = 16,
+        compactChipCornerRadiusDp = 14,
+        iconSizeDp = 20,
+        smallIconSizeDp = 16,
+        inputHorizontalPaddingDp = 12,
+        chipHorizontalPaddingDp = 12,
+        compactChipHorizontalPaddingDp = 10,
+        standardGapDp = 8,
+    )
 }

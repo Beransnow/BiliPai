@@ -55,6 +55,33 @@ class AppSemanticVisualPolicyTest {
     }
 
     @Test
+    fun chromeLiquidGlassHonorsIndependentAndGlobalCapabilities() {
+        assertFalse(
+            resolveAppChromeLiquidGlassEnabled(
+                supportsIndependentLiquidGlass = false,
+                individualEnabled = true,
+                androidNativeEnabled = false,
+            )
+        )
+        assertEquals(
+            true,
+            resolveAppChromeLiquidGlassEnabled(
+                supportsIndependentLiquidGlass = true,
+                individualEnabled = true,
+                androidNativeEnabled = false,
+            )
+        )
+        assertEquals(
+            true,
+            resolveAppChromeLiquidGlassEnabled(
+                supportsIndependentLiquidGlass = false,
+                individualEnabled = false,
+                androidNativeEnabled = true,
+            )
+        )
+    }
+
+    @Test
     fun staticMaterialPaletteCollapsesNonErrorAccentsToPrimary() {
         val scheme = lightColorScheme(
             primary = Color(0xFFAA3366),

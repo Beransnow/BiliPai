@@ -11,7 +11,7 @@ import com.android.purebilibili.core.theme.UiPreset
 
 /** Shared content-card decisions for feed / search / dynamic list shells. */
 data class ContentCardSurfaceSpec(
-    val useMiuixTokens: Boolean,
+    val usesTonalContainerTreatment: Boolean,
     val cornerLevel: ContainerLevel,
     val borderWidthDp: Float,
     val borderAlpha: Float,
@@ -26,7 +26,7 @@ fun resolveContentCardSurfaceSpec(
     val useMiuix = isNativeMiuixEnabled(uiPreset, androidNativeVariant)
     return if (useMiuix) {
         ContentCardSurfaceSpec(
-            useMiuixTokens = true,
+            usesTonalContainerTreatment = true,
             cornerLevel = ContainerLevel.Card,
             borderWidthDp = 0.8f,
             borderAlpha = 0.22f,
@@ -35,7 +35,7 @@ fun resolveContentCardSurfaceSpec(
         )
     } else {
         ContentCardSurfaceSpec(
-            useMiuixTokens = false,
+            usesTonalContainerTreatment = false,
             cornerLevel = ContainerLevel.Card,
             borderWidthDp = 0f,
             borderAlpha = 0f,

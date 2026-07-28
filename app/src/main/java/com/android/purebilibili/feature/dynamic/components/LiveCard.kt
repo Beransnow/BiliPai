@@ -7,6 +7,7 @@ import com.android.purebilibili.core.ui.MediaContrastPalette
 
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.rememberAppPlayIcon
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -15,9 +16,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 //  Cupertino Icons - iOS SF Symbols 风格图标
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -131,7 +129,7 @@ fun LiveCard(
                     
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
-                            CupertinoIcons.Default.Play,
+                            rememberAppPlayIcon(),
                             null,
                             modifier = Modifier.size(AppSpacingTokens.Medium + AppSpacingTokens.Micro),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f)

@@ -26,8 +26,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -35,6 +33,7 @@ import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.LocalSharedTransitionScope
 import com.android.purebilibili.core.ui.transition.liveCoverSharedElementKey
+import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
 
 internal data class LiveRoomCardUiModel(
     val roomId: Long,
@@ -52,10 +51,8 @@ internal fun LiveRoomCard(
     onClick: () -> Unit,
     enableSharedCoverTransition: Boolean = false,
 ) {
-    val visualSpec = resolveLiveVisualSpec(
-        uiPreset = LocalUiPreset.current,
-        androidNativeVariant = LocalAndroidNativeVariant.current,
-    )
+    val topChromePolicy = rememberAppTopChromePolicy()
+    val visualSpec = resolveLiveVisualSpec(topChromePolicy.tabPresentation)
     val metrics = visualSpec.homeMetrics
     val sharedTransitionScope = LocalSharedTransitionScope.current
     val animatedVisibilityScope = LocalAnimatedVisibilityScope.current

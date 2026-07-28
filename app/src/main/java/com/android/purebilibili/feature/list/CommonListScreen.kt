@@ -61,9 +61,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.DisposableEffect // [Fix] Missing import
 import kotlinx.coroutines.launch // [Fix] Import
 //  Cupertino Icons - iOS SF Symbols 风格图标
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
@@ -101,7 +98,9 @@ import com.android.purebilibili.feature.home.policy.resolveBottomBarChromeScroll
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
 import com.android.purebilibili.core.ui.resolveGlobalWallpaperChromeColor
 import com.android.purebilibili.core.theme.BiliPink
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
+import com.android.purebilibili.core.ui.rememberAppChromeLiquidGlassEnabled
+import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
+import com.android.purebilibili.core.ui.components.AppSearchField
 import com.android.purebilibili.core.ui.animation.DissolveAnimationPreset
 import com.android.purebilibili.core.ui.animation.DissolvableVideoCard
 import com.android.purebilibili.core.ui.animation.jiggleOnDissolve
@@ -109,23 +108,23 @@ import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.LocalSharedTransitionScope
 import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
 import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.rememberAppFolderIcon
+import com.android.purebilibili.core.ui.rememberAppHeadphonesIcon
 import com.android.purebilibili.core.ui.transition.BiliPaiSharedElementKey
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.VideoGridItemSkeleton
 import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.feature.home.components.cards.ElegantVideoCard
-import io.github.alexzhirkevich.cupertino.CupertinoActivityIndicator
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.rememberAdaptiveGridColumns
 import com.android.purebilibili.core.util.rememberResponsiveSpacing
-import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.data.model.response.HistoryBusiness
 import com.android.purebilibili.data.model.response.HistoryItem
 import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.feature.article.ArticleSharedElementSlot
 import com.android.purebilibili.feature.article.resolveHistoryArticleCoverAspectRatio
 import com.android.purebilibili.feature.article.resolveArticleSharedTransitionKey
-import com.android.purebilibili.feature.settings.IOSSlidingSegmentedControl
+import com.android.purebilibili.feature.settings.AppSegmentedControl
 import com.android.purebilibili.feature.settings.PlaybackSegmentOption
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import com.android.purebilibili.feature.space.SeasonSeriesDetailViewModel
@@ -204,8 +203,11 @@ fun CommonListScreen(
     val homeSettings by SettingsManager.getHomeSettings(context).collectAsStateWithLifecycle(initialValue = com.android.purebilibili.core.store.HomeSettings(),
         context = kotlin.coroutines.EmptyCoroutineContext
     )
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
+    val topChromePolicy = rememberAppTopChromePolicy()
+    val liquidGlassEnabled = rememberAppChromeLiquidGlassEnabled(
+        individualEnabled = homeSettings.isLiquidGlassEnabled,
+        androidNativeEnabled = homeSettings.androidNativeLiquidGlassEnabled,
+    )
     val windowSizeClass = LocalWindowSizeClass.current
     val deviceUiProfile = remember(windowSizeClass.widthSizeClass) {
         resolveDeviceUiProfile(
@@ -671,23 +673,21 @@ fun CommonListScreen(
             homeSettings = homeSettings,
         )
     }
-    val videoCardAppearance = remember(homeSettings, uiPreset) {
+    val videoCardAppearance = remember(homeSettings, liquidGlassEnabled) {
         resolveCommonListVideoCardAppearance(
             homeSettings = homeSettings,
-            uiPreset = uiPreset
+            liquidGlassEnabled = liquidGlassEnabled,
         )
     }
-    val favoriteHeaderLayout = remember(uiPreset, androidNativeVariant) {
+    val favoriteHeaderLayout = remember(topChromePolicy) {
         resolveCommonListFavoriteHeaderLayout(
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant
+            topChromePolicy = topChromePolicy,
         )
     }
-    val historyFilterChrome = remember(homeSettings, uiPreset, androidNativeVariant) {
+    val historyFilterChrome = remember(homeSettings, topChromePolicy) {
         resolveHistoryFilterTabChromeSpec(
             homeSettings = homeSettings,
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant
+            topChromePolicy = topChromePolicy,
         )
     }
     val blurIntensity = currentUnifiedBlurIntensity()
@@ -1068,7 +1068,7 @@ fun CommonListScreen(
                                     }
                                 ) {
                                     Icon(
-                                        imageVector = CupertinoIcons.Outlined.Headphones,
+                                        imageVector = rememberAppHeadphonesIcon(),
                                         contentDescription = "全部听"
                                     )
                                 }
@@ -1216,7 +1216,7 @@ fun CommonListScreen(
                                 vertical = favoriteHeaderLayout.searchBarVerticalPaddingDp.dp
                             )
                     ) {
-                        com.android.purebilibili.core.ui.components.IOSSearchBar(
+                        AppSearchField(
                             query = searchQuery,
                             onQueryChange = { searchQuery = it },
                             placeholder = when {
@@ -1306,7 +1306,7 @@ fun CommonListScreen(
                     }
 
                     if (favoriteViewModel != null && subscribedFoldersState.isNotEmpty()) {
-                        IOSSlidingSegmentedControl(
+                        AppSegmentedControl(
                             options = favoriteBrowseOptions,
                             selectedValue = favoriteBrowseSection,
                             modifier = Modifier.padding(
@@ -1591,7 +1591,7 @@ private fun FavoriteFolderChipPreview(
             )
         } else {
             Icon(
-                imageVector = CupertinoIcons.Default.Folder,
+                imageVector = rememberAppFolderIcon(),
                 contentDescription = null,
                 modifier = Modifier.size(AppSpacingTokens.Large - AppSpacingTokens.Micro / 2),
                 tint = if (selected) {
@@ -2174,7 +2174,7 @@ private fun FavoriteSubscribedFolderPreview(
             )
         } else {
             Icon(
-                imageVector = CupertinoIcons.Default.Folder,
+                imageVector = rememberAppFolderIcon(),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary
             )
@@ -2295,7 +2295,7 @@ private fun FavoriteCollectionRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                imageVector = CupertinoIcons.Default.Folder,
+                imageVector = rememberAppFolderIcon(),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary
             )

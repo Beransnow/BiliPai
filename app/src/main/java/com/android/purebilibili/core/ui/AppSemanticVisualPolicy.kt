@@ -105,3 +105,24 @@ fun rememberAppSemanticVisualPolicy(): AppSemanticVisualPolicy {
         )
     }
 }
+
+fun resolveAppChromeLiquidGlassEnabled(
+    supportsIndependentLiquidGlass: Boolean,
+    individualEnabled: Boolean,
+    androidNativeEnabled: Boolean,
+): Boolean = androidNativeEnabled || (supportsIndependentLiquidGlass && individualEnabled)
+
+@Composable
+fun rememberAppChromeLiquidGlassEnabled(
+    individualEnabled: Boolean,
+    androidNativeEnabled: Boolean,
+): Boolean {
+    val policy = rememberAppSemanticVisualPolicy()
+    return remember(policy.supportsIndependentLiquidGlass, individualEnabled, androidNativeEnabled) {
+        resolveAppChromeLiquidGlassEnabled(
+            supportsIndependentLiquidGlass = policy.supportsIndependentLiquidGlass,
+            individualEnabled = individualEnabled,
+            androidNativeEnabled = androidNativeEnabled,
+        )
+    }
+}

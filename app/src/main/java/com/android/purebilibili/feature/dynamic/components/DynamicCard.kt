@@ -15,9 +15,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 //  Cupertino Icons - iOS SF Symbols 风格图标
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -45,6 +42,11 @@ import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.common.CopySelectionDialog
 import com.android.purebilibili.core.ui.rememberAppMoreIcon
 import com.android.purebilibili.core.ui.rememberAppVisibilityOffIcon
+import com.android.purebilibili.core.ui.AppAlertDialog
+import com.android.purebilibili.core.ui.AppDialogAction
+import com.android.purebilibili.core.ui.rememberAppHistoryIcon
+import com.android.purebilibili.core.ui.rememberAppDeleteIcon
+import com.android.purebilibili.core.ui.rememberAppLinkIcon
 import com.android.purebilibili.data.model.response.DynamicDesc
 import com.android.purebilibili.data.model.response.DynamicItem
 import com.android.purebilibili.data.model.response.DrawItem
@@ -121,13 +123,12 @@ fun DynamicCardV2(
     }
 
     pendingDeleteAction?.let { action ->
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { pendingDeleteAction = null },
-            icon = { Icon(CupertinoIcons.Default.Trash, contentDescription = null) },
             title = { Text(action.title) },
             text = { Text(action.content) },
             confirmButton = {
-                TextButton(
+                AppDialogAction(
                     onClick = {
                         pendingDeleteAction = null
                         onDeleteClick?.invoke(action)
@@ -137,7 +138,7 @@ fun DynamicCardV2(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { pendingDeleteAction = null }) {
+                AppDialogAction(onClick = { pendingDeleteAction = null }) {
                     Text(action.cancelText)
                 }
             }
@@ -247,7 +248,7 @@ fun DynamicCardV2(
                             text = { Text("复制链接", color = MaterialTheme.colorScheme.onSurface) },
                             leadingIcon = { 
                                 Icon(
-                                    CupertinoIcons.Default.Link,
+                                    rememberAppLinkIcon(),
                                     contentDescription = null,
                                     modifier = Modifier.size(AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall),
                                     tint = MaterialTheme.colorScheme.onSurface
@@ -268,7 +269,7 @@ fun DynamicCardV2(
                                 text = { Text("稍后再看", color = MaterialTheme.colorScheme.onSurface) },
                                 leadingIcon = {
                                     Icon(
-                                        CupertinoIcons.Default.Clock,
+                                        rememberAppHistoryIcon(),
                                         contentDescription = null,
                                         modifier = Modifier.size(AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall),
                                         tint = MaterialTheme.colorScheme.onSurface
@@ -286,7 +287,7 @@ fun DynamicCardV2(
                                 text = { Text(deleteAction.label, color = MaterialTheme.colorScheme.error) },
                                 leadingIcon = {
                                     Icon(
-                                        CupertinoIcons.Default.Trash,
+                                        rememberAppDeleteIcon(),
                                         contentDescription = null,
                                         modifier = Modifier.size(AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall),
                                         tint = MaterialTheme.colorScheme.error
@@ -688,7 +689,6 @@ fun DynamicCardV2(
         ) {
             // 转发按钮
             ActionButton(
-                icon = io.github.alexzhirkevich.cupertino.icons.CupertinoIcons.Default.ArrowTurnUpRight,
                 count = statModule.forward.count,
                 label = "转发",
                 enabled = !statModule.forward.forbidden,
@@ -698,7 +698,6 @@ fun DynamicCardV2(
             
             // 评论按钮
             ActionButton(
-                icon = io.github.alexzhirkevich.cupertino.icons.CupertinoIcons.Default.Message,
                 count = statModule.comment.count,
                 label = "评论",
                 enabled = !statModule.comment.forbidden,
@@ -708,8 +707,6 @@ fun DynamicCardV2(
             
             // 点赞按钮
             ActionButton(
-                icon = if (isLiked) io.github.alexzhirkevich.cupertino.icons.CupertinoIcons.Filled.HandThumbsup
-                       else io.github.alexzhirkevich.cupertino.icons.CupertinoIcons.Default.HandThumbsup,
                 count = statModule.like.count,
                 label = "点赞",
                 isActive = isLiked,

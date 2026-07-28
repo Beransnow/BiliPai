@@ -111,8 +111,7 @@ import com.android.purebilibili.core.ui.components.IOSGridItem
 import com.android.purebilibili.core.store.StoredAccountSession
 import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.SettingsManager
-import com.android.purebilibili.core.store.resolveSharedLiquidGlassChromeEnabled
-import com.android.purebilibili.core.theme.LocalUiPreset
+import com.android.purebilibili.core.ui.rememberAppChromeLiquidGlassEnabled
 import com.android.purebilibili.data.model.response.FavFolder
 import com.android.purebilibili.data.model.response.FollowBangumiItem
 import com.android.purebilibili.data.model.response.SpaceAggregateArchiveItem
@@ -1408,10 +1407,9 @@ private fun ProfileSpaceTabs(
     val homeSettings by SettingsManager
         .getHomeSettings(context)
         .collectAsStateWithLifecycle(initialValue = HomeSettings())
-    val sharedLiquidGlassEnabled = resolveSharedLiquidGlassChromeEnabled(
+    val sharedLiquidGlassEnabled = rememberAppChromeLiquidGlassEnabled(
         individualEnabled = homeSettings.isBottomBarLiquidGlassEnabled,
-        uiPreset = LocalUiPreset.current,
-        androidNativeLiquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled
+        androidNativeEnabled = homeSettings.androidNativeLiquidGlassEnabled,
     )
     val selectedIndex = tabs.indexOfFirst { it.tab == selectedTab }.coerceAtLeast(0)
     val tabModifier = Modifier

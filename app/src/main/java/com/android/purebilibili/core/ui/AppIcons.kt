@@ -45,7 +45,11 @@ import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Wifi
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.KeyboardArrowUp
+import androidx.compose.material.icons.outlined.Link
+import androidx.compose.material.icons.outlined.ViewList
 import androidx.compose.material.icons.outlined.NotificationsNone
 import androidx.compose.material.icons.outlined.Folder as MaterialFolder
 import androidx.compose.material.icons.outlined.Photo as MaterialPhoto
@@ -506,6 +510,18 @@ fun rememberAppWatchLaterIcon(): ImageVector = resolveAppWatchLaterIcon(LocalUiP
 @Composable
 fun rememberAppCoinIcon(): ImageVector = resolveAppCoinIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
 
+@Composable
+fun rememberAppLinkIcon(): ImageVector = resolveAppLinkIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+
+@Composable
+fun rememberAppDeleteIcon(): ImageVector = resolveAppDeleteIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+
+@Composable
+fun rememberAppListLayoutIcon(): ImageVector = resolveAppListLayoutIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+
+@Composable
+fun rememberAppGridLayoutIcon(): ImageVector = resolveAppGridLayoutIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+
 private fun resolvePlatformIcon(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant,
@@ -753,3 +769,23 @@ fun resolveAppCoinIcon(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
 ): ImageVector = AppIcons.BiliCoin
+
+fun resolveAppLinkIcon(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Outlined.Link, CupertinoIcons.Outlined.Link)
+
+fun resolveAppDeleteIcon(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Outlined.DeleteOutline, CupertinoIcons.Outlined.Trash)
+
+fun resolveAppListLayoutIcon(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Outlined.ViewList, CupertinoIcons.Outlined.ListBullet)
+
+fun resolveAppGridLayoutIcon(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Outlined.GridView, CupertinoIcons.Outlined.RectangleStack)

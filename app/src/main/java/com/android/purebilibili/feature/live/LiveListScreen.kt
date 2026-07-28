@@ -50,13 +50,11 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.network.NetworkModule
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
-import com.android.purebilibili.core.ui.resolveCompactCapsuleChromeSpec
+import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.responsiveContentWidth
 import com.android.purebilibili.data.model.response.LiveAreaParent
@@ -279,10 +277,9 @@ fun LiveListScreen(
     }
 
     val windowSizeClass = LocalWindowSizeClass.current
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val visualSpec = remember(uiPreset, androidNativeVariant) {
-        resolveLiveVisualSpec(uiPreset, androidNativeVariant)
+    val topChromePolicy = rememberAppTopChromePolicy()
+    val visualSpec = remember(topChromePolicy.tabPresentation) {
+        resolveLiveVisualSpec(topChromePolicy.tabPresentation)
     }
     val metrics = visualSpec.homeMetrics
     val contentWidth = if (windowSizeClass.isExpandedScreen) {
@@ -451,10 +448,7 @@ private fun LiveListHeader(
     onAvatarClick: () -> Unit
 ) {
     val palette = rememberLiveChromePalette()
-    val compactChrome = resolveCompactCapsuleChromeSpec(
-        uiPreset = LocalUiPreset.current,
-        androidNativeVariant = LocalAndroidNativeVariant.current,
-    )
+    val compactChrome = rememberAppTopChromePolicy().compactChromeSpec
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -682,10 +676,9 @@ private fun LiveAreaHomeChipRow(
             areaIds = areaList.map { it.id }
         )
     }
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val segmentedSpec = remember(uiPreset, androidNativeVariant) {
-        resolveLiveHomeCategorySegmentedControlSpec(uiPreset, androidNativeVariant)
+    val compactChrome = rememberAppTopChromePolicy().compactChromeSpec
+    val segmentedSpec = remember(compactChrome) {
+        resolveLiveHomeCategorySegmentedControlSpec(compactChrome)
     }
     val scrollState = rememberScrollState()
     val density = LocalDensity.current

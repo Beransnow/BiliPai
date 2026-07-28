@@ -4,9 +4,7 @@ import android.content.Context
 import com.android.purebilibili.core.store.BottomBarSearchAutoExpandMode
 import com.android.purebilibili.core.store.HomeTopLayoutOrder
 import com.android.purebilibili.core.store.SettingsManager
-import com.android.purebilibili.core.theme.AndroidNativeVariant
-import com.android.purebilibili.core.theme.UiPreset
-import com.android.purebilibili.core.theme.resolveUiStyle
+import com.android.purebilibili.core.theme.UiStyle
 
 enum class OnboardingSettingsProfile(
     val title: String,
@@ -28,8 +26,7 @@ enum class OnboardingSettingsProfile(
 
 data class OnboardingSettingsGuidePreset(
     val profile: OnboardingSettingsProfile,
-    val uiPreset: UiPreset,
-    val androidNativeVariant: AndroidNativeVariant,
+    val uiStyle: UiStyle,
     val bottomBarFloating: Boolean,
     val bottomBarLiquidGlassEnabled: Boolean,
     val bottomBarSearchEnabled: Boolean,
@@ -63,8 +60,7 @@ fun resolveOnboardingSettingsGuidePreset(
     return when (profile) {
         OnboardingSettingsProfile.RECOMMENDED -> OnboardingSettingsGuidePreset(
             profile = profile,
-            uiPreset = UiPreset.MD3,
-            androidNativeVariant = AndroidNativeVariant.MATERIAL3,
+            uiStyle = UiStyle.MATERIAL3,
             bottomBarFloating = true,
             bottomBarLiquidGlassEnabled = false,
             bottomBarSearchEnabled = false,
@@ -80,8 +76,7 @@ fun resolveOnboardingSettingsGuidePreset(
 
         OnboardingSettingsProfile.PERFORMANCE -> OnboardingSettingsGuidePreset(
             profile = profile,
-            uiPreset = UiPreset.MD3,
-            androidNativeVariant = AndroidNativeVariant.MATERIAL3,
+            uiStyle = UiStyle.MATERIAL3,
             bottomBarFloating = true,
             bottomBarLiquidGlassEnabled = false,
             bottomBarSearchEnabled = false,
@@ -97,8 +92,7 @@ fun resolveOnboardingSettingsGuidePreset(
 
         OnboardingSettingsProfile.DATA_SAVER -> OnboardingSettingsGuidePreset(
             profile = profile,
-            uiPreset = UiPreset.MD3,
-            androidNativeVariant = AndroidNativeVariant.MATERIAL3,
+            uiStyle = UiStyle.MATERIAL3,
             bottomBarFloating = true,
             bottomBarLiquidGlassEnabled = false,
             bottomBarSearchEnabled = false,
@@ -121,7 +115,7 @@ suspend fun applyOnboardingSettingsGuidePreset(
     val preset = resolveOnboardingSettingsGuidePreset(profile)
     SettingsManager.setUiStyle(
         context = context,
-        uiStyle = resolveUiStyle(preset.uiPreset, preset.androidNativeVariant)
+        uiStyle = preset.uiStyle
     )
     SettingsManager.setBottomBarFloating(context, preset.bottomBarFloating)
     SettingsManager.setBottomBarLiquidGlassEnabled(context, preset.bottomBarLiquidGlassEnabled)

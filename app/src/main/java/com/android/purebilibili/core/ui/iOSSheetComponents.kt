@@ -132,7 +132,7 @@ internal fun bottomSheetContentExitTransition(
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IOSModalBottomSheet(
+fun AppModalBottomSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -200,6 +200,52 @@ fun IOSModalBottomSheet(
         }
     )
 }
+
+data class AppBottomSheetMotion(
+    val scrimEnter: EnterTransition,
+    val scrimExit: ExitTransition,
+    val contentEnter: EnterTransition,
+    val contentExit: ExitTransition,
+)
+
+@Composable
+fun rememberAppBottomSheetMotion(): AppBottomSheetMotion {
+    val uiPreset = LocalUiPreset.current
+    val androidNativeVariant = LocalAndroidNativeVariant.current
+    return remember(uiPreset, androidNativeVariant) {
+        AppBottomSheetMotion(
+            scrimEnter = bottomSheetScrimEnterTransition(uiPreset, androidNativeVariant),
+            scrimExit = bottomSheetScrimExitTransition(uiPreset, androidNativeVariant),
+            contentEnter = bottomSheetContentEnterTransition(uiPreset, androidNativeVariant),
+            contentExit = bottomSheetContentExitTransition(uiPreset, androidNativeVariant),
+        )
+    }
+}
+
+@Deprecated("Use AppModalBottomSheet")
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun IOSModalBottomSheet(
+    onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
+    sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+    containerColor: Color = MaterialTheme.colorScheme.surface,
+    scrimColor: Color = BottomSheetDefaults.ScrimColor,
+    presentationProgress: Float = 1f,
+    dragHandle: @Composable (() -> Unit)? = { IOSDragHandle() },
+    windowInsets: androidx.compose.foundation.layout.WindowInsets = BottomSheetDefaults.modalWindowInsets,
+    content: @Composable () -> Unit,
+) = AppModalBottomSheet(
+    onDismissRequest = onDismissRequest,
+    modifier = modifier,
+    sheetState = sheetState,
+    containerColor = containerColor,
+    scrimColor = scrimColor,
+    presentationProgress = presentationProgress,
+    dragHandle = dragHandle,
+    windowInsets = windowInsets,
+    content = content,
+)
 
 @Composable
 fun IOSDragHandle() {

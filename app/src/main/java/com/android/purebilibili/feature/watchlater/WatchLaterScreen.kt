@@ -19,9 +19,6 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import com.android.purebilibili.core.ui.animation.DissolveAnimationPreset
 import com.android.purebilibili.core.ui.animation.DissolvableVideoCard
 import com.android.purebilibili.core.ui.animation.jiggleOnDissolve
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
 import com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState
 import dev.chrisbanes.haze.HazeState
 import com.android.purebilibili.core.ui.blur.hazeSourceCompat
@@ -63,6 +60,8 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.rememberAppPlayIcon
+import com.android.purebilibili.core.ui.rememberAppWatchLaterIcon
 import com.android.purebilibili.core.network.NetworkModule
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
@@ -628,7 +627,7 @@ fun WatchLaterScreen(
                                     }
                                 ) {
                                     Icon(
-                                        CupertinoIcons.Filled.Play,
+                                        rememberAppPlayIcon(),
                                         contentDescription = "全部播放",
                                         tint = MaterialTheme.colorScheme.primary
                                     )
@@ -772,7 +771,7 @@ fun WatchLaterScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Icon(
-                            CupertinoIcons.Default.Clock,
+                            rememberAppWatchLaterIcon(),
                             contentDescription = null,
                             modifier = Modifier.size(AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Large),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)

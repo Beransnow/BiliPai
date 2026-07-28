@@ -6,6 +6,7 @@ import com.android.purebilibili.core.ui.MediaContrastPalette
 
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.rememberAppPlayIcon
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.tween
@@ -59,8 +60,6 @@ import com.android.purebilibili.core.ui.transition.videoCardShellSharedBoundsOrE
 import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.feature.home.components.cards.videoCardShellReturnChromeAlpha
 import com.android.purebilibili.data.model.response.ArchiveMajor
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.filled.PlayCircle
 
 /**
  * 对齐 PiliPlus 的动态视频呈现：
@@ -286,7 +285,7 @@ private fun VideoCardLargeCover(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = CupertinoIcons.Filled.PlayCircle,
+                        imageVector = rememberAppPlayIcon(),
                         contentDescription = null,
                         tint = MediaContrastPalette.Foreground,
                         modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro)

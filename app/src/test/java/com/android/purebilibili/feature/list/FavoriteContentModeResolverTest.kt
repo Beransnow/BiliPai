@@ -65,11 +65,11 @@ class FavoriteContentModeResolverTest {
         )
         assertTrue(
             segmentedSource.contains("forceLiquidIndicator: Boolean = false"),
-            "Shared iOS segmented control should expose an explicit liquid-indicator override"
+            "Shared segmented control should expose an explicit liquid-indicator override"
         )
         assertTrue(
             segmentedSource.contains("tapPressRefractionEnabled: Boolean = true"),
-            "Shared iOS segmented control should expose tap refraction control to callers"
+            "Shared segmented control should expose tap refraction control to callers"
         )
         assertTrue(
             segmentedSource.contains("forceLiquidChrome = forceLiquidIndicator"),

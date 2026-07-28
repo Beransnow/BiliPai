@@ -14,7 +14,7 @@ class LiveCategorySegmentedControlStructureTest {
         )
 
         assertTrue(source.contains("BottomBarLiquidSegmentedControl("))
-        assertTrue(source.contains("resolveLiveHomeCategorySegmentedControlSpec(uiPreset, androidNativeVariant)"))
+        assertTrue(source.contains("resolveLiveHomeCategorySegmentedControlSpec(compactChrome)"))
         assertTrue(source.contains("height = segmentedSpec.heightDp.dp"))
         assertTrue(source.contains("indicatorHeight = segmentedSpec.indicatorHeightDp.dp"))
         assertTrue(source.contains(".horizontalScroll(scrollState, enabled = false)"))
@@ -38,7 +38,7 @@ class LiveCategorySegmentedControlStructureTest {
         assertTrue(source.contains("pagerState.animateScrollToPage"))
         assertTrue(source.contains("selectedTab = pagerState.currentPage"))
         assertTrue(source.contains("BottomBarLiquidSegmentedControl("))
-        assertTrue(source.contains("resolveLiveAreaParentSegmentedControlSpec(uiPreset, androidNativeVariant)"))
+        assertTrue(source.contains("resolveLiveAreaParentSegmentedControlSpec(compactChrome)"))
         assertTrue(source.contains("height = segmentedSpec.heightDp.dp"))
         assertTrue(source.contains("indicatorHeight = segmentedSpec.indicatorHeightDp.dp"))
         assertTrue(source.contains(".horizontalScroll(scrollState, enabled = false)"))

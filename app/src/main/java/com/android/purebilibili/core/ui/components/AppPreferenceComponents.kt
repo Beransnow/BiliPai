@@ -1,10 +1,12 @@
 package com.android.purebilibili.core.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
@@ -129,14 +131,25 @@ fun AppPreferenceDivider(
     startIndent: Dp = 66.dp,
 ) = IOSDivider(modifier = modifier, startIndent = startIndent)
 
+enum class AppSearchFieldPresentation {
+    STANDARD,
+    TOP_BAR,
+}
+
 @Composable
 fun AppSearchField(
     query: String,
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     placeholder: String = "搜索",
+    onSearch: () -> Unit = {},
+    onClear: () -> Unit = { onQueryChange("") },
+    presentation: AppSearchFieldPresentation = AppSearchFieldPresentation.STANDARD,
+    autoFocusEnabled: Boolean = false,
+    focusRequester: FocusRequester? = null,
     containerColor: Color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
     heightOverride: Dp? = null,
+    interactionSource: MutableInteractionSource? = null,
 ) = IOSSearchBar(
     query = query,
     onQueryChange = onQueryChange,
@@ -144,7 +157,14 @@ fun AppSearchField(
     placeholder = placeholder,
     containerColor = containerColor,
     heightOverride = heightOverride,
-    forceExpandedInput = true,
+    forceExpandedInput = presentation == AppSearchFieldPresentation.TOP_BAR,
+    topBarChrome = presentation == AppSearchFieldPresentation.TOP_BAR,
+    onSearch = onSearch,
+    onClear = onClear,
+    showClearAction = presentation != AppSearchFieldPresentation.TOP_BAR,
+    autoFocusEnabled = autoFocusEnabled,
+    focusRequester = focusRequester,
+    interactionSource = interactionSource,
 )
 
 @Composable

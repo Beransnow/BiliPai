@@ -27,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -48,7 +47,6 @@ import com.android.purebilibili.feature.dynamic.resolveDynamicActionButtonText
  */
 @Composable
 fun ActionButton(
-    icon: ImageVector,
     count: Int,
     label: String,
     isActive: Boolean = false,
@@ -89,7 +87,7 @@ fun ActionButton(
         isLike -> rememberAppLikeIcon()
         isForward -> rememberAppShareIcon()
         isComment -> rememberAppCommentIcon()
-        else -> icon
+        else -> rememberAppCommentIcon()
     }
     BoxWithConstraints(modifier = modifier) {
         val slotWidthDp = maxWidth.value.toInt()

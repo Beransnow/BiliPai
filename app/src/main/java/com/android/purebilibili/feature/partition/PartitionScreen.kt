@@ -63,8 +63,7 @@ import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.HomeFeedCardStyle
 import com.android.purebilibili.core.store.BottomBarLiquidGlassPreset
 import com.android.purebilibili.core.store.SettingsManager
-import com.android.purebilibili.core.store.resolveSharedLiquidGlassChromeEnabled
-import com.android.purebilibili.core.theme.LocalUiPreset
+import com.android.purebilibili.core.ui.rememberAppChromeLiquidGlassEnabled
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
 import com.android.purebilibili.data.model.response.BangumiType
 import com.android.purebilibili.data.model.response.VideoItem
@@ -377,19 +376,11 @@ fun PartitionContent(
     viewModel: PartitionFeedViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val uiPreset = LocalUiPreset.current
     val homeSettings by SettingsManager.getHomeSettings(context).collectAsStateWithLifecycle(initialValue = HomeSettings())
-    val liquidGlassIndicatorEnabled = remember(
-        homeSettings.isBottomBarLiquidGlassEnabled,
-        homeSettings.androidNativeLiquidGlassEnabled,
-        uiPreset
-    ) {
-        resolveSharedLiquidGlassChromeEnabled(
-            individualEnabled = homeSettings.isBottomBarLiquidGlassEnabled,
-            uiPreset = uiPreset,
-            androidNativeLiquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled
-        )
-    }
+    val liquidGlassIndicatorEnabled = rememberAppChromeLiquidGlassEnabled(
+        individualEnabled = homeSettings.isBottomBarLiquidGlassEnabled,
+        androidNativeEnabled = homeSettings.androidNativeLiquidGlassEnabled,
+    )
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     val layoutDirection = LocalLayoutDirection.current

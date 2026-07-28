@@ -31,8 +31,6 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.StarBorder
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppShapes
@@ -40,6 +38,7 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
+import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.responsiveContentWidth
 import androidx.compose.material3.Icon
@@ -86,10 +85,9 @@ fun LiveAreaScreen(
     onBack: () -> Unit,
     onAreaClick: (Int, Int, String) -> Unit
 ) {
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val visualSpec = remember(uiPreset, androidNativeVariant) {
-        resolveLiveVisualSpec(uiPreset, androidNativeVariant)
+    val topChromePolicy = rememberAppTopChromePolicy()
+    val visualSpec = remember(topChromePolicy.tabPresentation) {
+        resolveLiveVisualSpec(topChromePolicy.tabPresentation)
     }
     val metrics = visualSpec.homeMetrics
     val windowSizeClass = LocalWindowSizeClass.current
@@ -285,10 +283,9 @@ private fun LiveAreaParentTabRow(
     onTabSelected: (Int) -> Unit
 ) {
     if (areas.isEmpty()) return
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val segmentedSpec = remember(uiPreset, androidNativeVariant) {
-        resolveLiveAreaParentSegmentedControlSpec(uiPreset, androidNativeVariant)
+    val compactChrome = rememberAppTopChromePolicy().compactChromeSpec
+    val segmentedSpec = remember(compactChrome) {
+        resolveLiveAreaParentSegmentedControlSpec(compactChrome)
     }
     val scrollState = rememberScrollState()
     val density = LocalDensity.current

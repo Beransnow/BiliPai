@@ -159,12 +159,12 @@ internal fun MessageFeedCard(
     Surface(
         modifier = modifier,
         shape = AppShapes.borderedContainer(surfaceSpec.cornerLevel),
-        color = if (surfaceSpec.useMiuixTokens) {
+        color = if (surfaceSpec.usesTonalContainerTreatment) {
             AppSurfaceTokens.surfaceContainer()
         } else {
             MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.42f)
         },
-        border = if (surfaceSpec.useMiuixTokens) {
+        border = if (surfaceSpec.usesTonalContainerTreatment) {
             androidx.compose.foundation.BorderStroke(
                 surfaceSpec.borderWidthDp.dp,
                 AppSurfaceTokens.divider().copy(alpha = surfaceSpec.borderAlpha)

@@ -113,7 +113,7 @@ import com.android.purebilibili.core.ui.blur.BlurSurfaceType
 import com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState
 import com.android.purebilibili.core.ui.blur.unifiedBlur
 import com.android.purebilibili.core.ui.resolveOfficialVerifyBadge
-import com.android.purebilibili.core.ui.components.IOSSearchBar
+import com.android.purebilibili.core.ui.components.AppSearchField
 import com.android.purebilibili.core.ui.common.copyOnLongPress
 import com.android.purebilibili.core.ui.common.rememberClipboardCopyHandler
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
@@ -1309,7 +1309,7 @@ private fun SpaceContent(
                         LaunchedEffect(state.isSearchMode, currentSearchScope) {
                             searchFocusRequester.requestFocus()
                         }
-                        IOSSearchBar(
+                        AppSearchField(
                             query = state.searchQuery,
                             onQueryChange = onSearchQueryChange,
                             placeholder = resolveSpaceSearchPlaceholder(currentSearchScope),
@@ -1442,7 +1442,7 @@ private fun SpaceContent(
                         LaunchedEffect(state.isSearchMode, currentSearchScope) {
                             searchFocusRequester.requestFocus()
                         }
-                        IOSSearchBar(
+                        AppSearchField(
                             query = state.searchQuery,
                             onQueryChange = onSearchQueryChange,
                             placeholder = resolveSpaceSearchPlaceholder(currentSearchScope),

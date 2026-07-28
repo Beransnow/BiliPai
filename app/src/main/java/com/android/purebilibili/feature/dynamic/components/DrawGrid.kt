@@ -4,15 +4,13 @@ package com.android.purebilibili.feature.dynamic.components
 import com.android.purebilibili.core.ui.AppSpacingTokens
 
 import com.android.purebilibili.core.ui.MediaContrastPalette
+import com.android.purebilibili.core.ui.rememberAppSparklesIcon
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 //  Cupertino Icons - iOS SF Symbols 风格图标
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -180,7 +178,7 @@ private fun DrawGridImage(
             )
         } else {
             Icon(
-                CupertinoIcons.Default.Star,
+                rememberAppSparklesIcon(),
                 contentDescription = null,
                 modifier = Modifier.size(AppSpacingTokens.DoubleExtraLarge),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
