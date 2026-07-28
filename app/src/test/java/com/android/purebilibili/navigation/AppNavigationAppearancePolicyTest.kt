@@ -120,6 +120,17 @@ class AppNavigationAppearancePolicyTest {
     }
 
     @Test
+    fun appNavigationUsesNeutralBottomBarPolicyWithoutReadingStyleLocals() {
+        val source = loadSource("app/src/main/java/com/android/purebilibili/navigation/AppNavigation.kt")
+
+        assertTrue(source.contains("rememberAppBottomBarContentPadding("))
+        assertFalse(source.contains("LocalUiPreset"))
+        assertFalse(source.contains("LocalAndroidNativeVariant"))
+        assertFalse(source.contains("UiPreset"))
+        assertFalse(source.contains("AndroidNativeVariant"))
+    }
+
+    @Test
     fun appNavigationProvidesGlobalSharedTransitionSwitch() {
         val navigationSource = loadSource("app/src/main/java/com/android/purebilibili/navigation/AppNavigation.kt")
         val providerSource = loadSource("app/src/main/java/com/android/purebilibili/core/ui/SharedTransitionProvider.kt")

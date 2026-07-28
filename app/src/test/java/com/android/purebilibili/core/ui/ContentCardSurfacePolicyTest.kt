@@ -36,11 +36,11 @@ class ContentCardSurfacePolicyTest {
             "app/src/main/java/com/android/purebilibili/feature/dynamic/components/DynamicComponents.kt"
         )
 
-        assertTrue(messageSource.contains("resolveContentCardSurfaceSpec("))
+        assertTrue(messageSource.contains("rememberContentCardSurfaceSpec("))
         assertTrue(messageSource.contains("AppShapes.borderedContainer("))
         assertTrue(searchSource.contains("resolveContentCardSurfaceSpec("))
         assertTrue(searchSource.contains("AppShapes.borderedContainer("))
-        assertTrue(dynamicSource.contains("resolveContentCardSurfaceSpec("))
+        assertTrue(dynamicSource.contains("rememberContentCardSurfaceSpec("))
         assertTrue(dynamicSource.contains("AppShapes.borderedContainer("))
     }
 

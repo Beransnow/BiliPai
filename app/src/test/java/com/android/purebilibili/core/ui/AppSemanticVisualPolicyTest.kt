@@ -28,6 +28,7 @@ class AppSemanticVisualPolicyTest {
         )
 
         assertEquals(AppSemanticIconFamily.CUPERTINO, policy.iconFamily)
+        assertFalse(policy.prefersGroupedListCards)
         assertNull(policy.accentPalette)
         assertEquals(
             Color(0xFFABCDEF),
@@ -45,6 +46,10 @@ class AppSemanticVisualPolicyTest {
             )
 
             assertEquals(AppSemanticIconFamily.MATERIAL, policy.iconFamily)
+            assertEquals(
+                variant == AndroidNativeVariant.MIUIX,
+                policy.prefersGroupedListCards,
+            )
             assertEquals(palette, policy.accentPalette)
         }
     }

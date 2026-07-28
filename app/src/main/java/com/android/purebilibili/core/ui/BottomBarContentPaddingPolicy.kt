@@ -1,5 +1,6 @@
 package com.android.purebilibili.core.ui
 
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.theme.AndroidNativeVariant
@@ -22,11 +23,22 @@ fun resolveBottomBarContentPaddingSpec(
     // These are the actual shell extents used by the renderers. Label mode
     // changes item content, but it does not change the navigation shell's
     // occupied height.
+    return resolveBottomBarContentPaddingSpec(
+        compactDockedBar = uiPreset == UiPreset.MD3 &&
+            androidNativeVariant == AndroidNativeVariant.MIUIX,
+        hasUiSkinDecoration = hasUiSkinDecoration,
+    )
+}
+
+private fun resolveBottomBarContentPaddingSpec(
+    compactDockedBar: Boolean,
+    hasUiSkinDecoration: Boolean,
+): BottomBarContentPaddingSpec {
     val floatingBodyHeight = if (hasUiSkinDecoration) 88.dp else 64.dp
-    val dockedBodyHeight = when {
-        uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX ->
-            if (hasUiSkinDecoration) 88.dp else 64.dp
-        else -> 80.dp
+    val dockedBodyHeight = if (compactDockedBar) {
+        if (hasUiSkinDecoration) 88.dp else 64.dp
+    } else {
+        80.dp
     }
     return BottomBarContentPaddingSpec(
         floatingBodyHeight = floatingBodyHeight,
@@ -47,12 +59,6 @@ fun resolveBottomBarContentPadding(
     hasUiSkinDecoration: Boolean,
     extraContentPadding: Dp = AppSpacingTokens.Small,
 ): Dp {
-    val safeNavigationBarsBottom = navigationBarsBottom.coerceAtLeast(0.dp)
-    val safeExtraContentPadding = extraContentPadding.coerceAtLeast(0.dp)
-    if (!reserveBottomBar) {
-        return safeNavigationBarsBottom + safeExtraContentPadding
-    }
-
     val spec = resolveBottomBarContentPaddingSpec(
         bottomBarLabelMode = bottomBarLabelMode,
         isTablet = isTablet,
@@ -60,6 +66,50 @@ fun resolveBottomBarContentPadding(
         androidNativeVariant = androidNativeVariant,
         hasUiSkinDecoration = hasUiSkinDecoration,
     )
+    return calculateBottomBarContentPadding(
+        navigationBarsBottom = navigationBarsBottom,
+        reserveBottomBar = reserveBottomBar,
+        isBottomBarFloating = isBottomBarFloating,
+        spec = spec,
+        extraContentPadding = extraContentPadding,
+    )
+}
+
+@Composable
+fun rememberAppBottomBarContentPadding(
+    navigationBarsBottom: Dp,
+    reserveBottomBar: Boolean,
+    isBottomBarFloating: Boolean,
+    hasUiSkinDecoration: Boolean,
+    extraContentPadding: Dp = AppSpacingTokens.Small,
+): Dp {
+    val renderer = rememberPresetPrimitiveRenderer()
+    val spec = resolveBottomBarContentPaddingSpec(
+        compactDockedBar = renderer == PresetPrimitiveRenderer.MIUIX_BRIDGED,
+        hasUiSkinDecoration = hasUiSkinDecoration,
+    )
+    return calculateBottomBarContentPadding(
+        navigationBarsBottom = navigationBarsBottom,
+        reserveBottomBar = reserveBottomBar,
+        isBottomBarFloating = isBottomBarFloating,
+        spec = spec,
+        extraContentPadding = extraContentPadding,
+    )
+}
+
+private fun calculateBottomBarContentPadding(
+    navigationBarsBottom: Dp,
+    reserveBottomBar: Boolean,
+    isBottomBarFloating: Boolean,
+    spec: BottomBarContentPaddingSpec,
+    extraContentPadding: Dp,
+): Dp {
+    val safeNavigationBarsBottom = navigationBarsBottom.coerceAtLeast(0.dp)
+    val safeExtraContentPadding = extraContentPadding.coerceAtLeast(0.dp)
+    if (!reserveBottomBar) {
+        return safeNavigationBarsBottom + safeExtraContentPadding
+    }
+
     val barExtent = if (isBottomBarFloating) {
         spec.floatingBodyHeight + spec.floatingInset
     } else {

@@ -23,11 +23,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
-import com.android.purebilibili.core.ui.resolveContentCardSurfaceSpec
+import com.android.purebilibili.core.ui.rememberContentCardSurfaceSpec
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -157,9 +155,7 @@ internal fun MessageFeedCard(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val surfaceSpec = resolveContentCardSurfaceSpec(uiPreset, androidNativeVariant)
+    val surfaceSpec = rememberContentCardSurfaceSpec()
     Surface(
         modifier = modifier,
         shape = AppShapes.borderedContainer(surfaceSpec.cornerLevel),

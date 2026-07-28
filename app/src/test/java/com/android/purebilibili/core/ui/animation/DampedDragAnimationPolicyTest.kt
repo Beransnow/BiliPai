@@ -126,7 +126,7 @@ class DampedDragAnimationPolicyTest {
         ).first { it.exists() }.readText()
         val inputLayerSource = source
             .substringAfter("private fun BoxScope.KernelSuBottomBarInputLayer(")
-            .substringBefore("@Composable\nprivate fun KernelSuBottomBarSearchSlot(")
+            .substringBefore("private fun KernelSuBottomBarSearchSlot(")
 
         assertTrue(inputLayerSource.contains(".horizontalDragGesture("))
         assertTrue(inputLayerSource.contains("dragState = dampedDragState"))

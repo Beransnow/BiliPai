@@ -1845,18 +1845,17 @@ class iOSHomeHeaderVisualPolicyTest {
         assertFalse(headerSource.contains("val topTabBackgroundImagePath = uiSkinDecoration?.topTabBackgroundImagePath"))
         assertFalse(headerSource.contains("model = File(topTabBackgroundImagePath)"))
         assertFalse(headerSource.contains("val tabRowHeightDp = if (shouldUseSkinPlainTopTabs)"))
-        assertTrue(topBarSource.contains("val effectiveRenderer = if (skinPlainStyle || forceMaterialUnderline)"))
+        assertTrue(topBarSource.contains("val effectivePresentation = if (skinPlainStyle || forceMaterialUnderline)"))
     }
 
     @Test
-    fun `home screen passes android native variant into top reserved padding`() {
+    fun `home screen resolves top reserved padding from neutral chrome profile`() {
         val homeScreenSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/HomeScreen.kt")
-        val reservedPaddingCall = homeScreenSource
-            .substringAfter("val listTopPadding = resolveHomeTopReservedListPadding(")
-            .substringBefore(")")
 
-        assertTrue(reservedPaddingCall.contains("androidNativeVariant = androidNativeVariant"))
-        assertTrue(reservedPaddingCall.contains("isTabFloating = topTabStyle.floating"))
+        assertTrue(homeScreenSource.contains("val homeTopPresetStyle = remember(topChromePolicy"))
+        assertTrue(homeScreenSource.contains("val listTopPadding = statusBarHeight + chromeHeight"))
+        assertTrue(homeScreenSource.contains("homeTopPresetStyle.tabsToContentSpacing + floatingDockLift"))
+        assertFalse(homeScreenSource.contains("LocalAndroidNativeVariant"))
     }
 
     @Test

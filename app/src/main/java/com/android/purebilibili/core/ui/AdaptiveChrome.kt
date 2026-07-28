@@ -23,6 +23,7 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
@@ -330,6 +331,54 @@ fun AdaptiveTopAppBar(
                 windowInsets = topBarWindowInsets
             )
         }
+    }
+}
+
+/**
+ * Semantic top-tab treatments consumed by feature chrome.
+ *
+ * The values describe interaction and geometry rather than a vendor renderer, so feature code
+ * does not need to inspect the persisted UI style.
+ */
+enum class AppTopTabPresentation {
+    MOVING_CAPSULE,
+    MATERIAL_UNDERLINE,
+    TONAL_CAPSULE,
+}
+
+data class AppTopChromePolicy(
+    val tabPresentation: AppTopTabPresentation,
+    val iconFamily: AppSemanticIconFamily,
+    val compactChromeSpec: CompactCapsuleChromeSpec,
+)
+
+internal fun resolveAppTopChromePolicy(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant,
+): AppTopChromePolicy = when {
+    uiPreset == UiPreset.IOS -> AppTopChromePolicy(
+        tabPresentation = AppTopTabPresentation.MOVING_CAPSULE,
+        iconFamily = AppSemanticIconFamily.CUPERTINO,
+        compactChromeSpec = resolveCompactCapsuleChromeSpec(uiPreset, androidNativeVariant),
+    )
+    androidNativeVariant == AndroidNativeVariant.MIUIX -> AppTopChromePolicy(
+        tabPresentation = AppTopTabPresentation.TONAL_CAPSULE,
+        iconFamily = AppSemanticIconFamily.MATERIAL,
+        compactChromeSpec = resolveCompactCapsuleChromeSpec(uiPreset, androidNativeVariant),
+    )
+    else -> AppTopChromePolicy(
+        tabPresentation = AppTopTabPresentation.MATERIAL_UNDERLINE,
+        iconFamily = AppSemanticIconFamily.MATERIAL,
+        compactChromeSpec = resolveCompactCapsuleChromeSpec(uiPreset, androidNativeVariant),
+    )
+}
+
+@Composable
+fun rememberAppTopChromePolicy(): AppTopChromePolicy {
+    val uiPreset = LocalUiPreset.current
+    val androidNativeVariant = LocalAndroidNativeVariant.current
+    return remember(uiPreset, androidNativeVariant) {
+        resolveAppTopChromePolicy(uiPreset, androidNativeVariant)
     }
 }
 

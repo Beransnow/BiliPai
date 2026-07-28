@@ -2,6 +2,7 @@
 package com.android.purebilibili.feature.home.components
 
 import com.android.purebilibili.core.ui.AppSpacingTokens
+import com.android.purebilibili.core.ui.resolveAppTopChromePolicy
 
 import com.android.purebilibili.core.ui.OpticalContrastPalette
 import com.android.purebilibili.feature.home.HomeVisualPalette
@@ -156,6 +157,15 @@ internal enum class HomeTopChromeSurfaceTreatment {
     STRUCTURED_GLASS,
     FLAT_GLASS
 }
+
+internal fun resolveHomeTopPresetStyle(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant,
+    labelMode: Int,
+): HomeTopPresetStyle = resolveHomeTopPresetStyle(
+    chromePolicy = resolveAppTopChromePolicy(uiPreset, androidNativeVariant),
+    labelMode = labelMode,
+)
 
 internal fun resolveHomeTopLinkedBottomBarAppearance(
     homeSettings: HomeSettings?,
@@ -1461,6 +1471,9 @@ fun iOSHomeHeader(
 ) {
     val uiPreset = LocalUiPreset.current
     val androidNativeVariant = LocalAndroidNativeVariant.current
+    val topChromePolicy = remember(uiPreset, androidNativeVariant) {
+        resolveAppTopChromePolicy(uiPreset, androidNativeVariant)
+    }
     val shouldUseSkinPlainTopTabs = shouldUseHomeSkinPlainTopTabs(uiSkinDecoration)
     val haptic = rememberHapticFeedback()
     val density = LocalDensity.current
@@ -1580,12 +1593,11 @@ fun iOSHomeHeader(
         interactionBudget = interactionBudget
     )
     val usePlainMd3TopTabUnderline = shouldUsePlainMd3TopTabUnderline(
-        uiPreset = uiPreset,
+        presentation = topChromePolicy.tabPresentation,
         liquidGlassEnabled = topChromeLiquidGlassEnabled
     )
     val drawTopTabOuterChromeSurface = shouldDrawHomeTopTabOuterChromeSurface(
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant,
+        presentation = topChromePolicy.tabPresentation,
         materialMode = effectiveTabMaterialMode
     )
     val rawHeaderChromeColors = tuneHomeTopGlassColors(

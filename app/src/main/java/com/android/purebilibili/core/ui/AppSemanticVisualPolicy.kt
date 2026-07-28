@@ -37,6 +37,7 @@ data class AppSemanticVisualPolicy(
     val accentPalette: AppSemanticAccentPalette?,
     val prefersNativeChrome: Boolean,
     val supportsIndependentLiquidGlass: Boolean,
+    val prefersGroupedListCards: Boolean = false,
 ) {
     fun resolveAccent(role: AppSemanticAccentRole, fallback: Color): Color {
         val palette = accentPalette ?: return fallback
@@ -81,8 +82,10 @@ internal fun resolveAppSemanticVisualPolicy(
     materialPalette: AppSemanticAccentPalette,
 ): AppSemanticVisualPolicy = when (resolveUiStyle(uiPreset, androidNativeVariant)) {
     UiStyle.IOS -> AppSemanticVisualPolicy.Cupertino
-    UiStyle.MATERIAL3,
-    UiStyle.MIUIX -> AppSemanticVisualPolicy.material(materialPalette)
+    UiStyle.MATERIAL3 -> AppSemanticVisualPolicy.material(materialPalette)
+    UiStyle.MIUIX -> AppSemanticVisualPolicy.material(materialPalette).copy(
+        prefersGroupedListCards = true,
+    )
 }
 
 @Composable

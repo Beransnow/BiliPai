@@ -63,8 +63,7 @@ import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppPullRefreshIndicatorStyle
 import com.android.purebilibili.core.ui.rememberAppPullRefreshProfile
 import com.android.purebilibili.core.ui.rememberAppSemanticVisualPolicy
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
+import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
 import com.android.purebilibili.core.theme.BiliPink
 import com.android.purebilibili.feature.settings.GITHUB_URL
 import com.android.purebilibili.core.store.SettingsManager //  引入 SettingsManager
@@ -87,10 +86,8 @@ import com.android.purebilibili.feature.home.components.resolveHomeInteractionMo
 import com.android.purebilibili.feature.home.components.resolveHomeDrawerScrimAlpha
 import com.android.purebilibili.feature.home.components.resolveTopTabStyle
 import com.android.purebilibili.feature.home.components.resolveHomeTopChromeMaterialMode
-import com.android.purebilibili.feature.home.components.resolveHomeTopSearchBarHeight
-import com.android.purebilibili.feature.home.components.resolveHomeTopSearchCollapseDistance
-import com.android.purebilibili.feature.home.components.resolveHomeTopReservedListPadding
-import com.android.purebilibili.feature.home.components.resolveHomeTopTabRowHeight
+import com.android.purebilibili.feature.home.components.resolveHomeTopPresetStyle
+import com.android.purebilibili.feature.home.components.resolveHomeTopTabYOffsetDp
 import com.android.purebilibili.feature.home.policy.BottomBarVisibilityIntent
 import com.android.purebilibili.feature.home.policy.HomeBottomBarScrollState
 import com.android.purebilibili.feature.home.policy.HomeFeedScrollAnchor
@@ -649,8 +646,7 @@ fun HomeScreen(
     val homeFeedCardLayout = remember(homeFeedCardStyle) {
         resolveHomeFeedCardLayout(homeFeedCardStyle)
     }
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
+    val topChromePolicy = rememberAppTopChromePolicy()
     val pullRefreshProfile = rememberAppPullRefreshProfile()
     val semanticVisualPolicy = rememberAppSemanticVisualPolicy()
     val pullRefreshMotionStyle = pullRefreshProfile.motionStyle
@@ -1249,29 +1245,28 @@ fun HomeScreen(
             isLiquidGlassEnabled = false
         )
     }
-    val searchBarHeightDp = resolveHomeTopSearchBarHeight(
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant
-    )
-    val tabRowHeightDp = resolveHomeTopTabRowHeight(
-        isTabFloating = topTabStyle.floating,
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant,
-        labelMode = homeSettings.topTabLabelMode
-    )
-    val searchCollapseDistanceDp = resolveHomeTopSearchCollapseDistance(
-        searchBarHeight = searchBarHeightDp,
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant
-    )
-    val listTopPadding = resolveHomeTopReservedListPadding(
-        statusBarHeight = statusBarHeight,
-        searchBarHeight = searchBarHeightDp,
-        tabRowHeight = tabRowHeightDp,
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant,
-        isTabFloating = topTabStyle.floating
-    )
+    val homeTopPresetStyle = remember(topChromePolicy, homeSettings.topTabLabelMode) {
+        resolveHomeTopPresetStyle(topChromePolicy, homeSettings.topTabLabelMode)
+    }
+    val searchBarHeightDp = homeTopPresetStyle.searchBarHeight
+    val tabRowHeightDp = if (topTabStyle.floating) {
+        homeTopPresetStyle.tabRowHeightFloating
+    } else {
+        homeTopPresetStyle.tabRowHeightDocked
+    }
+    val searchCollapseDistanceDp = searchBarHeightDp +
+        homeTopPresetStyle.searchToTabsSpacing +
+        homeTopPresetStyle.searchCollapseExtraSpacing
+    val floatingDockLift = resolveHomeTopTabYOffsetDp(topTabStyle.floating).dp
+    val chromeHeight = if (homeTopPresetStyle.useUnifiedPanel) {
+        searchBarHeightDp + tabRowHeightDp +
+            (homeTopPresetStyle.unifiedPanelInnerPadding * 2) +
+            homeTopPresetStyle.searchToTabsSpacing
+    } else {
+        searchBarHeightDp + homeTopPresetStyle.searchToTabsSpacing + tabRowHeightDp
+    }
+    val listTopPadding = statusBarHeight + chromeHeight +
+        homeTopPresetStyle.tabsToContentSpacing + floatingDockLift
     
     // Pixels
     val searchCollapseDistancePx = with(density) { searchCollapseDistanceDp.toPx() }

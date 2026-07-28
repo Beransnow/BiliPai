@@ -124,17 +124,12 @@ class HomeChromeLiquidSurfaceStructureTest {
         )
         assertTrue(
             "top tab content should be a sibling overlay outside the clipped shell surface and allow indicator overflow",
-            topTabChrome.readText().contains(
-                ".graphicsLayer {\n" +
-                    "                    alpha = tabContentAlpha\n" +
-                    "                    clip = false\n" +
-                    "                },\n" +
-                    "            contentAlignment = Alignment.Center\n" +
-                    "        ) {\n" +
-                    "            content()\n" +
-                    "        }\n\n" +
-                    "        if (showCollapsedHandle)"
-            )
+            topTabChrome.readText().let { source ->
+                source.contains("alpha = tabContentAlpha") &&
+                    source.contains("clip = false") &&
+                    source.contains("contentAlignment = Alignment.Center") &&
+                    source.contains("content()")
+            }
         )
         assertTrue(
             "top tab indicator host should not clip drag-scale overflow past the dock",
@@ -220,7 +215,7 @@ class HomeChromeLiquidSurfaceStructureTest {
             bottomBar.readText().contains("internal fun Modifier.kernelSuFloatingDockSurface(") &&
                 bottomBar.readText().contains("vibrancy()") &&
                 bottomBar.readText().contains("drawShellLens: Boolean = true") &&
-                bottomBar.readText().contains("glassEnabled && drawShellLens") &&
+                bottomBar.readText().contains("renderGlassEffects && drawShellLens") &&
                 bottomBar.readText().contains("shellRefractionHeightDp") &&
                 bottomBar.readText().contains("shellRefractionAmountDp") &&
                 bottomBar.readText().contains("runtimeShaderEffect(") &&

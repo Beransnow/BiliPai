@@ -138,7 +138,7 @@ import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
 import com.android.purebilibili.core.ui.LocalSetBottomBarVisible
 import com.android.purebilibili.core.ui.LocalBottomBarVisible
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
-import com.android.purebilibili.core.ui.resolveBottomBarContentPadding
+import com.android.purebilibili.core.ui.rememberAppBottomBarContentPadding
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.core.ui.LocalPredictiveBackGestureEnabled
 import com.android.purebilibili.core.ui.motion.emphasizedEnterTween
@@ -160,7 +160,6 @@ import com.android.purebilibili.core.store.HomeWallpaperEffectScope
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.navigation.NavigationSettingsStore
 import com.android.purebilibili.core.store.resolveEffectiveHomeSettings
-import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.util.NetworkUtils
 import com.android.purebilibili.navigation3.BiliPaiNavDisplayHost
 import com.android.purebilibili.navigation3.BiliPaiProgrammaticBackDispatcher
@@ -358,7 +357,6 @@ fun AppNavigation(
     val downloadTasks by com.android.purebilibili.feature.download.DownloadManager.tasks.collectAsStateWithLifecycle(
         context = kotlin.coroutines.EmptyCoroutineContext
     )
-    val uiPreset = LocalUiPreset.current
     val homeSettings by SettingsManager.getHomeSettings(context).collectAsStateWithLifecycle(initialValue = com.android.purebilibili.core.store.HomeSettings(),
         context = kotlin.coroutines.EmptyCoroutineContext
     )
@@ -369,7 +367,6 @@ fun AppNavigation(
     }
     val uiSkinState by rememberUiSkinState(context)
     val bottomBarUiSkinDecoration = rememberBottomBarUiSkinDecoration(uiSkinState)
-    val androidNativeVariant = com.android.purebilibili.core.theme.LocalAndroidNativeVariant.current
     val appearance = remember(homeSettings) {
         resolveAppNavigationAppearance(
             homeSettings = homeSettings,
@@ -1148,16 +1145,12 @@ fun AppNavigation(
             bottomBarVisibilityMode != SettingsManager.BottomBarVisibilityMode.ALWAYS_HIDDEN
         val bottomBarReservesSpace = bottomBarCanMount &&
             (bottomBarVisibilityState.currentState || bottomBarVisibilityState.targetState)
-        val bottomBarContentPadding = resolveBottomBarContentPadding(
+        val bottomBarContentPadding = rememberAppBottomBarContentPadding(
             navigationBarsBottom = WindowInsets.navigationBars
                 .asPaddingValues()
                 .calculateBottomPadding(),
             reserveBottomBar = bottomBarReservesSpace && !useSideNavigation,
             isBottomBarFloating = isBottomBarFloating,
-            bottomBarLabelMode = bottomBarLabelMode,
-            isTablet = isTabletLayout,
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant,
             hasUiSkinDecoration = bottomBarUiSkinDecoration != null,
         )
 

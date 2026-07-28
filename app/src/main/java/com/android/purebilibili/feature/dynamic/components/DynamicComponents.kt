@@ -14,12 +14,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
-import com.android.purebilibili.core.ui.resolveContentCardSurfaceSpec
+import com.android.purebilibili.core.ui.rememberContentCardSurfaceSpec
 
 /**
  *  Dynamic 模块专用的 GlassCard 组件
@@ -34,9 +32,7 @@ fun GlassCard(
     borderWidth: Dp? = null,
     content: @Composable BoxScope.() -> Unit
 ) {
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val surfaceSpec = resolveContentCardSurfaceSpec(uiPreset, androidNativeVariant)
+    val surfaceSpec = rememberContentCardSurfaceSpec()
     val resolvedShape = shape ?: AppShapes.borderedContainer(ContainerLevel.Card)
     val resolvedBackground = backgroundColor ?: if (surfaceSpec.useMiuixTokens) {
         AppSurfaceTokens.surfaceContainer().copy(alpha = 0.92f)

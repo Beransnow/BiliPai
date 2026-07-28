@@ -2,6 +2,7 @@
 package com.android.purebilibili.feature.home.components
 
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
+import com.android.purebilibili.core.ui.AppBottomNavigationHost
 import com.android.purebilibili.core.ui.AppSpacingTokens
 
 import com.android.purebilibili.core.ui.OpticalContrastPalette
@@ -119,10 +120,6 @@ import com.android.purebilibili.core.theme.iOSRed
 import com.android.purebilibili.core.theme.BottomBarColors  // 统一底栏颜色配置
 import com.android.purebilibili.core.theme.BottomBarColorPalette  // 调色板
 import com.android.purebilibili.core.theme.LocalCornerRadiusScale
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.theme.AndroidNativeVariant
-import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.core.theme.iOSCornerRadius
 import kotlinx.coroutines.launch  //  延迟导航
 //  Cupertino Icons - iOS SF Symbols 风格图标
@@ -171,7 +168,6 @@ import com.android.purebilibili.core.store.BottomBarSearchAutoExpandMode
 import com.android.purebilibili.core.store.BottomBarSearchLayoutMode
 import com.android.purebilibili.core.store.LiquidGlassStyle // [New] Top-level enum
 import com.android.purebilibili.core.store.LiquidGlassMode
-import com.android.purebilibili.core.store.resolveSharedLiquidGlassChromeEnabled
 import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.FastOutSlowInEasing
 import kotlin.math.sign
@@ -903,7 +899,6 @@ internal fun shouldComposeBottomBarDockContent(
 internal fun resolveAndroidNativeBottomBarTuning(
     blurEnabled: Boolean,
     darkTheme: Boolean,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
 ): AndroidNativeBottomBarTuning {
     return AndroidNativeBottomBarTuning(
         cornerRadiusDp = 32f,
@@ -2244,9 +2239,65 @@ fun FrostedBottomBar(
     isFeedScrollInProgress: Boolean = false,
     uiSkinDecoration: BottomBarUiSkinDecoration? = null
 ) {
-    if (LocalUiPreset.current == UiPreset.MD3) {
-        val androidNativeVariant = LocalAndroidNativeVariant.current
-        if (androidNativeVariant == AndroidNativeVariant.MIUIX) {
+    val isTablet = com.android.purebilibili.core.util.LocalWindowSizeClass.current.isTablet
+    AppBottomNavigationHost(
+        individualLiquidGlassEnabled = homeSettings.isBottomBarLiquidGlassEnabled,
+        androidNativeLiquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled,
+        cupertinoContent = { policy ->
+            CupertinoBottomBar(
+                currentItem = currentItem,
+                onItemClick = onItemClick,
+                modifier = modifier,
+                hazeState = hazeState,
+                isFloating = isFloating,
+                labelMode = labelMode,
+                homeSettings = homeSettings,
+                onSearchClick = onSearchClick,
+                onSearchKeywordSubmit = onSearchKeywordSubmit,
+                searchLaunchKey = searchLaunchKey,
+                onSearchLaunchTransitionFinished = onSearchLaunchTransitionFinished,
+                visibleItems = visibleItems,
+                itemColorIndices = itemColorIndices,
+                dynamicUnreadCount = dynamicUnreadCount,
+                onToggleSidebar = onToggleSidebar,
+                backdrop = backdrop,
+                miuixBackdrop = miuixBackdrop,
+                motionTier = motionTier,
+                isTransitionRunning = isTransitionRunning,
+                forceLowBlurBudget = forceLowBlurBudget,
+                isFeedScrollInProgress = isFeedScrollInProgress,
+                uiSkinDecoration = uiSkinDecoration,
+                isTablet = isTablet,
+                sharedLiquidGlassEnabled = policy.liquidGlassEnabled,
+            )
+        },
+        materialContent = { policy ->
+            MaterialBottomBar(
+                currentItem = currentItem,
+                onItemClick = onItemClick,
+                modifier = modifier,
+                visibleItems = visibleItems,
+                onToggleSidebar = onToggleSidebar,
+                dynamicUnreadCount = dynamicUnreadCount,
+                isFloating = isFloating,
+                isTablet = isTablet,
+                labelMode = labelMode,
+                blurEnabled = hazeState != null,
+                hazeState = hazeState,
+                backdrop = backdrop,
+                miuixBackdrop = miuixBackdrop,
+                homeSettings = homeSettings,
+                onSearchClick = onSearchClick,
+                onSearchKeywordSubmit = onSearchKeywordSubmit,
+                motionTier = motionTier,
+                isTransitionRunning = isTransitionRunning,
+                forceLowBlurBudget = forceLowBlurBudget,
+                isFeedScrollInProgress = isFeedScrollInProgress,
+                uiSkinDecoration = uiSkinDecoration,
+                sharedLiquidGlassEnabled = policy.liquidGlassEnabled,
+            )
+        },
+        platformContent = { policy ->
             MiuixBottomBar(
                 currentItem = currentItem,
                 onItemClick = onItemClick,
@@ -2255,7 +2306,7 @@ fun FrostedBottomBar(
                 onToggleSidebar = onToggleSidebar,
                 dynamicUnreadCount = dynamicUnreadCount,
                 isFloating = isFloating,
-                isTablet = com.android.purebilibili.core.util.LocalWindowSizeClass.current.isTablet,
+                isTablet = isTablet,
                 labelMode = labelMode,
                 blurEnabled = hazeState != null,
                 hazeState = hazeState,
@@ -2265,39 +2316,45 @@ fun FrostedBottomBar(
                 onSearchClick = onSearchClick,
                 onSearchKeywordSubmit = onSearchKeywordSubmit,
                 searchLaunchKey = searchLaunchKey,
-                onSearchLaunchTransitionFinished = onSearchLaunchTransitionFinished,                motionTier = motionTier,
+                onSearchLaunchTransitionFinished = onSearchLaunchTransitionFinished,
+                motionTier = motionTier,
                 isTransitionRunning = isTransitionRunning,
                 forceLowBlurBudget = forceLowBlurBudget,
                 isFeedScrollInProgress = isFeedScrollInProgress,
-                uiSkinDecoration = uiSkinDecoration
+                uiSkinDecoration = uiSkinDecoration,
+                sharedLiquidGlassEnabled = policy.liquidGlassEnabled,
             )
-        } else {
-            MaterialBottomBar(
-                currentItem = currentItem,
-                onItemClick = onItemClick,
-                modifier = modifier,
-                visibleItems = visibleItems,
-                onToggleSidebar = onToggleSidebar,
-                dynamicUnreadCount = dynamicUnreadCount,
-                isFloating = isFloating,
-                isTablet = com.android.purebilibili.core.util.LocalWindowSizeClass.current.isTablet,
-                labelMode = labelMode,
-                blurEnabled = hazeState != null,
-                hazeState = hazeState,
-                backdrop = backdrop,
-                miuixBackdrop = miuixBackdrop,
-                homeSettings = homeSettings,
-                onSearchClick = onSearchClick,
-                onSearchKeywordSubmit = onSearchKeywordSubmit,                motionTier = motionTier,
-                isTransitionRunning = isTransitionRunning,
-                forceLowBlurBudget = forceLowBlurBudget,
-                isFeedScrollInProgress = isFeedScrollInProgress,
-                uiSkinDecoration = uiSkinDecoration
-            )
-        }
-        return
-    }
+        },
+    )
+}
 
+@Composable
+private fun CupertinoBottomBar(
+    currentItem: BottomNavItem,
+    onItemClick: (BottomNavItem) -> Unit,
+    modifier: Modifier,
+    hazeState: HazeState?,
+    isFloating: Boolean,
+    labelMode: Int,
+    homeSettings: com.android.purebilibili.core.store.HomeSettings,
+    onSearchClick: () -> Unit,
+    onSearchKeywordSubmit: (String) -> Unit,
+    searchLaunchKey: Int,
+    onSearchLaunchTransitionFinished: (Int) -> Unit,
+    visibleItems: List<BottomNavItem>,
+    itemColorIndices: Map<String, Int>,
+    dynamicUnreadCount: Int,
+    onToggleSidebar: (() -> Unit)?,
+    backdrop: LayerBackdrop?,
+    miuixBackdrop: MiuixLayerBackdrop?,
+    motionTier: MotionTier,
+    isTransitionRunning: Boolean,
+    forceLowBlurBudget: Boolean,
+    isFeedScrollInProgress: Boolean,
+    uiSkinDecoration: BottomBarUiSkinDecoration?,
+    isTablet: Boolean,
+    sharedLiquidGlassEnabled: Boolean,
+) {
     val isDarkTheme = AppSurfaceTokens.chromeBackground().red < 0.5f // Simple darkness check
     val haptic = rememberHapticFeedback()
     val normalizedLabelMode = normalizeBottomBarLabelMode(labelMode)
@@ -2314,15 +2371,7 @@ fun FrostedBottomBar(
             searchLayoutMode = homeSettings.bottomBarSearchLayoutMode
         )
     }
-    val windowSizeClass = com.android.purebilibili.core.util.LocalWindowSizeClass.current
-    val isTablet = windowSizeClass.isTablet
     val globalWallpaperVisible = LocalGlobalWallpaperBackdropVisible.current
-    val uiPreset = LocalUiPreset.current
-    val sharedLiquidGlassEnabled = resolveSharedLiquidGlassChromeEnabled(
-        individualEnabled = homeSettings.isBottomBarLiquidGlassEnabled,
-        uiPreset = uiPreset,
-        androidNativeLiquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled
-    )
     if (isFloating) {
         val glassEnabled = resolveAndroidNativeBottomBarGlassEnabled(
             liquidGlassEnabled = sharedLiquidGlassEnabled,
@@ -2398,7 +2447,8 @@ fun FrostedBottomBar(
         motionTier = motionTier,
         isTransitionRunning = isTransitionRunning,
         forceLowBlurBudget = forceLowBlurBudget,
-        uiSkinDecoration = uiSkinDecoration
+        uiSkinDecoration = uiSkinDecoration,
+        sharedLiquidGlassEnabled = sharedLiquidGlassEnabled,
     )
 }
 
@@ -2425,7 +2475,8 @@ private fun MaterialBottomBar(
     isTransitionRunning: Boolean,
     forceLowBlurBudget: Boolean,
     isFeedScrollInProgress: Boolean = false,
-    uiSkinDecoration: BottomBarUiSkinDecoration? = null
+    uiSkinDecoration: BottomBarUiSkinDecoration? = null,
+    sharedLiquidGlassEnabled: Boolean,
 ) {
     val haptic = rememberHapticFeedback()
     val normalizedLabelMode = normalizeBottomBarLabelMode(labelMode)
@@ -2443,17 +2494,12 @@ private fun MaterialBottomBar(
         )
     }
     val glassEnabled = resolveAndroidNativeBottomBarGlassEnabled(
-        liquidGlassEnabled = resolveSharedLiquidGlassChromeEnabled(
-            individualEnabled = homeSettings.isBottomBarLiquidGlassEnabled,
-            uiPreset = LocalUiPreset.current,
-            androidNativeLiquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled
-        ),
+        liquidGlassEnabled = sharedLiquidGlassEnabled,
         blurEnabled = blurEnabled
     )
     val androidNativeTuning = resolveAndroidNativeBottomBarTuning(
         blurEnabled = glassEnabled || blurEnabled,
         darkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.chromeBackground()),
-        androidNativeVariant = LocalAndroidNativeVariant.current
     )
     val blurIntensity = currentUnifiedBlurIntensity()
     val baseSurfaceColor = if (isFloating) {
@@ -2680,7 +2726,8 @@ private fun MiuixBottomBar(
     isTransitionRunning: Boolean,
     forceLowBlurBudget: Boolean,
     isFeedScrollInProgress: Boolean = false,
-    uiSkinDecoration: BottomBarUiSkinDecoration? = null
+    uiSkinDecoration: BottomBarUiSkinDecoration? = null,
+    sharedLiquidGlassEnabled: Boolean,
 ) {
     val haptic = rememberHapticFeedback()
     val normalizedLabelMode = normalizeBottomBarLabelMode(labelMode)
@@ -2699,17 +2746,12 @@ private fun MiuixBottomBar(
     }
     val displayMode = resolveMd3BottomBarDisplayMode(labelMode).toMiuixNavigationDisplayMode()
     val glassEnabled = resolveAndroidNativeBottomBarGlassEnabled(
-        liquidGlassEnabled = resolveSharedLiquidGlassChromeEnabled(
-            individualEnabled = homeSettings.isBottomBarLiquidGlassEnabled,
-            uiPreset = LocalUiPreset.current,
-            androidNativeLiquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled
-        ),
+        liquidGlassEnabled = sharedLiquidGlassEnabled,
         blurEnabled = blurEnabled
     )
     val tuning = resolveAndroidNativeBottomBarTuning(
         blurEnabled = glassEnabled || blurEnabled,
         darkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.background()),
-        androidNativeVariant = AndroidNativeVariant.MIUIX
     )
     val blurIntensity = currentUnifiedBlurIntensity()
     val baseSurfaceColor = if (isFloating) {
