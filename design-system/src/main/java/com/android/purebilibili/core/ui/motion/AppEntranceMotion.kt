@@ -114,14 +114,14 @@ fun resolveEntranceStaggerDelayMs(index: Int, spec: EntranceMotionSpec): Int {
     return (index * spec.staggerStepMs).coerceAtMost(spec.maxStaggerMs)
 }
 
-internal data class EntranceFrame(
+data class EntranceFrame(
     val alpha: Float,
     val translationYDp: Float,
     val scale: Float
 )
 
 /** 由 progress(0→1)非线性派生当帧视觉值。progress=0 起始态,1 终态。 */
-internal fun resolveEntranceFrame(progress: Float, spec: EntranceMotionSpec): EntranceFrame {
+fun resolveEntranceFrame(progress: Float, spec: EntranceMotionSpec): EntranceFrame {
     val p = progress.coerceIn(0f, 1f)
     val alphaLead = spec.alphaLeadFraction.coerceIn(0.05f, 1f)
     val alpha = (p / alphaLead).coerceIn(0f, 1f)

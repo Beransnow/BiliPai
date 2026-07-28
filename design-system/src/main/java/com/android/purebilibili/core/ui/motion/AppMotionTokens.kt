@@ -16,7 +16,7 @@ import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
 
-internal object AppMotionEasing {
+object AppMotionEasing {
     val EmphasizedEnter: Easing = CubicBezierEasing(0.22f, 1f, 0.36f, 1f)
     val EmphasizedExit: Easing = CubicBezierEasing(0.32f, 0f, 0.67f, 0f)
     val Continuity: Easing = CubicBezierEasing(0.20f, 0.90f, 0.22f, 1.00f)
@@ -25,31 +25,31 @@ internal object AppMotionEasing {
     val SoftClear: Easing = CubicBezierEasing(0.40f, 0.00f, 0.55f, 0.30f)
 }
 
-internal fun <T> emphasizedEnterTween(durationMillis: Int): TweenSpec<T> =
+fun <T> emphasizedEnterTween(durationMillis: Int): TweenSpec<T> =
     tween(durationMillis = durationMillis, easing = AppMotionEasing.EmphasizedEnter)
 
-internal fun <T> emphasizedExitTween(durationMillis: Int): TweenSpec<T> =
+fun <T> emphasizedExitTween(durationMillis: Int): TweenSpec<T> =
     tween(durationMillis = durationMillis, easing = AppMotionEasing.EmphasizedExit)
 
-internal fun <T> continuityTween(durationMillis: Int): TweenSpec<T> =
+fun <T> continuityTween(durationMillis: Int): TweenSpec<T> =
     tween(durationMillis = durationMillis, easing = AppMotionEasing.Continuity)
 
 internal fun <T> gentleEnterTween(durationMillis: Int): TweenSpec<T> =
     tween(durationMillis = durationMillis, easing = AppMotionEasing.GentleEnter)
 
-internal fun <T> softLandingSpring(): SpringSpec<T> =
+fun <T> softLandingSpring(): SpringSpec<T> =
     spring(
         dampingRatio = 0.86f,
         stiffness = Spring.StiffnessMediumLow
     )
 
-internal fun interactiveSnapSpring(): SpringSpec<Float> =
+fun interactiveSnapSpring(): SpringSpec<Float> =
     spring(
         dampingRatio = 0.78f,
         stiffness = 420f
     )
 
-internal fun pullRefreshReleaseSpring(): SpringSpec<Float> =
+fun pullRefreshReleaseSpring(): SpringSpec<Float> =
     spring(
         dampingRatio = 0.96f,
         stiffness = 520f
@@ -74,7 +74,7 @@ internal fun selectionSpring(): SpringSpec<Float> =
         stiffness = 500f
     )
 
-internal fun indicatorSpring(): SpringSpec<Float> =
+fun indicatorSpring(): SpringSpec<Float> =
     spring(
         dampingRatio = 0.7f,
         stiffness = Spring.StiffnessMedium
