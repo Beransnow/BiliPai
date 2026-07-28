@@ -45,9 +45,18 @@ class PerformanceGuardrailsPolicyTest {
         assertTrue(source.contains("metricsDestination = layout.buildDirectory.dir(\"compose_metrics\")"))
     }
 
+    @Test
+    fun composeReportsWorkflowChecksSecretsBeforeTheConditionalJob() {
+        val source = loadSource(".github/workflows/ComposeReports.yml")
+        assertTrue(source.contains("check-fcm:"))
+        assertTrue(source.contains("needs: check-fcm"))
+        assertTrue(source.contains("if: needs.check-fcm.outputs.has_fcm == 'true'"))
+        assertFalse(source.contains("if: \${{ secrets.FCM"))
+    }
+
     private fun loadSource(path: String): String {
         val normalized = path.removePrefix("app/")
-        return listOf(File(path), File(normalized))
+        return listOf(File(path), File(normalized), File("../$path"))
             .first { it.exists() }
             .readText()
     }

@@ -8,8 +8,25 @@ permissions:
   contents: read
 
 jobs:
+  check-fcm:
+    runs-on: ubuntu-latest
+    outputs:
+      has_fcm: ${{ steps.check.outputs.has_fcm }}
+    steps:
+      - name: Check FCM configuration
+        id: check
+        env:
+          FCM: ${{ secrets.FCM }}
+        run: |
+          if [ -n "$FCM" ]; then
+            echo "has_fcm=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_fcm=false" >> "$GITHUB_OUTPUT"
+          fi
+
   compose-reports:
-    if: ${{ secrets.FCM != '' }}
+    needs: check-fcm
+    if: needs.check-fcm.outputs.has_fcm == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository

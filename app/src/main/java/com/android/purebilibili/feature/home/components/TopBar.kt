@@ -3,6 +3,7 @@ package com.android.purebilibili.feature.home.components
 
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppSpacingTokens
+import com.android.purebilibili.core.ui.MediaContrastPalette
 
 import com.android.purebilibili.core.ui.OpticalContrastPalette
 import com.android.purebilibili.feature.home.HomeVisualPalette
@@ -1882,7 +1883,7 @@ private fun LightweightTopTabItem(
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = MediaContrastPalette.Foreground,
                         modifier = Modifier
                             .size(resolveTopTabIconSizeDp(if (showText) 0 else 1).dp)
                             .graphicsLayer {
