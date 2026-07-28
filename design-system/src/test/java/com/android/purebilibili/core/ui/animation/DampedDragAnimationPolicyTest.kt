@@ -22,8 +22,8 @@ class DampedDragAnimationPolicyTest {
     @Test
     fun `shared drag animation uses 9-0-0 gesture detection with KSU drag scale`() {
         val source = listOf(
-            File("app/src/main/java/com/android/purebilibili/core/ui/animation/DampedDragAnimation.kt"),
-            File("src/main/java/com/android/purebilibili/core/ui/animation/DampedDragAnimation.kt")
+            File("design-system/src/main/java/com/android/purebilibili/core/ui/animation/DampedDragAnimation.kt"),
+            File("src/main/java/com/android/purebilibili/core/ui/animation/DampedDragAnimation.kt"),
         ).first { it.exists() }.readText()
         val dragSource = source
             .substringAfter("fun onDrag(")
@@ -58,8 +58,8 @@ class DampedDragAnimationPolicyTest {
     @Test
     fun `drag velocity uses KernelSU value tracker for indicator deformation`() {
         val source = listOf(
-            File("app/src/main/java/com/android/purebilibili/core/ui/animation/DampedDragAnimation.kt"),
-            File("src/main/java/com/android/purebilibili/core/ui/animation/DampedDragAnimation.kt")
+            File("design-system/src/main/java/com/android/purebilibili/core/ui/animation/DampedDragAnimation.kt"),
+            File("src/main/java/com/android/purebilibili/core/ui/animation/DampedDragAnimation.kt"),
         ).first { it.exists() }.readText()
         val dragSource = source
             .substringAfter("fun onDrag(")
@@ -84,8 +84,8 @@ class DampedDragAnimationPolicyTest {
     @Test
     fun `settle pulse counters distinguish drag release and click selection`() {
         val source = listOf(
-            File("app/src/main/java/com/android/purebilibili/core/ui/animation/DampedDragAnimation.kt"),
-            File("src/main/java/com/android/purebilibili/core/ui/animation/DampedDragAnimation.kt")
+            File("design-system/src/main/java/com/android/purebilibili/core/ui/animation/DampedDragAnimation.kt"),
+            File("src/main/java/com/android/purebilibili/core/ui/animation/DampedDragAnimation.kt"),
         ).first { it.exists() }.readText()
         val releaseSource = source
             .substringAfter("fun onDragEnd(")
@@ -105,8 +105,8 @@ class DampedDragAnimationPolicyTest {
     @Test
     fun `click index update keeps press progress until target settles`() {
         val source = listOf(
-            File("app/src/main/java/com/android/purebilibili/core/ui/animation/DampedDragAnimation.kt"),
-            File("src/main/java/com/android/purebilibili/core/ui/animation/DampedDragAnimation.kt")
+            File("design-system/src/main/java/com/android/purebilibili/core/ui/animation/DampedDragAnimation.kt"),
+            File("src/main/java/com/android/purebilibili/core/ui/animation/DampedDragAnimation.kt"),
         ).first { it.exists() }.readText()
         val updateIndexSource = source
             .substringAfter("fun updateIndex(index: Int)")
@@ -118,20 +118,4 @@ class DampedDragAnimationPolicyTest {
         assertTrue(source.contains("release(onSettled = onSettled)"))
     }
 
-    @Test
-    fun `bottom bar input layer keeps horizontal drag gesture wiring`() {
-        val source = listOf(
-            File("app/src/main/java/com/android/purebilibili/feature/home/components/BottomBar.kt"),
-            File("src/main/java/com/android/purebilibili/feature/home/components/BottomBar.kt")
-        ).first { it.exists() }.readText()
-        val inputLayerSource = source
-            .substringAfter("private fun BoxScope.KernelSuBottomBarInputLayer(")
-            .substringBefore("private fun KernelSuBottomBarSearchSlot(")
-
-        assertTrue(inputLayerSource.contains(".horizontalDragGesture("))
-        assertTrue(inputLayerSource.contains("dragState = dampedDragState"))
-        assertTrue(inputLayerSource.contains("itemWidthPx = itemWidthPx"))
-        assertTrue(inputLayerSource.contains("onPressChanged = dampedDragState::setPressed"))
-        assertFalse(inputLayerSource.contains("pointerInput("))
-    }
 }

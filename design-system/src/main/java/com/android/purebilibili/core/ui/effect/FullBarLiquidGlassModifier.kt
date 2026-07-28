@@ -11,7 +11,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
-import org.intellij.lang.annotations.Language
 
 /**
  * Applies a liquid glass refraction effect to an element with a transparent
@@ -50,7 +49,6 @@ fun Modifier.liquidGlassBackground(
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
 object LiquidGlassBackgroundShader {
-    @Language("AGSL")
     const val SHADER = """
         uniform shader img;
 

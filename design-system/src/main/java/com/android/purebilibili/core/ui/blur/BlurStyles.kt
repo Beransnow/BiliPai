@@ -1,4 +1,3 @@
-// 文件路径: core/ui/blur/BlurStyles.kt
 package com.android.purebilibili.core.ui.blur
 
 import androidx.compose.material3.MaterialTheme

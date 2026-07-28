@@ -79,7 +79,7 @@ internal fun resolveDampedDragReleaseTargetIndex(
  * 交互逻辑以 9.0.0 发行版为准（跟手 snapTo + 速度飞掷投影），
  * 拖动手感保持 KSU 风格（KERNEL_SU_PRESSED_SCALE + 速度形变）。
  */
-internal class DampedDragAnimationState(
+class DampedDragAnimationState internal constructor(
     initialIndex: Int,
     private val itemCount: Int,
     private val scope: CoroutineScope,
@@ -342,7 +342,7 @@ internal class DampedDragAnimationState(
 private const val KERNEL_SU_PRESSED_SCALE = 78f / 56f
 
 @Composable
-internal fun rememberDampedDragAnimationState(
+fun rememberDampedDragAnimationState(
     initialIndex: Int,
     itemCount: Int,
     onIndexChanged: (Int) -> Unit,
@@ -380,7 +380,7 @@ internal fun rememberDampedDragAnimationState(
  * - horizontalDrag：标准的 Compose 拖拽事件循环
  * - VelocityTracker：跟踪帧间速度用于飞掷投影和形变
  */
-internal fun Modifier.horizontalDragGesture(
+fun Modifier.horizontalDragGesture(
     dragState: DampedDragAnimationState,
     itemWidthPx: Float,
     consumePointerChanges: Boolean = true,

@@ -15,7 +15,7 @@ fun resolveIosClickableItemRenderer(
     androidNativeVariant: AndroidNativeVariant,
     onClick: (() -> Unit)?,
     showChevron: Boolean,
-    centered: Boolean
+    centered: Boolean,
 ): IosClickableItemRenderer = when {
     uiPreset == UiPreset.IOS || centered -> IosClickableItemRenderer.IOS_LEGACY
     uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX -> {
@@ -34,7 +34,7 @@ fun shouldRouteIosClickableItemToMiuixArrowPreference(
     androidNativeVariant: AndroidNativeVariant,
     onClick: (() -> Unit)?,
     showChevron: Boolean,
-    centered: Boolean
+    centered: Boolean,
 ): Boolean = resolveIosClickableItemRenderer(
     uiPreset = uiPreset,
     androidNativeVariant = androidNativeVariant,
@@ -45,10 +45,10 @@ fun shouldRouteIosClickableItemToMiuixArrowPreference(
 
 fun shouldRouteIosSwitchItemToMiuixSwitchPreference(
     uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant
+    androidNativeVariant: AndroidNativeVariant,
 ): Boolean = uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX
 
 fun shouldRouteIosSliderPreferenceToMiuixSliderPreference(
     uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant
+    androidNativeVariant: AndroidNativeVariant,
 ): Boolean = uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX

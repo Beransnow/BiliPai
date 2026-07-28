@@ -10,7 +10,7 @@ enum class AdaptiveSideNavigationRailRenderer {
 
 fun resolveAdaptiveSideNavigationRailRenderer(
     uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant
+    androidNativeVariant: AndroidNativeVariant,
 ): AdaptiveSideNavigationRailRenderer = when (
     resolvePresetPrimitiveRenderer(uiPreset, androidNativeVariant)
 ) {
