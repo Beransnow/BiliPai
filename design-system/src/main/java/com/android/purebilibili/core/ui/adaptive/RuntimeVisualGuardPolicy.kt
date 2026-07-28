@@ -1,11 +1,11 @@
 package com.android.purebilibili.core.ui.adaptive
 
-internal const val RUNTIME_VISUAL_GUARD_HIGH_JANK_THRESHOLD_PERCENT = 7.5f
-internal const val RUNTIME_VISUAL_GUARD_RECOVER_JANK_THRESHOLD_PERCENT = 4.0f
-internal const val RUNTIME_VISUAL_GUARD_DOWNGRADE_COOLDOWN_MS = 60_000L
+const val RUNTIME_VISUAL_GUARD_HIGH_JANK_THRESHOLD_PERCENT = 7.5f
+const val RUNTIME_VISUAL_GUARD_RECOVER_JANK_THRESHOLD_PERCENT = 4.0f
+const val RUNTIME_VISUAL_GUARD_DOWNGRADE_COOLDOWN_MS = 60_000L
 private const val REQUIRED_HIGH_JANK_WINDOWS = 2
 
-internal fun isRuntimeVisualGuardHighJankWindow(jankPercent: Float): Boolean =
+fun isRuntimeVisualGuardHighJankWindow(jankPercent: Float): Boolean =
     jankPercent >= RUNTIME_VISUAL_GUARD_HIGH_JANK_THRESHOLD_PERCENT
 
 data class RuntimeVisualGuardDecision(

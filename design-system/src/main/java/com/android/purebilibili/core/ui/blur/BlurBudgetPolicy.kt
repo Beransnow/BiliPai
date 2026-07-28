@@ -16,7 +16,7 @@ data class BlurBudget(
     val allowRealtime: Boolean
 )
 
-internal fun resolveBlurBudget(
+fun resolveBlurBudget(
     surfaceType: BlurSurfaceType,
     motionTier: MotionTier,
     isScrolling: Boolean,
@@ -80,7 +80,7 @@ internal fun resolveBlurBudget(
 }
 
 
-internal fun resolveBlurInputScale(
+fun resolveBlurInputScale(
     budget: BlurBudget,
     surfaceType: BlurSurfaceType
 ): Float {

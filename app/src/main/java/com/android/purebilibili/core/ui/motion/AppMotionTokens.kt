@@ -80,27 +80,6 @@ internal fun indicatorSpring(): SpringSpec<Float> =
         stiffness = Spring.StiffnessMedium
     )
 
-private const val NAVIGATION_SPRING_REFERENCE_DURATION_MILLIS = 350f
-private const val NAVIGATION_SPRING_REFERENCE_STIFFNESS = 700f
-private const val NAVIGATION_SPRING_MAX_STIFFNESS = 2_000f
-
-internal fun resolveNavigationSlideSpringStiffness(durationMillis: Int): Float {
-    val safeDuration = durationMillis.coerceAtLeast(1).toFloat()
-    val durationRatio = NAVIGATION_SPRING_REFERENCE_DURATION_MILLIS / safeDuration
-    return (NAVIGATION_SPRING_REFERENCE_STIFFNESS * durationRatio * durationRatio)
-        .coerceIn(
-            NAVIGATION_SPRING_REFERENCE_STIFFNESS,
-            NAVIGATION_SPRING_MAX_STIFFNESS
-        )
-}
-
-internal fun navigationSlideSpring(durationMillis: Int): SpringSpec<IntOffset> =
-    spring(
-        dampingRatio = 1f,
-        stiffness = resolveNavigationSlideSpringStiffness(durationMillis),
-        visibilityThreshold = IntOffset(1, 1)
-    )
-
 /**
  * Preset-aware motion tokens. Screens should call the @Composable accessors
  * (e.g. [AppMotionTokens.standardSpec]) instead of writing literal `tween(...)`

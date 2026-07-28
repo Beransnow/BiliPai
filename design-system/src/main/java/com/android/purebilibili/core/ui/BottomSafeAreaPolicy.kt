@@ -3,7 +3,7 @@ package com.android.purebilibili.core.ui
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-internal fun resolveBottomSafeAreaPadding(
+fun resolveBottomSafeAreaPadding(
     navigationBarsBottom: Dp,
     extraBottomPadding: Dp = 0.dp
 ): Dp {

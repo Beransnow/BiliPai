@@ -10,10 +10,10 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.ui.unit.IntOffset
 
-internal const val SETTINGS_IOS_PUSH_DURATION_MS = 350
-internal const val SETTINGS_IOS_PUSH_PARALLAX_FACTOR = 0.33f
+const val SETTINGS_IOS_PUSH_DURATION_MS = 350
+const val SETTINGS_IOS_PUSH_PARALLAX_FACTOR = 0.33f
 
-internal fun resolveSettingsIosPushTransitionMillis(
+fun resolveSettingsIosPushTransitionMillis(
     animationEnabled: Boolean,
     reduceMotion: Boolean,
 ): Int {
@@ -21,7 +21,7 @@ internal fun resolveSettingsIosPushTransitionMillis(
     return SETTINGS_IOS_PUSH_DURATION_MS
 }
 
-internal fun resolveSettingsIosPushForwardContentTransform(
+fun resolveSettingsIosPushForwardContentTransform(
     durationMillis: Int = SETTINGS_IOS_PUSH_DURATION_MS,
 ): ContentTransform {
     if (durationMillis <= 0) {
@@ -40,7 +40,7 @@ internal fun resolveSettingsIosPushForwardContentTransform(
     )
 }
 
-internal fun resolveSettingsIosPushPopContentTransform(
+fun resolveSettingsIosPushPopContentTransform(
     durationMillis: Int = SETTINGS_IOS_PUSH_DURATION_MS,
 ): ContentTransform {
     if (durationMillis <= 0) {
@@ -65,7 +65,7 @@ internal fun resolveSettingsIosPushPopContentTransform(
  * 设置预测式返回专用：目标页保持全屏，只横滑顶页。
  * 若对目标页再套 parallax 入场，手势 seek 时两页之间会露出 windowBackground 灰缝，并显得卡手。
  */
-internal fun resolveSettingsIosPredictivePopContentTransform(
+fun resolveSettingsIosPredictivePopContentTransform(
     durationMillis: Int = SETTINGS_IOS_PUSH_DURATION_MS,
 ): ContentTransform {
     if (durationMillis <= 0) {

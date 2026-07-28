@@ -7,7 +7,7 @@ package com.android.purebilibili.core.ui.adaptive
  * 纯语义标记（`home:current_category`、`video_player:gesture_mode`）不开窗口——
  * 它们在界面静止时也长期挂着，会把静止帧算进分母，稀释真实掉帧率。
  */
-internal val RUNTIME_VISUAL_GUARD_TRACKED_PREFIXES: List<String> = listOf(
+val RUNTIME_VISUAL_GUARD_TRACKED_PREFIXES: List<String> = listOf(
     "VideoCardTransition",
     "home:feed:",
     "home:pager_swipe",
@@ -18,7 +18,7 @@ internal val RUNTIME_VISUAL_GUARD_TRACKED_PREFIXES: List<String> = listOf(
     "video_detail:player_swipe_collapse",
 )
 
-internal fun isRuntimeVisualGuardTrackedStateKey(key: String): Boolean {
+fun isRuntimeVisualGuardTrackedStateKey(key: String): Boolean {
     if (key.isBlank()) return false
     return RUNTIME_VISUAL_GUARD_TRACKED_PREFIXES.any { prefix ->
         key == prefix || key.startsWith(prefix)
@@ -31,10 +31,10 @@ internal fun isRuntimeVisualGuardTrackedStateKey(key: String): Boolean {
  * 依赖 [MotionTier] 的声明顺序 `Reduced < Normal < Enhanced`；
  * [motionTierOrderIsConservativeFirst] 会在 enum 被重排时立刻失败。
  */
-internal fun minMotionTier(first: MotionTier, second: MotionTier): MotionTier =
+fun minMotionTier(first: MotionTier, second: MotionTier): MotionTier =
     if (first.ordinal <= second.ordinal) first else second
 
-internal fun motionTierOrderIsConservativeFirst(): Boolean =
+fun motionTierOrderIsConservativeFirst(): Boolean =
     MotionTier.Reduced.ordinal < MotionTier.Normal.ordinal &&
         MotionTier.Normal.ordinal < MotionTier.Enhanced.ordinal
 
@@ -44,7 +44,7 @@ internal fun motionTierOrderIsConservativeFirst(): Boolean =
  * 单个信号的窗口互相独立（竖滑与横滑会同帧共存，混在一个窗口里会互相污染分母），
  * 但对外只暴露一个决策，且取最保守的那个。
  */
-internal fun mergeRuntimeVisualGuardDecisions(
+fun mergeRuntimeVisualGuardDecisions(
     decisions: Collection<RuntimeVisualGuardDecision>,
     baseTier: MotionTier,
 ): RuntimeVisualGuardDecision {

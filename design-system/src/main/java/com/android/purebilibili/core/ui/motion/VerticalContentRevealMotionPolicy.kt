@@ -7,12 +7,12 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 
-internal enum class VerticalContentRevealMode {
+enum class VerticalContentRevealMode {
     DefaultExpand,
     FloatUp
 }
 
-internal data class VerticalContentRevealMotionSpec(
+data class VerticalContentRevealMotionSpec(
     val mode: VerticalContentRevealMode,
     val delayMillis: Int,
     val durationMillis: Int,
@@ -20,7 +20,7 @@ internal data class VerticalContentRevealMotionSpec(
     val initialScale: Float
 )
 
-internal fun resolveCommentVerticalContentRevealMotionSpec(): VerticalContentRevealMotionSpec {
+fun resolveCommentVerticalContentRevealMotionSpec(): VerticalContentRevealMotionSpec {
     return VerticalContentRevealMotionSpec(
         mode = VerticalContentRevealMode.DefaultExpand,
         delayMillis = 0,
@@ -30,7 +30,7 @@ internal fun resolveCommentVerticalContentRevealMotionSpec(): VerticalContentRev
     )
 }
 
-internal fun resolveDetailVerticalContentRevealMotionSpec(
+fun resolveDetailVerticalContentRevealMotionSpec(
     delayMillis: Int,
     durationMillis: Int,
     slideOffsetDp: Float,
@@ -45,7 +45,7 @@ internal fun resolveDetailVerticalContentRevealMotionSpec(
     )
 }
 
-internal fun verticalContentRevealEnterTransition(
+fun verticalContentRevealEnterTransition(
     spec: VerticalContentRevealMotionSpec
 ): EnterTransition {
     return when (spec.mode) {
@@ -54,7 +54,7 @@ internal fun verticalContentRevealEnterTransition(
     }
 }
 
-internal fun verticalContentRevealExitTransition(
+fun verticalContentRevealExitTransition(
     spec: VerticalContentRevealMotionSpec
 ): ExitTransition {
     return when (spec.mode) {

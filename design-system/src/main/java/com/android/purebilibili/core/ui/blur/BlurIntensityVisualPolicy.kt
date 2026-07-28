@@ -1,12 +1,12 @@
 package com.android.purebilibili.core.ui.blur
 
-internal enum class BlurHazeMaterial {
+enum class BlurHazeMaterial {
     ULTRA_THIN,
     THIN,
     THICK,
 }
 
-internal fun resolveBlurHazeMaterial(intensity: BlurIntensity): BlurHazeMaterial {
+fun resolveBlurHazeMaterial(intensity: BlurIntensity): BlurHazeMaterial {
     return when (intensity) {
         BlurIntensity.THIN -> BlurHazeMaterial.THIN
         BlurIntensity.APPLE_DOCK -> BlurHazeMaterial.THICK
@@ -14,7 +14,7 @@ internal fun resolveBlurHazeMaterial(intensity: BlurIntensity): BlurHazeMaterial
     }
 }
 
-internal fun resolveBlurBackgroundAlpha(intensity: BlurIntensity): Float {
+fun resolveBlurBackgroundAlpha(intensity: BlurIntensity): Float {
     return when (intensity) {
         BlurIntensity.THIN -> 0.4f
         BlurIntensity.APPLE_DOCK -> 0.6f
@@ -22,13 +22,13 @@ internal fun resolveBlurBackgroundAlpha(intensity: BlurIntensity): Float {
     }
 }
 
-internal val blurIntensityLevelOrder = listOf(
+val blurIntensityLevelOrder = listOf(
     BlurIntensity.THICK,
     BlurIntensity.THIN,
     BlurIntensity.APPLE_DOCK,
 )
 
-internal fun resolveBudgetedBlurIntensity(
+fun resolveBudgetedBlurIntensity(
     preferred: BlurIntensity,
     budget: BlurBudget,
 ): BlurIntensity {

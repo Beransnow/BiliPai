@@ -3,7 +3,7 @@ package com.android.purebilibili.core.ui.motion
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.spring
 
-internal data class MotionSpringConfig(
+data class MotionSpringConfig(
     val dampingRatio: Float,
     val stiffness: Float,
     val visibilityThreshold: Float? = null
@@ -17,7 +17,7 @@ internal data class MotionSpringConfig(
     }
 }
 
-internal data class BottomBarDragMotionSpec(
+data class BottomBarDragMotionSpec(
     val baseResistance: Float,
     val overscrollResistance: Float,
     val overscrollLimitItems: Float,
@@ -28,7 +28,7 @@ internal data class BottomBarDragMotionSpec(
     val offsetSnapSpring: MotionSpringConfig
 )
 
-internal data class BottomBarRefractionMotionSpec(
+data class BottomBarRefractionMotionSpec(
     val movingVelocityThresholdPxPerSecond: Float,
     val speedProgressDivisorPxPerSecond: Float,
     val dragProgressFloor: Float,
@@ -36,7 +36,7 @@ internal data class BottomBarRefractionMotionSpec(
     val panelOffsetMaxDp: Float
 )
 
-internal data class BottomBarIndicatorMotionSpec(
+data class BottomBarIndicatorMotionSpec(
     val deformationScaleXDelta: Float,
     val deformationScaleYCompressionRatio: Float,
     val scaleSpring: MotionSpringConfig,
@@ -49,20 +49,20 @@ internal data class BottomBarIndicatorMotionSpec(
     val capsuleVelocityClamp: Float
 )
 
-internal data class BottomBarMotionSpec(
+data class BottomBarMotionSpec(
     val drag: BottomBarDragMotionSpec,
     val refraction: BottomBarRefractionMotionSpec,
     val indicator: BottomBarIndicatorMotionSpec
 )
 
-internal enum class BottomBarMotionProfile {
+enum class BottomBarMotionProfile {
     DEFAULT,
     IOS_FLOATING,
     ANDROID_NATIVE_FLOATING,
     MIUI_FLOATING
 }
 
-internal fun resolveBottomBarMotionSpec(
+fun resolveBottomBarMotionSpec(
     profile: BottomBarMotionProfile = BottomBarMotionProfile.DEFAULT
 ): BottomBarMotionSpec {
     val base = createDefaultBottomBarMotionSpec()

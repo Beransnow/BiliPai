@@ -11,16 +11,6 @@ import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.HazeMaterials
 
 /**
- *  模糊强度枚举
- * 用户可选的三种模糊强度
- */
-enum class BlurIntensity {
-    THIN,        // 标准 - 平衡美观与性能（默认）
-    THICK,       // 浓郁 - 背景透色 + 磨砂质感
-    APPLE_DOCK,  // 玻璃拟态 - 强烈模糊，完全遮盖背景
-}
-
-/**
  *  模糊样式管理
  * 
  * 模糊 + 饱和度增强 + 半透明底色 + 顶部高光 + 精细边框

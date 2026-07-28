@@ -160,13 +160,16 @@ if (Test-Path -LiteralPath $exceptionsFile -PathType Leaf) {
 
 $productionRoot = Join-Path $RepoRoot "app/src/main/java"
 $featureRoot = Join-Path $RepoRoot "app/src/main/java/com/android/purebilibili/feature"
-$testRoot = Join-Path $RepoRoot "app/src/test"
+$testRoots = @(
+    (Join-Path $RepoRoot "app/src/test"),
+    (Join-Path $RepoRoot "design-system/src/test")
+)
 $coreUiRoot = Join-Path $RepoRoot "app/src/main/java/com/android/purebilibili/core/ui"
 $designSystemRoot = Join-Path $RepoRoot "design-system"
 
 $production = Get-KotlinSources $productionRoot
 $features = @($production | Where-Object { $_.Path -like "app/src/main/java/com/android/purebilibili/feature/*" })
-$tests = Get-KotlinSources $testRoot
+$tests = @($testRoots | ForEach-Object { Get-KotlinSources $_ })
 $coreUi = Get-KotlinSources $coreUiRoot
 $designSystem = Get-KotlinSources $designSystemRoot
 

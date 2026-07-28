@@ -1,19 +1,19 @@
 package com.android.purebilibili.core.ui
 
-internal enum class InteractiveOverlaySurfaceType {
+enum class InteractiveOverlaySurfaceType {
     BOTTOM_SHEET,
     DIALOG,
     DRAWER
 }
 
-internal data class InteractiveOverlayProgressVisual(
+data class InteractiveOverlayProgressVisual(
     val scrimAlpha: Float,
     val surfaceAlphaMultiplier: Float,
     val blurEnabled: Boolean,
     val forceLowBlurBudget: Boolean
 )
 
-internal fun resolveInteractiveOverlayProgressVisual(
+fun resolveInteractiveOverlayProgressVisual(
     presentationProgress: Float,
     surfaceType: InteractiveOverlaySurfaceType,
     blurActive: Boolean,
