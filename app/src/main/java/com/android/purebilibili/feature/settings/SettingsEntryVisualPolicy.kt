@@ -10,8 +10,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.android.purebilibili.R
 import com.android.purebilibili.core.theme.LocalDynamicColorActive
-import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.LocalUiStyle
+import com.android.purebilibili.core.theme.UiStyle
 import com.android.purebilibili.core.theme.iOSBlue
 import com.android.purebilibili.core.theme.iOSGreen
 import com.android.purebilibili.core.theme.iOSOrange
@@ -71,15 +71,15 @@ private fun SettingsEntryThemePalette.resolve(
 internal fun rememberSettingsEntryTint(
     role: SettingsEntryTintRole,
     iosTint: Color,
-    uiPreset: UiPreset = LocalUiPreset.current,
+    uiStyle: UiStyle = LocalUiStyle.current,
     dynamicColorActive: Boolean = LocalDynamicColorActive.current
 ): Color {
     val colorScheme = MaterialTheme.colorScheme
     val md3Palette = remember(colorScheme, dynamicColorActive) {
         resolveMd3SettingsEntryThemePalette(colorScheme, useSemanticAccentRoles = dynamicColorActive)
     }
-    return remember(role, iosTint, uiPreset, dynamicColorActive, md3Palette) {
-        if (uiPreset == UiPreset.MD3) {
+    return remember(role, iosTint, uiStyle, dynamicColorActive, md3Palette) {
+        if (uiStyle != UiStyle.IOS) {
             md3Palette.resolve(role)
         } else {
             iosTint
@@ -170,24 +170,24 @@ private fun resolveIosSettingsEntryTint(
 @Composable
 internal fun rememberSettingsEntryVisual(
     target: SettingsSearchTarget,
-    uiPreset: UiPreset = LocalUiPreset.current,
+    uiStyle: UiStyle = LocalUiStyle.current,
     dynamicColorActive: Boolean = LocalDynamicColorActive.current
 ): SettingsEntryVisual {
     val colorScheme = MaterialTheme.colorScheme
     val md3Palette = remember(colorScheme, dynamicColorActive) {
         resolveMd3SettingsEntryThemePalette(colorScheme, useSemanticAccentRoles = dynamicColorActive)
     }
-    return remember(target, uiPreset, dynamicColorActive, md3Palette) {
-        resolveSettingsEntryVisual(target, uiPreset, md3Palette)
+    return remember(target, uiStyle, dynamicColorActive, md3Palette) {
+        resolveSettingsEntryVisual(target, uiStyle, md3Palette)
     }
 }
 
 internal fun resolveSettingsEntryVisual(
     target: SettingsSearchTarget,
-    uiPreset: UiPreset = UiPreset.IOS,
+    uiStyle: UiStyle = UiStyle.IOS,
     md3Palette: SettingsEntryThemePalette = PreviewMd3SettingsEntryThemePalette
 ): SettingsEntryVisual {
-    val iconTint = if (uiPreset == UiPreset.MD3) {
+    val iconTint = if (uiStyle != UiStyle.IOS) {
         md3Palette.resolve(resolveMd3SettingsEntryTintRole(target))
     } else {
         resolveIosSettingsEntryTint(target)
@@ -204,7 +204,7 @@ internal fun resolveSettingsEntryVisual(
         else -> SettingsEntryVisual(
             icon = resolveSettingsSemanticIcon(
                 role = resolveSettingsSearchTargetIconRole(target),
-                uiPreset = uiPreset
+                uiStyle = uiStyle
             ),
             iconTint = iconTint
         )

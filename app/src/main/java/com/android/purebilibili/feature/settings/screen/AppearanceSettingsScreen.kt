@@ -511,15 +511,15 @@ fun AppearanceSettingsContent(
         //  主题与颜色
         item { 
             Box(modifier = Modifier.entrance()) {
-                IOSSectionTitle("显示模式")
+                AppPreferenceSectionTitle("显示模式")
             }
         }
         item {
             Box(modifier = Modifier.entrance()) {
-                IOSGroup {
+                AppPreferenceGroup {
                     // 主题模式选择 (横向卡片)
                     Column(modifier = Modifier.padding(16.dp)) {
-                        IOSSlidingSegmentedSetting(
+                        AppSegmentedPreference(
                             title = "${uiPresetTitle}：$selectedUiPresetLabel",
                             subtitle = uiPresetSubtitle,
                             options = uiPresetOptions,
@@ -535,9 +535,9 @@ fun AppearanceSettingsContent(
                             exit = shrinkVertically() + fadeOut()
                         ) {
                             Column(modifier = Modifier.padding(top = 16.dp)) {
-                                IOSDivider()
+                                AppPreferenceDivider()
                                 Spacer(modifier = Modifier.height(8.dp))
-                                IOSSlidingSegmentedSetting(
+                                AppSegmentedPreference(
                                     title = "${androidNativeVariantTitle}：$selectedAndroidNativeVariantLabel",
                                     subtitle = androidNativeVariantSubtitle,
                                     options = androidNativeVariantOptions,
@@ -548,8 +548,8 @@ fun AppearanceSettingsContent(
                                 )
 
                                 Spacer(modifier = Modifier.height(16.dp))
-                                IOSDivider()
-	                             IOSSwitchItem(
+                                AppPreferenceDivider()
+	                             AppSwitchPreference(
 	                                icon = rememberSettingsSemanticIcon(SettingsIconRole.ANDROID_LIQUID_GLASS),
                                     title = "安卓原生液态玻璃",
                                     subtitle = if (isLiquidGlassAvailable) {
@@ -572,10 +572,10 @@ fun AppearanceSettingsContent(
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
-                        IOSDivider()
+                        AppPreferenceDivider()
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        IOSSlidingSegmentedSetting(
+                        AppSegmentedPreference(
                             title = "${themeModeTitle}：$selectedThemeModeLabel",
                             subtitle = themeModeSubtitle,
                             options = themeModeOptions,
@@ -591,9 +591,9 @@ fun AppearanceSettingsContent(
                             exit = androidx.compose.animation.shrinkVertically() + androidx.compose.animation.fadeOut()
                         ) {
                             Column(modifier = Modifier.padding(top = 16.dp)) {
-                                IOSDivider()
+                                AppPreferenceDivider()
                                 Spacer(modifier = Modifier.height(8.dp))
-                                IOSSlidingSegmentedSetting(
+                                AppSegmentedPreference(
                                     title = "${darkThemeStyleTitle}：$selectedDarkThemeStyleLabel",
                                     subtitle = darkThemeStyleSubtitle,
                                     options = darkThemeStyleOptions,
@@ -606,10 +606,10 @@ fun AppearanceSettingsContent(
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
-                        IOSDivider()
+                        AppPreferenceDivider()
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        IOSSlidingSegmentedSetting(
+                        AppSegmentedPreference(
                             title = "${appLanguageTitle}：$selectedAppLanguageLabel",
                             subtitle = appLanguageSubtitle,
                             options = appLanguageOptions,
@@ -620,10 +620,10 @@ fun AppearanceSettingsContent(
                         )
                         
                         Spacer(modifier = Modifier.height(16.dp))
-                        IOSDivider()
+                        AppPreferenceDivider()
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        IOSSlidingSegmentedSetting(
+                        AppSegmentedPreference(
                             title = "MD3 颜色来源：$selectedMd3ColorSourceLabel",
                             subtitle = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                                 "可跟随系统壁纸，也可使用自定义主题色"
@@ -646,8 +646,8 @@ fun AppearanceSettingsContent(
                         }
 
                         Spacer(modifier = Modifier.height(12.dp))
-                        IOSDivider()
-                        IOSClickableItem(
+                        AppPreferenceDivider()
+                        AppPreference(
                             icon = rememberSettingsSemanticIcon(SettingsIconRole.DYNAMIC_COLOR),
                             title = "自定义 MD3 颜色",
                             subtitle = if (state.md3ColorSource == Md3ColorSource.CUSTOM) {
@@ -660,8 +660,8 @@ fun AppearanceSettingsContent(
                             iconTint = selectedCustomThemeColor
                         )
 
-                        IOSDivider()
-                        IOSSwitchItem(
+                        AppPreferenceDivider()
+                        AppSwitchPreference(
                             icon = rememberSettingsSemanticIcon(SettingsIconRole.ADVANCED_COLOR),
                             title = "高级配色",
                             subtitle = "分别覆盖明暗模式的背景、文字与控件色",
@@ -692,7 +692,7 @@ fun AppearanceSettingsContent(
                             )
                         }
 
-                        IOSDivider()
+                        AppPreferenceDivider()
 	                        ThemePresetDropdownSetting(
 	                            icon = rememberSettingsSemanticIcon(SettingsIconRole.COLOR_STYLE),
                             title = "色彩风格",
@@ -702,7 +702,7 @@ fun AppearanceSettingsContent(
                             iconTint = iOSPurple
                         )
 
-                        IOSDivider()
+                        AppPreferenceDivider()
 	                        ThemePresetDropdownSetting(
 	                            icon = rememberSettingsSemanticIcon(SettingsIconRole.COLOR_SPEC),
                             title = "色彩标准",
@@ -901,14 +901,14 @@ fun AppearanceSettingsContent(
 
         item {
             Box(modifier = Modifier.entrance()) {
-                IOSSectionTitle("字体与密度")
+                AppPreferenceSectionTitle("字体与密度")
             }
         }
         item {
             Box(modifier = Modifier.entrance()) {
-                IOSGroup {
+                AppPreferenceGroup {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        IOSSlidingSegmentedSetting(
+                        AppSegmentedPreference(
                             title = "字体大小：${state.appFontSizePreset.label}",
                             subtitle = "仅调整应用内文字比例",
                             options = resolveAppFontSizeSegmentOptions(),
@@ -919,8 +919,8 @@ fun AppearanceSettingsContent(
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
-                        IOSDivider()
-	                        IOSClickableItem(
+                        AppPreferenceDivider()
+	                        AppPreference(
 	                            icon = rememberSettingsSemanticIcon(SettingsIconRole.FONT_FILE),
                             title = "应用字体",
                             subtitle = if (state.appFontDisplayName.isBlank()) {
@@ -941,8 +941,8 @@ fun AppearanceSettingsContent(
                             exit = shrinkVertically() + fadeOut()
                         ) {
                             Column {
-                                IOSDivider()
-	                                IOSClickableItem(
+                                AppPreferenceDivider()
+	                                AppPreference(
 	                                    icon = rememberSettingsSemanticIcon(SettingsIconRole.REPLAY_ONBOARDING),
                                     title = "恢复默认字体",
                                     subtitle = "移除已导入字体文件，立即回到系统字体",
@@ -958,10 +958,10 @@ fun AppearanceSettingsContent(
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
-                        IOSDivider()
+                        AppPreferenceDivider()
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        IOSSlidingSegmentedSetting(
+                        AppSegmentedPreference(
                             title = "界面缩放：${state.appUiScalePreset.label}",
                             subtitle = "调整列表、卡片与控件的整体密度",
                             options = resolveAppUiScaleSegmentOptions(),
@@ -972,10 +972,10 @@ fun AppearanceSettingsContent(
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
-                        IOSDivider()
+                        AppPreferenceDivider()
                         Spacer(modifier = Modifier.height(8.dp))
 
-	                        IOSSwitchItem(
+	                        AppSwitchPreference(
 	                            icon = rememberSettingsSemanticIcon(SettingsIconRole.DISPLAY_STYLE),
                             title = "应用内 DPI 覆盖",
                             subtitle = resolveDpiOverrideSubtitle(
@@ -998,7 +998,7 @@ fun AppearanceSettingsContent(
                             exit = androidx.compose.animation.shrinkVertically() + androidx.compose.animation.fadeOut()
                         ) {
                             Column(modifier = Modifier.padding(top = 16.dp)) {
-                                IOSSlidingSegmentedSetting(
+                                AppSegmentedPreference(
                                     title = "应用 DPI：${resolveDisplayedAppDpiPercent(state.appDpiOverridePercent)}%",
                                     subtitle = "按当前设备 DPI 进行应用内覆盖，不修改系统设置",
                                     options = resolveAppDpiOverrideSegmentOptions(),
@@ -1024,12 +1024,12 @@ fun AppearanceSettingsContent(
         //  启动画面
         item { 
             Box(modifier = Modifier.entrance()) {
-                IOSSectionTitle("启动画面") 
+                AppPreferenceSectionTitle("启动画面")
             }
         }
         item {
             Box(modifier = Modifier.entrance()) {
-                IOSGroup {
+                AppPreferenceGroup {
                     val isSplashEnabled by com.android.purebilibili.core.store.SettingsManager.isSplashEnabled(context).collectAsStateWithLifecycle(initialValue = false)
                     val splashRandomEnabled by com.android.purebilibili.core.store.SettingsManager.getSplashRandomEnabled(context).collectAsStateWithLifecycle(initialValue = false)
                     val splashRandomPoolUris by com.android.purebilibili.core.store.SettingsManager.getSplashRandomPoolUris(context).collectAsStateWithLifecycle(initialValue = emptyList())
@@ -1041,7 +1041,7 @@ fun AppearanceSettingsContent(
                     }
                     
                     // 开关项
-	                    IOSSwitchItem(
+	                    AppSwitchPreference(
 	                        icon = rememberSettingsSemanticIcon(SettingsIconRole.SPLASH_WALLPAPER),
                         title = "使用开屏壁纸",
                         subtitle = "应用启动时显示官方或相册壁纸",
@@ -1050,8 +1050,8 @@ fun AppearanceSettingsContent(
                         iconTint = com.android.purebilibili.core.theme.iOSBlue
                     )
 
-                    IOSDivider()
-	                    IOSSwitchItem(
+                    AppPreferenceDivider()
+	                    AppSwitchPreference(
 	                        icon = rememberSettingsSemanticIcon(SettingsIconRole.RANDOM_WALLPAPER),
                         title = "随机展示开屏壁纸",
                         subtitle = "启动时从可见官方壁纸中随机展示",
@@ -1124,8 +1124,8 @@ fun AppearanceSettingsContent(
                         }
                     }
 
-                    IOSDivider()
-	                    IOSSwitchItem(
+                    AppPreferenceDivider()
+	                    AppSwitchPreference(
 	                        icon = rememberSettingsSemanticIcon(SettingsIconRole.ANIMATION),
                         title = "开屏图标遮罩动画",
                         subtitle = "关闭后不保留图标页，不播放遮罩和飞出动画",
@@ -1141,7 +1141,7 @@ fun AppearanceSettingsContent(
                         exit = androidx.compose.animation.shrinkVertically() + androidx.compose.animation.fadeOut()
                     ) {
                         Column {
-                            IOSDivider()
+                            AppPreferenceDivider()
                             
                             var showWallpaperPicker by remember { mutableStateOf(false) }
                             
@@ -1223,14 +1223,14 @@ fun AppearanceSettingsContent(
         //  个性化
         item { 
             Box(modifier = Modifier.entrance()) {
-                IOSSectionTitle("开屏与图标")
+                AppPreferenceSectionTitle("开屏与图标")
             }
         }
         item {
             Box(modifier = Modifier.entrance()) {
-                IOSGroup {
+                AppPreferenceGroup {
                     // 图标设置
-	                    IOSClickableItem(
+	                    AppPreference(
 	                        icon = rememberSettingsSemanticIcon(SettingsIconRole.APP_ICON),
                         title = "应用图标",
                         value = when(state.appIcon) {
@@ -1254,9 +1254,9 @@ fun AppearanceSettingsContent(
                         onClick = onNavigateToIconSettings,
                         iconTint = iOSPurple
                     )
-                    IOSDivider()
+                    AppPreferenceDivider()
                     // 动画设置
-	                    IOSClickableItem(
+	                    AppPreference(
 	                        icon = rememberSettingsSemanticIcon(SettingsIconRole.ANIMATION),
                         title = "动画与效果",
                         value = if (state.cardAnimationEnabled) "已开启" else "已关闭",
@@ -1264,8 +1264,8 @@ fun AppearanceSettingsContent(
                         iconTint = iOSPink
                     )
 
-                    IOSDivider()
-	                    IOSSwitchItem(
+                    AppPreferenceDivider()
+	                    AppSwitchPreference(
 	                        icon = rememberSettingsSemanticIcon(SettingsIconRole.OPEN_LINKS),
                         title = "底栏搜索入口",
                         subtitle = "在悬浮底栏右侧显示搜索入口",
@@ -1274,8 +1274,8 @@ fun AppearanceSettingsContent(
                         iconTint = iOSTeal
                     )
 
-                    IOSDivider()
-                    IOSSlidingSegmentedSetting(
+                    AppPreferenceDivider()
+                    AppSegmentedPreference(
                         title = "底栏搜索布局",
                         subtitle = "完整底栏保留全部入口；首页+搜索只保留首页刷新和搜索",
                         options = bottomBarSearchLayoutOptions,
@@ -1284,8 +1284,8 @@ fun AppearanceSettingsContent(
                         onSelectionChange = { viewModel.setBottomBarSearchLayoutMode(it) }
                     )
 
-                    IOSDivider()
-                    IOSSlidingSegmentedSetting(
+                    AppPreferenceDivider()
+                    AppSegmentedPreference(
                         title = "搜索框自动展开",
                         subtitle = "选择回到首页顶部或向下浏览时自动展开",
                         options = bottomBarSearchAutoExpandOptions,
@@ -1294,9 +1294,9 @@ fun AppearanceSettingsContent(
                         onSelectionChange = { viewModel.setBottomBarSearchAutoExpandMode(it) }
                     )
 
-                    IOSDivider()
+                    AppPreferenceDivider()
                     // 触感反馈
-	                    IOSSwitchItem(
+	                    AppSwitchPreference(
 	                        icon = rememberSettingsSemanticIcon(SettingsIconRole.FULLSCREEN_GESTURE),
                         title = "触感反馈",
                         checked = state.hapticFeedbackEnabled,
@@ -1310,12 +1310,12 @@ fun AppearanceSettingsContent(
             //  首页与列表
             item { 
                 Box(modifier = Modifier.entrance()) {
-                    IOSSectionTitle("首页与列表")
+                    AppPreferenceSectionTitle("首页与列表")
                 }
             }
             item {
                 Box(modifier = Modifier.entrance()) {
-                    IOSGroup {
+                    AppPreferenceGroup {
                         val displayMode = state.displayMode
                         var isExpanded by remember { mutableStateOf(false) }
                         val displayModeBringIntoViewRequester = remember { BringIntoViewRequester() }
@@ -1425,9 +1425,9 @@ fun AppearanceSettingsContent(
                             }
                         }
                         
-                        IOSDivider(modifier = Modifier.padding(start = 16.dp))
+                        AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
                         Column(modifier = Modifier.padding(16.dp)) {
-                            IOSSlidingSegmentedSetting(
+                            AppSegmentedPreference(
                                 title = "列表顶部栏：${commonListHeaderCollapseMode.label}",
                                 subtitle = commonListHeaderCollapseMode.description,
                                 options = commonListHeaderCollapseOptions,
@@ -1440,8 +1440,8 @@ fun AppearanceSettingsContent(
                             )
                         }
 
-                        IOSDivider(modifier = Modifier.padding(start = 16.dp))
-                        IOSSwitchItem(
+                        AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
+                        AppSwitchPreference(
                             icon = rememberSettingsSemanticIcon(SettingsIconRole.HOME_CARD_STATS_COMPACT),
                             title = "统计信息贴封面（紧凑）",
                             subtitle = if (compactVideoStatsOnCover) {
@@ -1458,8 +1458,8 @@ fun AppearanceSettingsContent(
                             iconTint = iOSTeal
                         )
 
-                        IOSDivider(modifier = Modifier.padding(start = 16.dp))
-                        IOSSwitchItem(
+                        AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
+                        AppSwitchPreference(
                             icon = rememberSettingsSemanticIcon(SettingsIconRole.DISPLAY_STYLE),
                             title = "首页顶部轮播封面",
                             subtitle = if (homeHeroCarouselEnabled) {
@@ -1478,8 +1478,8 @@ fun AppearanceSettingsContent(
 
                         AnimatedVisibility(visible = homeHeroCarouselEnabled) {
                             Column {
-                                IOSDivider(modifier = Modifier.padding(start = 16.dp))
-                                IOSSwitchItem(
+                                AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
+                                AppSwitchPreference(
                                     icon = rememberSettingsSemanticIcon(SettingsIconRole.AUTO_PLAY_ON_OPEN),
                                     title = "轮播默认播放",
                                     subtitle = if (homeHeroCarouselAutoplayEnabled) {
@@ -1498,9 +1498,9 @@ fun AppearanceSettingsContent(
                             }
                         }
 
-                        IOSDivider(modifier = Modifier.padding(start = 16.dp))
+                        AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
                         Column(modifier = Modifier.padding(16.dp)) {
-                            IOSSlidingSegmentedSetting(
+                            AppSegmentedPreference(
                                 title = "卡片封面比例：${homeFeedCardStyle.label}",
                                 subtitle = homeFeedCardStyle.subtitle + "（首页、搜索、列表、相关推荐等同步）",
                                 options = HomeFeedCardStyle.entries.map {
@@ -1514,7 +1514,7 @@ fun AppearanceSettingsContent(
                                 }
                             )
                             Spacer(modifier = Modifier.height(16.dp))
-                            IOSSlidingSegmentedSetting(
+                            AppSegmentedPreference(
                                 title = "首页视频时长：${homeDurationStyle.label}",
                                 subtitle = "可移到封面外、仅显示无底色文字或完全隐藏",
                                 options = HomeDurationStyle.entries.map {
@@ -1528,7 +1528,7 @@ fun AppearanceSettingsContent(
                                 }
                             )
                             Spacer(modifier = Modifier.height(16.dp))
-                            IOSSlidingSegmentedSetting(
+                            AppSegmentedPreference(
                                 title = "卡片标签效果：${homeCardBadgeEffectMode.label}",
                                 subtitle = homeCardBadgeEffectMode.subtitle,
                                 options = HomeCardBadgeEffectMode.entries.map {
@@ -1542,7 +1542,7 @@ fun AppearanceSettingsContent(
                                 }
                             )
                             Spacer(modifier = Modifier.height(16.dp))
-                            IOSSlidingSegmentedSetting(
+                            AppSegmentedPreference(
                                 title = "卡片信息区：${homeCardInfoGlassMode.label}",
                                 subtitle = homeCardInfoGlassMode.subtitle,
                                 options = HomeCardInfoGlassMode.entries.map {
@@ -1557,7 +1557,7 @@ fun AppearanceSettingsContent(
                             )
                         }
 
-                        IOSDivider(modifier = Modifier.padding(start = 16.dp))
+                        AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
                         // Wallpaper section: realtime card glass is WIP — keep default OFF.
                         Text(
                             text = "壁纸与卡片实时模糊 / 实时液态玻璃仍在开发中，请勿使用相关选项（默认关闭）。",
@@ -1638,8 +1638,8 @@ fun AppearanceSettingsContent(
                             )
                         }
 
-                        IOSDivider(modifier = Modifier.padding(start = 16.dp))
-                        IOSSlidingSegmentedSetting(
+                        AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
+                        AppSegmentedPreference(
                             title = "首页壁纸效果",
                             subtitle = when (homeWallpaperEffectMode) {
                                 HomeWallpaperEffectMode.OFF -> "首页不使用开屏壁纸作为背景"
@@ -1662,8 +1662,8 @@ fun AppearanceSettingsContent(
                             exit = shrinkVertically() + fadeOut()
                         ) {
                             Column {
-                                IOSDivider(modifier = Modifier.padding(start = 16.dp))
-                                IOSSlidingSegmentedSetting(
+                                AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
+                                AppSegmentedPreference(
                                     title = "壁纸作用范围",
                                     subtitle = when (homeWallpaperEffectScope) {
                                         HomeWallpaperEffectScope.HOME_ONLY -> "仅首页使用该壁纸背景效果"
@@ -1680,8 +1680,8 @@ fun AppearanceSettingsContent(
                             }
                         }
 
-                        IOSDivider(modifier = Modifier.padding(start = 16.dp))
-	                        IOSSwitchItem(
+                        AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
+	                        AppSwitchPreference(
 	                            icon = rememberSettingsSemanticIcon(SettingsIconRole.HOME_UP_BADGES),
                             title = "UP主标识",
                             subtitle = if (homeUpBadgesVisible) {
@@ -1698,8 +1698,8 @@ fun AppearanceSettingsContent(
                             iconTint = com.android.purebilibili.core.theme.iOSBlue
                         )
 
-                        IOSDivider(modifier = Modifier.padding(start = 16.dp))
-	                        IOSSwitchItem(
+                        AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
+	                        AppSwitchPreference(
 	                            icon = rememberSettingsSemanticIcon(SettingsIconRole.ONLINE_COUNT),
                             title = "卡片与视频页观看人数",
                             subtitle = if (showOnlineCount) {
@@ -1723,7 +1723,7 @@ fun AppearanceSettingsContent(
                             exit = androidx.compose.animation.shrinkVertically() + androidx.compose.animation.fadeOut()
                         ) {
                             Column {
-                                IOSDivider(modifier = Modifier.padding(start = 16.dp))
+                                AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
                                 Column(modifier = Modifier.padding(16.dp)) {
                                     Row(
                                         verticalAlignment = Alignment.CenterVertically,
@@ -1797,7 +1797,7 @@ fun AppearanceSettingsContent(
                                     }
 
                                     Spacer(modifier = Modifier.height(16.dp))
-                                    IOSSlidingSegmentedSetting(
+                                    AppSegmentedPreference(
                                         title = "推荐流卡片宽度：${state.homeFeedCardWidthPreset.label}",
                                         subtitle = if (state.gridColumnCount > 0) {
                                             "当前固定 ${state.gridColumnCount} 列优先生效，自动列数时使用该宽度"
@@ -1895,7 +1895,7 @@ private fun ThemeRoleOverrideEditor(
             targets = ThemeRoleColorTarget.entries.take(4),
             onColorClick = onColorClick
         )
-        IOSDivider()
+        AppPreferenceDivider()
         ThemeRoleModeEditor(
             title = "深色模式",
             roles = overrides.dark,
@@ -1949,7 +1949,7 @@ internal fun ThemeRoleModeEditor(
             }
         }
         targets.forEachIndexed { index, target ->
-            IOSClickableItem(
+            AppPreference(
                 icon = rememberSettingsSemanticIcon(SettingsIconRole.DYNAMIC_COLOR),
                 title = target.label,
                 subtitle = colors[index],
@@ -2093,7 +2093,7 @@ private fun Md3CustomColorPickerDialog(
                     )
                 }
 
-                IOSAdaptiveTextField(
+                AppTextField(
                     value = pendingHex,
                     onValueChange = { pendingHex = it.uppercase().take(9) },
                     label = "HEX",

@@ -6,15 +6,18 @@
 
 更新日期：2026-07-28。按“审查 + 阶段 0～5”等权计算：
 
-`[██████░░░░░░░░░░░░░░] 29%`
+`[█████████░░░░░░░░░░░] 43%`
 
 | 工作项 | 状态 | 已落地内容 |
 |---|---:|---|
 | 审查与路线 | 100% | 架构、清单、阶段、风险与复跑命令已记录 |
 | 阶段 0：契约与兼容层 | 100% | `UiStyle`、`ui_style_v1`、新旧三键双写、导入导出兼容、Theme bridge、冲突诊断与矩阵测试 |
-| 阶段 1～5 | 0% | 尚未开始迁移 feature 调用 |
+| 阶段 1：设置列表试点 | 100% | 中性 `App*` preference/dialog/segmented 入口；设置试点迁移；旧 Local 与 IOS* 调用棘轮达标 |
+| 阶段 2～5 | 0% | 等待后续按首页/导航、普通 feature、播放器/插件、清理边界顺序推进 |
 
 阶段 0 保持渲染行为不变：`LocalUiStyle` 与旧两个 Local 同时提供，旧设置入口继续可用；合法新键优先，缺失或非法新键回退旧两键。iOS 写入保留隐藏的 Android native variant，设置分享同时携带新键和旧两键。兼容层新增 2 个引用旧类型的 core 文件，因此全生产计数为 103；受阶段棘轮约束的 feature/直接 Local/IOS* caller 仍为 **69/47/42**，符合阶段 0“不新增、暂不要求下降”的边界。
+
+阶段 1 不重写 renderer：`AppPreference`、`AppSwitchPreference`、`AppSliderPreference`、`AppSegmentedControl` 及配套 group/divider/text-field/dialog 入口继续委托已验证的自适应实现。`SettingsSections`、Appearance、Playback、Plugins 等 14 个设置文件已迁到中性入口；8 个设置实现改读单一 `LocalUiStyle`，旧 renderer 参数通过 core 兼容桥集中映射。阶段棘轮由 **69/47/42** 降至 **61/39/28**，分别达到 `<=61`、`<=39`、`<=28`；新增 API 委托契约测试与三风格 renderer bridge 矩阵，Kotlin 编译及相关设置窄测通过。
 
 ## 执行摘要
 
@@ -204,9 +207,9 @@ flowchart LR
 |---|---:|---|
 | 生产 Kotlin | 开工 1058；并发改动后 1057 | `(rg --files app/src/main/java -g '*.kt').Count`；变化来自范围外文件被删除 |
 | 风格引用生产文件 | 101 | core 与 feature 都含分发逻辑 |
-| 风格引用 feature | 69 | 页面/局部 policy 仍知道两级模型 |
-| 直接读取两个 Local 的 feature | 47 | 最应优先清零的耦合 |
-| 调用内部换肤 IOS* 的 feature | 42（旧报告口径 21） | 中性能力已有，名字和边界未收拢 |
+| 风格引用 feature | 阶段 1 后 61（基线 69） | 设置试点已切到单一 `UiStyle`，其余页面/局部 policy 仍待迁移 |
+| 直接读取两个 Local 的 feature | 阶段 1 后 39（基线 47） | 8 个设置实现已改读 `LocalUiStyle` |
+| 调用内部换肤 IOS* 的 feature | 阶段 1 后 28（基线 42；旧报告口径 21） | 14 个设置文件已切到中性 App* 门面 |
 | 调用统一 renderer 的生产文件 | 9 | 7 个 core/ui、2 个 home feature，尚未成为唯一边界 |
 
 ### 四种情况必须分开处理

@@ -313,14 +313,14 @@ class SettingsRootCategoryContentStructureTest {
         assertTrue(settingsSections.contains("SettingsDetailGroup(title = \"显示与交互\")"))
         assertTrue(settingsSections.contains("SettingsDetailGroup(title = \"画质与播放\")"))
         assertTrue(settingsSections.contains("SettingsDetailGroup(title = \"隐私与安全\")"))
-        assertTrue(appearance.contains("IOSSectionTitle(\"显示模式\")"))
-        assertTrue(appearance.contains("IOSSectionTitle(\"字体与密度\")"))
-        assertTrue(appearance.contains("IOSSectionTitle(\"开屏与图标\")"))
-        assertTrue(playback.contains("IOSSectionTitle(\"小窗与后台\")"))
-        assertTrue(playback.contains("IOSSectionTitle(\"诊断\")"))
-        assertTrue(playback.indexOf("IOSSectionTitle(\"网络与画质\")") < playback.indexOf("IOSSectionTitle(\"互动与评论\")"))
-        assertTrue(animation.contains("IOSSectionTitle(\"玻璃效果\")"))
-        assertTrue(animation.contains("IOSSectionTitle(\"底栏入口\")"))
+        assertTrue(appearance.contains("AppPreferenceSectionTitle(\"显示模式\")"))
+        assertTrue(appearance.contains("AppPreferenceSectionTitle(\"字体与密度\")"))
+        assertTrue(appearance.contains("AppPreferenceSectionTitle(\"开屏与图标\")"))
+        assertTrue(playback.contains("AppPreferenceSectionTitle(\"小窗与后台\")"))
+        assertTrue(playback.contains("AppPreferenceSectionTitle(\"诊断\")"))
+        assertTrue(playback.indexOf("AppPreferenceSectionTitle(\"网络与画质\")") < playback.indexOf("AppPreferenceSectionTitle(\"互动与评论\")"))
+        assertTrue(animation.contains("AppPreferenceSectionTitle(\"玻璃效果\")"))
+        assertTrue(animation.contains("AppPreferenceSectionTitle(\"底栏入口\")"))
     }
 
     @Test

@@ -6,8 +6,8 @@ import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.LocalUiStyle
+import com.android.purebilibili.core.theme.UiStyle
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.outlined.*
 
@@ -133,9 +133,9 @@ internal enum class SettingsIconRole {
 @Composable
 internal fun rememberSettingsSemanticIcon(
     role: SettingsIconRole,
-    uiPreset: UiPreset = LocalUiPreset.current
-): ImageVector = remember(role, uiPreset) {
-    resolveSettingsSemanticIcon(role, uiPreset)
+    uiStyle: UiStyle = LocalUiStyle.current
+): ImageVector = remember(role, uiStyle) {
+    resolveSettingsSemanticIcon(role, uiStyle)
 }
 
 internal fun resolveSettingsSearchTargetIconRole(
@@ -179,8 +179,8 @@ internal fun resolveSettingsSearchTargetIconRole(
 
 internal fun resolveSettingsSemanticIcon(
     role: SettingsIconRole,
-    uiPreset: UiPreset = UiPreset.IOS
-): ImageVector = if (uiPreset == UiPreset.MD3) {
+    uiStyle: UiStyle = UiStyle.IOS
+): ImageVector = if (uiStyle != UiStyle.IOS) {
     resolveMd3SettingsSemanticIcon(role)
 } else {
     resolveIosSettingsSemanticIcon(role)

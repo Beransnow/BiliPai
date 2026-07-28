@@ -36,17 +36,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.R
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalCornerRadiusScale
-import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.LocalUiStyle
+import com.android.purebilibili.core.theme.UiStyle
+import com.android.purebilibili.core.theme.toRendererStyleBridge
 import com.android.purebilibili.core.theme.iOSCornerRadius
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.core.ui.rememberAppSettingsIcon
-import com.android.purebilibili.core.ui.components.IOSClickableItem
-import com.android.purebilibili.core.ui.components.IOSDivider
-import com.android.purebilibili.core.ui.components.IOSGroup
+import com.android.purebilibili.core.ui.components.AppPreference
+import com.android.purebilibili.core.ui.components.AppPreferenceDivider
+import com.android.purebilibili.core.ui.components.AppPreferenceGroup
 import com.android.purebilibili.core.ui.components.resolveAdaptiveListComponentVisualSpec
 import com.android.purebilibili.core.ui.components.resolveAdaptiveSearchBarContainerColor
 import com.android.purebilibili.core.ui.components.shouldUseNativeMiuixSearchBar
@@ -61,23 +61,23 @@ internal fun SettingsSearchBarSection(
     query: String,
     onQueryChange: (String) -> Unit,
 ) {
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
+    val uiStyle = LocalUiStyle.current
+    val rendererStyle = remember(uiStyle) { uiStyle.toRendererStyleBridge() }
     val colorScheme = MaterialTheme.colorScheme
     val visualSpec = resolveAdaptiveListComponentVisualSpec(
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant,
+        uiPreset = rendererStyle.preset,
+        androidNativeVariant = rendererStyle.variant,
     )
     val placeholder = stringResource(R.string.settings_search_placeholder)
     val clearLabel = stringResource(R.string.common_clear)
     val containerColor = resolveAdaptiveSearchBarContainerColor(
-        uiPreset = uiPreset,
+        uiPreset = rendererStyle.preset,
         colorScheme = colorScheme,
         fallbackColor = colorScheme.surfaceVariant.copy(alpha = 0.5f),
-        androidNativeVariant = androidNativeVariant,
+        androidNativeVariant = rendererStyle.variant,
         globalWallpaperVisible = LocalGlobalWallpaperBackdropVisible.current,
     )
-    val cornerRadius = if (uiPreset == UiPreset.MD3) {
+    val cornerRadius = if (uiStyle != UiStyle.IOS) {
         visualSpec.searchBarCornerRadiusDp.dp
     } else {
         iOSCornerRadius.Small * LocalCornerRadiusScale.current
@@ -94,7 +94,7 @@ internal fun SettingsSearchBarSection(
         runCatching { focusRequester.requestFocus() }
     }
 
-    if (shouldUseNativeMiuixSearchBar(uiPreset, androidNativeVariant)) {
+    if (shouldUseNativeMiuixSearchBar(rendererStyle.preset, rendererStyle.variant)) {
         InputField(
             query = query,
             onQueryChange = onQueryChange,
@@ -107,7 +107,7 @@ internal fun SettingsSearchBarSection(
         return
     }
 
-    if (uiPreset == UiPreset.MD3) {
+    if (uiStyle != UiStyle.IOS) {
         OutlinedTextField(
             value = query,
             onValueChange = onQueryChange,
@@ -218,23 +218,23 @@ internal fun SettingsHomeSearchEntry(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
+    val uiStyle = LocalUiStyle.current
+    val rendererStyle = remember(uiStyle) { uiStyle.toRendererStyleBridge() }
     val colorScheme = MaterialTheme.colorScheme
     val visualSpec = resolveSettingsVisualSpec()
     val listVisualSpec = resolveAdaptiveListComponentVisualSpec(
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant,
+        uiPreset = rendererStyle.preset,
+        androidNativeVariant = rendererStyle.variant,
     )
     val containerColor = resolveAdaptiveSearchBarContainerColor(
-        uiPreset = uiPreset,
+        uiPreset = rendererStyle.preset,
         colorScheme = colorScheme,
         fallbackColor = colorScheme.surfaceVariant.copy(alpha = 0.5f),
-        androidNativeVariant = androidNativeVariant,
+        androidNativeVariant = rendererStyle.variant,
         globalWallpaperVisible = LocalGlobalWallpaperBackdropVisible.current,
     )
     val placeholder = stringResource(R.string.settings_search_placeholder)
-    val cornerRadius = if (uiPreset == UiPreset.MD3) {
+    val cornerRadius = if (uiStyle != UiStyle.IOS) {
         listVisualSpec.searchBarCornerRadiusDp.dp
     } else {
         iOSCornerRadius.Small * LocalCornerRadiusScale.current
@@ -255,7 +255,7 @@ internal fun SettingsHomeSearchEntry(
             .padding(horizontal = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (uiPreset == UiPreset.MD3) {
+        if (uiStyle != UiStyle.IOS) {
             Icon(
                 imageVector = Icons.Default.Search,
                 contentDescription = null,
@@ -284,16 +284,16 @@ internal fun SettingsSearchResultsSection(
     results: List<SettingsSearchResult>,
     onResultClick: (SettingsSearchResult) -> Unit,
 ) {
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
+    val uiStyle = LocalUiStyle.current
+    val rendererStyle = remember(uiStyle) { uiStyle.toRendererStyleBridge() }
     val visualSpec = resolveAdaptiveListComponentVisualSpec(
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant,
+        uiPreset = rendererStyle.preset,
+        androidNativeVariant = rendererStyle.variant,
     )
     SettingsCategoryHeader(stringResource(R.string.settings_search_results_title))
-    IOSGroup {
+    AppPreferenceGroup {
         if (results.isEmpty()) {
-            IOSClickableItem(
+            AppPreference(
                 icon = rememberAppSettingsIcon(),
                 title = stringResource(R.string.settings_search_empty_title),
                 subtitle = stringResource(R.string.settings_search_empty_subtitle),
@@ -303,8 +303,8 @@ internal fun SettingsSearchResultsSection(
             )
         } else {
             results.forEachIndexed { index, result ->
-                val visual = rememberSettingsEntryVisual(result.target, uiPreset)
-                IOSClickableItem(
+                val visual = rememberSettingsEntryVisual(result.target, uiStyle)
+                AppPreference(
                     icon = visual.icon,
                     iconPainter = visual.iconResId?.let { painterResource(id = it) },
                     title = result.title,
@@ -314,7 +314,7 @@ internal fun SettingsSearchResultsSection(
                     iconTint = visual.iconTint,
                 )
                 if (index != results.lastIndex) {
-                    IOSDivider(startIndent = visualSpec.dividerStartIndentDp.dp)
+                    AppPreferenceDivider(startIndent = visualSpec.dividerStartIndentDp.dp)
                 }
             }
         }

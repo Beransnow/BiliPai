@@ -111,7 +111,7 @@ class SettingsMiuixSimplificationStructureTest {
         }
 
         lines.forEachIndexed { index, line ->
-            if (line.contains("IOSGroup")) {
+            if (line.contains("AppPreferenceGroup")) {
                 inGroup = true
                 groupStartLine = index + 1
                 braceDepth = 0

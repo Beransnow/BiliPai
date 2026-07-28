@@ -8,7 +8,7 @@ import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.ui.graphics.Color
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.UiStyle
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.outlined.DocOnDoc
 import io.github.alexzhirkevich.cupertino.icons.outlined.Gift
@@ -78,7 +78,7 @@ class SettingsEntryVisualPolicyTest {
             Icons.Outlined.Home,
             resolveSettingsEntryVisual(
                 SettingsSearchTarget.HOME_FEED,
-                UiPreset.MD3,
+                UiStyle.MATERIAL3,
                 md3Palette
             ).icon
         )
@@ -86,7 +86,7 @@ class SettingsEntryVisualPolicyTest {
             Icons.Outlined.ChatBubbleOutline,
             resolveSettingsEntryVisual(
                 SettingsSearchTarget.INTERACTION_COMMENT,
-                UiPreset.MD3,
+                UiStyle.MATERIAL3,
                 md3Palette
             ).icon
         )
@@ -94,7 +94,7 @@ class SettingsEntryVisualPolicyTest {
             Icons.Outlined.Terminal,
             resolveSettingsEntryVisual(
                 SettingsSearchTarget.DIAGNOSTICS,
-                UiPreset.MD3,
+                UiStyle.MATERIAL3,
                 md3Palette
             ).icon
         )
@@ -102,7 +102,7 @@ class SettingsEntryVisualPolicyTest {
             Icons.Outlined.Palette,
             resolveSettingsEntryVisual(
                 SettingsSearchTarget.APPEARANCE,
-                UiPreset.MD3,
+                UiStyle.MATERIAL3,
                 md3Palette
             ).icon
         )
@@ -110,7 +110,7 @@ class SettingsEntryVisualPolicyTest {
             Icons.Outlined.Security,
             resolveSettingsEntryVisual(
                 SettingsSearchTarget.PERMISSION,
-                UiPreset.MD3,
+                UiStyle.MATERIAL3,
                 md3Palette
             ).icon
         )
@@ -118,7 +118,7 @@ class SettingsEntryVisualPolicyTest {
             Icons.Outlined.TouchApp,
             resolveSettingsEntryVisual(
                 SettingsSearchTarget.FULLSCREEN_GESTURE,
-                UiPreset.MD3,
+                UiStyle.MATERIAL3,
                 md3Palette
             ).icon
         )
@@ -132,7 +132,7 @@ class SettingsEntryVisualPolicyTest {
         )
         assertEquals(
             Icons.Outlined.TouchApp,
-            resolveSettingsEntryVisual(SettingsSearchTarget.FULLSCREEN_GESTURE, UiPreset.MD3).icon
+            resolveSettingsEntryVisual(SettingsSearchTarget.FULLSCREEN_GESTURE, UiStyle.MATERIAL3).icon
         )
     }
 
@@ -142,7 +142,7 @@ class SettingsEntryVisualPolicyTest {
             md3Palette.tertiary,
             resolveSettingsEntryVisual(
                 SettingsSearchTarget.APPEARANCE,
-                UiPreset.MD3,
+                UiStyle.MATERIAL3,
                 md3Palette
             ).iconTint
         )
@@ -150,7 +150,7 @@ class SettingsEntryVisualPolicyTest {
             md3Palette.secondary,
             resolveSettingsEntryVisual(
                 SettingsSearchTarget.PERMISSION,
-                UiPreset.MD3,
+                UiStyle.MATERIAL3,
                 md3Palette
             ).iconTint
         )
@@ -158,7 +158,7 @@ class SettingsEntryVisualPolicyTest {
             md3Palette.primary,
             resolveSettingsEntryVisual(
                 SettingsSearchTarget.TELEGRAM,
-                UiPreset.MD3,
+                UiStyle.MATERIAL3,
                 md3Palette
             ).iconTint
         )
@@ -166,7 +166,7 @@ class SettingsEntryVisualPolicyTest {
             md3Palette.primary,
             resolveSettingsEntryVisual(
                 SettingsSearchTarget.CLEAR_CACHE,
-                UiPreset.MD3,
+                UiStyle.MATERIAL3,
                 md3Palette
             ).iconTint
         )
@@ -188,7 +188,7 @@ class SettingsEntryVisualPolicyTest {
             staticPalette.primary,
             resolveSettingsEntryVisual(
                 SettingsSearchTarget.APPEARANCE,
-                UiPreset.MD3,
+                UiStyle.MATERIAL3,
                 staticPalette
             ).iconTint
         )
@@ -196,7 +196,7 @@ class SettingsEntryVisualPolicyTest {
             staticPalette.primary,
             resolveSettingsEntryVisual(
                 SettingsSearchTarget.PERMISSION,
-                UiPreset.MD3,
+                UiStyle.MATERIAL3,
                 staticPalette
             ).iconTint
         )
@@ -204,7 +204,7 @@ class SettingsEntryVisualPolicyTest {
             staticPalette.primary,
             resolveSettingsEntryVisual(
                 SettingsSearchTarget.CLEAR_CACHE,
-                UiPreset.MD3,
+                UiStyle.MATERIAL3,
                 staticPalette
             ).iconTint
         )

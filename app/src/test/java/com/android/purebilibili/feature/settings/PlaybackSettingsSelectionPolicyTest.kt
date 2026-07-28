@@ -3,7 +3,7 @@ package com.android.purebilibili.feature.settings
 import com.android.purebilibili.core.store.FullscreenAspectRatio
 import com.android.purebilibili.core.store.FullscreenMode
 import com.android.purebilibili.core.store.PortraitPlayerCollapseMode
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.UiStyle
 import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -23,8 +23,8 @@ class PlaybackSettingsSelectionPolicyTest {
         val contentBlock = source
             .substringAfter("fun PlaybackSettingsContent(")
             .substringBefore("private fun PlaybackInteractionSettingsSection(")
-        assertTrue(contentBlock.contains("IOSSectionTitle(\"互动与评论\")"))
-        assertTrue(contentBlock.contains("IOSSectionTitle(\"全屏与手势\")"))
+        assertTrue(contentBlock.contains("AppPreferenceSectionTitle(\"互动与评论\")"))
+        assertTrue(contentBlock.contains("AppPreferenceSectionTitle(\"全屏与手势\")"))
         assertTrue(contentBlock.contains("PlaybackInteractionSettingsSection("))
         assertTrue(contentBlock.contains("PlaybackFullscreenGestureSettingsSection("))
     }
@@ -162,21 +162,21 @@ class PlaybackSettingsSelectionPolicyTest {
         assertEquals(
             IosSlidingSegmentedControlChrome.MD3_SEGMENTED,
             resolveIosSlidingSegmentedControlChrome(
-                uiPreset = UiPreset.MD3,
+                uiStyle = UiStyle.MATERIAL3,
                 androidNativeLiquidGlassEnabled = false
             )
         )
         assertEquals(
             IosSlidingSegmentedControlChrome.LIQUID_INDICATOR,
             resolveIosSlidingSegmentedControlChrome(
-                uiPreset = UiPreset.MD3,
+                uiStyle = UiStyle.MATERIAL3,
                 androidNativeLiquidGlassEnabled = true
             )
         )
         assertEquals(
             IosSlidingSegmentedControlChrome.LIQUID_INDICATOR,
             resolveIosSlidingSegmentedControlChrome(
-                uiPreset = UiPreset.IOS,
+                uiStyle = UiStyle.IOS,
                 androidNativeLiquidGlassEnabled = false
             )
         )

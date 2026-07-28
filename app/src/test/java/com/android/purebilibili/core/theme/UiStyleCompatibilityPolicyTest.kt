@@ -60,4 +60,20 @@ class UiStyleCompatibilityPolicyTest {
             )
         }
     }
+
+    @Test
+    fun rendererBridge_coversAllThreeEffectiveStyles() {
+        assertEquals(
+            RendererStyleBridge(UiPreset.IOS, AndroidNativeVariant.MATERIAL3),
+            UiStyle.IOS.toRendererStyleBridge(),
+        )
+        assertEquals(
+            RendererStyleBridge(UiPreset.MD3, AndroidNativeVariant.MATERIAL3),
+            UiStyle.MATERIAL3.toRendererStyleBridge(),
+        )
+        assertEquals(
+            RendererStyleBridge(UiPreset.MD3, AndroidNativeVariant.MIUIX),
+            UiStyle.MIUIX.toRendererStyleBridge(),
+        )
+    }
 }

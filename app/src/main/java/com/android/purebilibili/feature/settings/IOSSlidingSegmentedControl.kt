@@ -27,10 +27,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.SettingsManager
-import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.AndroidNativeVariant
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.LocalUiStyle
+import com.android.purebilibili.core.theme.UiStyle
+import com.android.purebilibili.core.theme.toRendererStyleBridge
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
@@ -99,10 +98,10 @@ internal data class IosSlidingSegmentedControlRenderPolicy(
 )
 
 internal fun resolveIosSlidingSegmentedControlChrome(
-    uiPreset: UiPreset,
+    uiStyle: UiStyle,
     androidNativeLiquidGlassEnabled: Boolean
 ): IosSlidingSegmentedControlChrome {
-    return if (uiPreset == UiPreset.MD3 && !androidNativeLiquidGlassEnabled) {
+    return if (uiStyle != UiStyle.IOS && !androidNativeLiquidGlassEnabled) {
         IosSlidingSegmentedControlChrome.MD3_SEGMENTED
     } else {
         IosSlidingSegmentedControlChrome.LIQUID_INDICATOR
@@ -114,7 +113,8 @@ internal fun resolveIosSlidingSegmentedControlRenderPolicy(
     hasExternalBackdrop: Boolean,
     longestLabelLength: Int = 0,
 ): IosSlidingSegmentedControlRenderPolicy {
-    val compactChrome = resolveCompactCapsuleChromeSpec(UiPreset.IOS, AndroidNativeVariant.MATERIAL3)
+    val rendererStyle = UiStyle.IOS.toRendererStyleBridge()
+    val compactChrome = resolveCompactCapsuleChromeSpec(rendererStyle.preset, rendererStyle.variant)
     return IosSlidingSegmentedControlRenderPolicy(
         itemWidthDp = if (itemCount >= 4) 56 else 66,
         heightDp = compactChrome.primaryHeightDp,
@@ -136,7 +136,7 @@ internal fun resolveIosSlidingSegmentedLiquidGlassRequest(
 }
 
 internal fun resolveMd3SegmentedControlColorTokens(
-    androidNativeVariant: AndroidNativeVariant,
+    uiStyle: UiStyle,
     materialPrimaryContainer: Color,
     materialOnPrimaryContainer: Color,
     materialSurfaceContainerHigh: Color,
@@ -146,7 +146,7 @@ internal fun resolveMd3SegmentedControlColorTokens(
     miuixSurfaceContainerHigh: Color,
     miuixOnSurfaceVariantSummary: Color
 ): Md3SegmentedControlColorTokens {
-    return if (androidNativeVariant == AndroidNativeVariant.MATERIAL3) {
+    return if (uiStyle == UiStyle.MATERIAL3) {
         Md3SegmentedControlColorTokens(
             outerContainerColor = materialSurfaceContainerHigh,
             activeContainerColor = materialPrimaryContainer,
@@ -173,7 +173,7 @@ internal fun <T> IOSSlidingSegmentedSetting(
     enabled: Boolean = true,
     onSelectionChange: (T) -> Unit
 ) {
-    val uiPreset = LocalUiPreset.current
+    val uiStyle = LocalUiStyle.current
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -182,7 +182,7 @@ internal fun <T> IOSSlidingSegmentedSetting(
     ) {
         Text(
             text = title,
-            style = if (uiPreset == UiPreset.MD3) {
+            style = if (uiStyle != UiStyle.IOS) {
                 MaterialTheme.typography.titleMedium
             } else {
                 MaterialTheme.typography.bodyLarge
@@ -205,6 +205,26 @@ internal fun <T> IOSSlidingSegmentedSetting(
     }
 }
 
+/** Style-neutral settings preference entry point backed by the existing adaptive renderer. */
+@Composable
+internal fun <T> AppSegmentedPreference(
+    title: String,
+    options: List<PlaybackSegmentOption<T>>,
+    selectedValue: T,
+    modifier: Modifier = Modifier,
+    subtitle: String? = null,
+    enabled: Boolean = true,
+    onSelectionChange: (T) -> Unit,
+) = IOSSlidingSegmentedSetting(
+    title = title,
+    options = options,
+    selectedValue = selectedValue,
+    modifier = modifier,
+    subtitle = subtitle,
+    enabled = enabled,
+    onSelectionChange = onSelectionChange,
+)
+
 @Composable
 internal fun <T> IOSSlidingSegmentedControl(
     options: List<PlaybackSegmentOption<T>>,
@@ -222,16 +242,16 @@ internal fun <T> IOSSlidingSegmentedControl(
     onSelectionChange: (T) -> Unit
 ) {
     if (options.isEmpty()) return
-    val uiPreset = LocalUiPreset.current
+    val uiStyle = LocalUiStyle.current
     val context = LocalContext.current
     val homeSettings by SettingsManager
         .getHomeSettings(context)
         .collectAsStateWithLifecycle(initialValue = HomeSettings())
     val effectiveAndroidNativeLiquidGlassEnabled =
         forceLiquidIndicator || homeSettings.androidNativeLiquidGlassEnabled
-    val chrome = remember(uiPreset, effectiveAndroidNativeLiquidGlassEnabled) {
+    val chrome = remember(uiStyle, effectiveAndroidNativeLiquidGlassEnabled) {
         resolveIosSlidingSegmentedControlChrome(
-            uiPreset = uiPreset,
+            uiStyle = uiStyle,
             androidNativeLiquidGlassEnabled = effectiveAndroidNativeLiquidGlassEnabled
         )
     }
@@ -262,6 +282,38 @@ internal fun <T> IOSSlidingSegmentedControl(
     )
 }
 
+/** Style-neutral segmented control entry point backed by the existing adaptive renderer. */
+@Composable
+internal fun <T> AppSegmentedControl(
+    options: List<PlaybackSegmentOption<T>>,
+    selectedValue: T,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    forceLiquidIndicator: Boolean = false,
+    height: Dp = BOTTOM_BAR_LIQUID_SEGMENTED_CONTROL_HEIGHT_DP.dp,
+    indicatorHeight: Dp = BOTTOM_BAR_LIQUID_SEGMENTED_CONTROL_INDICATOR_HEIGHT_DP.dp,
+    labelFontSize: TextUnit = 14.sp,
+    backdrop: Backdrop? = null,
+    tapPressRefractionEnabled: Boolean = true,
+    containerColorOverride: Color? = null,
+    indicatorIdleSurfaceColorOverride: Color? = null,
+    onSelectionChange: (T) -> Unit,
+) = IOSSlidingSegmentedControl(
+    options = options,
+    selectedValue = selectedValue,
+    modifier = modifier,
+    enabled = enabled,
+    forceLiquidIndicator = forceLiquidIndicator,
+    height = height,
+    indicatorHeight = indicatorHeight,
+    labelFontSize = labelFontSize,
+    backdrop = backdrop,
+    tapPressRefractionEnabled = tapPressRefractionEnabled,
+    containerColorOverride = containerColorOverride,
+    indicatorIdleSurfaceColorOverride = indicatorIdleSurfaceColorOverride,
+    onSelectionChange = onSelectionChange,
+)
+
 @Composable
 private fun <T> Md3SegmentedControl(
     options: List<PlaybackSegmentOption<T>>,
@@ -270,10 +322,11 @@ private fun <T> Md3SegmentedControl(
     enabled: Boolean = true,
     onSelectionChange: (T) -> Unit
 ) {
-    val androidNativeVariant = LocalAndroidNativeVariant.current
+    val uiStyle = LocalUiStyle.current
+    val rendererStyle = remember(uiStyle) { uiStyle.toRendererStyleBridge() }
     val materialColorScheme = MaterialTheme.colorScheme
     val colorTokens = resolveMd3SegmentedControlColorTokens(
-        androidNativeVariant = androidNativeVariant,
+        uiStyle = uiStyle,
         materialPrimaryContainer = materialColorScheme.primaryContainer,
         materialOnPrimaryContainer = materialColorScheme.onPrimaryContainer,
         materialSurfaceContainerHigh = materialColorScheme.surfaceContainerHigh,
@@ -283,13 +336,12 @@ private fun <T> Md3SegmentedControl(
         miuixSurfaceContainerHigh = AppSurfaceTokens.surfaceContainerHigh(),
         miuixOnSurfaceVariantSummary = AppSurfaceTokens.onSurfaceVariantSummary()
     )
-    val uiPreset = LocalUiPreset.current
     val pillCornerRadius = AppShapes.resolveContainerCornerDp(
         level = ContainerLevel.Pill,
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant
+        uiPreset = rendererStyle.preset,
+        androidNativeVariant = rendererStyle.variant
     )
-    when (resolveMd3SegmentedControlRenderer(androidNativeVariant)) {
+    when (resolveMd3SegmentedControlRenderer(rendererStyle.variant)) {
         Md3SegmentedControlRenderer.MIUIX_TAB_ROW -> {
             MiuixTabRowSegmentedControl(
                 options = options,

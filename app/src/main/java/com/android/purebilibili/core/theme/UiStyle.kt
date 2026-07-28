@@ -23,6 +23,21 @@ data class LegacyUiStylePreferences(
     val androidNativeVariant: AndroidNativeVariant,
 )
 
+/**
+ * Temporary bridge for adaptive renderers that still accept the legacy two-part style model.
+ * Feature code may pass this through, but style selection remains centralized here.
+ */
+data class RendererStyleBridge(
+    val preset: UiPreset,
+    val variant: AndroidNativeVariant,
+)
+
+fun UiStyle.toRendererStyleBridge(): RendererStyleBridge = when (this) {
+    UiStyle.IOS -> RendererStyleBridge(UiPreset.IOS, AndroidNativeVariant.MATERIAL3)
+    UiStyle.MATERIAL3 -> RendererStyleBridge(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
+    UiStyle.MIUIX -> RendererStyleBridge(UiPreset.MD3, AndroidNativeVariant.MIUIX)
+}
+
 fun resolveUiStyle(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant,

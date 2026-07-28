@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,9 +29,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.R
-import com.android.purebilibili.core.theme.LocalUiPreset
+import com.android.purebilibili.core.theme.LocalUiStyle
 import com.android.purebilibili.core.ui.AdaptiveSplitLayout
+import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.feature.settings.SettingsHomeSearchEntry
 import com.android.purebilibili.feature.settings.SettingsRootCategory
@@ -55,7 +56,7 @@ fun SettingsTabletShell(
         resolveSettingsTabletLayoutPolicy(widthDp = configuration.screenWidthDp)
     }
     val categories = remember { resolveSettingsRootCategoryOrder() }
-    val uiPreset = LocalUiPreset.current
+    val uiStyle = LocalUiStyle.current
 
     AdaptiveSplitLayout(
         modifier = modifier.fillMaxSize(),
@@ -91,7 +92,7 @@ fun SettingsTabletShell(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     items(categories) { category ->
-                        val visual = rememberSettingsEntryVisual(category.searchTarget, uiPreset)
+                        val visual = rememberSettingsEntryVisual(category.searchTarget, uiStyle)
                         val selected = selectedCategory == category
                         NavigationDrawerItem(
                             label = {
@@ -111,7 +112,7 @@ fun SettingsTabletShell(
                                 Box(
                                     modifier = Modifier
                                         .size(resolveSettingsVisualSpec().categoryIconBubbleSize)
-                                        .clip(RoundedCornerShape(10.dp))
+                                        .clip(AppShapes.container(ContainerLevel.Field))
                                         .background(visual.iconTint.copy(alpha = 0.16f)),
                                     contentAlignment = Alignment.Center,
                                 ) {
