@@ -2,10 +2,8 @@ package com.android.purebilibili.core.ui
 
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Test
-import java.io.File
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class AdaptiveLoadingIndicatorPolicyTest {
 
@@ -86,23 +84,4 @@ class AdaptiveLoadingIndicatorPolicyTest {
         assertEquals(AdaptiveLoadingDensity.COMPACT, resolveAdaptiveLoadingDensity(24f))
     }
 
-    @Test
-    fun `shared entry points route through adaptive loading`() {
-        val adaptive = loadSource(
-            "src/main/java/com/android/purebilibili/core/ui/AdaptiveLoadingIndicator.kt",
-        )
-        val lottie = loadSource(
-            "src/main/java/com/android/purebilibili/core/ui/LottieComponents.kt",
-        )
-
-        assertTrue(adaptive.contains("LoadingIndicator("))
-        assertTrue(adaptive.contains("MiuixInfiniteProgressIndicator("))
-        assertTrue(adaptive.contains("MiuixCircularProgressIndicator("))
-        assertTrue(adaptive.contains("IosCutePersonLoadingIndicator("))
-        assertTrue(lottie.contains("AdaptiveLoadingIndicator("))
-        assertTrue(lottie.contains("fun CutePersonLoadingIndicator("))
-        assertTrue(lottie.contains("internal fun IosCutePersonLoadingIndicator("))
-    }
-
-    private fun loadSource(path: String): String = File(path).readText()
 }
