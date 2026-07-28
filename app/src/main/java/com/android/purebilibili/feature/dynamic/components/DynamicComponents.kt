@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.dynamic.components
 
+import com.android.purebilibili.core.ui.AppSpacingTokens
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -39,7 +41,7 @@ fun GlassCard(
     val resolvedBackground = backgroundColor ?: if (surfaceSpec.useMiuixTokens) {
         AppSurfaceTokens.surfaceContainer().copy(alpha = 0.92f)
     } else {
-        MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+        AppSurfaceTokens.surface().copy(alpha = 0.6f)
     }
     val resolvedBorderColor = borderColor ?: if (surfaceSpec.useMiuixTokens) {
         AppSurfaceTokens.divider().copy(alpha = surfaceSpec.borderAlpha)
@@ -49,7 +51,7 @@ fun GlassCard(
     val resolvedBorderWidth = borderWidth ?: if (surfaceSpec.useMiuixTokens) {
         surfaceSpec.borderWidthDp.dp
     } else {
-        0.5.dp
+        AppSpacingTokens.Micro / 4
     }
     Box(
         modifier = modifier

@@ -1139,10 +1139,10 @@ fun FullscreenPlayerOverlay(
             var localDisplayArea by remember(danmakuDisplayArea) { mutableFloatStateOf(danmakuDisplayArea) }
             var localMergeDuplicates by remember(danmakuMergeDuplicates) { mutableStateOf(danmakuMergeDuplicates) }
             var localDuplicateMergeWindowMs by remember(danmakuDuplicateMergeWindowMs) {
-                mutableStateOf(danmakuDuplicateMergeWindowMs)
+                mutableIntStateOf(danmakuDuplicateMergeWindowMs)
             }
             var localDuplicateMergeCountThreshold by remember(danmakuDuplicateMergeCountThreshold) {
-                mutableStateOf(danmakuDuplicateMergeCountThreshold)
+                mutableIntStateOf(danmakuDuplicateMergeCountThreshold)
             }
             var localAllowScroll by remember(danmakuAllowScroll) { mutableStateOf(danmakuAllowScroll) }
             var localAllowTop by remember(danmakuAllowTop) { mutableStateOf(danmakuAllowTop) }

@@ -1306,10 +1306,10 @@ private fun VideoDetailDanmakuSettingsPanel(
     var localDisplayArea by remember(danmakuSettings.displayArea) { mutableFloatStateOf(danmakuSettings.displayArea) }
     var localMergeDuplicates by remember(danmakuSettings.mergeDuplicates) { mutableStateOf(danmakuSettings.mergeDuplicates) }
     var localDuplicateMergeWindowMs by remember(danmakuSettings.duplicateMergeWindowMs) {
-        mutableStateOf(danmakuSettings.duplicateMergeWindowMs)
+        mutableIntStateOf(danmakuSettings.duplicateMergeWindowMs)
     }
     var localDuplicateMergeCountThreshold by remember(danmakuSettings.duplicateMergeCountThreshold) {
-        mutableStateOf(danmakuSettings.duplicateMergeCountThreshold)
+        mutableIntStateOf(danmakuSettings.duplicateMergeCountThreshold)
     }
     var localAllowScroll by remember(danmakuSettings.allowScroll) { mutableStateOf(danmakuSettings.allowScroll) }
     var localAllowTop by remember(danmakuSettings.allowTop) { mutableStateOf(danmakuSettings.allowTop) }

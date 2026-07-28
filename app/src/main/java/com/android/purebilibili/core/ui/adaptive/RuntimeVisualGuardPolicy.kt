@@ -1,9 +1,12 @@
 package com.android.purebilibili.core.ui.adaptive
 
-private const val HIGH_JANK_THRESHOLD_PERCENT = 7.5f
-private const val RECOVER_JANK_THRESHOLD_PERCENT = 4.0f
-private const val DOWNGRADE_COOLDOWN_MS = 60_000L
+internal const val RUNTIME_VISUAL_GUARD_HIGH_JANK_THRESHOLD_PERCENT = 7.5f
+internal const val RUNTIME_VISUAL_GUARD_RECOVER_JANK_THRESHOLD_PERCENT = 4.0f
+internal const val RUNTIME_VISUAL_GUARD_DOWNGRADE_COOLDOWN_MS = 60_000L
 private const val REQUIRED_HIGH_JANK_WINDOWS = 2
+
+internal fun isRuntimeVisualGuardHighJankWindow(jankPercent: Float): Boolean =
+    jankPercent >= RUNTIME_VISUAL_GUARD_HIGH_JANK_THRESHOLD_PERCENT
 
 data class RuntimeVisualGuardDecision(
     val effectiveMotionTier: MotionTier,
@@ -30,7 +33,7 @@ fun resolveRuntimeVisualGuardDecision(
     }
 
     val shouldTriggerDowngrade =
-        rollingJankPercent >= HIGH_JANK_THRESHOLD_PERCENT &&
+        isRuntimeVisualGuardHighJankWindow(rollingJankPercent) &&
             consecutiveHighJankWindows >= REQUIRED_HIGH_JANK_WINDOWS
     if (shouldTriggerDowngrade) {
         return RuntimeVisualGuardDecision(
@@ -41,7 +44,8 @@ fun resolveRuntimeVisualGuardDecision(
         )
     }
 
-    val inCooldown = lastDowngradeAtMs != null && (nowMs - lastDowngradeAtMs) < DOWNGRADE_COOLDOWN_MS
+    val inCooldown = lastDowngradeAtMs != null &&
+        (nowMs - lastDowngradeAtMs) < RUNTIME_VISUAL_GUARD_DOWNGRADE_COOLDOWN_MS
     if (inCooldown) {
         return RuntimeVisualGuardDecision(
             effectiveMotionTier = MotionTier.Reduced,
@@ -52,7 +56,8 @@ fun resolveRuntimeVisualGuardDecision(
     }
 
     val shouldStayDowngraded =
-        lastDowngradeAtMs != null && rollingJankPercent > RECOVER_JANK_THRESHOLD_PERCENT
+        lastDowngradeAtMs != null &&
+            rollingJankPercent > RUNTIME_VISUAL_GUARD_RECOVER_JANK_THRESHOLD_PERCENT
     if (shouldStayDowngraded) {
         return RuntimeVisualGuardDecision(
             effectiveMotionTier = MotionTier.Reduced,

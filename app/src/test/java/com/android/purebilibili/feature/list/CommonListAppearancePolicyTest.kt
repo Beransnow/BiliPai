@@ -14,6 +14,21 @@ import kotlin.test.assertTrue
 class CommonListAppearancePolicyTest {
 
     @Test
+    fun commonListGridWidth_preservesPhoneDensityAndTabletReadability() {
+        assertEquals(170.dp, resolveCommonListGridMinColumnWidth(isExpandedScreen = false))
+        assertEquals(240.dp, resolveCommonListGridMinColumnWidth(isExpandedScreen = true))
+    }
+
+    @Test
+    fun favoritePreviewAndProgressBadgeWidths_areOwnedByLayoutPolicy() {
+        assertEquals(112.dp, resolveFavoriteSubscribedFolderPreviewWidth())
+        assertEquals(
+            FavoriteProgressBadgeWidthSpec(minWidth = 104.dp, maxWidth = 150.dp),
+            resolveFavoriteProgressBadgeWidthSpec(),
+        )
+    }
+
+    @Test
     fun md3FollowPreset_keepsHeaderBlurForCommonList() {
         val enabled = resolveCommonListHeaderBlurEnabled(
             homeSettings = HomeSettings(

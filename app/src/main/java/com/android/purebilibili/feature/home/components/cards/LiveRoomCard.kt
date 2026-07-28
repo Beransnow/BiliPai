@@ -1,4 +1,8 @@
 package com.android.purebilibili.feature.home.components.cards
+
+import com.android.purebilibili.core.ui.AppSpacingTokens
+
+import com.android.purebilibili.core.ui.MediaContrastPalette
 /**
  * Shared Element Transition Imports
  */
@@ -54,8 +58,8 @@ fun LiveRoomCard(
     
     // [新增] 获取圆角缩放比例
     val cornerRadiusScale = LocalCornerRadiusScale.current
-    val cardCornerRadius = iOSCornerRadius.Large * cornerRadiusScale  // 14.dp * scale
-    val tagCornerRadius = iOSCornerRadius.Tiny * cornerRadiusScale   // 4.dp * scale
+    val cardCornerRadius = iOSCornerRadius.Large * cornerRadiusScale  // AppSpacingTokens.Medium + AppSpacingTokens.Micro * scale
+    val tagCornerRadius = iOSCornerRadius.Tiny * cornerRadiusScale   // AppSpacingTokens.ExtraSmall * scale
     
     // Shared Element Transition Scopes
     val sharedTransitionScope = LocalSharedTransitionScope.current
@@ -83,7 +87,7 @@ fun LiveRoomCard(
             ) {
                 triggerCardClick()
             }
-            .padding(bottom = 6.dp)  //  减少间距
+            .padding(bottom = AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro)  //  减少间距
     ) {
         //  封面容器 - iOS 风格
         Box(
@@ -91,10 +95,10 @@ fun LiveRoomCard(
                 .fillMaxWidth()
                 .aspectRatio(16f / 10f)
                 .shadow(
-                    elevation = 2.dp,
+                    elevation = AppSpacingTokens.Micro,
                     shape = RoundedCornerShape(cardCornerRadius),
-                    ambientColor = Color.Black.copy(alpha = 0.08f),
-                    spotColor = Color.Black.copy(alpha = 0.12f),
+                    ambientColor = MediaContrastPalette.Scrim.copy(alpha = 0.08f),
+                    spotColor = MediaContrastPalette.Scrim.copy(alpha = 0.12f),
                     clip = true // [Optimization] Combine shadow and clip
                 )
                 .background(MaterialTheme.colorScheme.surfaceVariant)
@@ -125,13 +129,13 @@ fun LiveRoomCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(80.dp)
+                    .height(AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.DoubleExtraLarge)
                     .align(Alignment.BottomCenter)
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
                                 Color.Transparent,
-                                Color.Black.copy(alpha = 0.6f)
+                                MediaContrastPalette.Scrim.copy(alpha = 0.6f)
                             )
                         )
                     )
@@ -141,16 +145,16 @@ fun LiveRoomCard(
             Surface(
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .padding(8.dp),
+                    .padding(AppSpacingTokens.Small),
                 shape = RoundedCornerShape(tagCornerRadius),
                 color = MaterialTheme.colorScheme.error
             ) {
                 Text(
                     text = "直播中",
-                    color = Color.White,
-                    fontSize = 10.sp,
+                    color = MediaContrastPalette.Foreground,
+                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    modifier = Modifier.padding(horizontal = AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro, vertical = AppSpacingTokens.Micro)
                 )
             }
             
@@ -159,15 +163,15 @@ fun LiveRoomCard(
                 Surface(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(8.dp),
+                        .padding(AppSpacingTokens.Small),
                     shape = RoundedCornerShape(tagCornerRadius),
-                    color = Color.Black.copy(alpha = 0.5f)
+                    color = MediaContrastPalette.Scrim.copy(alpha = 0.5f)
                 ) {
                     Text(
                         text = room.areaName,
-                        color = Color.White,
-                        fontSize = 10.sp,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        color = MediaContrastPalette.Foreground,
+                        fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                        modifier = Modifier.padding(horizontal = AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro, vertical = AppSpacingTokens.Micro)
                     )
                 }
             }
@@ -176,24 +180,24 @@ fun LiveRoomCard(
             Row(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
-                    .padding(8.dp),
+                    .padding(AppSpacingTokens.Small),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = "👁",
-                    fontSize = 10.sp
+                    fontSize = MaterialTheme.typography.labelSmall.fontSize
                 )
-                Spacer(modifier = Modifier.width(4.dp))
+                Spacer(modifier = Modifier.width(AppSpacingTokens.ExtraSmall))
                 Text(
                     text = FormatUtils.formatStat(viewerCount.toLong()),
-                    color = Color.White.copy(0.95f),
-                    fontSize = 11.sp,
+                    color = MediaContrastPalette.Foreground.copy(0.95f),
+                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
                     fontWeight = FontWeight.Medium
                 )
             }
         }
         
-        Spacer(modifier = Modifier.height(6.dp))  //  减少间距
+        Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro))  //  减少间距
         
         // 标题
         Text(
@@ -202,17 +206,17 @@ fun LiveRoomCard(
             overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontWeight = FontWeight.Bold,
-                fontSize = 14.sp,
+                fontSize = MaterialTheme.typography.labelMedium.fontSize,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
             ),
-            modifier = Modifier.padding(horizontal = 4.dp)
+            modifier = Modifier.padding(horizontal = AppSpacingTokens.ExtraSmall)
         )
         
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall))
         
         // 主播信息
         Row(
-            modifier = Modifier.padding(horizontal = 4.dp),
+            modifier = Modifier.padding(horizontal = AppSpacingTokens.ExtraSmall),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 主播头像
@@ -226,17 +230,17 @@ fun LiveRoomCard(
                         .build(),
                     contentDescription = null,
                     modifier = Modifier
-                        .size(18.dp)
+                        .size(AppSpacingTokens.Large + AppSpacingTokens.Micro)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.surfaceVariant),
                     contentScale = ContentScale.Crop
                 )
-                Spacer(modifier = Modifier.width(5.dp))
+                Spacer(modifier = Modifier.width(AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro / 2))
             }
             
             Text(
                 text = room.uname,
-                fontSize = 12.sp,
+                fontSize = MaterialTheme.typography.labelSmall.fontSize,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis

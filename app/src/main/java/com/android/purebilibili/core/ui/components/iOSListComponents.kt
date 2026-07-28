@@ -42,6 +42,7 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
@@ -524,10 +525,14 @@ private fun IOSLiquidGlassSwitch(
         )
         Box(
             modifier = Modifier
-                .offset(
-                    x = thumbOffsetDp.dp - thumbPulseOverscan,
-                    y = layoutSpec.thumbOffsetYDp.dp
-                )
+                // lambda 版：thumbOffsetDp 是开关拨动时逐帧变化的动画值，
+                // 非 lambda 版会把它固化到布局阶段，每帧重新测量整个开关。
+                .offset {
+                    IntOffset(
+                        x = (thumbOffsetDp.dp - thumbPulseOverscan).roundToPx(),
+                        y = layoutSpec.thumbOffsetYDp.dp.roundToPx()
+                    )
+                }
                 .size(
                     width = layoutSpec.thumbWidthDp.dp + thumbPulseOverscan * 2,
                     height = layoutSpec.thumbHeightDp.dp

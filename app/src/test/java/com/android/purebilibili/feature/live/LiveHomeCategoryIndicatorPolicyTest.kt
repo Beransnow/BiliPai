@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.live
 
+import com.android.purebilibili.core.theme.AndroidNativeVariant
+import com.android.purebilibili.core.theme.UiPreset
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -36,27 +38,49 @@ class LiveHomeCategoryIndicatorPolicyTest {
     }
 
     @Test
-    fun `live home category control fits four visible items with matching indicator width`() {
-        val spec = resolveLiveHomeCategorySegmentedControlSpec()
+    fun `live home category control follows each preset`() {
+        val ios = resolveLiveHomeCategorySegmentedControlSpec(
+            UiPreset.IOS,
+            AndroidNativeVariant.MATERIAL3,
+        )
+        val md3 = resolveLiveHomeCategorySegmentedControlSpec(
+            UiPreset.MD3,
+            AndroidNativeVariant.MATERIAL3,
+        )
+        val miuix = resolveLiveHomeCategorySegmentedControlSpec(
+            UiPreset.MD3,
+            AndroidNativeVariant.MIUIX,
+        )
 
-        assertEquals(82, spec.itemWidthDp)
-        assertEquals(44, spec.heightDp)
-        assertEquals(30, spec.indicatorHeightDp)
-        assertEquals(14, spec.labelFontSizeSp)
-        assertEquals(4, spec.containerHorizontalPaddingDp)
-        assertEquals(4, spec.containerVerticalPaddingDp)
+        assertEquals(44, ios.heightDp)
+        assertEquals(32, ios.indicatorHeightDp)
+        assertEquals(56, md3.heightDp)
+        assertEquals(28, md3.indicatorHeightDp)
+        assertEquals(48, miuix.heightDp)
+        assertEquals(28, miuix.indicatorHeightDp)
+        listOf(ios, md3, miuix).forEach { spec ->
+            assertEquals(82, spec.itemWidthDp)
+            assertEquals(14, spec.labelFontSizeSp)
+            assertEquals(4, spec.containerHorizontalPaddingDp)
+            assertEquals(4, spec.containerVerticalPaddingDp)
+            assertEquals(20, spec.edgeBufferDp)
+        }
     }
 
     @Test
     fun `all tags parent category uses fixed width so labels are not compressed`() {
-        val spec = resolveLiveAreaParentSegmentedControlSpec()
+        val spec = resolveLiveAreaParentSegmentedControlSpec(
+            UiPreset.MD3,
+            AndroidNativeVariant.MATERIAL3,
+        )
 
         assertEquals(112, spec.itemWidthDp)
-        assertEquals(44, spec.heightDp)
-        assertEquals(30, spec.indicatorHeightDp)
+        assertEquals(56, spec.heightDp)
+        assertEquals(28, spec.indicatorHeightDp)
         assertEquals(16, spec.labelFontSizeSp)
         assertEquals(4, spec.containerHorizontalPaddingDp)
         assertEquals(4, spec.containerVerticalPaddingDp)
+        assertEquals(20, spec.edgeBufferDp)
     }
 
     @Test

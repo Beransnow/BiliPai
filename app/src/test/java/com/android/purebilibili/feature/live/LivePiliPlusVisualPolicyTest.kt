@@ -1,6 +1,8 @@
 package com.android.purebilibili.feature.live
 
 import androidx.compose.ui.graphics.Color
+import com.android.purebilibili.core.theme.AndroidNativeVariant
+import com.android.purebilibili.core.theme.UiPreset
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -19,10 +21,35 @@ class LivePiliPlusVisualPolicyTest {
     }
 
     @Test
-    fun `mobile grid keeps two columns and expanded grid follows PiliPlus max extent`() {
-        assertEquals(2, resolveLivePiliPlusGridColumns(widthDp = 390, isExpandedScreen = false))
-        assertEquals(3, resolveLivePiliPlusGridColumns(widthDp = 720, isExpandedScreen = true))
-        assertEquals(4, resolveLivePiliPlusGridColumns(widthDp = 1100, isExpandedScreen = true))
+    fun `live visual spec preserves preset specific density`() {
+        val ios = resolveLiveVisualSpec(UiPreset.IOS, AndroidNativeVariant.MATERIAL3)
+        val md3 = resolveLiveVisualSpec(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
+        val miuix = resolveLiveVisualSpec(UiPreset.MD3, AndroidNativeVariant.MIUIX)
+
+        assertEquals(12, ios.homeMetrics.safeSpaceDp)
+        assertEquals(18, md3.homeMetrics.safeSpaceDp)
+        assertEquals(16, miuix.homeMetrics.safeSpaceDp)
+        assertEquals(8, ios.homeMetrics.cardSpaceDp)
+        assertEquals(12, md3.homeMetrics.cardSpaceDp)
+        assertEquals(10, miuix.homeMetrics.cardSpaceDp)
+        assertEquals(90, ios.roomCardDetailsMinHeightDp)
+        assertEquals(88, md3.roomCardDetailsMinHeightDp)
+        assertEquals(95, miuix.roomCardDetailsMinHeightDp)
+        assertEquals(48, ios.playerButtonTouchTargetDp)
+        assertEquals(48, md3.playerButtonTouchTargetDp)
+        assertEquals(48, miuix.playerButtonTouchTargetDp)
+        assertEquals(38, ios.playerButtonVisualSizeDp)
+        assertEquals(40, md3.playerButtonVisualSizeDp)
+        assertEquals(38, miuix.playerButtonVisualSizeDp)
+        assertEquals(1200, ios.maxContentWidthDp)
+    }
+
+    @Test
+    fun `mobile and tablet grids follow layout class`() {
+        assertEquals(2, resolveLivePiliPlusGridColumns(widthDp = 390, isTabletLayout = false))
+        assertEquals(3, resolveLivePiliPlusGridColumns(widthDp = 720, isTabletLayout = true))
+        assertEquals(4, resolveLivePiliPlusGridColumns(widthDp = 1100, isTabletLayout = true))
+        assertEquals(5, resolveLivePiliPlusGridColumns(widthDp = 1200, isTabletLayout = true))
     }
 
     @Test
@@ -72,13 +99,46 @@ class LivePiliPlusVisualPolicyTest {
 
     @Test
     fun `interaction segmented control keeps liquid glass touch target dimensions`() {
-        val spec = resolveLiveInteractionSegmentedControlSpec()
+        val spec = resolveLiveInteractionSegmentedControlSpec(
+            UiPreset.IOS,
+            AndroidNativeVariant.MATERIAL3,
+        )
 
-        assertEquals(14, spec.horizontalPaddingDp)
+        assertEquals(12, spec.horizontalPaddingDp)
         assertEquals(8, spec.verticalPaddingDp)
         assertEquals(44, spec.heightDp)
-        assertEquals(30, spec.indicatorHeightDp)
+        assertEquals(32, spec.indicatorHeightDp)
         assertEquals(14, spec.labelFontSizeSp)
+    }
+
+    @Test
+    fun `interaction segmented control follows android native variants`() {
+        val md3 = resolveLiveInteractionSegmentedControlSpec(
+            UiPreset.MD3,
+            AndroidNativeVariant.MATERIAL3,
+        )
+        val miuix = resolveLiveInteractionSegmentedControlSpec(
+            UiPreset.MD3,
+            AndroidNativeVariant.MIUIX,
+        )
+
+        assertEquals(56, md3.heightDp)
+        assertEquals(16, md3.horizontalPaddingDp)
+        assertEquals(48, miuix.heightDp)
+        assertEquals(12, miuix.horizontalPaddingDp)
+    }
+
+    @Test
+    fun `live overlay controls keep named density and accessible touch targets`() {
+        val chatInput = resolveLiveChatInputVisualSpec()
+        val playerControl = resolveLivePlayerControlVisualSpec()
+        val sheet = resolveLiveSheetVisualSpec()
+
+        assertEquals(48, chatInput.controlSizeDp)
+        assertEquals(48, chatInput.sendButtonSizeDp)
+        assertEquals(48, playerControl.rowHeightDp)
+        assertEquals(420, sheet.emoticonListMaxHeightDp)
+        assertEquals(360, sheet.contributionListMaxHeightDp)
     }
 
     @Test

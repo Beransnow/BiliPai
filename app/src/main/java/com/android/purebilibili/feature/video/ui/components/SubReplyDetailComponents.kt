@@ -49,6 +49,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -472,7 +473,7 @@ internal fun SubReplyDetailContent(
     val appearance = rememberVideoCommentAppearance()
     val unusedShowUpFlag = showUpFlag
     val listState = rememberLazyListState()
-    var highlightedTargetId by remember(rootReply.rpid) { mutableStateOf(0L) }
+    var highlightedTargetId by remember(rootReply.rpid) { mutableLongStateOf(0L) }
     var conversationAnchor by remember(rootReply.rpid) { mutableStateOf<ReplyItem?>(null) }
     var previousConversationMode by remember(rootReply.rpid) { mutableStateOf<Boolean?>(null) }
     var savedListScroll by remember(rootReply.rpid) {

@@ -5,6 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalUiPreset
@@ -21,6 +22,9 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
  * - Miuix: card = surfaceContainer (bridge maps it to Miuix's secondaryContainerVariant).
  */
 object AppSurfaceTokens {
+
+    /** Standard outline width for bordered cards, fields, and dialogs. */
+    val OutlineWidth = 1.dp
 
     fun resolveCardContainer(
         colorScheme: ColorScheme,

@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.home.components
 
+import com.android.purebilibili.core.ui.AppSpacingTokens
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -94,7 +96,7 @@ fun MineSideDrawer(
     onProfileClick: () -> Unit,
     hazeState: HazeState? = null, // 毛玻璃效果状态
     isBlurEnabled: Boolean = true, // [新增] 模糊开关状态
-    bottomOverlayHeight: Dp = 0.dp
+    bottomOverlayHeight: Dp = AppSpacingTokens.None
 ) {
     val uiPreset = LocalUiPreset.current
     val scope = rememberCoroutineScope()
@@ -245,7 +247,7 @@ fun MineSideDrawer(
                     .clip(RoundedCornerShape(layoutPolicy.profileCardCornerRadiusDp.dp))
                     .background(itemSurfaceColor)
                     .border(
-                        BorderStroke(0.8.dp, itemBorderColor),
+                        BorderStroke(AppSpacingTokens.Micro * 0.4f, itemBorderColor),
                         RoundedCornerShape(layoutPolicy.profileCardCornerRadiusDp.dp)
                     )
                     .clickable { closeAndRun(onProfileClick) }
@@ -267,7 +269,7 @@ fun MineSideDrawer(
                             .background(MaterialTheme.colorScheme.surfaceVariant)
                     )
                     
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
                     
                     // 用户名和等级
                     Column(modifier = Modifier.weight(1f)) {
@@ -280,9 +282,9 @@ fun MineSideDrawer(
                         )
                         
                         if (user.isLogin) {
-                            Spacer(modifier = Modifier.height(4.dp))
+                            Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall))
                             Row(
-                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 // 等级徽章
@@ -301,7 +303,7 @@ fun MineSideDrawer(
                                             color = colorScheme.onPrimary,
                                             fontSize = layoutPolicy.badgeFontSp.sp,
                                             fontWeight = FontWeight.Bold,
-                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                            modifier = Modifier.padding(horizontal = AppSpacingTokens.ExtraSmall, vertical = AppSpacingTokens.Micro)
                                         )
                                     }
                                 }
@@ -320,7 +322,7 @@ fun MineSideDrawer(
             }
             
             // 分割线样式
-            val dividerThickness = 0.5.dp
+            val dividerThickness = AppSpacingTokens.Micro / 4
             
             // 组间分割线 (全宽带padding)
             HorizontalDivider(
@@ -339,7 +341,7 @@ fun MineSideDrawer(
                     .padding(horizontal = layoutPolicy.sectionHorizontalPaddingDp.dp),
                 shape = RoundedCornerShape(layoutPolicy.sectionCornerRadiusDp.dp),
                 color = itemSurfaceColor,
-                border = BorderStroke(0.8.dp, itemBorderColor)
+                border = BorderStroke(AppSpacingTokens.Micro * 0.4f, itemBorderColor)
             ) {
                 Column(
                     modifier = Modifier.fillMaxWidth()
@@ -353,7 +355,7 @@ fun MineSideDrawer(
                         valueColor = secondaryContentColor,
                         chevronTint = chevronColor
                     )
-                    HorizontalDivider(modifier = Modifier.padding(start = 48.dp), thickness = dividerThickness, color = dividerColor)
+                    HorizontalDivider(modifier = Modifier.padding(start = AppSpacingTokens.TripleExtraLarge), thickness = dividerThickness, color = dividerColor)
                     IOSClickableItem(
                         icon = historyIcon,
                         title = "历史记录",
@@ -363,7 +365,7 @@ fun MineSideDrawer(
                         valueColor = secondaryContentColor,
                         chevronTint = chevronColor
                     )
-                    HorizontalDivider(modifier = Modifier.padding(start = 48.dp), thickness = dividerThickness, color = dividerColor)
+                    HorizontalDivider(modifier = Modifier.padding(start = AppSpacingTokens.TripleExtraLarge), thickness = dividerThickness, color = dividerColor)
                     IOSClickableItem(
                         icon = tvIcon,
                         title = "番剧影视",
@@ -373,7 +375,7 @@ fun MineSideDrawer(
                         valueColor = secondaryContentColor,
                         chevronTint = chevronColor
                     )
-                    HorizontalDivider(modifier = Modifier.padding(start = 48.dp), thickness = dividerThickness, color = dividerColor)
+                    HorizontalDivider(modifier = Modifier.padding(start = AppSpacingTokens.TripleExtraLarge), thickness = dividerThickness, color = dividerColor)
                     IOSClickableItem(
                         icon = bookmarkIcon,
                         title = "我的收藏",
@@ -383,7 +385,7 @@ fun MineSideDrawer(
                         valueColor = secondaryContentColor,
                         chevronTint = chevronColor
                     )
-                    HorizontalDivider(modifier = Modifier.padding(start = 48.dp), thickness = dividerThickness, color = dividerColor)
+                    HorizontalDivider(modifier = Modifier.padding(start = AppSpacingTokens.TripleExtraLarge), thickness = dividerThickness, color = dividerColor)
                     IOSClickableItem(
                         icon = likeIcon,
                         title = "我的点赞",
@@ -393,7 +395,7 @@ fun MineSideDrawer(
                         valueColor = secondaryContentColor,
                         chevronTint = chevronColor
                     )
-                    HorizontalDivider(modifier = Modifier.padding(start = 48.dp), thickness = dividerThickness, color = dividerColor)
+                    HorizontalDivider(modifier = Modifier.padding(start = AppSpacingTokens.TripleExtraLarge), thickness = dividerThickness, color = dividerColor)
                     IOSClickableItem(
                         icon = watchLaterIcon,
                         title = "稍后再看",
@@ -403,7 +405,7 @@ fun MineSideDrawer(
                         valueColor = secondaryContentColor,
                         chevronTint = chevronColor
                     )
-                    HorizontalDivider(modifier = Modifier.padding(start = 48.dp), thickness = dividerThickness, color = dividerColor)
+                    HorizontalDivider(modifier = Modifier.padding(start = AppSpacingTokens.TripleExtraLarge), thickness = dividerThickness, color = dividerColor)
                     IOSClickableItem(
                         icon = inboxIcon,
                         title = "消息中心",
@@ -434,7 +436,7 @@ fun MineSideDrawer(
                         .padding(horizontal = layoutPolicy.sectionHorizontalPaddingDp.dp),
                     shape = RoundedCornerShape(layoutPolicy.sectionCornerRadiusDp.dp),
                     color = itemSurfaceColor,
-                    border = BorderStroke(0.8.dp, itemBorderColor)
+                    border = BorderStroke(AppSpacingTokens.Micro * 0.4f, itemBorderColor)
                 ) {
                     IOSClickableItem(
                         icon = logoutIcon,

@@ -52,6 +52,7 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -349,8 +350,8 @@ fun VideoCommentSheetHost(
     var isDraggingSheet by remember { mutableStateOf(false) }
     var isDismissDragSettling by remember { mutableStateOf(false) }
     var isDragDismissExitPending by remember { mutableStateOf(false) }
-    var sheetDragTargetOffsetPx by remember { mutableStateOf(0f) }
-    var mainSheetMeasuredHeightPx by remember { mutableStateOf(0f) }
+    var sheetDragTargetOffsetPx by remember { mutableFloatStateOf(0f) }
+    var mainSheetMeasuredHeightPx by remember { mutableFloatStateOf(0f) }
     val hostVisibilityProgress by animateFloatAsState(
         targetValue = if (hostVisible) 1f else 0f,
         animationSpec = tween(

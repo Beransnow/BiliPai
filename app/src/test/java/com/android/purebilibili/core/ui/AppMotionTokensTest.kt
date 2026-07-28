@@ -2,11 +2,13 @@ package com.android.purebilibili.core.ui
 
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.TweenSpec
+import androidx.compose.ui.unit.IntOffset
 
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
 import com.android.purebilibili.core.ui.motion.AppMotionTokens
+import com.android.purebilibili.core.ui.motion.navigationSlideSpring
 import com.android.purebilibili.core.ui.motion.pullRefreshReleaseSpring
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -136,5 +138,20 @@ class AppMotionTokensTest {
 
         assertTrue(spring.dampingRatio >= 0.94f, "pull refresh release should not visibly bounce")
         assertTrue(spring.stiffness >= 480f, "pull refresh release should settle quickly")
+    }
+
+    @Test
+    fun navigationSlideSpring_scalesStiffnessWithTargetDuration() {
+        val fast = navigationSlideSpring(durationMillis = 220)
+        val standard = navigationSlideSpring(durationMillis = 300)
+        val slow = navigationSlideSpring(durationMillis = 350)
+
+        assertEquals(1f, fast.dampingRatio)
+        assertTrue(fast.stiffness > standard.stiffness)
+        assertTrue(standard.stiffness > slow.stiffness)
+        assertTrue(fast.stiffness >= 1_700f)
+        assertTrue(standard.stiffness >= 900f)
+        assertEquals(700f, slow.stiffness)
+        assertEquals(IntOffset(1, 1), slow.visibilityThreshold)
     }
 }

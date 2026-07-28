@@ -3,6 +3,11 @@ package com.android.purebilibili.core.ui
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
+import androidx.compose.ui.unit.dp
+
+object AppChromeSizeTokens {
+    val MinimumTouchTarget = 48.dp
+}
 
 /**
  * 高频胶囊控件的尺寸基准。

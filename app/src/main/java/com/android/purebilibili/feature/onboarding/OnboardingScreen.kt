@@ -132,13 +132,11 @@ fun OnboardingScreen(
                 modifier = Modifier.fillMaxSize(),
                 userScrollEnabled = true
             ) { page ->
-                val pageOffsetProvider = remember(pagerState, page) {
-                    {
-                        (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
-                    }
-                }
                 OnboardingAnimatedPage(
-                    pageOffsetProvider = pageOffsetProvider,
+                    // 传 lambda 而不是 Float：currentPageOffsetFraction 横滑时每帧变化，
+                    // 在这里直接读会让整页（含所有子页内容）每帧重组。
+                    // OnboardingAnimatedPage 本来就只在 graphicsLayer 里用它。
+                    pageOffset = { (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction },
                     motionSpec = motionSpec,
                     modifier = Modifier
                         .fillMaxSize()
@@ -244,14 +242,14 @@ private fun OnboardingBottomControls(
 
 @Composable
 private fun OnboardingAnimatedPage(
-    pageOffsetProvider: () -> Float,
+    pageOffset: () -> Float,
     motionSpec: OnboardingMotionSpec,
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit
 ) {
     Box(
         modifier = modifier.graphicsLayer {
-            val clampedOffset = pageOffsetProvider().absoluteValue.coerceIn(0f, 1f)
+            val clampedOffset = pageOffset().absoluteValue.coerceIn(0f, 1f)
             val scale = lerp(1f, motionSpec.pager.minScale, clampedOffset)
             scaleX = scale
             scaleY = scale

@@ -46,6 +46,7 @@ import com.android.purebilibili.core.store.DEFAULT_ANALYTICS_ENABLED
 import com.android.purebilibili.core.store.DEFAULT_CRASH_TRACKING_ENABLED
 import com.android.purebilibili.core.theme.LocalSettingsLiquidGlassEnabled
 import com.android.purebilibili.core.ui.LocalBottomBarVisible
+import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.AppNavigationSettings
 import com.android.purebilibili.core.util.AnalyticsHelper
@@ -99,13 +100,20 @@ fun SettingsScreen(
     onSearchOpen: () -> Unit = {},
     destination: SettingsNavDestination = SettingsNavDestination.Home,
     mainHazeState: dev.chrisbanes.haze.HazeState? = null,
-    forceSinglePaneContent: Boolean = false
+    forceSinglePaneContent: Boolean = false,
+    rootEntranceEnabled: Boolean = true,
 ) {
     val context = LocalContext.current
     val hapticFeedback = LocalHapticFeedback.current
     val uriHandler = LocalUriHandler.current
     val scope = rememberCoroutineScope()
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val navigationTransitionRunning =
+        LocalAnimatedVisibilityScope.current?.transition?.isRunning == true
+    val rootEntranceStartWhen = shouldStartSettingsEntrance(
+        entranceEnabled = rootEntranceEnabled,
+        navigationTransitionRunning = navigationTransitionRunning,
+    )
     val versionClickThreshold = EasterEggs.VERSION_EASTER_EGG_THRESHOLD
     
     // State Collection
@@ -933,6 +941,8 @@ fun SettingsScreen(
             ) {
                 MobileSettingsNavLayout(
                     destination = destination,
+                    rootEntranceEnabled = rootEntranceEnabled,
+                    rootEntranceStartWhen = rootEntranceStartWhen,
                     onBack = onBack,
                     onCategoryClick = onCategoryClick,
                     onSearchOpen = onSearchOpen,
@@ -1073,6 +1083,8 @@ internal fun SettingsCategoryHeader(title: String) {
 @Composable
 private fun MobileSettingsNavLayout(
     destination: SettingsNavDestination,
+    rootEntranceEnabled: Boolean,
+    rootEntranceStartWhen: Boolean,
     onBack: () -> Unit,
     onCategoryClick: (SettingsRootCategory) -> Unit,
     onSearchOpen: () -> Unit,
@@ -1237,44 +1249,53 @@ private fun MobileSettingsNavLayout(
         homeRefreshCount = homeRefreshCount,
     )
 
+    @Composable
+    fun SettingsRootContent() {
+        when (destination) {
+            SettingsNavDestination.Home -> {
+                Column {
+                    SettingsHomeSearchEntry(onClick = onSearchOpen)
+                    Box(modifier = Modifier.padding(top = 8.dp).entrance()) {
+                        SettingsRootCategoryListSection(
+                            categories = sectionOrder,
+                            onCategoryClick = onCategoryClick,
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    SettingsAboutHomeSection(
+                        onGithubClick = onGithubClick,
+                        onTelegramClick = onTelegramClick,
+                        onCheckUpdateClick = onCheckUpdateClick,
+                        onDonateClick = onDonateClick,
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+            }
+            is SettingsNavDestination.Category -> {
+                Box(modifier = Modifier.padding(top = 12.dp)) {
+                    SettingsRootCategoryContent(
+                        category = destination.category,
+                        actions = rootCategoryActions,
+                        state = rootCategoryState,
+                    )
+                }
+            }
+            SettingsNavDestination.Search -> Unit
+        }
+    }
+
     com.android.purebilibili.feature.settings.ui.SettingsPageScaffold(
         title = screenTitle,
         onBack = onBack,
         backContentDescription = backLabel,
         bottomContentPadding = bottomInset,
     ) {
-        EntranceGroup(startWhen = true) {
-            when (destination) {
-                SettingsNavDestination.Home -> {
-                    Column {
-                        SettingsHomeSearchEntry(onClick = onSearchOpen)
-                        Box(modifier = Modifier.padding(top = 8.dp).entrance()) {
-                            SettingsRootCategoryListSection(
-                                categories = sectionOrder,
-                                onCategoryClick = onCategoryClick,
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(12.dp))
-                        SettingsAboutHomeSection(
-                            onGithubClick = onGithubClick,
-                            onTelegramClick = onTelegramClick,
-                            onCheckUpdateClick = onCheckUpdateClick,
-                            onDonateClick = onDonateClick,
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-                }
-                is SettingsNavDestination.Category -> {
-                    Box(modifier = Modifier.padding(top = 12.dp)) {
-                        SettingsRootCategoryContent(
-                            category = destination.category,
-                            actions = rootCategoryActions,
-                            state = rootCategoryState,
-                        )
-                    }
-                }
-                SettingsNavDestination.Search -> Unit
+        if (rootEntranceEnabled) {
+            EntranceGroup(startWhen = rootEntranceStartWhen) {
+                SettingsRootContent()
             }
+        } else {
+            SettingsRootContent()
         }
     }
 }

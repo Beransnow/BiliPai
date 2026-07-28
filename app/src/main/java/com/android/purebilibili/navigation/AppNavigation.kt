@@ -17,6 +17,9 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue //  新增
@@ -24,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect // 新增
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
@@ -35,7 +39,6 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.material3.MaterialTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.purebilibili.app.StartupLaunchDecision
 import com.android.purebilibili.feature.article.ArticleDetailScreen
 import com.android.purebilibili.feature.article.shouldUseArticleNoOpRouteTransition
 import com.android.purebilibili.feature.audio.library.resolveListenVideoPlaybackSelection
@@ -105,7 +108,6 @@ import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpe
 import com.android.purebilibili.core.ui.transition.rememberVideoCardTransitionClock
 import com.android.purebilibili.core.ui.transition.VideoCardTransitionVisualTimeline
 import com.android.purebilibili.core.ui.motion.rememberSystemReduceMotion
-import com.android.purebilibili.core.ui.performance.normalizeWindowJankRoute
 import com.android.purebilibili.core.ui.transition.VideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.resolveVideoSharedTransitionDurationMillis
 import com.android.purebilibili.core.ui.transition.predictiveBackBackgroundEffect
@@ -119,11 +121,12 @@ import com.android.purebilibili.data.model.response.BgmInfo
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 import androidx.compose.runtime.rememberCoroutineScope
 import com.android.purebilibili.core.ui.blur.hazeSourceCompat
 import com.android.purebilibili.core.ui.blur.shouldAllowRuntimeShaderBackedHazeEffect
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
@@ -134,6 +137,8 @@ import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBac
 import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
 import com.android.purebilibili.core.ui.LocalSetBottomBarVisible
 import com.android.purebilibili.core.ui.LocalBottomBarVisible
+import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
+import com.android.purebilibili.core.ui.resolveBottomBarContentPadding
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.core.ui.LocalPredictiveBackGestureEnabled
 import com.android.purebilibili.core.ui.motion.emphasizedEnterTween
@@ -305,8 +310,7 @@ private fun BiliPaiNavKey.toPrivacyNavigationTarget(): PrivacyNavigationTarget {
 @androidx.media3.common.util.UnstableApi
 // @OptIn(ExperimentalMaterial3WindowSizeClassApi::class) (Removed)
 @Composable
-internal fun AppNavigation(
-    startupLaunchDecision: StartupLaunchDecision,
+fun AppNavigation(
     //  小窗管理器
     miniPlayerManager: MiniPlayerManager? = null,
     //  PiP 支持参数
@@ -324,7 +328,6 @@ internal fun AppNavigation(
     onVideoDetailExit: () -> Unit = {},
     onAudioModeEnter: () -> Unit = {},
     onAudioModeExit: () -> Unit = {},
-    onPerformanceRouteChanged: (String?) -> Unit = {},
     onPrivacyAuthenticationRequired: (
         PrivacyAuthenticationRequest,
         (PrivacyAuthenticationResult) -> Unit
@@ -376,6 +379,7 @@ internal fun AppNavigation(
         )
     }
     val cardTransitionEnabled = appearance.cardTransitionEnabled
+    val videoDetailTransitionsEnabled = false
     val videoTransitionRealtimeBlurEnabled by SettingsManager
         .getVideoTransitionRealtimeBlurEnabled(context)
         .collectAsStateWithLifecycle(initialValue = true)
@@ -398,8 +402,8 @@ internal fun AppNavigation(
     }
     var inAppSearchKeyword by remember { mutableStateOf<String?>(null) }
     var searchEntryMotionSource by remember { mutableStateOf(SearchEntryMotionSource.NONE) }
-    var searchEntryMotionKey by remember { mutableStateOf(0) }
-    var bottomBarSearchLaunchKey by remember { mutableStateOf(0) }
+    var searchEntryMotionKey by remember { mutableIntStateOf(0) }
+    var bottomBarSearchLaunchKey by remember { mutableIntStateOf(0) }
     var navigation3ReturnSession by remember { mutableStateOf(BiliPaiReturnSessionState()) }
     val effectiveInitialSearchKeyword = inAppSearchKeyword ?: initialSearchKeyword
     val consumeInitialSearchKeyword: (String) -> Unit = { consumedKeyword ->
@@ -419,12 +423,26 @@ internal fun AppNavigation(
     var showLaunchDisclaimer by remember {
         mutableStateOf(!firstLaunchShown && !launchDisclaimerAck)
     }
-    val startDestination = if (startupLaunchDecision.onboardingRequired) {
-        ScreenRoutes.Onboarding.route
-    } else {
-        ScreenRoutes.Home.route
+    val startDestination = if (firstLaunchShown) ScreenRoutes.Home.route else ScreenRoutes.Onboarding.route
+    val cachedPortraitStartupRoute = remember(context) {
+        SettingsManager.getCachedLaunchToPortraitFeedOnStartup(context)
     }
-    val launchToPortraitFeedOnStartupAtInit = startupLaunchDecision.openPortraitFeedOnStartup
+    val resolvedPortraitStartupRoute by produceState<Boolean?>(
+        initialValue = cachedPortraitStartupRoute,
+        key1 = context,
+    ) {
+        if (value == null) {
+            value = try {
+                SettingsManager.resolveLaunchToPortraitFeedOnStartup(context)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                false
+            }
+        }
+    }
+    // 缓存缺失时等待 DataStore 首值；先用 false 建栈会让恢复备份后的本次启动进错首页。
+    val launchToPortraitFeedOnStartupAtInit = resolvedPortraitStartupRoute ?: return
 
     val videoSharedTransitionSpeedSettings = remember(
         homeSettings.videoSharedTransitionSpeed,
@@ -451,12 +469,12 @@ internal fun AppNavigation(
             LocalVideoSharedTransitionSpeedSettings provides videoSharedTransitionSpeedSettings
         ) {
         // [新增] 全局底栏状态管理
-        var navigation3BackStack by remember(startupLaunchDecision) {
+        var navigation3BackStack by remember(startDestination, launchToPortraitFeedOnStartupAtInit) {
             mutableStateOf(
                 resolveInitialBiliPaiBackStack(
                     firstRoute = startDestination,
-                    onboardingRequired = startupLaunchDecision.onboardingRequired,
-                    openPortraitFeedOnStartup = launchToPortraitFeedOnStartupAtInit,
+                    onboardingRequired = !firstLaunchShown,
+                    openPortraitFeedOnStartup = firstLaunchShown && launchToPortraitFeedOnStartupAtInit
                 )
             )
         }
@@ -557,7 +575,7 @@ internal fun AppNavigation(
         LaunchedEffect(visibleBottomBarItems, mainBottomPagerState.selectedPage) {
             val lastPage = visibleBottomBarItems.lastIndex
             if (lastPage >= 0 && mainBottomPagerState.selectedPage > lastPage) {
-                mainBottomPagerState.animateToPage(lastPage)
+                mainBottomPagerState.switchToPage(lastPage)
             }
         }
         val bottomPagerRenderBudget =
@@ -692,7 +710,7 @@ internal fun AppNavigation(
             val performPagerNavigation = {
                 beforeNavigation?.invoke()
                 navigation3BackStack = listOf(BiliPaiNavKey.MainHost)
-                mainBottomPagerState.animateToPage(page)
+                mainBottomPagerState.switchToPage(page)
             }
             if (
                 shouldRequirePrivacyAuthentication(
@@ -1019,12 +1037,6 @@ internal fun AppNavigation(
             currentKey = currentNavigation3Key,
             currentBottomItem = currentBottomNavItem
         )
-        val performanceRoute = remember(currentRoute, activeBottomTabRoute) {
-            normalizeWindowJankRoute(currentRoute ?: activeBottomTabRoute)
-        }
-        LaunchedEffect(performanceRoute) {
-            onPerformanceRouteChanged(performanceRoute)
-        }
         val backGestureDecision = remember(
             cardTransitionEnabled,
             systemBackAction,
@@ -1034,7 +1046,8 @@ internal fun AppNavigation(
             activeBottomTabRoute,
         ) {
             resolveBiliPaiBackGestureDecision(
-                cardTransitionEnabled = cardTransitionEnabled,
+                cardTransitionEnabled = sharedVideoCardTransitionEnabled,
+                videoDetailTransitionsEnabled = videoDetailTransitionsEnabled,
                 systemBackAction = systemBackAction,
                 currentKey = currentNavigation3Key,
                 previousKey = previousNavigation3Key,
@@ -1066,7 +1079,7 @@ internal fun AppNavigation(
         val shouldDeferBottomBarReveal = shouldDeferBottomBarRevealOnVideoReturn(
             isReturningFromDetail = navigation3ReturnSession.isReturningFromDetail,
             activeBottomTabRoute = activeBottomTabRoute,
-            cardTransitionEnabled = cardTransitionEnabled
+            cardTransitionEnabled = videoDetailTransitionsEnabled
         )
         val bottomBarMountGate = shouldShowBottomBarForNavigation(
             activeRoute = bottomBarMountRoute,
@@ -1106,12 +1119,12 @@ internal fun AppNavigation(
                 shouldDelayBottomBarRevealAfterVideoReturn(
                     isReturningFromDetail = navigation3ReturnSession.isReturningFromDetail,
                     isBottomBarDestination = isBottomBarDestination,
-                    cardTransitionEnabled = cardTransitionEnabled
+                    cardTransitionEnabled = videoDetailTransitionsEnabled
                 )
             ) {
                 kotlinx.coroutines.delay(
                     resolveVideoReturnBottomBarRevealDelayMs(
-                        cardTransitionEnabled = cardTransitionEnabled,
+                        cardTransitionEnabled = videoDetailTransitionsEnabled,
                         isQuickReturnFromDetail = navigation3ReturnSession.isQuickReturnFromDetail
                     )
                 )
@@ -1132,6 +1145,24 @@ internal fun AppNavigation(
                 bottomBarVisibilityMode == SettingsManager.BottomBarVisibilityMode.ALWAYS_VISIBLE ||
                     isBottomBarVisible
             )
+        val bottomBarVisibilityState = remember { MutableTransitionState(finalBottomBarVisible) }
+        bottomBarVisibilityState.targetState = finalBottomBarVisible
+        val bottomBarCanMount = bottomBarMountGate &&
+            bottomBarVisibilityMode != SettingsManager.BottomBarVisibilityMode.ALWAYS_HIDDEN
+        val bottomBarReservesSpace = bottomBarCanMount &&
+            (bottomBarVisibilityState.currentState || bottomBarVisibilityState.targetState)
+        val bottomBarContentPadding = resolveBottomBarContentPadding(
+            navigationBarsBottom = WindowInsets.navigationBars
+                .asPaddingValues()
+                .calculateBottomPadding(),
+            reserveBottomBar = bottomBarReservesSpace && !useSideNavigation,
+            isBottomBarFloating = isBottomBarFloating,
+            bottomBarLabelMode = bottomBarLabelMode,
+            isTablet = isTabletLayout,
+            uiPreset = uiPreset,
+            androidNativeVariant = androidNativeVariant,
+            hasUiSkinDecoration = bottomBarUiSkinDecoration != null,
+        )
 
         val setBottomBarVisible: (Boolean) -> Unit = remember {
             bottomBarSetter@{ visible: Boolean ->
@@ -1146,7 +1177,7 @@ internal fun AppNavigation(
         val dynamicScrollChannel = remember { kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.CONFLATED) }
         val historyScrollChannel = remember { kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.CONFLATED) }
         val favoriteScrollChannel = remember { kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.CONFLATED) }
-        var dynamicUnreadCount by remember { mutableStateOf(0) }
+        var dynamicUnreadCount by remember { mutableIntStateOf(0) }
         val dynamicUnreadPollingEnabled = visibleBottomBarItems.contains(BottomNavItem.DYNAMIC)
         LaunchedEffect(currentBottomNavItem, dynamicUnreadPollingEnabled) {
             if (!dynamicUnreadPollingEnabled || currentBottomNavItem == BottomNavItem.DYNAMIC) {
@@ -1349,7 +1380,17 @@ internal fun AppNavigation(
         // Wallpaper-only Haze source for card badge frosted glass. Must stay separate from
         // mainHazeState: badges live inside the main content source tree, and reusing that
         // state for hazeEffect causes HWUI prepareTree stack overflow.
-        val wallpaperHazeState = if (mainHazeState != null) {
+        //
+        // 条件挂载：这个 state 只有卡片角标实时模糊 / 信息区实时模糊两个消费者，
+        // 两者默认都关闭。为 null 时，本文件与 HomeScreen 里的两处 hazeSourceCompat
+        // 会一并跳过——默认档因此省掉两层全屏 record。判定见
+        // HomeWallpaperHazeSourcePolicy。
+        val wallpaperHazeSourceEnabled = com.android.purebilibili.feature.home
+            .shouldMountWallpaperHazeSource(
+                badgeEffectMode = effectiveHomeSettings.homeCardBadgeEffectMode,
+                infoGlassMode = effectiveHomeSettings.homeCardInfoGlassMode
+            )
+        val wallpaperHazeState = if (mainHazeState != null && wallpaperHazeSourceEnabled) {
             com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState(
                 initialBlurEnabled = true
             )
@@ -1360,6 +1401,7 @@ internal fun AppNavigation(
         CompositionLocalProvider(
             LocalSetBottomBarVisible provides setBottomBarVisible,
             LocalBottomBarVisible provides finalBottomBarVisible,
+            LocalBottomBarContentPadding provides bottomBarContentPadding,
             LocalGlobalWallpaperBackdropVisible provides exposeGlobalHomeWallpaperChrome,
             LocalPredictiveBackGestureEnabled provides predictiveBackEnabled,
             com.android.purebilibili.core.ui.LocalMainHazeState provides mainHazeState,
@@ -1407,7 +1449,7 @@ internal fun AppNavigation(
                     AppSystemBackAction.RETURN_TO_HOME_TAB -> {
                         val homeIndex = visibleBottomBarItems.indexOf(BottomNavItem.HOME)
                         if (homeIndex >= 0) {
-                            mainBottomPagerState.animateToPage(homeIndex)
+                            mainBottomPagerState.switchToPage(homeIndex)
                         }
                     }
                     AppSystemBackAction.NAVIGATE_UP -> {
@@ -1459,10 +1501,11 @@ internal fun AppNavigation(
                         )
                     }
                 }
-                Box(
-                    modifier = Modifier
-                        .animateContentSize()
-                ) {
+                // 这里原本挂着 animateContentSize()。它在全屏根节点上做两件坏事：
+                // 强制该节点每次都 measure 两遍（一次拿目标尺寸、一次按动画插值），
+                // 并隐式加上 clipToBounds。而这个 Box 的尺寸只随键盘/系统栏/旋转变化，
+                // 对这类变化做尺寸补间没有观感价值，代价却压在每一帧的测量上。
+                Box {
                 // ===== 内容层 (hazeSource) =====
                 // 这个 Box 包裹全局壁纸和所有导航内容，作为底栏模糊/折射的源
                 // [LayerBackdrop] Apply layerBackdrop before the bottom bar sibling so the dock
@@ -1554,7 +1597,8 @@ internal fun AppNavigation(
                     val entryRoute = key.toLegacyRoute()
                     val backgroundState = LocalVideoCardTransitionBackgroundState.current
                     val predictiveBackState = LocalPredictiveBackBackgroundState.current
-                    val shouldApplyBackground = cardTransitionEnabled &&
+                    val shouldApplyBackground = videoDetailTransitionsEnabled &&
+                        cardTransitionEnabled &&
                         shouldApplyVideoCardTransitionBackgroundToRoute(
                             entryRoute = entryRoute,
                             sourceRoute = backgroundState.sourceRouteProvider(),
@@ -1606,7 +1650,8 @@ internal fun AppNavigation(
                 @Composable
                 fun RenderNavigationContent(
                     key: BiliPaiNavKey,
-                    isBottomPagerPageActive: Boolean = true
+                    isBottomPagerPageActive: Boolean = true,
+                    isBottomPagerHosted: Boolean = false,
                 ) {
                     @Composable
                     fun SettingsTabletEntry(content: @Composable () -> Unit) {
@@ -1631,7 +1676,7 @@ internal fun AppNavigation(
                                             beyondViewportPageCount = resolveBottomPagerBeyondViewportPageCount(
                                                 pageCount = visibleBottomBarItems.size,
                                                 contentReady = bottomPagerContentReady
-                                            ),
+                                            ).coerceAtMost(BOTTOM_PAGER_MAX_PRELOAD_DISTANCE),
                                             userScrollEnabled = shouldEnableBottomPagerUserScroll()
                                         ) { page ->
                                             val slotItem = visibleBottomBarItems.getOrNull(page) ?: BottomNavItem.HOME
@@ -1655,7 +1700,8 @@ internal fun AppNavigation(
                                                     ) {
                                                         RenderNavigationContent(
                                                             key = pageKey,
-                                                            isBottomPagerPageActive = page == bottomPagerState.settledPage
+                                                            isBottomPagerPageActive = page == bottomPagerState.settledPage,
+                                                            isBottomPagerHosted = true,
                                                         )
                                                     }
                                                 }
@@ -2114,9 +2160,10 @@ internal fun AppNavigation(
                                 onClearReturningFromDetail = {
                                     navigation3ReturnSession = navigation3ReturnSession.clearReturning()
                                 },
-                                transitionEnabled = shouldEnableVideoDetailSharedTransition(
-                                    cardTransitionEnabled = sharedVideoCardTransitionEnabled
-                                ),
+                                transitionEnabled = videoDetailTransitionsEnabled &&
+                                    shouldEnableVideoDetailSharedTransition(
+                                        cardTransitionEnabled = sharedVideoCardTransitionEnabled
+                                    ),
                                 transitionEnterDurationMillis = navMotionSpec.slowFadeDurationMillis,
                                 onBack = {
                                     if (!navigation3ProgrammaticBackDispatcher.dispatch()) {
@@ -2132,7 +2179,7 @@ internal fun AppNavigation(
                                         // 再 pop 至 MainHost 触发与系统返回相同的横向过渡。
                                         val homeIndex = visibleBottomBarItems.indexOf(BottomNavItem.HOME)
                                         if (homeIndex >= 0) {
-                                            mainBottomPagerState.snapToPage(homeIndex)
+                                            mainBottomPagerState.switchToPage(homeIndex)
                                         }
                                         navigation3BackStack = popBiliPaiNavKeyToRoot(navigation3BackStack)
                                     }
@@ -2192,7 +2239,7 @@ internal fun AppNavigation(
                                     navigation3BackStack = resolveInitialBiliPaiBackStack(
                                         firstRoute = ScreenRoutes.Home.route,
                                         onboardingRequired = false,
-                                        openPortraitFeedOnStartup = false,
+                                        openPortraitFeedOnStartup = launchToPortraitFeedOnStartupAtInit
                                     )
                                 }
                             )
@@ -2218,6 +2265,7 @@ internal fun AppNavigation(
                                     onSearchOpen = { pushNavigation3Key(BiliPaiNavKey.SettingsSearch) },
                                     mainHazeState = mainHazeState,
                                     forceSinglePaneContent = true,
+                                    rootEntranceEnabled = !isBottomPagerHosted,
                                 )
                             }
                         BiliPaiNavEntryContentRole.SETTINGS_CATEGORY -> {
@@ -2716,13 +2764,13 @@ internal fun AppNavigation(
                                         seasonSeriesKey.ownerName
                                     )
                                 }
+                                val seasonSeriesSourceRoute =
+                                    com.android.purebilibili.navigation3.normalizeBiliPaiVideoSourceRoute(
+                                        seasonSeriesKey.toLegacyRoute()
+                                    ) ?: seasonSeriesKey.toLegacyRoute()
 
                                 CompositionLocalProvider(
-                                    LocalVideoCardSharedElementSourceRoute provides (
-                                        com.android.purebilibili.navigation3.normalizeBiliPaiVideoSourceRoute(
-                                            seasonSeriesKey.toLegacyRoute()
-                                        ) ?: seasonSeriesKey.toLegacyRoute()
-                                    )
+                                    LocalVideoCardSharedElementSourceRoute provides seasonSeriesSourceRoute
                                 ) {
                                     CommonListScreen(
                                         viewModel = viewModel,
@@ -2741,7 +2789,7 @@ internal fun AppNavigation(
                                                 cid = cid,
                                                 coverUrl = cover,
                                                 initialVertical = isVertical,
-                                                sourceRoute = seasonSeriesKey.toLegacyRoute()
+                                                sourceRoute = seasonSeriesSourceRoute
                                             )
                                         },
                                         onUpClick = { mid ->
@@ -3019,7 +3067,9 @@ internal fun AppNavigation(
                 BiliPaiNavDisplayHost(
                     backStack = navigation3BackStack,
                     cardTransitionEnabled = sharedVideoCardTransitionEnabled,
-                    videoCardDepthEffectEnabled = sharedVideoCardTransitionEnabled,
+                    videoDetailTransitionsEnabled = videoDetailTransitionsEnabled,
+                    videoCardDepthEffectEnabled =
+                        videoDetailTransitionsEnabled && sharedVideoCardTransitionEnabled,
                     reduceMotion = systemReduceMotion,
                     videoSharedTransitionDurationMillis =
                         effectiveVideoCardTransitionDurationMillis,
@@ -3067,14 +3117,14 @@ internal fun AppNavigation(
             } // End of Content Box
             } // End of Row
 
-            if (bottomBarMountGate && bottomBarVisibilityMode != SettingsManager.BottomBarVisibilityMode.ALWAYS_HIDDEN) {
+            if (bottomBarCanMount) {
                 val bottomBarModifier = Modifier
                     .align(Alignment.BottomCenter)
                     .zIndex(1f)
 
                 Box(modifier = bottomBarModifier) {
                     AnimatedVisibility(
-                        visible = finalBottomBarVisible,
+                        visibleState = bottomBarVisibilityState,
                         enter = slideInVertically(
                             animationSpec = softLandingSpring(),
                             initialOffsetY = { it }
@@ -3167,7 +3217,7 @@ internal fun AppNavigation(
                 onReturnToHomeTab = {
                     val homeIndex = visibleBottomBarItems.indexOf(BottomNavItem.HOME)
                     if (homeIndex >= 0) {
-                        mainBottomPagerState.snapToPage(homeIndex)
+                        mainBottomPagerState.switchToPage(homeIndex)
                     }
                 },
             )

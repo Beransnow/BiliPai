@@ -142,7 +142,7 @@ fun AnimationSettingsContent(
         )
     }
     var customTransitionDurationMillis by remember(state.videoSharedTransitionCustomDurationMillis) {
-        mutableStateOf(state.videoSharedTransitionCustomDurationMillis)
+        mutableIntStateOf(state.videoSharedTransitionCustomDurationMillis)
     }
     fun snapCustomTransitionDuration(value: Float): Int {
         val stepMillis = 20

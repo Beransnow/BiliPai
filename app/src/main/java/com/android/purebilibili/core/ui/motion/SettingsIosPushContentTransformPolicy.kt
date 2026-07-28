@@ -27,7 +27,7 @@ internal fun resolveSettingsIosPushForwardContentTransform(
     if (durationMillis <= 0) {
         return EnterTransition.None togetherWith ExitTransition.None
     }
-    val spec = tween<IntOffset>(durationMillis = durationMillis, easing = EaseInOut)
+    val spec = navigationSlideSpring(durationMillis)
     val parallaxOffset: (Int) -> Int = { width ->
         -(width * SETTINGS_IOS_PUSH_PARALLAX_FACTOR).toInt()
     }
@@ -46,6 +46,8 @@ internal fun resolveSettingsIosPushPopContentTransform(
     if (durationMillis <= 0) {
         return EnterTransition.None togetherWith ExitTransition.None
     }
+    // 返回可能承接预测手势的 seek 进度，保持固定时长 tween，避免松手提交时
+    // 从手势曲线突然切到 spring 造成速度跳变。
     val spec = tween<IntOffset>(durationMillis = durationMillis, easing = EaseInOut)
     val parallaxOffset: (Int) -> Int = { width ->
         -(width * SETTINGS_IOS_PUSH_PARALLAX_FACTOR).toInt()

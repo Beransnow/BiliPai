@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.following
 
+import com.android.purebilibili.core.ui.AppSpacingTokens
+
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.Animatable
@@ -49,7 +51,10 @@ import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
 import com.android.purebilibili.core.ui.OfficialVerifyBadge
 import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
 import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.motion.AppMotionTokens
 import com.android.purebilibili.core.util.FormatUtils
+import com.android.purebilibili.core.util.responsiveContentWidth
 import com.android.purebilibili.data.model.response.FollowingUser
 import com.android.purebilibili.data.model.response.RelationTagItem
 import com.android.purebilibili.data.repository.ActionRepository
@@ -699,7 +704,7 @@ fun FollowingListScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = AppSurfaceTokens.chromeBackground()
                 )
             )
         }
@@ -714,7 +719,7 @@ fun FollowingListScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .padding(horizontal = AppSpacingTokens.Large, vertical = AppSpacingTokens.Small)
             ) {
                 com.android.purebilibili.core.ui.components.IOSSearchBar(
                     query = searchQuery,
@@ -736,10 +741,10 @@ fun FollowingListScreen(
                     is FollowingListUiState.Error -> {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("😢", fontSize = 48.sp)
-                                Spacer(Modifier.height(16.dp))
+                                Text("😢", fontSize = MaterialTheme.typography.displaySmall.fontSize)
+                                Spacer(Modifier.height(AppSpacingTokens.Large))
                                 Text(state.message, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Spacer(Modifier.height(16.dp))
+                                Spacer(Modifier.height(AppSpacingTokens.Large))
                                 Button(onClick = { viewModel.loadFollowingList(mid, forceRefresh = true) }) {
                                     Text("重试")
                                 }
@@ -810,7 +815,7 @@ fun FollowingListScreen(
                                 }
                             },
                             state = pullRefreshState,
-                            indicatorTopInset = 0.dp,
+                            indicatorTopInset = AppSpacingTokens.None,
                             modifier = Modifier.fillMaxSize()
                         ) {
                             if (filteredUsers.isEmpty() && searchQuery.isNotEmpty()) {
@@ -818,7 +823,11 @@ fun FollowingListScreen(
                                     Text("没有找到相关 UP 主", color = MaterialTheme.colorScheme.onSurfaceVariant)
                                  }
                             } else {
-                                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                                LazyColumn(
+                                    modifier = Modifier
+                                        .responsiveContentWidth(resolveFollowingListMaxWidth())
+                                        .fillMaxSize(),
+                                ) {
                                     // 统计信息
                                     item {
                                         AnimatedBlurFadeText(
@@ -829,11 +838,11 @@ fun FollowingListScreen(
                                                 searchQuery.isEmpty() -> "当前分组 ${filteredUsers.size} 人"
                                                 else -> "找到 ${filteredUsers.size} 个结果"
                                             },
-                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                                            modifier = Modifier.padding(horizontal = AppSpacingTokens.Large, vertical = AppSpacingTokens.Medium)
                                         ) { text, animatedModifier ->
                                             Text(
                                                 text = text,
-                                                fontSize = 13.sp,
+                                                fontSize = MaterialTheme.typography.labelMedium.fontSize,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 modifier = animatedModifier
                                             )
@@ -845,8 +854,8 @@ fun FollowingListScreen(
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .horizontalScroll(rememberScrollState())
-                                                .padding(horizontal = 16.dp, vertical = 4.dp),
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                                .padding(horizontal = AppSpacingTokens.Large, vertical = AppSpacingTokens.ExtraSmall),
+                                            horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small)
                                         ) {
                                             groupFilterChips.forEach { chip ->
                                                 val chipFilterId = if (chip.tagid == Long.MIN_VALUE) null else chip.tagid
@@ -868,9 +877,9 @@ fun FollowingListScreen(
                                         item {
                                             Text(
                                                 text = "分组信息加载中...($followGroupMetaLoadedCount/${state.users.size})",
-                                                fontSize = 12.sp,
+                                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                                                modifier = Modifier.padding(horizontal = AppSpacingTokens.Large, vertical = AppSpacingTokens.ExtraSmall)
                                             )
                                         }
                                     }
@@ -898,7 +907,7 @@ fun FollowingListScreen(
                                                 Box(
                                                     modifier = Modifier
                                                         .fillMaxWidth()
-                                                        .padding(16.dp),
+                                                        .padding(AppSpacingTokens.Large),
                                                     contentAlignment = Alignment.Center
                                                 ) {
                                                     CupertinoActivityIndicator()
@@ -910,13 +919,13 @@ fun FollowingListScreen(
                                                     modifier = Modifier
                                                         .fillMaxWidth()
                                                         .clickable { viewModel.loadMore() }
-                                                        .padding(16.dp),
+                                                        .padding(AppSpacingTokens.Large),
                                                     contentAlignment = Alignment.Center
                                                 ) {
                                                     Text(
                                                         "加载更多",
                                                         color = MaterialTheme.colorScheme.primary,
-                                                        fontSize = 14.sp
+                                                        fontSize = MaterialTheme.typography.labelMedium.fontSize
                                                     )
                                                 }
                                             }
@@ -928,14 +937,14 @@ fun FollowingListScreen(
 
                         if (isEditMode) {
                             Surface(
-                                tonalElevation = 3.dp,
-                                shadowElevation = 3.dp
+                                tonalElevation = AppSpacingTokens.ExtraSmall - AppSpacingTokens.Micro / 2,
+                                shadowElevation = AppSpacingTokens.ExtraSmall - AppSpacingTokens.Micro / 2
                             ) {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(horizontal = 16.dp, vertical = 10.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                        .padding(horizontal = AppSpacingTokens.Large, vertical = AppSpacingTokens.Small + AppSpacingTokens.Micro),
+                                    horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Medium),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     OutlinedButton(
@@ -981,8 +990,8 @@ fun FollowingListScreen(
                                     ) {
                                         if (isBatchUnfollowing) {
                                             CircularProgressIndicator(
-                                                modifier = Modifier.size(16.dp),
-                                                strokeWidth = 2.dp,
+                                                modifier = Modifier.size(AppSpacingTokens.Large),
+                                                strokeWidth = AppSpacingTokens.Micro,
                                                 color = MaterialTheme.colorScheme.onPrimary
                                             )
                                         } else {
@@ -1046,7 +1055,7 @@ fun FollowingListScreen(
                                         Box(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .padding(vertical = 12.dp),
+                                                .padding(vertical = AppSpacingTokens.Medium),
                                             contentAlignment = Alignment.Center
                                         ) {
                                             CupertinoActivityIndicator()
@@ -1055,22 +1064,22 @@ fun FollowingListScreen(
                                         Column(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .heightIn(max = 320.dp)
+                                                .heightIn(max = resolveFollowingBatchGroupDialogMaxHeight())
                                                 .verticalScroll(rememberScrollState())
                                         ) {
                                             if (groupDialogMixed) {
                                                 Text(
                                                     text = "检测到已选 UP 主原分组不一致，已默认全部不选。",
                                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    fontSize = 12.sp,
-                                                    modifier = Modifier.padding(bottom = 8.dp)
+                                                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                                    modifier = Modifier.padding(bottom = AppSpacingTokens.Small)
                                                 )
                                             }
                                             if (groupDialogTags.isEmpty()) {
                                                 Text(
                                                     text = "暂无可用分组（不勾选即回到默认分组）",
                                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                    fontSize = 13.sp
+                                                    fontSize = MaterialTheme.typography.labelMedium.fontSize
                                                 )
                                             } else {
                                                 groupDialogTags.forEach { tag ->
@@ -1084,7 +1093,7 @@ fun FollowingListScreen(
                                                                     groupDialogSelection + tag.tagid
                                                                 }
                                                             }
-                                                            .padding(vertical = 6.dp),
+                                                            .padding(vertical = AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro),
                                                         verticalAlignment = Alignment.CenterVertically
                                                     ) {
                                                         Checkbox(
@@ -1099,7 +1108,7 @@ fun FollowingListScreen(
                                                         )
                                                         Text(
                                                             text = "${tag.name} (${tag.count})",
-                                                            fontSize = 14.sp,
+                                                            fontSize = MaterialTheme.typography.labelMedium.fontSize,
                                                             color = MaterialTheme.colorScheme.onSurface
                                                         )
                                                     }
@@ -1108,8 +1117,8 @@ fun FollowingListScreen(
                                             Text(
                                                 text = "确定后会完全覆盖原分组设置。",
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                fontSize = 12.sp,
-                                                modifier = Modifier.padding(top = 8.dp)
+                                                fontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                                modifier = Modifier.padding(top = AppSpacingTokens.Small)
                                             )
                                         }
                                     }
@@ -1136,8 +1145,8 @@ fun FollowingListScreen(
                                     ) {
                                         if (groupDialogSaving) {
                                             CircularProgressIndicator(
-                                                modifier = Modifier.size(16.dp),
-                                                strokeWidth = 2.dp,
+                                                modifier = Modifier.size(AppSpacingTokens.Large),
+                                                strokeWidth = AppSpacingTokens.Micro,
                                                 color = MaterialTheme.colorScheme.onPrimary
                                             )
                                         } else {
@@ -1170,6 +1179,7 @@ private fun AnimatedBlurFadeText(
 ) {
     val blurAnim = remember { Animatable(0f) }
     val alphaAnim = remember { Animatable(1f) }
+    val standardMotionSpec = AppMotionTokens.standardSpec<Float>()
 
     LaunchedEffect(targetText) {
         blurAnim.snapTo(6f)
@@ -1177,20 +1187,20 @@ private fun AnimatedBlurFadeText(
         launch {
             blurAnim.animateTo(
                 targetValue = 0f,
-                animationSpec = tween(durationMillis = 220)
+                animationSpec = standardMotionSpec
             )
         }
         alphaAnim.animateTo(
             targetValue = 1f,
-            animationSpec = tween(durationMillis = 180)
+            animationSpec = standardMotionSpec
         )
     }
 
     AnimatedContent(
         targetState = targetText,
         transitionSpec = {
-            (fadeIn(animationSpec = tween(180)) togetherWith
-                fadeOut(animationSpec = tween(140))) using
+            (fadeIn(animationSpec = standardMotionSpec) togetherWith
+                fadeOut(animationSpec = standardMotionSpec)) using
                 SizeTransform(clip = false)
         },
         label = "following-count-blur-fade"
@@ -1222,7 +1232,7 @@ private fun FollowingUserItem(
         modifier = modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = AppSpacingTokens.Large, vertical = AppSpacingTokens.Medium),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // 头像
@@ -1234,12 +1244,12 @@ private fun FollowingUserItem(
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .size(48.dp)
+                .size(AppSpacingTokens.TripleExtraLarge)
                 .clip(CircleShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         )
         
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(AppSpacingTokens.Medium))
         
         // 用户信息
         Column(modifier = Modifier.weight(1f)) {
@@ -1249,7 +1259,7 @@ private fun FollowingUserItem(
             ) {
                 Text(
                     text = user.uname,
-                    fontSize = 15.sp,
+                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
@@ -1257,25 +1267,25 @@ private fun FollowingUserItem(
                     modifier = Modifier.weight(1f, fill = false)
                 )
                 if (officialBadge != null) {
-                    Spacer(Modifier.width(6.dp))
+                    Spacer(Modifier.width(AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro))
                     FollowingOfficialVerifyBadgeView(officialBadge)
                 }
             }
             if (followingSinceLabel.isNotEmpty()) {
-                Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(AppSpacingTokens.ExtraSmall))
                 Text(
                     text = followingSinceLabel,
-                    fontSize = 12.sp,
+                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
                     color = MaterialTheme.colorScheme.primary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
             }
             if (user.sign.isNotEmpty()) {
-                Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(AppSpacingTokens.ExtraSmall))
                 Text(
                     text = user.sign,
-                    fontSize = 12.sp,
+                    fontSize = MaterialTheme.typography.labelSmall.fontSize,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis

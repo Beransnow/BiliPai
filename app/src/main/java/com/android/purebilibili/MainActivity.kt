@@ -59,7 +59,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.ComposeView
@@ -68,30 +67,24 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.Density
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.PlayerView
+import androidx.metrics.performance.JankStats
 import androidx.window.layout.WindowMetrics
 import androidx.window.layout.WindowMetricsCalculator
 import coil.compose.AsyncImagePainter
+import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
 import com.android.purebilibili.core.store.SettingsManager
-import com.android.purebilibili.core.store.DEFAULT_ANALYTICS_ENABLED
-import com.android.purebilibili.app.PureApplication
-import com.android.purebilibili.app.StartupLaunchDecision
 import com.android.purebilibili.core.coroutines.AppScope
 import com.android.purebilibili.core.theme.BiliPink
 import com.android.purebilibili.core.theme.LocalDisplayMetricsSnapshot
 import com.android.purebilibili.core.theme.PureBiliBiliTheme
 import com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState
 import com.android.purebilibili.core.ui.motion.AppMotionEasing
-import com.android.purebilibili.core.ui.performance.DefaultWindowJankReporter
-import com.android.purebilibili.core.ui.performance.WindowJankController
+import com.android.purebilibili.core.ui.performance.AppRuntimeVisualGuardTracker
 import com.android.purebilibili.core.ui.wallpaper.SplashWallpaperLayout
-import com.android.purebilibili.core.ui.wallpaper.probeSplashWallpaperAspectRatio
-import com.android.purebilibili.core.ui.wallpaper.resolveSplashWallpaperDecodeSize
 import com.android.purebilibili.core.ui.wallpaper.resolveSplashWallpaperLayout
 import com.android.purebilibili.core.util.BilibiliNavigationTarget
 import com.android.purebilibili.core.util.BilibiliNavigationTargetParser
-import com.android.purebilibili.core.util.AnalyticsHelper
 import com.android.purebilibili.core.util.WindowWidthSizeClass
 import com.android.purebilibili.core.util.Logger
 import com.android.purebilibili.feature.plugin.EyeProtectionOverlay
@@ -108,6 +101,7 @@ import com.android.purebilibili.core.theme.buildDisplayMetricsSnapshot
 import com.android.purebilibili.core.ui.IOSAlertDialog
 import com.android.purebilibili.core.ui.IOSDialogAction
 import com.android.purebilibili.core.ui.blur.ProvideUnifiedBlurIntensity
+import com.android.purebilibili.core.ui.performance.ProvideRuntimeVisualGuard
 import com.android.purebilibili.core.util.BilibiliUrlParser
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.calculateWindowSizeClass
@@ -150,9 +144,7 @@ import com.android.purebilibili.navigation.ScreenRoutes
 import com.android.purebilibili.navigation.VideoRoute
 import dev.chrisbanes.haze.haze
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -161,7 +153,6 @@ import java.net.URI
 import java.net.URLEncoder
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.max
 import kotlin.math.pow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -777,8 +768,8 @@ open class MainActivity : AppCompatActivity() {
     private var splashFlyoutEnabledAtCreate = false
     private var splashExitCallbackTriggered = false
     private var systemInDarkThemeSnapshot by mutableStateOf(false)
-    private var windowJankController: WindowJankController? = null
-    private var currentPerformanceRoute: String? = null
+    private var runtimeJankStats: JankStats? = null
+    private val runtimeVisualGuardSession = Any()
 
     var windowMetrics: WindowMetrics? by mutableStateOf(null)
 
@@ -856,10 +847,6 @@ open class MainActivity : AppCompatActivity() {
         val splashScreen = installSplashScreen()
         val runColdStartSplash = shouldRunColdStartSplash(savedInstanceStatePresent = savedInstanceState != null)
         val welcomePrefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
-        val startupSessionCoordinator =
-            (application as PureApplication).startupSessionCoordinator
-        val onboardingRequiredAtLaunch = !welcomePrefs.getBoolean(KEY_FIRST_LAUNCH, false)
-        val launchDecisionReady = AtomicBoolean(onboardingRequiredAtLaunch)
         val splashIconVisible = SettingsManager.isSplashIconAnimationEnabledSync(this)
         val splashFlyoutEnabled = runColdStartSplash && shouldEnableSplashFlyoutAnimation(
             sdkInt = Build.VERSION.SDK_INT,
@@ -883,15 +870,6 @@ open class MainActivity : AppCompatActivity() {
         VideoRepository.preloadHomeData()
         
         super.onCreate(savedInstanceState)
-        windowJankController = WindowJankController.create(
-            window = window,
-            buildType = BuildConfig.BUILD_TYPE,
-            analyticsEnabled = getSharedPreferences("analytics_tracking", MODE_PRIVATE)
-                .getBoolean("enabled", DEFAULT_ANALYTICS_ENABLED),
-            reporter = DefaultWindowJankReporter(
-                upload = AnalyticsHelper::logWindowJankSummary,
-            ),
-        )
         //  初始调用，后续会根据主题动态更新
         enableEdgeToEdge()
         
@@ -901,25 +879,26 @@ open class MainActivity : AppCompatActivity() {
         
         //  🚀 [启动优化] 保持 Splash 直到数据加载完成或超时
         var isDataReady = false
-        val startTime = startupSessionCoordinator.sessionStartedAtMs
+        val startTime = System.currentTimeMillis()
 
         windowMetrics = WindowMetricsCalculator.getOrCreate().computeMaximumWindowMetrics(this)
 
         splashScreen.setKeepOnScreenCondition {
+            if (!keepSystemSplashForPreload) {
+                return@setKeepOnScreenCondition false
+            }
+
             // 检查数据是否就绪
-            if (keepSystemSplashForPreload && VideoRepository.isHomeDataReady()) {
+            if (VideoRepository.isHomeDataReady()) {
                 isDataReady = true
             }
             
             // 计算耗时
-            val elapsed = SystemClock.elapsedRealtime() - startTime
+            val elapsed = System.currentTimeMillis() - startTime
             
-            // 条件：启动决策或首页数据未就绪，且仍在同一个 1000ms 总截止内。
+            // 条件：数据未就绪 且 未超时(1400ms)
             // 如果超时，强制进入（会显示骨架屏），避免用户以为死机
-            val shouldKeepForDecision = !launchDecisionReady.get()
-            val shouldKeepForHome = keepSystemSplashForPreload && !isDataReady
-            val shouldKeep = (shouldKeepForDecision || shouldKeepForHome) &&
-                elapsed < splashMaxKeepOnScreenMs()
+            val shouldKeep = !isDataReady && elapsed < splashMaxKeepOnScreenMs()
             
             if (!shouldKeep) {
                  Logger.d(TAG, "🚀 Splash dismissed. DataReady=$isDataReady, Elapsed=${elapsed}ms")
@@ -1103,7 +1082,6 @@ open class MainActivity : AppCompatActivity() {
         val composeContentView = ComposeView(this).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
         }
-        val appContentLaidOut = CompletableDeferred<Unit>()
         val rootContainer = FrameLayout(this).apply {
             addView(
                 composeContentView,
@@ -1119,29 +1097,6 @@ open class MainActivity : AppCompatActivity() {
             val context = LocalContext.current
             val uriHandler = LocalUriHandler.current
             val scope = rememberCoroutineScope()
-            var startupLaunchDecision by remember {
-                mutableStateOf(
-                    if (onboardingRequiredAtLaunch) {
-                        StartupLaunchDecision(
-                            onboardingRequired = true,
-                            openPortraitFeedOnStartup = false,
-                        )
-                    } else {
-                        startupSessionCoordinator.currentDecisionOrNull()
-                    }
-                )
-            }
-            LaunchedEffect(Unit) {
-                val remainingMs = startupSessionCoordinator.remainingDecisionTimeMs(
-                    nowMs = SystemClock.elapsedRealtime(),
-                    totalDeadlineMs = splashMaxKeepOnScreenMs(),
-                )
-                startupLaunchDecision = startupSessionCoordinator.freezeDecision(
-                    onboardingRequired = onboardingRequiredAtLaunch,
-                    timeoutMs = remainingMs,
-                )
-                launchDecisionReady.set(true)
-            }
             var startupUpdateCheckResult by remember { mutableStateOf<AppUpdateCheckResult?>(null) }
             var startupUpdateDownloadState by remember { mutableStateOf(AppUpdateDownloadState()) }
             var pendingCrashSnapshotPath by remember {
@@ -1279,6 +1234,9 @@ open class MainActivity : AppCompatActivity() {
                 appFontFileName = appFontFileName,
 
             ) {
+                ProvideRuntimeVisualGuard(
+                    widthSizeClass = windowSizeClass.widthSizeClass
+                ) {
                 ProvideUnifiedBlurIntensity {
                     //  📐 [平板适配] 提供全局 WindowSizeClass
                     CompositionLocalProvider(
@@ -1385,67 +1343,52 @@ open class MainActivity : AppCompatActivity() {
                                     setPictureInPictureParams(pipParams)
                                 }
                             }
-                            startupLaunchDecision?.let { frozenLaunchDecision ->
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .onGloballyPositioned {
-                                            appContentLaidOut.complete(Unit)
-                                        }
-                                ) {
-                                    AppNavigation(
-                                        startupLaunchDecision = frozenLaunchDecision,
-                                        miniPlayerManager = miniPlayerManager,
-                                        isInPipMode = isPipRenderingActive,
-                                        pendingVideoId = pendingVideoId,
-                                        pendingShortcutRoute = pendingRoute,
-                                        pendingNavigationRoute = pendingNavigationRoute,
-                                        onPendingVideoIdConsumed = { consumedVideoId ->
-                                            if (pendingVideoId == consumedVideoId) {
-                                                pendingVideoId = null
-                                            }
-                                        },
-                                        onPendingShortcutRouteConsumed = { consumedRoute ->
-                                            if (pendingRoute == consumedRoute) {
-                                                pendingRoute = null
-                                            }
-                                        },
-                                        onPendingNavigationRouteConsumed = { consumedRoute ->
-                                            if (pendingNavigationRoute == consumedRoute) {
-                                                pendingNavigationRoute = null
-                                            }
-                                        },
-                                        initialSearchKeyword = pendingSearchKeyword,
-                                        onInitialSearchKeywordConsumed = { consumedKeyword ->
-                                            if (pendingSearchKeyword == consumedKeyword) {
-                                                pendingSearchKeyword = null
-                                            }
-                                        },
-                                        onVideoDetailEnter = {
-                                            isInVideoDetail = true
-                                            Logger.d(TAG, " 进入视频详情页")
-                                        },
-                                        onVideoDetailExit = {
-                                            isInVideoDetail = false
-                                            Logger.d(TAG, "🔙 退出视频详情页")
-                                        },
-                                        onAudioModeEnter = {
-                                            isInAudioModeRoute = true
-                                            Logger.d(TAG, "🎧 进入听视频页")
-                                        },
-                                        onAudioModeExit = {
-                                            isInAudioModeRoute = false
-                                            Logger.d(TAG, "🎧 退出听视频页")
-                                        },
-                                        onPerformanceRouteChanged = { route ->
-                                            currentPerformanceRoute = route
-                                            windowJankController?.onRouteChanged(route)
-                                        },
-                                        onPrivacyAuthenticationRequired = ::authenticatePrivacyAccess,
-                                        mainHazeState = mainHazeState //  传递全局 Haze 状态
-                                    )
-                                }
-                            }
+                            AppNavigation(
+                                miniPlayerManager = miniPlayerManager,
+                                isInPipMode = isPipRenderingActive,
+                                pendingVideoId = pendingVideoId,
+                                pendingShortcutRoute = pendingRoute,
+                                pendingNavigationRoute = pendingNavigationRoute,
+                                onPendingVideoIdConsumed = { consumedVideoId ->
+                                    if (pendingVideoId == consumedVideoId) {
+                                        pendingVideoId = null
+                                    }
+                                },
+                                onPendingShortcutRouteConsumed = { consumedRoute ->
+                                    if (pendingRoute == consumedRoute) {
+                                        pendingRoute = null
+                                    }
+                                },
+                                onPendingNavigationRouteConsumed = { consumedRoute ->
+                                    if (pendingNavigationRoute == consumedRoute) {
+                                        pendingNavigationRoute = null
+                                    }
+                                },
+                                initialSearchKeyword = pendingSearchKeyword,
+                                onInitialSearchKeywordConsumed = { consumedKeyword ->
+                                    if (pendingSearchKeyword == consumedKeyword) {
+                                        pendingSearchKeyword = null
+                                    }
+                                },
+                                onVideoDetailEnter = {
+                                    isInVideoDetail = true
+                                    Logger.d(TAG, " 进入视频详情页")
+                                },
+                                onVideoDetailExit = {
+                                    isInVideoDetail = false
+                                    Logger.d(TAG, "🔙 退出视频详情页")
+                                },
+                                onAudioModeEnter = {
+                                    isInAudioModeRoute = true
+                                    Logger.d(TAG, "🎧 进入听视频页")
+                                },
+                                onAudioModeExit = {
+                                    isInAudioModeRoute = false
+                                    Logger.d(TAG, "🎧 退出听视频页")
+                                },
+                                onPrivacyAuthenticationRequired = ::authenticatePrivacyAccess,
+                                mainHazeState = mainHazeState //  传递全局 Haze 状态
+                            )
                             
                             //  OnboardingBottomSheet 等其他 overlay 组件
 
@@ -1597,54 +1540,17 @@ open class MainActivity : AppCompatActivity() {
                     val splashExtraBlur = customSplashExtraBlurDp(splashFadeProgress)
                     val splashTailScrimAlpha = customSplashOverlayScrimAlpha(splashFadeProgress)
 
-                    LaunchedEffect(Unit) {
-                        snapshotFlow {
-                            !customSplashShouldRender(showSplash, splashOverlayAlpha)
-                        }
-                            .filter { it }
-                            .first()
-                        appContentLaidOut.await()
-                        repeat(3) {
-                            withFrameNanos { }
-                        }
-                        reportFullyDrawn()
-                        (application as PureApplication).onFirstInteractive()
-                    }
-
                     if (customSplashShouldRender(showSplash, splashOverlayAlpha) && splashUri.isNotEmpty()) {
-                        val splashDecodeSize = remember(windowMetrics) {
-                            val bounds = windowMetrics!!.bounds
-                            resolveSplashWallpaperDecodeSize(
-                                windowWidthPx = bounds.width(),
-                                windowHeightPx = bounds.height(),
-                            )
-                        }
-                        val splashImageRequest = remember(
-                            splashUri,
-                            splashDecodeSize.widthPx,
-                            splashDecodeSize.heightPx,
-                        ) {
-                            ImageRequest.Builder(context)
-                                .data(splashUri)
-                                .size(splashDecodeSize.widthPx, splashDecodeSize.heightPx)
-                                .build()
-                        }
-                        val splashPainter = rememberAsyncImagePainter(model = splashImageRequest)
-                        var splashAspectRatio by remember(splashUri) { mutableStateOf<Float?>(null) }
-                        LaunchedEffect(splashUri) {
-                            probeSplashWallpaperAspectRatio(context, splashUri)?.let { ratio ->
-                                splashAspectRatio = ratio
-                            }
-                        }
-                        LaunchedEffect(splashPainter) {
-                            val success = snapshotFlow { splashPainter.state }
-                                .filterIsInstance<AsyncImagePainter.State.Success>()
-                                .first()
-                            if (splashAspectRatio == null) {
-                                splashAspectRatio = resolveDrawableAspectRatio(
-                                    width = success.result.drawable.intrinsicWidth,
-                                    height = success.result.drawable.intrinsicHeight,
-                                )
+                        val splashProbePainter = rememberAsyncImagePainter(model = splashUri)
+                        val splashAspectRatio by remember(splashProbePainter.state) {
+                            derivedStateOf {
+                                when (val state = splashProbePainter.state) {
+                                    is AsyncImagePainter.State.Success -> resolveDrawableAspectRatio(
+                                        width = state.result.drawable.intrinsicWidth,
+                                        height = state.result.drawable.intrinsicHeight
+                                    )
+                                    else -> null
+                                }
                             }
                         }
                         val splashWallpaperLayout = remember(windowSizeClass.widthSizeClass, splashAspectRatio) {
@@ -1661,8 +1567,8 @@ open class MainActivity : AppCompatActivity() {
                         ) {
                             when (splashWallpaperLayout) {
                                 SplashWallpaperLayout.FULL_CROP -> {
-                                    Image(
-                                        painter = splashPainter,
+                                    AsyncImage(
+                                        model = splashUri,
                                         contentDescription = "Splash Wallpaper",
                                         alignment = BiasAlignment(0f, splashAlignmentBias),
                                         contentScale = ContentScale.Crop,
@@ -1677,8 +1583,8 @@ open class MainActivity : AppCompatActivity() {
                                 }
 
                                 SplashWallpaperLayout.POSTER_CARD_BLUR_BG -> {
-                                    Image(
-                                        painter = splashPainter,
+                                    AsyncImage(
+                                        model = splashUri,
                                         contentDescription = null,
                                         alignment = BiasAlignment(0f, splashAlignmentBias),
                                         contentScale = ContentScale.Crop,
@@ -1718,8 +1624,8 @@ open class MainActivity : AppCompatActivity() {
                                             .widthIn(min = 190.dp, max = 340.dp)
                                             .aspectRatio(9f / 16f)
                                     ) {
-                                        Image(
-                                            painter = splashPainter,
+                                        AsyncImage(
+                                            model = splashUri,
                                             contentDescription = "Splash Wallpaper Poster",
                                             alignment = BiasAlignment(0f, splashAlignmentBias),
                                             contentScale = ContentScale.Crop,
@@ -2004,6 +1910,7 @@ open class MainActivity : AppCompatActivity() {
 
                     }
                 }
+                }
             }
             }
         }
@@ -2017,6 +1924,23 @@ open class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        AppRuntimeVisualGuardTracker.activateSession(runtimeVisualGuardSession)
+        val existingJankStats = runtimeJankStats
+        if (existingJankStats != null) {
+            existingJankStats.isTrackingEnabled = true
+        } else {
+            runtimeJankStats = runCatching {
+                JankStats.createAndTrack(window) { frameData ->
+                    AppRuntimeVisualGuardTracker.onFrame(
+                        session = runtimeVisualGuardSession,
+                        frameData = frameData,
+                        nowMs = SystemClock.uptimeMillis(),
+                    )
+                }
+            }.onFailure { throwable ->
+                Logger.w(TAG, "无法启动页面转场性能采样", throwable)
+            }.getOrNull()
+        }
         if (shouldLogWarmResume(hasCompletedInitialResume, isChangingConfigurations)) {
             Logger.d(
                 TAG,
@@ -2025,9 +1949,14 @@ open class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onStop() {
+        AppRuntimeVisualGuardTracker.discardActiveWindow(runtimeVisualGuardSession)
+        runtimeJankStats?.isTrackingEnabled = false
+        super.onStop()
+    }
+
     override fun onResume() {
         super.onResume()
-        windowJankController?.onWindowResumed(currentPerformanceRoute)
         refreshSystemThemeSnapshot(reason = "resume")
         miniPlayerManager.clearUserLeaveHint()
         miniPlayerManager.clearPlaybackRoutePipState()
@@ -2051,11 +1980,6 @@ open class MainActivity : AppCompatActivity() {
         if (!hasCompletedInitialResume) {
             hasCompletedInitialResume = true
         }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        windowJankController?.onWindowPaused()
     }
     
     //  用户按 Home 键或切换应用时触发
@@ -2294,8 +2218,8 @@ open class MainActivity : AppCompatActivity() {
     }
     
     override fun onDestroy() {
-        windowJankController?.close()
-        windowJankController = null
+        runtimeJankStats?.isTrackingEnabled = false
+        runtimeJankStats = null
         super.onDestroy()
     }
 }

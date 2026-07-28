@@ -1,10 +1,11 @@
 // 文件路径: feature/dynamic/DynamicScreen.kt
 package com.android.purebilibili.feature.dynamic
 
+import com.android.purebilibili.core.ui.AppSpacingTokens
+
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.SizeTransform
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -30,7 +31,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -56,12 +56,14 @@ import com.android.purebilibili.core.ui.BiliGradientButton
 import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
 import com.android.purebilibili.core.ui.EmptyState
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
+import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
+import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.motion.AppMotionTokens
 import com.android.purebilibili.core.ui.LoadingAnimation
 import com.android.purebilibili.core.ui.TopReadabilityChrome
 import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
 import com.android.purebilibili.core.ui.resolveGlobalWallpaperChromeColor
-import com.android.purebilibili.core.ui.resolveBottomSafeAreaPadding
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.util.responsiveContentWidth
 import com.android.purebilibili.feature.dynamic.resolveDynamicHorizontalUserListHorizontalPadding
@@ -205,16 +207,14 @@ fun DynamicScreen(
     val displayedLogicalTab = resolveDynamicSettledLogicalTab(displayedTabIndex, visibleTabs)
         ?: activeSelectedTab
     val activeListState = listStates[displayedLogicalTab]
+    val pagerMotionSpec = AppMotionTokens.emphasizedSpec<Float>()
 
     LaunchedEffect(activeSelectedTab, pagerState.pageCount) {
         val targetIndex = visibleTabs.indexOfFirst { it.logicalIndex == activeSelectedTab }
         if (targetIndex in visibleTabs.indices && targetIndex != pagerState.settledPage) {
             pagerState.animateScrollToPage(
                 page = targetIndex,
-                animationSpec = tween(
-                    durationMillis = 240,
-                    easing = LinearOutSlowInEasing
-                )
+                animationSpec = pagerMotionSpec
             )
         }
     }
@@ -260,10 +260,7 @@ fun DynamicScreen(
 
     val density = LocalDensity.current
     val statusBarHeight = WindowInsets.statusBars.getTop(density).let { with(density) { it.toDp() } }
-    val dynamicListBottomPadding = resolveBottomSafeAreaPadding(
-        navigationBarsBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
-        extraBottomPadding = 120.dp
-    )
+    val dynamicListBottomPadding = LocalBottomBarContentPadding.current
     val pullRefreshState = rememberPullToRefreshState()
 
     // GIF 图片加载器
@@ -526,18 +523,20 @@ fun DynamicScreen(
             }
 
             //  [新增] 模式切换动画
+            val modeEnterFadeSpec = AppMotionTokens.emphasizedSpec<Float>()
+            val modeExitFadeSpec = AppMotionTokens.standardSpec<Float>()
             AnimatedContent(
                 targetState = displayMode,
                 transitionSpec = {
                     //  根据切换方向使用不同动画
                     val slideDirection = if (targetState == DynamicDisplayMode.HORIZONTAL) {
                         // 从侧边栏切换到横向：向左滑出+淡出，向左滑入+淡入
-                        (slideInHorizontally { -it / 4 } + fadeIn(animationSpec = tween(300))) togetherWith
-                        (slideOutHorizontally { it / 4 } + fadeOut(animationSpec = tween(200)))
+                        (slideInHorizontally { -it / 4 } + fadeIn(animationSpec = modeEnterFadeSpec)) togetherWith
+                        (slideOutHorizontally { it / 4 } + fadeOut(animationSpec = modeExitFadeSpec))
                     } else {
                         // 从横向切换到侧边栏：向右滑出+淡出，向右滑入+淡入
-                        (slideInHorizontally { it / 4 } + fadeIn(animationSpec = tween(300))) togetherWith
-                        (slideOutHorizontally { -it / 4 } + fadeOut(animationSpec = tween(200)))
+                        (slideInHorizontally { it / 4 } + fadeIn(animationSpec = modeEnterFadeSpec)) togetherWith
+                        (slideOutHorizontally { -it / 4 } + fadeOut(animationSpec = modeExitFadeSpec))
                     }
                     slideDirection.using(SizeTransform(clip = false))
                 },
@@ -659,8 +658,8 @@ fun DynamicScreen(
                             // 顶栏（下滑折叠，回顶复现）
                             androidx.compose.animation.AnimatedVisibility(
                                 visible = !shouldCollapseTopBar,
-                                enter = expandVertically(animationSpec = tween(180)) + fadeIn(animationSpec = tween(180)),
-                                exit = shrinkVertically(animationSpec = tween(180)) + fadeOut(animationSpec = tween(140)),
+                                enter = expandVertically(animationSpec = AppMotionTokens.standardSpec()) + fadeIn(animationSpec = AppMotionTokens.standardSpec()),
+                                exit = shrinkVertically(animationSpec = AppMotionTokens.standardSpec()) + fadeOut(animationSpec = AppMotionTokens.standardSpec()),
                                 modifier = Modifier.align(Alignment.TopCenter)
                             ) {
                                 DynamicTopBarWithTabs(
@@ -670,7 +669,7 @@ fun DynamicScreen(
                                         scope.launch {
                                             pagerState.animateScrollToPage(
                                                 page = visibleIndex,
-                                                animationSpec = tween(240, easing = LinearOutSlowInEasing)
+                                                animationSpec = AppMotionTokens.spatialSpec()
                                             )
                                         }
                                     },
@@ -795,9 +794,9 @@ fun DynamicScreen(
                             val backgroundAlpha = BlurStyles.getBackgroundAlpha(blurIntensity)
                             val globalWallpaperVisible = LocalGlobalWallpaperBackdropVisible.current
                             val headerColor = resolveGlobalWallpaperChromeColor(
-                                requestedColor = MaterialTheme.colorScheme.surface.copy(alpha = backgroundAlpha),
-                                defaultBackgroundColor = MaterialTheme.colorScheme.background,
-                                defaultSurfaceColor = MaterialTheme.colorScheme.surface,
+                                requestedColor = AppSurfaceTokens.surface().copy(alpha = backgroundAlpha),
+                                defaultBackgroundColor = AppSurfaceTokens.background(),
+                                defaultSurfaceColor = AppSurfaceTokens.surface(),
                                 globalWallpaperVisible = globalWallpaperVisible
                             )
 
@@ -818,8 +817,8 @@ fun DynamicScreen(
                                     // 顶栏（下滑折叠，回顶复现）
                                     AnimatedVisibility(
                                         visible = !shouldCollapseTopBar,
-                                        enter = expandVertically(animationSpec = tween(180)) + fadeIn(animationSpec = tween(180)),
-                                        exit = shrinkVertically(animationSpec = tween(180)) + fadeOut(animationSpec = tween(140))
+                                        enter = expandVertically(animationSpec = AppMotionTokens.standardSpec()) + fadeIn(animationSpec = AppMotionTokens.standardSpec()),
+                                        exit = shrinkVertically(animationSpec = AppMotionTokens.standardSpec()) + fadeOut(animationSpec = AppMotionTokens.standardSpec())
                                     ) {
                                         DynamicTopBarWithTabs(
                                             selectedTab = displayedTabIndex,
@@ -828,7 +827,7 @@ fun DynamicScreen(
                                                 scope.launch {
                                                     pagerState.animateScrollToPage(
                                                         page = visibleIndex,
-                                                        animationSpec = tween(240, easing = LinearOutSlowInEasing)
+                                                        animationSpec = AppMotionTokens.spatialSpec()
                                                     )
                                                 }
                                             },
@@ -841,8 +840,8 @@ fun DynamicScreen(
 
                                     AnimatedVisibility(
                                         visible = shouldShowHorizontalUserList && !shouldCollapseHorizontalUserList,
-                                        enter = expandVertically(animationSpec = tween(180)) + fadeIn(animationSpec = tween(180)),
-                                        exit = shrinkVertically(animationSpec = tween(180)) + fadeOut(animationSpec = tween(140))
+                                        enter = expandVertically(animationSpec = AppMotionTokens.standardSpec()) + fadeIn(animationSpec = AppMotionTokens.standardSpec()),
+                                        exit = shrinkVertically(animationSpec = AppMotionTokens.standardSpec()) + fadeOut(animationSpec = AppMotionTokens.standardSpec())
                                     ) {
                                         HorizontalUserList(
                                             users = followedUsers,
@@ -883,9 +882,9 @@ fun DynamicScreen(
                 visible = shouldShowBackToTop,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(end = 20.dp, bottom = dynamicListBottomPadding + 12.dp),
-                enter = fadeIn(animationSpec = tween(180)) + scaleIn(initialScale = 0.92f),
-                exit = fadeOut(animationSpec = tween(140)) + scaleOut(targetScale = 0.92f)
+                    .padding(end = AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall, bottom = dynamicListBottomPadding + AppSpacingTokens.Medium),
+                enter = fadeIn(animationSpec = AppMotionTokens.standardSpec()) + scaleIn(initialScale = 0.92f),
+                exit = fadeOut(animationSpec = AppMotionTokens.standardSpec()) + scaleOut(targetScale = 0.92f)
             ) {
                 SmallFloatingActionButton(
                     onClick = {
@@ -893,7 +892,7 @@ fun DynamicScreen(
                             scrollDynamicFeedToTop(refreshWhenAlreadyAtTop = false)
                         }
                     },
-                    containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
+                    containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(AppSpacingTokens.ExtraSmall - AppSpacingTokens.Micro / 2),
                     contentColor = MaterialTheme.colorScheme.primary
                 ) {
                     Icon(
@@ -989,8 +988,8 @@ private fun DynamicList(
         horizontalArrangement = Arrangement.spacedBy(resolveDynamicTimelineHorizontalSpacing()),
         verticalItemSpacing = resolveDynamicTimelineVerticalSpacing(),
         modifier = modifier
-            .fillMaxSize()
             .responsiveContentWidth(maxWidth = resolveDynamicTimelineMaxWidth())
+            .fillMaxSize()
     ) {
         // 空状态
         if (filteredItems.isEmpty() && !activeLoading && activeError == null) {
@@ -1002,7 +1001,7 @@ private fun DynamicList(
                 EmptyState(
                     message = if (selectedTab == 4 && !isSelectedUserTabActive) "选择一个UP查看专属动态" else "暂无动态",
                     actionText = if (selectedTab == 4 && !isSelectedUserTabActive) "从左侧或顶部 UP 列表中选择一个用户" else "登录后查看关注 UP主 的动态",
-                    modifier = Modifier.height(300.dp)
+                    modifier = Modifier.height(AppSpacingTokens.TripleExtraLarge * 6 + AppSpacingTokens.Medium)
                 )
             }
         }
@@ -1051,10 +1050,10 @@ private fun DynamicList(
                 span = StaggeredGridItemSpan.FullLine
             ) {
                 Box(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(AppSpacingTokens.Large),
                     contentAlignment = Alignment.Center
                 ) {
-                    LoadingAnimation(size = 40.dp)
+                    LoadingAnimation(size = AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Small)
                 }
             }
         }
@@ -1068,10 +1067,10 @@ private fun DynamicList(
             ) {
                 Text(
                     "没有更多了",
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(AppSpacingTokens.Large),
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.5f),
-                    fontSize = 13.sp
+                    fontSize = MaterialTheme.typography.labelMedium.fontSize
                 )
             }
         }
@@ -1083,7 +1082,7 @@ private fun OldContentDivider(label: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 10.dp),
+            .padding(horizontal = AppSpacingTokens.Large, vertical = AppSpacingTokens.Small + AppSpacingTokens.Micro),
         verticalAlignment = Alignment.CenterVertically
     ) {
         HorizontalDivider(
@@ -1092,9 +1091,9 @@ private fun OldContentDivider(label: String) {
         )
         Text(
             text = label,
-            modifier = Modifier.padding(horizontal = 10.dp),
+            modifier = Modifier.padding(horizontal = AppSpacingTokens.Small + AppSpacingTokens.Micro),
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
-            fontSize = 12.sp
+            fontSize = MaterialTheme.typography.labelSmall.fontSize
         )
         HorizontalDivider(
             modifier = Modifier.weight(1f),
@@ -1134,7 +1133,7 @@ private fun HorizontalUserList(
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
-                            .padding(4.dp)
+                            .padding(AppSpacingTokens.ExtraSmall)
                             .combinedClickable(
                                 onClick = onToggleShowHidden,
                                 onLongClick = onToggleShowHidden
@@ -1142,7 +1141,7 @@ private fun HorizontalUserList(
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(48.dp)
+                                .size(AppSpacingTokens.TripleExtraLarge)
                                 .clip(CircleShape)
                                 .background(MaterialTheme.colorScheme.surfaceVariant),
                             contentAlignment = Alignment.Center
@@ -1157,10 +1156,10 @@ private fun HorizontalUserList(
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall))
                         Text(
                             text = if (showHiddenUsers) "隐藏中" else "显示隐藏",
-                            fontSize = 10.sp,
+                            fontSize = MaterialTheme.typography.labelSmall.fontSize,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1
                         )
@@ -1189,17 +1188,17 @@ private fun HorizontalUserList(
                                 onClick = { onUserClick(user.uid) },
                                 onLongClick = { showMenu = true }
                             )
-                            .padding(4.dp)
+                            .padding(AppSpacingTokens.ExtraSmall)
                             .alpha(if (user.isHidden) 0.5f else 1f)
                     ) {
                         Box {
                             Box(
                                 modifier = Modifier
-                                    .size(48.dp)
+                                    .size(AppSpacingTokens.TripleExtraLarge)
                                     .clip(CircleShape)
                                     .then(
                                         if (isSelected)
-                                            Modifier.border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                                            Modifier.border(AppSpacingTokens.Micro, MaterialTheme.colorScheme.primary, CircleShape)
                                         else
                                             Modifier
                                     )
@@ -1216,12 +1215,12 @@ private fun HorizontalUserList(
                             }
                         }
                         if (shouldShowDynamicUserLiveBadge(user.isLive)) {
-                            DynamicUserLiveBadge(modifier = Modifier.padding(top = 2.dp))
+                            DynamicUserLiveBadge(modifier = Modifier.padding(top = AppSpacingTokens.Micro))
                         }
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall))
                         Text(
                             displayName,
-                            fontSize = 11.sp,
+                            fontSize = MaterialTheme.typography.labelSmall.fontSize,
                             color = if (isSelected)
                                 MaterialTheme.colorScheme.primary
                             else
@@ -1229,7 +1228,7 @@ private fun HorizontalUserList(
                             maxLines = 1,
                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                            modifier = Modifier.width(64.dp)
+                            modifier = Modifier.width(AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Large)
                         )
                     }
 
@@ -1274,7 +1273,7 @@ private fun ErrorOverlay(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(error.orEmpty(), color = MaterialTheme.colorScheme.error)
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(AppSpacingTokens.Large))
             if (error?.contains("未登录") == true) {
                 BiliGradientButton(text = "去登录", onClick = onLoginClick)
             } else {

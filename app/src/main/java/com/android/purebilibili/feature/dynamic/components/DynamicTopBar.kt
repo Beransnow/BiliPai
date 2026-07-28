@@ -1,6 +1,13 @@
 // 文件路径: feature/dynamic/components/DynamicTopBar.kt
 package com.android.purebilibili.feature.dynamic.components
 
+import com.android.purebilibili.core.ui.AppChromeSizeTokens
+import com.android.purebilibili.core.ui.AppSpacingTokens
+
+import com.android.purebilibili.core.ui.OpticalContrastPalette
+
+import com.android.purebilibili.core.ui.AppSurfaceTokens
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -79,7 +86,7 @@ fun DynamicTopBarWithTabs(
     
     //  使用 blurIntensity 对应的背景透明度实现毛玻璃质感
     val headerColor = resolveDynamicTopBarHeaderColor(
-        surfaceColor = MaterialTheme.colorScheme.surface,
+        surfaceColor = AppSurfaceTokens.surface(),
         backgroundAlpha = if (shouldUseHeaderBlur) backgroundAlpha else 0f,
         globalWallpaperVisible = globalWallpaperVisible
     )
@@ -118,14 +125,14 @@ fun DynamicTopBarWithTabs(
                             DynamicDisplayMode.HORIZONTAL else DynamicDisplayMode.SIDEBAR
                         onDisplayModeChange(newMode)
                     },
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
                 ) {
                     Icon(
                         imageVector = if (displayMode == DynamicDisplayMode.SIDEBAR)
                             CupertinoIcons.Default.ListBullet else CupertinoIcons.Default.RectangleStack,
                         contentDescription = "切换布局模式",
                         tint = MaterialTheme.colorScheme.onSurface, // 自适应颜色
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro)
                     )
                 }
             }
@@ -146,8 +153,8 @@ private fun DynamicCompactTabRow(
         selectedIndex = selectedTab,
         onSelected = onTabSelected,
         modifier = modifier,
-        height = 44.dp,
-        labelFontSize = 14.sp,
+        height = AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Medium,
+        labelFontSize = MaterialTheme.typography.labelMedium.fontSize,
         indicatorPositionProvider = indicatorPositionProvider
     )
 }
@@ -177,8 +184,8 @@ internal fun shouldUseDynamicTopBarHeaderBlur(
 
 @Composable
 private fun rememberDynamicTabUnselectedColor(): Color {
-    return if (isDynamicTopBarDarkSurface(MaterialTheme.colorScheme.surface)) {
-        Color.White.copy(alpha = 0.9f)
+    return if (isDynamicTopBarDarkSurface(AppSurfaceTokens.surface())) {
+        OpticalContrastPalette.Highlight.copy(alpha = 0.9f)
     } else {
         MaterialTheme.colorScheme.onSurfaceVariant
     }

@@ -1,5 +1,10 @@
 package com.android.purebilibili.feature.dynamic.components
 
+import com.android.purebilibili.core.ui.AppSpacingTokens
+
+import com.android.purebilibili.core.ui.AppShapes
+import com.android.purebilibili.core.ui.ContainerLevel
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -38,21 +43,21 @@ internal fun DynamicOpusLinkCard(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(AppShapes.container(ContainerLevel.Card))
             .clickable(enabled = card.jumpUrl.isNotBlank(), onClick = onClick),
         color = MaterialTheme.colorScheme.surfaceContainer,
-        tonalElevation = 0.dp,
-        shape = RoundedCornerShape(12.dp)
+        tonalElevation = AppSpacingTokens.None,
+        shape = AppShapes.container(ContainerLevel.Card)
     ) {
         Row(
-            modifier = Modifier.padding(10.dp),
+            modifier = Modifier.padding(AppSpacingTokens.Small + AppSpacingTokens.Micro),
             verticalAlignment = Alignment.CenterVertically
         ) {
             LinkCardCover(card = card)
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(AppSpacingTokens.Small + AppSpacingTokens.Micro))
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall)
             ) {
                 if (card.label.isNotBlank()) {
                     Text(
@@ -82,7 +87,7 @@ internal fun DynamicOpusLinkCard(
                 }
             }
             if (card.badgeText.isNotBlank()) {
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(AppSpacingTokens.Small))
                 Text(
                     text = card.badgeText,
                     style = MaterialTheme.typography.labelMedium,
@@ -96,20 +101,20 @@ internal fun DynamicOpusLinkCard(
 
 @Composable
 private fun LinkCardCover(card: OpusLinkCard) {
-    val shape = RoundedCornerShape(8.dp)
+    val shape = AppShapes.container(ContainerLevel.Card)
     if (card.cover.isNotBlank()) {
         AsyncImage(
             model = card.cover,
             contentDescription = card.title,
             modifier = Modifier
-                .size(width = 86.dp, height = 58.dp)
+                .size(width = AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro, height = AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Small + AppSpacingTokens.Micro)
                 .clip(shape),
             contentScale = ContentScale.Crop
         )
     } else {
         Box(
             modifier = Modifier
-                .size(width = 58.dp, height = 58.dp)
+                .size(width = AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Small + AppSpacingTokens.Micro, height = AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Small + AppSpacingTokens.Micro)
                 .clip(shape)
                 .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
@@ -117,7 +122,7 @@ private fun LinkCardCover(card: OpusLinkCard) {
             Icon(
                 imageVector = CupertinoIcons.Default.Link,
                 contentDescription = null,
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier.size(AppSpacingTokens.ExtraLarge),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }

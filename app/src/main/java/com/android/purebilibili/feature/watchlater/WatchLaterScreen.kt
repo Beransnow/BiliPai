@@ -1,6 +1,8 @@
 // 文件路径: feature/watchlater/WatchLaterScreen.kt
 package com.android.purebilibili.feature.watchlater
 
+import com.android.purebilibili.core.ui.MediaContrastPalette
+
 import android.app.Application
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.tween
@@ -53,7 +55,13 @@ import com.android.purebilibili.core.refresh.WatchLaterRefreshBus
 import com.android.purebilibili.core.ui.AdaptiveScaffold
 import com.android.purebilibili.core.ui.AdaptiveTopAppBar
 import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
+import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
 import com.android.purebilibili.core.ui.LocalSharedTransitionScope
+import com.android.purebilibili.core.ui.AppSpacingTokens
+import com.android.purebilibili.core.ui.AppChromeSizeTokens
+import com.android.purebilibili.core.ui.AppShapes
+import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.network.NetworkModule
 import com.android.purebilibili.core.store.SettingsManager
@@ -71,6 +79,7 @@ import com.android.purebilibili.data.model.response.Stat
 import com.android.purebilibili.feature.common.resolveIndexedVideoLazyKey
 import com.android.purebilibili.feature.list.resolveDeleteBatchParallelism
 import com.android.purebilibili.core.util.CardPositionManager
+import com.android.purebilibili.core.util.responsiveContentWidth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -727,8 +736,9 @@ fun WatchLaterScreen(
                 // 暂时不加显式分割线，依靠毛玻璃效果
             }
         },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = AppSurfaceTokens.groupedListContainer()
     ) { padding ->
+        val bottomContentPadding = LocalBottomBarContentPadding.current
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -750,7 +760,7 @@ fun WatchLaterScreen(
                             text = state.error ?: "未知错误",
                             color = MaterialTheme.colorScheme.error
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(AppSpacingTokens.Small))
                         OutlinedButton(onClick = { viewModel.loadData() }) {
                             Text("重试")
                         }
@@ -764,10 +774,10 @@ fun WatchLaterScreen(
                         Icon(
                             CupertinoIcons.Default.Clock,
                             contentDescription = null,
-                            modifier = Modifier.size(64.dp),
+                            modifier = Modifier.size(AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Large),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(AppSpacingTokens.Small))
                         Text(
                             text = "稍后再看列表为空",
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -777,13 +787,15 @@ fun WatchLaterScreen(
                 else -> {
                     LazyColumn(
                         contentPadding = PaddingValues(
-                            start = 12.dp,
-                            end = 12.dp,
-                            top = padding.calculateTopPadding() + 8.dp,
-                            bottom = padding.calculateBottomPadding() + 8.dp + 80.dp
+                            start = AppSpacingTokens.Medium,
+                            end = AppSpacingTokens.Medium,
+                            top = padding.calculateTopPadding() + AppSpacingTokens.Small,
+                            bottom = bottomContentPadding
                         ),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxSize()
+                        verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+                        modifier = Modifier
+                            .responsiveContentWidth(resolveWatchLaterListMaxWidth())
+                            .fillMaxSize()
                     ) {
                         itemsIndexed(
                             items = displayedItems,
@@ -989,9 +1001,7 @@ private fun WatchLaterVideoCard(
         sourceRoute = sourceRoute,
         transitionEnabled = sharedElementReady
     )
-    val cardShellShape = remember(sharedTransitionVisualSpec) {
-        RoundedCornerShape(12.dp)
-    }
+    val cardShellShape = AppShapes.container(ContainerLevel.Card)
 
     Row(
         modifier = Modifier
@@ -1011,32 +1021,32 @@ private fun WatchLaterVideoCard(
             .onGloballyPositioned { coordinates ->
                 cardBoundsRef.value = coordinates.boundsInRoot()
             }
-            .clip(RoundedCornerShape(12.dp))
+            .clip(cardShellShape)
             .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
             .then(
                 if (isBatchMode) {
                     Modifier.border(
-                        width = if (isSelected) 2.dp else 1.dp,
+                        width = if (isSelected) AppSpacingTokens.Micro else AppSpacingTokens.Micro / 2,
                         color = if (isSelected) {
                             MaterialTheme.colorScheme.primary
                         } else {
                             MaterialTheme.colorScheme.outline.copy(alpha = 0.45f)
                         },
-                        shape = RoundedCornerShape(12.dp)
+                        shape = cardShellShape
                     )
                 } else {
                     Modifier
                 }
             )
             .clickable(onClick = cardClick)
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+            .padding(AppSpacingTokens.Small),
+        horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Medium),
         verticalAlignment = Alignment.CenterVertically
     ) {
         // 封面
         Box(
             modifier = Modifier
-                .width(140.dp)
+                .width(resolveWatchLaterCoverWidth())
                 .aspectRatio(16f / 9f)
                 .clip(coverShape)
         ) {
@@ -1050,14 +1060,14 @@ private fun WatchLaterVideoCard(
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(4.dp)
-                    .background(Color.Black.copy(alpha = 0.7f), RoundedCornerShape(4.dp))
-                    .padding(horizontal = 4.dp, vertical = 2.dp)
+                    .padding(AppSpacingTokens.ExtraSmall)
+                    .background(MediaContrastPalette.Scrim.copy(alpha = 0.7f), AppShapes.container(ContainerLevel.Tag))
+                    .padding(horizontal = AppSpacingTokens.ExtraSmall, vertical = AppSpacingTokens.Micro)
             ) {
                 Text(
                     text = formatDuration(item.duration),
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color.White
+                    color = MediaContrastPalette.Foreground
                 )
             }
         }
@@ -1083,7 +1093,7 @@ private fun WatchLaterVideoCard(
                 color = MaterialTheme.colorScheme.onSurface
             )
             
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall))
             
             Text(
                 text = item.owner.name,
@@ -1109,12 +1119,12 @@ private fun WatchLaterVideoCard(
                 } else {
                     MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.75f)
                 },
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(AppSpacingTokens.ExtraLarge)
             )
         } else {
             IconButton(
                 onClick = onDelete,
-                modifier = Modifier.size(36.dp)
+                modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Close,

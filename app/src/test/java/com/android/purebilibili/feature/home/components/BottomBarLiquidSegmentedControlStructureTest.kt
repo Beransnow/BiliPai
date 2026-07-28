@@ -305,7 +305,7 @@ class BottomBarLiquidSegmentedControlStructureTest {
         assertTrue(source.contains("BOTTOM_BAR_LIQUID_SEGMENTED_CONTROL_HEIGHT_DP = 58"))
         assertTrue(source.contains("BOTTOM_BAR_LIQUID_SEGMENTED_CONTROL_INDICATOR_HEIGHT_DP = 56"))
         assertTrue(source.contains("resolveSharedLiquidIndicatorPanelOffsetPx("))
-        assertTrue(source.contains("4.dp.toPx()"))
+        assertTrue(source.contains("AppSpacingTokens.ExtraSmall.toPx()"))
         assertTrue(source.contains("resolveBottomBarItemMotionVisual("))
         assertFalse(source.contains("rememberCombinedBackdrop("))
         assertFalse(source.contains("backdrop ?: tabsBackdrop"))

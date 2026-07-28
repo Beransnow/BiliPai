@@ -454,6 +454,8 @@ fun SpaceScreen(
                             onSearchQueryChange = viewModel::updateSearchQuery,
                             onSearchEntryClick = { viewModel.setSearchMode(true) },
                             onLocateTargetConsumed = viewModel::consumePendingLocateBvid,
+                            onLocateTargetMissing = viewModel::reportPendingLocateBvidMissing,
+                            onLocateTargetLoadFailed = viewModel::reportPendingLocateBvidLoadFailed,
                             onFollowClick = viewModel::toggleFollow,
                             onTopPhotoClick = { showTopPhotoPreview = true },
                             onAvatarClick = { showAvatarPreview = true },
@@ -771,6 +773,8 @@ private fun SpaceContent(
     onSearchQueryChange: (String) -> Unit,
     onSearchEntryClick: () -> Unit,
     onLocateTargetConsumed: (String) -> Unit,
+    onLocateTargetMissing: (String) -> Unit,
+    onLocateTargetLoadFailed: (String) -> Unit,
     onFollowClick: () -> Unit,
     onTopPhotoClick: () -> Unit,
     onAvatarClick: () -> Unit,
@@ -942,19 +946,38 @@ private fun SpaceContent(
         selectedMainTab,
         selectedContributionTab,
         contributionVideoItemStartIndex,
-        state.videos
+        state.videos,
+        state.hasMoreVideos,
+        state.videoPageLoadCompletionVersion,
     ) {
         val targetBvid = state.pendingLocateBvid ?: return@LaunchedEffect
         if (
             selectedMainTab == SpaceMainTab.CONTRIBUTION &&
             selectedContributionTab.subTab == SpaceSubTab.VIDEO
         ) {
-            val targetVideoIndex = state.videos.indexOfFirst { it.bvid == targetBvid }
-            if (targetVideoIndex < 0) {
-                if (state.isLoadingMore) return@LaunchedEffect
-                gridState.animateScrollToItem(contributionVideoItemStartIndex)
-                onLocateTargetConsumed(targetBvid)
-                return@LaunchedEffect
+            val targetVideoIndex = when (
+                val action = resolveSpaceLocateTargetPageAction(
+                    targetBvid = targetBvid,
+                    videos = state.videos,
+                    isLoading = state.isLoadingMore,
+                    hasMore = state.hasMoreVideos,
+                    lastLoadFailed = state.lastVideoPageLoadFailed,
+                )
+            ) {
+                is SpaceLocateTargetPageAction.Found -> action.index
+                SpaceLocateTargetPageAction.Wait -> return@LaunchedEffect
+                SpaceLocateTargetPageAction.LoadMore -> {
+                    onLoadMoreVideos()
+                    return@LaunchedEffect
+                }
+                SpaceLocateTargetPageAction.LoadFailed -> {
+                    onLocateTargetLoadFailed(targetBvid)
+                    return@LaunchedEffect
+                }
+                SpaceLocateTargetPageAction.Missing -> {
+                    onLocateTargetMissing(targetBvid)
+                    return@LaunchedEffect
+                }
             }
 
             gridState.animateScrollToItem(contributionVideoItemStartIndex + targetVideoIndex)

@@ -600,10 +600,10 @@ fun PortraitVideoPager(
         )
     }
     var currentPlayingCid by remember(initialInfo.cid, useSharedPlayer) {
-        mutableStateOf(if (useSharedPlayer) initialInfo.cid else 0L)
+        mutableLongStateOf(if (useSharedPlayer) initialInfo.cid else 0L)
     }
     var currentPlayingAid by remember(initialInfo.aid, useSharedPlayer) {
-        mutableStateOf(if (useSharedPlayer) initialInfo.aid else 0L)
+        mutableLongStateOf(if (useSharedPlayer) initialInfo.aid else 0L)
     }
     var isLoading by remember { mutableStateOf(false) }
     var lastCommittedPage by remember(useSharedPlayer) {
