@@ -104,7 +104,14 @@ class SettingsSemanticIconPolicyTest {
         val groupRoles = mutableListOf<Pair<Int, String>>()
 
         lines.forEachIndexed { index, line ->
-            if (groupStartLine == null && (line.contains("IOSGroup {") || line.contains("SettingsCardGroup {"))) {
+            if (
+                groupStartLine == null &&
+                (
+                    line.contains("IOSGroup {") ||
+                        line.contains("AppPreferenceGroup {") ||
+                        line.contains("SettingsCardGroup {")
+                    )
+            ) {
                 groupStartLine = index + 1
                 groupBraceDepth = line.braceDelta()
                 groupRoles.clear()

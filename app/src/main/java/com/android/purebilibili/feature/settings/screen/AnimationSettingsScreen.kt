@@ -232,7 +232,7 @@ fun AnimationSettingsContent(
                         )
                         IOSDivider()
                         IOSSwitchItem(
-                            icon = rememberSettingsSemanticIcon(SettingsIconRole.CARD_TRANSITION_ANIMATION),
+                            icon = rememberSettingsSemanticIcon(SettingsIconRole.WALLPAPER_EFFECT),
                             title = "过渡动画实时模糊",
                             subtitle = "过渡期间对背景使用实时模糊效果，关闭可降低 GPU 负载",
                             checked = videoTransitionRealtimeBlurEnabled,
@@ -241,7 +241,7 @@ fun AnimationSettingsContent(
                         )
                         IOSDivider()
                         IOSSwitchItem(
-                            icon = rememberSettingsSemanticIcon(SettingsIconRole.CARD_TRANSITION_ANIMATION),
+                            icon = rememberSettingsSemanticIcon(SettingsIconRole.PREDICTIVE_BACK),
                             title = "预测性返回手势",
                             subtitle = "关闭后仍可边缘返回，但不显示跟手预览，松手后执行普通返回动画",
                             checked = appNavigationSettings.predictiveBackEnabled,

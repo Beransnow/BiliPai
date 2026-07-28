@@ -205,6 +205,26 @@ internal fun <T> IOSSlidingSegmentedSetting(
     }
 }
 
+/** Style-neutral settings preference entry point backed by the adaptive renderer. */
+@Composable
+internal fun <T> AppSegmentedPreference(
+    title: String,
+    options: List<PlaybackSegmentOption<T>>,
+    selectedValue: T,
+    modifier: Modifier = Modifier,
+    subtitle: String? = null,
+    enabled: Boolean = true,
+    onSelectionChange: (T) -> Unit,
+) = IOSSlidingSegmentedSetting(
+    title = title,
+    options = options,
+    selectedValue = selectedValue,
+    modifier = modifier,
+    subtitle = subtitle,
+    enabled = enabled,
+    onSelectionChange = onSelectionChange,
+)
+
 @Composable
 internal fun <T> IOSSlidingSegmentedControl(
     options: List<PlaybackSegmentOption<T>>,
@@ -261,6 +281,38 @@ internal fun <T> IOSSlidingSegmentedControl(
         onSelectionChange = onSelectionChange
     )
 }
+
+/** Style-neutral segmented control entry point backed by the adaptive renderer. */
+@Composable
+internal fun <T> AppSegmentedControl(
+    options: List<PlaybackSegmentOption<T>>,
+    selectedValue: T,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    forceLiquidIndicator: Boolean = false,
+    height: Dp = BOTTOM_BAR_LIQUID_SEGMENTED_CONTROL_HEIGHT_DP.dp,
+    indicatorHeight: Dp = BOTTOM_BAR_LIQUID_SEGMENTED_CONTROL_INDICATOR_HEIGHT_DP.dp,
+    labelFontSize: TextUnit = 14.sp,
+    backdrop: Backdrop? = null,
+    tapPressRefractionEnabled: Boolean = true,
+    containerColorOverride: Color? = null,
+    indicatorIdleSurfaceColorOverride: Color? = null,
+    onSelectionChange: (T) -> Unit,
+) = IOSSlidingSegmentedControl(
+    options = options,
+    selectedValue = selectedValue,
+    modifier = modifier,
+    enabled = enabled,
+    forceLiquidIndicator = forceLiquidIndicator,
+    height = height,
+    indicatorHeight = indicatorHeight,
+    labelFontSize = labelFontSize,
+    backdrop = backdrop,
+    tapPressRefractionEnabled = tapPressRefractionEnabled,
+    containerColorOverride = containerColorOverride,
+    indicatorIdleSurfaceColorOverride = indicatorIdleSurfaceColorOverride,
+    onSelectionChange = onSelectionChange,
+)
 
 @Composable
 private fun <T> Md3SegmentedControl(

@@ -23,8 +23,8 @@ class PlaybackSettingsSelectionPolicyTest {
         val contentBlock = source
             .substringAfter("fun PlaybackSettingsContent(")
             .substringBefore("private fun PlaybackInteractionSettingsSection(")
-        assertTrue(contentBlock.contains("IOSSectionTitle(\"互动与评论\")"))
-        assertTrue(contentBlock.contains("IOSSectionTitle(\"全屏与手势\")"))
+        assertTrue(contentBlock.contains("AppPreferenceSectionTitle(\"互动与评论\")"))
+        assertTrue(contentBlock.contains("AppPreferenceSectionTitle(\"全屏与手势\")"))
         assertTrue(contentBlock.contains("PlaybackInteractionSettingsSection("))
         assertTrue(contentBlock.contains("PlaybackFullscreenGestureSettingsSection("))
     }
@@ -399,6 +399,6 @@ class PlaybackSettingsSelectionPolicyTest {
             File(path.removePrefix("app/")),
             File("..", path)
         )
-        return candidates.first { it.exists() }.readText()
+        return candidates.first { it.exists() }.readText().replace("\r\n", "\n")
     }
 }

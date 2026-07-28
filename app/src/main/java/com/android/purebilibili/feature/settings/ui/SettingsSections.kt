@@ -64,8 +64,8 @@ import com.android.purebilibili.core.ui.components.rememberAdaptiveSemanticIconT
 import com.android.purebilibili.core.ui.components.resolveAdaptiveListComponentVisualSpec
 import com.android.purebilibili.core.ui.components.resolveAdaptiveListRowVisualSpec
 import androidx.compose.ui.res.stringResource
-import com.android.purebilibili.core.ui.IOSAlertDialog
-import com.android.purebilibili.core.ui.IOSDialogAction
+import com.android.purebilibili.core.ui.AppAlertDialog
+import com.android.purebilibili.core.ui.AppDialogAction
 import com.android.purebilibili.core.store.MAX_HOME_REFRESH_COUNT
 import com.android.purebilibili.core.store.MIN_HOME_REFRESH_COUNT
 import com.android.purebilibili.feature.dynamic.allDynamicTabSpecs
@@ -83,12 +83,12 @@ import kotlin.math.roundToInt
 // Delegated to core/ui/components/iOSListComponents.kt
 import com.android.purebilibili.core.ui.animation.entrance
 import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.ui.components.IOSSectionTitle as SettingsSectionTitle
-import com.android.purebilibili.core.ui.components.IOSGroup as SettingsGroup
-import com.android.purebilibili.core.ui.components.IOSSwitchItem as SettingSwitchItem
-import com.android.purebilibili.core.ui.components.IOSClickableItem as SettingClickableItem
-import com.android.purebilibili.core.ui.components.IOSDivider as SettingsDivider
-import com.android.purebilibili.core.ui.components.IOSSliderPreference as SettingSliderItem
+import com.android.purebilibili.core.ui.components.AppPreferenceSectionTitle as SettingsSectionTitle
+import com.android.purebilibili.core.ui.components.AppPreferenceGroup as SettingsGroup
+import com.android.purebilibili.core.ui.components.AppSwitchPreference as SettingSwitchItem
+import com.android.purebilibili.core.ui.components.AppPreference as SettingClickableItem
+import com.android.purebilibili.core.ui.components.AppPreferenceDivider as SettingsDivider
+import com.android.purebilibili.core.ui.components.AppSliderPreference as SettingSliderItem
 
 
 
@@ -427,7 +427,7 @@ private fun SettingsRootCategoryRow(
         Box(
             modifier = Modifier
                 .size(visualSpec.categoryIconBubbleSize)
-                .clip(RoundedCornerShape(10.dp))
+                .clip(AppShapes.container(ContainerLevel.Field))
                 .background(iconTint.copy(alpha = 0.16f)),
             contentAlignment = Alignment.Center,
         ) {
@@ -1083,7 +1083,7 @@ fun FeedApiSection(
             
             Spacer(modifier = Modifier.height(16.dp))
 
-            IOSSlidingSegmentedControl(
+            AppSegmentedControl(
                 options = resolveFeedApiSegmentOptions(),
                 selectedValue = feedApiType,
                 onSelectionChange = onFeedApiTypeChange
@@ -1495,7 +1495,7 @@ fun AboutSection(
 
     detailDialogContent?.let { dialogContent ->
         val dialogScrollState = rememberScrollState()
-        IOSAlertDialog(
+        AppAlertDialog(
             onDismissRequest = { detailDialogContent = null },
             title = { Text(dialogContent.title) },
             text = {
@@ -1519,7 +1519,7 @@ fun AboutSection(
                 }
             },
             confirmButton = {
-                IOSDialogAction(
+                AppDialogAction(
                     onClick = {
                         when (dialogContent.action) {
                             AppBuildInfoDialogAction.VIEW_VERIFICATION -> onVerificationClick()
@@ -1533,7 +1533,7 @@ fun AboutSection(
                 }
             },
             dismissButton = {
-                IOSDialogAction(onClick = { detailDialogContent = null }) {
+                AppDialogAction(onClick = { detailDialogContent = null }) {
                     Text("关闭")
                 }
             }

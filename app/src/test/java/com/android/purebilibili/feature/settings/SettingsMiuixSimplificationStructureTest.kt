@@ -22,7 +22,7 @@ class SettingsMiuixSimplificationStructureTest {
     }
 
     @Test
-    fun `animation settings expose local glass toggles without duplicating global native control`() {
+    fun `animation settings expose independent glass toggles without duplicating global native control`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/settings/screen/AnimationSettingsScreen.kt")
 
         assertFalse(source.contains("previewLiquidGlassProgress"))
@@ -32,10 +32,10 @@ class SettingsMiuixSimplificationStructureTest {
         assertTrue(source.contains("首页搜索框液态玻璃"))
         assertTrue(source.contains("toggleHomeSearchLiquidGlass("))
         assertTrue(source.contains("底栏液态玻璃"))
-        assertFalse(source.contains("安卓原生液态玻璃"))
+        assertFalse(source.contains("title = \"安卓原生液态玻璃\""))
         assertFalse(source.contains("toggleAndroidNativeLiquidGlass("))
-        assertFalse(source.contains("共享元素背景模糊"))
-        assertFalse(source.contains("toggleVideoTransitionRealtimeBlur("))
+        assertTrue(source.contains("过渡动画实时模糊"))
+        assertTrue(source.contains("toggleVideoTransitionRealtimeBlur("))
         assertTrue(source.contains("SettingsPageScaffold("))
     }
 
@@ -85,7 +85,7 @@ class SettingsMiuixSimplificationStructureTest {
             File(normalizedPath)
         ).firstOrNull { it.exists() }
         require(sourceFile != null) { "Cannot locate $path from ${File(".").absolutePath}" }
-        return sourceFile.readText()
+        return sourceFile.readText().replace("\r\n", "\n")
     }
 
     private fun findDuplicateSettingIcons(path: String, source: String): List<String> {
@@ -111,7 +111,7 @@ class SettingsMiuixSimplificationStructureTest {
         }
 
         lines.forEachIndexed { index, line ->
-            if (line.contains("IOSGroup")) {
+            if (line.contains("IOSGroup") || line.contains("AppPreferenceGroup")) {
                 inGroup = true
                 groupStartLine = index + 1
                 braceDepth = 0

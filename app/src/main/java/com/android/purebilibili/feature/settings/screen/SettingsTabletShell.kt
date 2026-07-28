@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -32,7 +31,9 @@ import androidx.compose.ui.unit.dp
 import com.android.purebilibili.R
 import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.ui.AdaptiveSplitLayout
+import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.feature.settings.SettingsHomeSearchEntry
 import com.android.purebilibili.feature.settings.SettingsRootCategory
@@ -111,7 +112,7 @@ fun SettingsTabletShell(
                                 Box(
                                     modifier = Modifier
                                         .size(resolveSettingsVisualSpec().categoryIconBubbleSize)
-                                        .clip(RoundedCornerShape(10.dp))
+                                        .clip(AppShapes.container(ContainerLevel.Field))
                                         .background(visual.iconTint.copy(alpha = 0.16f)),
                                     contentAlignment = Alignment.Center,
                                 ) {
