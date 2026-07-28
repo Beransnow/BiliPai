@@ -101,6 +101,7 @@ import coil.compose.AsyncImage
 import coil.imageLoader
 import coil.size.Scale
 import com.android.purebilibili.R
+import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppShapes
@@ -548,7 +549,7 @@ fun SpaceScreen(
     if (showBlockConfirmDialog) {
         val userName = currentSuccessState?.userInfo?.name ?: "该用户"
         val userFace = currentSuccessState?.userInfo?.face.orEmpty()
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showBlockConfirmDialog = false },
             title = { Text(if (isBlocked) "解除屏蔽" else "屏蔽 UP 主") },
             text = {

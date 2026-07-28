@@ -3,6 +3,7 @@ package com.android.purebilibili.feature.dynamic.components
 
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppSpacingTokens
+import com.android.purebilibili.core.ui.AppAlertDialog
 
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
@@ -121,7 +122,7 @@ fun DynamicCardV2(
     }
 
     pendingDeleteAction?.let { action ->
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { pendingDeleteAction = null },
             icon = { Icon(CupertinoIcons.Default.Trash, contentDescription = null) },
             title = { Text(action.title) },

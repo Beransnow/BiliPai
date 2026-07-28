@@ -60,6 +60,7 @@ internal fun resolveIosDialogActionLayoutPolicy(
 @Composable
 fun IOSAlertDialog(
     onDismissRequest: () -> Unit,
+    icon: @Composable (() -> Unit)? = null,
     title: @Composable (() -> Unit)? = null,
     text: @Composable (() -> Unit)? = null,
     confirmButton: @Composable (() -> Unit)? = null,
@@ -76,6 +77,7 @@ fun IOSAlertDialog(
                 onDismissRequest = onDismissRequest,
             ) {
                 MiuixAlertDialogBody(
+                    icon = icon,
                     title = title,
                     text = text,
                     confirmButton = confirmButton,
@@ -97,6 +99,7 @@ fun IOSAlertDialog(
                     tonalElevation = 6.dp
                 ) {
                     MiuixAlertDialogBody(
+                        icon = icon,
                         title = title,
                         text = text,
                         confirmButton = confirmButton,
@@ -109,6 +112,7 @@ fun IOSAlertDialog(
         IOSAlertDialogRenderer.MATERIAL_ALERT -> {
             AlertDialog(
                 onDismissRequest = onDismissRequest,
+                icon = icon,
                 title = title,
                 text = text,
                 confirmButton = { confirmButton?.invoke() ?: Spacer(modifier = Modifier) },
@@ -149,6 +153,14 @@ fun IOSAlertDialog(
                     modifier = Modifier.padding(top = 20.dp, start = 16.dp, end = 16.dp, bottom = 20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    if (icon != null) {
+                        Box(contentAlignment = Alignment.Center) {
+                            icon()
+                        }
+                        if (title != null || text != null) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                    }
                     if (title != null) {
                         ProvideTextStyle(
                             value = MaterialTheme.typography.titleMedium.copy(
@@ -243,6 +255,7 @@ fun IOSAlertDialog(
 
 @Composable
 private fun MiuixAlertDialogBody(
+    icon: @Composable (() -> Unit)?,
     title: @Composable (() -> Unit)?,
     text: @Composable (() -> Unit)?,
     confirmButton: @Composable (() -> Unit)?,
@@ -252,9 +265,21 @@ private fun MiuixAlertDialogBody(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        if (icon != null) {
+            Box(
+                modifier = Modifier.padding(top = 12.dp, start = 16.dp, end = 16.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                icon()
+            }
+        }
         if (title != null) {
             Box(
-                modifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp),
+                modifier = Modifier.padding(
+                    top = if (icon != null) 8.dp else 12.dp,
+                    start = 16.dp,
+                    end = 16.dp,
+                ),
                 contentAlignment = Alignment.Center
             ) {
                 ProvideTextStyle(

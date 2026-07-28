@@ -72,6 +72,7 @@ import com.android.purebilibili.feature.dynamic.components.ImagePreviewDialog
 import com.android.purebilibili.feature.dynamic.components.ImagePreviewTextContent
 import com.android.purebilibili.core.ui.LoadingAnimation
 import com.android.purebilibili.core.ui.BiliGradientButton
+import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppTopBarStyle
@@ -828,7 +829,7 @@ private fun ProfileSpaceContent(
         )
     }
     if (showPhotoPickerDialog) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showPhotoPickerDialog = false },
             title = { Text("选择照片", fontWeight = FontWeight.Bold) },
             text = { Text("将打开系统相册选择一张照片作为背景。\n\n仅获取选中照片的访问权限，不会访问其他照片。") },
@@ -1991,7 +1992,7 @@ private fun ProfileDynamicCard(
     var pendingDeleteAction by remember(item.id_str) { mutableStateOf<DynamicDeleteAction?>(null) }
 
     pendingDeleteAction?.let { action ->
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { pendingDeleteAction = null },
             icon = { Icon(CupertinoIcons.Default.Trash, contentDescription = null) },
             title = { Text(action.title) },
@@ -2628,7 +2629,7 @@ fun MobileProfileContent(
     }
 
     if (showPhotoPickerDialog) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showPhotoPickerDialog = false },
             icon = {
                 Icon(

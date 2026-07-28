@@ -44,4 +44,15 @@ class IosDialogComponentsPolicyTest {
             )
         )
     }
+
+    @Test
+    fun iosPresetKeepsLocalIosDialogRenderer() {
+        assertEquals(
+            IOSAlertDialogRenderer.IOS_LOCAL,
+            resolveIosAlertDialogRenderer(
+                uiPreset = UiPreset.IOS,
+                androidNativeVariant = AndroidNativeVariant.MATERIAL3
+            )
+        )
+    }
 }

@@ -48,6 +48,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
+import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.ui.components.AppTextField
 import com.android.purebilibili.core.util.FormatUtils
@@ -260,7 +261,7 @@ fun ChatScreen(
     }
 
     pendingWithdrawMessage?.let { targetMessage ->
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = {
                 if (uiState.withdrawingMessageKey == null) {
                     pendingWithdrawMessage = null
@@ -298,7 +299,7 @@ fun ChatScreen(
     }
 
     if (showInterceptConfirm) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showInterceptConfirm = false },
             title = { Text("移入拦截") },
             text = { Text("后续这类会话会进入拦截分类，仍可在拦截列表中查看和恢复。") },

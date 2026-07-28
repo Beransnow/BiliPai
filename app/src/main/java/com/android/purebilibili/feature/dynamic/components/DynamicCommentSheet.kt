@@ -164,7 +164,7 @@ fun DynamicCommentSheet(
             }
     }
     
-    com.android.purebilibili.core.ui.IOSModalBottomSheet(
+    com.android.purebilibili.core.ui.AppModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = null

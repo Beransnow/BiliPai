@@ -28,6 +28,7 @@ import com.android.purebilibili.core.theme.LocalUiStyle
 import com.android.purebilibili.core.theme.UiStyle
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
+import com.android.purebilibili.core.ui.AppAlertDialog
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
 import com.android.purebilibili.core.ui.rememberAppBackIcon
@@ -220,7 +221,7 @@ fun InboxScreen(
     }
 
     pendingRemoveSession?.let { session ->
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { pendingRemoveSession = null },
             title = { Text("删除会话") },
             text = { Text("会话会从列表中移除，但不会删除聊天记录。") },
@@ -243,7 +244,7 @@ fun InboxScreen(
     }
 
     pendingInterceptSession?.let { session ->
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { pendingInterceptSession = null },
             title = { Text("移入拦截") },
             text = { Text("后续这类会话会进入拦截分类，仍可在拦截列表中查看和恢复。") },
@@ -266,7 +267,7 @@ fun InboxScreen(
     }
 
     if (showClearDustbinConfirm) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showClearDustbinConfirm = false },
             title = { Text("清空拦截会话") },
             text = { Text("所有拦截会话会从列表中移除，聊天记录仍由服务端保留。") },

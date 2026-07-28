@@ -94,6 +94,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.feature.home.LocalHomeScrollOffset
@@ -1381,7 +1382,7 @@ fun CommonListScreen(
     }
 
     if (showHistoryBatchDeleteConfirm && historyViewModel != null) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showHistoryBatchDeleteConfirm = false },
             title = { Text("批量删除历史") },
             text = { Text("确认删除已选择的 ${selectedHistoryKeys.size} 条历史记录吗？") },
@@ -1415,7 +1416,7 @@ fun CommonListScreen(
     }
 
     if (showFavoriteCleanInvalidConfirm && favoriteViewModel != null) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showFavoriteCleanInvalidConfirm = false },
             title = { Text("清理失效内容") },
             text = {
@@ -1444,7 +1445,7 @@ fun CommonListScreen(
     }
 
     if (showHistoryClearConfirm && historyViewModel != null) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showHistoryClearConfirm = false },
             title = { Text("清空历史") },
             text = { Text(resolveHistoryClearConfirmText(state.items.size)) },
@@ -1469,7 +1470,7 @@ fun CommonListScreen(
     }
 
     if (pendingHistorySingleDeleteKey != null && historyViewModel != null) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { pendingHistorySingleDeleteKey = null },
             title = { Text("删除历史记录") },
             text = { Text("确认删除这条历史记录吗？") },

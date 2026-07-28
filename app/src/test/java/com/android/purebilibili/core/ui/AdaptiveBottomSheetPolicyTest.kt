@@ -1,5 +1,6 @@
 package com.android.purebilibili.core.ui
 
+import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -22,6 +23,17 @@ class AdaptiveBottomSheetPolicyTest {
 
         assertEquals(14, spec.cornerRadiusDp)
         assertFalse(spec.useMaterialDragHandle)
+    }
+
+    @Test
+    fun `miuix variant should use native radius tokens`() {
+        val spec = resolveAdaptiveBottomSheetVisualSpec(
+            UiPreset.MD3,
+            AndroidNativeVariant.MIUIX,
+        )
+
+        assertEquals(22, spec.cornerRadiusDp)
+        assertTrue(spec.useMaterialDragHandle)
     }
 
     @Test
