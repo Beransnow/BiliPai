@@ -18,10 +18,12 @@ import com.android.purebilibili.core.ui.transition.normalizeVideoSharedTransitio
 import com.android.purebilibili.core.store.home.HomeSettingsStore
 import com.android.purebilibili.core.store.navigation.NavigationSettingsStore
 import com.android.purebilibili.core.store.player.PlayerSettingsStore
+import com.android.purebilibili.core.store.theme.*
 import com.android.purebilibili.core.theme.AppFontSizePreset
 import com.android.purebilibili.core.theme.AppUiScalePreset
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.UiStyle
 import com.android.purebilibili.core.theme.normalizeThemeColorIndex
 import com.android.purebilibili.core.theme.resolveColorSpecPreference
 import com.android.purebilibili.core.theme.resolvePaletteStylePreference
@@ -525,6 +527,7 @@ data class HomeSettings(
 }
 
 data class AppThemeSettings(
+    val uiStyle: UiStyle = UiStyle.MATERIAL3,
     val uiPreset: UiPreset = UiPreset.MD3,
     val androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3,
     val themeMode: AppThemeMode = AppThemeMode.FOLLOW_SYSTEM,
@@ -1102,8 +1105,6 @@ object SettingsManager {
     private val KEY_THEME_MODE = intPreferencesKey("theme_mode_v2")
     private val KEY_DARK_THEME_STYLE = intPreferencesKey("dark_theme_style_v1")
     private val KEY_APP_LANGUAGE = intPreferencesKey("app_language_v1")
-    private val KEY_UI_PRESET = intPreferencesKey("ui_preset")
-    private val KEY_ANDROID_NATIVE_VARIANT = intPreferencesKey("android_native_variant_v1")
     private val KEY_DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
     private val KEY_MD3_COLOR_SOURCE = stringPreferencesKey("md3_color_source")
     private val KEY_MD3_CUSTOM_COLOR_HEX = stringPreferencesKey("md3_custom_color_hex")
@@ -1762,11 +1763,11 @@ object SettingsManager {
     internal fun mapAppThemeSettingsFromPreferences(preferences: Preferences): AppThemeSettings {
         val rawDpiOverride = preferences[KEY_APP_DPI_OVERRIDE_PERCENT] ?: 0
         val defaultRoleOverrides = ThemeRoleOverrides()
+        val storedUiStyleSettings = resolveStoredUiStyleSettings(preferences)
         return AppThemeSettings(
-            uiPreset = resolveUiPresetPreferenceValue(preferences[KEY_UI_PRESET]),
-            androidNativeVariant = resolveAndroidNativeVariantPreferenceValue(
-                preferences[KEY_ANDROID_NATIVE_VARIANT]
-            ),
+            uiStyle = storedUiStyleSettings.uiStyle,
+            uiPreset = storedUiStyleSettings.uiPreset,
+            androidNativeVariant = storedUiStyleSettings.androidNativeVariant,
             themeMode = resolveThemeModePreference(
                 preferences[KEY_THEME_MODE] ?: AppThemeMode.FOLLOW_SYSTEM.value
             ),
@@ -1932,27 +1933,18 @@ object SettingsManager {
         )
     }
 
-    fun getUiPreset(context: Context): Flow<UiPreset> = context.settingsDataStore.data
-        .map { preferences ->
-            resolveUiPresetPreferenceValue(preferences[KEY_UI_PRESET])
-        }
+    fun getUiStyle(context: Context): Flow<UiStyle> = UiStyleSettingsStore.getUiStyle(context)
 
-    suspend fun setUiPreset(context: Context, preset: UiPreset) {
-        context.settingsDataStore.edit { preferences ->
-            preferences[KEY_UI_PRESET] = preset.value
-        }
-    }
+    suspend fun setUiStyle(context: Context, uiStyle: UiStyle) = UiStyleSettingsStore.setUiStyle(context, uiStyle)
+    fun getUiPreset(context: Context): Flow<UiPreset> = UiStyleSettingsStore.getUiPreset(context)
+
+    suspend fun setUiPreset(context: Context, preset: UiPreset) = UiStyleSettingsStore.setUiPreset(context, preset)
 
     fun getAndroidNativeVariant(context: Context): Flow<AndroidNativeVariant> =
-        context.settingsDataStore.data.map { preferences ->
-            resolveAndroidNativeVariantPreferenceValue(preferences[KEY_ANDROID_NATIVE_VARIANT])
-        }
+        UiStyleSettingsStore.getAndroidNativeVariant(context)
 
-    suspend fun setAndroidNativeVariant(context: Context, variant: AndroidNativeVariant) {
-        context.settingsDataStore.edit { preferences ->
-            preferences[KEY_ANDROID_NATIVE_VARIANT] = variant.value
-        }
-    }
+    suspend fun setAndroidNativeVariant(context: Context, variant: AndroidNativeVariant) =
+        UiStyleSettingsStore.setAndroidNativeVariant(context, variant)
 
     // --- Dynamic Color ---
     fun getDynamicColor(context: Context): Flow<Boolean> = context.settingsDataStore.data
@@ -6261,7 +6253,9 @@ object SettingsManager {
 
     private val shareableSettingDefinitions: List<ShareablePreferenceDefinition> by lazy {
         listOf(
-            IntShareablePreferenceDefinition(KEY_UI_PRESET, SettingsShareSection.APPEARANCE),
+            IntShareablePreferenceDefinition(UI_STYLE_PREFERENCE_KEY, SettingsShareSection.APPEARANCE),
+            IntShareablePreferenceDefinition(UI_PRESET_PREFERENCE_KEY, SettingsShareSection.APPEARANCE),
+            IntShareablePreferenceDefinition(ANDROID_NATIVE_VARIANT_PREFERENCE_KEY, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_THEME_MODE, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_DARK_THEME_STYLE, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_APP_LANGUAGE, SettingsShareSection.APPEARANCE),
@@ -6507,6 +6501,9 @@ object SettingsManager {
                     definition.write(preferences, value) -> appliedKeys += key
                     else -> skippedKeys += key
                 }
+            }
+            if (synchronizeImportedUiStylePreferences(preferences, settings.keys)) {
+                com.android.purebilibili.core.util.Logger.w("SettingsManager", "ui_style_v1 overrode conflicting legacy mirrors")
             }
         }
 

@@ -8,6 +8,7 @@ import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.AppFontSizePreset
 import com.android.purebilibili.core.theme.AppUiScalePreset
 import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.UiStyle
 import com.android.purebilibili.feature.screenshot.AppScreenshotCaptureMode
 import com.android.purebilibili.feature.screenshot.AppScreenshotGestureMode
 import com.android.purebilibili.feature.settings.AppLanguage
@@ -24,6 +25,7 @@ class AppThemeSettingsMappingPolicyTest {
     fun emptyPreferences_useStartupThemeDefaults() {
         val result = mapAppThemeSettingsFromPreferences(mutablePreferencesOf())
 
+        assertEquals(UiStyle.MATERIAL3, result.uiStyle)
         assertEquals(UiPreset.MD3, result.uiPreset)
         assertEquals(AndroidNativeVariant.MATERIAL3, result.androidNativeVariant)
         assertEquals(AppThemeMode.FOLLOW_SYSTEM, result.themeMode)
@@ -76,6 +78,7 @@ class AppThemeSettingsMappingPolicyTest {
         )
 
         assertEquals(UiPreset.IOS, result.uiPreset)
+        assertEquals(UiStyle.IOS, result.uiStyle)
         assertEquals(AndroidNativeVariant.MIUIX, result.androidNativeVariant)
         assertEquals(AppThemeMode.DARK, result.themeMode)
         assertEquals(DarkThemeStyle.AMOLED, result.darkThemeStyle)
@@ -94,5 +97,21 @@ class AppThemeSettingsMappingPolicyTest {
         assertEquals(true, result.appGestureScreenshotEnabled)
         assertEquals(AppScreenshotGestureMode.THREE_FINGER_SWIPE_DOWN, result.appScreenshotGestureMode)
         assertEquals(AppScreenshotCaptureMode.SELECT_REGION, result.appScreenshotCaptureMode)
+    }
+
+    @Test
+    fun validNewStyle_controlsEffectiveThemeAndLegacyCompatibilityValues() {
+        val result = mapAppThemeSettingsFromPreferences(
+            mutablePreferencesOf(
+                intPreferencesKey("ui_style_v1") to UiStyle.MIUIX.value,
+                intPreferencesKey("ui_preset") to UiPreset.IOS.value,
+                intPreferencesKey("android_native_variant_v1") to
+                    AndroidNativeVariant.MATERIAL3.value,
+            )
+        )
+
+        assertEquals(UiStyle.MIUIX, result.uiStyle)
+        assertEquals(UiPreset.MD3, result.uiPreset)
+        assertEquals(AndroidNativeVariant.MIUIX, result.androidNativeVariant)
     }
 }
