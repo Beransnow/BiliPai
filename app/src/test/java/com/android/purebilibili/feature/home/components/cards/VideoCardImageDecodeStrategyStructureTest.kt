@@ -2,33 +2,60 @@ package com.android.purebilibili.feature.home.components.cards
 
 import java.io.File
 import kotlin.test.Test
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class VideoCardImageDecodeStrategyStructureTest {
 
     @Test
-    fun `video cards let Coil resolve decode size from layout constraints`() {
+    fun `tiered home covers forward HomeCoverRequestSpec while unconstrained styles stay layout sized`() {
+        val sourceRoot = File("src/main/java/com/android/purebilibili/feature/home/components/cards")
+        val videoCard = sourceRoot.resolve("VideoCard.kt").readText()
+        val storyCard = sourceRoot.resolve("StoryVideoCard.kt").readText()
+        val glassCard = sourceRoot.resolve("GlassVideoCard.kt").readText()
+        val cinematicCard = sourceRoot.resolve("CinematicVideoCard.kt").readText()
+
+        listOf(videoCard, storyCard).forEach { source ->
+            assertTrue(source.contains("widthPx = coverRequestSpec?.widthPx"))
+            assertTrue(source.contains("heightPx = coverRequestSpec?.heightPx"))
+        }
+        listOf(glassCard, cinematicCard).forEach { source ->
+            val coverRequest = source.substringAfter("model = rememberImageRequest(\n")
+                .substringBefore("),\n")
+            assertTrue(!coverRequest.contains("widthPx ="))
+            assertTrue(!coverRequest.contains("heightPx ="))
+        }
+    }
+
+    @Test
+    fun `home image models survive unrelated recomposition`() {
         val sourceRoot = File("src/main/java/com/android/purebilibili/feature/home/components/cards")
         val cardSources = listOf(
             "VideoCard.kt",
             "StoryVideoCard.kt",
             "GlassVideoCard.kt",
             "CinematicVideoCard.kt"
-        ).associateWith { fileName -> sourceRoot.resolve(fileName).readText() }
+        ).map { sourceRoot.resolve(it).readText() }
+        val requestHelper = File(
+            "src/main/java/com/android/purebilibili/core/ui/image/RememberedImageRequest.kt"
+        ).readText()
 
-        cardSources.forEach { (fileName, source) ->
-            val imageRequests = Regex(
-                "ImageRequest\\.Builder\\([^)]*\\)[\\s\\S]*?\\.build\\(\\)"
-            ).findAll(source)
-                .map { it.value }
-                .filter { request -> request.contains(".data(coverUrl)") }
-                .toList()
-            assertTrue(imageRequests.isNotEmpty(), "$fileName 应包含封面图片请求")
-            assertFalse(
-                imageRequests.any { request -> request.contains(".size(") },
-                "$fileName 不应覆盖 Coil 根据布局约束推导的解码尺寸"
-            )
+        cardSources.forEach { source ->
+            assertTrue(source.contains("rememberImageRequest("))
+            assertTrue(!source.contains("model = ImageRequest.Builder("))
+        }
+        listOf(
+            "data",
+            "widthPx",
+            "heightPx",
+            "referer",
+            "crossfadeEnabled",
+            "crossfadeMillis",
+            "placeholderMemoryCacheKey",
+            "memoryCacheKey",
+            "diskCacheKey",
+            "scale",
+        ).forEach { requestKey ->
+            assertTrue(requestHelper.contains("        $requestKey,"), "$requestKey must be a remember key")
         }
     }
 }

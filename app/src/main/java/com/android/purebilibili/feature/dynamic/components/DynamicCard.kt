@@ -41,6 +41,7 @@ import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.core.ui.common.CopySelectionDialog
 import com.android.purebilibili.core.ui.rememberAppMoreIcon
 import com.android.purebilibili.core.ui.rememberAppVisibilityOffIcon
+import com.android.purebilibili.core.ui.image.rememberImageRequest
 import com.android.purebilibili.data.model.response.DynamicDesc
 import com.android.purebilibili.data.model.response.DynamicItem
 import com.android.purebilibili.data.model.response.DrawItem
@@ -82,6 +83,9 @@ fun DynamicCardV2(
     val content = item.modules.module_dynamic
     val stat = item.modules.module_stat
     val context = LocalContext.current
+    val authorFaceUrl = remember(author?.face) {
+        author?.face.orEmpty().let { if (it.startsWith("http://")) it.replace("http://", "https://") else it }
+    }
     val uriHandler = LocalUriHandler.current
     val dynamicPreviewTextVisible by SettingsManager.getDynamicImagePreviewTextVisible(context)
         .collectAsStateWithLifecycle(initialValue = true)
@@ -176,10 +180,10 @@ fun DynamicCardV2(
             ) {
                 // 头像
                 AsyncImage(
-                    model = coil.request.ImageRequest.Builder(LocalContext.current)
-                        .data(author.face.let { if (it.startsWith("http://")) it.replace("http://", "https://") else it })
-                        .crossfade(true)
-                        .build(),
+                    model = rememberImageRequest(
+                        data = authorFaceUrl,
+                        crossfadeEnabled = true,
+                    ),
                     contentDescription = null,
                     modifier = Modifier
                         .size(40.dp)
@@ -746,23 +750,33 @@ fun RichTextContent(
         )
     }
     
-    // 创建表情的 InlineContent 映射
-    val inlineContent = emojiNodes.mapValues { (_, iconUrl) ->
-        InlineTextContent(
-            Placeholder(
-                width = 1.4.em,
-                height = 1.4.em,
-                placeholderVerticalAlign = PlaceholderVerticalAlign.Center
-            )
-        ) {
-            AsyncImage(
-                model = coil.request.ImageRequest.Builder(LocalContext.current)
-                    .data(iconUrl.let { if (it.startsWith("http://")) it.replace("http://", "https://") else it })
-                    .crossfade(true)
-                    .build(),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize()
-            )
+    // Inline map and its request models share the same content-derived lifetime.
+    val emojiImageRequests = remember(context, emojiNodes) {
+        emojiNodes.mapValues { (_, iconUrl) ->
+            val normalizedUrl = iconUrl.let {
+                if (it.startsWith("http://")) it.replace("http://", "https://") else it
+            }
+            coil.request.ImageRequest.Builder(context)
+                .data(normalizedUrl)
+                .crossfade(true)
+                .build()
+        }
+    }
+    val inlineContent = remember(emojiImageRequests) {
+        emojiImageRequests.mapValues { (_, imageRequest) ->
+            InlineTextContent(
+                Placeholder(
+                    width = 1.4.em,
+                    height = 1.4.em,
+                    placeholderVerticalAlign = PlaceholderVerticalAlign.Center
+                )
+            ) {
+                AsyncImage(
+                    model = imageRequest,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
         }
     }
     val copyText = remember(desc.rich_text_nodes, desc.text) {
@@ -888,6 +902,14 @@ fun DynamicCardCompact(
     val author = item.modules.module_author
     val content = item.modules.module_dynamic
     val stat = item.modules.module_stat
+    val authorFaceUrl = remember(author?.face) {
+        author?.face.orEmpty().let { if (it.startsWith("http://")) it.replace("http://", "https://") else it }
+    }
+    val archiveCoverUrl = remember(content?.major?.archive?.cover) {
+        content?.major?.archive?.cover.orEmpty().let {
+            if (it.startsWith("http://")) it.replace("http://", "https://") else it
+        }
+    }
     
     // 获取内容预览文本
     val previewText = content?.desc?.text?.take(50) 
@@ -910,10 +932,10 @@ fun DynamicCardCompact(
         // 头像
         if (author != null) {
             AsyncImage(
-                model = coil.request.ImageRequest.Builder(LocalContext.current)
-                    .data(author.face.let { if (it.startsWith("http://")) it.replace("http://", "https://") else it })
-                    .crossfade(true)
-                    .build(),
+                model = rememberImageRequest(
+                    data = authorFaceUrl,
+                    crossfadeEnabled = true,
+                ),
                 contentDescription = null,
                 modifier = Modifier
                     .size(44.dp)
@@ -965,10 +987,10 @@ fun DynamicCardCompact(
         content?.major?.archive?.let { archive ->
             Spacer(modifier = Modifier.width(12.dp))
             AsyncImage(
-                model = coil.request.ImageRequest.Builder(LocalContext.current)
-                    .data(archive.cover.let { if (it.startsWith("http://")) it.replace("http://", "https://") else it })
-                    .crossfade(true)
-                    .build(),
+                model = rememberImageRequest(
+                    data = archiveCoverUrl,
+                    crossfadeEnabled = true,
+                ),
                 contentDescription = null,
                 modifier = Modifier
                     .size(width = 80.dp, height = 50.dp)

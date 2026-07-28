@@ -473,6 +473,10 @@ fun BangumiPlayerView(
                     view.resizeMode = currentAspectRatio.playerResizeMode
                     view.visibility = if (anime4kFrameVisible) View.INVISIBLE else View.VISIBLE
                 },
+                onRelease = { view ->
+                    if (view.player === exoPlayer) view.player = null
+                    if (playerViewRef === view) playerViewRef = null
+                },
                 modifier = with(density) {
                     Modifier.requiredSize(
                         width = playerFrameViewport.width.toDp(),

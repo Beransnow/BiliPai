@@ -35,10 +35,6 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleOut
-import androidx.activity.compose.BackHandler
-import androidx.navigationevent.NavigationEventInfo
-import androidx.navigationevent.compose.NavigationBackHandler
-import androidx.navigationevent.compose.rememberNavigationEventState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.rememberScrollState
@@ -168,7 +164,6 @@ import kotlinx.coroutines.launch
 //  共享元素过渡
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.shape.RoundedCornerShape
-import com.android.purebilibili.core.ui.LocalPredictiveBackGestureEnabled
 import com.android.purebilibili.core.ui.LocalSharedTransitionScope
 import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.transition.LocalVideoCardTransitionBackgroundState
@@ -201,6 +196,9 @@ import com.android.purebilibili.feature.video.player.PlaylistItem
 import com.android.purebilibili.feature.video.player.PlaylistManager
 import com.android.purebilibili.feature.video.player.PlaylistUiState
 import com.android.purebilibili.feature.video.player.ExternalPlaylistSource
+import com.android.purebilibili.feature.video.back.VideoLocalBackHost
+import com.android.purebilibili.feature.video.back.VideoLocalBackTarget
+import com.android.purebilibili.feature.video.back.VideoLocalBackTargetEffect
 import com.android.purebilibili.core.ui.performance.TrackJankStateFlag
 // 📱 [新增] 竖屏全屏
 import com.android.purebilibili.feature.video.ui.overlay.PortraitFullscreenOverlay
@@ -2233,31 +2231,6 @@ internal fun VideoDetailScreenStateHolder(
         )
     }
 
-    val localBackTarget = resolveVideoDetailLocalBackTarget(
-        isLandscapeFullscreen = isFullscreenMode,
-        isPortraitFullscreen = isPortraitFullscreen,
-    )
-    val localBackEventState = rememberNavigationEventState(NavigationEventInfo.None)
-    val predictiveBackGestureEnabled = LocalPredictiveBackGestureEnabled.current
-    NavigationBackHandler(
-        state = localBackEventState,
-        isBackEnabled = localBackTarget != VideoDetailLocalBackTarget.NAVIGATE_BACK,
-        reportPredictiveProgress = predictiveBackGestureEnabled,
-        onBackCompleted = { commitTransition: () -> Unit ->
-            when (localBackTarget) {
-                VideoDetailLocalBackTarget.EXIT_PORTRAIT_FULLSCREEN -> presentationState.setPortraitFullscreen(false)
-                VideoDetailLocalBackTarget.EXIT_LANDSCAPE_FULLSCREEN -> toggleFullscreen()
-                VideoDetailLocalBackTarget.NAVIGATE_BACK -> Unit
-            }
-            commitTransition()
-        },
-    )
-
-    // 以下 BackHandler 会阻止 Compose Navigation 的返回路由动画，由根导航统一处理。
-    // 显式点击返回时由 handleBack 提前标记 returning，系统路径仍由 onDispose 兜底标记。
-    // BackHandler(enabled = !isFullscreenMode && !isPortraitFullscreen, onBack = handleBack)
-
-
     // 清理逻辑（markLeavingByNavigation、restoreStatusBar）已移至 DisposableEffect.onDispose
 
     // 沉浸式状态栏控制
@@ -3451,13 +3424,21 @@ internal fun VideoDetailScreenStateHolder(
         )
     }
 
-    VideoDetailScreenContent(
-        transitionState = transitionState,
-        routeSheetMotion = routeSheetMotion,
-        isFullscreenMode = isFullscreenMode,
-        backgroundColor = MaterialTheme.colorScheme.background,
-        modifier = detailShellModifier,
-        mainContent = { VideoDetailRouteSheetMainContent() },
-        overlayContent = { VideoDetailRouteSheetOverlayContent() }
-    )
+    VideoLocalBackHost {
+        VideoLocalBackTargetEffect(
+            key = "video_detail_portrait_fullscreen",
+            target = VideoLocalBackTarget.EXIT_PORTRAIT_FULLSCREEN,
+            enabled = isPortraitFullscreen,
+            onCommitted = { presentationState.setPortraitFullscreen(false) },
+        )
+        VideoDetailScreenContent(
+            transitionState = transitionState,
+            routeSheetMotion = routeSheetMotion,
+            isFullscreenMode = isFullscreenMode,
+            backgroundColor = MaterialTheme.colorScheme.background,
+            modifier = detailShellModifier,
+            mainContent = { VideoDetailRouteSheetMainContent() },
+            overlayContent = { VideoDetailRouteSheetOverlayContent() }
+        )
+    }
 }

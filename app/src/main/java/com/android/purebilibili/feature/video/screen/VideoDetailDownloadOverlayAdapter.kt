@@ -32,6 +32,7 @@ internal fun VideoDetailDownloadOverlayAdapter(
     // 本地状态控制画质选择弹窗
     var showQualitySelection by remember { mutableStateOf(false) }
     var showBatchDownloadDialog by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     if (showDownloadDialog && successForDownload != null) {
         val batchDownloadCandidates = remember(successForDownload.info) {
@@ -149,9 +150,11 @@ internal fun VideoDetailDownloadOverlayAdapter(
                                 isVerticalVideo = false
                             )
                             if (task.audioUrl.isNotEmpty()) {
-                                val started = com.android.purebilibili.feature.download.DownloadManager.addTask(task)
-                                if (started) viewModel.toast("已开始下载音频")
-                                else viewModel.toast("该任务已在下载中或已完成")
+                                coroutineScope.launch {
+                                    val started = com.android.purebilibili.feature.download.DownloadManager.addTask(task)
+                                    if (started) viewModel.toast("已开始下载音频")
+                                    else viewModel.toast("该任务已在下载中或已完成")
+                                }
                             } else {
                                 viewModel.toast("无法获取音频地址")
                             }

@@ -132,9 +132,13 @@ fun OnboardingScreen(
                 modifier = Modifier.fillMaxSize(),
                 userScrollEnabled = true
             ) { page ->
-                val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+                val pageOffsetProvider = remember(pagerState, page) {
+                    {
+                        (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+                    }
+                }
                 OnboardingAnimatedPage(
-                    pageOffset = pageOffset,
+                    pageOffsetProvider = pageOffsetProvider,
                     motionSpec = motionSpec,
                     modifier = Modifier
                         .fillMaxSize()
@@ -240,14 +244,14 @@ private fun OnboardingBottomControls(
 
 @Composable
 private fun OnboardingAnimatedPage(
-    pageOffset: Float,
+    pageOffsetProvider: () -> Float,
     motionSpec: OnboardingMotionSpec,
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit
 ) {
     Box(
         modifier = modifier.graphicsLayer {
-            val clampedOffset = pageOffset.absoluteValue.coerceIn(0f, 1f)
+            val clampedOffset = pageOffsetProvider().absoluteValue.coerceIn(0f, 1f)
             val scale = lerp(1f, motionSpec.pager.minScale, clampedOffset)
             scaleX = scale
             scaleY = scale

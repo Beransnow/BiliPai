@@ -4600,26 +4600,32 @@ object SettingsManager {
         context.settingsDataStore.edit { preferences ->
             preferences[KEY_LAUNCH_TO_PORTRAIT_FEED_ON_STARTUP] = value
         }
+        writeLaunchToPortraitFeedOnStartupMirror(context, value)
+    }
+
+    suspend fun readLaunchToPortraitFeedOnStartup(context: Context): Boolean {
+        return context.settingsDataStore.data.first()[KEY_LAUNCH_TO_PORTRAIT_FEED_ON_STARTUP] ?: false
+    }
+
+    fun readLaunchToPortraitFeedOnStartupMirror(context: Context): Boolean? {
+        val prefs = context.getSharedPreferences(PORTRAIT_STARTUP_CACHE_PREFS, Context.MODE_PRIVATE)
+        if (!prefs.contains(CACHE_KEY_LAUNCH_TO_PORTRAIT_FEED)) return null
+        return prefs.getBoolean(CACHE_KEY_LAUNCH_TO_PORTRAIT_FEED, false)
+    }
+
+    fun writeLaunchToPortraitFeedOnStartupMirror(context: Context, value: Boolean) {
         context.getSharedPreferences(PORTRAIT_STARTUP_CACHE_PREFS, Context.MODE_PRIVATE)
             .edit()
             .putBoolean(CACHE_KEY_LAUNCH_TO_PORTRAIT_FEED, value)
             .apply()
     }
 
+    /**
+     * Compatibility accessor for synchronous consumers. It intentionally reads only the mirror;
+     * startup fallback/repair is owned by StartupSessionCoordinator and never uses runBlocking.
+     */
     fun isLaunchToPortraitFeedOnStartupSync(context: Context): Boolean {
-        val prefs = context.getSharedPreferences(PORTRAIT_STARTUP_CACHE_PREFS, Context.MODE_PRIVATE)
-        if (prefs.contains(CACHE_KEY_LAUNCH_TO_PORTRAIT_FEED)) {
-            return prefs.getBoolean(CACHE_KEY_LAUNCH_TO_PORTRAIT_FEED, false)
-        }
-        return try {
-            kotlinx.coroutines.runBlocking(kotlinx.coroutines.Dispatchers.IO) {
-                context.settingsDataStore.data.first()[KEY_LAUNCH_TO_PORTRAIT_FEED_ON_STARTUP] ?: false
-            }.also { value ->
-                prefs.edit().putBoolean(CACHE_KEY_LAUNCH_TO_PORTRAIT_FEED, value).apply()
-            }
-        } catch (_: Exception) {
-            false
-        }
+        return readLaunchToPortraitFeedOnStartupMirror(context) ?: false
     }
     
     // --- 竖屏视频判断比例 (高度/宽度 > ratio 视为竖屏，默认 1.0) ---

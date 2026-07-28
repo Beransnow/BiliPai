@@ -17,7 +17,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
@@ -28,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.iOSCardTapEffect
 import com.android.purebilibili.core.util.animateEnter
@@ -54,6 +52,7 @@ import com.android.purebilibili.core.theme.iOSCornerRadius
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.components.UpBadgeName
 import com.android.purebilibili.core.ui.components.resolveUpStatsText
+import com.android.purebilibili.core.ui.image.rememberImageRequest
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedTransitionMotionSpec
@@ -310,15 +309,14 @@ internal fun StoryVideoCard(
         ) {
             // 封面比例由首页卡片样式统一配置。
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(coverUrl)
-                    .apply {
-                        coverRequestSpec?.let { size(it.widthPx, it.heightPx) }
-                    }
-                    .crossfade(coverCrossfadeEnabled)
-                    .memoryCacheKey(coverCacheKey)
-                    .diskCacheKey(coverCacheKey)
-                    .build(),
+                model = rememberImageRequest(
+                    data = coverUrl,
+                    widthPx = coverRequestSpec?.widthPx,
+                    heightPx = coverRequestSpec?.heightPx,
+                    crossfadeEnabled = coverCrossfadeEnabled,
+                    memoryCacheKey = coverCacheKey,
+                    diskCacheKey = coverCacheKey,
+                ),
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxSize(),
@@ -416,10 +414,10 @@ internal fun StoryVideoCard(
                 leadingContent = if (video.owner.face.isNotEmpty()) {
                     {
                         AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(FormatUtils.fixImageUrl(video.owner.face))
-                                .crossfade(100)
-                                .build(),
+                            model = rememberImageRequest(
+                                data = FormatUtils.fixImageUrl(video.owner.face),
+                                crossfadeMillis = 100,
+                            ),
                             contentDescription = null,
                             modifier = Modifier
                                 .size(24.dp)

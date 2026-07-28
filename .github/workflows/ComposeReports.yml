@@ -1,0 +1,48 @@
+name: Compose Compiler Reports
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compose-reports:
+    if: ${{ secrets.FCM != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Configure Firebase metadata
+        run: echo "${{ secrets.FCM }}" | base64 -d > app/google-services.json
+
+      - name: Compile release and collect Compose compiler data
+        run: ./gradlew :app:compileReleaseKotlin -Pbili.composeReports=true --no-daemon --no-configuration-cache --console=plain
+
+      - name: Verify report output
+        run: |
+          test -d app/build/compose_reports
+          test -d app/build/compose_metrics
+          find app/build/compose_reports app/build/compose_metrics -type f -print -quit | grep -q .
+
+      - name: Upload Compose compiler reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: compose-compiler-reports
+          path: |
+            app/build/compose_reports
+            app/build/compose_metrics
+          retention-days: 14
+          if-no-files-found: error

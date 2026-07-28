@@ -1570,24 +1570,18 @@ fun HomeScreen(
                         val pullRefreshState = rememberPullToRefreshState()
                         val pullDistanceFraction = pullRefreshState.distanceFraction
                         val isPageRefreshing = isRefreshing && currentCategory == category
-                        var stablePullOffsetFraction by remember { mutableFloatStateOf(0f) }
 
                         //  下拉物理由策略区分：MD3 截图式跟随当前手指距离回收，旧 iOS 弹性保留防抖滞后。
-                        val resolvedStablePullOffsetFraction = resolveStablePullContentOffsetFraction(
+                        val resolvedPullOffsetFraction = resolvePullContentOffsetFraction(
                             distanceFraction = pullDistanceFraction,
                             isRefreshing = isPageRefreshing,
-                            isStateAnimating = pullRefreshState.isAnimating,
-                            previousOffsetFraction = stablePullOffsetFraction,
                             motionStyle = pullRefreshMotionStyle,
                             indicatorStyle = pullRefreshIndicatorStyle
                         )
-                        SideEffect {
-                            stablePullOffsetFraction = resolvedStablePullOffsetFraction
-                        }
 
                         //  使用 animateFloatAsState 包装偏移量
-                        val animatedDragOffsetFraction by androidx.compose.animation.core.animateFloatAsState(
-                            targetValue = resolvedStablePullOffsetFraction,
+                        val animatedDragOffsetFraction = androidx.compose.animation.core.animateFloatAsState(
+                            targetValue = resolvedPullOffsetFraction,
                             animationSpec = if (
                                 shouldSnapPullOffsetToFinger(
                                     distanceFraction = pullDistanceFraction,
@@ -1610,7 +1604,7 @@ fun HomeScreen(
                         ) {
                             {
                                 val maxPx = resolvePullContentMaxOffsetDp(pullRefreshIndicatorStyle).dp.toPx()
-                                maxPx * animatedDragOffsetFraction
+                                maxPx * animatedDragOffsetFraction.value
                             }
                         }
                         

@@ -44,6 +44,9 @@ import com.android.purebilibili.core.ui.blur.BlurSurfaceType
 import com.android.purebilibili.core.ui.blur.shouldAllowRuntimeShaderBackedHazeEffect
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.feature.video.danmaku.DanmakuCloudSyncUiState
+import com.android.purebilibili.feature.video.back.VideoLocalBackTarget
+import com.android.purebilibili.feature.video.back.VideoLocalBackTargetEffect
+import com.android.purebilibili.feature.video.back.rememberVideoLocalBackAction
 // Import reusable components from standalone files
 import com.android.purebilibili.feature.video.ui.components.QualitySelectionMenu
 import com.android.purebilibili.feature.video.ui.components.SpeedSelectionMenuDialog
@@ -655,6 +658,76 @@ fun VideoPlayerOverlay(
     }
     var showPlaybackOrderSheet by remember { mutableStateOf(false) }
     var showPageSelectorSheet by remember { mutableStateOf(false) }
+    val endDrawerBackKey = remember { Any() }
+    val pageSelectorBackKey = remember { Any() }
+    val chapterListBackKey = remember { Any() }
+    val aspectRatioBackKey = remember { Any() }
+    val danmakuComposerBackKey = remember { Any() }
+    VideoLocalBackTargetEffect(
+        key = endDrawerBackKey,
+        target = VideoLocalBackTarget.PLAYER_END_DRAWER,
+        enabled = isFullscreen && endDrawerVisible,
+        onCommitted = onDismissEndDrawer,
+    )
+    VideoLocalBackTargetEffect(
+        key = pageSelectorBackKey,
+        target = VideoLocalBackTarget.PLAYER_PAGE_SELECTOR,
+        enabled = isFullscreen && showPageSelectorSheet,
+        onCommitted = { showPageSelectorSheet = false },
+    )
+    VideoLocalBackTargetEffect(
+        key = chapterListBackKey,
+        target = VideoLocalBackTarget.PLAYER_CHAPTER_LIST,
+        enabled = isFullscreen && showChapterList,
+        onCommitted = { showChapterList = false },
+    )
+    VideoLocalBackTargetEffect(
+        key = aspectRatioBackKey,
+        target = VideoLocalBackTarget.PLAYER_ASPECT_RATIO,
+        enabled = isFullscreen && showRatioMenu,
+        onCommitted = { showRatioMenu = false },
+    )
+    VideoLocalBackTargetEffect(
+        key = danmakuComposerBackKey,
+        target = VideoLocalBackTarget.DANMAKU_COMPOSER,
+        enabled = isFullscreen && danmakuComposerVisible,
+        onCommitted = onDismissDanmakuComposer,
+    )
+    val dismissEndDrawer = rememberVideoLocalBackAction(
+        target = VideoLocalBackTarget.PLAYER_END_DRAWER,
+        onCommitted = onDismissEndDrawer,
+    )
+    val dismissPageSelector = rememberVideoLocalBackAction(
+        target = VideoLocalBackTarget.PLAYER_PAGE_SELECTOR,
+        onCommitted = { showPageSelectorSheet = false },
+    )
+    val dismissChapterList = rememberVideoLocalBackAction(
+        target = VideoLocalBackTarget.PLAYER_CHAPTER_LIST,
+        onCommitted = { showChapterList = false },
+    )
+    val dismissAspectRatio = rememberVideoLocalBackAction(
+        target = VideoLocalBackTarget.PLAYER_ASPECT_RATIO,
+        onCommitted = { showRatioMenu = false },
+    )
+    val dismissDanmakuComposer = rememberVideoLocalBackAction(
+        target = VideoLocalBackTarget.DANMAKU_COMPOSER,
+        onCommitted = onDismissDanmakuComposer,
+    )
+    val dismissPageSelectorSurface: () -> Unit = if (isFullscreen) {
+        dismissPageSelector
+    } else {
+        { showPageSelectorSheet = false }
+    }
+    val dismissChapterListSurface: () -> Unit = if (isFullscreen) {
+        dismissChapterList
+    } else {
+        { showChapterList = false }
+    }
+    val dismissAspectRatioSurface: () -> Unit = if (isFullscreen) {
+        dismissAspectRatio
+    } else {
+        { showRatioMenu = false }
+    }
     // 换集后强制关掉分集/菜单等全屏遮罩，避免 Dialog/Sheet 残留挡触摸。
     LaunchedEffect(bvid, cid) {
         showPageSelectorSheet = false
@@ -1327,7 +1400,7 @@ fun VideoPlayerOverlay(
                     if (isFullscreen && danmakuComposerVisible) {
                         LandscapeDanmakuComposer(
                             visible = true,
-                            onDismiss = onDismissDanmakuComposer,
+                            onDismiss = dismissDanmakuComposer,
                             onSend = onSendDanmakuComposer,
                             isSending = isSendingDanmakuComposer,
                             initialColor = danmakuComposerInitialColor,
@@ -1807,7 +1880,7 @@ fun VideoPlayerOverlay(
                     .clickable(
                         indication = null,
                         interactionSource = remember { MutableInteractionSource() }
-                    ) { showRatioMenu = false },
+                    ) { dismissAspectRatioSurface() },
                 contentAlignment = Alignment.Center
             ) {
                 AspectRatioMenu(
@@ -1816,7 +1889,7 @@ fun VideoPlayerOverlay(
                         onAspectRatioChange(ratio)
                         showRatioMenu = false
                     },
-                    onDismiss = { showRatioMenu = false }
+                    onDismiss = dismissAspectRatioSurface
                 )
             }
         }
@@ -1997,7 +2070,7 @@ fun VideoPlayerOverlay(
                 viewPoints = viewPoints,
                 currentPositionMs = displayedProgressState.current,
                 onSeek = commitSeek,
-                onDismiss = { showChapterList = false }
+                onDismiss = dismissChapterListSurface
             )
         }
 
@@ -2010,7 +2083,7 @@ fun VideoPlayerOverlay(
                         indication = null,
                         interactionSource = remember { MutableInteractionSource() }
                     ) {
-                        showPageSelectorSheet = false
+                        dismissPageSelectorSurface()
                     },
                 contentAlignment = Alignment.BottomCenter
             ) {
@@ -2040,7 +2113,7 @@ fun VideoPlayerOverlay(
                             currentPageIndex = currentPageIndex,
                             forceGridMode = true,
                             blockParentVerticalScroll = true,
-                            onDismissRequest = { showPageSelectorSheet = false },
+                            onDismissRequest = dismissPageSelectorSurface,
                             onPageSelect = { index ->
                                 showPageSelectorSheet = false
                                 onPageSelect(index)
@@ -2068,7 +2141,7 @@ fun VideoPlayerOverlay(
         // --- 11. [新增] 侧边栏抽屉 ---
         LandscapeEndDrawer(
             visible = endDrawerVisible,
-            onDismiss = onDismissEndDrawer,
+            onDismiss = dismissEndDrawer,
             relatedVideos = relatedVideos,
             ugcSeason = ugcSeason,
             currentBvid = bvid,

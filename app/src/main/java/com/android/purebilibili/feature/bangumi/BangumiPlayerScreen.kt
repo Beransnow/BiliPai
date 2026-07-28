@@ -28,6 +28,8 @@ import io.github.alexzhirkevich.cupertino.CupertinoActivityIndicator
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.player.PlayerLeaseRegistry
+import com.android.purebilibili.core.player.PlayerReleaseFence
 import com.android.purebilibili.feature.video.danmaku.rememberDanmakuManager
 import com.android.purebilibili.feature.video.player.MiniPlayerManager
 import com.android.purebilibili.feature.video.player.PlaylistItem
@@ -97,6 +99,9 @@ fun BangumiPlayerScreen(
         ExoPlayer.Builder(context).build().apply {
             playWhenReady = true
         }
+    }
+    val playerOwner = remember(exoPlayer) {
+        PlayerLeaseRegistry.acquire(player = exoPlayer, owner = "bangumi-screen")
     }
     val miniPlayerManager = remember(context) {
         MiniPlayerManager.getInstance(context.applicationContext)
@@ -345,14 +350,19 @@ fun BangumiPlayerScreen(
     }
     
     // 清理播放器 +  屏幕常亮管理
-    DisposableEffect(Unit) {
+    DisposableEffect(exoPlayer, playerOwner) {
         val window = context.findActivity()?.window
         
         //  [修复] 进入番剧播放页时保持屏幕常亮，防止自动熄屏
         window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         
         onDispose {
-            exoPlayer.release()
+            exoPlayer.playWhenReady = false
+            exoPlayer.pause()
+            PlayerLeaseRegistry.requestRelease(
+                token = playerOwner,
+                fence = PlayerReleaseFence.navigation,
+            )
             //  恢复默认方向，避免离开播放器后卡在横屏
             context.findActivity()?.requestedOrientation = 
                 ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED

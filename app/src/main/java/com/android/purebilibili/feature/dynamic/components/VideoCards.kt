@@ -41,6 +41,7 @@ import coil.compose.AsyncImage
 import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
 import com.android.purebilibili.core.ui.LocalSharedTransitionScope
+import com.android.purebilibili.core.ui.image.rememberImageRequest
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedTransitionMotionSpec
@@ -159,7 +160,6 @@ fun VideoCardLarge(
         VideoCardLargeCover(
             archive = archive,
             coverUrl = coverUrl,
-            context = context,
             isCollection = isCollection,
             cornerBadgeText = cornerBadgeText,
             coverShape = coverShape
@@ -186,7 +186,6 @@ fun VideoCardLarge(
 private fun VideoCardLargeCover(
     archive: ArchiveMajor,
     coverUrl: String,
-    context: android.content.Context,
     isCollection: Boolean,
     cornerBadgeText: String?,
     coverShape: androidx.compose.ui.graphics.Shape,
@@ -201,11 +200,11 @@ private fun VideoCardLargeCover(
     ) {
         if (coverUrl.isNotEmpty()) {
             AsyncImage(
-                model = coil.request.ImageRequest.Builder(context)
-                    .data(coverUrl)
-                    .addHeader("Referer", "https://www.bilibili.com/")
-                    .crossfade(true)
-                    .build(),
+                model = rememberImageRequest(
+                    data = coverUrl,
+                    referer = "https://www.bilibili.com/",
+                    crossfadeEnabled = true,
+                ),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop

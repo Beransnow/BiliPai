@@ -49,6 +49,13 @@ internal data class ImagePreviewDismissRectFrame(
     val dismissFraction: Float
 )
 
+internal data class ImagePreviewContentBounds(
+    val leftPx: Float,
+    val topPx: Float,
+    val widthPx: Float,
+    val heightPx: Float
+)
+
 internal data class ImagePreviewVerticalDragFrame(
     val progress: Float,
     val scale: Float,
@@ -243,6 +250,50 @@ internal fun resolveImagePreviewDismissRectFrame(
             bottom = centerY + height / 2f
         ),
         dismissFraction = dismissFraction
+    )
+}
+
+/**
+ * Resolves the preview container geometry without requiring a composition-time State read.
+ * The caller samples this from a measure block, so opening and closing invalidate layout only.
+ */
+internal fun resolveImagePreviewContentBounds(
+    transitionProgress: Float,
+    fullWidthPx: Float,
+    fullHeightPx: Float,
+    sourceRect: Rect?,
+    dismissStartRect: Rect?,
+    isDismissing: Boolean
+): ImagePreviewContentBounds {
+    val fullWidth = fullWidthPx.coerceAtLeast(1f)
+    val fullHeight = fullHeightPx.coerceAtLeast(1f)
+    val progress = transitionProgress.coerceIn(0f, 1f)
+
+    if (sourceRect == null) {
+        return ImagePreviewContentBounds(0f, 0f, fullWidth, fullHeight)
+    }
+
+    if (isDismissing && dismissStartRect != null) {
+        val frame = resolveImagePreviewDismissRectFrame(
+            transitionProgress = progress,
+            sourceRect = sourceRect,
+            displayedImageRect = dismissStartRect
+        )
+        if (frame != null) {
+            return ImagePreviewContentBounds(
+                leftPx = frame.rect.left,
+                topPx = frame.rect.top,
+                widthPx = frame.rect.width.coerceAtLeast(1f),
+                heightPx = frame.rect.height.coerceAtLeast(1f)
+            )
+        }
+    }
+
+    return ImagePreviewContentBounds(
+        leftPx = lerpFloat(sourceRect.left, 0f, progress),
+        topPx = lerpFloat(sourceRect.top, 0f, progress),
+        widthPx = lerpFloat(sourceRect.width, fullWidth, progress).coerceAtLeast(1f),
+        heightPx = lerpFloat(sourceRect.height, fullHeight, progress).coerceAtLeast(1f)
     )
 }
 

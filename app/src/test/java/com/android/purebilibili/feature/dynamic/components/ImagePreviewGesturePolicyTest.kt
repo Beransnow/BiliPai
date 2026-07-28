@@ -1,11 +1,27 @@
 package com.android.purebilibili.feature.dynamic.components
 
+import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ImagePreviewGesturePolicyTest {
+
+    @Test
+    fun predictiveProgressUsesOneSnapshotCollectorAndPagerMotionReadsInLayers() {
+        val path = "app/src/main/java/com/android/purebilibili/feature/dynamic/components/ImagePreviewDialog.kt"
+        val normalizedPath = path.removePrefix("app/")
+        val sourceFile = listOf(File(path), File(normalizedPath)).firstOrNull { it.exists() }
+        require(sourceFile != null) { "Cannot locate $path from ${File(".").absolutePath}" }
+        val source = sourceFile.readText()
+
+        assertTrue(source.contains("snapshotFlow {"))
+        assertTrue(source.contains(".collectLatest { backProgress ->"))
+        assertFalse(source.contains("LaunchedEffect(backProgress, isDismissing)"))
+        assertTrue(source.contains("val pageOffset = pageOffsetProvider()"))
+        assertTrue(source.contains("pageOffsetFraction = pagerState.currentPageOffsetFraction"))
+    }
 
     @Test
     fun shouldEnableImagePreviewVerticalDismiss_allowsScaleAtRest() {

@@ -36,6 +36,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.asComposeRenderEffect
@@ -43,10 +44,12 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,9 +62,11 @@ import coil.request.SuccessResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.abs
+import kotlin.math.roundToInt
 import android.app.Activity
 import android.content.ClipData
 import android.content.ContextWrapper
@@ -251,14 +256,13 @@ private fun ImagePreviewOverlayContent(
         }
     }
     
-    //  动画状态控制
-    // 0f = 关闭/初始状态 (at sourceRect), 1f = 打开状态 (Fullscreen)
-    val animateTrigger = remember { androidx.compose.animation.core.Animatable(0f) }
-    var isDismissing by remember { mutableStateOf(false) }
+    // Opening, drag, predictive back and dismiss share one owner. Its continuous values are
+    // sampled from layout/layer/draw blocks instead of invalidating this composition per frame.
+    val motionState = remember { ImagePreviewMotionState() }
+    val isDismissing = motionState.isDismissing
     var currentImageDisplayRect by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
-    var dismissImageDisplayRect by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
     var activeZoomScale by remember { mutableFloatStateOf(1f) }
-    var isVerticalDismissDragging by remember { mutableStateOf(false) }
+    val isVerticalDismissDragging = motionState.isVerticalDragging
     val longPressSaveEnabled by SettingsManager.getImagePreviewLongPressSaveEnabled(context)
         .collectAsStateWithLifecycle(initialValue = true)
     var imagePreviewTextVisible by remember(textContent, defaultTextVisible) {
@@ -269,10 +273,6 @@ private fun ImagePreviewOverlayContent(
             )
         )
     }
-    // 竖滑跟手用状态值，避免每帧 launch snapTo 竞态导致滑不动。
-    var verticalDismissOffsetYPx by remember { mutableFloatStateOf(0f) }
-    val verticalDismissSnapAnim = remember { androidx.compose.animation.core.Animatable(0f) }
-
     fun handleImageSaveResult(success: Boolean) {
         haptic(resolveImagePreviewSaveFeedback(success))
         Toast.makeText(
@@ -300,11 +300,7 @@ private fun ImagePreviewOverlayContent(
 
     LaunchedEffect(pagerState.currentPage) {
         activeZoomScale = 1f
-        if (!isDismissing) {
-            isVerticalDismissDragging = false
-            verticalDismissOffsetYPx = 0f
-            verticalDismissSnapAnim.snapTo(0f)
-        }
+        motionState.resetForPageChange()
     }
     
     //  存储权限状态（Android 9 及以下需要）
@@ -371,48 +367,7 @@ private fun ImagePreviewOverlayContent(
             val fullWidthPx = with(density) { fullWidth.toPx() }
             val fullHeightPx = with(density) { fullHeight.toPx() }
             val maxBlurRadiusPx = with(density) { 18.dp.toPx() }
-            
-            val rawProgress = animateTrigger.value
-            val verticalDragFrame = resolveImagePreviewVerticalDragFrame(
-                dragOffsetYPx = verticalDismissOffsetYPx,
-                containerHeightPx = fullHeightPx
-            )
-            
-            //  计算容器位置和大小
-            // 如果切走了或者没有源矩形，则全屏显示（仅淡入淡出）
-            // 有缩略图源矩形时始终做尺寸落位，保证返回大小匹配预览格。
             val shouldUseRectAnim = sourceRect != null
-            val transitionFrame = resolveImagePreviewTransitionFrame(
-                rawProgress = rawProgress,
-                hasSourceRect = shouldUseRectAnim,
-                sourceCornerRadiusDp = sourceCornerRadiusDp
-            )
-            val presentedCornerRadiusDp = resolveImagePreviewPresentedCornerRadiusDp(
-                visualProgress = transitionFrame.visualProgress,
-                verticalDragProgress = if (isDismissing) 0f else verticalDragFrame.progress,
-                hasSourceRect = shouldUseRectAnim,
-                sourceCornerRadiusDp = sourceCornerRadiusDp
-            )
-            val visualFrame = resolveImagePreviewVisualFrame(
-                visualProgress = transitionFrame.visualProgress,
-                transitionEnabled = !isDismissing,
-                maxBlurRadiusPx = maxBlurRadiusPx
-            )
-            val backdropAlpha = if (isDismissing) {
-                resolveImagePreviewDismissBackdropAlpha(transitionFrame.visualProgress)
-            } else {
-                visualFrame.backdropAlpha * verticalDragFrame.backdropAlphaMultiplier
-            }
-            val dismissRectFrame = resolveImagePreviewDismissRectFrame(
-                transitionProgress = transitionFrame.layoutProgress,
-                sourceRect = if (shouldUseRectAnim && isDismissing) sourceRect else null,
-                displayedImageRect = if (shouldUseRectAnim && isDismissing) dismissImageDisplayRect else null
-            )
-            
-            val targetLeft = 0.dp
-            val targetTop = 0.dp
-            val targetWidth = fullWidth
-            val targetHeight = fullHeight
             val previewSurfaceRect = remember(constraints.maxWidth, constraints.maxHeight) {
                 androidx.compose.ui.geometry.Rect(
                     left = 0f,
@@ -424,10 +379,8 @@ private fun ImagePreviewOverlayContent(
 
             LaunchedEffect(Unit) {
                 val openMotion = imagePreviewDismissMotion()
-                animateTrigger.snapTo(0f)
                 // 进场与退场同系 Continuity，一镜对称。
-                animateTrigger.animateTo(
-                    targetValue = 1f,
+                motionState.open(
                     animationSpec = continuityTween(durationMillis = openMotion.openDurationMillis)
                 )
             }
@@ -440,39 +393,33 @@ private fun ImagePreviewOverlayContent(
                     preferPreviewSurface = false
                 )
             ) {
-                if (isDismissing) return
-                dismissImageDisplayRect = startRect
-                isVerticalDismissDragging = false
-                isDismissing = true
+                if (!motionState.beginDismiss(startRect)) return
                 scope.launch {
-                    verticalDismissOffsetYPx = 0f
-                    verticalDismissSnapAnim.snapTo(0f)
                     val dismissMotion = imagePreviewDismissMotion()
                     // 单段 morph：几何线性 + Continuity 速度曲线，无 overshoot / spring 二次落点。
-                    animateTrigger.animateTo(
-                        targetValue = dismissMotion.settleTarget,
+                    motionState.animateDismiss(
                         animationSpec = continuityTween(
                             durationMillis = dismissMotion.collapseDurationMillis
                         )
                     )
-                    onDismiss()
+                    if (motionState.commitDismiss()) onDismiss()
                 }
             }
 
             val backEventState = rememberNavigationEventState(NavigationEventInfo.None)
             val predictiveBackGestureEnabled = LocalPredictiveBackGestureEnabled.current
-            val backProgress =
-                if (predictiveBackGestureEnabled) {
+            val latestIsDismissing = rememberUpdatedState(isDismissing)
+            LaunchedEffect(backEventState, predictiveBackGestureEnabled) {
+                if (!predictiveBackGestureEnabled) return@LaunchedEffect
+                snapshotFlow {
                     (backEventState.transitionState as? NavigationEventTransitionState.InProgress)
                         ?.latestEvent
                         ?.progress
                         ?: 0f
-                } else {
-                    0f
-                }
-            LaunchedEffect(backProgress, isDismissing) {
-                if (!isDismissing && backProgress > 0f) {
-                    animateTrigger.snapTo(1f - backProgress)
+                }.collectLatest { backProgress ->
+                    if (!latestIsDismissing.value && backProgress > 0f) {
+                        motionState.updatePredictiveBack(backProgress)
+                    }
                 }
             }
             NavigationBackHandler(
@@ -482,101 +429,66 @@ private fun ImagePreviewOverlayContent(
                 onBackCancelled = { commitTransition: () -> Unit ->
                     scope.launch {
                         val dismissMotion = imagePreviewDismissMotion()
-                        animateTrigger.animateTo(
-                            targetValue = 1f,
+                        val shouldCommit = motionState.cancelBack(
                             animationSpec = emphasizedEnterTween(
                                 durationMillis = dismissMotion.cancelRecoverDurationMillis
-                            ),
+                            )
                         )
-                        commitTransition()
+                        if (shouldCommit) commitTransition()
                     }
                 },
                 onBackCompleted = { commitTransition: () -> Unit ->
-                    triggerDismiss()
-                    commitTransition()
+                    if (motionState.completeBack()) {
+                        triggerDismiss()
+                        commitTransition()
+                    }
                 },
             )
-            
-            val (currentLeft, currentTop, currentWidth, currentHeight) = if (shouldUseRectAnim) {
-                val source = sourceRect
-                val sourceLeft = with(density) { source.left.toDp() }
-                val sourceTop = with(density) { source.top.toDp() }
-                val sourceWidth = with(density) { source.width.toDp() }
-                val sourceHeight = with(density) { source.height.toDp() }
-                
-                val l = androidx.compose.ui.unit.lerp(sourceLeft, targetLeft, transitionFrame.layoutProgress)
-                val t = androidx.compose.ui.unit.lerp(sourceTop, targetTop, transitionFrame.layoutProgress)
-                val w = androidx.compose.ui.unit.lerp(sourceWidth, targetWidth, transitionFrame.layoutProgress)
-                val h = androidx.compose.ui.unit.lerp(sourceHeight, targetHeight, transitionFrame.layoutProgress)
-                
-                Quad(l, t, w, h)
-            } else {
-                Quad(0.dp, 0.dp, fullWidth, fullHeight)
-            }
             
             // 1. 背景层 (淡入淡出)
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .testTag(IMAGE_PREVIEW_BACKDROP_TAG)
-                    .background(Color.Black.copy(alpha = backdropAlpha))
+                    .drawBehind {
+                        val transitionFrame = resolveImagePreviewTransitionFrame(
+                            rawProgress = motionState.readTransitionProgress(),
+                            hasSourceRect = shouldUseRectAnim,
+                            sourceCornerRadiusDp = sourceCornerRadiusDp
+                        )
+                        val verticalDragFrame = resolveImagePreviewVerticalDragFrame(
+                            dragOffsetYPx = motionState.readVerticalDragOffsetYPx(),
+                            containerHeightPx = fullHeightPx
+                        )
+                        val visualFrame = resolveImagePreviewVisualFrame(
+                            visualProgress = transitionFrame.visualProgress,
+                            transitionEnabled = !isDismissing,
+                            maxBlurRadiusPx = maxBlurRadiusPx
+                        )
+                        val backdropAlpha = if (isDismissing) {
+                            resolveImagePreviewDismissBackdropAlpha(transitionFrame.visualProgress)
+                        } else {
+                            visualFrame.backdropAlpha * verticalDragFrame.backdropAlphaMultiplier
+                        }
+                        drawRect(Color.Black.copy(alpha = backdropAlpha))
+                    }
                     .pointerInput(Unit) {
                         detectTapGestures(
                             onTap = { triggerDismiss() }
                         )
                     }
             )
-            
-            // 2. 内容层 (缩放位移)
-            val contentModifier = if (isDismissing && shouldUseRectAnim && dismissRectFrame != null) {
-                Modifier
-                    .offset(
-                        x = with(density) { dismissRectFrame.rect.left.toDp() },
-                        y = with(density) { dismissRectFrame.rect.top.toDp() }
-                    )
-                    .size(
-                        width = with(density) { dismissRectFrame.rect.width.toDp() },
-                        height = with(density) { dismissRectFrame.rect.height.toDp() }
-                    )
-                    .clip(RoundedCornerShape(presentedCornerRadiusDp.dp))
-                    .graphicsLayer {
-                        alpha = visualFrame.contentAlpha
-                        renderEffect = null
-                    }
-            } else {
-                Modifier
-                    .offset(x = currentLeft, y = currentTop)
-                    .size(width = currentWidth, height = currentHeight)
-                    .clip(RoundedCornerShape(presentedCornerRadiusDp.dp))
-                    .graphicsLayer {
-                        alpha = visualFrame.contentAlpha
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-                            visualFrame.blurRadiusPx > 0.01f
-                        ) {
-                            renderEffect = RenderEffect.createBlurEffect(
-                                visualFrame.blurRadiusPx,
-                                visualFrame.blurRadiusPx,
-                                Shader.TileMode.CLAMP
-                            ).asComposeRenderEffect()
-                        } else {
-                            renderEffect = null
-                        }
-                        if (!shouldUseRectAnim) {
-                            scaleX = transitionFrame.fallbackScale
-                            scaleY = transitionFrame.fallbackScale
-                        }
-                        if (!isDismissing) {
-                            translationY = verticalDismissOffsetYPx
-                            val dragScale = verticalDragFrame.scale
-                            scaleX *= dragScale
-                            scaleY *= dragScale
-                            transformOrigin = TransformOrigin.Center
-                        }
-                    }
-            }
 
-            Box(
-                 modifier = contentModifier
+            // 2. 内容层 (缩放位移)。进出场几何只让 measure/layer 失效，不重组 Pager。
+            ImagePreviewMotionContainer(
+                motionState = motionState,
+                sourceRect = sourceRect,
+                sourceCornerRadiusDp = sourceCornerRadiusDp,
+                fullWidthPx = fullWidthPx,
+                fullHeightPx = fullHeightPx,
+                maxBlurRadiusPx = maxBlurRadiusPx,
+                isDismissing = isDismissing,
+                modifier = Modifier.fillMaxSize()
             ) {
                 //  使用 HorizontalPager 实现滑动切换 + 3D立体动画
                 HorizontalPager(
@@ -589,18 +501,21 @@ private fun ImagePreviewOverlayContent(
                     key = { images.getOrElse(it) { "" } }
                 ) { page ->
                     // 计算当前页面的偏移量（0 = 居中，-1 = 左边，1 = 右边）
-                    val pageOffset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
-                    
-                    // 🎭 3D 立体旋转动画 - Cube 效果
-                    // 仅当完全打开时才应用复杂变换，避免动画冲突
-                    val apply3D = transitionFrame.visualProgress > 0.92f
+                    val pageOffsetProvider = remember(pagerState, page) {
+                        {
+                            (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+                        }
+                    }
                     
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .testTag(IMAGE_PREVIEW_PAGE_TAG)
                             .graphicsLayer {
+                                // 仅当完全打开时才应用复杂变换，避免动画冲突。
+                                val apply3D = motionState.readTransitionProgress() > 0.92f
                                 if (apply3D) {
+                                    val pageOffset = pageOffsetProvider()
                                     if (useCommentPreviewChrome) {
                                         val transform = resolveCommentImagePreviewPageTransform(
                                             pageOffsetFraction = pageOffset,
@@ -678,38 +593,38 @@ private fun ImagePreviewOverlayContent(
                             },
                             onVerticalDismissDragStart = {
                                 if (page == pagerState.currentPage && !isDismissing) {
-                                    isVerticalDismissDragging = true
-                                    scope.launch { verticalDismissSnapAnim.stop() }
+                                    if (motionState.beginVerticalDrag()) {
+                                        scope.launch { motionState.stopVerticalSnap() }
+                                    }
                                 }
                             },
                             onVerticalDismissDrag = { dragDelta ->
-                                if (page == pagerState.currentPage && !isDismissing && isVerticalDismissDragging) {
-                                    verticalDismissOffsetYPx += dragDelta
+                                if (page == pagerState.currentPage && !isDismissing && motionState.isVerticalDragging) {
+                                    motionState.dragVerticallyBy(dragDelta)
                                 }
                             },
                             onVerticalDismissDragEnd = {
-                                if (page == pagerState.currentPage && !isDismissing && isVerticalDismissDragging) {
-                                    isVerticalDismissDragging = false
-                                    val draggedRect = resolveImagePreviewDraggedDisplayRect(
-                                        displayedImageRect = currentImageDisplayRect,
-                                        translationYPx = verticalDismissOffsetYPx,
-                                        scale = verticalDragFrame.scale
-                                    )
-                                    when (
-                                        resolveImagePreviewVerticalDismissDecision(
-                                            dragOffsetYPx = verticalDismissOffsetYPx,
+                                if (page == pagerState.currentPage && !isDismissing && motionState.isVerticalDragging) {
+                                    motionState.finishVerticalDrag()?.let { dragOffsetYPx ->
+                                        val verticalDragFrame = resolveImagePreviewVerticalDragFrame(
+                                            dragOffsetYPx = dragOffsetYPx,
                                             containerHeightPx = fullHeightPx
                                         )
-                                    ) {
-                                        ImagePreviewVerticalDismissDecision.DISMISS -> triggerDismiss(draggedRect)
-                                        ImagePreviewVerticalDismissDecision.SNAP_BACK -> {
-                                            scope.launch {
-                                                verticalDismissSnapAnim.snapTo(verticalDismissOffsetYPx)
-                                                verticalDismissSnapAnim.animateTo(
-                                                    targetValue = 0f,
-                                                    animationSpec = interactiveSnapSpring()
-                                                ) {
-                                                    verticalDismissOffsetYPx = value
+                                        val draggedRect = resolveImagePreviewDraggedDisplayRect(
+                                            displayedImageRect = currentImageDisplayRect,
+                                            translationYPx = dragOffsetYPx,
+                                            scale = verticalDragFrame.scale
+                                        )
+                                        when (
+                                            resolveImagePreviewVerticalDismissDecision(
+                                                dragOffsetYPx = dragOffsetYPx,
+                                                containerHeightPx = fullHeightPx
+                                            )
+                                        ) {
+                                            ImagePreviewVerticalDismissDecision.DISMISS -> triggerDismiss(draggedRect)
+                                            ImagePreviewVerticalDismissDecision.SNAP_BACK -> {
+                                                scope.launch {
+                                                    motionState.snapVerticalDragBack(interactiveSnapSpring())
                                                 }
                                             }
                                         }
@@ -718,14 +633,9 @@ private fun ImagePreviewOverlayContent(
                             },
                             onVerticalDismissDragCancel = {
                                 if (page == pagerState.currentPage && !isDismissing) {
-                                    isVerticalDismissDragging = false
-                                    scope.launch {
-                                        verticalDismissSnapAnim.snapTo(verticalDismissOffsetYPx)
-                                        verticalDismissSnapAnim.animateTo(
-                                            targetValue = 0f,
-                                            animationSpec = interactiveSnapSpring()
-                                        ) {
-                                            verticalDismissOffsetYPx = value
+                                    if (motionState.finishVerticalDrag() != null) {
+                                        scope.launch {
+                                            motionState.snapVerticalDragBack(interactiveSnapSpring())
                                         }
                                     }
                                 }
@@ -755,14 +665,15 @@ private fun ImagePreviewOverlayContent(
             }
             
             // 3. UI 覆盖层 - 退出时先于图片清掉 chrome，只剩干净一镜 morph
-            val chromeAlpha = resolveImagePreviewChromeAlpha(
-                visualProgress = transitionFrame.visualProgress,
-                isDismissing = isDismissing
-            )
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .graphicsLayer { alpha = chromeAlpha }
+                    .graphicsLayer {
+                        alpha = resolveImagePreviewChromeAlpha(
+                            visualProgress = motionState.readTransitionProgress(),
+                            isDismissing = isDismissing
+                        )
+                    }
             ) {
                 val safeDrawingPadding = WindowInsets.safeDrawing.asPaddingValues()
                 val overlayPadding = resolveImagePreviewOverlayPadding(
@@ -770,9 +681,6 @@ private fun ImagePreviewOverlayContent(
                     safeInsetTop = safeDrawingPadding.calculateTopPadding(),
                     safeInsetEnd = safeDrawingPadding.calculateEndPadding(layoutDirection),
                     safeInsetBottom = safeDrawingPadding.calculateBottomPadding()
-                )
-                val textTransform = resolveImagePreviewTextTransform(
-                    pageOffsetFraction = pagerState.currentPageOffsetFraction
                 )
                 val resolvedText = resolveImagePreviewText(
                     textContent = textContent,
@@ -800,6 +708,9 @@ private fun ImagePreviewOverlayContent(
                                 bottom = overlayPadding.bottom + 66.dp
                             )
                             .graphicsLayer {
+                                val textTransform = resolveImagePreviewTextTransform(
+                                    pageOffsetFraction = pagerState.currentPageOffsetFraction
+                                )
                                 alpha = textTransform.alpha
                                 rotationX = textTransform.rotationX
                                 translationY = with(density) { textTransform.translateYDp.dp.toPx() }
@@ -928,8 +839,8 @@ private fun ImagePreviewOverlayContent(
                     }
                 }
                 
-                val chromeOffset = pagerState.currentPageOffsetFraction.coerceIn(-1f, 1f)
                 val chromeModifier = Modifier.graphicsLayer {
+                    val chromeOffset = pagerState.currentPageOffsetFraction.coerceIn(-1f, 1f)
                     rotationZ = -chromeOffset * 2.8f
                     translationX = with(density) { (-chromeOffset * 10f).dp.toPx() }
                     transformOrigin = TransformOrigin.Center
@@ -991,6 +902,9 @@ private fun ImagePreviewOverlayContent(
                             resolvedText != null && shouldShowResolvedText && textPlacement == ImagePreviewTextPlacement.TOP_BAR -> {
                                 Box(
                                     modifier = Modifier.graphicsLayer {
+                                        val textTransform = resolveImagePreviewTextTransform(
+                                            pageOffsetFraction = pagerState.currentPageOffsetFraction
+                                        )
                                         alpha = textTransform.alpha
                                         translationY = with(density) { (textTransform.translateYDp * 0.45f).dp.toPx() }
                                     }
@@ -1175,6 +1089,98 @@ private fun ImagePreviewOverlayContent(
                     )
                 }
             }
+    }
+}
+
+@Composable
+private fun ImagePreviewMotionContainer(
+    motionState: ImagePreviewMotionState,
+    sourceRect: androidx.compose.ui.geometry.Rect?,
+    sourceCornerRadiusDp: Float,
+    fullWidthPx: Float,
+    fullHeightPx: Float,
+    maxBlurRadiusPx: Float,
+    isDismissing: Boolean,
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit
+) {
+    Layout(
+        modifier = modifier,
+        content = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        val transitionFrame = resolveImagePreviewTransitionFrame(
+                            rawProgress = motionState.readTransitionProgress(),
+                            hasSourceRect = sourceRect != null,
+                            sourceCornerRadiusDp = sourceCornerRadiusDp
+                        )
+                        val verticalDragFrame = resolveImagePreviewVerticalDragFrame(
+                            dragOffsetYPx = motionState.readVerticalDragOffsetYPx(),
+                            containerHeightPx = fullHeightPx
+                        )
+                        val presentedCornerRadiusDp = resolveImagePreviewPresentedCornerRadiusDp(
+                            visualProgress = transitionFrame.visualProgress,
+                            verticalDragProgress = if (isDismissing) 0f else verticalDragFrame.progress,
+                            hasSourceRect = sourceRect != null,
+                            sourceCornerRadiusDp = sourceCornerRadiusDp
+                        )
+                        val visualFrame = resolveImagePreviewVisualFrame(
+                            visualProgress = transitionFrame.visualProgress,
+                            transitionEnabled = !isDismissing,
+                            maxBlurRadiusPx = maxBlurRadiusPx
+                        )
+
+                        alpha = visualFrame.contentAlpha
+                        shape = RoundedCornerShape(presentedCornerRadiusDp.dp)
+                        clip = true
+                        renderEffect = if (
+                            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                            visualFrame.blurRadiusPx > 0.01f
+                        ) {
+                            RenderEffect.createBlurEffect(
+                                visualFrame.blurRadiusPx,
+                                visualFrame.blurRadiusPx,
+                                Shader.TileMode.CLAMP
+                            ).asComposeRenderEffect()
+                        } else {
+                            null
+                        }
+                        if (sourceRect == null) {
+                            scaleX = transitionFrame.fallbackScale
+                            scaleY = transitionFrame.fallbackScale
+                        }
+                        if (!isDismissing) {
+                            translationY = motionState.readVerticalDragOffsetYPx()
+                            scaleX *= verticalDragFrame.scale
+                            scaleY *= verticalDragFrame.scale
+                            transformOrigin = TransformOrigin.Center
+                        }
+                    },
+                content = content
+            )
+        }
+    ) { measurables, constraints ->
+        val bounds = resolveImagePreviewContentBounds(
+            transitionProgress = motionState.readTransitionProgress(),
+            fullWidthPx = fullWidthPx,
+            fullHeightPx = fullHeightPx,
+            sourceRect = sourceRect,
+            dismissStartRect = motionState.dismissStartRect,
+            isDismissing = isDismissing
+        )
+        val childWidth = bounds.widthPx.roundToInt().coerceAtLeast(1)
+        val childHeight = bounds.heightPx.roundToInt().coerceAtLeast(1)
+        val placeable = measurables.single().measure(
+            Constraints.fixed(width = childWidth, height = childHeight)
+        )
+        layout(constraints.maxWidth, constraints.maxHeight) {
+            placeable.place(
+                x = bounds.leftPx.roundToInt(),
+                y = bounds.topPx.roundToInt()
+            )
+        }
     }
 }
 

@@ -164,10 +164,12 @@ class VideoCardScrollLiteVisualPolicyTest {
     fun `video card cover request remembers crossfade to avoid rebuild flash`() {
         val source = File("src/main/java/com/android/purebilibili/feature/home/components/cards/VideoCard.kt")
             .readText()
-        assertTrue(source.contains("val coverImageRequest = remember("))
+        assertTrue(source.contains("val coverImageRequest = rememberImageRequest("))
         assertTrue(source.contains("coverCrossfadeEnabled"))
         assertTrue(source.contains("pinnedSharedReturnCover"))
-        assertTrue(source.contains(".placeholderMemoryCacheKey(requestCoverCacheKey)"))
+        assertTrue(source.contains("placeholderMemoryCacheKey = requestCoverCacheKey"))
+        assertTrue(source.contains("widthPx = coverRequestSpec?.widthPx"))
+        assertTrue(source.contains("heightPx = coverRequestSpec?.heightPx"))
         assertTrue(source.contains("model = coverImageRequest"))
     }
 

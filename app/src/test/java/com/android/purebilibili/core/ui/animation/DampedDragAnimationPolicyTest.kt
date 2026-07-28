@@ -9,6 +9,24 @@ import kotlin.test.assertTrue
 class DampedDragAnimationPolicyTest {
 
     @Test
+    fun `drag state exposes stable pull based motion reader`() {
+        val dragSource = listOf(
+            File("app/src/main/java/com/android/purebilibili/core/ui/animation/DampedDragAnimation.kt"),
+            File("src/main/java/com/android/purebilibili/core/ui/animation/DampedDragAnimation.kt")
+        ).first { it.exists() }.readText()
+        val readerSource = listOf(
+            File("app/src/main/java/com/android/purebilibili/core/ui/animation/MotionReader.kt"),
+            File("src/main/java/com/android/purebilibili/core/ui/animation/MotionReader.kt")
+        ).first { it.exists() }.readText()
+
+        assertTrue(readerSource.contains("@Stable"))
+        assertTrue(readerSource.contains("internal interface MotionReader"))
+        assertTrue(dragSource.contains(") : MotionReader {"))
+        assertTrue(dragSource.contains("override fun readPosition(): Float"))
+        assertTrue(dragSource.contains("override fun readDragging(): Boolean"))
+    }
+
+    @Test
     fun `velocity conversion guards invalid item width`() {
         assertEquals(
             0f,

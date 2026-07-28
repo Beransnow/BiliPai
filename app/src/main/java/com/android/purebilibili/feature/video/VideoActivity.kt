@@ -14,6 +14,11 @@ import android.content.res.Configuration
 import android.graphics.drawable.Icon
 import android.os.Build
 import android.os.Bundle
+import com.android.purebilibili.BuildConfig
+import com.android.purebilibili.core.store.DEFAULT_ANALYTICS_ENABLED
+import com.android.purebilibili.core.ui.performance.DefaultWindowJankReporter
+import com.android.purebilibili.core.ui.performance.WindowJankController
+import com.android.purebilibili.core.util.AnalyticsHelper
 import com.android.purebilibili.core.util.Logger
 import android.util.Rational
 import androidx.activity.ComponentActivity
@@ -43,6 +48,7 @@ class VideoActivity : ComponentActivity() {
     private val viewModel: VideoPlaybackViewModel by viewModels()
     private var isFullscreen by mutableStateOf(false)
     private var isInPipMode by mutableStateOf(false)
+    private var windowJankController: WindowJankController? = null
     
     //  PiP 广播接收器
     private val pipReceiver = object : BroadcastReceiver() {
@@ -97,6 +103,16 @@ class VideoActivity : ComponentActivity() {
             return
         }
 
+        windowJankController = WindowJankController.create(
+            window = window,
+            buildType = BuildConfig.BUILD_TYPE,
+            analyticsEnabled = getSharedPreferences("analytics_tracking", MODE_PRIVATE)
+                .getBoolean("enabled", DEFAULT_ANALYTICS_ENABLED),
+            reporter = DefaultWindowJankReporter(
+                upload = AnalyticsHelper::logWindowJankSummary,
+            ),
+        )
+
         updateStateFromConfig(resources.configuration)
 
         setContent {
@@ -120,8 +136,20 @@ class VideoActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        windowJankController?.onWindowResumed(VIDEO_DETAIL_PERFORMANCE_ROUTE)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        windowJankController?.onWindowPaused()
+    }
     
     override fun onDestroy() {
+        windowJankController?.close()
+        windowJankController = null
         super.onDestroy()
         //  注销广播接收器
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -221,6 +249,8 @@ class VideoActivity : ComponentActivity() {
     }
 
     companion object {
+        private const val VIDEO_DETAIL_PERFORMANCE_ROUTE = "video_detail"
+
         fun start(context: Context, bvid: String, options: android.os.Bundle? = null) {
             val intent = Intent(context, VideoActivity::class.java).apply {
                 putExtra("bvid", bvid)

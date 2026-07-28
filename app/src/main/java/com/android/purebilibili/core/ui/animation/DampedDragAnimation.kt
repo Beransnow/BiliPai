@@ -87,7 +87,7 @@ internal class DampedDragAnimationState(
     private val motionSpec: BottomBarMotionSpec,
     private val notifyIndexChangedOnReleaseStart: Boolean = false,
     @Suppress("UNUSED_PARAMETER") private val holdPressUntilReleaseTargetSettles: Boolean = false
-) {
+) : MotionReader {
     private val valueAnimationSpec = spring(1f, 1000f, 0.001f)
     private val velocityAnimationSpec = spring(0.5f, 300f, 0.01f)
     private val pressProgressAnimationSpec = spring(1f, 1000f, 0.001f)
@@ -123,6 +123,18 @@ internal class DampedDragAnimationState(
     val scale: Float get() = maxOf(scaleX, scaleY)
     val dragOffset: Float get() = offsetAnimation.value
     val isRunning: Boolean get() = valueAnimation.isRunning
+
+    override fun readPosition(): Float = valueAnimation.value
+
+    override fun readPressProgress(): Float = pressProgressAnimation.value
+
+    override fun readDragOffsetPx(): Float = offsetAnimation.value
+
+    override fun readVelocityPxPerSecond(): Float = velocityPxPerSecond
+
+    override fun readDeformationVelocityItemsPerSecond(): Float = velocityAnimation.value
+
+    override fun readDragging(): Boolean = isDragging
 
     var velocityPxPerSecond by mutableFloatStateOf(0f)
         private set

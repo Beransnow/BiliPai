@@ -99,7 +99,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.imageLoader
-import coil.request.ImageRequest
 import coil.size.Scale
 import com.android.purebilibili.R
 import com.android.purebilibili.core.ui.AdaptiveScaffold
@@ -108,6 +107,7 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
 import com.android.purebilibili.core.ui.OfficialVerifyBadge
+import com.android.purebilibili.core.ui.image.rememberImageRequest
 import com.android.purebilibili.core.ui.OfficialVerifyBadgeSpec
 import com.android.purebilibili.core.ui.blur.BlurSurfaceType
 import com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState
@@ -1980,12 +1980,13 @@ private fun SpaceHeader(
         ) {
             if (topPhotoUrl.isNotBlank()) {
                 AsyncImage(
-                    model = ImageRequest.Builder(context)
-                        .data(topPhotoUrl)
-                        .size(1440, 900)
-                        .scale(Scale.FILL)
-                        .crossfade(true)
-                        .build(),
+                    model = rememberImageRequest(
+                        data = topPhotoUrl,
+                        widthPx = 1440,
+                        heightPx = 900,
+                        scale = Scale.FILL,
+                        crossfadeEnabled = true,
+                    ),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -2046,10 +2047,10 @@ private fun SpaceHeader(
                             .clickable(enabled = avatarPreviewEnabled, onClick = onAvatarClick)
                     ) {
                         AsyncImage(
-                            model = ImageRequest.Builder(context)
-                                .data(FormatUtils.buildSizedImageUrl(userInfo.face, width = 320, height = 320))
-                                .crossfade(true)
-                                .build(),
+                            model = rememberImageRequest(
+                                data = FormatUtils.buildSizedImageUrl(userInfo.face, width = 320, height = 320),
+                                crossfadeEnabled = true,
+                            ),
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
@@ -2911,10 +2912,10 @@ private fun SpaceHomeVideoCard(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(FormatUtils.buildSizedImageUrl(video.pic, width = 640, height = 360))
-                    .crossfade(true)
-                    .build(),
+                model = rememberImageRequest(
+                    data = FormatUtils.buildSizedImageUrl(video.pic, width = 640, height = 360),
+                    crossfadeEnabled = true,
+                ),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -3064,10 +3065,10 @@ private fun SpaceAggregateMediaCard(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(FormatUtils.buildSizedImageUrl(item.cover, width = 640, height = 360))
-                    .crossfade(true)
-                    .build(),
+                model = rememberImageRequest(
+                    data = FormatUtils.buildSizedImageUrl(item.cover, width = 640, height = 360),
+                    crossfadeEnabled = true,
+                ),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
@@ -3123,10 +3124,10 @@ private fun SpaceAggregatePosterCard(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(FormatUtils.buildSizedImageUrl(item.cover, width = 480, height = 720))
-                    .crossfade(true)
-                    .build(),
+                model = rememberImageRequest(
+                    data = FormatUtils.buildSizedImageUrl(item.cover, width = 480, height = 720),
+                    crossfadeEnabled = true,
+                ),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
@@ -3224,10 +3225,10 @@ private fun SpaceTopVideoCard(
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(FormatUtils.buildSizedImageUrl(video.pic, width = 560, height = 352))
-                        .crossfade(true)
-                        .build(),
+                    model = rememberImageRequest(
+                        data = FormatUtils.buildSizedImageUrl(video.pic, width = 560, height = 352),
+                        crossfadeEnabled = true,
+                    ),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -3391,10 +3392,10 @@ private fun SpaceArchiveListItemRow(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(FormatUtils.buildSizedImageUrl(cover, width = 560, height = 350))
-                    .crossfade(true)
-                    .build(),
+                model = rememberImageRequest(
+                    data = FormatUtils.buildSizedImageUrl(cover, width = 560, height = 350),
+                    crossfadeEnabled = true,
+                ),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
@@ -3550,10 +3551,10 @@ private fun SpaceAudioListItem(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(FormatUtils.buildSizedImageUrl(audio.cover, width = 256, height = 256))
-                    .crossfade(true)
-                    .build(),
+                model = rememberImageRequest(
+                    data = FormatUtils.buildSizedImageUrl(audio.cover, width = 256, height = 256),
+                    crossfadeEnabled = true,
+                ),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
@@ -3625,10 +3626,10 @@ private fun SpaceArticleListItem(
                     key = { it }
                 ) { imageUrl ->
                     AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(FormatUtils.buildSizedImageUrl(imageUrl, width = 480, height = 320))
-                            .crossfade(true)
-                            .build(),
+                        model = rememberImageRequest(
+                            data = FormatUtils.buildSizedImageUrl(imageUrl, width = 480, height = 320),
+                            crossfadeEnabled = true,
+                        ),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -3715,16 +3716,15 @@ private fun SpaceBangumiCard(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(
+                model = rememberImageRequest(
+                    data =
                         FormatUtils.buildSizedImageUrl(
                             item.cover.ifBlank { item.squareCover },
                             width = 480,
                             height = 720
-                        )
-                    )
-                    .crossfade(true)
-                    .build(),
+                        ),
+                    crossfadeEnabled = true,
+                ),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
@@ -3780,10 +3780,10 @@ private fun SpaceCollectionSummaryCard(
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(FormatUtils.buildSizedImageUrl(cover, width = 480, height = 300))
-                        .crossfade(true)
-                        .build(),
+                    model = rememberImageRequest(
+                        data = FormatUtils.buildSizedImageUrl(cover, width = 480, height = 300),
+                        crossfadeEnabled = true,
+                    ),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -3855,10 +3855,10 @@ private fun SpaceCollectionWithPreviewCard(
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                 ) {
                     AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(FormatUtils.buildSizedImageUrl(cover, width = 480, height = 300))
-                            .crossfade(true)
-                            .build(),
+                        model = rememberImageRequest(
+                            data = FormatUtils.buildSizedImageUrl(cover, width = 480, height = 300),
+                            crossfadeEnabled = true,
+                        ),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
@@ -3898,10 +3898,10 @@ private fun SpaceCollectionWithPreviewCard(
                     items(previews, key = { "${it.cover}_${it.title}" }) { preview ->
                         Column(modifier = Modifier.width(112.dp)) {
                             AsyncImage(
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data(FormatUtils.buildSizedImageUrl(preview.cover, width = 320, height = 200))
-                                    .crossfade(true)
-                                    .build(),
+                                model = rememberImageRequest(
+                                    data = FormatUtils.buildSizedImageUrl(preview.cover, width = 320, height = 200),
+                                    crossfadeEnabled = true,
+                                ),
                                 contentDescription = null,
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier

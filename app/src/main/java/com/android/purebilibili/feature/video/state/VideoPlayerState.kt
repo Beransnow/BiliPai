@@ -37,6 +37,8 @@ import coil.transform.RoundedCornersTransformation
 import com.android.purebilibili.R
 import com.android.purebilibili.core.network.NetworkModule
 import com.android.purebilibili.core.player.PlaybackMediaCache
+import com.android.purebilibili.core.player.PlayerLeaseRegistry
+import com.android.purebilibili.core.player.PlayerReleaseFence
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.Logger
 import com.android.purebilibili.core.util.NetworkUtils
@@ -898,6 +900,9 @@ fun rememberVideoPlayerState(
                 }
         }
     }
+    val playerOwner = remember(player) {
+        PlayerLeaseRegistry.acquire(player = player, owner = "video-detail-screen")
+    }
     val playbackCompletionBehavior by SettingsManager
         .getPlaybackCompletionBehavior(context)
         .collectAsStateWithLifecycle(initialValue = PlaybackCompletionBehavior.CONTINUE_CURRENT_LOGIC
@@ -934,7 +939,7 @@ fun rememberVideoPlayerState(
         }
     }
 
-    DisposableEffect(player) {
+    DisposableEffect(player, playerOwner) {
         onDispose {
             viewModel.flushPlaybackHeartbeatSnapshot(reason = "dispose")
             //  [新增] 保存播放进度到 ViewModel 缓存
@@ -945,26 +950,27 @@ fun rememberVideoPlayerState(
             // 仅当当前实例仍被 MiniPlayerManager 持有时才保留
             val shouldKeepPlayer = miniPlayerManager.isActive && miniPlayerManager.isPlayerManaged(player)
             
+            // Listener/ticker ownership belongs to this screen even if player ownership moves to
+            // mini-player or PiP.
+            holder.release()
             if (shouldKeepPlayer) {
                 // 小窗模式下不释放 player，只释放其他资源
                 com.android.purebilibili.core.util.Logger.d("VideoPlayerState", " MiniPlayerManager 正在使用此 player，不释放")
             } else {
-                // ⚡ [性能优化] 释放视频尺寸监听器（快速，main thread）
-                holder.release()
-                // 仅当引用匹配时才清理，避免误清理新页面正在使用的 player
-                miniPlayerManager.clearExternalPlayerIfMatches(player)
-                
-                // ⚡ [性能优化] 将重量级的 player.release() 和通知清理延迟到下一帧
-                // ExoPlayer 要求 release() 在主线程调用，所以用 Handler.post 而非后台线程
-                // 这样不阻塞当前 onDispose 栈，让导航转场动画先完成
-                val playerToRelease = player
-                val appContext = context.applicationContext
-                android.os.Handler(android.os.Looper.getMainLooper()).post {
-                    com.android.purebilibili.core.util.Logger.d("VideoPlayerState", "⚡ 延迟释放播放器资源")
-                    playerToRelease.release()
-                    val notificationManager = appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                    notificationManager.cancel(NOTIFICATION_ID)
+                // Detach MediaSession/manager synchronously; registry owns heavyweight release.
+                if (!miniPlayerManager.detachExternalPlayerForRelease(player)) {
+                    miniPlayerManager.clearExternalPlayerIfMatches(player)
+                    miniPlayerManager.releaseMediaSessionIfBoundTo(player)
                 }
+                val appContext = context.applicationContext
+                PlayerLeaseRegistry.requestRelease(
+                    token = playerOwner,
+                    fence = PlayerReleaseFence.navigation,
+                    onReleased = {
+                        val notificationManager = appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                        notificationManager.cancel(NOTIFICATION_ID)
+                    },
+                )
             }
             
             (context as? ComponentActivity)?.window?.attributes?.screenBrightness =

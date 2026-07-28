@@ -78,6 +78,7 @@ import com.android.purebilibili.feature.dynamic.components.DynamicUserLiveBadge
 import com.android.purebilibili.feature.dynamic.components.DynamicTopBarWithTabs
 import com.android.purebilibili.core.ui.rememberAppVisibilityOffIcon
 import com.android.purebilibili.core.ui.rememberAppVisibilityOnIcon
+import com.android.purebilibili.core.ui.image.rememberImageRequest
 import com.android.purebilibili.feature.dynamic.components.DynamicDisplayMode
 import com.android.purebilibili.feature.dynamic.components.DynamicCommentSheet
 import com.android.purebilibili.feature.dynamic.components.RepostDialog
@@ -1171,6 +1172,9 @@ private fun HorizontalUserList(
             items(users, key = { it.uid }) { user ->
                 val isSelected = selectedUserId == user.uid
                 var showMenu by remember { mutableStateOf(false) }
+                val avatarUrl = remember(user.face) {
+                    user.face.let { if (it.startsWith("http://")) it.replace("http://", "https://") else it }
+                }
                 val displayName = if (user.isHidden) {
                     "${user.name}(隐)"
                 } else {
@@ -1201,10 +1205,10 @@ private fun HorizontalUserList(
                                     )
                             ) {
                                 AsyncImage(
-                                    model = coil.request.ImageRequest.Builder(LocalContext.current)
-                                        .data(user.face.let { if (it.startsWith("http://")) it.replace("http://", "https://") else it })
-                                        .crossfade(true)
-                                        .build(),
+                                    model = rememberImageRequest(
+                                        data = avatarUrl,
+                                        crossfadeEnabled = true,
+                                    ),
                                     contentDescription = null,
                                     modifier = Modifier.fillMaxSize().clip(CircleShape),
                                     contentScale = ContentScale.Crop

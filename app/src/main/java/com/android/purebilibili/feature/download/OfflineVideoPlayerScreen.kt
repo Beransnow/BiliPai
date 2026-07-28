@@ -39,6 +39,8 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
+import com.android.purebilibili.core.player.PlayerLeaseRegistry
+import com.android.purebilibili.core.player.PlayerReleaseFence
 import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.theme.resolveAdaptivePrimaryAccentColors
@@ -183,6 +185,9 @@ fun OfflineVideoPlayerScreen(
     // 创建播放器
     val player = remember(file.absolutePath) {
         ExoPlayer.Builder(context).build()
+    }
+    val playerOwner = remember(player) {
+        PlayerLeaseRegistry.acquire(player = player, owner = "offline-player-screen")
     }
     val offlineSessionRegistered = remember(file.exists(), task.filePath) {
         shouldRegisterOfflinePlaybackSession(
@@ -330,17 +335,18 @@ fun OfflineVideoPlayerScreen(
         player.playWhenReady = true
     }
 
-    DisposableEffect(player, task.id) {
+    DisposableEffect(player, task.id, playerOwner) {
         danmakuManager.attachPlayer(player)
         onDispose {
             persistCurrentPlaybackPosition(task, player)
             danmakuManager.detachView()
-            if (miniPlayerManager.isPlayerManaged(player)) {
-                miniPlayerManager.dismiss()
-            } else {
+            if (!miniPlayerManager.detachExternalPlayerForRelease(player)) {
                 miniPlayerManager.clearExternalPlayerIfMatches(player)
             }
-            player.release()
+            PlayerLeaseRegistry.requestRelease(
+                token = playerOwner,
+                fence = PlayerReleaseFence.navigation,
+            )
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
             activity?.let { act ->
                 val windowInsetsController = WindowCompat.getInsetsController(act.window, act.window.decorView)
@@ -600,6 +606,12 @@ fun OfflineVideoPlayerScreen(
                     useController = false
                     keepScreenOn = true
                 }
+            },
+            update = { view ->
+                if (view.player !== player) view.player = player
+            },
+            onRelease = { view ->
+                if (view.player === player) view.player = null
             },
             modifier = Modifier.fillMaxSize()
         )

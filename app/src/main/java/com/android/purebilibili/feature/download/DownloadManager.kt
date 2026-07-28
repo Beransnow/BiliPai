@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
@@ -43,6 +44,16 @@ internal fun resolveMuxerSampleBufferSize(
     return maxOf(defaultBytes, advertisedMax)
 }
 
+internal enum class DownloadRestoreState {
+    NOT_STARTED,
+    RESTORED,
+    FAILED,
+}
+
+internal fun canPersistDownloadTasks(state: DownloadRestoreState): Boolean {
+    return state == DownloadRestoreState.RESTORED
+}
+
 /**
  *  视频下载管理器
  * 
@@ -61,8 +72,6 @@ object DownloadManager {
         .build()
     private val assetDownloader = ResumableAssetDownloader(client)
     
-    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    
     // 下载任务状态
     private val _tasks = MutableStateFlow<Map<String, DownloadTask>>(emptyMap())
     val tasks: StateFlow<Map<String, DownloadTask>> = _tasks.asStateFlow()
@@ -73,6 +82,9 @@ object DownloadManager {
     private var downloadDir: File? = null
     private var tasksFile: File? = null
     private var appContext: Context? = null
+    private val restoreMutex = kotlinx.coroutines.sync.Mutex()
+    @Volatile private var restoreState: DownloadRestoreState = DownloadRestoreState.NOT_STARTED
+    @Volatile private var pathObservationJob: Job? = null
 
     private fun safeExternalFilesRoot(context: Context): File? {
         return runCatching { context.getExternalFilesDir(null) }
@@ -89,20 +101,64 @@ object DownloadManager {
     /**
      * 初始化（在 Application 中调用）
      */
-    fun init(context: Context) {
-        appContext = context.applicationContext
+    fun configure(context: Context, applicationScope: CoroutineScope? = null) {
+        val applicationContext = context.applicationContext
+        synchronized(this) {
+            appContext = applicationContext
+            val initialPath = com.android.purebilibili.core.store.SettingsManager
+                .getDownloadPathSync(applicationContext)
+            downloadDir = resolveDownloadDir(applicationContext, initialPath)
+            tasksFile = File(applicationContext.filesDir, "download_tasks.json")
+        }
 
-        val initialPath = com.android.purebilibili.core.store.SettingsManager.getDownloadPathSync(context)
-        downloadDir = resolveDownloadDir(context, initialPath)
-        tasksFile = File(context.filesDir, "download_tasks.json")
-        loadTasks()
-        scheduleNextQueuedDownload()
-
-        scope.launch {
+        if (applicationScope != null && pathObservationJob == null) {
+            pathObservationJob = applicationScope.launch(Dispatchers.IO) {
             com.android.purebilibili.core.store.SettingsManager.getDownloadPath(context)
                 .collect { customPath ->
                     downloadDir = resolveDownloadDir(context, customPath)
                 }
+            }
+        }
+    }
+
+    /** Restores persisted tasks exactly once. A corrupt file is retained and never overwritten. */
+    suspend fun ensureRestored(): Boolean = restoreMutex.withLock {
+        when (restoreState) {
+            DownloadRestoreState.RESTORED -> return@withLock true
+            DownloadRestoreState.FAILED -> return@withLock false
+            DownloadRestoreState.NOT_STARTED -> Unit
+        }
+
+        val file = tasksFile ?: return@withLock false
+        try {
+            val content = withContext(Dispatchers.IO) {
+                if (file.exists()) file.readText() else null
+            }
+            val restored = if (content == null) {
+                emptyMap()
+            } else {
+                withContext(Dispatchers.Default) {
+                    json.decodeFromString<List<DownloadTask>>(content)
+                        .map(::normalizeRestoredDownloadTask)
+                        .associateBy { it.id }
+                }
+            }
+            withContext(Dispatchers.Main.immediate) {
+                _tasks.value = restored
+            }
+            restoreState = DownloadRestoreState.RESTORED
+            scheduleNextQueuedDownload()
+            true
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (error: Exception) {
+            restoreState = DownloadRestoreState.FAILED
+            com.android.purebilibili.core.util.Logger.e(
+                "DownloadManager",
+                "Failed to restore tasks; preserving persisted file",
+                error,
+            )
+            false
         }
     }
     
@@ -114,7 +170,8 @@ object DownloadManager {
     /**
      * 添加下载任务
      */
-    fun addTask(task: DownloadTask): Boolean {
+    suspend fun addTask(task: DownloadTask): Boolean {
+        if (!ensureRestored()) return false
         val existing = _tasks.value[task.id]
         if (existing != null && existing.status != DownloadStatus.FAILED && existing.status != DownloadStatus.PAUSED) {
             return false // 已在下载中
@@ -122,7 +179,7 @@ object DownloadManager {
         
         val newTask = task.copy(status = DownloadStatus.QUEUED, errorMessage = null)
         _tasks.value = _tasks.value + (task.id to newTask)
-        saveTasks()
+        withContext(Dispatchers.IO) { saveTasks() }
         scheduleNextQueuedDownload()
         return true
     }
@@ -143,6 +200,7 @@ object DownloadManager {
      * @throws Exception 下载失败时抛出异常
      */
     suspend fun executeDownload(taskId: String) {
+        check(ensureRestored()) { "下载任务恢复失败" }
         val task = _tasks.value[taskId] 
             ?: throw IllegalStateException("任务不存在: $taskId")
         if (task.status != DownloadStatus.PENDING && task.status != DownloadStatus.DOWNLOADING) {
@@ -845,6 +903,7 @@ object DownloadManager {
     }
 
     private fun scheduleNextQueuedDownload() {
+        if (restoreState != DownloadRestoreState.RESTORED) return
         val nextTaskId = resolveNextQueuedDownloadTaskId(_tasks.value.values) ?: return
         enqueueDownload(nextTaskId)
     }
@@ -856,22 +915,8 @@ object DownloadManager {
         }
     }
     
-    private fun loadTasks() {
-        try {
-            val file = tasksFile ?: return
-            if (file.exists()) {
-                val content = file.readText()
-                val list = json.decodeFromString<List<DownloadTask>>(content)
-                _tasks.value = list
-                    .map(::normalizeRestoredDownloadTask)
-                    .associateBy { it.id }
-            }
-        } catch (e: Exception) {
-            com.android.purebilibili.core.util.Logger.e("DownloadManager", "Failed to load tasks", e)
-        }
-    }
-    
     private fun saveTasks() {
+        if (!canPersistDownloadTasks(restoreState)) return
         try {
             val file = tasksFile ?: return
             val content = json.encodeToString(_tasks.value.values.toList())

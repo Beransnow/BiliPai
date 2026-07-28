@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.material3.MaterialTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.purebilibili.app.StartupLaunchDecision
 import com.android.purebilibili.feature.article.ArticleDetailScreen
 import com.android.purebilibili.feature.article.shouldUseArticleNoOpRouteTransition
 import com.android.purebilibili.feature.audio.library.resolveListenVideoPlaybackSelection
@@ -104,6 +105,7 @@ import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpe
 import com.android.purebilibili.core.ui.transition.rememberVideoCardTransitionClock
 import com.android.purebilibili.core.ui.transition.VideoCardTransitionVisualTimeline
 import com.android.purebilibili.core.ui.motion.rememberSystemReduceMotion
+import com.android.purebilibili.core.ui.performance.normalizeWindowJankRoute
 import com.android.purebilibili.core.ui.transition.VideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.resolveVideoSharedTransitionDurationMillis
 import com.android.purebilibili.core.ui.transition.predictiveBackBackgroundEffect
@@ -303,7 +305,8 @@ private fun BiliPaiNavKey.toPrivacyNavigationTarget(): PrivacyNavigationTarget {
 @androidx.media3.common.util.UnstableApi
 // @OptIn(ExperimentalMaterial3WindowSizeClassApi::class) (Removed)
 @Composable
-fun AppNavigation(
+internal fun AppNavigation(
+    startupLaunchDecision: StartupLaunchDecision,
     //  小窗管理器
     miniPlayerManager: MiniPlayerManager? = null,
     //  PiP 支持参数
@@ -321,6 +324,7 @@ fun AppNavigation(
     onVideoDetailExit: () -> Unit = {},
     onAudioModeEnter: () -> Unit = {},
     onAudioModeExit: () -> Unit = {},
+    onPerformanceRouteChanged: (String?) -> Unit = {},
     onPrivacyAuthenticationRequired: (
         PrivacyAuthenticationRequest,
         (PrivacyAuthenticationResult) -> Unit
@@ -415,10 +419,12 @@ fun AppNavigation(
     var showLaunchDisclaimer by remember {
         mutableStateOf(!firstLaunchShown && !launchDisclaimerAck)
     }
-    val startDestination = if (firstLaunchShown) ScreenRoutes.Home.route else ScreenRoutes.Onboarding.route
-    val launchToPortraitFeedOnStartupAtInit = remember {
-        SettingsManager.isLaunchToPortraitFeedOnStartupSync(context)
+    val startDestination = if (startupLaunchDecision.onboardingRequired) {
+        ScreenRoutes.Onboarding.route
+    } else {
+        ScreenRoutes.Home.route
     }
+    val launchToPortraitFeedOnStartupAtInit = startupLaunchDecision.openPortraitFeedOnStartup
 
     val videoSharedTransitionSpeedSettings = remember(
         homeSettings.videoSharedTransitionSpeed,
@@ -445,12 +451,12 @@ fun AppNavigation(
             LocalVideoSharedTransitionSpeedSettings provides videoSharedTransitionSpeedSettings
         ) {
         // [新增] 全局底栏状态管理
-        var navigation3BackStack by remember(startDestination, launchToPortraitFeedOnStartupAtInit) {
+        var navigation3BackStack by remember(startupLaunchDecision) {
             mutableStateOf(
                 resolveInitialBiliPaiBackStack(
                     firstRoute = startDestination,
-                    onboardingRequired = !firstLaunchShown,
-                    openPortraitFeedOnStartup = firstLaunchShown && launchToPortraitFeedOnStartupAtInit
+                    onboardingRequired = startupLaunchDecision.onboardingRequired,
+                    openPortraitFeedOnStartup = launchToPortraitFeedOnStartupAtInit,
                 )
             )
         }
@@ -1013,6 +1019,12 @@ fun AppNavigation(
             currentKey = currentNavigation3Key,
             currentBottomItem = currentBottomNavItem
         )
+        val performanceRoute = remember(currentRoute, activeBottomTabRoute) {
+            normalizeWindowJankRoute(currentRoute ?: activeBottomTabRoute)
+        }
+        LaunchedEffect(performanceRoute) {
+            onPerformanceRouteChanged(performanceRoute)
+        }
         val backGestureDecision = remember(
             cardTransitionEnabled,
             systemBackAction,
@@ -2180,8 +2192,7 @@ fun AppNavigation(
                                     navigation3BackStack = resolveInitialBiliPaiBackStack(
                                         firstRoute = ScreenRoutes.Home.route,
                                         onboardingRequired = false,
-                                        openPortraitFeedOnStartup = SettingsManager
-                                            .isLaunchToPortraitFeedOnStartupSync(context)
+                                        openPortraitFeedOnStartup = false,
                                     )
                                 }
                             )

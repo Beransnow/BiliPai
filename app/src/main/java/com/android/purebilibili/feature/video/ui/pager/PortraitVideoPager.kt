@@ -110,6 +110,8 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.MergingMediaSource
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
+import com.android.purebilibili.core.player.PlayerLeaseRegistry
+import com.android.purebilibili.core.player.PlayerReleaseFence
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.network.NetworkModule
 import com.android.purebilibili.core.plugin.PluginManager
@@ -127,6 +129,8 @@ import com.android.purebilibili.data.model.response.RelatedVideo
 import com.android.purebilibili.data.model.response.Stat
 import com.android.purebilibili.data.model.response.ViewInfo
 import com.android.purebilibili.feature.video.player.PlaylistManager
+import com.android.purebilibili.feature.video.back.VideoLocalBackTarget
+import com.android.purebilibili.feature.video.back.rememberVideoLocalBackAction
 import com.android.purebilibili.feature.video.danmaku.DanmakuManager
 import com.android.purebilibili.feature.video.danmaku.rememberIsolatedDanmakuManager
 import com.android.purebilibili.feature.video.playback.session.PlaybackSeekSessionState
@@ -237,6 +241,10 @@ fun PortraitVideoPager(
     onRotateToLandscape: () -> Unit
 ) {
     val context = LocalContext.current
+    val exitPortraitFullscreen = rememberVideoLocalBackAction(
+        target = VideoLocalBackTarget.EXIT_PORTRAIT_FULLSCREEN,
+        onCommitted = onBack,
+    )
     val view = LocalView.current
     val activity = remember(context) { context.findActivity() }
     val window = activity?.window
@@ -550,14 +558,24 @@ fun PortraitVideoPager(
                 setPlaybackSpeed(SettingsManager.getPreferredPlaybackSpeedSync(context))
             }
     }
+    val ownedPlayerToken = remember(exoPlayer, useSharedPlayer) {
+        if (useSharedPlayer) null else {
+            PlayerLeaseRegistry.acquire(player = exoPlayer, owner = "portrait-pager")
+        }
+    }
     LaunchedEffect(exoPlayer, playbackCompletionBehavior) {
         exoPlayer.repeatMode = resolvePlaybackCompletionRepeatMode(playbackCompletionBehavior)
     }
 
-    if (!useSharedPlayer) {
-        DisposableEffect(exoPlayer) {
+    if (ownedPlayerToken != null) {
+        DisposableEffect(exoPlayer, ownedPlayerToken) {
             onDispose {
-                exoPlayer.release()
+                exoPlayer.playWhenReady = false
+                exoPlayer.pause()
+                PlayerLeaseRegistry.requestRelease(
+                    token = ownedPlayerToken,
+                    fence = PlayerReleaseFence.navigation,
+                )
             }
         }
     }
@@ -1322,7 +1340,7 @@ fun PortraitVideoPager(
             VideoPageItem(
                 item = item,
                 isCurrentPage = page == pagerState.currentPage,
-                onBack = onBack,
+                onBack = exitPortraitFullscreen,
                 onHomeClick = onHomeClick,
                 viewModel = viewModel,
                 commentViewModel = commentViewModel,
@@ -2216,6 +2234,10 @@ private fun VideoPageItem(
                                 if (view.resizeMode != portraitPagerResizeMode) {
                                     view.resizeMode = portraitPagerResizeMode
                                 }
+                            },
+                            onRelease = { view ->
+                                if (view.player === exoPlayer) view.player = null
+                                if (playerViewRef === view) playerViewRef = null
                             },
                             modifier = Modifier.fillMaxSize()
                         )

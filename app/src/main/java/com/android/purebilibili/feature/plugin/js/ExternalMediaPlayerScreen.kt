@@ -39,6 +39,8 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.PlayerView
 import com.android.purebilibili.core.plugin.js.ExternalMediaLaunchStore
+import com.android.purebilibili.core.player.PlayerLeaseRegistry
+import com.android.purebilibili.core.player.PlayerReleaseFence
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,10 +65,18 @@ fun ExternalMediaPlayerScreen(
             .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
             .build()
     }
+    val playerOwner = remember(player) {
+        PlayerLeaseRegistry.acquire(player = player, owner = "external-media-screen")
+    }
 
-    DisposableEffect(player) {
+    DisposableEffect(player, playerOwner) {
         onDispose {
-            player.release()
+            player.playWhenReady = false
+            player.pause()
+            PlayerLeaseRegistry.requestRelease(
+                token = playerOwner,
+                fence = PlayerReleaseFence.navigation,
+            )
         }
     }
 
@@ -135,7 +145,10 @@ fun ExternalMediaPlayerScreen(
                 },
                 update = { view ->
                     view.player = player
-                }
+                },
+                onRelease = { view ->
+                    if (view.player === player) view.player = null
+                },
             )
             Row(
                 modifier = Modifier

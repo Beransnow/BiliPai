@@ -43,6 +43,8 @@ import coil.transform.RoundedCornersTransformation
 import com.android.purebilibili.R
 import com.android.purebilibili.core.network.NetworkModule
 import com.android.purebilibili.core.player.PlaybackMediaCache
+import com.android.purebilibili.core.player.PlayerLeaseRegistry
+import com.android.purebilibili.core.player.PlayerReleaseFence
 import com.android.purebilibili.core.player.PlayerVolumeController
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.TokenManager
@@ -1194,6 +1196,47 @@ class MiniPlayerManager private constructor(private val context: Context) :
         }
         return false
     }
+
+    /**
+     * Detaches manager/session ownership without releasing the player itself.
+     * Heavy release is serialized by PlayerLeaseRegistry after the navigation fence.
+     */
+    fun detachExternalPlayerForRelease(target: ExoPlayer): Boolean {
+        if (_externalPlayer !== target) return false
+        target.playWhenReady = false
+        target.pause()
+        target.removeListener(playerListener)
+        _externalPlayer = null
+        isMiniMode = false
+        isActive = false
+        playbackServiceRequested = false
+        isPlaying = false
+        currentBvid = null
+        cachedUiState = null
+        releaseMediaSession()
+        clearPlaybackNotificationArtifacts()
+        return true
+    }
+
+    fun releaseMediaSessionIfBoundTo(target: ExoPlayer): Boolean {
+        val session = mediaSession ?: return false
+        if (shouldRebindMediaSessionPlayer(session.player, target)) return false
+        releaseMediaSession()
+        return true
+    }
+
+    private fun releaseReplacedExternalPlayer(target: ExoPlayer) {
+        target.playWhenReady = false
+        target.pause()
+        target.removeListener(playerListener)
+        if (!PlayerLeaseRegistry.requestReleaseCurrentOwner(
+                player = target,
+                fence = PlayerReleaseFence.navigation,
+            )
+        ) {
+            target.release()
+        }
+    }
     
     //  [修复2] 清除外部播放器引用（从小窗返回全屏时调用）
     fun resetExternalPlayer() {
@@ -1827,6 +1870,12 @@ class MiniPlayerManager private constructor(private val context: Context) :
         Logger.d(TAG) { "📲 Entering mini mode for video: $currentTitle (forced=$forced)" }
         isLeavingByNavigation = false
         isMiniMode = true
+        currentPlayer?.let { player ->
+            PlayerLeaseRegistry.transferOnNextCommittedPop(
+                player = player,
+                newOwner = "mini-player",
+            )
+        }
         if (shouldResumePlayback) {
             currentPlayer.playWhenReady = true
             currentPlayer.play()
@@ -1873,12 +1922,18 @@ class MiniPlayerManager private constructor(private val context: Context) :
         // ⚡ [性能优化] player 延迟释放，避免阻塞关闭动画
         val playerToRelease = _externalPlayer
         if (playerToRelease != null) {
-            android.os.Handler(android.os.Looper.getMainLooper()).post {
-                try {
-                    playerToRelease.release()
-                    Logger.d(TAG, "⚡ 延迟释放外部播放器")
-                } catch (e: Exception) {
-                    Logger.e(TAG, "释放外部播放器失败", e)
+            val scheduledByRegistry = PlayerLeaseRegistry.requestReleaseCurrentOwner(
+                player = playerToRelease,
+                fence = PlayerReleaseFence.navigation,
+            )
+            if (!scheduledByRegistry) {
+                android.os.Handler(android.os.Looper.getMainLooper()).post {
+                    try {
+                        playerToRelease.release()
+                        Logger.d(TAG, "⚡ 延迟释放外部播放器")
+                    } catch (e: Exception) {
+                        Logger.e(TAG, "释放外部播放器失败", e)
+                    }
                 }
             }
         }
@@ -1953,9 +2008,7 @@ class MiniPlayerManager private constructor(private val context: Context) :
         if (_externalPlayer != null && _externalPlayer != externalPlayer) {
             Logger.d(TAG, "🛑 Releasing old external player: ${_externalPlayer.hashCode()} -> ${externalPlayer.hashCode()}")
             try {
-                _externalPlayer?.removeListener(playerListener)
-                _externalPlayer?.stop()
-                _externalPlayer?.release()
+                _externalPlayer?.let(::releaseReplacedExternalPlayer)
             } catch (e: Exception) {
                 Logger.e(TAG, "Failed to release old external player", e)
             }
@@ -2007,9 +2060,7 @@ class MiniPlayerManager private constructor(private val context: Context) :
         // 释放旧的外部播放器（如果有且不同）
         if (_externalPlayer != null && _externalPlayer != externalPlayer) {
             try {
-                _externalPlayer?.removeListener(playerListener)
-                _externalPlayer?.stop()
-                _externalPlayer?.release()
+                _externalPlayer?.let(::releaseReplacedExternalPlayer)
             } catch (e: Exception) {
                 Logger.e(TAG, "Failed to release old external player", e)
             }

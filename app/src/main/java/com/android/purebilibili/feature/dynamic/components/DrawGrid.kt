@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.imageLoader
+import com.android.purebilibili.core.ui.image.rememberImageRequest
 import com.android.purebilibili.data.model.response.DrawItem
 import androidx.compose.material3.Text
 import androidx.compose.ui.unit.sp
@@ -135,7 +136,6 @@ private fun DrawGridImage(
     scaleMode: DrawGridScaleMode,
     onImageClick: (Int, Rect?) -> Unit
 ) {
-    val context = LocalContext.current
     val imageUrl = remember(item.src) {
         val rawSrc = item.src.trim()
         when {
@@ -161,11 +161,11 @@ private fun DrawGridImage(
     ) {
         if (imageUrl.isNotEmpty()) {
             AsyncImage(
-                model = coil.request.ImageRequest.Builder(context)
-                    .data(imageUrl)
-                    .addHeader("Referer", "https://www.bilibili.com/")
-                    .crossfade(!isGif)
-                    .build(),
+                model = rememberImageRequest(
+                    data = imageUrl,
+                    referer = "https://www.bilibili.com/",
+                    crossfadeEnabled = !isGif,
+                ),
                 imageLoader = if (isGif) gifImageLoader else defaultImageLoader,
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),

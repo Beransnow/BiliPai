@@ -30,7 +30,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -41,6 +40,7 @@ import com.android.purebilibili.core.ui.blur.hazeSourceCompat
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.ui.rememberAppVisibilityOffIcon
 import com.android.purebilibili.core.ui.rememberAppVisibilityOnIcon
+import com.android.purebilibili.core.ui.image.rememberImageRequest
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.core.ui.resolveGlobalWallpaperProtectiveColor
 import com.android.purebilibili.core.ui.blur.BlurStyles
@@ -396,10 +396,10 @@ fun SidebarUserItem(
                         .padding(2.dp)
                 ) {
                     AsyncImage(
-                        model = coil.request.ImageRequest.Builder(LocalContext.current)
-                            .data(faceUrl.ifEmpty { null })
-                            .crossfade(true)
-                            .build(),
+                        model = rememberImageRequest(
+                            data = faceUrl.ifEmpty { null },
+                            crossfadeEnabled = true,
+                        ),
                         contentDescription = user.name,
                         modifier = Modifier
                             .fillMaxSize()

@@ -9,8 +9,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
+import android.os.SystemClock
 import androidx.profileinstaller.ProfileInstaller
 import coil.ImageLoader
 import coil.ImageLoaderFactory
@@ -34,6 +33,7 @@ import com.android.purebilibili.core.store.AppIconAppearance
 import com.android.purebilibili.core.store.normalizeAppIconKey
 import com.android.purebilibili.core.store.resolveAppIconLauncherAlias
 import com.android.purebilibili.core.store.supportsAppIconAppearance
+import com.android.purebilibili.core.ui.performance.PerformanceStrictMode
 import com.android.purebilibili.core.util.AnalyticsHelper
 import com.android.purebilibili.core.util.CrashReporter
 import com.android.purebilibili.core.util.Logger
@@ -50,9 +50,8 @@ import com.android.purebilibili.feature.plugin.SponsorBlockPlugin
 import com.android.purebilibili.feature.plugin.dlna.DlnaCastPlugin
 import com.android.purebilibili.feature.plugin.googlecast.GoogleCastPlugin
 import com.android.purebilibili.feature.plugin.TodayWatchPlugin
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -76,7 +75,18 @@ class PureApplication : Application(), ImageLoaderFactory, ComponentCallbacks2 {
     private val telemetryListener =
         PureApplicationRuntimeConfig.createTelemetryBackgroundStateListener()
 
-    private val startupOrchestrator by lazy { AppStartupOrchestrator() }
+    private val startupOrchestrator by lazy {
+        AppStartupOrchestrator { task, error ->
+            Logger.e(
+                PureApplicationRuntimeConfig.TAG,
+                "Startup task failed: ${task.id}",
+                error,
+            )
+        }
+    }
+
+    internal lateinit var startupSessionCoordinator: StartupSessionCoordinator
+        private set
     
     //  Coil 图片加载器 - 优化内存和磁盘缓存
     override fun newImageLoader(): ImageLoader {
@@ -115,6 +125,8 @@ class PureApplication : Application(), ImageLoaderFactory, ComponentCallbacks2 {
     }
     
     override fun onCreate() {
+        val startupSessionStartedAtMs = SystemClock.elapsedRealtime()
+        PerformanceStrictMode.installIfEnabled()
         //  [关键] 必须在 super.onCreate() 之前设置！
         // 这样系统在初始化时就能读取到正确的夜间模式配置
         applyThemePreference()
@@ -124,20 +136,37 @@ class PureApplication : Application(), ImageLoaderFactory, ComponentCallbacks2 {
         Logger.init(this)
         CrashReporter.installGlobalExceptionHandler()
 
-        // 启动即确保首页视觉默认值生效：底栏悬浮 + 液态玻璃 + 顶部模糊
-        // 冷启动路径不阻塞主线程，迁移改为后台执行。
-        if (PureApplicationRuntimeConfig.shouldBlockStartupForHomeVisualDefaultsMigration()) {
-            runBlocking(Dispatchers.IO) {
-                SettingsManager.ensureHomeVisualDefaults(this@PureApplication)
-            }
-        } else {
-            AppScope.ioScope.launch {
-                SettingsManager.ensureHomeVisualDefaults(this@PureApplication)
-            }
+        startupSessionCoordinator = StartupSessionCoordinator(
+            sessionStartedAtMs = startupSessionStartedAtMs,
+            readMirror = {
+                SettingsManager.readLaunchToPortraitFeedOnStartupMirror(this@PureApplication)
+            },
+            readAuthoritative = {
+                SettingsManager.readLaunchToPortraitFeedOnStartup(this@PureApplication)
+            },
+            writeMirror = { enabled ->
+                SettingsManager.writeLaunchToPortraitFeedOnStartupMirror(
+                    this@PureApplication,
+                    enabled,
+                )
+            },
+        ).also { coordinator ->
+            coordinator.start(AppScope.ioScope)
         }
 
-        startupOrchestrator.runImmediate(::runStartupTask)
-        startupOrchestrator.scheduleDeferred(::runStartupTask)
+        startupOrchestrator.start(
+            trigger = StartupTrigger.APP_CREATE,
+            scope = AppScope.ioScope,
+            taskRunner = ::runStartupTask,
+        )
+    }
+
+    internal fun onFirstInteractive() {
+        startupOrchestrator.start(
+            trigger = StartupTrigger.FIRST_INTERACTIVE,
+            scope = AppScope.ioScope,
+            taskRunner = ::runStartupTask,
+        )
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -152,7 +181,7 @@ class PureApplication : Application(), ImageLoaderFactory, ComponentCallbacks2 {
         }
     }
 
-    private fun runStartupTask(task: AppStartupTask) {
+    private suspend fun runStartupTask(task: AppStartupTask) {
         when (task.id) {
             "network_module_init" -> NetworkModule.init(this)
             "token_manager_init" -> TokenManager.init(this)
@@ -160,18 +189,31 @@ class PureApplication : Application(), ImageLoaderFactory, ComponentCallbacks2 {
             "video_repository_init" -> com.android.purebilibili.data.repository.VideoRepository.init(this)
             "background_manager_init" -> BackgroundManager.init(this)
             "player_settings_cache_init" -> com.android.purebilibili.core.store.PlayerSettingsCache.init(this)
+            "home_visual_defaults_restore" -> SettingsManager.ensureHomeVisualDefaults(this)
+            "plugin_manager_configure" -> PluginManager.initialize(this)
+            "home_feed_policy_restore" -> PluginManager.register(HomeFeedAnonymizerPlugin())
+            "download_manager_configure" -> com.android.purebilibili.feature.download.DownloadManager
+                .configure(this, AppScope.ioScope)
             "notification_channel_init" -> createNotificationChannel()
             "playlist_restore" -> initPlaylistRestoreNow()
             "telemetry_init" -> initTelemetryNow()
-            "plugin_init" -> initPluginStackNow()
+            "built_in_plugin_restore" -> restoreBuiltInPluginsNow()
+            "json_plugin_restore" -> {
+                com.android.purebilibili.core.plugin.json.JsonPluginManager.initialize(this)
+            }
+            "download_restore" -> {
+                if (!com.android.purebilibili.feature.download.DownloadManager.ensureRestored()) {
+                    Logger.w(PureApplicationRuntimeConfig.TAG, "Download restore failed; persisted state preserved")
+                }
+            }
+            "plugin_preferences_sync" -> syncPluginPreferencesNow()
+            "launcher_icon_sync" -> syncAppIconState()
             "dex2oat_profile_install" -> requestDex2OatProfileInstallNow()
         }
     }
 
     private fun initPlaylistRestoreNow() {
-        AppScope.ioScope.launch {
-            com.android.purebilibili.feature.video.player.PlaylistManager.init(this@PureApplication)
-        }
+        com.android.purebilibili.feature.video.player.PlaylistManager.init(this@PureApplication)
     }
 
     private fun initTelemetryNow() {
@@ -180,36 +222,30 @@ class PureApplication : Application(), ImageLoaderFactory, ComponentCallbacks2 {
         attachTelemetryListener()
     }
 
-    private fun initPluginStackNow() {
-        PluginManager.initialize(this)
-        PluginManager.register(SponsorBlockPlugin())
-        PluginManager.register(AdFilterPlugin())
-        PluginManager.register(Anime4KPlugin())
-        PluginManager.register(DanmakuEnhancePlugin())
-        PluginManager.register(EyeProtectionPlugin())
-        PluginManager.register(TodayWatchPlugin())
-        PluginManager.register(CdnRegionPlugin())
-        PluginManager.register(HomeFeedAnonymizerPlugin())
-        PluginManager.register(DlnaCastPlugin())
-        PluginManager.register(GoogleCastPlugin())
-        Logger.d(PureApplicationRuntimeConfig.TAG, " Plugin system initialized with 10 built-in plugins")
+    private suspend fun restoreBuiltInPluginsNow() {
+        PluginManager.registerAll(
+            listOf(
+                SponsorBlockPlugin(),
+                AdFilterPlugin(),
+                Anime4KPlugin(),
+                DanmakuEnhancePlugin(),
+                EyeProtectionPlugin(),
+                TodayWatchPlugin(),
+                CdnRegionPlugin(),
+                DlnaCastPlugin(),
+                GoogleCastPlugin(),
+            )
+        )
+        Logger.d(PureApplicationRuntimeConfig.TAG, " Plugin system restored and published")
+    }
 
-        com.android.purebilibili.core.plugin.json.JsonPluginManager.initialize(this)
-        Logger.d(PureApplicationRuntimeConfig.TAG, " JSON plugin system initialized")
-
-        com.android.purebilibili.feature.download.DownloadManager.init(this)
-
-        AppScope.ioScope.launch {
-            val sponsorBlockEnabled = com.android.purebilibili.core.store.SettingsManager
-                .getSponsorBlockEnabled(this@PureApplication)
-                .first()
-            PluginManager.setEnabled("sponsor_block", sponsorBlockEnabled)
-            Logger.d(PureApplicationRuntimeConfig.TAG, " SponsorBlock plugin synced: enabled=$sponsorBlockEnabled")
-
-            SettingsManager.forceDanmakuDefaults(this@PureApplication)
-        }
-
-        syncAppIconState()
+    private suspend fun syncPluginPreferencesNow() {
+        val sponsorBlockEnabled = SettingsManager
+            .getSponsorBlockEnabled(this@PureApplication)
+            .first()
+        PluginManager.setEnabled("sponsor_block", sponsorBlockEnabled)
+        Logger.d(PureApplicationRuntimeConfig.TAG, " SponsorBlock plugin synced: enabled=$sponsorBlockEnabled")
+        SettingsManager.forceDanmakuDefaults(this@PureApplication)
     }
 
     private fun requestDex2OatProfileInstallNow() {
@@ -385,10 +421,8 @@ class PureApplication : Application(), ImageLoaderFactory, ComponentCallbacks2 {
      * 
      * 修复：重装后检测 icon 偏好与 Manifest 默认状态冲突，自动重置为默认图标。
      */
-    private fun syncAppIconState() {
-        // [Optim] Use IO dispatcher to prevent ANR during startup (PackageManager is heavy)
-        AppScope.ioScope.launch {
-            try {
+    private suspend fun syncAppIconState() {
+        try {
                 val pm = packageManager
                 val packageName = this@PureApplication.packageName
                 // 读取用户保存的图标偏好
@@ -443,7 +477,7 @@ class PureApplication : Application(), ImageLoaderFactory, ComponentCallbacks2 {
                         )
                     }
                     Logger.d(PureApplicationRuntimeConfig.TAG, " Reset to default icon: $DEFAULT_APP_ICON_KEY")
-                    return@launch
+                    return
                 }
                 
                 // 同步所有 alias 状态：只有目标启用，其他禁用
@@ -474,9 +508,10 @@ class PureApplication : Application(), ImageLoaderFactory, ComponentCallbacks2 {
                 }
                 
                 Logger.d(PureApplicationRuntimeConfig.TAG, " Synced app icon state: $currentIcon")
-            } catch (e: Exception) {
-                android.util.Log.e(PureApplicationRuntimeConfig.TAG, "Failed to sync app icon state", e)
-            }
+        } catch (cancellation: CancellationException) {
+            throw cancellation
+        } catch (e: Exception) {
+            android.util.Log.e(PureApplicationRuntimeConfig.TAG, "Failed to sync app icon state", e)
         }
     }
 

@@ -34,10 +34,6 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleOut
-import androidx.activity.compose.BackHandler
-import androidx.navigationevent.NavigationEventInfo
-import androidx.navigationevent.compose.NavigationBackHandler
-import androidx.navigationevent.compose.rememberNavigationEventState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.rememberScrollState
@@ -86,6 +82,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.android.purebilibili.data.model.response.BgmInfo
+import com.android.purebilibili.feature.video.back.VideoLocalBackTarget
+import com.android.purebilibili.feature.video.back.VideoLocalBackTargetEffect
+import com.android.purebilibili.feature.video.back.rememberVideoLocalBackAction
 import com.android.purebilibili.data.model.CommentFraudStatus
 import com.android.purebilibili.data.repository.resolveCommentFraudLightMessage
 import com.android.purebilibili.data.repository.shouldShowCommentFraudResultDialog
@@ -604,9 +603,18 @@ internal fun ExternalPlaylistQueueSheet(
 ) {
     if (!visible) return
 
-    BackHandler(enabled = visible) {
-        onDismiss()
-    }
+    val isInlineSurface = presentation == ExternalPlaylistQueueSheetPresentation.INLINE_HAZE
+    val backKey = remember { Any() }
+    VideoLocalBackTargetEffect(
+        key = backKey,
+        target = VideoLocalBackTarget.PLAYLIST_QUEUE,
+        enabled = visible && isInlineSurface,
+        onCommitted = onDismiss,
+    )
+    val dismissInlineSurface = rememberVideoLocalBackAction(
+        target = VideoLocalBackTarget.PLAYLIST_QUEUE,
+        onCommitted = onDismiss,
+    )
 
     val configuration = LocalConfiguration.current
     val listMaxHeight = resolveExternalPlaylistQueueListMaxHeightDp(configuration.screenHeightDp).dp
@@ -632,7 +640,7 @@ internal fun ExternalPlaylistQueueSheet(
                         .clickable(
                             interactionSource = interactionSource,
                             indication = null
-                        ) { onDismiss() }
+                        ) { dismissInlineSurface() }
                 )
 
                 Surface(

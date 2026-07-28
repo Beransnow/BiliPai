@@ -49,6 +49,10 @@ val debugUiToolingRuntimeEnabled = providers.gradleProperty("bili.debug.uiToolin
     .map(String::toBoolean)
     .orElse(false)
     .get()
+val composeReportsEnabled = providers.gradleProperty("bili.composeReports")
+    .map(String::toBoolean)
+    .orElse(false)
+    .get()
 val buildCommitSha = providers.gradleProperty("bili.build.commitSha")
     .orElse("local")
     .get()
@@ -252,11 +256,13 @@ tasks.matching { task ->
     dependsOn(prepareKspGeneratedDirs)
 }
 
-// 🔥 Compose 编译器性能指标 (仅在需要分析时启用，会拖慢编译速度)
-// composeCompiler {
-//     reportsDestination = layout.buildDirectory.dir("compose_reports")
-//     metricsDestination = layout.buildDirectory.dir("compose_metrics")
-// }
+// Compose 编译器性能指标：仅在 -Pbili.composeReports=true 时启用。
+if (composeReportsEnabled) {
+    composeCompiler {
+        reportsDestination = layout.buildDirectory.dir("compose_reports")
+        metricsDestination = layout.buildDirectory.dir("compose_metrics")
+    }
+}
 
 dependencies {
     val miuixVersion = "0.9.3"

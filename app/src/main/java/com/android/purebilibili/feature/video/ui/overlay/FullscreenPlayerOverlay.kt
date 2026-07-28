@@ -867,6 +867,10 @@ fun FullscreenPlayerOverlay(
                         playerView.resizeMode = aspectRatio.playerResizeMode
                         playerViewRef = playerView
                     },
+                    onRelease = { playerView ->
+                        if (playerView.player === exoPlayer) playerView.player = null
+                        if (playerViewRef === playerView) playerViewRef = null
+                    },
                     modifier = viewportModifier
                 )
 

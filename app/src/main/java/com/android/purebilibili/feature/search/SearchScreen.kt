@@ -119,6 +119,7 @@ import com.android.purebilibili.core.ui.adaptive.resolveEffectiveMotionTier
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import androidx.compose.ui.platform.LocalContext
+import com.android.purebilibili.core.ui.image.rememberImageRequest
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -2720,11 +2721,12 @@ fun SearchResultCard(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(coverUrl)
-                    .crossfade(150)
-                    .size(480, 300)
-                    .build(),
+                model = rememberImageRequest(
+                    data = coverUrl,
+                    widthPx = 480,
+                    heightPx = 300,
+                    crossfadeMillis = 150,
+                ),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
@@ -2811,10 +2813,10 @@ fun SearchResultCard(
                 leadingContent = if (video.owner.face.isNotBlank()) {
                     {
                         AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(FormatUtils.fixImageUrl(video.owner.face))
-                                .crossfade(true)
-                                .build(),
+                            model = rememberImageRequest(
+                                data = FormatUtils.fixImageUrl(video.owner.face),
+                                crossfadeEnabled = true,
+                            ),
                             contentDescription = null,
                             modifier = Modifier
                                 .size(12.dp)
@@ -2880,10 +2882,10 @@ internal fun UpSearchResultCard(
             } else Modifier
 
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(cleanedItem.upic)
-                    .crossfade(true)
-                    .build(),
+                model = rememberImageRequest(
+                    data = cleanedItem.upic,
+                    crossfadeEnabled = true,
+                ),
                 contentDescription = cleanedItem.uname,
                 modifier = Modifier
                     .then(avatarModifier)
@@ -2979,10 +2981,10 @@ internal fun BangumiSearchResultCard(
         ) {
             // 封面
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(item.cover)
-                    .crossfade(true)
-                    .build(),
+                model = rememberImageRequest(
+                    data = item.cover,
+                    crossfadeEnabled = true,
+                ),
                 contentDescription = item.title,
                 modifier = Modifier
                     .width(80.dp)
@@ -3294,10 +3296,10 @@ internal fun TopicSearchResultCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(cleaned.cover)
-                    .crossfade(true)
-                    .build(),
+                model = rememberImageRequest(
+                    data = cleaned.cover,
+                    crossfadeEnabled = true,
+                ),
                 contentDescription = cleaned.title,
                 modifier = Modifier
                     .size(64.dp)
@@ -3355,10 +3357,10 @@ internal fun PhotoSearchResultCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(cleaned.cover)
-                    .crossfade(true)
-                    .build(),
+                model = rememberImageRequest(
+                    data = cleaned.cover,
+                    crossfadeEnabled = true,
+                ),
                 contentDescription = cleaned.title,
                 modifier = Modifier
                     .size(width = 104.dp, height = 72.dp)
@@ -3422,10 +3424,10 @@ internal fun ArticleSearchResultCard(
         ) {
             if (item.imageUrls.isNotEmpty()) {
                 AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(FormatUtils.buildSizedImageUrl(item.imageUrls.first(), width = 360, height = 240))
-                        .crossfade(true)
-                        .build(),
+                    model = rememberImageRequest(
+                        data = FormatUtils.buildSizedImageUrl(item.imageUrls.first(), width = 360, height = 240),
+                        crossfadeEnabled = true,
+                    ),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier

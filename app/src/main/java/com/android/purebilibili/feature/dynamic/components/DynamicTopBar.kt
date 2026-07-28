@@ -6,6 +6,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,6 +50,20 @@ fun DynamicTopBarWithTabs(
     hazeState: HazeState? = null,
     indicatorPositionProvider: (() -> Float)? = null
 ) {
+    // Pager callers commonly allocate the provider in their own recomposition. Keep the shared
+    // segmented control on one stable callback identity; it samples the latest callback in layer.
+    val latestIndicatorPositionProvider = rememberUpdatedState(indicatorPositionProvider)
+    val latestSelectedTab = rememberUpdatedState(selectedTab)
+    val stableIndicatorPositionProvider = remember(indicatorPositionProvider != null) {
+        if (indicatorPositionProvider == null) {
+            null
+        } else {
+            {
+                latestIndicatorPositionProvider.value?.invoke()
+                    ?: latestSelectedTab.value.toFloat()
+            }
+        }
+    }
     val density = LocalDensity.current
     val statusBarHeight = WindowInsets.statusBars.getTop(density).let { with(density) { it.toDp() } }
     val liquidTabSpec = resolveDynamicTopBarLiquidTabSpec()
@@ -92,7 +108,7 @@ fun DynamicTopBarWithTabs(
                     tabs = tabs,
                     onTabSelected = onTabSelected,
                     modifier = Modifier.weight(1f),
-                    indicatorPositionProvider = indicatorPositionProvider
+                    indicatorPositionProvider = stableIndicatorPositionProvider
                 )
                 
                 //  布局模式切换按钮

@@ -11,6 +11,21 @@ import kotlin.test.assertTrue
 class BottomBarLiquidSegmentedControlStructureTest {
 
     @Test
+    fun `segmented motion is sampled through a stable reader without press state bounce`() {
+        val source = loadSource(
+            "app/src/main/java/com/android/purebilibili/feature/home/components/BottomBarLiquidSegmentedControl.kt"
+        )
+
+        assertTrue(source.contains("class SegmentedControlMotionReader("))
+        assertTrue(source.contains("motionReader: MotionReader"))
+        assertTrue(source.contains("ColorProducer {"))
+        assertTrue(source.contains("PressInteraction.Press"))
+        assertTrue(source.contains("snapshotFlow { motionReader.readPosition() }"))
+        assertFalse(source.contains("collectIsPressedAsState"))
+        assertFalse(source.contains("SideEffect"))
+    }
+
+    @Test
     fun `liquid segmented labels keep bottom bar foreground opacity`() {
         val onSurface = Color(0xFFF1F1F1)
 

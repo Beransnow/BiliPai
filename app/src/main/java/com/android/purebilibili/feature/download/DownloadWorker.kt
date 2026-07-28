@@ -77,6 +77,15 @@ class DownloadWorker(
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         val taskId = inputData.getString(KEY_TASK_ID) 
             ?: return@withContext Result.failure()
+
+        DownloadManager.configure(applicationContext)
+        if (!DownloadManager.ensureRestored()) {
+            com.android.purebilibili.core.util.Logger.w(
+                "DownloadWorker",
+                "Persisted download state is not available; retrying before task execution",
+            )
+            return@withContext Result.retry()
+        }
         
         com.android.purebilibili.core.util.Logger.d("DownloadWorker", "🚀 Starting download: $taskId")
         setForeground(getForegroundInfo())
