@@ -21,6 +21,7 @@ import androidx.compose.animation.*
 import com.android.purebilibili.core.ui.AdaptivePlainTooltipBox
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.AppThemeSelection
 import com.android.purebilibili.core.ui.ContainerLevel
 import androidx.compose.animation.core.*
 //  Cupertino Icons - iOS SF Symbols 风格图标
@@ -230,7 +231,7 @@ fun AppearanceSettingsContent(
     val uiStyleMaterialLabel = stringResource(R.string.appearance_android_native_variant_material3)
     val uiStyleMiuixLabel = stringResource(R.string.appearance_android_native_variant_miuix)
     val uiStyleOptions = remember(uiPresetIosLabel, uiStyleMaterialLabel, uiStyleMiuixLabel) {
-        resolveUiStyleSegmentOptions(
+        resolveThemeSelectionOptions(
             iosLabel = uiPresetIosLabel,
             material3Label = uiStyleMaterialLabel,
             miuixLabel = uiStyleMiuixLabel,
@@ -243,7 +244,7 @@ fun AppearanceSettingsContent(
     val uiPresetAndroidMiuixTitle = stringResource(R.string.appearance_ui_preset_android_miuix_title)
     val uiPresetAndroidMiuixSummary = stringResource(R.string.appearance_ui_preset_android_miuix_summary)
     val uiPresetDescription = remember(
-        state.uiStyle,
+        state.themeSelection,
         uiPresetIosTitle,
         uiPresetIosSummary,
         uiPresetAndroidMaterialTitle,
@@ -252,7 +253,7 @@ fun AppearanceSettingsContent(
         uiPresetAndroidMiuixSummary
     ) {
         resolveAppearanceUiPresetDescription(
-            uiStyle = state.uiStyle,
+            selection = state.themeSelection,
             iosTitle = uiPresetIosTitle,
             iosSummary = uiPresetIosSummary,
             materialTitle = uiPresetAndroidMaterialTitle,
@@ -262,7 +263,7 @@ fun AppearanceSettingsContent(
         )
     }
     val selectedUiStyleLabel = uiStyleOptions
-        .first { it.value == state.uiStyle }
+        .first { it.value == state.themeSelection }
         .label
     val themeModeTitle = stringResource(R.string.appearance_theme_mode_title)
     val themeModeSubtitle = stringResource(R.string.appearance_theme_mode_subtitle)
@@ -507,12 +508,12 @@ fun AppearanceSettingsContent(
                             title = "${uiPresetTitle}：$selectedUiStyleLabel",
                             subtitle = uiPresetSubtitle,
                             options = uiStyleOptions,
-                            selectedValue = state.uiStyle,
-                            onSelectionChange = viewModel::setUiStyle,
+                            selectedValue = state.themeSelection,
+                            onSelectionChange = viewModel::setThemeSelection,
                         )
 
                         AnimatedVisibility(
-                            visible = state.uiStyle != UiStyle.IOS,
+                            visible = state.themeSelection != AppThemeSelection.IOS,
                             enter = expandVertically() + fadeIn(),
                             exit = shrinkVertically() + fadeOut()
                         ) {

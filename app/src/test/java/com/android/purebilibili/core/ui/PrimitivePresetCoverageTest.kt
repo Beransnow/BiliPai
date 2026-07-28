@@ -49,17 +49,17 @@ class PrimitivePresetCoverageTest {
 
     @Test
     fun dialogActionLayoutPolicy_stillBranches() {
-        // iOSDialogComponents already exposes resolveIosDialogActionLayoutPolicy.
+        // AppDialogComponents exposes a preset-aware action layout policy.
         // Verify it continues to differentiate iOS vs MD3.
-        val iosLayout = resolveIosDialogActionLayoutPolicy(UiPreset.IOS)
-        val md3Layout = resolveIosDialogActionLayoutPolicy(UiPreset.MD3)
+        val iosLayout = resolveDialogActionLayoutPolicy(UiPreset.IOS)
+        val md3Layout = resolveDialogActionLayoutPolicy(UiPreset.MD3)
         assertEquals(true, iosLayout.expandToContainer)
         assertEquals(false, md3Layout.expandToContainer)
     }
 
     @Test
     fun adaptiveBottomSheetVisual_stillBranches() {
-        // iOSSheetComponents exposes resolveAdaptiveBottomSheetVisualSpec.
+        // AppSheetComponents exposes resolveAdaptiveBottomSheetVisualSpec.
         val ios = resolveAdaptiveBottomSheetVisualSpec(UiPreset.IOS)
         val md3 = resolveAdaptiveBottomSheetVisualSpec(UiPreset.MD3)
         assertEquals(14, ios.cornerRadiusDp)

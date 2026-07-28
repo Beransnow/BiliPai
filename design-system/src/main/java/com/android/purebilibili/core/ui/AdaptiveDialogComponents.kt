@@ -22,33 +22,33 @@ import androidx.compose.ui.window.DialogProperties
 import com.android.purebilibili.core.theme.iOSBlue
 import top.yukonga.miuix.kmp.overlay.OverlayDialog
 
-enum class IOSAlertDialogRenderer {
-    IOS_LOCAL,
+enum class AppAlertDialogRenderer {
+    CUPERTINO_LOCAL,
     MATERIAL_ALERT,
     LOCAL_DIALOG,
     MIUIX_OVERLAY
 }
 
-fun resolveIosAlertDialogRenderer(
+fun resolveAppAlertDialogRenderer(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant
-): IOSAlertDialogRenderer = when {
+): AppAlertDialogRenderer = when {
     // 设置等页对话框常在 AdaptiveScaffold 外层组合；OverlayDialog 依赖 Miuix Scaffold
     // 的 DialogStates host，否则点击后状态变了但弹窗不可见。改用窗口 Dialog 承载。
     uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX ->
-        IOSAlertDialogRenderer.LOCAL_DIALOG
-    uiPreset == UiPreset.MD3 -> IOSAlertDialogRenderer.MATERIAL_ALERT
-    else -> IOSAlertDialogRenderer.IOS_LOCAL
+        AppAlertDialogRenderer.LOCAL_DIALOG
+    uiPreset == UiPreset.MD3 -> AppAlertDialogRenderer.MATERIAL_ALERT
+    else -> AppAlertDialogRenderer.CUPERTINO_LOCAL
 }
 
-internal data class IOSDialogActionLayoutPolicy(
+data class DialogActionLayoutPolicy(
     val expandToContainer: Boolean
 )
 
-internal fun resolveIosDialogActionLayoutPolicy(
+fun resolveDialogActionLayoutPolicy(
     uiPreset: UiPreset
-): IOSDialogActionLayoutPolicy {
-    return IOSDialogActionLayoutPolicy(
+): DialogActionLayoutPolicy {
+    return DialogActionLayoutPolicy(
         expandToContainer = uiPreset == UiPreset.IOS
     )
 }
@@ -69,8 +69,8 @@ internal fun AdaptiveAlertDialog(
 ) {
     val uiPreset = LocalUiPreset.current
     val androidNativeVariant = LocalAndroidNativeVariant.current
-    when (resolveIosAlertDialogRenderer(uiPreset, androidNativeVariant)) {
-        IOSAlertDialogRenderer.MIUIX_OVERLAY -> {
+    when (resolveAppAlertDialogRenderer(uiPreset, androidNativeVariant)) {
+        AppAlertDialogRenderer.MIUIX_OVERLAY -> {
             OverlayDialog(
                 show = true,
                 onDismissRequest = onDismissRequest,
@@ -84,7 +84,7 @@ internal fun AdaptiveAlertDialog(
             }
             return
         }
-        IOSAlertDialogRenderer.LOCAL_DIALOG -> {
+        AppAlertDialogRenderer.LOCAL_DIALOG -> {
             Dialog(
                 onDismissRequest = onDismissRequest,
                 properties = properties
@@ -106,7 +106,7 @@ internal fun AdaptiveAlertDialog(
             }
             return
         }
-        IOSAlertDialogRenderer.MATERIAL_ALERT -> {
+        AppAlertDialogRenderer.MATERIAL_ALERT -> {
             AlertDialog(
                 onDismissRequest = onDismissRequest,
                 title = title,
@@ -119,7 +119,7 @@ internal fun AdaptiveAlertDialog(
             )
             return
         }
-        IOSAlertDialogRenderer.IOS_LOCAL -> Unit
+        AppAlertDialogRenderer.CUPERTINO_LOCAL -> Unit
     }
 
     val progressVisual = resolveInteractiveOverlayProgressVisual(
@@ -317,7 +317,7 @@ internal fun AdaptiveDialogAction(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
-    val layoutPolicy = resolveIosDialogActionLayoutPolicy(LocalUiPreset.current)
+    val layoutPolicy = resolveDialogActionLayoutPolicy(LocalUiPreset.current)
     Box(
         modifier = modifier
             .then(

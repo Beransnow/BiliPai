@@ -1,5 +1,8 @@
 package com.android.purebilibili.feature.settings
 
+import com.android.purebilibili.core.ui.components.AppSegmentedChrome
+import com.android.purebilibili.core.ui.components.resolveAppSegmentedChrome
+import com.android.purebilibili.core.ui.components.resolveAppSegmentedLabelFontSizeSp
 import com.android.purebilibili.core.store.FullscreenAspectRatio
 import com.android.purebilibili.core.store.FullscreenMode
 import com.android.purebilibili.core.store.PortraitPlayerCollapseMode
@@ -111,7 +114,7 @@ class PlaybackSettingsSelectionPolicyTest {
     fun `md3 segmented labels should shrink for crowded language options`() {
         assertEquals(
             12f,
-            resolveMd3SegmentedLabelFontSizeSp(
+            resolveAppSegmentedLabelFontSizeSp(
                 optionCount = 4,
                 longestLabelLength = "English".length
             ),
@@ -119,7 +122,7 @@ class PlaybackSettingsSelectionPolicyTest {
         )
         assertEquals(
             13f,
-            resolveMd3SegmentedLabelFontSizeSp(
+            resolveAppSegmentedLabelFontSizeSp(
                 optionCount = 3,
                 longestLabelLength = "HEVC".length
             ),
@@ -129,13 +132,13 @@ class PlaybackSettingsSelectionPolicyTest {
 
     @Test
     fun `ios liquid segmented control default label size matches tall indicator`() {
-        val source = loadSource("app/src/main/java/com/android/purebilibili/feature/settings/IOSSlidingSegmentedControl.kt")
+        val source = loadSource("app/src/main/java/com/android/purebilibili/feature/settings/AppSegmentedComponents.kt")
 
         assertTrue(source.contains("labelFontSize: TextUnit = 14.sp"))
         assertFalse(source.contains("labelFontSize: TextUnit = 12.sp"))
         assertEquals(
             12f,
-            resolveMd3SegmentedLabelFontSizeSp(
+            resolveAppSegmentedLabelFontSizeSp(
                 optionCount = 5,
                 longestLabelLength = "跟随系统".length
             ),
@@ -145,10 +148,9 @@ class PlaybackSettingsSelectionPolicyTest {
 
     @Test
     fun `material md3 segmented control drops outer capsule shell`() {
-        val source = loadSource("app/src/main/java/com/android/purebilibili/feature/settings/IOSSlidingSegmentedControl.kt")
+        val source = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/renderer/material3/AppMaterial3SegmentedControl.kt")
         val materialBlock = source
-            .substringAfter("private fun <T> MaterialMd3SegmentedControl(")
-            .substringBefore("private fun <T> IOSSlidingSegmentedControlImpl(")
+            .substringAfter("internal fun <T> AppMaterial3SegmentedControl(")
 
         assertTrue(materialBlock.contains("SingleChoiceSegmentedButtonRow("))
         assertTrue(materialBlock.contains("SegmentedButtonDefaults.borderStroke("))
@@ -159,24 +161,24 @@ class PlaybackSettingsSelectionPolicyTest {
     @Test
     fun `android native liquid glass opt in makes shared ios segmented control use liquid indicator`() {
         assertEquals(
-            IosSlidingSegmentedControlChrome.MD3_SEGMENTED,
-            resolveIosSlidingSegmentedControlChrome(
+            AppSegmentedChrome.NATIVE,
+            resolveAppSegmentedChrome(
                 usesMaterialFallback = true,
-                androidNativeLiquidGlassEnabled = false
+                nativeLiquidGlassEnabled = false
             )
         )
         assertEquals(
-            IosSlidingSegmentedControlChrome.LIQUID_INDICATOR,
-            resolveIosSlidingSegmentedControlChrome(
+            AppSegmentedChrome.LIQUID,
+            resolveAppSegmentedChrome(
                 usesMaterialFallback = true,
-                androidNativeLiquidGlassEnabled = true
+                nativeLiquidGlassEnabled = true
             )
         )
         assertEquals(
-            IosSlidingSegmentedControlChrome.LIQUID_INDICATOR,
-            resolveIosSlidingSegmentedControlChrome(
+            AppSegmentedChrome.LIQUID,
+            resolveAppSegmentedChrome(
                 usesMaterialFallback = false,
-                androidNativeLiquidGlassEnabled = false
+                nativeLiquidGlassEnabled = false
             )
         )
     }

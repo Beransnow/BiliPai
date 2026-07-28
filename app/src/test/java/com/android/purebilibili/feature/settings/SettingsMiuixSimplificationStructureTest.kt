@@ -11,9 +11,9 @@ class SettingsMiuixSimplificationStructureTest {
     fun `appearance settings expose one ui style selection while keeping miuix scaffold`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/settings/screen/AppearanceSettingsScreen.kt")
 
-        assertTrue(source.contains("resolveUiStyleSegmentOptions("))
+        assertTrue(source.contains("resolveThemeSelectionOptions("))
         assertTrue(source.contains("resolveAppearanceUiPresetDescription("))
-        assertTrue(source.contains("onSelectionChange = viewModel::setUiStyle"))
+        assertTrue(source.contains("onSelectionChange = viewModel::setThemeSelection"))
         assertFalse(source.contains("resolveAndroidNativeVariantSegmentOptions("))
         assertFalse(source.contains("viewModel.setUiPreset("))
         assertFalse(source.contains("viewModel.setAndroidNativeVariant("))

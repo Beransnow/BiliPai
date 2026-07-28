@@ -37,7 +37,7 @@ class FavoriteContentModeResolverTest {
             "app/src/main/java/com/android/purebilibili/feature/list/CommonListScreen.kt"
         )
         val segmentedSource = loadSource(
-            "app/src/main/java/com/android/purebilibili/feature/settings/IOSSlidingSegmentedControl.kt"
+            "app/src/main/java/com/android/purebilibili/feature/settings/AppSegmentedComponents.kt"
         )
         val bottomBarSource = loadSource(
             "app/src/main/java/com/android/purebilibili/feature/home/components/BottomBarLiquidSegmentedControl.kt"

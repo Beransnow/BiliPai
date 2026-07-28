@@ -7,18 +7,18 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class IosDialogComponentsPolicyTest {
+class AppDialogComponentsPolicyTest {
 
     @Test
     fun `md3 dialog actions stay content sized inside material alert dialogs`() {
-        val policy = resolveIosDialogActionLayoutPolicy(UiPreset.MD3)
+        val policy = resolveDialogActionLayoutPolicy(UiPreset.MD3)
 
         assertFalse(policy.expandToContainer)
     }
 
     @Test
     fun `ios preset dialog actions expand to keep full width tap targets`() {
-        val policy = resolveIosDialogActionLayoutPolicy(UiPreset.IOS)
+        val policy = resolveDialogActionLayoutPolicy(UiPreset.IOS)
 
         assertTrue(policy.expandToContainer)
     }
@@ -26,8 +26,8 @@ class IosDialogComponentsPolicyTest {
     @Test
     fun miuixAlertDialogUsesWindowDialogWhenOutsideScaffoldHost() {
         assertEquals(
-            IOSAlertDialogRenderer.LOCAL_DIALOG,
-            resolveIosAlertDialogRenderer(
+            AppAlertDialogRenderer.LOCAL_DIALOG,
+            resolveAppAlertDialogRenderer(
                 uiPreset = UiPreset.MD3,
                 androidNativeVariant = AndroidNativeVariant.MIUIX
             )
@@ -37,8 +37,8 @@ class IosDialogComponentsPolicyTest {
     @Test
     fun md3MaterialKeepsMaterialAlertDialogRenderer() {
         assertEquals(
-            IOSAlertDialogRenderer.MATERIAL_ALERT,
-            resolveIosAlertDialogRenderer(
+            AppAlertDialogRenderer.MATERIAL_ALERT,
+            resolveAppAlertDialogRenderer(
                 uiPreset = UiPreset.MD3,
                 androidNativeVariant = AndroidNativeVariant.MATERIAL3
             )

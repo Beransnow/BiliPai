@@ -1,6 +1,6 @@
 package com.android.purebilibili.feature.settings
 
-import com.android.purebilibili.core.theme.UiStyle
+import com.android.purebilibili.core.ui.AppThemeSelection
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -8,14 +8,14 @@ class SettingsLanguageStateTest {
 
     @Test
     fun settingsUiState_defaultsToIosStyle() {
-        assertEquals(UiStyle.IOS, SettingsUiState().uiStyle)
+        assertEquals(AppThemeSelection.IOS, SettingsUiState().themeSelection)
     }
 
     @Test
     fun settingsUiState_preservesExplicitUiStyle() {
         assertEquals(
-            UiStyle.MIUIX,
-            SettingsUiState(uiStyle = UiStyle.MIUIX).uiStyle,
+            AppThemeSelection.MIUIX,
+            SettingsUiState(themeSelection = AppThemeSelection.MIUIX).themeSelection,
         )
     }
 

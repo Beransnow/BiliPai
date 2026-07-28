@@ -1,6 +1,6 @@
 package com.android.purebilibili.feature.settings
 
-import com.android.purebilibili.core.theme.UiStyle
+import com.android.purebilibili.core.ui.AppThemeSelection
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -9,7 +9,7 @@ class AppearanceUiPresetDescriptionPolicyTest {
     @Test
     fun `resolveAppearanceUiPresetDescription should return ios copy for ios preset`() {
         val description = resolveAppearanceUiPresetDescription(
-            uiStyle = UiStyle.IOS,
+            selection = AppThemeSelection.IOS,
             iosTitle = "iOS Preset",
             iosSummary = "Keep stronger glass, roundness, and Cupertino-style details.",
             materialTitle = "Android Native · Material 3",
@@ -28,7 +28,7 @@ class AppearanceUiPresetDescriptionPolicyTest {
     @Test
     fun `resolveAppearanceUiPresetDescription should return material copy for android native material variant`() {
         val description = resolveAppearanceUiPresetDescription(
-            uiStyle = UiStyle.MATERIAL3,
+            selection = AppThemeSelection.MATERIAL3,
             iosTitle = "iOS Preset",
             iosSummary = "Keep stronger glass, roundness, and Cupertino-style details.",
             materialTitle = "Android Native · Material 3",
@@ -47,7 +47,7 @@ class AppearanceUiPresetDescriptionPolicyTest {
     @Test
     fun `resolveAppearanceUiPresetDescription should return miuix copy for android native miuix variant`() {
         val description = resolveAppearanceUiPresetDescription(
-            uiStyle = UiStyle.MIUIX,
+            selection = AppThemeSelection.MIUIX,
             iosTitle = "iOS Preset",
             iosSummary = "Keep stronger glass, roundness, and Cupertino-style details.",
             materialTitle = "Android Native · Material 3",

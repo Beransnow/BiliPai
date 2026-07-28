@@ -37,7 +37,7 @@ import com.android.purebilibili.core.theme.iOSSystemGray4
 import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
 import com.android.purebilibili.core.ui.motion.AppMotionTokens
 
-internal data class AdaptiveBottomSheetVisualSpec(
+data class AdaptiveBottomSheetVisualSpec(
     val cornerRadiusDp: Int,
     val useMaterialDragHandle: Boolean
 )
@@ -49,7 +49,7 @@ internal data class AdaptiveBottomSheetMotionSpec(
     val contentExitFadeDurationMillis: Int
 )
 
-internal fun resolveAdaptiveBottomSheetVisualSpec(
+fun resolveAdaptiveBottomSheetVisualSpec(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
 ): AdaptiveBottomSheetVisualSpec {
@@ -139,7 +139,7 @@ fun AppModalBottomSheet(
     containerColor: Color = MaterialTheme.colorScheme.surface,
     scrimColor: Color = BottomSheetDefaults.ScrimColor,
     presentationProgress: Float = 1f,
-    dragHandle: @Composable (() -> Unit)? = { IOSDragHandle() },
+    dragHandle: @Composable (() -> Unit)? = { AppBottomSheetDragHandle() },
     windowInsets: androidx.compose.foundation.layout.WindowInsets = androidx.compose.material3.BottomSheetDefaults.modalWindowInsets,
     content: @Composable () -> Unit
 ) {
@@ -187,7 +187,7 @@ fun AppModalBottomSheet(
         scrimColor = scrimColor.copy(alpha = progressVisual.scrimAlpha),
         dragHandle = if (visualSpec.useMaterialDragHandle) {
             if (isNativeMiuixEnabled(uiPreset, androidNativeVariant)) {
-                { IOSDragHandle() }
+                { AppBottomSheetDragHandle() }
             } else {
                 { BottomSheetDefaults.DragHandle() }
             }
@@ -232,7 +232,7 @@ fun rememberAppBottomSheetMotion(): AppBottomSheetMotion {
 }
 
 @Composable
-fun IOSDragHandle() {
+fun AppBottomSheetDragHandle() {
     Box(
         modifier = Modifier
             .fillMaxWidth()

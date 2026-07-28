@@ -6,13 +6,11 @@ import com.android.purebilibili.core.store.HomeFeedCardWidthPreset
 import com.android.purebilibili.core.store.PortraitPlayerCollapseMode
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.TabletCommentPanelWidthPreset
+import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.feature.screenshot.AppScreenshotCaptureMode
 import com.android.purebilibili.feature.screenshot.AppScreenshotGestureMode
 
-internal data class PlaybackSegmentOption<T>(
-    val value: T,
-    val label: String
-)
+internal typealias PlaybackSegmentOption<T> = AppSegmentOption<T>
 
 internal fun <T> resolveSelectionIndex(
     options: List<PlaybackSegmentOption<T>>,

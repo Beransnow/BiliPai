@@ -28,7 +28,7 @@ class AppPreferenceApiStructureTest {
         assertTrue(source.contains(") = IOSGroup("))
 
         val dialogSource = loadSource(
-            "app/src/main/java/com/android/purebilibili/core/ui/AppDialogComponents.kt"
+            "design-system/src/main/java/com/android/purebilibili/core/ui/AppDialogComponents.kt"
         )
         assertTrue(dialogSource.contains("fun AppAlertDialog("))
         assertTrue(dialogSource.contains(") = AdaptiveAlertDialog("))
@@ -76,14 +76,13 @@ class AppPreferenceApiStructureTest {
             File("src/main/java/com/android/purebilibili/feature/settings"),
         ).firstOrNull(File::isDirectory)
             ?: error("Cannot locate settings production sources from ${File(".").absolutePath}")
-        val legacyImplementation = "IOSSlidingSegmentedControl.kt"
         val legacyCall = Regex(
             """\b(IOSSectionTitle|IOSGroup|IOSSwitchItem|IOSSliderPreference|IOSClickableItem|IOSDivider|IOSAdaptiveTextField|IOSSlidingSegmentedControl|IOSSlidingSegmentedSetting|IOSAlertDialog|IOSDialogAction)\b"""
         )
 
         settingsRoot.walkTopDown()
             .filter { file ->
-                file.isFile && file.extension == "kt" && file.name != legacyImplementation
+                file.isFile && file.extension == "kt"
             }
             .forEach { file ->
                 val source = file.readText().replace("\r\n", "\n")
@@ -96,7 +95,7 @@ class AppPreferenceApiStructureTest {
 
     private fun loadSource(path: String): String {
         val normalizedPath = path.removePrefix("app/")
-        return listOf(File(path), File(normalizedPath))
+        return listOf(File(path), File(normalizedPath), File("../$path"))
             .firstOrNull(File::exists)
             ?.readText()
             ?.replace("\r\n", "\n")

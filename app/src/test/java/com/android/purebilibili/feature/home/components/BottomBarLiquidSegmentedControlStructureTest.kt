@@ -422,7 +422,7 @@ class BottomBarLiquidSegmentedControlStructureTest {
     @Test
     fun `common list and video tabs pass page backdrop into segmented control`() {
         val commonList = loadSource("app/src/main/java/com/android/purebilibili/feature/list/CommonListScreen.kt")
-        val iosSegmented = loadSource("app/src/main/java/com/android/purebilibili/feature/settings/IOSSlidingSegmentedControl.kt")
+        val iosSegmented = loadSource("app/src/main/java/com/android/purebilibili/feature/settings/AppSegmentedComponents.kt")
 
         val videoContent = loadSource("app/src/main/java/com/android/purebilibili/feature/video/screen/VideoContentSection.kt")
         val commentSortBar = loadSource(

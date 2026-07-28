@@ -22,8 +22,10 @@ import com.android.purebilibili.core.store.resolveAppIconLauncherAlias
 import com.android.purebilibili.core.store.supportsAppIconAppearance
 import com.android.purebilibili.core.theme.AppFontSizePreset
 import com.android.purebilibili.core.theme.AppUiScalePreset
-import com.android.purebilibili.core.theme.UiStyle
 import com.android.purebilibili.core.theme.syncThemeRoleControlAccent
+import com.android.purebilibili.core.ui.AppThemeSelection
+import com.android.purebilibili.core.ui.toAppThemeSelection
+import com.android.purebilibili.core.ui.toUiStyle
 import com.android.purebilibili.core.ui.blur.BlurIntensity
 import com.android.purebilibili.core.ui.transition.VIDEO_SHARED_TRANSITION_CUSTOM_DEFAULT_MILLIS
 import com.android.purebilibili.core.ui.transition.VideoSharedTransitionSpeed
@@ -58,7 +60,7 @@ internal fun shouldStartSettingsDiagnostics(
 ): Boolean = loadState != SettingsDiagnosticsLoadState.LOADED && !jobActive
 
 data class SettingsUiState(
-    val uiStyle: UiStyle = UiStyle.IOS,
+    val themeSelection: AppThemeSelection = AppThemeSelection.IOS,
     val hwDecode: Boolean = true,
     val themeMode: AppThemeMode = AppThemeMode.FOLLOW_SYSTEM,
     val darkThemeStyle: DarkThemeStyle = DarkThemeStyle.DEFAULT,
@@ -131,7 +133,7 @@ data class SettingsUiState(
 
 // 内部数据类，用于分批合并流
 private data class CoreSettings(
-    val uiStyle: UiStyle,
+    val themeSelection: AppThemeSelection,
     val hwDecode: Boolean,
     val themeMode: AppThemeMode,
     val darkThemeStyle: DarkThemeStyle,
@@ -197,7 +199,7 @@ data class ExperimentalSettings(
 )
 
 private data class BaseSettings(
-    val uiStyle: UiStyle,
+    val themeSelection: AppThemeSelection,
     val hwDecode: Boolean,
     val themeMode: AppThemeMode,
     val darkThemeStyle: DarkThemeStyle,
@@ -277,7 +279,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     //  [核心修复] 分步合并，解决 combine 参数限制报错
     // 第 1 步：合并前 4 个设置
     private val coreSettingsFlow = combine(
-        SettingsManager.getUiStyle(context).asAnyFlow(),
+        SettingsManager.getUiStyle(context).map { it.toAppThemeSelection() }.asAnyFlow(),
         SettingsManager.getHwDecode(context).asAnyFlow(),
         SettingsManager.getThemeMode(context).asAnyFlow(),
         SettingsManager.getDarkThemeStyle(context).asAnyFlow(),
@@ -292,7 +294,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             .asAnyFlow()
     ) { values ->
         CoreSettings(
-            uiStyle = values[0] as UiStyle,
+            themeSelection = values[0] as AppThemeSelection,
             hwDecode = values[1] as Boolean,
             themeMode = values[2] as AppThemeMode,
             darkThemeStyle = values[3] as DarkThemeStyle,
@@ -516,7 +518,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     // 第 5 步：合并两组设置
     private val baseSettingsFlow = combine(coreSettingsFlow, extraSettingsFlow) { core, extra ->
         BaseSettings(
-            uiStyle = core.uiStyle,
+            themeSelection = core.themeSelection,
             hwDecode = core.hwDecode,
             themeMode = core.themeMode,
             darkThemeStyle = core.darkThemeStyle,
@@ -579,7 +581,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         _diagnosticsState,
     ) { settings, cache, experimental, diagnostics ->
         SettingsUiState(
-            uiStyle = settings.uiStyle,
+            themeSelection = settings.themeSelection,
             hwDecode = settings.hwDecode,
             themeMode = settings.themeMode,
             darkThemeStyle = settings.darkThemeStyle,
@@ -715,9 +717,9 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun toggleHwDecode(value: Boolean) { viewModelScope.launch { SettingsManager.setHwDecode(context, value) } }
-    fun setUiStyle(uiStyle: UiStyle) {
+    fun setThemeSelection(selection: AppThemeSelection) {
         viewModelScope.launch {
-            SettingsManager.setUiStyle(context, uiStyle)
+            SettingsManager.setUiStyle(context, selection.toUiStyle())
         }
     }
     fun setThemeMode(mode: AppThemeMode) { 
