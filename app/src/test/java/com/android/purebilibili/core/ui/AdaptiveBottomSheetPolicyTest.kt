@@ -1,5 +1,6 @@
 package com.android.purebilibili.core.ui
 
+import androidx.compose.ui.graphics.Color
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
 import org.junit.Assert.assertEquals
@@ -23,6 +24,119 @@ class AdaptiveBottomSheetPolicyTest {
 
         assertEquals(14, spec.cornerRadiusDp)
         assertFalse(spec.useMaterialDragHandle)
+    }
+
+    @Test
+    fun `explicitly hidden drag handle stays hidden for every style`() {
+        val styles = listOf(
+            UiPreset.IOS to AndroidNativeVariant.MATERIAL3,
+            UiPreset.MD3 to AndroidNativeVariant.MATERIAL3,
+            UiPreset.MD3 to AndroidNativeVariant.MIUIX,
+        )
+
+        styles.forEach { (uiPreset, androidNativeVariant) ->
+            assertEquals(
+                AdaptiveBottomSheetDragHandleRenderer.HIDDEN,
+                resolveAdaptiveBottomSheetDragHandleRenderer(
+                    uiPreset = uiPreset,
+                    androidNativeVariant = androidNativeVariant,
+                    hasDragHandle = false,
+                ),
+            )
+        }
+    }
+
+    @Test
+    fun `present drag handle uses each style default renderer`() {
+        assertEquals(
+            AdaptiveBottomSheetDragHandleRenderer.CALLER,
+            resolveAdaptiveBottomSheetDragHandleRenderer(
+                uiPreset = UiPreset.IOS,
+                androidNativeVariant = AndroidNativeVariant.MATERIAL3,
+                hasDragHandle = true,
+            ),
+        )
+        assertEquals(
+            AdaptiveBottomSheetDragHandleRenderer.MATERIAL3_DEFAULT,
+            resolveAdaptiveBottomSheetDragHandleRenderer(
+                uiPreset = UiPreset.MD3,
+                androidNativeVariant = AndroidNativeVariant.MATERIAL3,
+                hasDragHandle = true,
+            ),
+        )
+        assertEquals(
+            AdaptiveBottomSheetDragHandleRenderer.MIUIX_DEFAULT,
+            resolveAdaptiveBottomSheetDragHandleRenderer(
+                uiPreset = UiPreset.MD3,
+                androidNativeVariant = AndroidNativeVariant.MIUIX,
+                hasDragHandle = true,
+            ),
+        )
+    }
+
+    @Test
+    fun `omitted container color uses each style default token`() {
+        val iosDefault = Color.Red
+        val material3Default = Color.Green
+        val miuixDefault = Color.Blue
+
+        assertEquals(
+            iosDefault,
+            resolveAdaptiveBottomSheetContainerColor(
+                uiPreset = UiPreset.IOS,
+                androidNativeVariant = AndroidNativeVariant.MATERIAL3,
+                containerColor = null,
+                iosDefaultColor = iosDefault,
+                material3DefaultColor = material3Default,
+                miuixDefaultColor = miuixDefault,
+            ),
+        )
+        assertEquals(
+            material3Default,
+            resolveAdaptiveBottomSheetContainerColor(
+                uiPreset = UiPreset.MD3,
+                androidNativeVariant = AndroidNativeVariant.MATERIAL3,
+                containerColor = null,
+                iosDefaultColor = iosDefault,
+                material3DefaultColor = material3Default,
+                miuixDefaultColor = miuixDefault,
+            ),
+        )
+        assertEquals(
+            miuixDefault,
+            resolveAdaptiveBottomSheetContainerColor(
+                uiPreset = UiPreset.MD3,
+                androidNativeVariant = AndroidNativeVariant.MIUIX,
+                containerColor = null,
+                iosDefaultColor = iosDefault,
+                material3DefaultColor = material3Default,
+                miuixDefaultColor = miuixDefault,
+            ),
+        )
+    }
+
+    @Test
+    fun `explicit container color is preserved for every style`() {
+        val explicitColor = Color.Magenta
+        val styles = listOf(
+            UiPreset.IOS to AndroidNativeVariant.MATERIAL3,
+            UiPreset.MD3 to AndroidNativeVariant.MATERIAL3,
+            UiPreset.MD3 to AndroidNativeVariant.MIUIX,
+        )
+
+        styles.forEach { (uiPreset, androidNativeVariant) ->
+            assertEquals(
+                explicitColor,
+                resolveAdaptiveBottomSheetContainerColor(
+                    uiPreset = uiPreset,
+                    androidNativeVariant = androidNativeVariant,
+                    containerColor = explicitColor,
+                    iosDefaultColor = Color.Red,
+                    material3DefaultColor = Color.Green,
+                    miuixDefaultColor = Color.Blue,
+                ),
+            )
+        }
     }
 
     @Test

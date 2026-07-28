@@ -29,6 +29,7 @@ import androidx.compose.ui.draw.scale
 import android.widget.Toast
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.AppModalBottomSheet
 
 /**
  * 修复壁纸图片 URL (不添加缩放后缀，保持原图质量)
@@ -67,7 +68,7 @@ fun OfficialWallpaperSheet(
     }
 
     // ModalBottomSheet 容器
-    ModalBottomSheet(
+    AppModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = MaterialTheme.colorScheme.background,

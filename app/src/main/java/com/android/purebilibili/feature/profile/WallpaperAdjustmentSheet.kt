@@ -30,6 +30,7 @@ import coil.request.ImageRequest
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.TabletAndroid
 import androidx.compose.material.icons.outlined.PhoneAndroid
+import com.android.purebilibili.core.ui.AppModalBottomSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,7 +48,7 @@ fun WallpaperAdjustmentSheet(
     val currentBias = if (selectedTab == 0) mobileBias else tabletBias
     
     // Bottom Sheet
-    ModalBottomSheet(
+    AppModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = MaterialTheme.colorScheme.surface,
@@ -239,7 +240,7 @@ fun ProfileWallpaperAdjustmentSheet(
         }
     }
 
-    ModalBottomSheet(
+    AppModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = MaterialTheme.colorScheme.surface,

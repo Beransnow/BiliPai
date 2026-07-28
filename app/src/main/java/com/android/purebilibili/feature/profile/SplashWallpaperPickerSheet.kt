@@ -34,6 +34,7 @@ import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.AppModalBottomSheet
 
 /**
  * 🖼️ 开屏壁纸选择器 (用于设置页)
@@ -97,7 +98,7 @@ fun SplashWallpaperPickerSheet(
         SettingsManager.setSplashRandomPoolUris(context, randomPool)
     }
 
-    ModalBottomSheet(
+    AppModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = MaterialTheme.colorScheme.background,

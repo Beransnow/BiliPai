@@ -73,6 +73,7 @@ import com.android.purebilibili.feature.dynamic.components.ImagePreviewTextConte
 import com.android.purebilibili.core.ui.LoadingAnimation
 import com.android.purebilibili.core.ui.BiliGradientButton
 import com.android.purebilibili.core.ui.AppAlertDialog
+import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppTopBarStyle
@@ -2379,7 +2380,7 @@ private fun ProfileEditAccountDialog(
 ) {
     var sign by remember(state.sign) { mutableStateOf(state.sign) }
     val signError = validateProfileSign(sign)
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("编辑资料") },
         text = {
@@ -3003,10 +3004,9 @@ private fun ProfileWallpaperActionSheet(
     onResetWallpaperClick: () -> Unit,
     isResetEnabled: Boolean
 ) {
-    ModalBottomSheet(
+    AppModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
     ) {
         Column(
             modifier = Modifier
@@ -4004,7 +4004,7 @@ private fun AccountSwitchDialog(
     onSwitch: (Long) -> Unit,
     onRemove: (Long) -> Unit
 ) {
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("账号切换", fontWeight = FontWeight.Bold) },
         text = {
@@ -4146,7 +4146,7 @@ fun ProfileTripleActionEntry(
     
     // 选择弹窗
     if (showDialog) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showDialog = false },
             title = { Text("🎉 三连成功！") },
             text = { Text("请选择你想解锁的功能：") },

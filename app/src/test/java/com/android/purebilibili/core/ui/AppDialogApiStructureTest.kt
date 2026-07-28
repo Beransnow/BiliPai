@@ -26,6 +26,7 @@ class AppDialogApiStructureTest {
         val apiSource = load("app/src/main/java/com/android/purebilibili/core/ui/AppDialogComponents.kt")
 
         assertTrue(apiSource.contains("fun AppModalBottomSheet("))
+        assertTrue(apiSource.contains("containerColor: Color? = null"))
         assertTrue(apiSource.contains(") = IOSModalBottomSheet("))
         listOf(
             "modifier = modifier",
@@ -60,26 +61,72 @@ class AppDialogApiStructureTest {
 
         val profileSource = load("app/src/main/java/com/android/purebilibili/feature/profile/ProfileScreen.kt")
         val spaceSource = load("app/src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt")
-        assertEquals(3, Regex("""\bAppAlertDialog\s*\(""").findAll(profileSource).count())
-        assertEquals(3, directAlert.findAll(profileSource).count())
-        assertEquals(1, Regex("""\bAppAlertDialog\s*\(""").findAll(spaceSource).count())
-        assertEquals(1, directAlert.findAll(spaceSource).count())
+        assertEquals(6, Regex("""\bAppAlertDialog\s*\(""").findAll(profileSource).count())
+        assertFalse(directAlert.containsMatchIn(profileSource))
+        assertEquals(2, Regex("""\bAppAlertDialog\s*\(""").findAll(spaceSource).count())
+        assertFalse(directAlert.containsMatchIn(spaceSource))
     }
 
     @Test
-    fun dynamicCommentSheetNoLongerCallsHistoricalIosEntryPoint() {
-        val source = load(
-            "app/src/main/java/com/android/purebilibili/feature/dynamic/components/DynamicCommentSheet.kt"
+    fun phaseThreeSheetsUseNeutralEntryPoint() {
+        val expectedNeutralSheetCalls = mapOf(
+            "app/src/main/java/com/android/purebilibili/feature/dynamic/components/DynamicCommentSheet.kt" to 1,
+            "app/src/main/java/com/android/purebilibili/feature/profile/ProfileScreen.kt" to 1,
+            "app/src/main/java/com/android/purebilibili/feature/profile/OfficialWallpaperSheet.kt" to 1,
+            "app/src/main/java/com/android/purebilibili/feature/profile/WallpaperAdjustmentSheet.kt" to 2,
+            "app/src/main/java/com/android/purebilibili/feature/profile/SplashWallpaperPickerSheet.kt" to 1,
         )
+        val directSheet = Regex("""(?<![A-Za-z0-9_])(ModalBottomSheet|IOSModalBottomSheet)\s*\(""")
 
-        assertTrue(source.contains("AppModalBottomSheet("))
-        assertFalse(source.contains("IOSModalBottomSheet("))
+        expectedNeutralSheetCalls.forEach { (path, expectedCount) ->
+            val source = load(path)
+            assertEquals(
+                expectedCount,
+                Regex("""\bAppModalBottomSheet\s*\(""").findAll(source).count(),
+                "Unexpected neutral sheet count in $path",
+            )
+            assertFalse(directSheet.containsMatchIn(source), "Direct sheet renderer remains in $path")
+        }
     }
 
-    private fun load(path: String): String {
+    @Test
+    fun phaseThreeFeatureScopeRejectsDirectDialogAndSheetRenderers() {
+        val roots = listOf(
+            "app/src/main/java/com/android/purebilibili/feature/dynamic",
+            "app/src/main/java/com/android/purebilibili/feature/list",
+            "app/src/main/java/com/android/purebilibili/feature/message",
+            "app/src/main/java/com/android/purebilibili/feature/partition",
+            "app/src/main/java/com/android/purebilibili/feature/profile",
+            "app/src/main/java/com/android/purebilibili/feature/search",
+            "app/src/main/java/com/android/purebilibili/feature/space",
+            "app/src/main/java/com/android/purebilibili/feature/live",
+        )
+        val stageFourLiveFiles = setOf(
+            "LiveContributionRankSheet.kt",
+            "LiveInteractionSheets.kt",
+            "LivePlayerScreen.kt",
+            "LiveSendDanmakuSheet.kt",
+        )
+        val directRenderer = Regex(
+            """(?<![A-Za-z0-9_])(AlertDialog|ModalBottomSheet|IOSAlertDialog|IOSModalBottomSheet|IOSDialogAction|IOSDragHandle)\s*\(""",
+        )
+
+        roots.flatMap { resolve(it).walkTopDown().filter(File::isFile).toList() }
+            .filter { it.extension == "kt" }
+            .filterNot { it.name in stageFourLiveFiles }
+            .forEach { file ->
+                assertFalse(
+                    directRenderer.containsMatchIn(file.readText()),
+                    "Direct Dialog/Sheet renderer remains in ${file.path}",
+                )
+            }
+    }
+
+    private fun resolve(path: String): File {
         val normalized = path.removePrefix("app/")
         return listOf(File(path), File(normalized))
             .first { it.exists() }
-            .readText()
     }
+
+    private fun load(path: String): String = resolve(path).readText()
 }

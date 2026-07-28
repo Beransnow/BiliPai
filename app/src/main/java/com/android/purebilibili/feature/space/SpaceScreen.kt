@@ -45,7 +45,6 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.ViewAgenda
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
@@ -596,7 +595,7 @@ fun SpaceScreen(
     }
 
     if (followGroupDialogVisible) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = {
                 if (!isSavingFollowGroups) {
                     viewModel.dismissFollowGroupDialog()

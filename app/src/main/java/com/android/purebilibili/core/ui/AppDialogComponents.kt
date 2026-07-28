@@ -3,7 +3,6 @@ package com.android.purebilibili.core.ui
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -41,14 +40,17 @@ fun AppDialogAction(
     content: @Composable () -> Unit,
 ) = IOSDialogAction(onClick = onClick, modifier = modifier, content = content)
 
-/** Style-neutral modal sheet entry point backed by the existing adaptive sheet renderer. */
+/**
+ * Style-neutral modal sheet entry point backed by the existing adaptive sheet renderer.
+ * A null [containerColor] selects the current style token; a null [dragHandle] hides the handle.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppModalBottomSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-    containerColor: Color = MaterialTheme.colorScheme.surface,
+    containerColor: Color? = null,
     scrimColor: Color = BottomSheetDefaults.ScrimColor,
     presentationProgress: Float = 1f,
     dragHandle: @Composable (() -> Unit)? = { AppSheetDragHandle() },
