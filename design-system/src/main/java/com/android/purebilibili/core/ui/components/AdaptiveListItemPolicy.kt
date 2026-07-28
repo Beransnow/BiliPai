@@ -3,30 +3,30 @@ package com.android.purebilibili.core.ui.components
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
 
-enum class IosClickableItemRenderer {
-    IOS_LEGACY,
+enum class AppClickableItemRenderer {
+    CUPERTINO,
     MD3_BASIC,
     MIUIX_ARROW,
     MIUIX_BASIC,
 }
 
-fun resolveIosClickableItemRenderer(
+fun resolveAppClickableItemRenderer(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant,
     onClick: (() -> Unit)?,
     showChevron: Boolean,
     centered: Boolean,
-): IosClickableItemRenderer = when {
-    uiPreset == UiPreset.IOS || centered -> IosClickableItemRenderer.IOS_LEGACY
+): AppClickableItemRenderer = when {
+    uiPreset == UiPreset.IOS || centered -> AppClickableItemRenderer.CUPERTINO
     uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX -> {
         if (onClick != null && showChevron) {
-            IosClickableItemRenderer.MIUIX_ARROW
+            AppClickableItemRenderer.MIUIX_ARROW
         } else {
-            IosClickableItemRenderer.MIUIX_BASIC
+            AppClickableItemRenderer.MIUIX_BASIC
         }
     }
-    uiPreset == UiPreset.MD3 -> IosClickableItemRenderer.MD3_BASIC
-    else -> IosClickableItemRenderer.IOS_LEGACY
+    uiPreset == UiPreset.MD3 -> AppClickableItemRenderer.MD3_BASIC
+    else -> AppClickableItemRenderer.CUPERTINO
 }
 
 fun shouldRouteIosClickableItemToMiuixArrowPreference(
@@ -35,13 +35,13 @@ fun shouldRouteIosClickableItemToMiuixArrowPreference(
     onClick: (() -> Unit)?,
     showChevron: Boolean,
     centered: Boolean,
-): Boolean = resolveIosClickableItemRenderer(
+): Boolean = resolveAppClickableItemRenderer(
     uiPreset = uiPreset,
     androidNativeVariant = androidNativeVariant,
     onClick = onClick,
     showChevron = showChevron,
     centered = centered
-) == IosClickableItemRenderer.MIUIX_ARROW
+) == AppClickableItemRenderer.MIUIX_ARROW
 
 fun shouldRouteIosSwitchItemToMiuixSwitchPreference(
     uiPreset: UiPreset,

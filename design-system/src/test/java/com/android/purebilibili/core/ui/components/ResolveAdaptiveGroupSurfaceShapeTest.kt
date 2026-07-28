@@ -10,7 +10,7 @@ import kotlin.test.Test
 import kotlin.test.assertIs
 import kotlin.test.assertSame
 
-class ResolveIosGroupSurfaceShapeTest {
+class ResolveAdaptiveGroupSurfaceShapeTest {
 
     private val defaultShape = RoundedCornerShape(12.dp)
     private val continuousShape = IosContinuousRoundedCornerShape(14.dp)
@@ -18,7 +18,7 @@ class ResolveIosGroupSurfaceShapeTest {
 
     @Test
     fun iosBorderedGroup_fallsBackToStandardRoundedCorners() {
-        val shape = resolveIosGroupSurfaceShape(
+        val shape = resolveAdaptiveGroupSurfaceShape(
             uiPreset = UiPreset.IOS,
             requestedShape = continuousShape,
             defaultShape = defaultShape,
@@ -29,7 +29,7 @@ class ResolveIosGroupSurfaceShapeTest {
 
     @Test
     fun iosBorderlessGroup_keepsContinuousCorners() {
-        val shape = resolveIosGroupSurfaceShape(
+        val shape = resolveAdaptiveGroupSurfaceShape(
             uiPreset = UiPreset.IOS,
             requestedShape = continuousShape,
             defaultShape = defaultShape,
@@ -40,7 +40,7 @@ class ResolveIosGroupSurfaceShapeTest {
 
     @Test
     fun md3BorderedGroup_keepsRequestedShape() {
-        val shape = resolveIosGroupSurfaceShape(
+        val shape = resolveAdaptiveGroupSurfaceShape(
             uiPreset = UiPreset.MD3,
             requestedShape = continuousShape,
             defaultShape = defaultShape,
@@ -51,7 +51,7 @@ class ResolveIosGroupSurfaceShapeTest {
 
     @Test
     fun nullRequestedShape_usesDefault() {
-        val shape = resolveIosGroupSurfaceShape(
+        val shape = resolveAdaptiveGroupSurfaceShape(
             uiPreset = UiPreset.IOS,
             requestedShape = null,
             defaultShape = defaultShape,

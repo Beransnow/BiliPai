@@ -131,9 +131,9 @@ class MiuixV2MigrationStructureTest {
     @Test
     fun iosClickableItem_routesThroughAdaptiveListItemPolicy() {
         val source = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt")
-        assertTrue(source.contains("resolveIosClickableItemRenderer("))
-        assertTrue(source.contains("IosClickableItemRenderer.MIUIX_ARROW"))
-        assertTrue(source.contains("IosClickableItemRenderer.MIUIX_BASIC"))
+        assertTrue(source.contains("resolveAppClickableItemRenderer("))
+        assertTrue(source.contains("AppClickableItemRenderer.MIUIX_ARROW"))
+        assertTrue(source.contains("AppClickableItemRenderer.MIUIX_BASIC"))
         assertTrue(source.contains("shouldRouteIosSwitchItemToMiuixSwitchPreference("))
         assertTrue(source.contains("shouldRouteIosSliderPreferenceToMiuixSliderPreference("))
         assertTrue(source.contains("MiuixSliderPreference("))

@@ -285,7 +285,7 @@ class AdaptiveListComponentPolicyTest {
         assertTrue(source.contains("fun SettingsSearchBarSection"))
         assertTrue(source.contains("AppSearchField("))
         assertFalse(source.contains("BasicTextField("))
-        assertFalse(source.contains("IOSSearchBar("))
+        assertFalse(source.contains("AdaptiveSearchFieldRenderer("))
     }
 
     @Test

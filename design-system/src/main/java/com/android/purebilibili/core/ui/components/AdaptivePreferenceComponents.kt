@@ -462,7 +462,7 @@ fun AppAdaptiveSwitch(
             )
         }
         AppAdaptiveSwitchTreatment.LIQUID_GLASS -> {
-            IOSLiquidGlassSwitch(
+            AppLiquidGlassSwitchRenderer(
                 checked = checked,
                 onCheckedChange = onCheckedChange,
                 enabled = enabled,
@@ -473,7 +473,7 @@ fun AppAdaptiveSwitch(
 }
 
 @Composable
-private fun IOSLiquidGlassSwitch(
+private fun AppLiquidGlassSwitchRenderer(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
@@ -588,7 +588,7 @@ private fun IOSLiquidGlassSwitch(
 }
 
 @Composable
-fun IOSSectionTitle(title: String) {
+fun AdaptivePreferenceSectionTitleRenderer(title: String) {
     val uiPreset = LocalUiPreset.current
     val androidNativeVariant = LocalAndroidNativeVariant.current
     val visualSpec = remember(uiPreset, androidNativeVariant) {
@@ -634,7 +634,7 @@ fun IOSSectionTitle(title: String) {
  * Continuous iOS corners do not compose cleanly with [Surface] borders; use standard arcs
  * for bordered list groups so the stroke follows smooth quarter-circle corners.
  */
-internal fun resolveIosGroupSurfaceShape(
+internal fun resolveAdaptiveGroupSurfaceShape(
     uiPreset: UiPreset,
     requestedShape: Shape?,
     defaultShape: RoundedCornerShape,
@@ -648,7 +648,7 @@ internal fun resolveIosGroupSurfaceShape(
 }
 
 @Composable
-fun IOSGroup(
+fun AdaptivePreferenceGroupRenderer(
     modifier: Modifier = Modifier,
     containerColor: Color = MaterialTheme.colorScheme.surface,
     shape: androidx.compose.ui.graphics.Shape? = null,
@@ -669,7 +669,7 @@ fun IOSGroup(
     val defaultShape = RoundedCornerShape(
         if (uiPreset == UiPreset.MD3) visualSpec.groupCornerRadiusDp.dp else groupCornerRadius
     )
-    val appliedShape = resolveIosGroupSurfaceShape(
+    val appliedShape = resolveAdaptiveGroupSurfaceShape(
         uiPreset = uiPreset,
         requestedShape = shape,
         defaultShape = defaultShape,
@@ -879,7 +879,7 @@ internal fun AdaptiveSwitchPreferenceContent(
 }
 
 @Composable
-fun IOSSliderPreference(
+fun AdaptiveSliderPreferenceRenderer(
     icon: ImageVector? = null,
     title: String,
     subtitle: String? = null,
@@ -1034,14 +1034,14 @@ internal fun AdaptivePreferenceContent(
     val effectiveIconTint = rememberAdaptiveSemanticIconTint(iconTint, uiPreset)
     val cornerRadiusScale = LocalCornerRadiusScale.current
     val iconCornerRadius = if (uiPreset == UiPreset.MD3) visualSpec.iconCornerRadiusDp.dp else iOSCornerRadius.Small * cornerRadiusScale
-    val clickableRenderer = resolveIosClickableItemRenderer(
+    val clickableRenderer = resolveAppClickableItemRenderer(
         uiPreset = uiPreset,
         androidNativeVariant = androidNativeVariant,
         onClick = onClick,
         showChevron = showChevron,
         centered = centered
     )
-    if (clickableRenderer == IosClickableItemRenderer.MIUIX_ARROW) {
+    if (clickableRenderer == AppClickableItemRenderer.MIUIX_ARROW) {
         MiuixArrowPreference(
             title = title,
             titleColor = BasicComponentDefaults.titleColor(color = textColor),
@@ -1113,8 +1113,8 @@ internal fun AdaptivePreferenceContent(
         return
     }
     if (
-        clickableRenderer == IosClickableItemRenderer.MD3_BASIC ||
-        clickableRenderer == IosClickableItemRenderer.MIUIX_BASIC
+        clickableRenderer == AppClickableItemRenderer.MD3_BASIC ||
+        clickableRenderer == AppClickableItemRenderer.MIUIX_BASIC
     ) {
         BasicComponent(
             modifier = Modifier
@@ -1175,7 +1175,7 @@ internal fun AdaptivePreferenceContent(
                 if (!value.isNullOrBlank()) {
                     Text(
                         text = value,
-                        style = if (clickableRenderer == IosClickableItemRenderer.MIUIX_BASIC) {
+                        style = if (clickableRenderer == AppClickableItemRenderer.MIUIX_BASIC) {
                             MaterialTheme.typography.bodySmall
                         } else {
                             MaterialTheme.typography.bodyMedium
@@ -1328,7 +1328,7 @@ internal fun AdaptivePreferenceContent(
 }
 
 @Composable
-fun IOSDivider(
+fun AdaptivePreferenceDividerRenderer(
     modifier: Modifier = Modifier,
     startIndent: androidx.compose.ui.unit.Dp = 66.dp
 ) {
@@ -1350,7 +1350,7 @@ fun IOSDivider(
 
 
 @Composable
-fun IOSGridItem(
+fun AdaptivePreferenceGridItemRenderer(
     icon: ImageVector,
     title: String,
     onClick: () -> Unit,
@@ -1412,7 +1412,7 @@ fun IOSGridItem(
 }
 
 @Composable
-fun IOSSearchBar(
+fun AdaptiveSearchFieldRenderer(
     query: String,
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier,
@@ -1725,7 +1725,7 @@ fun AppSearchEntry(
 }
 
 @Composable
-fun IOSAdaptiveTextField(
+fun AdaptiveTextFieldRenderer(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,

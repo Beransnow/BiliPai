@@ -21,11 +21,11 @@ class AppPreferenceApiStructureTest {
         assertTrue(source.contains("fun AppPreferenceDivider("))
         assertTrue(source.contains("fun AppTextField("))
         assertTrue(source.contains("fun AppSearchField("))
-        assertTrue(source.contains(") = IOSSearchBar("))
+        assertTrue(source.contains(") = AdaptiveSearchFieldRenderer("))
         assertTrue(source.contains(") = AdaptivePreferenceContent("))
         assertTrue(source.contains(") = AdaptiveSwitchPreferenceContent("))
-        assertTrue(source.contains(") = IOSSliderPreference("))
-        assertTrue(source.contains(") = IOSGroup("))
+        assertTrue(source.contains(") = AdaptiveSliderPreferenceRenderer("))
+        assertTrue(source.contains(") = AdaptivePreferenceGroupRenderer("))
 
         val dialogSource = loadSource(
             "design-system/src/main/java/com/android/purebilibili/core/ui/AppDialogComponents.kt"

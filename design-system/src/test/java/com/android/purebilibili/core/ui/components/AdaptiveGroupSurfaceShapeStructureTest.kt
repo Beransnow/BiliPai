@@ -5,17 +5,17 @@ import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class IOSGroupSurfaceShapeStructureTest {
+class AdaptiveGroupSurfaceShapeStructureTest {
 
     @Test
     fun `ios group passes rounded shape into surface for md3 and miuix borders`() {
         val source = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt")
         val iosGroupSource = source
-            .substringAfter("fun IOSGroup(")
+            .substringAfter("fun AdaptivePreferenceGroupRenderer(")
             .substringBefore("@Composable\ninternal fun AdaptiveSwitchPreferenceContent")
 
         assertFalse(iosGroupSource.contains(".clip(appliedShape)"))
-        assertTrue(iosGroupSource.contains("resolveIosGroupSurfaceShape("))
+        assertTrue(iosGroupSource.contains("resolveAdaptiveGroupSurfaceShape("))
         assertTrue(iosGroupSource.contains("Surface("))
         assertTrue(iosGroupSource.contains("shape = appliedShape,"))
     }
@@ -24,14 +24,14 @@ class IOSGroupSurfaceShapeStructureTest {
     fun `miuix grouped settings use native card and preference rows`() {
         val source = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt")
         val iosGroupSource = source
-            .substringAfter("fun IOSGroup(")
+            .substringAfter("fun AdaptivePreferenceGroupRenderer(")
             .substringBefore("@Composable\ninternal fun AdaptiveSwitchPreferenceContent")
         val switchItemSource = source
             .substringAfter("fun AdaptiveSwitchPreferenceContent(")
-            .substringBefore("@Composable\nfun IOSSliderPreference")
+            .substringBefore("@Composable\nfun AdaptiveSliderPreferenceRenderer")
         val clickableItemSource = source
             .substringAfter("fun AdaptivePreferenceContent(")
-            .substringBefore("@Composable\nfun IOSSearchBar")
+            .substringBefore("@Composable\nfun AdaptiveSearchFieldRenderer")
 
         assertTrue(source.contains("Card as MiuixCard"))
         assertTrue(source.contains("SwitchPreference as MiuixSwitchPreference"))
@@ -46,7 +46,7 @@ class IOSGroupSurfaceShapeStructureTest {
         val source = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt")
         val switchItemSource = source
             .substringAfter("fun AdaptiveSwitchPreferenceContent(")
-            .substringBefore("@Composable\nfun IOSSliderPreference")
+            .substringBefore("@Composable\nfun AdaptiveSliderPreferenceRenderer")
 
         assertTrue(switchItemSource.contains("Row("))
         assertTrue(switchItemSource.contains("Column(modifier = Modifier.weight(1f))"))
@@ -59,7 +59,7 @@ class IOSGroupSurfaceShapeStructureTest {
         val source = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt")
         val switchItemSource = source
             .substringAfter("fun AdaptiveSwitchPreferenceContent(")
-            .substringBefore("@Composable\nfun IOSSliderPreference")
+            .substringBefore("@Composable\nfun AdaptiveSliderPreferenceRenderer")
 
         assertTrue(
             switchItemSource.contains("LocalAppThemeConfig.current.hapticFeedbackEnabled"),

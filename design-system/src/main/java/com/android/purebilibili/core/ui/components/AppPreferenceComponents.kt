@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
  * away from historical IOS* names without changing layout, interaction, or persistence.
  */
 @Composable
-fun AppPreferenceSectionTitle(title: String) = IOSSectionTitle(title)
+fun AppPreferenceSectionTitle(title: String) = AdaptivePreferenceSectionTitleRenderer(title)
 
 @Composable
 fun AppPreferenceGroup(
@@ -30,7 +30,7 @@ fun AppPreferenceGroup(
     shape: Shape? = null,
     border: BorderStroke? = null,
     content: @Composable ColumnScope.() -> Unit,
-) = IOSGroup(
+) = AdaptivePreferenceGroupRenderer(
     modifier = modifier,
     containerColor = containerColor,
     shape = shape,
@@ -75,7 +75,7 @@ fun AppSliderPreference(
     textColor: Color = MaterialTheme.colorScheme.onSurface,
     subtitleColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     valueColor: Color = MaterialTheme.colorScheme.primary,
-) = IOSSliderPreference(
+) = AdaptiveSliderPreferenceRenderer(
     icon = icon,
     title = title,
     subtitle = subtitle,
@@ -133,7 +133,7 @@ fun AppPreference(
 fun AppPreferenceDivider(
     modifier: Modifier = Modifier,
     startIndent: Dp = 66.dp,
-) = IOSDivider(modifier = modifier, startIndent = startIndent)
+) = AdaptivePreferenceDividerRenderer(modifier = modifier, startIndent = startIndent)
 
 @Composable
 fun AppPreferenceGridItem(
@@ -144,7 +144,7 @@ fun AppPreferenceGridItem(
     containerColor: Color = MaterialTheme.colorScheme.surface,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     modifier: Modifier = Modifier,
-) = IOSGridItem(
+) = AdaptivePreferenceGridItemRenderer(
     icon = icon,
     title = title,
     onClick = onClick,
@@ -173,7 +173,7 @@ fun AppSearchField(
     containerColor: Color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
     heightOverride: Dp? = null,
     interactionSource: MutableInteractionSource? = null,
-) = IOSSearchBar(
+) = AdaptiveSearchFieldRenderer(
     query = query,
     onQueryChange = onQueryChange,
     modifier = modifier,
@@ -202,7 +202,7 @@ fun AppTextField(
     maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
     isError: Boolean = false,
     supportingText: @Composable (() -> Unit)? = null,
-) = IOSAdaptiveTextField(
+) = AdaptiveTextFieldRenderer(
     value = value,
     onValueChange = onValueChange,
     modifier = modifier,

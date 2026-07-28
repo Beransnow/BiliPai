@@ -12,8 +12,8 @@ class AdaptiveListItemPolicyTest {
     @Test
     fun `miuix clickable item with chevron routes to arrow preference`() {
         assertEquals(
-            IosClickableItemRenderer.MIUIX_ARROW,
-            resolveIosClickableItemRenderer(
+            AppClickableItemRenderer.MIUIX_ARROW,
+            resolveAppClickableItemRenderer(
                 uiPreset = UiPreset.MD3,
                 androidNativeVariant = AndroidNativeVariant.MIUIX,
                 onClick = {},
@@ -35,8 +35,8 @@ class AdaptiveListItemPolicyTest {
     @Test
     fun `miuix clickable item without chevron routes to basic component`() {
         assertEquals(
-            IosClickableItemRenderer.MIUIX_BASIC,
-            resolveIosClickableItemRenderer(
+            AppClickableItemRenderer.MIUIX_BASIC,
+            resolveAppClickableItemRenderer(
                 uiPreset = UiPreset.MD3,
                 androidNativeVariant = AndroidNativeVariant.MIUIX,
                 onClick = {},
@@ -58,8 +58,8 @@ class AdaptiveListItemPolicyTest {
     @Test
     fun `material md3 clickable item routes to basic component`() {
         assertEquals(
-            IosClickableItemRenderer.MD3_BASIC,
-            resolveIosClickableItemRenderer(
+            AppClickableItemRenderer.MD3_BASIC,
+            resolveAppClickableItemRenderer(
                 uiPreset = UiPreset.MD3,
                 androidNativeVariant = AndroidNativeVariant.MATERIAL3,
                 onClick = {},
@@ -72,8 +72,8 @@ class AdaptiveListItemPolicyTest {
     @Test
     fun `ios preset keeps legacy row renderer`() {
         assertEquals(
-            IosClickableItemRenderer.IOS_LEGACY,
-            resolveIosClickableItemRenderer(
+            AppClickableItemRenderer.CUPERTINO,
+            resolveAppClickableItemRenderer(
                 uiPreset = UiPreset.IOS,
                 androidNativeVariant = AndroidNativeVariant.MIUIX,
                 onClick = {},
