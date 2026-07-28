@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material.icons.outlined.Comment
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.DynamicFeed
 import androidx.compose.material.icons.outlined.FolderCopy
@@ -522,6 +523,9 @@ fun rememberAppListLayoutIcon(): ImageVector = resolveAppListLayoutIcon(LocalUiP
 @Composable
 fun rememberAppGridLayoutIcon(): ImageVector = resolveAppGridLayoutIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
 
+@Composable
+fun rememberAppCheckCircleIcon(): ImageVector = resolveAppCheckCircleIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+
 private fun resolvePlatformIcon(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant,
@@ -789,3 +793,8 @@ fun resolveAppGridLayoutIcon(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
 ): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Outlined.GridView, CupertinoIcons.Outlined.RectangleStack)
+
+fun resolveAppCheckCircleIcon(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Outlined.CheckCircle, CupertinoIcons.Outlined.CheckmarkCircle)

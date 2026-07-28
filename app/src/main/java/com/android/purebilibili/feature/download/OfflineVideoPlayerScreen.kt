@@ -40,8 +40,10 @@ import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import coil.compose.AsyncImage
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
+import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.rememberAppCommentIcon
+import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
+import com.android.purebilibili.core.ui.rememberAppPlayIcon
 import com.android.purebilibili.core.theme.resolveAdaptivePrimaryAccentColors
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.feature.video.player.MiniPlayerManager
@@ -49,14 +51,17 @@ import com.android.purebilibili.feature.video.danmaku.configureAsPassiveDanmakuO
 import com.android.purebilibili.feature.video.danmaku.rememberDanmakuManager
 import com.android.purebilibili.feature.video.ui.gesture.GestureLevelKind
 import com.android.purebilibili.feature.video.ui.gesture.GestureLevelOverlayContent
-import com.android.purebilibili.feature.video.ui.gesture.GestureLevelOverlayStyle
 import com.android.purebilibili.feature.video.ui.gesture.resolveGestureLevelIcon
 import com.android.purebilibili.feature.video.ui.gesture.resolveGestureLevelOverlayStyle
 import com.android.purebilibili.feature.video.ui.section.VideoGestureMode
 import com.bytedance.danmaku.render.engine.DanmakuView
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.filled.*
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FastForward
+import androidx.compose.material.icons.outlined.Fullscreen
+import androidx.compose.material.icons.outlined.FullscreenExit
+import androidx.compose.material.icons.outlined.Pause
+import androidx.compose.material.icons.outlined.SkipNext
+import androidx.compose.material.icons.outlined.SkipPrevious
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -87,13 +92,12 @@ fun OfflineVideoPlayerScreen(
     val maxVolume = remember { audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC) }
     val miniPlayerManager = remember(context) { MiniPlayerManager.getInstance(context) }
     val danmakuManager = rememberDanmakuManager()
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val gestureLevelOverlayStyle = remember(uiPreset, androidNativeVariant) {
-        resolveGestureLevelOverlayStyle(
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant
-        )
+    val playerChromeProfile = rememberAppPlayerChromeProfile()
+    val backIcon = rememberAppBackIcon()
+    val commentIcon = rememberAppCommentIcon()
+    val playIcon = rememberAppPlayIcon()
+    val gestureLevelOverlayStyle = remember(playerChromeProfile.tabPresentation) {
+        resolveGestureLevelOverlayStyle(playerChromeProfile.tabPresentation)
     }
     
     val tasks by DownloadManager.tasks.collectAsStateWithLifecycle()
@@ -686,7 +690,7 @@ fun OfflineVideoPlayerScreen(
                         style = gestureLevelOverlayStyle,
                         modifier = Modifier
                             .align(
-                                if (gestureLevelOverlayStyle == GestureLevelOverlayStyle.Miuix) {
+                                if (playerChromeProfile.effects.usesTonalContainerTreatment) {
                                     if (gestureMode == GestureMode.Volume) {
                                         Alignment.CenterEnd
                                     } else {
@@ -697,7 +701,7 @@ fun OfflineVideoPlayerScreen(
                                 }
                             )
                             .then(
-                                if (gestureLevelOverlayStyle == GestureLevelOverlayStyle.Miuix) {
+                                if (playerChromeProfile.effects.usesTonalContainerTreatment) {
                                     Modifier.padding(horizontal = 22.dp)
                                 } else {
                                     Modifier
@@ -745,7 +749,7 @@ fun OfflineVideoPlayerScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        CupertinoIcons.Default.Forward,
+                        Icons.Outlined.FastForward,
                         contentDescription = null,
                         tint = Color.White,
                         modifier = Modifier.size(20.dp)
@@ -814,7 +818,7 @@ fun OfflineVideoPlayerScreen(
             ) {
                 IconButton(onClick = { if (isFullscreen) toggleFullscreen() else onBack() }) {
                     Icon(
-                        CupertinoIcons.Default.ChevronBackward,
+                        backIcon,
                         contentDescription = "返回",
                         tint = Color.White,
                         modifier = Modifier.size(24.dp)
@@ -879,7 +883,7 @@ fun OfflineVideoPlayerScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    CupertinoIcons.Default.BackwardEnd,
+                                    Icons.Outlined.SkipPrevious,
                                     contentDescription = "上一集",
                                     tint = Color.White,
                                     modifier = Modifier.size(16.dp)
@@ -909,7 +913,7 @@ fun OfflineVideoPlayerScreen(
                                 Text("下一集", color = Color.White, fontSize = 12.sp)
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Icon(
-                                    CupertinoIcons.Default.ForwardEnd,
+                                    Icons.Outlined.SkipNext,
                                     contentDescription = "下一集",
                                     tint = Color.White,
                                     modifier = Modifier.size(16.dp)
@@ -940,7 +944,7 @@ fun OfflineVideoPlayerScreen(
                         modifier = Modifier.size(36.dp)
                     ) {
                         Icon(
-                            if (isPlaying) CupertinoIcons.Default.Pause else CupertinoIcons.Default.Play,
+                            if (isPlaying) Icons.Outlined.Pause else playIcon,
                             contentDescription = if (isPlaying) "暂停" else "播放",
                             tint = Color.White,
                             modifier = Modifier.size(24.dp)
@@ -969,7 +973,7 @@ fun OfflineVideoPlayerScreen(
                         ) {
                             Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                                 Icon(
-                                    if (danmakuEnabled) CupertinoIcons.Filled.TextBubble else CupertinoIcons.Outlined.TextBubble,
+                                    commentIcon,
                                     contentDescription = if (danmakuEnabled) "关闭弹幕" else "开启弹幕",
                                     tint = if (danmakuEnabled) activeControlColors.contentColor else Color.White,
                                     modifier = Modifier.size(22.dp)
@@ -993,7 +997,7 @@ fun OfflineVideoPlayerScreen(
                     ) {
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                             Icon(
-                                if (isFullscreen) CupertinoIcons.Default.ArrowDownRightAndArrowUpLeft else CupertinoIcons.Default.ArrowUpLeftAndArrowDownRight,
+                                if (isFullscreen) Icons.Outlined.FullscreenExit else Icons.Outlined.Fullscreen,
                                 contentDescription = if (isFullscreen) "退出全屏" else "全屏",
                                 tint = if (!isFullscreen) activeControlColors.contentColor else Color.White,
                                 modifier = Modifier.size(22.dp)
@@ -1019,7 +1023,7 @@ fun OfflineVideoPlayerScreen(
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
-                        CupertinoIcons.Default.Play,
+                        playIcon,
                         contentDescription = "播放",
                         tint = Color.White.copy(alpha = 0.95f),
                         modifier = Modifier.size(42.dp)

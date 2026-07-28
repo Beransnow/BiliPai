@@ -71,16 +71,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.layout.onSizeChanged
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
-import com.android.purebilibili.core.ui.bottomSheetContentEnterTransition
-import com.android.purebilibili.core.ui.bottomSheetContentExitTransition
-import com.android.purebilibili.core.ui.bottomSheetScrimEnterTransition
-import com.android.purebilibili.core.ui.bottomSheetScrimExitTransition
+import com.android.purebilibili.core.ui.rememberAppBottomSheetMotion
 import com.android.purebilibili.core.ui.InteractiveOverlayProgressVisual
 import com.android.purebilibili.core.ui.InteractiveOverlaySurfaceType
-import com.android.purebilibili.core.ui.resolveAdaptiveBottomSheetMotionSpec
 import com.android.purebilibili.core.ui.resolveInteractiveOverlayProgressVisual
 import com.android.purebilibili.data.model.CommentFraudStatus
 import com.android.purebilibili.data.model.response.ReplyItem
@@ -341,11 +335,7 @@ fun VideoCommentSheetHost(
         mainSheetVisible = mainSheetVisible,
         topReservedPx = topReservedPx
     )
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val motionSpec = remember(uiPreset, androidNativeVariant) {
-        resolveAdaptiveBottomSheetMotionSpec(uiPreset, androidNativeVariant)
-    }
+    val motionSpec = rememberAppBottomSheetMotion()
     val appearance = rememberVideoCommentAppearance()
     var isDraggingSheet by remember { mutableStateOf(false) }
     var isDismissDragSettling by remember { mutableStateOf(false) }
@@ -540,8 +530,8 @@ fun VideoCommentSheetHost(
 
     AnimatedVisibility(
         visible = hostVisible,
-        enter = bottomSheetScrimEnterTransition(uiPreset, androidNativeVariant),
-        exit = bottomSheetScrimExitTransition(uiPreset, androidNativeVariant)
+        enter = motionSpec.scrimEnter,
+        exit = motionSpec.scrimExit
     ) {
         val interceptBackdropTap = shouldInterceptVideoCommentSheetHostBackdropTap(
             mainSheetVisible = mainSheetVisible
@@ -578,8 +568,8 @@ fun VideoCommentSheetHost(
             val sheetHeight = with(density) { sheetHeightPx.toDp() }
             AnimatedVisibility(
                 visible = hostVisible,
-                enter = bottomSheetContentEnterTransition(uiPreset, androidNativeVariant),
-                exit = bottomSheetContentExitTransition(uiPreset, androidNativeVariant),
+                enter = motionSpec.contentEnter,
+                exit = motionSpec.contentExit,
                 modifier = Modifier.align(Alignment.BottomCenter)
             ) {
                 Surface(

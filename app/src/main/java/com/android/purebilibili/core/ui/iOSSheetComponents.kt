@@ -206,6 +206,10 @@ data class AppBottomSheetMotion(
     val scrimExit: ExitTransition,
     val contentEnter: EnterTransition,
     val contentExit: ExitTransition,
+    val scrimEnterDurationMillis: Int,
+    val scrimExitDurationMillis: Int,
+    val contentEnterFadeDurationMillis: Int,
+    val contentExitFadeDurationMillis: Int,
 )
 
 @Composable
@@ -213,11 +217,16 @@ fun rememberAppBottomSheetMotion(): AppBottomSheetMotion {
     val uiPreset = LocalUiPreset.current
     val androidNativeVariant = LocalAndroidNativeVariant.current
     return remember(uiPreset, androidNativeVariant) {
+        val motionSpec = resolveAdaptiveBottomSheetMotionSpec(uiPreset, androidNativeVariant)
         AppBottomSheetMotion(
             scrimEnter = bottomSheetScrimEnterTransition(uiPreset, androidNativeVariant),
             scrimExit = bottomSheetScrimExitTransition(uiPreset, androidNativeVariant),
             contentEnter = bottomSheetContentEnterTransition(uiPreset, androidNativeVariant),
             contentExit = bottomSheetContentExitTransition(uiPreset, androidNativeVariant),
+            scrimEnterDurationMillis = motionSpec.scrimEnterDurationMillis,
+            scrimExitDurationMillis = motionSpec.scrimExitDurationMillis,
+            contentEnterFadeDurationMillis = motionSpec.contentEnterFadeDurationMillis,
+            contentExitFadeDurationMillis = motionSpec.contentExitFadeDurationMillis,
         )
     }
 }

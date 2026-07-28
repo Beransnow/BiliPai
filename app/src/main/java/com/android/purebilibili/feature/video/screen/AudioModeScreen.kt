@@ -46,7 +46,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.media3.common.Player
 import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.SettingsManager
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
 import com.android.purebilibili.feature.video.player.PlayMode
 import com.android.purebilibili.feature.video.state.rememberVideoPlayerState
 import com.android.purebilibili.feature.video.viewmodel.VideoPlaybackUiState
@@ -62,9 +62,9 @@ internal fun resolveAudioPlayModeLabel(mode: PlayMode): String = when (mode) {
 }
 
 internal fun shouldUseAudioModeLiquidPlayModeControl(
-    uiPreset: UiPreset,
+    supportsIndependentLiquidGlass: Boolean,
     androidNativeLiquidGlassEnabled: Boolean
-): Boolean = uiPreset != UiPreset.MD3 || androidNativeLiquidGlassEnabled
+): Boolean = supportsIndependentLiquidGlass || androidNativeLiquidGlassEnabled
 
 internal enum class AudioModePlayPauseAction {
     PAUSE,
@@ -214,6 +214,12 @@ fun AudioModeScreen(
         initialValue = HomeSettings(),
         context = kotlin.coroutines.EmptyCoroutineContext
     )
+    val playerChromeProfile = rememberAppPlayerChromeProfile()
+    val liquidPlayModeControlEnabled = shouldUseAudioModeLiquidPlayModeControl(
+        supportsIndependentLiquidGlass =
+            playerChromeProfile.effects.supportsIndependentLiquidGlass,
+        androidNativeLiquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled,
+    )
     var cachedSuccessState by remember { mutableStateOf<VideoPlaybackUiState.Success?>(null) }
 
     LaunchedEffect(subjectSnapshot, uiState) {
@@ -290,7 +296,7 @@ fun AudioModeScreen(
         onEnterPip = enterPip,
         sleepTimerMinutes = sleepTimerMinutes,
         titleOverride = titleOverride,
-        liquidGlassEffectsEnabled = homeSettings.androidNativeLiquidGlassEnabled,
+        liquidGlassEffectsEnabled = liquidPlayModeControlEnabled,
         onToggleOrientation = {
             activity?.requestedOrientation = resolveAudioModeRequestedOrientation(isLandscape)
         },

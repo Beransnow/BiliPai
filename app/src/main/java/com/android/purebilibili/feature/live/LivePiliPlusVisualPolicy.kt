@@ -1,11 +1,8 @@
 package com.android.purebilibili.feature.live
 
 import androidx.compose.ui.graphics.Color
-import com.android.purebilibili.core.theme.AndroidNativeVariant
-import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.core.ui.AppTopTabPresentation
 import com.android.purebilibili.core.ui.CompactCapsuleChromeSpec
-import com.android.purebilibili.core.ui.resolveCompactCapsuleChromeSpec
 
 internal data class LivePiliPlusHomeMetrics(
     val safeSpaceDp: Int,
@@ -242,26 +239,6 @@ internal fun resolveLiveInteractionSegmentedControlSpec(
         labelFontSizeSp = 14
     )
 }
-
-@Deprecated("Player compatibility only; use the neutral tab presentation overload")
-internal fun resolveLiveVisualSpec(
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant,
-): LiveVisualSpec = resolveLiveVisualSpec(
-    tabPresentation = when {
-        uiPreset == UiPreset.IOS -> AppTopTabPresentation.MOVING_CAPSULE
-        androidNativeVariant == AndroidNativeVariant.MIUIX -> AppTopTabPresentation.TONAL_CAPSULE
-        else -> AppTopTabPresentation.MATERIAL_UNDERLINE
-    },
-)
-
-@Deprecated("Player compatibility only; use the neutral compact chrome overload")
-internal fun resolveLiveInteractionSegmentedControlSpec(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3,
-): LiveInteractionSegmentedControlSpec = resolveLiveInteractionSegmentedControlSpec(
-    resolveCompactCapsuleChromeSpec(uiPreset, androidNativeVariant),
-)
 
 internal fun resolveLandscapeLiveChatVisualSpec(): LandscapeLiveChatVisualSpec {
     return LandscapeLiveChatVisualSpec(

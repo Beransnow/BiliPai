@@ -28,6 +28,7 @@ import androidx.compose.material.icons.automirrored.outlined.ForwardToInbox
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.CardGiftcard
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.OpenInBrowser
 import androidx.compose.material.icons.outlined.Share
@@ -95,10 +96,6 @@ import com.android.purebilibili.feature.video.ui.section.shouldKickPlaybackAfter
 import com.android.purebilibili.feature.video.ui.overlay.LiveDanmakuOverlay
 import com.android.purebilibili.feature.video.ui.components.VideoAspectRatio
 import com.android.purebilibili.feature.video.ui.components.resolveVideoViewportLayout
-import io.github.alexzhirkevich.cupertino.CupertinoActivityIndicator
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.Checkmark
-import io.github.alexzhirkevich.cupertino.icons.outlined.ChevronBackward
 import dev.chrisbanes.haze.HazeState
 import com.android.purebilibili.core.ui.blur.hazeSourceCompat
 import dev.chrisbanes.haze.hazeEffect
@@ -107,13 +104,13 @@ import dev.chrisbanes.haze.materials.HazeMaterials
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import com.android.purebilibili.core.ui.LocalSharedTransitionScope
 import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
-import com.android.purebilibili.core.ui.resolveCompactCapsuleChromeSpec
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -854,7 +851,7 @@ fun LivePlayerScreen(
             
             // Loading/Error Indicator
             if (uiState is LivePlayerState.Loading) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CupertinoActivityIndicator() }
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { AdaptiveLoadingIndicator() }
             }
             if (uiState is LivePlayerState.Error) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -1337,14 +1334,12 @@ private fun LivePortraitOverlayAppBar(
 ) {
     val palette = rememberLiveChromePalette()
     val roomColorTokens = resolveLivePiliPlusRoomColorTokens()
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val liveVisualSpec = remember(uiPreset, androidNativeVariant) {
-        resolveLiveVisualSpec(uiPreset, androidNativeVariant)
+    val backIcon = rememberAppBackIcon()
+    val playerChromeProfile = rememberAppPlayerChromeProfile()
+    val liveVisualSpec = remember(playerChromeProfile.tabPresentation) {
+        resolveLiveVisualSpec(playerChromeProfile.tabPresentation)
     }
-    val compactChrome = remember(uiPreset, androidNativeVariant) {
-        resolveCompactCapsuleChromeSpec(uiPreset, androidNativeVariant)
-    }
+    val compactChrome = playerChromeProfile.compactChromeSpec
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -1369,7 +1364,7 @@ private fun LivePortraitOverlayAppBar(
             modifier = Modifier.size(liveVisualSpec.playerButtonTouchTargetDp.dp)
         ) {
             Icon(
-                CupertinoIcons.Outlined.ChevronBackward,
+                backIcon,
                 contentDescription = "返回",
                 tint = roomColorTokens.inputOverlayColor
             )
@@ -1462,11 +1457,7 @@ private fun LiveRedPocketChip(
     compact: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val compactChrome = remember(uiPreset, androidNativeVariant) {
-        resolveCompactCapsuleChromeSpec(uiPreset, androidNativeVariant)
-    }
+    val compactChrome = rememberAppPlayerChromeProfile().compactChromeSpec
     val label = if (compact) {
         "红包"
     } else {
@@ -1640,10 +1631,9 @@ private fun LivePrimaryInteractionPanel(
     chatContent: @Composable () -> Unit,
     superChatContent: @Composable () -> Unit
 ) {
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val segmentedSpec = remember(uiPreset, androidNativeVariant) {
-        resolveLiveInteractionSegmentedControlSpec(uiPreset, androidNativeVariant)
+    val playerChromeProfile = rememberAppPlayerChromeProfile()
+    val segmentedSpec = remember(playerChromeProfile.compactChromeSpec) {
+        resolveLiveInteractionSegmentedControlSpec(playerChromeProfile.compactChromeSpec)
     }
     val tabs = remember { listOf("聊天", "SC") }
     val pagerState = rememberPagerState(pageCount = { tabs.size })
@@ -1748,10 +1738,9 @@ private fun LiveQualityMenu(
     onDismiss: () -> Unit
 ) {
     val palette = rememberLiveChromePalette()
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val visualSpec = remember(uiPreset, androidNativeVariant) {
-        resolveLiveVisualSpec(uiPreset, androidNativeVariant)
+    val playerChromeProfile = rememberAppPlayerChromeProfile()
+    val visualSpec = remember(playerChromeProfile.tabPresentation) {
+        resolveLiveVisualSpec(playerChromeProfile.tabPresentation)
     }
     Box(
         modifier = Modifier.fillMaxSize().background(palette.scrim.copy(alpha = 0.56f)).clickable(
@@ -1786,7 +1775,7 @@ private fun LiveQualityMenu(
                     ) {
                         Text(q.desc, color = if (q.qn == currentQuality) palette.accent else palette.primaryText)
                         Spacer(Modifier.weight(1f))
-                        if (q.qn == currentQuality) Icon(CupertinoIcons.Default.Checkmark, null, tint = palette.accent)
+                        if (q.qn == currentQuality) Icon(Icons.Outlined.Check, null, tint = palette.accent)
                     }
                 }
             }
@@ -1801,10 +1790,9 @@ private fun LiveVideoFitMenu(
     onDismiss: () -> Unit
 ) {
     val palette = rememberLiveChromePalette()
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val visualSpec = remember(uiPreset, androidNativeVariant) {
-        resolveLiveVisualSpec(uiPreset, androidNativeVariant)
+    val playerChromeProfile = rememberAppPlayerChromeProfile()
+    val visualSpec = remember(playerChromeProfile.tabPresentation) {
+        resolveLiveVisualSpec(playerChromeProfile.tabPresentation)
     }
     Box(
         modifier = Modifier
@@ -1847,7 +1835,7 @@ private fun LiveVideoFitMenu(
                         Text(mode.displayName, color = if (mode == current) palette.accent else palette.primaryText)
                         Spacer(Modifier.weight(1f))
                         if (mode == current) {
-                            Icon(CupertinoIcons.Default.Checkmark, null, tint = palette.accent)
+                            Icon(Icons.Outlined.Check, null, tint = palette.accent)
                         }
                     }
                 }

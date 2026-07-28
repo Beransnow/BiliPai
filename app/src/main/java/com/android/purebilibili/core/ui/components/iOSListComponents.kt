@@ -1020,7 +1020,8 @@ fun IOSClickableItem(
     chevronTint: Color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f),
     centered: Boolean = false,
     enableCopy: Boolean = false,
-    showChevron: Boolean = true
+    showChevron: Boolean = true,
+    trailingContent: @Composable (() -> Unit)? = null,
 ) {
     val uiPreset = LocalUiPreset.current
     val androidNativeVariant = LocalAndroidNativeVariant.current
@@ -1095,6 +1096,7 @@ fun IOSClickableItem(
                 }
             },
             endActions = {
+                trailingContent?.invoke()
                 if (!value.isNullOrBlank()) {
                     Text(
                         text = value,
@@ -1170,6 +1172,7 @@ fun IOSClickableItem(
                 }
             },
             endActions = {
+                trailingContent?.invoke()
                 if (!value.isNullOrBlank()) {
                     Text(
                         text = value,
@@ -1294,6 +1297,7 @@ fun IOSClickableItem(
         
         if (!centered) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                trailingContent?.invoke()
                 if (value != null) {
                     Text(
                         text = value, 

@@ -13,9 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -59,10 +56,6 @@ import coil.compose.AsyncImage
 import coil.imageLoader
 import coil.request.ImageRequest
 import coil.size.Scale
-import com.android.purebilibili.core.theme.iOSBlue
-import com.android.purebilibili.core.theme.iOSGreen
-import com.android.purebilibili.core.theme.iOSOrange
-import com.android.purebilibili.core.theme.iOSYellow
 import com.android.purebilibili.core.theme.DarkBackground
 import com.android.purebilibili.core.theme.DarkSurface
 import com.android.purebilibili.core.theme.DarkSurfaceVariant
@@ -96,18 +89,19 @@ import com.android.purebilibili.core.ui.rememberAppRefreshIcon
 import com.android.purebilibili.core.ui.rememberAppRestoreIcon
 import com.android.purebilibili.core.ui.rememberAppSettingsIcon
 import com.android.purebilibili.core.ui.rememberAppShareIcon
+import com.android.purebilibili.core.ui.rememberAppChevronForwardIcon
+import com.android.purebilibili.core.ui.rememberAppDeleteIcon
+import com.android.purebilibili.core.ui.rememberAppLinkIcon
+import com.android.purebilibili.core.ui.rememberAppSemanticVisualPolicy
+import com.android.purebilibili.core.ui.AppSemanticAccentRole
 import com.android.purebilibili.core.ui.components.UserLevelBadge
 import com.android.purebilibili.core.ui.rememberAppWarningIcon
 import com.android.purebilibili.core.ui.rememberAppWatchLaterIcon
 import com.android.purebilibili.core.ui.wallpaper.ProfileWallpaperTransform
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.WindowWidthSizeClass
-import com.android.purebilibili.core.ui.components.IOSGroup
-import com.android.purebilibili.core.ui.components.IOSClickableItem
-import com.android.purebilibili.core.ui.components.IOSDivider
-import com.android.purebilibili.core.ui.components.IOSSwitchItem
-import com.android.purebilibili.core.ui.components.IOSSectionTitle
-import com.android.purebilibili.core.ui.components.IOSGridItem
+import com.android.purebilibili.core.ui.components.AppPreference
+import com.android.purebilibili.core.ui.components.AppPreferenceGridItem
 import com.android.purebilibili.core.store.StoredAccountSession
 import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.SettingsManager
@@ -1234,7 +1228,7 @@ private fun ProfileSpaceHeader(
                         color = Color.White,
                         modifier = Modifier
                             .clip(RoundedCornerShape(999.dp))
-                            .background(com.android.purebilibili.core.theme.iOSPink)
+                            .background(MaterialTheme.colorScheme.secondary)
                             .padding(horizontal = 8.dp, vertical = 3.dp)
                     )
                 }
@@ -1980,6 +1974,8 @@ private fun ProfileDynamicCard(
     val bodyText = resolveProfileDynamicText(item)
     val orig = item.orig
     val moreIcon = rememberAppMoreIcon()
+    val deleteIcon = rememberAppDeleteIcon()
+    val linkIcon = rememberAppLinkIcon()
     val context = LocalContext.current
     val deleteAction = remember(item) { resolveProfileDynamicDeleteAction(item) }
     var showMoreMenu by remember(item.id_str) { mutableStateOf(false) }
@@ -1988,7 +1984,7 @@ private fun ProfileDynamicCard(
     pendingDeleteAction?.let { action ->
         AlertDialog(
             onDismissRequest = { pendingDeleteAction = null },
-            icon = { Icon(CupertinoIcons.Default.Trash, contentDescription = null) },
+            icon = { Icon(deleteIcon, contentDescription = null) },
             title = { Text(action.title) },
             text = { Text(action.content) },
             confirmButton = {
@@ -2061,7 +2057,7 @@ private fun ProfileDynamicCard(
                         text = { Text("复制链接") },
                         leadingIcon = {
                             Icon(
-                                CupertinoIcons.Default.Link,
+                                linkIcon,
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -2082,7 +2078,7 @@ private fun ProfileDynamicCard(
                             text = { Text(deleteAction.label) },
                             leadingIcon = {
                                 Icon(
-                                    CupertinoIcons.Default.Trash,
+                                    deleteIcon,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.error,
                                     modifier = Modifier.size(20.dp)
@@ -2772,7 +2768,6 @@ fun MobileProfileContent(
                 
             }
             // item { Spacer(...) } // Removed
-            // item { IOSGroup { ... } } // Removed
         }
         
         AppTopBar(
@@ -3488,6 +3483,19 @@ fun ServicesSection(
     val watchLaterIcon = rememberAppWatchLaterIcon()
     val inboxIcon = rememberAppInboxIcon()
     val accountIcon = rememberAppProfileAddIcon()
+    val semanticVisualPolicy = rememberAppSemanticVisualPolicy()
+    val primaryAccent = semanticVisualPolicy.resolveAccent(
+        AppSemanticAccentRole.PRIMARY,
+        MaterialTheme.colorScheme.primary,
+    )
+    val secondaryAccent = semanticVisualPolicy.resolveAccent(
+        AppSemanticAccentRole.SECONDARY,
+        MaterialTheme.colorScheme.secondary,
+    )
+    val tertiaryAccent = semanticVisualPolicy.resolveAccent(
+        AppSemanticAccentRole.TERTIARY,
+        MaterialTheme.colorScheme.tertiary,
+    )
 
     if (isTablet) {
         val items = buildList {
@@ -3511,7 +3519,7 @@ fun ServicesSection(
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         rowItems.forEach { (title, icon, onClick) ->
-                            IOSGridItem(
+                            AppPreferenceGridItem(
                                 icon = icon,
                                 title = title,
                                 onClick = onClick,
@@ -3560,7 +3568,7 @@ fun ServicesSection(
                             icon = historyIcon,
                             title = "历史记录",
                             onClick = onHistoryClick,
-                            iconTint = iOSBlue,
+                            iconTint = primaryAccent,
                             textColor = contentColor,
                         )
                         ProfileServiceDivider(contentColor)
@@ -3570,7 +3578,7 @@ fun ServicesSection(
                             icon = bookmarkIcon,
                             title = "我的收藏",
                             onClick = onFavoriteClick,
-                            iconTint = iOSYellow,
+                            iconTint = tertiaryAccent,
                             textColor = contentColor,
                         )
                         if (favoriteFolderShortcuts.isNotEmpty()) {
@@ -3589,7 +3597,7 @@ fun ServicesSection(
                         icon = watchLaterIcon,
                         title = "稍后再看",
                         onClick = onWatchLaterClick,
-                        iconTint = iOSGreen,
+                        iconTint = tertiaryAccent,
                         textColor = contentColor,
                     )
                     ProfileServiceDivider(contentColor)
@@ -3597,7 +3605,7 @@ fun ServicesSection(
                         icon = inboxIcon,
                         title = "消息中心",
                         onClick = onInboxClick,
-                        iconTint = com.android.purebilibili.core.theme.iOSPink,
+                        iconTint = secondaryAccent,
                         textColor = contentColor,
                     )
                 }
@@ -3632,7 +3640,7 @@ fun ServicesSection(
                 tonalElevation = 0.dp // Ensure no extra overlay
             ) {
                 Column {
-                    IOSClickableItem(
+                    AppPreference(
                         icon = downloadIcon,
                         title = "离线缓存",
                         onClick = onDownloadClick,
@@ -3640,20 +3648,20 @@ fun ServicesSection(
                         textColor = contentColor
                     )
                     if (showHistoryService) {
-                        IOSClickableItem(
+                        AppPreference(
                             icon = historyIcon,
                             title = "历史记录",
                             onClick = onHistoryClick,
-                            iconTint = iOSBlue,
+                            iconTint = primaryAccent,
                             textColor = contentColor
                         )
                     }
                     if (showFavoriteService) {
-                        IOSClickableItem(
+                        AppPreference(
                             icon = bookmarkIcon,
                             title = "我的收藏",
                             onClick = onFavoriteClick,
-                            iconTint = iOSYellow,
+                            iconTint = tertiaryAccent,
                             textColor = contentColor
                         )
                         if (favoriteFolderShortcuts.isNotEmpty()) {
@@ -3665,28 +3673,28 @@ fun ServicesSection(
                             )
                         }
                     }
-                    IOSClickableItem(
+                    AppPreference(
                         icon = watchLaterIcon,
                         title = "稍后再看",
                         onClick = onWatchLaterClick,
-                        iconTint = iOSGreen,
+                        iconTint = tertiaryAccent,
                         textColor = contentColor
                     )
-                    IOSClickableItem(
+                    AppPreference(
                         icon = inboxIcon,
                         title = "消息中心",
                         onClick = onInboxClick,
-                        iconTint = com.android.purebilibili.core.theme.iOSPink,
+                        iconTint = secondaryAccent,
                         textColor = contentColor
                     )
-                    IOSClickableItem(
+                    AppPreference(
                         icon = accountIcon,
                         title = "账号切换",
                         onClick = onAccountManageClick,
-                        iconTint = iOSOrange,
+                        iconTint = secondaryAccent,
                         textColor = contentColor
                     )
-                    IOSClickableItem(
+                    AppPreference(
                         title = if (isLogin) "退出登录" else "立即登录",
                         onClick = onLogout,
                         textColor = if (isLogin) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
@@ -3758,7 +3766,7 @@ private fun ProfileServiceRow(
             overflow = TextOverflow.Ellipsis
         )
         Icon(
-            imageVector = CupertinoIcons.Default.ChevronForward,
+            imageVector = rememberAppChevronForwardIcon(),
             contentDescription = null,
             tint = textColor.copy(alpha = 0.46f),
             modifier = Modifier.size(20.dp)
@@ -3794,7 +3802,7 @@ private fun ProfileAccountActionArea(
                 icon = accountIcon,
                 title = "账号切换",
                 onClick = onAccountManageClick,
-                iconTint = iOSOrange,
+                iconTint = MaterialTheme.colorScheme.secondary,
                 textColor = textColor
             )
             ProfileServiceDivider(textColor)
@@ -3807,7 +3815,7 @@ private fun ProfileAccountActionArea(
                     icon = accountIcon,
                     title = "账号切换",
                     onClick = onAccountManageClick,
-                    iconTint = iOSOrange,
+                    iconTint = MaterialTheme.colorScheme.secondary,
                     textColor = textColor
                 )
             }
@@ -3938,7 +3946,7 @@ private fun ProfileFavoriteFolderShortcutChip(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = iOSYellow,
+            tint = MaterialTheme.colorScheme.tertiary,
             modifier = Modifier.size(if (compact) 18.dp else 20.dp)
         )
         Spacer(modifier = Modifier.width(if (compact) 7.dp else 8.dp))

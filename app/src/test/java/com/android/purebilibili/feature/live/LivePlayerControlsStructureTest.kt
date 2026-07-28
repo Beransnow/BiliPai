@@ -29,7 +29,7 @@ class LivePlayerControlsStructureTest {
 
     @Test
     fun `player icon button separates touch and visual token sizes`() {
-        assertTrue(source.contains("resolveLiveVisualSpec(uiPreset, androidNativeVariant)"))
+        assertTrue(source.contains("resolveLiveVisualSpec(playerChromeProfile.tabPresentation)"))
         assertTrue(source.contains("visualSpec.playerButtonTouchTargetDp.dp"))
         assertTrue(source.contains("visualSpec.playerButtonVisualSizeDp.dp"))
         assertTrue(source.contains(".size(touchTargetSize)"))

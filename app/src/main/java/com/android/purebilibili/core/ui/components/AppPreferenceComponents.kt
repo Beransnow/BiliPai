@@ -107,6 +107,7 @@ fun AppPreference(
     centered: Boolean = false,
     enableCopy: Boolean = false,
     showChevron: Boolean = true,
+    trailingContent: @Composable (() -> Unit)? = null,
 ) = IOSClickableItem(
     icon = icon,
     iconPainter = iconPainter,
@@ -123,6 +124,7 @@ fun AppPreference(
     centered = centered,
     enableCopy = enableCopy,
     showChevron = showChevron,
+    trailingContent = trailingContent,
 )
 
 @Composable
@@ -130,6 +132,25 @@ fun AppPreferenceDivider(
     modifier: Modifier = Modifier,
     startIndent: Dp = 66.dp,
 ) = IOSDivider(modifier = modifier, startIndent = startIndent)
+
+@Composable
+fun AppPreferenceGridItem(
+    icon: ImageVector,
+    title: String,
+    onClick: () -> Unit,
+    iconTint: Color = MaterialTheme.colorScheme.primary,
+    containerColor: Color = MaterialTheme.colorScheme.surface,
+    contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    modifier: Modifier = Modifier,
+) = IOSGridItem(
+    icon = icon,
+    title = title,
+    onClick = onClick,
+    iconTint = iconTint,
+    containerColor = containerColor,
+    contentColor = contentColor,
+    modifier = modifier,
+)
 
 enum class AppSearchFieldPresentation {
     STANDARD,

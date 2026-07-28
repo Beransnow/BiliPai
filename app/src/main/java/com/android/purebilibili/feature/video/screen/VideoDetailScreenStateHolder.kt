@@ -97,7 +97,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState
 import com.android.purebilibili.core.store.PortraitPlayerCollapseMode
-import com.android.purebilibili.core.theme.LocalUiPreset
+import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
 //  已改用 MaterialTheme.colorScheme.primary
 
 import com.android.purebilibili.data.model.response.RelatedVideo
@@ -2575,9 +2575,9 @@ internal fun VideoDetailScreenStateHolder(
                         val screenWidthDp = configuration.screenWidthDp.dp
                         val screenHeightDp = configuration.screenHeightDp.dp
                         val videoHeight = screenWidthDp * 9f / 16f  // 16:9 比例
-                        val uiPreset = LocalUiPreset.current
-                        val videoContentTabSwitchAnimationSpec = remember(uiPreset) {
-                            resolveVideoContentTabSwitchAnimationSpec(uiPreset)
+                        val playerChromeProfile = rememberAppPlayerChromeProfile()
+                        val videoContentTabSwitchAnimationSpec = remember(playerChromeProfile.tabPresentation) {
+                            resolveVideoContentTabSwitchAnimationSpec(playerChromeProfile.tabPresentation)
                         }
 
                         //  读取竖屏播放器滚动缩小模式

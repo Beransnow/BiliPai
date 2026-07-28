@@ -47,8 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
+import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
 import com.android.purebilibili.core.util.HapticType
 import com.android.purebilibili.core.util.rememberHapticFeedback
 import com.android.purebilibili.feature.video.ui.components.AnimatedGesturePercentText
@@ -71,10 +70,9 @@ fun BoxScope.GestureLevelOverlayHost(
     modifier: Modifier = Modifier
 ) {
     val kind = resolveGestureLevelKind(mode) ?: return
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val style = remember(uiPreset, androidNativeVariant) {
-        resolveGestureLevelOverlayStyle(uiPreset, androidNativeVariant)
+    val playerChromeProfile = rememberAppPlayerChromeProfile()
+    val style = remember(playerChromeProfile.tabPresentation) {
+        resolveGestureLevelOverlayStyle(playerChromeProfile.tabPresentation)
     }
     val motionSpec = remember { resolveVideoGestureMotionSpec() }
     val spec = remember(style, kind, percent) {

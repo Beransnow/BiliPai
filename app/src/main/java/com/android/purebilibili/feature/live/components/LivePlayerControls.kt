@@ -32,8 +32,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
+import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.rememberAppCommentIcon
+import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
+import com.android.purebilibili.core.ui.rememberAppPlayIcon
+import com.android.purebilibili.core.ui.rememberAppRefreshIcon
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -42,27 +45,20 @@ import com.android.purebilibili.feature.live.resolveLiveVisualSpec
 import com.android.purebilibili.feature.live.LiveStatusPalette
 import com.android.purebilibili.feature.video.ui.gesture.GestureLevelKind
 import com.android.purebilibili.feature.video.ui.gesture.GestureLevelOverlayContent
-import com.android.purebilibili.feature.video.ui.gesture.GestureLevelOverlayStyle
 import com.android.purebilibili.feature.video.ui.gesture.resolveGestureLevelIcon
 import com.android.purebilibili.feature.video.ui.gesture.resolveGestureLevelOverlayStyle
 import com.android.purebilibili.feature.video.ui.section.VideoGestureMode
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.ChevronBackward
-import io.github.alexzhirkevich.cupertino.icons.outlined.Pause
-import io.github.alexzhirkevich.cupertino.icons.outlined.Play
-import io.github.alexzhirkevich.cupertino.icons.outlined.ArrowUpLeftAndArrowDownRight
-import io.github.alexzhirkevich.cupertino.icons.outlined.ArrowDownRightAndArrowUpLeft
-import io.github.alexzhirkevich.cupertino.icons.outlined.ArrowClockwise
-import io.github.alexzhirkevich.cupertino.icons.filled.TextBubble
-import io.github.alexzhirkevich.cupertino.icons.filled.BubbleLeft
 import android.app.Activity
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.outlined.AspectRatio
 import androidx.compose.material.icons.outlined.Block
+import androidx.compose.material.icons.outlined.Fullscreen
+import androidx.compose.material.icons.outlined.FullscreenExit
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.MusicNote
 import androidx.compose.material.icons.outlined.PictureInPictureAlt
+import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayCircleOutline
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Timer
@@ -83,10 +79,9 @@ private fun LivePlayerIconButton(
     require(label.isNotBlank()) { "Live player icon button label must not be blank" }
 
     val palette = rememberLiveChromePalette()
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val visualSpec = remember(uiPreset, androidNativeVariant) {
-        resolveLiveVisualSpec(uiPreset, androidNativeVariant)
+    val playerChromeProfile = rememberAppPlayerChromeProfile()
+    val visualSpec = remember(playerChromeProfile.tabPresentation) {
+        resolveLiveVisualSpec(playerChromeProfile.tabPresentation)
     }
     val touchTargetSize = visualSpec.playerButtonTouchTargetDp.dp
     val visualSize = visualSpec.playerButtonVisualSizeDp.dp
@@ -198,13 +193,13 @@ fun LivePlayerControls(
     val context = LocalContext.current
     val activity = context as? Activity
     val audioManager = remember { context.getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager }
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val gestureLevelOverlayStyle = remember(uiPreset, androidNativeVariant) {
-        resolveGestureLevelOverlayStyle(
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant
-        )
+    val playerChromeProfile = rememberAppPlayerChromeProfile()
+    val backIcon = rememberAppBackIcon()
+    val commentIcon = rememberAppCommentIcon()
+    val playIcon = rememberAppPlayIcon()
+    val refreshIcon = rememberAppRefreshIcon()
+    val gestureLevelOverlayStyle = remember(playerChromeProfile.tabPresentation) {
+        resolveGestureLevelOverlayStyle(playerChromeProfile.tabPresentation)
     }
     var gestureKind by remember { mutableStateOf(GestureLevelKind.Volume) }
     var gesturePercent by remember { mutableFloatStateOf(0f) }
@@ -327,7 +322,7 @@ fun LivePlayerControls(
                     style = gestureLevelOverlayStyle,
                     modifier = Modifier
                         .align(
-                            if (gestureLevelOverlayStyle == GestureLevelOverlayStyle.Miuix) {
+                            if (playerChromeProfile.effects.usesTonalContainerTreatment) {
                                 if (gestureKind == GestureLevelKind.Volume) {
                                     Alignment.CenterEnd
                                 } else {
@@ -338,7 +333,7 @@ fun LivePlayerControls(
                             }
                         )
                         .then(
-                            if (gestureLevelOverlayStyle == GestureLevelOverlayStyle.Miuix) {
+                            if (playerChromeProfile.effects.usesTonalContainerTreatment) {
                                 Modifier.padding(horizontal = AppSpacingTokens.ExtraLarge)
                             } else {
                                 Modifier
@@ -375,7 +370,7 @@ fun LivePlayerControls(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 LivePlayerIconButton(
-                    icon = CupertinoIcons.Default.ChevronBackward,
+                    icon = backIcon,
                     label = "返回",
                     selected = false,
                     enabled = true,
@@ -481,7 +476,7 @@ fun LivePlayerControls(
             ) {
                 // 播放/暂停
                 LivePlayerIconButton(
-                    icon = if (isPlaying) CupertinoIcons.Default.Pause else CupertinoIcons.Default.Play,
+                    icon = if (isPlaying) Icons.Outlined.Pause else playIcon,
                     label = if (isPlaying) "暂停" else "播放",
                     selected = false,
                     enabled = true,
@@ -492,7 +487,7 @@ fun LivePlayerControls(
                 
                 // [新增] 刷新按钮
                 LivePlayerIconButton(
-                    icon = CupertinoIcons.Outlined.ArrowClockwise,
+                    icon = refreshIcon,
                     label = "刷新直播",
                     selected = false,
                     enabled = true,
@@ -545,7 +540,7 @@ fun LivePlayerControls(
                             modifier = Modifier.padding(horizontal = AppSpacingTokens.Medium)
                         ) {
                             Icon(
-                                imageVector = CupertinoIcons.Filled.TextBubble,
+                                imageVector = commentIcon,
                                 contentDescription = null,
                                 tint = if (isDanmakuEnabled) {
                                     palette.accentStrong
@@ -595,7 +590,7 @@ fun LivePlayerControls(
                                 modifier = Modifier.padding(horizontal = AppSpacingTokens.Medium)
                             ) {
                                 Icon(
-                                    imageVector = CupertinoIcons.Filled.BubbleLeft,
+                                    imageVector = commentIcon,
                                     contentDescription = null,
                                     tint = if (isChatVisible) palette.accentStrong else LiveStatusPalette.MediaContent.copy(alpha = 0.5f),
                                     modifier = Modifier.size(controlVisualSpec.iconSizeDp.dp)
@@ -662,7 +657,7 @@ fun LivePlayerControls(
                 
                 // 全屏
                 LivePlayerIconButton(
-                    icon = if (isFullscreen) CupertinoIcons.Default.ArrowDownRightAndArrowUpLeft else CupertinoIcons.Default.ArrowUpLeftAndArrowDownRight,
+                    icon = if (isFullscreen) Icons.Outlined.FullscreenExit else Icons.Outlined.Fullscreen,
                     label = if (isFullscreen) "退出全屏" else "进入全屏",
                     selected = false,
                     enabled = true,
