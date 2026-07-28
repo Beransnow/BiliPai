@@ -14,6 +14,41 @@ internal enum class AppPullRefreshIndicatorRenderer {
     MIUIX,
 }
 
+enum class AppPullRefreshMotionStyle { CUPERTINO, PLATFORM }
+
+enum class AppPullRefreshIndicatorStyle {
+    CUPERTINO,
+    MATERIAL_DEFAULT,
+    MATERIAL_SCREENSHOT_HANDLE,
+    MIUIX_NATIVE,
+}
+
+data class AppPullRefreshProfile(
+    val motionStyle: AppPullRefreshMotionStyle,
+    val indicatorStyle: AppPullRefreshIndicatorStyle,
+)
+
+internal fun resolveAppPullRefreshProfile(
+    renderer: PresetPrimitiveRenderer,
+): AppPullRefreshProfile = when (renderer) {
+    PresetPrimitiveRenderer.IOS -> AppPullRefreshProfile(
+        AppPullRefreshMotionStyle.CUPERTINO,
+        AppPullRefreshIndicatorStyle.CUPERTINO,
+    )
+    PresetPrimitiveRenderer.MATERIAL3 -> AppPullRefreshProfile(
+        AppPullRefreshMotionStyle.PLATFORM,
+        AppPullRefreshIndicatorStyle.MATERIAL_DEFAULT,
+    )
+    PresetPrimitiveRenderer.MIUIX_BRIDGED -> AppPullRefreshProfile(
+        AppPullRefreshMotionStyle.PLATFORM,
+        AppPullRefreshIndicatorStyle.MIUIX_NATIVE,
+    )
+}
+
+@Composable
+fun rememberAppPullRefreshProfile(): AppPullRefreshProfile =
+    resolveAppPullRefreshProfile(rememberPresetPrimitiveRenderer())
+
 internal fun resolveAppPullRefreshIndicatorRenderer(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant,

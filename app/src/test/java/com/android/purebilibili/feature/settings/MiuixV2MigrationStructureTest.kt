@@ -164,8 +164,8 @@ class MiuixV2MigrationStructureTest {
 
     @Test
     fun homePullRefreshPolicy_routesMiuixToNativeIndicator() {
-        val source = loadSource("app/src/main/java/com/android/purebilibili/feature/home/HomePullRefreshUiPolicy.kt")
-        assertTrue(source.contains("HomePullRefreshIndicatorStyle.MIUIX_NATIVE"))
+        val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/AppPullRefreshIndicator.kt")
+        assertTrue(source.contains("AppPullRefreshIndicatorStyle.MIUIX_NATIVE"))
     }
 
     @Test

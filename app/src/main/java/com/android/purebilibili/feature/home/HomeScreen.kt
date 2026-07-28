@@ -60,6 +60,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
 import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.AppPullRefreshIndicatorStyle
+import com.android.purebilibili.core.ui.rememberAppPullRefreshProfile
+import com.android.purebilibili.core.ui.rememberAppSemanticVisualPolicy
 import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.theme.BiliPink
@@ -648,18 +651,10 @@ fun HomeScreen(
     }
     val uiPreset = LocalUiPreset.current
     val androidNativeVariant = LocalAndroidNativeVariant.current
-    val pullRefreshMotionStyle = remember(uiPreset, androidNativeVariant) {
-        resolveHomePullRefreshMotionStyle(
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant
-        )
-    }
-    val pullRefreshIndicatorStyle = remember(uiPreset, androidNativeVariant) {
-        resolveHomePullRefreshIndicatorStyle(
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant
-        )
-    }
+    val pullRefreshProfile = rememberAppPullRefreshProfile()
+    val semanticVisualPolicy = rememberAppSemanticVisualPolicy()
+    val pullRefreshMotionStyle = pullRefreshProfile.motionStyle
+    val pullRefreshIndicatorStyle = pullRefreshProfile.indicatorStyle
 
     
     var showEasterEggDialog by remember { mutableStateOf(false) }
@@ -815,10 +810,10 @@ fun HomeScreen(
         baseCardTransitionEnabled,
         baseIsDataSaverActive,
         homeSettings.androidNativeLiquidGlassEnabled,
-        uiPreset
+        semanticVisualPolicy.supportsIndependentLiquidGlass
     ) {
         resolveHomePerformanceConfig(
-            uiPreset = uiPreset,
+            supportsIndependentLiquidGlass = semanticVisualPolicy.supportsIndependentLiquidGlass,
             headerBlurEnabled = baseIsHeaderBlurEnabled,
             bottomBarBlurEnabled = baseIsBottomBarBlurEnabled,
             topBarLiquidGlassEnabled = homeSettings.isTopBarLiquidGlassEnabled,
@@ -1619,7 +1614,7 @@ fun HomeScreen(
                              //  Custom indicators must include the same top inset as MIUIX contentPadding.
                              indicator = {
                                 when (pullRefreshIndicatorStyle) {
-                                    HomePullRefreshIndicatorStyle.MATERIAL_DEFAULT -> {
+                                    AppPullRefreshIndicatorStyle.MATERIAL_DEFAULT -> {
                                         // Official M3 expressive ContainedLoadingIndicator
                                         // (dynamic color) for Android Native Material 3.
                                         PullToRefreshDefaults.LoadingIndicator(
@@ -1630,8 +1625,8 @@ fun HomeScreen(
                                             state = pullRefreshState
                                         )
                                     }
-                                    HomePullRefreshIndicatorStyle.MIUIX_NATIVE -> Unit
-                                    HomePullRefreshIndicatorStyle.MD3_SCREENSHOT_HANDLE -> {
+                                    AppPullRefreshIndicatorStyle.MIUIX_NATIVE -> Unit
+                                    AppPullRefreshIndicatorStyle.MATERIAL_SCREENSHOT_HANDLE -> {
                                         val indicatorHeight = resolveMd3ScreenshotRefreshIndicatorHeightDp(
                                             progress = pullDistanceFraction,
                                             isRefreshing = isPageRefreshing
@@ -1659,7 +1654,7 @@ fun HomeScreen(
                                                 .fillMaxWidth()
                                         )
                                     }
-                                    HomePullRefreshIndicatorStyle.IOS -> {
+                                    AppPullRefreshIndicatorStyle.CUPERTINO -> {
                                         iOSRefreshIndicator(
                                             state = pullRefreshState,
                                             isRefreshing = isPageRefreshing,
@@ -1693,8 +1688,8 @@ fun HomeScreen(
                                      .zIndex(0f)
                                       .graphicsLayer {
                                           translationY = if (
-                                              pullRefreshIndicatorStyle == HomePullRefreshIndicatorStyle.MIUIX_NATIVE ||
-                                              pullRefreshIndicatorStyle == HomePullRefreshIndicatorStyle.MATERIAL_DEFAULT
+                                              pullRefreshIndicatorStyle == AppPullRefreshIndicatorStyle.MIUIX_NATIVE ||
+                                              pullRefreshIndicatorStyle == AppPullRefreshIndicatorStyle.MATERIAL_DEFAULT
                                           ) {
                                               0f
                                           } else {
