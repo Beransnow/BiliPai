@@ -26,8 +26,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.core.theme.iOSBlue
 import com.android.purebilibili.core.theme.iOSGreen
 import com.android.purebilibili.core.theme.iOSPink
@@ -41,39 +39,16 @@ import com.android.purebilibili.core.ui.rememberAppInboxIcon
 import com.android.purebilibili.core.ui.rememberAppLogoutIcon
 import com.android.purebilibili.core.ui.rememberAppTvIcon
 import com.android.purebilibili.core.ui.rememberAppWatchLaterIcon
+import com.android.purebilibili.core.ui.AppDrawerContainerTreatment
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.components.IOSClickableItem
 import com.android.purebilibili.core.ui.components.UserLevelBadge
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.blur.unifiedBlur
+import com.android.purebilibili.core.ui.rememberAppDrawerVisualPolicy
 import com.android.purebilibili.feature.home.UserState
 import dev.chrisbanes.haze.HazeState
 import kotlinx.coroutines.launch
-
-internal data class MineSideDrawerChromeSpec(
-    val useMaterialIcons: Boolean,
-    val preferOpaqueMd3Container: Boolean,
-    val profileChevronSizeDp: Int
-)
-
-internal fun resolveMineSideDrawerChromeSpec(
-    uiPreset: UiPreset,
-    blurEnabled: Boolean
-): MineSideDrawerChromeSpec {
-    return if (uiPreset == UiPreset.MD3) {
-        MineSideDrawerChromeSpec(
-            useMaterialIcons = true,
-            preferOpaqueMd3Container = !blurEnabled,
-            profileChevronSizeDp = 20
-        )
-    } else {
-        MineSideDrawerChromeSpec(
-            useMaterialIcons = false,
-            preferOpaqueMd3Container = false,
-            profileChevronSizeDp = 18
-        )
-    }
-}
 
 /**
  * 首页侧边栏 - 优化版 (带毛玻璃效果)
@@ -98,7 +73,6 @@ fun MineSideDrawer(
     isBlurEnabled: Boolean = true, // [新增] 模糊开关状态
     bottomOverlayHeight: Dp = AppSpacingTokens.None
 ) {
-    val uiPreset = LocalUiPreset.current
     val scope = rememberCoroutineScope()
     val configuration = LocalConfiguration.current
     val layoutPolicy = remember(configuration.screenWidthDp) {
@@ -140,12 +114,7 @@ fun MineSideDrawer(
         blurActive = blurActive,
         budget = drawerMotionBudget
     )
-    val chromeSpec = remember(uiPreset, effectiveBlurActive) {
-        resolveMineSideDrawerChromeSpec(
-            uiPreset = uiPreset,
-            blurEnabled = effectiveBlurActive
-        )
-    }
+    val visualPolicy = rememberAppDrawerVisualPolicy(blurEnabled = effectiveBlurActive)
     val palette = resolveDrawerGlassPalette(
         isDark = isDark,
         blurEnabled = effectiveBlurActive,
@@ -168,14 +137,15 @@ fun MineSideDrawer(
     val secondaryContentColor = colorScheme.onSurfaceVariant.copy(alpha = if (isDark) 0.92f else 0.86f)
     // 动态分割线颜色
     val dividerColor = colorScheme.outlineVariant.copy(alpha = palette.dividerAlpha)
-    val drawerBaseColor = if (chromeSpec.preferOpaqueMd3Container) {
+    val useOpaqueContainers = visualPolicy.containerTreatment == AppDrawerContainerTreatment.OPAQUE
+    val drawerBaseColor = if (useOpaqueContainers) {
         colorScheme.surfaceContainer
     } else if (isDark) {
         colorScheme.surface.copy(alpha = palette.drawerBaseAlpha)
     } else {
         colorScheme.surface.copy(alpha = palette.drawerBaseAlpha)
     }
-    val itemSurfaceColor = if (chromeSpec.preferOpaqueMd3Container) {
+    val itemSurfaceColor = if (useOpaqueContainers) {
         colorScheme.surfaceContainerHigh
     } else if (isDark) {
         colorScheme.surfaceContainerHigh.copy(alpha = palette.itemSurfaceAlpha)
@@ -316,7 +286,7 @@ fun MineSideDrawer(
                         imageVector = chevronForwardIcon,
                         contentDescription = null,
                         tint = secondaryContentColor,
-                        modifier = Modifier.size(chromeSpec.profileChevronSizeDp.dp)
+                        modifier = Modifier.size(visualPolicy.profileChevronSizeDp.dp)
                     )
                 }
             }

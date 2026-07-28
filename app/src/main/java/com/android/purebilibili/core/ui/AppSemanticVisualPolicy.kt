@@ -35,6 +35,8 @@ data class AppSemanticAccentPalette(
 data class AppSemanticVisualPolicy(
     val iconFamily: AppSemanticIconFamily,
     val accentPalette: AppSemanticAccentPalette?,
+    val prefersNativeChrome: Boolean,
+    val supportsIndependentLiquidGlass: Boolean,
 ) {
     fun resolveAccent(role: AppSemanticAccentRole, fallback: Color): Color {
         val palette = accentPalette ?: return fallback
@@ -50,11 +52,15 @@ data class AppSemanticVisualPolicy(
         val Cupertino = AppSemanticVisualPolicy(
             iconFamily = AppSemanticIconFamily.CUPERTINO,
             accentPalette = null,
+            prefersNativeChrome = false,
+            supportsIndependentLiquidGlass = true,
         )
 
         fun material(palette: AppSemanticAccentPalette) = AppSemanticVisualPolicy(
             iconFamily = AppSemanticIconFamily.MATERIAL,
             accentPalette = palette,
+            prefersNativeChrome = true,
+            supportsIndependentLiquidGlass = false,
         )
     }
 }

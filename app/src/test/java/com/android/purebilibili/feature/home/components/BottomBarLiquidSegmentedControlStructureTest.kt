@@ -249,7 +249,7 @@ class BottomBarLiquidSegmentedControlStructureTest {
         assertEquals(
             SegmentedControlChromeStyle.LIQUID_PILL,
             resolveSegmentedControlChromeStyle(
-                uiPreset = UiPreset.MD3,
+                prefersNativeChrome = true,
                 androidNativeLiquidGlassEnabled = true,
                 preferInlineContentStyle = true
             )
@@ -261,7 +261,7 @@ class BottomBarLiquidSegmentedControlStructureTest {
         assertEquals(
             SegmentedControlChromeStyle.LIQUID_PILL,
             resolveSegmentedControlChromeStyle(
-                uiPreset = UiPreset.MD3,
+                prefersNativeChrome = true,
                 androidNativeLiquidGlassEnabled = true,
                 preferInlineContentStyle = false
             )
@@ -337,7 +337,7 @@ class BottomBarLiquidSegmentedControlStructureTest {
         assertTrue(source.contains("KernelSuBottomBarIndicatorLayer("))
         assertTrue(source.contains("chromaticAberration = true"))
         assertTrue(source.contains("getHomeSettings("))
-        assertTrue(source.contains("resolveSharedLiquidGlassChromeEnabled("))
+        assertTrue(source.contains("visualPolicy.supportsIndependentLiquidGlass"))
         assertTrue(source.contains("resolveSegmentedControlChromeStyle("))
         assertTrue(source.contains("AndroidNativeUnderlinedSegmentedControl("))
         assertTrue(source.contains("SegmentedControlChromeStyle.ANDROID_NATIVE_UNDERLINE"))
