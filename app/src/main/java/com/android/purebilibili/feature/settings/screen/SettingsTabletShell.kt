@@ -29,7 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.R
-import com.android.purebilibili.core.ui.AdaptiveSplitLayout
+import com.android.purebilibili.core.ui.AppSplitLayout
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
@@ -55,7 +55,7 @@ fun SettingsTabletShell(
         resolveSettingsTabletLayoutPolicy(widthDp = configuration.screenWidthDp)
     }
     val categories = remember { resolveSettingsRootCategoryOrder() }
-    AdaptiveSplitLayout(
+    AppSplitLayout(
         modifier = modifier.fillMaxSize(),
         primaryRatio = layoutPolicy.primaryRatio,
         primaryContent = {

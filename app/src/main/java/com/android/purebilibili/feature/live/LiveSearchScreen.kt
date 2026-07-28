@@ -54,8 +54,8 @@ import coil.compose.AsyncImage
 import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
-import com.android.purebilibili.core.ui.AdaptiveScaffold
-import com.android.purebilibili.core.ui.AdaptiveTopAppBar
+import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -173,10 +173,10 @@ fun LiveSearchScreen(
         userLoadingMore = false
     }
 
-    AdaptiveScaffold(
+    AppScaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            AdaptiveTopAppBar(
+            AppTopBar(
                 title = "搜索直播",
                 navigationIcon = {
                     IconButton(onClick = onBack) {

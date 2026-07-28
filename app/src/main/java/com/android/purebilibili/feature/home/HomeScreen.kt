@@ -59,7 +59,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
-import com.android.purebilibili.core.ui.AdaptiveScaffold
+import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.theme.BiliPink
@@ -1467,7 +1467,7 @@ fun HomeScreen(
 
     //  Scaffold 内容封装 (用于 Panel 左右布局复用)
     val scaffoldLayout: @Composable () -> Unit = {
-        AdaptiveScaffold(
+        AppScaffold(
                 modifier = Modifier
                     .fillMaxSize()
                     .nestedScroll(nestedScrollConnection),

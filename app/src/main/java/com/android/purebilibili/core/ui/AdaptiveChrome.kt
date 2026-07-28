@@ -332,3 +332,58 @@ fun AdaptiveTopAppBar(
         }
     }
 }
+
+@Composable
+fun AppScaffold(
+    modifier: Modifier = Modifier,
+    topBar: @Composable () -> Unit = {},
+    bottomBar: @Composable () -> Unit = {},
+    floatingActionButton: @Composable () -> Unit = {},
+    snackbarHost: @Composable () -> Unit = {},
+    containerColor: Color = MaterialTheme.colorScheme.background,
+    contentWindowInsets: WindowInsets = WindowInsets.navigationBars,
+    content: @Composable (PaddingValues) -> Unit,
+) = AdaptiveScaffold(
+    modifier = modifier,
+    topBar = topBar,
+    bottomBar = bottomBar,
+    floatingActionButton = floatingActionButton,
+    snackbarHost = snackbarHost,
+    containerColor = containerColor,
+    contentWindowInsets = contentWindowInsets,
+    content = content,
+)
+
+enum class AppTopBarStyle {
+    SMALL,
+    CENTERED,
+    LARGE,
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AppTopBar(
+    title: String,
+    modifier: Modifier = Modifier,
+    subtitle: String? = null,
+    largeTitle: String = title,
+    navigationIcon: @Composable () -> Unit = {},
+    actions: @Composable RowScope.() -> Unit = {},
+    colors: TopAppBarColors = TopAppBarDefaults.topAppBarColors(),
+    style: AppTopBarStyle = AppTopBarStyle.SMALL,
+    scrollBehavior: TopAppBarScrollBehavior? = null,
+) = AdaptiveTopAppBar(
+    title = title,
+    modifier = modifier,
+    subtitle = subtitle,
+    largeTitle = largeTitle,
+    navigationIcon = navigationIcon,
+    actions = actions,
+    colors = colors,
+    style = when (style) {
+        AppTopBarStyle.SMALL -> AdaptiveTopAppBarStyle.SMALL
+        AppTopBarStyle.CENTERED -> AdaptiveTopAppBarStyle.CENTERED
+        AppTopBarStyle.LARGE -> AdaptiveTopAppBarStyle.LARGE
+    },
+    scrollBehavior = scrollBehavior,
+)

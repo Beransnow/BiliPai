@@ -33,8 +33,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.theme.resolveAdaptivePrimaryAccentColors
 import com.android.purebilibili.core.theme.iOSYellow
-import com.android.purebilibili.core.ui.AdaptiveScaffold
-import com.android.purebilibili.core.ui.AdaptiveTopAppBar
+import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.BangumiDetail
@@ -68,9 +68,9 @@ fun BangumiDetailScreen(
         viewModel.loadSeasonDetail(seasonId, epId)
     }
     
-    AdaptiveScaffold(
+    AppScaffold(
         topBar = {
-            AdaptiveTopAppBar(
+            AppTopBar(
                 title = "番剧详情",
                 navigationIcon = {
                     IconButton(onClick = onBack) {

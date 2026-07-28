@@ -27,7 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import com.android.purebilibili.core.ui.AdaptiveSplitLayout
+import com.android.purebilibili.core.ui.AppSplitLayout
 import com.android.purebilibili.core.util.ShareUtils
 import com.android.purebilibili.data.model.response.BgmInfo
 import com.android.purebilibili.data.model.response.ViewPoint
@@ -142,7 +142,7 @@ internal fun TabletVideoLayout(
             ?: (context as? android.content.ContextWrapper)?.baseContext as? android.app.Activity
     }
     
-    AdaptiveSplitLayout(
+    AppSplitLayout(
         primaryContent = {
             // 📹 左侧：播放器 + 视频信息（可滚动）
             Column(

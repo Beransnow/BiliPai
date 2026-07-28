@@ -46,8 +46,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
-import com.android.purebilibili.core.ui.AdaptiveScaffold
-import com.android.purebilibili.core.ui.AdaptiveTopAppBar
+import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
@@ -325,10 +325,10 @@ fun PartitionScreen(
     val hazeState = com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState()
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
-    AdaptiveScaffold(
+    AppScaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            AdaptiveTopAppBar(
+            AppTopBar(
                 title = "分区",
                 navigationIcon = {
                     IconButton(onClick = onBack) {

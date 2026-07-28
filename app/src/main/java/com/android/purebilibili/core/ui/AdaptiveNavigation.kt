@@ -355,3 +355,16 @@ fun AdaptiveSplitLayout(
         }
     }
 }
+
+@Composable
+fun AppSplitLayout(
+    primaryContent: @Composable () -> Unit,
+    secondaryContent: @Composable () -> Unit,
+    primaryRatio: Float = 0.65f,
+    modifier: Modifier = Modifier,
+) = AdaptiveSplitLayout(
+    primaryContent = primaryContent,
+    secondaryContent = secondaryContent,
+    primaryRatio = primaryRatio,
+    modifier = modifier,
+)

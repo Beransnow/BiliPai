@@ -52,8 +52,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.coroutines.AppScope
 import com.android.purebilibili.core.refresh.WatchLaterRefreshBus
-import com.android.purebilibili.core.ui.AdaptiveScaffold
-import com.android.purebilibili.core.ui.AdaptiveTopAppBar
+import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
 import com.android.purebilibili.core.ui.LocalSharedTransitionScope
@@ -559,7 +559,7 @@ fun WatchLaterScreen(
         }
     }
 
-    AdaptiveScaffold(
+    AppScaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             // 使用 Box 包裹实现毛玻璃背景
@@ -568,7 +568,7 @@ fun WatchLaterScreen(
                     .fillMaxWidth()
                     .unifiedBlur(hazeState)
             ) {
-                AdaptiveTopAppBar(
+                AppTopBar(
                     title = resolveWatchLaterTitle(
                         state.totalCount.takeIf { it > 0 } ?: state.items.size
                     ),
