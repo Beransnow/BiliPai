@@ -4,8 +4,6 @@ import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.core.ui.IOSLargeTitleBarRenderer
 import com.android.purebilibili.core.ui.resolveLargeTitleBarRenderer
-import com.android.purebilibili.feature.home.components.IOSRefreshIndicatorRenderer
-import com.android.purebilibili.feature.home.components.resolveRefreshIndicatorRenderer
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -52,16 +50,16 @@ class PrimitivePresetCoverageTest {
     @Test
     fun refreshIndicatorRenderer_swapsToMaterialWhenNotIos() {
         assertEquals(
-            IOSRefreshIndicatorRenderer.CUPERTINO_IOS,
-            resolveRefreshIndicatorRenderer(UiPreset.IOS, AndroidNativeVariant.MATERIAL3)
+            AppPullRefreshIndicatorRenderer.CUPERTINO,
+            resolveAppPullRefreshIndicatorRenderer(UiPreset.IOS, AndroidNativeVariant.MATERIAL3)
         )
         assertEquals(
-            IOSRefreshIndicatorRenderer.MATERIAL3_LOADING,
-            resolveRefreshIndicatorRenderer(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
+            AppPullRefreshIndicatorRenderer.MATERIAL3,
+            resolveAppPullRefreshIndicatorRenderer(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
         )
         assertEquals(
-            IOSRefreshIndicatorRenderer.MIUIX_BRIDGED,
-            resolveRefreshIndicatorRenderer(UiPreset.MD3, AndroidNativeVariant.MIUIX)
+            AppPullRefreshIndicatorRenderer.MIUIX,
+            resolveAppPullRefreshIndicatorRenderer(UiPreset.MD3, AndroidNativeVariant.MIUIX)
         )
     }
 

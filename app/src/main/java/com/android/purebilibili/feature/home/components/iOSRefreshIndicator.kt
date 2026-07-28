@@ -29,39 +29,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.android.purebilibili.core.theme.AndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.ui.AppPullRefreshLoadingIndicator
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
-import com.android.purebilibili.core.ui.PresetPrimitiveRenderer
-import com.android.purebilibili.core.ui.resolvePresetPrimitiveRenderer
 import com.android.purebilibili.feature.home.resolvePullRefreshHintText
-import io.github.alexzhirkevich.cupertino.CupertinoActivityIndicator
 
 /**
  * Renderer kind for [iOSRefreshIndicator]. iOS keeps its Cupertino spinner with
  * the rubber-band overshoot; MD3 uses the official morphing [LoadingIndicator];
- * the Miuix bridge uses Miuix compact progress via [AdaptiveLoadingIndicator]
+ * the shared App indicator chooses the native loading control for each style
  * when this composable is still mounted (home Miuix uses native pull-to-refresh).
  */
-enum class IOSRefreshIndicatorRenderer {
-    CUPERTINO_IOS,
-    MATERIAL3_LOADING,
-    MIUIX_BRIDGED
-}
-
-fun resolveRefreshIndicatorRenderer(
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant
-): IOSRefreshIndicatorRenderer = when (
-    resolvePresetPrimitiveRenderer(uiPreset, androidNativeVariant)
-) {
-    PresetPrimitiveRenderer.IOS -> IOSRefreshIndicatorRenderer.CUPERTINO_IOS
-    PresetPrimitiveRenderer.MATERIAL3 -> IOSRefreshIndicatorRenderer.MATERIAL3_LOADING
-    PresetPrimitiveRenderer.MIUIX_BRIDGED -> IOSRefreshIndicatorRenderer.MIUIX_BRIDGED
-}
-
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun Md3ScreenshotRefreshIndicator(
@@ -157,10 +134,6 @@ fun iOSRefreshIndicator(
     isRefreshing: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val renderer = resolveRefreshIndicatorRenderer(
-        uiPreset = LocalUiPreset.current,
-        androidNativeVariant = LocalAndroidNativeVariant.current
-    )
     //  进度值（0.0 ~ 1.0+）
     val progress = state.distanceFraction
     
@@ -217,29 +190,7 @@ fun iOSRefreshIndicator(
                 .padding(vertical = AppSpacingTokens.Medium)
         ) {
             if (isRefreshing) {
-                // iOS: Cupertino spinner. MD3: morphing LoadingIndicator.
-                // Miuix: AdaptiveLoadingIndicator compact (native circular/orbit).
-                when (renderer) {
-                    IOSRefreshIndicatorRenderer.CUPERTINO_IOS -> {
-                        CupertinoActivityIndicator(
-                            modifier = Modifier.size(AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    IOSRefreshIndicatorRenderer.MATERIAL3_LOADING -> {
-                        // Compact morphing indicator beside the hint text (default is AppSpacingTokens.TripleExtraLarge).
-                        AdaptiveLoadingIndicator(
-                            size = AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall,
-                            density = com.android.purebilibili.core.ui.AdaptiveLoadingDensity.PAGE,
-                        )
-                    }
-                    IOSRefreshIndicatorRenderer.MIUIX_BRIDGED -> {
-                        AdaptiveLoadingIndicator(
-                            size = AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro,
-                            strokeWidth = AppSpacingTokens.Micro,
-                        )
-                    }
-                }
+                AppPullRefreshLoadingIndicator()
             } else if (progress > 0.1f) {
                 //  箭头图标（旋转表示状态变化）
                 Text(
