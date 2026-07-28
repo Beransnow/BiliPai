@@ -13,7 +13,7 @@ data class AppDrawerVisualPolicy(
     val profileChevronSizeDp: Int,
 )
 
-internal fun resolveAppDrawerVisualPolicy(
+fun resolveAppDrawerVisualPolicy(
     renderer: PresetPrimitiveRenderer,
     blurEnabled: Boolean,
 ): AppDrawerVisualPolicy = when (renderer) {

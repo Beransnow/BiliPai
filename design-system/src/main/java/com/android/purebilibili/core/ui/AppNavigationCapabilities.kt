@@ -6,7 +6,7 @@ data class AppNavigationCapabilities(
     val usePlatformSideRail: Boolean,
 )
 
-internal fun resolveAppNavigationCapabilities(
+fun resolveAppNavigationCapabilities(
     renderer: PresetPrimitiveRenderer,
 ): AppNavigationCapabilities = AppNavigationCapabilities(
     usePlatformSideRail = renderer == PresetPrimitiveRenderer.MIUIX_BRIDGED,
