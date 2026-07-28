@@ -51,6 +51,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.components.AppTextField
 
 @Composable
 fun DynamicCommentOverlayHost(
@@ -282,16 +283,11 @@ fun DynamicCommentSheet(
                     .padding(AppSpacingTokens.Large),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                OutlinedTextField(
+                AppTextField(
                     value = commentText,
                     onValueChange = { commentText = it },
                     modifier = Modifier.weight(1f),
-                    placeholder = { Text("发一条友善的评论", fontSize = MaterialTheme.typography.labelMedium.fontSize) },
-                    shape = AppShapes.container(ContainerLevel.Pill),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                    ),
+                    placeholder = "发一条友善的评论",
                     singleLine = true
                 )
                 
@@ -412,12 +408,11 @@ fun DynamicInlineCommentComposer(
             .padding(AppSpacingTokens.Large),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        OutlinedTextField(
+        AppTextField(
             value = commentText,
             onValueChange = { commentText = it },
             modifier = Modifier.weight(1f),
-            placeholder = { Text("发一条友善的评论", fontSize = MaterialTheme.typography.labelMedium.fontSize) },
-            shape = AppShapes.container(ContainerLevel.Pill),
+            placeholder = "发一条友善的评论",
             singleLine = true,
         )
         Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))

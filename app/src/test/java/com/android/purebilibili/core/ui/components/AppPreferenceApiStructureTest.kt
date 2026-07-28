@@ -41,6 +41,57 @@ class AppPreferenceApiStructureTest {
         }
     }
 
+    @Test
+    fun appTextField_forwardsSharedInputSemanticsToNativeRenderers() {
+        val apiSource = loadSource(
+            "app/src/main/java/com/android/purebilibili/core/ui/components/AppPreferenceComponents.kt"
+        )
+        val rendererSource = loadSource(
+            "app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt"
+        )
+
+        listOf(
+            "enabled = enabled",
+            "readOnly = readOnly",
+            "keyboardOptions = keyboardOptions",
+            "keyboardActions = keyboardActions",
+            "leadingIcon = leadingIcon",
+            "trailingIcon = trailingIcon",
+            "visualTransformation = visualTransformation",
+        ).forEach { forwarding ->
+            assertTrue(apiSource.contains(forwarding), "AppTextField does not forward $forwarding")
+            assertTrue(rendererSource.contains(forwarding), "Renderer does not forward $forwarding")
+        }
+        assertTrue(rendererSource.contains("MiuixTextField("))
+        assertTrue(rendererSource.contains("OutlinedTextField("))
+        val textFieldRenderer = rendererSource
+            .substringAfter("fun IOSAdaptiveTextField(")
+            .substringBefore("private fun MiuixAdaptiveSearchBar(")
+        assertTrue(textFieldRenderer.contains("LocalUiStyle.current == UiStyle.MIUIX"))
+        assertFalse(textFieldRenderer.contains("LocalUiPreset"))
+        assertFalse(textFieldRenderer.contains("LocalAndroidNativeVariant"))
+    }
+
+    @Test
+    fun phaseThreeInputPilot_usesNeutralTextField() {
+        val pilotPaths = listOf(
+            "app/src/main/java/com/android/purebilibili/feature/dynamic/components/RepostDialog.kt",
+            "app/src/main/java/com/android/purebilibili/feature/dynamic/components/DynamicCommentSheet.kt",
+            "app/src/main/java/com/android/purebilibili/feature/live/LiveSearchScreen.kt",
+            "app/src/main/java/com/android/purebilibili/feature/live/components/LiveInteractionSheets.kt",
+            "app/src/main/java/com/android/purebilibili/feature/live/components/LiveSendDanmakuSheet.kt",
+            "app/src/main/java/com/android/purebilibili/feature/message/ChatScreen.kt",
+            "app/src/main/java/com/android/purebilibili/feature/profile/ProfileScreen.kt",
+        )
+        val directRendererCall = Regex("""\b(OutlinedTextField|InputField)\s*\(""")
+
+        pilotPaths.forEach { path ->
+            val source = loadSource(path)
+            assertTrue(source.contains("AppTextField("), "Neutral input is missing in $path")
+            assertFalse(directRendererCall.containsMatchIn(source), "Direct input renderer remains in $path")
+        }
+    }
+
     private fun loadSource(path: String): String {
         val normalizedPath = path.removePrefix("app/")
         return listOf(File(path), File(normalizedPath))

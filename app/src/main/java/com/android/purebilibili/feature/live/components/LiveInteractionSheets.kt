@@ -25,7 +25,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -51,6 +50,7 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.components.AppTextField
 import com.android.purebilibili.feature.live.LiveDanmakuItem
 import com.android.purebilibili.feature.live.resolveLiveSheetVisualSpec
 
@@ -224,13 +224,13 @@ fun LiveDmBlockSheet(
                 horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                OutlinedTextField(
+                AppTextField(
                     value = keyword,
                     onValueChange = { keyword = it.take(20) },
                     enabled = isLoggedIn,
                     modifier = Modifier.weight(1f),
                     singleLine = true,
-                    placeholder = { Text("新增屏蔽词") }
+                    placeholder = "新增屏蔽词",
                 )
                 Button(
                     enabled = isLoggedIn && keyword.trim().isNotBlank(),

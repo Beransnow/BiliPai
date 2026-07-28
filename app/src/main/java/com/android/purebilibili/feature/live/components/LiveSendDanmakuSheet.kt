@@ -11,7 +11,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -27,6 +26,7 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.components.AppTextField
 import com.android.purebilibili.data.repository.LiveDanmakuPermission
 import com.android.purebilibili.feature.live.LiveDanmakuItem
 
@@ -66,13 +66,14 @@ fun LiveSendDanmakuSheet(
                         .padding(AppSpacingTokens.Large),
                     verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Medium)
                 ) {
-                    OutlinedTextField(
+                    AppTextField(
                         value = message,
                         onValueChange = { message = it.take(maxLength) },
                         modifier = Modifier.fillMaxWidth(),
+                        singleLine = false,
                         minLines = 3,
                         maxLines = 4,
-                        placeholder = { Text(if (replyTarget == null) "输入弹幕内容" else "输入回复内容") },
+                        placeholder = if (replyTarget == null) "输入弹幕内容" else "输入回复内容",
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                         keyboardActions = KeyboardActions(onSend = {
                             val content = message.trim()

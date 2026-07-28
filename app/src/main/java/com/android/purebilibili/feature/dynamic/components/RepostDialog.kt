@@ -6,16 +6,15 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.components.AppTextField
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.outlined.*
@@ -64,24 +63,14 @@ fun RepostDialog(
                 Spacer(modifier = Modifier.height(AppSpacingTokens.Large))
                 
                 // 输入框
-                OutlinedTextField(
+                AppTextField(
                     value = repostText,
                     onValueChange = { repostText = it },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(AppSpacingTokens.TripleExtraLarge * 2 + AppSpacingTokens.ExtraLarge),
-                    placeholder = { 
-                        Text(
-                            "说点什么吧...(可选)",
-                            fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.5f)
-                        ) 
-                    },
-                    shape = AppShapes.container(ContainerLevel.Card),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.primary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                    )
+                    placeholder = "说点什么吧...(可选)",
+                    singleLine = false,
                 )
                 
                 Spacer(modifier = Modifier.height(AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall))

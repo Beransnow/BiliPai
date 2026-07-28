@@ -97,6 +97,7 @@ import com.android.purebilibili.core.ui.rememberAppRestoreIcon
 import com.android.purebilibili.core.ui.rememberAppSettingsIcon
 import com.android.purebilibili.core.ui.rememberAppShareIcon
 import com.android.purebilibili.core.ui.components.UserLevelBadge
+import com.android.purebilibili.core.ui.components.AppTextField
 import com.android.purebilibili.core.ui.rememberAppWarningIcon
 import com.android.purebilibili.core.ui.rememberAppWatchLaterIcon
 import com.android.purebilibili.core.ui.wallpaper.ProfileWallpaperTransform
@@ -2385,10 +2386,11 @@ private fun ProfileEditAccountDialog(
                 ProfileReadonlyAccountField("昵称", state.name)
                 ProfileReadonlyAccountField("生日", state.birthday.ifBlank { "未展示" })
                 ProfileReadonlyAccountField("性别", state.sex.ifBlank { "未展示" })
-                OutlinedTextField(
+                AppTextField(
                     value = sign,
                     onValueChange = { sign = it },
-                    label = { Text("签名") },
+                    label = "签名",
+                    singleLine = false,
                     minLines = 3,
                     maxLines = 4,
                     isError = signError != null,

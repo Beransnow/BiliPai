@@ -6,7 +6,7 @@
 
 更新日期：2026-07-28。按“审查 + 阶段 0～5”等权计算：
 
-`[████████████░░░░░░░░] 59%`
+`[████████████░░░░░░░░] 60%`
 
 | 工作项 | 状态 | 已落地内容 |
 |---|---:|---|
@@ -14,7 +14,7 @@
 | 阶段 0：契约与兼容层 | 100% | `UiStyle`、`ui_style_v1`、新旧三键双写、导入导出兼容、Theme bridge、冲突诊断与矩阵测试 |
 | 阶段 1：设置列表试点 | 100% | 中性 `App*` preference/dialog/segmented 入口；设置试点迁移；旧 Local 与 IOS* 调用棘轮达标 |
 | 阶段 2：Chrome 与导航 | 100% | 中性 `AppScaffold/AppTopBar/AppNavigation` 入口；30 个旧调用文件迁移；home/navigation policy 改读 `UiStyle`；棘轮达标 |
-| 阶段 3：普通 feature | 10% | 卡片/Surface 首批：`AppCard` slot API、三 renderer/tone policy；动态、消息 Feed、直播卡片迁移 |
+| 阶段 3：普通 feature | 20% | 卡片/Surface 首批已完成；输入首批补齐 `AppTextField` 共享语义并迁移动态、消息、直播非播放器、资料页 8 个调用点 |
 | 阶段 4～5 | 0% | 等待后续按播放器/插件、清理边界顺序推进 |
 
 阶段 0 保持渲染行为不变：`LocalUiStyle` 与旧两个 Local 同时提供，旧设置入口继续可用；合法新键优先，缺失或非法新键回退旧两键。iOS 写入保留隐藏的 Android native variant，设置分享同时携带新键和旧两键。兼容层新增 2 个引用旧类型的 core 文件，因此全生产计数为 103；受阶段棘轮约束的 feature/直接 Local/IOS* caller 仍为 **69/47/42**，符合阶段 0“不新增、暂不要求下降”的边界。
@@ -23,7 +23,11 @@
 
 阶段 2 保留既有 adaptive renderer，只增加并迁移到中性 `AppScaffold`、`AppTopBar`、`AppNavigation`、`AppSideNavigationRail`、`AppSplitLayout` 门面；feature 与 navigation 中旧 Chrome 调用已由 **30 个文件降至 0**，对应调用点全部切到中性入口。首页刷新、性能、侧栏、抽屉、分段控制和导航外观 policy 改读单一 `UiStyle`，6 个 Chrome 页面停止直接读取旧 Local。阶段棘轮由 **61/39/28** 降至 **47/28/28**，分别达到 `<=48`、`<=28`、`<=28`；新增中性 Chrome 委托与调用边界测试，Kotlin 编译及 163 项相关窄测通过。
 
-阶段 3 的卡片/Surface 首批新增 `AppCard` slot API，并用 `STANDARD/MUTED/GLASS` 语义 tone 在 `core/ui` 内选择 Material Surface 或原生 MIUIX Card；feature 只提供业务内容和点击回调。动态玻璃卡、消息 Feed 卡、直播房间卡与直播搜索用户卡已迁移，直播卡所需布局指标改由页面显式传入。阶段中间棘轮由 **47/28/28** 降至 **43/24/28**；三风格 renderer/tone matrix、直播结构测试和 Kotlin 编译通过。后续继续按输入→Dialog/Sheet→加载刷新→图标动效推进，阶段 3 尚未完成。
+阶段 3 的卡片/Surface 首批新增 `AppCard` slot API，并用 `STANDARD/MUTED/GLASS` 语义 tone 在 `core/ui` 内选择 Material Surface 或原生 MIUIX Card；feature 只提供业务内容和点击回调。动态玻璃卡、消息 Feed 卡、直播房间卡与直播搜索用户卡已迁移，直播卡所需布局指标改由页面显式传入。输入首批把 `enabled/readOnly`、行数、错误态、IME、前后图标和 visual transformation 收进 `AppTextField`；MIUIX 普通输入使用原生 Miuix TextField，搜索展开场景继续使用 InputField。动态评论/转发、消息聊天、直播搜索/弹幕/屏蔽词、资料签名共 8 个调用点停止直接指定 Material renderer，普通 feature（排除播放器）只剩搜索页 2 个专用 renderer 调用。阶段中间棘轮保持 **43/24/28**；输入结构测试和 Kotlin 编译通过。后续先收拢搜索输入，再按 Dialog/Sheet→加载刷新→图标动效推进，阶段 3 尚未完成。
+
+### Android/Compose 规范的适用优先级
+
+Android/Compose 规范对本路线是工程护栏，不是第四套视觉规范。仓库 `AGENTS.md` 与本迁移文档决定架构边界和阶段顺序；各 renderer 的原生语义决定 iOS、Material 3、MIUIX 的具体渲染。以下要求视为硬约束：不可见业务状态应上提、组合期不做昂贵工作、暗色与大屏行为可用、交互目标至少 48dp、可读性/对比度与禁用态明确。固定 Material 组件、统一 8dp 网格、固定圆角或默认控件尺寸只作为建议，不能覆盖 iOS/MIUIX 原生组件合同。所谓“统一尺寸”是共享语义 token 与可访问性下限统一，不是强迫三套 renderer 共享同一组件树或每个像素完全相同。
 
 ## 执行摘要
 
@@ -196,7 +200,7 @@ flowchart LR
 | C4 列表/Preference | iOS：自绘 grouped rows + Cupertino switch；M3：Material row/Switch/Slider；MIUIX：Miuix Card/SwitchPreference/SliderPreference。 | title、summary、leading、trailing、enabled、click/change 回调完全共享；`IOS*` 内部重复三路布局是当前最成熟的收拢点。 | MIUIX preference 的 haptic/insideMargin 与 iOS grouped separator 是**原生组件语义不同**。`iOSListComponents.kt:558-597,618-692,695-846,850-971`。涉及 #9/#17/#18/#30/#31/#35/#38-48/#51。 |
 | C5 按钮 | iOS：局部 clickable/liquid action；M3：Button/TextButton/OutlinedButton；MIUIX：部分 native action，部分仍走 Material bridge。 | 文案、enabled/loading、role、onClick 可共享；播放器和设置内直接 Button/TextButton 是**真重复**且尚无统一通用入口。 | player 控制需固定触控面积、overlay 对比度和手势穿透。`SettingsSections.kt:939-963`；`VideoSettingsPanel.kt:446-470,852,1472`；`LivePlayerScreen.kt:866,1910`。涉及 #20/#27/#51/#59/#60。 |
 | C6 卡片/Surface | iOS/M3：多为 Surface + 不同 token；MIUIX：列表组已用 MiuixCard，普通 feed 多仍是 Surface bridge。 | container/content/onClick/selected/border/elevation 可共享；只改颜色/圆角的是**仅 token 不同**，每个 feed 重写整棵 card 才是真重复。 | 图片比例、shared bounds、列表稳定 key 与 player preview 性能必须保留。`AppSurfaceTokens.kt:31-76`；`iOSListComponents.kt:618-692`；`DynamicCard.kt:45-47`。涉及 #3/#4/#17/#18/#21-23/#25/#26/#28-31/#34-37/#54。 |
-| C7 输入 | iOS/M3：`IOSAdaptiveTextField` 当前都落到 Material OutlinedTextField；MIUIX：InputField；搜索框另有 iOS/M3 自绘分支。 | value、onValueChange、label、placeholder、error、IME 语义共享；SettingsSearch/视频设置重复圆角与颜色判断。 | MIUIX InputField 的 expanded/search contract 与 Material TextField 不同，需 renderer 适配而非强行同树。`iOSListComponents.kt:1381,1593-1608,1612-1652`；`SettingsSearchUi.kt:64-110,221-258`。涉及 #18/#29/#37/#45/#59；插件中心间接调用见 `PluginsScreen.kt:67-69`。 |
+| C7 输入 | `AppTextField` 已覆盖普通输入：iOS/M3 使用 Material OutlinedTextField，MIUIX 使用原生 Miuix TextField；搜索展开框仍由 Miuix InputField 与 Material 搜索 renderer 分发。 | value、onValueChange、label、placeholder、error、enabled/readOnly、行数、IME、图标与 visual transformation 语义共享；搜索页保留 2 个待收拢的专用 renderer 调用。 | MIUIX InputField 的 expanded/search contract 与普通 TextField 不同，需独立 `AppSearchField` renderer 而非强行同树。普通 feature 首批 8 个调用点已迁 `AppTextField`；设置与视频输入仍按后续阶段处理。 |
 | C8 Dialog/Sheet | iOS：自绘 local dialog/sheet；M3：AlertDialog/Material sheet；MIUIX：OverlayDialog/Miuix sheet 或安全 local fallback。 | visible/dismiss/title/body/actions/confirm state 可共享；42 个 IOS* caller 中大量为 sheet/dialog，属于**名称与分发重复**。 | MIUIX overlay 依赖 popup host；手势进度、scrim、drag handle 和 player sheet 层级是原生/宿主差异。`iOSDialogComponents.kt:25-41,61-123`；`iOSSheetComponents.kt:87-135`；`PortraitDetailSheet.kt:31-69`。涉及 #32/#33/#55-60/#67。 |
 | C9 加载/刷新 | iOS：cute person/自定义 refresh；M3：LoadingIndicator 或 Circular；MIUIX：Infinite/Circular 与原生 refresh 文案。 | refreshing/loading、progress、density、onRefresh 可共享；已有 `PresetPrimitiveRenderer`，应直接升级为 App API。 | page/compact 密度、home overlay top inset 与刷新动效必须保留。`AdaptiveLoadingIndicatorPolicy.kt:15-64`；`AdaptivePullToRefreshPolicy.kt:6-18`；`iOSRefreshIndicator.kt:58,161-162`。涉及 #8/#11/#15/#16/#24/#25。 |
 | C10 图标 | iOS：CupertinoIcons；M3/MIUIX：Material icons（当前 MIUIX 无独立 glyph）。 | semantic name、contentDescription、filled/outlined state 可共享；页面按 `UiPreset` 选 icon 是**真重复**。 | 品牌图标、硬币、自定义播放图标不应强制换皮；未来 MIUIX glyph 可只改 renderer。`AppIcons.kt:149` 起的 `resolvePlatformIcon`/`rememberApp*Icon`；`SettingsSemanticIconPolicy.kt:136,182-183`。涉及 #7/#12/#43/#49/#51/#59。 |
@@ -213,9 +217,9 @@ flowchart LR
 |---|---:|---|
 | 生产 Kotlin | 开工 1058；并发改动后 1057 | `(rg --files app/src/main/java -g '*.kt').Count`；变化来自范围外文件被删除 |
 | 风格引用生产文件 | 101 | core 与 feature 都含分发逻辑 |
-| 风格引用 feature | 阶段 1 后 61（基线 69） | 设置试点已切到单一 `UiStyle`，其余页面/局部 policy 仍待迁移 |
-| 直接读取两个 Local 的 feature | 阶段 1 后 39（基线 47） | 8 个设置实现已改读 `LocalUiStyle` |
-| 调用内部换肤 IOS* 的 feature | 阶段 1 后 28（基线 42；旧报告口径 21） | 14 个设置文件已切到中性 App* 门面 |
+| 风格引用 feature | 阶段 3 当前 43（基线 69） | 设置、Chrome 与卡片首批已收拢；其余页面/局部 policy 仍待迁移 |
+| 直接读取两个 Local 的 feature | 阶段 3 当前 24（基线 47） | 设置、Chrome 与卡片首批已改读中性边界或单一 `UiStyle` |
+| 调用内部换肤 IOS* 的 feature | 阶段 3 当前 28（基线 42；旧报告口径 21） | 设置文件已切到中性 App* 门面；普通 feature 的 Dialog/Sheet 等仍待迁移 |
 | 调用统一 renderer 的生产文件 | 9 | 7 个 core/ui、2 个 home feature，尚未成为唯一边界 |
 
 ### 四种情况必须分开处理

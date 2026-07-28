@@ -1,7 +1,10 @@
 package com.android.purebilibili.core.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -9,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
@@ -139,7 +143,15 @@ fun AppTextField(
     singleLine: Boolean = true,
     minLines: Int = 1,
     maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
+    enabled: Boolean = true,
+    readOnly: Boolean = false,
     isError: Boolean = false,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    interactionSource: MutableInteractionSource? = null,
     supportingText: @Composable (() -> Unit)? = null,
 ) = IOSAdaptiveTextField(
     value = value,
@@ -150,6 +162,14 @@ fun AppTextField(
     singleLine = singleLine,
     minLines = minLines,
     maxLines = maxLines,
+    enabled = enabled,
+    readOnly = readOnly,
     isError = isError,
+    keyboardOptions = keyboardOptions,
+    keyboardActions = keyboardActions,
+    leadingIcon = leadingIcon,
+    trailingIcon = trailingIcon,
+    visualTransformation = visualTransformation,
+    interactionSource = interactionSource,
     supportingText = supportingText,
 )
