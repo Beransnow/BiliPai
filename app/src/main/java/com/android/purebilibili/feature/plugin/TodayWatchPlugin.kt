@@ -42,7 +42,7 @@ import com.android.purebilibili.core.plugin.RecommendedVideo
 import com.android.purebilibili.core.store.TodayWatchFeedbackSnapshot
 import com.android.purebilibili.core.store.TodayWatchFeedbackStore
 import com.android.purebilibili.core.store.TodayWatchProfileStore
-import com.android.purebilibili.core.ui.components.IOSSwitchItem
+import com.android.purebilibili.core.ui.components.AppSwitchPreference
 import com.android.purebilibili.core.util.Logger
 import com.android.purebilibili.feature.home.TodayWatchCreatorSignal
 import com.android.purebilibili.feature.home.TodayWatchMode
@@ -359,7 +359,7 @@ class TodayWatchPlugin : RecommendationPluginApi {
 
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
 
-            IOSSwitchItem(
+            AppSwitchPreference(
                 icon = CupertinoIcons.Default.Sparkles,
                 title = "联动护眼信号",
                 subtitle = "夜间优先短时长、低刺激内容",
@@ -367,7 +367,7 @@ class TodayWatchPlugin : RecommendationPluginApi {
                 onCheckedChange = { enabled -> commit(uiConfig.copy(linkEyeCareSignal = enabled)) }
             )
 
-            IOSSwitchItem(
+            AppSwitchPreference(
                 icon = CupertinoIcons.Default.Lightbulb,
                 title = "显示模式说明",
                 subtitle = "显示“已结合护眼状态”等提示文案",
@@ -375,7 +375,7 @@ class TodayWatchPlugin : RecommendationPluginApi {
                 onCheckedChange = { enabled -> commit(uiConfig.copy(showReasonHint = enabled)) }
             )
 
-            IOSSwitchItem(
+            AppSwitchPreference(
                 icon = CupertinoIcons.Default.ListBullet,
                 title = "显示 UP 主榜",
                 subtitle = "在卡片中展示你近期偏好的创作者",
@@ -383,7 +383,7 @@ class TodayWatchPlugin : RecommendationPluginApi {
                 onCheckedChange = { enabled -> commit(uiConfig.copy(showUpRank = enabled)) }
             )
 
-            IOSSwitchItem(
+            AppSwitchPreference(
                 icon = CupertinoIcons.Default.Sparkles,
                 title = "瀑布展开动画",
                 subtitle = "卡片内容按非线性节奏依次展开",

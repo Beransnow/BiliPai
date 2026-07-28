@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.sp
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.WindowInsets
 import com.android.purebilibili.core.store.PlaybackCompletionBehavior
-import com.android.purebilibili.core.ui.IOSModalBottomSheet
+import com.android.purebilibili.core.ui.AppModalBottomSheet
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.outlined.Checkmark
 
@@ -66,7 +66,7 @@ internal fun PlaybackOrderSelectionSheet(
         }
         PlaybackOrderSheetPresentation.BOTTOM_SHEET -> {
             val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-            IOSModalBottomSheet(
+            AppModalBottomSheet(
                 onDismissRequest = onDismiss,
                 sheetState = sheetState,
                 // 让面板底色延伸到手势条后方，避免底部白条割裂。

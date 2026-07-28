@@ -41,7 +41,7 @@ fun EmotePanelSheet(
 ) {
     if (!visible) return
     
-    com.android.purebilibili.core.ui.IOSModalBottomSheet(
+    com.android.purebilibili.core.ui.AppModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         dragHandle = null

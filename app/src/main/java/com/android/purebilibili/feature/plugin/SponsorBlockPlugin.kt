@@ -53,7 +53,7 @@ import com.android.purebilibili.data.model.response.SponsorBlockMarkerMode
 import com.android.purebilibili.data.model.response.SponsorSegment
 import com.android.purebilibili.data.model.response.SponsorProgressMarker
 import com.android.purebilibili.data.repository.SponsorBlockRepository
-import com.android.purebilibili.feature.settings.IOSSlidingSegmentedSetting
+import com.android.purebilibili.feature.settings.AppSegmentedPreference
 import com.android.purebilibili.feature.settings.PlaybackSegmentOption
 import io.github.alexzhirkevich.cupertino.CupertinoSwitch
 import kotlinx.coroutines.launch
@@ -437,7 +437,7 @@ class SponsorBlockPlugin : PlayerPluginApi {
             Spacer(modifier = Modifier.height(12.dp))
 
             // 使用原设置组件 - 自动跳过
-            IOSSwitchItem(
+            AppSwitchPreference(
                 icon = CupertinoIcons.Default.Bolt,
                 title = "自动跳过",
                 subtitle = "关闭后将显示手动跳过按钮而非自动跳过",
@@ -454,7 +454,7 @@ class SponsorBlockPlugin : PlayerPluginApi {
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
             )
 
-            IOSSlidingSegmentedSetting(
+            AppSegmentedPreference(
                 title = "进度条提示：${markerMode.label}",
                 subtitle = "可选关闭、仅提示恰饭，或显示全部可跳过片段",
                 options = markerOptions,
@@ -474,7 +474,7 @@ class SponsorBlockPlugin : PlayerPluginApi {
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
             )
 
-            IOSSwitchItem(
+            AppSwitchPreference(
                 icon = CupertinoIcons.Default.Bell,
                 title = "每日汇总通知",
                 subtitle = "当天有跳过记录时，汇总跳过次数和节省时间",
@@ -502,7 +502,7 @@ class SponsorBlockPlugin : PlayerPluginApi {
                 )
             }
 
-            IOSClickableItem(
+            AppPreference(
                 icon = CupertinoIcons.Default.Bell,
                 title = "发送测试通知",
                 subtitle = "确认空降助手通知权限和展示效果，不写入跳过记录",
@@ -520,7 +520,7 @@ class SponsorBlockPlugin : PlayerPluginApi {
             )
             
             // 使用原设置组件 - 关于空降助手
-            IOSClickableItem(
+            AppPreference(
                 icon = CupertinoIcons.Default.InfoCircle,
                 title = aboutItem.title,
                 subtitle = aboutItem.subtitle,

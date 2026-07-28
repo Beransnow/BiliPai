@@ -200,7 +200,7 @@ import com.android.purebilibili.feature.video.ui.components.VideoAspectRatio
 import com.android.purebilibili.feature.video.danmaku.rememberDanmakuManager
 import com.android.purebilibili.core.ui.blur.shouldAllowRuntimeShaderBackedHazeEffect
 import com.android.purebilibili.core.ui.blur.unifiedBlur
-import com.android.purebilibili.core.ui.IOSModalBottomSheet
+import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.core.util.FormatUtils
 import coil.compose.AsyncImage
@@ -669,7 +669,7 @@ internal fun ExternalPlaylistQueueSheet(
             }
         }
         ExternalPlaylistQueueSheetPresentation.MODAL -> {
-            IOSModalBottomSheet(
+            AppModalBottomSheet(
                 onDismissRequest = onDismiss,
                 containerColor = Color.Transparent,
                 windowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0)

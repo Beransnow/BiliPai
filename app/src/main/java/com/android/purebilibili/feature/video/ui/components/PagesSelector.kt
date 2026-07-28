@@ -54,7 +54,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.android.purebilibili.core.ui.IOSModalBottomSheet
+import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.data.model.response.Page
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -233,7 +233,7 @@ fun PagesSelector(
             )
         }
 
-        IOSModalBottomSheet(
+        AppModalBottomSheet(
             onDismissRequest = { showExpandedSheet = false },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             dragHandle = null,

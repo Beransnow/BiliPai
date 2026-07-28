@@ -41,7 +41,7 @@ import com.android.purebilibili.core.ui.rememberAppTvIcon
 import com.android.purebilibili.core.ui.rememberAppWatchLaterIcon
 import com.android.purebilibili.core.ui.AppDrawerContainerTreatment
 import com.android.purebilibili.core.ui.AppShapes
-import com.android.purebilibili.core.ui.components.IOSClickableItem
+import com.android.purebilibili.core.ui.components.AppPreference
 import com.android.purebilibili.core.ui.components.UserLevelBadge
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.blur.unifiedBlur
@@ -316,7 +316,7 @@ fun MineSideDrawer(
                 Column(
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    IOSClickableItem(
+                    AppPreference(
                         icon = downloadIcon,
                         title = "离线缓存",
                         onClick = { closeAndRun(onDownloadClick) },
@@ -326,7 +326,7 @@ fun MineSideDrawer(
                         chevronTint = chevronColor
                     )
                     HorizontalDivider(modifier = Modifier.padding(start = AppSpacingTokens.TripleExtraLarge), thickness = dividerThickness, color = dividerColor)
-                    IOSClickableItem(
+                    AppPreference(
                         icon = historyIcon,
                         title = "历史记录",
                         onClick = { closeAndRun(onHistoryClick) },
@@ -336,7 +336,7 @@ fun MineSideDrawer(
                         chevronTint = chevronColor
                     )
                     HorizontalDivider(modifier = Modifier.padding(start = AppSpacingTokens.TripleExtraLarge), thickness = dividerThickness, color = dividerColor)
-                    IOSClickableItem(
+                    AppPreference(
                         icon = tvIcon,
                         title = "番剧影视",
                         onClick = { closeAndRun(onBangumiClick) },
@@ -346,7 +346,7 @@ fun MineSideDrawer(
                         chevronTint = chevronColor
                     )
                     HorizontalDivider(modifier = Modifier.padding(start = AppSpacingTokens.TripleExtraLarge), thickness = dividerThickness, color = dividerColor)
-                    IOSClickableItem(
+                    AppPreference(
                         icon = bookmarkIcon,
                         title = "我的收藏",
                         onClick = { closeAndRun(onFavoriteClick) },
@@ -356,7 +356,7 @@ fun MineSideDrawer(
                         chevronTint = chevronColor
                     )
                     HorizontalDivider(modifier = Modifier.padding(start = AppSpacingTokens.TripleExtraLarge), thickness = dividerThickness, color = dividerColor)
-                    IOSClickableItem(
+                    AppPreference(
                         icon = likeIcon,
                         title = "我的点赞",
                         onClick = { closeAndRun(onLikedVideosClick) },
@@ -366,7 +366,7 @@ fun MineSideDrawer(
                         chevronTint = chevronColor
                     )
                     HorizontalDivider(modifier = Modifier.padding(start = AppSpacingTokens.TripleExtraLarge), thickness = dividerThickness, color = dividerColor)
-                    IOSClickableItem(
+                    AppPreference(
                         icon = watchLaterIcon,
                         title = "稍后再看",
                         onClick = { closeAndRun(onWatchLaterClick) },
@@ -376,7 +376,7 @@ fun MineSideDrawer(
                         chevronTint = chevronColor
                     )
                     HorizontalDivider(modifier = Modifier.padding(start = AppSpacingTokens.TripleExtraLarge), thickness = dividerThickness, color = dividerColor)
-                    IOSClickableItem(
+                    AppPreference(
                         icon = inboxIcon,
                         title = "消息中心",
                         onClick = { closeAndRun(onInboxClick) },
@@ -408,7 +408,7 @@ fun MineSideDrawer(
                     color = itemSurfaceColor,
                     border = BorderStroke(AppSpacingTokens.Micro * 0.4f, itemBorderColor)
                 ) {
-                    IOSClickableItem(
+                    AppPreference(
                         icon = logoutIcon,
                         title = "退出登录",
                         onClick = { closeAndRun(onLogout) },

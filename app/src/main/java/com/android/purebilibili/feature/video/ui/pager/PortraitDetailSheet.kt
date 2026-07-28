@@ -169,12 +169,12 @@ fun PortraitDetailSheet(
                             var showBlockConfirmDialog by remember { mutableStateOf(false) }
                             
                             if (showBlockConfirmDialog) {
-                                com.android.purebilibili.core.ui.IOSAlertDialog(
+                                com.android.purebilibili.core.ui.AppAlertDialog(
                                     onDismissRequest = { showBlockConfirmDialog = false },
                                     title = { Text(if (isBlocked) "解除屏蔽" else "屏蔽 UP 主") },
                                     text = { Text(if (isBlocked) "确定要解除对 ${info.owner.name} 的屏蔽吗？" else "屏蔽后，将不再推荐该 UP 主的视频。\n确定要屏蔽 ${info.owner.name} 吗？") },
                                     confirmButton = {
-                                        com.android.purebilibili.core.ui.IOSDialogAction(
+                                        com.android.purebilibili.core.ui.AppDialogAction(
                                             onClick = {
                                                 scope.launch {
                                                     if (isBlocked) {
@@ -195,7 +195,7 @@ fun PortraitDetailSheet(
                                         }
                                     },
                                     dismissButton = {
-                                        com.android.purebilibili.core.ui.IOSDialogAction(onClick = { showBlockConfirmDialog = false }) { Text("取消") }
+                                        com.android.purebilibili.core.ui.AppDialogAction(onClick = { showBlockConfirmDialog = false }) { Text("取消") }
                                     }
                                 )
                             }

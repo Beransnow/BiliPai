@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.plugin.Plugin
 import com.android.purebilibili.core.plugin.PluginManager
 import com.android.purebilibili.core.plugin.PluginStore
-import com.android.purebilibili.core.ui.components.IOSSwitchItem
+import com.android.purebilibili.core.ui.components.AppSwitchPreference
 import com.android.purebilibili.core.util.Logger
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.filled.Moon
@@ -388,7 +388,7 @@ class EyeProtectionPlugin : Plugin {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
-            IOSSwitchItem(
+            AppSwitchPreference(
                 icon = CupertinoIcons.Outlined.Lightbulb,
                 title = "立即开启护眼",
                 subtitle = "手动强制开启，不受时间段限制",
@@ -404,7 +404,7 @@ class EyeProtectionPlugin : Plugin {
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
             )
 
-            IOSSwitchItem(
+            AppSwitchPreference(
                 icon = CupertinoIcons.Outlined.Moon,
                 title = "定时护眼模式",
                 subtitle = "${uiConfig.nightModeStartHour}:00 - ${uiConfig.nightModeEndHour}:00 自动开启",
@@ -448,7 +448,7 @@ class EyeProtectionPlugin : Plugin {
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
             )
 
-            IOSSwitchItem(
+            AppSwitchPreference(
                 icon = CupertinoIcons.Outlined.Clock,
                 title = "关怀提醒",
                 subtitle = "定时提醒休息、看远处、放松肩颈",
@@ -462,7 +462,7 @@ class EyeProtectionPlugin : Plugin {
             if (uiConfig.usageReminderEnabled) {
                 Spacer(modifier = Modifier.height(10.dp))
 
-                IOSSwitchItem(
+                AppSwitchPreference(
                     icon = CupertinoIcons.Outlined.Sparkles,
                     title = "仅夜间提醒",
                     subtitle = "白天减少打扰，夜间更积极守护",
