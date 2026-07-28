@@ -15,7 +15,7 @@ class TopReadabilityChromePolicyTest {
             surfaceColor = Color.White,
             surfaceAlpha = 0.72f,
             hazeRequested = false,
-            hasHazeState = false
+            hasHazeState = false,
         )
 
         assertEquals(96, spec.heightDp)
@@ -33,7 +33,7 @@ class TopReadabilityChromePolicyTest {
                 surfaceColor = Color.Black,
                 surfaceAlpha = 0.64f,
                 hazeRequested = true,
-                hasHazeState = true
+                hasHazeState = true,
             ).useHaze
         )
         assertFalse(
@@ -42,7 +42,7 @@ class TopReadabilityChromePolicyTest {
                 surfaceColor = Color.Black,
                 surfaceAlpha = 0.64f,
                 hazeRequested = true,
-                hasHazeState = false
+                hasHazeState = false,
             ).useHaze
         )
     }

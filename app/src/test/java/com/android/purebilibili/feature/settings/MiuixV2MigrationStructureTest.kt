@@ -165,7 +165,7 @@ class MiuixV2MigrationStructureTest {
 
     @Test
     fun homePullRefreshPolicy_routesMiuixToNativeIndicator() {
-        val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/AppPullRefreshIndicator.kt")
+        val source = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/AppPullRefreshIndicator.kt")
         assertTrue(source.contains("AppPullRefreshIndicatorStyle.MIUIX_NATIVE"))
     }
 
@@ -200,11 +200,9 @@ class MiuixV2MigrationStructureTest {
     }
 
     @Test
-    fun iosLargeTitleBar_routesMd3AndMiuixToAdaptiveTopAppBar() {
-        val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/iOSLargeTitleBar.kt")
-        assertTrue(source.contains("resolveLargeTitleBarRenderer("))
-        assertTrue(source.contains("IOSLargeTitleBarRenderer.ADAPTIVE_TOP_APP_BAR"))
-        assertTrue(source.contains("AdaptiveTopAppBar("))
+    fun legacyIosLargeTitleBar_isRemovedAfterFeatureMigration() {
+        val source = File("app/src/main/java/com/android/purebilibili/core/ui/iOSLargeTitleBar.kt")
+        assertFalse(source.exists())
     }
 
     @Test

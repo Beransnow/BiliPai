@@ -64,8 +64,8 @@ class DynamicNeutralUiStructureTest {
         val topBarSource = File(sourceRoot, "components/DynamicTopBar.kt").readText()
 
         assertTrue(commentSource.contains("rememberAppSegmentedControlPolicy()"))
-        assertFalse(commentSource.contains("iOSSegmentedControl("))
-        assertFalse(commentSource.contains("feature.video.ui.components.iOSSegmentedControl"))
+        assertFalse(commentSource.contains("CommentSegmentedControl("))
+        assertFalse(commentSource.contains("feature.video.ui.components.CommentSegmentedControl"))
         assertFalse(topBarSource.contains("AndroidNativeUnderlinedSegmentedControl("))
         assertFalse(topBarSource.contains("feature.home.components.AndroidNativeUnderlinedSegmentedControl"))
     }

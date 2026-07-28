@@ -139,7 +139,7 @@ fun CollectionSheet(
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                iOSSegmentedControl(
+                CommentSegmentedControl(
                     items = sortModes.map(::resolveCollectionSortLabel),
                     selectedIndex = sortModes.indexOf(sortMode).coerceAtLeast(0),
                     onScaleChange = { index ->

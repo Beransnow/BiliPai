@@ -2,8 +2,7 @@ package com.android.purebilibili.core.ui
 
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
-import com.android.purebilibili.core.ui.IOSLargeTitleBarRenderer
-import com.android.purebilibili.core.ui.resolveLargeTitleBarRenderer
+import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -32,19 +31,12 @@ class PrimitivePresetCoverageTest {
     }
 
     @Test
-    fun largeTitleBarRenderer_collapsesMd3AndMiuixOntoAdaptiveTopAppBar() {
-        assertEquals(
-            IOSLargeTitleBarRenderer.IOS_LARGE_TITLE,
-            resolveLargeTitleBarRenderer(UiPreset.IOS, AndroidNativeVariant.MATERIAL3)
+    fun legacyLargeTitleBar_isRemovedAfterFeatureMigration() {
+        val legacySource = listOf(
+            File("app/src/main/java/com/android/purebilibili/core/ui/iOSLargeTitleBar.kt"),
+            File("src/main/java/com/android/purebilibili/core/ui/iOSLargeTitleBar.kt"),
         )
-        assertEquals(
-            IOSLargeTitleBarRenderer.ADAPTIVE_TOP_APP_BAR,
-            resolveLargeTitleBarRenderer(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
-        )
-        assertEquals(
-            IOSLargeTitleBarRenderer.ADAPTIVE_TOP_APP_BAR,
-            resolveLargeTitleBarRenderer(UiPreset.MD3, AndroidNativeVariant.MIUIX)
-        )
+        assertEquals(false, legacySource.any { it.exists() })
     }
 
     @Test

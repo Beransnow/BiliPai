@@ -352,7 +352,7 @@ data class AppTopChromePolicy(
     val compactChromeSpec: CompactCapsuleChromeSpec,
 )
 
-internal fun resolveAppTopChromePolicy(
+fun resolveAppTopChromePolicy(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant,
 ): AppTopChromePolicy = when {

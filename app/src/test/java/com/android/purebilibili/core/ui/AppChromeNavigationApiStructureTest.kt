@@ -9,15 +9,15 @@ class AppChromeNavigationApiStructureTest {
 
     @Test
     fun neutralChromeApisDelegateToExistingAdaptiveRenderers() {
-        val chrome = loadSource("app/src/main/java/com/android/purebilibili/core/ui/AdaptiveChrome.kt")
-        val navigation = loadSource("app/src/main/java/com/android/purebilibili/core/ui/AdaptiveNavigation.kt")
+        val chrome = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/AdaptiveChrome.kt")
+        val navigation = loadSource("app/src/main/java/com/android/purebilibili/core/ui/SplitLayout.kt")
 
         assertTrue(chrome.contains("fun AppScaffold("))
         assertTrue(chrome.contains(") = AdaptiveScaffold("))
         assertTrue(chrome.contains("fun AppTopBar("))
         assertTrue(chrome.contains(") = AdaptiveTopAppBar("))
         assertTrue(navigation.contains("fun AppSplitLayout("))
-        assertTrue(navigation.contains(") = AdaptiveSplitLayout("))
+        assertTrue(navigation.contains(") = AppAdaptiveSplitLayout("))
     }
 
     @Test
@@ -38,8 +38,8 @@ class AppChromeNavigationApiStructureTest {
     }
 
     private fun loadSource(path: String): String {
-        val normalizedPath = path.removePrefix("app/")
-        return listOf(File(path), File(normalizedPath))
+        val normalizedPath = path.removePrefix("app/").removePrefix("design-system/")
+        return listOf(File(path), File("../$path"), File(normalizedPath))
             .firstOrNull(File::exists)
             ?.readText()
             ?: error("Cannot locate $path from ${File(".").absolutePath}")

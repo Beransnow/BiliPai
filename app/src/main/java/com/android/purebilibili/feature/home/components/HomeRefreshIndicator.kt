@@ -1,4 +1,4 @@
-// 文件路径: feature/home/components/iOSRefreshIndicator.kt
+// 文件路径: feature/home/components/HomeRefreshIndicator.kt
 package com.android.purebilibili.feature.home.components
 
 import com.android.purebilibili.core.ui.AppSpacingTokens
@@ -34,7 +34,7 @@ import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.feature.home.resolvePullRefreshHintText
 
 /**
- * Renderer kind for [iOSRefreshIndicator]. iOS keeps its Cupertino spinner with
+ * Renderer kind for [HomeRefreshIndicator]. iOS keeps its Cupertino spinner with
  * the rubber-band overshoot; MD3 uses the official morphing [LoadingIndicator];
  * the shared App indicator chooses the native loading control for each style
  * when this composable is still mounted (home Miuix uses native pull-to-refresh).
@@ -129,7 +129,7 @@ fun Md3ScreenshotRefreshIndicator(
  */
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
-fun iOSRefreshIndicator(
+fun HomeRefreshIndicator(
     state: PullToRefreshState,
     isRefreshing: Boolean,
     modifier: Modifier = Modifier

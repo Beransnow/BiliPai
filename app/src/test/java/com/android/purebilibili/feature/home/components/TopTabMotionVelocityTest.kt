@@ -276,7 +276,7 @@ class TopTabMotionVelocityTest {
 
     @Test
     fun `top tab drag does not change search or list layout clearance`() {
-        val headerSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/iOSHomeHeader.kt")
+        val headerSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/HomeHeader.kt")
         val homeSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/HomeScreen.kt")
 
         assertTrue(headerSource.contains("translationY = searchContentTranslationYPx"))

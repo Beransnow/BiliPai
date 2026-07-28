@@ -22,7 +22,7 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-class iOSHomeHeaderVisualPolicyTest {
+class HomeHeaderVisualPolicyTest {
 
     @Test
     fun `top right unread badge only appears for inbox action`() {
@@ -36,8 +36,8 @@ class iOSHomeHeaderVisualPolicyTest {
     fun `top right unread badge escapes icon center without clipping`() {
         val layout = resolveHomeTopRightUnreadBadgeLayout()
         val source = listOf(
-            File("app/src/main/java/com/android/purebilibili/feature/home/components/iOSHomeHeader.kt"),
-            File("src/main/java/com/android/purebilibili/feature/home/components/iOSHomeHeader.kt")
+            File("app/src/main/java/com/android/purebilibili/feature/home/components/HomeHeader.kt"),
+            File("src/main/java/com/android/purebilibili/feature/home/components/HomeHeader.kt")
         ).first { it.exists() }.readText()
         val topRightButtonSource = source
             .substringAfter("Spacer(modifier = Modifier.width(resolveHomeTopEdgeControlGap")
@@ -1802,7 +1802,7 @@ class iOSHomeHeaderVisualPolicyTest {
     @Test
     fun `home header consumes skin atmosphere and search tint`() {
         val homeScreenSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/HomeScreen.kt")
-        val headerSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/iOSHomeHeader.kt")
+        val headerSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/HomeHeader.kt")
 
         assertTrue(homeScreenSource.contains("uiSkinDecoration = homeUiSkinDecoration"))
         assertTrue(headerSource.contains("uiSkinDecoration: HomeUiSkinDecoration? = null"))
@@ -1815,7 +1815,7 @@ class iOSHomeHeaderVisualPolicyTest {
 
     @Test
     fun `home header search capsule reuses top tab dock liquid glass surface`() {
-        val headerSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/iOSHomeHeader.kt")
+        val headerSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/HomeHeader.kt")
         val searchCapsuleSource = headerSource
             .substringAfter(".height(resolveHomeTopSearchPillHeight(topChromePolicy))")
             .substringBefore("val searchFieldContent")
@@ -1835,7 +1835,7 @@ class iOSHomeHeaderVisualPolicyTest {
 
     @Test
     fun `home header skin top tabs keep host readability and only pass sticker icons`() {
-        val headerSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/iOSHomeHeader.kt")
+        val headerSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/HomeHeader.kt")
         val topBarSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/TopBar.kt")
 
         assertTrue(headerSource.contains("val shouldUseSkinPlainTopTabs = shouldUseHomeSkinPlainTopTabs(uiSkinDecoration)"))
@@ -1860,7 +1860,7 @@ class iOSHomeHeaderVisualPolicyTest {
 
     @Test
     fun `home header settings button uses preset aware sizing`() {
-        val headerSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/iOSHomeHeader.kt")
+        val headerSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/HomeHeader.kt")
 
         assertTrue(headerSource.contains("val topRightActionButtonSize = resolveHomeTopSettingsButtonSize(topChromePolicy)"))
         assertTrue(headerSource.contains(".size(topRightActionButtonSize)"))

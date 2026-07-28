@@ -28,7 +28,7 @@ data class AppPullRefreshProfile(
     val indicatorStyle: AppPullRefreshIndicatorStyle,
 )
 
-internal fun resolveAppPullRefreshProfile(
+fun resolveAppPullRefreshProfile(
     renderer: PresetPrimitiveRenderer,
 ): AppPullRefreshProfile = when (renderer) {
     PresetPrimitiveRenderer.IOS -> AppPullRefreshProfile(

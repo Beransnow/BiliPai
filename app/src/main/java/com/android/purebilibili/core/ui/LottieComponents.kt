@@ -152,7 +152,7 @@ fun LoadingAnimation(
             strokeWidth = 2.4.dp,
         )
         if (text != null) {
-            Spacer(modifier = Modifier.height(BiliDesign.Spacing.sm))
+            Spacer(modifier = Modifier.height(AppSpacingTokens.Small))
             Text(
                 text = text,
                 style = MaterialTheme.typography.bodyMedium,
@@ -324,7 +324,7 @@ fun EmptyState(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(BiliDesign.Spacing.xxl)
+            .padding(AppSpacingTokens.DoubleExtraLarge)
             .then(
                 if (enableEasterEgg) {
                     Modifier.clickable {
@@ -344,7 +344,7 @@ fun EmptyState(
             url = LottieUrls.EMPTY,
             size = 150.dp
         )
-        Spacer(modifier = Modifier.height(BiliDesign.Spacing.lg))
+        Spacer(modifier = Modifier.height(AppSpacingTokens.Large))
         
         //  显示彩蛋消息或默认消息（使用柔和的主题色）
         Text(
@@ -357,11 +357,11 @@ fun EmptyState(
         )
         
         if (actionText != null && onAction != null) {
-            Spacer(modifier = Modifier.height(BiliDesign.Spacing.md))
+            Spacer(modifier = Modifier.height(AppSpacingTokens.Medium))
             Text(
                 text = actionText,
                 style = MaterialTheme.typography.labelLarge,
-                color = BiliDesign.Colors.BiliPink,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.clickable { onAction() }
             )
         }
@@ -403,7 +403,7 @@ fun ErrorState(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(BiliDesign.Spacing.xxl)
+            .padding(AppSpacingTokens.DoubleExtraLarge)
             .then(
                 if (enableEasterEgg) {
                     Modifier.clickable {
@@ -425,7 +425,7 @@ fun ErrorState(
             size = 120.dp,
             iterations = 1
         )
-        Spacer(modifier = Modifier.height(BiliDesign.Spacing.lg))
+        Spacer(modifier = Modifier.height(AppSpacingTokens.Large))
         Text(
             text = displayMessage,
             style = MaterialTheme.typography.bodyLarge,
@@ -435,7 +435,7 @@ fun ErrorState(
                 MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
         )
         if (onRetry != null) {
-            Spacer(modifier = Modifier.height(BiliDesign.Spacing.md))
+            Spacer(modifier = Modifier.height(AppSpacingTokens.Medium))
             Text(
                 text = if (showEncouragement) "冲鸭！" else "点击重试",
                 style = MaterialTheme.typography.labelLarge,

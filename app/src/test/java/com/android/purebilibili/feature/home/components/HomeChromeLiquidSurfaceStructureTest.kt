@@ -18,7 +18,7 @@ class HomeChromeLiquidSurfaceStructureTest {
         }.first { candidate ->
             Files.exists(
                 candidate.resolve(
-                    "app/src/main/java/com/android/purebilibili/feature/home/components/iOSHomeHeader.kt"
+                    "app/src/main/java/com/android/purebilibili/feature/home/components/HomeHeader.kt"
                 )
             )
         }
@@ -26,7 +26,7 @@ class HomeChromeLiquidSurfaceStructureTest {
             "app/src/main/java/com/android/purebilibili/feature/home/components"
         )
 
-        val topHeader = componentsDir.resolve("iOSHomeHeader.kt")
+        val topHeader = componentsDir.resolve("HomeHeader.kt")
         val topTabChrome = componentsDir.resolve("HomeTopTabChrome.kt")
         val topBar = componentsDir.resolve("TopBar.kt")
         val bottomBar = componentsDir.resolve("BottomBar.kt")

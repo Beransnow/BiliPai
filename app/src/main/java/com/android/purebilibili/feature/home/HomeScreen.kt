@@ -77,8 +77,8 @@ import com.android.purebilibili.feature.home.components.BottomNavItem
 import com.android.purebilibili.feature.home.components.FluidHomeTopBar
 import com.android.purebilibili.feature.home.components.FrostedSideBar
 import com.android.purebilibili.feature.home.components.CategoryTabRow
-import com.android.purebilibili.feature.home.components.iOSHomeHeader  //  iOS 大标题头部
-import com.android.purebilibili.feature.home.components.iOSRefreshIndicator  //  iOS 下拉刷新指示器
+import com.android.purebilibili.feature.home.components.HomeHeader
+import com.android.purebilibili.feature.home.components.HomeRefreshIndicator
 import com.android.purebilibili.feature.home.components.Md3ScreenshotRefreshIndicator
 import com.android.purebilibili.feature.home.components.HomeInteractionMotionBudget
 import com.android.purebilibili.feature.home.components.rememberHomeUiSkinDecoration
@@ -374,7 +374,7 @@ fun HomeScreen(
     )
     // 顶部标签顺序和可见项交给设置页控制；默认仍是六项。
     // [Refactor] Hoist PagerState to be available for both Content and Header
-    // 确保 pagerState 在所有作用域均可见，以便传给 iOSHomeHeader
+    // 确保 pagerState 在所有作用域均可见，以便传给 HomeHeader
     val topTabEntries = remember(homeTopTabSettings) {
         resolveHomeTopTabEntries(
             customOrderIds = homeTopTabSettings.orderIds,
@@ -1650,7 +1650,7 @@ fun HomeScreen(
                                         )
                                     }
                                     AppPullRefreshIndicatorStyle.CUPERTINO -> {
-                                        iOSRefreshIndicator(
+                                        HomeRefreshIndicator(
                                             state = pullRefreshState,
                                             isRefreshing = isPageRefreshing,
                                             modifier = Modifier
@@ -1949,9 +1949,9 @@ fun HomeScreen(
             false
         }
         // [Optimization] Stable lambda: defers the state read to draw and keeps
-        // iOSHomeHeader skippable (a fresh lambda each frame would defeat skipping).
+        // Keep HomeHeader skippable (a fresh lambda each frame would defeat skipping).
         val headerOffsetProvider = remember { { headerOffsetHeightPx } }
-        iOSHomeHeader(
+        HomeHeader(
             headerOffsetProvider = headerOffsetProvider,
             isHeaderCollapseEnabled = collapseSearchOnScroll,
             isTopTabsAutoCollapseEnabled = collapseTabsOnScroll,

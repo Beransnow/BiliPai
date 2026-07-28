@@ -1,4 +1,4 @@
-// 文件路径: feature/home/components/iOSHomeHeader.kt
+// 文件路径: feature/home/components/HomeHeader.kt
 package com.android.purebilibili.feature.home.components
 
 import com.android.purebilibili.core.ui.AppSpacingTokens
@@ -1362,7 +1362,7 @@ internal fun Modifier.homeTopChromeSurface(
  *  实现了 1:1 的物理跟手效果，消除了漂浮感。
  */
 @Composable
-fun iOSHomeHeader(
+fun HomeHeader(
     headerOffsetProvider: () -> Float, // [Optimization] Defer state read to prevent parent recomposition
     isHeaderCollapseEnabled: Boolean = true,
     isTopTabsAutoCollapseEnabled: Boolean = false,
