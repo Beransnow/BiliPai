@@ -322,8 +322,8 @@ class SettingsRootCategoryContentStructureTest {
             playback.indexOf("AppPreferenceSectionTitle(\"网络与画质\")") <
                 playback.indexOf("AppPreferenceSectionTitle(\"互动与评论\")")
         )
-        assertTrue(animation.contains("IOSSectionTitle(\"玻璃效果\")"))
-        assertTrue(animation.contains("IOSSectionTitle(\"底栏入口\")"))
+        assertTrue(animation.contains("AppPreferenceSectionTitle(\"玻璃效果\")"))
+        assertTrue(animation.contains("AppPreferenceSectionTitle(\"底栏入口\")"))
     }
 
     @Test

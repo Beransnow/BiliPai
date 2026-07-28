@@ -62,6 +62,31 @@ class AppPreferenceApiStructureTest {
         }
     }
 
+    @Test
+    fun settingsFeatureCallers_useNeutralComponentNames() {
+        val settingsRoot = listOf(
+            File("app/src/main/java/com/android/purebilibili/feature/settings"),
+            File("src/main/java/com/android/purebilibili/feature/settings"),
+        ).firstOrNull(File::isDirectory)
+            ?: error("Cannot locate settings production sources from ${File(".").absolutePath}")
+        val legacyImplementation = "IOSSlidingSegmentedControl.kt"
+        val legacyCall = Regex(
+            """\b(IOSSectionTitle|IOSGroup|IOSSwitchItem|IOSSliderPreference|IOSClickableItem|IOSDivider|IOSAdaptiveTextField|IOSSlidingSegmentedControl|IOSSlidingSegmentedSetting|IOSAlertDialog|IOSDialogAction)\b"""
+        )
+
+        settingsRoot.walkTopDown()
+            .filter { file ->
+                file.isFile && file.extension == "kt" && file.name != legacyImplementation
+            }
+            .forEach { file ->
+                val source = file.readText().replace("\r\n", "\n")
+                assertFalse(
+                    legacyCall.containsMatchIn(source),
+                    "Legacy component call remains in ${file.relativeTo(settingsRoot)}",
+                )
+            }
+    }
+
     private fun loadSource(path: String): String {
         val normalizedPath = path.removePrefix("app/")
         return listOf(File(path), File(normalizedPath))

@@ -366,13 +366,13 @@ fun BottomBarSettingsContent(
             // 底部导航
             item {
                 Box(modifier = Modifier.entrance()) {
-                    IOSSectionTitle("底部导航")
+                    AppPreferenceSectionTitle("底部导航")
                 }
             }
 
             item {
                 Box(modifier = Modifier.entrance()) {
-                    IOSGroup {
+                    AppPreferenceGroup {
                         val scope = rememberCoroutineScope()
                         val visibilityMode by SettingsManager.getBottomBarVisibilityMode(context).collectAsStateWithLifecycle(initialValue = SettingsManager.BottomBarVisibilityMode.ALWAYS_VISIBLE)
                         val labelMode by SettingsManager.getBottomBarLabelMode(context).collectAsStateWithLifecycle(initialValue = 0)
@@ -472,7 +472,7 @@ fun BottomBarSettingsContent(
                             }
                         }
                         
-                        IOSDivider()
+                        AppPreferenceDivider()
                         
                         //  底栏标签样式（选择器）
                         Column(modifier = Modifier.padding(16.dp)) {
@@ -554,13 +554,13 @@ fun BottomBarSettingsContent(
             // 顶部标签
             item {
                 Box(modifier = Modifier.entrance()) {
-                    IOSSectionTitle("顶部标签")
+                    AppPreferenceSectionTitle("顶部标签")
                 }
             }
 
             item {
                 Box(modifier = Modifier.entrance()) {
-                    IOSGroup {
+                    AppPreferenceGroup {
                         Column(
                             modifier = Modifier.padding(16.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -1110,14 +1110,14 @@ fun BottomBarSettingsContent(
             // 平板导航
             item {
                 Box(modifier = Modifier.entrance()) {
-                    IOSSectionTitle("平板导航")
+                    AppPreferenceSectionTitle("平板导航")
                 }
             }
 
             item {
                 Box(modifier = Modifier.entrance()) {
-                    IOSGroup {
-                        IOSSwitchItem(
+                    AppPreferenceGroup {
+                        AppSwitchPreference(
                             icon = CupertinoIcons.Outlined.SidebarLeft,
                             title = "侧边导航栏",
                             subtitle = "在平板横屏或大屏布局中使用侧边栏代替底部导航",
@@ -1136,7 +1136,7 @@ fun BottomBarSettingsContent(
             // 当前底栏预览
             item {
                 Box(modifier = Modifier.entrance()) {
-                    IOSSectionTitle("当前底栏")
+                    AppPreferenceSectionTitle("当前底栏")
                 }
             }
             
@@ -1156,14 +1156,14 @@ fun BottomBarSettingsContent(
                 Box(modifier = Modifier.entrance()) {
                     Column {
                         Spacer(modifier = Modifier.height(8.dp))
-                        IOSSectionTitle("可用项目")
+                        AppPreferenceSectionTitle("可用项目")
                     }
                 }
             }
             
             item {
                 Box(modifier = Modifier.entrance()) {
-                    IOSGroup {
+                    AppPreferenceGroup {
                         allBottomBarTabs.forEachIndexed { index, tab ->
                             if (index > 0) {
                                 HorizontalDivider(modifier = Modifier.padding(start = 56.dp))
@@ -1437,7 +1437,7 @@ private fun BottomBarTabItem(
     
     //  颜色选择弹窗
     if (showColorPicker) {
-        com.android.purebilibili.core.ui.IOSAlertDialog(
+        com.android.purebilibili.core.ui.AppAlertDialog(
             onDismissRequest = { showColorPicker = false },
             title = { Text("选择${tab.label}颜色") },
             text = {
@@ -1483,7 +1483,7 @@ private fun BottomBarTabItem(
                 }
             },
             confirmButton = {
-                com.android.purebilibili.core.ui.IOSDialogAction(
+                com.android.purebilibili.core.ui.AppDialogAction(
                     onClick = { showColorPicker = false }
                 ) {
                     Text("取消", color = MaterialTheme.colorScheme.primary)

@@ -44,9 +44,9 @@ import com.android.purebilibili.core.theme.iOSCornerRadius
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.core.ui.rememberAppSettingsIcon
-import com.android.purebilibili.core.ui.components.IOSClickableItem
-import com.android.purebilibili.core.ui.components.IOSDivider
-import com.android.purebilibili.core.ui.components.IOSGroup
+import com.android.purebilibili.core.ui.components.AppPreference
+import com.android.purebilibili.core.ui.components.AppPreferenceDivider
+import com.android.purebilibili.core.ui.components.AppPreferenceGroup
 import com.android.purebilibili.core.ui.components.resolveAdaptiveListComponentVisualSpec
 import com.android.purebilibili.core.ui.components.resolveAdaptiveSearchBarContainerColor
 import com.android.purebilibili.core.ui.components.shouldUseNativeMiuixSearchBar
@@ -291,9 +291,9 @@ internal fun SettingsSearchResultsSection(
         androidNativeVariant = androidNativeVariant,
     )
     SettingsCategoryHeader(stringResource(R.string.settings_search_results_title))
-    IOSGroup {
+    AppPreferenceGroup {
         if (results.isEmpty()) {
-            IOSClickableItem(
+            AppPreference(
                 icon = rememberAppSettingsIcon(),
                 title = stringResource(R.string.settings_search_empty_title),
                 subtitle = stringResource(R.string.settings_search_empty_subtitle),
@@ -304,7 +304,7 @@ internal fun SettingsSearchResultsSection(
         } else {
             results.forEachIndexed { index, result ->
                 val visual = rememberSettingsEntryVisual(result.target)
-                IOSClickableItem(
+                AppPreference(
                     icon = visual.icon,
                     iconPainter = visual.iconResId?.let { painterResource(id = it) },
                     title = result.title,
@@ -314,7 +314,7 @@ internal fun SettingsSearchResultsSection(
                     iconTint = visual.iconTint,
                 )
                 if (index != results.lastIndex) {
-                    IOSDivider(startIndent = visualSpec.dividerStartIndentDp.dp)
+                    AppPreferenceDivider(startIndent = visualSpec.dividerStartIndentDp.dp)
                 }
             }
         }

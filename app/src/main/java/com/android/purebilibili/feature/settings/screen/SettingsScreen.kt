@@ -70,7 +70,7 @@ import io.github.alexzhirkevich.cupertino.icons.filled.*
 import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import kotlinx.coroutines.launch
 
-import com.android.purebilibili.core.ui.components.IOSSectionTitle
+import com.android.purebilibili.core.ui.components.AppPreferenceSectionTitle
 import com.android.purebilibili.core.ui.animation.EntranceGroup
 import com.android.purebilibili.core.ui.animation.entrance
 import com.android.purebilibili.core.ui.motion.rememberSystemReduceMotion
@@ -512,7 +512,7 @@ fun SettingsScreen(
     }
     
     if (showPathDialog) {
-        com.android.purebilibili.core.ui.IOSAlertDialog(
+        com.android.purebilibili.core.ui.AppAlertDialog(
             onDismissRequest = { showPathDialog = false },
             title = { Text("下载位置", color = MaterialTheme.colorScheme.onSurface) },
             text = { 
@@ -536,13 +536,13 @@ fun SettingsScreen(
                 }
             },
             confirmButton = {
-                com.android.purebilibili.core.ui.IOSDialogAction(onClick = { 
+                com.android.purebilibili.core.ui.AppDialogAction(onClick = {
                     showPathDialog = false
                     downloadFolderPicker.launch(null)
                 }) { Text("选择导出目录") }
             },
             dismissButton = { 
-                com.android.purebilibili.core.ui.IOSDialogAction(onClick = { 
+                com.android.purebilibili.core.ui.AppDialogAction(onClick = {
                     scope.launch {
                         SettingsManager.setDownloadPath(context, null)
                         SettingsManager.setDownloadExportTreeUri(context, null)
@@ -554,7 +554,7 @@ fun SettingsScreen(
         )
     }
     if (showImageSavePathDialog) {
-        com.android.purebilibili.core.ui.IOSAlertDialog(
+        com.android.purebilibili.core.ui.AppAlertDialog(
             onDismissRequest = { showImageSavePathDialog = false },
             title = { Text("图片保存位置", color = MaterialTheme.colorScheme.onSurface) },
             text = {
@@ -581,13 +581,13 @@ fun SettingsScreen(
                 }
             },
             confirmButton = {
-                com.android.purebilibili.core.ui.IOSDialogAction(onClick = {
+                com.android.purebilibili.core.ui.AppDialogAction(onClick = {
                     showImageSavePathDialog = false
                     imageSaveFolderPicker.launch(null)
                 }) { Text("选择图片目录") }
             },
             dismissButton = {
-                com.android.purebilibili.core.ui.IOSDialogAction(onClick = {
+                com.android.purebilibili.core.ui.AppDialogAction(onClick = {
                     scope.launch {
                         SettingsManager.setImageSaveTreeUri(context, null)
                     }
@@ -599,11 +599,11 @@ fun SettingsScreen(
     }
     
     if (showEasterEggDialog) {
-        com.android.purebilibili.core.ui.IOSAlertDialog(
+        com.android.purebilibili.core.ui.AppAlertDialog(
             onDismissRequest = { showEasterEggDialog = false; versionClickCount = 0 },
             title = { Text(" 你发现了彩蛋！", fontWeight = FontWeight.Bold) },
             text = { Text("感谢你使用 BiliPai！这是一个用爱发电的开源项目。") },
-            confirmButton = { com.android.purebilibili.core.ui.IOSDialogAction(onClick = { showEasterEggDialog = false; versionClickCount = 0 }) { Text("我知道了！") } }
+            confirmButton = { com.android.purebilibili.core.ui.AppDialogAction(onClick = { showEasterEggDialog = false; versionClickCount = 0 }) { Text("我知道了！") } }
         )
     }
 
@@ -649,7 +649,7 @@ fun SettingsScreen(
             )
         }
         val releaseNotesScrollState = rememberScrollState()
-        com.android.purebilibili.core.ui.IOSAlertDialog(
+        com.android.purebilibili.core.ui.AppAlertDialog(
             onDismissRequest = { updateCheckResult = null },
             title = {
                 Text(
@@ -719,7 +719,7 @@ fun SettingsScreen(
                 }
             },
             confirmButton = {
-                com.android.purebilibili.core.ui.IOSDialogAction(onClick = {
+                com.android.purebilibili.core.ui.AppDialogAction(onClick = {
                     val downloadedFile = updateDownloadState.filePath
                         ?.takeIf { updateDownloadState.status == AppUpdateDownloadStatus.COMPLETED }
                         ?.let { path -> java.io.File(path) }
@@ -727,18 +727,18 @@ fun SettingsScreen(
 
                     if (downloadedFile != null) {
                         installDownloadedAppUpdate(context, downloadedFile)
-                        return@IOSDialogAction
+                        return@AppDialogAction
                     }
 
                     val asset = preferredAsset
                     if (asset == null) {
                         updateCheckResult = null
                         uriHandler.openUri(info.releaseUrl)
-                        return@IOSDialogAction
+                        return@AppDialogAction
                     }
 
                     if (updateDownloadState.status == AppUpdateDownloadStatus.DOWNLOADING) {
-                        return@IOSDialogAction
+                        return@AppDialogAction
                     }
 
                     scope.launch {
@@ -776,7 +776,7 @@ fun SettingsScreen(
                 }
             },
             dismissButton = {
-                com.android.purebilibili.core.ui.IOSDialogAction(onClick = {
+                com.android.purebilibili.core.ui.AppDialogAction(onClick = {
                     updateCheckResult = null
                     updateDownloadState = AppUpdateDownloadState()
                 }) { Text("稍后") }
@@ -811,7 +811,7 @@ fun SettingsScreen(
             )
         }
         val releaseNotesScrollState = rememberScrollState()
-        com.android.purebilibili.core.ui.IOSAlertDialog(
+        com.android.purebilibili.core.ui.AppAlertDialog(
             onDismissRequest = { changelogCheckResult = null },
             title = {
                 Text(
@@ -860,13 +860,13 @@ fun SettingsScreen(
                 }
             },
             confirmButton = {
-                com.android.purebilibili.core.ui.IOSDialogAction(onClick = {
+                com.android.purebilibili.core.ui.AppDialogAction(onClick = {
                     changelogCheckResult = null
                     uriHandler.openUri(info.releaseUrl)
                 }) { Text("查看发布页") }
             },
             dismissButton = {
-                com.android.purebilibili.core.ui.IOSDialogAction(onClick = {
+                com.android.purebilibili.core.ui.AppDialogAction(onClick = {
                     changelogCheckResult = null
                 }) { Text("关闭") }
             }

@@ -635,7 +635,7 @@ internal fun CacheClearConfirmDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    com.android.purebilibili.core.ui.IOSAlertDialog(
+    com.android.purebilibili.core.ui.AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { 
             Text(
@@ -695,7 +695,7 @@ internal fun CacheClearConfirmDialog(
             }
         },
         confirmButton = {
-            com.android.purebilibili.core.ui.IOSDialogAction(
+            com.android.purebilibili.core.ui.AppDialogAction(
                 onClick = onConfirm
             ) { 
                 Text(
@@ -709,7 +709,7 @@ internal fun CacheClearConfirmDialog(
             }
         },
         dismissButton = { 
-            com.android.purebilibili.core.ui.IOSDialogAction(onClick = onDismiss) { 
+            com.android.purebilibili.core.ui.AppDialogAction(onClick = onDismiss) {
                 Text("取消", color = MaterialTheme.colorScheme.primary) 
             } 
         }

@@ -207,10 +207,10 @@ fun PermissionSettingsContent(
             }
 
             Box(modifier = Modifier.entrance()) {
-                IOSSectionTitle("需要授权的权限")
+                AppPreferenceSectionTitle("需要授权的权限")
             }
             Box(modifier = Modifier.entrance()) {
-                IOSGroup {
+                AppPreferenceGroup {
                     permissions.filter { !it.isNormal }.forEachIndexed { index, info ->
                         if (index > 0) HorizontalDivider()
                         PermissionItem(
@@ -223,10 +223,10 @@ fun PermissionSettingsContent(
             }
 
             Box(modifier = Modifier.entrance()) {
-                IOSSectionTitle("自动授予的权限")
+                AppPreferenceSectionTitle("自动授予的权限")
             }
             Box(modifier = Modifier.entrance()) {
-                IOSGroup {
+                AppPreferenceGroup {
                     permissions.filter { it.isNormal }.forEachIndexed { index, info ->
                         if (index > 0) HorizontalDivider()
                         PermissionItem(
