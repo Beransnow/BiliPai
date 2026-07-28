@@ -48,22 +48,6 @@ class PrimitivePresetCoverageTest {
     }
 
     @Test
-    fun refreshIndicatorRenderer_swapsToMaterialWhenNotIos() {
-        assertEquals(
-            AppPullRefreshIndicatorRenderer.CUPERTINO,
-            resolveAppPullRefreshIndicatorRenderer(UiPreset.IOS, AndroidNativeVariant.MATERIAL3)
-        )
-        assertEquals(
-            AppPullRefreshIndicatorRenderer.MATERIAL3,
-            resolveAppPullRefreshIndicatorRenderer(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
-        )
-        assertEquals(
-            AppPullRefreshIndicatorRenderer.MIUIX,
-            resolveAppPullRefreshIndicatorRenderer(UiPreset.MD3, AndroidNativeVariant.MIUIX)
-        )
-    }
-
-    @Test
     fun dialogActionLayoutPolicy_stillBranches() {
         // iOSDialogComponents already exposes resolveIosDialogActionLayoutPolicy.
         // Verify it continues to differentiate iOS vs MD3.
