@@ -49,7 +49,7 @@ fun AppSwitchPreference(
     iconTint: Color = MaterialTheme.colorScheme.primary,
     textColor: Color = MaterialTheme.colorScheme.onSurface,
     subtitleColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
-) = IOSSwitchItem(
+) = AdaptiveSwitchPreferenceContent(
     icon = icon,
     title = title,
     subtitle = subtitle,
@@ -108,7 +108,7 @@ fun AppPreference(
     enableCopy: Boolean = false,
     showChevron: Boolean = true,
     trailingContent: @Composable (() -> Unit)? = null,
-) = IOSClickableItem(
+) = AdaptivePreferenceContent(
     icon = icon,
     iconPainter = iconPainter,
     title = title,

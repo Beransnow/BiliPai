@@ -14,7 +14,7 @@ fun AppAlertDialog(
     dismissButton: @Composable (() -> Unit)? = null,
     presentationProgress: Float = 1f,
     properties: DialogProperties = DialogProperties(),
-) = IOSAlertDialog(
+) = AdaptiveAlertDialog(
     onDismissRequest = onDismissRequest,
     title = title,
     text = text,
@@ -30,4 +30,4 @@ fun AppDialogAction(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
-) = IOSDialogAction(onClick = onClick, modifier = modifier, content = content)
+) = AdaptiveDialogAction(onClick = onClick, modifier = modifier, content = content)

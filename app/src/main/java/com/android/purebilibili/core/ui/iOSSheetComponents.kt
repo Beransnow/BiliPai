@@ -231,31 +231,6 @@ fun rememberAppBottomSheetMotion(): AppBottomSheetMotion {
     }
 }
 
-@Deprecated("Use AppModalBottomSheet")
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun IOSModalBottomSheet(
-    onDismissRequest: () -> Unit,
-    modifier: Modifier = Modifier,
-    sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-    containerColor: Color = MaterialTheme.colorScheme.surface,
-    scrimColor: Color = BottomSheetDefaults.ScrimColor,
-    presentationProgress: Float = 1f,
-    dragHandle: @Composable (() -> Unit)? = { IOSDragHandle() },
-    windowInsets: androidx.compose.foundation.layout.WindowInsets = BottomSheetDefaults.modalWindowInsets,
-    content: @Composable () -> Unit,
-) = AppModalBottomSheet(
-    onDismissRequest = onDismissRequest,
-    modifier = modifier,
-    sheetState = sheetState,
-    containerColor = containerColor,
-    scrimColor = scrimColor,
-    presentationProgress = presentationProgress,
-    dragHandle = dragHandle,
-    windowInsets = windowInsets,
-    content = content,
-)
-
 @Composable
 fun IOSDragHandle() {
     Box(

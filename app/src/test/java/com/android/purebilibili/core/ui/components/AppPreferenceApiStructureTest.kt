@@ -22,8 +22,8 @@ class AppPreferenceApiStructureTest {
         assertTrue(source.contains("fun AppTextField("))
         assertTrue(source.contains("fun AppSearchField("))
         assertTrue(source.contains(") = IOSSearchBar("))
-        assertTrue(source.contains(") = IOSClickableItem("))
-        assertTrue(source.contains(") = IOSSwitchItem("))
+        assertTrue(source.contains(") = AdaptivePreferenceContent("))
+        assertTrue(source.contains(") = AdaptiveSwitchPreferenceContent("))
         assertTrue(source.contains(") = IOSSliderPreference("))
         assertTrue(source.contains(") = IOSGroup("))
 
@@ -31,9 +31,9 @@ class AppPreferenceApiStructureTest {
             "app/src/main/java/com/android/purebilibili/core/ui/AppDialogComponents.kt"
         )
         assertTrue(dialogSource.contains("fun AppAlertDialog("))
-        assertTrue(dialogSource.contains(") = IOSAlertDialog("))
+        assertTrue(dialogSource.contains(") = AdaptiveAlertDialog("))
         assertTrue(dialogSource.contains("fun AppDialogAction("))
-        assertTrue(dialogSource.contains(") = IOSDialogAction("))
+        assertTrue(dialogSource.contains(") = AdaptiveDialogAction("))
 
         val listSource = loadSource(
             "app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt"

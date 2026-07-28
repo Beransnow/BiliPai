@@ -58,7 +58,7 @@ internal fun resolveIosDialogActionLayoutPolicy(
  * Mimics the look of standard iOS UIAlertController (Alert style).
  */
 @Composable
-fun IOSAlertDialog(
+internal fun AdaptiveAlertDialog(
     onDismissRequest: () -> Unit,
     title: @Composable (() -> Unit)? = null,
     text: @Composable (() -> Unit)? = null,
@@ -306,13 +306,13 @@ private fun MiuixAlertDialogBody(
 }
 
 /**
- * A helper for buttons inside IOSAlertDialog if you need absolute control,
+ * A helper for buttons inside the adaptive alert dialog if you need absolute control,
  * basically a wrapper that removes TextButton padding issues if standard TextButton is used.
  * But actually providing TextStyle above might be enough for simple Text() children.
  * If user passes TextButton, we might need to conform it.
  */
 @Composable
-fun IOSDialogAction(
+internal fun AdaptiveDialogAction(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit

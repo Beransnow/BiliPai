@@ -727,7 +727,7 @@ fun IOSGroup(
 }
 
 @Composable
-fun IOSSwitchItem(
+internal fun AdaptiveSwitchPreferenceContent(
     icon: ImageVector? = null,
     title: String,
     subtitle: String? = null,
@@ -1005,7 +1005,7 @@ fun IOSSliderPreference(
 }
 
 @Composable
-fun IOSClickableItem(
+internal fun AdaptivePreferenceContent(
     icon: ImageVector? = null,
     iconPainter: androidx.compose.ui.graphics.painter.Painter? = null,
     title: String,

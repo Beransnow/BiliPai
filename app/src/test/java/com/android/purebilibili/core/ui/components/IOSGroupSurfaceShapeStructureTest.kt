@@ -12,7 +12,7 @@ class IOSGroupSurfaceShapeStructureTest {
         val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt")
         val iosGroupSource = source
             .substringAfter("fun IOSGroup(")
-            .substringBefore("@Composable\nfun IOSSwitchItem")
+            .substringBefore("@Composable\ninternal fun AdaptiveSwitchPreferenceContent")
 
         assertFalse(iosGroupSource.contains(".clip(appliedShape)"))
         assertTrue(iosGroupSource.contains("resolveIosGroupSurfaceShape("))
@@ -25,12 +25,12 @@ class IOSGroupSurfaceShapeStructureTest {
         val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt")
         val iosGroupSource = source
             .substringAfter("fun IOSGroup(")
-            .substringBefore("@Composable\nfun IOSSwitchItem")
+            .substringBefore("@Composable\ninternal fun AdaptiveSwitchPreferenceContent")
         val switchItemSource = source
-            .substringAfter("fun IOSSwitchItem(")
+            .substringAfter("fun AdaptiveSwitchPreferenceContent(")
             .substringBefore("@Composable\nfun IOSSliderPreference")
         val clickableItemSource = source
-            .substringAfter("fun IOSClickableItem(")
+            .substringAfter("fun AdaptivePreferenceContent(")
             .substringBefore("@Composable\nfun IOSSearchBar")
 
         assertTrue(source.contains("Card as MiuixCard"))
@@ -45,7 +45,7 @@ class IOSGroupSurfaceShapeStructureTest {
     fun `switch item uses measured row layout so trailing switch cannot overlap text`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt")
         val switchItemSource = source
-            .substringAfter("fun IOSSwitchItem(")
+            .substringAfter("fun AdaptiveSwitchPreferenceContent(")
             .substringBefore("@Composable\nfun IOSSliderPreference")
 
         assertTrue(switchItemSource.contains("Row("))
@@ -58,7 +58,7 @@ class IOSGroupSurfaceShapeStructureTest {
     fun `miuix switch item respects app haptic setting`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt")
         val switchItemSource = source
-            .substringAfter("fun IOSSwitchItem(")
+            .substringAfter("fun AdaptiveSwitchPreferenceContent(")
             .substringBefore("@Composable\nfun IOSSliderPreference")
 
         assertTrue(
