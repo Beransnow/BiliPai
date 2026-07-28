@@ -20,8 +20,6 @@ import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.appendInlineContent
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -50,6 +48,7 @@ import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.ui.rememberAppMoreIcon
 import com.android.purebilibili.core.ui.rememberAppPhotoIcon
+import com.android.purebilibili.core.ui.rememberAppSendIcon
 import com.android.purebilibili.core.ui.components.AppTextField
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.EmoteInfo
@@ -401,6 +400,7 @@ fun ChatInputBar(
     val showSendAction = text.isNotBlank()
     val isBusy = isSending || isUploadingImage
     val photoIcon = rememberAppPhotoIcon()
+    val sendIcon = rememberAppSendIcon()
 
     Surface(
         tonalElevation = 3.dp,
@@ -442,7 +442,7 @@ fun ChatInputBar(
                     )
                 } else {
                     Icon(
-                        imageVector = if (showSendAction) Icons.AutoMirrored.Filled.Send else photoIcon,
+                        imageVector = if (showSendAction) sendIcon else photoIcon,
                         contentDescription = if (showSendAction) "发送" else "图片",
                         tint = if (showSendAction) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                     )

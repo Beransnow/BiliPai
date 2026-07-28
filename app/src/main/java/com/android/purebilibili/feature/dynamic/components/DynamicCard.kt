@@ -15,10 +15,6 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-//  Cupertino Icons - iOS SF Symbols 风格图标
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -45,6 +41,8 @@ import kotlinx.coroutines.launch
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.common.CopySelectionDialog
 import com.android.purebilibili.core.ui.rememberAppCommentIcon
+import com.android.purebilibili.core.ui.rememberAppDeleteIcon
+import com.android.purebilibili.core.ui.rememberAppLinkIcon
 import com.android.purebilibili.core.ui.rememberAppLikeFilledIcon
 import com.android.purebilibili.core.ui.rememberAppLikeIcon
 import com.android.purebilibili.core.ui.rememberAppMoreIcon
@@ -119,6 +117,8 @@ fun DynamicCardV2(
     val watchLaterIcon = rememberAppWatchLaterIcon()
     val shareIcon = rememberAppShareIcon()
     val commentIcon = rememberAppCommentIcon()
+    val deleteIcon = rememberAppDeleteIcon()
+    val linkIcon = rememberAppLinkIcon()
     val likeIcon = rememberAppLikeIcon()
     val likeFilledIcon = rememberAppLikeFilledIcon()
     var pendingDeleteAction by remember(item.id_str) { mutableStateOf<DynamicDeleteAction?>(null) }
@@ -134,7 +134,7 @@ fun DynamicCardV2(
     pendingDeleteAction?.let { action ->
         AppAlertDialog(
             onDismissRequest = { pendingDeleteAction = null },
-            icon = { Icon(CupertinoIcons.Default.Trash, contentDescription = null) },
+            icon = { Icon(deleteIcon, contentDescription = null) },
             title = { Text(action.title) },
             text = { Text(action.content) },
             confirmButton = {
@@ -258,7 +258,7 @@ fun DynamicCardV2(
                             text = { Text("复制链接", color = MaterialTheme.colorScheme.onSurface) },
                             leadingIcon = { 
                                 Icon(
-                                    CupertinoIcons.Default.Link,
+                                    linkIcon,
                                     contentDescription = null,
                                     modifier = Modifier.size(AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall),
                                     tint = MaterialTheme.colorScheme.onSurface
@@ -297,7 +297,7 @@ fun DynamicCardV2(
                                 text = { Text(deleteAction.label, color = MaterialTheme.colorScheme.error) },
                                 leadingIcon = {
                                     Icon(
-                                        CupertinoIcons.Default.Trash,
+                                        deleteIcon,
                                         contentDescription = null,
                                         modifier = Modifier.size(AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall),
                                         tint = MaterialTheme.colorScheme.error

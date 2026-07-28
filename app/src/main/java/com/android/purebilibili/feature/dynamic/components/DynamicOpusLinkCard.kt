@@ -30,9 +30,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.android.purebilibili.core.ui.rememberAppLinkIcon
 import com.android.purebilibili.data.model.response.OpusLinkCard
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.Link
 
 @Composable
 internal fun DynamicOpusLinkCard(
@@ -120,7 +119,7 @@ private fun LinkCardCover(card: OpusLinkCard) {
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = CupertinoIcons.Default.Link,
+                imageVector = rememberAppLinkIcon(),
                 contentDescription = null,
                 modifier = Modifier.size(AppSpacingTokens.ExtraLarge),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant

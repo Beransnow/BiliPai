@@ -30,12 +30,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Sort
-import androidx.compose.material.icons.outlined.Bolt
-import androidx.compose.material.icons.outlined.ContentCopy
-import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Menu
-import androidx.compose.material.icons.outlined.ViewAgenda
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
@@ -100,10 +95,15 @@ import com.android.purebilibili.core.ui.OfficialVerifyBadge
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.ui.rememberAppCloseIcon
 import com.android.purebilibili.core.ui.rememberAppCommentIcon
+import com.android.purebilibili.core.ui.rememberAppCopyIcon
+import com.android.purebilibili.core.ui.rememberAppGridLayoutIcon
 import com.android.purebilibili.core.ui.rememberAppInboxIcon
+import com.android.purebilibili.core.ui.rememberAppLiveStatusIcon
 import com.android.purebilibili.core.ui.rememberAppMoreIcon
 import com.android.purebilibili.core.ui.rememberAppPlayCircleIcon
 import com.android.purebilibili.core.ui.rememberAppSearchIcon
+import com.android.purebilibili.core.ui.rememberAppSortIcon
+import com.android.purebilibili.core.ui.rememberAppStackLayoutIcon
 import com.android.purebilibili.core.ui.rememberAppVisibilityOffIcon
 import com.android.purebilibili.core.ui.rememberAppVisibilityOnIcon
 import com.android.purebilibili.core.ui.image.rememberImageRequest
@@ -308,7 +308,7 @@ fun SpaceScreen(
                                     },
                                     leadingIcon = {
                                         Icon(
-                                            imageVector = Icons.Outlined.ContentCopy,
+                                            imageVector = rememberAppCopyIcon(),
                                             contentDescription = null
                                         )
                                     }
@@ -2091,7 +2091,7 @@ private fun SpaceHeader(
                                 color = Color(0xFFFFC107)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Outlined.Bolt,
+                                    imageVector = rememberAppLiveStatusIcon(),
                                     contentDescription = null,
                                     tint = Color.White,
                                     modifier = Modifier
@@ -2688,7 +2688,11 @@ private fun SpaceContributionVideoToolbarActions(
             modifier = Modifier.size(40.dp)
         ) {
             Icon(
-                imageVector = if (isSingleColumn) Icons.Outlined.GridView else Icons.Outlined.ViewAgenda,
+                imageVector = if (isSingleColumn) {
+                    rememberAppGridLayoutIcon()
+                } else {
+                    rememberAppStackLayoutIcon()
+                },
                 contentDescription = if (isSingleColumn) "切换为双列" else "切换为单列",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -2702,7 +2706,7 @@ private fun SpaceContributionVideoToolbarActions(
                     contentPadding = PaddingValues(horizontal = 8.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.Sort,
+                        imageVector = rememberAppSortIcon(),
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(17.dp)
@@ -2722,7 +2726,7 @@ private fun SpaceContributionVideoToolbarActions(
                     modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.Sort,
+                        imageVector = rememberAppSortIcon(),
                         contentDescription = resolveSpaceVideoSortCompactLabel(currentOrder),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )

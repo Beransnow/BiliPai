@@ -23,14 +23,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import androidx.compose.ui.draw.scale
 import android.widget.Toast
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.core.ui.AppLoadingIndicator
 import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.core.ui.rememberAppCloseIcon
+import com.android.purebilibili.core.ui.rememberAppSelectionCheckedIcon
 
 /**
  * 修复壁纸图片 URL (不添加缩放后缀，保持原图质量)
@@ -171,7 +170,7 @@ fun OfficialWallpaperSheet(
                                     // 选中标记 (右上角)
                                     if (isSelected) {
                                         Icon(
-                                            imageVector = CupertinoIcons.Default.CheckmarkCircle,
+                                            imageVector = rememberAppSelectionCheckedIcon(),
                                             contentDescription = null,
                                             tint = MaterialTheme.colorScheme.primary,
                                             modifier = Modifier

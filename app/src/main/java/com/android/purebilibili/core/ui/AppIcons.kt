@@ -2,29 +2,40 @@ package com.android.purebilibili.core.ui
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.automirrored.outlined.Comment
 import androidx.compose.material.icons.automirrored.outlined.ExitToApp
+import androidx.compose.material.icons.automirrored.outlined.FormatListBulleted
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.PlayCircle
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material.icons.outlined.Bolt
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Comment
+import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.DynamicFeed
 import androidx.compose.material.icons.outlined.FolderCopy
+import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Headphones
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.LiveTv
+import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material.icons.outlined.Memory
 import androidx.compose.material.icons.outlined.MusicNote
 import androidx.compose.material.icons.outlined.PersonAddAlt1
+import androidx.compose.material.icons.outlined.PhoneAndroid
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.PlayCircleOutline
 import androidx.compose.material.icons.outlined.Refresh
@@ -32,15 +43,18 @@ import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Speed
+import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material.icons.outlined.SwapVert
 import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.TabletAndroid
 import androidx.compose.material.icons.outlined.ThumbUpOffAlt
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material.icons.outlined.WatchLater
 import androidx.compose.material.icons.outlined.WarningAmber
+import androidx.compose.material.icons.outlined.ViewAgenda
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.BarChart
@@ -404,6 +418,18 @@ fun rememberAppClearIcon(): ImageVector = resolveAppClearIcon(LocalUiPreset.curr
 fun rememberAppCloseIcon(): ImageVector = resolveAppCloseIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
 
 @Composable
+fun rememberAppDeleteIcon(): ImageVector = resolveAppDeleteIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+
+@Composable
+fun rememberAppLinkIcon(): ImageVector = resolveAppLinkIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+
+@Composable
+fun rememberAppCopyIcon(): ImageVector = resolveAppCopyIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+
+@Composable
+fun rememberAppSendIcon(): ImageVector = resolveAppSendIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+
+@Composable
 fun rememberAppHistoryIcon(): ImageVector = resolveAppHistoryIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
 
 @Composable
@@ -477,6 +503,36 @@ fun rememberAppPlayCircleIcon(): ImageVector = resolveAppPlayCircleIcon(LocalUiP
 
 @Composable
 fun rememberAppPlayCircleFilledIcon(): ImageVector = resolveAppPlayCircleFilledIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+
+@Composable
+fun rememberAppFavoriteIcon(): ImageVector = resolveAppFavoriteIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+
+@Composable
+fun rememberAppFavoriteFilledIcon(): ImageVector = resolveAppFavoriteFilledIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+
+@Composable
+fun rememberAppListLayoutIcon(): ImageVector = resolveAppListLayoutIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+
+@Composable
+fun rememberAppStackLayoutIcon(): ImageVector = resolveAppStackLayoutIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+
+@Composable
+fun rememberAppGridLayoutIcon(): ImageVector = resolveAppGridLayoutIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+
+@Composable
+fun rememberAppSortIcon(): ImageVector = resolveAppSortIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+
+@Composable
+fun rememberAppSelectionCheckedIcon(): ImageVector = resolveAppSelectionCheckedIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+
+@Composable
+fun rememberAppPhoneDeviceIcon(): ImageVector = resolveAppPhoneDeviceIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+
+@Composable
+fun rememberAppTabletDeviceIcon(): ImageVector = resolveAppTabletDeviceIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
+
+@Composable
+fun rememberAppLiveStatusIcon(): ImageVector = resolveAppLiveStatusIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
 
 @Composable
 fun rememberAppCollectionIcon(): ImageVector = resolveAppCollectionIcon(LocalUiPreset.current, LocalAndroidNativeVariant.current)
@@ -589,6 +645,26 @@ fun resolveAppCloseIcon(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
 ): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Outlined.Close, CupertinoIcons.Outlined.Xmark)
+
+fun resolveAppDeleteIcon(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Outlined.Delete, CupertinoIcons.Outlined.Trash)
+
+fun resolveAppLinkIcon(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Outlined.Link, CupertinoIcons.Outlined.Link)
+
+fun resolveAppCopyIcon(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Outlined.ContentCopy, CupertinoIcons.Outlined.DocOnDoc)
+
+fun resolveAppSendIcon(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.AutoMirrored.Filled.Send, CupertinoIcons.Filled.Paperplane)
 
 fun resolveAppHistoryIcon(
     uiPreset: UiPreset,
@@ -714,6 +790,56 @@ fun resolveAppPlayCircleFilledIcon(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
 ): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Filled.PlayCircle, CupertinoIcons.Filled.PlayCircle)
+
+fun resolveAppFavoriteIcon(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Outlined.StarBorder, CupertinoIcons.Outlined.Star)
+
+fun resolveAppFavoriteFilledIcon(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Filled.Star, CupertinoIcons.Filled.Star)
+
+fun resolveAppListLayoutIcon(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.AutoMirrored.Outlined.FormatListBulleted, CupertinoIcons.Outlined.ListBullet)
+
+fun resolveAppStackLayoutIcon(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Outlined.ViewAgenda, CupertinoIcons.Outlined.RectangleStack)
+
+fun resolveAppGridLayoutIcon(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Outlined.GridView, CupertinoIcons.Outlined.Grid)
+
+fun resolveAppSortIcon(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.AutoMirrored.Outlined.Sort, CupertinoIcons.Outlined.ArrowUpArrowDown)
+
+fun resolveAppSelectionCheckedIcon(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Outlined.CheckCircle, CupertinoIcons.Outlined.CheckmarkCircle)
+
+fun resolveAppPhoneDeviceIcon(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Outlined.PhoneAndroid, CupertinoIcons.Outlined.Iphone)
+
+fun resolveAppTabletDeviceIcon(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Outlined.TabletAndroid, CupertinoIcons.Outlined.Ipad)
+
+fun resolveAppLiveStatusIcon(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+): ImageVector = resolvePlatformIcon(uiPreset, androidNativeVariant, Icons.Outlined.Bolt, CupertinoIcons.Outlined.Bolt)
 
 fun resolveAppCollectionIcon(
     uiPreset: UiPreset,

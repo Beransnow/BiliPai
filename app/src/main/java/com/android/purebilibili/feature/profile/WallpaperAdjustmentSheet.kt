@@ -27,10 +27,9 @@ import com.android.purebilibili.core.ui.wallpaper.applyGestureToProfileWallpaper
 import com.android.purebilibili.core.ui.wallpaper.sanitizeProfileWallpaperTransform
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.TabletAndroid
-import androidx.compose.material.icons.outlined.PhoneAndroid
 import com.android.purebilibili.core.ui.AppModalBottomSheet
+import com.android.purebilibili.core.ui.rememberAppPhoneDeviceIcon
+import com.android.purebilibili.core.ui.rememberAppTabletDeviceIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,6 +43,8 @@ fun WallpaperAdjustmentSheet(
     var selectedTab by remember { mutableIntStateOf(0) } // 0: Mobile, 1: Tablet
     var mobileBias by remember { mutableFloatStateOf(initialMobileBias) }
     var tabletBias by remember { mutableFloatStateOf(initialTabletBias) }
+    val phoneDeviceIcon = rememberAppPhoneDeviceIcon()
+    val tabletDeviceIcon = rememberAppTabletDeviceIcon()
     
     val currentBias = if (selectedTab == 0) mobileBias else tabletBias
     
@@ -103,14 +104,14 @@ fun WallpaperAdjustmentSheet(
             ) {
                 TabItem(
                     title = "手机端",
-                    icon = Icons.Outlined.PhoneAndroid,
+                    icon = phoneDeviceIcon,
                     isSelected = selectedTab == 0,
                     modifier = Modifier.weight(1f),
                     onClick = { selectedTab = 0 }
                 )
                 TabItem(
                     title = "平板端",
-                    icon = Icons.Outlined.TabletAndroid,
+                    icon = tabletDeviceIcon,
                     isSelected = selectedTab == 1,
                     modifier = Modifier.weight(1f),
                     onClick = { selectedTab = 1 }
@@ -229,6 +230,8 @@ fun ProfileWallpaperAdjustmentSheet(
     var tabletTransform by remember {
         mutableStateOf(sanitizeProfileWallpaperTransform(initialTabletTransform))
     }
+    val phoneDeviceIcon = rememberAppPhoneDeviceIcon()
+    val tabletDeviceIcon = rememberAppTabletDeviceIcon()
 
     val currentTransform = if (selectedTab == 0) mobileTransform else tabletTransform
     val currentTransformState = rememberUpdatedState(currentTransform)
@@ -293,14 +296,14 @@ fun ProfileWallpaperAdjustmentSheet(
             ) {
                 TabItem(
                     title = "手机端",
-                    icon = Icons.Outlined.PhoneAndroid,
+                    icon = phoneDeviceIcon,
                     isSelected = selectedTab == 0,
                     modifier = Modifier.weight(1f),
                     onClick = { selectedTab = 0 }
                 )
                 TabItem(
                     title = "平板端",
-                    icon = Icons.Outlined.TabletAndroid,
+                    icon = tabletDeviceIcon,
                     isSelected = selectedTab == 1,
                     modifier = Modifier.weight(1f),
                     onClick = { selectedTab = 1 }

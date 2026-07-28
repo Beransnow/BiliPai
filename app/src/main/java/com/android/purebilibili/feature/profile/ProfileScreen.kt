@@ -13,9 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -90,6 +87,8 @@ import com.android.purebilibili.core.ui.rememberAppFolderIcon
 import com.android.purebilibili.core.ui.rememberAppHistoryIcon
 import com.android.purebilibili.core.ui.rememberAppInboxIcon
 import com.android.purebilibili.core.ui.rememberAppCommentIcon
+import com.android.purebilibili.core.ui.rememberAppDeleteIcon
+import com.android.purebilibili.core.ui.rememberAppLinkIcon
 import com.android.purebilibili.core.ui.rememberAppLikeIcon
 import com.android.purebilibili.core.ui.rememberAppMoreIcon
 import com.android.purebilibili.core.ui.rememberAppLockIcon
@@ -1988,6 +1987,8 @@ private fun ProfileDynamicCard(
     val bodyText = resolveProfileDynamicText(item)
     val orig = item.orig
     val moreIcon = rememberAppMoreIcon()
+    val deleteIcon = rememberAppDeleteIcon()
+    val linkIcon = rememberAppLinkIcon()
     val context = LocalContext.current
     val deleteAction = remember(item) { resolveProfileDynamicDeleteAction(item) }
     var showMoreMenu by remember(item.id_str) { mutableStateOf(false) }
@@ -1996,7 +1997,7 @@ private fun ProfileDynamicCard(
     pendingDeleteAction?.let { action ->
         AppAlertDialog(
             onDismissRequest = { pendingDeleteAction = null },
-            icon = { Icon(CupertinoIcons.Default.Trash, contentDescription = null) },
+            icon = { Icon(deleteIcon, contentDescription = null) },
             title = { Text(action.title) },
             text = { Text(action.content) },
             confirmButton = {
@@ -2069,7 +2070,7 @@ private fun ProfileDynamicCard(
                         text = { Text("复制链接") },
                         leadingIcon = {
                             Icon(
-                                CupertinoIcons.Default.Link,
+                                linkIcon,
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -2090,7 +2091,7 @@ private fun ProfileDynamicCard(
                             text = { Text(deleteAction.label) },
                             leadingIcon = {
                                 Icon(
-                                    CupertinoIcons.Default.Trash,
+                                    deleteIcon,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.error,
                                     modifier = Modifier.size(20.dp)

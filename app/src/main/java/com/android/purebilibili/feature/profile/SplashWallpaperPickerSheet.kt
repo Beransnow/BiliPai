@@ -30,13 +30,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.android.purebilibili.core.store.SettingsManager
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.core.ui.AppLoadingIndicator
 import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.core.ui.rememberAppCloseIcon
 import com.android.purebilibili.core.ui.rememberAppPhotoIcon
+import com.android.purebilibili.core.ui.rememberAppSelectionCheckedIcon
 
 /**
  * 🖼️ 开屏壁纸选择器 (用于设置页)
@@ -233,7 +232,7 @@ fun SplashWallpaperPickerSheet(
 
                                     if (isSelected) {
                                         Icon(
-                                            imageVector = CupertinoIcons.Default.CheckmarkCircle,
+                                            imageVector = rememberAppSelectionCheckedIcon(),
                                             contentDescription = null,
                                             tint = MaterialTheme.colorScheme.primary,
                                             modifier = Modifier
@@ -433,7 +432,7 @@ private fun SplashCustomWallpaperTile(
 
             if (isSelected) {
                 Icon(
-                    imageVector = CupertinoIcons.Default.CheckmarkCircle,
+                    imageVector = rememberAppSelectionCheckedIcon(),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier

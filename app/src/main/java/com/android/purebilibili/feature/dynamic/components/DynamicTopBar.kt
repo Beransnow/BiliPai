@@ -23,11 +23,9 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-//  Cupertino Icons - iOS SF Symbols 风格图标
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
+import com.android.purebilibili.core.ui.rememberAppListLayoutIcon
+import com.android.purebilibili.core.ui.rememberAppStackLayoutIcon
 import com.android.purebilibili.core.ui.resolveGlobalWallpaperProtectiveColor
 import com.android.purebilibili.core.ui.blur.unifiedBlur
 import com.android.purebilibili.feature.dynamic.resolveDynamicTopBarHorizontalPadding
@@ -79,6 +77,8 @@ fun DynamicTopBarWithTabs(
     val blurIntensity = currentUnifiedBlurIntensity()
     val backgroundAlpha = BlurStyles.getBackgroundAlpha(blurIntensity)
     val globalWallpaperVisible = LocalGlobalWallpaperBackdropVisible.current
+    val listLayoutIcon = rememberAppListLayoutIcon()
+    val stackLayoutIcon = rememberAppStackLayoutIcon()
     val shouldUseHeaderBlur = shouldUseDynamicTopBarHeaderBlur(
         hasHazeState = hazeState != null,
         globalWallpaperVisible = globalWallpaperVisible
@@ -129,7 +129,7 @@ fun DynamicTopBarWithTabs(
                 ) {
                     Icon(
                         imageVector = if (displayMode == DynamicDisplayMode.SIDEBAR)
-                            CupertinoIcons.Default.ListBullet else CupertinoIcons.Default.RectangleStack,
+                            listLayoutIcon else stackLayoutIcon,
                         contentDescription = "切换布局模式",
                         tint = MaterialTheme.colorScheme.onSurface, // 自适应颜色
                         modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro)

@@ -31,7 +31,7 @@ class PhaseThreeIconBoundaryStructureTest {
     }
 
     @Test
-    fun phaseThreeOrdinaryFeaturesKeepOnlyTheReviewedDirectGlyphDebt() {
+    fun phaseThreeOrdinaryFeaturesKeepOnlyTheReviewedDirectGlyphExceptions() {
         val sourceRoot = resolveMainPackageRoot()
         val sourceFiles = phaseThreeSourceFiles(sourceRoot).toList()
         val aliases = sourceFiles.flatMap { file ->
@@ -48,18 +48,18 @@ class PhaseThreeIconBoundaryStructureTest {
         val actual = sourceFiles.asSequence()
             .flatMap { file ->
                 val relativePath = file.relativeTo(sourceRoot).invariantSeparatorsPath
-                findDirectGlyphs(file.readText()).map { glyph -> DirectGlyphDebt(relativePath, glyph) }
+                findDirectGlyphs(file.readText()).map { glyph -> DirectGlyphException(relativePath, glyph) }
             }
             .groupingBy { it }
             .eachCount()
 
         assertEquals(
-            REVIEWED_DIRECT_GLYPH_DEBT,
+            REVIEWED_DIRECT_GLYPH_EXCEPTIONS,
             actual,
-            "Direct platform icons in phase 3 must stay on the reviewed semantic-debt list; " +
-                "migrate shared meanings through rememberApp*Icon and shrink this list deliberately.",
+            "Direct platform icons in phase 3 must stay on the reviewed exception list; " +
+                "shared meanings belong behind rememberApp*Icon.",
         )
-        assertEquals(31, actual.values.sum(), "The C10 first-batch direct-glyph baseline must not grow.")
+        assertEquals(5, actual.values.sum(), "The completed C10 ordinary-feature exception baseline must not grow.")
     }
 
     @Test
@@ -85,6 +85,20 @@ class PhaseThreeIconBoundaryStructureTest {
         )
         assertEquals(1, countCall(videoCardsSource, "rememberAppPlayCircleFilledIcon"))
         assertEquals(0, countCall(videoCardsSource, "rememberAppPlayIcon"))
+    }
+
+    @Test
+    fun secondBatchSemanticFacadesStayAtTheReviewedCallBaseline() {
+        val sourceRoot = resolveMainPackageRoot()
+        val source = phaseThreeSourceFiles(sourceRoot)
+            .joinToString(separator = "\n") { file -> maskCommentsAndLiterals(file.readText()) }
+        val actual = SECOND_BATCH_SEMANTIC_CALLS.keys.associateWith { name -> countCall(source, name) }
+
+        assertEquals(
+            SECOND_BATCH_SEMANTIC_CALLS,
+            actual,
+            "C10 second-batch semantic calls changed; keep each reviewed meaning on its exact App icon facade.",
+        )
     }
 
     private fun findDirectGlyphs(source: String): Sequence<String> {
@@ -204,7 +218,7 @@ class PhaseThreeIconBoundaryStructureTest {
             ?: error("Cannot locate app main package root from ${File(".").absolutePath}")
     }
 
-    private data class DirectGlyphDebt(
+    private data class DirectGlyphException(
         val relativePath: String,
         val glyph: String,
     )
@@ -234,31 +248,28 @@ class PhaseThreeIconBoundaryStructureTest {
             "feature/profile/SplashWallpaperPickerSheet.kt" to 1,
             "feature/space/SpaceScreen.kt" to 1,
         )
-        val REVIEWED_DIRECT_GLYPH_DEBT = mapOf(
-            DirectGlyphDebt("feature/dynamic/components/DrawGrid.kt", "CupertinoIcons.Default.Star") to 1,
-            DirectGlyphDebt("feature/dynamic/components/DynamicCard.kt", "CupertinoIcons.Default.Link") to 1,
-            DirectGlyphDebt("feature/dynamic/components/DynamicCard.kt", "CupertinoIcons.Default.Trash") to 2,
-            DirectGlyphDebt("feature/dynamic/components/DynamicOpusLinkCard.kt", "CupertinoIcons.Default.Link") to 1,
-            DirectGlyphDebt("feature/dynamic/components/DynamicTopBar.kt", "CupertinoIcons.Default.ListBullet") to 1,
-            DirectGlyphDebt("feature/dynamic/components/DynamicTopBar.kt", "CupertinoIcons.Default.RectangleStack") to 1,
-            DirectGlyphDebt("feature/list/CommonListScreen.kt", "Icons.Rounded.CheckCircle") to 1,
-            DirectGlyphDebt("feature/list/CommonListScreen.kt", "Icons.Rounded.RadioButtonUnchecked") to 1,
-            DirectGlyphDebt("feature/live/LiveAreaScreen.kt", "Icons.Outlined.Star") to 1,
-            DirectGlyphDebt("feature/live/LiveAreaScreen.kt", "Icons.Outlined.StarBorder") to 2,
-            DirectGlyphDebt("feature/message/ChatScreen.kt", "Icons.AutoMirrored.Filled.Send") to 1,
-            DirectGlyphDebt("feature/profile/OfficialWallpaperSheet.kt", "CupertinoIcons.Default.CheckmarkCircle") to 1,
-            DirectGlyphDebt("feature/profile/ProfileScreen.kt", "CupertinoIcons.Default.Link") to 1,
-            DirectGlyphDebt("feature/profile/ProfileScreen.kt", "CupertinoIcons.Default.Trash") to 2,
-            DirectGlyphDebt("feature/profile/SplashWallpaperPickerSheet.kt", "CupertinoIcons.Default.CheckmarkCircle") to 2,
-            DirectGlyphDebt("feature/profile/WallpaperAdjustmentSheet.kt", "Icons.Outlined.PhoneAndroid") to 2,
-            DirectGlyphDebt("feature/profile/WallpaperAdjustmentSheet.kt", "Icons.Outlined.TabletAndroid") to 2,
-            DirectGlyphDebt("feature/search/SearchTrendingScreen.kt", "Icons.Rounded.North") to 1,
-            DirectGlyphDebt("feature/space/SpaceScreen.kt", "Icons.AutoMirrored.Outlined.Sort") to 2,
-            DirectGlyphDebt("feature/space/SpaceScreen.kt", "Icons.Outlined.Bolt") to 1,
-            DirectGlyphDebt("feature/space/SpaceScreen.kt", "Icons.Outlined.ContentCopy") to 1,
-            DirectGlyphDebt("feature/space/SpaceScreen.kt", "Icons.Outlined.GridView") to 1,
-            DirectGlyphDebt("feature/space/SpaceScreen.kt", "Icons.Outlined.Menu") to 1,
-            DirectGlyphDebt("feature/space/SpaceScreen.kt", "Icons.Outlined.ViewAgenda") to 1,
+        val REVIEWED_DIRECT_GLYPH_EXCEPTIONS = mapOf(
+            DirectGlyphException("feature/dynamic/components/DrawGrid.kt", "CupertinoIcons.Default.Star") to 1,
+            DirectGlyphException("feature/list/CommonListScreen.kt", "Icons.Rounded.CheckCircle") to 1,
+            DirectGlyphException("feature/list/CommonListScreen.kt", "Icons.Rounded.RadioButtonUnchecked") to 1,
+            DirectGlyphException("feature/search/SearchTrendingScreen.kt", "Icons.Rounded.North") to 1,
+            DirectGlyphException("feature/space/SpaceScreen.kt", "Icons.Outlined.Menu") to 1,
+        )
+        val SECOND_BATCH_SEMANTIC_CALLS = mapOf(
+            "rememberAppDeleteIcon" to 2,
+            "rememberAppLinkIcon" to 3,
+            "rememberAppFavoriteIcon" to 2,
+            "rememberAppFavoriteFilledIcon" to 1,
+            "rememberAppListLayoutIcon" to 1,
+            "rememberAppStackLayoutIcon" to 2,
+            "rememberAppGridLayoutIcon" to 1,
+            "rememberAppSortIcon" to 2,
+            "rememberAppCopyIcon" to 1,
+            "rememberAppSendIcon" to 1,
+            "rememberAppSelectionCheckedIcon" to 3,
+            "rememberAppPhoneDeviceIcon" to 2,
+            "rememberAppTabletDeviceIcon" to 2,
+            "rememberAppLiveStatusIcon" to 1,
         )
     }
 }

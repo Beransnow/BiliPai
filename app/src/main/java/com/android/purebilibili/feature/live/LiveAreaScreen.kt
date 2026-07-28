@@ -26,9 +26,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Star
-import androidx.compose.material.icons.outlined.StarBorder
 import com.android.purebilibili.core.ui.AppLoadingIndicator
 import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalUiPreset
@@ -40,6 +37,8 @@ import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
 import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.rememberAppFavoriteFilledIcon
+import com.android.purebilibili.core.ui.rememberAppFavoriteIcon
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.responsiveContentWidth
 import androidx.compose.material3.Icon
@@ -406,6 +405,7 @@ private fun LiveFavoriteTagCard(
     onRemove: () -> Unit
 ) {
     val colorScheme = MaterialTheme.colorScheme
+    val favoriteIcon = rememberAppFavoriteIcon()
     Box {
         Surface(
             onClick = { if (isEditing) onRemove() else onClick() },
@@ -464,7 +464,7 @@ private fun LiveFavoriteTagCard(
                     modifier = Modifier.size(AppSpacingTokens.ExtraLarge),
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.StarBorder,
+                        imageVector = favoriteIcon,
                         contentDescription = "移除常用标签",
                         tint = colorScheme.onErrorContainer,
                         modifier = Modifier.padding(AppSpacingTokens.ExtraSmall)
@@ -515,6 +515,8 @@ private fun LiveAreaGridItem(
     onClick: () -> Unit
 ) {
     val colorScheme = MaterialTheme.colorScheme
+    val favoriteIcon = rememberAppFavoriteIcon()
+    val favoriteFilledIcon = rememberAppFavoriteFilledIcon()
     Box(
         modifier = Modifier
             .height(AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.DoubleExtraLarge)
@@ -547,7 +549,7 @@ private fun LiveAreaGridItem(
                     .size(AppSpacingTokens.Large)
             ) {
                 Icon(
-                    imageVector = if (isFavorite) Icons.Outlined.Star else Icons.Outlined.StarBorder,
+                    imageVector = if (isFavorite) favoriteFilledIcon else favoriteIcon,
                     contentDescription = if (isFavorite) "取消收藏" else "收藏标签",
                     tint = if (isFavorite) colorScheme.onSurfaceVariant else colorScheme.onSecondaryContainer,
                     modifier = Modifier.padding(AppSpacingTokens.Micro)
