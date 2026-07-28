@@ -76,7 +76,7 @@ fun resolveAppSemanticAccentPalette(
     error = colorScheme.error,
 )
 
-internal fun resolveAppSemanticVisualPolicy(
+fun resolveAppSemanticVisualPolicy(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant,
     materialPalette: AppSemanticAccentPalette,

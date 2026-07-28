@@ -534,7 +534,7 @@ private fun resolvePlatformIcon(
 ): ImageVector {
     return when {
         uiPreset == UiPreset.IOS -> iosIcon
-        isNativeMiuixEnabled(uiPreset, androidNativeVariant) -> materialIcon
+        uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX -> materialIcon
         else -> materialIcon
     }
 }

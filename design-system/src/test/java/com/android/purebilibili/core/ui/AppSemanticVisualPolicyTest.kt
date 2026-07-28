@@ -118,7 +118,7 @@ class AppSemanticVisualPolicyTest {
 
     private fun loadSource(path: String): String {
         val normalizedPath = path.removePrefix("app/")
-        return listOf(File(path), File(normalizedPath))
+        return listOf(File(path), File(normalizedPath), File("../$path"))
             .firstOrNull(File::exists)
             ?.readText()
             ?.replace("\r\n", "\n")

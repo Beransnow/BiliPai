@@ -49,7 +49,10 @@ dependencies {
     api("androidx.compose.ui:ui")
     api("androidx.compose.foundation:foundation")
     api("androidx.compose.animation:animation")
+    api("androidx.compose.material:material-icons-extended")
     api("androidx.compose.material3:material3:1.5.0-alpha18")
+    implementation("io.github.alexzhirkevich:cupertino:0.1.0-alpha04")
+    api("io.github.alexzhirkevich:cupertino-icons-extended:0.1.0-alpha04")
     api("top.yukonga.miuix.kmp:miuix-ui-android:0.9.3")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")

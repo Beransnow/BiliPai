@@ -66,8 +66,8 @@ import io.github.alexzhirkevich.cupertino.icons.outlined.RectanglePortraitAndArr
 import io.github.alexzhirkevich.cupertino.icons.outlined.ArrowTurnUpRight
 import io.github.alexzhirkevich.cupertino.icons.outlined.Sparkles
 import io.github.alexzhirkevich.cupertino.icons.outlined.XmarkCircle
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class AppIconsPresetPolicyTest {
 

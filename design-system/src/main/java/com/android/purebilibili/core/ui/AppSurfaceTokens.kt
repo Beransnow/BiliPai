@@ -187,7 +187,7 @@ object AppSurfaceTokens {
         val uiPreset = LocalUiPreset.current
         val androidNativeVariant = LocalAndroidNativeVariant.current
         return resolveMiuixSemanticColor(
-            isMiuix = isNativeMiuixEnabled(uiPreset, androidNativeVariant),
+            isMiuix = uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX,
             miuixColor = miuixColor,
             materialFallback = materialFallback
         )
