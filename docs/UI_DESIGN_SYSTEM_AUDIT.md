@@ -6,7 +6,7 @@
 
 更新日期：2026-07-28。按“审查 + 阶段 0～5”等权计算：
 
-`[███████████░░░░░░░░░] 57%`
+`[████████████░░░░░░░░] 59%`
 
 | 工作项 | 状态 | 已落地内容 |
 |---|---:|---|
@@ -14,13 +14,16 @@
 | 阶段 0：契约与兼容层 | 100% | `UiStyle`、`ui_style_v1`、新旧三键双写、导入导出兼容、Theme bridge、冲突诊断与矩阵测试 |
 | 阶段 1：设置列表试点 | 100% | 中性 `App*` preference/dialog/segmented 入口；设置试点迁移；旧 Local 与 IOS* 调用棘轮达标 |
 | 阶段 2：Chrome 与导航 | 100% | 中性 `AppScaffold/AppTopBar/AppNavigation` 入口；30 个旧调用文件迁移；home/navigation policy 改读 `UiStyle`；棘轮达标 |
-| 阶段 3～5 | 0% | 等待后续按普通 feature、播放器/插件、清理边界顺序推进 |
+| 阶段 3：普通 feature | 10% | 卡片/Surface 首批：`AppCard` slot API、三 renderer/tone policy；动态、消息 Feed、直播卡片迁移 |
+| 阶段 4～5 | 0% | 等待后续按播放器/插件、清理边界顺序推进 |
 
 阶段 0 保持渲染行为不变：`LocalUiStyle` 与旧两个 Local 同时提供，旧设置入口继续可用；合法新键优先，缺失或非法新键回退旧两键。iOS 写入保留隐藏的 Android native variant，设置分享同时携带新键和旧两键。兼容层新增 2 个引用旧类型的 core 文件，因此全生产计数为 103；受阶段棘轮约束的 feature/直接 Local/IOS* caller 仍为 **69/47/42**，符合阶段 0“不新增、暂不要求下降”的边界。
 
 阶段 1 不重写 renderer：`AppPreference`、`AppSwitchPreference`、`AppSliderPreference`、`AppSegmentedControl` 及配套 group/divider/text-field/dialog 入口继续委托已验证的自适应实现。`SettingsSections`、Appearance、Playback、Plugins 等 14 个设置文件已迁到中性入口；8 个设置实现改读单一 `LocalUiStyle`，旧 renderer 参数通过 core 兼容桥集中映射。阶段棘轮由 **69/47/42** 降至 **61/39/28**，分别达到 `<=61`、`<=39`、`<=28`；新增 API 委托契约测试与三风格 renderer bridge 矩阵，Kotlin 编译及相关设置窄测通过。
 
 阶段 2 保留既有 adaptive renderer，只增加并迁移到中性 `AppScaffold`、`AppTopBar`、`AppNavigation`、`AppSideNavigationRail`、`AppSplitLayout` 门面；feature 与 navigation 中旧 Chrome 调用已由 **30 个文件降至 0**，对应调用点全部切到中性入口。首页刷新、性能、侧栏、抽屉、分段控制和导航外观 policy 改读单一 `UiStyle`，6 个 Chrome 页面停止直接读取旧 Local。阶段棘轮由 **61/39/28** 降至 **47/28/28**，分别达到 `<=48`、`<=28`、`<=28`；新增中性 Chrome 委托与调用边界测试，Kotlin 编译及 163 项相关窄测通过。
+
+阶段 3 的卡片/Surface 首批新增 `AppCard` slot API，并用 `STANDARD/MUTED/GLASS` 语义 tone 在 `core/ui` 内选择 Material Surface 或原生 MIUIX Card；feature 只提供业务内容和点击回调。动态玻璃卡、消息 Feed 卡、直播房间卡与直播搜索用户卡已迁移，直播卡所需布局指标改由页面显式传入。阶段中间棘轮由 **47/28/28** 降至 **43/24/28**；三风格 renderer/tone matrix、直播结构测试和 Kotlin 编译通过。后续继续按输入→Dialog/Sheet→加载刷新→图标动效推进，阶段 3 尚未完成。
 
 ## 执行摘要
 

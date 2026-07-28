@@ -196,6 +196,7 @@ fun LiveFollowingScreen(
                                 viewerCount = item.online,
                                 areaName = item.areaName,
                             ),
+                            visualSpec = visualSpec,
                             onClick = { onLiveClick(item.roomid, item.title, item.uname) },
                         )
                     }

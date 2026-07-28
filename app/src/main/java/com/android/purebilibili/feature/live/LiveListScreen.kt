@@ -432,6 +432,7 @@ private fun LiveHomeContent(
             else -> items(contentItems, key = { it.roomId }) { item ->
                 LiveRoomCard(
                     model = item.toLiveRoomCardUiModel(),
+                    visualSpec = visualSpec,
                     enableSharedCoverTransition = true,
                     onClick = { onLiveClick(item.roomId, item.title, item.uname) }
                 )

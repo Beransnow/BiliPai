@@ -249,6 +249,7 @@ fun LiveAreaDetailScreen(
                     items(rooms, key = { it.roomid }) { room ->
                         LiveRoomCard(
                             model = room.toLiveRoomCardUiModel(),
+                            visualSpec = visualSpec,
                             onClick = { onLiveClick(room.roomid, room.title, room.uname) },
                         )
                     }

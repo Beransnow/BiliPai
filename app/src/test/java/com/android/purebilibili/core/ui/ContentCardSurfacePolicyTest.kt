@@ -2,6 +2,7 @@ package com.android.purebilibili.core.ui
 
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.UiStyle
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -29,19 +30,61 @@ class ContentCardSurfacePolicyTest {
     }
 
     @Test
-    fun messageFeedAndSearchSurfacesAdoptSharedPolicy() {
+    fun appCardRoutesMiuixToNativeCardAndOtherStylesToMaterialSurface() {
+        UiStyle.entries.forEach { uiStyle ->
+            val spec = resolveAppCardVisualSpec(uiStyle, AppCardTone.STANDARD)
+            val expected = if (uiStyle == UiStyle.MIUIX) {
+                AppCardRenderer.MIUIX_CARD
+            } else {
+                AppCardRenderer.MATERIAL_SURFACE
+            }
+            assertEquals(expected, spec.renderer)
+        }
+    }
+
+    @Test
+    fun appCardTonesKeepSemanticSurfaceAndElevationContracts() {
+        val standard = resolveAppCardVisualSpec(UiStyle.MATERIAL3, AppCardTone.STANDARD)
+        val muted = resolveAppCardVisualSpec(UiStyle.MATERIAL3, AppCardTone.MUTED)
+        val glass = resolveAppCardVisualSpec(UiStyle.IOS, AppCardTone.GLASS)
+
+        assertEquals(AppCardContainerRole.CARD, standard.containerRole)
+        assertEquals(1f, standard.borderWidthDp)
+        assertEquals(AppCardContainerRole.SURFACE_VARIANT, muted.containerRole)
+        assertEquals(0.42f, muted.containerAlpha)
+        assertEquals(AppCardContainerRole.SURFACE, glass.containerRole)
+        assertEquals(0.6f, glass.containerAlpha)
+        assertEquals(0f, glass.tonalElevationDp)
+        assertEquals(0f, glass.shadowElevationDp)
+    }
+
+    @Test
+    fun migratedFeatureCardsUseNeutralAppCardWithoutStyleLocals() {
         val messageSource = load("app/src/main/java/com/android/purebilibili/feature/message/feed/MessageFeedCommon.kt")
-        val searchSource = load("app/src/main/java/com/android/purebilibili/feature/search/SearchScreen.kt")
         val dynamicSource = load(
             "app/src/main/java/com/android/purebilibili/feature/dynamic/components/DynamicComponents.kt"
         )
+        val liveSource = load("app/src/main/java/com/android/purebilibili/feature/live/LiveRoomCard.kt")
 
-        assertTrue(messageSource.contains("resolveContentCardSurfaceSpec("))
-        assertTrue(messageSource.contains("AppShapes.borderedContainer("))
-        assertTrue(searchSource.contains("resolveContentCardSurfaceSpec("))
-        assertTrue(searchSource.contains("AppShapes.borderedContainer("))
-        assertTrue(dynamicSource.contains("resolveContentCardSurfaceSpec("))
-        assertTrue(dynamicSource.contains("AppShapes.borderedContainer("))
+        assertTrue(messageSource.contains("AppCard("))
+        assertTrue(messageSource.contains("AppCardTone.MUTED"))
+        assertTrue(dynamicSource.contains("AppCard("))
+        assertTrue(dynamicSource.contains("AppCardTone.GLASS"))
+        assertTrue(liveSource.contains("AppCard("))
+        listOf(messageSource, dynamicSource, liveSource).forEach { source ->
+            assertFalse(source.contains("LocalUiPreset"))
+            assertFalse(source.contains("LocalAndroidNativeVariant"))
+        }
+    }
+
+    @Test
+    fun appCardOwnsRendererDispatchAndUsesSlotContent() {
+        val source = load("app/src/main/java/com/android/purebilibili/core/ui/AppCard.kt")
+
+        assertTrue(source.contains("content: @Composable BoxScope.() -> Unit"))
+        assertTrue(source.contains("AppCardRenderer.MIUIX_CARD -> MiuixCard("))
+        assertTrue(source.contains("AppCardRenderer.MATERIAL_SURFACE ->"))
+        assertTrue(source.contains("LocalUiStyle.current"))
     }
 
     private fun load(path: String): String {

@@ -1,7 +1,6 @@
 package com.android.purebilibili.feature.live
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -26,12 +24,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.ui.AppShapes
+import com.android.purebilibili.core.ui.AppCard
 import com.android.purebilibili.core.ui.AppSpacingTokens
-import com.android.purebilibili.core.ui.AppSurfaceTokens
-import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.LocalSharedTransitionScope
 import com.android.purebilibili.core.ui.transition.liveCoverSharedElementKey
@@ -49,25 +43,17 @@ internal data class LiveRoomCardUiModel(
 @Composable
 internal fun LiveRoomCard(
     model: LiveRoomCardUiModel,
+    visualSpec: LiveVisualSpec,
     onClick: () -> Unit,
     enableSharedCoverTransition: Boolean = false,
 ) {
-    val visualSpec = resolveLiveVisualSpec(
-        uiPreset = LocalUiPreset.current,
-        androidNativeVariant = LocalAndroidNativeVariant.current,
-    )
     val metrics = visualSpec.homeMetrics
     val sharedTransitionScope = LocalSharedTransitionScope.current
     val animatedVisibilityScope = LocalAnimatedVisibilityScope.current
     val palette = rememberLiveChromePalette()
 
-    Surface(
+    AppCard(
         onClick = onClick,
-        shape = AppShapes.borderedContainer(ContainerLevel.Card),
-        color = AppSurfaceTokens.cardContainer(),
-        border = BorderStroke(AppSurfaceTokens.OutlineWidth, palette.border),
-        tonalElevation = AppSpacingTokens.None,
-        shadowElevation = AppSpacingTokens.None,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column {

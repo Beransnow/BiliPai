@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -23,11 +22,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.ui.AppShapes
-import com.android.purebilibili.core.ui.AppSurfaceTokens
-import com.android.purebilibili.core.ui.resolveContentCardSurfaceSpec
+import com.android.purebilibili.core.ui.AppCard
+import com.android.purebilibili.core.ui.AppCardTone
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -157,25 +153,9 @@ internal fun MessageFeedCard(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit
 ) {
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val surfaceSpec = resolveContentCardSurfaceSpec(uiPreset, androidNativeVariant)
-    Surface(
+    AppCard(
         modifier = modifier,
-        shape = AppShapes.borderedContainer(surfaceSpec.cornerLevel),
-        color = if (surfaceSpec.useMiuixTokens) {
-            AppSurfaceTokens.surfaceContainer()
-        } else {
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.42f)
-        },
-        border = if (surfaceSpec.useMiuixTokens) {
-            androidx.compose.foundation.BorderStroke(
-                surfaceSpec.borderWidthDp.dp,
-                AppSurfaceTokens.divider().copy(alpha = surfaceSpec.borderAlpha)
-            )
-        } else {
-            null
-        }
+        tone = AppCardTone.MUTED,
     ) {
         content()
     }

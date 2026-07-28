@@ -1,6 +1,5 @@
 package com.android.purebilibili.feature.live
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,7 +30,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -54,11 +52,11 @@ import coil.compose.AsyncImage
 import com.android.purebilibili.core.theme.LocalUiStyle
 import com.android.purebilibili.core.theme.toRendererStyleBridge
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.AppCard
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
-import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
 import com.android.purebilibili.core.util.LocalWindowSizeClass
@@ -274,6 +272,7 @@ fun LiveSearchScreen(
                         gridItems(liveResults, key = { it.roomid }) { room ->
                             LiveRoomCard(
                                 model = room.toLiveRoomCardUiModel(),
+                                visualSpec = visualSpec,
                                 onClick = { onLiveClick(room.roomid, room.title, room.uname) },
                             )
                         }
@@ -339,11 +338,8 @@ private fun LiveSearchState(message: String? = null) {
 
 @Composable
 private fun LiveSearchUserCard(item: SearchUpItem, onClick: () -> Unit) {
-    Surface(
+    AppCard(
         onClick = onClick,
-        shape = AppShapes.borderedContainer(ContainerLevel.Card),
-        color = AppSurfaceTokens.cardContainer(),
-        border = BorderStroke(AppSurfaceTokens.OutlineWidth, AppSurfaceTokens.divider()),
     ) {
         Row(
             modifier = Modifier
