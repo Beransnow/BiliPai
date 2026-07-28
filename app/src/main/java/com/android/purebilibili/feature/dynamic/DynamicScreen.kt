@@ -52,7 +52,7 @@ import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.imageLoader
 import com.android.purebilibili.core.ui.AppScaffold
-import com.android.purebilibili.core.ui.BiliGradientButton
+import com.android.purebilibili.core.ui.components.AppPrimaryButton
 import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
 import com.android.purebilibili.core.ui.EmptyState
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
@@ -1268,9 +1268,9 @@ private fun ErrorOverlay(
             Text(error.orEmpty(), color = MaterialTheme.colorScheme.error)
             Spacer(modifier = Modifier.height(AppSpacingTokens.Large))
             if (error?.contains("未登录") == true) {
-                BiliGradientButton(text = "去登录", onClick = onLoginClick)
+                AppPrimaryButton(text = "去登录", onClick = onLoginClick)
             } else {
-                BiliGradientButton(text = "重试", onClick = onRetry)
+                AppPrimaryButton(text = "重试", onClick = onRetry)
             }
         }
     }

@@ -64,7 +64,7 @@ import com.android.purebilibili.feature.home.UserState
 import com.android.purebilibili.feature.dynamic.components.ImagePreviewDialog
 import com.android.purebilibili.feature.dynamic.components.ImagePreviewTextContent
 import com.android.purebilibili.core.ui.LoadingAnimation
-import com.android.purebilibili.core.ui.BiliGradientButton
+import com.android.purebilibili.core.ui.components.AppPrimaryButton
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppTopBarStyle
@@ -2879,7 +2879,7 @@ fun GuestProfileContent(
             Spacer(modifier = Modifier.height(48.dp))
 
             //  登录按钮 - 使用现代化渐变按钮
-            BiliGradientButton(
+            AppPrimaryButton(
                 text = "安全登录",
                 onClick = onGoToLogin,
                 leadingIcon = loginIcon,
