@@ -51,8 +51,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.purebilibili.R
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -61,6 +59,7 @@ import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.core.ui.blur.unifiedBlur
 import com.android.purebilibili.core.ui.motion.AppMotionTokens
 import com.android.purebilibili.core.ui.resolveGlobalWallpaperProtectiveColor
+import com.android.purebilibili.core.ui.rememberAppNavigationCapabilities
 import com.android.purebilibili.core.util.HapticType
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.WindowWidthSizeClass
@@ -104,13 +103,7 @@ fun FrostedSideBar(
     uiSkinDecoration: BottomBarUiSkinDecoration? = null,
     onToggleSidebar: (() -> Unit)? = null
 ) {
-    when (
-        resolveSideBarRenderer(
-            uiPreset = LocalUiPreset.current,
-            androidNativeVariant = LocalAndroidNativeVariant.current
-        )
-    ) {
-        SideBarRenderer.MIUIX_NAVIGATION_RAIL -> {
+    if (rememberAppNavigationCapabilities().usePlatformSideRail) {
             MiuixSideBar(
                 currentItem = currentItem,
                 onItemClick = onItemClick,
@@ -122,8 +115,7 @@ fun FrostedSideBar(
                 uiSkinDecoration = uiSkinDecoration,
                 onToggleSidebar = onToggleSidebar
             )
-        }
-        SideBarRenderer.FROSTED -> {
+    } else {
             FrostedSideBarContent(
                 currentItem = currentItem,
                 onItemClick = onItemClick,
@@ -135,7 +127,6 @@ fun FrostedSideBar(
                 uiSkinDecoration = uiSkinDecoration,
                 onToggleSidebar = onToggleSidebar
             )
-        }
     }
 }
 
