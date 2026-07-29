@@ -12,9 +12,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Icon
+import com.android.purebilibili.core.ui.components.AppIcon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -115,7 +115,7 @@ fun DynamicTopBarWithTabs(
                     },
                     modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
                 ) {
-                    Icon(
+                    AppIcon(
                         imageVector = if (displayMode == DynamicDisplayMode.SIDEBAR)
                             rememberAppListLayoutIcon() else rememberAppGridLayoutIcon(),
                         contentDescription = "切换布局模式",
@@ -163,7 +163,7 @@ private fun DynamicCompactTabRow(
                         .clickable { onTabSelected(index) },
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(
+                    AppText(
                         text = label,
                         color = textColor,
                         style = MaterialTheme.typography.labelMedium,

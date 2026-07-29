@@ -4,12 +4,14 @@ import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import android.provider.Settings
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -39,10 +41,12 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.android.purebilibili.core.ui.AppShapes
+import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
+import com.android.purebilibili.core.ui.motion.AppMotionTokens
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
+import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppLinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -50,7 +54,7 @@ import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import com.android.purebilibili.core.ui.components.AppSlider
 import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.Text
+import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -68,6 +72,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.graphicsLayer
@@ -172,7 +178,7 @@ internal fun MusicPlayerContent(
 
     val backgroundColor by animateColorAsState(
         targetValue = paletteColor,
-        animationSpec = tween(if (effectiveReduceMotion) 0 else 400),
+        animationSpec = if (effectiveReduceMotion) snap() else AppMotionTokens.emphasizedSpec(),
         label = "music_palette"
     )
     val glassEnabled = resolveMusicLiquidGlassEnabled(
@@ -207,7 +213,7 @@ internal fun MusicPlayerContent(
                 coverUrl = state.coverUrl,
                 bitmap = artworkBitmap,
                 modifier = Modifier.fillMaxSize(),
-                cornerRadius = 0
+                shape = RectangleShape
             )
 
             MusicPlayerLayout.COMPACT_PAGER -> {
@@ -269,8 +275,8 @@ internal fun MusicPlayerContent(
                     AnimatedVisibility(
                         visible = pagerState.currentPage != 1 || lyricsControlsVisible,
                         modifier = Modifier.align(Alignment.BottomCenter),
-                        enter = if (effectiveReduceMotion) fadeIn(tween(0)) else fadeIn() + slideInVertically { it / 2 },
-                        exit = if (effectiveReduceMotion) fadeOut(tween(0)) else fadeOut() + slideOutVertically { it / 2 }
+                        enter = if (effectiveReduceMotion) EnterTransition.None else fadeIn() + slideInVertically { it / 2 },
+                        exit = if (effectiveReduceMotion) ExitTransition.None else fadeOut() + slideOutVertically { it / 2 }
                     ) {
                         BottomBarLiquidSegmentedControl(
                             items = listOf("播放", "歌词"),
@@ -376,7 +382,7 @@ internal fun MusicPlayerContent(
             containerColor = backgroundColor.copy(alpha = 0.92f),
             contentColor = MusicContentColor
         ) {
-            Text(
+            AppText(
                 text = "播放器操作",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
@@ -432,7 +438,7 @@ internal fun MusicPlayerContent(
             containerColor = backgroundColor.copy(alpha = 0.96f),
             contentColor = MusicContentColor
         ) {
-            Text(
+            AppText(
                 text = "待播清单",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
@@ -460,18 +466,18 @@ internal fun MusicPlayerContent(
                             contentDescription = null,
                             modifier = Modifier
                                 .size(52.dp)
-                                .clip(RoundedCornerShape(8.dp)),
+                                .clip(AppShapes.container(ContainerLevel.Field)),
                             contentScale = ContentScale.Crop
                         )
                         Spacer(Modifier.width(12.dp))
                         Column(Modifier.weight(1f)) {
-                            Text(
+                            AppText(
                                 text = item.title,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 fontWeight = if (index == state.currentQueueIndex) FontWeight.Bold else FontWeight.Normal
                             )
-                            Text(
+                            AppText(
                                 text = item.artist,
                                 color = MusicContentColor.copy(alpha = 0.65f),
                                 maxLines = 1,
@@ -479,7 +485,7 @@ internal fun MusicPlayerContent(
                             )
                         }
                         if (index == state.currentQueueIndex) {
-                            Icon(CupertinoIcons.Outlined.MusicNote, contentDescription = null)
+                            AppIcon(CupertinoIcons.Outlined.MusicNote, contentDescription = null)
                         }
                     }
                 }
@@ -493,7 +499,7 @@ internal fun MusicPlayerContent(
             containerColor = backgroundColor.copy(alpha = 0.97f),
             contentColor = MusicContentColor
         ) {
-            Text(
+            AppText(
                 text = "手动匹配歌词",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
@@ -508,12 +514,12 @@ internal fun MusicPlayerContent(
                 AppOutlinedTextField(
                     value = lyricSearchText,
                     onValueChange = { lyricSearchText = it },
-                    label = { Text("歌名") },
+                    label = { AppText("歌名") },
                     singleLine = true,
                     modifier = Modifier.weight(1f)
                 )
                 AppTextButton(onClick = { onLyricsSearch(lyricSearchText) }) {
-                    Text("搜索")
+                    AppText("搜索")
                 }
             }
             if (state.isLyricsSearching) {
@@ -524,7 +530,7 @@ internal fun MusicPlayerContent(
                         .padding(24.dp)
                 )
             } else if (state.lyricCandidates.isEmpty()) {
-                Text(
+                AppText(
                     text = "输入歌名后搜索网易云、QQ 音乐与酷狗",
                     color = MusicContentColor.copy(alpha = 0.62f),
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp)
@@ -545,8 +551,8 @@ internal fun MusicPlayerContent(
                                 }
                                 .padding(horizontal = 24.dp, vertical = 12.dp)
                         ) {
-                            Text(candidate.title, fontWeight = FontWeight.SemiBold)
-                            Text(
+                            AppText(candidate.title, fontWeight = FontWeight.SemiBold)
+                            AppText(
                                 text = "${candidate.artist} · ${candidate.sourceLabel}",
                                 color = MusicContentColor.copy(alpha = 0.62f)
                             )
@@ -622,7 +628,7 @@ private fun PlayerPage(
         }
         Spacer(Modifier.height(24.dp))
         Column(Modifier.fillMaxWidth()) {
-            Text(
+            AppText(
                 text = state.title,
                 color = MusicContentColor,
                 style = MaterialTheme.typography.headlineSmall,
@@ -630,7 +636,7 @@ private fun PlayerPage(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
-            Text(
+            AppText(
                 text = state.artist.ifBlank { "未知艺术家" },
                 color = MusicContentColor.copy(alpha = 0.64f),
                 style = MaterialTheme.typography.titleMedium,
@@ -638,7 +644,7 @@ private fun PlayerPage(
                 overflow = TextOverflow.Ellipsis
             )
             state.error?.let {
-                Text(it, color = Color(0xFFFF9B92), style = MaterialTheme.typography.bodySmall)
+                AppText(it, color = Color(0xFFFF9B92), style = MaterialTheme.typography.bodySmall)
             }
         }
         Spacer(Modifier.height(14.dp))
@@ -689,11 +695,11 @@ private fun MusicArtwork(
     coverUrl: String,
     bitmap: ImageBitmap?,
     modifier: Modifier,
-    cornerRadius: Int = 18
+    shape: Shape = AppShapes.container(ContainerLevel.Card)
 ) {
     Box(
         modifier = modifier
-            .clip(RoundedCornerShape(cornerRadius.dp))
+            .clip(shape)
             .background(
                 Brush.linearGradient(
                     listOf(Color(0xFF615571), Color(0xFF27212F))
@@ -714,7 +720,7 @@ private fun MusicArtwork(
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
-            else -> Icon(
+            else -> AppIcon(
                 CupertinoIcons.Outlined.MusicNote,
                 contentDescription = null,
                 tint = MusicContentColor.copy(alpha = 0.78f),
@@ -743,8 +749,8 @@ private fun MusicProgress(state: MusicPlayerUiState, onSeek: (Long) -> Unit) {
         )
     )
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(formatMusicTime(state.positionMs), color = MusicContentColor.copy(alpha = 0.58f), fontSize = 11.sp)
-        Text("-${formatMusicTime((state.durationMs - state.positionMs).coerceAtLeast(0L))}", color = MusicContentColor.copy(alpha = 0.58f), fontSize = 11.sp)
+        AppText(formatMusicTime(state.positionMs), color = MusicContentColor.copy(alpha = 0.58f), fontSize = 11.sp)
+        AppText("-${formatMusicTime((state.durationMs - state.positionMs).coerceAtLeast(0L))}", color = MusicContentColor.copy(alpha = 0.58f), fontSize = 11.sp)
     }
 }
 
@@ -771,7 +777,7 @@ private fun PlaybackControls(
             if (state.isBuffering) {
                 AppCircularProgressIndicator(color = MusicContentColor, modifier = Modifier.size(36.dp))
             } else {
-                Icon(
+                AppIcon(
                     imageVector = if (state.isPlaying) CupertinoIcons.Filled.Pause else CupertinoIcons.Filled.Play,
                     contentDescription = if (state.isPlaying) "暂停" else "播放",
                     tint = MusicContentColor,
@@ -791,7 +797,7 @@ private fun PlaybackControls(
 @Composable
 private fun PlaybackIconButton(icon: ImageVector, description: String, enabled: Boolean, onClick: () -> Unit) {
     AppIconButton(onClick = onClick, enabled = enabled, modifier = Modifier.size(56.dp)) {
-        Icon(
+        AppIcon(
             imageVector = icon,
             contentDescription = description,
             tint = MusicContentColor.copy(alpha = if (enabled) 1f else 0.28f),
@@ -868,7 +874,7 @@ private fun LyricsPage(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
+                AppText(
                     text = when {
                         state.isLyricsSearching -> "正在匹配歌词…"
                         state.lyricsError != null -> "歌词加载失败"
@@ -932,8 +938,8 @@ private fun LyricsPage(
                     end = 20.dp,
                     bottom = if (showPageSwitcher) 68.dp else 0.dp
                 ),
-            enter = if (reduceMotion) fadeIn(tween(0)) else fadeIn() + slideInVertically { it / 2 },
-            exit = if (reduceMotion) fadeOut(tween(0)) else fadeOut() + slideOutVertically { it / 2 }
+            enter = if (reduceMotion) EnterTransition.None else fadeIn() + slideInVertically { it / 2 },
+            exit = if (reduceMotion) ExitTransition.None else fadeOut() + slideOutVertically { it / 2 }
         ) {
             LyricsPrimaryControls(
                 state = state,
@@ -1010,7 +1016,7 @@ private fun LyricsPrimaryControls(
             .fillMaxWidth()
             .musicGlassSurface(
                 glassEnabled,
-                RoundedCornerShape(28.dp),
+                AppShapes.container(ContainerLevel.Floating),
                 glassTintColor,
                 miuixBackdrop
             )
@@ -1021,10 +1027,10 @@ private fun LyricsPrimaryControls(
         Row(verticalAlignment = Alignment.CenterVertically) {
             PlaybackControls(state, onPlayPause, onPrevious, onNext, modifier = Modifier.weight(1f))
             AppTextButton(onClick = onOpenSettings, modifier = Modifier.height(48.dp)) {
-                Text("歌词设置", color = MusicContentColor, fontSize = 12.sp)
+                AppText("歌词设置", color = MusicContentColor, fontSize = 12.sp)
             }
             AppTextButton(onClick = onHideControls, modifier = Modifier.height(48.dp)) {
-                Text("收起", color = MusicContentColor, fontSize = 12.sp)
+                AppText("收起", color = MusicContentColor, fontSize = 12.sp)
             }
         }
     }
@@ -1071,14 +1077,14 @@ private fun LyricsSettingsContent(
             .padding(horizontal = 24.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("歌词设置", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        AppText("歌词设置", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         MusicActionSheetItem(if (showTranslations) "隐藏翻译与罗马音" else "显示翻译与罗马音", onToggleTranslations)
-        Text("歌词时间校正 · ${formatLyricsOffset(lyricsOffsetMs)}", color = MusicContentColor.copy(alpha = 0.72f))
+        AppText("歌词时间校正 · ${formatLyricsOffset(lyricsOffsetMs)}", color = MusicContentColor.copy(alpha = 0.72f))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            AppTextButton(onClick = { onLyricsOffsetChange(-250L) }, modifier = Modifier.height(48.dp)) { Text("歌词提前 0.25 秒") }
-            AppTextButton(onClick = { onLyricsOffsetChange(250L) }, modifier = Modifier.height(48.dp)) { Text("歌词延后 0.25 秒") }
+            AppTextButton(onClick = { onLyricsOffsetChange(-250L) }, modifier = Modifier.height(48.dp)) { AppText("歌词提前 0.25 秒") }
+            AppTextButton(onClick = { onLyricsOffsetChange(250L) }, modifier = Modifier.height(48.dp)) { AppText("歌词延后 0.25 秒") }
         }
-        AppTextButton(onClick = { onLyricsOffsetChange(-lyricsOffsetMs) }, modifier = Modifier.height(48.dp)) { Text("重置歌词时间") }
+        AppTextButton(onClick = { onLyricsOffsetChange(-lyricsOffsetMs) }, modifier = Modifier.height(48.dp)) { AppText("重置歌词时间") }
         MusicActionSheetItem("重新匹配歌词", onLyricsRetry)
         MusicActionSheetItem("手动搜索歌词", onOpenLyricsSearch)
     }
@@ -1096,11 +1102,11 @@ private fun LyricLineContent(
 ) {
     val transition = updateTransition(targetState = focusStyle, label = "lyric_focus")
     val blurRadius = transition.animateDp(
-        transitionSpec = { tween(if (reduceMotion) 0 else 260) },
+        transitionSpec = { if (reduceMotion) snap() else AppMotionTokens.standardSpec() },
         label = "lyric_blur"
     ) { it.blurRadiusDp.dp }
     val alpha = transition.animateFloat(
-        transitionSpec = { tween(if (reduceMotion) 0 else 260) },
+        transitionSpec = { if (reduceMotion) snap() else AppMotionTokens.standardSpec() },
         label = "lyric_alpha"
     ) { it.alphaPercent / 100f }
     val focusModifier = if (Build.VERSION.SDK_INT >= 31 && blurRadius.value > 0.dp) {
@@ -1115,7 +1121,7 @@ private fun LyricLineContent(
             .graphicsLayer { this.alpha = alpha.value }
             .clickable(onClick = onClick)
     ) {
-        Text(
+        AppText(
             text = buildLyricText(line, isCurrent, positionMs),
             color = MusicContentColor,
             style = MaterialTheme.typography.headlineSmall,
@@ -1123,7 +1129,7 @@ private fun LyricLineContent(
             lineHeight = 34.sp
         )
         line.translations.firstOrNull()?.takeIf { showTranslations && it.isNotBlank() }?.let {
-            Text(
+            AppText(
                 text = it,
                 color = MusicContentColor.copy(alpha = 0.72f),
                 style = MaterialTheme.typography.bodyLarge,
@@ -1131,7 +1137,7 @@ private fun LyricLineContent(
             )
         }
         line.romanization?.takeIf { showTranslations && it.isNotBlank() }?.let {
-            Text(
+            AppText(
                 text = it,
                 color = MusicContentColor.copy(alpha = 0.58f),
                 style = MaterialTheme.typography.bodyMedium,
@@ -1197,7 +1203,7 @@ private fun GlassIconButton(
             .size(48.dp)
             .musicGlassSurface(glassEnabled, CircleShape, glassTintColor, miuixBackdrop)
     ) {
-        Icon(icon, contentDescription = description, tint = MusicContentColor)
+        AppIcon(icon, contentDescription = description, tint = MusicContentColor)
     }
 }
 
@@ -1215,7 +1221,7 @@ private fun GlassTextButton(
             .height(48.dp)
             .musicGlassSurface(
                 glassEnabled,
-                RoundedCornerShape(24.dp),
+                AppShapes.container(ContainerLevel.Pill),
                 glassTintColor,
                 miuixBackdrop
             )
@@ -1223,7 +1229,7 @@ private fun GlassTextButton(
             .padding(horizontal = 15.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(label, color = MusicContentColor, style = MaterialTheme.typography.labelMedium)
+        AppText(label, color = MusicContentColor, style = MaterialTheme.typography.labelMedium)
     }
 }
 
@@ -1237,7 +1243,7 @@ private fun MusicActionSheetItem(label: String, onClick: () -> Unit) {
             .padding(horizontal = 24.dp),
         contentAlignment = Alignment.CenterStart
     ) {
-        Text(label, color = MusicContentColor, style = MaterialTheme.typography.bodyLarge)
+        AppText(label, color = MusicContentColor, style = MaterialTheme.typography.bodyLarge)
     }
 }
 

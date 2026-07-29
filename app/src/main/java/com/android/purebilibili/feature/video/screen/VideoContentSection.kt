@@ -1,5 +1,8 @@
 // 文件路径: feature/video/screen/VideoContentSection.kt
 package com.android.purebilibili.feature.video.screen
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
+import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.animation.*
@@ -1010,7 +1013,7 @@ private fun VideoCommentTab(
             } else if (replies.isEmpty()) {
                 item {
                     Box(modifier = Modifier.fillMaxWidth().padding(32.dp), contentAlignment = Alignment.Center) {
-                        Text(
+                        AppText(
                             text = if (upOnlyFilter) "这个视频没有 UP 主的评论" else "暂无评论",
                             color = commentAppearance.secondaryTextColor
                         )
@@ -1077,7 +1080,7 @@ private fun VideoCommentTab(
                         when {
                             isRepliesLoading -> AdaptiveLoadingIndicator()
                             isRepliesEnd || replies.size >= replyCount -> {
-                                Text("—— end ——", color = commentAppearance.secondaryTextColor, fontSize = 12.sp)
+                                AppText("—— end ——", color = commentAppearance.secondaryTextColor, fontSize = 12.sp)
                             }
                             // 当 shouldLoadMore 为 true 时才显示加载指示器
                             shouldLoadMore -> AdaptiveLoadingIndicator()
@@ -1107,7 +1110,7 @@ private fun VideoCommentTab(
                     containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
                     contentColor = MaterialTheme.colorScheme.primary
                 ) {
-                    Icon(
+                    AppIcon(
                         imageVector = rememberAppChevronUpIcon(),
                         contentDescription = "回到顶部"
                     )
@@ -1502,14 +1505,14 @@ private fun VideoContentTabBar(
                         .clickable { onRestorePlayer() }
                         .padding(horizontal = 10.dp, vertical = 6.dp)
                 ) {
-                    Icon(
+                    AppIcon(
                         imageVector = rememberAppPlayIcon(),
                         contentDescription = "恢复画面",
                         tint = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(12.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(
+                    AppText(
                         text = "恢复画面",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onPrimary,
@@ -1544,14 +1547,14 @@ private fun VideoContentTabBar(
                         vertical = danmakuActionLayoutPolicy.toggleVerticalPaddingDp.dp
                     )
             ) {
-                Icon(
+                AppIcon(
                     imageVector = rememberAppCommentIcon(),
                     contentDescription = if (danmakuEnabled) "关闭弹幕" else "开启弹幕",
                     tint = if (danmakuEnabled) danmakuActiveColor else danmakuInactiveColor,
                     modifier = Modifier.size(danmakuActionLayoutPolicy.toggleIconSizeDp.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(
+                AppText(
                     text = if (danmakuEnabled) "开" else "关",
                     fontSize = danmakuActionLayoutPolicy.toggleTextSizeSp.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -1576,7 +1579,7 @@ private fun VideoContentTabBar(
                             vertical = danmakuActionLayoutPolicy.sendVerticalPaddingDp.dp
                         )
                 ) {
-                    Text(
+                    AppText(
                         text = danmakuActionLayoutPolicy.sendLabel,
                         fontSize = danmakuActionLayoutPolicy.sendTextSizeSp.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1593,7 +1596,7 @@ private fun VideoContentTabBar(
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Icon(
+                    AppIcon(
                         imageVector = rememberAppSettingsIcon(),
                         contentDescription = "弹幕设置",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1602,7 +1605,7 @@ private fun VideoContentTabBar(
                 }
             }
         }
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
+        AppHorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
     }
 }
 
@@ -1617,7 +1620,7 @@ private fun VideoRecommendationHeader() {
             .padding(horizontal = 4.dp, vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
+        AppText(
             text = "相关推荐",
             fontSize = 15.sp,
             fontWeight = FontWeight.Bold,
@@ -1668,7 +1671,7 @@ fun VideoTagChip(
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f),
         shape = RoundedCornerShape(14.dp)
     ) {
-        Text(
+        AppText(
             text = tagName,
             fontSize = 12.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,

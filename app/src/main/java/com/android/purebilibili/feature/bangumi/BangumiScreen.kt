@@ -1,5 +1,7 @@
 // 文件路径: feature/bangumi/BangumiScreen.kt
 package com.android.purebilibili.feature.bangumi
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -264,21 +266,23 @@ fun BangumiScreen(
                                 SizeTransform(clip = false)
                         },
                         label = "bangumiIndexListTransition"
-                    ) {
-                        BangumiPiliPlusHomeContent(
-                            listState = listState,
-                            timelineState = timelineState,
-                            myFollowState = myFollowState,
-                            selectedType = selectedType,
-                            myFollowType = myFollowType,
-                            onRetry = { viewModel.loadBangumiList() },
-                            onRetryTimeline = { viewModel.loadTimeline() },
-                            onRetryMyFollow = { viewModel.loadMyFollowBangumi(myFollowType) },
-                            onLoadMore = { viewModel.loadMore() },
-                            onOpenMyFollow = { viewModel.openMyFollowEntry() },
-                            onItemClick = onBangumiClick,
-                            onChromeCollapsedChange = { indexChromeCollapsed = it }
-                        )
+                    ) { transitionKey ->
+                        key(transitionKey) {
+                            BangumiPiliPlusHomeContent(
+                                listState = listState,
+                                timelineState = timelineState,
+                                myFollowState = myFollowState,
+                                selectedType = selectedType,
+                                myFollowType = myFollowType,
+                                onRetry = { viewModel.loadBangumiList() },
+                                onRetryTimeline = { viewModel.loadTimeline() },
+                                onRetryMyFollow = { viewModel.loadMyFollowBangumi(myFollowType) },
+                                onLoadMore = { viewModel.loadMore() },
+                                onOpenMyFollow = { viewModel.openMyFollowEntry() },
+                                onItemClick = onBangumiClick,
+                                onChromeCollapsedChange = { indexChromeCollapsed = it }
+                            )
+                        }
                     }
                 }
                 BangumiDisplayMode.TIMELINE -> {
@@ -461,7 +465,7 @@ private fun BangumiPiliPlusHomeContent(
                     }
                     if (listState.items.isEmpty()) {
                         item(span = { GridItemSpan(maxLineSpan) }) {
-                            Text(
+                            AppText(
                                 text = "暂无推荐内容",
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier
@@ -512,7 +516,7 @@ private fun BangumiPiliPlusHomeContent(
                 containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
                 contentColor = MaterialTheme.colorScheme.primary
             ) {
-                Icon(
+                AppIcon(
                     imageVector = rememberAppChevronUpIcon(),
                     contentDescription = "回到顶部"
                 )
@@ -533,7 +537,7 @@ private fun BangumiHomeSectionHeader(
             .padding(top = 2.dp, bottom = 2.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
+        AppText(
             text = title,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
@@ -545,7 +549,7 @@ private fun BangumiHomeSectionHeader(
                 onClick = onAction,
                 contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
             ) {
-                Text(actionText, fontSize = 13.sp)
+                AppText(actionText, fontSize = 13.sp)
             }
         }
     }
@@ -580,7 +584,7 @@ private fun BangumiFollowPreviewSection(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.padding(16.dp)
                     ) {
-                        Text(
+                        AppText(
                             text = "还没有追番追剧",
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 14.sp
@@ -644,7 +648,7 @@ private fun FollowBangumiHomeCard(
                 item.newEp?.indexShow.orEmpty()
             }
             if (bottomText.isNotBlank()) {
-                Text(
+                AppText(
                     text = bottomText,
                     color = Color.White,
                     fontSize = 10.sp,
@@ -664,7 +668,7 @@ private fun FollowBangumiHomeCard(
                 )
             }
         }
-        Text(
+        AppText(
             text = item.title,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
@@ -691,7 +695,7 @@ private fun BangumiTimelinePreviewSection(
         is TimelineState.Success -> {
             val visibleDays = state.days.filter { !it.episodes.isNullOrEmpty() }
             if (visibleDays.isEmpty()) {
-                Text(
+                AppText(
                     text = "今天暂无更新",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(vertical = 24.dp),
@@ -717,7 +721,7 @@ private fun BangumiTimelinePreviewSection(
                                 MaterialTheme.colorScheme.surfaceVariant
                             }
                         ) {
-                            Text(
+                            AppText(
                                 text = buildTimelineDayLabel(day),
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
                                 color = if (selected) {
@@ -797,7 +801,7 @@ private fun TimelineEpisodeHomeCard(
             )
             val updateLabel = episode.pubIndex.ifBlank { episode.pubTime }
             if (updateLabel.isNotBlank()) {
-                Text(
+                AppText(
                     text = updateLabel,
                     color = Color.White,
                     fontSize = 10.sp,
@@ -817,7 +821,7 @@ private fun TimelineEpisodeHomeCard(
                 )
             }
         }
-        Text(
+        AppText(
             text = episode.title,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
@@ -838,7 +842,7 @@ private fun BangumiHomeBadge(
         color = MaterialTheme.colorScheme.primary,
         shape = RoundedCornerShape(4.dp)
     ) {
-        Text(
+        AppText(
             text = text,
             color = MaterialTheme.colorScheme.onPrimary,
             fontSize = 10.sp,
@@ -884,7 +888,7 @@ private fun HomeErrorStrip(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(
+            AppText(
                 text = message,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 13.sp,
@@ -893,7 +897,7 @@ private fun HomeErrorStrip(
             )
             Spacer(modifier = Modifier.height(8.dp))
             AppTextButton(onClick = onRetry) {
-                Text("重试")
+                AppText("重试")
             }
         }
     }
@@ -926,7 +930,7 @@ private fun BangumiSearchBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 AppIconButton(onClick = onBack) {
-                    Icon(CupertinoIcons.Default.ChevronBackward, contentDescription = "返回")
+                    AppIcon(CupertinoIcons.Default.ChevronBackward, contentDescription = "返回")
                 }
                 
                 Spacer(modifier = Modifier.width(4.dp))
@@ -941,7 +945,7 @@ private fun BangumiSearchBar(
                         .padding(horizontal = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
+                    AppIcon(
                         CupertinoIcons.Default.MagnifyingGlass,
                         null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
@@ -965,7 +969,7 @@ private fun BangumiSearchBar(
                         decorationBox = { inner ->
                             Box(contentAlignment = Alignment.CenterStart) {
                                 if (query.isEmpty()) {
-                                    Text(
+                                    AppText(
                                         "搜索番剧名称、声优...",
                                         style = TextStyle(
                                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.5f),
@@ -983,7 +987,7 @@ private fun BangumiSearchBar(
                             onClick = { onQueryChange("") },
                             modifier = Modifier.size(28.dp)
                         ) {
-                            Icon(
+                            AppIcon(
                                 CupertinoIcons.Default.XmarkCircle,
                                 null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -999,7 +1003,7 @@ private fun BangumiSearchBar(
                     onClick = { onSearch(query) },
                     enabled = query.isNotEmpty()
                 ) {
-                    Text(
+                    AppText(
                         "搜索",
                         color = if (query.isNotEmpty()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant.copy(0.5f)
                     )
@@ -1035,19 +1039,19 @@ private fun BangumiNavigationBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 AppIconButton(onClick = onBack) {
-                    Icon(CupertinoIcons.Default.ChevronBackward, contentDescription = "返回")
+                    AppIcon(CupertinoIcons.Default.ChevronBackward, contentDescription = "返回")
                 }
-                Text(
+                AppText(
                     text = title,
                     fontSize = titleFontSize,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
                 )
                 AppIconButton(onClick = onSearch) {
-                    Icon(CupertinoIcons.Default.MagnifyingGlass, contentDescription = "搜索")
+                    AppIcon(CupertinoIcons.Default.MagnifyingGlass, contentDescription = "搜索")
                 }
                 AppIconButton(onClick = onOpenMyFollow) {
-                    Icon(
+                    AppIcon(
                         CupertinoIcons.Default.Bookmark,
                         contentDescription = "我的追番",
                         tint = if (isMyFollowMode) MaterialTheme.colorScheme.primary else LocalContentColor.current
@@ -1109,13 +1113,13 @@ private fun BangumiListContent(
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
+                    AppText(
                         text = listState.message,
                         color = MaterialTheme.colorScheme.error
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     AppButton(onClick = onRetry) {
-                        Text("重试")
+                        AppText("重试")
                     }
                 }
             }
@@ -1149,7 +1153,7 @@ private fun BangumiSearchContent(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
+                AppText(
                     resolveBangumiSearchPlaceholder(selectedType),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -1169,13 +1173,13 @@ private fun BangumiSearchContent(
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
+                    AppText(
                         text = searchState.message,
                         color = MaterialTheme.colorScheme.error
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     AppButton(onClick = onRetry) {
-                        Text("重试")
+                        AppText("重试")
                     }
                 }
             }
@@ -1186,7 +1190,7 @@ private fun BangumiSearchContent(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
+                    AppText(
                         "未找到相关番剧",
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

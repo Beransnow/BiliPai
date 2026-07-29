@@ -1,4 +1,5 @@
 package com.android.purebilibili.feature.list
+import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 
 import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.AppSpacingTokens
@@ -76,10 +77,9 @@ import kotlinx.coroutines.launch // [Fix] Import
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
+import com.android.purebilibili.core.ui.components.AppIcon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import com.android.purebilibili.core.ui.components.AppText
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.material.icons.Icons
@@ -1064,7 +1064,7 @@ fun CommonListScreen(
                         ),
                         navigationIcon = {
                             AppIconButton(onClick = onBack) {
-                                Icon(rememberAppBackIcon(), contentDescription = "Back")
+                                AppIcon(rememberAppBackIcon(), contentDescription = "Back")
                             }
                         },
                         actions = {
@@ -1086,7 +1086,7 @@ fun CommonListScreen(
                                         )
                                     }
                                 ) {
-                                    Icon(
+                                    AppIcon(
                                         imageVector = rememberAppHeadphonesIcon(),
                                         contentDescription = "全部听"
                                     )
@@ -1098,7 +1098,7 @@ fun CommonListScreen(
                                             enabled = !isFavoriteManaging,
                                             onClick = { showFavoriteManagementMenu = true }
                                         ) {
-                                            Icon(
+                                            AppIcon(
                                                 imageVector = Icons.Filled.MoreVert,
                                                 contentDescription = "更多管理"
                                             )
@@ -1110,7 +1110,7 @@ fun CommonListScreen(
                                             FavoriteResourceOrder.entries.forEach { order ->
                                                 AppDropdownMenuItem(
                                                     text = {
-                                                        Text(
+                                                        AppText(
                                                             if (order == favoriteOrder) {
                                                                 "排序：${order.label}"
                                                             } else {
@@ -1125,9 +1125,9 @@ fun CommonListScreen(
                                                     }
                                                 )
                                             }
-                                            HorizontalDivider()
+                                            AppHorizontalDivider()
                                             AppDropdownMenuItem(
-                                                text = { Text("清理失效内容") },
+                                                text = { AppText("清理失效内容") },
                                                 enabled = canCleanInvalidFavoriteResources(selectedFavoriteFolder) && !isFavoriteManaging,
                                                 onClick = {
                                                     showFavoriteManagementMenu = false
@@ -1155,13 +1155,13 @@ fun CommonListScreen(
                                             }
                                         }
                                     ) {
-                                        Text(if (allSelected) "取消全选" else "全选")
+                                        AppText(if (allSelected) "取消全选" else "全选")
                                     }
                                     AppTextButton(
                                         enabled = selectedHistoryKeys.isNotEmpty(),
                                         onClick = { showHistoryBatchDeleteConfirm = true }
                                     ) {
-                                        Text("删除(${selectedHistoryKeys.size})")
+                                        AppText("删除(${selectedHistoryKeys.size})")
                                     }
                                     AppTextButton(
                                         onClick = {
@@ -1169,7 +1169,7 @@ fun CommonListScreen(
                                             selectedHistoryKeys = emptySet()
                                         }
                                     ) {
-                                        Text("完成")
+                                        AppText("完成")
                                     }
                                 } else {
                                     if (state.items.isNotEmpty()) {
@@ -1180,7 +1180,7 @@ fun CommonListScreen(
                                                 selectedHistoryKeys = emptySet()
                                             }
                                         ) {
-                                            Text("批量删除")
+                                            AppText("批量删除")
                                         }
                                     }
 
@@ -1189,7 +1189,7 @@ fun CommonListScreen(
                                             enabled = !isHistoryManagementBusy,
                                             onClick = { showHistoryManagementMenu = true }
                                         ) {
-                                            Icon(
+                                            AppIcon(
                                                 imageVector = Icons.Filled.MoreVert,
                                                 contentDescription = "更多管理"
                                             )
@@ -1199,7 +1199,7 @@ fun CommonListScreen(
                                             onDismissRequest = { showHistoryManagementMenu = false }
                                         ) {
                                             AppDropdownMenuItem(
-                                                text = { Text(resolveHistoryPauseActionLabel(isHistoryPaused)) },
+                                                text = { AppText(resolveHistoryPauseActionLabel(isHistoryPaused)) },
                                                 enabled = !isHistoryManagementBusy,
                                                 onClick = {
                                                     showHistoryManagementMenu = false
@@ -1207,7 +1207,7 @@ fun CommonListScreen(
                                                 }
                                             )
                                             AppDropdownMenuItem(
-                                                text = { Text("清空历史") },
+                                                text = { AppText("清空历史") },
                                                 enabled = state.items.isNotEmpty() && !isHistoryManagementBusy,
                                                 onClick = {
                                                     showHistoryManagementMenu = false
@@ -1303,7 +1303,7 @@ fun CommonListScreen(
                                             enabled = !isHistoryBatchMode,
                                             onClick = { onHistoryFilterSelected(filter) },
                                             label = {
-                                                Text(
+                                                AppText(
                                                     text = filter.label,
                                                     style = MaterialTheme.typography.labelLarge.copy(
                                                         fontSize = historyFilterChrome.labelFontSizeSp.sp
@@ -1389,7 +1389,7 @@ fun CommonListScreen(
                     containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(AppSpacingTokens.ExtraSmall - AppSpacingTokens.Micro / 2),
                     contentColor = MaterialTheme.colorScheme.primary
                 ) {
-                    Icon(
+                    AppIcon(
                         imageVector = rememberAppChevronUpIcon(),
                         contentDescription = "回到顶部"
                     )
@@ -1401,8 +1401,8 @@ fun CommonListScreen(
     if (showHistoryBatchDeleteConfirm && historyViewModel != null) {
         AppAlertDialog(
             onDismissRequest = { showHistoryBatchDeleteConfirm = false },
-            title = { Text("批量删除历史") },
-            text = { Text("确认删除已选择的 ${selectedHistoryKeys.size} 条历史记录吗？") },
+            title = { AppText("批量删除历史") },
+            text = { AppText("确认删除已选择的 ${selectedHistoryKeys.size} 条历史记录吗？") },
             confirmButton = {
                 AppTextButton(
                     onClick = {
@@ -1421,12 +1421,12 @@ fun CommonListScreen(
                         showHistoryBatchDeleteConfirm = false
                     }
                 ) {
-                    Text("删除")
+                    AppText("删除")
                 }
             },
             dismissButton = {
                 AppTextButton(onClick = { showHistoryBatchDeleteConfirm = false }) {
-                    Text("取消")
+                    AppText("取消")
                 }
             }
         )
@@ -1435,9 +1435,9 @@ fun CommonListScreen(
     if (showFavoriteCleanInvalidConfirm && favoriteViewModel != null) {
         AppAlertDialog(
             onDismissRequest = { showFavoriteCleanInvalidConfirm = false },
-            title = { Text("清理失效内容") },
+            title = { AppText("清理失效内容") },
             text = {
-                Text(
+                AppText(
                     resolveFavoriteCleanInvalidConfirmText(
                         selectedFavoriteFolder?.title.orEmpty()
                     )
@@ -1450,12 +1450,12 @@ fun CommonListScreen(
                         showFavoriteCleanInvalidConfirm = false
                     }
                 ) {
-                    Text("清理")
+                    AppText("清理")
                 }
             },
             dismissButton = {
                 AppTextButton(onClick = { showFavoriteCleanInvalidConfirm = false }) {
-                    Text("取消")
+                    AppText("取消")
                 }
             }
         )
@@ -1464,8 +1464,8 @@ fun CommonListScreen(
     if (showHistoryClearConfirm && historyViewModel != null) {
         AppAlertDialog(
             onDismissRequest = { showHistoryClearConfirm = false },
-            title = { Text("清空历史") },
-            text = { Text(resolveHistoryClearConfirmText(state.items.size)) },
+            title = { AppText("清空历史") },
+            text = { AppText(resolveHistoryClearConfirmText(state.items.size)) },
             confirmButton = {
                 AppTextButton(
                     onClick = {
@@ -1475,12 +1475,12 @@ fun CommonListScreen(
                         showHistoryClearConfirm = false
                     }
                 ) {
-                    Text("清空")
+                    AppText("清空")
                 }
             },
             dismissButton = {
                 AppTextButton(onClick = { showHistoryClearConfirm = false }) {
-                    Text("取消")
+                    AppText("取消")
                 }
             }
         )
@@ -1489,8 +1489,8 @@ fun CommonListScreen(
     if (pendingHistorySingleDeleteKey != null && historyViewModel != null) {
         AppAlertDialog(
             onDismissRequest = { pendingHistorySingleDeleteKey = null },
-            title = { Text("删除历史记录") },
-            text = { Text("确认删除这条历史记录吗？") },
+            title = { AppText("删除历史记录") },
+            text = { AppText("确认删除这条历史记录吗？") },
             confirmButton = {
                 AppTextButton(
                     onClick = {
@@ -1498,12 +1498,12 @@ fun CommonListScreen(
                         pendingHistorySingleDeleteKey = null
                     }
                 ) {
-                    Text("删除")
+                    AppText("删除")
                 }
             },
             dismissButton = {
                 AppTextButton(onClick = { pendingHistorySingleDeleteKey = null }) {
-                    Text("取消")
+                    AppText("取消")
                 }
             }
         )
@@ -1561,7 +1561,7 @@ private fun FavoriteFolderChipRow(
                             coverUrl = previewCover,
                             selected = isSelected
                         )
-                        Text(
+                        AppText(
                             text = resolveFavoriteFolderTabLabel(folder),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -1609,7 +1609,7 @@ private fun FavoriteFolderChipPreview(
                 contentScale = ContentScale.Crop
             )
         } else {
-            Icon(
+            AppIcon(
                 imageVector = rememberAppFolderIcon(),
                 contentDescription = null,
                 modifier = Modifier.size(AppSpacingTokens.Large - AppSpacingTokens.Micro / 2),
@@ -1699,7 +1699,7 @@ private fun CommonListContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(
+            AppText(
                 text = error,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodyMedium
@@ -1707,13 +1707,13 @@ private fun CommonListContent(
             if (onRetry != null) {
                 Spacer(modifier = Modifier.height(AppSpacingTokens.Medium))
                 AppButton(onClick = onRetry) {
-                    Text("重试")
+                    AppText("重试")
                 }
             }
         }
     } else if (items.isEmpty()) {
         Box(modifier = emptyViewportModifier, contentAlignment = Alignment.Center) {
-             Text("暂无数据", color = MaterialTheme.colorScheme.onSurfaceVariant)
+             AppText("暂无数据", color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     } else {
         val filteredItems = androidx.compose.runtime.remember(items, searchQuery) {
@@ -1742,7 +1742,7 @@ private fun CommonListContent(
 
         if (filteredItems.isEmpty() && searchQuery.isNotEmpty()) {
              Box(emptyViewportModifier, contentAlignment = Alignment.Center) {
-                Text("没有找到相关视频", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                AppText("没有找到相关视频", color = MaterialTheme.colorScheme.onSurfaceVariant)
              }
         } else {
             // 自动加载更多
@@ -1899,7 +1899,7 @@ private fun CommonListContent(
                                             shape = historySelectionShape
                                         )
                                 )
-                                Icon(
+                                AppIcon(
                                     imageVector = if (isSelected) Icons.Rounded.CheckCircle else Icons.Rounded.RadioButtonUnchecked,
                                     contentDescription = if (isSelected) "已选择" else "未选择",
                                     tint = if (isSelected) {
@@ -2025,21 +2025,21 @@ private fun HistoryArticleCard(
                     shape = AppShapes.container(ContainerLevel.Pill),
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
                 ) {
-                    Text(
+                    AppText(
                         text = "专栏",
                         color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.labelMedium,
                         modifier = Modifier.padding(horizontal = AppSpacingTokens.Small + AppSpacingTokens.Micro, vertical = AppSpacingTokens.ExtraSmall)
                     )
                 }
-                Text(
+                AppText(
                     text = article.title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 4,
                     overflow = TextOverflow.Ellipsis
                 )
-                Text(
+                AppText(
                     text = article.owner.name.ifBlank { "未知作者" },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2067,7 +2067,7 @@ private fun FavoriteSubscribedFolderList(
     if (folders.isEmpty()) {
         val message = if (searchQuery.isNotBlank()) "没有找到相关追更" else "暂无追更合集"
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(text = message, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            AppText(text = message, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         return
     }
@@ -2149,14 +2149,14 @@ private fun FavoriteSubscribedFolderRow(
             )
             Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
             Column(modifier = Modifier.weight(1f)) {
-                Text(
+                AppText(
                     text = folder.title,
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1
                 )
                 Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall))
-                Text(
+                AppText(
                     text = "${folder.media_count} 个内容",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -2165,7 +2165,7 @@ private fun FavoriteSubscribedFolderRow(
             Spacer(modifier = Modifier.width(AppSpacingTokens.Small))
             AppAssistChip(
                 onClick = onClick,
-                label = { Text("订阅") }
+                label = { AppText("订阅") }
             )
         }
     }
@@ -2193,7 +2193,7 @@ private fun FavoriteSubscribedFolderPreview(
                 contentScale = ContentScale.Crop
             )
         } else {
-            Icon(
+            AppIcon(
                 imageVector = rememberAppFolderIcon(),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary
@@ -2256,28 +2256,28 @@ private fun FavoriteProgressBadgeCapsule(
             modifier = Modifier.padding(horizontal = AppSpacingTokens.Medium, vertical = AppSpacingTokens.Small + AppSpacingTokens.Micro),
             verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Micro)
         ) {
-            Text(
+            AppText(
                 text = title,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Text(
+            AppText(
                 text = badge.primaryText,
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Text(
+            AppText(
                 text = badge.secondaryText,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary
             )
             badge.footnoteText?.let { footnote ->
-                HorizontalDivider(
+                AppHorizontalDivider(
                     modifier = Modifier.padding(vertical = AppSpacingTokens.Micro),
                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f),
                     thickness = AppSpacingTokens.Micro / 4
                 )
-                Text(
+                AppText(
                     text = footnote,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -2314,14 +2314,14 @@ private fun FavoriteCollectionRow(
                 .padding(horizontal = AppSpacingTokens.Medium + AppSpacingTokens.Micro, vertical = AppSpacingTokens.Medium + AppSpacingTokens.Micro),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
+            AppIcon(
                 imageVector = rememberAppFolderIcon(),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
             Column(modifier = Modifier.weight(1f)) {
-                Text(
+                AppText(
                     text = item.title,
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -2329,7 +2329,7 @@ private fun FavoriteCollectionRow(
                 )
                 if (subtitle.isNotBlank()) {
                     Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall))
-                    Text(
+                    AppText(
                         text = subtitle,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2340,7 +2340,7 @@ private fun FavoriteCollectionRow(
             Spacer(modifier = Modifier.width(AppSpacingTokens.Small))
             AppAssistChip(
                 onClick = onClick,
-                label = { Text("合集") }
+                label = { AppText("合集") }
             )
         }
     }

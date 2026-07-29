@@ -1,5 +1,7 @@
 // 文件路径: feature/video/ui/components/CommentFraudDialog.kt
 package com.android.purebilibili.feature.video.ui.components
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -65,7 +67,7 @@ fun CommentFraudResultDialog(
     AppAlertDialog(
         onDismissRequest = onDismiss,
         icon = {
-            Icon(
+            AppIcon(
                 imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier.size(36.dp),
@@ -78,7 +80,7 @@ fun CommentFraudResultDialog(
             )
         },
         title = {
-            Text(
+            AppText(
                 text = title,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
@@ -86,7 +88,7 @@ fun CommentFraudResultDialog(
             )
         },
         text = {
-            Text(
+            AppText(
                 text = description,
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -95,7 +97,7 @@ fun CommentFraudResultDialog(
         },
         confirmButton = {
             AppTextButton(onClick = onDismiss) {
-                Text("知道了")
+                AppText("知道了")
             }
         },
         dismissButton = {
@@ -110,7 +112,7 @@ fun CommentFraudResultDialog(
                         contentColor = MaterialTheme.colorScheme.error
                     )
                 ) {
-                    Text("删除评论")
+                    AppText("删除评论")
                 }
             }
         }
@@ -144,7 +146,7 @@ fun CommentFraudDetectingBanner(
                 color = MaterialTheme.colorScheme.tertiary
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(
+            AppText(
                 text = "正在检测评论可见性…",
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant

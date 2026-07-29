@@ -1,5 +1,6 @@
 // 文件路径: feature/dynamic/DynamicScreen.kt
 package com.android.purebilibili.feature.dynamic
+import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 
 import com.android.purebilibili.core.ui.AppSpacingTokens
 
@@ -33,10 +34,9 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
+import com.android.purebilibili.core.ui.components.AppIcon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import com.android.purebilibili.core.ui.components.AppText
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
@@ -899,7 +899,7 @@ fun DynamicScreen(
                     containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(AppSpacingTokens.ExtraSmall - AppSpacingTokens.Micro / 2),
                     contentColor = MaterialTheme.colorScheme.primary
                 ) {
-                    Icon(
+                    AppIcon(
                         imageVector = rememberAppChevronUpIcon(),
                         contentDescription = "回到顶部"
                     )
@@ -1069,7 +1069,7 @@ private fun DynamicList(
                 contentType = "dynamic_no_more_footer",
                 span = StaggeredGridItemSpan.FullLine
             ) {
-                Text(
+                AppText(
                     "没有更多了",
                     modifier = Modifier.fillMaxWidth().padding(AppSpacingTokens.Large),
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -1089,17 +1089,17 @@ private fun OldContentDivider(label: String) {
             .padding(horizontal = AppSpacingTokens.Large, vertical = AppSpacingTokens.Small + AppSpacingTokens.Micro),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        HorizontalDivider(
+        AppHorizontalDivider(
             modifier = Modifier.weight(1f),
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
         )
-        Text(
+        AppText(
             text = label,
             modifier = Modifier.padding(horizontal = AppSpacingTokens.Small + AppSpacingTokens.Micro),
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
             fontSize = MaterialTheme.typography.labelSmall.fontSize
         )
-        HorizontalDivider(
+        AppHorizontalDivider(
             modifier = Modifier.weight(1f),
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
         )
@@ -1150,7 +1150,7 @@ private fun HorizontalUserList(
                                 .background(MaterialTheme.colorScheme.surfaceVariant),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
+                            AppIcon(
                                 imageVector = if (showHiddenUsers) {
                                     rememberAppVisibilityOnIcon()
                                 } else {
@@ -1161,7 +1161,7 @@ private fun HorizontalUserList(
                             )
                         }
                         Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall))
-                        Text(
+                        AppText(
                             text = if (showHiddenUsers) "隐藏中" else "显示隐藏",
                             fontSize = MaterialTheme.typography.labelSmall.fontSize,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1219,7 +1219,7 @@ private fun HorizontalUserList(
                             DynamicUserLiveBadge(modifier = Modifier.padding(top = AppSpacingTokens.Micro))
                         }
                         Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall))
-                        Text(
+                        AppText(
                             displayName,
                             fontSize = MaterialTheme.typography.labelSmall.fontSize,
                             color = if (isSelected)
@@ -1238,14 +1238,14 @@ private fun HorizontalUserList(
                         onDismissRequest = { showMenu = false }
                     ) {
                         AppDropdownMenuItem(
-                            text = { Text(if (user.isPinned) "取消置顶" else "置顶") },
+                            text = { AppText(if (user.isPinned) "取消置顶" else "置顶") },
                             onClick = {
                                 showMenu = false
                                 onTogglePin(user.uid)
                             }
                         )
                         AppDropdownMenuItem(
-                            text = { Text(if (user.isHidden) "取消隐藏" else "隐藏") },
+                            text = { AppText(if (user.isHidden) "取消隐藏" else "隐藏") },
                             onClick = {
                                 showMenu = false
                                 onToggleHidden(user.uid)
@@ -1273,7 +1273,7 @@ private fun ErrorOverlay(
             modifier = modifier,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(error.orEmpty(), color = MaterialTheme.colorScheme.error)
+            AppText(error.orEmpty(), color = MaterialTheme.colorScheme.error)
             Spacer(modifier = Modifier.height(AppSpacingTokens.Large))
             if (error?.contains("未登录") == true) {
                 AppPrimaryButton(text = "去登录", onClick = onLoginClick)

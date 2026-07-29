@@ -1,4 +1,6 @@
 package com.android.purebilibili.feature.profile
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -69,7 +71,7 @@ fun WallpaperAdjustmentSheet(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
-                Text(
+                AppText(
                     text = "取消",
                     modifier = Modifier
                         .align(Alignment.CenterStart)
@@ -77,14 +79,14 @@ fun WallpaperAdjustmentSheet(
                     color = MaterialTheme.colorScheme.primary
                 )
                 
-                Text(
+                AppText(
                     text = "调整壁纸位置",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.align(Alignment.Center)
                 )
                 
-                Text(
+                AppText(
                     text = "保存",
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -167,7 +169,7 @@ fun WallpaperAdjustmentSheet(
                         )
                         
                         // Text Overlay hint
-                        Text(
+                        AppText(
                             text = "预览效果",
                             color = Color.White.copy(alpha = 0.8f),
                             fontSize = 10.sp,
@@ -190,9 +192,9 @@ fun WallpaperAdjustmentSheet(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text("顶部对齐", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
-                    Text("居中", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
-                    Text("底部对齐", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
+                    AppText("顶部对齐", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
+                    AppText("居中", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
+                    AppText("底部对齐", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
                 }
                 
                 AppSlider(
@@ -205,7 +207,7 @@ fun WallpaperAdjustmentSheet(
                     modifier = Modifier.fillMaxWidth()
                 )
                 
-                Text(
+                AppText(
                     text = "上下拖动滑块调整图片显示区域",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.outline,
@@ -260,7 +262,7 @@ fun ProfileWallpaperAdjustmentSheet(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
-                Text(
+                AppText(
                     text = "取消",
                     modifier = Modifier
                         .align(Alignment.CenterStart)
@@ -268,14 +270,14 @@ fun ProfileWallpaperAdjustmentSheet(
                     color = MaterialTheme.colorScheme.primary
                 )
 
-                Text(
+                AppText(
                     text = "调整壁纸位置",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.align(Alignment.Center)
                 )
 
-                Text(
+                AppText(
                     text = "保存",
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -397,7 +399,7 @@ fun ProfileWallpaperAdjustmentSheet(
                                 )
                         )
 
-                        Text(
+                        AppText(
                             text = "双指缩放  单指拖动",
                             color = Color.White.copy(alpha = 0.86f),
                             fontSize = 10.sp,
@@ -420,12 +422,12 @@ fun ProfileWallpaperAdjustmentSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column {
-                    Text(
+                    AppText(
                         text = if (selectedTab == 0) "手机端参数" else "平板端参数",
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Text(
+                    AppText(
                         text = "缩放 ${"%.2f".format(currentTransform.scale)}x  横向 ${"%.2f".format(currentTransform.offsetX)}  纵向 ${"%.2f".format(currentTransform.offsetY)}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.outline
@@ -435,11 +437,11 @@ fun ProfileWallpaperAdjustmentSheet(
                 AppTextButton(
                     onClick = { updateCurrentTransform(ProfileWallpaperTransform()) }
                 ) {
-                    Text("重置位置")
+                    AppText("重置位置")
                 }
             }
 
-            Text(
+            AppText(
                 text = "不同设备分别保存；首次设置会以居中参数作为默认值。",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.outline,
@@ -468,14 +470,14 @@ private fun TabItem(
         contentAlignment = Alignment.Center
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
+            AppIcon(
                 imageVector = icon,
                 contentDescription = null,
                 tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(16.dp)
             )
             Spacer(modifier = Modifier.width(6.dp))
-            Text(
+            AppText(
                 text = title,
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,

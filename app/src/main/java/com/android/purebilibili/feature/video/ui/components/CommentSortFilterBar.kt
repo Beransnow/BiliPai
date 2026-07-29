@@ -1,4 +1,6 @@
 package com.android.purebilibili.feature.video.ui.components
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,6 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.SettingsManager
@@ -34,8 +37,8 @@ internal data class CommentSortSegmentedControlSpec(
 internal fun resolveCommentSortSegmentedControlSpec(itemCount: Int): CommentSortSegmentedControlSpec {
     return CommentSortSegmentedControlSpec(
         itemWidthDp = if (itemCount >= 4) 56 else 66,
-        heightDp = 40,
-        indicatorHeightDp = 27
+        heightDp = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp,
+        indicatorHeightDp = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp,
     )
 }
 
@@ -76,14 +79,14 @@ fun CommentSortFilterBar(
     ) {
         //  Left: Title
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
+            AppText(
                 text = "评论",
                 fontSize = 20.sp, // iOS Large Title style scale
                 fontWeight = FontWeight.Bold,
                 color = appearance.primaryTextColor
             )
             Spacer(modifier = Modifier.width(6.dp))
-            Text(
+            AppText(
                 text = FormatUtils.formatStat(count.toLong()),
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Normal,
@@ -177,7 +180,7 @@ fun CommentToggleButton(
             .clickable { onToggle() },
         contentAlignment = Alignment.Center
     ) {
-        Icon(
+        AppIcon(
             imageVector = icon,
             contentDescription = null,
             tint = contentColor,

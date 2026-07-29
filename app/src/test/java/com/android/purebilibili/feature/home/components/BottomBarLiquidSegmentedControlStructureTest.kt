@@ -411,7 +411,9 @@ class BottomBarLiquidSegmentedControlStructureTest {
             "app/src/main/java/com/android/purebilibili/feature/dynamic/components/DynamicTopBar.kt"
         )
 
-        assertTrue(dynamicTopBar.contains("AndroidNativeUnderlinedSegmentedControl("))
+        assertTrue(dynamicTopBar.contains("DynamicCompactTabRow("))
+        assertTrue(dynamicTopBar.contains("resolveDynamicTabIndicatorPosition("))
+        assertTrue(dynamicTopBar.contains(".background(selectedColor)"))
         assertFalse(dynamicTopBar.contains("BottomBarLiquidSegmentedControl("))
         assertFalse(dynamicTopBar.contains("MiuixBackdrop"))
         assertFalse(dynamicTopBar.contains("miuixBackdrop"))

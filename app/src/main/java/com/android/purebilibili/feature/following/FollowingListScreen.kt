@@ -1,4 +1,6 @@
 package com.android.purebilibili.feature.following
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import com.android.purebilibili.core.ui.AppSpacingTokens
 
@@ -58,6 +60,7 @@ import com.android.purebilibili.core.ui.components.AppFilterChip
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppOutlinedButton
 import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppSnackbarHost
 import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.motion.AppMotionTokens
 import com.android.purebilibili.core.util.FormatUtils
@@ -685,13 +688,13 @@ fun FollowingListScreen(
     var groupDialogMixed by remember { mutableStateOf(false) }
 
     AppScaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        snackbarHost = { AppSnackbarHost(hostState = snackbarHostState) },
         topBar = {
             AppTopBar(
                 title = "我的关注",
                 navigationIcon = {
                     AppIconButton(onClick = onBack) {
-                        Icon(rememberAppBackIcon(), contentDescription = "返回")
+                        AppIcon(rememberAppBackIcon(), contentDescription = "返回")
                     }
                 },
                 actions = {
@@ -705,7 +708,7 @@ fun FollowingListScreen(
                             },
                             enabled = !isBatchUnfollowing
                         ) {
-                            Text(if (isEditMode) "完成" else "管理")
+                            AppText(if (isEditMode) "完成" else "管理")
                         }
                     }
                 },
@@ -747,12 +750,12 @@ fun FollowingListScreen(
                     is FollowingListUiState.Error -> {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("😢", fontSize = MaterialTheme.typography.displaySmall.fontSize)
+                                AppText("😢", fontSize = MaterialTheme.typography.displaySmall.fontSize)
                                 Spacer(Modifier.height(AppSpacingTokens.Large))
-                                Text(state.message, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                AppText(state.message, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Spacer(Modifier.height(AppSpacingTokens.Large))
                                 AppButton(onClick = { viewModel.loadFollowingList(mid, forceRefresh = true) }) {
-                                    Text("重试")
+                                    AppText("重试")
                                 }
                             }
                         }
@@ -826,7 +829,7 @@ fun FollowingListScreen(
                         ) {
                             if (filteredUsers.isEmpty() && searchQuery.isNotEmpty()) {
                                  Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                    Text("没有找到相关 UP 主", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    AppText("没有找到相关 UP 主", color = MaterialTheme.colorScheme.onSurfaceVariant)
                                  }
                             } else {
                                 LazyColumn(
@@ -846,7 +849,7 @@ fun FollowingListScreen(
                                             },
                                             modifier = Modifier.padding(horizontal = AppSpacingTokens.Large, vertical = AppSpacingTokens.Medium)
                                         ) { text, animatedModifier ->
-                                            Text(
+                                            AppText(
                                                 text = text,
                                                 fontSize = MaterialTheme.typography.labelMedium.fontSize,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -871,7 +874,7 @@ fun FollowingListScreen(
                                                     onClick = { selectedGroupFilter = chipFilterId },
                                                     label = {
                                                         AnimatedBlurFadeText(targetText = "${chip.name} ${chip.count}") { text, modifier ->
-                                                            Text(text = text, modifier = modifier)
+                                                            AppText(text = text, modifier = modifier)
                                                         }
                                                     }
                                                 )
@@ -881,7 +884,7 @@ fun FollowingListScreen(
 
                                     if (isFollowGroupMetaLoading) {
                                         item {
-                                            Text(
+                                            AppText(
                                                 text = "分组信息加载中...($followGroupMetaLoadedCount/${state.users.size})",
                                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -928,7 +931,7 @@ fun FollowingListScreen(
                                                         .padding(AppSpacingTokens.Large),
                                                     contentAlignment = Alignment.Center
                                                 ) {
-                                                    Text(
+                                                    AppText(
                                                         "加载更多",
                                                         color = MaterialTheme.colorScheme.primary,
                                                         fontSize = MaterialTheme.typography.labelMedium.fontSize
@@ -964,7 +967,7 @@ fun FollowingListScreen(
                                     ) {
                                         val allVisibleSelected = visibleMids.isNotEmpty() &&
                                             visibleMids.all { selectedMids.contains(it) }
-                                        Text(if (allVisibleSelected) "取消全选" else "全选当前")
+                                        AppText(if (allVisibleSelected) "取消全选" else "全选当前")
                                     }
 
                                     AppOutlinedButton(
@@ -986,7 +989,7 @@ fun FollowingListScreen(
                                         },
                                         enabled = hasSelection && !isBatchUnfollowing
                                     ) {
-                                        Text("设置分组")
+                                        AppText("设置分组")
                                     }
 
                                     AppButton(
@@ -1001,7 +1004,7 @@ fun FollowingListScreen(
                                                 color = MaterialTheme.colorScheme.onPrimary
                                             )
                                         } else {
-                                            Text("取消关注 ($selectedCount)")
+                                            AppText("取消关注 ($selectedCount)")
                                         }
                                     }
                                 }
@@ -1013,8 +1016,8 @@ fun FollowingListScreen(
                                 onDismissRequest = {
                                     if (!isBatchUnfollowing) showBatchUnfollowConfirm = false
                                 },
-                                title = { Text("批量取消关注") },
-                                text = { Text("确认取消关注已选择的 $selectedCount 位 UP 主吗？") },
+                                title = { AppText("批量取消关注") },
+                                text = { AppText("确认取消关注已选择的 $selectedCount 位 UP 主吗？") },
                                 confirmButton = {
                                     AppButton(
                                         onClick = {
@@ -1036,7 +1039,7 @@ fun FollowingListScreen(
                                         },
                                         enabled = !isBatchUnfollowing
                                     ) {
-                                        Text("确认")
+                                        AppText("确认")
                                     }
                                 },
                                 dismissButton = {
@@ -1044,7 +1047,7 @@ fun FollowingListScreen(
                                         onClick = { showBatchUnfollowConfirm = false },
                                         enabled = !isBatchUnfollowing
                                     ) {
-                                        Text("取消")
+                                        AppText("取消")
                                     }
                                 }
                             )
@@ -1055,7 +1058,7 @@ fun FollowingListScreen(
                                 onDismissRequest = {
                                     if (!groupDialogSaving) showBatchGroupDialog = false
                                 },
-                                title = { Text("批量设置分组") },
+                                title = { AppText("批量设置分组") },
                                 text = {
                                     if (groupDialogLoading) {
                                         Box(
@@ -1074,7 +1077,7 @@ fun FollowingListScreen(
                                                 .verticalScroll(rememberScrollState())
                                         ) {
                                             if (groupDialogMixed) {
-                                                Text(
+                                                AppText(
                                                     text = "检测到已选 UP 主原分组不一致，已默认全部不选。",
                                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                     fontSize = MaterialTheme.typography.labelSmall.fontSize,
@@ -1082,7 +1085,7 @@ fun FollowingListScreen(
                                                 )
                                             }
                                             if (groupDialogTags.isEmpty()) {
-                                                Text(
+                                                AppText(
                                                     text = "暂无可用分组（不勾选即回到默认分组）",
                                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                     fontSize = MaterialTheme.typography.labelMedium.fontSize
@@ -1112,7 +1115,7 @@ fun FollowingListScreen(
                                                                 }
                                                             }
                                                         )
-                                                        Text(
+                                                        AppText(
                                                             text = "${tag.name} (${tag.count})",
                                                             fontSize = MaterialTheme.typography.labelMedium.fontSize,
                                                             color = MaterialTheme.colorScheme.onSurface
@@ -1120,7 +1123,7 @@ fun FollowingListScreen(
                                                     }
                                                 }
                                             }
-                                            Text(
+                                            AppText(
                                                 text = "确定后会完全覆盖原分组设置。",
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
@@ -1156,7 +1159,7 @@ fun FollowingListScreen(
                                                 color = MaterialTheme.colorScheme.onPrimary
                                             )
                                         } else {
-                                            Text("确定")
+                                            AppText("确定")
                                         }
                                     }
                                 },
@@ -1165,7 +1168,7 @@ fun FollowingListScreen(
                                         onClick = { showBatchGroupDialog = false },
                                         enabled = !groupDialogSaving
                                     ) {
-                                        Text("取消")
+                                        AppText("取消")
                                     }
                                 }
                             )
@@ -1263,7 +1266,7 @@ private fun FollowingUserItem(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
+                AppText(
                     text = user.uname,
                     fontSize = MaterialTheme.typography.bodyMedium.fontSize,
                     fontWeight = FontWeight.Medium,
@@ -1279,7 +1282,7 @@ private fun FollowingUserItem(
             }
             if (followingSinceLabel.isNotEmpty()) {
                 Spacer(Modifier.height(AppSpacingTokens.ExtraSmall))
-                Text(
+                AppText(
                     text = followingSinceLabel,
                     fontSize = MaterialTheme.typography.labelSmall.fontSize,
                     color = MaterialTheme.colorScheme.primary,
@@ -1289,7 +1292,7 @@ private fun FollowingUserItem(
             }
             if (user.sign.isNotEmpty()) {
                 Spacer(Modifier.height(AppSpacingTokens.ExtraSmall))
-                Text(
+                AppText(
                     text = user.sign,
                     fontSize = MaterialTheme.typography.labelSmall.fontSize,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

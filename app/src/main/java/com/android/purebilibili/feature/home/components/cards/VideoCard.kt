@@ -1,4 +1,6 @@
 package com.android.purebilibili.feature.home.components.cards
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
@@ -233,7 +235,7 @@ internal fun VideoCardDurationPublishRow(
         }
 
         if (durationText.isNotBlank()) {
-            Text(
+            AppText(
                 text = durationText,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = contentTypography.statistic.copy(fontWeight = FontWeight.Medium),
@@ -257,7 +259,7 @@ private fun VideoCardPublishTime(
             shape = AppShapes.container(ContainerLevel.Pill),
             modifier = modifier
         ) {
-            Text(
+            AppText(
                 text = text,
                 style = contentTypography.statistic.copy(fontWeight = FontWeight.Medium),
                 color = color.copy(alpha = 0.92f),
@@ -267,7 +269,7 @@ private fun VideoCardPublishTime(
             )
         }
     } else {
-        Text(
+        AppText(
             text = text,
             style = contentTypography.statistic,
             color = color,
@@ -825,7 +827,7 @@ internal fun ElegantVideoCard(
                         .align(Alignment.TopEnd)
                         .padding(AppSpacingTokens.Small)
                 ) {
-                    Text(
+                    AppText(
                         text = premiumBadgeLabel,
                         color = MediaContrastPalette.Foreground,
                         fontSize = MaterialTheme.typography.labelSmall.fontSize,
@@ -921,13 +923,13 @@ internal fun ElegantVideoCard(
                             containerColor = coverPillColors.containerColor,
                             borderColor = coverPillColors.borderColor
                         ) {
-                            Icon(
+                            AppIcon(
                                 imageVector = CupertinoIcons.Outlined.PlayCircle,
                                 contentDescription = null,
                                 modifier = Modifier.size(AppSpacingTokens.Small + AppSpacingTokens.Micro),
                                 tint = MediaContrastPalette.Foreground.copy(alpha = 0.94f)
                             )
-                            Text(
+                            AppText(
                                 text = primaryStatText,
                                 color = MediaContrastPalette.Foreground.copy(alpha = 0.94f),
                                 fontSize = MaterialTheme.typography.labelSmall.fontSize,
@@ -949,13 +951,13 @@ internal fun ElegantVideoCard(
                                 containerColor = coverPillColors.containerColor,
                                 borderColor = coverPillColors.borderColor
                             ) {
-                                Icon(
+                                AppIcon(
                                     imageVector = CupertinoIcons.Outlined.BubbleLeft,
                                     contentDescription = null,
                                     modifier = Modifier.size(AppSpacingTokens.Small + AppSpacingTokens.Micro),
                                     tint = MediaContrastPalette.Foreground.copy(alpha = 0.90f)
                                 )
-                                Text(
+                                AppText(
                                     text = secondaryStatText,
                                     color = MediaContrastPalette.Foreground.copy(alpha = 0.90f),
                                     fontSize = MaterialTheme.typography.labelSmall.fontSize,
@@ -977,13 +979,13 @@ internal fun ElegantVideoCard(
                                 containerColor = coverPillColors.containerColor,
                                 borderColor = coverPillColors.borderColor
                             ) {
-                                Icon(
+                                AppIcon(
                                     imageVector = CupertinoIcons.Outlined.Eye,
                                     contentDescription = null,
                                     modifier = Modifier.size(AppSpacingTokens.Small + AppSpacingTokens.Micro),
                                     tint = MediaContrastPalette.Foreground.copy(alpha = 0.90f)
                                 )
-                                Text(
+                                AppText(
                                     text = onlineCount,
                                     color = MediaContrastPalette.Foreground.copy(alpha = 0.90f),
                                     fontSize = MaterialTheme.typography.labelSmall.fontSize,
@@ -999,7 +1001,7 @@ internal fun ElegantVideoCard(
 
                     //  时长标签 (与播放量/评论数同行对齐)
                     if (showDurationOnCover) {
-                        Text(
+                        AppText(
                             text = durationText,
                             color = MediaContrastPalette.Foreground,
                             fontSize = MaterialTheme.typography.labelSmall.fontSize,
@@ -1015,7 +1017,7 @@ internal fun ElegantVideoCard(
             } else {
                 //  非贴封面模式时，时长标签仍独立显示在右下角
                 if (showDurationOnCover) {
-                    Text(
+                    AppText(
                         text = durationText,
                         color = MediaContrastPalette.Foreground,
                         fontSize = MaterialTheme.typography.labelSmall.fontSize,
@@ -1126,7 +1128,7 @@ internal fun ElegantVideoCard(
                 .weight(1f)
                 .semantics { contentDescription = "视频标题: ${video.title}" }
 
-            Text(
+            AppText(
                 text = highlightedTitle ?: AnnotatedString(video.title),
                 maxLines = 2,
                 minLines = titleMinLines,
@@ -1180,7 +1182,7 @@ internal fun ElegantVideoCard(
                             },
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
+                        AppIcon(
                             imageVector = CupertinoIcons.Filled.HandThumbsup,
                             contentDescription = "取消收藏",
                             modifier = Modifier.size(AppSpacingTokens.Large),
@@ -1205,7 +1207,7 @@ internal fun ElegantVideoCard(
                             },
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
+                        AppText(
                             text = "⋮",
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = MaterialTheme.typography.labelMedium.fontSize,
@@ -1252,7 +1254,7 @@ internal fun ElegantVideoCard(
                                 color = inlinePillColors.containerColor,
                                 border = BorderStroke(AppSpacingTokens.Micro * 0.4f, inlinePillColors.borderColor)
                             ) {
-                                Text(
+                                AppText(
                                     text = "已关注",
                                     style = contentTypography.coverBadge,
                                     color = MaterialTheme.colorScheme.primary,
@@ -1260,7 +1262,7 @@ internal fun ElegantVideoCard(
                                 )
                             }
                         } else {
-                            Text(
+                            AppText(
                                 text = "已关注",
                                 modifier = followBadgeModifier,
                                 style = contentTypography.coverBadge,
@@ -1329,13 +1331,13 @@ internal fun ElegantVideoCard(
                         containerColor = inlinePillColors.containerColor,
                         borderColor = inlinePillColors.borderColor
                     ) {
-                        Icon(
+                        AppIcon(
                             imageVector = CupertinoIcons.Outlined.PlayCircle,
                             contentDescription = null,
                             modifier = Modifier.size(AppSpacingTokens.Medium),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Text(
+                        AppText(
                             text = primaryStatText,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = contentTypography.statistic.copy(fontWeight = FontWeight.Medium)
@@ -1353,13 +1355,13 @@ internal fun ElegantVideoCard(
                         containerColor = inlinePillColors.containerColor,
                         borderColor = inlinePillColors.borderColor
                     ) {
-                        Icon(
+                        AppIcon(
                             imageVector = CupertinoIcons.Outlined.BubbleLeft,
                             contentDescription = null,
                             modifier = Modifier.size(AppSpacingTokens.Medium),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Text(
+                        AppText(
                             text = secondaryStatText,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = contentTypography.statistic.copy(fontWeight = FontWeight.Medium)
@@ -1375,13 +1377,13 @@ internal fun ElegantVideoCard(
                         containerColor = inlinePillColors.containerColor,
                         borderColor = inlinePillColors.borderColor
                     ) {
-                        Icon(
+                        AppIcon(
                             imageVector = CupertinoIcons.Outlined.Eye,
                             contentDescription = null,
                             modifier = Modifier.size(AppSpacingTokens.Medium),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Text(
+                        AppText(
                             text = onlineCount,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = contentTypography.statistic.copy(fontWeight = FontWeight.Medium)
@@ -1415,7 +1417,7 @@ internal fun ElegantVideoCard(
                 if (onWatchLater != null) {
                     AppDropdownMenuItem(
                         text = {
-                            Text(
+                            AppText(
                                 "🕐 稍后再看",
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -1431,7 +1433,7 @@ internal fun ElegantVideoCard(
                 if (onUnfavorite != null) {
                      AppDropdownMenuItem(
                         text = {
-                            Text(
+                            AppText(
                                 "💔 取消收藏",
                                 color = MaterialTheme.colorScheme.error  // 使用错误色强调删除操作
                             )
@@ -1448,7 +1450,7 @@ internal fun ElegantVideoCard(
                 if (onDismiss != null) {
                     AppDropdownMenuItem(
                         text = {
-                            Text(
+                            AppText(
                                 dismissMenuText,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
@@ -1467,8 +1469,8 @@ internal fun ElegantVideoCard(
     if (showUnfavoriteDialog) {
         AppAlertDialog(
             onDismissRequest = { showUnfavoriteDialog = false },
-            title = { Text("取消收藏") },
-            text = { Text("确定要将此视频从收藏夹中移除吗？") },
+            title = { AppText("取消收藏") },
+            text = { AppText("确定要将此视频从收藏夹中移除吗？") },
             confirmButton = {
                 AppTextButton(
                     onClick = {
@@ -1476,12 +1478,12 @@ internal fun ElegantVideoCard(
                         onUnfavorite?.invoke()
                     }
                 ) {
-                    Text("移除", color = MaterialTheme.colorScheme.error)
+                    AppText("移除", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 AppTextButton(onClick = { showUnfavoriteDialog = false }) {
-                    Text("取消")
+                    AppText("取消")
                 }
             }
         )

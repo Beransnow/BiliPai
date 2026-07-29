@@ -1,5 +1,6 @@
 // 文件路径: feature/video/ui/components/SpeedSelectionPanel.kt
 package com.android.purebilibili.feature.video.ui.components
+import com.android.purebilibili.core.ui.components.AppText
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -63,7 +64,7 @@ fun SpeedSelectionMenu(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // 标题
-            Text(
+            AppText(
                 text = "播放速度",
                 color = Color.White.copy(alpha = 0.7f),
                 fontSize = 12.sp,
@@ -80,7 +81,7 @@ fun SpeedSelectionMenu(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
-                    Text(
+                    AppText(
                         text = "自定义: ${PlaybackSpeed.formatSpeedFull(currentSpeed)}",
                         color = MaterialTheme.colorScheme.primary,
                         fontSize = 18.sp,
@@ -101,8 +102,8 @@ fun SpeedSelectionMenu(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("0.1x", color = Color.White.copy(0.5f), fontSize = 10.sp)
-                        Text("8.0x", color = Color.White.copy(0.5f), fontSize = 10.sp)
+                        AppText("0.1x", color = Color.White.copy(0.5f), fontSize = 10.sp)
+                        AppText("8.0x", color = Color.White.copy(0.5f), fontSize = 10.sp)
                     }
                     
                     Spacer(modifier = Modifier.height(16.dp))
@@ -119,7 +120,7 @@ fun SpeedSelectionMenu(
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("-0.1")
+                            AppText("-0.1")
                         }
                         
                         AppButton(
@@ -130,7 +131,7 @@ fun SpeedSelectionMenu(
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("+0.1")
+                            AppText("+0.1")
                         }
                     }
                     
@@ -138,7 +139,7 @@ fun SpeedSelectionMenu(
                     
                     // 返回预设
                     AppTextButton(onClick = { isCustomMode = false }) {
-                        Text("返回预设选项")
+                        AppText("返回预设选项")
                     }
                 }
             } else {
@@ -162,7 +163,7 @@ fun SpeedSelectionMenu(
                             onDismiss()
                         }
                     ) {
-                        Text(
+                        AppText(
                             text = PlaybackSpeed.formatSpeedFull(speed),
                             color = if (isSelected) MaterialTheme.colorScheme.primary else Color.White,
                             fontSize = 14.sp,
@@ -183,7 +184,7 @@ fun SpeedSelectionMenu(
                     onClick = { isCustomMode = true }
                 ) {
                     Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(vertical = 10.dp)) {
-                         Text(
+                         AppText(
                             text = "自定义倍速...",
                             color = Color.White.copy(0.9f),
                             fontSize = 14.sp
@@ -210,7 +211,7 @@ fun SpeedButton(
         shape = RoundedCornerShape(6.dp),
         color = Color.Black.copy(alpha = 0.5f)
     ) {
-        Text(
+        AppText(
             text = PlaybackSpeed.formatSpeed(currentSpeed),
             color = if (currentSpeed != 1.0f) MaterialTheme.colorScheme.primary else Color.White,
             fontSize = 12.sp,

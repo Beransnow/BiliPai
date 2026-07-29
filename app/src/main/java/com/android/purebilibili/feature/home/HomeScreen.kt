@@ -1,5 +1,6 @@
 // 文件路径: feature/home/HomeScreen.kt
 package com.android.purebilibili.feature.home
+import com.android.purebilibili.core.ui.components.AppText
 
 import com.android.purebilibili.core.ui.MediaContrastPalette
 
@@ -153,7 +154,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged  //  性能优化：防止重复触发
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.map as mapFlow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.yield
 import androidx.compose.animation.ExperimentalSharedTransitionApi  //  共享过渡实验API
@@ -392,6 +393,7 @@ fun HomeScreen(
             HomeTopTabEntry.Partition -> resolveHomeTopTabEntryLabel(entry)
         }
     }
+    val topTabKeys = remember(topTabEntries) { topTabEntries.map(HomeTopTabEntry::id) }
     val initialPage = resolveHomeInitialTopTabPage(
         topTabEntries = topTabEntries,
         currentCategory = currentCategory,
@@ -723,7 +725,7 @@ fun HomeScreen(
         val anchorBvid = recommendOldContentAnchorBvid ?: return@LaunchedEffect
         val recommendState = gridStates[HomeCategory.RECOMMEND] ?: return@LaunchedEffect
         viewModel.getCategoryState(HomeCategory.RECOMMEND)
-            .map { content -> content.videos.indexOfFirst { it.bvid == anchorBvid } }
+            .mapFlow { content -> content.videos.indexOfFirst { it.bvid == anchorBvid } }
             .distinctUntilChanged()
             .collectLatest { anchorIndex ->
                 if (anchorIndex <= 0) return@collectLatest
@@ -742,13 +744,13 @@ fun HomeScreen(
         AppAlertDialog(
             onDismissRequest = { showEasterEggDialog = false },
             title = { 
-                Text(
+                AppText(
                     "关闭趣味提示？", 
                     color = MaterialTheme.colorScheme.onSurface
                 ) 
             },
             text = { 
-                Text(
+                AppText(
                     "关闭后下拉刷新将不再显示趣味消息。\n\n你可以在「设置」中随时重新开启。",
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 ) 
@@ -761,12 +763,12 @@ fun HomeScreen(
                         }
                         showEasterEggDialog = false
                     }
-                ) { Text("关闭彩蛋", color = MaterialTheme.colorScheme.error) }
+                ) { AppText("关闭彩蛋", color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = {
                 AppTextButton(
                     onClick = { showEasterEggDialog = false }
-                ) { Text("保留彩蛋", color = MaterialTheme.colorScheme.primary) }
+                ) { AppText("保留彩蛋", color = MaterialTheme.colorScheme.primary) }
             },
             containerColor = AppSurfaceTokens.cardContainer()
         )
@@ -1979,7 +1981,7 @@ fun HomeScreen(
             topRightUnreadCount = messageUnreadCount,
             onSearchClick = onSearchClick,
             topCategories = localizedTopTabLabels,
-            topCategoryKeys = topTabEntries.map { it.id },
+            topCategoryKeys = topTabKeys,
             categoryIndex = displayedTabIndex,
             onCategorySelected = onCategorySelected@ { index ->
                 viewModel.updateDisplayedTabIndex(index)
@@ -2074,7 +2076,7 @@ fun HomeScreen(
                     tonalElevation = refreshTipAppearance.tonalElevationDp.dp,
                     shadowElevation = refreshTipAppearance.shadowElevationDp.dp
                 ) {
-                    Text(
+                    AppText(
                         text = refreshDeltaTipText.orEmpty(),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -2123,13 +2125,13 @@ fun HomeScreen(
                 ),
                 contentPadding = PaddingValues(horizontal = AppSpacingTokens.Large, vertical = AppSpacingTokens.Small + AppSpacingTokens.Micro)
             ) {
-                Text(
+                AppText(
                     text = "⟲",
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.width(AppSpacingTokens.ExtraSmall))
-                Text(
+                AppText(
                     text = "撤销刷新",
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold

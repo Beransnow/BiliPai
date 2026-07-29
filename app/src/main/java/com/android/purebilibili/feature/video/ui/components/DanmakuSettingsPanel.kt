@@ -1,5 +1,8 @@
 // File: feature/video/ui/components/DanmakuSettingsPanel.kt
 package com.android.purebilibili.feature.video.ui.components
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
+import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 
 import com.android.purebilibili.core.store.DanmakuPanelWidthMode
 import com.android.purebilibili.core.store.DanmakuSettingsScope
@@ -464,7 +467,7 @@ fun DanmakuSettingsPanel(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
+                        AppText(
                             text = "弹幕设置",
                             color = panelColors.titleColor,
                             fontSize = if (isFullscreenStyle) 17.sp else 20.sp,
@@ -484,7 +487,7 @@ fun DanmakuSettingsPanel(
                                 )
                                 .padding(horizontal = 8.dp, vertical = 4.dp)
                         ) {
-                            Text(
+                            AppText(
                                 text = settingsScope.badgeLabel,
                                 color = panelColors.badgeContentColor,
                                 fontSize = 11.sp,
@@ -499,7 +502,7 @@ fun DanmakuSettingsPanel(
                                 .size(32.dp)
                                 .background(panelColors.resetButtonBackgroundColor, CircleShape)
                         ) {
-                            Icon(
+                            AppIcon(
                                 CupertinoIcons.Default.Xmark,
                                 contentDescription = "关闭",
                                 tint = panelColors.resetButtonColor,
@@ -509,7 +512,7 @@ fun DanmakuSettingsPanel(
                     }
                     if (!isFullscreenStyle && settingsScope.subtitle.isNotBlank()) {
                         Spacer(modifier = Modifier.height(6.dp))
-                        Text(
+                        AppText(
                             text = settingsScope.subtitle,
                             color = panelColors.supportingColor,
                             fontSize = 12.sp,
@@ -537,14 +540,14 @@ fun DanmakuSettingsPanel(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text(
+                                        AppText(
                                             text = "同步弹幕设置到账号",
                                             color = panelColors.titleColor,
                                             fontSize = 15.sp,
                                             fontWeight = FontWeight.Medium
                                         )
                                         Spacer(modifier = Modifier.height(4.dp))
-                                        Text(
+                                        AppText(
                                             text = resolveDanmakuCloudSyncToggleSubtitle(cloudSyncEnabled),
                                             color = panelColors.supportingColor,
                                             fontSize = 11.sp
@@ -564,14 +567,14 @@ fun DanmakuSettingsPanel(
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Column(modifier = Modifier.weight(1f)) {
-                                            Text(
+                                            AppText(
                                                 text = "账号同步状态",
                                                 color = panelColors.titleColor,
                                                 fontSize = 14.sp,
                                                 fontWeight = FontWeight.Medium
                                             )
                                             Spacer(modifier = Modifier.height(4.dp))
-                                            Text(
+                                            AppText(
                                                 text = syncUiState.message
                                                     ?: when (syncUiState.status) {
                                                         DanmakuCloudSyncStatus.SUCCESS -> "当前基础弹幕设置已同步到账号"
@@ -595,7 +598,7 @@ fun DanmakuSettingsPanel(
                                                     .background(panelColors.badgeBackgroundColor)
                                                     .padding(horizontal = 10.dp, vertical = 5.dp)
                                             ) {
-                                                Text(
+                                                AppText(
                                                     text = resolveDanmakuSyncStatusBadgeText(syncUiState),
                                                     color = panelColors.badgeContentColor,
                                                     fontSize = 11.sp,
@@ -608,7 +611,7 @@ fun DanmakuSettingsPanel(
                                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
                                                 shape = RoundedCornerShape(10.dp)
                                             ) {
-                                                Text(
+                                                AppText(
                                                     text = if (shouldShowDanmakuSyncRetry(syncUiState.status)) {
                                                         "重试同步"
                                                     } else {
@@ -733,13 +736,13 @@ fun DanmakuSettingsPanel(
                                 modifier = Modifier.padding(16.dp),
                                 verticalArrangement = Arrangement.spacedBy(20.dp)
                             ) {
-                                Text(
+                                AppText(
                                     text = "高级渲染",
                                     color = panelColors.titleColor,
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.Medium
                                 )
-                                Text(
+                                AppText(
                                     text = "更细的弹幕渲染控制",
                                     color = panelColors.supportingColor,
                                     fontSize = 11.sp
@@ -864,14 +867,14 @@ fun DanmakuSettingsPanel(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column {
-                                Text(
+                                AppText(
                                     text = "合并重复弹幕",
                                     color = panelColors.titleColor,
                                     fontSize = 15.sp,
                                     fontWeight = FontWeight.Medium
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
-                                Text(
+                                AppText(
                                     text = "减少刷屏干扰，将重复内容合并显示",
                                     color = panelColors.supportingColor,
                                     fontSize = 11.sp
@@ -949,14 +952,14 @@ fun DanmakuSettingsPanel(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Column {
-                                    Text(
+                                    AppText(
                                         text = "智能避脸遮挡",
                                         color = panelColors.titleColor,
                                         fontSize = 15.sp,
                                         fontWeight = FontWeight.Medium
                                     )
                                     Spacer(modifier = Modifier.height(2.dp))
-                                    Text(
+                                    AppText(
                                         text = "实时识别人脸并避让弹幕轨道",
                                         color = panelColors.supportingColor,
                                         fontSize = 11.sp
@@ -985,14 +988,14 @@ fun DanmakuSettingsPanel(
                         shape = RoundedCornerShape(16.dp)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text(
+                            AppText(
                                 text = "屏蔽类型",
                                 color = panelColors.titleColor,
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Medium
                             )
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(
+                            AppText(
                                 text = "关闭对应开关即可屏蔽",
                                 color = panelColors.supportingColor,
                                 fontSize = 11.sp
@@ -1054,7 +1057,7 @@ fun DanmakuSettingsPanel(
                             shape = RoundedCornerShape(16.dp)
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
-                                Text(
+                                AppText(
                                     text = "自定义屏蔽词",
                                     color = panelColors.titleColor,
                                     fontSize = 15.sp,
@@ -1070,7 +1073,7 @@ fun DanmakuSettingsPanel(
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        Text(
+                                        AppText(
                                             text = "屏蔽管理",
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.Medium
@@ -1082,7 +1085,7 @@ fun DanmakuSettingsPanel(
                                                     .background(panelColors.badgeBackgroundColor)
                                                     .padding(horizontal = 8.dp, vertical = 2.dp)
                                             ) {
-                                                Text(
+                                                AppText(
                                                     text = resolveDanmakuBlockRuleBadgeText(totalBlockRuleCount),
                                                     color = panelColors.badgeContentColor,
                                                     fontSize = 10.sp,
@@ -1093,7 +1096,7 @@ fun DanmakuSettingsPanel(
                                     }
                                 }
                                 Spacer(modifier = Modifier.height(4.dp))
-                                Text(
+                                AppText(
                                     text = if (totalBlockRuleCount > 0) {
                                         "已维护 $totalBlockRuleCount 条规则，修改后立即生效"
                                     } else {
@@ -1107,7 +1110,7 @@ fun DanmakuSettingsPanel(
                                     value = blockRulesRaw,
                                     onValueChange = onBlockRulesRawChange,
                                     placeholder = {
-                                        Text(
+                                        AppText(
                                             text = "例如：剧透\\nregex:第\\\\d+集\\n/哈{3,}/",
                                             color = panelColors.supportingColor.copy(alpha = 0.6f),
                                             fontSize = 12.sp
@@ -1209,14 +1212,14 @@ private fun DanmakuBlockManagerDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
-                        Text(
+                        AppText(
                             text = "屏蔽管理",
                             color = panelColors.titleColor,
                             fontSize = 18.sp,
                             fontWeight = FontWeight.SemiBold
                         )
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(
+                        AppText(
                             text = "分类维护关键词、正则和 UID(hash) 规则",
                             color = panelColors.supportingColor,
                             fontSize = 11.sp
@@ -1228,7 +1231,7 @@ private fun DanmakuBlockManagerDialog(
                             .size(32.dp)
                             .background(panelColors.resetButtonBackgroundColor, CircleShape)
                     ) {
-                        Icon(
+                        AppIcon(
                             CupertinoIcons.Default.Xmark,
                             contentDescription = "关闭",
                             tint = panelColors.resetButtonColor,
@@ -1243,7 +1246,7 @@ private fun DanmakuBlockManagerDialog(
                             selected = selectedTabIndex == index,
                             onClick = { selectedTabIndex = index },
                             label = {
-                                Text(
+                                AppText(
                                     resolveDanmakuBlockManagerTabLabel(label, tabCounts[index]),
                                     fontSize = 12.sp
                                 )
@@ -1256,7 +1259,7 @@ private fun DanmakuBlockManagerDialog(
                     value = inputValue,
                     onValueChange = { inputValue = it },
                     placeholder = {
-                        Text(
+                        AppText(
                             text = currentHint,
                             color = panelColors.supportingColor.copy(alpha = 0.6f),
                             fontSize = 12.sp
@@ -1288,7 +1291,7 @@ private fun DanmakuBlockManagerDialog(
                         },
                         enabled = inputValue.isNotBlank()
                     ) {
-                        Text("添加")
+                        AppText("添加")
                     }
                 }
 
@@ -1299,7 +1302,7 @@ private fun DanmakuBlockManagerDialog(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         if (currentRules.isEmpty()) {
-                            Text(
+                            AppText(
                                 text = "当前分类还没有规则",
                                 color = panelColors.supportingColor,
                                 fontSize = 12.sp
@@ -1311,7 +1314,7 @@ private fun DanmakuBlockManagerDialog(
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(
+                                    AppText(
                                         text = rule,
                                         color = panelColors.titleColor,
                                         fontSize = 13.sp,
@@ -1326,11 +1329,11 @@ private fun DanmakuBlockManagerDialog(
                                             }
                                         }
                                     ) {
-                                        Text("删除")
+                                        AppText("删除")
                                     }
                                 }
                                 if (index != currentRules.lastIndex) {
-                                    HorizontalDivider(color = panelColors.dividerColor)
+                                    AppHorizontalDivider(color = panelColors.dividerColor)
                                 }
                             }
                         }
@@ -1342,7 +1345,7 @@ private fun DanmakuBlockManagerDialog(
                     horizontalArrangement = Arrangement.End
                 ) {
                     AppTextButton(onClick = onDismiss) {
-                        Text("取消")
+                        AppText("取消")
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     AppButton(
@@ -1359,7 +1362,7 @@ private fun DanmakuBlockManagerDialog(
                             onDismiss()
                         }
                     ) {
-                        Text("保存")
+                        AppText("保存")
                     }
                 }
             }
@@ -1385,7 +1388,7 @@ private fun DanmakuFilterSwitchRow(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            AppText(
                 text = label,
                 color = colors.titleColor,
                 fontSize = if (fullscreenStyle) 15.sp else 14.sp
@@ -1402,7 +1405,7 @@ private fun DanmakuFilterSwitchRow(
             )
         }
         if (showDivider) {
-            HorizontalDivider(color = colors.dividerColor)
+            AppHorizontalDivider(color = colors.dividerColor)
         }
     }
 }
@@ -1422,7 +1425,7 @@ private fun PortraitDanmakuDisplayAreaModeSelector(
         shape = RoundedCornerShape(16.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(
+            AppText(
                 text = "竖屏弹幕显示区域",
                 color = colors.titleColor,
                 fontSize = 15.sp,
@@ -1456,7 +1459,7 @@ private fun PortraitDanmakuDisplayAreaModeSelector(
                             .padding(vertical = 12.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
+                        AppText(
                             text = mode.label,
                             color = if (isSelected) {
                                 MaterialTheme.colorScheme.onPrimary
@@ -1504,7 +1507,7 @@ private fun DanmakuAreaSelector(
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            Text(
+            AppText(
                 text = "显示区域",
                 color = colors.titleColor,
                 fontSize = 15.sp,
@@ -1551,7 +1554,7 @@ private fun DanmakuAreaSelector(
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text(
+                            AppText(
                                 text = option.label,
                                 color = if (isSelected) {
                                     MaterialTheme.colorScheme.onPrimary
@@ -1563,7 +1566,7 @@ private fun DanmakuAreaSelector(
                                 textAlign = TextAlign.Center
                             )
                             Spacer(modifier = Modifier.height(2.dp))
-                            Text(
+                            AppText(
                                 text = option.subLabel,
                                 color = if (isSelected) {
                                     MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
@@ -1612,7 +1615,7 @@ private fun DanmakuSliderItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (fullscreenStyle) {
-                Text(
+                AppText(
                     text = "$label ${valueText(localValue)}",
                     color = colors.titleColor,
                     fontSize = 16.sp,
@@ -1629,7 +1632,7 @@ private fun DanmakuSliderItem(
                             .size(32.dp)
                             .background(colors.resetButtonBackgroundColor, CircleShape)
                     ) {
-                        Icon(
+                        AppIcon(
                             imageVector = Icons.Outlined.Refresh,
                             contentDescription = "重置",
                             tint = colors.resetButtonColor,
@@ -1638,7 +1641,7 @@ private fun DanmakuSliderItem(
                     }
                 }
             } else {
-                Text(
+                AppText(
                     text = label,
                     color = colors.titleColor,
                     fontSize = 15.sp,
@@ -1648,7 +1651,7 @@ private fun DanmakuSliderItem(
                     color = MaterialTheme.colorScheme.primary.copy(0.15f),
                     shape = RoundedCornerShape(6.dp)
                 ) {
-                    Text(
+                    AppText(
                         text = displayValue(localValue),
                         color = MaterialTheme.colorScheme.primary,
                         fontSize = 13.sp,

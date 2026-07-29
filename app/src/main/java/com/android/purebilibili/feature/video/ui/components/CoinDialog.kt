@@ -1,5 +1,6 @@
 // File: feature/video/ui/components/CoinDialog.kt
 package com.android.purebilibili.feature.video.ui.components
+import com.android.purebilibili.core.ui.components.AppText
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -46,7 +47,7 @@ fun CoinDialog(
         onDismissRequest = onDismiss,
         title = { 
             Column {
-                Text("\u6295\u5e01", fontWeight = FontWeight.Bold)
+                AppText("\u6295\u5e01", fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))
                 val balanceText = when {
                     userBalance == null -> "加载中..."
@@ -56,7 +57,7 @@ fun CoinDialog(
                     userBalance == -4.0 -> "Token丢失"
                     else -> "余额: $userBalance"
                 }
-                Text(
+                AppText(
                     balanceText, 
                     style = MaterialTheme.typography.labelMedium, 
                     color = if (userBalance != null && userBalance < 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
@@ -65,7 +66,7 @@ fun CoinDialog(
         },
         text = {
             Column {
-                Text(
+                AppText(
                     "\u9009\u62e9\u6295\u5e01\u6570\u91cf",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -81,14 +82,14 @@ fun CoinDialog(
                     AppFilterChip(
                         selected = selectedCount == 1,
                         onClick = { selectedCount = 1 },
-                        label = { Text("1 \u786c\u5e01") },
+                        label = { AppText("1 \u786c\u5e01") },
                         enabled = maxCoins >= 1
                     )
                     // 2 coins
                     AppFilterChip(
                         selected = selectedCount == 2,
                         onClick = { selectedCount = 2 },
-                        label = { Text("2 \u786c\u5e01") },
+                        label = { AppText("2 \u786c\u5e01") },
                         enabled = maxCoins >= 2
                     )
                 }
@@ -107,7 +108,7 @@ fun CoinDialog(
                         onCheckedChange = { alsoLike = it }
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("\u540c\u65f6\u70b9\u8d5e")
+                    AppText("\u540c\u65f6\u70b9\u8d5e")
                 }
             }
         },
@@ -116,12 +117,12 @@ fun CoinDialog(
                 onClick = { onConfirm(selectedCount.coerceAtMost(maxCoins), alsoLike) },
                 enabled = maxCoins > 0
             ) {
-                Text("\u6295\u5e01")
+                AppText("\u6295\u5e01")
             }
         },
         dismissButton = {
             AppTextButton(onClick = onDismiss) {
-                Text("\u53d6\u6d88")
+                AppText("\u53d6\u6d88")
             }
         }
     )

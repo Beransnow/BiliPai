@@ -1,5 +1,7 @@
 // 文件路径: feature/bangumi/ui/components/BangumiFilterComponents.kt
 package com.android.purebilibili.feature.bangumi.ui.components
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
@@ -152,7 +154,7 @@ fun BangumiFilterPanel(
                 AppTextButton(
                     onClick = { onFilterChange(BangumiFilter()) }
                 ) {
-                    Text("重置筛选", color = MaterialTheme.colorScheme.primary, fontSize = 13.sp)
+                    AppText("重置筛选", color = MaterialTheme.colorScheme.primary, fontSize = 13.sp)
                 }
             }
         }
@@ -211,7 +213,7 @@ private fun BangumiIndexFilterRow(
                 shape = AppShapes.container(ContainerLevel.Chip),
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.16f)
             ) {
-                Text(
+                AppText(
                     text = title,
                     modifier = Modifier
                         .widthIn(min = 72.dp)
@@ -257,7 +259,7 @@ private fun BangumiIndexFilterRow(
                 shape = AppShapes.container(ContainerLevel.Chip),
                 color = backgroundColor
             ) {
-                Text(
+                AppText(
                     text = option.label,
                     modifier = Modifier.padding(horizontal = horizontalPadding, vertical = 7.dp),
                     color = if (selected) {
@@ -298,13 +300,13 @@ private fun BangumiFilterMenuChip(
                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
+                AppText(
                     text = label,
                     fontSize = 12.sp,
                     color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.width(2.dp))
-                Icon(
+                AppIcon(
                     CupertinoIcons.Default.ChevronDown,
                     contentDescription = null,
                     modifier = Modifier.size(14.dp),
@@ -319,7 +321,7 @@ private fun BangumiFilterMenuChip(
         ) {
             options.forEachIndexed { index, option ->
                 AppDropdownMenuItem(
-                    text = { Text(option, fontSize = 14.sp) },
+                    text = { AppText(option, fontSize = 14.sp) },
                     onClick = { onOptionSelected(index) }
                 )
             }

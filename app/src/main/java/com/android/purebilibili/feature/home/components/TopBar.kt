@@ -1,5 +1,7 @@
 // 文件路径: feature/home/components/TopBar.kt
 package com.android.purebilibili.feature.home.components
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppSpacingTokens
@@ -638,7 +640,7 @@ fun FluidHomeTopBar(
                                 Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("未", fontSize = MaterialTheme.typography.labelSmall.fontSize, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                AppText("未", fontSize = MaterialTheme.typography.labelSmall.fontSize, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     }
@@ -664,14 +666,14 @@ fun FluidHomeTopBar(
                     contentAlignment = Alignment.CenterStart
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
+                        AppIcon(
                             CupertinoIcons.Default.MagnifyingGlass,
                             null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.5f),
                             modifier = Modifier.size(AppSpacingTokens.Large + AppSpacingTokens.Micro)
                         )
                         Spacer(modifier = Modifier.width(AppSpacingTokens.Small))
-                        Text(
+                        AppText(
                             text = "搜索视频、UP主...",
                             style = MaterialTheme.typography.bodyMedium,
                             fontSize = MaterialTheme.typography.labelMedium.fontSize,
@@ -688,7 +690,7 @@ fun FluidHomeTopBar(
                     onClick = onSettingsClick,
                     modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
                 ) {
-                    Icon(
+                    AppIcon(
                         CupertinoIcons.Default.Gearshape,
                         contentDescription = "设置",
                         tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
@@ -1654,7 +1656,7 @@ private fun LightweightHomeTopTabs(
                             modifier = Modifier.size(resolveTopTabSkinPartitionIconSize())
                         )
                     } else {
-                        Icon(
+                        AppIcon(
                             resolveTopTabPartitionIcon(chromePolicy.iconFamily),
                             contentDescription = "浏览全部分区",
                             tint = skinPlainContentColor ?: MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1801,7 +1803,7 @@ private fun LightweightTopTabItem(
                         modifier = Modifier.size(resolveTopTabSkinStickerIconSize(showText = showText))
                     )
                 } else {
-                    Icon(
+                    AppIcon(
                         imageVector = icon,
                         contentDescription = null,
                         tint = contentColor,
@@ -1820,7 +1822,7 @@ private fun LightweightTopTabItem(
                     showIcon -> 1
                     else -> 2
                 }
-                Text(
+                AppText(
                     text = category,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -2361,7 +2363,7 @@ fun CategoryTabItem(
                      transformOrigin = androidx.compose.ui.graphics.TransformOrigin.Center
                  }
              ) {
-                Icon(
+                AppIcon(
                      imageVector = icon,
                      contentDescription = null,
                      tint = contentColor,
@@ -2370,7 +2372,7 @@ fun CategoryTabItem(
                          .offset(y = (-0.5).dp)
                  )
                  Spacer(modifier = Modifier.height(iconTextSpacing))
-                 Text(
+                 AppText(
                      text = category,
                      color = contentColor,
                      fontSize = textSize,
@@ -2381,7 +2383,7 @@ fun CategoryTabItem(
                  )
              }
          } else if (showIcon) {
-             Icon(
+             AppIcon(
                  imageVector = icon,
                  contentDescription = null,
                  tint = contentColor,
@@ -2394,7 +2396,7 @@ fun CategoryTabItem(
                      }
              )
          } else {
-             Text(
+             AppText(
                  text = category,
                  color = contentColor,
                  fontSize = textSize,

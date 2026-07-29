@@ -1,5 +1,7 @@
 // 文件路径: feature/partition/PartitionScreen.kt
 package com.android.purebilibili.feature.partition
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -332,7 +334,7 @@ fun PartitionScreen(
                 title = "分区",
                 navigationIcon = {
                     AppIconButton(onClick = onBack) {
-                        Icon(rememberAppBackIcon(), contentDescription = "返回")
+                        AppIcon(rememberAppBackIcon(), contentDescription = "返回")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -696,7 +698,7 @@ private fun PartitionSideRailItem(
                 else -> unselectedColor
             }
             if (showIcon) {
-                Text(
+                AppText(
                     text = partition.emoji,
                     maxLines = 1,
                     textAlign = TextAlign.Center,
@@ -710,7 +712,7 @@ private fun PartitionSideRailItem(
                 Spacer(modifier = Modifier.height(1.dp))
             }
             if (showText) {
-                Text(
+                AppText(
                     text = partition.name,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -851,7 +853,7 @@ private fun PartitionVideoList(
         }
         state.videos.isEmpty() && state.error != null -> {
             Box(modifier = modifier.fillMaxHeight()) {
-                Text(
+                AppText(
                     text = state.error,
                     modifier = Modifier.align(Alignment.Center),
                     color = MaterialTheme.colorScheme.error

@@ -1,4 +1,7 @@
 package com.android.purebilibili.feature.video.ui.section
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
+import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -68,7 +71,7 @@ fun AiSummaryCard(
                         .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
+                    AppIcon(
                         imageVector = CupertinoIcons.Default.Sparkles,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
@@ -77,12 +80,12 @@ fun AiSummaryCard(
                 }
                 Spacer(modifier = Modifier.width(10.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
+                    AppText(
                         text = "AI 总结",
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Text(
+                    AppText(
                         text = collapsedPreview,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -91,7 +94,7 @@ fun AiSummaryCard(
                     )
                 }
                 Spacer(modifier = Modifier.width(10.dp))
-                Icon(
+                AppIcon(
                     imageVector = if (expanded) CupertinoIcons.Default.ChevronUp else CupertinoIcons.Default.ChevronDown,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -103,14 +106,14 @@ fun AiSummaryCard(
                 Column(
                     modifier = Modifier.padding(start = 14.dp, end = 14.dp, bottom = 14.dp)
                 ) {
-                    HorizontalDivider(
+                    AppHorizontalDivider(
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f),
                         thickness = 1.dp,
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
 
                     if (modelResult.summary.isNotBlank()) {
-                        Text(
+                        AppText(
                             text = modelResult.summary,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface,
@@ -143,13 +146,13 @@ fun AiSummaryCard(
                             onClick = onCreateNoteDraftClick,
                             modifier = Modifier.align(Alignment.End)
                         ) {
-                            Icon(
+                            AppIcon(
                                 imageVector = CupertinoIcons.Default.Sparkles,
                                 contentDescription = null,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("生成笔记草稿")
+                            AppText("生成笔记草稿")
                         }
                     }
                 }
@@ -202,7 +205,7 @@ fun AiSummaryPromptCard(
                             color = accentColor
                         )
                     } else {
-                        Icon(
+                        AppIcon(
                             imageVector = if (promptState.tone == AiSummaryPromptTone.WARNING) {
                                 CupertinoIcons.Default.ExclamationmarkCircle
                             } else {
@@ -216,13 +219,13 @@ fun AiSummaryPromptCard(
                 }
                 Spacer(modifier = Modifier.width(10.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
+                    AppText(
                         text = promptState.title,
                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(2.dp))
-                    Text(
+                    AppText(
                         text = promptState.message,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -236,7 +239,7 @@ fun AiSummaryPromptCard(
                     onClick = onActionClick,
                     modifier = Modifier.align(Alignment.End)
                 ) {
-                    Text(promptState.actionLabel)
+                    AppText(promptState.actionLabel)
                 }
             }
         }
@@ -275,7 +278,7 @@ private fun OutlineItemRow(
                 .weight(1f)
                 .padding(end = 12.dp)
         ) {
-             Text(
+             AppText(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface
@@ -295,14 +298,14 @@ private fun OutlineItemRow(
                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
+                    AppIcon(
                         imageVector = CupertinoIcons.Outlined.Clock,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(12.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(
+                    AppText(
                         text = formatTimestamp(timestamp),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary

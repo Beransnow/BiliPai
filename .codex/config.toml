@@ -1,0 +1,12 @@
+[mcp_servers.android_studio]
+command = 'Y:\AITools\Android Studio\jbr\bin\java.exe'
+args = ["-cp", 'Y:\AITools\Android Studio\lib\*;Y:\AITools\Android Studio\plugins\mcpserver\lib\*', "com.intellij.mcpserver.stdio.McpStdioRunnerKt"]
+enabled = true
+
+[mcp_servers.android_studio.env]
+IJ_MCP_SERVER_PORT = "64342"
+IJ_MCP_SERVER_PROJECT_PATH = 'I:\JBCode\AI Tools\BiliPai-miuix'
+
+[mcp_servers.codegraph]
+command = "codegraph"
+args = ["serve", "--mcp"]

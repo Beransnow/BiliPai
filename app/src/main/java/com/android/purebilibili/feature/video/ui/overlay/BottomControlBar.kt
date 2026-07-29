@@ -1,5 +1,8 @@
 // File: feature/video/ui/overlay/BottomControlBar.kt
 package com.android.purebilibili.feature.video.ui.overlay
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
+import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -658,7 +661,7 @@ fun BottomControlBar(
             Spacer(modifier = Modifier.width(layoutPolicy.afterPlaySpacingDp.dp))
 
             // Time
-            Text(
+            AppText(
                 text = "${FormatUtils.formatDuration((displayedPositionMs / 1000).toInt())} / ${FormatUtils.formatDuration((progress.duration / 1000).toInt())}",
                 color = Color.White.copy(alpha = 0.9f),
                 fontSize = layoutPolicy.timeFontSp.sp,
@@ -690,14 +693,14 @@ fun BottomControlBar(
                         ),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
+                    AppIcon(
                         imageVector = if (danmakuEnabled) CupertinoIcons.Filled.TextBubble else CupertinoIcons.Outlined.TextBubble,
                         contentDescription = if (danmakuEnabled) "关闭弹幕" else "开启弹幕",
                         tint = if (danmakuEnabled) danmakuActiveColor else danmakuInactiveColor,
                         modifier = Modifier.size(layoutPolicy.danmakuIconSizeDp.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(
+                    AppText(
                         text = if (danmakuEnabled) "开" else "关",
                         color = if (danmakuEnabled) danmakuActiveColor else danmakuInactiveColor,
                         fontSize = 11.sp,
@@ -723,7 +726,7 @@ fun BottomControlBar(
                                 .consumeTap(onDanmakuInputClick),
                             contentAlignment = Alignment.CenterStart
                         ) {
-                            Text(
+                            AppText(
                                 text = danmakuInputPlaceholder,
                                 color = Color.White.copy(alpha = if (isLoggedIn) 0.7f else 0.5f),
                                 fontSize = layoutPolicy.danmakuInputFontSp.sp,
@@ -746,7 +749,7 @@ fun BottomControlBar(
                                 .padding(end = layoutPolicy.danmakuSettingEndPaddingDp.dp)
                                 .size(layoutPolicy.danmakuSettingButtonSizeDp.dp)
                         ) {
-                            Icon(
+                            AppIcon(
                                 imageVector = CupertinoIcons.Default.Gearshape,
                                 contentDescription = "弹幕显示设置",
                                 tint = Color.White.copy(alpha = 0.8f),
@@ -758,7 +761,7 @@ fun BottomControlBar(
                     Spacer(modifier = Modifier.width(layoutPolicy.afterInputSpacingDp.dp))
                 } else if (showCompactDanmakuSend) {
                     Spacer(modifier = Modifier.width(layoutPolicy.danmakuSwitchToInputSpacingDp.dp))
-                    Text(
+                    AppText(
                         text = if (isLoggedIn) "发弹幕" else "登录发弹幕",
                         color = Color.White.copy(alpha = if (isLoggedIn) 0.92f else 0.62f),
                         fontSize = layoutPolicy.actionTextFontSp.sp,
@@ -785,7 +788,7 @@ fun BottomControlBar(
             ) {
                 // Quality
                 if (currentQualityLabel.isNotEmpty()) {
-                    Text(
+                    AppText(
                         text = currentQualityLabel,
                         color = Color.White,
                         fontSize = layoutPolicy.actionTextFontSp.sp,
@@ -795,7 +798,7 @@ fun BottomControlBar(
                 }
 
                 if (showEpisodeButton) {
-                    Text(
+                    AppText(
                         text = "分集",
                         color = Color.White,
                         fontSize = layoutPolicy.actionTextFontSp.sp,
@@ -805,7 +808,7 @@ fun BottomControlBar(
                 }
                 
                 // Speed
-                Text(
+                AppText(
                     text = if (currentSpeed == 1.0f) "倍速" else "${currentSpeed}x",
                     color = if (currentSpeed == 1.0f) Color.White else MaterialTheme.colorScheme.primary,
                     fontSize = layoutPolicy.actionTextFontSp.sp,
@@ -833,7 +836,7 @@ fun BottomControlBar(
                             }
                         }
                     ) {
-                        Text(
+                        AppText(
                             text = "字幕",
                             color = if (subtitleEnabled) MaterialTheme.colorScheme.primary else Color.White,
                             fontSize = layoutPolicy.actionTextFontSp.sp,
@@ -847,7 +850,7 @@ fun BottomControlBar(
                 }
 
                 if (showMoreActionsButton) {
-                    Text(
+                    AppText(
                         text = "更多",
                         color = if (showMoreActionsPanel) MaterialTheme.colorScheme.primary else Color.White,
                         fontSize = layoutPolicy.actionTextFontSp.sp,
@@ -869,7 +872,7 @@ fun BottomControlBar(
 
                 // 📱 [修复] 竖屏全屏按钮 - 仅在非全屏模式下显示
                 if (!isFullscreen) {
-                    Text(
+                    AppText(
                         text = "竖屏",
                         color = Color.White,
                         fontSize = layoutPolicy.actionTextFontSp.sp,
@@ -885,7 +888,7 @@ fun BottomControlBar(
                         .consumeTap(onToggleFullscreen),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
+                    AppIcon(
                         imageVector = if (isFullscreen) CupertinoIcons.Default.ArrowDownRightAndArrowUpLeft else CupertinoIcons.Default.ArrowUpLeftAndArrowDownRight,
                         contentDescription = if (isFullscreen) "退出横屏" else "横屏",
                         tint = Color.White,
@@ -923,7 +926,7 @@ fun BottomControlBar(
                         .padding(horizontal = 10.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Text(
+                    AppText(
                         text = "字幕显示",
                         color = Color.White.copy(alpha = 0.88f),
                         fontSize = 13.sp,
@@ -948,8 +951,8 @@ fun BottomControlBar(
                         )
                     }
                     if (subtitlePanelTrackOptions.isNotEmpty()) {
-                        HorizontalDivider(color = Color.White.copy(alpha = 0.10f))
-                        Text(
+                        AppHorizontalDivider(color = Color.White.copy(alpha = 0.10f))
+                        AppText(
                             text = "字幕轨道",
                             color = Color.White.copy(alpha = 0.72f),
                             fontSize = 12.sp,
@@ -971,7 +974,7 @@ fun BottomControlBar(
                         }
                     }
                     if (subtitleOptions.size > 1) {
-                        HorizontalDivider(color = Color.White.copy(alpha = 0.10f))
+                        AppHorizontalDivider(color = Color.White.copy(alpha = 0.10f))
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -979,7 +982,7 @@ fun BottomControlBar(
                                 .fillMaxWidth()
                                 .padding(horizontal = 4.dp)
                         ) {
-                            Text(
+                            AppText(
                                 text = "大字号",
                                 color = Color.White.copy(alpha = 0.85f),
                                 fontSize = 13.sp,
@@ -1149,7 +1152,7 @@ private fun SubtitlePanelOption(
     minWidthDp: Int,
     onClick: () -> Unit
 ) {
-    Text(
+    AppText(
         text = label,
         color = when {
             !enabled -> Color.White.copy(alpha = 0.42f)
@@ -1174,7 +1177,7 @@ private fun MoreActionTextButton(
     minWidthDp: Int,
     onClick: () -> Unit
 ) {
-    Text(
+    AppText(
         text = label,
         color = if (highlighted) MaterialTheme.colorScheme.primary else Color.White,
         textAlign = TextAlign.Center,
@@ -1208,8 +1211,8 @@ private fun Anime4KMoreAction(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text("Anime4K", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                Text(
+                AppText("Anime4K", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                AppText(
                     text = if (enabled) "模型：${resolveAnime4KPresetLabel(preset)}" else "实时超分辨率",
                     color = Color.White.copy(alpha = 0.68f),
                     fontSize = 11.sp
@@ -1258,7 +1261,7 @@ private fun Anime4KIntensityOption(
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Text(
+        AppText(
             text = label,
             color = if (selected) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.86f),
             fontSize = 12.sp,
@@ -1482,14 +1485,14 @@ fun VideoProgressBar(
                                 ),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
+                            AppIcon(
                                 CupertinoIcons.Default.ListBullet,
                                 contentDescription = "Chapter",
                                 tint = Color.White.copy(alpha = 0.8f),
                                 modifier = Modifier.size(layoutPolicy.chapterIconSizeDp.dp)
                             )
                             Spacer(modifier = Modifier.width(layoutPolicy.chapterSpacingDp.dp))
-                            Text(
+                            AppText(
                                 text = currentChapter,
                                 color = Color.White.copy(alpha = 0.9f),
                                 fontSize = layoutPolicy.chapterFontSp.sp,

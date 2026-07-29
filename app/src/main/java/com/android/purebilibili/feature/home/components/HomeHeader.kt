@@ -1,5 +1,7 @@
 // 文件路径: feature/home/components/HomeHeader.kt
 package com.android.purebilibili.feature.home.components
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSemanticIconFamily
@@ -526,8 +528,10 @@ internal fun resolveHomeTopEdgeButtonShape(
     return when (chromePolicy.tabPresentation) {
         AppTopTabPresentation.MOVING_CAPSULE -> CircleShape
         // Preserve the former semantic Dialog radii: 14dp scaled by each native profile.
-        AppTopTabPresentation.MATERIAL_UNDERLINE -> RoundedCornerShape(12.6.dp)
-        AppTopTabPresentation.TONAL_CAPSULE -> RoundedCornerShape(16.1.dp)
+        AppTopTabPresentation.MATERIAL_UNDERLINE,
+        AppTopTabPresentation.TONAL_CAPSULE -> RoundedCornerShape(
+            chromePolicy.compactChromeSpec.secondaryButtonCornerRadiusDp.dp
+        )
     }
 }
 
@@ -2236,7 +2240,7 @@ fun HomeHeader(
                         topTabsContent()
                         if (drawTopSearchDivider) {
                             Spacer(modifier = Modifier.height(currentSearchToTabsSpacing))
-                            HorizontalDivider(
+                            AppHorizontalDivider(
                                 thickness = AppSpacingTokens.Micro / 2,
                                 color = headerChromeColors.borderColor.copy(
                                     alpha = resolveHomeTopUnifiedPanelDividerAlpha(topChromeRenderMode) *
@@ -2586,7 +2590,7 @@ fun HomeHeader(
                                         ),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(
+                                    AppIcon(
                                         topRightActionIcon,
                                         contentDescription = topRightActionContentDescription,
                                         tint = if (isLightMode) {
@@ -2617,7 +2621,7 @@ fun HomeHeader(
                     if (topLayoutOrder == HomeTopLayoutOrder.SEARCH_THEN_TABS) {
                         if (drawTopSearchDivider) {
                             Spacer(modifier = Modifier.height(currentSearchToTabsSpacing))
-                            HorizontalDivider(
+                            AppHorizontalDivider(
                                 thickness = AppSpacingTokens.Micro / 2,
                                 color = headerChromeColors.borderColor.copy(
                                     alpha = resolveHomeTopUnifiedPanelDividerAlpha(topChromeRenderMode) *

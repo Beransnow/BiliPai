@@ -186,14 +186,8 @@ class BottomBarMiuixStructureTest {
             kernelSuRendererSource.contains("indicatorPanelOffsetPx = presetPanelOffsets.indicatorPanelOffsetPx") &&
                 kernelSuRendererSource.contains("translationX = indicatorTranslationXPx + indicatorPanelOffsetPx")
         )
-        assertTrue(kernelSuRendererSource.contains("val interactiveHighlightCenterXPx by remember("))
-        assertTrue(kernelSuRendererSource.contains("presetPanelOffsets.indicatorPanelOffsetPx"))
-        assertTrue(kernelSuRendererSource.contains("resolveBottomBarInteractiveHighlightCenterX("))
-        assertTrue(kernelSuRendererSource.contains("val shellHighlightAlpha = resolveBottomBarShellHighlightAlpha("))
-        assertTrue(kernelSuRendererSource.contains(".bottomBarInteractiveHighlight("))
-        assertTrue(kernelSuRendererSource.contains("enabled = glassEnabled && interactiveHighlightEnabled"))
-        assertTrue(kernelSuRendererSource.contains("alpha = shellHighlightAlpha"))
-        assertTrue(kernelSuRendererSource.contains("centerXPx = interactiveHighlightCenterXPx"))
+        assertFalse(kernelSuRendererSource.contains("bottomBarInteractiveHighlight"))
+        assertFalse(kernelSuRendererSource.contains("shellHighlightAlpha"))
         assertFalse(
             kernelSuRendererSource.contains(
                 ".width(dockWidth)\n                        .height(dockHeight)\n                        .graphicsLayer { scaleX = edgeCompressionScaleX }"

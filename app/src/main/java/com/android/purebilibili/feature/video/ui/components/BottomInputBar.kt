@@ -17,10 +17,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
+import com.android.purebilibili.core.ui.components.AppIcon
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppSurface
-import androidx.compose.material3.Text
+import com.android.purebilibili.core.ui.components.AppText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -321,7 +321,7 @@ private fun FloatingLiquidBottomInputBarContentRow(
                 .padding(horizontal = 12.dp),
             contentAlignment = Alignment.CenterStart
         ) {
-            Text(
+            AppText(
                 text = "评论 UP 主和大家...",
                 color = inputTextColor,
                 fontSize = 14.sp,
@@ -383,7 +383,7 @@ private fun BottomInputBarContentRow(
                 .padding(horizontal = 12.dp),
             contentAlignment = Alignment.CenterStart
         ) {
-            Text(
+            AppText(
                 text = "评论 UP 主和大家...",
                 color = inputTextColor,
                 fontSize = 14.sp,
@@ -474,7 +474,7 @@ private fun IconActionButton(
         verticalArrangement = Arrangement.Center,
         modifier = Modifier.clickable(onClick = onClick).padding(4.dp)
     ) {
-        Icon(
+        AppIcon(
             imageVector = icon,
             contentDescription = label,
             tint = tint,
@@ -482,7 +482,7 @@ private fun IconActionButton(
         )
         if (showLabel) {
             Spacer(modifier = Modifier.height(2.dp))
-            Text(
+            AppText(
                 text = label,
                 fontSize = 10.sp,
                 color = tint

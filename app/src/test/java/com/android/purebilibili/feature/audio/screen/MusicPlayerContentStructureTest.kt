@@ -41,14 +41,14 @@ class MusicPlayerContentStructureTest {
     }
 
     @Test
-    fun `player uses three mode liquid dock and moves secondary actions to sheet`() {
+    fun `player uses four mode liquid dock and moves secondary actions to sheet`() {
         val source = loadSource()
         val playerPage = source
             .substringAfter("private fun PlayerPage(")
             .substringBefore("private fun MusicArtwork(")
 
         assertTrue(playerPage.contains("MusicPlayModeDock("))
-        assertTrue(source.contains("listOf(\"顺序播放\", \"随机播放\", \"单曲循环\")"))
+        assertTrue(source.contains("listOf(\"顺序播放\", \"随机播放\", \"单曲循环\", \"列表循环\")"))
         assertTrue(source.contains("showActions"))
         assertTrue(source.contains("播放器操作"))
         assertTrue(source.contains("onCollectionClick"))

@@ -1,5 +1,6 @@
 // 文件路径: feature/home/components/cards/GlassVideoCard.kt
 package com.android.purebilibili.feature.home.components.cards
+import com.android.purebilibili.core.ui.components.AppText
 
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.components.AppDropdownMenu
@@ -377,7 +378,7 @@ fun GlassVideoCard(
                                 border = BorderStroke(AppSpacingTokens.Micro * 0.4f, emphasizedCoverPillColors.borderColor),
                                 shape = RoundedCornerShape(tagCornerRadius)
                             ) {
-                                Text(
+                                AppText(
                                     text = durationText,
                                     color = MediaContrastPalette.Foreground,
                                     style = contentTypography.coverBadge.copy(fontWeight = FontWeight.Bold),
@@ -397,7 +398,7 @@ fun GlassVideoCard(
                                 color = MediaContrastPalette.Scrim.copy(alpha = durationBadgeStyle.backgroundAlpha),
                                 shape = RoundedCornerShape(tagCornerRadius)
                             ) {
-                                Text(
+                                AppText(
                                     text = durationText,
                                     color = MediaContrastPalette.Foreground,
                                     style = contentTypography.coverBadge.copy(fontWeight = FontWeight.Bold),
@@ -421,7 +422,7 @@ fun GlassVideoCard(
                                 border = BorderStroke(AppSpacingTokens.Micro * 0.4f, coverPillColors.borderColor),
                                 shape = RoundedCornerShape(smallTagRadius)
                             ) {
-                                Text(
+                                AppText(
                                     text = "竖屏",
                                     color = MediaContrastPalette.Foreground,
                                     style = contentTypography.coverBadge.copy(fontWeight = FontWeight.Bold),
@@ -436,7 +437,7 @@ fun GlassVideoCard(
                                 color = HomeVisualPalette.VerticalVideoAccent.copy(alpha = 0.82f),
                                 shape = RoundedCornerShape(smallTagRadius)
                             ) {
-                                Text(
+                                AppText(
                                     text = "竖屏",
                                     color = MediaContrastPalette.Foreground,
                                     style = contentTypography.coverBadge.copy(fontWeight = FontWeight.Bold),
@@ -461,7 +462,7 @@ fun GlassVideoCard(
                             isQuickReturnFromDetail = isQuickReturningFromVideoDetail,
                         )
                 ) {
-                    Text(
+                    AppText(
                         text = video.title,
                         color = onSurface,
                         style = contentTypography.title,
@@ -510,7 +511,7 @@ fun GlassVideoCard(
                                     color = inlinePillColors.containerColor,
                                     border = BorderStroke(AppSpacingTokens.Micro * 0.4f, inlinePillColors.borderColor)
                                 ) {
-                                    Text(
+                                    AppText(
                                         text = "${FormatUtils.formatStat(video.stat.view.toLong())}播放",
                                         color = onSurfaceVariant.copy(alpha = 0.78f),
                                         style = contentTypography.statistic,
@@ -518,7 +519,7 @@ fun GlassVideoCard(
                                     )
                                 }
                             } else {
-                                Text(
+                                AppText(
                                     text = "${FormatUtils.formatStat(video.stat.view.toLong())}播放",
                                     color = onSurfaceVariant.copy(alpha = 0.78f),
                                     style = contentTypography.statistic
@@ -556,7 +557,7 @@ fun GlassVideoCard(
     ) {
         AppDropdownMenuItem(
             text = { 
-                Text(
+                AppText(
                     "🚫 不感兴趣",
                     color = MaterialTheme.colorScheme.onSurface
                 ) 
