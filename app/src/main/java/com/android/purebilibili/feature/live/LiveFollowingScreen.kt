@@ -25,9 +25,9 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
-import androidx.compose.material3.Button
+import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -114,7 +114,7 @@ fun LiveFollowingScreen(
             AppTopBar(
                 title = if (items.isNotEmpty()) "${items.size}人正在直播" else "关注直播",
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    AppIconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "返回",
@@ -122,7 +122,7 @@ fun LiveFollowingScreen(
                     }
                 },
                 actions = {
-                    IconButton(
+                    AppIconButton(
                         enabled = !isLoading && !isRefreshing,
                         onClick = {
                             coroutineScope.launch {
@@ -199,7 +199,7 @@ fun LiveFollowingScreen(
                     }
                     item {
                         if (hasMore || isLoadingMore) {
-                            Button(
+                            AppButton(
                                 enabled = !isLoadingMore,
                                 modifier = Modifier.fillMaxWidth(),
                                 onClick = {
