@@ -13,7 +13,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
@@ -35,7 +34,7 @@ import com.android.purebilibili.feature.home.resolvePullRefreshHintText
 
 /**
  * Renderer kind for [HomeRefreshIndicator]. iOS keeps its Cupertino spinner with
- * the rubber-band overshoot; MD3 uses the official morphing [LoadingIndicator];
+ * the rubber-band overshoot; MD3 uses the official morphing loading indicator;
  * the shared App indicator chooses the native loading control for each style
  * when this composable is still mounted (home Miuix uses native pull-to-refresh).
  */
@@ -87,7 +86,7 @@ fun Md3ScreenshotRefreshIndicator(
         ) {
             if (isRefreshing) {
                 // Official M3 morphing LoadingIndicator (dynamic primary).
-                LoadingIndicator(
+                AdaptiveLoadingIndicator(
                     color = MaterialTheme.colorScheme.primary,
                 )
             } else {
