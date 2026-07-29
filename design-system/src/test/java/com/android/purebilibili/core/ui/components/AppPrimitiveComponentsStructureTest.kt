@@ -38,6 +38,8 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(source.contains(") = RadioButton("))
         assertTrue(source.contains("fun AppSlider("))
         assertTrue(source.contains(") = Slider("))
+        assertTrue(source.contains("fun AppOutlinedButton("))
+        assertTrue(source.contains(") = OutlinedButton("))
     }
 
     private fun loadSource(): String {

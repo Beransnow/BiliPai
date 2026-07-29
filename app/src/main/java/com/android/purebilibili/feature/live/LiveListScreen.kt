@@ -20,7 +20,7 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.android.purebilibili.core.ui.components.AppOutlinedButton
 import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -808,7 +808,7 @@ private fun LiveListErrorState(
             style = MaterialTheme.typography.bodyLarge,
         )
         Spacer(Modifier.height(AppSpacingTokens.Medium))
-        OutlinedButton(onClick = onRetry) {
+        AppOutlinedButton(onClick = onRetry) {
             Text("重试")
         }
     }

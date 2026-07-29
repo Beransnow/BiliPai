@@ -34,7 +34,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.android.purebilibili.core.ui.components.AppOutlinedButton
 import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import androidx.compose.material3.PrimaryScrollableTabRow
 import com.android.purebilibili.core.ui.components.AppSurface
@@ -344,7 +344,7 @@ private fun HighQualityAuthorizationCard(
             AppButton(onClick = onAuthorize, modifier = Modifier.fillMaxWidth()) {
                 Text("扫码授权高画质")
             }
-            OutlinedButton(onClick = onContinue, modifier = Modifier.fillMaxWidth()) {
+            AppOutlinedButton(onClick = onContinue, modifier = Modifier.fillMaxWidth()) {
                 Text("稍后使用")
             }
         }
@@ -398,7 +398,7 @@ private fun TvQrLoginContent(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            OutlinedButton(onClick = onRefresh, modifier = Modifier.fillMaxWidth()) {
+            AppOutlinedButton(onClick = onRefresh, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Outlined.Refresh, contentDescription = null)
                 Spacer(Modifier.size(8.dp))
                 Text("刷新二维码")

@@ -16,7 +16,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.android.purebilibili.core.ui.components.AppOutlinedButton
 import com.android.purebilibili.core.ui.components.AppSlider
 import androidx.compose.material3.Text
 import com.android.purebilibili.core.ui.components.AppDropdownMenu
@@ -719,7 +719,7 @@ private fun TimePickerDropdown(
             .then(modifier)
             .fillMaxWidth()
     ) {
-        OutlinedButton(
+        AppOutlinedButton(
             onClick = { expanded = true },
             modifier = Modifier
                 .fillMaxWidth()

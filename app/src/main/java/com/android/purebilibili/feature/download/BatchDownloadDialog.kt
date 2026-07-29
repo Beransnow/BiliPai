@@ -24,7 +24,7 @@ import androidx.compose.material3.CardDefaults
 import com.android.purebilibili.core.ui.components.AppCheckbox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import com.android.purebilibili.core.ui.components.AppOutlinedButton
 import com.android.purebilibili.core.ui.components.AppRadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -252,7 +252,7 @@ internal fun BatchDownloadDialog(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        OutlinedButton(
+                        AppOutlinedButton(
                             onClick = onDismiss,
                             modifier = Modifier.weight(1f)
                         ) {

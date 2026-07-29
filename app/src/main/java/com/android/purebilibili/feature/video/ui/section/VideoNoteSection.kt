@@ -34,7 +34,7 @@ import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.AppModalBottomSheet
-import androidx.compose.material3.OutlinedButton
+import com.android.purebilibili.core.ui.components.AppOutlinedButton
 import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
@@ -162,14 +162,14 @@ fun VideoNoteCard(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         noteState.privateNoteDocument?.let { privateDocument ->
-                            OutlinedButton(
+                            AppOutlinedButton(
                                 onClick = { onShareClick(privateDocument) }
                             ) {
                                 Icon(Icons.Outlined.Share, contentDescription = null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text("分享")
                             }
-                            OutlinedButton(
+                            AppOutlinedButton(
                                 onClick = onDeleteClick,
                                 enabled = !noteState.deleting
                             ) {
@@ -330,7 +330,7 @@ fun VideoNoteEditorSheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                OutlinedButton(
+                AppOutlinedButton(
                     onClick = {
                         val document = markdownToDocument(
                             title = title,
