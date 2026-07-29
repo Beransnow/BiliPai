@@ -59,6 +59,8 @@ import com.android.purebilibili.core.theme.LocalCornerRadiusScale
 import com.android.purebilibili.core.theme.iOSCornerRadius
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.components.UpBadgeName
+import com.android.purebilibili.core.ui.components.AppDropdownMenu
+import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import com.android.purebilibili.core.ui.components.resolveUpStatsText
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
@@ -524,11 +526,11 @@ internal fun StoryVideoCard(
     }
     
     //  [新增] 长按删除菜单
-    DropdownMenu(
+    AppDropdownMenu(
         expanded = showDismissMenu,
         onDismissRequest = { showDismissMenu = false }
     ) {
-        DropdownMenuItem(
+        AppDropdownMenuItem(
             text = { 
                 Text(
                     "🚫 不感兴趣",
