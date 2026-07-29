@@ -26,6 +26,8 @@ import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.BangumiItem
 import com.android.purebilibili.data.model.response.BangumiSearchItem
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppTextButton
 
 /**
  * 番剧卡片组件 - 用于列表/网格显示
@@ -301,7 +303,7 @@ fun BangumiSearchCardGrid(
         )
         val hitEpisode = item.episodes?.firstOrNull { it.id > 0L }
         if (hitEpisode != null && onEpisodeClick != null) {
-            TextButton(
+            AppTextButton(
                 onClick = onEpisodeClick,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -328,7 +330,7 @@ fun BangumiBadge(
     modifier: Modifier = Modifier,
     containerColor: Color = MaterialTheme.colorScheme.primary
 ) {
-    Surface(
+    AppSurface(
         modifier = modifier,
         color = containerColor,
         shape = AppShapes.container(ContainerLevel.Tag)

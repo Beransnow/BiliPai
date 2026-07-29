@@ -34,6 +34,9 @@ import coil.compose.AsyncImage
 //  已改用 MaterialTheme.colorScheme.primary
 import com.android.purebilibili.core.theme.iOSYellow
 import com.android.purebilibili.core.util.FormatUtils
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppLinearProgressIndicator
+import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.data.model.response.FollowBangumiItem
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 
@@ -98,7 +101,7 @@ fun MyBangumiContent(
                             color = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = onRetry) {
+                        AppButton(onClick = onRetry) {
                             Text("重试")
                         }
                     }
@@ -152,7 +155,7 @@ private fun MyFollowSummarySection(
 ) {
     var showDetail by rememberSaveable(currentType) { mutableStateOf(true) }
 
-    Surface(
+    AppSurface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 10.dp),
@@ -192,7 +195,7 @@ private fun MyFollowSummarySection(
                 )
             }
 
-            Surface(
+            AppSurface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f),
@@ -251,7 +254,7 @@ private fun FollowSummaryCard(
         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.42f)
     }
 
-    Surface(
+    AppSurface(
         modifier = modifier.heightIn(min = 88.dp),
         shape = RoundedCornerShape(14.dp),
         color = cardColor,
@@ -295,7 +298,7 @@ private fun MyFollowStatsDetailPanel(
     statsDetail: MyFollowStatsDetail,
     watchInsight: MyFollowWatchInsight
 ) {
-    Surface(
+    AppSurface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.38f),
@@ -315,7 +318,7 @@ private fun MyFollowStatsDetailPanel(
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            LinearProgressIndicator(
+            AppLinearProgressIndicator(
                 progress = { statsDetail.loadedProgress },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -358,7 +361,7 @@ private fun DetailMetricChip(
     value: String,
     modifier: Modifier = Modifier
 ) {
-    Surface(
+    AppSurface(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
         color = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
@@ -531,7 +534,7 @@ private fun MyFollowCard(
             
             // 角标（会员专享等）
             if (item.badge.isNotEmpty()) {
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(4.dp),
@@ -549,7 +552,7 @@ private fun MyFollowCard(
             
             // 更新状态标记
             if (item.newEp?.indexShow?.contains("更新") == true) {
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .padding(4.dp),
@@ -592,7 +595,7 @@ private fun MyFollowCard(
             }
             
             // 播放按钮 (悬浮)
-            Surface(
+            AppSurface(
                 modifier = Modifier
                     .align(Alignment.Center)
                     .size(36.dp),

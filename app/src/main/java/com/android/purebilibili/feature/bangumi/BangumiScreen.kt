@@ -56,6 +56,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppLinearProgressIndicator
+import com.android.purebilibili.core.ui.components.AppSmallFloatingActionButton
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppTextButton
 //  已改用 MaterialTheme.colorScheme.primary
 import com.android.purebilibili.core.theme.iOSYellow
 import com.android.purebilibili.core.util.FormatUtils
@@ -445,7 +451,7 @@ private fun BangumiPiliPlusHomeContent(
                             key = "refreshing-indicator",
                             span = { GridItemSpan(maxLineSpan) }
                         ) {
-                            LinearProgressIndicator(
+                            AppLinearProgressIndicator(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(bottom = 2.dp),
@@ -496,7 +502,7 @@ private fun BangumiPiliPlusHomeContent(
             enter = fadeIn(animationSpec = tween(180)) + scaleIn(initialScale = 0.92f),
             exit = fadeOut(animationSpec = tween(140)) + scaleOut(targetScale = 0.92f)
         ) {
-            SmallFloatingActionButton(
+            AppSmallFloatingActionButton(
                 onClick = {
                     coroutineScope.launch {
                         gridState.animateScrollToItem(0)
@@ -535,7 +541,7 @@ private fun BangumiHomeSectionHeader(
             modifier = Modifier.weight(1f)
         )
         if (actionText != null && onAction != null) {
-            TextButton(
+            AppTextButton(
                 onClick = onAction,
                 contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
             ) {
@@ -561,7 +567,7 @@ private fun BangumiFollowPreviewSection(
         )
         is MyFollowState.Success -> {
             if (state.items.isEmpty()) {
-                Surface(
+                AppSurface(
                     onClick = onOpenMyFollow,
                     shape = RoundedCornerShape(8.dp),
                     color = MaterialTheme.colorScheme.surface,
@@ -702,7 +708,7 @@ private fun BangumiTimelinePreviewSection(
                     items(visibleDays.size, key = { index -> visibleDays[index].date }) { index ->
                         val day = visibleDays[index]
                         val selected = index == selectedIndex
-                        Surface(
+                        AppSurface(
                             onClick = { selectedIndex = index },
                             shape = RoundedCornerShape(8.dp),
                             color = if (selected) {
@@ -827,7 +833,7 @@ private fun BangumiHomeBadge(
     text: String,
     modifier: Modifier = Modifier
 ) {
-    Surface(
+    AppSurface(
         modifier = modifier,
         color = MaterialTheme.colorScheme.primary,
         shape = RoundedCornerShape(4.dp)
@@ -865,7 +871,7 @@ private fun HomeErrorStrip(
     onRetry: () -> Unit,
     minHeight: androidx.compose.ui.unit.Dp = 150.dp
 ) {
-    Surface(
+    AppSurface(
         shape = RoundedCornerShape(8.dp),
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 1.dp,
@@ -886,7 +892,7 @@ private fun HomeErrorStrip(
                 overflow = TextOverflow.Ellipsis
             )
             Spacer(modifier = Modifier.height(8.dp))
-            TextButton(onClick = onRetry) {
+            AppTextButton(onClick = onRetry) {
                 Text("重试")
             }
         }
@@ -904,7 +910,7 @@ private fun BangumiSearchBar(
     onSearch: (String) -> Unit,
     onBack: () -> Unit
 ) {
-    Surface(
+    AppSurface(
         modifier = Modifier.fillMaxWidth().responsiveContentWidth(),
         color = MaterialTheme.colorScheme.surface,
         shadowElevation = 3.dp
@@ -919,7 +925,7 @@ private fun BangumiSearchBar(
                     .padding(horizontal = 12.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = onBack) {
+                AppIconButton(onClick = onBack) {
                     Icon(CupertinoIcons.Default.ChevronBackward, contentDescription = "返回")
                 }
                 
@@ -973,7 +979,7 @@ private fun BangumiSearchBar(
                     )
                     
                     if (query.isNotEmpty()) {
-                        IconButton(
+                        AppIconButton(
                             onClick = { onQueryChange("") },
                             modifier = Modifier.size(28.dp)
                         ) {
@@ -989,7 +995,7 @@ private fun BangumiSearchBar(
                 
                 Spacer(modifier = Modifier.width(12.dp))
                 
-                TextButton(
+                AppTextButton(
                     onClick = { onSearch(query) },
                     enabled = query.isNotEmpty()
                 ) {
@@ -1014,7 +1020,7 @@ private fun BangumiNavigationBar(
     val configuration = LocalConfiguration.current
     val titleFontSize = resolveBangumiNavigationTitleFontSizeSp(configuration.screenWidthDp).sp
 
-    Surface(
+    AppSurface(
         modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
         shadowElevation = 2.dp
@@ -1028,7 +1034,7 @@ private fun BangumiNavigationBar(
                     .padding(horizontal = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = onBack) {
+                AppIconButton(onClick = onBack) {
                     Icon(CupertinoIcons.Default.ChevronBackward, contentDescription = "返回")
                 }
                 Text(
@@ -1037,10 +1043,10 @@ private fun BangumiNavigationBar(
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
                 )
-                IconButton(onClick = onSearch) {
+                AppIconButton(onClick = onSearch) {
                     Icon(CupertinoIcons.Default.MagnifyingGlass, contentDescription = "搜索")
                 }
-                IconButton(onClick = onOpenMyFollow) {
+                AppIconButton(onClick = onOpenMyFollow) {
                     Icon(
                         CupertinoIcons.Default.Bookmark,
                         contentDescription = "我的追番",
@@ -1108,7 +1114,7 @@ private fun BangumiListContent(
                         color = MaterialTheme.colorScheme.error
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = onRetry) {
+                    AppButton(onClick = onRetry) {
                         Text("重试")
                     }
                 }
@@ -1168,7 +1174,7 @@ private fun BangumiSearchContent(
                         color = MaterialTheme.colorScheme.error
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = onRetry) {
+                    AppButton(onClick = onRetry) {
                         Text("重试")
                     }
                 }
