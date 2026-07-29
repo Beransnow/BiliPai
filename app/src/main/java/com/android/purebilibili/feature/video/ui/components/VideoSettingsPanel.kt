@@ -44,7 +44,9 @@ import com.android.purebilibili.core.ui.rememberAppSpeedIcon
 import com.android.purebilibili.core.ui.rememberAppTimerIcon
 import com.android.purebilibili.core.ui.rememberAppWifiIcon
 import com.android.purebilibili.core.ui.components.DefaultPlaybackSpeedPreferenceControl
+import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.components.AppPreference
+import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppSwitchPreference
 import com.android.purebilibili.core.ui.components.formatDefaultPlaybackSpeed
 import com.android.purebilibili.data.model.response.AiAudioInfo
@@ -526,7 +528,7 @@ fun VideoSettingsPanel(
                                     else -> videoSettingsChipContentColor(false).copy(alpha = 0.45f)
                                 }
 
-                                Surface(
+                                AppSurface(
                                     onClick = {
                                         if (!isSelected && isEnabled) {
                                             onQualitySelected(index)
@@ -598,7 +600,7 @@ fun VideoSettingsPanel(
                         val codecs = listOf("avc1" to "AVC (H.264)", "hev1" to "HEVC (H.265)", "av01" to "AV1")
                         codecs.forEach { (codec, label) ->
                             val isSelected = currentCodec == codec
-                            Surface(
+                            AppSurface(
                                 onClick = { onCodecChange(codec) },
                                 shape = RoundedCornerShape(16.dp),
                                 color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
@@ -661,7 +663,7 @@ fun VideoSettingsPanel(
                         val codecs = listOf("avc1" to "AVC (H.264)", "hev1" to "HEVC (H.265)", "av01" to "AV1")
                         codecs.forEach { (codec, label) ->
                             val isSelected = currentSecondCodec == codec
-                            Surface(
+                            AppSurface(
                                 onClick = { onSecondCodecChange(codec) },
                                 shape = RoundedCornerShape(16.dp),
                                 color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
@@ -732,7 +734,7 @@ fun VideoSettingsPanel(
                         )
                         audios.forEach { (code, label) ->
                             val isSelected = currentAudioQuality == code
-                            Surface(
+                            AppSurface(
                                 onClick = { onAudioQualityChange(code) },
                                 shape = RoundedCornerShape(16.dp),
                                 color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
@@ -786,7 +788,7 @@ fun VideoSettingsPanel(
                         ) {
                             aiAudioInfo.items.forEach { item ->
                                 val isSelected = currentAudioLang == item.langCode
-                                Surface(
+                                AppSurface(
                                     onClick = { onAudioLangChange(item.langCode) },
                                     shape = RoundedCornerShape(16.dp),
                                     color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
@@ -840,7 +842,7 @@ fun VideoSettingsPanel(
                             )
                         }
                         Spacer(modifier = Modifier.height(12.dp))
-                        Button(
+                        AppButton(
                             enabled = !isCdnProbing,
                             onClick = onProbeCdnCandidates,
                             modifier = Modifier.fillMaxWidth()
@@ -1191,7 +1193,7 @@ private fun CdnLineRow(
         }
     }.ifBlank { "手动检测后显示延迟/速度" }
 
-    Surface(
+    AppSurface(
         onClick = onClick,
         shape = RoundedCornerShape(8.dp),
         color = if (isSelected) {
@@ -1262,7 +1264,7 @@ private fun SleepTimerOptions(
     ) {
         options.forEach { (minutes, label) ->
             val isSelected = currentMinutes == minutes
-            Surface(
+            AppSurface(
                 onClick = { onSelect(minutes) },
                 shape = RoundedCornerShape(spec.chipCornerRadius),
                 color = videoSettingsChipContainerColor(isSelected),
@@ -1308,7 +1310,7 @@ private fun SpeedOptions(
     ) {
         options.forEach { (speed, label) ->
             val isSelected = currentSpeed == speed
-            Surface(
+            AppSurface(
                 onClick = { onSelect(speed) },
                 shape = RoundedCornerShape(spec.chipCornerRadius),
                 color = videoSettingsChipContainerColor(isSelected),
@@ -1341,7 +1343,7 @@ private fun FlipButton(
     policy: VideoSettingsPanelActionPolicy
 ) {
     val spec = rememberVideoSettingsPanelVisualSpec()
-    Surface(
+    AppSurface(
         onClick = onClick,
         shape = RoundedCornerShape(policy.pillHeightDp.dp),
         color = if (isActive) videoSettingsChipContainerColor(true) else videoSettingsChipContainerColor(false).copy(alpha = 0.78f),
@@ -1390,7 +1392,7 @@ private fun SettingsActionPill(
     val usesTonalContainerTreatment = rememberAppPlayerChromeProfile()
         .effects
         .usesTonalContainerTreatment
-    Surface(
+    AppSurface(
         onClick = onClick,
         shape = RoundedCornerShape(policy.pillHeightDp.dp),
         color = if (usesTonalContainerTreatment) {
@@ -1444,7 +1446,7 @@ private fun SeekSecondsOptions(
     ) {
         options.forEach { seconds ->
             val isSelected = currentSeconds == seconds
-            Surface(
+            AppSurface(
                 onClick = { onSelect(seconds) },
                 shape = RoundedCornerShape(spec.chipCornerRadius),
                 color = videoSettingsChipContainerColor(isSelected),
@@ -1482,7 +1484,7 @@ private fun LongPressSpeedOptions(
     ) {
         options.forEach { speed ->
             val isSelected = currentSpeed == speed
-            Surface(
+            AppSurface(
                 onClick = { onSelect(speed) },
                 shape = RoundedCornerShape(spec.chipCornerRadius),
                 color = videoSettingsChipContainerColor(isSelected),

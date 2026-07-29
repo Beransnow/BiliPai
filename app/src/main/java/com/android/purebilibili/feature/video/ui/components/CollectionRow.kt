@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.sp
 
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.rememberAppShareIcon
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.data.model.response.UgcSeason
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.outlined.ChevronForward
@@ -62,7 +64,7 @@ fun CollectionRow(
     val currentPosition = if (currentIndex >= 0) currentIndex + 1 else 0
     val totalCount = allEpisodes.size.takeIf { it > 0 } ?: ugcSeason.ep_count
     
-    Surface(
+    AppSurface(
         modifier = modifier
             .fillMaxWidth(),
         shape = androidx.compose.ui.graphics.RectangleShape,
@@ -145,7 +147,7 @@ fun CollectionRow(
             )
 
             //  分享按钮
-            IconButton(
+            AppIconButton(
                 onClick = {
                     val shareUrl = "https://space.bilibili.com/${ugcSeason.mid}/lists/${ugcSeason.id}?type=season"
                     val shareText = "${ugcSeason.title}\n$shareUrl"

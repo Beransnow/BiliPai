@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 //  已改用 MaterialTheme.colorScheme.primary
 import com.android.purebilibili.core.ui.rememberAppCoinIcon
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.rememberAppLikeFilledIcon
 import com.android.purebilibili.core.ui.rememberAppLikeIcon
 import com.android.purebilibili.core.ui.rememberAppMoreIcon
@@ -72,7 +74,7 @@ fun LandscapeTopControlBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         //  左侧：返回 + 标题
-        IconButton(onClick = onBack, modifier = Modifier.size(40.dp)) {
+        AppIconButton(onClick = onBack, modifier = Modifier.size(40.dp)) {
             Icon(
                 CupertinoIcons.Default.ChevronBackward,
                 contentDescription = "返回",
@@ -130,7 +132,7 @@ fun LandscapeTopControlBar(
             )
             
             // 分享按钮
-            IconButton(onClick = onShareClick, modifier = Modifier.size(36.dp)) {
+            AppIconButton(onClick = onShareClick, modifier = Modifier.size(36.dp)) {
                 Icon(
                     shareIcon,
                     contentDescription = "分享",
@@ -140,7 +142,7 @@ fun LandscapeTopControlBar(
             }
             
             // 更多按钮
-            IconButton(onClick = onMoreClick, modifier = Modifier.size(36.dp)) {
+            AppIconButton(onClick = onMoreClick, modifier = Modifier.size(36.dp)) {
                 Icon(
                     moreIcon,
                     contentDescription = "更多",
@@ -163,7 +165,7 @@ private fun TopBarActionButton(
     activeColor: Color = Color.Unspecified,  //  默认用主题色
     onClick: () -> Unit
 ) {
-    Surface(
+    AppSurface(
         onClick = onClick,
         color = Color.Transparent,
         shape = RoundedCornerShape(4.dp)

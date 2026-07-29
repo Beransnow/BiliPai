@@ -11,6 +11,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.AppAlertDialog
+import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.data.model.CommentFraudStatus
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.outlined.*
@@ -60,7 +62,7 @@ fun CommentFraudResultDialog(
         }
     }
 
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         icon = {
             Icon(
@@ -92,14 +94,14 @@ fun CommentFraudResultDialog(
             )
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
+            AppTextButton(onClick = onDismiss) {
                 Text("知道了")
             }
         },
         dismissButton = {
             // 如果被 ShadowBan，提供快捷删除操作
             if (status == CommentFraudStatus.SHADOW_BANNED && onDeleteComment != null) {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         onDeleteComment()
                         onDismiss()
