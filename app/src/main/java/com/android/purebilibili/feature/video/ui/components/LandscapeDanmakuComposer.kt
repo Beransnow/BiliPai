@@ -35,7 +35,7 @@ import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ButtonDefaults
 import com.android.purebilibili.core.ui.components.AppCheckbox
 import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
-import androidx.compose.material3.FilterChip
+import com.android.purebilibili.core.ui.components.AppFilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
@@ -208,7 +208,7 @@ fun LandscapeDanmakuComposer(
 
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             modeOptions.forEach { option ->
-                                FilterChip(
+                                AppFilterChip(
                                     selected = selectedMode == option.value,
                                     onClick = { selectedMode = option.value },
                                     label = { Text(option.label, fontSize = 12.sp) },
@@ -222,7 +222,7 @@ fun LandscapeDanmakuComposer(
 
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             fontSizeOptions.forEach { option ->
-                                FilterChip(
+                                AppFilterChip(
                                     selected = selectedFontSize == option.value,
                                     onClick = { selectedFontSize = option.value },
                                     label = { Text(option.label, fontSize = 12.sp) },

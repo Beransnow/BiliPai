@@ -30,7 +30,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+import com.android.purebilibili.core.ui.components.AppFilterChip
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
@@ -354,14 +354,14 @@ private fun PagesSelectorFilterBar(
             Spacer(modifier = Modifier.height(8.dp))
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 item {
-                    FilterChip(
+                    AppFilterChip(
                         selected = selectedGroupKey == null,
                         onClick = { onGroupSelect(null) },
                         label = { Text("全部 $totalCount") }
                     )
                 }
                 items(groups, key = { it.key }) { group ->
-                    FilterChip(
+                    AppFilterChip(
                         selected = selectedGroupKey == group.key,
                         onClick = { onGroupSelect(group.key) },
                         label = { Text("${group.label} ${group.count}") }

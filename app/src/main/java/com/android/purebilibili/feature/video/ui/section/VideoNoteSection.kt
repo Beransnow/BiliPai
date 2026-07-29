@@ -26,7 +26,7 @@ import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.FormatColorFill
 import androidx.compose.material.icons.outlined.Share
 import com.android.purebilibili.core.ui.AppAlertDialog
-import androidx.compose.material3.AssistChip
+import com.android.purebilibili.core.ui.components.AppAssistChip
 import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -453,7 +453,7 @@ private fun VideoNoteTimestampChips(
     if (timestamps.isEmpty()) return
     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         timestamps.forEach { timestamp ->
-            AssistChip(
+            AppAssistChip(
                 onClick = { onTimestampClick(timestamp.seconds * 1000L) },
                 label = { Text(timestamp.label) },
                 leadingIcon = {

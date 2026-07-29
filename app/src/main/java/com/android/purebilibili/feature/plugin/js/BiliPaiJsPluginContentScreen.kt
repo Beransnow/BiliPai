@@ -17,10 +17,10 @@ import androidx.compose.foundation.lazy.items
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
-import androidx.compose.material3.AssistChip
+import com.android.purebilibili.core.ui.components.AppAssistChip
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+import com.android.purebilibili.core.ui.components.AppFilterChip
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
@@ -204,7 +204,7 @@ private fun PluginContent(
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 installed.manifest.modules.forEach { module ->
-                    FilterChip(
+                    AppFilterChip(
                         selected = module == selectedModule,
                         onClick = { onSelectModule(module) },
                         label = { Text(module.title) }
@@ -224,7 +224,7 @@ private fun PluginContent(
                             singleLine = true
                         )
                     }
-                    AssistChip(onClick = onReload, label = { Text("重新加载") })
+                    AppAssistChip(onClick = onReload, label = { Text("重新加载") })
                 }
             }
         }

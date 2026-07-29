@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+import com.android.purebilibili.core.ui.components.AppFilterChip
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
@@ -145,7 +145,7 @@ fun ExternalMediaPlayerScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 request.streams.forEachIndexed { index, mediaStream ->
-                    FilterChip(
+                    AppFilterChip(
                         selected = index == selectedIndex,
                         onClick = { selectedIndex = index },
                         label = { Text(mediaStream.title.ifBlank { "线路 ${index + 1}" }) }

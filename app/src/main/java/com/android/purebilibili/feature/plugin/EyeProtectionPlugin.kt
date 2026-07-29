@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.FilterChip
+import com.android.purebilibili.core.ui.components.AppFilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -488,7 +488,7 @@ class EyeProtectionPlugin : Plugin {
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     listOf(20, 30, 45, 60).forEach { minutes ->
-                        FilterChip(
+                        AppFilterChip(
                             selected = uiConfig.usageDurationMinutes == minutes,
                             onClick = {
                                 val changed = uiConfig.copy(usageDurationMinutes = minutes)
@@ -522,7 +522,7 @@ class EyeProtectionPlugin : Plugin {
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     listOf(5, 10, 15, 20).forEach { minutes ->
-                        FilterChip(
+                        AppFilterChip(
                             selected = uiConfig.reminderSnoozeMinutes == minutes,
                             onClick = {
                                 val changed = uiConfig.copy(reminderSnoozeMinutes = minutes)
@@ -561,7 +561,7 @@ class EyeProtectionPlugin : Plugin {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 presets.forEach { (preset, label) ->
-                    FilterChip(
+                    AppFilterChip(
                         selected = uiConfig.carePreset == preset,
                         onClick = {
                             val changed = applyPresetConfig(uiConfig, preset)

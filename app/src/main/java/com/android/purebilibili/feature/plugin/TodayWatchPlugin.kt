@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import com.android.purebilibili.core.ui.AppAlertDialog
-import androidx.compose.material3.FilterChip
+import com.android.purebilibili.core.ui.components.AppFilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -312,7 +312,7 @@ class TodayWatchPlugin : RecommendationPluginApi {
             Text("UP主榜数量", style = MaterialTheme.typography.labelLarge)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(3, 5, 8, 10).forEach { value ->
-                    FilterChip(
+                    AppFilterChip(
                         selected = uiConfig.upRankLimit == value,
                         onClick = { commit(uiConfig.copy(upRankLimit = value)) },
                         label = { Text("$value 个") }
@@ -323,7 +323,7 @@ class TodayWatchPlugin : RecommendationPluginApi {
             Text("队列生成长度", style = MaterialTheme.typography.labelLarge)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(12, 20, 30, 40).forEach { value ->
-                    FilterChip(
+                    AppFilterChip(
                         selected = uiConfig.queueBuildLimit == value,
                         onClick = {
                             val preview = uiConfig.queuePreviewLimit.coerceAtMost(value)
@@ -338,7 +338,7 @@ class TodayWatchPlugin : RecommendationPluginApi {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(4, 6, 8, 10).forEach { value ->
                     val clamped = value.coerceAtMost(uiConfig.queueBuildLimit)
-                    FilterChip(
+                    AppFilterChip(
                         selected = uiConfig.queuePreviewLimit == clamped,
                         onClick = { commit(uiConfig.copy(queuePreviewLimit = clamped)) },
                         label = { Text("$clamped 条") }
@@ -349,7 +349,7 @@ class TodayWatchPlugin : RecommendationPluginApi {
             Text("历史样本量", style = MaterialTheme.typography.labelLarge)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 listOf(40, 80, 120).forEach { value ->
-                    FilterChip(
+                    AppFilterChip(
                         selected = uiConfig.historySampleLimit == value,
                         onClick = { commit(uiConfig.copy(historySampleLimit = value)) },
                         label = { Text("$value 条") }
@@ -401,7 +401,7 @@ class TodayWatchPlugin : RecommendationPluginApi {
                         1.6f to "明显",
                         1.9f to "强烈"
                     ).forEach { (value, label) ->
-                        FilterChip(
+                        AppFilterChip(
                             selected = kotlin.math.abs(uiConfig.waterfallExponent - value) < 0.01f,
                             onClick = { commit(uiConfig.copy(waterfallExponent = value)) },
                             label = { Text(label) }
@@ -533,7 +533,7 @@ private fun TodayWatchTasteInsightSection(
         Text("近期偏好 UP", style = MaterialTheme.typography.labelLarge)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             state.preferredCreators.forEach { signal ->
-                FilterChip(
+                AppFilterChip(
                     selected = false,
                     onClick = {},
                     label = { Text("${signal.label} · ${signal.value}") }
@@ -575,7 +575,7 @@ private fun TodayWatchTasteInsightSection(
         Text("已降权信号", style = MaterialTheme.typography.labelLarge)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             state.negativeSignals.forEach { signal ->
-                FilterChip(
+                AppFilterChip(
                     selected = false,
                     onClick = {},
                     label = { Text("${signal.label} · ${signal.value}") }

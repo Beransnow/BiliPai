@@ -22,7 +22,7 @@ import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.components.AppCard
 import androidx.compose.material3.CardDefaults
 import com.android.purebilibili.core.ui.components.AppCheckbox
-import androidx.compose.material3.FilterChip
+import com.android.purebilibili.core.ui.components.AppFilterChip
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppOutlinedButton
 import com.android.purebilibili.core.ui.components.AppRadioButton
@@ -102,21 +102,21 @@ internal fun BatchDownloadDialog(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        FilterChip(
+                        AppFilterChip(
                             selected = false,
                             onClick = {
                                 workingCandidates = selectAllBatchDownloadCandidates(workingCandidates)
                             },
                             label = { Text("全选") }
                         )
-                        FilterChip(
+                        AppFilterChip(
                             selected = false,
                             onClick = {
                                 workingCandidates = invertBatchDownloadCandidateSelection(workingCandidates)
                             },
                             label = { Text("反选") }
                         )
-                        FilterChip(
+                        AppFilterChip(
                             selected = false,
                             onClick = {
                                 workingCandidates = selectOnlyUndownloadedBatchCandidates(

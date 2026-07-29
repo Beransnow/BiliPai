@@ -17,10 +17,10 @@ import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Report
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AssistChip
+import com.android.purebilibili.core.ui.components.AppAssistChip
 import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+import com.android.purebilibili.core.ui.components.AppFilterChip
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
@@ -74,7 +74,7 @@ fun LiveReportDialog(
                 )
                 Column(verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small)) {
                     DefaultLiveReportReasons.forEach { reason ->
-                        AssistChip(
+                        AppAssistChip(
                             onClick = { onReport(reason) },
                             label = { Text(reason.label) }
                         )
@@ -271,19 +271,19 @@ private fun LiveRuleSection(
     Column(verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small)) {
         Text("规则", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
         Row(horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small)) {
-            FilterChip(
+            AppFilterChip(
                 selected = (shieldInfo?.level ?: 0) > 0,
                 enabled = enabled,
                 onClick = { onSetRule("level", if ((shieldInfo?.level ?: 0) > 0) 0 else 5) },
                 label = { Text("等级") }
             )
-            FilterChip(
+            AppFilterChip(
                 selected = (shieldInfo?.medal ?: 0) > 0,
                 enabled = enabled,
                 onClick = { onSetRule("medal", if ((shieldInfo?.medal ?: 0) > 0) 0 else 1) },
                 label = { Text("勋章") }
             )
-            FilterChip(
+            AppFilterChip(
                 selected = (shieldInfo?.verify ?: 0) > 0,
                 enabled = enabled,
                 onClick = { onSetRule("verify", if ((shieldInfo?.verify ?: 0) > 0) 0 else 1) },

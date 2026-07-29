@@ -43,6 +43,10 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(source.contains("fun AppCard("))
         assertTrue(source.contains("content: @Composable ColumnScope.() -> Unit"))
         assertTrue(source.contains(") = Card("))
+        assertTrue(source.contains("fun AppAssistChip("))
+        assertTrue(source.contains(") = AssistChip("))
+        assertTrue(source.contains("fun AppFilterChip("))
+        assertTrue(source.contains(") = FilterChip("))
     }
 
     private fun loadSource(): String {
