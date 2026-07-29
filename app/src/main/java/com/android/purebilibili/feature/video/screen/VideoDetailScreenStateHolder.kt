@@ -160,6 +160,7 @@ import com.android.purebilibili.feature.video.policy.shouldSkipGesturePlayerColl
 import com.android.purebilibili.feature.video.policy.shouldTrackVideoDetailCollapseMotion
 import com.android.purebilibili.feature.video.subtitle.resolveSubtitlePreferenceSession
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.components.AppButton
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import kotlinx.coroutines.Dispatchers
@@ -3241,7 +3242,7 @@ internal fun VideoDetailScreenStateHolder(
                                                 errorState.error is com.android.purebilibili.data.model.VideoLoadError.PlayUrlEmpty
                                             if (showRetryButton) {
                                                 Spacer(Modifier.height(24.dp))
-                                                Button(
+                                                AppButton(
                                                     onClick = { viewModel.retry() },
                                                     colors = ButtonDefaults.buttonColors(
                                                         containerColor = MaterialTheme.colorScheme.primary
