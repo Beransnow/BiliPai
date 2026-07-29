@@ -2,6 +2,7 @@
 package com.android.purebilibili.feature.settings
 
 import com.android.purebilibili.core.ui.components.AppSegmentOption
+import com.android.purebilibili.core.ui.components.AppRadioButton
 import android.app.AppOpsManager
 import android.content.Context
 import android.content.Intent
@@ -247,7 +248,7 @@ fun PlaybackSettingsContent(
                                 },
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            RadioButton(
+                            AppRadioButton(
                                 selected = playerInsightMode == mode,
                                 onClick = null
                             )

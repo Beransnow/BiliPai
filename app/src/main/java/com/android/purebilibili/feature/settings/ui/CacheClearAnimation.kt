@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.android.purebilibili.core.util.CacheClearTarget
+import com.android.purebilibili.core.ui.components.AppCheckbox
 import com.android.purebilibili.core.theme.iOSBlue
 import com.android.purebilibili.core.theme.iOSGreen
 import com.android.purebilibili.core.theme.iOSOrange
@@ -668,7 +669,7 @@ internal fun CacheClearConfirmDialog(
                             .padding(vertical = 6.dp),
                         verticalAlignment = Alignment.Top
                     ) {
-                        Checkbox(
+                        AppCheckbox(
                             checked = option.target in selectedTargets,
                             onCheckedChange = { checked ->
                                 onTargetToggle(option.target, checked)
