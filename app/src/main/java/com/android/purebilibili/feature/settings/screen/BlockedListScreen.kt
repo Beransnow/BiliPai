@@ -25,10 +25,15 @@ import com.android.purebilibili.data.repository.buildBlockedUpShareText
 import com.android.purebilibili.data.repository.parseBlockedUpShareText
 import com.android.purebilibili.feature.settings.ui.SettingsPageScaffold
 import com.android.purebilibili.core.ui.AppShapes
+import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
+import com.android.purebilibili.core.ui.components.AppOutlinedButton
 import com.android.purebilibili.core.ui.components.AppTextField
+import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.components.AppPreferenceSectionTitle
 import com.android.purebilibili.core.ui.components.UserLevelBadge
 import com.android.purebilibili.core.util.ShareUtils
@@ -167,7 +172,7 @@ fun BlockedListContent(
     var showImportDialog by remember { mutableStateOf(false) }
     var importText by remember { mutableStateOf("") }
     if (showImportDialog && onImportBlockedList != null) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showImportDialog = false },
             title = { Text("导入黑名单") },
             text = {
@@ -180,7 +185,7 @@ fun BlockedListContent(
                 )
             },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         onImportBlockedList(importText)
                         showImportDialog = false
@@ -192,7 +197,7 @@ fun BlockedListContent(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showImportDialog = false }) {
+                AppTextButton(onClick = { showImportDialog = false }) {
                     Text("取消")
                 }
             }
@@ -298,7 +303,7 @@ private fun BlockedListSyncAction(
             .background(AppSurfaceTokens.cardContainer())
             .padding(12.dp)
     ) {
-        Button(
+        AppButton(
             onClick = onSync,
             enabled = !syncing && !refreshingProfiles,
             modifier = Modifier
@@ -306,7 +311,7 @@ private fun BlockedListSyncAction(
                 .heightIn(min = 48.dp)
         ) {
             if (syncing) {
-                CircularProgressIndicator(
+                AppCircularProgressIndicator(
                     modifier = Modifier.size(18.dp),
                     strokeWidth = 2.dp,
                     color = MaterialTheme.colorScheme.onPrimary
@@ -325,7 +330,7 @@ private fun BlockedListSyncAction(
             Spacer(modifier = Modifier.height(8.dp))
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (onRefreshProfiles != null) {
-                    OutlinedButton(
+                    AppOutlinedButton(
                         onClick = onRefreshProfiles,
                         enabled = !syncing && !refreshingProfiles,
                         modifier = Modifier.fillMaxWidth()
@@ -341,7 +346,7 @@ private fun BlockedListSyncAction(
                     }
                 }
                 if (onExportBlockedListJson != null) {
-                    OutlinedButton(
+                    AppOutlinedButton(
                         onClick = onExportBlockedListJson,
                         enabled = !syncing && !refreshingProfiles,
                         modifier = Modifier.fillMaxWidth()
@@ -350,7 +355,7 @@ private fun BlockedListSyncAction(
                     }
                 }
                 if (onImportBlockedListJsonRequest != null) {
-                    OutlinedButton(
+                    AppOutlinedButton(
                         onClick = onImportBlockedListJsonRequest,
                         enabled = !syncing && !refreshingProfiles,
                         modifier = Modifier.fillMaxWidth()
@@ -359,7 +364,7 @@ private fun BlockedListSyncAction(
                     }
                 }
                 if (onImportBlockedListRequest != null) {
-                    OutlinedButton(
+                    AppOutlinedButton(
                         onClick = onImportBlockedListRequest,
                         enabled = !syncing && !refreshingProfiles,
                         modifier = Modifier.fillMaxWidth()
@@ -368,7 +373,7 @@ private fun BlockedListSyncAction(
                     }
                 }
                 if (onShareBlockedList != null) {
-                    OutlinedButton(
+                    AppOutlinedButton(
                         onClick = onShareBlockedList,
                         enabled = !syncing && !refreshingProfiles,
                         modifier = Modifier.fillMaxWidth()
@@ -464,7 +469,7 @@ private fun BlockedUpItem(
             }
         }
         
-        TextButton(onClick = onUnblock) {
+        AppTextButton(onClick = onUnblock) {
             Text("解除屏蔽", color = Color.Red)
         }
     }

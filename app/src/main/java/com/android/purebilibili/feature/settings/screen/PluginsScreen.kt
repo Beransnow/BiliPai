@@ -63,9 +63,15 @@ import com.android.purebilibili.core.theme.iOSPurple
 import com.android.purebilibili.core.theme.iOSTeal
 import com.android.purebilibili.feature.settings.SettingsLocalBackHandler
 import com.android.purebilibili.feature.settings.ui.SettingsPageScaffold
+import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.resolveBottomSafeAreaPadding
 import com.android.purebilibili.core.ui.components.AppAdaptiveSwitch
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppOutlinedButton
+import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTextField
+import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.components.rememberAdaptiveSemanticIconTint
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.rememberNotificationPermissionState
@@ -477,7 +483,7 @@ fun PluginsContent(
             
             // 插件列表
             item {
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .clip(RoundedCornerShape(12.dp)),
@@ -549,7 +555,7 @@ fun PluginsContent(
             }
             
             item {
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .clip(RoundedCornerShape(12.dp))
@@ -602,7 +608,7 @@ fun PluginsContent(
 
             item {
                 Spacer(modifier = Modifier.height(12.dp))
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .clip(RoundedCornerShape(12.dp)),
@@ -649,13 +655,13 @@ fun PluginsContent(
                             }
                         }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedButton(
+                            AppOutlinedButton(
                                 onClick = { showJsImportDialog = true },
                                 enabled = !isJsPreviewLoading
                             ) {
                                 Text("链接")
                             }
-                            OutlinedButton(
+                            AppOutlinedButton(
                                 onClick = { jsPluginPicker.launch("*/*") },
                                 enabled = !isJsPreviewLoading
                             ) {
@@ -680,7 +686,7 @@ fun PluginsContent(
             if (installedJsPlugins.isNotEmpty()) {
                 item {
                     Spacer(modifier = Modifier.height(12.dp))
-                    Surface(
+                    AppSurface(
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
                             .clip(RoundedCornerShape(12.dp)),
@@ -718,7 +724,7 @@ fun PluginsContent(
 
             item {
                 Spacer(modifier = Modifier.height(12.dp))
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .clip(RoundedCornerShape(12.dp))
@@ -765,7 +771,7 @@ fun PluginsContent(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        Surface(
+                        AppSurface(
                             shape = RoundedCornerShape(6.dp),
                             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f)
                         ) {
@@ -794,7 +800,7 @@ fun PluginsContent(
             if (installedKotlinPackages.isNotEmpty()) {
                 item {
                     Spacer(modifier = Modifier.height(12.dp))
-                    Surface(
+                    AppSurface(
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
                             .clip(RoundedCornerShape(12.dp)),
@@ -852,7 +858,7 @@ fun PluginsContent(
             }
 
             item {
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                         .clip(RoundedCornerShape(12.dp))
@@ -899,7 +905,7 @@ fun PluginsContent(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        Surface(
+                        AppSurface(
                             shape = RoundedCornerShape(6.dp),
                             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f)
                         ) {
@@ -927,7 +933,7 @@ fun PluginsContent(
 
             if (installedUiSkins.isNotEmpty()) {
                 item {
-                    Surface(
+                    AppSurface(
                         modifier = Modifier
                             .padding(horizontal = 16.dp, vertical = 12.dp)
                             .clip(RoundedCornerShape(12.dp)),
@@ -994,7 +1000,7 @@ fun PluginsContent(
                     Spacer(modifier = Modifier.height(12.dp))
                     val filterStats by com.android.purebilibili.core.plugin.json.JsonPluginManager.filterStats.collectAsStateWithLifecycle()
                     
-                    Surface(
+                    AppSurface(
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
                             .clip(RoundedCornerShape(12.dp)),
@@ -1091,7 +1097,7 @@ fun PluginsContent(
         }
     
     if (showJsImportDialog) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = {
                 if (!isJsPreviewLoading) {
                     showJsImportDialog = false
@@ -1128,7 +1134,7 @@ fun PluginsContent(
                             horizontalArrangement = Arrangement.Center,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            CircularProgressIndicator(modifier = Modifier.size(20.dp))
+                            AppCircularProgressIndicator(modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("正在预览...")
                         }
@@ -1136,7 +1142,7 @@ fun PluginsContent(
                 }
             },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = { requestJsPreview(jsImportUrl) },
                     enabled = !isJsPreviewLoading
                 ) {
@@ -1144,7 +1150,7 @@ fun PluginsContent(
                 }
             },
             dismissButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         showJsImportDialog = false
                         jsImportUrl = ""
@@ -1159,7 +1165,7 @@ fun PluginsContent(
     }
 
     jsPreview?.let { preview ->
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = {
                 if (!isJsInstalling) {
                     jsPreview = null
@@ -1207,14 +1213,14 @@ fun PluginsContent(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            CircularProgressIndicator(modifier = Modifier.size(18.dp))
+                            AppCircularProgressIndicator(modifier = Modifier.size(18.dp))
                             Text("正在安装...", style = MaterialTheme.typography.bodySmall)
                         }
                     }
                 }
             },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     enabled = !isJsInstalling,
                     onClick = {
                         isJsInstalling = true
@@ -1244,7 +1250,7 @@ fun PluginsContent(
                 }
             },
             dismissButton = {
-                TextButton(
+                AppTextButton(
                     enabled = !isJsInstalling,
                     onClick = { jsPreview = null }
                 ) {
@@ -1256,7 +1262,7 @@ fun PluginsContent(
 
     //  导入插件对话框
     if (showImportDialog) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { 
                 showImportDialog = false
                 importUrl = ""
@@ -1292,7 +1298,7 @@ fun PluginsContent(
                             horizontalArrangement = Arrangement.Center,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            CircularProgressIndicator(modifier = Modifier.size(20.dp))
+                            AppCircularProgressIndicator(modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("正在安装...")
                         }
@@ -1304,7 +1310,7 @@ fun PluginsContent(
                             horizontalArrangement = Arrangement.Center,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            CircularProgressIndicator(modifier = Modifier.size(20.dp))
+                            AppCircularProgressIndicator(modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("正在加载插件信息...")
                         }
@@ -1312,7 +1318,7 @@ fun PluginsContent(
                 }
             },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         requestPreview(importUrl)
                     },
@@ -1322,7 +1328,7 @@ fun PluginsContent(
                 }
             },
             dismissButton = {
-                TextButton(
+                AppTextButton(
                     onClick = { 
                         showImportDialog = false
                         importUrl = ""
@@ -1337,7 +1343,7 @@ fun PluginsContent(
     }
 
     if (isPreviewLoading && !showImportDialog) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = {},
             confirmButton = {},
             title = { Text("加载中") },
@@ -1346,7 +1352,7 @@ fun PluginsContent(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    CircularProgressIndicator(modifier = Modifier.size(20.dp))
+                    AppCircularProgressIndicator(modifier = Modifier.size(20.dp))
                     Text("正在加载插件信息...")
                 }
             }
@@ -1357,7 +1363,7 @@ fun PluginsContent(
         val plugin = previewPlugin
         val sourceUrl = previewSourceUrl
         if (plugin != null && sourceUrl != null) {
-            AlertDialog(
+            AppAlertDialog(
                 onDismissRequest = {
                     if (!isImporting) {
                         showPreviewDialog = false
@@ -1407,7 +1413,7 @@ fun PluginsContent(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                CircularProgressIndicator(modifier = Modifier.size(18.dp))
+                                AppCircularProgressIndicator(modifier = Modifier.size(18.dp))
                                 Text(
                                     text = "正在安装...",
                                     style = MaterialTheme.typography.bodySmall
@@ -1417,7 +1423,7 @@ fun PluginsContent(
                     }
                 },
                 confirmButton = {
-                    TextButton(
+                    AppTextButton(
                         enabled = !isImporting,
                         onClick = {
                             isImporting = true
@@ -1447,7 +1453,7 @@ fun PluginsContent(
                     }
                 },
                 dismissButton = {
-                    TextButton(
+                    AppTextButton(
                         enabled = !isImporting,
                         onClick = { showPreviewDialog = false }
                     ) {
@@ -1460,7 +1466,7 @@ fun PluginsContent(
 
     kotlinPreview?.let { (preview, decision) ->
         val previewModel = buildExternalPluginInstallPreview(decision)
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = {
                 if (!isImporting) {
                     kotlinPreview = null
@@ -1504,10 +1510,10 @@ fun PluginsContent(
                 }
             },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     enabled = decision is ExternalPluginInstallDecision.RequiresUserApproval,
                     onClick = {
-                        val bytes = kotlinPackageBytes ?: return@TextButton
+                        val bytes = kotlinPackageBytes ?: return@AppTextButton
                         val result = kotlinPluginStore.installPreview(
                             preview = preview,
                             packageBytes = bytes,
@@ -1533,7 +1539,7 @@ fun PluginsContent(
                 }
             },
             dismissButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         kotlinPreview = null
                         kotlinPackageBytes = null
@@ -1548,7 +1554,7 @@ fun PluginsContent(
     uiSkinPreview?.let { preview ->
         val previewModel = buildUiSkinPackagePreview(preview)
         val imagePreviewItems = buildUiSkinImagePreviewItems(uiSkinPreviewAssetFiles)
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = {
                 if (!isImporting) {
                     uiSkinPreview = null
@@ -1608,9 +1614,9 @@ fun PluginsContent(
                 }
             },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
-                        val bytes = uiSkinPackageBytes ?: return@TextButton
+                        val bytes = uiSkinPackageBytes ?: return@AppTextButton
                         val result = uiSkinStore.installPreview(preview, bytes)
                         result.onSuccess { installed ->
                             installedUiSkins = uiSkinStore.listInstalledPackages()
@@ -1642,7 +1648,7 @@ fun PluginsContent(
                 }
             },
             dismissButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         uiSkinPreview = null
                         uiSkinPackageBytes = null
@@ -1662,7 +1668,7 @@ fun PluginsContent(
             isActive = isActive
         )
         val imagePreviewItems = buildUiSkinImagePreviewItems(installed.assetFiles)
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { uiSkinInstalledPreview = null },
             icon = { Icon(CupertinoIcons.Default.Eye, contentDescription = null) },
             title = { Text("皮肤预览") },
@@ -1711,7 +1717,7 @@ fun PluginsContent(
                 }
             },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         UiSkinSettingsStore.setSelection(
                             context = context,
@@ -1734,7 +1740,7 @@ fun PluginsContent(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { uiSkinInstalledPreview = null }) {
+                AppTextButton(onClick = { uiSkinInstalledPreview = null }) {
                     Text("关闭")
                 }
             }
@@ -1742,13 +1748,13 @@ fun PluginsContent(
     }
 
     uiSkinPendingDelete?.let { skin ->
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { uiSkinPendingDelete = null },
             icon = { Icon(CupertinoIcons.Default.Trash, contentDescription = null) },
             title = { Text("删除皮肤") },
             text = { Text("确定要删除皮肤 \"${skin.displayName}\" 吗？删除后会清理本地包和已解压资源。") },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         val wasActive = uiSkinState.enabled &&
                             uiSkinState.activeSkin?.installId == skin.installId
@@ -1779,7 +1785,7 @@ fun PluginsContent(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { uiSkinPendingDelete = null }) {
+                AppTextButton(onClick = { uiSkinPendingDelete = null }) {
                     Text("取消")
                 }
             }
@@ -1889,7 +1895,7 @@ private fun InstalledUiSkinItem(
                 onCheckedChange = onToggle
             )
             Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                IconButton(onClick = onPreview) {
+                AppIconButton(onClick = onPreview) {
                     Icon(
                         imageVector = CupertinoIcons.Default.Eye,
                         contentDescription = "预览皮肤",
@@ -1897,7 +1903,7 @@ private fun InstalledUiSkinItem(
                         modifier = Modifier.size(18.dp)
                     )
                 }
-                IconButton(
+                AppIconButton(
                     onClick = onDelete,
                     enabled = previewModel.canDelete
                 ) {
@@ -1972,7 +1978,7 @@ private fun PluginItem(
                     //  暂不可用标签
                     if (plugin.unavailable) {
                         Spacer(modifier = Modifier.width(6.dp))
-                        Surface(
+                        AppSurface(
                             shape = RoundedCornerShape(4.dp),
                             color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.8f)
                         ) {
@@ -2034,7 +2040,7 @@ private fun PluginItem(
             enter = expandVertically(),
             exit = shrinkVertically()
         ) {
-            Surface(
+            AppSurface(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 66.dp, end = 16.dp, bottom = 8.dp),
@@ -2105,13 +2111,13 @@ private fun InstalledJsPluginItem(
             )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextButton(
+            AppTextButton(
                 onClick = onOpen,
                 enabled = installed.enabled
             ) {
                 Text("打开内容")
             }
-            TextButton(
+            AppTextButton(
                 onClick = onDelete,
                 colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
             ) {
@@ -2135,7 +2141,7 @@ private fun PluginCapabilityChips(
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         models.forEach { model ->
-            Surface(
+            AppSurface(
                 shape = RoundedCornerShape(6.dp),
                 color = if (showAuthorizationLabels && model.requiresExplicitApproval) {
                     MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.62f)
@@ -2214,7 +2220,7 @@ private fun JsonPluginStatsNotificationSection(
     onEnabledChange: (Boolean) -> Unit,
     onSendTest: () -> Unit
 ) {
-    Surface(
+    AppSurface(
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp)),
@@ -2268,7 +2274,7 @@ private fun JsonPluginStatsNotificationSection(
                     .height(0.5.dp)
                     .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             )
-            TextButton(
+            AppTextButton(
                 onClick = onSendTest,
                 modifier = Modifier
                     .align(Alignment.End)
@@ -2370,7 +2376,7 @@ private fun JsonPluginItem(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     //  统计始终显示
-                    Surface(
+                    AppSurface(
                         shape = RoundedCornerShape(4.dp),
                         color = if (filterCount > 0) 
                             iOSGreen.copy(alpha = 0.15f)
@@ -2414,7 +2420,7 @@ private fun JsonPluginItem(
             enter = expandVertically(),
             exit = shrinkVertically()
         ) {
-            Surface(
+            AppSurface(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 66.dp, end = 16.dp, bottom = 8.dp),
@@ -2428,7 +2434,7 @@ private fun JsonPluginItem(
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     // 测试规则按钮
-                    TextButton(
+                    AppTextButton(
                         onClick = onTest,
                         colors = ButtonDefaults.textButtonColors(
                             contentColor = iOSBlue
@@ -2440,7 +2446,7 @@ private fun JsonPluginItem(
                     }
                     
                     // 重置统计按钮
-                    TextButton(
+                    AppTextButton(
                         onClick = onResetStats,
                         colors = ButtonDefaults.textButtonColors(
                             contentColor = iOSOrange
@@ -2452,7 +2458,7 @@ private fun JsonPluginItem(
                     }
                     
                     // 编辑按钮
-                    TextButton(
+                    AppTextButton(
                         onClick = onEdit,
                         colors = ButtonDefaults.textButtonColors(
                             contentColor = iOSPurple
@@ -2464,7 +2470,7 @@ private fun JsonPluginItem(
                     }
                     
                     // 删除按钮
-                    TextButton(
+                    AppTextButton(
                         onClick = { showDeleteDialog = true },
                         colors = ButtonDefaults.textButtonColors(
                             contentColor = MaterialTheme.colorScheme.error
@@ -2481,12 +2487,12 @@ private fun JsonPluginItem(
     
     // 删除确认对话框
     if (showDeleteDialog) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showDeleteDialog = false },
             title = { Text("删除插件") },
             text = { Text("确定要删除插件 \"${plugin.name}\" 吗？") },
             confirmButton = {
-                TextButton(onClick = {
+                AppTextButton(onClick = {
                     onDelete()
                     showDeleteDialog = false
                 }) {
@@ -2494,7 +2500,7 @@ private fun JsonPluginItem(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
+                AppTextButton(onClick = { showDeleteDialog = false }) {
                     Text("取消")
                 }
             }
@@ -2516,7 +2522,7 @@ private fun TestResultDialog(
     val blockedCount = originalCount - filteredCount
     val dialogIconTint = rememberAdaptiveSemanticIconTint(iOSBlue)
 
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         icon = {
             Icon(
@@ -2536,7 +2542,7 @@ private fun TestResultDialog(
                 Spacer(modifier = Modifier.height(12.dp))
                 
                 // 统计卡片
-                Surface(
+                AppSurface(
                     shape = RoundedCornerShape(8.dp),
                     color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
                 ) {
@@ -2647,7 +2653,7 @@ private fun TestResultDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
+            AppTextButton(onClick = onDismiss) {
                 Text("确定")
             }
         }

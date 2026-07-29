@@ -1036,7 +1036,7 @@ fun BottomBarSettingsContent(
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }
-                                    IconButton(
+                                    AppIconButton(
                                         onClick = { moveTopTab(tab.id, -1) },
                                         enabled = !tab.fixedVisible && index > 0
                                     ) {
@@ -1046,7 +1046,7 @@ fun BottomBarSettingsContent(
                                             modifier = Modifier.size(16.dp)
                                         )
                                     }
-                                    IconButton(
+                                    AppIconButton(
                                         onClick = { moveTopTab(tab.id, 1) },
                                         enabled = !tab.fixedVisible && index < visibleTopOrder.lastIndex
                                     ) {
@@ -1221,7 +1221,7 @@ fun BottomBarSettingsContent(
                 Box(modifier = Modifier.entrance()) {
                     Column {
                         Spacer(modifier = Modifier.height(16.dp))
-                        io.github.alexzhirkevich.cupertino.CupertinoButton(
+                        AppOutlinedButton(
                             onClick = {
                                 localOrder = listOf("HOME", "DYNAMIC", "HISTORY", "LISTEN_VIDEO", "PROFILE")
                                 localVisibleTabs = setOf("HOME", "DYNAMIC", "HISTORY", "LISTEN_VIDEO", "PROFILE")
@@ -1235,7 +1235,7 @@ fun BottomBarSettingsContent(
                                 }
                             },
                             modifier = Modifier.fillMaxWidth(),
-                            colors = io.github.alexzhirkevich.cupertino.CupertinoButtonDefaults.borderedButtonColors(
+                            colors = ButtonDefaults.outlinedButtonColors(
                                 contentColor = MaterialTheme.colorScheme.primary
                             )
                         ) {
@@ -1267,7 +1267,7 @@ private fun BottomBarPreview(
     var draggingItemIndex by remember { mutableStateOf<Int?>(null) }
     var draggingItemCenter by remember { mutableFloatStateOf(0f) }
     
-    Surface(
+    AppSurface(
         modifier = Modifier
             .fillMaxWidth()
             .clip(AppShapes.container(ContainerLevel.Dialog)),

@@ -284,7 +284,7 @@ fun AnimationSettingsContent(
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
                                 }
-                                Slider(
+                                AppSlider(
                                     value = customTransitionDurationMillis.toFloat(),
                                     onValueChange = { value ->
                                         customTransitionDurationMillis = snapCustomTransitionDuration(value)
@@ -452,7 +452,7 @@ fun AnimationSettingsContent(
             //  提示
             item {
                 Box(modifier = Modifier.entrance()) {
-                    Surface(
+                    AppSurface(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp),
