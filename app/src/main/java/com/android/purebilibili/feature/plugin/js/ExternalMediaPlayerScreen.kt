@@ -15,7 +15,7 @@ import com.android.purebilibili.core.ui.components.AppFilterChip
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import com.android.purebilibili.core.ui.AppScaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -86,7 +86,7 @@ fun ExternalMediaPlayerScreen(
         player.playWhenReady = true
     }
 
-    Scaffold(
+    AppScaffold(
         topBar = {
             TopAppBar(
                 title = { Text(request?.title ?: "外部媒体") },
@@ -110,7 +110,7 @@ fun ExternalMediaPlayerScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            return@Scaffold
+            return@AppScaffold
         }
 
         Column(

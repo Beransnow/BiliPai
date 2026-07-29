@@ -28,7 +28,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -62,7 +62,7 @@ fun SearchTrendingScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val pullRefreshState = rememberPullToRefreshState()
 
-    Scaffold(
+    AppScaffold(
         topBar = {
             TopAppBar(
                 title = { Text("bilibili 热搜") },

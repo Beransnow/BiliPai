@@ -43,7 +43,7 @@ import androidx.compose.material3.ButtonDefaults
 import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -116,7 +116,7 @@ fun OnboardingScreen(
             .fillMaxSize()
             .testTag("onboarding_root")
     ) {
-        Scaffold(
+        AppScaffold(
             bottomBar = {
                 OnboardingBottomControls(
                     pageCount = pageCount,

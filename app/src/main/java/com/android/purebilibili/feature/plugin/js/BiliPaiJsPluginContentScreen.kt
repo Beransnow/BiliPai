@@ -25,7 +25,7 @@ import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppOutlinedTextField
-import androidx.compose.material3.Scaffold
+import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -123,7 +123,7 @@ fun BiliPaiJsPluginContentScreen(
         }
     }
 
-    Scaffold(
+    AppScaffold(
         topBar = {
             TopAppBar(
                 title = { Text(installed?.manifest?.title ?: "JS 插件内容") },
