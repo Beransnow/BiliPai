@@ -58,6 +58,10 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.components.AppDropdownMenu
+import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppSurface
 
 /**
  * 直播聊天区域组件
@@ -143,7 +147,7 @@ fun LiveChatSection(
                         color = palette.secondaryText
                     )
                 }
-                Surface(
+                AppSurface(
                     shape = AppShapes.container(ContainerLevel.Pill),
                     color = palette.accentSoft
                 ) {
@@ -196,7 +200,7 @@ fun LiveChatSection(
                 }
             }
             if (isAwayFromBottom) {
-                Surface(
+                AppSurface(
                     onClick = {
                         scope.launch {
                             listState.animateScrollToItem(messages.lastIndex.coerceAtLeast(0))
@@ -385,11 +389,11 @@ private fun LiveDanmakuUserMenu(
     onBlockUser: (LiveDanmakuItem) -> Unit,
     onReportDanmaku: (LiveDanmakuItem) -> Unit
 ) {
-    DropdownMenu(
+    AppDropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismiss
     ) {
-        DropdownMenuItem(
+        AppDropdownMenuItem(
             text = {
                 Text(
                     text = item.uname.ifBlank { "弹幕" },
@@ -401,14 +405,14 @@ private fun LiveDanmakuUserMenu(
             onClick = {}
         )
         HorizontalDivider()
-        DropdownMenuItem(
+        AppDropdownMenuItem(
             text = { Text("复制弹幕信息") },
             onClick = {
                 onDismiss()
                 onCopyInfo()
             }
         )
-        DropdownMenuItem(
+        AppDropdownMenuItem(
             text = { Text("去TA的个人空间") },
             enabled = item.uid > 0L,
             onClick = {
@@ -416,7 +420,7 @@ private fun LiveDanmakuUserMenu(
                 onUserClick(item.uid)
             }
         )
-        DropdownMenuItem(
+        AppDropdownMenuItem(
             text = { Text("@TA") },
             enabled = item.uname.isNotBlank(),
             onClick = {
@@ -424,7 +428,7 @@ private fun LiveDanmakuUserMenu(
                 onAtUser(item)
             }
         )
-        DropdownMenuItem(
+        AppDropdownMenuItem(
             text = { Text("屏蔽发送者") },
             enabled = item.uname.isNotBlank() || item.uid > 0L,
             onClick = {
@@ -432,7 +436,7 @@ private fun LiveDanmakuUserMenu(
                 onBlockUser(item)
             }
         )
-        DropdownMenuItem(
+        AppDropdownMenuItem(
             text = { Text("举报选中弹幕") },
             enabled = item.text.isNotBlank(),
             onClick = {
@@ -464,7 +468,7 @@ private fun SuperChatMessageItem(
 ) {
     val bg = resolveLiveSuperChatColor(item.superChatBackgroundColor)
         .copy(alpha = if (isOverlay) 0.82f else 1f)
-    Surface(
+    AppSurface(
         color = bg,
         shape = AppShapes.container(ContainerLevel.Card),
         modifier = Modifier.fillMaxWidth(if (isOverlay) 0.72f else 0.82f)
@@ -486,7 +490,7 @@ private fun SuperChatMessageItem(
                     modifier = Modifier.weight(1f)
                 )
                 if (item.superChatPrice.isNotBlank()) {
-                    Surface(
+                    AppSurface(
                         shape = AppShapes.container(ContainerLevel.Pill),
                         color = LiveStatusPalette.MediaScrim.copy(alpha = 0.18f)
                     ) {
@@ -523,7 +527,7 @@ private fun MedalBadge(name: String, level: Int, colorInt: Int) {
     val color = resolveLiveMedalColor(colorInt)
     val visualSpec = remember { resolveLiveMedalBadgeVisualSpec() }
     
-    Surface(
+    AppSurface(
         color = color,
         shape = AppShapes.container(ContainerLevel.Tag),
         modifier = Modifier.padding(top = AppSpacingTokens.Micro)
@@ -567,7 +571,7 @@ private fun UserLevelBadge(level: Int) {
     // 颜色根据等级变化 (简化处理：低等级灰/蓝，高等级橙/红)
     val color = resolveLiveLevelColor(level)
     
-    Surface(
+    AppSurface(
                 border = androidx.compose.foundation.BorderStroke(AppSpacingTokens.Micro / 2, color),
         shape = AppShapes.borderedContainer(ContainerLevel.Tag),
         color = Color.Transparent, // 空心
@@ -605,7 +609,7 @@ private fun ChatInputBar(
     val fieldColor = if (isOverlay) Color.Transparent else palette.searchField
     val iconTint = if (isOverlay) roomTokens.inputContentColor else palette.secondaryText
     
-    Surface(
+    AppSurface(
         color = if (isOverlay) roomTokens.inputOverlayColor.copy(alpha = roomTokens.inputContainerAlpha) else palette.surfaceElevated,
         shape = if (isOverlay) AppShapes.container(ContainerLevel.Sheet) else RectangleShape,
                 tonalElevation = if (isOverlay) AppSpacingTokens.None else AppSpacingTokens.Micro,
@@ -626,7 +630,7 @@ private fun ChatInputBar(
                 .imePadding(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(
+            AppIconButton(
                 onClick = onToggleDanmaku,
                 modifier = Modifier.size(inputVisualSpec.controlSizeDp.dp)
             ) {
@@ -677,7 +681,7 @@ private fun ChatInputBar(
                 onLike = onLike
             )
 
-            IconButton(
+            AppIconButton(
                 onClick = onOpenEmote,
                 modifier = Modifier.size(inputVisualSpec.controlSizeDp.dp)
             ) {
@@ -691,7 +695,7 @@ private fun ChatInputBar(
             
             // 发送按钮
             val isEnabled = text.isNotBlank()
-            Surface(
+            AppSurface(
                 onClick = {
                     if (isEnabled) {
                         onSend(text)
@@ -742,7 +746,7 @@ private fun LiveLikeButton(
     }
 
     Box {
-        IconButton(
+        AppIconButton(
             onClick = {
                 likeCount += 1
                 flushJob?.cancel()
@@ -763,7 +767,7 @@ private fun LiveLikeButton(
             )
         }
         if (likeCount > 0) {
-            Surface(
+            AppSurface(
                 shape = AppShapes.container(ContainerLevel.Tag),
                 color = palette.accent.copy(alpha = 0.96f),
                 modifier = Modifier
