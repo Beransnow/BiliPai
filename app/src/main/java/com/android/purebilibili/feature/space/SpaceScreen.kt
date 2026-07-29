@@ -51,8 +51,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import com.android.purebilibili.core.ui.components.AppDropdownMenu
+import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
@@ -293,12 +293,12 @@ fun SpaceScreen(
                                     contentDescription = moreLabel
                                 )
                             }
-                            DropdownMenu(
+                            AppDropdownMenu(
                                 expanded = showMenu,
                                 onDismissRequest = { showMenu = false },
                                 modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                             ) {
-                                DropdownMenuItem(
+                                AppDropdownMenuItem(
                                     text = { Text("复制空间链接") },
                                     onClick = {
                                         showMenu = false
@@ -314,7 +314,7 @@ fun SpaceScreen(
                                         )
                                     }
                                 )
-                                DropdownMenuItem(
+                                AppDropdownMenuItem(
                                     text = { Text(if (isBlocked) unblockUserLabel else blockUserLabel) },
                                     onClick = {
                                         showMenu = false
@@ -2729,12 +2729,12 @@ private fun SpaceContributionVideoToolbarActions(
                 }
             }
 
-            DropdownMenu(
+            AppDropdownMenu(
                 expanded = menuExpanded,
                 onDismissRequest = { menuExpanded = false }
             ) {
                 VideoSortOrder.entries.forEach { order ->
-                    DropdownMenuItem(
+                    AppDropdownMenuItem(
                         text = { Text(order.displayName) },
                         onClick = {
                             menuExpanded = false

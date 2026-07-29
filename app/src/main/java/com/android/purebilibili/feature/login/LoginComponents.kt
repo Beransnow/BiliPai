@@ -43,8 +43,8 @@ import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import com.android.purebilibili.core.ui.components.AppTextButton
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import com.android.purebilibili.core.ui.components.AppDropdownMenu
+import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
@@ -717,12 +717,12 @@ fun PhoneLoginContent(
             )
         }
 
-        DropdownMenu(
+        AppDropdownMenu(
             expanded = regionMenuExpanded,
             onDismissRequest = { regionMenuExpanded = false }
         ) {
             phoneRegions.forEach { region ->
-                DropdownMenuItem(
+                AppDropdownMenuItem(
                     text = { Text("${region.dialingCode} ${region.name}") },
                     onClick = {
                         selectedRegionCid = region.cid

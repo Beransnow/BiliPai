@@ -18,6 +18,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MenuDefaults
+import androidx.compose.material3.MenuItemColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -265,6 +266,7 @@ fun AppDropdownMenuItem(
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     enabled: Boolean = true,
+    colors: MenuItemColors = MenuDefaults.itemColors(),
     contentPadding: PaddingValues = MenuDefaults.DropdownMenuItemContentPadding,
     interactionSource: MutableInteractionSource? = null,
 ) = DropdownMenuItem(
@@ -274,6 +276,7 @@ fun AppDropdownMenuItem(
     leadingIcon = leadingIcon,
     trailingIcon = trailingIcon,
     enabled = enabled,
+    colors = colors,
     contentPadding = contentPadding,
     interactionSource = interactionSource,
 )

@@ -22,8 +22,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import com.android.purebilibili.core.ui.components.AppDropdownMenu
+import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -425,12 +425,12 @@ fun CinematicVideoCard(
 
 
     // 长按菜单
-    DropdownMenu(
+    AppDropdownMenu(
         expanded = showDismissMenu,
         onDismissRequest = { showDismissMenu = false }
     ) {
         if (onWatchLater != null) {
-            DropdownMenuItem(
+            AppDropdownMenuItem(
                 text = { Text("🕐 稍后再看") },
                 onClick = {
                     showDismissMenu = false
@@ -439,7 +439,7 @@ fun CinematicVideoCard(
             )
         }
         if (onDismiss != null) {
-            DropdownMenuItem(
+            AppDropdownMenuItem(
                 text = { Text("🚫 不感兴趣") },
                 onClick = {
                     showDismissMenu = false

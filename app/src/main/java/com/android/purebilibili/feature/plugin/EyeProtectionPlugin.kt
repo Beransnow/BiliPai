@@ -19,8 +19,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import com.android.purebilibili.core.ui.components.AppDropdownMenu
+import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -749,13 +749,13 @@ private fun TimePickerDropdown(
             }
         }
 
-        DropdownMenu(
+        AppDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
             modifier = Modifier.fillMaxWidth()
         ) {
             (0..23).forEach { hour ->
-                DropdownMenuItem(
+                AppDropdownMenuItem(
                     text = { Text(String.format("%02d:00", hour)) },
                     trailingIcon = {
                         if (hour == selectedHour) {
