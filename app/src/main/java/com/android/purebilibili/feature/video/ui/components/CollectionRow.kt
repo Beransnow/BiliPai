@@ -1,5 +1,7 @@
 // 文件路径: feature/video/ui/components/CollectionRow.kt
 package com.android.purebilibili.feature.video.ui.components
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -84,7 +86,7 @@ fun CollectionRow(
                     .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
+                AppIcon(
                     CupertinoIcons.Default.Folder,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
@@ -97,14 +99,14 @@ fun CollectionRow(
             //  合集信息
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
+                    AppText(
                         text = "合集",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.Medium
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(
+                    AppText(
                         text = ugcSeason.title,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -121,7 +123,7 @@ fun CollectionRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     if (currentPosition > 0 && totalCount > 0) {
-                        Text(
+                        AppText(
                             text = "$currentPosition/$totalCount",
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -129,7 +131,7 @@ fun CollectionRow(
                         )
                     }
 
-                    Text(
+                    AppText(
                         text = resolveCollectionSortLabel(sortMode),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary.copy(alpha = 0.88f)
@@ -159,7 +161,7 @@ fun CollectionRow(
                 },
                 modifier = Modifier.size(28.dp)
             ) {
-                Icon(
+                AppIcon(
                     shareIcon,
                     contentDescription = "分享合集",
                     modifier = Modifier.size(16.dp),
@@ -168,7 +170,7 @@ fun CollectionRow(
             }
             
             //  右侧箭头
-            Icon(
+            AppIcon(
                 CupertinoIcons.Default.ChevronForward,
                 contentDescription = "查看合集",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),

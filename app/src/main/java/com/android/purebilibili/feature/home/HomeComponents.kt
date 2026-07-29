@@ -2,6 +2,7 @@
 // 此文件包含对话框和错误状态展示
 // UserState 定义在 HomeViewModel.kt 中
 package com.android.purebilibili.feature.home
+import com.android.purebilibili.core.ui.components.AppText
 
 import com.android.purebilibili.core.ui.AppSpacingTokens
 
@@ -32,18 +33,18 @@ fun WelcomeDialog(githubUrl: String, onConfirm: () -> Unit) {
     val uriHandler = LocalUriHandler.current
     AppAlertDialog(
         onDismissRequest = { },
-        title = { Text("欢迎") },
+        title = { AppText("欢迎") },
         text = {
             Column {
-                Text("本应用仅供学习使用。")
+                AppText("本应用仅供学习使用。")
                 AppTextButton(onClick = { uriHandler.openUri(githubUrl) }) {
-                    Text("开源地址: $githubUrl", fontSize = MaterialTheme.typography.labelSmall.fontSize, color = MaterialTheme.colorScheme.primary)
+                    AppText("开源地址: $githubUrl", fontSize = MaterialTheme.typography.labelSmall.fontSize, color = MaterialTheme.colorScheme.primary)
                 }
             }
         },
         confirmButton = {
             AppButton(onClick = onConfirm, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)) {
-                Text("进入")
+                AppText("进入")
             }
         },
         containerColor = AppSurfaceTokens.cardContainer()
@@ -60,13 +61,13 @@ fun ErrorState(message: String, onRetry: () -> Unit) {
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = message, color = MaterialTheme.colorScheme.error)
+            AppText(text = message, color = MaterialTheme.colorScheme.error)
             Spacer(modifier = Modifier.height(AppSpacingTokens.Large))
             AppButton(
                 onClick = onRetry,
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                Text("重试")
+                AppText("重试")
             }
         }
     }
@@ -95,7 +96,7 @@ fun LiveSubCategoryRow(
             AppFilterChip(
                 selected = isSelected,
                 onClick = { onSubCategorySelected(subCategory) },
-                label = { Text(stringResource(resolveLiveSubCategoryLabelRes(subCategory))) },
+                label = { AppText(stringResource(resolveLiveSubCategoryLabelRes(subCategory))) },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = MaterialTheme.colorScheme.primary,  //  使用主题色
                     selectedLabelColor = MaterialTheme.colorScheme.onPrimary     //  使用主题对应的前景色

@@ -198,7 +198,13 @@ internal fun resolveDeviceDisplayCornerRadiusPx(
     rootWindowInsets: android.view.WindowInsets?,
     sdkInt: Int = Build.VERSION.SDK_INT,
 ): Float {
-    if (sdkInt < Build.VERSION_CODES.S || rootWindowInsets == null) return 0f
+    if (
+        sdkInt < Build.VERSION_CODES.S ||
+        Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
+        rootWindowInsets == null
+    ) {
+        return 0f
+    }
     val positions = intArrayOf(
         android.view.RoundedCorner.POSITION_TOP_LEFT,
         android.view.RoundedCorner.POSITION_TOP_RIGHT,

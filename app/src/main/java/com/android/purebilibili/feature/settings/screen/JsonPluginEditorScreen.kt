@@ -1,5 +1,7 @@
 // 文件路径: feature/settings/JsonPluginEditorScreen.kt
 package com.android.purebilibili.feature.settings
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -64,7 +66,7 @@ fun JsonPluginEditorScreen(
                 )
                 onSave(updated)
             }) {
-                Icon(CupertinoIcons.Default.Checkmark, contentDescription = "保存")
+                AppIcon(CupertinoIcons.Default.Checkmark, contentDescription = "保存")
             }
         },
     ) {
@@ -94,7 +96,7 @@ fun JsonPluginEditorContent(
 ) {
     if (pluginType != "json_rule") {
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("内置插件无法编辑规则", style = MaterialTheme.typography.bodyLarge)
+            AppText("内置插件无法编辑规则", style = MaterialTheme.typography.bodyLarge)
         }
         return
     }
@@ -110,7 +112,7 @@ fun JsonPluginEditorContent(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("基本信息", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    AppText("基本信息", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(16.dp))
                     
                     AppTextField(
@@ -139,14 +141,14 @@ fun JsonPluginEditorContent(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text("过滤规则", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                AppText("过滤规则", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 
                 AppTextButton(onClick = {
                     onRulesChange(rules + Rule(field = "title", op = "contains", value = JsonPrimitive(""), action = "hide"))
                 }) {
-                    Icon(CupertinoIcons.Default.Plus, null, modifier = Modifier.size(16.dp))
+                    AppIcon(CupertinoIcons.Default.Plus, null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("添加规则")
+                    AppText("添加规则")
                 }
             }
         }
@@ -170,7 +172,7 @@ fun JsonPluginEditorContent(
 
         if (rules.isEmpty()) {
             item {
-                Text(
+                AppText(
                     text = "点击 + 添加规则",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -232,13 +234,13 @@ private fun RuleEditor(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
+                AppText(
                     text = "规则",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
                 AppIconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
-                    Icon(
+                    AppIcon(
                         CupertinoIcons.Default.Trash,
                         contentDescription = "删除",
                         tint = MaterialTheme.colorScheme.error,
@@ -304,7 +306,7 @@ private fun DropdownSelector(
     var expanded by remember { mutableStateOf(false) }
     
     Column {
-        Text(
+        AppText(
             text = label,
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -314,7 +316,7 @@ private fun DropdownSelector(
                 onClick = { expanded = true },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(value.ifEmpty { "选择..." })
+                AppText(value.ifEmpty { "选择..." })
             }
             AppDropdownMenu(
                 expanded = expanded,
@@ -322,7 +324,7 @@ private fun DropdownSelector(
             ) {
                 options.forEach { option ->
                     AppDropdownMenuItem(
-                        text = { Text(option) },
+                        text = { AppText(option) },
                         onClick = {
                             onSelect(option)
                             expanded = false

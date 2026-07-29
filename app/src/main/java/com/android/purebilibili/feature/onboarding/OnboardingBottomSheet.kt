@@ -1,5 +1,6 @@
 // 文件路径: feature/onboarding/OnboardingBottomSheet.kt
 package com.android.purebilibili.feature.onboarding
+import com.android.purebilibili.core.ui.components.AppText
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.RepeatMode
@@ -232,7 +233,7 @@ fun OnboardingBottomSheet(
                                     MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
                                 )
                             ) {
-                                Text("跳过", fontWeight = FontWeight.Medium)
+                                AppText("跳过", fontWeight = FontWeight.Medium)
                             }
                             
                             // 下一步按钮
@@ -248,7 +249,7 @@ fun OnboardingBottomSheet(
                                     containerColor = MaterialTheme.colorScheme.primary
                                 )
                             ) {
-                                Text("下一步", fontWeight = FontWeight.SemiBold)
+                                AppText("下一步", fontWeight = FontWeight.SemiBold)
                             }
                         } else {
                             // 最后一页：开始使用
@@ -262,7 +263,7 @@ fun OnboardingBottomSheet(
                                     containerColor = MaterialTheme.colorScheme.primary
                                 )
                             ) {
-                                Text(
+                                AppText(
                                     "开始探索 BiliPai",
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 16.sp
@@ -273,7 +274,7 @@ fun OnboardingBottomSheet(
                     
                     //  GitHub 链接
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text(
+                    AppText(
                         "github.com/jay3-yy/BiliPai",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
@@ -354,7 +355,7 @@ private fun WelcomePage(hazeState: HazeState) {
         Spacer(modifier = Modifier.height(24.dp))
         
         // 标题 - 动画项 1
-        Text(
+        AppText(
             "欢迎使用 BiliPai",
             fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
@@ -368,7 +369,7 @@ private fun WelcomePage(hazeState: HazeState) {
         Spacer(modifier = Modifier.height(8.dp))
         
         // 副标题 - 动画项 2
-        Text(
+        AppText(
             "简洁 · 流畅 · 开源",
             fontSize = 16.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -416,7 +417,7 @@ private fun WelcomePage(hazeState: HazeState) {
                 translationY = (1f - animatedItems[5].value) * 20f
             }
         ) {
-            Text(
+            AppText(
                 "本应用仅供学习交流，所有内容版权归 Bilibili 及原作者。",
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f),
@@ -499,7 +500,7 @@ private fun AppearanceSettingsPage(hazeState: HazeState) {
         Spacer(modifier = Modifier.height(24.dp))
         
         // 标题 - 动画项 1
-        Text(
+        AppText(
             "个性化外观",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
@@ -513,7 +514,7 @@ private fun AppearanceSettingsPage(hazeState: HazeState) {
         Spacer(modifier = Modifier.height(8.dp))
         
         // 副标题 - 动画项 2
-        Text(
+        AppText(
             "打造专属于你的界面风格",
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -637,7 +638,7 @@ private fun PlaybackSettingsPage(hazeState: HazeState) {
         Spacer(modifier = Modifier.height(24.dp))
         
         // 标题 - 动画项 1
-        Text(
+        AppText(
             "智能播放体验",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
@@ -651,7 +652,7 @@ private fun PlaybackSettingsPage(hazeState: HazeState) {
         Spacer(modifier = Modifier.height(8.dp))
         
         // 副标题 - 动画项 2
-        Text(
+        AppText(
             "流畅观看，省流省电",
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -770,11 +771,11 @@ private fun FeatureBadge(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(emoji, fontSize = 24.sp)
+                AppText(emoji, fontSize = 24.sp)
             }
         }
         Spacer(modifier = Modifier.height(8.dp))
-        Text(
+        AppText(
             label,
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
@@ -827,19 +828,19 @@ private fun FeatureListItem(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(icon, fontSize = 20.sp)
+                AppText(icon, fontSize = 20.sp)
             }
             
             Spacer(modifier = Modifier.width(14.dp))
             
             Column(modifier = Modifier.weight(1f)) {
-                Text(
+                AppText(
                     title,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 15.sp,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Text(
+                AppText(
                     description,
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

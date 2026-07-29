@@ -1,5 +1,7 @@
 // 文件路径: feature/video/MiniPlayerOverlay.kt
 package com.android.purebilibili.feature.video.ui.overlay
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import com.android.purebilibili.feature.video.player.MiniPlayerManager
 import com.android.purebilibili.core.util.Logger
@@ -576,7 +578,7 @@ fun MiniPlayerOverlay(
                         )
 
                         // 标题
-                        Text(
+                        AppText(
                             text = miniPlayerManager.currentTitle,
                             color = Color.White,
                             fontSize = layoutPolicy.titleFontSp.sp,
@@ -615,7 +617,7 @@ fun MiniPlayerOverlay(
                                 shape = CircleShape,
                                 color = Color.Black.copy(alpha = 0.5f)
                             ) {
-                                Icon(
+                                AppIcon(
                                     imageVector = CupertinoIcons.Default.Minus, // 使用 Minus 图标作为隐藏/最小化
                                     contentDescription = "隐藏",
                                     tint = Color.White,
@@ -633,7 +635,7 @@ fun MiniPlayerOverlay(
                                     shape = CircleShape,
                                     color = Color.Black.copy(alpha = 0.5f)
                                 ) {
-                                    Icon(
+                                    AppIcon(
                                         imageVector = CupertinoIcons.Outlined.PipEnter,
                                         contentDescription = "切换到画中画",
                                         tint = Color.White,
@@ -651,7 +653,7 @@ fun MiniPlayerOverlay(
                                 shape = CircleShape,
                                 color = Color.Black.copy(alpha = 0.5f)
                             ) {
-                                Icon(
+                                AppIcon(
                                     imageVector = CupertinoIcons.Default.ArrowUpLeftAndArrowDownRight,
                                     contentDescription = "展开",
                                     tint = Color.White,
@@ -668,7 +670,7 @@ fun MiniPlayerOverlay(
                                 shape = CircleShape,
                                 color = com.android.purebilibili.core.theme.iOSRed.copy(alpha = 0.7f)
                             ) {
-                                Icon(
+                                AppIcon(
                                     imageVector = clearIcon,
                                     contentDescription = "关闭",
                                     tint = Color.White,
@@ -706,7 +708,7 @@ fun MiniPlayerOverlay(
                         shape = CircleShape,
                         color = accentColor.copy(alpha = 0.9f)
                     ) {
-                        Icon(
+                        AppIcon(
                             imageVector = if (isPlaying) CupertinoIcons.Default.Pause else CupertinoIcons.Default.Play,
                             contentDescription = if (isPlaying) "暂停" else "播放",
                             tint = Color.White,
@@ -726,7 +728,7 @@ fun MiniPlayerOverlay(
                             color = Color.Black.copy(alpha = 0.7f)
                         ) {
                             val timeText = "${formatMiniTime(seekPreviewPosition)} / ${formatMiniTime(duration)}"
-                            Text(
+                            AppText(
                                 text = timeText,
                                 color = Color.White,
                                 fontSize = layoutPolicy.seekHintFontSp.sp,
@@ -738,7 +740,7 @@ fun MiniPlayerOverlay(
                             )
                         }
                     } else if (chrome.showDragHint) {
-                        Text(
+                        AppText(
                             text = if (miniPlayerManager.isLiveMode) "拖动小窗移动 | 双击展开" else "拖动小窗移动 | 左右滑动调进度",
                             color = Color.White.copy(alpha = 0.7f),
                             fontSize = layoutPolicy.dragHintFontSp.sp,
@@ -767,7 +769,7 @@ fun MiniPlayerOverlay(
                                     .background(Color.White, CircleShape)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text(
+                            AppText(
                                 text = "直播",
                                 color = Color.White,
                                 fontSize = 10.sp,
@@ -840,7 +842,7 @@ fun MiniPlayerOverlay(
                         ),
                         color = Color.Black.copy(alpha = 0.35f)
                     ) {
-                        Icon(
+                        AppIcon(
                             imageVector = CupertinoIcons.Default.ArrowUpLeftAndArrowDownRight,
                             contentDescription = "拖动调整小窗大小",
                             tint = Color.White.copy(alpha = 0.9f),
@@ -905,7 +907,7 @@ private fun StashedMiniPlayerView(
         onClick = onUnstash
     ) {
         Box(contentAlignment = Alignment.Center) {
-            Icon(
+            AppIcon(
                 imageVector = if (isLeft) Icons.Filled.ChevronRight else Icons.Filled.ChevronLeft,
                 contentDescription = "Show",
                 tint = Color.White,

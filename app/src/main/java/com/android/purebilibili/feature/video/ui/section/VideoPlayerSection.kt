@@ -1,5 +1,7 @@
 // 文件路径: feature/video/VideoPlayerSection.kt
 package com.android.purebilibili.feature.video.ui.section
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import com.android.purebilibili.feature.video.danmaku.DanmakuManager
 import com.android.purebilibili.feature.video.danmaku.DanmakuCloudSyncUiState
@@ -288,7 +290,7 @@ private fun GesturePercentDigit(
         if (target == null) {
             Spacer(modifier = Modifier.width(slotWidth))
         } else {
-            Text(
+            AppText(
                 text = target.toString(),
                 color = Color.White,
                 style = textStyle.copy(shadow = textShadow),
@@ -347,7 +349,7 @@ private fun GesturePercentValue(
                 )
             }
         }
-        Text(
+        AppText(
             text = "%",
             color = Color.White,
             style = textStyle.copy(shadow = textShadow),
@@ -3304,7 +3306,7 @@ fun VideoPlayerSection(
                                 .background(Color.White.copy(alpha = 0.96f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
+                            AppIcon(
                                 imageVector = Icons.Filled.PlayArrow,
                                 contentDescription = "Play video",
                                 tint = Color(0xFF4D5160),
@@ -3799,7 +3801,7 @@ fun VideoPlayerSection(
                 val showSecondaryLine = !subtitleSecondaryText.isNullOrBlank()
                 val secondaryAsPrimaryLine = showSecondaryLine && !showPrimaryLine
                 // 行容器常驻：用空串占位而不是 if 拆装 Text，减少 quantize 边界闪一下。
-                Text(
+                AppText(
                     text = subtitleSecondaryText.orEmpty(),
                     color = Color.White.copy(alpha = if (showSecondaryLine) 0.88f else 0f),
                     fontSize = if (secondaryAsPrimaryLine) {
@@ -3815,7 +3817,7 @@ fun VideoPlayerSection(
                         if (showSecondaryLine) Modifier else Modifier.height(0.dp)
                     )
                 )
-                Text(
+                AppText(
                     text = subtitlePrimaryText.orEmpty(),
                     color = Color.White.copy(alpha = if (showPrimaryLine) 1f else 0f),
                     fontSize = subtitleTextSizeSpec.primarySp.sp,
@@ -3905,13 +3907,13 @@ fun VideoPlayerSection(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(
+                AppIcon(
                     imageVector = Icons.Filled.Refresh,
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.size(16.dp)
                 )
-                Text(
+                AppText(
                     text = orientationHintText,
                     color = Color.White,
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
@@ -3939,7 +3941,7 @@ fun VideoPlayerSection(
                     .background(Color.Black.copy(0.75f), RoundedCornerShape(20.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
+                AppText(
                     text = seekFeedbackText ?: "",
                     color = if (seekFeedbackText?.startsWith("+") == true) com.android.purebilibili.core.theme.iOSGreen else com.android.purebilibili.core.theme.iOSRed,
                     style = MaterialTheme.typography.headlineMedium.copy(
@@ -3982,13 +3984,13 @@ fun VideoPlayerSection(
                 ),
                 shape = RoundedCornerShape(24.dp)
             ) {
-                Icon(
+                AppIcon(
                     imageVector = Icons.Filled.Refresh,
                     contentDescription = "还原画面",
                     modifier = Modifier.size(uiLayoutPolicy.restoreButtonIconSizeDp.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(
+                AppText(
                     text = "还原画面",
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
                 )
@@ -4079,7 +4081,7 @@ fun VideoPlayerSection(
                 contentColor = Color.White,
                 tonalElevation = 0.dp
             ) {
-                Text(
+                AppText(
                     text = if (longPressSpeedLocked) {
                         "已锁定 ${effectiveLongPressSpeed}x"
                     } else {
@@ -4116,7 +4118,7 @@ fun VideoPlayerSection(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                 ) {
-                    Text(
+                    AppText(
                         text = "需要长按锁定倍速吗？",
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -4134,7 +4136,7 @@ fun VideoPlayerSection(
                             },
                             colors = ButtonDefaults.textButtonColors(contentColor = Color.White)
                         ) {
-                            Text("开启锁定")
+                            AppText("开启锁定")
                         }
                         AppTextButton(
                             onClick = {
@@ -4148,7 +4150,7 @@ fun VideoPlayerSection(
                             },
                             colors = ButtonDefaults.textButtonColors(contentColor = Color.White)
                         ) {
-                            Text("不再提示")
+                            AppText("不再提示")
                         }
                     }
                 }

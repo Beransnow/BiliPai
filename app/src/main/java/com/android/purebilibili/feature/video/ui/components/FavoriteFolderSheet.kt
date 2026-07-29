@@ -1,4 +1,5 @@
 package com.android.purebilibili.feature.video.ui.components
+import com.android.purebilibili.core.ui.components.AppText
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -66,7 +67,7 @@ fun FavoriteFolderSheet(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                Text(
+                AppText(
                     text = "添加到收藏夹",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
@@ -78,7 +79,7 @@ fun FavoriteFolderSheet(
                     onClick = { showCreateDialog = true },
                     modifier = Modifier.align(Alignment.CenterEnd)
                 ) {
-                    Text("新建")
+                    AppText("新建")
                 }
             }
             
@@ -98,7 +99,7 @@ fun FavoriteFolderSheet(
                         .height(200.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("暂无收藏夹", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    AppText("暂无收藏夹", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             } else {
                 LazyColumn(
@@ -124,7 +125,7 @@ fun FavoriteFolderSheet(
                     .padding(top = 8.dp, bottom = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
+                AppText(
                     text = "已选择 ${selectedFolderIds.size} 个收藏夹",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -141,7 +142,7 @@ fun FavoriteFolderSheet(
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                     } else {
-                        Text("保存")
+                        AppText("保存")
                     }
                 }
             }
@@ -160,13 +161,13 @@ fun CreateFolderDialog(
 
     AppAlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("新建收藏夹") },
+        title = { AppText("新建收藏夹") },
         text = {
             Column {
                 AppOutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
-                    label = { Text("标题") },
+                    label = { AppText("标题") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -174,7 +175,7 @@ fun CreateFolderDialog(
                 AppOutlinedTextField(
                     value = intro,
                     onValueChange = { intro = it },
-                    label = { Text("简介 (选填)") },
+                    label = { AppText("简介 (选填)") },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -185,7 +186,7 @@ fun CreateFolderDialog(
                         checked = isPrivate,
                         onCheckedChange = { isPrivate = it }
                     )
-                    Text("设为私密")
+                    AppText("设为私密")
                 }
             }
         },
@@ -198,12 +199,12 @@ fun CreateFolderDialog(
                 },
                 enabled = title.isNotBlank()
             ) {
-                Text("创建")
+                AppText("创建")
             }
         },
         dismissButton = {
             AppTextButton(onClick = onDismiss) {
-                Text("取消")
+                AppText("取消")
             }
         }
     )
@@ -223,14 +224,14 @@ fun FavoriteFolderItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(
+            AppText(
                 text = folder.title,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(2.dp))
-            Text(
+            AppText(
                 text = "${folder.media_count}个内容",
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant

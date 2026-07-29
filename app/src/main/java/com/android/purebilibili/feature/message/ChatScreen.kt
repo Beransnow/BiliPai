@@ -1,5 +1,7 @@
 // 聊天详情页面
 package com.android.purebilibili.feature.message
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import android.content.Intent
 import android.net.Uri
@@ -56,6 +58,7 @@ import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppSnackbar
 import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.util.FormatUtils
@@ -108,13 +111,13 @@ fun ChatScreen(
                 title = userName,
                 navigationIcon = {
                     AppIconButton(onClick = onBack) {
-                        Icon(rememberAppBackIcon(), contentDescription = "返回")
+                        AppIcon(rememberAppBackIcon(), contentDescription = "返回")
                     }
                 },
                 actions = {
                     Box {
                         AppIconButton(onClick = { showSessionMenu = true }) {
-                            Icon(Icons.Default.MoreVert, contentDescription = "会话设置")
+                            AppIcon(Icons.Default.MoreVert, contentDescription = "会话设置")
                         }
                         ChatSessionControlMenu(
                             expanded = showSessionMenu,
@@ -183,15 +186,15 @@ fun ChatScreen(
                         modifier = Modifier.align(Alignment.Center),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(uiState.error ?: "加载失败")
+                        AppText(uiState.error ?: "加载失败")
                         Spacer(modifier = Modifier.height(8.dp))
                         AppButton(onClick = { viewModel.loadMessages() }) {
-                            Text("重试")
+                            AppText("重试")
                         }
                     }
                 }
                 uiState.messages.isEmpty() -> {
-                    Text(
+                    AppText(
                         text = "暂无消息",
                         modifier = Modifier.align(Alignment.Center),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -217,7 +220,7 @@ fun ChatScreen(
                                         )
                                     } else {
                                         AppTextButton(onClick = { viewModel.loadMoreMessages() }) {
-                                            Text("加载更多")
+                                            AppText("加载更多")
                                         }
                                     }
                                 }
@@ -251,17 +254,17 @@ fun ChatScreen(
             
             // 发送错误提示
             uiState.sendError?.let { error ->
-                Snackbar(
+                AppSnackbar(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .padding(16.dp),
                     action = {
                         AppTextButton(onClick = { viewModel.clearSendError() }) {
-                            Text("知道了")
+                            AppText("知道了")
                         }
                     }
                 ) {
-                    Text(error)
+                    AppText(error)
                 }
             }
         }
@@ -274,8 +277,8 @@ fun ChatScreen(
                     pendingWithdrawMessage = null
                 }
             },
-            title = { Text("撤回消息") },
-            text = { Text("要撤回这条消息吗？") },
+            title = { AppText("撤回消息") },
+            text = { AppText("要撤回这条消息吗？") },
             confirmButton = {
                 AppTextButton(
                     enabled = uiState.withdrawingMessageKey == null,
@@ -283,7 +286,7 @@ fun ChatScreen(
                         viewModel.withdrawMessage(targetMessage)
                     }
                 ) {
-                    Text(if (uiState.withdrawingMessageKey == targetMessage.msg_key) "撤回中..." else "确认")
+                    AppText(if (uiState.withdrawingMessageKey == targetMessage.msg_key) "撤回中..." else "确认")
                 }
             },
             dismissButton = {
@@ -293,7 +296,7 @@ fun ChatScreen(
                         pendingWithdrawMessage = null
                     }
                 ) {
-                    Text("取消")
+                    AppText("取消")
                 }
             }
         )
@@ -308,8 +311,8 @@ fun ChatScreen(
     if (showInterceptConfirm) {
         AppAlertDialog(
             onDismissRequest = { showInterceptConfirm = false },
-            title = { Text("移入拦截") },
-            text = { Text("后续这类会话会进入拦截分类，仍可在拦截列表中查看和恢复。") },
+            title = { AppText("移入拦截") },
+            text = { AppText("后续这类会话会进入拦截分类，仍可在拦截列表中查看和恢复。") },
             confirmButton = {
                 AppTextButton(
                     onClick = {
@@ -317,12 +320,12 @@ fun ChatScreen(
                         showInterceptConfirm = false
                     }
                 ) {
-                    Text("移入")
+                    AppText("移入")
                 }
             },
             dismissButton = {
                 AppTextButton(onClick = { showInterceptConfirm = false }) {
-                    Text("取消")
+                    AppText("取消")
                 }
             }
         )
@@ -347,7 +350,7 @@ private fun ChatSessionControlMenu(
     ) {
         AppDropdownMenuItem(
             text = {
-                Text(if (controlInfo.isDnd == true) "关闭免打扰" else "开启免打扰")
+                AppText(if (controlInfo.isDnd == true) "关闭免打扰" else "开启免打扰")
             },
             enabled = !isUpdating,
             onClick = onToggleDnd
@@ -356,7 +359,7 @@ private fun ChatSessionControlMenu(
         if (sessionType == 1 && controlInfo.showPushSetting) {
             AppDropdownMenuItem(
                 text = {
-                    Text(if (controlInfo.pushMuted == true) "接收推送" else "关闭推送")
+                    AppText(if (controlInfo.pushMuted == true) "接收推送" else "关闭推送")
                 },
                 enabled = !isUpdating,
                 onClick = onTogglePush
@@ -366,7 +369,7 @@ private fun ChatSessionControlMenu(
         if (sessionType == 1) {
             AppDropdownMenuItem(
                 text = {
-                    Text(if (controlInfo.isIntercept == true) "移出拦截" else "移入拦截")
+                    AppText(if (controlInfo.isIntercept == true) "移出拦截" else "移入拦截")
                 },
                 enabled = !isUpdating,
                 onClick = onToggleIntercept
@@ -381,7 +384,7 @@ private fun ChatSessionControlMenu(
                         controlInfo.isLimit == true -> "会话受限"
                         else -> "举报受限"
                     }
-                    Text(text)
+                    AppText(text)
                 },
                 enabled = false,
                 onClick = {}
@@ -389,7 +392,7 @@ private fun ChatSessionControlMenu(
         }
 
         AppDropdownMenuItem(
-            text = { Text("刷新状态") },
+            text = { AppText("刷新状态") },
             enabled = !isUpdating,
             onClick = onRefresh
         )
@@ -422,7 +425,7 @@ fun ChatInputBar(
                 value = text,
                 onValueChange = onTextChange,
                 modifier = Modifier.weight(1f),
-                placeholder = { Text("输入消息...") },
+                placeholder = { AppText("输入消息...") },
                 maxLines = 4,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                 keyboardActions = KeyboardActions(onSend = { onSend() }),
@@ -447,7 +450,7 @@ fun ChatInputBar(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Icon(
+                    AppIcon(
                         imageVector = if (showSendAction) Icons.AutoMirrored.Filled.Send else Icons.Filled.AddCircle,
                         contentDescription = if (showSendAction) "发送" else "图片",
                         tint = if (showSendAction) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
@@ -526,7 +529,7 @@ fun MessageBubble(
             when {
                 message.msg_status == 1 -> {
                     // 已撤回消息
-                    Text(
+                    AppText(
                         text = "[消息已撤回]",
                         color = textColor.copy(alpha = 0.6f),
                         fontSize = 14.sp
@@ -557,7 +560,7 @@ fun MessageBubble(
                             contentScale = ContentScale.Fit
                         )
                     } else {
-                        Text(
+                        AppText(
                             text = "[图片]",
                             color = textColor,
                             fontSize = 15.sp
@@ -577,7 +580,7 @@ fun MessageBubble(
                             contentScale = ContentScale.Fit
                         )
                     } else {
-                        Text(
+                        AppText(
                             text = "[表情]",
                             color = textColor,
                             fontSize = 15.sp
@@ -586,7 +589,7 @@ fun MessageBubble(
                 }
                 message.msg_type == 10 -> {
                     // 通知消息
-                    Text(
+                    AppText(
                         text = parseNotificationContent(message.content),
                         color = textColor,
                         fontSize = 14.sp
@@ -603,7 +606,7 @@ fun MessageBubble(
                                 }
                             }
                         )
-                    } ?: Text(
+                    } ?: AppText(
                         text = "[视频]",
                         color = textColor,
                         fontSize = 15.sp
@@ -620,14 +623,14 @@ fun MessageBubble(
                                 }
                             }
                         )
-                    } ?: Text(
+                    } ?: AppText(
                         text = "[${getMessageTypeName(message.msg_type)}]",
                         color = textColor,
                         fontSize = 15.sp
                     )
                 }
                 else -> {
-                    Text(
+                    AppText(
                         text = "[${getMessageTypeName(message.msg_type)}]",
                         color = textColor.copy(alpha = 0.6f),
                         fontSize = 14.sp
@@ -649,7 +652,7 @@ fun MessageBubble(
         
         // 时间
         Spacer(modifier = Modifier.height(2.dp))
-        Text(
+        AppText(
             text = formatMessageTime(message.timestamp),
             fontSize = 10.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
@@ -698,7 +701,7 @@ fun VideoLinkPreviewCard(
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
+                    AppText(
                         text = "▶",
                         color = Color.White,
                         fontSize = 16.sp
@@ -707,7 +710,7 @@ fun VideoLinkPreviewCard(
                 
                 // 时长
                 if (preview.duration > 0) {
-                    Text(
+                    AppText(
                         text = formatDuration(preview.duration),
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
@@ -728,7 +731,7 @@ fun VideoLinkPreviewCard(
                 modifier = Modifier.padding(8.dp)
             ) {
                 // 标题
-                Text(
+                AppText(
                     text = preview.title,
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 2,
@@ -744,7 +747,7 @@ fun VideoLinkPreviewCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         if (preview.ownerName.isNotBlank()) {
-                            Text(
+                            AppText(
                                 text = preview.ownerName,
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -752,7 +755,7 @@ fun VideoLinkPreviewCard(
                         }
 
                         if (preview.viewCount > 0) {
-                            Text(
+                            AppText(
                                 text = if (preview.ownerName.isNotBlank()) {
                                     " · ${formatViewCount(preview.viewCount)}播放"
                                 } else {
@@ -803,13 +806,13 @@ fun MessageCardPreviewCard(
             }
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(
+                AppText(
                     text = preview.kind.label,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height(3.dp))
-                Text(
+                AppText(
                     text = preview.title.ifBlank { preview.kind.label },
                     style = MaterialTheme.typography.bodySmall,
                     maxLines = 2,
@@ -817,7 +820,7 @@ fun MessageCardPreviewCard(
                 )
                 if (preview.subtitle.isNotBlank()) {
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
+                    AppText(
                         text = preview.subtitle,
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -895,7 +898,7 @@ fun RichMessageText(
     
     // 如果没有特殊内容，直接显示文本
     if (allMatches.isEmpty()) {
-        Text(text = text, color = color, fontSize = fontSize)
+        AppText(text = text, color = color, fontSize = fontSize)
         return
     }
     
@@ -963,7 +966,7 @@ fun RichMessageText(
     // 用于检测点击位置
     var layoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
     
-    Text(
+    AppText(
         text = annotatedString,
         color = color,
         fontSize = fontSize,

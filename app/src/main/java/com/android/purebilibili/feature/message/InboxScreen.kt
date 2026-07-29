@@ -1,5 +1,7 @@
 // 私信收件箱页面
 package com.android.purebilibili.feature.message
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -37,6 +39,7 @@ import com.android.purebilibili.core.ui.components.AppFilterChip
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppOutlinedButton
 import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppSnackbar
 import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.data.model.response.SessionItem
@@ -75,7 +78,7 @@ fun InboxScreen(
                 },
                 navigationIcon = {
                     AppIconButton(onClick = onBack) {
-                        Icon(rememberAppBackIcon(), contentDescription = "返回")
+                        AppIcon(rememberAppBackIcon(), contentDescription = "返回")
                     }
                 }
             )
@@ -97,15 +100,15 @@ fun InboxScreen(
                         modifier = Modifier.align(Alignment.Center),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(uiState.error ?: "加载失败")
+                        AppText(uiState.error ?: "加载失败")
                         Spacer(modifier = Modifier.height(8.dp))
                         AppButton(onClick = { viewModel.loadSessions() }) {
-                            Text("重试")
+                            AppText("重试")
                         }
                     }
                 }
                 uiState.sessions.isEmpty() -> {
-                    Text(
+                    AppText(
                         text = "暂无私信",
                         modifier = Modifier.align(Alignment.Center),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -199,7 +202,7 @@ fun InboxScreen(
                                             )
                                         } else {
                                             AppTextButton(onClick = { viewModel.loadMoreSessions() }) {
-                                                Text("加载更多")
+                                                AppText("加载更多")
                                             }
                                         }
                                     }
@@ -211,17 +214,17 @@ fun InboxScreen(
             }
 
             uiState.operationError?.let { error ->
-                Snackbar(
+                AppSnackbar(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .padding(16.dp),
                     action = {
                         AppTextButton(onClick = { viewModel.clearOperationError() }) {
-                            Text("知道了")
+                            AppText("知道了")
                         }
                     }
                 ) {
-                    Text(error)
+                    AppText(error)
                 }
             }
         }
@@ -230,8 +233,8 @@ fun InboxScreen(
     pendingRemoveSession?.let { session ->
         AppAlertDialog(
             onDismissRequest = { pendingRemoveSession = null },
-            title = { Text("删除会话") },
-            text = { Text("会话会从列表中移除，但不会删除聊天记录。") },
+            title = { AppText("删除会话") },
+            text = { AppText("会话会从列表中移除，但不会删除聊天记录。") },
             confirmButton = {
                 AppTextButton(
                     onClick = {
@@ -239,12 +242,12 @@ fun InboxScreen(
                         pendingRemoveSession = null
                     }
                 ) {
-                    Text("删除")
+                    AppText("删除")
                 }
             },
             dismissButton = {
                 AppTextButton(onClick = { pendingRemoveSession = null }) {
-                    Text("取消")
+                    AppText("取消")
                 }
             }
         )
@@ -253,8 +256,8 @@ fun InboxScreen(
     pendingInterceptSession?.let { session ->
         AppAlertDialog(
             onDismissRequest = { pendingInterceptSession = null },
-            title = { Text("移入拦截") },
-            text = { Text("后续这类会话会进入拦截分类，仍可在拦截列表中查看和恢复。") },
+            title = { AppText("移入拦截") },
+            text = { AppText("后续这类会话会进入拦截分类，仍可在拦截列表中查看和恢复。") },
             confirmButton = {
                 AppTextButton(
                     onClick = {
@@ -262,12 +265,12 @@ fun InboxScreen(
                         pendingInterceptSession = null
                     }
                 ) {
-                    Text("移入")
+                    AppText("移入")
                 }
             },
             dismissButton = {
                 AppTextButton(onClick = { pendingInterceptSession = null }) {
-                    Text("取消")
+                    AppText("取消")
                 }
             }
         )
@@ -276,8 +279,8 @@ fun InboxScreen(
     if (showClearDustbinConfirm) {
         AppAlertDialog(
             onDismissRequest = { showClearDustbinConfirm = false },
-            title = { Text("清空拦截会话") },
-            text = { Text("所有拦截会话会从列表中移除，聊天记录仍由服务端保留。") },
+            title = { AppText("清空拦截会话") },
+            text = { AppText("所有拦截会话会从列表中移除，聊天记录仍由服务端保留。") },
             confirmButton = {
                 AppTextButton(
                     onClick = {
@@ -285,12 +288,12 @@ fun InboxScreen(
                         showClearDustbinConfirm = false
                     }
                 ) {
-                    Text("清空")
+                    AppText("清空")
                 }
             },
             dismissButton = {
                 AppTextButton(onClick = { showClearDustbinConfirm = false }) {
-                    Text("取消")
+                    AppText("取消")
                 }
             }
         )
@@ -310,7 +313,7 @@ private fun MessageCenterTopShortcutRow(
         val columns = if (maxWidth >= 820.dp) 4 else 2
 
         Column {
-            Text(
+            AppText(
                 text = "消息分类",
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -374,7 +377,7 @@ private fun MessageCenterShortcutCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
+                AppText(
                     text = item.title,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
@@ -394,7 +397,7 @@ private fun MessageCenterShortcutCard(
                             )
                             .padding(horizontal = 7.dp, vertical = 2.dp)
                     ) {
-                        Text(
+                        AppText(
                             text = if (item.unreadCount > 99) "99+" else item.unreadCount.toString(),
                             color = MaterialTheme.colorScheme.onPrimary,
                             fontSize = 10.sp,
@@ -406,7 +409,7 @@ private fun MessageCenterShortcutCard(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            Text(
+            AppText(
                 text = if (item.unreadCount > 0) "${item.unreadCount} 条" else "查看",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -427,7 +430,7 @@ private fun MessageSessionCategoryRow(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        Text(
+        AppText(
             text = "私信会话",
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -443,7 +446,7 @@ private fun MessageSessionCategoryRow(
                     selected = item.category == selectedCategory,
                     onClick = { onCategoryClick(item.category) },
                     label = {
-                        Text(
+                        AppText(
                             text = if (item.unreadCount > 0) {
                                 "${item.category.title} ${if (item.unreadCount > 99) "99+" else item.unreadCount}"
                             } else {
@@ -475,7 +478,7 @@ private fun DustbinActionRow(
             enabled = !isOperating,
             modifier = Modifier.weight(1f)
         ) {
-            Text("全部已读")
+            AppText("全部已读")
         }
 
         AppOutlinedButton(
@@ -483,7 +486,7 @@ private fun DustbinActionRow(
             enabled = !isOperating,
             modifier = Modifier.weight(1f)
         ) {
-            Text("清空拦截")
+            AppText("清空拦截")
         }
     }
 }
@@ -503,7 +506,7 @@ private fun MessageUnreadBadge(
             .padding(horizontal = 4.dp, vertical = 1.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(
+        AppText(
             text = text,
             color = MaterialTheme.colorScheme.onPrimary,
             fontSize = 9.sp,
@@ -583,7 +586,7 @@ fun SessionListItem(
 
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
+                AppText(
                     text = displayName,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium,
@@ -594,7 +597,7 @@ fun SessionListItem(
 
                 if (session.top_ts > 0) {
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(
+                    AppText(
                         text = "置顶",
                         fontSize = 10.sp,
                         color = MaterialTheme.colorScheme.primary,
@@ -620,7 +623,7 @@ fun SessionListItem(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            Text(
+            AppText(
                 text = MessagePreviewParser.parseSessionPreview(
                     content = session.last_msg?.content,
                     msgType = session.last_msg?.msg_type ?: 1
@@ -635,7 +638,7 @@ fun SessionListItem(
         Spacer(modifier = Modifier.width(8.dp))
 
         Column(horizontalAlignment = Alignment.End) {
-            Text(
+            AppText(
                 text = formatTime(session.last_msg?.timestamp ?: 0),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -646,7 +649,7 @@ fun SessionListItem(
                     onClick = { showMenu = true },
                     modifier = Modifier.size(24.dp)
                 ) {
-                    Icon(
+                    AppIcon(
                         Icons.Default.MoreVert,
                         contentDescription = "更多",
                         modifier = Modifier.size(16.dp),
@@ -659,14 +662,14 @@ fun SessionListItem(
                     onDismissRequest = { showMenu = false }
                 ) {
                     AppDropdownMenuItem(
-                        text = { Text(if (session.top_ts > 0) "取消置顶" else "置顶") },
+                        text = { AppText(if (session.top_ts > 0) "取消置顶" else "置顶") },
                         onClick = {
                             showMenu = false
                             onToggleTop()
                         }
                     )
                     AppDropdownMenuItem(
-                        text = { Text(if (session.is_dnd == 1) "关闭免打扰" else "开启免打扰") },
+                        text = { AppText(if (session.is_dnd == 1) "关闭免打扰" else "开启免打扰") },
                         onClick = {
                             showMenu = false
                             onToggleDnd()
@@ -674,7 +677,7 @@ fun SessionListItem(
                     )
                     if (session.session_type == 1) {
                         AppDropdownMenuItem(
-                            text = { Text(if (session.is_intercept == 1) "移出拦截" else "移入拦截") },
+                            text = { AppText(if (session.is_intercept == 1) "移出拦截" else "移入拦截") },
                             onClick = {
                                 showMenu = false
                                 onToggleIntercept()
@@ -682,7 +685,7 @@ fun SessionListItem(
                         )
                     }
                     AppDropdownMenuItem(
-                        text = { Text("删除会话") },
+                        text = { AppText("删除会话") },
                         onClick = {
                             showMenu = false
                             onRemove()
@@ -697,7 +700,7 @@ fun SessionListItem(
 
 @Composable
 private fun MessageSmallFlag(text: String) {
-    Text(
+    AppText(
         text = text,
         fontSize = 10.sp,
         color = MaterialTheme.colorScheme.primary,

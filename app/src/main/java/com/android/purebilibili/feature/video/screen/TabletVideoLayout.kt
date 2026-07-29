@@ -1,5 +1,7 @@
 // 文件路径: feature/video/screen/TabletVideoLayout.kt
 package com.android.purebilibili.feature.video.screen
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
@@ -440,23 +442,23 @@ private fun TabletSecondaryContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             AppTextButton(onClick = { onPaneModeChange(TabletSecondaryPaneMode.COMPACT) }) {
-                Text("半开")
+                AppText("半开")
             }
             AppTextButton(onClick = { onPaneModeChange(TabletSecondaryPaneMode.EXPANDED) }) {
-                Text("展开")
+                AppText("展开")
             }
             Spacer(modifier = Modifier.height(8.dp))
             AppTextButton(onClick = {
                 selectedTab = 0
                 onPaneModeChange(TabletSecondaryPaneMode.COMPACT)
             }) {
-                Text("评论")
+                AppText("评论")
             }
             AppTextButton(onClick = {
                 selectedTab = 1
                 onPaneModeChange(TabletSecondaryPaneMode.COMPACT)
             }) {
-                Text("推荐")
+                AppText("推荐")
             }
         }
         return
@@ -475,7 +477,7 @@ private fun TabletSecondaryContent(
             horizontalArrangement = Arrangement.End
         ) {
             AppTextButton(onClick = onPaneModeCycle) {
-                Text(
+                AppText(
                     when (paneMode) {
                         TabletSecondaryPaneMode.EXPANDED -> "半开"
                         TabletSecondaryPaneMode.COMPACT -> "收起"
@@ -499,7 +501,7 @@ private fun TabletSecondaryContent(
                             pagerState.animateScrollToPage(index)
                         }
                     },
-                    text = { Text(title) }
+                    text = { AppText(title) }
                 )
             }
         }
@@ -590,7 +592,7 @@ private fun TabletSecondaryContent(
                                         playbackActions.openRootCommentComposer()
                                     }
                                 ) {
-                                    Text(
+                                    AppText(
                                         text = "写评论，直接和 UP 主交流",
                                         color = commentAppearance.secondaryTextColor,
                                         fontSize = 13.sp,
@@ -668,13 +670,13 @@ private fun TabletSecondaryContent(
                                     .padding(horizontal = 24.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text(
+                                AppText(
                                     text = "暂无评论",
                                     style = MaterialTheme.typography.titleMedium,
                                     color = commentAppearance.secondaryTextColor
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
-                                Text(
+                                AppText(
                                     text = "先看看相关推荐",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = commentAppearance.secondaryTextColor
@@ -685,7 +687,7 @@ private fun TabletSecondaryContent(
                                         pagerState.animateScrollToPage(1)
                                     }
                                 }) {
-                                    Text("切换到相关推荐")
+                                    AppText("切换到相关推荐")
                                 }
                             }
                         }
@@ -704,13 +706,13 @@ private fun TabletSecondaryContent(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = Modifier.padding(8.dp)
                             ) {
-                                Icon(
+                                AppIcon(
                                     imageVector = if (commentState.upOnlyFilter) io.github.alexzhirkevich.cupertino.icons.CupertinoIcons.Default.CheckmarkCircle else io.github.alexzhirkevich.cupertino.icons.CupertinoIcons.Default.Person,
                                     contentDescription = null,
                                     modifier = Modifier.size(20.dp)
                                 )
                                 Spacer(modifier = Modifier.height(2.dp))
-                                Text(
+                                AppText(
                                     text = "只看\nUP",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontSize = 10.sp,
@@ -936,7 +938,7 @@ private fun ScrollableVideoInfoSection(
         item {
             Spacer(modifier = Modifier.height(24.dp))
             if (info.desc.isNotEmpty()) {
-                Text(
+                AppText(
                     text = "简介",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
@@ -955,7 +957,7 @@ private fun ScrollableVideoInfoSection(
                         .clickable { isExpanded = !isExpanded }
                         .padding(12.dp)
                 ) {
-                    Text(
+                    AppText(
                         text = info.desc,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -965,7 +967,7 @@ private fun ScrollableVideoInfoSection(
                     )
                     if (info.desc.length > 50) {
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(
+                        AppText(
                             text = if (isExpanded) "收起" else "展开",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.primary,
@@ -979,7 +981,7 @@ private fun ScrollableVideoInfoSection(
         // 7. 更多推荐 (水平滚动)
         item {
             Spacer(modifier = Modifier.height(24.dp))
-            Text(
+            AppText(
                 text = "更多推荐",
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
@@ -1029,7 +1031,7 @@ private fun ScrollableVideoInfoSection(
                                         .background(Color.Black.copy(alpha = 0.6f), androidx.compose.foundation.shape.RoundedCornerShape(4.dp))
                                         .padding(horizontal = 4.dp, vertical = 2.dp)
                                 ) {
-                                    Text(
+                                    AppText(
                                         text = com.android.purebilibili.core.util.FormatUtils.formatDuration(video.duration),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = Color.White,
@@ -1038,7 +1040,7 @@ private fun ScrollableVideoInfoSection(
                                 }
                             }
                             Spacer(modifier = Modifier.height(6.dp))
-                            Text(
+                            AppText(
                                 text = video.title,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -1047,7 +1049,7 @@ private fun ScrollableVideoInfoSection(
                                 lineHeight = 16.sp
                             )
                             Spacer(modifier = Modifier.height(2.dp))
-                            Text(
+                            AppText(
                                 text = video.owner.name,
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1068,7 +1070,7 @@ private fun ScrollableVideoInfoSection(
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
+                    AppText(
                         text = "暂无更多推荐",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)

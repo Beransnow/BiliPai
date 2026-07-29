@@ -1,5 +1,7 @@
 // 文件路径: feature/bangumi/BangumiTimelineScreen.kt
 package com.android.purebilibili.feature.bangumi
+import com.android.purebilibili.core.ui.components.AppText
+import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -56,13 +58,13 @@ fun BangumiTimelineContent(
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
+                    AppText(
                         text = timelineState.message,
                         color = MaterialTheme.colorScheme.error
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     AppButton(onClick = onRetry) {
-                        Text("重试")
+                        AppText("重试")
                     }
                 }
             }
@@ -111,7 +113,7 @@ private fun TimelineView(
             }
         }
         
-        HorizontalDivider(
+        AppHorizontalDivider(
             thickness = 0.5.dp,
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
         )
@@ -139,7 +141,7 @@ private fun TimelineView(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
+                AppText(
                     "今日无更新",
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -179,7 +181,7 @@ private fun DayChip(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
         ) {
-            Text(
+            AppText(
                 text = if (isToday) "今天" else weekDay,
                 fontSize = 14.sp,
                 fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Normal,
@@ -190,7 +192,7 @@ private fun DayChip(
                 }
             )
             Spacer(modifier = Modifier.height(2.dp))
-            Text(
+            AppText(
                 text = displayDate,
                 fontSize = 11.sp,
                 color = when {
@@ -243,7 +245,7 @@ private fun TimelineEpisodeCard(
                             .background(MaterialTheme.colorScheme.primary, AppShapes.container(ContainerLevel.Tag))
                             .padding(horizontal = 4.dp, vertical = 2.dp)
                     ) {
-                        Text(
+                        AppText(
                             "追番",
                             fontSize = 9.sp,
                             color = Color.White
@@ -258,7 +260,7 @@ private fun TimelineEpisodeCard(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                Text(
+                AppText(
                     text = episode.title,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Medium,
@@ -272,7 +274,7 @@ private fun TimelineEpisodeCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // 更新集数
-                    Text(
+                    AppText(
                         text = episode.pubIndex,
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.primary
@@ -281,7 +283,7 @@ private fun TimelineEpisodeCard(
                     Spacer(modifier = Modifier.width(8.dp))
                     
                     // 更新时间
-                    Text(
+                    AppText(
                         text = episode.pubTime,
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -291,7 +293,7 @@ private fun TimelineEpisodeCard(
                 // 延迟信息
                 if (isDelayed && episode.delayReason.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
+                    AppText(
                         text = " ${episode.delayReason}",
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.error

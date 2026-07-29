@@ -1,5 +1,8 @@
 // 文件路径: feature/bangumi/BangumiDetailScreen.kt
 package com.android.purebilibili.feature.bangumi
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
+import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -83,7 +86,7 @@ fun BangumiDetailScreen(
                 title = "番剧详情",
                 navigationIcon = {
                     AppIconButton(onClick = onBack) {
-                        Icon(rememberAppBackIcon(), contentDescription = "返回")
+                        AppIcon(rememberAppBackIcon(), contentDescription = "返回")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -112,13 +115,13 @@ fun BangumiDetailScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
+                        AppText(
                             text = state.message,
                             color = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         AppButton(onClick = { viewModel.loadSeasonDetail(seasonId) }) {
-                            Text("重试")
+                            AppText("重试")
                         }
                     }
                 }
@@ -210,7 +213,7 @@ private fun TabletBangumiDetailContent(
                         
                         // Title & Stats
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(
+                            AppText(
                                 text = detail.title,
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold,
@@ -223,19 +226,19 @@ private fun TabletBangumiDetailContent(
                             detail.rating?.let { rating ->
                                 if (rating.score > 0) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(
+                                        AppIcon(
                                             CupertinoIcons.Default.Star,
                                             contentDescription = null,
                                             tint = iOSYellow, // Assuming this is available
                                             modifier = Modifier.size(16.dp)
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
-                                        Text(
+                                        AppText(
                                             text = String.format("%.1f", rating.score),
                                             color = iOSYellow,
                                             fontWeight = FontWeight.Bold
                                         )
-                                        Text(
+                                        AppText(
                                             text = " (${rating.count}人评分)",
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             fontSize = 12.sp
@@ -246,7 +249,7 @@ private fun TabletBangumiDetailContent(
                             
                             // Stats
                             detail.stat?.let { stat ->
-                                Text(
+                                AppText(
                                     text = "${FormatUtils.formatStat(stat.views)}播放 · ${FormatUtils.formatStat(stat.favorites)}追番",
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontSize = 12.sp
@@ -275,13 +278,13 @@ private fun TabletBangumiDetailContent(
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(8.dp)
                         ) {
-                            Icon(
+                            AppIcon(
                                 if (isFollowing) CupertinoIcons.Default.Checkmark else CupertinoIcons.Default.Plus,
                                 contentDescription = null,
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(resolveBangumiFollowStatusLabel(detail.userStatus))
+                            AppText(resolveBangumiFollowStatusLabel(detail.userStatus))
                         }
                     }
                 }
@@ -294,13 +297,13 @@ private fun TabletBangumiDetailContent(
                 if (detail.evaluate.isNotEmpty()) {
                     item {
                         Column {
-                            Text(
+                            AppText(
                                 text = "简介",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp
                             )
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(
+                            AppText(
                                 text = detail.evaluate,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 14.sp,
@@ -335,7 +338,7 @@ private fun TabletBangumiDetailContent(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
+                            AppText(
                                 text = "选集 (${detail.episodes.size})",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 20.sp
@@ -344,7 +347,7 @@ private fun TabletBangumiDetailContent(
                                 jumpInputText = ""
                                 jumpErrorMessage = null
                                 showJumpDialog = true 
-                            }) { Text("跳转") }
+                            }) { AppText("跳转") }
                         }
                      }
                      
@@ -360,7 +363,7 @@ private fun TabletBangumiDetailContent(
                      .filter { !it.episodes.isNullOrEmpty() }
                      .forEachIndexed { index, section ->
                          item(span = { GridItemSpan(maxLineSpan) }) {
-                             Text(
+                             AppText(
                                  text = resolveBangumiSectionTitle(section, index),
                                  modifier = Modifier.padding(top = 24.dp, bottom = 8.dp),
                                  fontWeight = FontWeight.Bold,
@@ -379,7 +382,7 @@ private fun TabletBangumiDetailContent(
                  // Related Seasons
                  if (!detail.seasons.isNullOrEmpty() && detail.seasons.size > 1) {
                      item(span = { GridItemSpan(maxLineSpan) }) {
-                         Text(
+                         AppText(
                             text = "相关季度",
                             modifier = Modifier.padding(top = 24.dp, bottom = 8.dp),
                             fontWeight = FontWeight.Bold,
@@ -396,7 +399,7 @@ private fun TabletBangumiDetailContent(
                             modifier = Modifier.height(48.dp) // Fixed height for consistency
                          ) {
                              Box(contentAlignment = Alignment.Center) {
-                                 Text(
+                                 AppText(
                                     text = season.seasonTitle.ifEmpty { season.title },
                                     modifier = Modifier.padding(horizontal = 12.dp),
                                     fontSize = 14.sp,
@@ -416,7 +419,7 @@ private fun TabletBangumiDetailContent(
     if (showJumpDialog && !detail.episodes.isNullOrEmpty()) {
          AppAlertDialog(
             onDismissRequest = { showJumpDialog = false },
-            title = { Text("跳转到第几集") },
+            title = { AppText("跳转到第几集") },
             text = {
                 Column {
                     AppOutlinedTextField(
@@ -425,13 +428,13 @@ private fun TabletBangumiDetailContent(
                             jumpInputText = it.filter { char -> char.isDigit() }
                             jumpErrorMessage = null
                         },
-                        label = { Text("集数 (1-${detail.episodes.size})") },
+                        label = { AppText("集数 (1-${detail.episodes.size})") },
                         singleLine = true,
                         isError = jumpErrorMessage != null,
                         modifier = Modifier.fillMaxWidth()
                     )
                     if (jumpErrorMessage != null) {
-                        Text(
+                        AppText(
                             text = jumpErrorMessage!!,
                             color = MaterialTheme.colorScheme.error,
                             fontSize = 12.sp,
@@ -454,10 +457,10 @@ private fun TabletBangumiDetailContent(
                             showJumpDialog = false
                         }
                     }
-                ) { Text("跳转") }
+                ) { AppText("跳转") }
             },
             dismissButton = {
-                AppTextButton(onClick = { showJumpDialog = false }) { Text("取消") }
+                AppTextButton(onClick = { showJumpDialog = false }) { AppText("取消") }
             }
         )
     }
@@ -556,7 +559,7 @@ private fun MobileBangumiDetailContent(
                         Column(
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text(
+                            AppText(
                                 text = detail.title,
                                 color = Color.White,
                                 fontSize = 20.sp,
@@ -570,19 +573,19 @@ private fun MobileBangumiDetailContent(
                             detail.rating?.let { rating ->
                                 if (rating.score > 0) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(
+                                        AppIcon(
                                             CupertinoIcons.Default.Star,
                                             contentDescription = null,
                                             tint = iOSYellow,
                                             modifier = Modifier.size(16.dp)
                                         )
                                         Spacer(modifier = Modifier.width(4.dp))
-                                        Text(
+                                        AppText(
                                             text = String.format("%.1f", rating.score),
                                             color = iOSYellow,
                                             fontWeight = FontWeight.Bold
                                         )
-                                        Text(
+                                        AppText(
                                             text = " (${rating.count}人评分)",
                                             color = Color.White.copy(alpha = 0.7f),
                                             fontSize = 12.sp
@@ -595,7 +598,7 @@ private fun MobileBangumiDetailContent(
                             
                             // 更新状态
                             detail.newEp?.desc?.let { desc ->
-                                Text(
+                                AppText(
                                     text = desc,
                                     color = Color.White.copy(alpha = 0.7f),
                                     fontSize = 12.sp
@@ -606,7 +609,7 @@ private fun MobileBangumiDetailContent(
                             
                             // 播放量
                             detail.stat?.let { stat ->
-                                Text(
+                                AppText(
                                     text = "${FormatUtils.formatStat(stat.views)}播放 · ${FormatUtils.formatStat(stat.favorites)}追番",
                                     color = Color.White.copy(alpha = 0.7f),
                                     fontSize = 12.sp
@@ -641,13 +644,13 @@ private fun MobileBangumiDetailContent(
                             ),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Icon(
+                            AppIcon(
                                 CupertinoIcons.Default.Checkmark,
                                 contentDescription = null,
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text(resolveBangumiFollowStatusLabel(detail.userStatus))
+                            AppText(resolveBangumiFollowStatusLabel(detail.userStatus))
                         }
                     } else {
                         //  未追番：使用填充的主色按钮
@@ -660,13 +663,13 @@ private fun MobileBangumiDetailContent(
                             ),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Icon(
+                            AppIcon(
                                 CupertinoIcons.Default.Plus,
                                 contentDescription = null,
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("追番")
+                            AppText("追番")
                         }
                     }
                 }
@@ -685,13 +688,13 @@ private fun MobileBangumiDetailContent(
                     Column(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
-                        Text(
+                        AppText(
                             text = "简介",
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(
+                        AppText(
                             text = detail.evaluate,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 14.sp,
@@ -712,7 +715,7 @@ private fun MobileBangumiDetailContent(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
+                        AppText(
                             text = "选集 (${detail.episodes.size})",
                             fontWeight = FontWeight.Bold,
                             fontSize = 16.sp
@@ -727,7 +730,7 @@ private fun MobileBangumiDetailContent(
                             },
                             color = Color.Transparent
                         ) {
-                            Text(
+                            AppText(
                                 text = "跳转",
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                 fontSize = 14.sp,
@@ -758,7 +761,7 @@ private fun MobileBangumiDetailContent(
                                     color = if (isCurrentPage) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                                     shape = RoundedCornerShape(16.dp)
                                 ) {
-                                    Text(
+                                    AppText(
                                         text = "$start-$end",
                                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                                         fontSize = 12.sp,
@@ -812,12 +815,12 @@ private fun MobileBangumiDetailContent(
                                         Column(
                                             horizontalAlignment = Alignment.CenterHorizontally
                                         ) {
-                                            Icon(
+                                            AppIcon(
                                                 CupertinoIcons.Default.Ellipsis,
                                                 contentDescription = "更多",
                                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
-                                            Text(
+                                            AppText(
                                                 text = "全部${detail.episodes.size}集",
                                                 fontSize = 10.sp,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -847,7 +850,7 @@ private fun MobileBangumiDetailContent(
             // 相关季度
             if (!detail.seasons.isNullOrEmpty() && detail.seasons.size > 1) {
                 item {
-                    Text(
+                    AppText(
                         text = "相关季度",
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                         fontWeight = FontWeight.Bold,
@@ -875,7 +878,7 @@ private fun MobileBangumiDetailContent(
                                     MaterialTheme.colorScheme.surfaceVariant
                                 }
                             ) {
-                                Text(
+                                AppText(
                                     text = season.seasonTitle.ifEmpty { season.title },
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                                     fontSize = 14.sp,
@@ -896,7 +899,7 @@ private fun MobileBangumiDetailContent(
         if (showJumpDialog && !detail.episodes.isNullOrEmpty()) {
             com.android.purebilibili.core.ui.AppAlertDialog(
                 onDismissRequest = { showJumpDialog = false },
-                title = { Text("跳转到第几集") },
+                title = { AppText("跳转到第几集") },
                 text = {
                     Column {
                         AppOutlinedTextField(
@@ -905,13 +908,13 @@ private fun MobileBangumiDetailContent(
                                 jumpInputText = it.filter { char -> char.isDigit() }
                                 jumpErrorMessage = null
                             },
-                            label = { Text("集数 (1-${detail.episodes.size})") },
+                            label = { AppText("集数 (1-${detail.episodes.size})") },
                             singleLine = true,
                             isError = jumpErrorMessage != null,
                             modifier = Modifier.fillMaxWidth()
                         )
                         if (jumpErrorMessage != null) {
-                            Text(
+                            AppText(
                                 text = jumpErrorMessage!!,
                                 color = MaterialTheme.colorScheme.error,
                                 fontSize = 12.sp,
@@ -935,12 +938,12 @@ private fun MobileBangumiDetailContent(
                             }
                         }
                     ) {
-                        Text("跳转")
+                        AppText("跳转")
                     }
                 },
                 dismissButton = {
                     com.android.purebilibili.core.ui.AppDialogAction(onClick = { showJumpDialog = false }) {
-                        Text("取消")
+                        AppText("取消")
                     }
                 }
             )
@@ -994,7 +997,7 @@ private fun BangumiDetailMetaSection(
                     AppAssistChip(
                         onClick = {},
                         label = {
-                            Text(
+                            AppText(
                                 text = chip,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -1013,7 +1016,7 @@ private fun BangumiDetailMetaSection(
                     AppSuggestionChip(
                         onClick = {},
                         label = {
-                            Text(
+                            AppText(
                                 text = label,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
@@ -1039,7 +1042,7 @@ private fun BangumiSectionPreview(
 ) {
     if (episodes.isEmpty()) return
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
+        AppText(
             text = title,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
             fontWeight = FontWeight.Bold,
@@ -1067,7 +1070,7 @@ private fun BangumiFollowStatusDialog(
 ) {
     AppAlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("追番状态") },
+        title = { AppText("追番状态") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 BANGUMI_FOLLOW_STATUS_OPTIONS.forEach { option ->
@@ -1085,7 +1088,7 @@ private fun BangumiFollowStatusDialog(
                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
+                            AppText(
                                 text = option.label,
                                 fontSize = 15.sp,
                                 fontWeight = if (currentStatus == option.status) {
@@ -1101,7 +1104,7 @@ private fun BangumiFollowStatusDialog(
                                 modifier = Modifier.weight(1f)
                             )
                             if (currentStatus == option.status) {
-                                Icon(
+                                AppIcon(
                                     CupertinoIcons.Default.Checkmark,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -1115,12 +1118,12 @@ private fun BangumiFollowStatusDialog(
         },
         confirmButton = {
             AppTextButton(onClick = { onSelect(BANGUMI_FOLLOW_STATUS_UNFOLLOW) }) {
-                Text("取消追番")
+                AppText("取消追番")
             }
         },
         dismissButton = {
             AppTextButton(onClick = onDismiss) {
-                Text("关闭")
+                AppText("关闭")
             }
         }
     )
@@ -1163,7 +1166,7 @@ private fun EpisodeChip(
                         color = badgeColors.backgroundColor,
                         shape = RoundedCornerShape(4.dp)
                     ) {
-                        Text(
+                        AppText(
                             text = episode.badge,
                             modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
                             color = badgeColors.contentColor,
@@ -1182,7 +1185,7 @@ private fun EpisodeChip(
             modifier = Modifier.fillMaxWidth()
         ) {
             // 集数数字
-            Text(
+            AppText(
                 text = episode.title.ifEmpty { episode.id.toString() },
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
@@ -1192,7 +1195,7 @@ private fun EpisodeChip(
             // 标题
             if (episode.longTitle.isNotEmpty()) {
                 Spacer(modifier = Modifier.width(6.dp))
-                Text(
+                AppText(
                     text = episode.longTitle,
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1238,14 +1241,14 @@ private fun EpisodeSelectionSheet(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
+                AppText(
                     text = "选集 (${detail.episodes?.size ?: 0})",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
                 
                 AppIconButton(onClick = onDismiss) {
-                    Icon(
+                    AppIcon(
                         CupertinoIcons.Default.Xmark,
                         contentDescription = "关闭",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1277,7 +1280,7 @@ private fun EpisodeSelectionSheet(
                                 Color.Transparent
                             }
                         ) {
-                            Text(
+                            AppText(
                                 text = season.seasonTitle.ifEmpty { season.title },
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                                 fontSize = 14.sp,
@@ -1295,7 +1298,7 @@ private fun EpisodeSelectionSheet(
             
             //  更新信息
             detail.newEp?.desc?.let { desc ->
-                Text(
+                AppText(
                     text = desc,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                     fontSize = 12.sp,
@@ -1303,7 +1306,7 @@ private fun EpisodeSelectionSheet(
                 )
             }
             
-            HorizontalDivider(
+            AppHorizontalDivider(
                 modifier = Modifier.padding(vertical = 8.dp),
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
             )
@@ -1332,7 +1335,7 @@ private fun EpisodeSelectionSheet(
                             color = if (isCurrentPage) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                             shape = RoundedCornerShape(16.dp)
                         ) {
-                            Text(
+                            AppText(
                                 text = "$start-$end",
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                                 fontSize = 12.sp,
@@ -1413,7 +1416,7 @@ private fun EpisodeListItem(
                     color = badgeColors.backgroundColor,
                     shape = RoundedCornerShape(2.dp)
                 ) {
-                    Text(
+                    AppText(
                         text = episode.badge,
                         modifier = Modifier.padding(horizontal = 3.dp, vertical = 1.dp),
                         color = badgeColors.contentColor,
@@ -1430,7 +1433,7 @@ private fun EpisodeListItem(
             modifier = Modifier.weight(1f)
         ) {
             // 集数
-            Text(
+            AppText(
                 text = "第${episode.title}话",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
@@ -1440,7 +1443,7 @@ private fun EpisodeListItem(
             
             // 标题
             if (episode.longTitle.isNotEmpty()) {
-                Text(
+                AppText(
                     text = episode.longTitle,
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

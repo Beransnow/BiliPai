@@ -1,5 +1,6 @@
 // 文件路径: feature/search/SearchScreen.kt
 package com.android.purebilibili.feature.search
+import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 
 import com.android.purebilibili.core.ui.components.AppTab
 import com.android.purebilibili.core.ui.components.AppAssistChip
@@ -54,13 +55,12 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
+import com.android.purebilibili.core.ui.components.AppIcon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ScrollableTabRow
+import com.android.purebilibili.core.ui.components.AppScrollableTabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-import androidx.compose.material3.Text
+import com.android.purebilibili.core.ui.components.AppText
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -839,7 +839,7 @@ fun SearchScreen(
             // --- 列表内容层 ---
             if (state.showResults) {
                 if (state.error != null) {
-                    Text(
+                    AppText(
                         text = state.error ?: "未知错误",
                         modifier = Modifier.align(Alignment.Center),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -867,7 +867,7 @@ fun SearchScreen(
                                         horizontalArrangement = Arrangement.Center,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text(
+                                        AppText(
                                             text = easterEggMsg,
                                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                                             fontSize = 14.sp,
@@ -1065,14 +1065,14 @@ fun SearchScreen(
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                                    Text(
+                                                    AppText(
                                                         text = pageEmptyStateCopy.title,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                         fontSize = 15.sp,
                                                         fontWeight = FontWeight.Medium
                                                     )
                                                     Spacer(modifier = Modifier.height(8.dp))
-                                                    Text(
+                                                    AppText(
                                                         text = pageEmptyStateCopy.subtitle,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                                         fontSize = 13.sp
@@ -1102,7 +1102,7 @@ fun SearchScreen(
                                     //  [新增] 已加载全部提示
                                     if (!pageResultState.hasMoreResults && pageResultState.searchResults.isNotEmpty() && !pageResultState.isLoadingMore) {
                                         item {
-                                            Text(
+                                            AppText(
                                                 text = "已加载全部 ${pageResultState.searchResults.size} 条结果",
                                                 modifier = Modifier
                                                     .fillMaxWidth()
@@ -1155,14 +1155,14 @@ fun SearchScreen(
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                                    Text(
+                                                    AppText(
                                                         text = pageEmptyStateCopy.title,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                         fontSize = 15.sp,
                                                         fontWeight = FontWeight.Medium
                                                     )
                                                     Spacer(modifier = Modifier.height(8.dp))
-                                                    Text(
+                                                    AppText(
                                                         text = pageEmptyStateCopy.subtitle,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                                         fontSize = 13.sp,
@@ -1252,14 +1252,14 @@ fun SearchScreen(
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                                    Text(
+                                                    AppText(
                                                         text = pageEmptyStateCopy.title,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                         fontSize = 15.sp,
                                                         fontWeight = FontWeight.Medium
                                                     )
                                                     Spacer(modifier = Modifier.height(8.dp))
-                                                    Text(
+                                                    AppText(
                                                         text = pageEmptyStateCopy.subtitle,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                                         fontSize = 13.sp
@@ -1311,14 +1311,14 @@ fun SearchScreen(
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                                    Text(
+                                                    AppText(
                                                         text = pageEmptyStateCopy.title,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                         fontSize = 15.sp,
                                                         fontWeight = FontWeight.Medium
                                                     )
                                                     Spacer(modifier = Modifier.height(8.dp))
-                                                    Text(
+                                                    AppText(
                                                         text = pageEmptyStateCopy.subtitle,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                                         fontSize = 13.sp,
@@ -1433,14 +1433,14 @@ fun SearchScreen(
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                                    Text(
+                                                    AppText(
                                                         text = pageEmptyStateCopy.title,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                         fontSize = 15.sp,
                                                         fontWeight = FontWeight.Medium
                                                     )
                                                     Spacer(modifier = Modifier.height(8.dp))
-                                                    Text(
+                                                    AppText(
                                                         text = pageEmptyStateCopy.subtitle,
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                                         fontSize = 13.sp,
@@ -1653,7 +1653,7 @@ fun SearchScreen(
                     containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
                     contentColor = MaterialTheme.colorScheme.primary
                 ) {
-                    Icon(
+                    AppIcon(
                         imageVector = rememberAppChevronUpIcon(),
                         contentDescription = "回到顶部"
                     )
@@ -1783,7 +1783,7 @@ fun SearchTopBar(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 AppIconButton(onClick = onBack) {
-                    Icon(
+                    AppIcon(
                         backIcon,
                         contentDescription = backLabel,
                         tint = MaterialTheme.colorScheme.onSurface
@@ -1820,7 +1820,7 @@ fun SearchTopBar(
                     enabled = query.isNotEmpty(),
                     modifier = Modifier.size(chromeSpec.clearActionSizeDp.dp)
                 ) {
-                    Icon(
+                    AppIcon(
                         clearIcon,
                         contentDescription = stringResource(R.string.common_clear),
                         tint = if (query.isNotEmpty()) {
@@ -1846,7 +1846,7 @@ fun SearchTopBar(
                             }
                         )
                 ) {
-                    Icon(
+                    AppIcon(
                         searchIcon,
                         contentDescription = searchLabel,
                         tint = if (canSubmit) {
@@ -1876,7 +1876,7 @@ fun HistoryChip(
         selected = false,
         onClick = onClick,
         label = {
-            Text(
+            AppText(
                 text = keyword,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontSize = 13.sp,
@@ -1885,7 +1885,7 @@ fun HistoryChip(
             )
         },
         leadingIcon = {
-            Icon(
+            AppIcon(
                 historyIcon,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f),
@@ -1897,7 +1897,7 @@ fun HistoryChip(
                 onClick = onDelete,
                 modifier = Modifier.size(24.dp)
             ) {
-                Icon(
+                AppIcon(
                     clearIcon,
                     contentDescription = deleteLabel,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.5f),
@@ -1925,14 +1925,14 @@ fun HistoryItem(
             .padding(vertical = 12.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(historyIcon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f), modifier = Modifier.size(20.dp))
+        AppIcon(historyIcon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f), modifier = Modifier.size(20.dp))
         Spacer(modifier = Modifier.width(12.dp))
-        Text(text = history.keyword, color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp, modifier = Modifier.weight(1f))
+        AppText(text = history.keyword, color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp, modifier = Modifier.weight(1f))
         AppIconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
-            Icon(clearIcon, contentDescription = deleteLabel, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f), modifier = Modifier.size(16.dp))
+            AppIcon(clearIcon, contentDescription = deleteLabel, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f), modifier = Modifier.size(16.dp))
         }
     }
-    HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant, thickness = 0.5.dp)
+    AppHorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant, thickness = 0.5.dp)
 }
 
 /**
@@ -1950,8 +1950,8 @@ fun QuickCategory(
             .clickable { onClick() }
             .padding(8.dp)
     ) {
-        Text(text = emoji, fontSize = 24.sp)
-        Text(text = label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
+        AppText(text = emoji, fontSize = 24.sp)
+        AppText(text = label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 
@@ -1978,12 +1978,12 @@ fun SearchDiscoverySection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
+                AppText(
                     "💎",
                     fontSize = 16.sp
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text(
+                AppText(
                     title, //  使用动态标题
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface
@@ -1998,7 +1998,7 @@ fun SearchDiscoverySection(
                     .padding(4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
+                AppText(
                     "换一换",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -2018,7 +2018,7 @@ fun SearchDiscoverySection(
                     shape = RoundedCornerShape(6.dp),
                     modifier = Modifier.clickable { onItemClick(keyword) }
                 ) {
-                    Text(
+                    AppText(
                         keyword,
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -2055,12 +2055,12 @@ fun SearchHotSection(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
+                    AppText(
                         "", // 🔥
                         fontSize = 16.sp
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(
+                    AppText(
                         "热门搜索",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface
@@ -2075,7 +2075,7 @@ fun SearchHotSection(
                         MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)
                     }
                 ) {
-                    Text(
+                    AppText(
                         text = if (hotSearchEnabled) "热搜开" else "热搜关",
                         color = if (hotSearchEnabled) {
                             MaterialTheme.colorScheme.primary
@@ -2114,7 +2114,7 @@ fun SearchHotSection(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     // 排名序号
-                                    Text(
+                                    AppText(
                                         text = "${globalIndex + 1}",
                                         fontSize = 14.sp,
                                         fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
@@ -2123,7 +2123,7 @@ fun SearchHotSection(
                                     )
 
                                     // 标题
-                                    Text(
+                                    AppText(
                                         text = hotItem.show_name,
                                         fontSize = 14.sp,
                                         color = MaterialTheme.colorScheme.onSurface,
@@ -2166,13 +2166,13 @@ fun SearchHistorySection(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
+                AppText(
                     historyTitle,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 AppTextButton(onClick = onClear) {
-                    Text(clearLabel, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                    AppText(clearLabel, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                 }
             }
             Spacer(modifier = Modifier.height(8.dp))
@@ -2203,7 +2203,7 @@ private fun SearchResultTypeTabRow(
     onTabClick: (Int, SearchType) -> Unit
 ) {
     val selectedPage = pagerState.currentPage.coerceIn(tabs.indices)
-    ScrollableTabRow(
+    AppScrollableTabRow(
         selectedTabIndex = selectedPage,
         modifier = Modifier
             .fillMaxWidth(),
@@ -2230,7 +2230,7 @@ private fun SearchResultTypeTabRow(
                 unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.height(44.dp)
             ) {
-                Text(
+                AppText(
                     text = type.displayName,
                     fontSize = 13.sp,
                     fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
@@ -2346,7 +2346,7 @@ fun SearchFilterBar(
                     ) {
                         SearchOrder.entries.forEach { order ->
                             AppDropdownMenuItem(
-                                text = { Text(order.displayName) },
+                                text = { AppText(order.displayName) },
                                 onClick = {
                                     onOrderChange(order)
                                     showOrderMenu = false
@@ -2375,7 +2375,7 @@ fun SearchFilterBar(
                                 duration in currentDurations
                             }
                             AppDropdownMenuItem(
-                                text = { Text(duration.displayName) },
+                                text = { AppText(duration.displayName) },
                                 leadingIcon = {
                                     AppCheckbox(
                                         checked = selected,
@@ -2404,7 +2404,7 @@ fun SearchFilterBar(
                     ) {
                         videoTidOptions.forEach { (tid, name) ->
                             AppDropdownMenuItem(
-                                text = { Text(name) },
+                                text = { AppText(name) },
                                 onClick = {
                                     onVideoTidChange(tid)
                                     showVideoTidMenu = false
@@ -2428,7 +2428,7 @@ fun SearchFilterBar(
                     ) {
                         SearchUpOrder.entries.forEach { order ->
                             AppDropdownMenuItem(
-                                text = { Text(order.displayName) },
+                                text = { AppText(order.displayName) },
                                 onClick = {
                                     onUpOrderChange(order)
                                     showUpOrderMenu = false
@@ -2452,7 +2452,7 @@ fun SearchFilterBar(
                         ) {
                             SearchOrderSort.entries.forEach { sort ->
                                 AppDropdownMenuItem(
-                                    text = { Text(sort.displayName) },
+                                    text = { AppText(sort.displayName) },
                                     onClick = {
                                         onUpOrderSortChange(sort)
                                         showUpOrderSortMenu = false
@@ -2476,7 +2476,7 @@ fun SearchFilterBar(
                     ) {
                         SearchUserType.entries.forEach { userType ->
                             AppDropdownMenuItem(
-                                text = { Text(userType.displayName) },
+                                text = { AppText(userType.displayName) },
                                 onClick = {
                                     onUpUserTypeChange(userType)
                                     showUpUserTypeMenu = false
@@ -2500,7 +2500,7 @@ fun SearchFilterBar(
                         ) {
                             SearchLiveOrder.entries.forEach { order ->
                                 AppDropdownMenuItem(
-                                    text = { Text(order.displayName) },
+                                    text = { AppText(order.displayName) },
                                     onClick = {
                                         onLiveOrderChange(order)
                                         showLiveOrderMenu = false
@@ -2525,7 +2525,7 @@ private fun FilterMenuChip(
         selected = highlighted,
         onClick = onClick,
         label = {
-            Text(
+            AppText(
                 text = text,
                 fontSize = 13.sp,
                 maxLines = 1,
@@ -2533,7 +2533,7 @@ private fun FilterMenuChip(
             )
         },
         trailingIcon = {
-            Icon(
+            AppIcon(
                 chevronIcon,
                 contentDescription = null,
                 modifier = Modifier.size(16.dp)
@@ -2676,7 +2676,7 @@ fun SearchResultCard(
                 shape = RoundedCornerShape(4.dp),
                 color = Color.Black.copy(alpha = 0.6f)
             ) {
-                Text(
+                AppText(
                     text = FormatUtils.formatDuration(video.duration),
                     color = Color.White,
                     fontSize = 11.sp,
@@ -2691,13 +2691,13 @@ fun SearchResultCard(
                     .padding(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
+                AppText(
                     text = "▶ ${FormatUtils.formatStat(video.stat.view.toLong())}",
                     color = Color.White,
                     fontSize = 11.sp
                 )
                 if (video.stat.danmaku > 0) {
-                    Text(
+                    AppText(
                         text = "   ${FormatUtils.formatStat(video.stat.danmaku.toLong())}",
                         color = Color.White.copy(alpha = 0.85f),
                         fontSize = 11.sp
@@ -2709,7 +2709,7 @@ fun SearchResultCard(
         Spacer(modifier = Modifier.height(8.dp))
         
         // 标题
-        Text(
+        AppText(
             text = video.title,
             maxLines = 2,
             minLines = 1,
@@ -2754,7 +2754,7 @@ fun SearchResultCard(
             
             //  显示发布时间
             if (video.pubdate > 0) {
-                Text(
+                AppText(
                     text = " · ${FormatUtils.formatPublishTime(video.pubdate)}",
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
@@ -2821,7 +2821,7 @@ internal fun UpSearchResultCard(
             Column(modifier = Modifier.weight(1f)) {
                 // 名称 + 认证标志
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
+                    AppText(
                         text = cleanedItem.uname,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
@@ -2849,7 +2849,7 @@ internal fun UpSearchResultCard(
                 // 个性签名
                 if (cleanedItem.usign.isNotBlank()) {
                     Spacer(modifier = Modifier.height(2.dp))
-                    Text(
+                    AppText(
                         text = cleanedItem.usign,
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2862,13 +2862,13 @@ internal fun UpSearchResultCard(
                 
                 // 粉丝数 + 视频数
                 Row {
-                    Text(
+                    AppText(
                         text = "粉丝 ${FormatUtils.formatStat(cleanedItem.fans.toLong())}",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text(
+                    AppText(
                         text = "视频 ${cleanedItem.videos}",
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
@@ -2923,7 +2923,7 @@ internal fun BangumiSearchResultCard(
                         onClick = {},
                         enabled = false,
                         label = {
-                            Text(
+                            AppText(
                                 text = categoryLabel,
                                 fontSize = 11.sp
                             )
@@ -2932,7 +2932,7 @@ internal fun BangumiSearchResultCard(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                 }
-                Text(
+                AppText(
                     text = item.title,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Medium,
@@ -2946,7 +2946,7 @@ internal fun BangumiSearchResultCard(
                 // 类型 + 集数
                 Row {
                     if (item.seasonTypeName.isNotBlank()) {
-                        Text(
+                        AppText(
                             text = item.seasonTypeName,
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.primary,
@@ -2957,7 +2957,7 @@ internal fun BangumiSearchResultCard(
                         Spacer(modifier = Modifier.width(8.dp))
                     }
                     if (item.indexShow.isNotBlank()) {
-                        Text(
+                        AppText(
                             text = item.indexShow,
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2972,13 +2972,13 @@ internal fun BangumiSearchResultCard(
                     if (score.score > 0) {
                         Spacer(modifier = Modifier.height(4.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
+                            AppText(
                                 text = "⭐ ${score.score}",
                                 fontSize = 12.sp,
                                 color = Color(0xFFFF9800)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text(
+                            AppText(
                                 text = "${score.userCount}人评分",
                                 fontSize = 11.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
@@ -2990,7 +2990,7 @@ internal fun BangumiSearchResultCard(
                 // 简介
                 if (item.desc.isNotBlank()) {
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
+                    AppText(
                         text = item.desc,
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
@@ -3047,7 +3047,7 @@ internal fun LiveSearchResultCard(
                         color = Color(0xFFFF4081),
                         shape = RoundedCornerShape(4.dp)
                     ) {
-                        Text(
+                        AppText(
                             text = "直播中",
                             fontSize = 10.sp,
                             color = Color.White,
@@ -3065,7 +3065,7 @@ internal fun LiveSearchResultCard(
                         color = Color.Black.copy(alpha = 0.6f),
                         shape = RoundedCornerShape(4.dp)
                     ) {
-                        Text(
+                        AppText(
                             text = FormatUtils.formatStat(item.online.toLong()),
                             fontSize = 10.sp,
                             color = Color.White,
@@ -3079,7 +3079,7 @@ internal fun LiveSearchResultCard(
             
             // 直播信息
             Column(modifier = Modifier.weight(1f)) {
-                Text(
+                AppText(
                     text = item.title,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
@@ -3091,7 +3091,7 @@ internal fun LiveSearchResultCard(
                 Spacer(modifier = Modifier.height(4.dp))
                 
                 // 主播名
-                Text(
+                AppText(
                     text = item.uname,
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -3103,7 +3103,7 @@ internal fun LiveSearchResultCard(
                 
                 // 分区
                 if (item.area_v2_name.isNotBlank()) {
-                    Text(
+                    AppText(
                         text = "${item.area_v2_parent_name} · ${item.area_v2_name}",
                         fontSize = 11.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
@@ -3163,7 +3163,7 @@ internal fun LiveUserSearchResultCard(
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
+                    AppText(
                         text = cleaned.uname,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
@@ -3178,7 +3178,7 @@ internal fun LiveUserSearchResultCard(
                             color = Color(0xFFFF4081),
                             shape = RoundedCornerShape(4.dp)
                         ) {
-                            Text(
+                            AppText(
                                 text = "直播中",
                                 fontSize = 10.sp,
                                 color = Color.White,
@@ -3188,7 +3188,7 @@ internal fun LiveUserSearchResultCard(
                     }
                 }
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
+                AppText(
                     text = "粉丝 ${FormatUtils.formatStat(cleaned.attentions.toLong())}",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -3229,7 +3229,7 @@ internal fun TopicSearchResultCard(
             )
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(
+                AppText(
                     text = cleaned.title,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Medium,
@@ -3239,7 +3239,7 @@ internal fun TopicSearchResultCard(
                 )
                 if (cleaned.description.isNotBlank()) {
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
+                    AppText(
                         text = cleaned.description,
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -3248,7 +3248,7 @@ internal fun TopicSearchResultCard(
                     )
                 }
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
+                AppText(
                     text = "浏览 ${FormatUtils.formatStat(cleaned.view.toLong())}",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f)
@@ -3290,7 +3290,7 @@ internal fun PhotoSearchResultCard(
             )
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(
+                AppText(
                     text = cleaned.title,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Medium,
@@ -3299,7 +3299,7 @@ internal fun PhotoSearchResultCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
+                AppText(
                     text = cleaned.uname,
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -3307,7 +3307,7 @@ internal fun PhotoSearchResultCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
+                AppText(
                     text = "图片 ${cleaned.count} · 浏览 ${FormatUtils.formatStat(cleaned.view.toLong())} · 喜欢 ${FormatUtils.formatStat(cleaned.like.toLong())}",
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f),
@@ -3315,7 +3315,7 @@ internal fun PhotoSearchResultCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
+                AppText(
                     text = "暂不支持打开",
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.outline
@@ -3361,7 +3361,7 @@ internal fun ArticleSearchResultCard(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
+                AppText(
                     text = item.title,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -3371,7 +3371,7 @@ internal fun ArticleSearchResultCard(
                 )
 
                 if (item.description.isNotBlank()) {
-                    Text(
+                    AppText(
                         text = item.description,
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -3391,14 +3391,14 @@ internal fun ArticleSearchResultCard(
                     }
                 }
                 if (metaLine.isNotBlank()) {
-                    Text(
+                    AppText(
                         text = metaLine,
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
-                Text(
+                AppText(
                     text = "${FormatUtils.formatStat(item.view.toLong())}浏览 · ${FormatUtils.formatStat(item.reply.toLong())}评论 · ${FormatUtils.formatStat(item.like.toLong())}点赞",
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)

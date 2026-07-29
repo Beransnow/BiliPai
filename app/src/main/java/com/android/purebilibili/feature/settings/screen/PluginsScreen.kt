@@ -1,5 +1,7 @@
 // 文件路径: feature/settings/PluginsScreen.kt
 package com.android.purebilibili.feature.settings
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -473,7 +475,7 @@ fun PluginsContent(
             
             // 标题说明
             item {
-                Text(
+                AppText(
                     text = "已安装插件".uppercase(),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -535,7 +537,7 @@ fun PluginsContent(
             // 统计信息
             item {
                 val enabledCount = plugins.count { it.enabled }
-                Text(
+                AppText(
                     text = "${plugins.size} 个插件，$enabledCount 个已启用",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -546,7 +548,7 @@ fun PluginsContent(
             //  导入外部插件按钮
             item {
                 Spacer(modifier = Modifier.height(24.dp))
-                Text(
+                AppText(
                     text = "外部插件",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -576,7 +578,7 @@ fun PluginsContent(
                                 .background(importTint.copy(alpha = 0.12f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
+                            AppIcon(
                                 imageVector = CupertinoIcons.Default.IcloudAndArrowDown,
                                 contentDescription = null,
                                 tint = importTint,
@@ -585,18 +587,18 @@ fun PluginsContent(
                         }
                         Spacer(modifier = Modifier.width(14.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(
+                            AppText(
                                 text = "导入外部插件",
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
-                            Text(
+                            AppText(
                                 text = "通过链接安装 JSON 规则插件，安装前预览能力",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        Icon(
+                        AppIcon(
                             imageVector = CupertinoIcons.Default.Plus,
                             contentDescription = null,
                             tint = importTint,
@@ -629,7 +631,7 @@ fun PluginsContent(
                                     .background(iOSTeal.copy(alpha = 0.12f)),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(
+                                AppIcon(
                                     imageVector = CupertinoIcons.Default.Terminal,
                                     contentDescription = null,
                                     tint = iOSTeal,
@@ -638,12 +640,12 @@ fun PluginsContent(
                             }
                             Spacer(modifier = Modifier.width(14.dp))
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(
+                                AppText(
                                     text = "导入 JS 媒体插件",
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
-                                Text(
+                                AppText(
                                     text = if (isJsPreviewLoading) {
                                         "正在预览 JS 插件..."
                                     } else {
@@ -659,13 +661,13 @@ fun PluginsContent(
                                 onClick = { showJsImportDialog = true },
                                 enabled = !isJsPreviewLoading
                             ) {
-                                Text("链接")
+                                AppText("链接")
                             }
                             AppOutlinedButton(
                                 onClick = { jsPluginPicker.launch("*/*") },
                                 enabled = !isJsPreviewLoading
                             ) {
-                                Text("本地文件")
+                                AppText("本地文件")
                             }
                         }
                     }
@@ -674,7 +676,7 @@ fun PluginsContent(
 
             if (jsImportError != null) {
                 item {
-                    Text(
+                    AppText(
                         text = jsImportError ?: "",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error,
@@ -747,7 +749,7 @@ fun PluginsContent(
                                 .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
+                            AppIcon(
                                 imageVector = CupertinoIcons.Filled.Shield,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.primary,
@@ -756,12 +758,12 @@ fun PluginsContent(
                         }
                         Spacer(modifier = Modifier.width(14.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(
+                            AppText(
                                 text = "开放 Kotlin 插件包",
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
-                            Text(
+                            AppText(
                                 text = if (isKotlinPackageLoading) {
                                     "正在读取 .bpplugin..."
                                 } else {
@@ -775,7 +777,7 @@ fun PluginsContent(
                             shape = RoundedCornerShape(6.dp),
                             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f)
                         ) {
-                            Text(
+                            AppText(
                                 text = "预览",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -788,7 +790,7 @@ fun PluginsContent(
 
             if (kotlinImportError != null) {
                 item {
-                    Text(
+                    AppText(
                         text = kotlinImportError ?: "",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error,
@@ -816,17 +818,17 @@ fun PluginsContent(
                                             .padding(horizontal = 16.dp, vertical = 12.dp),
                                         verticalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
-                                        Text(
+                                        AppText(
                                             text = installed.title,
                                             style = MaterialTheme.typography.bodyLarge,
                                             color = MaterialTheme.colorScheme.onSurface
                                         )
-                                        Text(
+                                        AppText(
                                             text = "${installed.subtitle} · ${installed.stateText}",
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
-                                        Text(
+                                        AppText(
                                             text = installed.packageHashText,
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -849,7 +851,7 @@ fun PluginsContent(
 
             item {
                 Spacer(modifier = Modifier.height(12.dp))
-                Text(
+                AppText(
                     text = "界面皮肤",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -881,7 +883,7 @@ fun PluginsContent(
                                 .background(MaterialTheme.colorScheme.tertiary.copy(alpha = 0.10f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
+                            AppIcon(
                                 imageVector = CupertinoIcons.Filled.Paintbrush,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.tertiary,
@@ -890,12 +892,12 @@ fun PluginsContent(
                         }
                         Spacer(modifier = Modifier.width(14.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(
+                            AppText(
                                 text = "导入界面皮肤包",
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
-                            Text(
+                            AppText(
                                 text = if (isUiSkinPackageLoading) {
                                     "正在读取 .bpskin..."
                                 } else {
@@ -909,7 +911,7 @@ fun PluginsContent(
                             shape = RoundedCornerShape(6.dp),
                             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f)
                         ) {
-                            Text(
+                            AppText(
                                 text = "资源包",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -922,7 +924,7 @@ fun PluginsContent(
 
             if (uiSkinImportError != null) {
                 item {
-                    Text(
+                    AppText(
                         text = uiSkinImportError ?: "",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error,
@@ -1086,7 +1088,7 @@ fun PluginsContent(
             // 底部说明
             item {
                 Spacer(modifier = Modifier.height(24.dp))
-                Text(
+                AppText(
                     text = "插件可以扩展应用功能，如自动跳过广告、过滤推荐内容等。\n启用插件后可点击展开查看详细设置。",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
@@ -1105,11 +1107,11 @@ fun PluginsContent(
                     jsImportError = null
                 }
             },
-            icon = { Icon(CupertinoIcons.Default.Terminal, contentDescription = null) },
-            title = { Text("导入 JS 媒体插件") },
+            icon = { AppIcon(CupertinoIcons.Default.Terminal, contentDescription = null) },
+            title = { AppText("导入 JS 媒体插件") },
             text = {
                 Column {
-                    Text(
+                    AppText(
                         text = "输入 JS 插件链接。安装前只展示插件信息、模块和权限，确认后默认保持禁用。",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1125,7 +1127,7 @@ fun PluginsContent(
                         placeholder = "例如：https://example.com/plugin.js",
                         singleLine = true,
                         isError = jsImportError != null,
-                        supportingText = jsImportError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } }
+                        supportingText = jsImportError?.let { { AppText(it, color = MaterialTheme.colorScheme.error) } }
                     )
                     if (isJsPreviewLoading) {
                         Spacer(modifier = Modifier.height(16.dp))
@@ -1136,7 +1138,7 @@ fun PluginsContent(
                         ) {
                             AppCircularProgressIndicator(modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("正在预览...")
+                            AppText("正在预览...")
                         }
                     }
                 }
@@ -1146,7 +1148,7 @@ fun PluginsContent(
                     onClick = { requestJsPreview(jsImportUrl) },
                     enabled = !isJsPreviewLoading
                 ) {
-                    Text("预览")
+                    AppText("预览")
                 }
             },
             dismissButton = {
@@ -1158,7 +1160,7 @@ fun PluginsContent(
                     },
                     enabled = !isJsPreviewLoading
                 ) {
-                    Text("取消")
+                    AppText("取消")
                 }
             }
         )
@@ -1171,31 +1173,31 @@ fun PluginsContent(
                     jsPreview = null
                 }
             },
-            icon = { Icon(CupertinoIcons.Filled.Shield, contentDescription = null) },
-            title = { Text("JS 插件预览") },
+            icon = { AppIcon(CupertinoIcons.Filled.Shield, contentDescription = null) },
+            title = { AppText("JS 插件预览") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
+                    AppText(
                         text = preview.manifest.title,
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Text(
+                    AppText(
                         text = "${preview.manifest.id} · v${preview.manifest.version} · ${preview.manifest.author.ifBlank { "未知作者" }}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
+                    AppText(
                         text = preview.manifest.description.ifBlank { "无描述" },
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
+                    AppText(
                         text = "模块：${preview.manifest.modules.joinToString("、") { it.title }}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
+                    AppText(
                         text = "来源：${preview.sourceUrl ?: "本地文件"}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1203,7 +1205,7 @@ fun PluginsContent(
                     PluginCapabilityDetailSection(
                         capabilities = resolveBiliPaiJsPluginCapabilities(preview.manifest)
                     )
-                    Text(
+                    AppText(
                         text = "外部 JS 由用户信任源提供；不会暴露登录 Cookie、Token、本地文件路径或 Android 对象。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error
@@ -1214,7 +1216,7 @@ fun PluginsContent(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             AppCircularProgressIndicator(modifier = Modifier.size(18.dp))
-                            Text("正在安装...", style = MaterialTheme.typography.bodySmall)
+                            AppText("正在安装...", style = MaterialTheme.typography.bodySmall)
                         }
                     }
                 }
@@ -1246,7 +1248,7 @@ fun PluginsContent(
                         }
                     }
                 ) {
-                    Text("确认安装")
+                    AppText("确认安装")
                 }
             },
             dismissButton = {
@@ -1254,7 +1256,7 @@ fun PluginsContent(
                     enabled = !isJsInstalling,
                     onClick = { jsPreview = null }
                 ) {
-                    Text("取消")
+                    AppText("取消")
                 }
             }
         )
@@ -1268,11 +1270,11 @@ fun PluginsContent(
                 importUrl = ""
                 importError = null
             },
-            icon = { Icon(CupertinoIcons.Default.IcloudAndArrowDown, contentDescription = null) },
-            title = { Text("导入外部插件") },
+            icon = { AppIcon(CupertinoIcons.Default.IcloudAndArrowDown, contentDescription = null) },
+            title = { AppText("导入外部插件") },
             text = {
                 Column {
-                    Text(
+                    AppText(
                         text = "输入 JSON 规则插件链接（支持任意返回 JSON 的 http/https 地址）",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1288,7 +1290,7 @@ fun PluginsContent(
                         placeholder = "例如：https://example.com/plugin.json",
                         singleLine = true,
                         isError = importError != null,
-                        supportingText = importError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } }
+                        supportingText = importError?.let { { AppText(it, color = MaterialTheme.colorScheme.error) } }
                     )
                     
                     if (isImporting) {
@@ -1300,7 +1302,7 @@ fun PluginsContent(
                         ) {
                             AppCircularProgressIndicator(modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("正在安装...")
+                            AppText("正在安装...")
                         }
                     }
                     if (isPreviewLoading) {
@@ -1312,7 +1314,7 @@ fun PluginsContent(
                         ) {
                             AppCircularProgressIndicator(modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("正在加载插件信息...")
+                            AppText("正在加载插件信息...")
                         }
                     }
                 }
@@ -1324,7 +1326,7 @@ fun PluginsContent(
                     },
                     enabled = !isImporting && !isPreviewLoading
                 ) {
-                    Text("预览")
+                    AppText("预览")
                 }
             },
             dismissButton = {
@@ -1336,7 +1338,7 @@ fun PluginsContent(
                     },
                     enabled = !isImporting && !isPreviewLoading
                 ) {
-                    Text("取消")
+                    AppText("取消")
                 }
             }
         )
@@ -1346,14 +1348,14 @@ fun PluginsContent(
         AppAlertDialog(
             onDismissRequest = {},
             confirmButton = {},
-            title = { Text("加载中") },
+            title = { AppText("加载中") },
             text = {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     AppCircularProgressIndicator(modifier = Modifier.size(20.dp))
-                    Text("正在加载插件信息...")
+                    AppText("正在加载插件信息...")
                 }
             }
         )
@@ -1379,28 +1381,28 @@ fun PluginsContent(
                                 .clip(RoundedCornerShape(8.dp))
                         )
                     } else {
-                        Icon(CupertinoIcons.Default.Puzzlepiece, contentDescription = null)
+                        AppIcon(CupertinoIcons.Default.Puzzlepiece, contentDescription = null)
                     }
                 },
-                title = { Text("安装插件预览") },
+                title = { AppText("安装插件预览") },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(
+                        AppText(
                             text = plugin.name,
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
-                        Text(
+                        AppText(
                             text = plugin.description.ifEmpty { "无描述" },
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Text(
+                        AppText(
                             text = "作者：${plugin.author}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Text(
+                        AppText(
                             text = "版本：${plugin.version} · 类型：${plugin.type} · 规则数：${plugin.rules.size}",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1414,7 +1416,7 @@ fun PluginsContent(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 AppCircularProgressIndicator(modifier = Modifier.size(18.dp))
-                                Text(
+                                AppText(
                                     text = "正在安装...",
                                     style = MaterialTheme.typography.bodySmall
                                 )
@@ -1449,7 +1451,7 @@ fun PluginsContent(
                             }
                         }
                     ) {
-                        Text("确认安装")
+                        AppText("确认安装")
                     }
                 },
                 dismissButton = {
@@ -1457,7 +1459,7 @@ fun PluginsContent(
                         enabled = !isImporting,
                         onClick = { showPreviewDialog = false }
                     ) {
-                        Text("取消")
+                        AppText("取消")
                     }
                 }
             )
@@ -1473,26 +1475,26 @@ fun PluginsContent(
                     kotlinPackageBytes = null
                 }
             },
-            icon = { Icon(CupertinoIcons.Filled.Shield, contentDescription = null) },
-            title = { Text("Kotlin 插件包预览") },
+            icon = { AppIcon(CupertinoIcons.Filled.Shield, contentDescription = null) },
+            title = { AppText("Kotlin 插件包预览") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
+                    AppText(
                         text = previewModel.title,
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Text(
+                    AppText(
                         text = previewModel.subtitle,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
+                    AppText(
                         text = previewModel.packageHashText,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
+                    AppText(
                         text = "${previewModel.signerText} · ${buildExternalPluginPayloadSummary(preview.payloadEntries)}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1501,7 +1503,7 @@ fun PluginsContent(
                         capabilities = preview.descriptor.manifest.capabilities
                     )
                     if (decision is ExternalPluginInstallDecision.Rejected) {
-                        Text(
+                        AppText(
                             text = decision.reason,
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error
@@ -1535,7 +1537,7 @@ fun PluginsContent(
                         }
                     }
                 ) {
-                    Text("保存授权")
+                    AppText("保存授权")
                 }
             },
             dismissButton = {
@@ -1545,7 +1547,7 @@ fun PluginsContent(
                         kotlinPackageBytes = null
                     }
                 ) {
-                    Text("取消")
+                    AppText("取消")
                 }
             }
         )
@@ -1562,41 +1564,41 @@ fun PluginsContent(
                     uiSkinPreviewAssetFiles = emptyMap()
                 }
             },
-            icon = { Icon(CupertinoIcons.Filled.Paintbrush, contentDescription = null) },
-            title = { Text("界面皮肤包预览") },
+            icon = { AppIcon(CupertinoIcons.Filled.Paintbrush, contentDescription = null) },
+            title = { AppText("界面皮肤包预览") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
+                    AppText(
                         text = previewModel.title,
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Text(
+                    AppText(
                         text = previewModel.subtitle,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
+                    AppText(
                         text = previewModel.packageHashText,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
+                    AppText(
                         text = previewModel.assetSummaryText,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
+                    AppText(
                         text = previewModel.sourceText,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
+                    AppText(
                         text = previewModel.licenseText,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
+                    AppText(
                         text = "${previewModel.shareText} · ${previewModel.officialAssetText}",
                         style = MaterialTheme.typography.bodySmall,
                         color = if (preview.manifest.containsOfficialAssets) {
@@ -1606,7 +1608,7 @@ fun PluginsContent(
                         }
                     )
                     UiSkinImagePreviewGrid(items = imagePreviewItems)
-                    Text(
+                    AppText(
                         text = "宿主只保存资源和启用记录，不执行代码；可替换首页皮肤图标和装饰层，不替换底栏液态玻璃链路。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1644,7 +1646,7 @@ fun PluginsContent(
                         }
                     }
                 ) {
-                    Text("保存并启用")
+                    AppText("保存并启用")
                 }
             },
             dismissButton = {
@@ -1655,7 +1657,7 @@ fun PluginsContent(
                         uiSkinPreviewAssetFiles = emptyMap()
                     }
                 ) {
-                    Text("取消")
+                    AppText("取消")
                 }
             }
         )
@@ -1670,41 +1672,41 @@ fun PluginsContent(
         val imagePreviewItems = buildUiSkinImagePreviewItems(installed.assetFiles)
         AppAlertDialog(
             onDismissRequest = { uiSkinInstalledPreview = null },
-            icon = { Icon(CupertinoIcons.Default.Eye, contentDescription = null) },
-            title = { Text("皮肤预览") },
+            icon = { AppIcon(CupertinoIcons.Default.Eye, contentDescription = null) },
+            title = { AppText("皮肤预览") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
+                    AppText(
                         text = previewModel.title,
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Text(
+                    AppText(
                         text = previewModel.subtitle,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
+                    AppText(
                         text = previewModel.packageHashText,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
+                    AppText(
                         text = previewModel.assetSummaryText,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
+                    AppText(
                         text = previewModel.sourceText,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
+                    AppText(
                         text = previewModel.licenseText,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Text(
+                    AppText(
                         text = "${previewModel.shareText} · ${previewModel.officialAssetText}",
                         style = MaterialTheme.typography.bodySmall,
                         color = if (installed.manifest.containsOfficialAssets) {
@@ -1736,12 +1738,12 @@ fun PluginsContent(
                     },
                     enabled = !isActive
                 ) {
-                    Text(if (isActive) "已启用" else "启用预览")
+                    AppText(if (isActive) "已启用" else "启用预览")
                 }
             },
             dismissButton = {
                 AppTextButton(onClick = { uiSkinInstalledPreview = null }) {
-                    Text("关闭")
+                    AppText("关闭")
                 }
             }
         )
@@ -1750,9 +1752,9 @@ fun PluginsContent(
     uiSkinPendingDelete?.let { skin ->
         AppAlertDialog(
             onDismissRequest = { uiSkinPendingDelete = null },
-            icon = { Icon(CupertinoIcons.Default.Trash, contentDescription = null) },
-            title = { Text("删除皮肤") },
-            text = { Text("确定要删除皮肤 \"${skin.displayName}\" 吗？删除后会清理本地包和已解压资源。") },
+            icon = { AppIcon(CupertinoIcons.Default.Trash, contentDescription = null) },
+            title = { AppText("删除皮肤") },
+            text = { AppText("确定要删除皮肤 \"${skin.displayName}\" 吗？删除后会清理本地包和已解压资源。") },
             confirmButton = {
                 AppTextButton(
                     onClick = {
@@ -1781,12 +1783,12 @@ fun PluginsContent(
                         }
                     }
                 ) {
-                    Text("删除", color = MaterialTheme.colorScheme.error)
+                    AppText("删除", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 AppTextButton(onClick = { uiSkinPendingDelete = null }) {
-                    Text("取消")
+                    AppText("取消")
                 }
             }
         )
@@ -1815,7 +1817,7 @@ private fun UiSkinImagePreviewGrid(
     items: List<com.android.purebilibili.feature.settings.UiSkinImagePreviewItem>
 ) {
     if (items.isEmpty()) {
-        Text(
+        AppText(
             text = "图片预览：未找到可展示资源",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1841,7 +1843,7 @@ private fun UiSkinImagePreviewGrid(
                         .clip(RoundedCornerShape(8.dp))
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                 )
-                Text(
+                AppText(
                     text = item.label,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1873,12 +1875,12 @@ private fun InstalledUiSkinItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(
+            AppText(
                 text = skin.displayName,
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Text(
+            AppText(
                 text = buildInstalledUiSkinSubtitle(skin.manifest),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1896,7 +1898,7 @@ private fun InstalledUiSkinItem(
             )
             Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                 AppIconButton(onClick = onPreview) {
-                    Icon(
+                    AppIcon(
                         imageVector = CupertinoIcons.Default.Eye,
                         contentDescription = "预览皮肤",
                         tint = MaterialTheme.colorScheme.primary,
@@ -1907,7 +1909,7 @@ private fun InstalledUiSkinItem(
                     onClick = onDelete,
                     enabled = previewModel.canDelete
                 ) {
-                    Icon(
+                    AppIcon(
                         imageVector = CupertinoIcons.Default.Trash,
                         contentDescription = "删除皮肤",
                         tint = if (previewModel.canDelete) {
@@ -1951,7 +1953,7 @@ private fun PluginItem(
                     .background(effectiveIconTint.copy(alpha = 0.12f)),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
+                AppIcon(
                     imageVector = plugin.icon ?: CupertinoIcons.Default.Puzzlepiece,
                     contentDescription = null,
                     tint = effectiveIconTint,
@@ -1964,13 +1966,13 @@ private fun PluginItem(
             // 标题和描述
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
+                    AppText(
                         text = plugin.name,
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
+                    AppText(
                         text = "v${plugin.version}",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1982,7 +1984,7 @@ private fun PluginItem(
                             shape = RoundedCornerShape(4.dp),
                             color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.8f)
                         ) {
-                            Text(
+                            AppText(
                                 text = "暂不可用",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.error,
@@ -1992,14 +1994,14 @@ private fun PluginItem(
                     }
                 }
                 Spacer(modifier = Modifier.height(2.dp))
-                Text(
+                AppText(
                     text = plugin.description,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 //  显示作者
                 if (plugin.author != "Unknown") {
-                    Text(
+                    AppText(
                         text = "作者：${plugin.author}",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
@@ -2024,7 +2026,7 @@ private fun PluginItem(
             )
             
             // 展开箭头
-            Icon(
+            AppIcon(
                 imageVector = if (isExpanded) CupertinoIcons.Default.ChevronUp else CupertinoIcons.Default.ChevronDown,
                 contentDescription = if (isExpanded) "收起" else "展开",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
@@ -2048,7 +2050,7 @@ private fun PluginItem(
                 shape = RoundedCornerShape(8.dp)
             ) {
                 if (plugin.unavailable) {
-                    Text(
+                    AppText(
                         text = plugin.unavailableReason,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2084,17 +2086,17 @@ private fun InstalledJsPluginItem(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(
+                AppText(
                     text = installed.manifest.title,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Text(
+                AppText(
                     text = "${installed.manifest.id} · v${installed.manifest.version} · ${if (installed.enabled) "已启用" else "未启用"}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Text(
+                AppText(
                     text = installed.manifest.description.ifBlank { installed.sourceUrl ?: "本地 JS 插件" },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2115,13 +2117,13 @@ private fun InstalledJsPluginItem(
                 onClick = onOpen,
                 enabled = installed.enabled
             ) {
-                Text("打开内容")
+                AppText("打开内容")
             }
             AppTextButton(
                 onClick = onDelete,
                 colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
             ) {
-                Text("删除")
+                AppText("删除")
             }
         }
     }
@@ -2149,7 +2151,7 @@ private fun PluginCapabilityChips(
                     MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.62f)
                 }
             ) {
-                Text(
+                AppText(
                     text = if (showAuthorizationLabels && model.requiresExplicitApproval) {
                         "${model.label} · 需授权"
                     } else {
@@ -2180,14 +2182,14 @@ private fun PluginCapabilityDetailSection(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(
+        AppText(
             text = if (showAuthorizationLabels) "能力与授权" else "能力",
             style = MaterialTheme.typography.labelLarge,
             color = MaterialTheme.colorScheme.primary
         )
         models.forEach { model ->
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(
+                AppText(
                     text = if (showAuthorizationLabels && model.requiresExplicitApproval) {
                         "${model.label} · 安装前确认"
                     } else {
@@ -2196,7 +2198,7 @@ private fun PluginCapabilityDetailSection(
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Text(
+                AppText(
                     text = model.description,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -2241,7 +2243,7 @@ private fun JsonPluginStatsNotificationSection(
                         .background(iOSPurple.copy(alpha = 0.12f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
+                    AppIcon(
                         imageVector = CupertinoIcons.Default.Bell,
                         contentDescription = null,
                         tint = iOSPurple,
@@ -2250,12 +2252,12 @@ private fun JsonPluginStatsNotificationSection(
                 }
                 Spacer(modifier = Modifier.width(14.dp))
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
+                    AppText(
                         text = "插件统计通知",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Text(
+                    AppText(
                         text = "每天汇总 JSON 规则插件过滤数量",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -2281,9 +2283,9 @@ private fun JsonPluginStatsNotificationSection(
                     .padding(horizontal = 16.dp, vertical = 4.dp),
                 colors = ButtonDefaults.textButtonColors(contentColor = iOSPurple)
             ) {
-                Icon(CupertinoIcons.Default.Bell, null, modifier = Modifier.size(16.dp))
+                AppIcon(CupertinoIcons.Default.Bell, null, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("发送测试通知", style = MaterialTheme.typography.labelMedium)
+                AppText("发送测试通知", style = MaterialTheme.typography.labelMedium)
             }
         }
     }
@@ -2332,7 +2334,7 @@ private fun JsonPluginItem(
                             .clip(RoundedCornerShape(10.dp))
                     )
                 } else {
-                    Icon(
+                    AppIcon(
                         imageVector = CupertinoIcons.Default.Terminal,
                         contentDescription = null,
                         tint = jsonPluginTint,
@@ -2348,19 +2350,19 @@ private fun JsonPluginItem(
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
+                    AppText(
                         text = plugin.name,
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(
+                    AppText(
                         text = "v${plugin.version}",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                     )
                 }
-                Text(
+                AppText(
                     text = plugin.description.ifEmpty { plugin.type },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2369,7 +2371,7 @@ private fun JsonPluginItem(
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
+                    AppText(
                         text = "作者：${plugin.author}",
                         style = MaterialTheme.typography.labelSmall,
                         color = iOSPurple
@@ -2383,7 +2385,7 @@ private fun JsonPluginItem(
                         else 
                             MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                     ) {
-                        Text(
+                        AppText(
                             text = "已过滤 $filterCount 项",
                             style = MaterialTheme.typography.labelSmall,
                             color = if (filterCount > 0) iOSGreen else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2404,7 +2406,7 @@ private fun JsonPluginItem(
             )
             
             // 展开箭头
-            Icon(
+            AppIcon(
                 imageVector = if (isExpanded) CupertinoIcons.Default.ChevronUp else CupertinoIcons.Default.ChevronDown,
                 contentDescription = if (isExpanded) "收起" else "展开",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
@@ -2440,9 +2442,9 @@ private fun JsonPluginItem(
                             contentColor = iOSBlue
                         )
                     ) {
-                        Icon(CupertinoIcons.Default.Lightbulb, null, modifier = Modifier.size(16.dp))
+                        AppIcon(CupertinoIcons.Default.Lightbulb, null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("测试规则", style = MaterialTheme.typography.labelMedium)
+                        AppText("测试规则", style = MaterialTheme.typography.labelMedium)
                     }
                     
                     // 重置统计按钮
@@ -2452,9 +2454,9 @@ private fun JsonPluginItem(
                             contentColor = iOSOrange
                         )
                     ) {
-                        Icon(CupertinoIcons.Default.ArrowCounterclockwise, null, modifier = Modifier.size(16.dp))
+                        AppIcon(CupertinoIcons.Default.ArrowCounterclockwise, null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("重置统计", style = MaterialTheme.typography.labelMedium)
+                        AppText("重置统计", style = MaterialTheme.typography.labelMedium)
                     }
                     
                     // 编辑按钮
@@ -2464,9 +2466,9 @@ private fun JsonPluginItem(
                             contentColor = iOSPurple
                         )
                     ) {
-                        Icon(CupertinoIcons.Default.Terminal, null, modifier = Modifier.size(16.dp))
+                        AppIcon(CupertinoIcons.Default.Terminal, null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("编辑", style = MaterialTheme.typography.labelMedium)
+                        AppText("编辑", style = MaterialTheme.typography.labelMedium)
                     }
                     
                     // 删除按钮
@@ -2476,9 +2478,9 @@ private fun JsonPluginItem(
                             contentColor = MaterialTheme.colorScheme.error
                         )
                     ) {
-                        Icon(CupertinoIcons.Default.Trash, null, modifier = Modifier.size(16.dp))
+                        AppIcon(CupertinoIcons.Default.Trash, null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("删除", style = MaterialTheme.typography.labelMedium)
+                        AppText("删除", style = MaterialTheme.typography.labelMedium)
                     }
                 }
             }
@@ -2489,19 +2491,19 @@ private fun JsonPluginItem(
     if (showDeleteDialog) {
         AppAlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("删除插件") },
-            text = { Text("确定要删除插件 \"${plugin.name}\" 吗？") },
+            title = { AppText("删除插件") },
+            text = { AppText("确定要删除插件 \"${plugin.name}\" 吗？") },
             confirmButton = {
                 AppTextButton(onClick = {
                     onDelete()
                     showDeleteDialog = false
                 }) {
-                    Text("删除", color = MaterialTheme.colorScheme.error)
+                    AppText("删除", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 AppTextButton(onClick = { showDeleteDialog = false }) {
-                    Text("取消")
+                    AppText("取消")
                 }
             }
         )
@@ -2525,16 +2527,16 @@ private fun TestResultDialog(
     AppAlertDialog(
         onDismissRequest = onDismiss,
         icon = {
-            Icon(
+            AppIcon(
                 CupertinoIcons.Default.Lightbulb,
                 contentDescription = null,
                 tint = dialogIconTint
             )
         },
-        title = { Text("规则测试结果") },
+        title = { AppText("规则测试结果") },
         text = {
             Column {
-                Text(
+                AppText(
                     text = "插件：$pluginName",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -2553,39 +2555,39 @@ private fun TestResultDialog(
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
+                            AppText(
                                 text = "$originalCount",
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
-                            Text(
+                            AppText(
                                 text = "测试视频",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
+                            AppText(
                                 text = "$blockedCount",
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = if (blockedCount > 0) iOSGreen else MaterialTheme.colorScheme.onSurface
                             )
-                            Text(
+                            AppText(
                                 text = "被过滤",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
+                            AppText(
                                 text = "$filteredCount",
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
-                            Text(
+                            AppText(
                                 text = "保留",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -2597,7 +2599,7 @@ private fun TestResultDialog(
                 // 被过滤的视频列表
                 if (filteredVideos.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text(
+                    AppText(
                         text = "被过滤的视频示例：",
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -2611,7 +2613,7 @@ private fun TestResultDialog(
                                     .padding(vertical = 4.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(
+                                AppIcon(
                                     CupertinoIcons.Default.Trash,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f),
@@ -2619,13 +2621,13 @@ private fun TestResultDialog(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(
+                                    AppText(
                                         text = video.title,
                                         style = MaterialTheme.typography.bodySmall,
                                         maxLines = 1,
                                         color = MaterialTheme.colorScheme.onSurface
                                     )
-                                    Text(
+                                    AppText(
                                         text = "时长：${formatDuration(video.duration)}",
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -2634,7 +2636,7 @@ private fun TestResultDialog(
                             }
                         }
                         if (filteredVideos.size > 3) {
-                            Text(
+                            AppText(
                                 text = "……还有 ${filteredVideos.size - 3} 个视频",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2644,7 +2646,7 @@ private fun TestResultDialog(
                     }
                 } else if (blockedCount == 0) {
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text(
+                    AppText(
                         text = " 当前测试样本中没有符合过滤条件的视频",
                         style = MaterialTheme.typography.bodySmall,
                         color = iOSGreen
@@ -2654,7 +2656,7 @@ private fun TestResultDialog(
         },
         confirmButton = {
             AppTextButton(onClick = onDismiss) {
-                Text("确定")
+                AppText("确定")
             }
         }
     )

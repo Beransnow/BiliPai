@@ -1,4 +1,7 @@
 package com.android.purebilibili.feature.profile
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
+import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 
 import android.app.Activity
 import android.content.Context
@@ -451,12 +454,12 @@ fun ProfileScreen(
                             style = AppTopBarStyle.CENTERED,
                             navigationIcon = {
                                 AppIconButton(onClick = onBack) {
-                                    Icon(rememberAppBackIcon(), contentDescription = "Back")
+                                    AppIcon(rememberAppBackIcon(), contentDescription = "Back")
                                 }
                             },
                             actions = {
                                 AppIconButton(onClick = onSettingsClick) {
-                                    Icon(rememberAppSettingsIcon(), contentDescription = "Settings")
+                                    AppIcon(rememberAppSettingsIcon(), contentDescription = "Settings")
                                 }
                             },
                             colors = TopAppBarDefaults.topAppBarColors(
@@ -476,7 +479,7 @@ fun ProfileScreen(
                     verticalArrangement = Arrangement.Center
                 ) {
                     // 错误图标
-                    Icon(
+                    AppIcon(
                         rememberAppWarningIcon(),
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
@@ -485,7 +488,7 @@ fun ProfileScreen(
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
-                    Text(
+                    AppText(
                         text = currentUiState.message,
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -500,18 +503,18 @@ fun ProfileScreen(
                             containerColor = MaterialTheme.colorScheme.primary
                         )
                     ) {
-                        Icon(rememberAppRefreshIcon(), contentDescription = null, modifier = Modifier.size(18.dp))
+                        AppIcon(rememberAppRefreshIcon(), contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("重试")
+                        AppText("重试")
                     }
                     
                     Spacer(modifier = Modifier.height(16.dp))
                     
                     // 离线缓存入口
                     AppOutlinedButton(onClick = onDownloadClick) {
-                        Icon(rememberAppDownloadIcon(), contentDescription = null, modifier = Modifier.size(18.dp))
+                        AppIcon(rememberAppDownloadIcon(), contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("查看离线缓存")
+                        AppText("查看离线缓存")
                     }
                 }
             }
@@ -558,12 +561,12 @@ fun ProfileScreen(
                                 style = AppTopBarStyle.LARGE,
                                 navigationIcon = {
                                     AppIconButton(onClick = onBack) {
-                                        Icon(rememberAppBackIcon(), contentDescription = "Back", tint = MaterialTheme.colorScheme.primary)
+                                        AppIcon(rememberAppBackIcon(), contentDescription = "Back", tint = MaterialTheme.colorScheme.primary)
                                     }
                                 },
                                 actions = {
                                     AppIconButton(onClick = onSettingsClick) {
-                                        Icon(rememberAppSettingsIcon(), contentDescription = "Settings", tint = MaterialTheme.colorScheme.primary)
+                                        AppIcon(rememberAppSettingsIcon(), contentDescription = "Settings", tint = MaterialTheme.colorScheme.primary)
                                     }
                                 },
                                 colors = TopAppBarDefaults.topAppBarColors(
@@ -830,8 +833,8 @@ private fun ProfileSpaceContent(
     if (showPhotoPickerDialog) {
         AppAlertDialog(
             onDismissRequest = { showPhotoPickerDialog = false },
-            title = { Text("选择照片", fontWeight = FontWeight.Bold) },
-            text = { Text("将打开系统相册选择一张照片作为背景。\n\n仅获取选中照片的访问权限，不会访问其他照片。") },
+            title = { AppText("选择照片", fontWeight = FontWeight.Bold) },
+            text = { AppText("将打开系统相册选择一张照片作为背景。\n\n仅获取选中照片的访问权限，不会访问其他照片。") },
             confirmButton = {
                 AppButton(
                     onClick = {
@@ -841,12 +844,12 @@ private fun ProfileSpaceContent(
                         )
                     }
                 ) {
-                    Text("选择照片")
+                    AppText("选择照片")
                 }
             },
             dismissButton = {
                 AppTextButton(onClick = { showPhotoPickerDialog = false }) {
-                    Text("取消")
+                    AppText("取消")
                 }
             }
         )
@@ -1006,14 +1009,14 @@ private fun ProfileSpaceContent(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 AppIconButton(onClick = onBack) {
-                    Icon(rememberAppBackIcon(), contentDescription = "返回", tint = topBarIconColor)
+                    AppIcon(rememberAppBackIcon(), contentDescription = "返回", tint = topBarIconColor)
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 AppIconButton(onClick = { showWallpaperActionSheet = true }) {
-                    Icon(rememberAppPhotoIcon(), contentDescription = "换壁纸", tint = topBarIconColor)
+                    AppIcon(rememberAppPhotoIcon(), contentDescription = "换壁纸", tint = topBarIconColor)
                 }
                 AppIconButton(onClick = onSettingsClick) {
-                    Icon(rememberAppSettingsIcon(), contentDescription = "设置", tint = topBarIconColor)
+                    AppIcon(rememberAppSettingsIcon(), contentDescription = "设置", tint = topBarIconColor)
                 }
             }
         }
@@ -1218,7 +1221,7 @@ private fun ProfileSpaceHeader(
                 modifier = Modifier.weight(1f),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
+                AppText(
                     text = user.name,
                     style = MaterialTheme.typography.titleLarge,
                     color = textColor,
@@ -1231,7 +1234,7 @@ private fun ProfileSpaceHeader(
                 UserLevelBadge(level = user.level)
                 if (user.isVip) {
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
+                    AppText(
                         text = user.vipLabel.ifBlank { "大会员" },
                         style = MaterialTheme.typography.labelSmall,
                         color = Color.White,
@@ -1246,7 +1249,7 @@ private fun ProfileSpaceHeader(
                 onClick = { identityExpanded = !identityExpanded },
                 modifier = Modifier.size(36.dp)
             ) {
-                Icon(
+                AppIcon(
                     imageVector = if (identityExpanded) rememberAppChevronUpIcon() else rememberAppChevronDownIcon(),
                     contentDescription = if (identityExpanded) "收起个人资料" else "展开个人资料",
                     tint = secondaryColor,
@@ -1276,7 +1279,7 @@ private fun ProfileSpaceHeader(
                 border = BorderStroke(1.dp, heroChrome.actionButtonContentColor.copy(alpha = heroChrome.actionButtonBorderAlpha)),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("编辑资料")
+                AppText("编辑资料")
             }
             if (showWallpaperAction) {
                 ProfileWallpaperMenuButton(
@@ -1320,7 +1323,7 @@ private fun ProfileIdentityDrawer(
                     .padding(horizontal = 12.dp, vertical = 10.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
+                AppText(
                     text = meta.signText,
                     style = MaterialTheme.typography.bodyMedium,
                     color = if (meta.signPlaceholder) secondaryColor else contentColor.copy(alpha = 0.86f),
@@ -1364,7 +1367,7 @@ private fun ProfileSpaceMetaChip(
         color = containerColor,
         border = BorderStroke(0.6.dp, borderColor)
     ) {
-        Text(
+        AppText(
             text = text,
             style = MaterialTheme.typography.labelMedium,
             color = contentColor,
@@ -1383,13 +1386,13 @@ private fun ProfileSpaceStat(label: String, value: Int, color: Color, onClick: (
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
+        AppText(
             text = FormatUtils.formatStat(value.toLong()),
             style = MaterialTheme.typography.titleMedium,
             color = color,
             fontWeight = FontWeight.Bold
         )
-        Text(text = label, style = MaterialTheme.typography.labelSmall, color = color.copy(alpha = 0.7f))
+        AppText(text = label, style = MaterialTheme.typography.labelSmall, color = color.copy(alpha = 0.7f))
     }
 }
 
@@ -1454,7 +1457,7 @@ private fun ProfileSpaceTabs(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Text(
+                AppText(
                     text = item.title,
                     style = MaterialTheme.typography.titleSmall,
                     color = if (selected) contentChrome.onSurfaceColor else contentChrome.onSurfaceVariantColor,
@@ -1637,7 +1640,7 @@ private fun ProfileSpaceServices(
     embeddedInPanel: Boolean = false
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
+        AppText(
             text = "我的服务",
             style = MaterialTheme.typography.titleMedium,
             color = contentChrome.onSurfaceColor,
@@ -1785,7 +1788,7 @@ private fun ProfileSpaceSection(
                 .padding(horizontal = 20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            AppText(
                 text = if (count > 0) "$title  ${FormatUtils.formatStat(count.toLong())}" else title,
                 style = MaterialTheme.typography.titleMedium,
                 color = textColor,
@@ -1793,7 +1796,7 @@ private fun ProfileSpaceSection(
                 modifier = Modifier.weight(1f)
             )
             AppTextButton(onClick = onMoreClick) {
-                Text(
+                AppText(
                     text = "查看更多",
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Medium
@@ -1851,7 +1854,7 @@ private fun ProfileSpacePosterCard(
                         modifier = Modifier.matchParentSize()
                     )
                 } else {
-                    Icon(
+                    AppIcon(
                         rememberAppFolderIcon(),
                         contentDescription = null,
                         tint = contentChrome.onSurfaceVariantColor.copy(alpha = 0.42f),
@@ -1869,7 +1872,7 @@ private fun ProfileSpacePosterCard(
                     .padding(horizontal = 10.dp, vertical = 7.dp),
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-                Text(
+                AppText(
                     text = title,
                     style = MaterialTheme.typography.bodyMedium,
                     color = contentChrome.onSurfaceColor,
@@ -1877,7 +1880,7 @@ private fun ProfileSpacePosterCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Text(
+                AppText(
                     text = subtitle.ifBlank { "公开" },
                     style = MaterialTheme.typography.labelSmall,
                     color = contentChrome.onSurfaceVariantColor,
@@ -1961,7 +1964,7 @@ private fun ProfileDynamicList(
                 onDeleteClick = onDeleteClick
             )
             if (index != items.lastIndex) {
-                HorizontalDivider(
+                AppHorizontalDivider(
                     modifier = Modifier.padding(vertical = 4.dp),
                     color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.22f),
                     thickness = 0.7.dp
@@ -1993,9 +1996,9 @@ private fun ProfileDynamicCard(
     pendingDeleteAction?.let { action ->
         AppAlertDialog(
             onDismissRequest = { pendingDeleteAction = null },
-            icon = { Icon(deleteIcon, contentDescription = null) },
-            title = { Text(action.title) },
-            text = { Text(action.content) },
+            icon = { AppIcon(deleteIcon, contentDescription = null) },
+            title = { AppText(action.title) },
+            text = { AppText(action.content) },
             confirmButton = {
                 AppTextButton(
                     onClick = {
@@ -2003,12 +2006,12 @@ private fun ProfileDynamicCard(
                         onDeleteClick(action)
                     }
                 ) {
-                    Text(action.confirmText, color = MaterialTheme.colorScheme.error)
+                    AppText(action.confirmText, color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 AppTextButton(onClick = { pendingDeleteAction = null }) {
-                    Text(action.cancelText)
+                    AppText(action.cancelText)
                 }
             }
         )
@@ -2032,7 +2035,7 @@ private fun ProfileDynamicCard(
             )
             Spacer(modifier = Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(
+                AppText(
                     text = authorName,
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.primary,
@@ -2041,7 +2044,7 @@ private fun ProfileDynamicCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 if (publishText.isNotBlank()) {
-                    Text(
+                    AppText(
                         text = publishText,
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -2050,7 +2053,7 @@ private fun ProfileDynamicCard(
             }
             Box {
                 AppIconButton(onClick = { showMoreMenu = true }, modifier = Modifier.size(40.dp)) {
-                    Icon(
+                    AppIcon(
                         imageVector = moreIcon,
                         contentDescription = "更多",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2063,9 +2066,9 @@ private fun ProfileDynamicCard(
                     modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer)
                 ) {
                     AppDropdownMenuItem(
-                        text = { Text("复制链接") },
+                        text = { AppText("复制链接") },
                         leadingIcon = {
-                            Icon(
+                            AppIcon(
                                 linkIcon,
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp)
@@ -2084,9 +2087,9 @@ private fun ProfileDynamicCard(
                     )
                     if (deleteAction != null) {
                         AppDropdownMenuItem(
-                            text = { Text(deleteAction.label) },
+                            text = { AppText(deleteAction.label) },
                             leadingIcon = {
-                                Icon(
+                                AppIcon(
                                     deleteIcon,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.error,
@@ -2104,7 +2107,7 @@ private fun ProfileDynamicCard(
         }
 
         if (bodyText.isNotBlank()) {
-            Text(
+            AppText(
                 text = bodyText,
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -2140,7 +2143,7 @@ private fun ProfileDynamicOriginalContent(item: SpaceDynamicItem, onVideoClick: 
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             if (authorName.isNotBlank()) {
-                Text(
+                AppText(
                     text = "@$authorName",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary,
@@ -2150,7 +2153,7 @@ private fun ProfileDynamicOriginalContent(item: SpaceDynamicItem, onVideoClick: 
                 )
             }
             if (text.isNotBlank()) {
-                Text(
+                AppText(
                     text = text,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2196,7 +2199,7 @@ private fun ProfileDynamicMajorContent(item: SpaceDynamicItem, onVideoClick: (St
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         if (!title.isNullOrBlank() && title != resolveProfileDynamicText(item)) {
-            Text(
+            AppText(
                 text = title,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
@@ -2283,14 +2286,14 @@ private fun ProfileDynamicAction(icon: ImageVector, text: String) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
-        Icon(
+        AppIcon(
             imageVector = icon,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(18.dp)
         )
         Spacer(modifier = Modifier.width(5.dp))
-        Text(
+        AppText(
             text = text,
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2329,7 +2332,7 @@ private fun ProfileSpaceListRow(title: String, subtitle: String, imageUrl: Strin
                         modifier = Modifier.matchParentSize()
                     )
                 } else {
-                    Icon(
+                    AppIcon(
                         rememberAppFolderIcon(),
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.42f)
@@ -2337,7 +2340,7 @@ private fun ProfileSpaceListRow(title: String, subtitle: String, imageUrl: Strin
                 }
             }
             Column(modifier = Modifier.weight(1f)) {
-                Text(
+                AppText(
                     text = title,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -2345,7 +2348,7 @@ private fun ProfileSpaceListRow(title: String, subtitle: String, imageUrl: Strin
                     overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
+                AppText(
                     text = subtitle.ifBlank { "公开" },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -2365,7 +2368,7 @@ private fun ProfileSpaceEmpty(text: String) {
             .padding(48.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        AppText(text = text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -2380,7 +2383,7 @@ private fun ProfileEditAccountDialog(
     val signError = validateProfileSign(sign)
     AppAlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("编辑资料") },
+        title = { AppText("编辑资料") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 ProfileReadonlyAccountField("昵称", state.name)
@@ -2389,11 +2392,11 @@ private fun ProfileEditAccountDialog(
                 AppOutlinedTextField(
                     value = sign,
                     onValueChange = { sign = it },
-                    label = { Text("签名") },
+                    label = { AppText("签名") },
                     minLines = 3,
                     maxLines = 4,
                     isError = signError != null,
-                    supportingText = { Text(signError ?: "${sign.length}/70") },
+                    supportingText = { AppText(signError ?: "${sign.length}/70") },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -2403,12 +2406,12 @@ private fun ProfileEditAccountDialog(
                 onClick = { onSaveSign(sign) },
                 enabled = !isSaving && signError == null
             ) {
-                Text(if (isSaving) "保存中" else "保存签名")
+                AppText(if (isSaving) "保存中" else "保存签名")
             }
         },
         dismissButton = {
             AppTextButton(onClick = onDismiss) {
-                Text("取消")
+                AppText("取消")
             }
         }
     )
@@ -2417,8 +2420,8 @@ private fun ProfileEditAccountDialog(
 @Composable
 private fun ProfileReadonlyAccountField(label: String, value: String) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(text = label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(text = value, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+        AppText(text = label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        AppText(text = value, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
     }
 }
 
@@ -2482,7 +2485,7 @@ fun TabletProfileContent(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
+                    AppText(
                         text = "我的服务",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
@@ -2514,7 +2517,7 @@ fun TabletProfileContent(
                             onClick = onAccountManageClick,
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("切换账号")
+                            AppText("切换账号")
                         }
 
                         Spacer(modifier = Modifier.width(20.dp))
@@ -2527,7 +2530,7 @@ fun TabletProfileContent(
                             ),
                             modifier = Modifier.weight(1f)
                         ) {
-                            Text("退出登录")
+                            AppText("退出登录")
                         }
                     }
                 }
@@ -2630,7 +2633,7 @@ fun MobileProfileContent(
         AppAlertDialog(
             onDismissRequest = { showPhotoPickerDialog = false },
             icon = {
-                Icon(
+                AppIcon(
                     rememberAppPhotoIcon(),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
@@ -2638,10 +2641,10 @@ fun MobileProfileContent(
                 )
             },
             title = {
-                Text("选择照片", fontWeight = FontWeight.Bold)
+                AppText("选择照片", fontWeight = FontWeight.Bold)
             },
             text = {
-                Text(
+                AppText(
                     "将打开系统相册选择一张照片作为背景。\n\n" +
                         "📸 仅获取您选中照片的访问权限\n" +
                         "🔒 不会访问您的其他照片",
@@ -2657,12 +2660,12 @@ fun MobileProfileContent(
                         )
                     }
                 ) {
-                    Text("选择照片")
+                    AppText("选择照片")
                 }
             },
             dismissButton = {
                 AppTextButton(onClick = { showPhotoPickerDialog = false }) {
-                    Text("取消")
+                    AppText("取消")
                 }
             }
         )
@@ -2702,18 +2705,18 @@ fun MobileProfileContent(
 
         // YES, remove background here.
         
-        Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) {
             // 📜 滚动内容
             LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .then(if (hazeState != null) Modifier.hazeSourceCompat(hazeState) else Modifier),
-            contentPadding = PaddingValues(
-                // [Modified] 顶部留白，适配居中顶部栏（64dp + Status Bar ~ 30-40dp）
-                top = 120.dp, 
-                bottom = paddingValues.calculateBottomPadding() + 120.dp
-            )
-        ) {
+                modifier = Modifier
+                    .fillMaxSize()
+                    .then(if (hazeState != null) Modifier.hazeSourceCompat(hazeState) else Modifier),
+                contentPadding = PaddingValues(
+                    // [Modified] 顶部留白，适配居中顶部栏（64dp + Status Bar ~ 30-40dp）
+                    top = 120.dp,
+                    bottom = paddingValues.calculateBottomPadding() + 120.dp
+                )
+            ) {
             item { 
                 Column {
                     // [UI优化] 移除背景色，透明显示下方 Header 图
@@ -2784,15 +2787,15 @@ fun MobileProfileContent(
             style = AppTopBarStyle.CENTERED,
             navigationIcon = {
                 AppIconButton(onClick = onBack) {
-                    Icon(rememberAppBackIcon(), contentDescription = "Back", tint = contentColor)
+                    AppIcon(rememberAppBackIcon(), contentDescription = "Back", tint = contentColor)
                 }
             },
             actions = {
                 AppIconButton(onClick = { showWallpaperActionSheet = true }) {
-                    Icon(rememberAppPhotoIcon(), contentDescription = "背景装扮", tint = contentColor)
+                    AppIcon(rememberAppPhotoIcon(), contentDescription = "背景装扮", tint = contentColor)
                 }
                 AppIconButton(onClick = onSettingsClick) {
-                    Icon(rememberAppSettingsIcon(), contentDescription = "Settings", tint = contentColor)
+                    AppIcon(rememberAppSettingsIcon(), contentDescription = "Settings", tint = contentColor)
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
@@ -2837,10 +2840,10 @@ fun GuestProfileContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             AppIconButton(onClick = onBack) {
-                Icon(rememberAppBackIcon(), contentDescription = "Back", tint = Color.White)
+                AppIcon(rememberAppBackIcon(), contentDescription = "Back", tint = Color.White)
             }
             AppIconButton(onClick = onSettingsClick) {
-                Icon(rememberAppSettingsIcon(), contentDescription = "Settings", tint = Color.White)
+                AppIcon(rememberAppSettingsIcon(), contentDescription = "Settings", tint = Color.White)
             }
         }
         
@@ -2871,14 +2874,14 @@ fun GuestProfileContent(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            Text(
+            AppText(
                 text = "欢迎使用 BiliPai",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
             )
 
-            Text(
+            AppText(
                 text = "登录后享受完整的 B站 体验",
                 fontSize = 14.sp,
                 color = Color.White.copy(alpha = 0.6f),
@@ -2904,14 +2907,14 @@ fun GuestProfileContent(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.alpha(0.5f)
             ) {
-                Icon(
+                AppIcon(
                     lockIcon,
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.size(14.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text(
+                AppText(
                     text = "支持扫码登录和网页登录",
                     fontSize = 12.sp,
                     color = Color.White
@@ -2981,7 +2984,7 @@ private fun ProfileWallpaperMenuButton(
         shadowElevation = 0.dp
     ) {
         Box(contentAlignment = Alignment.Center) {
-            Icon(
+            AppIcon(
                 imageVector = rememberAppPhotoIcon(),
                 contentDescription = "背景装扮",
                 tint = contentColor,
@@ -3012,7 +3015,7 @@ private fun ProfileWallpaperActionSheet(
                 .padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text(
+            AppText(
                 text = "背景装扮",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
@@ -3076,7 +3079,7 @@ private fun ProfileWallpaperSheetActionRow(
                 color = MaterialTheme.colorScheme.surface.copy(alpha = if (enabled) 0.82f else 0.46f)
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Icon(
+                    AppIcon(
                         imageVector = icon,
                         contentDescription = null,
                         tint = contentColor,
@@ -3084,7 +3087,7 @@ private fun ProfileWallpaperSheetActionRow(
                     )
                 }
             }
-            Text(
+            AppText(
                 text = title,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
@@ -3176,7 +3179,7 @@ private fun ProfileWallpaperActionCard(
             )
     ) {
         if (showSectionLabel) {
-            Text(
+            AppText(
                 text = "背景装扮",
                 style = MaterialTheme.typography.labelMedium,
                 color = sectionLabelColor,
@@ -3281,7 +3284,7 @@ private fun ProfileWallpaperActionButton(
                         .size(30.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
+                    AppIcon(
                         imageVector = icon,
                         contentDescription = title,
                         tint = effectiveContentColor,
@@ -3292,7 +3295,7 @@ private fun ProfileWallpaperActionButton(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                Text(
+                AppText(
                     text = displayTitle,
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.SemiBold,
@@ -3302,7 +3305,7 @@ private fun ProfileWallpaperActionButton(
                 )
                 if (subtitle.isNotEmpty()) {
                     Spacer(modifier = Modifier.height(2.dp))
-                    Text(
+                    AppText(
                         text = subtitle,
                         style = MaterialTheme.typography.labelSmall,
                         color = effectiveSecondaryColor
@@ -3319,7 +3322,7 @@ fun UserInfoText(user: UserState, centered: Boolean = false, forceWhite: Boolean
     val contentColor = if (forceWhite) Color.White else MaterialTheme.colorScheme.onSurface
     val shadow = if (forceWhite) Shadow(color = Color.Black.copy(alpha = 0.5f), blurRadius = 4f) else null
     
-    Text(
+    AppText(
         text = user.name,
         style = MaterialTheme.typography.titleLarge.copy(
             shadow = shadow
@@ -3333,7 +3336,7 @@ fun UserInfoText(user: UserState, centered: Boolean = false, forceWhite: Boolean
         Spacer(modifier = Modifier.width(8.dp))
         if (user.isVip) {
             AppSurface(color = MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(4.dp)) {
-                Text(
+                AppText(
                     user.vipLabel.ifEmpty { "大会员" },
                     fontSize = 10.sp,
                     color = MaterialTheme.colorScheme.onPrimary,
@@ -3342,7 +3345,7 @@ fun UserInfoText(user: UserState, centered: Boolean = false, forceWhite: Boolean
             }
         } else {
             AppSurface(color = MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(4.dp)) {
-                Text("正式会员", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
+                AppText("正式会员", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
             }
         }
     }
@@ -3402,14 +3405,14 @@ fun StatItem(
         } else Modifier
     ) {
         //  修复：数字和标签颜色 + 阴影
-        Text(
+        AppText(
             text = count, 
             fontWeight = FontWeight.Bold, 
             fontSize = 18.sp, 
             color = textColor,
             style = LocalTextStyle.current.copy(shadow = shadow)
         )
-        Text(
+        AppText(
             text = label, 
             fontSize = 12.sp, 
             color = if (useShadow) Color.White.copy(alpha = 0.9f) else labelColor, // Whiter label
@@ -3444,19 +3447,19 @@ fun VipBannerSection(user: UserState) {
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column {
-                Text(
+                AppText(
                     text = if (user.isVip) "尊贵的大会员" else "成为大会员",
                     color = colorScheme.onTertiaryContainer,
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp
                 )
-                Text(
+                AppText(
                     text = "硬币: ${user.coin}   B币: ${user.bcoin}",
                     color = colorScheme.onTertiaryContainer.copy(alpha = 0.8f),
                     fontSize = 11.sp
                 )
             }
-            Text(
+            AppText(
                 text = if (user.isVip) "续费 >" else "开通 >",
                 color = colorScheme.onTertiaryContainer,
                 fontSize = 12.sp
@@ -3757,7 +3760,7 @@ private fun ProfileServiceRow(
                 .background(iconTint.copy(alpha = 0.14f)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
+            AppIcon(
                 imageVector = icon,
                 contentDescription = null,
                 tint = iconTint,
@@ -3765,7 +3768,7 @@ private fun ProfileServiceRow(
             )
         }
         Spacer(modifier = Modifier.width(14.dp))
-        Text(
+        AppText(
             text = title,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
@@ -3774,7 +3777,7 @@ private fun ProfileServiceRow(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
-        Icon(
+        AppIcon(
             imageVector = rememberAppChevronForwardIcon(),
             contentDescription = null,
             tint = textColor.copy(alpha = 0.46f),
@@ -3855,7 +3858,7 @@ private fun ProfileAccountActionArea(
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
+                AppText(
                     text = if (isLogin) "退出登录" else "立即登录",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
@@ -3952,7 +3955,7 @@ private fun ProfileFavoriteFolderShortcutChip(
             .padding(horizontal = if (compact) 9.dp else 10.dp, vertical = if (compact) 7.dp else 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
+        AppIcon(
             imageVector = icon,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.tertiary,
@@ -3960,7 +3963,7 @@ private fun ProfileFavoriteFolderShortcutChip(
         )
         Spacer(modifier = Modifier.width(if (compact) 7.dp else 8.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(
+            AppText(
                 text = shortcut.title,
                 color = contentColor,
                 maxLines = 1,
@@ -3968,7 +3971,7 @@ private fun ProfileFavoriteFolderShortcutChip(
                 style = if (compact) MaterialTheme.typography.labelMedium else MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.SemiBold
             )
-            Text(
+            AppText(
                 text = "${shortcut.mediaCount} 个内容",
                 color = contentColor.copy(alpha = 0.62f),
                 maxLines = 1,
@@ -3994,7 +3997,7 @@ private fun ProfileFavoriteFolderMoreChip(
             .padding(horizontal = 12.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(
+        AppText(
             text = "更多收藏夹",
             color = contentColor,
             maxLines = 1,
@@ -4016,7 +4019,7 @@ private fun AccountSwitchDialog(
 ) {
     AppAlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("账号切换", fontWeight = FontWeight.Bold) },
+        title = { AppText("账号切换", fontWeight = FontWeight.Bold) },
         text = {
             Column(
                 modifier = Modifier
@@ -4026,7 +4029,7 @@ private fun AccountSwitchDialog(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 if (accounts.isEmpty()) {
-                    Text(
+                    AppText(
                         text = "暂无已保存账号，先添加一个账号后即可快速切换。",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -4057,12 +4060,12 @@ private fun AccountSwitchDialog(
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(
+                                    AppText(
                                         text = account.name.ifBlank { "UID ${account.mid}" },
                                         style = MaterialTheme.typography.bodyLarge,
                                         fontWeight = FontWeight.SemiBold
                                     )
-                                    Text(
+                                    AppText(
                                         text = buildString {
                                             append("UID ${account.mid}")
                                             if (account.vipLabel.isNotBlank()) {
@@ -4075,17 +4078,17 @@ private fun AccountSwitchDialog(
                                 }
 
                                 if (account.mid == activeAccountMid) {
-                                    Text(
+                                    AppText(
                                         text = "当前",
                                         color = MaterialTheme.colorScheme.primary,
                                         style = MaterialTheme.typography.labelLarge
                                     )
                                 } else {
                                     AppTextButton(onClick = { onSwitch(account.mid) }) {
-                                        Text("切换")
+                                        AppText("切换")
                                     }
                                     AppTextButton(onClick = { onRemove(account.mid) }) {
-                                        Text("移除", color = MaterialTheme.colorScheme.error)
+                                        AppText("移除", color = MaterialTheme.colorScheme.error)
                                     }
                                 }
                             }
@@ -4096,12 +4099,12 @@ private fun AccountSwitchDialog(
         },
         confirmButton = {
             AppTextButton(onClick = onAddAccount) {
-                Text("添加账号")
+                AppText("添加账号")
             }
         },
         dismissButton = {
             AppTextButton(onClick = onDismiss) {
-                Text("关闭")
+                AppText("关闭")
             }
         }
     )
@@ -4158,14 +4161,14 @@ fun ProfileTripleActionEntry(
     if (showDialog) {
         AppAlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("🎉 三连成功！") },
-            text = { Text("请选择你想解锁的功能：") },
+            title = { AppText("🎉 三连成功！") },
+            text = { AppText("请选择你想解锁的功能：") },
             confirmButton = {
                 AppTextButton(onClick = {
                     showDialog = false
                     onVipClick()
                 }) {
-                    Text("解锁大会员")
+                    AppText("解锁大会员")
                 }
             },
             dismissButton = {
@@ -4173,7 +4176,7 @@ fun ProfileTripleActionEntry(
                     showDialog = false
                     on4KClick()
                 }) {
-                    Text("4K 画质")
+                    AppText("4K 画质")
                 }
             }
         )

@@ -1,5 +1,7 @@
 // 文件路径: feature/watchlater/WatchLaterScreen.kt
 package com.android.purebilibili.feature.watchlater
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import com.android.purebilibili.core.ui.MediaContrastPalette
 
@@ -579,7 +581,7 @@ fun WatchLaterScreen(
                     ),
                     navigationIcon = {
                         AppIconButton(onClick = onBack) {
-                            Icon(rememberAppBackIcon(), contentDescription = "返回")
+                            AppIcon(rememberAppBackIcon(), contentDescription = "返回")
                         }
                     },
                     actions = {
@@ -591,13 +593,13 @@ fun WatchLaterScreen(
                                         selectedBvids = if (allSelected) emptySet() else state.items.map { it.bvid }.toSet()
                                     }
                                 ) {
-                                    Text(if (allSelected) "取消全选" else "全选")
+                                    AppText(if (allSelected) "取消全选" else "全选")
                                 }
                                 AppTextButton(
                                     enabled = selectedBvids.isNotEmpty(),
                                     onClick = { showBatchDeleteConfirm = true }
                                 ) {
-                                    Text("删除(${selectedBvids.size})")
+                                    AppText("删除(${selectedBvids.size})")
                                 }
                                 AppTextButton(
                                     onClick = {
@@ -605,7 +607,7 @@ fun WatchLaterScreen(
                                         selectedBvids = emptySet()
                                     }
                                 ) {
-                                    Text("完成")
+                                    AppText("完成")
                                 }
                             } else {
                                 AppIconButton(
@@ -632,7 +634,7 @@ fun WatchLaterScreen(
                                         onVideoClick(target.bvid, target.cid, target.resumePositionMs)
                                     }
                                 ) {
-                                    Icon(
+                                    AppIcon(
                                         rememberAppPlayIcon(),
                                         contentDescription = "全部播放",
                                         tint = MaterialTheme.colorScheme.primary
@@ -644,7 +646,7 @@ fun WatchLaterScreen(
                                         savedSortOrder = sortOrder.toggled().name
                                     }
                                 ) {
-                                    Text(if (sortOrder == WatchLaterSortOrder.FORWARD) "正序" else "倒序")
+                                    AppText(if (sortOrder == WatchLaterSortOrder.FORWARD) "正序" else "倒序")
                                 }
 
                                 Box {
@@ -652,7 +654,7 @@ fun WatchLaterScreen(
                                         enabled = !state.isManaging,
                                         onClick = { showManagementMenu = true }
                                     ) {
-                                        Icon(
+                                        AppIcon(
                                             imageVector = Icons.Filled.MoreVert,
                                             contentDescription = "更多管理",
                                             tint = MaterialTheme.colorScheme.primary
@@ -663,7 +665,7 @@ fun WatchLaterScreen(
                                         onDismissRequest = { showManagementMenu = false }
                                     ) {
                                         AppDropdownMenuItem(
-                                            text = { Text("全部听") },
+                                            text = { AppText("全部听") },
                                             enabled = !state.isManaging,
                                             onClick = {
                                                 showManagementMenu = false
@@ -700,7 +702,7 @@ fun WatchLaterScreen(
                                             }
                                         )
                                         AppDropdownMenuItem(
-                                            text = { Text("批量删除") },
+                                            text = { AppText("批量删除") },
                                             enabled = !state.isManaging,
                                             onClick = {
                                                 showManagementMenu = false
@@ -709,7 +711,7 @@ fun WatchLaterScreen(
                                             }
                                         )
                                         AppDropdownMenuItem(
-                                            text = { Text("清空已看") },
+                                            text = { AppText("清空已看") },
                                             enabled = !state.isManaging,
                                             onClick = {
                                                 showManagementMenu = false
@@ -717,7 +719,7 @@ fun WatchLaterScreen(
                                             }
                                         )
                                         AppDropdownMenuItem(
-                                            text = { Text("清空全部") },
+                                            text = { AppText("清空全部") },
                                             enabled = !state.isManaging,
                                             onClick = {
                                                 showManagementMenu = false
@@ -761,13 +763,13 @@ fun WatchLaterScreen(
                         modifier = Modifier.align(Alignment.Center),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(
+                        AppText(
                             text = state.error ?: "未知错误",
                             color = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.height(AppSpacingTokens.Small))
                         AppOutlinedButton(onClick = { viewModel.loadData() }) {
-                            Text("重试")
+                            AppText("重试")
                         }
                     }
                 }
@@ -776,14 +778,14 @@ fun WatchLaterScreen(
                         modifier = Modifier.align(Alignment.Center),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Icon(
+                        AppIcon(
                             rememberAppWatchLaterIcon(),
                             contentDescription = null,
                             modifier = Modifier.size(AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Large),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                         )
                         Spacer(modifier = Modifier.height(AppSpacingTokens.Small))
-                        Text(
+                        AppText(
                             text = "稍后再看列表为空",
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -876,8 +878,8 @@ fun WatchLaterScreen(
     if (showBatchDeleteConfirm) {
         AppAlertDialog(
             onDismissRequest = { showBatchDeleteConfirm = false },
-            title = { Text("批量删除") },
-            text = { Text("确认删除已选择的 ${selectedBvids.size} 个视频吗？") },
+            title = { AppText("批量删除") },
+            text = { AppText("确认删除已选择的 ${selectedBvids.size} 个视频吗？") },
             confirmButton = {
                 AppTextButton(
                     onClick = {
@@ -890,12 +892,12 @@ fun WatchLaterScreen(
                         showBatchDeleteConfirm = false
                     }
                 ) {
-                    Text("删除")
+                    AppText("删除")
                 }
             },
             dismissButton = {
                 AppTextButton(onClick = { showBatchDeleteConfirm = false }) {
-                    Text("取消")
+                    AppText("取消")
                 }
             }
         )
@@ -911,14 +913,14 @@ fun WatchLaterScreen(
         AppAlertDialog(
             onDismissRequest = { pendingManagementAction = null },
             title = {
-                Text(
+                AppText(
                     when (action) {
                         WatchLaterManagementAction.CLEAR_VIEWED -> "清空已看"
                         WatchLaterManagementAction.CLEAR_ALL -> "清空全部"
                     }
                 )
             },
-            text = { Text(resolveWatchLaterManagementConfirmText(action, affectedCount)) },
+            text = { AppText(resolveWatchLaterManagementConfirmText(action, affectedCount)) },
             confirmButton = {
                 AppTextButton(
                     onClick = {
@@ -926,12 +928,12 @@ fun WatchLaterScreen(
                         pendingManagementAction = null
                     }
                 ) {
-                    Text("确认")
+                    AppText("确认")
                 }
             },
             dismissButton = {
                 AppTextButton(onClick = { pendingManagementAction = null }) {
-                    Text("取消")
+                    AppText("取消")
                 }
             }
         )
@@ -1069,7 +1071,7 @@ private fun WatchLaterVideoCard(
                     .background(MediaContrastPalette.Scrim.copy(alpha = 0.7f), AppShapes.container(ContainerLevel.Tag))
                     .padding(horizontal = AppSpacingTokens.ExtraSmall, vertical = AppSpacingTokens.Micro)
             ) {
-                Text(
+                AppText(
                     text = formatDuration(item.duration),
                     style = MaterialTheme.typography.labelSmall,
                     color = MediaContrastPalette.Foreground
@@ -1089,7 +1091,7 @@ private fun WatchLaterVideoCard(
                 ),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
+            AppText(
                 text = item.title,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
@@ -1100,7 +1102,7 @@ private fun WatchLaterVideoCard(
             
             Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall))
             
-            Text(
+            AppText(
                 text = item.owner.name,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1108,7 +1110,7 @@ private fun WatchLaterVideoCard(
                 overflow = TextOverflow.Ellipsis
             )
             
-            Text(
+            AppText(
                 text = "${formatNumber(item.stat.view)}播放",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
@@ -1116,7 +1118,7 @@ private fun WatchLaterVideoCard(
         }
 
         if (isBatchMode) {
-            Icon(
+            AppIcon(
                 imageVector = if (isSelected) Icons.Rounded.CheckCircle else Icons.Rounded.RadioButtonUnchecked,
                 contentDescription = if (isSelected) "已选择" else "未选择",
                 tint = if (isSelected) {
@@ -1131,7 +1133,7 @@ private fun WatchLaterVideoCard(
                 onClick = onDelete,
                 modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
             ) {
-                Icon(
+                AppIcon(
                     imageVector = Icons.Rounded.Close,
                     contentDescription = "删除",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant

@@ -1,4 +1,6 @@
 package com.android.purebilibili.feature.profile
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import android.content.Intent
 import android.widget.Toast
@@ -131,10 +133,10 @@ fun SplashWallpaperPickerSheet(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     AppIconButton(onClick = onDismiss) {
-                        Icon(clearIcon, contentDescription = "关闭")
+                        AppIcon(clearIcon, contentDescription = "关闭")
                     }
 
-                    Text(
+                    AppText(
                         text = titleText,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
@@ -153,9 +155,9 @@ fun SplashWallpaperPickerSheet(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         AppOutlinedButton(onClick = openCustomWallpaperPicker) {
-                            Icon(photoIcon, contentDescription = null)
+                            AppIcon(photoIcon, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("从相册选择")
+                            AppText("从相册选择")
                         }
                         Spacer(modifier = Modifier.height(16.dp))
                         AdaptiveLoadingIndicator()
@@ -167,16 +169,16 @@ fun SplashWallpaperPickerSheet(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(text = error ?: "加载失败", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        AppText(text = error ?: "加载失败", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.height(12.dp))
                         AppOutlinedButton(onClick = openCustomWallpaperPicker) {
-                            Icon(photoIcon, contentDescription = null)
+                            AppIcon(photoIcon, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("从相册选择")
+                            AppText("从相册选择")
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         AppButton(onClick = { viewModel.loadOfficialWallpapers() }) {
-                            Text("重试")
+                            AppText("重试")
                         }
                     }
                 }
@@ -186,12 +188,12 @@ fun SplashWallpaperPickerSheet(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Text(text = "暂无官方壁纸", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        AppText(text = "暂无官方壁纸", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.height(12.dp))
                         AppOutlinedButton(onClick = openCustomWallpaperPicker) {
-                            Icon(photoIcon, contentDescription = null)
+                            AppIcon(photoIcon, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("从相册选择")
+                            AppText("从相册选择")
                         }
                     }
                 }
@@ -240,7 +242,7 @@ fun SplashWallpaperPickerSheet(
                                     )
 
                                     if (isSelected) {
-                                        Icon(
+                                        AppIcon(
                                             imageVector = rememberAppCheckCircleIcon(),
                                             contentDescription = null,
                                             tint = MaterialTheme.colorScheme.primary,
@@ -255,7 +257,7 @@ fun SplashWallpaperPickerSheet(
 
                                 Spacer(modifier = Modifier.height(6.dp))
 
-                                Text(
+                                AppText(
                                     text = item.title.ifEmpty { "未命名" },
                                     style = MaterialTheme.typography.bodySmall,
                                     maxLines = 1,
@@ -348,7 +350,7 @@ fun SplashWallpaperPickerSheet(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(
+                            AppText(
                                 text = "同时保存到相册",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -379,12 +381,12 @@ fun SplashWallpaperPickerSheet(
                                 strokeWidth = 2.dp
                             )
                         } else {
-                            Text(actionText, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                            AppText(actionText, fontSize = 16.sp, fontWeight = FontWeight.Bold)
                         }
                     }
 
                     if (saveState is WallpaperSaveState.Error) {
-                        Text(
+                        AppText(
                             text = (saveState as WallpaperSaveState.Error).message,
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodySmall,
@@ -426,14 +428,14 @@ private fun SplashCustomWallpaperTile(
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(
+                AppIcon(
                     photoIcon,
                     contentDescription = null,
                     tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(28.dp)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
+                AppText(
                     text = "相册",
                     style = MaterialTheme.typography.labelMedium,
                     color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
@@ -441,7 +443,7 @@ private fun SplashCustomWallpaperTile(
             }
 
             if (isSelected) {
-                Icon(
+                AppIcon(
                     imageVector = rememberAppCheckCircleIcon(),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
@@ -456,7 +458,7 @@ private fun SplashCustomWallpaperTile(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        Text(
+        AppText(
             text = "从相册选择",
             style = MaterialTheme.typography.bodySmall,
             maxLines = 1,

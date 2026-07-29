@@ -1,5 +1,7 @@
 // 文件路径: feature/dynamic/components/ImagePreviewDialog.kt
 package com.android.purebilibili.feature.dynamic.components
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
@@ -873,7 +875,7 @@ private fun ImagePreviewOverlayContent(
                                             verticalAlignment = Alignment.CenterVertically
                                         ) {
                                             if (currentText.headline.isNotBlank()) {
-                                                Text(
+                                                AppText(
                                                     text = currentText.headline,
                                                     color = MediaContrastPalette.Foreground.copy(alpha = 0.9f),
                                                     fontSize = MaterialTheme.typography.labelMedium.fontSize,
@@ -883,7 +885,7 @@ private fun ImagePreviewOverlayContent(
                                                 )
                                             }
                                             if (currentText.pageIndicator.isNotBlank()) {
-                                                Text(
+                                                AppText(
                                                     text = currentText.pageIndicator,
                                                     color = MediaContrastPalette.Foreground.copy(alpha = 0.64f),
                                                     fontSize = MaterialTheme.typography.labelSmall.fontSize
@@ -892,7 +894,7 @@ private fun ImagePreviewOverlayContent(
                                         }
                                     }
                                     if (currentText.body.isNotBlank()) {
-                                        Text(
+                                        AppText(
                                             text = currentText.body,
                                             color = MediaContrastPalette.Foreground.copy(alpha = 0.94f),
                                             fontSize = MaterialTheme.typography.bodyMedium.fontSize,
@@ -996,7 +998,7 @@ private fun ImagePreviewOverlayContent(
                             containerColor = MediaContrastPalette.Scrim.copy(0.5f)
                         )
                     ) {
-                        Icon(
+                        AppIcon(
                             imageVector = rememberAppClearIcon(),
                             contentDescription = "关闭",
                             tint = MediaContrastPalette.Foreground
@@ -1054,7 +1056,7 @@ private fun ImagePreviewOverlayContent(
                                             verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Micro)
                                         ) {
                                             if (secondaryText.isNotBlank()) {
-                                                Text(
+                                                AppText(
                                                     text = secondaryText,
                                                     color = MediaContrastPalette.Foreground.copy(alpha = 0.82f),
                                                     fontSize = MaterialTheme.typography.labelSmall.fontSize,
@@ -1063,7 +1065,7 @@ private fun ImagePreviewOverlayContent(
                                                 )
                                             }
                                             if (primaryText.isNotBlank()) {
-                                                Text(
+                                                AppText(
                                                     text = primaryText,
                                                     color = MediaContrastPalette.Foreground,
                                                     fontSize = MaterialTheme.typography.labelMedium.fontSize,
@@ -1075,7 +1077,7 @@ private fun ImagePreviewOverlayContent(
                                                 )
                                             }
                                             if (images.size > 1) {
-                                                Text(
+                                                AppText(
                                                     text = "${page + 1} / ${images.size}",
                                                     color = MediaContrastPalette.Foreground.copy(alpha = 0.8f),
                                                     fontSize = MaterialTheme.typography.labelSmall.fontSize
@@ -1086,7 +1088,7 @@ private fun ImagePreviewOverlayContent(
                                 }
                             }
                             images.size > 1 -> {
-                                Text(
+                                AppText(
                                     "${pagerState.currentPage + 1} / ${images.size}",
                                     color = MediaContrastPalette.Foreground,
                                     fontSize = MaterialTheme.typography.bodyMedium.fontSize,
@@ -1108,7 +1110,7 @@ private fun ImagePreviewOverlayContent(
                                 containerColor = MediaContrastPalette.Scrim.copy(0.5f)
                             )
                         ) {
-                            Icon(
+                            AppIcon(
                                 imageVector = if (imagePreviewTextVisible) {
                                     rememberAppVisibilityOffIcon()
                                 } else {
@@ -1138,7 +1140,7 @@ private fun ImagePreviewOverlayContent(
                                 strokeWidth = AppSpacingTokens.Micro
                             )
                         } else {
-                            Icon(
+                            AppIcon(
                                 imageVector = shareIcon,
                                 contentDescription = "分享图片",
                                 tint = MediaContrastPalette.Foreground
@@ -1165,7 +1167,7 @@ private fun ImagePreviewOverlayContent(
                                 strokeWidth = AppSpacingTokens.Micro
                             )
                         } else {
-                            Icon(
+                            AppIcon(
                                 imageVector = rememberAppDownloadIcon(),
                                 contentDescription = "保存图片",
                                 tint = MediaContrastPalette.Foreground
@@ -1221,7 +1223,7 @@ private fun ImagePreviewCommentTopBar(
             onClick = onDismiss,
             modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
         ) {
-            Icon(
+            AppIcon(
                 imageVector = rememberAppClearIcon(),
                 contentDescription = "关闭",
                 tint = MediaContrastPalette.Foreground,
@@ -1232,7 +1234,7 @@ private fun ImagePreviewCommentTopBar(
             modifier = Modifier.weight(1f),
             contentAlignment = Alignment.Center
         ) {
-            Text(
+            AppText(
                 text = label,
                 color = MediaContrastPalette.Foreground.copy(alpha = 0.9f),
                 fontSize = MaterialTheme.typography.labelMedium.fontSize,
@@ -1257,7 +1259,7 @@ private fun ImagePreviewCommentTopBar(
                     strokeWidth = AppSpacingTokens.Micro
                 )
             } else {
-                Icon(
+                AppIcon(
                     imageVector = shareIcon,
                     contentDescription = "分享图片",
                     tint = MediaContrastPalette.Foreground,
@@ -1305,7 +1307,7 @@ private fun ImagePreviewCommentPanel(
             )
             Spacer(modifier = Modifier.width(AppSpacingTokens.Small + AppSpacingTokens.Micro))
             Column(modifier = Modifier.weight(1f)) {
-                Text(
+                AppText(
                     text = context.authorName,
                     color = MediaContrastPalette.Foreground,
                     fontSize = MaterialTheme.typography.bodyMedium.fontSize,
@@ -1313,7 +1315,7 @@ private fun ImagePreviewCommentPanel(
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
                 if (context.timeText.isNotBlank()) {
-                    Text(
+                    AppText(
                         text = context.timeText,
                         color = MediaContrastPalette.Foreground.copy(alpha = 0.58f),
                         fontSize = MaterialTheme.typography.labelSmall.fontSize,
@@ -1324,7 +1326,7 @@ private fun ImagePreviewCommentPanel(
         }
 
         if (context.body.isNotBlank()) {
-            Text(
+            AppText(
                 text = context.body,
                 color = MediaContrastPalette.Foreground.copy(alpha = 0.94f),
                 fontSize = MaterialTheme.typography.bodyMedium.fontSize,
@@ -1348,7 +1350,7 @@ private fun ImagePreviewCommentPanel(
                     .padding(horizontal = AppSpacingTokens.Medium + AppSpacingTokens.Micro),
                 contentAlignment = Alignment.CenterStart
             ) {
-                Text(
+                AppText(
                     text = "回复 ${context.authorName}",
                     color = MediaContrastPalette.Foreground.copy(alpha = 0.56f),
                     fontSize = MaterialTheme.typography.labelMedium.fontSize,
@@ -1409,14 +1411,14 @@ private fun ImagePreviewCommentActionButton(
                 strokeWidth = AppSpacingTokens.Micro
             )
         } else {
-            Icon(
+            AppIcon(
                 imageVector = icon,
                 contentDescription = label,
                 tint = if (selected) MaterialTheme.colorScheme.primary else MediaContrastPalette.Foreground,
                 modifier = Modifier.size(AppSpacingTokens.ExtraLarge)
             )
         }
-        Text(
+        AppText(
             text = label,
             color = MediaContrastPalette.Foreground.copy(alpha = if (enabled) 0.88f else 0.38f),
             fontSize = MaterialTheme.typography.labelSmall.fontSize,

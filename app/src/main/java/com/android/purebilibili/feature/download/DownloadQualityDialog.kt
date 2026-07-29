@@ -1,4 +1,6 @@
 package com.android.purebilibili.feature.download
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -55,14 +57,14 @@ fun DownloadQualityDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
+                    AppText(
                         text = "选择下载画质",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     AppIconButton(onClick = onDismiss) {
-                        Icon(
+                        AppIcon(
                             imageVector = CupertinoIcons.Default.Xmark,
                             contentDescription = "取消",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -73,7 +75,7 @@ fun DownloadQualityDialog(
                 Spacer(modifier = Modifier.height(8.dp))
                 
                 // 视频标题
-                Text(
+                AppText(
                     text = title,
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -94,7 +96,7 @@ fun DownloadQualityDialog(
                         checked = includeDanmaku,
                         onCheckedChange = { includeDanmaku = it }
                     )
-                    Text(
+                    AppText(
                         text = "同时缓存弹幕",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
@@ -124,7 +126,7 @@ fun DownloadQualityDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
+                            AppText(
                                 text = qualityLabel,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                                 color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
@@ -136,7 +138,7 @@ fun DownloadQualityDialog(
                                     color = MaterialTheme.colorScheme.tertiary,
                                     shape = RoundedCornerShape(4.dp)
                                 ) {
-                                    Text(
+                                    AppText(
                                         text = "VIP",
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold,
@@ -147,7 +149,7 @@ fun DownloadQualityDialog(
                             }
                         }
                         if (isSelected) {
-                            Icon(
+                            AppIcon(
                                 imageVector = CupertinoIcons.Default.Checkmark,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer
@@ -165,7 +167,7 @@ fun DownloadQualityDialog(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("取消")
+                    AppText("取消")
                 }
             }
         }

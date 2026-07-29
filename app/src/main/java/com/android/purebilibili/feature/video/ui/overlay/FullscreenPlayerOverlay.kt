@@ -1,5 +1,7 @@
 // 文件路径: feature/video/FullscreenPlayerOverlay.kt
 package com.android.purebilibili.feature.video.ui.overlay
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import com.android.purebilibili.feature.video.danmaku.rememberDanmakuManager
 import com.android.purebilibili.feature.video.danmaku.configureAsPassiveDanmakuOverlay
@@ -940,10 +942,10 @@ fun FullscreenPlayerOverlay(
                         modifier = Modifier.padding(16.dp)
                     ) {
                         AppIconButton(onClick = onNavigateToDetail) {
-                            Icon(CupertinoIcons.Default.ChevronBackward, "返回详情页", tint = Color.White)
+                            AppIcon(CupertinoIcons.Default.ChevronBackward, "返回详情页", tint = Color.White)
                         }
                         Spacer(Modifier.width(8.dp))
-                        Text(
+                        AppText(
                             text = miniPlayerManager.currentTitle,
                             color = Color.White,
                             fontSize = 16.sp,
@@ -955,7 +957,7 @@ fun FullscreenPlayerOverlay(
                                 .copyOnLongPress(miniPlayerManager.currentTitle, "视频标题")
                         )
 
-                        Text(
+                        AppText(
                             text = currentClockText,
                             color = Color.White.copy(alpha = 0.9f),
                             fontSize = 14.sp,
@@ -990,14 +992,14 @@ fun FullscreenPlayerOverlay(
                                 .padding(horizontal = 8.dp, vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
+                            AppIcon(
                                 imageVector = if (danmakuEnabled) CupertinoIcons.Filled.TextBubble else CupertinoIcons.Outlined.TextBubble,
                                 contentDescription = if (danmakuEnabled) "关闭弹幕" else "开启弹幕",
                                 tint = if (danmakuEnabled) danmakuActiveColor else danmakuInactiveColor,
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text(
+                            AppText(
                                 text = if (danmakuEnabled) "开" else "关",
                                 color = if (danmakuEnabled) danmakuActiveColor else danmakuInactiveColor,
                                 fontSize = 12.sp,
@@ -1007,7 +1009,7 @@ fun FullscreenPlayerOverlay(
                         
                         //  [新增] 弹幕设置按钮
                         AppIconButton(onClick = { showDanmakuSettings = true }) {
-                            Icon(CupertinoIcons.Default.Gear, "弹幕设置", tint = Color.White)
+                            AppIcon(CupertinoIcons.Default.Gear, "弹幕设置", tint = Color.White)
                         }
                     }
                 }
@@ -1041,7 +1043,7 @@ fun FullscreenPlayerOverlay(
                                     }
                                 },
                             ) {
-                                Icon(
+                                AppIcon(
                                     imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                                     contentDescription = if (isPlaying) "暂停" else "播放",
                                     tint = MaterialTheme.colorScheme.primary,
@@ -1051,7 +1053,7 @@ fun FullscreenPlayerOverlay(
                             
                             Spacer(modifier = Modifier.width(8.dp))
                             
-                            Text(
+                            AppText(
                                 FormatUtils.formatDuration((displayedProgressState.current / 1000).toInt()),
                                 color = Color.White,
                                 fontSize = 12.sp
@@ -1098,7 +1100,7 @@ fun FullscreenPlayerOverlay(
                                 )
                             )
                             
-                            Text(FormatUtils.formatDuration((duration / 1000).toInt()), color = Color.White, fontSize = 12.sp)
+                            AppText(FormatUtils.formatDuration((duration / 1000).toInt()), color = Color.White, fontSize = 12.sp)
                         }
                         
                         Spacer(modifier = Modifier.height(4.dp))
@@ -1348,7 +1350,7 @@ private fun GestureIndicator(
                     .widthIn(min = 128.dp, max = 190.dp)
                     .padding(horizontal = 18.dp, vertical = 14.dp)
             ) {
-                Text(
+                AppText(
                     "${FormatUtils.formatDuration(((seekTime ?: 0) / 1000).toInt())} / ${FormatUtils.formatDuration((duration / 1000).toInt())}",
                     color = Color.White,
                     fontSize = 20.sp,
@@ -1404,7 +1406,7 @@ private fun FullscreenControlButton(
         shape = RoundedCornerShape(6.dp),
         color = Color.Black.copy(alpha = 0.5f)
     ) {
-        Text(
+        AppText(
             text = text,
             color = if (isHighlighted) MaterialTheme.colorScheme.primary else Color.White,
             fontSize = 12.sp,

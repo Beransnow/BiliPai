@@ -1,4 +1,6 @@
 package com.android.purebilibili.feature.video.ui.overlay
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -347,7 +349,7 @@ fun PortraitFullscreenOverlay(
                                 strokeWidth = 2.dp
                             )
                             Spacer(modifier = Modifier.width(10.dp))
-                            Text(
+                            AppText(
                                 text = "正在恢复播放...",
                                 color = Color.White,
                                 fontSize = 14.sp,
@@ -426,7 +428,7 @@ private fun PortraitProgressControlStrip(
         modifier = modifier.height(40.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
+        AppText(
             text = timeLabel,
             color = Color.White.copy(alpha = 0.86f),
             fontSize = 12.sp,
@@ -479,7 +481,7 @@ private fun PortraitChromeChip(
             Color.White
         }
     ) {
-        Text(
+        AppText(
             text = label,
             fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold,
@@ -526,7 +528,7 @@ private fun PortraitTopControlBar(
                 colors = IconButtonDefaults.iconButtonColors(containerColor = Color.Transparent),
                 modifier = Modifier.size(layoutPolicy.topBackButtonSizeDp.dp)
             ) {
-                Icon(
+                AppIcon(
                     imageVector = CupertinoIcons.Default.ChevronBackward,
                     contentDescription = "返回",
                     tint = Color.White,
@@ -538,7 +540,7 @@ private fun PortraitTopControlBar(
                 colors = IconButtonDefaults.iconButtonColors(containerColor = Color.Transparent),
                 modifier = Modifier.size(layoutPolicy.topBackButtonSizeDp.dp)
             ) {
-                Icon(
+                AppIcon(
                     imageVector = CupertinoIcons.Default.House,
                     contentDescription = "主界面",
                     tint = Color.White,
@@ -547,7 +549,7 @@ private fun PortraitTopControlBar(
             }
             Spacer(modifier = Modifier.width(layoutPolicy.topViewCountStartSpacingDp.dp))
             if (shouldShowPortraitViewCount(viewCount = viewCount, compactMode = layoutPolicy.compactMode)) {
-                Text(
+                AppText(
                     text = "${FormatUtils.formatStat(viewCount.toLong())}播放",
                     color = Color.White.copy(alpha = 0.8f),
                     fontSize = layoutPolicy.topViewCountFontSp.sp
@@ -582,7 +584,7 @@ private fun PortraitTopControlBar(
                     .padding(horizontal = 6.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
+                AppIcon(
                     imageVector = if (danmakuEnabled) CupertinoIcons.Filled.TextBubble else CupertinoIcons.Outlined.TextBubble,
                     contentDescription = if (danmakuEnabled) "关闭弹幕" else "开启弹幕",
                     tint = if (danmakuEnabled) danmakuActiveColor else danmakuInactiveColor,
@@ -590,7 +592,7 @@ private fun PortraitTopControlBar(
                 )
             }
             AppIconButton(onClick = onSearchClick) {
-                Icon(
+                AppIcon(
                     imageVector = Icons.Rounded.Search,
                     contentDescription = "搜索",
                     tint = Color.White,
@@ -599,7 +601,7 @@ private fun PortraitTopControlBar(
             }
             if (shouldShowPortraitTopMoreAction()) {
                 AppIconButton(onClick = onMoreClick) {
-                    Icon(
+                    AppIcon(
                         imageVector = Icons.Rounded.MoreVert,
                         contentDescription = "菜单",
                         tint = Color.White,
@@ -651,7 +653,7 @@ private fun PortraitVideoInfo(
             }
             
             // 名字（seed 未带 owner 时勿只渲染裸 `@`）
-            Text(
+            AppText(
                 text = com.android.purebilibili.feature.video.ui.pager.resolvePortraitAuthorLabel(authorName),
                 color = Color.White,
                 fontSize = layoutPolicy.authorNameFontSp.sp,
@@ -681,7 +683,7 @@ private fun PortraitVideoInfo(
                     modifier = Modifier.padding(horizontal = layoutPolicy.followButtonHorizontalPaddingDp.dp)
                 ) {
                     if (iconVisible) {
-                        Icon(
+                        AppIcon(
                             imageVector = Icons.Rounded.Add,
                             contentDescription = null,
                             tint = contentColor,
@@ -689,7 +691,7 @@ private fun PortraitVideoInfo(
                         )
                         Spacer(modifier = Modifier.width(layoutPolicy.followIconSpacingDp.dp))
                     }
-                    Text(
+                    AppText(
                         text = buttonText,
                         color = contentColor,
                         fontSize = layoutPolicy.followTextFontSp.sp,
@@ -700,7 +702,7 @@ private fun PortraitVideoInfo(
         }
 
         // 第二行：标题
-        Text(
+        AppText(
             text = title,
             color = Color.White.copy(alpha = 0.9f),
             fontSize = layoutPolicy.titleFontSp.sp,

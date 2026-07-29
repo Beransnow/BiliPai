@@ -23,7 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import com.android.purebilibili.core.ui.components.AppText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -928,7 +928,7 @@ internal fun AndroidNativeUnderlinedSegmentedControl(
                         .clickable(enabled = enabled) { onSelected(index) },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
+                    AppText(
                         text = label,
                         color = if (selected) selectedTextColor else unselectedTextColor,
                         fontSize = labelFontSize,
@@ -1023,7 +1023,7 @@ private fun BottomBarLiquidSegmentedLabels(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
+                AppText(
                     text = label,
                     color = textColor,
                     fontSize = labelFontSize,

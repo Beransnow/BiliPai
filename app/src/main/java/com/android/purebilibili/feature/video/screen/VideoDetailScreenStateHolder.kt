@@ -1,5 +1,6 @@
 // 文件路径: feature/video/screen/VideoDetailScreen.kt
 package com.android.purebilibili.feature.video.screen
+import com.android.purebilibili.core.ui.components.AppText
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -98,6 +99,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState
 import com.android.purebilibili.core.store.PortraitPlayerCollapseMode
 import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
+import com.android.purebilibili.core.ui.AppSurfaceTokens
 //  已改用 MaterialTheme.colorScheme.primary
 
 import com.android.purebilibili.data.model.response.RelatedVideo
@@ -2264,7 +2266,7 @@ internal fun VideoDetailScreenStateHolder(
     // 清理逻辑（markLeavingByNavigation、restoreStatusBar）已移至 DisposableEffect.onDispose
 
     // 沉浸式状态栏控制
-    val backgroundColor = MaterialTheme.colorScheme.background
+    val backgroundColor = AppSurfaceTokens.background()
     val isLightBackground = remember(backgroundColor) { backgroundColor.luminance() > 0.5f }
     val systemBarsVisibilityPolicy = remember(
         isFullscreenMode,
@@ -3045,7 +3047,7 @@ internal fun VideoDetailScreenStateHolder(
                                     if (suppressPhoneDetailBodyForDirectPortrait) {
                                         Color.Black
                                     } else {
-                                        MaterialTheme.colorScheme.background
+                                        AppSurfaceTokens.background()
                                     }
                                 )
                                 .graphicsLayer {
@@ -3102,7 +3104,7 @@ internal fun VideoDetailScreenStateHolder(
                                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                                     AdaptiveLoadingIndicator()
                                                     Spacer(Modifier.height(16.dp))
-                                                    Text(
+                                                    AppText(
                                                         text = "正在重试 ${loadingState.retryAttempt}/${loadingState.maxAttempts}...",
                                                         color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                                         fontSize = 14.sp
@@ -3192,7 +3194,7 @@ internal fun VideoDetailScreenStateHolder(
                                             modifier = Modifier.padding(32.dp)
                                         ) {
                                             //  根据错误类型显示不同图标
-                                            Text(
+                                            AppText(
                                                 text = when (errorState.error) {
                                                     is com.android.purebilibili.data.model.VideoLoadError.NetworkError -> "📡"
                                                     is com.android.purebilibili.data.model.VideoLoadError.VideoNotFound -> "🔍"
@@ -3205,7 +3207,7 @@ internal fun VideoDetailScreenStateHolder(
                                                 fontSize = 48.sp
                                             )
                                             Spacer(Modifier.height(16.dp))
-                                            Text(
+                                            AppText(
                                                 text = errorState.msg,
                                                 color = MaterialTheme.colorScheme.onSurface,
                                                 fontSize = 16.sp,
@@ -3217,7 +3219,7 @@ internal fun VideoDetailScreenStateHolder(
                                                 is com.android.purebilibili.data.model.VideoLoadError.GlobalCooldown,
                                                 is com.android.purebilibili.data.model.VideoLoadError.PlayUrlEmpty -> {
                                                     Spacer(Modifier.height(8.dp))
-                                                    Text(
+                                                    AppText(
                                                         text = " 建议：切换 WiFi/移动数据 或 清除缓存后重试",
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                         fontSize = 13.sp,
@@ -3226,7 +3228,7 @@ internal fun VideoDetailScreenStateHolder(
                                                 }
                                                 is com.android.purebilibili.data.model.VideoLoadError.RateLimited -> {
                                                     Spacer(Modifier.height(8.dp))
-                                                    Text(
+                                                    AppText(
                                                         text = " 该视频可能暂时不可用，请尝试其他视频",
                                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                         fontSize = 13.sp,
@@ -3248,7 +3250,7 @@ internal fun VideoDetailScreenStateHolder(
                                                         containerColor = MaterialTheme.colorScheme.primary
                                                     )
                                                 ) {
-                                                    Text(
+                                                    AppText(
                                                         text = when (errorState.error) {
                                                             is com.android.purebilibili.data.model.VideoLoadError.RateLimited -> "强制重试"
                                                             is com.android.purebilibili.data.model.VideoLoadError.GlobalCooldown -> "清除冷却并重试"
@@ -3476,7 +3478,7 @@ internal fun VideoDetailScreenStateHolder(
         transitionState = transitionState,
         routeSheetMotion = routeSheetMotion,
         isFullscreenMode = isFullscreenMode,
-        backgroundColor = MaterialTheme.colorScheme.background,
+        backgroundColor = AppSurfaceTokens.background(),
         modifier = detailShellModifier,
         mainContent = { VideoDetailRouteSheetMainContent() },
         overlayContent = { VideoDetailRouteSheetOverlayContent() }

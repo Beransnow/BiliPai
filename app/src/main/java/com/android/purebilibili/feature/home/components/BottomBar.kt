@@ -59,11 +59,11 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PlayCircleOutline
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.WatchLater
-import androidx.compose.material3.Icon
+import com.android.purebilibili.core.ui.components.AppIcon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItemDefaults
-import androidx.compose.material3.Text
+import com.android.purebilibili.core.ui.components.AppText
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,8 +79,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
@@ -272,8 +270,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_home,
         R.string.bottom_nav_home,
         emptyList(),
-        { Icon(CupertinoIcons.Filled.House, contentDescription = null) },
-        { Icon(CupertinoIcons.Outlined.House, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Filled.House, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Outlined.House, contentDescription = null) },
         ScreenRoutes.Home.route
     ),
     DYNAMIC(
@@ -281,8 +279,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_dynamic,
         R.string.bottom_nav_dynamic,
         emptyList(),
-        { Icon(CupertinoIcons.Filled.Bell, contentDescription = null) },
-        { Icon(CupertinoIcons.Outlined.Bell, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Filled.Bell, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Outlined.Bell, contentDescription = null) },
         ScreenRoutes.Dynamic.route
     ),
     STORY(
@@ -290,8 +288,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_story,
         R.string.bottom_nav_story,
         emptyList(),
-        { Icon(CupertinoIcons.Filled.PlayCircle, contentDescription = null) },
-        { Icon(CupertinoIcons.Outlined.PlayCircle, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Filled.PlayCircle, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Outlined.PlayCircle, contentDescription = null) },
         ScreenRoutes.Story.baseRoute
     ),
     HISTORY(
@@ -299,8 +297,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_history,
         R.string.bottom_nav_history_desc,
         listOf("历史记录"),
-        { Icon(CupertinoIcons.Filled.Clock, contentDescription = null) },
-        { Icon(CupertinoIcons.Outlined.Clock, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Filled.Clock, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Outlined.Clock, contentDescription = null) },
         ScreenRoutes.History.route
     ),
     LISTEN_VIDEO(
@@ -309,13 +307,13 @@ enum class BottomNavItem(
         R.string.bottom_nav_listen_video_desc,
         listOf("音乐"),
         {
-            Icon(
+            AppIcon(
                 painter = painterResource(R.drawable.ic_bottom_nav_listen_video_selected),
                 contentDescription = null
             )
         },
         {
-            Icon(
+            AppIcon(
                 painter = painterResource(R.drawable.ic_bottom_nav_listen_video),
                 contentDescription = null
             )
@@ -327,8 +325,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_profile,
         R.string.bottom_nav_profile_desc,
         listOf("个人中心"),
-        { Icon(CupertinoIcons.Filled.Person, contentDescription = null) },
-        { Icon(CupertinoIcons.Outlined.Person, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Filled.Person, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Outlined.Person, contentDescription = null) },
         ScreenRoutes.Profile.route
     ),
     FAVORITE(
@@ -336,8 +334,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_favorite,
         R.string.bottom_nav_favorite_desc,
         listOf("收藏夹"),
-        { Icon(CupertinoIcons.Filled.Star, contentDescription = null) },
-        { Icon(CupertinoIcons.Outlined.Star, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Filled.Star, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Outlined.Star, contentDescription = null) },
         ScreenRoutes.Favorite.route
     ),
     LIVE(
@@ -345,8 +343,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_live,
         R.string.bottom_nav_live,
         emptyList(),
-        { Icon(CupertinoIcons.Filled.Video, contentDescription = null) },
-        { Icon(CupertinoIcons.Outlined.Video, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Filled.Video, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Outlined.Video, contentDescription = null) },
         ScreenRoutes.LiveList.route
     ),
     WATCHLATER(
@@ -354,8 +352,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_watch_later,
         R.string.bottom_nav_watch_later_desc,
         listOf("稍后再看"),
-        { Icon(CupertinoIcons.Filled.Clock, contentDescription = null) },
-        { Icon(CupertinoIcons.Outlined.Clock, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Filled.Clock, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Outlined.Clock, contentDescription = null) },
         ScreenRoutes.WatchLater.route
     ),
     SETTINGS(
@@ -363,8 +361,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_settings,
         R.string.bottom_nav_settings,
         emptyList(),
-        { Icon(CupertinoIcons.Filled.Gearshape, contentDescription = null) },
-        { Icon(CupertinoIcons.Default.Gearshape, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Filled.Gearshape, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Default.Gearshape, contentDescription = null) },
         ScreenRoutes.Settings.route
     )
 }
@@ -1608,59 +1606,6 @@ internal fun resolveBottomBarIndicatorGlowAlpha(
     return maxOf(pressProgress, motionProgress).coerceIn(0f, 1f)
 }
 
-internal fun resolveBottomBarShellHighlightAlpha(
-    glassEnabled: Boolean,
-    pressProgress: Float,
-    motionProgress: Float = 0f,
-    isDragging: Boolean = false
-): Float {
-    if (!glassEnabled) return 0f
-    // 拖拽中保留一道地板:慢拖时 motion/press 都低,但高光应持续锚定在指示器上,
-    // 让它「跟手」而非中途变暗掉队。高 motion 时不被地板压低。
-    val dragFloor = if (isDragging) 0.6f else 0f
-    return maxOf(pressProgress, motionProgress, dragFloor).coerceIn(0f, 1f)
-}
-
-internal fun resolveBottomBarInteractiveHighlightCenterX(
-    indicatorTranslationXPx: Float,
-    itemWidthPx: Float,
-    panelOffsetPx: Float
-): Float {
-    return indicatorTranslationXPx + itemWidthPx * 0.5f + panelOffsetPx
-}
-
-private fun Modifier.bottomBarInteractiveHighlight(
-    enabled: Boolean,
-    alpha: Float,
-    centerXPx: Float
-): Modifier = composed {
-    // 不直接引用平台着色器类：低版本系统在 Compose materialize modifier 时也可能解析类并崩溃。
-    drawWithContent {
-        val clampedAlpha = alpha.coerceIn(0f, 1f)
-        drawContent()
-        if (!enabled || clampedAlpha <= 0f) return@drawWithContent
-        val center = Offset(
-            x = centerXPx.coerceIn(0f, size.width),
-            y = size.height * 0.5f
-        )
-        drawRect(
-            color = OpticalContrastPalette.Highlight.copy(alpha = 0.06f * clampedAlpha),
-            blendMode = BlendMode.Plus
-        )
-        drawRect(
-            brush = Brush.radialGradient(
-                colors = listOf(
-                    OpticalContrastPalette.Highlight.copy(alpha = 0.17f * clampedAlpha),
-                    Color.Transparent
-                ),
-                center = center,
-                radius = size.minDimension * 1.2f
-            ),
-            blendMode = BlendMode.Plus
-        )
-    }
-}
-
 internal fun resolveBottomBarBackdropPresetCaptureLens(
     progress: Float
 ): BottomBarBackdropPresetLensSpec {
@@ -2410,7 +2355,6 @@ private fun CupertinoBottomBar(
             containerColor = containerColor,
             tuning = tuning,
             glassEnabled = glassEnabled,
-            interactiveHighlightEnabled = homeSettings.bottomBarInteractiveHighlightEnabled,
             liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
             iconStyle = SharedFloatingBottomBarIconStyle.CUPERTINO,
             haptic = haptic,
@@ -2556,7 +2500,6 @@ private fun MaterialBottomBar(
             containerColor = containerColor,
             tuning = androidNativeTuning,
             glassEnabled = glassEnabled,
-            interactiveHighlightEnabled = homeSettings.bottomBarInteractiveHighlightEnabled,
             liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
             haptic = haptic,
             bottomBarSearchEnabled = homeSettings.isBottomBarSearchEnabled,
@@ -2624,7 +2567,7 @@ private fun MaterialBottomBar(
                                             contentDescription = itemContentDescription
                                         )
                                     } else {
-                                        Icon(
+                                        AppIcon(
                                             imageVector = resolveMaterialBottomBarIcon(item = item, selected = currentItem == item),
                                             contentDescription = itemContentDescription
                                         )
@@ -2636,7 +2579,7 @@ private fun MaterialBottomBar(
                         },
                         label = if (showText) {
                             {
-                                Text(
+                                AppText(
                                     text = itemLabel,
                                     modifier = Modifier.bottomBarSkinLabelScrim(
                                         color = skinDockedItemColors.labelScrimColor,
@@ -2670,7 +2613,7 @@ private fun MaterialBottomBar(
                         },
                         icon = {
                             if (showIcon) {
-                                Icon(
+                                AppIcon(
                                     imageVector = Icons.AutoMirrored.Outlined.MenuOpen,
                                     contentDescription = sidebarLabel
                                 )
@@ -2680,7 +2623,7 @@ private fun MaterialBottomBar(
                         },
                         label = if (showText) {
                             {
-                                Text(
+                                AppText(
                                     text = sidebarLabel,
                                     modifier = Modifier.bottomBarSkinLabelScrim(
                                         color = skinDockedItemColors.labelScrimColor,
@@ -2797,7 +2740,6 @@ private fun MiuixBottomBar(
             containerColor = containerColor,
             tuning = tuning,
             glassEnabled = glassEnabled,
-            interactiveHighlightEnabled = homeSettings.bottomBarInteractiveHighlightEnabled,
             liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
             iconStyle = SharedFloatingBottomBarIconStyle.CUPERTINO,
             haptic = haptic,
@@ -2891,7 +2833,7 @@ private fun MiuixBottomBar(
                         badge = reminderBadgeText?.let { badgeText ->
                             {
                                 AppPlatformNavigationBadge {
-                                    Text(text = badgeText)
+                                    AppText(text = badgeText)
                                 }
                             }
                         }
@@ -3018,7 +2960,7 @@ private fun RowScope.MiuixDockedBottomBarItem(
                         size = resolveBottomBarMiuixSkinDockIconSize()
                     )
                 } else {
-                    Icon(
+                    AppIcon(
                         imageVector = icon,
                         contentDescription = label,
                         tint = contentColor,
@@ -3028,7 +2970,7 @@ private fun RowScope.MiuixDockedBottomBarItem(
             }
         }
         if (showText) {
-            Text(
+            AppText(
                 text = label,
                 color = contentColor,
                 textAlign = TextAlign.Center,
@@ -3072,7 +3014,6 @@ private fun KernelSuAlignedBottomBar(
     containerColor: Color,
     tuning: AndroidNativeBottomBarTuning,
     glassEnabled: Boolean,
-    interactiveHighlightEnabled: Boolean,
     liquidGlassPreset: BottomBarLiquidGlassPreset,
     iconStyle: SharedFloatingBottomBarIconStyle = SharedFloatingBottomBarIconStyle.MATERIAL,
     haptic: (HapticType) -> Unit,
@@ -3154,12 +3095,6 @@ private fun KernelSuAlignedBottomBar(
         if (isValidSelection) {
             dampedDragState.updateIndex(selectedIndex)
         }
-    }
-    // [KSU 对齐] 交互高光锚点:点击切换时高光直接在被点项绽放(对齐 KSU 按下即
-    // snap 到触点),不随选中弹簧动画沿途滑动。拖拽时改为跟随实时指示器。
-    var highlightAnchorIndex by remember { mutableIntStateOf(selectedIndex) }
-    LaunchedEffect(selectedIndex) {
-        highlightAnchorIndex = selectedIndex
     }
     val pressMotionProgress by remember {
         derivedStateOf { dampedDragState.pressProgress }
@@ -3350,44 +3285,11 @@ private fun KernelSuAlignedBottomBar(
                     }
                 }
             }
-            // [KSU 对齐] 高光位移:拖拽时跟随实时指示器,否则锚定到被点项,
-            // 使点击切换时高光在目标项直接绽放,而非沿选中弹簧动画滑过。
-            val highlightTranslationXPx by remember(
-                density,
-                dockHorizontalPadding,
-                indicatorWidth,
-                totalItems
-            ) {
-                derivedStateOf {
-                    val position = if (dampedDragState.isDragging) {
-                        visualIndicatorPosition
-                    } else {
-                        highlightAnchorIndex.toFloat()
-                            .coerceIn(0f, (totalItems - 1).coerceAtLeast(0).toFloat())
-                    }
-                    with(density) {
-                        (dockHorizontalPadding + indicatorWidth * position).toPx()
-                    }
-                }
-            }
             val presetPanelOffsets = remember(liquidGlassPreset, panelOffsetPx) {
                 resolveBottomBarPresetPanelOffsets(
                     preset = liquidGlassPreset,
                     rawPanelOffsetPx = panelOffsetPx
                 )
-            }
-            val interactiveHighlightCenterXPx by remember(
-                highlightTranslationXPx,
-                itemWidthPx,
-                presetPanelOffsets.indicatorPanelOffsetPx
-            ) {
-                derivedStateOf {
-                    resolveBottomBarInteractiveHighlightCenterX(
-                        indicatorTranslationXPx = highlightTranslationXPx,
-                        itemWidthPx = itemWidthPx,
-                        panelOffsetPx = presetPanelOffsets.indicatorPanelOffsetPx
-                    )
-                }
             }
             val foregroundAboveIndicator = shouldRenderBottomBarForegroundAboveIndicator(liquidGlassPreset)
             val backdropPresetProgress = resolveBottomBarEffectiveBackdropPresetProgress(
@@ -3409,12 +3311,6 @@ private fun KernelSuAlignedBottomBar(
             val indicatorIdleSurfaceColor = resolveBottomBarIdleIndicatorSurfaceColor(
                 preset = liquidGlassPreset,
                 darkTheme = isDarkTheme
-            )
-            val shellHighlightAlpha = resolveBottomBarShellHighlightAlpha(
-                glassEnabled = effectiveGlassEnabled,
-                pressProgress = effectivePressProgress,
-                motionProgress = effectiveIndicatorEffectProgress,
-                isDragging = dampedDragState.isDragging
             )
             val isBottomBarInteractionActive = dampedDragState.isDragging ||
                 dampedDragState.isRunning ||
@@ -3529,7 +3425,6 @@ private fun KernelSuAlignedBottomBar(
                     haptic(HapticType.LIGHT)
                     searchExpansionOverride = searchOverride
                 } else {
-                    highlightAnchorIndex = index
                     dampedDragState.updateIndex(index)
                     performMaterialBottomBarTap(
                         haptic = haptic,
@@ -3540,7 +3435,6 @@ private fun KernelSuAlignedBottomBar(
 
             fun handleBottomBarSidebarClick() {
                 if (onToggleSidebar != null) {
-                    highlightAnchorIndex = visibleItems.size
                     dampedDragState.updateIndex(visibleItems.size)
                     performMaterialBottomBarTap(
                         haptic = haptic,
@@ -3572,9 +3466,6 @@ private fun KernelSuAlignedBottomBar(
                     edgeCompressionScaleX = edgeCompressionScaleX,
                     shellProgress = backdropPresetProgress.shellProgress,
                     visiblePanelOffsetPx = presetPanelOffsets.visiblePanelOffsetPx,
-                    interactiveHighlightEnabled = interactiveHighlightEnabled,
-                    shellHighlightAlpha = shellHighlightAlpha,
-                    interactiveHighlightCenterXPx = interactiveHighlightCenterXPx,
                     uiSkinDecoration = uiSkinDecoration,
                     liquidGlassPreset = liquidGlassPreset,
                     isScrolling = isFeedScrollInProgress,
@@ -3874,7 +3765,7 @@ private fun KernelSuAlignedBottomBar(
                                     }
                                 )
                             } else {
-                                Icon(
+                                AppIcon(
                                     imageVector = CupertinoIcons.Filled.House,
                                     contentDescription = null,
                                     tint = if (currentItem == BottomNavItem.HOME) selectedColor else unselectedColor,
@@ -3960,9 +3851,6 @@ private fun KernelSuBottomBarShell(
     edgeCompressionScaleX: Float,
     shellProgress: Float,
     visiblePanelOffsetPx: Float,
-    interactiveHighlightEnabled: Boolean,
-    shellHighlightAlpha: Float,
-    interactiveHighlightCenterXPx: Float,
     uiSkinDecoration: BottomBarUiSkinDecoration?,
     liquidGlassPreset: BottomBarLiquidGlassPreset,
     isScrolling: Boolean,
@@ -4001,11 +3889,6 @@ private fun KernelSuBottomBarShell(
                     materialScrollProgress = materialScrollProgress,
                     materialMotionProgress = materialMotionProgress,
                     materialPressProgress = materialPressProgress
-                )
-                .bottomBarInteractiveHighlight(
-                    enabled = glassEnabled && interactiveHighlightEnabled,
-                    alpha = shellHighlightAlpha,
-                    centerXPx = interactiveHighlightCenterXPx
                 )
         )
 
@@ -4570,7 +4453,7 @@ private fun KernelSuBottomBarSearchVisualContent(
                 ),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
+            AppIcon(
                 imageVector = CupertinoIcons.Default.MagnifyingGlass,
                 contentDescription = "搜索",
                 tint = contentColor,
@@ -4599,7 +4482,7 @@ private fun KernelSuBottomBarSearchVisualContent(
                     decorationBox = { innerTextField ->
                         Box(contentAlignment = Alignment.CenterStart) {
                             if (query.isBlank()) {
-                                Text(
+                                AppText(
                                     text = "搜索",
                                     color = contentColor.copy(alpha = 0.45f),
                                     maxLines = 1,
@@ -4617,7 +4500,7 @@ private fun KernelSuBottomBarSearchVisualContent(
                         .alpha(fieldAlpha),
                     contentAlignment = Alignment.CenterStart
                 ) {
-                    Text(
+                    AppText(
                         text = query.ifBlank { "搜索" },
                         color = if (query.isBlank()) {
                             contentColor.copy(alpha = 0.45f)
@@ -4751,7 +4634,7 @@ private fun RowScope.AndroidNativeBottomBarItem(
                         .align(Alignment.TopCenter)
                         .padding(top = resolveBottomBarSkinDockIconTopPadding())
                 )
-                Text(
+                AppText(
                     text = label,
                     color = contentColor,
                     fontSize = resolveBottomBarSkinDockLabelFontSize(),
@@ -4792,13 +4675,13 @@ private fun RowScope.AndroidNativeBottomBarItem(
                                 )
                             }
                             item == null && iconStyle == SharedFloatingBottomBarIconStyle.CUPERTINO -> {
-                                Icon(
+                                AppIcon(
                                     imageVector = CupertinoIcons.Outlined.SidebarLeft,
                                     contentDescription = label
                                 )
                             }
                             item == null -> {
-                                Icon(
+                                AppIcon(
                                     imageVector = Icons.AutoMirrored.Outlined.MenuOpen,
                                     contentDescription = label
                                 )
@@ -4828,7 +4711,7 @@ private fun RowScope.AndroidNativeBottomBarItem(
                 Spacer(modifier = Modifier.height(iconLabelGap))
             }
             if (showText) {
-                Text(
+                AppText(
                     text = label,
                     color = contentColor,
                     fontSize = if (shouldUseSkinItemLayout) {
@@ -4913,12 +4796,12 @@ private fun BottomBarBlendedMaterialIcon(
             item = item,
             unreadCount = unreadCount
         ) {
-            Icon(
+            AppIcon(
                 imageVector = resolveMaterialBottomBarIcon(item, selected = false),
                 contentDescription = contentDescription,
                 modifier = Modifier.alpha(1f - clampedSelectedAlpha)
             )
-            Icon(
+            AppIcon(
                 imageVector = resolveMaterialBottomBarIcon(item, selected = true),
                 contentDescription = null,
                 modifier = Modifier.alpha(clampedSelectedAlpha)
@@ -4973,7 +4856,7 @@ private fun BottomBarReminderBadgeAnchor(
                     .padding(horizontal = AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro / 2, vertical = AppSpacingTokens.Micro / 2),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
+                AppText(
                     text = badgeText,
                     color = OpticalContrastPalette.Highlight,
                     fontSize = MaterialTheme.typography.labelSmall.fontSize,

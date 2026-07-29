@@ -25,13 +25,13 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.material3.Icon
+import com.android.purebilibili.core.ui.components.AppIcon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppPlatformNavigationRail
 import com.android.purebilibili.core.ui.components.AppPlatformNavigationRailItem
-import androidx.compose.material3.Text
+import com.android.purebilibili.core.ui.components.AppText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -240,7 +240,7 @@ private fun MiuixSideBar(
                     },
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
+                AppIcon(
                     CupertinoIcons.Outlined.SidebarRight,
                     contentDescription = sidebarLabel,
                     tint = AppSurfaceTokens.onSurfaceVariantSummary(),
@@ -284,7 +284,7 @@ private fun ColumnScope.MiuixSideBarSkinItem(
             }
         }
         Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall))
-        Text(
+        AppText(
             text = label,
             style = MaterialTheme.typography.labelSmall,
             fontSize = MaterialTheme.typography.labelSmall.fontSize,
@@ -471,7 +471,7 @@ private fun FrostedSideBarContent(
 
                     Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall))
 
-                    Text(
+                    AppText(
                         text = itemLabel,
                         style = MaterialTheme.typography.labelSmall,
                         fontSize = MaterialTheme.typography.labelSmall.fontSize,
@@ -497,7 +497,7 @@ private fun FrostedSideBarContent(
                         },
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
+                    AppIcon(
                         CupertinoIcons.Outlined.SidebarRight,
                         contentDescription = sidebarLabel,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),

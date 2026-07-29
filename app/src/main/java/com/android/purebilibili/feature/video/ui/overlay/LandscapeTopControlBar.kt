@@ -1,5 +1,7 @@
 // 文件路径: feature/video/ui/overlay/LandscapeTopControlBar.kt
 package com.android.purebilibili.feature.video.ui.overlay
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -75,7 +77,7 @@ fun LandscapeTopControlBar(
     ) {
         //  左侧：返回 + 标题
         AppIconButton(onClick = onBack, modifier = Modifier.size(40.dp)) {
-            Icon(
+            AppIcon(
                 CupertinoIcons.Default.ChevronBackward,
                 contentDescription = "返回",
                 tint = Color.White
@@ -86,7 +88,7 @@ fun LandscapeTopControlBar(
         
         Column(modifier = Modifier.weight(1f)) {
             // 标题
-            Text(
+            AppText(
                 text = title,
                 color = Color.White,
                 fontSize = 14.sp,
@@ -97,7 +99,7 @@ fun LandscapeTopControlBar(
             
             // 观看人数
             if (onlineCount.isNotEmpty()) {
-                Text(
+                AppText(
                     text = onlineCount,
                     color = Color.White.copy(alpha = 0.7f),
                     fontSize = 11.sp,
@@ -133,7 +135,7 @@ fun LandscapeTopControlBar(
             
             // 分享按钮
             AppIconButton(onClick = onShareClick, modifier = Modifier.size(36.dp)) {
-                Icon(
+                AppIcon(
                     shareIcon,
                     contentDescription = "分享",
                     tint = Color.White,
@@ -143,7 +145,7 @@ fun LandscapeTopControlBar(
             
             // 更多按钮
             AppIconButton(onClick = onMoreClick, modifier = Modifier.size(36.dp)) {
-                Icon(
+                AppIcon(
                     moreIcon,
                     contentDescription = "更多",
                     tint = Color.White,
@@ -174,7 +176,7 @@ private fun TopBarActionButton(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
-            Icon(
+            AppIcon(
                 imageVector = icon,
                 contentDescription = null,
                 tint = if (isActive) (if (activeColor == Color.Unspecified) MaterialTheme.colorScheme.primary else activeColor) else Color.White,
@@ -182,7 +184,7 @@ private fun TopBarActionButton(
             )
             if (label.isNotEmpty()) {
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(
+                AppText(
                     text = label,
                     color = if (isActive) (if (activeColor == Color.Unspecified) MaterialTheme.colorScheme.primary else activeColor) else Color.White,
                     fontSize = 12.sp,
