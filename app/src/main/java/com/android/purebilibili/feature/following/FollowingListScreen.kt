@@ -20,9 +20,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 //  Cupertino Icons - iOS SF Symbols 风格图标
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
@@ -51,6 +48,7 @@ import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
 import com.android.purebilibili.core.ui.OfficialVerifyBadge
 import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
 import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.motion.AppMotionTokens
 import com.android.purebilibili.core.util.FormatUtils
@@ -58,7 +56,6 @@ import com.android.purebilibili.core.util.responsiveContentWidth
 import com.android.purebilibili.data.model.response.FollowingUser
 import com.android.purebilibili.data.model.response.RelationTagItem
 import com.android.purebilibili.data.repository.ActionRepository
-import io.github.alexzhirkevich.cupertino.CupertinoActivityIndicator
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -721,7 +718,7 @@ fun FollowingListScreen(
                     .fillMaxWidth()
                     .padding(horizontal = AppSpacingTokens.Large, vertical = AppSpacingTokens.Small)
             ) {
-                com.android.purebilibili.core.ui.components.IOSSearchBar(
+                com.android.purebilibili.core.ui.components.AppSearchField(
                     query = searchQuery,
                     onQueryChange = { searchQuery = it },
                     placeholder = "搜索 UP 主"
@@ -734,7 +731,7 @@ fun FollowingListScreen(
                 when (val state = uiState) {
                     is FollowingListUiState.Loading -> {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            CupertinoActivityIndicator()
+                            AdaptiveLoadingIndicator()
                         }
                     }
                     
@@ -910,7 +907,7 @@ fun FollowingListScreen(
                                                         .padding(AppSpacingTokens.Large),
                                                     contentAlignment = Alignment.Center
                                                 ) {
-                                                    CupertinoActivityIndicator()
+                                                    AdaptiveLoadingIndicator()
                                                 }
                                             }
                                         } else if (state.hasMore) {
@@ -1058,7 +1055,7 @@ fun FollowingListScreen(
                                                 .padding(vertical = AppSpacingTokens.Medium),
                                             contentAlignment = Alignment.Center
                                         ) {
-                                            CupertinoActivityIndicator()
+                                            AdaptiveLoadingIndicator()
                                         }
                                     } else {
                                         Column(

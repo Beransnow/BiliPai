@@ -289,6 +289,7 @@ dependencies {
     implementation(project(":settings-core"))
     implementation(project(":network-core"))
     implementation(project(":plugin-sdk"))
+    implementation(project(":design-system"))
 
     // --- 1. Compose UI ---
     implementation(platform("androidx.compose:compose-bom:2026.03.01"))  // 🔥 更新到最新版本

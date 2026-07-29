@@ -1,6 +1,7 @@
 package com.android.purebilibili.feature.home.components
 
-import com.android.purebilibili.core.theme.UiStyle
+import com.android.purebilibili.core.ui.PresetPrimitiveRenderer
+import com.android.purebilibili.core.ui.resolveAppNavigationCapabilities
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -12,20 +13,20 @@ class SideBarRendererPolicyTest {
     @Test
     fun miuixVariantRoutesToOfficialNavigationRail() {
         assertEquals(
-            SideBarRenderer.MIUIX_NAVIGATION_RAIL,
-            resolveSideBarRenderer(UiStyle.MIUIX)
+            true,
+            resolveAppNavigationCapabilities(PresetPrimitiveRenderer.MIUIX_BRIDGED).usePlatformSideRail
         )
     }
 
     @Test
     fun materialAndIosKeepFrostedSideBar() {
         assertEquals(
-            SideBarRenderer.FROSTED,
-            resolveSideBarRenderer(UiStyle.MATERIAL3)
+            false,
+            resolveAppNavigationCapabilities(PresetPrimitiveRenderer.MATERIAL3).usePlatformSideRail
         )
         assertEquals(
-            SideBarRenderer.FROSTED,
-            resolveSideBarRenderer(UiStyle.IOS)
+            false,
+            resolveAppNavigationCapabilities(PresetPrimitiveRenderer.IOS).usePlatformSideRail
         )
     }
 
@@ -76,7 +77,7 @@ class SideBarRendererPolicyTest {
             ?.readText()
             ?: File("app/src/main/java/com/android/purebilibili/feature/home/components/SideBar.kt").readText()
 
-        assertTrue(source.contains("resolveSideBarRenderer("))
+        assertTrue(source.contains("rememberAppNavigationCapabilities()"))
         assertTrue(source.contains("MiuixNavigationRail("))
         assertTrue(source.contains("MiuixNavigationRailItem("))
         assertTrue(source.contains("rememberMiuixNavigationRailState("))

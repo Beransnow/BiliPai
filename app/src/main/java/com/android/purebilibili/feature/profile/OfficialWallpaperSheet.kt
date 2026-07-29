@@ -23,13 +23,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import androidx.compose.material.icons.Icons
 import androidx.compose.ui.draw.scale
 import android.widget.Toast
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.android.purebilibili.core.ui.AppLoadingIndicator
-import com.android.purebilibili.core.ui.AppModalBottomSheet
-import com.android.purebilibili.core.ui.rememberAppCloseIcon
-import com.android.purebilibili.core.ui.rememberAppSelectionCheckedIcon
+import com.android.purebilibili.core.ui.rememberAppClearIcon
+import com.android.purebilibili.core.ui.rememberAppCheckCircleIcon
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 
 /**
  * 修复壁纸图片 URL (不添加缩放后缀，保持原图质量)
@@ -54,6 +54,7 @@ fun OfficialWallpaperSheet(
     viewModel: ProfileViewModel,
     onDismiss: () -> Unit
 ) {
+    val clearIcon = rememberAppClearIcon()
     val officialWallpapers by viewModel.officialWallpapers.collectAsStateWithLifecycle()
     val isLoading by viewModel.officialWallpapersLoading.collectAsStateWithLifecycle()
     val error by viewModel.officialWallpapersError.collectAsStateWithLifecycle()
@@ -91,7 +92,7 @@ fun OfficialWallpaperSheet(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     IconButton(onClick = onDismiss) {
-                        Icon(rememberAppCloseIcon(), contentDescription = "Close")
+                        Icon(clearIcon, contentDescription = "关闭")
                     }
                     
                     Text(
@@ -170,7 +171,7 @@ fun OfficialWallpaperSheet(
                                     // 选中标记 (右上角)
                                     if (isSelected) {
                                         Icon(
-                                            imageVector = rememberAppSelectionCheckedIcon(),
+                                            imageVector = rememberAppCheckCircleIcon(),
                                             contentDescription = null,
                                             tint = MaterialTheme.colorScheme.primary,
                                             modifier = Modifier

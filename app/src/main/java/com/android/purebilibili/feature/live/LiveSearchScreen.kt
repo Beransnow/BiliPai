@@ -21,12 +21,17 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Search
+import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.Tab
+import com.android.purebilibili.core.ui.components.AppOutlinedTextField
+import com.android.purebilibili.core.ui.components.AppPrimaryTabRow
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppTab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -45,17 +50,13 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.android.purebilibili.core.theme.LocalUiStyle
-import com.android.purebilibili.core.theme.toRendererStyleBridge
-import com.android.purebilibili.core.ui.AppLoadingIndicator
-import com.android.purebilibili.core.ui.AppCard
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
+import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
-import com.android.purebilibili.core.ui.rememberAppBackIcon
-import com.android.purebilibili.core.ui.rememberAppSearchIcon
-import com.android.purebilibili.core.ui.components.AppTextField
+import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.responsiveContentWidth
 import com.android.purebilibili.data.model.response.LiveRoomSearchItem
@@ -72,10 +73,9 @@ fun LiveSearchScreen(
 ) {
     val keyboard = LocalSoftwareKeyboardController.current
     val scope = rememberCoroutineScope()
-    val uiStyle = LocalUiStyle.current
-    val rendererStyle = remember(uiStyle) { uiStyle.toRendererStyleBridge() }
-    val visualSpec = remember(rendererStyle) {
-        resolveLiveVisualSpec(rendererStyle.preset, rendererStyle.variant)
+    val topChromePolicy = rememberAppTopChromePolicy()
+    val visualSpec = remember(topChromePolicy.tabPresentation) {
+        resolveLiveVisualSpec(topChromePolicy.tabPresentation)
     }
     val metrics = visualSpec.homeMetrics
     val windowSizeClass = LocalWindowSizeClass.current
@@ -174,7 +174,7 @@ fun LiveSearchScreen(
             AppTopBar(
                 title = "搜索直播",
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    AppIconButton(onClick = onBack) {
                         Icon(
                             imageVector = rememberAppBackIcon(),
                             contentDescription = "返回",
@@ -201,7 +201,7 @@ fun LiveSearchScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
             ) {
-                AppTextField(
+                AppOutlinedTextField(
                     value = query,
                     onValueChange = {
                         query = it
@@ -221,7 +221,7 @@ fun LiveSearchScreen(
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                     keyboardActions = KeyboardActions(onSearch = { scope.launch { submit() } }),
                 )
-                IconButton(
+                AppIconButton(
                     onClick = { scope.launch { submit() } },
                     enabled = query.isNotBlank(),
                     modifier = Modifier.size(AppSpacingTokens.TripleExtraLarge),
@@ -236,13 +236,13 @@ fun LiveSearchScreen(
             if (!hasSubmitted) {
                 LiveSearchState("输入关键词后搜索直播间或主播")
             } else {
-                PrimaryTabRow(selectedTabIndex = selectedTab) {
-                    Tab(
+                AppPrimaryTabRow(selectedTabIndex = selectedTab) {
+                    AppTab(
                         selected = selectedTab == 0,
                         onClick = { selectedTab = 0 },
                         text = { Text("正在直播 ${liveResults.size.takeIf { it > 0 } ?: ""}") },
                     )
-                    Tab(
+                    AppTab(
                         selected = selectedTab == 1,
                         onClick = { selectedTab = 1 },
                         text = { Text("主播 ${userResults.size.takeIf { it > 0 } ?: ""}") },
@@ -274,7 +274,7 @@ fun LiveSearchScreen(
                         }
                         if (liveHasMore || liveLoadingMore) {
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                Button(
+                                AppButton(
                                     enabled = !liveLoadingMore,
                                     modifier = Modifier.fillMaxWidth(),
                                     onClick = { scope.launch { loadMoreLive() } },
@@ -301,7 +301,7 @@ fun LiveSearchScreen(
                         }
                         item {
                             if (userHasMore || userLoadingMore) {
-                                Button(
+                                AppButton(
                                     enabled = !userLoadingMore,
                                     modifier = Modifier.fillMaxWidth(),
                                     onClick = { scope.launch { loadMoreUser() } },
@@ -334,7 +334,7 @@ private fun LiveSearchState(message: String? = null) {
 
 @Composable
 private fun LiveSearchUserCard(item: SearchUpItem, onClick: () -> Unit) {
-    AppCard(
+    AppSurface(
         onClick = onClick,
     ) {
         Row(

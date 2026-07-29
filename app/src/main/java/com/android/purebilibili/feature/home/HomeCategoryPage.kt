@@ -16,11 +16,11 @@ import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Card
+import com.android.purebilibili.core.ui.components.AppCard
 import androidx.compose.material3.CardDefaults
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.TextButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.text.style.TextOverflow
@@ -51,7 +51,6 @@ import com.android.purebilibili.feature.home.components.cards.ElegantVideoCard
 import com.android.purebilibili.feature.home.components.cards.LiveRoomCard
 import com.android.purebilibili.feature.home.components.cards.StoryVideoCard
 
-import io.github.alexzhirkevich.cupertino.CupertinoActivityIndicator
 import androidx.compose.ui.Alignment
 import coil.compose.AsyncImage
 import java.io.File
@@ -530,8 +529,8 @@ internal fun HomeCategoryPageContent(
                     contentAlignment = Alignment.Center
                 ) {
                     if (categoryState.isLoading) {
-                        CupertinoActivityIndicator(
-                            modifier = Modifier.size(AppSpacingTokens.ExtraLarge),
+                        AdaptiveLoadingIndicator(
+                            size = AppSpacingTokens.ExtraLarge,
                             color = MaterialTheme.colorScheme.secondary
                         )
                     }
@@ -643,7 +642,7 @@ private fun TodayWatchPlanCard(
         revealContent = true
     }
 
-    Card(
+    AppCard(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
         ),
@@ -667,7 +666,7 @@ private fun TodayWatchPlanCard(
                     modifier = Modifier.weight(1f)
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Micro)) {
-                    TextButton(
+                    AppTextButton(
                         enabled = !isLoading,
                         onClick = onRefresh
                     ) {
@@ -679,7 +678,7 @@ private fun TodayWatchPlanCard(
                         Spacer(modifier = Modifier.width(AppSpacingTokens.ExtraSmall))
                         Text("刷新")
                     }
-                    TextButton(
+                    AppTextButton(
                         onClick = { onCollapsedChange(!collapsed) }
                     ) {
                         Icon(

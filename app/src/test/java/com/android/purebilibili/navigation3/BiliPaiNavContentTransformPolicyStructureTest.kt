@@ -145,11 +145,11 @@ class BiliPaiNavContentTransformPolicyStructureTest {
 
     @Test
     fun horizontalPageTransitionsUseCriticallyDampedSpring() {
-        val tokenSource = sourceFile("core/ui/motion/AppMotionTokens.kt")
-        val bottomBarSource = sourceFile(
+        val tokenSource = designSystemSourceFile("core/ui/motion/NavigationSlideSpring.kt")
+        val bottomBarSource = designSystemSourceFile(
             "core/ui/motion/BottomBarLikeContentTransformPolicy.kt"
         )
-        val settingsSource = sourceFile(
+        val settingsSource = designSystemSourceFile(
             "core/ui/motion/SettingsIosPushContentTransformPolicy.kt"
         )
         val springToken = tokenSource
@@ -168,11 +168,11 @@ class BiliPaiNavContentTransformPolicyStructureTest {
 
     @Test
     fun settingsPredictivePopKeepsSeekableTween() {
-        val source = sourceFile(
+        val source = designSystemSourceFile(
             "core/ui/motion/SettingsIosPushContentTransformPolicy.kt"
         )
         val predictiveFunction = source
-            .substringAfter("internal fun resolveSettingsIosPredictivePopContentTransform")
+            .substringAfter("fun resolveSettingsIosPredictivePopContentTransform")
 
         assertTrue(predictiveFunction.contains("tween("))
         assertTrue(predictiveFunction.contains("navigationSlideSpring(").not())
@@ -180,12 +180,12 @@ class BiliPaiNavContentTransformPolicyStructureTest {
 
     @Test
     fun settingsCommittedPopKeepsTweenForGestureContinuity() {
-        val source = sourceFile(
+        val source = designSystemSourceFile(
             "core/ui/motion/SettingsIosPushContentTransformPolicy.kt"
         )
         val popFunction = source
-            .substringAfter("internal fun resolveSettingsIosPushPopContentTransform")
-            .substringBefore("internal fun resolveSettingsIosPredictivePopContentTransform")
+            .substringAfter("fun resolveSettingsIosPushPopContentTransform")
+            .substringBefore("fun resolveSettingsIosPredictivePopContentTransform")
 
         assertTrue(popFunction.contains("tween<IntOffset>("))
         assertTrue(popFunction.contains("navigationSlideSpring(").not())
@@ -199,6 +199,13 @@ class BiliPaiNavContentTransformPolicyStructureTest {
         return listOf(
             File("app/src/main/java/com/android/purebilibili/$relativePath"),
             File("src/main/java/com/android/purebilibili/$relativePath")
+        ).first { it.exists() }.readText()
+    }
+
+    private fun designSystemSourceFile(relativePath: String): String {
+        return listOf(
+            File("design-system/src/main/java/com/android/purebilibili/$relativePath"),
+            File("../design-system/src/main/java/com/android/purebilibili/$relativePath"),
         ).first { it.exists() }.readText()
     }
 }

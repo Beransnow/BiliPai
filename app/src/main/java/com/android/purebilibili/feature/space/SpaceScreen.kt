@@ -31,21 +31,29 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Menu
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.PlayCircleOutline
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.VisibilityOff
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.ViewAgenda
+import com.android.purebilibili.core.ui.AppAlertDialog
+import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
-import com.android.purebilibili.core.ui.AppLoadingIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import com.android.purebilibili.core.ui.components.AppCheckbox
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.components.AppDropdownMenu
+import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppLinearProgressIndicator
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -85,7 +93,6 @@ import coil.compose.AsyncImage
 import coil.imageLoader
 import coil.size.Scale
 import com.android.purebilibili.R
-import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppShapes
@@ -264,7 +271,7 @@ fun SpaceScreen(
                 AppTopBar(
                     title = screenTitle,
                     navigationIcon = {
-                        IconButton(onClick = onBack) {
+                        AppIconButton(onClick = onBack) {
                             Icon(
                                 imageVector = rememberAppBackIcon(),
                                 contentDescription = backLabel
@@ -278,7 +285,7 @@ fun SpaceScreen(
                     scrollBehavior = scrollBehavior,
                     actions = {
                         if (canSearch) {
-                            IconButton(onClick = { viewModel.setSearchMode(!isSearchMode) }) {
+                            AppIconButton(onClick = { viewModel.setSearchMode(!isSearchMode) }) {
                                 Icon(
                                     imageVector = if (isSearchMode) rememberAppCloseIcon() else rememberAppSearchIcon(),
                                     contentDescription = if (isSearchMode) "关闭搜索" else "搜索"
@@ -286,18 +293,18 @@ fun SpaceScreen(
                             }
                         }
                         Box {
-                            IconButton(onClick = { showMenu = true }) {
+                            AppIconButton(onClick = { showMenu = true }) {
                                 Icon(
                                     imageVector = rememberAppMoreIcon(),
                                     contentDescription = moreLabel
                                 )
                             }
-                            DropdownMenu(
+                            AppDropdownMenu(
                                 expanded = showMenu,
                                 onDismissRequest = { showMenu = false },
                                 modifier = Modifier.background(MaterialTheme.colorScheme.surface)
                             ) {
-                                DropdownMenuItem(
+                                AppDropdownMenuItem(
                                     text = { Text("复制空间链接") },
                                     onClick = {
                                         showMenu = false
@@ -313,7 +320,7 @@ fun SpaceScreen(
                                         )
                                     }
                                 )
-                                DropdownMenuItem(
+                                AppDropdownMenuItem(
                                     text = { Text(if (isBlocked) unblockUserLabel else blockUserLabel) },
                                     onClick = {
                                         showMenu = false
@@ -560,7 +567,7 @@ fun SpaceScreen(
                 )
             },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         coroutineScope.launch {
                             if (isBlocked) {
@@ -586,7 +593,7 @@ fun SpaceScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showBlockConfirmDialog = false }) {
+                AppTextButton(onClick = { showBlockConfirmDialog = false }) {
                     Text("取消")
                 }
             }
@@ -633,7 +640,7 @@ fun SpaceScreen(
                                         .padding(vertical = 6.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Checkbox(
+                                    AppCheckbox(
                                         checked = followGroupSelectedTagIds.contains(tag.tagid),
                                         onCheckedChange = { viewModel.toggleFollowGroupSelection(tag.tagid) }
                                     )
@@ -655,13 +662,13 @@ fun SpaceScreen(
                 }
             },
             confirmButton = {
-                Button(
+                AppButton(
                     onClick = { viewModel.saveFollowGroupSelection() },
                     enabled = !isFollowGroupsLoading && !isSavingFollowGroups
                 ) {
                     if (isSavingFollowGroups) {
-                        AppLoadingIndicator(
-                            size = 16.dp,
+                        AppCircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
                             strokeWidth = 2.dp,
                             color = MaterialTheme.colorScheme.onPrimary
                         )
@@ -671,7 +678,7 @@ fun SpaceScreen(
                 }
             },
             dismissButton = {
-                TextButton(
+                AppTextButton(
                     onClick = { viewModel.dismissFollowGroupDialog() },
                     enabled = !isSavingFollowGroups
                 ) {
@@ -702,7 +709,7 @@ private fun SpacePlayedVideoLocatePrompt(
             animationSpec = tween(120)
         )
     ) {
-        Surface(
+        AppSurface(
             shape = RoundedCornerShape(18.dp),
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
             tonalElevation = 6.dp,
@@ -728,10 +735,10 @@ private fun SpacePlayedVideoLocatePrompt(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
-                    TextButton(onClick = onDismiss) {
+                    AppTextButton(onClick = onDismiss) {
                         Text("暂不")
                     }
-                    TextButton(onClick = onConfirm) {
+                    AppTextButton(onClick = onConfirm) {
                         Text("定位")
                     }
                 }
@@ -2083,7 +2090,7 @@ private fun SpaceHeader(
                         )
 
                         if (userInfo.liveRoom?.liveStatus == 1) {
-                            Surface(
+                            AppSurface(
                                 modifier = Modifier
                                     .align(Alignment.BottomEnd)
                                     .padding(end = 2.dp),
@@ -2131,7 +2138,7 @@ private fun SpaceHeader(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Surface(
+                            AppSurface(
                                 shape = CircleShape,
                                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.42f),
                                 border = BorderStroke(
@@ -2139,7 +2146,7 @@ private fun SpaceHeader(
                                     MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
                                 )
                             ) {
-                                IconButton(
+                                AppIconButton(
                                     modifier = Modifier.size(38.dp),
                                     onClick = {
                                         android.widget.Toast.makeText(
@@ -2162,7 +2169,7 @@ private fun SpaceHeader(
                                 modifier = Modifier.weight(1f),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Button(
+                                AppButton(
                                     onClick = onFollowClick,
                                     modifier = Modifier
                                         .widthIn(min = 112.dp, max = 136.dp)
@@ -2297,7 +2304,7 @@ private fun SpaceSearchEntryChip(
     // Use bordered Field shape (not continuous Pill + stroke) so corners stay round
     // and match the real search bar; continuous iOS corners + BorderStroke chamfer.
     val shape = AppShapes.borderedContainer(ContainerLevel.Field)
-    Surface(
+    AppSurface(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
@@ -2456,7 +2463,7 @@ private fun SpaceContributionToolbarDock(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Surface(
+    AppSurface(
         modifier = modifier,
         shape = AppShapes.container(ContainerLevel.Pill),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.22f),
@@ -2652,7 +2659,7 @@ private fun SpaceContributionVideoToolbarActions(
         }
 
         if (spec.showPlayAllText) {
-            TextButton(
+            AppTextButton(
                 onClick = onPlayAllClick,
                 modifier = Modifier.height(40.dp),
                 contentPadding = PaddingValues(horizontal = 8.dp)
@@ -2671,7 +2678,7 @@ private fun SpaceContributionVideoToolbarActions(
                 )
             }
         } else {
-            IconButton(
+            AppIconButton(
                 onClick = onPlayAllClick,
                 modifier = Modifier.size(40.dp)
             ) {
@@ -2683,7 +2690,7 @@ private fun SpaceContributionVideoToolbarActions(
             }
         }
 
-        IconButton(
+        AppIconButton(
             onClick = onLayoutModeClick,
             modifier = Modifier.size(40.dp)
         ) {
@@ -2700,7 +2707,7 @@ private fun SpaceContributionVideoToolbarActions(
 
         Box {
             if (spec.showSortText) {
-                TextButton(
+                AppTextButton(
                     onClick = { menuExpanded = true },
                     modifier = Modifier.height(40.dp),
                     contentPadding = PaddingValues(horizontal = 8.dp)
@@ -2721,7 +2728,7 @@ private fun SpaceContributionVideoToolbarActions(
                     )
                 }
             } else {
-                IconButton(
+                AppIconButton(
                     onClick = { menuExpanded = true },
                     modifier = Modifier.size(40.dp)
                 ) {
@@ -2733,12 +2740,12 @@ private fun SpaceContributionVideoToolbarActions(
                 }
             }
 
-            DropdownMenu(
+            AppDropdownMenu(
                 expanded = menuExpanded,
                 onDismissRequest = { menuExpanded = false }
             ) {
                 VideoSortOrder.entries.forEach { order ->
-                    DropdownMenuItem(
+                    AppDropdownMenuItem(
                         text = { Text(order.displayName) },
                         onClick = {
                             menuExpanded = false
@@ -2778,7 +2785,7 @@ private fun SpaceSectionHeader(
         )
         Spacer(modifier = Modifier.weight(1f))
         if (onActionClick != null && !actionLabel.isNullOrBlank()) {
-            TextButton(onClick = onActionClick) {
+            AppTextButton(onClick = onActionClick) {
                 Text(actionLabel)
             }
         }
@@ -2950,7 +2957,7 @@ private fun SpaceHomeVideoCard(
             )
 
             if (!badgeLabel.isNullOrBlank()) {
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .padding(8.dp),
@@ -2967,7 +2974,7 @@ private fun SpaceHomeVideoCard(
                 }
             }
 
-            Surface(
+            AppSurface(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(8.dp),
@@ -2983,7 +2990,7 @@ private fun SpaceHomeVideoCard(
             }
 
             if (progressState.showProgressBar) {
-                LinearProgressIndicator(
+                AppLinearProgressIndicator(
                     progress = { progressState.progressFraction },
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
@@ -3101,7 +3108,7 @@ private fun SpaceAggregateMediaCard(
             )
 
             if (item.length.isNotBlank()) {
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(8.dp),
@@ -3427,7 +3434,7 @@ private fun SpaceArchiveListItemRow(
                 modifier = Modifier.fillMaxSize()
             )
             if (!badgeLabel.isNullOrBlank()) {
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .padding(6.dp),
@@ -3444,7 +3451,7 @@ private fun SpaceArchiveListItemRow(
                 }
             }
             if (duration.isNotBlank()) {
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(6.dp),
@@ -3460,7 +3467,7 @@ private fun SpaceArchiveListItemRow(
                 }
             }
             if (progressState?.showProgressBar == true) {
-                LinearProgressIndicator(
+                AppLinearProgressIndicator(
                     progress = { progressState.progressFraction },
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
@@ -3685,7 +3692,7 @@ private fun SpaceFavoriteFolderRow(
     folder: FavFolder,
     onClick: () -> Unit
 ) {
-    Surface(
+    AppSurface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
@@ -3784,7 +3791,7 @@ private fun SpaceCollectionSummaryCard(
     total: Int,
     onClick: () -> Unit
 ) {
-    Surface(
+    AppSurface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
@@ -3859,7 +3866,7 @@ private fun SpaceCollectionWithPreviewCard(
     previews: List<PreviewMedia>,
     onClick: () -> Unit
 ) {
-    Surface(
+    AppSurface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
@@ -3965,7 +3972,7 @@ private fun SpaceBadgeChip(
     contentColor: Color,
     onClick: (() -> Unit)? = null
 ) {
-    Surface(
+    AppSurface(
         modifier = if (onClick != null) Modifier.clickable { onClick() } else Modifier,
         shape = RoundedCornerShape(999.dp),
         color = containerColor
@@ -4075,7 +4082,7 @@ private fun SpaceErrorSection(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(12.dp))
-        Button(onClick = onRetry) {
+        AppButton(onClick = onRetry) {
             Text("重试")
         }
     }
@@ -4097,7 +4104,7 @@ private fun SpaceErrorState(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(12.dp))
-            Button(onClick = onRetry) {
+            AppButton(onClick = onRetry) {
                 Text("重试")
             }
         }

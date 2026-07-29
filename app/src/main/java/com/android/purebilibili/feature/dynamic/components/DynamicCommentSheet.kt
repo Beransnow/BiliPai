@@ -5,6 +5,8 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.rememberAppSegmentedControlPolicy
 
 import android.content.Context
 import androidx.compose.foundation.background
@@ -22,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontWeight
@@ -36,7 +39,6 @@ import com.android.purebilibili.feature.dynamic.resolveDynamicCommentSheetTotalC
 import com.android.purebilibili.feature.video.ui.components.CommentPictures
 import com.android.purebilibili.feature.video.ui.components.RichCommentText
 import com.android.purebilibili.feature.video.ui.components.FanGroupDecorationBadge
-import com.android.purebilibili.feature.video.ui.components.iOSSegmentedControl
 import com.android.purebilibili.feature.video.ui.components.resolveFanGroupDecorationCardBgs
 import com.android.purebilibili.feature.video.ui.components.resolveFanGroupVisualFromMemberAndSailing
 import com.android.purebilibili.feature.video.ui.components.resolveInlineSubReplyToggleLabel
@@ -48,10 +50,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
-import com.android.purebilibili.core.ui.AppLoadingIndicator
-import com.android.purebilibili.core.ui.rememberAppCloseIcon
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.rememberAppClearIcon
 import com.android.purebilibili.core.ui.rememberAppCommentIcon
 import com.android.purebilibili.core.ui.rememberAppLikeIcon
+import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.core.ui.components.AppTextField
 
 @Composable
@@ -165,7 +168,7 @@ fun DynamicCommentSheet(
             }
     }
     
-    com.android.purebilibili.core.ui.AppModalBottomSheet(
+    AppModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         dragHandle = null
@@ -188,17 +191,17 @@ fun DynamicCommentSheet(
                     fontWeight = FontWeight.SemiBold
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                iOSSegmentedControl(
+                DynamicCommentSortControl(
                     items = sortModes.map { it.label },
                     selectedIndex = sortModes.indexOf(sortMode).coerceAtLeast(0),
-                    onScaleChange = { index ->
+                    onSelected = { index ->
                         sortModes.getOrNull(index)?.let(onSortModeChange)
                     }
                 )
                 Spacer(modifier = Modifier.width(AppSpacingTokens.Small))
                 IconButton(onClick = onDismiss) {
                     Icon(
-                        rememberAppCloseIcon(),
+                        rememberAppClearIcon(),
                         contentDescription = "关闭",
                         modifier = Modifier.size(AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall)
                     )
@@ -314,6 +317,54 @@ fun DynamicCommentSheet(
     }
 }
 
+@Composable
+private fun DynamicCommentSortControl(
+    items: List<String>,
+    selectedIndex: Int,
+    onSelected: (Int) -> Unit,
+) {
+    if (items.isEmpty()) return
+    val policy = rememberAppSegmentedControlPolicy()
+    val safeSelectedIndex = selectedIndex.coerceIn(items.indices)
+    Row(
+        modifier = Modifier
+            .width(66.dp * items.size)
+            .height(40.dp)
+            .clip(RoundedCornerShape(policy.pillCornerRadius))
+            .background(AppSurfaceTokens.surfaceContainer())
+            .padding(AppSpacingTokens.Micro),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        items.forEachIndexed { index, label ->
+            val selected = index == safeSelectedIndex
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .clip(RoundedCornerShape(policy.pillCornerRadius))
+                    .background(
+                        if (selected) AppSurfaceTokens.secondaryContainer() else Color.Transparent
+                    )
+                    .clickable { onSelected(index) },
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = label,
+                    color = if (selected) {
+                        AppSurfaceTokens.onSecondaryContainer()
+                    } else {
+                        AppSurfaceTokens.onSurfaceVariantActions()
+                    },
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+    }
+}
+
 /** Inline comments for dynamic detail, rendered by the detail screen's LazyColumn. */
 @Composable
 fun DynamicInlineCommentHeader(
@@ -334,10 +385,10 @@ fun DynamicInlineCommentHeader(
             fontWeight = FontWeight.SemiBold,
         )
         Spacer(modifier = Modifier.weight(1f))
-        iOSSegmentedControl(
+        DynamicCommentSortControl(
             items = sortModes.map { it.label },
             selectedIndex = sortModes.indexOf(sortMode).coerceAtLeast(0),
-            onScaleChange = { index ->
+            onSelected = { index ->
                 sortModes.getOrNull(index)?.let(onSortModeChange)
             },
         )

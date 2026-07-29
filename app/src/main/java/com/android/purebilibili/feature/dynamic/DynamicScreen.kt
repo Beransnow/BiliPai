@@ -51,8 +51,8 @@ import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.imageLoader
 import com.android.purebilibili.core.ui.AppScaffold
-import com.android.purebilibili.core.ui.BiliGradientButton
-import com.android.purebilibili.core.ui.AppPullToRefreshBox
+import com.android.purebilibili.core.ui.components.AppPrimaryButton
+import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
 import com.android.purebilibili.core.ui.EmptyState
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
@@ -86,9 +86,6 @@ import com.android.purebilibili.feature.dynamic.components.RepostDialog
 import com.android.purebilibili.feature.dynamic.components.DynamicSubReplyPreviewHost
 import com.android.purebilibili.feature.home.LocalHomeScrollOffset
 import com.android.purebilibili.feature.home.policy.resolveBottomBarChromeScrollOffset
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
 import dev.chrisbanes.haze.HazeState
 import com.android.purebilibili.core.ui.blur.hazeSourceCompat
 import com.android.purebilibili.core.ui.blur.BlurStyles
@@ -1270,9 +1267,9 @@ private fun ErrorOverlay(
             Text(error.orEmpty(), color = MaterialTheme.colorScheme.error)
             Spacer(modifier = Modifier.height(AppSpacingTokens.Large))
             if (error?.contains("未登录") == true) {
-                BiliGradientButton(text = "去登录", onClick = onLoginClick)
+                AppPrimaryButton(text = "去登录", onClick = onLoginClick)
             } else {
-                BiliGradientButton(text = "重试", onClick = onRetry)
+                AppPrimaryButton(text = "重试", onClick = onRetry)
             }
         }
     }

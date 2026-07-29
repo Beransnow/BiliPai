@@ -10,11 +10,11 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
+import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -108,7 +108,7 @@ fun ArticleDetailScreen(
             AppTopBar(
                 title = screenTitle,
                 navigationIcon = {
-                    IconButton(onClick = { onBack(sharedReturnReady) }) {
+                    AppIconButton(onClick = { onBack(sharedReturnReady) }) {
                         Icon(rememberAppBackIcon(), contentDescription = backLabel)
                     }
                 }
@@ -142,7 +142,7 @@ fun ArticleDetailScreen(
                             text = state.message,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Button(onClick = { retryToken++ }) {
+                        AppButton(onClick = { retryToken++ }) {
                             Text(retryLabel)
                         }
                     }

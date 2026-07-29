@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.android.purebilibili.core.ui.IOSModalBottomSheet
+import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.data.model.response.RecommendationFeedbackReason
 import com.android.purebilibili.data.model.response.RecommendationFeedbackType
 import com.android.purebilibili.data.model.response.VideoItem
@@ -33,7 +33,7 @@ fun HomeNotInterestedReasonSheet(
     onReasonSelected: (RecommendationFeedbackReason) -> Unit,
     onDismissRequest: () -> Unit
 ) {
-    IOSModalBottomSheet(onDismissRequest = onDismissRequest) {
+    AppModalBottomSheet(onDismissRequest = onDismissRequest) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()

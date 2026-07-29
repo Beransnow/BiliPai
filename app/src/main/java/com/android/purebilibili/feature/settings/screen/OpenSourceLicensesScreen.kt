@@ -23,6 +23,7 @@ import com.android.purebilibili.R
 import com.android.purebilibili.feature.settings.ui.SettingsPageScaffold
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.ContainerLevel
 
 /**
@@ -361,7 +362,7 @@ fun LicenseCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(
+    AppSurface(
         modifier = modifier
             .fillMaxWidth()
             .padding(bottom = 8.dp)
@@ -396,7 +397,7 @@ fun LicenseCard(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Surface(
+                    AppSurface(
                         color = MaterialTheme.colorScheme.primaryContainer,
                         shape = AppShapes.container(ContainerLevel.Tag)
                     ) {

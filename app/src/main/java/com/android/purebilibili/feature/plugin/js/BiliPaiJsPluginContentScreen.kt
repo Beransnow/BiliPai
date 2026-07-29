@@ -17,18 +17,18 @@ import androidx.compose.foundation.lazy.items
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
-import androidx.compose.material3.AssistChip
+import com.android.purebilibili.core.ui.components.AppAssistChip
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+import com.android.purebilibili.core.ui.components.AppFilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppOutlinedTextField
+import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import com.android.purebilibili.core.ui.AppTopBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -123,12 +123,12 @@ fun BiliPaiJsPluginContentScreen(
         }
     }
 
-    Scaffold(
+    AppScaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(installed?.manifest?.title ?: "JS 插件内容") },
+            AppTopBar(
+                title = installed?.manifest?.title ?: "JS 插件内容",
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    AppIconButton(onClick = onBack) {
                         Icon(rememberAppBackIcon(), contentDescription = "返回")
                     }
                 }
@@ -204,7 +204,7 @@ private fun PluginContent(
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 installed.manifest.modules.forEach { module ->
-                    FilterChip(
+                    AppFilterChip(
                         selected = module == selectedModule,
                         onClick = { onSelectModule(module) },
                         label = { Text(module.title) }
@@ -216,7 +216,7 @@ private fun PluginContent(
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     params.forEach { param ->
-                        OutlinedTextField(
+                        AppOutlinedTextField(
                             value = paramValues[param.name] ?: param.defaultValue,
                             onValueChange = { paramValues[param.name] = it },
                             label = { Text(param.title) },
@@ -224,7 +224,7 @@ private fun PluginContent(
                             singleLine = true
                         )
                     }
-                    AssistChip(onClick = onReload, label = { Text("重新加载") })
+                    AppAssistChip(onClick = onReload, label = { Text("重新加载") })
                 }
             }
         }
@@ -278,7 +278,7 @@ private fun BiliPaiJsMediaItemRow(
         imageUrl == null -> PluginMediaImageState.LOAD_FAILED
         else -> PluginMediaImageState.LOADING
     }
-    Surface(
+    AppSurface(
         modifier = Modifier
             .fillMaxWidth()
             .clip(AppShapes.container(ContainerLevel.Field))
@@ -368,7 +368,7 @@ private fun PluginMediaImagePlaceholder(
             .clip(AppShapes.container(ContainerLevel.Chip)),
         contentAlignment = Alignment.Center
     ) {
-        Surface(
+        AppSurface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)
         ) {}

@@ -400,10 +400,10 @@ class BottomBarMiuixStructureTest {
 
     @Test
     fun `home top skin does not render broad atmosphere block`() {
-        val source = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/iOSHomeHeader.kt")
+        val source = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/HomeHeader.kt")
         val skinDecorationSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/BottomBarUiSkin.kt")
         val headerSource = source
-            .substringAfter("fun iOSHomeHeader(")
+            .substringAfter("fun HomeHeader(")
             .substringBefore("@Composable\nprivate fun")
 
         assertFalse(skinDecorationSource.contains("HomeSkinAtmosphere("))
@@ -415,7 +415,7 @@ class BottomBarMiuixStructureTest {
     fun `home and sidebar consume imported skin assets without changing host-only items`() {
         val navigationSource = loadSource("app/src/main/java/com/android/purebilibili/navigation/AppNavigation.kt")
         val sidebarSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/SideBar.kt")
-        val headerSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/iOSHomeHeader.kt")
+        val headerSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/HomeHeader.kt")
 
         val sideBarCallSource = navigationSource
             .substringAfter("FrostedSideBar(")
@@ -603,11 +603,14 @@ class BottomBarMiuixStructureTest {
     }
 
     @Test
-    fun `android native miuix variant routes to dedicated miuix bottom bar renderer`() {
+    fun `neutral bottom bar host routes platform content to dedicated implementation`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/BottomBar.kt")
 
-        assertTrue(source.contains("val androidNativeVariant = LocalAndroidNativeVariant.current"))
-        assertTrue(source.contains("androidNativeVariant == AndroidNativeVariant.MIUIX"))
+        assertTrue(source.contains("AppBottomNavigationHost("))
+        assertTrue(source.contains("platformContent = { policy ->"))
+        assertFalse(source.contains("LocalUiPreset"))
+        assertFalse(source.contains("LocalAndroidNativeVariant"))
+        assertFalse(source.contains("AndroidNativeVariant"))
         assertTrue(source.contains("MiuixBottomBar("))
         assertTrue(source.contains("if (isFloating) {"))
         assertTrue(source.contains("KernelSuAlignedBottomBar("))

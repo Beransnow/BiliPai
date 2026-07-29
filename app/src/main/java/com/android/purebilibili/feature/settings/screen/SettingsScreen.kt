@@ -62,6 +62,7 @@ import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.TopReadabilityChrome
 import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.plugin.PluginManager
 
 import com.android.purebilibili.core.ui.blur.hazeSourceCompat
@@ -1332,7 +1333,7 @@ fun DonateDialog(onDismiss: () -> Unit) {
                     )
 
                     // Close Button (Top Left of Image)
-                    IconButton(
+                    AppIconButton(
                         onClick = onDismiss,
                         modifier = Modifier
                             .padding(8.dp)

@@ -1,9 +1,8 @@
 package com.android.purebilibili.feature.live
 
 import androidx.compose.ui.graphics.Color
-import com.android.purebilibili.core.theme.AndroidNativeVariant
-import com.android.purebilibili.core.theme.UiPreset
-import com.android.purebilibili.core.ui.resolveCompactCapsuleChromeSpec
+import com.android.purebilibili.core.ui.AppTopTabPresentation
+import com.android.purebilibili.core.ui.CompactCapsuleChromeSpec
 
 internal data class LivePiliPlusHomeMetrics(
     val safeSpaceDp: Int,
@@ -97,29 +96,27 @@ internal data class LiveMedalBadgeVisualSpec(
 )
 
 internal fun resolveLiveVisualSpec(
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant,
+    tabPresentation: AppTopTabPresentation,
 ): LiveVisualSpec {
-    val isMiuix = uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX
-    val safeSpaceDp = when {
-        uiPreset == UiPreset.IOS -> 12
-        isMiuix -> 16
-        else -> 18
+    val safeSpaceDp = when (tabPresentation) {
+        AppTopTabPresentation.MOVING_CAPSULE -> 12
+        AppTopTabPresentation.TONAL_CAPSULE -> 16
+        AppTopTabPresentation.MATERIAL_UNDERLINE -> 18
     }
-    val cardSpaceDp = when {
-        uiPreset == UiPreset.IOS -> 8
-        isMiuix -> 10
-        else -> 12
+    val cardSpaceDp = when (tabPresentation) {
+        AppTopTabPresentation.MOVING_CAPSULE -> 8
+        AppTopTabPresentation.TONAL_CAPSULE -> 10
+        AppTopTabPresentation.MATERIAL_UNDERLINE -> 12
     }
-    val playerButtonVisualSizeDp = when {
-        uiPreset == UiPreset.IOS -> 38
-        isMiuix -> 38
-        else -> 40
+    val playerButtonVisualSizeDp = when (tabPresentation) {
+        AppTopTabPresentation.MOVING_CAPSULE,
+        AppTopTabPresentation.TONAL_CAPSULE -> 38
+        AppTopTabPresentation.MATERIAL_UNDERLINE -> 40
     }
-    val roomCardDetailsMinHeightDp = when {
-        uiPreset == UiPreset.IOS -> 90
-        isMiuix -> 95
-        else -> 88
+    val roomCardDetailsMinHeightDp = when (tabPresentation) {
+        AppTopTabPresentation.MOVING_CAPSULE -> 90
+        AppTopTabPresentation.TONAL_CAPSULE -> 95
+        AppTopTabPresentation.MATERIAL_UNDERLINE -> 88
     }
     return LiveVisualSpec(
         homeMetrics = LivePiliPlusHomeMetrics(
@@ -166,16 +163,14 @@ internal fun resolveLivePlayerControlVisualSpec(): LivePlayerControlVisualSpec =
 
 internal fun resolveLivePiliPlusHomeMetrics(): LivePiliPlusHomeMetrics {
     return resolveLiveVisualSpec(
-        uiPreset = UiPreset.IOS,
-        androidNativeVariant = AndroidNativeVariant.MATERIAL3,
+        tabPresentation = AppTopTabPresentation.MOVING_CAPSULE,
     ).homeMetrics
 }
 
 internal fun resolveLivePiliPlusHomeMetrics(
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant,
+    tabPresentation: AppTopTabPresentation,
 ): LivePiliPlusHomeMetrics {
-    return resolveLiveVisualSpec(uiPreset, androidNativeVariant).homeMetrics
+    return resolveLiveVisualSpec(tabPresentation).homeMetrics
 }
 
 internal fun resolveLivePiliPlusGridColumns(
@@ -234,10 +229,8 @@ internal fun shouldStopLivePlaybackOnRouteDispose(isChangingConfigurations: Bool
 }
 
 internal fun resolveLiveInteractionSegmentedControlSpec(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3,
+    compactChrome: CompactCapsuleChromeSpec,
 ): LiveInteractionSegmentedControlSpec {
-    val compactChrome = resolveCompactCapsuleChromeSpec(uiPreset, androidNativeVariant)
     return LiveInteractionSegmentedControlSpec(
         horizontalPaddingDp = compactChrome.chipHorizontalPaddingDp,
         verticalPaddingDp = compactChrome.standardGapDp,

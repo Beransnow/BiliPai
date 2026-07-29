@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -33,6 +32,7 @@ import com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity
 import com.android.purebilibili.core.ui.blur.hazeSourceCompat
 import com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState
 import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.feature.settings.SettingsPageScrollHost
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,7 +76,7 @@ internal fun SettingsPageScaffold(
                     AppTopBar(
                         title = title,
                         navigationIcon = {
-                            IconButton(onClick = onBack) {
+                            AppIconButton(onClick = onBack) {
                                 Icon(
                                     imageVector = rememberAppBackIcon(),
                                     contentDescription = backContentDescription,

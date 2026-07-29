@@ -12,10 +12,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
-import androidx.compose.material3.PrimaryTabRow
+import com.android.purebilibili.core.ui.AppModalBottomSheet
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppTab
+import com.android.purebilibili.core.ui.components.AppPrimaryTabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -80,7 +80,7 @@ fun LiveContributionRankSheet(
         }
     }
 
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    AppModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -101,16 +101,16 @@ fun LiveContributionRankSheet(
                 color = AppSurfaceTokens.onSurfaceVariantSummary(),
                 style = MaterialTheme.typography.bodySmall
             )
-            PrimaryTabRow(selectedTabIndex = selectedTab) {
+            AppPrimaryTabRow(selectedTabIndex = selectedTab) {
                 rankTypes.forEachIndexed { index, type ->
-                    Tab(
+                    AppTab(
                         selected = selectedTab == index,
                         onClick = { selectedTab = index },
                         text = { Text(type.title) }
                     )
                 }
             }
-            Surface(
+            AppSurface(
                 shape = AppShapes.container(ContainerLevel.Card),
                 color = AppSurfaceTokens.cardContainer()
             ) {

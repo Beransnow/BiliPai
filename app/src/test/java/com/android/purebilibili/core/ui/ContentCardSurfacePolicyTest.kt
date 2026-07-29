@@ -14,7 +14,7 @@ class ContentCardSurfacePolicyTest {
     @Test
     fun miuixContentCardsUseTokenSurfaceAndFlatElevation() {
         val spec = resolveContentCardSurfaceSpec(UiPreset.MD3, AndroidNativeVariant.MIUIX)
-        assertTrue(spec.useMiuixTokens)
+        assertTrue(spec.usesTonalContainerTreatment)
         assertEquals(ContainerLevel.Card, spec.cornerLevel)
         assertEquals(0.8f, spec.borderWidthDp)
         assertEquals(0.22f, spec.borderAlpha)
@@ -25,7 +25,7 @@ class ContentCardSurfacePolicyTest {
     @Test
     fun materialContentCardsKeepLegacyGlassShellDefaults() {
         val spec = resolveContentCardSurfaceSpec(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
-        assertFalse(spec.useMiuixTokens)
+        assertFalse(spec.usesTonalContainerTreatment)
         assertEquals(0f, spec.borderWidthDp)
     }
 
@@ -66,25 +66,12 @@ class ContentCardSurfacePolicyTest {
         )
         val liveSource = load("app/src/main/java/com/android/purebilibili/feature/live/LiveRoomCard.kt")
 
-        assertTrue(messageSource.contains("AppCard("))
-        assertTrue(messageSource.contains("AppCardTone.MUTED"))
-        assertTrue(dynamicSource.contains("AppCard("))
-        assertTrue(dynamicSource.contains("AppCardTone.GLASS"))
-        assertTrue(liveSource.contains("AppCard("))
-        listOf(messageSource, dynamicSource, liveSource).forEach { source ->
-            assertFalse(source.contains("LocalUiPreset"))
-            assertFalse(source.contains("LocalAndroidNativeVariant"))
-        }
-    }
-
-    @Test
-    fun appCardOwnsRendererDispatchAndUsesSlotContent() {
-        val source = load("app/src/main/java/com/android/purebilibili/core/ui/AppCard.kt")
-
-        assertTrue(source.contains("content: @Composable BoxScope.() -> Unit"))
-        assertTrue(source.contains("AppCardRenderer.MIUIX_CARD -> MiuixCard("))
-        assertTrue(source.contains("AppCardRenderer.MATERIAL_SURFACE ->"))
-        assertTrue(source.contains("LocalUiStyle.current"))
+        assertTrue(messageSource.contains("rememberContentCardSurfaceSpec("))
+        assertTrue(messageSource.contains("AppShapes.borderedContainer("))
+        assertTrue(searchSource.contains("rememberContentCardSurfaceSpec("))
+        assertTrue(searchSource.contains("AppShapes.borderedContainer("))
+        assertTrue(dynamicSource.contains("rememberContentCardSurfaceSpec("))
+        assertTrue(dynamicSource.contains("AppShapes.borderedContainer("))
     }
 
     private fun load(path: String): String {

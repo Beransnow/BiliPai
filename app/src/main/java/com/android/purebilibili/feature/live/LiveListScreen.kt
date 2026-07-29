@@ -13,11 +13,15 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Badge
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.NotificationsNone
+import androidx.compose.material.icons.outlined.Search
+import com.android.purebilibili.core.ui.components.AppBadge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppOutlinedButton
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -46,16 +50,11 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.network.NetworkModule
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
-import com.android.purebilibili.core.ui.resolveCompactCapsuleChromeSpec
-import com.android.purebilibili.core.ui.rememberAppBackIcon
-import com.android.purebilibili.core.ui.rememberAppNotificationIcon
-import com.android.purebilibili.core.ui.rememberAppSearchIcon
+import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.responsiveContentWidth
 import com.android.purebilibili.data.model.response.LiveAreaParent
@@ -278,10 +277,9 @@ fun LiveListScreen(
     }
 
     val windowSizeClass = LocalWindowSizeClass.current
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val visualSpec = remember(uiPreset, androidNativeVariant) {
-        resolveLiveVisualSpec(uiPreset, androidNativeVariant)
+    val topChromePolicy = rememberAppTopChromePolicy()
+    val visualSpec = remember(topChromePolicy.tabPresentation) {
+        resolveLiveVisualSpec(topChromePolicy.tabPresentation)
     }
     val metrics = visualSpec.homeMetrics
     val contentWidth = if (windowSizeClass.isExpandedScreen) {
@@ -451,10 +449,7 @@ private fun LiveListHeader(
     onAvatarClick: () -> Unit
 ) {
     val palette = rememberLiveChromePalette()
-    val compactChrome = resolveCompactCapsuleChromeSpec(
-        uiPreset = LocalUiPreset.current,
-        androidNativeVariant = LocalAndroidNativeVariant.current,
-    )
+    val compactChrome = rememberAppTopChromePolicy().compactChromeSpec
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -467,7 +462,7 @@ private fun LiveListHeader(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small)
         ) {
-            Surface(
+            AppSurface(
                 onClick = onBack,
                 color = Color.Transparent,
                 shape = CircleShape,
@@ -481,7 +476,7 @@ private fun LiveListHeader(
                     )
                 }
             }
-            Surface(
+            AppSurface(
                 onClick = onSearchClick,
                 color = palette.searchField,
                 shape = AppShapes.container(ContainerLevel.Pill),
@@ -509,7 +504,7 @@ private fun LiveListHeader(
                 }
             }
             Box {
-                Surface(
+                AppSurface(
                     onClick = onInboxClick,
                     color = Color.Transparent,
                     shape = CircleShape,
@@ -524,7 +519,7 @@ private fun LiveListHeader(
                     }
                 }
                 if (livingCount > 0) {
-                    Badge(
+                    AppBadge(
                         containerColor = palette.accentStrong,
                         contentColor = palette.onAccent,
                         modifier = Modifier.align(Alignment.TopEnd)
@@ -543,7 +538,7 @@ private fun LiveListHeader(
                     .semantics { contentDescription = "全部直播分区" },
                 contentAlignment = Alignment.Center,
             ) {
-                Surface(
+                AppSurface(
                     color = palette.surfaceMuted,
                     shape = CircleShape,
                     modifier = Modifier.size(compactChrome.secondaryButtonSizeDp.dp)
@@ -682,10 +677,9 @@ private fun LiveAreaHomeChipRow(
             areaIds = areaList.map { it.id }
         )
     }
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val segmentedSpec = remember(uiPreset, androidNativeVariant) {
-        resolveLiveHomeCategorySegmentedControlSpec(uiPreset, androidNativeVariant)
+    val compactChrome = rememberAppTopChromePolicy().compactChromeSpec
+    val segmentedSpec = remember(compactChrome) {
+        resolveLiveHomeCategorySegmentedControlSpec(compactChrome)
     }
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
@@ -755,7 +749,7 @@ private fun LiveAreaChildChipRow(
     )
     LazyRow(horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Medium)) {
         items(items, key = { it.id }) { child ->
-            Surface(
+            AppSurface(
                 onClick = {
                     onAreaDetailClick(
                         parentAreaId,
@@ -815,7 +809,7 @@ private fun LiveListErrorState(
             style = MaterialTheme.typography.bodyLarge,
         )
         Spacer(Modifier.height(AppSpacingTokens.Medium))
-        OutlinedButton(onClick = onRetry) {
+        AppOutlinedButton(onClick = onRetry) {
             Text("重试")
         }
     }

@@ -8,6 +8,7 @@ import com.android.purebilibili.core.ui.MediaContrastPalette
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.rememberAppPlayIcon
+import com.android.purebilibili.core.ui.components.AppCard
 
 import android.util.Log
 import androidx.compose.foundation.background
@@ -62,7 +63,7 @@ fun LiveCard(
         val roomId = liveInfo.live_play_info?.room_id ?: 0L
         val title = liveInfo.live_play_info?.title ?: ""
         
-        Card(
+        AppCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { onLiveClick(roomId, title, "") },  //  点击跳转直播
@@ -145,7 +146,7 @@ fun LiveCard(
         }
     } else {
         // 无法解析时显示占位
-        Card(
+        AppCard(
             modifier = Modifier.fillMaxWidth(),
             shape = AppShapes.container(ContainerLevel.Card),
             colors = CardDefaults.cardColors(

@@ -16,20 +16,20 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import com.android.purebilibili.core.theme.LocalUiStyle
-import com.android.purebilibili.core.theme.toRendererStyleBridge
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Refresh
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
-import com.android.purebilibili.core.ui.AppLoadingIndicator
-import com.android.purebilibili.core.ui.rememberAppBackIcon
-import com.android.purebilibili.core.ui.rememberAppRefreshIcon
-import androidx.compose.material3.Button
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
+import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -59,10 +59,9 @@ fun LiveFollowingScreen(
     onBack: () -> Unit,
     onLiveClick: (Long, String, String) -> Unit
 ) {
-    val uiStyle = LocalUiStyle.current
-    val rendererStyle = remember(uiStyle) { uiStyle.toRendererStyleBridge() }
-    val visualSpec = remember(rendererStyle) {
-        resolveLiveVisualSpec(rendererStyle.preset, rendererStyle.variant)
+    val topChromePolicy = rememberAppTopChromePolicy()
+    val visualSpec = remember(topChromePolicy.tabPresentation) {
+        resolveLiveVisualSpec(topChromePolicy.tabPresentation)
     }
     val metrics = visualSpec.homeMetrics
     val windowSizeClass = LocalWindowSizeClass.current
@@ -115,7 +114,7 @@ fun LiveFollowingScreen(
             AppTopBar(
                 title = if (items.isNotEmpty()) "${items.size}人正在直播" else "关注直播",
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    AppIconButton(onClick = onBack) {
                         Icon(
                             imageVector = rememberAppBackIcon(),
                             contentDescription = "返回",
@@ -123,7 +122,7 @@ fun LiveFollowingScreen(
                     }
                 },
                 actions = {
-                    IconButton(
+                    AppIconButton(
                         enabled = !isLoading && !isRefreshing,
                         onClick = {
                             coroutineScope.launch {
@@ -201,7 +200,7 @@ fun LiveFollowingScreen(
                     }
                     item {
                         if (hasMore || isLoadingMore) {
-                            Button(
+                            AppButton(
                                 enabled = !isLoadingMore,
                                 modifier = Modifier.fillMaxWidth(),
                                 onClick = {

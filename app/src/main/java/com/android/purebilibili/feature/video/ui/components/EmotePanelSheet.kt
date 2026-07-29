@@ -1,6 +1,8 @@
 // 文件路径: feature/video/ui/components/EmotePanelSheet.kt
 package com.android.purebilibili.feature.video.ui.components
 
+import com.android.purebilibili.core.ui.components.AppTab
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -23,7 +25,7 @@ import coil.compose.AsyncImage
 import com.android.purebilibili.core.ui.image.rememberImageRequest
 import com.android.purebilibili.data.model.response.EmotePackage
 import com.android.purebilibili.data.model.response.EmoteItem
-import io.github.alexzhirkevich.cupertino.CupertinoActivityIndicator
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 
 /**
  * [新增] 表情选择面板组件
@@ -40,7 +42,7 @@ fun EmotePanelSheet(
 ) {
     if (!visible) return
     
-    com.android.purebilibili.core.ui.IOSModalBottomSheet(
+    com.android.purebilibili.core.ui.AppModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         dragHandle = null
@@ -72,7 +74,7 @@ fun EmotePanelSheet(
                         .weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
-                    CupertinoActivityIndicator()
+                    AdaptiveLoadingIndicator()
                 }
             } else if (packages.isEmpty()) {
                 Box(
@@ -109,7 +111,7 @@ fun EmotePanelSheet(
                     divider = {}
                 ) {
                     packages.forEachIndexed { index, pkg ->
-                        Tab(
+                        AppTab(
                             selected = selectedPackageIndex == index,
                             onClick = { selectedPackageIndex = index },
                             text = {

@@ -38,13 +38,13 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.BlurOn
 import androidx.compose.material.icons.outlined.Speed
-import androidx.compose.material3.Button
+import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -110,13 +110,13 @@ fun OnboardingScreen(
         }
     }
 
-    Surface(
+    AppSurface(
         color = MaterialTheme.colorScheme.surface,
         modifier = Modifier
             .fillMaxSize()
             .testTag("onboarding_root")
     ) {
-        Scaffold(
+        AppScaffold(
             bottomBar = {
                 OnboardingBottomControls(
                     pageCount = pageCount,
@@ -206,7 +206,7 @@ private fun OnboardingBottomControls(
         }
 
         val actionColors = resolveAdaptivePrimaryAccentColors(MaterialTheme.colorScheme)
-        Button(
+        AppButton(
             onClick = onActionClick,
             modifier = Modifier
                 .fillMaxWidth()
@@ -224,7 +224,7 @@ private fun OnboardingBottomControls(
             enabled = !isApplyingSettings
         ) {
             if (isApplyingSettings) {
-                CircularProgressIndicator(
+                AppCircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
                     strokeWidth = 2.dp,
                     color = actionColors.contentColor

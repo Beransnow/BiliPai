@@ -17,9 +17,9 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,9 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.android.purebilibili.core.theme.LocalUiStyle
-import com.android.purebilibili.core.theme.toRendererStyleBridge
-import com.android.purebilibili.core.ui.AppLoadingIndicator
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppShapes
@@ -43,7 +41,7 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
-import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.responsiveContentWidth
 import com.android.purebilibili.data.model.response.LiveAreaChild
@@ -70,10 +68,9 @@ fun LiveAreaDetailScreen(
     var totalCount by remember { mutableIntStateOf(0) }
     var isLoadingMore by remember { mutableStateOf(false) }
     val gridState = rememberLazyGridState()
-    val uiStyle = LocalUiStyle.current
-    val rendererStyle = remember(uiStyle) { uiStyle.toRendererStyleBridge() }
-    val visualSpec = remember(rendererStyle) {
-        resolveLiveVisualSpec(rendererStyle.preset, rendererStyle.variant)
+    val topChromePolicy = rememberAppTopChromePolicy()
+    val visualSpec = remember(topChromePolicy.tabPresentation) {
+        resolveLiveVisualSpec(topChromePolicy.tabPresentation)
     }
     val metrics = visualSpec.homeMetrics
     val windowSizeClass = LocalWindowSizeClass.current
@@ -159,7 +156,7 @@ fun LiveAreaDetailScreen(
             AppTopBar(
                 title = title,
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    AppIconButton(onClick = onBack) {
                         Icon(
                             imageVector = rememberAppBackIcon(),
                             contentDescription = "返回",
@@ -299,7 +296,7 @@ private fun LiveSortChip(
     onClick: () -> Unit,
 ) {
     val palette = rememberLiveChromePalette()
-    Surface(
+    AppSurface(
         onClick = onClick,
         shape = AppShapes.borderedContainer(ContainerLevel.Pill),
         color = if (selected) palette.accentSoft else palette.surfaceMuted,

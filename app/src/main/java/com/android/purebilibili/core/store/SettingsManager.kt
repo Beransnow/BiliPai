@@ -195,7 +195,6 @@ enum class HomeHeaderBlurMode(val value: Int, val label: String) {
 
 internal fun resolveHomeHeaderBlurEnabled(
     mode: HomeHeaderBlurMode,
-    uiPreset: UiPreset
 ): Boolean {
     return when (mode) {
         HomeHeaderBlurMode.FOLLOW_PRESET -> true
@@ -1935,16 +1934,30 @@ object SettingsManager {
 
     fun getUiStyle(context: Context): Flow<UiStyle> = UiStyleSettingsStore.getUiStyle(context)
 
-    suspend fun setUiStyle(context: Context, uiStyle: UiStyle) = UiStyleSettingsStore.setUiStyle(context, uiStyle)
-    fun getUiPreset(context: Context): Flow<UiPreset> = UiStyleSettingsStore.getUiPreset(context)
-
-    suspend fun setUiPreset(context: Context, preset: UiPreset) = UiStyleSettingsStore.setUiPreset(context, preset)
-
+    suspend fun setUiPreset(context: Context, preset: UiPreset) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_UI_PRESET] = preset.value
+        }
+    }
     fun getAndroidNativeVariant(context: Context): Flow<AndroidNativeVariant> =
         UiStyleSettingsStore.getAndroidNativeVariant(context)
 
-    suspend fun setAndroidNativeVariant(context: Context, variant: AndroidNativeVariant) =
-        UiStyleSettingsStore.setAndroidNativeVariant(context, variant)
+    suspend fun setAndroidNativeVariant(context: Context, variant: AndroidNativeVariant) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_ANDROID_NATIVE_VARIANT] = variant.value
+        }
+    }
+    fun getUiStyle(context: Context): Flow<UiStyle> = context.settingsDataStore.data.map {
+        UiStyle.fromLegacyValues(it[KEY_UI_PRESET], it[KEY_ANDROID_NATIVE_VARIANT])
+    }
+
+    suspend fun setUiStyle(context: Context, uiStyle: UiStyle) {
+        val writePlan = uiStyle.legacyWritePlan()
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_UI_PRESET] = writePlan.uiPreset.value
+            writePlan.androidNativeVariant?.let { preferences[KEY_ANDROID_NATIVE_VARIANT] = it.value }
+        }
+    }
 
     // --- Dynamic Color ---
     fun getDynamicColor(context: Context): Flow<Boolean> = context.settingsDataStore.data
@@ -6253,9 +6266,8 @@ object SettingsManager {
 
     private val shareableSettingDefinitions: List<ShareablePreferenceDefinition> by lazy {
         listOf(
-            IntShareablePreferenceDefinition(UI_STYLE_PREFERENCE_KEY, SettingsShareSection.APPEARANCE),
-            IntShareablePreferenceDefinition(UI_PRESET_PREFERENCE_KEY, SettingsShareSection.APPEARANCE),
-            IntShareablePreferenceDefinition(ANDROID_NATIVE_VARIANT_PREFERENCE_KEY, SettingsShareSection.APPEARANCE),
+            IntShareablePreferenceDefinition(KEY_UI_PRESET, SettingsShareSection.APPEARANCE),
+            IntShareablePreferenceDefinition(KEY_ANDROID_NATIVE_VARIANT, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_THEME_MODE, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_DARK_THEME_STYLE, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_APP_LANGUAGE, SettingsShareSection.APPEARANCE),

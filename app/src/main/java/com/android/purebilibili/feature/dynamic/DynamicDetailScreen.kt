@@ -10,14 +10,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.Button
+import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -118,7 +116,7 @@ fun DynamicDetailScreen(
             AppTopBar(
                 title = screenTitle,
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    AppIconButton(onClick = onBack) {
                         Icon(rememberAppBackIcon(), contentDescription = backLabel)
                     }
                 }
@@ -152,7 +150,7 @@ fun DynamicDetailScreen(
                             text = state.message,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        Button(onClick = { retryToken++ }) {
+                        AppButton(onClick = { retryToken++ }) {
                             Text(retryLabel)
                         }
                     }

@@ -1,8 +1,5 @@
 package com.android.purebilibili.feature.home
 
-import com.android.purebilibili.core.store.resolveSharedLiquidGlassChromeEnabled
-import com.android.purebilibili.core.theme.UiStyle
-import com.android.purebilibili.core.theme.toRendererStyleBridge
 
 internal data class HomePerformanceConfig(
     val headerBlurEnabled: Boolean,
@@ -52,7 +49,7 @@ internal fun resolveHomeCoverPreloadRange(
 }
 
 internal fun resolveHomePerformanceConfig(
-    uiStyle: UiStyle = UiStyle.IOS,
+    supportsIndependentLiquidGlass: Boolean = true,
     headerBlurEnabled: Boolean,
     bottomBarBlurEnabled: Boolean,
     topBarLiquidGlassEnabled: Boolean,
@@ -68,22 +65,12 @@ internal fun resolveHomePerformanceConfig(
     // Feature retired: keep parameter for compatibility, but never apply runtime smoothness downgrade.
     val shouldPrioritizeSmoothness = false
     val effectiveDataSaver = isDataSaverActive
-    val rendererStyle = uiStyle.toRendererStyleBridge()
-    val effectiveTopBarLiquidGlass = resolveSharedLiquidGlassChromeEnabled(
-        individualEnabled = topBarLiquidGlassEnabled,
-        uiPreset = rendererStyle.preset,
-        androidNativeLiquidGlassEnabled = androidNativeLiquidGlassEnabled
-    ) && !shouldPrioritizeSmoothness
-    val effectiveHomeSearchLiquidGlass = resolveSharedLiquidGlassChromeEnabled(
-        individualEnabled = homeSearchLiquidGlassEnabled,
-        uiPreset = rendererStyle.preset,
-        androidNativeLiquidGlassEnabled = androidNativeLiquidGlassEnabled
-    ) && !shouldPrioritizeSmoothness
-    val effectiveBottomBarLiquidGlass = resolveSharedLiquidGlassChromeEnabled(
-        individualEnabled = bottomBarLiquidGlassEnabled,
-        uiPreset = rendererStyle.preset,
-        androidNativeLiquidGlassEnabled = androidNativeLiquidGlassEnabled
-    ) && !shouldPrioritizeSmoothness
+    fun resolveLiquidGlass(individualEnabled: Boolean): Boolean =
+        androidNativeLiquidGlassEnabled ||
+            (supportsIndependentLiquidGlass && individualEnabled)
+    val effectiveTopBarLiquidGlass = resolveLiquidGlass(topBarLiquidGlassEnabled)
+    val effectiveHomeSearchLiquidGlass = resolveLiquidGlass(homeSearchLiquidGlassEnabled)
+    val effectiveBottomBarLiquidGlass = resolveLiquidGlass(bottomBarLiquidGlassEnabled)
     val effectivePreloadAheadCount = when {
         shouldPrioritizeSmoothness -> normalPreloadAheadCount.coerceAtLeast(0).coerceAtMost(2)
         else -> resolveHomePreloadAheadCount(

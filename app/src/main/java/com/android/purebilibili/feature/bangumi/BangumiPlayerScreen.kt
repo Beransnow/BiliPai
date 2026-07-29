@@ -24,7 +24,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.exoplayer.ExoPlayer
-import io.github.alexzhirkevich.cupertino.CupertinoActivityIndicator
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -627,7 +627,7 @@ fun BangumiPlayerScreen(
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                CupertinoActivityIndicator()
+                                AdaptiveLoadingIndicator()
                             }
                         }
                         

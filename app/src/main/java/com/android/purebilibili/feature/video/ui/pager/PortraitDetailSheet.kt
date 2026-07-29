@@ -27,12 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.shape.CircleShape
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.ui.bottomSheetContentEnterTransition
-import com.android.purebilibili.core.ui.bottomSheetContentExitTransition
-import com.android.purebilibili.core.ui.bottomSheetScrimEnterTransition
-import com.android.purebilibili.core.ui.bottomSheetScrimExitTransition
+import com.android.purebilibili.core.ui.rememberAppBottomSheetMotion
 import com.android.purebilibili.feature.video.ui.section.resolvePublishTimeRowText
 import com.android.purebilibili.feature.video.ui.section.shouldEmphasizePrecisePublishTime
 import kotlinx.coroutines.launch
@@ -67,19 +62,12 @@ fun PortraitDetailSheet(
 
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val backKey = remember { Any() }
-    VideoLocalBackTargetEffect(
-        key = backKey,
-        target = VideoLocalBackTarget.PORTRAIT_DETAIL,
-        enabled = visible,
-        onCommitted = onDismiss,
-    )
-    val dismissViaBackDispatcher = rememberVideoLocalBackAction(
-        target = VideoLocalBackTarget.PORTRAIT_DETAIL,
-        onCommitted = onDismiss,
-    )
+    val sheetMotion = rememberAppBottomSheetMotion()
+
+    // 拦截返回键
+    BackHandler(enabled = visible) {
+        onDismiss()
+    }
 
     Box(
         modifier = Modifier.fillMaxSize(),
@@ -88,8 +76,8 @@ fun PortraitDetailSheet(
         // 1. 遮罩层 (Scrim)
         AnimatedVisibility(
             visible = visible,
-            enter = bottomSheetScrimEnterTransition(uiPreset, androidNativeVariant),
-            exit = bottomSheetScrimExitTransition(uiPreset, androidNativeVariant)
+            enter = sheetMotion.scrimEnter,
+            exit = sheetMotion.scrimExit
         ) {
             Box(
                 modifier = Modifier
@@ -105,8 +93,8 @@ fun PortraitDetailSheet(
         // 2. 内容层 (Sheet Content)
         AnimatedVisibility(
             visible = visible,
-            enter = bottomSheetContentEnterTransition(uiPreset, androidNativeVariant),
-            exit = bottomSheetContentExitTransition(uiPreset, androidNativeVariant)
+            enter = sheetMotion.contentEnter,
+            exit = sheetMotion.contentExit
         ) {
             Surface(
                 modifier = Modifier
@@ -183,12 +171,12 @@ fun PortraitDetailSheet(
                             var showBlockConfirmDialog by remember { mutableStateOf(false) }
                             
                             if (showBlockConfirmDialog) {
-                                com.android.purebilibili.core.ui.IOSAlertDialog(
+                                com.android.purebilibili.core.ui.AppAlertDialog(
                                     onDismissRequest = { showBlockConfirmDialog = false },
                                     title = { Text(if (isBlocked) "解除屏蔽" else "屏蔽 UP 主") },
                                     text = { Text(if (isBlocked) "确定要解除对 ${info.owner.name} 的屏蔽吗？" else "屏蔽后，将不再推荐该 UP 主的视频。\n确定要屏蔽 ${info.owner.name} 吗？") },
                                     confirmButton = {
-                                        com.android.purebilibili.core.ui.IOSDialogAction(
+                                        com.android.purebilibili.core.ui.AppDialogAction(
                                             onClick = {
                                                 scope.launch {
                                                     if (isBlocked) {
@@ -209,7 +197,7 @@ fun PortraitDetailSheet(
                                         }
                                     },
                                     dismissButton = {
-                                        com.android.purebilibili.core.ui.IOSDialogAction(onClick = { showBlockConfirmDialog = false }) { Text("取消") }
+                                        com.android.purebilibili.core.ui.AppDialogAction(onClick = { showBlockConfirmDialog = false }) { Text("取消") }
                                     }
                                 )
                             }

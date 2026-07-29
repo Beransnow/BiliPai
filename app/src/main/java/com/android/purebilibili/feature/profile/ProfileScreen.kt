@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -56,10 +55,6 @@ import coil.compose.AsyncImage
 import coil.imageLoader
 import coil.request.ImageRequest
 import coil.size.Scale
-import com.android.purebilibili.core.theme.iOSBlue
-import com.android.purebilibili.core.theme.iOSGreen
-import com.android.purebilibili.core.theme.iOSOrange
-import com.android.purebilibili.core.theme.iOSYellow
 import com.android.purebilibili.core.theme.DarkBackground
 import com.android.purebilibili.core.theme.DarkSurface
 import com.android.purebilibili.core.theme.DarkSurfaceVariant
@@ -68,9 +63,7 @@ import com.android.purebilibili.feature.home.UserState
 import com.android.purebilibili.feature.dynamic.components.ImagePreviewDialog
 import com.android.purebilibili.feature.dynamic.components.ImagePreviewTextContent
 import com.android.purebilibili.core.ui.LoadingAnimation
-import com.android.purebilibili.core.ui.BiliGradientButton
-import com.android.purebilibili.core.ui.AppAlertDialog
-import com.android.purebilibili.core.ui.AppModalBottomSheet
+import com.android.purebilibili.core.ui.components.AppPrimaryButton
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppTopBarStyle
@@ -98,6 +91,11 @@ import com.android.purebilibili.core.ui.rememberAppRefreshIcon
 import com.android.purebilibili.core.ui.rememberAppRestoreIcon
 import com.android.purebilibili.core.ui.rememberAppSettingsIcon
 import com.android.purebilibili.core.ui.rememberAppShareIcon
+import com.android.purebilibili.core.ui.rememberAppChevronForwardIcon
+import com.android.purebilibili.core.ui.rememberAppDeleteIcon
+import com.android.purebilibili.core.ui.rememberAppLinkIcon
+import com.android.purebilibili.core.ui.rememberAppSemanticVisualPolicy
+import com.android.purebilibili.core.ui.AppSemanticAccentRole
 import com.android.purebilibili.core.ui.components.UserLevelBadge
 import com.android.purebilibili.core.ui.components.AppTextField
 import com.android.purebilibili.core.ui.rememberAppWarningIcon
@@ -105,18 +103,12 @@ import com.android.purebilibili.core.ui.rememberAppWatchLaterIcon
 import com.android.purebilibili.core.ui.wallpaper.ProfileWallpaperTransform
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.WindowWidthSizeClass
-import com.android.purebilibili.core.ui.components.IOSGroup
-import com.android.purebilibili.core.ui.components.IOSClickableItem
-import com.android.purebilibili.core.ui.components.IOSDivider
-import com.android.purebilibili.core.ui.components.IOSSwitchItem
-import com.android.purebilibili.core.ui.components.IOSSectionTitle
-import com.android.purebilibili.core.ui.components.IOSGridItem
+import com.android.purebilibili.core.ui.components.AppPreference
+import com.android.purebilibili.core.ui.components.AppPreferenceGridItem
 import com.android.purebilibili.core.store.StoredAccountSession
 import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.SettingsManager
-import com.android.purebilibili.core.store.resolveSharedLiquidGlassChromeEnabled
-import com.android.purebilibili.core.theme.LocalUiStyle
-import com.android.purebilibili.core.theme.toRendererStyleBridge
+import com.android.purebilibili.core.ui.rememberAppChromeLiquidGlassEnabled
 import com.android.purebilibili.data.model.response.FavFolder
 import com.android.purebilibili.data.model.response.FollowBangumiItem
 import com.android.purebilibili.data.model.response.SpaceAggregateArchiveItem
@@ -1239,7 +1231,7 @@ private fun ProfileSpaceHeader(
                         color = Color.White,
                         modifier = Modifier
                             .clip(RoundedCornerShape(999.dp))
-                            .background(com.android.purebilibili.core.theme.iOSPink)
+                            .background(MaterialTheme.colorScheme.secondary)
                             .padding(horizontal = 8.dp, vertical = 3.dp)
                     )
                 }
@@ -1412,11 +1404,9 @@ private fun ProfileSpaceTabs(
     val homeSettings by SettingsManager
         .getHomeSettings(context)
         .collectAsStateWithLifecycle(initialValue = HomeSettings())
-    val rendererStyle = LocalUiStyle.current.toRendererStyleBridge()
-    val sharedLiquidGlassEnabled = resolveSharedLiquidGlassChromeEnabled(
+    val sharedLiquidGlassEnabled = rememberAppChromeLiquidGlassEnabled(
         individualEnabled = homeSettings.isBottomBarLiquidGlassEnabled,
-        uiPreset = rendererStyle.preset,
-        androidNativeLiquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled
+        androidNativeEnabled = homeSettings.androidNativeLiquidGlassEnabled,
     )
     val selectedIndex = tabs.indexOfFirst { it.tab == selectedTab }.coerceAtLeast(0)
     val tabModifier = Modifier
@@ -2782,7 +2772,6 @@ fun MobileProfileContent(
                 
             }
             // item { Spacer(...) } // Removed
-            // item { IOSGroup { ... } } // Removed
         }
         
         AppTopBar(
@@ -2894,7 +2883,7 @@ fun GuestProfileContent(
             Spacer(modifier = Modifier.height(48.dp))
 
             //  登录按钮 - 使用现代化渐变按钮
-            BiliGradientButton(
+            AppPrimaryButton(
                 text = "安全登录",
                 onClick = onGoToLogin,
                 leadingIcon = loginIcon,
@@ -3497,6 +3486,19 @@ fun ServicesSection(
     val watchLaterIcon = rememberAppWatchLaterIcon()
     val inboxIcon = rememberAppInboxIcon()
     val accountIcon = rememberAppProfileAddIcon()
+    val semanticVisualPolicy = rememberAppSemanticVisualPolicy()
+    val primaryAccent = semanticVisualPolicy.resolveAccent(
+        AppSemanticAccentRole.PRIMARY,
+        MaterialTheme.colorScheme.primary,
+    )
+    val secondaryAccent = semanticVisualPolicy.resolveAccent(
+        AppSemanticAccentRole.SECONDARY,
+        MaterialTheme.colorScheme.secondary,
+    )
+    val tertiaryAccent = semanticVisualPolicy.resolveAccent(
+        AppSemanticAccentRole.TERTIARY,
+        MaterialTheme.colorScheme.tertiary,
+    )
 
     if (isTablet) {
         val items = buildList {
@@ -3520,7 +3522,7 @@ fun ServicesSection(
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         rowItems.forEach { (title, icon, onClick) ->
-                            IOSGridItem(
+                            AppPreferenceGridItem(
                                 icon = icon,
                                 title = title,
                                 onClick = onClick,
@@ -3569,7 +3571,7 @@ fun ServicesSection(
                             icon = historyIcon,
                             title = "历史记录",
                             onClick = onHistoryClick,
-                            iconTint = iOSBlue,
+                            iconTint = primaryAccent,
                             textColor = contentColor,
                         )
                         ProfileServiceDivider(contentColor)
@@ -3579,7 +3581,7 @@ fun ServicesSection(
                             icon = bookmarkIcon,
                             title = "我的收藏",
                             onClick = onFavoriteClick,
-                            iconTint = iOSYellow,
+                            iconTint = tertiaryAccent,
                             textColor = contentColor,
                         )
                         if (favoriteFolderShortcuts.isNotEmpty()) {
@@ -3598,7 +3600,7 @@ fun ServicesSection(
                         icon = watchLaterIcon,
                         title = "稍后再看",
                         onClick = onWatchLaterClick,
-                        iconTint = iOSGreen,
+                        iconTint = tertiaryAccent,
                         textColor = contentColor,
                     )
                     ProfileServiceDivider(contentColor)
@@ -3606,7 +3608,7 @@ fun ServicesSection(
                         icon = inboxIcon,
                         title = "消息中心",
                         onClick = onInboxClick,
-                        iconTint = com.android.purebilibili.core.theme.iOSPink,
+                        iconTint = secondaryAccent,
                         textColor = contentColor,
                     )
                 }
@@ -3641,7 +3643,7 @@ fun ServicesSection(
                 tonalElevation = 0.dp // Ensure no extra overlay
             ) {
                 Column {
-                    IOSClickableItem(
+                    AppPreference(
                         icon = downloadIcon,
                         title = "离线缓存",
                         onClick = onDownloadClick,
@@ -3649,20 +3651,20 @@ fun ServicesSection(
                         textColor = contentColor
                     )
                     if (showHistoryService) {
-                        IOSClickableItem(
+                        AppPreference(
                             icon = historyIcon,
                             title = "历史记录",
                             onClick = onHistoryClick,
-                            iconTint = iOSBlue,
+                            iconTint = primaryAccent,
                             textColor = contentColor
                         )
                     }
                     if (showFavoriteService) {
-                        IOSClickableItem(
+                        AppPreference(
                             icon = bookmarkIcon,
                             title = "我的收藏",
                             onClick = onFavoriteClick,
-                            iconTint = iOSYellow,
+                            iconTint = tertiaryAccent,
                             textColor = contentColor
                         )
                         if (favoriteFolderShortcuts.isNotEmpty()) {
@@ -3674,28 +3676,28 @@ fun ServicesSection(
                             )
                         }
                     }
-                    IOSClickableItem(
+                    AppPreference(
                         icon = watchLaterIcon,
                         title = "稍后再看",
                         onClick = onWatchLaterClick,
-                        iconTint = iOSGreen,
+                        iconTint = tertiaryAccent,
                         textColor = contentColor
                     )
-                    IOSClickableItem(
+                    AppPreference(
                         icon = inboxIcon,
                         title = "消息中心",
                         onClick = onInboxClick,
-                        iconTint = com.android.purebilibili.core.theme.iOSPink,
+                        iconTint = secondaryAccent,
                         textColor = contentColor
                     )
-                    IOSClickableItem(
+                    AppPreference(
                         icon = accountIcon,
                         title = "账号切换",
                         onClick = onAccountManageClick,
-                        iconTint = iOSOrange,
+                        iconTint = secondaryAccent,
                         textColor = contentColor
                     )
-                    IOSClickableItem(
+                    AppPreference(
                         title = if (isLogin) "退出登录" else "立即登录",
                         onClick = onLogout,
                         textColor = if (isLogin) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
@@ -3803,7 +3805,7 @@ private fun ProfileAccountActionArea(
                 icon = accountIcon,
                 title = "账号切换",
                 onClick = onAccountManageClick,
-                iconTint = iOSOrange,
+                iconTint = MaterialTheme.colorScheme.secondary,
                 textColor = textColor
             )
             ProfileServiceDivider(textColor)
@@ -3816,7 +3818,7 @@ private fun ProfileAccountActionArea(
                     icon = accountIcon,
                     title = "账号切换",
                     onClick = onAccountManageClick,
-                    iconTint = iOSOrange,
+                    iconTint = MaterialTheme.colorScheme.secondary,
                     textColor = textColor
                 )
             }
@@ -3947,7 +3949,7 @@ private fun ProfileFavoriteFolderShortcutChip(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = iOSYellow,
+            tint = MaterialTheme.colorScheme.tertiary,
             modifier = Modifier.size(if (compact) 18.dp else 20.dp)
         )
         Spacer(modifier = Modifier.width(if (compact) 7.dp else 8.dp))

@@ -44,8 +44,6 @@ import com.android.purebilibili.core.theme.iOSGreen
 import com.android.purebilibili.core.theme.iOSOrange
 import com.android.purebilibili.core.theme.iOSPurple
 import com.android.purebilibili.core.theme.iOSTeal
-import com.android.purebilibili.core.theme.LocalUiStyle
-import com.android.purebilibili.core.theme.toRendererStyleBridge
 import com.android.purebilibili.feature.settings.SettingsPageScrollHost
 
 /**
@@ -272,14 +270,10 @@ private fun PermissionItem(
     isGranted: Boolean,
     onOpenSettings: (() -> Unit)?
 ) {
-    val uiStyle = LocalUiStyle.current
-    val rendererStyle = remember(uiStyle) { uiStyle.toRendererStyleBridge() }
-    val visualSpec = remember(rendererStyle) {
-        resolveAdaptiveListComponentVisualSpec(rendererStyle.preset, rendererStyle.variant)
-    }
-    val effectiveIconTint = rememberAdaptiveSemanticIconTint(info.iconTint, rendererStyle.preset)
-    val grantedTint = rememberAdaptiveSemanticIconTint(iOSGreen, rendererStyle.preset)
-    val deniedTint = rememberAdaptiveSemanticIconTint(com.android.purebilibili.core.theme.iOSRed, rendererStyle.preset)
+    val visualSpec = rememberAdaptiveListVisualCapabilities().componentSpec
+    val effectiveIconTint = rememberAdaptiveSemanticIconTint(info.iconTint)
+    val grantedTint = rememberAdaptiveSemanticIconTint(iOSGreen)
+    val deniedTint = rememberAdaptiveSemanticIconTint(com.android.purebilibili.core.theme.iOSRed)
     Row(
         modifier = Modifier
             .fillMaxWidth()

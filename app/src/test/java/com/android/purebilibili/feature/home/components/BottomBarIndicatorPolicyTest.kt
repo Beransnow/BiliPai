@@ -844,8 +844,8 @@ class BottomBarIndicatorPolicyTest {
     @Test
     fun `shared indicator drag scale uses KernelSU separate axis springs`() {
         val source = listOf(
-            java.io.File("app/src/main/java/com/android/purebilibili/core/ui/animation/DampedDragAnimation.kt"),
-            java.io.File("src/main/java/com/android/purebilibili/core/ui/animation/DampedDragAnimation.kt")
+            java.io.File("design-system/src/main/java/com/android/purebilibili/core/ui/animation/DampedDragAnimation.kt"),
+            java.io.File("src/main/java/com/android/purebilibili/core/ui/animation/DampedDragAnimation.kt"),
         ).first { it.exists() }.readText()
 
         assertTrue(source.contains("private const val KERNEL_SU_PRESSED_SCALE = 78f / 56f"))

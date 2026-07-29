@@ -26,9 +26,11 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import com.android.purebilibili.core.ui.AppLoadingIndicator
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.outlined.StarBorder
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppShapes
@@ -36,16 +38,14 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
-import com.android.purebilibili.core.ui.rememberAppBackIcon
-import com.android.purebilibili.core.ui.rememberAppFavoriteFilledIcon
-import com.android.purebilibili.core.ui.rememberAppFavoriteIcon
+import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.responsiveContentWidth
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.TextButton
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -85,10 +85,9 @@ fun LiveAreaScreen(
     onBack: () -> Unit,
     onAreaClick: (Int, Int, String) -> Unit
 ) {
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val visualSpec = remember(uiPreset, androidNativeVariant) {
-        resolveLiveVisualSpec(uiPreset, androidNativeVariant)
+    val topChromePolicy = rememberAppTopChromePolicy()
+    val visualSpec = remember(topChromePolicy.tabPresentation) {
+        resolveLiveVisualSpec(topChromePolicy.tabPresentation)
     }
     val metrics = visualSpec.homeMetrics
     val windowSizeClass = LocalWindowSizeClass.current
@@ -129,7 +128,7 @@ fun LiveAreaScreen(
             AppTopBar(
                 title = "全部标签",
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    AppIconButton(onClick = onBack) {
                         Icon(
                             imageVector = rememberAppBackIcon(),
                             contentDescription = "返回",
@@ -137,7 +136,7 @@ fun LiveAreaScreen(
                     }
                 },
                 actions = {
-                    TextButton(onClick = { isEditing = !isEditing }) {
+                    AppTextButton(onClick = { isEditing = !isEditing }) {
                         Text(if (isEditing) "完成" else "编辑")
                     }
                 },
@@ -159,7 +158,7 @@ fun LiveAreaScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = error ?: "", color = colorScheme.onSurfaceVariant)
                     Spacer(Modifier.height(AppSpacingTokens.Small))
-                    TextButton(
+                    AppTextButton(
                         onClick = {
                             isLoading = true
                             error = null
@@ -284,10 +283,9 @@ private fun LiveAreaParentTabRow(
     onTabSelected: (Int) -> Unit
 ) {
     if (areas.isEmpty()) return
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    val segmentedSpec = remember(uiPreset, androidNativeVariant) {
-        resolveLiveAreaParentSegmentedControlSpec(uiPreset, androidNativeVariant)
+    val compactChrome = rememberAppTopChromePolicy().compactChromeSpec
+    val segmentedSpec = remember(compactChrome) {
+        resolveLiveAreaParentSegmentedControlSpec(compactChrome)
     }
     val scrollState = rememberScrollState()
     val density = LocalDensity.current
@@ -407,7 +405,7 @@ private fun LiveFavoriteTagCard(
     val colorScheme = MaterialTheme.colorScheme
     val favoriteIcon = rememberAppFavoriteIcon()
     Box {
-        Surface(
+        AppSurface(
             onClick = { if (isEditing) onRemove() else onClick() },
             color = AppSurfaceTokens.cardContainer(),
             shape = AppShapes.borderedContainer(ContainerLevel.Card),
@@ -458,7 +456,7 @@ private fun LiveFavoriteTagCard(
                     .clickable(onClick = onRemove),
                 contentAlignment = Alignment.Center,
             ) {
-                Surface(
+                AppSurface(
                     shape = CircleShape,
                     color = colorScheme.errorContainer,
                     modifier = Modifier.size(AppSpacingTokens.ExtraLarge),
@@ -483,7 +481,7 @@ private fun LiveAreaIcon(
 ) {
     val colorScheme = MaterialTheme.colorScheme
     if (imageUrl.isBlank()) {
-        Surface(
+        AppSurface(
             color = AppSurfaceTokens.surfaceContainer(),
             shape = AppShapes.container(ContainerLevel.Tag),
             modifier = modifier
@@ -540,7 +538,7 @@ private fun LiveAreaGridItem(
             )
         }
         if (isEditing && child.id != "0") {
-            Surface(
+            AppSurface(
                 shape = CircleShape,
                 color = if (isFavorite) colorScheme.surfaceVariant else colorScheme.secondaryContainer,
                 modifier = Modifier

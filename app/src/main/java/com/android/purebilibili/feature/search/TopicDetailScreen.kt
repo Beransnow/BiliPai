@@ -24,9 +24,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.android.purebilibili.core.ui.AppLoadingIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -172,7 +172,7 @@ private fun TopicDetailTopBar(
             .background(MaterialTheme.colorScheme.surface),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = onBack) {
+        AppIconButton(onClick = onBack) {
             Icon(
                 imageVector = rememberAppBackIcon(),
                 contentDescription = "返回"
@@ -197,7 +197,7 @@ private fun TopicHeaderCard(details: TopicTopDetails?) {
     val topicDescription = topic?.description
     val creatorName = creator?.name
     val creatorFace = creator?.face
-    Surface(
+    AppSurface(
         shape = RoundedCornerShape(8.dp),
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 1.dp,

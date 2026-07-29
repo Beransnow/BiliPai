@@ -1,8 +1,8 @@
 package com.android.purebilibili.feature.live
 
 import androidx.compose.ui.graphics.Color
-import com.android.purebilibili.core.theme.AndroidNativeVariant
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.ui.AppTopTabPresentation
+import com.android.purebilibili.core.ui.CompactCapsuleChromeSpec
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -21,10 +21,10 @@ class LivePiliPlusVisualPolicyTest {
     }
 
     @Test
-    fun `live visual spec preserves preset specific density`() {
-        val ios = resolveLiveVisualSpec(UiPreset.IOS, AndroidNativeVariant.MATERIAL3)
-        val md3 = resolveLiveVisualSpec(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
-        val miuix = resolveLiveVisualSpec(UiPreset.MD3, AndroidNativeVariant.MIUIX)
+    fun `live visual spec preserves chrome presentation density`() {
+        val ios = resolveLiveVisualSpec(AppTopTabPresentation.MOVING_CAPSULE)
+        val md3 = resolveLiveVisualSpec(AppTopTabPresentation.MATERIAL_UNDERLINE)
+        val miuix = resolveLiveVisualSpec(AppTopTabPresentation.TONAL_CAPSULE)
 
         assertEquals(12, ios.homeMetrics.safeSpaceDp)
         assertEquals(18, md3.homeMetrics.safeSpaceDp)
@@ -100,8 +100,12 @@ class LivePiliPlusVisualPolicyTest {
     @Test
     fun `interaction segmented control keeps liquid glass touch target dimensions`() {
         val spec = resolveLiveInteractionSegmentedControlSpec(
-            UiPreset.IOS,
-            AndroidNativeVariant.MATERIAL3,
+            compactChrome(
+                primaryHeightDp = 44,
+                compactChipHeightDp = 32,
+                chipHorizontalPaddingDp = 12,
+                standardGapDp = 8,
+            ),
         )
 
         assertEquals(12, spec.horizontalPaddingDp)
@@ -114,12 +118,20 @@ class LivePiliPlusVisualPolicyTest {
     @Test
     fun `interaction segmented control follows android native variants`() {
         val md3 = resolveLiveInteractionSegmentedControlSpec(
-            UiPreset.MD3,
-            AndroidNativeVariant.MATERIAL3,
+            compactChrome(
+                primaryHeightDp = 56,
+                compactChipHeightDp = 28,
+                chipHorizontalPaddingDp = 16,
+                standardGapDp = 12,
+            ),
         )
         val miuix = resolveLiveInteractionSegmentedControlSpec(
-            UiPreset.MD3,
-            AndroidNativeVariant.MIUIX,
+            compactChrome(
+                primaryHeightDp = 48,
+                compactChipHeightDp = 28,
+                chipHorizontalPaddingDp = 12,
+                standardGapDp = 8,
+            ),
         )
 
         assertEquals(56, md3.heightDp)
@@ -154,4 +166,26 @@ class LivePiliPlusVisualPolicyTest {
         assertEquals(Color(0xFFDDE1E6), tokens.inputOverlayColor)
         assertEquals(Color(0xFFE6E1E5), tokens.inputContentColor)
     }
+
+    private fun compactChrome(
+        primaryHeightDp: Int,
+        compactChipHeightDp: Int,
+        chipHorizontalPaddingDp: Int,
+        standardGapDp: Int,
+    ) = CompactCapsuleChromeSpec(
+        primaryHeightDp = primaryHeightDp,
+        secondaryButtonSizeDp = 48,
+        chipHeightDp = 32,
+        compactChipHeightDp = compactChipHeightDp,
+        primaryCornerRadiusDp = 16,
+        secondaryButtonCornerRadiusDp = 16,
+        chipCornerRadiusDp = 16,
+        compactChipCornerRadiusDp = 14,
+        iconSizeDp = 20,
+        smallIconSizeDp = 16,
+        inputHorizontalPaddingDp = 12,
+        chipHorizontalPaddingDp = chipHorizontalPaddingDp,
+        compactChipHorizontalPaddingDp = 10,
+        standardGapDp = standardGapDp,
+    )
 }

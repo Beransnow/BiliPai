@@ -2,6 +2,8 @@
 
 package com.android.purebilibili.feature.settings
 
+import com.android.purebilibili.core.ui.components.AppSegmentOption
+
 import android.os.Build
 import android.os.SystemClock
 import android.widget.Toast
@@ -21,6 +23,7 @@ import androidx.compose.animation.*
 import com.android.purebilibili.core.ui.AdaptivePlainTooltipBox
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.AppThemeSelection
 import com.android.purebilibili.core.ui.ContainerLevel
 import androidx.compose.animation.core.*
 //  Cupertino Icons - iOS SF Symbols 风格图标
@@ -228,11 +231,13 @@ fun AppearanceSettingsContent(
     val uiPresetTitle = stringResource(R.string.appearance_ui_preset_title)
     val uiPresetSubtitle = stringResource(R.string.appearance_ui_preset_subtitle)
     val uiPresetIosLabel = stringResource(R.string.ui_preset_ios)
-    val uiPresetAndroidLabel = stringResource(R.string.ui_preset_android_native)
-    val uiPresetOptions = remember(uiPresetIosLabel, uiPresetAndroidLabel) {
-        resolveUiPresetSegmentOptions(
+    val uiStyleMaterialLabel = stringResource(R.string.appearance_android_native_variant_material3)
+    val uiStyleMiuixLabel = stringResource(R.string.appearance_android_native_variant_miuix)
+    val uiStyleOptions = remember(uiPresetIosLabel, uiStyleMaterialLabel, uiStyleMiuixLabel) {
+        resolveThemeSelectionOptions(
             iosLabel = uiPresetIosLabel,
-            androidNativeLabel = uiPresetAndroidLabel
+            material3Label = uiStyleMaterialLabel,
+            miuixLabel = uiStyleMiuixLabel,
         )
     }
     val uiPresetIosTitle = stringResource(R.string.appearance_ui_preset_ios_title)
@@ -241,22 +246,8 @@ fun AppearanceSettingsContent(
     val uiPresetAndroidMaterialSummary = stringResource(R.string.appearance_ui_preset_android_material_summary)
     val uiPresetAndroidMiuixTitle = stringResource(R.string.appearance_ui_preset_android_miuix_title)
     val uiPresetAndroidMiuixSummary = stringResource(R.string.appearance_ui_preset_android_miuix_summary)
-    val androidNativeVariantTitle = stringResource(R.string.appearance_android_native_variant_title)
-    val androidNativeVariantSubtitle = stringResource(R.string.appearance_android_native_variant_subtitle)
-    val androidNativeVariantMaterialLabel = stringResource(R.string.appearance_android_native_variant_material3)
-    val androidNativeVariantMiuixLabel = stringResource(R.string.appearance_android_native_variant_miuix)
-    val androidNativeVariantOptions = remember(
-        androidNativeVariantMaterialLabel,
-        androidNativeVariantMiuixLabel
-    ) {
-        resolveAndroidNativeVariantSegmentOptions(
-            material3Label = androidNativeVariantMaterialLabel,
-            miuixLabel = androidNativeVariantMiuixLabel
-        )
-    }
     val uiPresetDescription = remember(
-        state.uiPreset,
-        state.androidNativeVariant,
+        state.themeSelection,
         uiPresetIosTitle,
         uiPresetIosSummary,
         uiPresetAndroidMaterialTitle,
@@ -265,8 +256,7 @@ fun AppearanceSettingsContent(
         uiPresetAndroidMiuixSummary
     ) {
         resolveAppearanceUiPresetDescription(
-            preset = state.uiPreset,
-            androidNativeVariant = state.androidNativeVariant,
+            selection = state.themeSelection,
             iosTitle = uiPresetIosTitle,
             iosSummary = uiPresetIosSummary,
             materialTitle = uiPresetAndroidMaterialTitle,
@@ -275,11 +265,9 @@ fun AppearanceSettingsContent(
             miuixSummary = uiPresetAndroidMiuixSummary
         )
     }
-    val selectedUiPresetLabel =
-        uiPresetOptions.firstOrNull { it.value == state.uiPreset }?.label ?: state.uiPreset.label
-    val selectedAndroidNativeVariantLabel = androidNativeVariantOptions
-        .firstOrNull { it.value == state.androidNativeVariant }
-        ?.label ?: state.androidNativeVariant.label
+    val selectedUiStyleLabel = uiStyleOptions
+        .first { it.value == state.themeSelection }
+        .label
     val themeModeTitle = stringResource(R.string.appearance_theme_mode_title)
     val themeModeSubtitle = stringResource(R.string.appearance_theme_mode_subtitle)
     val themeModeFollowSystemLabel = stringResource(R.string.theme_mode_follow_system)
@@ -399,29 +387,29 @@ fun AppearanceSettingsContent(
         .collectAsStateWithLifecycle(initialValue = HomeWallpaperEffectScope.HOME_ONLY)
     val homeWallpaperEffectOptions = remember {
         listOf(
-            PlaybackSegmentOption(HomeWallpaperEffectMode.OFF, "关闭"),
-            PlaybackSegmentOption(HomeWallpaperEffectMode.SOFT_BLUR, "柔和"),
-            PlaybackSegmentOption(HomeWallpaperEffectMode.STRONG_BLUR, "强模糊"),
-            PlaybackSegmentOption(HomeWallpaperEffectMode.ORIGINAL, "原图")
+            AppSegmentOption(HomeWallpaperEffectMode.OFF, "关闭"),
+            AppSegmentOption(HomeWallpaperEffectMode.SOFT_BLUR, "柔和"),
+            AppSegmentOption(HomeWallpaperEffectMode.STRONG_BLUR, "强模糊"),
+            AppSegmentOption(HomeWallpaperEffectMode.ORIGINAL, "原图")
         )
     }
     val homeWallpaperEffectScopeOptions = remember {
         listOf(
-            PlaybackSegmentOption(HomeWallpaperEffectScope.HOME_ONLY, "仅首页"),
-            PlaybackSegmentOption(HomeWallpaperEffectScope.GLOBAL, "全局")
+            AppSegmentOption(HomeWallpaperEffectScope.HOME_ONLY, "仅首页"),
+            AppSegmentOption(HomeWallpaperEffectScope.GLOBAL, "全局")
         )
     }
     val bottomBarSearchAutoExpandOptions = remember {
         listOf(
-            PlaybackSegmentOption(BottomBarSearchAutoExpandMode.DISABLED, "不自动"),
-            PlaybackSegmentOption(BottomBarSearchAutoExpandMode.EXPAND_WHEN_SCROLLING_DOWN, "下滑展开"),
-            PlaybackSegmentOption(BottomBarSearchAutoExpandMode.EXPAND_AT_HOME_TOP, "顶部展开")
+            AppSegmentOption(BottomBarSearchAutoExpandMode.DISABLED, "不自动"),
+            AppSegmentOption(BottomBarSearchAutoExpandMode.EXPAND_WHEN_SCROLLING_DOWN, "下滑展开"),
+            AppSegmentOption(BottomBarSearchAutoExpandMode.EXPAND_AT_HOME_TOP, "顶部展开")
         )
     }
     val bottomBarSearchLayoutOptions = remember {
         listOf(
-            PlaybackSegmentOption(BottomBarSearchLayoutMode.FULL_DOCK, "完整底栏"),
-            PlaybackSegmentOption(BottomBarSearchLayoutMode.HOME_AND_SEARCH, "首页+搜索")
+            AppSegmentOption(BottomBarSearchLayoutMode.FULL_DOCK, "完整底栏"),
+            AppSegmentOption(BottomBarSearchLayoutMode.HOME_AND_SEARCH, "首页+搜索")
         )
     }
     val homeUpBadgesVisible by SettingsManager
@@ -452,7 +440,7 @@ fun AppearanceSettingsContent(
         )
     val commonListHeaderCollapseOptions = remember {
         CommonListHeaderCollapseMode.entries.map { mode ->
-            PlaybackSegmentOption(mode, mode.label)
+            AppSegmentOption(mode, mode.label)
         }
     }
     val themeRoleOverrides by SettingsManager
@@ -520,37 +508,23 @@ fun AppearanceSettingsContent(
                     // 主题模式选择 (横向卡片)
                     Column(modifier = Modifier.padding(16.dp)) {
                         AppSegmentedPreference(
-                            title = "${uiPresetTitle}：$selectedUiPresetLabel",
+                            title = "${uiPresetTitle}：$selectedUiStyleLabel",
                             subtitle = uiPresetSubtitle,
-                            options = uiPresetOptions,
-                            selectedValue = state.uiPreset,
-                            onSelectionChange = { preset ->
-                                viewModel.setUiPreset(preset)
-                            }
+                            options = uiStyleOptions,
+                            selectedValue = state.themeSelection,
+                            onSelectionChange = viewModel::setThemeSelection,
                         )
 
                         AnimatedVisibility(
-                            visible = state.uiPreset == UiPreset.MD3,
+                            visible = state.themeSelection != AppThemeSelection.IOS,
                             enter = expandVertically() + fadeIn(),
                             exit = shrinkVertically() + fadeOut()
                         ) {
                             Column(modifier = Modifier.padding(top = 16.dp)) {
                                 AppPreferenceDivider()
                                 Spacer(modifier = Modifier.height(8.dp))
-                                AppSegmentedPreference(
-                                    title = "${androidNativeVariantTitle}：$selectedAndroidNativeVariantLabel",
-                                    subtitle = androidNativeVariantSubtitle,
-                                    options = androidNativeVariantOptions,
-                                    selectedValue = state.androidNativeVariant,
-                                    onSelectionChange = { variant ->
-                                        viewModel.setAndroidNativeVariant(variant)
-                                    }
-                                )
-
-                                Spacer(modifier = Modifier.height(16.dp))
-                                AppPreferenceDivider()
-	                             AppSwitchPreference(
-	                                icon = rememberSettingsSemanticIcon(SettingsIconRole.ANDROID_LIQUID_GLASS),
+                                AppSwitchPreference(
+                                    icon = rememberSettingsSemanticIcon(SettingsIconRole.ANDROID_LIQUID_GLASS),
                                     title = "安卓原生液态玻璃",
                                     subtitle = if (isLiquidGlassAvailable) {
                                         "全局开启后，顶部 Dock、搜索框、底栏、分段控件与评论区统一复用底栏液态玻璃材质"
@@ -1504,7 +1478,7 @@ fun AppearanceSettingsContent(
                                 title = "卡片封面比例：${homeFeedCardStyle.label}",
                                 subtitle = homeFeedCardStyle.subtitle + "（首页、搜索、列表、相关推荐等同步）",
                                 options = HomeFeedCardStyle.entries.map {
-                                    PlaybackSegmentOption(it, it.label)
+                                    AppSegmentOption(it, it.label)
                                 },
                                 selectedValue = homeFeedCardStyle,
                                 onSelectionChange = {
@@ -1518,7 +1492,7 @@ fun AppearanceSettingsContent(
                                 title = "首页视频时长：${homeDurationStyle.label}",
                                 subtitle = "可移到封面外、仅显示无底色文字或完全隐藏",
                                 options = HomeDurationStyle.entries.map {
-                                    PlaybackSegmentOption(it, it.label)
+                                    AppSegmentOption(it, it.label)
                                 },
                                 selectedValue = homeDurationStyle,
                                 onSelectionChange = {
@@ -1532,7 +1506,7 @@ fun AppearanceSettingsContent(
                                 title = "卡片标签效果：${homeCardBadgeEffectMode.label}",
                                 subtitle = homeCardBadgeEffectMode.subtitle,
                                 options = HomeCardBadgeEffectMode.entries.map {
-                                    PlaybackSegmentOption(it, it.label)
+                                    AppSegmentOption(it, it.label)
                                 },
                                 selectedValue = homeCardBadgeEffectMode,
                                 onSelectionChange = {
@@ -1546,7 +1520,7 @@ fun AppearanceSettingsContent(
                                 title = "卡片信息区：${homeCardInfoGlassMode.label}",
                                 subtitle = homeCardInfoGlassMode.subtitle,
                                 options = HomeCardInfoGlassMode.entries.map {
-                                    PlaybackSegmentOption(it, it.label)
+                                    AppSegmentOption(it, it.label)
                                 },
                                 selectedValue = homeCardInfoGlassMode,
                                 onSelectionChange = {
@@ -2369,7 +2343,7 @@ private fun <T> ThemePresetDropdownSetting(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     title: String,
     selectedLabel: String,
-    options: List<PlaybackSegmentOption<T>>,
+    options: List<AppSegmentOption<T>>,
     onSelectionChange: (T) -> Unit,
     iconTint: Color
 ) {
@@ -2433,21 +2407,21 @@ private fun <T> ThemePresetDropdownSetting(
 
 private const val DEFAULT_APP_DPI_OVERRIDE_PERCENT = 100
 
-private fun resolveAppFontSizeSegmentOptions(): List<PlaybackSegmentOption<AppFontSizePreset>> {
+private fun resolveAppFontSizeSegmentOptions(): List<AppSegmentOption<AppFontSizePreset>> {
     return AppFontSizePreset.entries.map { preset ->
-        PlaybackSegmentOption(value = preset, label = preset.label)
+        AppSegmentOption(value = preset, label = preset.label)
     }
 }
 
-private fun resolveAppUiScaleSegmentOptions(): List<PlaybackSegmentOption<AppUiScalePreset>> {
+private fun resolveAppUiScaleSegmentOptions(): List<AppSegmentOption<AppUiScalePreset>> {
     return AppUiScalePreset.entries.map { preset ->
-        PlaybackSegmentOption(value = preset, label = preset.label)
+        AppSegmentOption(value = preset, label = preset.label)
     }
 }
 
-private fun resolveAppDpiOverrideSegmentOptions(): List<PlaybackSegmentOption<Int>> {
+private fun resolveAppDpiOverrideSegmentOptions(): List<AppSegmentOption<Int>> {
     return listOf(90, 95, 100, 105, 110).map { percent ->
-        PlaybackSegmentOption(value = percent, label = "$percent%")
+        AppSegmentOption(value = percent, label = "$percent%")
     }
 }
 

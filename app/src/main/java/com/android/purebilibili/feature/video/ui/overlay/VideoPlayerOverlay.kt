@@ -69,7 +69,7 @@ import com.android.purebilibili.feature.plugin.CdnLineDiagnostic
 import com.android.purebilibili.feature.video.playback.dash.buildLocalDashManifest
 import com.android.purebilibili.feature.common.resolveIndexedVideoLazyKey
 import com.android.purebilibili.feature.video.progress.PbpRidgeSample
-import io.github.alexzhirkevich.cupertino.CupertinoActivityIndicator
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -1751,7 +1751,7 @@ fun VideoPlayerOverlay(
             enter = fadeIn(tween(200)),
             exit = fadeOut(tween(200))
         ) {
-            CupertinoActivityIndicator(
+            AdaptiveLoadingIndicator(
                 color = centerLoadingVisualState.indicatorColor
             )
         }
@@ -1775,7 +1775,7 @@ fun VideoPlayerOverlay(
                         vertical = overlayVisualPolicy.qualitySwitchContentVerticalPaddingDp.dp
                     )
                 ) {
-                    CupertinoActivityIndicator(
+                    AdaptiveLoadingIndicator(
                         color = centerLoadingVisualState.indicatorColor
                     )
                     Spacer(modifier = Modifier.height(overlayVisualPolicy.qualitySwitchContentSpacingDp.dp))
@@ -1817,8 +1817,7 @@ fun VideoPlayerOverlay(
                         vertical = overlayVisualPolicy.qualitySwitchContentVerticalPaddingDp.dp
                     )
                 ) {
-                    //  iOS 风格加载器
-                    CupertinoActivityIndicator(
+                    AdaptiveLoadingIndicator(
                         color = centerLoadingVisualState.indicatorColor
                     )
                     Spacer(modifier = Modifier.height(overlayVisualPolicy.qualitySwitchContentSpacingDp.dp))

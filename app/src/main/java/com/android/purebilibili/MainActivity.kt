@@ -98,8 +98,11 @@ import com.android.purebilibili.feature.settings.AppLanguage
 import com.android.purebilibili.feature.settings.applyAppLanguage
 import com.android.purebilibili.core.theme.resolveEffectiveDynamicColorEnabled
 import com.android.purebilibili.core.theme.buildDisplayMetricsSnapshot
-import com.android.purebilibili.core.ui.IOSAlertDialog
-import com.android.purebilibili.core.ui.IOSDialogAction
+import com.android.purebilibili.core.ui.AppAlertDialog
+import com.android.purebilibili.core.ui.AppDialogAction
+import com.android.purebilibili.core.ui.AppThemeConfig
+import com.android.purebilibili.core.ui.ProvideAppThemeConfig
+import com.android.purebilibili.core.ui.blur.BlurIntensity
 import com.android.purebilibili.core.ui.blur.ProvideUnifiedBlurIntensity
 import com.android.purebilibili.core.ui.performance.ProvideRuntimeVisualGuard
 import com.android.purebilibili.core.util.BilibiliUrlParser
@@ -1149,6 +1152,29 @@ open class MainActivity : AppCompatActivity() {
             val appGestureScreenshotEnabled = appThemeSettings.appGestureScreenshotEnabled
             val appScreenshotGestureMode = appThemeSettings.appScreenshotGestureMode
             val appScreenshotCaptureMode = appThemeSettings.appScreenshotCaptureMode
+            val blurIntensity by SettingsManager.getBlurIntensity(context)
+                .collectAsStateWithLifecycle(initialValue = BlurIntensity.THIN)
+            val hapticFeedbackEnabled by SettingsManager.getHapticFeedbackEnabled(context)
+                .collectAsStateWithLifecycle(initialValue = true)
+            val uiEntranceAnimationEnabled by SettingsManager
+                .getUiEntranceAnimationEnabled(context)
+                .collectAsStateWithLifecycle(initialValue = true)
+            val runtimeVisualGuardEnabled by SettingsManager
+                .getRuntimeVisualGuardEnabled(context)
+                .collectAsStateWithLifecycle(initialValue = true)
+            val appThemeConfig = remember(
+                blurIntensity,
+                hapticFeedbackEnabled,
+                uiEntranceAnimationEnabled,
+                runtimeVisualGuardEnabled,
+            ) {
+                AppThemeConfig(
+                    blurIntensity = blurIntensity,
+                    hapticFeedbackEnabled = hapticFeedbackEnabled,
+                    uiEntranceAnimationEnabled = uiEntranceAnimationEnabled,
+                    runtimeVisualGuardEnabled = runtimeVisualGuardEnabled,
+                )
+            }
             
             // 4. 获取系统当前的深色状态
             val systemInDark = systemInDarkThemeSnapshot
@@ -1236,6 +1262,7 @@ open class MainActivity : AppCompatActivity() {
                 appFontFileName = appFontFileName,
 
             ) {
+                ProvideAppThemeConfig(config = appThemeConfig) {
                 ProvideRuntimeVisualGuard(
                     widthSizeClass = windowSizeClass.widthSizeClass
                 ) {
@@ -1729,7 +1756,7 @@ open class MainActivity : AppCompatActivity() {
                             )
                         }
                         val releaseNotesScrollState = rememberScrollState()
-                        IOSAlertDialog(
+                        AppAlertDialog(
                             onDismissRequest = { startupUpdateCheckResult = null },
                             title = {
                                 Text(
@@ -1801,7 +1828,7 @@ open class MainActivity : AppCompatActivity() {
                                 }
                             },
                             confirmButton = {
-                                IOSDialogAction(onClick = {
+                                AppDialogAction(onClick = {
                                     val downloadedFile = startupUpdateDownloadState.filePath
                                         ?.takeIf { startupUpdateDownloadState.status == AppUpdateDownloadStatus.COMPLETED }
                                         ?.let { path -> File(path) }
@@ -1809,18 +1836,18 @@ open class MainActivity : AppCompatActivity() {
 
                                     if (downloadedFile != null) {
                                         installDownloadedAppUpdate(context, downloadedFile)
-                                        return@IOSDialogAction
+                                        return@AppDialogAction
                                     }
 
                                     val asset = preferredAsset
                                     if (asset == null) {
                                         startupUpdateCheckResult = null
                                         uriHandler.openUri(info.releaseUrl)
-                                        return@IOSDialogAction
+                                        return@AppDialogAction
                                     }
 
                                     if (startupUpdateDownloadState.status == AppUpdateDownloadStatus.DOWNLOADING) {
-                                        return@IOSDialogAction
+                                        return@AppDialogAction
                                     }
 
                                     scope.launch {
@@ -1858,7 +1885,7 @@ open class MainActivity : AppCompatActivity() {
                                 }
                             },
                             dismissButton = {
-                                IOSDialogAction(onClick = {
+                                AppDialogAction(onClick = {
                                     startupUpdateCheckResult = null
                                     startupUpdateDownloadState = AppUpdateDownloadState()
                                 }) { Text("稍后") }
@@ -1872,7 +1899,7 @@ open class MainActivity : AppCompatActivity() {
                             hasPromptBeenHandled = hasHandledCrashPrompt
                         )
                     ) {
-                        IOSAlertDialog(
+                        AppAlertDialog(
                             onDismissRequest = {
                                 hasHandledCrashPrompt = true
                                 if (shouldClearPendingCrashLogAfterAction(CrashLogPromptAction.DISMISS)) {
@@ -1889,7 +1916,7 @@ open class MainActivity : AppCompatActivity() {
                                 )
                             },
                             confirmButton = {
-                                IOSDialogAction(onClick = {
+                                AppDialogAction(onClick = {
                                     hasHandledCrashPrompt = true
                                     Logger.sharePendingCrashSnapshot(context)
                                     if (shouldClearPendingCrashLogAfterAction(CrashLogPromptAction.SHARE)) {
@@ -1899,7 +1926,7 @@ open class MainActivity : AppCompatActivity() {
                                 }) { Text("分享") }
                             },
                             dismissButton = {
-                                IOSDialogAction(onClick = {
+                                AppDialogAction(onClick = {
                                     hasHandledCrashPrompt = true
                                     if (shouldClearPendingCrashLogAfterAction(CrashLogPromptAction.DISMISS)) {
                                         Logger.clearPendingCrashSnapshot(context)
@@ -1911,6 +1938,7 @@ open class MainActivity : AppCompatActivity() {
                     }
 
                     }
+                }
                 }
                 }
             }

@@ -4,6 +4,7 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.rememberAppDynamicIcon
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,7 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -39,7 +40,7 @@ internal fun DynamicOpusLinkCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
-    Surface(
+    AppSurface(
         modifier = modifier
             .fillMaxWidth()
             .clip(AppShapes.container(ContainerLevel.Card))
@@ -119,7 +120,7 @@ private fun LinkCardCover(card: OpusLinkCard) {
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = rememberAppLinkIcon(),
+                imageVector = rememberAppDynamicIcon(),
                 contentDescription = null,
                 modifier = Modifier.size(AppSpacingTokens.ExtraLarge),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant

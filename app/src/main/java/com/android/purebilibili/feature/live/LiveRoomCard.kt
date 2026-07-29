@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,11 +25,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.android.purebilibili.core.ui.AppCard
+import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.LocalSharedTransitionScope
 import com.android.purebilibili.core.ui.transition.liveCoverSharedElementKey
+import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
 
 internal data class LiveRoomCardUiModel(
     val roomId: Long,
@@ -47,12 +49,14 @@ internal fun LiveRoomCard(
     onClick: () -> Unit,
     enableSharedCoverTransition: Boolean = false,
 ) {
+    val topChromePolicy = rememberAppTopChromePolicy()
+    val visualSpec = resolveLiveVisualSpec(topChromePolicy.tabPresentation)
     val metrics = visualSpec.homeMetrics
     val sharedTransitionScope = LocalSharedTransitionScope.current
     val animatedVisibilityScope = LocalAnimatedVisibilityScope.current
     val palette = rememberLiveChromePalette()
 
-    AppCard(
+    AppSurface(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
     ) {

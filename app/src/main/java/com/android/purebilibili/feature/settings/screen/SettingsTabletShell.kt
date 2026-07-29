@@ -15,9 +15,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationDrawerItem
+import com.android.purebilibili.core.ui.components.AppNavigationDrawerItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -29,7 +29,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.R
-import com.android.purebilibili.core.theme.LocalUiStyle
 import com.android.purebilibili.core.ui.AppSplitLayout
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -56,8 +55,6 @@ fun SettingsTabletShell(
         resolveSettingsTabletLayoutPolicy(widthDp = configuration.screenWidthDp)
     }
     val categories = remember { resolveSettingsRootCategoryOrder() }
-    val uiStyle = LocalUiStyle.current
-
     AppSplitLayout(
         modifier = modifier.fillMaxSize(),
         primaryRatio = layoutPolicy.primaryRatio,
@@ -72,7 +69,7 @@ fun SettingsTabletShell(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    IconButton(onClick = onBack) {
+                    AppIconButton(onClick = onBack) {
                         Icon(
                             imageVector = rememberAppBackIcon(),
                             contentDescription = stringResource(R.string.common_back),
@@ -92,9 +89,9 @@ fun SettingsTabletShell(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     items(categories) { category ->
-                        val visual = rememberSettingsEntryVisual(category.searchTarget, uiStyle)
+                        val visual = rememberSettingsEntryVisual(category.searchTarget)
                         val selected = selectedCategory == category
-                        NavigationDrawerItem(
+                        AppNavigationDrawerItem(
                             label = {
                                 Column {
                                     Text(category.title, fontWeight = FontWeight.Medium)

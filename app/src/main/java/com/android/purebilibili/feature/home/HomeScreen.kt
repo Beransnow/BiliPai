@@ -40,7 +40,7 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.zIndex
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ModalNavigationDrawer
+import com.android.purebilibili.core.ui.components.AppModalNavigationDrawer
 import androidx.compose.material3.rememberDrawerState
 import com.android.purebilibili.feature.home.components.MineSideDrawer
 import androidx.compose.ui.graphics.Color
@@ -60,8 +60,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
 import com.android.purebilibili.core.ui.AppScaffold
-import com.android.purebilibili.core.theme.LocalUiStyle
-import com.android.purebilibili.core.theme.toRendererStyleBridge
+import com.android.purebilibili.core.ui.AppPullRefreshIndicatorStyle
+import com.android.purebilibili.core.ui.rememberAppPullRefreshProfile
+import com.android.purebilibili.core.ui.rememberAppSemanticVisualPolicy
+import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
 import com.android.purebilibili.core.theme.BiliPink
 import com.android.purebilibili.feature.settings.GITHUB_URL
 import com.android.purebilibili.core.store.SettingsManager //  引入 SettingsManager
@@ -75,8 +77,8 @@ import com.android.purebilibili.feature.home.components.BottomNavItem
 import com.android.purebilibili.feature.home.components.FluidHomeTopBar
 import com.android.purebilibili.feature.home.components.FrostedSideBar
 import com.android.purebilibili.feature.home.components.CategoryTabRow
-import com.android.purebilibili.feature.home.components.iOSHomeHeader  //  iOS 大标题头部
-import com.android.purebilibili.feature.home.components.iOSRefreshIndicator  //  iOS 下拉刷新指示器
+import com.android.purebilibili.feature.home.components.HomeHeader
+import com.android.purebilibili.feature.home.components.HomeRefreshIndicator
 import com.android.purebilibili.feature.home.components.Md3ScreenshotRefreshIndicator
 import com.android.purebilibili.feature.home.components.HomeInteractionMotionBudget
 import com.android.purebilibili.feature.home.components.rememberHomeUiSkinDecoration
@@ -84,10 +86,8 @@ import com.android.purebilibili.feature.home.components.resolveHomeInteractionMo
 import com.android.purebilibili.feature.home.components.resolveHomeDrawerScrimAlpha
 import com.android.purebilibili.feature.home.components.resolveTopTabStyle
 import com.android.purebilibili.feature.home.components.resolveHomeTopChromeMaterialMode
-import com.android.purebilibili.feature.home.components.resolveHomeTopSearchBarHeight
-import com.android.purebilibili.feature.home.components.resolveHomeTopSearchCollapseDistance
-import com.android.purebilibili.feature.home.components.resolveHomeTopReservedListPadding
-import com.android.purebilibili.feature.home.components.resolveHomeTopTabRowHeight
+import com.android.purebilibili.feature.home.components.resolveHomeTopPresetStyle
+import com.android.purebilibili.feature.home.components.resolveHomeTopTabYOffsetDp
 import com.android.purebilibili.feature.home.policy.BottomBarVisibilityIntent
 import com.android.purebilibili.feature.home.policy.HomeBottomBarScrollState
 import com.android.purebilibili.feature.home.policy.HomeFeedScrollAnchor
@@ -374,7 +374,7 @@ fun HomeScreen(
     )
     // 顶部标签顺序和可见项交给设置页控制；默认仍是六项。
     // [Refactor] Hoist PagerState to be available for both Content and Header
-    // 确保 pagerState 在所有作用域均可见，以便传给 iOSHomeHeader
+    // 确保 pagerState 在所有作用域均可见，以便传给 HomeHeader
     val topTabEntries = remember(homeTopTabSettings) {
         resolveHomeTopTabEntries(
             customOrderIds = homeTopTabSettings.orderIds,
@@ -646,14 +646,11 @@ fun HomeScreen(
     val homeFeedCardLayout = remember(homeFeedCardStyle) {
         resolveHomeFeedCardLayout(homeFeedCardStyle)
     }
-    val uiStyle = LocalUiStyle.current
-    val rendererStyle = remember(uiStyle) { uiStyle.toRendererStyleBridge() }
-    val pullRefreshMotionStyle = remember(uiStyle) {
-        resolveHomePullRefreshMotionStyle(uiStyle)
-    }
-    val pullRefreshIndicatorStyle = remember(uiStyle) {
-        resolveHomePullRefreshIndicatorStyle(uiStyle)
-    }
+    val topChromePolicy = rememberAppTopChromePolicy()
+    val pullRefreshProfile = rememberAppPullRefreshProfile()
+    val semanticVisualPolicy = rememberAppSemanticVisualPolicy()
+    val pullRefreshMotionStyle = pullRefreshProfile.motionStyle
+    val pullRefreshIndicatorStyle = pullRefreshProfile.indicatorStyle
 
     
     var showEasterEggDialog by remember { mutableStateOf(false) }
@@ -779,19 +776,17 @@ fun HomeScreen(
     }
 
     // 解构设置值（避免每次访问都触发重组）
-    val effectiveHomeSettings = remember(homeSettings, rendererStyle) {
+    val effectiveHomeSettings = remember(homeSettings) {
         resolveEffectiveHomeSettings(
             homeSettings = homeSettings,
-            uiPreset = rendererStyle.preset
         )
     }
     val displayMode = homeSettings.displayMode
     val isBottomBarFloating = homeSettings.isBottomBarFloating
     val bottomBarLabelMode = homeSettings.bottomBarLabelMode
-    val baseIsHeaderBlurEnabled = remember(homeSettings.headerBlurMode, rendererStyle) {
+    val baseIsHeaderBlurEnabled = remember(homeSettings.headerBlurMode) {
         resolveHomeHeaderBlurEnabled(
             mode = homeSettings.headerBlurMode,
-            uiPreset = rendererStyle.preset
         )
     }
     val baseIsBottomBarBlurEnabled = homeSettings.isBottomBarBlurEnabled
@@ -811,10 +806,10 @@ fun HomeScreen(
         baseCardTransitionEnabled,
         baseIsDataSaverActive,
         homeSettings.androidNativeLiquidGlassEnabled,
-        uiStyle
+        semanticVisualPolicy.supportsIndependentLiquidGlass
     ) {
         resolveHomePerformanceConfig(
-            uiStyle = uiStyle,
+            supportsIndependentLiquidGlass = semanticVisualPolicy.supportsIndependentLiquidGlass,
             headerBlurEnabled = baseIsHeaderBlurEnabled,
             bottomBarBlurEnabled = baseIsBottomBarBlurEnabled,
             topBarLiquidGlassEnabled = homeSettings.isTopBarLiquidGlassEnabled,
@@ -1250,29 +1245,28 @@ fun HomeScreen(
             isLiquidGlassEnabled = false
         )
     }
-    val searchBarHeightDp = resolveHomeTopSearchBarHeight(
-        uiPreset = rendererStyle.preset,
-        androidNativeVariant = rendererStyle.variant
-    )
-    val tabRowHeightDp = resolveHomeTopTabRowHeight(
-        isTabFloating = topTabStyle.floating,
-        uiPreset = rendererStyle.preset,
-        androidNativeVariant = rendererStyle.variant,
-        labelMode = homeSettings.topTabLabelMode
-    )
-    val searchCollapseDistanceDp = resolveHomeTopSearchCollapseDistance(
-        searchBarHeight = searchBarHeightDp,
-        uiPreset = rendererStyle.preset,
-        androidNativeVariant = rendererStyle.variant
-    )
-    val listTopPadding = resolveHomeTopReservedListPadding(
-        statusBarHeight = statusBarHeight,
-        searchBarHeight = searchBarHeightDp,
-        tabRowHeight = tabRowHeightDp,
-        uiPreset = rendererStyle.preset,
-        androidNativeVariant = rendererStyle.variant,
-        isTabFloating = topTabStyle.floating
-    )
+    val homeTopPresetStyle = remember(topChromePolicy, homeSettings.topTabLabelMode) {
+        resolveHomeTopPresetStyle(topChromePolicy, homeSettings.topTabLabelMode)
+    }
+    val searchBarHeightDp = homeTopPresetStyle.searchBarHeight
+    val tabRowHeightDp = if (topTabStyle.floating) {
+        homeTopPresetStyle.tabRowHeightFloating
+    } else {
+        homeTopPresetStyle.tabRowHeightDocked
+    }
+    val searchCollapseDistanceDp = searchBarHeightDp +
+        homeTopPresetStyle.searchToTabsSpacing +
+        homeTopPresetStyle.searchCollapseExtraSpacing
+    val floatingDockLift = resolveHomeTopTabYOffsetDp(topTabStyle.floating).dp
+    val chromeHeight = if (homeTopPresetStyle.useUnifiedPanel) {
+        searchBarHeightDp + tabRowHeightDp +
+            (homeTopPresetStyle.unifiedPanelInnerPadding * 2) +
+            homeTopPresetStyle.searchToTabsSpacing
+    } else {
+        searchBarHeightDp + homeTopPresetStyle.searchToTabsSpacing + tabRowHeightDp
+    }
+    val listTopPadding = statusBarHeight + chromeHeight +
+        homeTopPresetStyle.tabsToContentSpacing + floatingDockLift
     
     // Pixels
     val searchCollapseDistancePx = with(density) { searchCollapseDistanceDp.toPx() }
@@ -1609,7 +1603,7 @@ fun HomeScreen(
                              //  Custom indicators must include the same top inset as MIUIX contentPadding.
                              indicator = {
                                 when (pullRefreshIndicatorStyle) {
-                                    HomePullRefreshIndicatorStyle.MATERIAL_DEFAULT -> {
+                                    AppPullRefreshIndicatorStyle.MATERIAL_DEFAULT -> {
                                         // Official M3 expressive ContainedLoadingIndicator
                                         // (dynamic color) for Android Native Material 3.
                                         PullToRefreshDefaults.LoadingIndicator(
@@ -1620,8 +1614,8 @@ fun HomeScreen(
                                             state = pullRefreshState
                                         )
                                     }
-                                    HomePullRefreshIndicatorStyle.MIUIX_NATIVE -> Unit
-                                    HomePullRefreshIndicatorStyle.MD3_SCREENSHOT_HANDLE -> {
+                                    AppPullRefreshIndicatorStyle.MIUIX_NATIVE -> Unit
+                                    AppPullRefreshIndicatorStyle.MATERIAL_SCREENSHOT_HANDLE -> {
                                         val indicatorHeight = resolveMd3ScreenshotRefreshIndicatorHeightDp(
                                             progress = pullDistanceFraction,
                                             isRefreshing = isPageRefreshing
@@ -1649,8 +1643,8 @@ fun HomeScreen(
                                                 .fillMaxWidth()
                                         )
                                     }
-                                    HomePullRefreshIndicatorStyle.IOS -> {
-                                        iOSRefreshIndicator(
+                                    AppPullRefreshIndicatorStyle.CUPERTINO -> {
+                                        HomeRefreshIndicator(
                                             state = pullRefreshState,
                                             isRefreshing = isPageRefreshing,
                                             modifier = Modifier
@@ -1683,8 +1677,8 @@ fun HomeScreen(
                                      .zIndex(0f)
                                       .graphicsLayer {
                                           translationY = if (
-                                              pullRefreshIndicatorStyle == HomePullRefreshIndicatorStyle.MIUIX_NATIVE ||
-                                              pullRefreshIndicatorStyle == HomePullRefreshIndicatorStyle.MATERIAL_DEFAULT
+                                              pullRefreshIndicatorStyle == AppPullRefreshIndicatorStyle.MIUIX_NATIVE ||
+                                              pullRefreshIndicatorStyle == AppPullRefreshIndicatorStyle.MATERIAL_DEFAULT
                                           ) {
                                               0f
                                           } else {
@@ -1949,9 +1943,9 @@ fun HomeScreen(
             false
         }
         // [Optimization] Stable lambda: defers the state read to draw and keeps
-        // iOSHomeHeader skippable (a fresh lambda each frame would defeat skipping).
+        // Keep HomeHeader skippable (a fresh lambda each frame would defeat skipping).
         val headerOffsetProvider = remember { { headerOffsetHeightPx } }
-        iOSHomeHeader(
+        HomeHeader(
             headerOffsetProvider = headerOffsetProvider,
             isHeaderCollapseEnabled = collapseSearchOnScroll,
             isTopTabsAutoCollapseEnabled = collapseTabsOnScroll,
@@ -2228,7 +2222,7 @@ fun HomeScreen(
             } else {
                 AppSpacingTokens.None
             }
-            ModalNavigationDrawer(
+            AppModalNavigationDrawer(
                 drawerState = drawerState,
                 gesturesEnabled = true,
                 scrimColor = MaterialTheme.colorScheme.scrim.copy(

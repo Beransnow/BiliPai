@@ -42,7 +42,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -85,7 +85,7 @@ import com.android.purebilibili.core.ui.rememberAppLikeIcon
 import com.android.purebilibili.core.ui.image.rememberImageRequest
 import com.android.purebilibili.feature.video.viewmodel.CommentUiState
 import com.android.purebilibili.feature.video.viewmodel.SubReplyUiState
-import io.github.alexzhirkevich.cupertino.CupertinoActivityIndicator
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.filled.HandThumbsup
 import io.github.alexzhirkevich.cupertino.icons.outlined.HandThumbsup
@@ -661,7 +661,7 @@ internal fun SubReplyDetailContent(
                     color = appearance.primaryTextColor
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                IconButton(
+                AppIconButton(
                     onClick = onDismiss,
                     modifier = Modifier.testTag(SUB_REPLY_DETAIL_CLOSE_TAG)
                 ) {
@@ -850,7 +850,7 @@ internal fun SubReplyDetailContent(
                                 .padding(16.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            CupertinoActivityIndicator()
+                            AdaptiveLoadingIndicator()
                         }
                     }
                     showManualLoadMore -> {
@@ -1137,7 +1137,7 @@ private fun SubReplyDetailItem(
                     }
 
                     Spacer(modifier = Modifier.width(4.dp))
-                    IconButton(
+                    AppIconButton(
                         onClick = { showActionSheet = true },
                         modifier = Modifier
                             .size(40.dp)

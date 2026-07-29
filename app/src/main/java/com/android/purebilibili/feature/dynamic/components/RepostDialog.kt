@@ -3,10 +3,9 @@ package com.android.purebilibili.feature.dynamic.components
 
 import com.android.purebilibili.core.ui.AppSpacingTokens
 
-import com.android.purebilibili.core.ui.AppShapes
-import com.android.purebilibili.core.ui.AppSurfaceTokens
-import com.android.purebilibili.core.ui.ContainerLevel
-import com.android.purebilibili.core.ui.AppLoadingIndicator
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.AppAlertDialog
+import com.android.purebilibili.core.ui.AppDialogAction
 import com.android.purebilibili.core.ui.rememberAppShareIcon
 import com.android.purebilibili.core.ui.components.AppTextField
 
@@ -16,8 +15,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 
 /**
  *  动态转发对话框
@@ -30,89 +27,59 @@ fun RepostDialog(
     var repostText by remember { mutableStateOf("") }
     var isPosting by remember { mutableStateOf(false) }
     
-    Dialog(onDismissRequest = { if (!isPosting) onDismiss() }) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            shape = AppShapes.container(ContainerLevel.Dialog),
-            color = AppSurfaceTokens.cardContainer()
-        ) {
-            Column(
-                modifier = Modifier.padding(AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall)
-            ) {
-                // 标题
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        rememberAppShareIcon(),
-                        contentDescription = null,
-                        modifier = Modifier.size(AppSpacingTokens.ExtraLarge),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
-                    Text(
-                        "转发动态",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-                
-                Spacer(modifier = Modifier.height(AppSpacingTokens.Large))
-                
-                // 输入框
-                AppTextField(
-                    value = repostText,
-                    onValueChange = { repostText = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(AppSpacingTokens.TripleExtraLarge * 2 + AppSpacingTokens.ExtraLarge),
-                    placeholder = "说点什么吧...(可选)",
-                    singleLine = false,
+    AppAlertDialog(
+        onDismissRequest = { if (!isPosting) onDismiss() },
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    rememberAppShareIcon(),
+                    contentDescription = null,
+                    modifier = Modifier.size(AppSpacingTokens.ExtraLarge),
+                    tint = MaterialTheme.colorScheme.primary
                 )
-                
-                Spacer(modifier = Modifier.height(AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall))
-                
-                // 按钮
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(
-                        onClick = onDismiss,
-                        enabled = !isPosting
-                    ) {
-                        Text("取消")
-                    }
-                    
-                    Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
-                    
-                    Button(
-                        onClick = {
-                            isPosting = true
-                            onRepost(repostText) { success ->
-                                if (!success) {
-                                    isPosting = false
-                                }
-                            }
-                        },
-                        enabled = !isPosting,
-                        shape = AppShapes.container(ContainerLevel.Sheet)
-                    ) {
-                        if (isPosting) {
-                            AppLoadingIndicator(
-                                size = AppSpacingTokens.Large,
-                                strokeWidth = AppSpacingTokens.Micro,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                        } else {
-                            Text("转发")
+                Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
+                Text(
+                    "转发动态",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        },
+        text = {
+            AppTextField(
+                value = repostText,
+                onValueChange = { repostText = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(AppSpacingTokens.TripleExtraLarge * 2 + AppSpacingTokens.ExtraLarge),
+                placeholder = "说点什么吧...(可选)",
+                singleLine = false,
+                minLines = 3,
+                maxLines = 5,
+            )
+        },
+        dismissButton = {
+            AppDialogAction(onClick = { if (!isPosting) onDismiss() }) {
+                Text("取消")
+            }
+        },
+        confirmButton = {
+            AppDialogAction(
+                onClick = {
+                    if (!isPosting) {
+                        isPosting = true
+                        onRepost(repostText) { success ->
+                            if (!success) isPosting = false
                         }
                     }
                 }
+            ) {
+                if (isPosting) {
+                    AdaptiveLoadingIndicator(size = AppSpacingTokens.Large)
+                } else {
+                    Text("转发")
+                }
             }
         }
-    }
+    )
 }

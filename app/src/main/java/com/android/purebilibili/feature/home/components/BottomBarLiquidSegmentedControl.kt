@@ -54,10 +54,7 @@ import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.unit.sp
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.HomeSettings
-import com.android.purebilibili.core.store.resolveSharedLiquidGlassChromeEnabled
-import com.android.purebilibili.core.theme.LocalUiStyle
-import com.android.purebilibili.core.theme.UiStyle
-import com.android.purebilibili.core.theme.toRendererStyleBridge
+import com.android.purebilibili.core.ui.rememberAppSemanticVisualPolicy
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
@@ -93,18 +90,12 @@ import kotlin.math.sign
 internal fun resolveSegmentedControlLiquidGlassEnabled(
     storedLiquidGlassEnabled: Boolean,
     liquidGlassEffectsEnabled: Boolean,
-    uiStyle: UiStyle,
+    supportsIndependentLiquidGlass: Boolean,
     androidNativeLiquidGlassEnabled: Boolean
 ): Boolean {
     if (!liquidGlassEffectsEnabled) return false
-    // Same shared contract as top dock / search / bottom bar: global master ORs
-    // with the per-surface toggle and always reuses bottom-bar liquid material.
-    val rendererStyle = uiStyle.toRendererStyleBridge()
-    return resolveSharedLiquidGlassChromeEnabled(
-        individualEnabled = storedLiquidGlassEnabled,
-        uiPreset = rendererStyle.preset,
-        androidNativeLiquidGlassEnabled = androidNativeLiquidGlassEnabled
-    )
+    return androidNativeLiquidGlassEnabled ||
+        (supportsIndependentLiquidGlass && storedLiquidGlassEnabled)
 }
 
 internal enum class SegmentedControlChromeStyle {
@@ -117,11 +108,11 @@ internal const val BOTTOM_BAR_LIQUID_SEGMENTED_CONTROL_INDICATOR_HEIGHT_DP = 56
 private const val SEGMENTED_CONTROL_MIN_INDICATOR_ASPECT_RATIO = 1.6f
 
 internal fun resolveSegmentedControlChromeStyle(
-    uiStyle: UiStyle,
+    prefersNativeChrome: Boolean,
     androidNativeLiquidGlassEnabled: Boolean,
     preferInlineContentStyle: Boolean = false
 ): SegmentedControlChromeStyle {
-    return if (uiStyle != UiStyle.IOS && !androidNativeLiquidGlassEnabled) {
+    return if (prefersNativeChrome && !androidNativeLiquidGlassEnabled) {
         SegmentedControlChromeStyle.ANDROID_NATIVE_UNDERLINE
     } else {
         SegmentedControlChromeStyle.LIQUID_PILL
@@ -397,7 +388,7 @@ fun BottomBarLiquidSegmentedControl(
     }
 
     val context = LocalContext.current
-    val uiStyle = LocalUiStyle.current
+    val visualPolicy = rememberAppSemanticVisualPolicy()
     val homeSettings by SettingsManager
         .getHomeSettings(context)
         .collectAsStateWithLifecycle(initialValue = HomeSettings(),
@@ -406,7 +397,7 @@ fun BottomBarLiquidSegmentedControl(
     val effectiveAndroidNativeLiquidGlassEnabled =
         forceLiquidChrome || homeSettings.androidNativeLiquidGlassEnabled
     val chromeStyle = resolveSegmentedControlChromeStyle(
-        uiStyle = uiStyle,
+        prefersNativeChrome = visualPolicy.prefersNativeChrome,
         androidNativeLiquidGlassEnabled = effectiveAndroidNativeLiquidGlassEnabled,
         preferInlineContentStyle = preferInlineContentStyle
     )
@@ -431,7 +422,7 @@ fun BottomBarLiquidSegmentedControl(
     val liquidGlassEnabled = resolveSegmentedControlLiquidGlassEnabled(
         storedLiquidGlassEnabled = homeSettings.isBottomBarLiquidGlassEnabled,
         liquidGlassEffectsEnabled = liquidGlassEffectsEnabled,
-        uiStyle = uiStyle,
+        supportsIndependentLiquidGlass = visualPolicy.supportsIndependentLiquidGlass,
         androidNativeLiquidGlassEnabled = effectiveAndroidNativeLiquidGlassEnabled
     )
     val blurIntensity = currentUnifiedBlurIntensity()

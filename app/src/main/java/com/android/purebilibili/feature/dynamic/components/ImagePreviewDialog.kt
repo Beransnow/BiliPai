@@ -36,6 +36,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+//  Cupertino Icons - iOS SF Symbols 风格图标
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -78,9 +79,11 @@ import com.android.purebilibili.core.ui.LocalPredictiveBackGestureEnabled
 import com.android.purebilibili.core.ui.rememberAppShareIcon
 import com.android.purebilibili.core.ui.rememberAppLikeFilledIcon
 import com.android.purebilibili.core.ui.rememberAppLikeIcon
+import com.android.purebilibili.core.ui.rememberAppClearIcon
 import com.android.purebilibili.core.ui.rememberAppDownloadIcon
 import com.android.purebilibili.core.ui.rememberAppVisibilityOffIcon
 import com.android.purebilibili.core.ui.rememberAppVisibilityOnIcon
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.motion.continuityTween
 import com.android.purebilibili.core.ui.motion.emphasizedEnterTween
 import com.android.purebilibili.core.ui.motion.emphasizedExitTween
@@ -997,7 +1000,7 @@ private fun ImagePreviewOverlayContent(
                         )
                     ) {
                         Icon(
-                            imageVector = rememberAppCloseIcon(),
+                            imageVector = rememberAppClearIcon(),
                             contentDescription = "关闭",
                             tint = MediaContrastPalette.Foreground
                         )
@@ -1110,9 +1113,9 @@ private fun ImagePreviewOverlayContent(
                         ) {
                             Icon(
                                 imageVector = if (imagePreviewTextVisible) {
-                                    visibilityOffIcon
+                                    rememberAppVisibilityOffIcon()
                                 } else {
-                                    visibilityOnIcon
+                                    rememberAppVisibilityOnIcon()
                                 },
                                 contentDescription = if (imagePreviewTextVisible) "隐藏图片文字" else "显示图片文字",
                                 tint = MediaContrastPalette.Foreground
@@ -1132,7 +1135,7 @@ private fun ImagePreviewOverlayContent(
                         )
                     ) {
                         if (isSharing) {
-                            AppLoadingIndicator(
+                            AdaptiveLoadingIndicator(
                                 size = AppSpacingTokens.ExtraLarge,
                                 color = MediaContrastPalette.Foreground,
                                 strokeWidth = AppSpacingTokens.Micro
@@ -1159,14 +1162,14 @@ private fun ImagePreviewOverlayContent(
                         )
                     ) {
                         if (isSaving) {
-                            AppLoadingIndicator(
+                            AdaptiveLoadingIndicator(
                                 size = AppSpacingTokens.ExtraLarge,
                                 color = MediaContrastPalette.Foreground,
                                 strokeWidth = AppSpacingTokens.Micro
                             )
                         } else {
                             Icon(
-                                imageVector = downloadIcon,
+                                imageVector = rememberAppDownloadIcon(),
                                 contentDescription = "保存图片",
                                 tint = MediaContrastPalette.Foreground
                             )
@@ -1222,7 +1225,7 @@ private fun ImagePreviewCommentTopBar(
             modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
         ) {
             Icon(
-                imageVector = rememberAppCloseIcon(),
+                imageVector = rememberAppClearIcon(),
                 contentDescription = "关闭",
                 tint = MediaContrastPalette.Foreground,
                 modifier = Modifier.size(AppSpacingTokens.ExtraLarge)
@@ -1251,7 +1254,7 @@ private fun ImagePreviewCommentTopBar(
             modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
         ) {
             if (isSharing) {
-                AppLoadingIndicator(
+                AdaptiveLoadingIndicator(
                     size = AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro,
                     color = MediaContrastPalette.Foreground,
                     strokeWidth = AppSpacingTokens.Micro
@@ -1403,7 +1406,7 @@ private fun ImagePreviewCommentActionButton(
         verticalArrangement = Arrangement.Center
     ) {
         if (busy) {
-            AppLoadingIndicator(
+            AdaptiveLoadingIndicator(
                 size = AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro,
                 color = MediaContrastPalette.Foreground,
                 strokeWidth = AppSpacingTokens.Micro

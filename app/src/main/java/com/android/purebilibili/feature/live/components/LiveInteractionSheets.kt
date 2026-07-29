@@ -16,18 +16,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Report
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
+import com.android.purebilibili.core.ui.AppAlertDialog
+import com.android.purebilibili.core.ui.components.AppAssistChip
+import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
+import com.android.purebilibili.core.ui.components.AppFilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.AppModalBottomSheet
+import com.android.purebilibili.core.ui.components.AppOutlinedTextField
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,7 +61,7 @@ fun LiveReportDialog(
     onDismiss: () -> Unit,
     onReport: (LiveReportReason) -> Unit
 ) {
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         icon = { Icon(Icons.Outlined.Report, contentDescription = null) },
         title = { Text("举报弹幕") },
@@ -74,7 +75,7 @@ fun LiveReportDialog(
                 )
                 Column(verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small)) {
                     DefaultLiveReportReasons.forEach { reason ->
-                        AssistChip(
+                        AppAssistChip(
                             onClick = { onReport(reason) },
                             label = { Text(reason.label) }
                         )
@@ -84,7 +85,7 @@ fun LiveReportDialog(
         },
         confirmButton = {},
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            AppTextButton(onClick = onDismiss) {
                 Text("取消")
             }
         }
@@ -99,7 +100,7 @@ fun LiveEmoticonSheet(
     onDismiss: () -> Unit
 ) {
     val visualSpec = remember { resolveLiveSheetVisualSpec() }
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    AppModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -151,7 +152,7 @@ private fun LiveEmoticonRow(
     onClick: () -> Unit
 ) {
     val visualSpec = remember { resolveLiveSheetVisualSpec() }
-    Surface(
+    AppSurface(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
@@ -197,7 +198,7 @@ fun LiveDmBlockSheet(
     onDismiss: () -> Unit
 ) {
     var keyword by remember { mutableStateOf("") }
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    AppModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -224,7 +225,7 @@ fun LiveDmBlockSheet(
                 horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                AppTextField(
+                AppOutlinedTextField(
                     value = keyword,
                     onValueChange = { keyword = it.take(20) },
                     enabled = isLoggedIn,
@@ -232,7 +233,7 @@ fun LiveDmBlockSheet(
                     singleLine = true,
                     placeholder = "新增屏蔽词",
                 )
-                Button(
+                AppButton(
                     enabled = isLoggedIn && keyword.trim().isNotBlank(),
                     onClick = {
                         onAddKeyword(keyword.trim())
@@ -271,19 +272,19 @@ private fun LiveRuleSection(
     Column(verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small)) {
         Text("规则", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
         Row(horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small)) {
-            FilterChip(
+            AppFilterChip(
                 selected = (shieldInfo?.level ?: 0) > 0,
                 enabled = enabled,
                 onClick = { onSetRule("level", if ((shieldInfo?.level ?: 0) > 0) 0 else 5) },
                 label = { Text("等级") }
             )
-            FilterChip(
+            AppFilterChip(
                 selected = (shieldInfo?.medal ?: 0) > 0,
                 enabled = enabled,
                 onClick = { onSetRule("medal", if ((shieldInfo?.medal ?: 0) > 0) 0 else 1) },
                 label = { Text("勋章") }
             )
-            FilterChip(
+            AppFilterChip(
                 selected = (shieldInfo?.verify ?: 0) > 0,
                 enabled = enabled,
                 onClick = { onSetRule("verify", if ((shieldInfo?.verify ?: 0) > 0) 0 else 1) },
@@ -311,7 +312,7 @@ private fun LiveKeywordSection(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(item.keyword, modifier = Modifier.weight(1f))
-                    IconButton(enabled = enabled, onClick = { onDeleteKeyword(item.keyword) }) {
+                    AppIconButton(enabled = enabled, onClick = { onDeleteKeyword(item.keyword) }) {
                         Icon(Icons.Outlined.Delete, contentDescription = "删除")
                     }
                 }
@@ -344,7 +345,7 @@ private fun LiveShieldUserSection(
                             .weight(1f)
                             .padding(start = AppSpacingTokens.Medium)
                     )
-                    TextButton(enabled = enabled, onClick = { onUnblockUser(user) }) {
+                    AppTextButton(enabled = enabled, onClick = { onUnblockUser(user) }) {
                         Text("解除")
                     }
                 }

@@ -6,7 +6,7 @@ import com.android.purebilibili.core.ui.MediaContrastPalette
 
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
-import com.android.purebilibili.core.ui.rememberAppPlayCircleFilledIcon
+import com.android.purebilibili.core.ui.rememberAppPlayIcon
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.core.tween
@@ -284,7 +284,7 @@ private fun VideoCardLargeCover(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = rememberAppPlayCircleFilledIcon(),
+                        imageVector = rememberAppPlayIcon(),
                         contentDescription = null,
                         tint = MediaContrastPalette.Foreground,
                         modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro)

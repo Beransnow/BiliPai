@@ -28,7 +28,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -51,7 +51,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.purebilibili.R
-import com.android.purebilibili.core.theme.LocalUiStyle
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -60,6 +59,7 @@ import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.core.ui.blur.unifiedBlur
 import com.android.purebilibili.core.ui.motion.AppMotionTokens
 import com.android.purebilibili.core.ui.resolveGlobalWallpaperProtectiveColor
+import com.android.purebilibili.core.ui.rememberAppNavigationCapabilities
 import com.android.purebilibili.core.util.HapticType
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.WindowWidthSizeClass
@@ -103,12 +103,7 @@ fun FrostedSideBar(
     uiSkinDecoration: BottomBarUiSkinDecoration? = null,
     onToggleSidebar: (() -> Unit)? = null
 ) {
-    when (
-        resolveSideBarRenderer(
-            uiStyle = LocalUiStyle.current,
-        )
-    ) {
-        SideBarRenderer.MIUIX_NAVIGATION_RAIL -> {
+    if (rememberAppNavigationCapabilities().usePlatformSideRail) {
             MiuixSideBar(
                 currentItem = currentItem,
                 onItemClick = onItemClick,
@@ -120,8 +115,7 @@ fun FrostedSideBar(
                 uiSkinDecoration = uiSkinDecoration,
                 onToggleSidebar = onToggleSidebar
             )
-        }
-        SideBarRenderer.FROSTED -> {
+    } else {
             FrostedSideBarContent(
                 currentItem = currentItem,
                 onItemClick = onItemClick,
@@ -133,7 +127,6 @@ fun FrostedSideBar(
                 uiSkinDecoration = uiSkinDecoration,
                 onToggleSidebar = onToggleSidebar
             )
-        }
     }
 }
 
@@ -348,7 +341,7 @@ private fun FrostedSideBarContent(
 
     val sideBarWidth = AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.DoubleExtraLarge
 
-    Surface(
+    AppSurface(
         modifier = modifier
             .width(sideBarWidth)
             .fillMaxHeight()

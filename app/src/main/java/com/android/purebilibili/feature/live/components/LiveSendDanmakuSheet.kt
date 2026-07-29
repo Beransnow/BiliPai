@@ -7,11 +7,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
+import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.AppModalBottomSheet
+import com.android.purebilibili.core.ui.components.AppOutlinedTextField
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,7 +41,7 @@ fun LiveSendDanmakuSheet(
 ) {
     var message by remember { mutableStateOf("") }
     val maxLength = permission.maxLength.takeIf { it > 0 } ?: 40
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    AppModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -56,7 +57,7 @@ fun LiveSendDanmakuSheet(
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
-            Surface(
+            AppSurface(
                 color = AppSurfaceTokens.cardContainer(),
                 shape = AppShapes.container(ContainerLevel.Card)
             ) {
@@ -66,7 +67,7 @@ fun LiveSendDanmakuSheet(
                         .padding(AppSpacingTokens.Large),
                     verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Medium)
                 ) {
-                    AppTextField(
+                    AppOutlinedTextField(
                         value = message,
                         onValueChange = { message = it.take(maxLength) },
                         modifier = Modifier.fillMaxWidth(),
@@ -103,7 +104,7 @@ fun LiveSendDanmakuSheet(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.End
                     ) {
-                        Button(
+                        AppButton(
                             enabled = permission.canSend && message.trim().isNotEmpty(),
                             onClick = { onSend(message.trim()) }
                         ) {

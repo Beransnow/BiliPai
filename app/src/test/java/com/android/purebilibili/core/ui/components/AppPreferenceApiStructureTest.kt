@@ -10,17 +10,39 @@ class AppPreferenceApiStructureTest {
     @Test
     fun neutralPreferenceApi_delegatesToExistingAdaptiveRenderers() {
         val source = loadSource(
-            "app/src/main/java/com/android/purebilibili/core/ui/components/AppPreferenceComponents.kt"
+            "design-system/src/main/java/com/android/purebilibili/core/ui/components/AppPreferenceComponents.kt"
         )
 
         assertTrue(source.contains("fun AppPreference("))
         assertTrue(source.contains("fun AppSwitchPreference("))
         assertTrue(source.contains("fun AppSliderPreference("))
         assertTrue(source.contains("fun AppPreferenceGroup("))
-        assertTrue(source.contains(") = IOSClickableItem("))
-        assertTrue(source.contains(") = IOSSwitchItem("))
-        assertTrue(source.contains(") = IOSSliderPreference("))
-        assertTrue(source.contains(") = IOSGroup("))
+        assertTrue(source.contains("fun AppPreferenceSectionTitle("))
+        assertTrue(source.contains("fun AppPreferenceDivider("))
+        assertTrue(source.contains("fun AppTextField("))
+        assertTrue(source.contains("fun AppSearchField("))
+        assertTrue(source.contains(") = AdaptiveSearchFieldRenderer("))
+        assertTrue(source.contains(") = AdaptivePreferenceContent("))
+        assertTrue(source.contains(") = AdaptiveSwitchPreferenceContent("))
+        assertTrue(source.contains(") = AdaptiveSliderPreferenceRenderer("))
+        assertTrue(source.contains(") = AdaptivePreferenceGroupRenderer("))
+
+        val dialogSource = loadSource(
+            "design-system/src/main/java/com/android/purebilibili/core/ui/AppDialogComponents.kt"
+        )
+        assertTrue(dialogSource.contains("fun AppAlertDialog("))
+        assertTrue(dialogSource.contains(") = AdaptiveAlertDialog("))
+        assertTrue(dialogSource.contains("icon: @Composable (() -> Unit)? = null"))
+        assertTrue(dialogSource.contains("shape: Shape? = null"))
+        assertTrue(dialogSource.contains("containerColor: Color? = null"))
+        assertTrue(dialogSource.contains("tonalElevation: Dp? = null"))
+        assertTrue(dialogSource.contains("fun AppDialogAction("))
+        assertTrue(dialogSource.contains(") = AdaptiveDialogAction("))
+
+        val listSource = loadSource(
+            "design-system/src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt"
+        )
+        assertTrue(listSource.contains("fun AppSearchEntry("))
     }
 
     @Test
@@ -32,94 +54,55 @@ class AppPreferenceApiStructureTest {
             "app/src/main/java/com/android/purebilibili/feature/settings/screen/PluginsScreen.kt",
         )
         val legacyCall = Regex(
-            """\b(IOSSectionTitle|IOSGroup|IOSSwitchItem|IOSSliderPreference|IOSClickableItem|IOSDivider|IOSAdaptiveTextField|IOSSlidingSegmentedControl|IOSSlidingSegmentedSetting)\b"""
+            """\b(IOSSectionTitle|IOSGroup|IOSSwitchItem|IOSSliderPreference|IOSClickableItem|IOSDivider|IOSAdaptiveTextField|IOSSlidingSegmentedControl|IOSSlidingSegmentedSetting|IOSAlertDialog|IOSDialogAction)\b"""
+        )
+
+        val requiredNeutralCalls = mapOf(
+            pilotPaths[0] to listOf("AppPreferenceGroup", "AppSegmentedControl", "AppAlertDialog"),
+            pilotPaths[1] to listOf("AppPreferenceGroup", "AppSegmentedPreference", "AppTextField"),
+            pilotPaths[2] to listOf("AppPreferenceGroup", "AppSwitchPreference", "AppAlertDialog"),
+            pilotPaths[3] to listOf("AppTextField"),
         )
 
         pilotPaths.forEach { path ->
             val source = loadSource(path)
             assertFalse(legacyCall.containsMatchIn(source), "Legacy preference call remains in $path")
+            requiredNeutralCalls.getValue(path).forEach { neutralCall ->
+                assertTrue(source.contains(neutralCall), "$neutralCall is missing from $path")
+            }
         }
     }
 
     @Test
-    fun appTextField_forwardsSharedInputSemanticsToNativeRenderers() {
-        val apiSource = loadSource(
-            "app/src/main/java/com/android/purebilibili/core/ui/components/AppPreferenceComponents.kt"
+    fun settingsFeatureCallers_useNeutralComponentNames() {
+        val settingsRoot = listOf(
+            File("app/src/main/java/com/android/purebilibili/feature/settings"),
+            File("src/main/java/com/android/purebilibili/feature/settings"),
+        ).firstOrNull(File::isDirectory)
+            ?: error("Cannot locate settings production sources from ${File(".").absolutePath}")
+        val legacyCall = Regex(
+            """\b(IOSSectionTitle|IOSGroup|IOSSwitchItem|IOSSliderPreference|IOSClickableItem|IOSDivider|IOSAdaptiveTextField|IOSSlidingSegmentedControl|IOSSlidingSegmentedSetting|IOSAlertDialog|IOSDialogAction)\b"""
         )
-        val rendererSource = loadSource(
-            "app/src/main/java/com/android/purebilibili/core/ui/components/iOSListComponents.kt"
-        )
 
-        listOf(
-            "enabled = enabled",
-            "readOnly = readOnly",
-            "keyboardOptions = keyboardOptions",
-            "keyboardActions = keyboardActions",
-            "leadingIcon = leadingIcon",
-            "trailingIcon = trailingIcon",
-            "visualTransformation = visualTransformation",
-        ).forEach { forwarding ->
-            assertTrue(apiSource.contains(forwarding), "AppTextField does not forward $forwarding")
-            assertTrue(rendererSource.contains(forwarding), "Renderer does not forward $forwarding")
-        }
-        assertTrue(rendererSource.contains("MiuixTextField("))
-        assertTrue(rendererSource.contains("OutlinedTextField("))
-        val textFieldRenderer = rendererSource
-            .substringAfter("fun IOSAdaptiveTextField(")
-            .substringBefore("private fun MiuixAdaptiveSearchBar(")
-        assertTrue(textFieldRenderer.contains("LocalUiStyle.current == UiStyle.MIUIX"))
-        assertFalse(textFieldRenderer.contains("LocalUiPreset"))
-        assertFalse(textFieldRenderer.contains("LocalAndroidNativeVariant"))
-    }
-
-    @Test
-    fun phaseThreeInputPilot_usesNeutralTextField() {
-        val pilotPaths = listOf(
-            "app/src/main/java/com/android/purebilibili/feature/dynamic/components/RepostDialog.kt",
-            "app/src/main/java/com/android/purebilibili/feature/dynamic/components/DynamicCommentSheet.kt",
-            "app/src/main/java/com/android/purebilibili/feature/live/LiveSearchScreen.kt",
-            "app/src/main/java/com/android/purebilibili/feature/live/components/LiveInteractionSheets.kt",
-            "app/src/main/java/com/android/purebilibili/feature/live/components/LiveSendDanmakuSheet.kt",
-            "app/src/main/java/com/android/purebilibili/feature/message/ChatScreen.kt",
-            "app/src/main/java/com/android/purebilibili/feature/profile/ProfileScreen.kt",
-        )
-        val directRendererCall = Regex("""\b(OutlinedTextField|InputField)\s*\(""")
-
-        pilotPaths.forEach { path ->
-            val source = loadSource(path)
-            assertTrue(source.contains("AppTextField("), "Neutral input is missing in $path")
-            assertFalse(directRendererCall.containsMatchIn(source), "Direct input renderer remains in $path")
-        }
-    }
-
-    @Test
-    fun phaseThreeSearchPilot_usesNeutralSearchField() {
-        val apiSource = loadSource(
-            "app/src/main/java/com/android/purebilibili/core/ui/components/AppPreferenceComponents.kt"
-        )
-        assertTrue(apiSource.contains("fun AppSearchField("))
-        assertTrue(apiSource.contains(") = IOSSearchBar("))
-        assertTrue(apiSource.contains("AppSearchFieldPresentation.TOP_BAR"))
-
-        val pilotPaths = listOf(
-            "app/src/main/java/com/android/purebilibili/feature/search/SearchScreen.kt",
-            "app/src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt",
-            "app/src/main/java/com/android/purebilibili/feature/list/CommonListScreen.kt",
-        )
-        val directSearchRenderer = Regex("""\b(OutlinedTextField|InputField|IOSSearchBar)\s*\(""")
-
-        pilotPaths.forEach { path ->
-            val source = loadSource(path)
-            assertTrue(source.contains("AppSearchField("), "Neutral search input is missing in $path")
-            assertFalse(directSearchRenderer.containsMatchIn(source), "Direct search renderer remains in $path")
-        }
+        settingsRoot.walkTopDown()
+            .filter { file ->
+                file.isFile && file.extension == "kt"
+            }
+            .forEach { file ->
+                val source = file.readText().replace("\r\n", "\n")
+                assertFalse(
+                    legacyCall.containsMatchIn(source),
+                    "Legacy component call remains in ${file.relativeTo(settingsRoot)}",
+                )
+            }
     }
 
     private fun loadSource(path: String): String {
         val normalizedPath = path.removePrefix("app/")
-        return listOf(File(path), File(normalizedPath))
+        return listOf(File(path), File(normalizedPath), File("../$path"))
             .firstOrNull(File::exists)
             ?.readText()
+            ?.replace("\r\n", "\n")
             ?: error("Cannot locate $path from ${File(".").absolutePath}")
     }
 }

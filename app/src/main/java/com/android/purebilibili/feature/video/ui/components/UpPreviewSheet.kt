@@ -24,9 +24,9 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,12 +48,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.network.NetworkModule
 import com.android.purebilibili.core.network.WbiUtils
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.ui.bottomSheetContentEnterTransition
-import com.android.purebilibili.core.ui.bottomSheetContentExitTransition
-import com.android.purebilibili.core.ui.bottomSheetScrimEnterTransition
-import com.android.purebilibili.core.ui.bottomSheetScrimExitTransition
+import com.android.purebilibili.core.ui.rememberAppBottomSheetMotion
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.Owner
 import com.android.purebilibili.data.model.response.RelatedVideo
@@ -88,8 +83,7 @@ fun UpPreviewSheet(
 
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
+    val sheetMotion = rememberAppBottomSheetMotion()
     val colors = resolveUpPreviewSheetSurfaceColors(MaterialTheme.colorScheme)
     val backKey = remember { Any() }
     VideoLocalBackTargetEffect(
@@ -176,8 +170,8 @@ fun UpPreviewSheet(
     ) {
         AnimatedVisibility(
             visible = visible,
-            enter = bottomSheetScrimEnterTransition(uiPreset, androidNativeVariant),
-            exit = bottomSheetScrimExitTransition(uiPreset, androidNativeVariant),
+            enter = sheetMotion.scrimEnter,
+            exit = sheetMotion.scrimExit,
         ) {
             Box(
                 modifier = Modifier
@@ -193,10 +187,10 @@ fun UpPreviewSheet(
 
         AnimatedVisibility(
             visible = visible,
-            enter = bottomSheetContentEnterTransition(uiPreset, androidNativeVariant),
-            exit = bottomSheetContentExitTransition(uiPreset, androidNativeVariant),
+            enter = sheetMotion.contentEnter,
+            exit = sheetMotion.contentExit,
         ) {
-            Surface(
+            AppSurface(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(screenHeight * 0.72f)
@@ -279,7 +273,7 @@ fun UpPreviewSheet(
                             )
                         }
                         Spacer(Modifier.width(8.dp))
-                        Surface(
+                        AppSurface(
                             onClick = onFollowClick,
                             shape = RoundedCornerShape(999.dp),
                             color = if (isFollowing) {
@@ -328,7 +322,7 @@ fun UpPreviewSheet(
                                     .weight(1f),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                CircularProgressIndicator(
+                                AppCircularProgressIndicator(
                                     modifier = Modifier.size(28.dp),
                                     strokeWidth = 2.dp,
                                     color = colors.followFillColor,
