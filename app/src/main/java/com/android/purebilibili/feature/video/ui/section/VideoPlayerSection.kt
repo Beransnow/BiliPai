@@ -3157,6 +3157,11 @@ fun VideoPlayerSection(
     val forcedReturnCoverSharedElementSourceRoute = resolveForcedReturnCoverSharedElementSourceRoute(
         sourceRouteForSharedElement
     )
+    val coverLayerZIndex = resolveVideoPlayerCoverLayerZIndex(
+        playbackIntent = videoSharedTransitionVisualSpec.playbackIntent,
+        forceCoverDuringReturnAnimation = forceCoverDuringReturnAnimation,
+        shouldKeepCoverForManualStart = keepCoverForManualStart,
+    )
 
     AnimatedVisibility(
         visible = showCover && (currentCoverUrl.isNotEmpty() || entryPresentationSpec.showManualStartPlayButton),
@@ -3170,7 +3175,7 @@ fun VideoPlayerSection(
         } else {
             fadeOut(animationSpec = tween(coverMotionSpec.exitFadeDurationMillis))
         },
-        modifier = Modifier.zIndex(100f) // 返回中强制封面时，确保封面压住所有播放器层
+        modifier = Modifier.zIndex(coverLayerZIndex)
     ) {
         val coverCardShape = RoundedCornerShape(videoSharedTransitionVisualSpec.targetCornerDp.dp)
         val sharedCoverOverlayModifier = if (coverOverlaySharedBoundsEnabled) {
