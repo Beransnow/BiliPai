@@ -33,7 +33,7 @@ import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SuggestionChip
@@ -404,7 +404,7 @@ private fun SearchKeywordSectionHeader(
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 if (enabled) {
-                    IconButton(onClick = onRefresh, modifier = Modifier.size(40.dp)) {
+                    AppIconButton(onClick = onRefresh, modifier = Modifier.size(40.dp)) {
                         Icon(
                             imageVector = Icons.Rounded.Refresh,
                             contentDescription = "刷新搜索发现",
@@ -420,7 +420,7 @@ private fun SearchKeywordSectionHeader(
                             .height(18.dp)
                             .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.8f))
                     )
-                    IconButton(onClick = onToggleEnabled, modifier = Modifier.size(40.dp)) {
+                    AppIconButton(onClick = onToggleEnabled, modifier = Modifier.size(40.dp)) {
                         Icon(
                             imageVector = if (enabled) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
                             contentDescription = if (enabled) "隐藏搜索发现" else "显示搜索发现",
@@ -473,7 +473,7 @@ private fun SearchKeywordSectionHeader(
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (enabled) {
-                IconButton(onClick = onRefresh, modifier = Modifier.size(40.dp)) {
+                AppIconButton(onClick = onRefresh, modifier = Modifier.size(40.dp)) {
                     Icon(
                         imageVector = Icons.Rounded.Refresh,
                         contentDescription = "刷新搜索发现",
@@ -482,7 +482,7 @@ private fun SearchKeywordSectionHeader(
                 }
             }
             if (onToggleEnabled != null) {
-                IconButton(onClick = onToggleEnabled, modifier = Modifier.size(40.dp)) {
+                AppIconButton(onClick = onToggleEnabled, modifier = Modifier.size(40.dp)) {
                     Icon(
                         imageVector = if (enabled) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
                         contentDescription = if (enabled) "隐藏搜索发现" else "显示搜索发现",

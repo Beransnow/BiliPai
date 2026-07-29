@@ -38,7 +38,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -994,7 +994,7 @@ fun TopBar(
     Row(
         modifier = modifier.fillMaxWidth()
     ) {
-        IconButton(
+        AppIconButton(
             onClick = onClose,
             modifier = Modifier
                 .size(38.dp)

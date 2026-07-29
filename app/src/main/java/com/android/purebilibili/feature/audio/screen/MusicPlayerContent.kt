@@ -43,7 +43,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -767,7 +767,7 @@ private fun PlaybackControls(
             enabled = state.queueControls.hasPrevious && onPrevious != null,
             onClick = onPrevious ?: {}
         )
-        IconButton(onClick = onPlayPause, modifier = Modifier.size(72.dp)) {
+        AppIconButton(onClick = onPlayPause, modifier = Modifier.size(72.dp)) {
             if (state.isBuffering) {
                 CircularProgressIndicator(color = MusicContentColor, modifier = Modifier.size(36.dp))
             } else {
@@ -790,7 +790,7 @@ private fun PlaybackControls(
 
 @Composable
 private fun PlaybackIconButton(icon: ImageVector, description: String, enabled: Boolean, onClick: () -> Unit) {
-    IconButton(onClick = onClick, enabled = enabled, modifier = Modifier.size(56.dp)) {
+    AppIconButton(onClick = onClick, enabled = enabled, modifier = Modifier.size(56.dp)) {
         Icon(
             imageVector = icon,
             contentDescription = description,
@@ -1191,7 +1191,7 @@ private fun GlassIconButton(
     miuixBackdrop: MiuixBackdrop?,
     onClick: () -> Unit
 ) {
-    IconButton(
+    AppIconButton(
         onClick = onClick,
         modifier = Modifier
             .size(48.dp)

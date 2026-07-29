@@ -27,7 +27,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PrimaryTabRow
@@ -177,7 +177,7 @@ fun LiveSearchScreen(
             AppTopBar(
                 title = "搜索直播",
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    AppIconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "返回",
@@ -225,7 +225,7 @@ fun LiveSearchScreen(
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                     keyboardActions = KeyboardActions(onSearch = { scope.launch { submit() } }),
                 )
-                IconButton(
+                AppIconButton(
                     onClick = { scope.launch { submit() } },
                     enabled = query.isNotBlank(),
                     modifier = Modifier.size(AppSpacingTokens.TripleExtraLarge),

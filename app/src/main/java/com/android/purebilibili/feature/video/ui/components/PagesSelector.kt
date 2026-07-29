@@ -32,7 +32,7 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -160,7 +160,7 @@ fun PagesSelector(
                 }
             }
             if (onDismissRequest != null) {
-                IconButton(onClick = onDismissRequest) {
+                AppIconButton(onClick = onDismissRequest) {
                     Icon(
                         imageVector = Icons.Outlined.Close,
                         contentDescription = "关闭选集面板",
@@ -259,7 +259,7 @@ fun PagesSelector(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.weight(1f))
-                    IconButton(onClick = { showExpandedSheet = false }) {
+                    AppIconButton(onClick = { showExpandedSheet = false }) {
                         Icon(
                             imageVector = Icons.Outlined.Close,
                             contentDescription = "关闭选集",
@@ -338,7 +338,7 @@ private fun PagesSelectorFilterBar(
             },
             trailingIcon = if (query.isNotBlank()) {
                 {
-                    IconButton(onClick = { onQueryChange("") }) {
+                    AppIconButton(onClick = { onQueryChange("") }) {
                         Icon(
                             imageVector = Icons.Outlined.Close,
                             contentDescription = "清空搜索"

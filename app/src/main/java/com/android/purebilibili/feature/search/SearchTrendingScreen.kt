@@ -26,7 +26,7 @@ import androidx.compose.material.icons.rounded.Search
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -67,7 +67,7 @@ fun SearchTrendingScreen(
             TopAppBar(
                 title = { Text("bilibili 热搜") },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    AppIconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                             contentDescription = "返回"
@@ -75,7 +75,7 @@ fun SearchTrendingScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = viewModel::refresh) {
+                    AppIconButton(onClick = viewModel::refresh) {
                         Icon(
                             imageVector = Icons.Rounded.Refresh,
                             contentDescription = "刷新"

@@ -38,7 +38,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -279,7 +279,7 @@ fun LandscapeDanmakuComposer(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    IconButton(
+                    AppIconButton(
                         onClick = onDismiss,
                         modifier = Modifier.size(40.dp)
                     ) {
@@ -345,7 +345,7 @@ fun LandscapeDanmakuComposer(
                         )
                     }
 
-                    IconButton(
+                    AppIconButton(
                         onClick = { showStylePanel = !showStylePanel },
                         modifier = Modifier.size(48.dp)
                     ) {

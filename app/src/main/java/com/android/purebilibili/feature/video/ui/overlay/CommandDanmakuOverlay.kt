@@ -36,7 +36,7 @@ import androidx.compose.material.icons.rounded.ThumbUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -274,7 +274,7 @@ private fun CommandDanmakuCloseButton(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    IconButton(
+    AppIconButton(
         onClick = onDismiss,
         modifier = modifier.size(30.dp),
         colors = IconButtonDefaults.iconButtonColors(

@@ -56,7 +56,7 @@ import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
 import androidx.compose.material.icons.outlined.PlaylistPlay
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
@@ -1003,14 +1003,14 @@ private fun CinemaSideCurtain(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
-                            IconButton(onClick = { onTabSelected(0) }) {
+                            AppIconButton(onClick = { onTabSelected(0) }) {
                                 Icon(
                                     imageVector = Icons.Outlined.ChatBubbleOutline,
                                     contentDescription = "comments"
                                 )
                             }
                             Spacer(modifier = Modifier.height(10.dp))
-                            IconButton(onClick = { onTabSelected(1) }) {
+                            AppIconButton(onClick = { onTabSelected(1) }) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Outlined.PlaylistPlay,
                                     contentDescription = "related videos"

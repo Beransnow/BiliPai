@@ -32,7 +32,7 @@ import androidx.compose.material3.CardDefaults
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -185,7 +185,7 @@ internal fun LoginPage(
                 TopAppBar(
                     title = { Text("登录") },
                     actions = {
-                        IconButton(onClick = onClose) {
+                        AppIconButton(onClick = onClose) {
                             Icon(Icons.Outlined.Close, contentDescription = "关闭登录")
                         }
                     },
@@ -434,7 +434,7 @@ private fun PasswordLoginContent(
             label = { Text("密码") },
             leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = null) },
             trailingIcon = {
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                AppIconButton(onClick = { passwordVisible = !passwordVisible }) {
                     Icon(
                         if (passwordVisible) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
                         contentDescription = if (passwordVisible) "隐藏密码" else "显示密码"

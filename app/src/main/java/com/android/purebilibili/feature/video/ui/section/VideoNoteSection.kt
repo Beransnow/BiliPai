@@ -31,7 +31,7 @@ import androidx.compose.material3.Button
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -427,18 +427,18 @@ private fun VideoNoteEditorToolbar(
     onRedoClick: () -> Unit
 ) {
     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        IconButton(onClick = onBoldClick) { Text("B", fontWeight = FontWeight.Bold) }
-        IconButton(onClick = onHighlightClick) {
+        AppIconButton(onClick = onBoldClick) { Text("B", fontWeight = FontWeight.Bold) }
+        AppIconButton(onClick = onHighlightClick) {
             Icon(Icons.Outlined.FormatColorFill, contentDescription = "高亮")
         }
-        IconButton(onClick = onBulletClick) { Text("-") }
-        IconButton(onClick = onTimestampClick) {
+        AppIconButton(onClick = onBulletClick) { Text("-") }
+        AppIconButton(onClick = onTimestampClick) {
             Icon(Icons.Outlined.AccessTime, contentDescription = "插入时间点")
         }
-        IconButton(onClick = onUndoClick) {
+        AppIconButton(onClick = onUndoClick) {
             Icon(Icons.AutoMirrored.Outlined.Undo, contentDescription = "撤销")
         }
-        IconButton(onClick = onRedoClick) {
+        AppIconButton(onClick = onRedoClick) {
             Icon(Icons.AutoMirrored.Outlined.Redo, contentDescription = "重做")
         }
     }

@@ -55,7 +55,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.MaterialTheme
@@ -265,7 +265,7 @@ fun SpaceScreen(
                 AppTopBar(
                     title = screenTitle,
                     navigationIcon = {
-                        IconButton(onClick = onBack) {
+                        AppIconButton(onClick = onBack) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                                 contentDescription = backLabel
@@ -279,7 +279,7 @@ fun SpaceScreen(
                     scrollBehavior = scrollBehavior,
                     actions = {
                         if (canSearch) {
-                            IconButton(onClick = { viewModel.setSearchMode(!isSearchMode) }) {
+                            AppIconButton(onClick = { viewModel.setSearchMode(!isSearchMode) }) {
                                 Icon(
                                     imageVector = if (isSearchMode) Icons.Outlined.Close else Icons.Outlined.Search,
                                     contentDescription = if (isSearchMode) "关闭搜索" else "搜索"
@@ -287,7 +287,7 @@ fun SpaceScreen(
                             }
                         }
                         Box {
-                            IconButton(onClick = { showMenu = true }) {
+                            AppIconButton(onClick = { showMenu = true }) {
                                 Icon(
                                     imageVector = Icons.Outlined.MoreVert,
                                     contentDescription = moreLabel
@@ -2139,7 +2139,7 @@ private fun SpaceHeader(
                                     MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
                                 )
                             ) {
-                                IconButton(
+                                AppIconButton(
                                     modifier = Modifier.size(38.dp),
                                     onClick = {
                                         android.widget.Toast.makeText(
@@ -2671,7 +2671,7 @@ private fun SpaceContributionVideoToolbarActions(
                 )
             }
         } else {
-            IconButton(
+            AppIconButton(
                 onClick = onPlayAllClick,
                 modifier = Modifier.size(40.dp)
             ) {
@@ -2683,7 +2683,7 @@ private fun SpaceContributionVideoToolbarActions(
             }
         }
 
-        IconButton(
+        AppIconButton(
             onClick = onLayoutModeClick,
             modifier = Modifier.size(40.dp)
         ) {
@@ -2717,7 +2717,7 @@ private fun SpaceContributionVideoToolbarActions(
                     )
                 }
             } else {
-                IconButton(
+                AppIconButton(
                     onClick = { menuExpanded = true },
                     modifier = Modifier.size(40.dp)
                 ) {

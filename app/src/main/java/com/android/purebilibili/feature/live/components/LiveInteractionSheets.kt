@@ -22,7 +22,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -311,7 +311,7 @@ private fun LiveKeywordSection(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(item.keyword, modifier = Modifier.weight(1f))
-                    IconButton(enabled = enabled, onClick = { onDeleteKeyword(item.keyword) }) {
+                    AppIconButton(enabled = enabled, onClick = { onDeleteKeyword(item.keyword) }) {
                         Icon(Icons.Outlined.Delete, contentDescription = "删除")
                     }
                 }
