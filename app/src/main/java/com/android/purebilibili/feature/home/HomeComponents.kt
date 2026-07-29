@@ -15,6 +15,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.AppAlertDialog
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppFilterChip
+import com.android.purebilibili.core.ui.components.AppTextButton
 
 // ==========================================
 // 对话框组件
@@ -26,19 +30,19 @@ import com.android.purebilibili.core.ui.AppSurfaceTokens
 @Composable
 fun WelcomeDialog(githubUrl: String, onConfirm: () -> Unit) {
     val uriHandler = LocalUriHandler.current
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = { },
         title = { Text("欢迎") },
         text = {
             Column {
                 Text("本应用仅供学习使用。")
-                TextButton(onClick = { uriHandler.openUri(githubUrl) }) {
+                AppTextButton(onClick = { uriHandler.openUri(githubUrl) }) {
                     Text("开源地址: $githubUrl", fontSize = MaterialTheme.typography.labelSmall.fontSize, color = MaterialTheme.colorScheme.primary)
                 }
             }
         },
         confirmButton = {
-            Button(onClick = onConfirm, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)) {
+            AppButton(onClick = onConfirm, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)) {
                 Text("进入")
             }
         },
@@ -58,7 +62,7 @@ fun ErrorState(message: String, onRetry: () -> Unit) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = message, color = MaterialTheme.colorScheme.error)
             Spacer(modifier = Modifier.height(AppSpacingTokens.Large))
-            Button(
+            AppButton(
                 onClick = onRetry,
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
@@ -88,7 +92,7 @@ fun LiveSubCategoryRow(
     ) {
         LiveSubCategory.entries.forEach { subCategory ->
             val isSelected = selectedSubCategory == subCategory
-            FilterChip(
+            AppFilterChip(
                 selected = isSelected,
                 onClick = { onSubCategorySelected(subCategory) },
                 label = { Text(stringResource(resolveLiveSubCategoryLabelRes(subCategory))) },
