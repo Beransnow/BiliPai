@@ -35,7 +35,7 @@ import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
+import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import com.android.purebilibili.core.ui.components.AppTextButton
@@ -271,7 +271,7 @@ fun VideoNoteEditorSheet(
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
             )
             Spacer(modifier = Modifier.height(12.dp))
-            OutlinedTextField(
+            AppOutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
                 label = { Text("标题") },

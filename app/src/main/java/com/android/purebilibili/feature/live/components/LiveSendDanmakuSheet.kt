@@ -11,7 +11,7 @@ import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
+import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -66,7 +66,7 @@ fun LiveSendDanmakuSheet(
                         .padding(AppSpacingTokens.Large),
                     verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Medium)
                 ) {
-                    OutlinedTextField(
+                    AppOutlinedTextField(
                         value = message,
                         onValueChange = { message = it.take(maxLength) },
                         modifier = Modifier.fillMaxWidth(),

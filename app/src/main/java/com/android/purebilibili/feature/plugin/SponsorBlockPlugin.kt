@@ -21,7 +21,7 @@ import io.github.alexzhirkevich.cupertino.icons.filled.*
 import androidx.compose.material3.AlertDialog
 import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import androidx.compose.material3.Text
 import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.runtime.*
@@ -487,7 +487,7 @@ class SponsorBlockPlugin : PlayerPluginApi {
             )
 
             if (dailySummaryNotificationEnabled) {
-                OutlinedTextField(
+                AppOutlinedTextField(
                     value = dailySummaryNotificationPrefix,
                     onValueChange = { nextValue ->
                         dailySummaryNotificationPrefix = nextValue

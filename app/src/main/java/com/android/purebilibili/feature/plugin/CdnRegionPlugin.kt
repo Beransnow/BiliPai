@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.padding
 import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -410,7 +410,7 @@ class CdnRegionPlugin : PlaybackCdnPlugin {
                 Text("启用", style = MaterialTheme.typography.bodySmall)
                 Switch(checked = rule.enabled, onCheckedChange = { onChange(rule.copy(enabled = it)) })
             }
-            OutlinedTextField(
+            AppOutlinedTextField(
                 value = rule.pattern,
                 onValueChange = { onChange(rule.copy(pattern = it)) },
                 label = { Text("匹配正则") },
@@ -418,7 +418,7 @@ class CdnRegionPlugin : PlaybackCdnPlugin {
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(4.dp))
-            OutlinedTextField(
+            AppOutlinedTextField(
                 value = rule.replacement,
                 onValueChange = { onChange(rule.copy(replacement = it)) },
                 label = { Text("替换内容") },

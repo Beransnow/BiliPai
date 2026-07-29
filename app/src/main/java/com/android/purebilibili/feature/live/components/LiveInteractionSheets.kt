@@ -25,7 +25,7 @@ import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
+import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import com.android.purebilibili.core.ui.components.AppTextButton
@@ -224,7 +224,7 @@ fun LiveDmBlockSheet(
                 horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                OutlinedTextField(
+                AppOutlinedTextField(
                     value = keyword,
                     onValueChange = { keyword = it.take(20) },
                     enabled = isLoggedIn,

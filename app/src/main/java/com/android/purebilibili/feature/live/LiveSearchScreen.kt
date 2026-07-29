@@ -29,7 +29,7 @@ import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import androidx.compose.material3.PrimaryTabRow
 import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Tab
@@ -204,7 +204,7 @@ fun LiveSearchScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
             ) {
-                OutlinedTextField(
+                AppOutlinedTextField(
                     value = query,
                     onValueChange = {
                         query = it

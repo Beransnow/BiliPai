@@ -24,7 +24,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import androidx.compose.material3.Scaffold
 import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
@@ -216,7 +216,7 @@ private fun PluginContent(
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     params.forEach { param ->
-                        OutlinedTextField(
+                        AppOutlinedTextField(
                             value = paramValues[param.name] ?: param.defaultValue,
                             onValueChange = { paramValues[param.name] = it },
                             label = { Text(param.title) },

@@ -22,7 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import com.android.purebilibili.core.ui.components.AppTextButton
@@ -402,7 +402,7 @@ internal fun AudioModeSleepTimerDialog(
                         }
                     }
                 }
-                OutlinedTextField(
+                AppOutlinedTextField(
                     value = customInput,
                     onValueChange = { customInput = it.take(8) },
                     singleLine = true,

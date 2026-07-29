@@ -8,7 +8,7 @@ import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import io.github.alexzhirkevich.cupertino.icons.filled.*
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -212,7 +212,7 @@ class DanmakuEnhancePlugin : DanmakuPluginApi {
             
             // 屏蔽关键词输入
             if (enableFilter) {
-                OutlinedTextField(
+                AppOutlinedTextField(
                     value = blockedKeywords,
                     onValueChange = { newValue ->
                         blockedKeywords = newValue
@@ -229,7 +229,7 @@ class DanmakuEnhancePlugin : DanmakuPluginApi {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                OutlinedTextField(
+                AppOutlinedTextField(
                     value = blockedUserIds,
                     onValueChange = { newValue ->
                         blockedUserIds = newValue
@@ -279,7 +279,7 @@ class DanmakuEnhancePlugin : DanmakuPluginApi {
             
             // 高亮关键词输入
             if (enableHighlight) {
-                OutlinedTextField(
+                AppOutlinedTextField(
                     value = highlightKeywords,
                     onValueChange = { newValue ->
                         highlightKeywords = newValue

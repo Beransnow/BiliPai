@@ -47,7 +47,7 @@ import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
+import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
@@ -505,7 +505,7 @@ internal fun MusicPlayerContent(
                     .padding(horizontal = 24.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                OutlinedTextField(
+                AppOutlinedTextField(
                     value = lyricSearchText,
                     onValueChange = { lyricSearchText = it },
                     label = { Text("歌名") },

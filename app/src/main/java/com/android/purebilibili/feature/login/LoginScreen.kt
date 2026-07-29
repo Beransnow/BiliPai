@@ -35,7 +35,7 @@ import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
+import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import androidx.compose.material3.PrimaryScrollableTabRow
 import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Tab
@@ -419,7 +419,7 @@ private fun PasswordLoginContent(
     val isLoading = state is LoginState.Loading || state is LoginState.CaptchaReady
 
     LoginFormCard(title = "密码登录", modifier = modifier) {
-        OutlinedTextField(
+        AppOutlinedTextField(
             value = phone,
             onValueChange = { phone = it.filter(Char::isDigit) },
             label = { Text("手机号") },
@@ -428,7 +428,7 @@ private fun PasswordLoginContent(
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
-        OutlinedTextField(
+        AppOutlinedTextField(
             value = password,
             onValueChange = { password = it },
             label = { Text("密码") },
@@ -474,7 +474,7 @@ private fun SmsLoginContent(
     val isLoading = state is LoginState.Loading || state is LoginState.CaptchaReady
 
     LoginFormCard(title = "短信验证码登录", modifier = modifier) {
-        OutlinedTextField(
+        AppOutlinedTextField(
             value = phone,
             onValueChange = { phone = it.filter(Char::isDigit) },
             label = { Text("中国大陆手机号") },
@@ -485,7 +485,7 @@ private fun SmsLoginContent(
             modifier = Modifier.fillMaxWidth()
         )
         if (codeSent || code.isNotEmpty()) {
-            OutlinedTextField(
+            AppOutlinedTextField(
                 value = code,
                 onValueChange = { code = it.filter(Char::isDigit).take(6) },
                 label = { Text("短信验证码") },
@@ -535,7 +535,7 @@ private fun CookieImportContent(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        OutlinedTextField(
+        AppOutlinedTextField(
             value = cookieHeader,
             onValueChange = { cookieHeader = it },
             label = { Text("Cookie") },

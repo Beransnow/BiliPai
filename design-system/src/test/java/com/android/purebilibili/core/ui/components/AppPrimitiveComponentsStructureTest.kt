@@ -20,6 +20,8 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(source.contains(") = IconButton("))
         assertTrue(source.contains("fun AppTextButton("))
         assertTrue(source.contains(") = TextButton("))
+        assertTrue(source.contains("fun AppOutlinedTextField("))
+        assertTrue(source.contains(") = OutlinedTextField("))
         assertTrue(source.contains("fun AppDropdownMenu("))
         assertTrue(source.contains("fun AppModalNavigationDrawer("))
     }
