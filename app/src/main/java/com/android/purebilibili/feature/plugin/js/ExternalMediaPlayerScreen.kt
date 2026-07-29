@@ -17,7 +17,7 @@ import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.AppScaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import com.android.purebilibili.core.ui.AppTopBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -88,8 +88,8 @@ fun ExternalMediaPlayerScreen(
 
     AppScaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(request?.title ?: "外部媒体") },
+            AppTopBar(
+                title = request?.title ?: "外部媒体",
                 navigationIcon = {
                     AppIconButton(onClick = onBack) {
                         Icon(rememberAppBackIcon(), contentDescription = "返回")

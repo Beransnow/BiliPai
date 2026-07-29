@@ -28,7 +28,7 @@ import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import com.android.purebilibili.core.ui.AppTopBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -125,8 +125,8 @@ fun BiliPaiJsPluginContentScreen(
 
     AppScaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(installed?.manifest?.title ?: "JS 插件内容") },
+            AppTopBar(
+                title = installed?.manifest?.title ?: "JS 插件内容",
                 navigationIcon = {
                     AppIconButton(onClick = onBack) {
                         Icon(rememberAppBackIcon(), contentDescription = "返回")

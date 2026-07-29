@@ -31,7 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import com.android.purebilibili.core.ui.AppTopBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
@@ -64,8 +64,8 @@ fun SearchTrendingScreen(
 
     AppScaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("bilibili 热搜") },
+            AppTopBar(
+                title = "bilibili 热搜",
                 navigationIcon = {
                     AppIconButton(onClick = onBack) {
                         Icon(

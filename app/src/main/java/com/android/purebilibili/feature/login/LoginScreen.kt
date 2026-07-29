@@ -40,7 +40,7 @@ import androidx.compose.material3.PrimaryScrollableTabRow
 import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import com.android.purebilibili.core.ui.AppTopBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -182,8 +182,8 @@ internal fun LoginPage(
     AppSurface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         androidx.compose.material3.Scaffold(
             topBar = {
-                TopAppBar(
-                    title = { Text("登录") },
+                AppTopBar(
+                    title = "登录",
                     actions = {
                         AppIconButton(onClick = onClose) {
                             Icon(Icons.Outlined.Close, contentDescription = "关闭登录")
