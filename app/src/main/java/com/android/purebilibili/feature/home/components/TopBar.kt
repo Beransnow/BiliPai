@@ -3,6 +3,8 @@ package com.android.purebilibili.feature.home.components
 
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppSpacingTokens
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppSurface
 
 import com.android.purebilibili.core.ui.OpticalContrastPalette
 import com.android.purebilibili.feature.home.HomeVisualPalette
@@ -588,7 +590,7 @@ fun FluidHomeTopBar(
             .statusBarsPadding()
     ) {
         //  悬浮式导航栏容器 - 增强视觉层次
-        Surface(
+        AppSurface(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = AppSpacingTokens.Large, vertical = AppSpacingTokens.Small),
@@ -682,7 +684,7 @@ fun FluidHomeTopBar(
                 Spacer(modifier = Modifier.width(AppSpacingTokens.Small))
                 
                 //  右侧：设置按钮
-                IconButton(
+                AppIconButton(
                     onClick = onSettingsClick,
                     modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
                 ) {
