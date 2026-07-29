@@ -17,7 +17,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Slider
+import com.android.purebilibili.core.ui.components.AppSlider
 import androidx.compose.material3.Text
 import com.android.purebilibili.core.ui.components.AppDropdownMenu
 import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
@@ -614,7 +614,7 @@ class EyeProtectionPlugin : Plugin {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Slider(
+            AppSlider(
                 value = uiConfig.brightnessLevel,
                 onValueChange = { value ->
                     val newConfig = persistCurrentValuesToSelectedPreset(
@@ -653,7 +653,7 @@ class EyeProtectionPlugin : Plugin {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Slider(
+            AppSlider(
                 value = uiConfig.warmFilterStrength,
                 onValueChange = { value ->
                     val newConfig = persistCurrentValuesToSelectedPreset(

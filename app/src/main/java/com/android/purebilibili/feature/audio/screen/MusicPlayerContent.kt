@@ -48,7 +48,7 @@ import com.android.purebilibili.core.ui.components.AppLinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.core.ui.components.AppOutlinedTextField
-import androidx.compose.material3.Slider
+import com.android.purebilibili.core.ui.components.AppSlider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import com.android.purebilibili.core.ui.components.AppTextButton
@@ -728,7 +728,7 @@ private fun MusicArtwork(
 private fun MusicProgress(state: MusicPlayerUiState, onSeek: (Long) -> Unit) {
     val duration = state.durationMs.coerceAtLeast(1L)
     var draggedPosition by remember { mutableStateOf<Float?>(null) }
-    Slider(
+    AppSlider(
         value = draggedPosition ?: state.positionMs.coerceIn(0L, duration).toFloat(),
         onValueChange = { draggedPosition = it },
         onValueChangeFinished = {

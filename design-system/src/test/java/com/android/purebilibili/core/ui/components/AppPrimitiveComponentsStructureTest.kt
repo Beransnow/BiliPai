@@ -36,6 +36,8 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(source.contains(") = Switch("))
         assertTrue(source.contains("fun AppRadioButton("))
         assertTrue(source.contains(") = RadioButton("))
+        assertTrue(source.contains("fun AppSlider("))
+        assertTrue(source.contains(") = Slider("))
     }
 
     private fun loadSource(): String {
