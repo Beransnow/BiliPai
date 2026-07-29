@@ -43,13 +43,6 @@ data class AdaptiveBottomSheetVisualSpec(
     val useMaterialDragHandle: Boolean
 )
 
-internal enum class AdaptiveBottomSheetDragHandleRenderer {
-    HIDDEN,
-    CALLER,
-    MATERIAL3_DEFAULT,
-    MIUIX_DEFAULT,
-}
-
 internal data class AdaptiveBottomSheetMotionSpec(
     val scrimEnterDurationMillis: Int,
     val scrimExitDurationMillis: Int,
@@ -75,31 +68,6 @@ fun resolveAdaptiveBottomSheetVisualSpec(
         cornerRadiusDp = cornerRadiusDp,
         useMaterialDragHandle = uiPreset == UiPreset.MD3
     )
-}
-
-internal fun resolveAdaptiveBottomSheetContainerColor(
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant,
-    containerColor: Color?,
-    iosDefaultColor: Color,
-    material3DefaultColor: Color,
-    miuixDefaultColor: Color,
-): Color = containerColor ?: when {
-    uiPreset == UiPreset.IOS -> iosDefaultColor
-    androidNativeVariant == AndroidNativeVariant.MIUIX -> miuixDefaultColor
-    else -> material3DefaultColor
-}
-
-internal fun resolveAdaptiveBottomSheetDragHandleRenderer(
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant,
-    hasDragHandle: Boolean,
-): AdaptiveBottomSheetDragHandleRenderer = when {
-    !hasDragHandle -> AdaptiveBottomSheetDragHandleRenderer.HIDDEN
-    uiPreset == UiPreset.IOS -> AdaptiveBottomSheetDragHandleRenderer.CALLER
-    androidNativeVariant == AndroidNativeVariant.MIUIX ->
-        AdaptiveBottomSheetDragHandleRenderer.MIUIX_DEFAULT
-    else -> AdaptiveBottomSheetDragHandleRenderer.MATERIAL3_DEFAULT
 }
 
 internal fun resolveAdaptiveBottomSheetMotionSpec(
@@ -160,8 +128,8 @@ internal fun bottomSheetContentExitTransition(
 }
 
 /**
- * Legacy-named adaptive wrapper around Material3 [ModalBottomSheet].
- * A null [containerColor] selects the current style token; a null [dragHandle] hides the handle.
+ * iOS-style Modal Bottom Sheet wrapper.
+ * Uses Material3 ModalBottomSheet but styled to match iOS.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -201,28 +169,16 @@ fun AppModalBottomSheet(
         blurActive = true,
         maxScrimAlpha = scrimColor.alpha
     )
-    val resolvedContainerColor = resolveAdaptiveBottomSheetContainerColor(
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant,
-        containerColor = containerColor,
-        iosDefaultColor = MaterialTheme.colorScheme.surface,
-        material3DefaultColor = MaterialTheme.colorScheme.surfaceContainerLow,
-        miuixDefaultColor = MaterialTheme.colorScheme.surfaceContainer,
-    ).let { color ->
+    val resolvedContainerColor = if (uiPreset == UiPreset.MD3) {
+        if (isNativeMiuixEnabled(uiPreset, androidNativeVariant)) {
+            MaterialTheme.colorScheme.surfaceContainer
+        } else {
+            MaterialTheme.colorScheme.surfaceContainerLow
+        }
+    } else {
+        containerColor
+    }.let { color ->
         color.copy(alpha = color.alpha * progressVisual.surfaceAlphaMultiplier)
-    }
-    val dragHandleRenderer = resolveAdaptiveBottomSheetDragHandleRenderer(
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant,
-        hasDragHandle = dragHandle != null,
-    )
-    val materialDragHandle: @Composable () -> Unit = { BottomSheetDefaults.DragHandle() }
-    val miuixDragHandle: @Composable () -> Unit = { IOSDragHandle() }
-    val resolvedDragHandle: (@Composable () -> Unit)? = when (dragHandleRenderer) {
-        AdaptiveBottomSheetDragHandleRenderer.HIDDEN -> null
-        AdaptiveBottomSheetDragHandleRenderer.CALLER -> dragHandle
-        AdaptiveBottomSheetDragHandleRenderer.MATERIAL3_DEFAULT -> materialDragHandle
-        AdaptiveBottomSheetDragHandleRenderer.MIUIX_DEFAULT -> miuixDragHandle
     }
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,

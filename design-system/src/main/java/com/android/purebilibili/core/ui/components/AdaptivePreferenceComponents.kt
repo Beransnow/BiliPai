@@ -55,10 +55,8 @@ import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalDynamicColorActive
 import com.android.purebilibili.core.theme.LocalSettingsLiquidGlassEnabled
 import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.theme.LocalUiStyle
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
-import com.android.purebilibili.core.theme.UiStyle
 import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
 import com.android.purebilibili.core.ui.resolveCompactCapsuleChromeSpec
 import com.android.purebilibili.core.theme.iOSCornerRadius
@@ -89,8 +87,6 @@ import top.yukonga.miuix.kmp.preference.ArrowPreference as MiuixArrowPreference
 import top.yukonga.miuix.kmp.preference.SliderPreference as MiuixSliderPreference
 import top.yukonga.miuix.kmp.preference.SwitchPreference as MiuixSwitchPreference
 import top.yukonga.miuix.kmp.basic.InputField
-import top.yukonga.miuix.kmp.basic.TextField as MiuixTextField
-import top.yukonga.miuix.kmp.basic.TextFieldDefaults as MiuixTextFieldDefaults
 import kotlinx.coroutines.delay
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import kotlin.math.max
@@ -303,11 +299,6 @@ internal fun shouldUseNativeMiuixSearchBar(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant
 ): Boolean = uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX
-
-internal fun shouldShowAdaptiveSearchLeadingIcon(
-    uiPreset: UiPreset,
-    topBarChrome: Boolean,
-): Boolean = !topBarChrome || uiPreset == UiPreset.IOS
 
 internal fun resolveGlobalWallpaperListContainerColor(
     containerColor: Color,
@@ -1743,43 +1734,21 @@ fun AdaptiveTextFieldRenderer(
     singleLine: Boolean = true,
     minLines: Int = 1,
     maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
-    enabled: Boolean = true,
-    readOnly: Boolean = false,
     isError: Boolean = false,
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    keyboardActions: KeyboardActions = KeyboardActions.Default,
-    leadingIcon: @Composable (() -> Unit)? = null,
-    trailingIcon: @Composable (() -> Unit)? = null,
-    visualTransformation: VisualTransformation = VisualTransformation.None,
-    interactionSource: MutableInteractionSource? = null,
     supportingText: @Composable (() -> Unit)? = null,
 ) {
-    if (LocalUiStyle.current == UiStyle.MIUIX) {
+    val uiPreset = LocalUiPreset.current
+    val androidNativeVariant = LocalAndroidNativeVariant.current
+    if (shouldUseNativeMiuixSearchBar(uiPreset, androidNativeVariant)) {
         Column(modifier = modifier.fillMaxWidth()) {
-            MiuixTextField(
-                value = value,
-                onValueChange = onValueChange,
+            InputField(
+                query = value,
+                onQueryChange = onValueChange,
+                onSearch = {},
+                expanded = true,
+                onExpandedChange = {},
                 modifier = Modifier.fillMaxWidth(),
                 label = label ?: placeholder.orEmpty(),
-                useLabelAsPlaceholder = label == null,
-                enabled = enabled,
-                readOnly = readOnly,
-                keyboardOptions = keyboardOptions,
-                keyboardActions = keyboardActions,
-                leadingIcon = leadingIcon,
-                trailingIcon = trailingIcon,
-                singleLine = singleLine,
-                minLines = minLines,
-                maxLines = maxLines,
-                visualTransformation = visualTransformation,
-                interactionSource = interactionSource,
-                colors = MiuixTextFieldDefaults.textFieldColors(
-                    borderColor = if (isError) {
-                        MaterialTheme.colorScheme.error
-                    } else {
-                        MiuixTheme.colorScheme.primary
-                    },
-                ),
             )
             supportingText?.invoke()
         }
@@ -1794,16 +1763,8 @@ fun AdaptiveTextFieldRenderer(
         singleLine = singleLine,
         minLines = minLines,
         maxLines = maxLines,
-        enabled = enabled,
-        readOnly = readOnly,
         isError = isError,
-        keyboardOptions = keyboardOptions,
-        keyboardActions = keyboardActions,
-        leadingIcon = leadingIcon,
-        trailingIcon = trailingIcon,
-        visualTransformation = visualTransformation,
-        interactionSource = interactionSource,
-        supportingText = supportingText,
+        supportingText = supportingText
     )
 }
 
