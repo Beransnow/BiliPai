@@ -12,9 +12,16 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.android.purebilibili.core.ui.AppAlertDialog
+import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.data.model.response.FavFolder
 import com.android.purebilibili.feature.video.policy.resolveFavoriteFolderMediaId
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppCheckbox
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
+import com.android.purebilibili.core.ui.components.AppOutlinedTextField
+import com.android.purebilibili.core.ui.components.AppTextButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,7 +51,7 @@ fun FavoriteFolderSheet(
         )
     }
 
-    ModalBottomSheet(
+    AppModalBottomSheet(
         onDismissRequest = onDismissRequest,
         containerColor = MaterialTheme.colorScheme.surface,
         dragHandle = { BottomSheetDefaults.DragHandle() }
@@ -67,7 +74,7 @@ fun FavoriteFolderSheet(
                 )
                 
                 // [新增] 新建文件夹按钮
-                TextButton(
+                AppTextButton(
                     onClick = { showCreateDialog = true },
                     modifier = Modifier.align(Alignment.CenterEnd)
                 ) {
@@ -123,12 +130,12 @@ fun FavoriteFolderSheet(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.weight(1f)
                 )
-                Button(
+                AppButton(
                     onClick = onSaveClick,
                     enabled = !isLoading && !isSaving
                 ) {
                     if (isSaving) {
-                        CircularProgressIndicator(
+                        AppCircularProgressIndicator(
                             modifier = Modifier.size(14.dp),
                             strokeWidth = 2.dp,
                             color = MaterialTheme.colorScheme.onPrimary
@@ -151,12 +158,12 @@ fun CreateFolderDialog(
     var intro by remember { mutableStateOf("") }
     var isPrivate by remember { mutableStateOf(false) }
 
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("新建收藏夹") },
         text = {
             Column {
-                OutlinedTextField(
+                AppOutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
                     label = { Text("标题") },
@@ -164,7 +171,7 @@ fun CreateFolderDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                OutlinedTextField(
+                AppOutlinedTextField(
                     value = intro,
                     onValueChange = { intro = it },
                     label = { Text("简介 (选填)") },
@@ -174,7 +181,7 @@ fun CreateFolderDialog(
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Checkbox(
+                    AppCheckbox(
                         checked = isPrivate,
                         onCheckedChange = { isPrivate = it }
                     )
@@ -183,7 +190,7 @@ fun CreateFolderDialog(
             }
         },
         confirmButton = {
-            Button(
+            AppButton(
                 onClick = { 
                     if (title.isNotBlank()) {
                         onConfirm(title, intro, isPrivate)
@@ -195,7 +202,7 @@ fun CreateFolderDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            AppTextButton(onClick = onDismiss) {
                 Text("取消")
             }
         }
@@ -229,7 +236,7 @@ fun FavoriteFolderItem(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
-        Checkbox(
+        AppCheckbox(
             checked = selected,
             onCheckedChange = { onClick() }
         )

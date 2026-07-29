@@ -29,7 +29,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.rememberAppClearIcon
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
+import com.android.purebilibili.core.ui.components.AppDropdownMenu
+import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.outlined.*
 
@@ -96,7 +102,7 @@ fun CommentInputBar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 表情按钮
-            IconButton(
+            AppIconButton(
                 onClick = onEmoteClick,
                 modifier = Modifier.size(36.dp)
             ) {
@@ -172,7 +178,7 @@ fun CommentInputBar(
                 contentAlignment = Alignment.Center
             ) {
                 if (isSending) {
-                    CircularProgressIndicator(
+                    AppCircularProgressIndicator(
                         modifier = Modifier.size(18.dp),
                         strokeWidth = 2.dp,
                         color = MaterialTheme.colorScheme.onPrimary
@@ -203,11 +209,11 @@ fun CommentContextMenu(
     onDelete: (() -> Unit)? = null,  // 只有自己的评论才显示删除
     onReport: () -> Unit
 ) {
-    DropdownMenu(
+    AppDropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismiss
     ) {
-        DropdownMenuItem(
+        AppDropdownMenuItem(
             text = { Text("复制") },
             onClick = {
                 onCopy()
@@ -217,7 +223,7 @@ fun CommentContextMenu(
                 Icon(CupertinoIcons.Default.DocOnDoc, contentDescription = null, modifier = Modifier.size(18.dp))
             }
         )
-        DropdownMenuItem(
+        AppDropdownMenuItem(
             text = { Text("回复") },
             onClick = {
                 onReply()
@@ -228,7 +234,7 @@ fun CommentContextMenu(
             }
         )
         if (onDelete != null) {
-            DropdownMenuItem(
+            AppDropdownMenuItem(
                 text = { Text("删除", color = MaterialTheme.colorScheme.error) },
                 onClick = {
                     onDelete()
@@ -239,7 +245,7 @@ fun CommentContextMenu(
                 }
             )
         }
-        DropdownMenuItem(
+        AppDropdownMenuItem(
             text = { Text("举报") },
             onClick = {
                 onReport()
@@ -274,13 +280,13 @@ fun ReportReasonDialog(
         0 to "其他"
     )
     
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("举报原因", fontWeight = FontWeight.Bold) },
         text = {
             Column {
                 reasons.forEach { (code, label) ->
-                    TextButton(
+                    AppTextButton(
                         onClick = { onReport(code) },
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -295,7 +301,7 @@ fun ReportReasonDialog(
         },
         confirmButton = {},
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            AppTextButton(onClick = onDismiss) {
                 Text("取消")
             }
         }

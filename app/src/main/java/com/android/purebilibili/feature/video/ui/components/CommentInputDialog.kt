@@ -1,7 +1,13 @@
 // 文件路径: feature/video/ui/components/CommentInputDialog.kt
 package com.android.purebilibili.feature.video.ui.components
 
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppOutlinedTextField
+import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTab
+import com.android.purebilibili.core.ui.components.AppTextButton
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -287,7 +293,7 @@ fun CommentInputDialog(
                 )
                 
                 // 输入区域
-                Surface(
+                AppSurface(
                     modifier = modifier
                         .fillMaxWidth()
                         .wrapContentHeight(),
@@ -419,7 +425,7 @@ fun CommentInputDialog(
                                             contentDescription = "已选图片",
                                             modifier = Modifier.fillMaxSize()
                                         )
-                                        Surface(
+                                        AppSurface(
                                             shape = RoundedCornerShape(999.dp),
                                             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
                                             modifier = Modifier
@@ -494,7 +500,7 @@ fun CommentInputDialog(
                                 }
 
                                 // 图标栏: 表情 @ 图片
-                                IconButton(
+                                AppIconButton(
                                     onClick = { showEmojiPanel = !showEmojiPanel },
                                     enabled = canInputComment && !isSending,
                                     modifier = Modifier.size(layoutPolicy.toolbarToolButtonSizeDp.dp)
@@ -507,7 +513,7 @@ fun CommentInputDialog(
                                     )
                                 }
 
-                                IconButton(
+                                AppIconButton(
                                     onClick = {
                                         insertTextAtCursor("@")
                                         showEmojiPanel = false
@@ -526,7 +532,7 @@ fun CommentInputDialog(
                                     )
                                 }
 
-                                TextButton(
+                                AppTextButton(
                                     onClick = {
                                         insertTextAtCursor(resolveCommentProgressInsertText(currentVideoPositionMsProvider()))
                                         showEmojiPanel = false
@@ -543,7 +549,7 @@ fun CommentInputDialog(
                                     )
                                 }
 
-                                IconButton(
+                                AppIconButton(
                                     onClick = {
                                         imagePickerLauncher.launch(
                                             PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
@@ -568,7 +574,7 @@ fun CommentInputDialog(
                             Spacer(modifier = Modifier.width(8.dp))
 
                             // 发送按钮
-                            Button(
+                            AppButton(
                                 onClick = {
                                     if (text.isNotBlank() && !isSending && canInputComment) {
                                         keyboardController?.hide()
@@ -587,7 +593,7 @@ fun CommentInputDialog(
                                 modifier = Modifier.height(36.dp)
                             ) {
                                 if (isSending) {
-                                    CircularProgressIndicator(
+                                    AppCircularProgressIndicator(
                                         modifier = Modifier.size(16.dp),
                                         strokeWidth = 2.dp,
                                         color = MaterialTheme.colorScheme.onPrimary
@@ -795,7 +801,7 @@ private fun CommentMentionSearchPanel(
     onUserClick: (MentionSearchUser) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
+    AppSurface(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(max = 220.dp),
@@ -805,7 +811,7 @@ private fun CommentMentionSearchPanel(
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
-            OutlinedTextField(
+            AppOutlinedTextField(
                 value = query,
                 onValueChange = onQueryChange,
                 modifier = Modifier
@@ -838,7 +844,7 @@ private fun CommentMentionSearchPanel(
                             .padding(horizontal = 14.dp, vertical = 10.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        CircularProgressIndicator(
+                        AppCircularProgressIndicator(
                             modifier = Modifier.size(16.dp),
                             strokeWidth = 2.dp
                         )

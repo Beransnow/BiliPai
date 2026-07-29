@@ -40,6 +40,7 @@ import androidx.compose.material3.SelectableChipElevation
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.InputChip
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.MenuItemColors
@@ -625,6 +626,25 @@ fun AppFilterChip(
     horizontalArrangement = horizontalArrangement,
     contentPadding = contentPadding,
     interactionSource = interactionSource,
+)
+
+@Composable
+fun AppInputChip(
+    selected: Boolean,
+    onClick: () -> Unit,
+    label: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
+) = InputChip(
+    selected = selected,
+    onClick = onClick,
+    label = label,
+    modifier = modifier,
+    enabled = enabled,
+    leadingIcon = leadingIcon,
+    trailingIcon = trailingIcon,
 )
 
 @Composable

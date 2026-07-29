@@ -53,6 +53,8 @@ import com.android.purebilibili.core.ui.rememberAppSettingsIcon
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppTopTabPresentation
 import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
+import com.android.purebilibili.core.ui.components.AppSmallFloatingActionButton
+import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.performance.TrackJankStateFlag
 import com.android.purebilibili.core.ui.performance.TrackScrollJank
 import com.android.purebilibili.core.store.DanmakuSettings
@@ -1096,7 +1098,7 @@ private fun VideoCommentTab(
                 enter = fadeIn(animationSpec = tween(180)) + scaleIn(initialScale = 0.92f),
                 exit = fadeOut(animationSpec = tween(140)) + scaleOut(targetScale = 0.92f)
             ) {
-                SmallFloatingActionButton(
+                AppSmallFloatingActionButton(
                     onClick = {
                         scope.launch {
                             listState.animateScrollToItem(0)
@@ -1183,7 +1185,7 @@ private fun VideoHeaderContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface) // 🎨 [修复] 与 TabBar 统一使用 Surface (通常为白色/深灰色)，消除割裂感
+            .background(MaterialTheme.colorScheme.surface) // 🎨 [修复] 与 TabBar 统一使用容器背景色，消除割裂感
             .onGloballyPositioned { coordinates ->
                 onGloballyPositioned(coordinates.size.height.toFloat())
             }
@@ -1582,7 +1584,7 @@ private fun VideoContentTabBar(
                 }
             }
 
-            Surface(
+            AppSurface(
                 modifier = Modifier
                     .padding(start = danmakuActionLayoutPolicy.settingsLeadingPaddingDp.dp)
                     .size(danmakuActionLayoutPolicy.settingsButtonSizeDp.dp)
@@ -1661,7 +1663,7 @@ fun VideoTagChip(
     tagName: String,
     onClick: (String) -> Unit = {}
 ) {
-    Surface(
+    AppSurface(
         onClick = { onClick(tagName) },
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f),
         shape = RoundedCornerShape(14.dp)

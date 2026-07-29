@@ -39,6 +39,7 @@ import androidx.media3.common.Player
 import com.android.purebilibili.core.store.DanmakuPanelWidthMode
 import com.android.purebilibili.core.store.PortraitDanmakuDisplayAreaMode
 import com.android.purebilibili.core.theme.BiliPink
+import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.blur.unifiedBlur
 import com.android.purebilibili.core.ui.blur.BlurSurfaceType
 import com.android.purebilibili.core.ui.blur.shouldAllowRuntimeShaderBackedHazeEffect
@@ -67,6 +68,12 @@ import com.android.purebilibili.feature.video.playback.dash.buildLocalDashManife
 import com.android.purebilibili.feature.common.resolveIndexedVideoLazyKey
 import com.android.purebilibili.feature.video.progress.PbpRidgeSample
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppPrimaryTabRow
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppTab
+import com.android.purebilibili.core.ui.components.AppTextButton
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -1432,7 +1439,7 @@ fun VideoPlayerOverlay(
                     .align(Alignment.CenterStart)
                     .padding(start = overlayVisualPolicy.lockButtonEndPaddingDp.dp)
             ) {
-                Surface(
+                AppSurface(
                     onClick = onLockToggle,
                     color = Color.Black.copy(alpha = 0.6f),
                     shape = RoundedCornerShape(overlayVisualPolicy.lockButtonCornerRadiusDp.dp),
@@ -1466,7 +1473,7 @@ fun VideoPlayerOverlay(
                     .align(Alignment.CenterEnd)
                     .padding(end = overlayVisualPolicy.lockButtonEndPaddingDp.dp)
             ) {
-                Surface(
+                AppSurface(
                     onClick = onCaptureScreenshot,
                     color = Color.Black.copy(alpha = 0.6f),
                     shape = RoundedCornerShape(overlayVisualPolicy.lockButtonCornerRadiusDp.dp),
@@ -1492,7 +1499,7 @@ fun VideoPlayerOverlay(
             level = insightPresentation.level
         )
         if (showInsightHud) {
-            Surface(
+            AppSurface(
                 onClick = { showInsightDetails = true },
                 color = Color.Black.copy(alpha = 0.68f),
                 contentColor = Color.White,
@@ -1585,7 +1592,7 @@ fun VideoPlayerOverlay(
         }
 
         if (playerDiagnosticLoggingEnabled) playbackIssueSignal?.let { signal ->
-            AlertDialog(
+            AppAlertDialog(
                 onDismissRequest = {
                     dismissedPlaybackIssueTypes = dismissedPlaybackIssueTypes + signal.type
                     playbackIssueSignal = null
@@ -1597,7 +1604,7 @@ fun VideoPlayerOverlay(
                     Text(signal.message)
                 },
                 confirmButton = {
-                    TextButton(
+                    AppTextButton(
                         onClick = {
                             val savedPath = Logger.exportPlayerDiagnostic(
                                 context = context,
@@ -1624,7 +1631,7 @@ fun VideoPlayerOverlay(
                     }
                 },
                 dismissButton = {
-                    TextButton(
+                    AppTextButton(
                         onClick = {
                             dismissedPlaybackIssueTypes = dismissedPlaybackIssueTypes + signal.type
                             playbackIssueSignal = null
@@ -1690,7 +1697,7 @@ fun VideoPlayerOverlay(
             exit = fadeOut(tween(200))
         ) {
             val loadingState = centerLoadingUiState ?: return@AnimatedVisibility
-            Surface(
+            AppSurface(
                 color = Color.Black.copy(alpha = 0.72f),
                 shape = RoundedCornerShape(overlayVisualPolicy.qualitySwitchCornerRadiusDp.dp),
                 modifier = Modifier.padding(overlayVisualPolicy.qualitySwitchOuterPaddingDp.dp)
@@ -1732,7 +1739,7 @@ fun VideoPlayerOverlay(
             enter = fadeIn(tween(200)),
             exit = fadeOut(tween(200))
         ) {
-            Surface(
+            AppSurface(
                 color = Color.Black.copy(alpha = 0.7f),
                 shape = RoundedCornerShape(overlayVisualPolicy.qualitySwitchCornerRadiusDp.dp),
                 modifier = Modifier.padding(overlayVisualPolicy.qualitySwitchOuterPaddingDp.dp)
@@ -2013,7 +2020,7 @@ fun VideoPlayerOverlay(
                     },
                 contentAlignment = Alignment.BottomCenter
             ) {
-                Surface(
+                AppSurface(
                     shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
                     color = MaterialTheme.colorScheme.surface,
                     modifier = Modifier
@@ -2228,7 +2235,7 @@ private fun PortraitTopBar(
             horizontalArrangement = Arrangement.spacedBy(layoutPolicy.leftSectionSpacingDp.dp)
         ) {
             // 返回按钮 - 简洁无背景
-            IconButton(
+            AppIconButton(
                 onClick = onBack,
                 modifier = Modifier.size(layoutPolicy.buttonSizeDp.dp)
             ) {
@@ -2240,7 +2247,7 @@ private fun PortraitTopBar(
                 )
             }
 
-            IconButton(
+            AppIconButton(
                 onClick = onHome,
                 modifier = Modifier.size(layoutPolicy.buttonSizeDp.dp)
             ) {
@@ -2268,7 +2275,7 @@ private fun PortraitTopBar(
             horizontalArrangement = Arrangement.spacedBy(layoutPolicy.rightSectionSpacingDp.dp)
         ) {
             //  听视频模式按钮 - 激活时保留背景色
-            IconButton(
+            AppIconButton(
                 onClick = onAudioMode,
                 modifier = Modifier
                     .size(layoutPolicy.buttonSizeDp.dp)
@@ -2286,7 +2293,7 @@ private fun PortraitTopBar(
             }
 
             if (showCastButton) {
-                IconButton(
+                AppIconButton(
                     onClick = onCastClick,
                     modifier = Modifier.size(layoutPolicy.buttonSizeDp.dp)
                 ) {
@@ -2300,7 +2307,7 @@ private fun PortraitTopBar(
             }
             
             //  设置按钮 - 无背景
-            IconButton(
+            AppIconButton(
                 onClick = onSettings,
                 modifier = Modifier.size(layoutPolicy.buttonSizeDp.dp)
             ) {
@@ -2313,7 +2320,7 @@ private fun PortraitTopBar(
             }
             
             // 分享按钮 - 无背景
-            IconButton(
+            AppIconButton(
                 onClick = onShare,
                 modifier = Modifier.size(layoutPolicy.buttonSizeDp.dp)
             ) {
@@ -2341,7 +2348,7 @@ private fun PlaybackInsightPanel(
     val realtimeHazeState = hazeState?.takeIf {
         shouldAllowRuntimeShaderBackedHazeEffect(Build.VERSION.SDK_INT)
     }
-    Surface(
+    AppSurface(
         modifier = modifier.then(
             if (realtimeHazeState != null) {
                 Modifier.unifiedBlur(
@@ -2380,11 +2387,11 @@ private fun PlaybackInsightPanel(
                     )
                 }
                 if (onCopyReport != null) {
-                    TextButton(onClick = onCopyReport) {
+                    AppTextButton(onClick = onCopyReport) {
                         Text("复制")
                     }
                 }
-                IconButton(onClick = onDismiss) {
+                AppIconButton(onClick = onDismiss) {
                     Icon(
                         imageVector = Icons.Outlined.Close,
                         contentDescription = "关闭"
@@ -2536,7 +2543,7 @@ fun LandscapeEndDrawer(
             )
             
             // 抽屉内容
-            Surface(
+            AppSurface(
                 modifier = Modifier
                     .width(layoutPolicy.drawerWidthDp.dp)
                     .fillMaxHeight(),
@@ -2596,7 +2603,7 @@ fun LandscapeEndDrawer(
                             Spacer(modifier = Modifier.width(layoutPolicy.headerSpacingDp.dp))
                             
                             // 关注按钮 (放在右上角)
-                            Button(
+                            AppButton(
                                 onClick = onToggleFollow,
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = if (isFollowed) MaterialTheme.colorScheme.onSurface.copy(0.2f) else MaterialTheme.colorScheme.primary
@@ -2628,17 +2635,17 @@ fun LandscapeEndDrawer(
                     }
                     
                     if (hasSeason) {
-                        PrimaryTabRow(
+                        AppPrimaryTabRow(
                             selectedTabIndex = selectedTab,
                             containerColor = Color.Transparent,
                             contentColor = MaterialTheme.colorScheme.onSurface
                         ) {
-                            Tab(
+                            AppTab(
                                 selected = selectedTab == 0,
                                 onClick = { selectedTab = 0 },
                                 text = { Text("推荐视频", fontSize = layoutPolicy.followButtonFontSp.sp) }
                             )
-                            Tab(
+                            AppTab(
                                 selected = selectedTab == 1,
                                 onClick = { selectedTab = 1 },
                                 text = { Text("合集列表", fontSize = layoutPolicy.followButtonFontSp.sp) }

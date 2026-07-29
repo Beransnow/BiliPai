@@ -10,6 +10,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.android.purebilibili.core.ui.AppAlertDialog
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppCheckbox
+import com.android.purebilibili.core.ui.components.AppFilterChip
+import com.android.purebilibili.core.ui.components.AppTextButton
 
 /**
  * Coin Dialog Component
@@ -37,7 +42,7 @@ fun CoinDialog(
     
     val maxCoins = 2 - currentCoinCount  // Remaining coins that can be given
     
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { 
             Column {
@@ -73,14 +78,14 @@ fun CoinDialog(
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     // 1 coin
-                    FilterChip(
+                    AppFilterChip(
                         selected = selectedCount == 1,
                         onClick = { selectedCount = 1 },
                         label = { Text("1 \u786c\u5e01") },
                         enabled = maxCoins >= 1
                     )
                     // 2 coins
-                    FilterChip(
+                    AppFilterChip(
                         selected = selectedCount == 2,
                         onClick = { selectedCount = 2 },
                         label = { Text("2 \u786c\u5e01") },
@@ -97,7 +102,7 @@ fun CoinDialog(
                         .clickable { alsoLike = !alsoLike },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Checkbox(
+                    AppCheckbox(
                         checked = alsoLike,
                         onCheckedChange = { alsoLike = it }
                     )
@@ -107,7 +112,7 @@ fun CoinDialog(
             }
         },
         confirmButton = {
-            Button(
+            AppButton(
                 onClick = { onConfirm(selectedCount.coerceAtMost(maxCoins), alsoLike) },
                 enabled = maxCoins > 0
             ) {
@@ -115,7 +120,7 @@ fun CoinDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            AppTextButton(onClick = onDismiss) {
                 Text("\u53d6\u6d88")
             }
         }

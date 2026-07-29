@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.core.ui.rememberAppCollectionIcon
 import com.android.purebilibili.core.ui.rememberAppDownloadIcon
 import com.android.purebilibili.core.ui.rememberAppMusicIcon
@@ -39,7 +40,7 @@ internal fun VideoDetailDownloadOverlayAdapter(
                 successForDownload.info
             )
         }
-        ModalBottomSheet(
+        AppModalBottomSheet(
             onDismissRequest = { viewModel.closeDownloadDialog() },
             containerColor = MaterialTheme.colorScheme.surface,
             tonalElevation = 8.dp

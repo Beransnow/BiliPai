@@ -38,6 +38,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppCheckbox
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
+import com.android.purebilibili.core.ui.components.AppFilterChip
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppTextButton
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.outlined.Xmark
 import kotlinx.coroutines.delay
@@ -208,7 +215,7 @@ fun DanmakuSendDialog(
                     )
                 }
 
-                Surface(
+                AppSurface(
                     modifier = modifier
                         .fillMaxWidth(layoutPolicy.fillMaxWidthFraction)
                         .heightIn(max = maxSheetHeight)
@@ -241,7 +248,7 @@ fun DanmakuSendDialog(
                                 color = MaterialTheme.colorScheme.onSurface
                             )
 
-                            IconButton(
+                            AppIconButton(
                                 onClick = onDismiss,
                                 modifier = Modifier.size(32.dp)
                             ) {
@@ -313,7 +320,7 @@ fun DanmakuSendDialog(
                             textAlign = TextAlign.End
                         )
 
-                        TextButton(
+                        AppTextButton(
                             onClick = { showSettings = !showSettings },
                             modifier = Modifier.align(Alignment.End)
                         ) {
@@ -393,7 +400,7 @@ fun DanmakuSendDialog(
                                 .padding(horizontal = 12.dp, vertical = 8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Checkbox(
+                            AppCheckbox(
                                 checked = attentionCommandChecked,
                                 onCheckedChange = {
                                     attentionCommandChecked = it
@@ -435,7 +442,7 @@ fun DanmakuSendDialog(
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     modeOptions.forEach { (modeValue, label) ->
                                         val isSelected = selectedMode == modeValue
-                                        FilterChip(
+                                        AppFilterChip(
                                             selected = isSelected,
                                             onClick = { selectedMode = modeValue },
                                             label = {
@@ -468,7 +475,7 @@ fun DanmakuSendDialog(
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     fontSizeOptions.forEach { (sizeValue, label) ->
                                         val isSelected = selectedFontSize == sizeValue
-                                        FilterChip(
+                                        AppFilterChip(
                                             selected = isSelected,
                                             onClick = { selectedFontSize = sizeValue },
                                             label = {
@@ -490,7 +497,7 @@ fun DanmakuSendDialog(
                         }
 
                         // 发送按钮
-                        Button(
+                        AppButton(
                             onClick = {
                                 if (text.isNotBlank() && !isSending) {
                                     onSend(
@@ -512,7 +519,7 @@ fun DanmakuSendDialog(
                             )
                         ) {
                             if (isSending) {
-                                CircularProgressIndicator(
+                                AppCircularProgressIndicator(
                                     modifier = Modifier.size(20.dp),
                                     strokeWidth = 2.dp,
                                     color = MaterialTheme.colorScheme.onPrimary

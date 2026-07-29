@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
@@ -141,6 +142,7 @@ fun AppModalBottomSheet(
     shape: Shape? = null,
     containerColor: Color = MaterialTheme.colorScheme.surface,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    tonalElevation: Dp = 0.dp,
     scrimColor: Color = BottomSheetDefaults.ScrimColor,
     presentationProgress: Float = 1f,
     dragHandle: @Composable (() -> Unit)? = { AppBottomSheetDragHandle() },
@@ -190,6 +192,7 @@ fun AppModalBottomSheet(
         shape = sheetShape,
         containerColor = resolvedContainerColor,
         contentColor = contentColor,
+        tonalElevation = tonalElevation,
         scrimColor = scrimColor.copy(alpha = progressVisual.scrimAlpha),
         dragHandle = if (visualSpec.useMaterialDragHandle) {
             if (isNativeMiuixEnabled(uiPreset, androidNativeVariant)) {

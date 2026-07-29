@@ -46,6 +46,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppSwitch
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.SponsorProgressMarker
 import com.android.purebilibili.feature.video.progress.PbpRidgeDensity
@@ -737,7 +740,7 @@ fun BottomControlBar(
                             )
                         }
 
-                        IconButton(
+                        AppIconButton(
                             onClick = onDanmakuSettingsClick,
                             modifier = Modifier
                                 .padding(end = layoutPolicy.danmakuSettingEndPaddingDp.dp)
@@ -811,7 +814,7 @@ fun BottomControlBar(
                 )
 
                 if (showSubtitleButton) {
-                    Surface(
+                    AppSurface(
                         color = if (subtitleEnabled) {
                             MaterialTheme.colorScheme.primary.copy(alpha = 0.22f)
                         } else {
@@ -906,7 +909,7 @@ fun BottomControlBar(
                     bottom = floatingPanelBottomOffsetDp.dp
                 )
         ) {
-            Surface(
+            AppSurface(
                 color = Color.Black.copy(alpha = 0.76f),
                 shape = RoundedCornerShape(12.dp),
                 border = androidx.compose.foundation.BorderStroke(
@@ -982,7 +985,7 @@ fun BottomControlBar(
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Medium
                             )
-                            Switch(
+                            AppSwitch(
                                 checked = subtitleLargeTextEnabled,
                                 onCheckedChange = onSubtitleLargeTextChange,
                                 modifier = Modifier.height(28.dp)
@@ -1003,7 +1006,7 @@ fun BottomControlBar(
                     bottom = floatingPanelBottomOffsetDp.dp
                 )
         ) {
-            Surface(
+            AppSurface(
                 color = Color.Black.copy(alpha = 0.78f),
                 shape = RoundedCornerShape(16.dp),
                 border = androidx.compose.foundation.BorderStroke(
@@ -1212,7 +1215,7 @@ private fun Anime4KMoreAction(
                     fontSize = 11.sp
                 )
             }
-            Switch(
+            AppSwitch(
                 checked = enabled,
                 onCheckedChange = onCheckedChange
             )
