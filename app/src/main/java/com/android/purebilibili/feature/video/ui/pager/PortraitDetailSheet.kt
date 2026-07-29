@@ -36,6 +36,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppTextButton
 
 /**
  * 竖屏视频详情页 (简介)
@@ -94,7 +97,7 @@ fun PortraitDetailSheet(
             enter = sheetMotion.contentEnter,
             exit = sheetMotion.contentExit
         ) {
-            Surface(
+            AppSurface(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(max = screenHeight * 0.75f) // max height 75%
@@ -125,13 +128,13 @@ fun PortraitDetailSheet(
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            TextButton(onClick = onDanmakuToggle) {
+                            AppTextButton(onClick = onDanmakuToggle) {
                                 Text(
                                     text = if (danmakuEnabled) "弹幕开" else "弹幕关",
                                     fontSize = 13.sp
                                 )
                             }
-                            IconButton(onClick = onDismiss) {
+                            AppIconButton(onClick = onDismiss) {
                                 Icon(
                                     imageVector = Icons.Rounded.Close,
                                     contentDescription = "Close",
@@ -224,7 +227,7 @@ fun PortraitDetailSheet(
 
                             if (publishTimeRowText.isNotBlank()) {
                                 if (emphasizePublishTime) {
-                                    Surface(
+                                    AppSurface(
                                         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f),
                                         shape = RoundedCornerShape(10.dp),
                                         modifier = Modifier.padding(bottom = 10.dp)
@@ -443,7 +446,7 @@ private fun PortraitCollectionSection(
     ) {
         items.forEach { item ->
             key(item.key) {
-                Surface(
+                AppSurface(
                     onClick = item.onClick,
                     shape = RoundedCornerShape(10.dp),
                     color = if (item.selected) {

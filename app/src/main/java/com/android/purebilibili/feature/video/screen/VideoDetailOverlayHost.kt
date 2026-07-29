@@ -200,7 +200,13 @@ import com.android.purebilibili.feature.video.ui.components.VideoAspectRatio
 import com.android.purebilibili.feature.video.danmaku.rememberDanmakuManager
 import com.android.purebilibili.core.ui.blur.shouldAllowRuntimeShaderBackedHazeEffect
 import com.android.purebilibili.core.ui.blur.unifiedBlur
+import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppModalBottomSheet
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppCheckbox
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.core.util.FormatUtils
 import coil.compose.AsyncImage
@@ -248,7 +254,7 @@ internal fun VideoDetailFollowGroupDialog(
     )
     if (!followGroupDialogVisible) return
 
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = {
             if (!isSavingFollowGroups) viewModel.dismissFollowGroupDialog()
         },
@@ -285,7 +291,7 @@ internal fun VideoDetailFollowGroupDialog(
                                     .padding(vertical = 6.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Checkbox(
+                                AppCheckbox(
                                     checked = followGroupSelectedTagIds.contains(tag.tagid),
                                     onCheckedChange = { viewModel.toggleFollowGroupSelection(tag.tagid) }
                                 )
@@ -307,12 +313,12 @@ internal fun VideoDetailFollowGroupDialog(
             }
         },
         confirmButton = {
-            Button(
+            AppButton(
                 onClick = { viewModel.saveFollowGroupSelection() },
                 enabled = !isFollowGroupsLoading && !isSavingFollowGroups
             ) {
                 if (isSavingFollowGroups) {
-                    CircularProgressIndicator(
+                    AppCircularProgressIndicator(
                         modifier = Modifier.size(16.dp),
                         strokeWidth = 2.dp,
                         color = MaterialTheme.colorScheme.onPrimary
@@ -323,7 +329,7 @@ internal fun VideoDetailFollowGroupDialog(
             }
         },
         dismissButton = {
-            TextButton(
+            AppTextButton(
                 onClick = { viewModel.dismissFollowGroupDialog() },
                 enabled = !isSavingFollowGroups
             ) {
@@ -346,7 +352,7 @@ internal fun VideoDetailPlaybackEndedDialog(
     androidx.compose.ui.window.Dialog(
         onDismissRequest = { viewModel.dismissPlaybackEndedDialog() }
     ) {
-        Surface(
+        AppSurface(
             shape = RoundedCornerShape(16.dp),
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 8.dp
@@ -366,7 +372,7 @@ internal fun VideoDetailPlaybackEndedDialog(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Button(
+                AppButton(
                     onClick = {
                         viewModel.dismissPlaybackEndedDialog()
                         player.seekTo(0)
@@ -380,7 +386,7 @@ internal fun VideoDetailPlaybackEndedDialog(
                 ) {
                     Text("🔄 重播当前视频")
                 }
-                Button(
+                AppButton(
                     onClick = {
                         viewModel.dismissPlaybackEndedDialog()
                         viewModel.playNextRecommended()
@@ -392,7 +398,7 @@ internal fun VideoDetailPlaybackEndedDialog(
                 ) {
                     Text("▶️ 播放下一个视频")
                 }
-                TextButton(
+                AppTextButton(
                     onClick = { viewModel.dismissPlaybackEndedDialog() }
                 ) {
                     Text("暂不操作")
@@ -443,13 +449,13 @@ internal fun VideoDetailQualitySwitchFailureDialog(
                 }
             }
 
-            AlertDialog(
+            AppAlertDialog(
                 onDismissRequest = { dismissQualitySwitchFailureDialogAfterUserChoice() },
                 title = { Text(dialog.title) },
                 text = {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Text(dialog.message)
-                        TextButton(
+                        AppTextButton(
                             onClick = {
                                 qualitySwitchDialogScope.launch {
                                     com.android.purebilibili.core.store.SettingsManager
@@ -481,7 +487,7 @@ internal fun VideoDetailQualitySwitchFailureDialog(
                                 },
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Checkbox(
+                            AppCheckbox(
                                 checked = qualitySwitchFailureDialogOnceEnabled,
                                 onCheckedChange = { checked ->
                                     qualitySwitchDialogScope.launch {
@@ -495,7 +501,7 @@ internal fun VideoDetailQualitySwitchFailureDialog(
                     }
                 },
                 confirmButton = {
-                    TextButton(
+                    AppTextButton(
                         onClick = {
                             com.android.purebilibili.core.util.LogCollector.exportAndShare(context)
                             dismissQualitySwitchFailureDialogAfterUserChoice()
@@ -505,7 +511,7 @@ internal fun VideoDetailQualitySwitchFailureDialog(
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { dismissQualitySwitchFailureDialogAfterUserChoice() }) {
+                    AppTextButton(onClick = { dismissQualitySwitchFailureDialogAfterUserChoice() }) {
                         Text("关闭")
                     }
                 }
@@ -634,7 +640,7 @@ internal fun ExternalPlaylistQueueSheet(
                         ) { onDismiss() }
                 )
 
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .fillMaxWidth()
@@ -674,7 +680,7 @@ internal fun ExternalPlaylistQueueSheet(
                 containerColor = Color.Transparent,
                 windowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0)
             ) {
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(sheetShape)

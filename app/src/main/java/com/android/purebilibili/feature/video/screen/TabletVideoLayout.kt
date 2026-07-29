@@ -28,6 +28,11 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import com.android.purebilibili.core.ui.AppSplitLayout
+import com.android.purebilibili.core.ui.components.AppFloatingActionButton
+import com.android.purebilibili.core.ui.components.AppPrimaryTabRow
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppTab
+import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.util.ShareUtils
 import com.android.purebilibili.data.model.response.BgmInfo
 import com.android.purebilibili.data.model.response.ViewPoint
@@ -434,20 +439,20 @@ private fun TabletSecondaryContent(
                 .padding(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            TextButton(onClick = { onPaneModeChange(TabletSecondaryPaneMode.COMPACT) }) {
+            AppTextButton(onClick = { onPaneModeChange(TabletSecondaryPaneMode.COMPACT) }) {
                 Text("半开")
             }
-            TextButton(onClick = { onPaneModeChange(TabletSecondaryPaneMode.EXPANDED) }) {
+            AppTextButton(onClick = { onPaneModeChange(TabletSecondaryPaneMode.EXPANDED) }) {
                 Text("展开")
             }
             Spacer(modifier = Modifier.height(8.dp))
-            TextButton(onClick = {
+            AppTextButton(onClick = {
                 selectedTab = 0
                 onPaneModeChange(TabletSecondaryPaneMode.COMPACT)
             }) {
                 Text("评论")
             }
-            TextButton(onClick = {
+            AppTextButton(onClick = {
                 selectedTab = 1
                 onPaneModeChange(TabletSecondaryPaneMode.COMPACT)
             }) {
@@ -469,7 +474,7 @@ private fun TabletSecondaryContent(
                 .padding(horizontal = 8.dp, vertical = 4.dp),
             horizontalArrangement = Arrangement.End
         ) {
-            TextButton(onClick = onPaneModeCycle) {
+            AppTextButton(onClick = onPaneModeCycle) {
                 Text(
                     when (paneMode) {
                         TabletSecondaryPaneMode.EXPANDED -> "半开"
@@ -481,13 +486,13 @@ private fun TabletSecondaryContent(
         }
 
         // Tab 栏
-        PrimaryTabRow(
+        AppPrimaryTabRow(
             selectedTabIndex = pagerState.currentPage,
             containerColor = MaterialTheme.colorScheme.surface,
             contentColor = MaterialTheme.colorScheme.onSurface
         ) {
             tabs.forEachIndexed { index, title ->
-                Tab(
+                AppTab(
                     selected = pagerState.currentPage == index,
                     onClick = {
                         scope.launch {
@@ -575,7 +580,7 @@ private fun TabletSecondaryContent(
                                 contentPadding = PaddingValues(8.dp)
                             ) {
                             item {
-                                Surface(
+                                AppSurface(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(horizontal = 8.dp, vertical = 6.dp),
@@ -675,7 +680,7 @@ private fun TabletSecondaryContent(
                                     color = commentAppearance.secondaryTextColor
                                 )
                                 Spacer(modifier = Modifier.height(12.dp))
-                                TextButton(onClick = {
+                                AppTextButton(onClick = {
                                     scope.launch {
                                         pagerState.animateScrollToPage(1)
                                     }
@@ -685,7 +690,7 @@ private fun TabletSecondaryContent(
                             }
                         }
 
-                        FloatingActionButton(
+                        AppFloatingActionButton(
                             onClick = commentActions.toggleUpOnly,
                             modifier = Modifier
                                 .align(Alignment.BottomEnd)

@@ -2,6 +2,17 @@ package com.android.purebilibili.feature.list
 
 import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.AppSpacingTokens
+import com.android.purebilibili.core.ui.AppAlertDialog
+import com.android.purebilibili.core.ui.components.AppAssistChip
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppCard
+import com.android.purebilibili.core.ui.components.AppDropdownMenu
+import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
+import com.android.purebilibili.core.ui.components.AppFilterChip
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppSmallFloatingActionButton
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppTextButton
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -62,7 +73,15 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.DisposableEffect // [Fix] Missing import
 import kotlinx.coroutines.launch // [Fix] Import
 //  Cupertino Icons - iOS SF Symbols 风格图标
-import androidx.compose.material3.*
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.CheckCircle
@@ -1044,13 +1063,13 @@ fun CommonListScreen(
                             transitionEnabled = favoriteCollectionSharedTransitionEnabled
                         ),
                         navigationIcon = {
-                            IconButton(onClick = onBack) {
+                            AppIconButton(onClick = onBack) {
                                 Icon(rememberAppBackIcon(), contentDescription = "Back")
                             }
                         },
                         actions = {
                             if (favoriteViewModel != null) {
-                                IconButton(
+                                AppIconButton(
                                     enabled = activeFavoriteItems.isNotEmpty() && !isSubscribedBrowse,
                                     onClick = {
                                         playFavoriteVideo(
@@ -1075,7 +1094,7 @@ fun CommonListScreen(
 
                                 if (!isSubscribedBrowse) {
                                     Box {
-                                        IconButton(
+                                        AppIconButton(
                                             enabled = !isFavoriteManaging,
                                             onClick = { showFavoriteManagementMenu = true }
                                         ) {
@@ -1084,12 +1103,12 @@ fun CommonListScreen(
                                                 contentDescription = "更多管理"
                                             )
                                         }
-                                        DropdownMenu(
+                                        AppDropdownMenu(
                                             expanded = showFavoriteManagementMenu,
                                             onDismissRequest = { showFavoriteManagementMenu = false }
                                         ) {
                                             FavoriteResourceOrder.entries.forEach { order ->
-                                                DropdownMenuItem(
+                                                AppDropdownMenuItem(
                                                     text = {
                                                         Text(
                                                             if (order == favoriteOrder) {
@@ -1107,7 +1126,7 @@ fun CommonListScreen(
                                                 )
                                             }
                                             HorizontalDivider()
-                                            DropdownMenuItem(
+                                            AppDropdownMenuItem(
                                                 text = { Text("清理失效内容") },
                                                 enabled = canCleanInvalidFavoriteResources(selectedFavoriteFolder) && !isFavoriteManaging,
                                                 onClick = {
@@ -1127,7 +1146,7 @@ fun CommonListScreen(
                                         .toSet()
                                     val allSelected = visibleHistoryKeys.isNotEmpty() &&
                                         selectedHistoryKeys.containsAll(visibleHistoryKeys)
-                                    TextButton(
+                                    AppTextButton(
                                         onClick = {
                                             selectedHistoryKeys = if (allSelected) {
                                                 emptySet()
@@ -1138,13 +1157,13 @@ fun CommonListScreen(
                                     ) {
                                         Text(if (allSelected) "取消全选" else "全选")
                                     }
-                                    TextButton(
+                                    AppTextButton(
                                         enabled = selectedHistoryKeys.isNotEmpty(),
                                         onClick = { showHistoryBatchDeleteConfirm = true }
                                     ) {
                                         Text("删除(${selectedHistoryKeys.size})")
                                     }
-                                    TextButton(
+                                    AppTextButton(
                                         onClick = {
                                             isHistoryBatchMode = false
                                             selectedHistoryKeys = emptySet()
@@ -1154,7 +1173,7 @@ fun CommonListScreen(
                                     }
                                 } else {
                                     if (state.items.isNotEmpty()) {
-                                        TextButton(
+                                        AppTextButton(
                                             enabled = !isHistoryManagementBusy,
                                             onClick = {
                                                 isHistoryBatchMode = true
@@ -1166,7 +1185,7 @@ fun CommonListScreen(
                                     }
 
                                     Box {
-                                        IconButton(
+                                        AppIconButton(
                                             enabled = !isHistoryManagementBusy,
                                             onClick = { showHistoryManagementMenu = true }
                                         ) {
@@ -1175,11 +1194,11 @@ fun CommonListScreen(
                                                 contentDescription = "更多管理"
                                             )
                                         }
-                                        DropdownMenu(
+                                        AppDropdownMenu(
                                             expanded = showHistoryManagementMenu,
                                             onDismissRequest = { showHistoryManagementMenu = false }
                                         ) {
-                                            DropdownMenuItem(
+                                            AppDropdownMenuItem(
                                                 text = { Text(resolveHistoryPauseActionLabel(isHistoryPaused)) },
                                                 enabled = !isHistoryManagementBusy,
                                                 onClick = {
@@ -1187,7 +1206,7 @@ fun CommonListScreen(
                                                     historyViewModel.toggleHistoryPause()
                                                 }
                                             )
-                                            DropdownMenuItem(
+                                            AppDropdownMenuItem(
                                                 text = { Text("清空历史") },
                                                 enabled = state.items.isNotEmpty() && !isHistoryManagementBusy,
                                                 onClick = {
@@ -1279,7 +1298,7 @@ fun CommonListScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     items(HistoryContentFilter.entries, key = { it.name }) { filter ->
-                                        FilterChip(
+                                        AppFilterChip(
                                             selected = historyContentFilter == filter,
                                             enabled = !isHistoryBatchMode,
                                             onClick = { onHistoryFilterSelected(filter) },
@@ -1361,7 +1380,7 @@ fun CommonListScreen(
                 exit = androidx.compose.animation.fadeOut(animationSpec = AppMotionTokens.standardSpec()) +
                     androidx.compose.animation.scaleOut(targetScale = 0.92f)
             ) {
-                SmallFloatingActionButton(
+                AppSmallFloatingActionButton(
                     onClick = {
                         coroutineScope.launch {
                             scrollCommonListToTop()
@@ -1380,12 +1399,12 @@ fun CommonListScreen(
     }
 
     if (showHistoryBatchDeleteConfirm && historyViewModel != null) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showHistoryBatchDeleteConfirm = false },
             title = { Text("批量删除历史") },
             text = { Text("确认删除已选择的 ${selectedHistoryKeys.size} 条历史记录吗？") },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         val targetKeys = selectedHistoryKeys
                         when (resolveHistoryDeleteAnimationMode(targetKeys.size)) {
@@ -1406,7 +1425,7 @@ fun CommonListScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showHistoryBatchDeleteConfirm = false }) {
+                AppTextButton(onClick = { showHistoryBatchDeleteConfirm = false }) {
                     Text("取消")
                 }
             }
@@ -1414,7 +1433,7 @@ fun CommonListScreen(
     }
 
     if (showFavoriteCleanInvalidConfirm && favoriteViewModel != null) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showFavoriteCleanInvalidConfirm = false },
             title = { Text("清理失效内容") },
             text = {
@@ -1425,7 +1444,7 @@ fun CommonListScreen(
                 )
             },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         favoriteViewModel.cleanInvalidResourcesInSelectedFolder()
                         showFavoriteCleanInvalidConfirm = false
@@ -1435,7 +1454,7 @@ fun CommonListScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showFavoriteCleanInvalidConfirm = false }) {
+                AppTextButton(onClick = { showFavoriteCleanInvalidConfirm = false }) {
                     Text("取消")
                 }
             }
@@ -1443,12 +1462,12 @@ fun CommonListScreen(
     }
 
     if (showHistoryClearConfirm && historyViewModel != null) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showHistoryClearConfirm = false },
             title = { Text("清空历史") },
             text = { Text(resolveHistoryClearConfirmText(state.items.size)) },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         historyViewModel.clearAllHistory()
                         selectedHistoryKeys = emptySet()
@@ -1460,7 +1479,7 @@ fun CommonListScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showHistoryClearConfirm = false }) {
+                AppTextButton(onClick = { showHistoryClearConfirm = false }) {
                     Text("取消")
                 }
             }
@@ -1468,12 +1487,12 @@ fun CommonListScreen(
     }
 
     if (pendingHistorySingleDeleteKey != null && historyViewModel != null) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { pendingHistorySingleDeleteKey = null },
             title = { Text("删除历史记录") },
             text = { Text("确认删除这条历史记录吗？") },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         pendingHistorySingleDeleteKey?.let { historyViewModel.startVideoDissolve(it) }
                         pendingHistorySingleDeleteKey = null
@@ -1483,7 +1502,7 @@ fun CommonListScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { pendingHistorySingleDeleteKey = null }) {
+                AppTextButton(onClick = { pendingHistorySingleDeleteKey = null }) {
                     Text("取消")
                 }
             }
@@ -1518,7 +1537,7 @@ private fun FavoriteFolderChipRow(
                     loadedItems = if (isSelected) selectedFolderItems else emptyList()
                 )
             }
-            Surface(
+            AppSurface(
                 onClick = { onFolderSelected(index) },
                 shape = RoundedCornerShape(layout.folderChipMinHeightDp.dp),
                 color = if (isSelected) {
@@ -1687,7 +1706,7 @@ private fun CommonListContent(
             )
             if (onRetry != null) {
                 Spacer(modifier = Modifier.height(AppSpacingTokens.Medium))
-                Button(onClick = onRetry) {
+                AppButton(onClick = onRetry) {
                     Text("重试")
                 }
             }
@@ -1969,7 +1988,7 @@ private fun HistoryArticleCard(
     } else {
         baseCoverModifier
     }
-    ElevatedCard(
+    AppCard(
         modifier = modifier
             .fillMaxWidth()
             .onGloballyPositioned { coordinates ->
@@ -1982,7 +2001,8 @@ private fun HistoryArticleCard(
         shape = AppShapes.container(ContainerLevel.Sheet),
         colors = CardDefaults.elevatedCardColors(
             containerColor = AppSurfaceTokens.cardContainer()
-        )
+        ),
+        elevation = CardDefaults.elevatedCardElevation()
     ) {
         Column {
             Box(
@@ -2001,7 +2021,7 @@ private fun HistoryArticleCard(
                 modifier = Modifier.padding(horizontal = AppSpacingTokens.Medium, vertical = AppSpacingTokens.Medium),
                 verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small)
             ) {
-                Surface(
+                AppSurface(
                     shape = AppShapes.container(ContainerLevel.Pill),
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
                 ) {
@@ -2106,7 +2126,7 @@ private fun FavoriteSubscribedFolderRow(
     val previewCover = remember(folder.cover) {
         resolveFavoriteFolderPreviewCover(folder, emptyList())
     }
-    Surface(
+    AppSurface(
         modifier = Modifier
             .fillMaxWidth()
             .favoriteCollectionSharedBounds(
@@ -2143,7 +2163,7 @@ private fun FavoriteSubscribedFolderRow(
                 )
             }
             Spacer(modifier = Modifier.width(AppSpacingTokens.Small))
-            AssistChip(
+            AppAssistChip(
                 onClick = onClick,
                 label = { Text("订阅") }
             )
@@ -2225,7 +2245,7 @@ private fun FavoriteProgressBadgeCapsule(
     badge: FavoriteProgressBadge
 ) {
     val widthSpec = resolveFavoriteProgressBadgeWidthSpec()
-    Surface(
+    AppSurface(
         modifier = modifier.widthIn(min = widthSpec.minWidth, max = widthSpec.maxWidth),
         shape = AppShapes.container(ContainerLevel.Floating),
         color = AppSurfaceTokens.cardContainer().copy(alpha = 0.9f),
@@ -2281,7 +2301,7 @@ private fun FavoriteCollectionRow(
     }
     val subtitle = remember(subtitleParts) { subtitleParts.joinToString(separator = " · ") }
 
-    Surface(
+    AppSurface(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
@@ -2318,7 +2338,7 @@ private fun FavoriteCollectionRow(
                 }
             }
             Spacer(modifier = Modifier.width(AppSpacingTokens.Small))
-            AssistChip(
+            AppAssistChip(
                 onClick = onClick,
                 label = { Text("合集") }
             )

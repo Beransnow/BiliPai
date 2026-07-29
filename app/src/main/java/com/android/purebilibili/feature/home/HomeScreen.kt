@@ -41,6 +41,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.zIndex
 import androidx.compose.material3.DrawerValue
 import com.android.purebilibili.core.ui.components.AppModalNavigationDrawer
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.material3.rememberDrawerState
 import com.android.purebilibili.feature.home.components.MineSideDrawer
 import androidx.compose.ui.graphics.Color
@@ -59,6 +62,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
+import com.android.purebilibili.core.ui.AppAlertDialog
+import com.android.purebilibili.core.ui.AppPullRefreshLoadingIndicator
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppPullRefreshIndicatorStyle
 import com.android.purebilibili.core.ui.rememberAppPullRefreshProfile
@@ -734,7 +739,7 @@ fun HomeScreen(
     
     //  [彩蛋] 关闭确认对话框
     if (showEasterEggDialog) {
-        androidx.compose.material3.AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showEasterEggDialog = false },
             title = { 
                 Text(
@@ -749,7 +754,7 @@ fun HomeScreen(
                 ) 
             },
             confirmButton = {
-                androidx.compose.material3.TextButton(
+                AppTextButton(
                     onClick = {
                         coroutineScope.launch {
                             SettingsManager.setEasterEggEnabled(context, false)
@@ -759,7 +764,7 @@ fun HomeScreen(
                 ) { Text("关闭彩蛋", color = MaterialTheme.colorScheme.error) }
             },
             dismissButton = {
-                androidx.compose.material3.TextButton(
+                AppTextButton(
                     onClick = { showEasterEggDialog = false }
                 ) { Text("保留彩蛋", color = MaterialTheme.colorScheme.primary) }
             },
@@ -1612,7 +1617,7 @@ fun HomeScreen(
                                     AppPullRefreshIndicatorStyle.MATERIAL_DEFAULT -> {
                                         // Official M3 expressive ContainedLoadingIndicator
                                         // (dynamic color) for Android Native Material 3.
-                                        PullToRefreshDefaults.LoadingIndicator(
+                                        AppPullRefreshLoadingIndicator(
                                             modifier = Modifier
                                                 .align(Alignment.TopCenter)
                                                 .padding(top = homeRefreshIndicatorTopInset),
@@ -2051,7 +2056,7 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.TopCenter
             ) {
-                Surface(
+                AppSurface(
                     shape = AppShapes.container(ContainerLevel.Pill),
                     color = if (refreshTipAppearance.surfaceStyle == HomeRefreshTipSurfaceStyle.PLAIN) {
                         MaterialTheme.colorScheme.surfaceContainerHigh
@@ -2099,7 +2104,7 @@ fun HomeScreen(
                 ),
                 modifier = Modifier.padding(end = AppSpacingTokens.Large, bottom = homeListBottomPadding + AppSpacingTokens.Small)
             ) {
-            androidx.compose.material3.Button(
+            AppButton(
                 onClick = { viewModel.undoRefresh() },
                 modifier = Modifier.pointerInput(Unit) {
                     detectHorizontalDragGestures { change, _ ->

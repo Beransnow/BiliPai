@@ -55,6 +55,8 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.ui.draw.rotate
 import com.android.purebilibili.core.ui.common.copyOnClick
 import com.android.purebilibili.core.ui.OfficialVerifyBadge
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.resolveUpStatsText
 import com.android.purebilibili.core.ui.components.UserUpBadge
 import com.android.purebilibili.core.ui.resolveOfficialVerifyBadgeFromRole
@@ -241,7 +243,7 @@ fun VideoTitleSection(
         if (publishTimeRowText.isNotBlank()) {
             Spacer(Modifier.height(6.dp))
             if (emphasizePublishTime) {
-                Surface(
+                AppSurface(
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.78f),
                     shape = RoundedCornerShape(10.dp)
                 ) {
@@ -534,7 +536,7 @@ fun VideoTitleWithDesc(
         if (publishTimeRowText.isNotBlank()) {
             Spacer(Modifier.height(6.dp))
             if (emphasizePublishTime) {
-                Surface(
+                AppSurface(
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.78f),
                     shape = RoundedCornerShape(10.dp)
                 ) {
@@ -647,7 +649,7 @@ fun VideoTitleWithDesc(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     videoTags.take(10).forEach { tag ->
-                        Surface(
+                        AppSurface(
                             onClick = { onTagClick(tag.tag_name) },
                             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f),
                             shape = RoundedCornerShape(14.dp)
@@ -683,7 +685,7 @@ private fun VideoDetailBadgeChip(
     } else {
         MaterialTheme.colorScheme.onSurfaceVariant
     }
-    Surface(
+    AppSurface(
         color = containerColor,
         shape = RoundedCornerShape(8.dp)
     ) {
@@ -921,7 +923,7 @@ fun UpInfoSection(
                 val followVisualPolicy = remember(isFollowing) {
                     resolveVideoFollowVisualPolicy(isFollowing = isFollowing)
                 }
-                Surface(
+                AppSurface(
                     onClick = onFollowClick,
                     color = when (followVisualPolicy.detailButtonTone) {
                         FollowButtonTone.PRIMARY -> MaterialTheme.colorScheme.primary
@@ -1090,7 +1092,7 @@ fun DescriptionSection(desc: String) {
 
     if (desc.isBlank()) return
 
-    Surface(
+    AppSurface(
         modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.background
     ) {
@@ -1204,7 +1206,7 @@ fun BgmInfoRow(
         label = "BgmExpandIndicator"
     )
 
-    Surface(
+    AppSurface(
         color = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f),
         shape = RoundedCornerShape(8.dp),
         modifier = Modifier
@@ -1379,7 +1381,7 @@ private fun BgmSelectionSheet(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    IconButton(onClick = onDismiss) {
+                    AppIconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = CupertinoIcons.Default.Xmark,
                             contentDescription = "关闭",
@@ -1713,7 +1715,7 @@ private fun BgmDetailCard(
             ?: "点击查看这首音乐的完整详情"
     }
 
-    Surface(
+    AppSurface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),

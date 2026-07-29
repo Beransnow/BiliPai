@@ -1,6 +1,9 @@
 package com.android.purebilibili.feature.home.components
 
 import com.android.purebilibili.core.ui.AppSpacingTokens
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppSwitch
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -34,7 +37,7 @@ fun CrashTrackingConsentDialog(
     var isEnabled by remember { mutableStateOf(true) }  // 默认开启
     
     Dialog(onDismissRequest = { /* 不允许点击外部关闭 */ }) {
-        Surface(
+        AppSurface(
             shape = AppShapes.container(ContainerLevel.Dialog),
             color = AppSurfaceTokens.cardContainer(),
             tonalElevation = AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro,
@@ -81,7 +84,7 @@ fun CrashTrackingConsentDialog(
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Switch(
+                    AppSwitch(
                         checked = isEnabled,
                         onCheckedChange = { isEnabled = it },
                         colors = SwitchDefaults.colors(
@@ -94,7 +97,7 @@ fun CrashTrackingConsentDialog(
                 Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraLarge))
                 
                 // 确认按钮
-                Button(
+                AppButton(
                     onClick = {
                         scope.launch {
                             // 保存用户选择

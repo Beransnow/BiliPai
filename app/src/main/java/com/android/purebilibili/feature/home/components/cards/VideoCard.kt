@@ -2,6 +2,11 @@ package com.android.purebilibili.feature.home.components.cards
 
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
+import com.android.purebilibili.core.ui.AppAlertDialog
+import com.android.purebilibili.core.ui.components.AppDropdownMenu
+import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppTextButton
 
 import com.android.purebilibili.core.ui.MediaContrastPalette
 
@@ -247,7 +252,7 @@ private fun VideoCardPublishTime(
 ) {
     val contentTypography = feedContentTypography()
     if (emphasized) {
-        Surface(
+        AppSurface(
             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.8f),
             shape = AppShapes.container(ContainerLevel.Pill),
             modifier = modifier
@@ -1241,7 +1246,7 @@ internal fun ElegantVideoCard(
                 badgeTrailingContent = if (isFollowing) {
                     {
                         if (badgeStylePolicy.infoStyle == HomeVideoBadgeStyle.GLASS) {
-                            Surface(
+                            AppSurface(
                                 modifier = followBadgeModifier,
                                 shape = AppShapes.container(ContainerLevel.Pill),
                                 color = inlinePillColors.containerColor,
@@ -1401,14 +1406,14 @@ internal fun ElegantVideoCard(
                 .offset(x = menuOffset.x, y = menuOffset.y)
                 .size(AppSpacingTokens.Micro / 2)
         ) {
-            DropdownMenu(
+            AppDropdownMenu(
                 expanded = showDismissMenu,
                 onDismissRequest = { showDismissMenu = false },
                 offset = DpOffset.Zero
             ) {
                 // 稍后再看
                 if (onWatchLater != null) {
-                    DropdownMenuItem(
+                    AppDropdownMenuItem(
                         text = {
                             Text(
                                 "🕐 稍后再看",
@@ -1424,7 +1429,7 @@ internal fun ElegantVideoCard(
 
                 // 取消收藏 (仅在收藏页显示)
                 if (onUnfavorite != null) {
-                     DropdownMenuItem(
+                     AppDropdownMenuItem(
                         text = {
                             Text(
                                 "💔 取消收藏",
@@ -1441,7 +1446,7 @@ internal fun ElegantVideoCard(
 
                 // 不感兴趣 (放第一位，方便操作) -> 改回下方
                 if (onDismiss != null) {
-                    DropdownMenuItem(
+                    AppDropdownMenuItem(
                         text = {
                             Text(
                                 dismissMenuText,
@@ -1460,12 +1465,12 @@ internal fun ElegantVideoCard(
     
     
     if (showUnfavoriteDialog) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showUnfavoriteDialog = false },
             title = { Text("取消收藏") },
             text = { Text("确定要将此视频从收藏夹中移除吗？") },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         showUnfavoriteDialog = false
                         onUnfavorite?.invoke()
@@ -1475,7 +1480,7 @@ internal fun ElegantVideoCard(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showUnfavoriteDialog = false }) {
+                AppTextButton(onClick = { showUnfavoriteDialog = false }) {
                     Text("取消")
                 }
             }
@@ -1519,7 +1524,7 @@ internal fun HomeVideoBadgePill(
         } else {
             containerColor
         }
-        Surface(
+        AppSurface(
             modifier = glassModifier,
             shape = shape,
             color = surfaceColor,

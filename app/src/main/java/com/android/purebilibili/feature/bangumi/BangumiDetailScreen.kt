@@ -33,9 +33,18 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.theme.resolveAdaptivePrimaryAccentColors
 import com.android.purebilibili.core.theme.iOSYellow
+import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.components.AppAssistChip
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppOutlinedButton
+import com.android.purebilibili.core.ui.components.AppOutlinedTextField
+import com.android.purebilibili.core.ui.components.AppSuggestionChip
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.BangumiDetail
 import com.android.purebilibili.data.model.response.BangumiEpisode
@@ -73,7 +82,7 @@ fun BangumiDetailScreen(
             AppTopBar(
                 title = "番剧详情",
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    AppIconButton(onClick = onBack) {
                         Icon(rememberAppBackIcon(), contentDescription = "返回")
                     }
                 },
@@ -108,7 +117,7 @@ fun BangumiDetailScreen(
                             color = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.loadSeasonDetail(seasonId) }) {
+                        AppButton(onClick = { viewModel.loadSeasonDetail(seasonId) }) {
                             Text("重试")
                         }
                     }
@@ -251,7 +260,7 @@ private fun TabletBangumiDetailContent(
                 item {
                     Row(modifier = Modifier.fillMaxWidth()) {
                         // Follow Button
-                         Button(
+                         AppButton(
                             onClick = {
                                 if (isFollowing) {
                                     showFollowStatusDialog = true
@@ -331,7 +340,7 @@ private fun TabletBangumiDetailContent(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 20.sp
                             )
-                             TextButton(onClick = { 
+                             AppTextButton(onClick = {
                                 jumpInputText = ""
                                 jumpErrorMessage = null
                                 showJumpDialog = true 
@@ -380,7 +389,7 @@ private fun TabletBangumiDetailContent(
                      
                      items(detail.seasons, key = { it.seasonId }) { season ->
                          val isCurrentSeason = season.seasonId == detail.seasonId
-                         Surface(
+                         AppSurface(
                             onClick = { if (!isCurrentSeason) onSeasonClick(season.seasonId) },
                             shape = RoundedCornerShape(8.dp),
                             color = if (isCurrentSeason) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface,
@@ -405,12 +414,12 @@ private fun TabletBangumiDetailContent(
     
     // Dialogs (Shared logic)
     if (showJumpDialog && !detail.episodes.isNullOrEmpty()) {
-         AlertDialog(
+         AppAlertDialog(
             onDismissRequest = { showJumpDialog = false },
             title = { Text("跳转到第几集") },
             text = {
                 Column {
-                    OutlinedTextField(
+                    AppOutlinedTextField(
                         value = jumpInputText,
                         onValueChange = { 
                             jumpInputText = it.filter { char -> char.isDigit() }
@@ -432,7 +441,7 @@ private fun TabletBangumiDetailContent(
                 }
             },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         val epNumber = jumpInputText.toIntOrNull()
                         if (epNumber == null || epNumber < 1 || epNumber > detail.episodes.size) {
@@ -448,7 +457,7 @@ private fun TabletBangumiDetailContent(
                 ) { Text("跳转") }
             },
             dismissButton = {
-                TextButton(onClick = { showJumpDialog = false }) { Text("取消") }
+                AppTextButton(onClick = { showJumpDialog = false }) { Text("取消") }
             }
         )
     }
@@ -619,7 +628,7 @@ private fun MobileBangumiDetailContent(
                     // 追番按钮
                     if (isFollowing) {
                         //  已追番：使用带边框的样式，更清晰可见
-                        OutlinedButton(
+                        AppOutlinedButton(
                             onClick = {
                                 showFollowStatusDialog = true
                             },
@@ -642,7 +651,7 @@ private fun MobileBangumiDetailContent(
                         }
                     } else {
                         //  未追番：使用填充的主色按钮
-                        Button(
+                        AppButton(
                             onClick = {
                                 onFollowStatusSelect(BANGUMI_FOLLOW_STATUS_WATCHING)
                             },
@@ -710,7 +719,7 @@ private fun MobileBangumiDetailContent(
                         )
                         
                         //  跳转按钮
-                        Surface(
+                        AppSurface(
                             onClick = { 
                                 jumpInputText = ""
                                 jumpErrorMessage = null
@@ -744,7 +753,7 @@ private fun MobileBangumiDetailContent(
                                 val end = minOf((page + 1) * episodesPerPage, detail.episodes.size)
                                 val isCurrentPage = page == selectedPreviewPage
                                 
-                                Surface(
+                                AppSurface(
                                     onClick = { selectedPreviewPage = page },
                                     color = if (isCurrentPage) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                                     shape = RoundedCornerShape(16.dp)
@@ -789,7 +798,7 @@ private fun MobileBangumiDetailContent(
                         // 更多按钮
                         if (detail.episodes.size > 6) {
                             item {
-                                Surface(
+                                AppSurface(
                                     onClick = { showEpisodeSheet = true },
                                     modifier = Modifier
                                         .width(80.dp)
@@ -853,7 +862,7 @@ private fun MobileBangumiDetailContent(
                     ) {
                         items(detail.seasons, key = { it.seasonId }) { season ->
                             val isCurrentSeason = season.seasonId == detail.seasonId
-                            Surface(
+                            AppSurface(
                                 modifier = Modifier.clickable {
                                     if (!isCurrentSeason) {
                                         onSeasonClick(season.seasonId)
@@ -890,7 +899,7 @@ private fun MobileBangumiDetailContent(
                 title = { Text("跳转到第几集") },
                 text = {
                     Column {
-                        OutlinedTextField(
+                        AppOutlinedTextField(
                             value = jumpInputText,
                             onValueChange = { 
                                 jumpInputText = it.filter { char -> char.isDigit() }
@@ -982,7 +991,7 @@ private fun BangumiDetailMetaSection(
                 contentPadding = PaddingValues(horizontal = 0.dp)
             ) {
                 items(metaChips, key = { it }) { chip ->
-                    AssistChip(
+                    AppAssistChip(
                         onClick = {},
                         label = {
                             Text(
@@ -1001,7 +1010,7 @@ private fun BangumiDetailMetaSection(
                 contentPadding = PaddingValues(horizontal = 0.dp)
             ) {
                 items(restrictionLabels, key = { it }) { label ->
-                    SuggestionChip(
+                    AppSuggestionChip(
                         onClick = {},
                         label = {
                             Text(
@@ -1056,13 +1065,13 @@ private fun BangumiFollowStatusDialog(
     onSelect: (Int) -> Unit,
     onDismiss: () -> Unit
 ) {
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("追番状态") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 BANGUMI_FOLLOW_STATUS_OPTIONS.forEach { option ->
-                    Surface(
+                    AppSurface(
                         onClick = { onSelect(option.status) },
                         shape = RoundedCornerShape(8.dp),
                         color = if (currentStatus == option.status) {
@@ -1105,12 +1114,12 @@ private fun BangumiFollowStatusDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = { onSelect(BANGUMI_FOLLOW_STATUS_UNFOLLOW) }) {
+            AppTextButton(onClick = { onSelect(BANGUMI_FOLLOW_STATUS_UNFOLLOW) }) {
                 Text("取消追番")
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            AppTextButton(onClick = onDismiss) {
                 Text("关闭")
             }
         }
@@ -1129,7 +1138,7 @@ private fun EpisodeChip(
             .clickable(onClick = onClick)
     ) {
         // 缩略图
-        Surface(
+        AppSurface(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(16f / 9f),
@@ -1147,7 +1156,7 @@ private fun EpisodeChip(
                 // 角标（如：会员）
                 if (episode.badge.isNotEmpty()) {
                     val badgeColors = resolveAdaptivePrimaryAccentColors(MaterialTheme.colorScheme)
-                    Surface(
+                    AppSurface(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(4.dp),
@@ -1235,7 +1244,7 @@ private fun EpisodeSelectionSheet(
                     fontWeight = FontWeight.Bold
                 )
                 
-                IconButton(onClick = onDismiss) {
+                AppIconButton(onClick = onDismiss) {
                     Icon(
                         CupertinoIcons.Default.Xmark,
                         contentDescription = "关闭",
@@ -1254,7 +1263,7 @@ private fun EpisodeSelectionSheet(
                     items(detail.seasons, key = { it.seasonId }) { season ->
                         val isCurrentSeason = season.seasonId == detail.seasonId
                         
-                        Surface(
+                        AppSurface(
                             onClick = {
                                 if (!isCurrentSeason) {
                                     onSeasonClick(season.seasonId)
@@ -1318,7 +1327,7 @@ private fun EpisodeSelectionSheet(
                         val end = minOf((page + 1) * episodesPerPage, episodes.size)
                         val isCurrentPage = page == selectedPage
                         
-                        Surface(
+                        AppSurface(
                             onClick = { selectedPage = page },
                             color = if (isCurrentPage) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                             shape = RoundedCornerShape(16.dp)
@@ -1397,7 +1406,7 @@ private fun EpisodeListItem(
             // VIP 角标
             if (episode.badge.isNotEmpty()) {
                 val badgeColors = resolveAdaptivePrimaryAccentColors(MaterialTheme.colorScheme)
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(2.dp),

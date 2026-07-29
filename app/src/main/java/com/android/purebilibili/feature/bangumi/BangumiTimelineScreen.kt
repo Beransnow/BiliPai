@@ -12,6 +12,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -59,7 +61,7 @@ fun BangumiTimelineContent(
                         color = MaterialTheme.colorScheme.error
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = onRetry) {
+                    AppButton(onClick = onRetry) {
                         Text("重试")
                     }
                 }
@@ -164,7 +166,7 @@ private fun DayChip(
         day.date
     }
     
-    Surface(
+    AppSurface(
         onClick = onClick,
         shape = AppShapes.container(ContainerLevel.Card),
         color = when {
@@ -209,7 +211,7 @@ private fun TimelineEpisodeCard(
     val isFollowed = episode.follow == 1
     val isDelayed = episode.delay == 1
     
-    Surface(
+    AppSurface(
         onClick = onClick,
         shape = AppShapes.container(ContainerLevel.Card),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),

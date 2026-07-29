@@ -16,6 +16,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 //  Cupertino Icons - iOS SF Symbols 风格图标
 import androidx.compose.material3.*
+import com.android.purebilibili.core.ui.components.AppDropdownMenu
+import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -229,7 +232,7 @@ fun DynamicCardV2(
                 
                 //  [修复] 更多按钮 + 下拉菜单
                 Box {
-                    IconButton(onClick = { showMoreMenu = true }) {
+                    AppIconButton(onClick = { showMoreMenu = true }) {
                         Icon(
                             rememberAppMoreIcon(),
                             contentDescription = "更多",
@@ -238,13 +241,13 @@ fun DynamicCardV2(
                     }
                     
                     // 下拉菜单 - 自适应背景
-                    DropdownMenu(
+                    AppDropdownMenu(
                         expanded = showMoreMenu,
                         onDismissRequest = { showMoreMenu = false },
                         modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer) // 使用 surfaceContainer 获得微略不同的背景
                     ) {
                         // 复制链接
-                        DropdownMenuItem(
+                        AppDropdownMenuItem(
                             text = { Text("复制链接", color = MaterialTheme.colorScheme.onSurface) },
                             leadingIcon = { 
                                 Icon(
@@ -265,7 +268,7 @@ fun DynamicCardV2(
                         )
                         
                         if (watchLaterAid != null && onWatchLaterClick != null) {
-                            DropdownMenuItem(
+                            AppDropdownMenuItem(
                                 text = { Text("稍后再看", color = MaterialTheme.colorScheme.onSurface) },
                                 leadingIcon = {
                                     Icon(
@@ -283,7 +286,7 @@ fun DynamicCardV2(
                         }
 
                         if (deleteAction != null && onDeleteClick != null) {
-                            DropdownMenuItem(
+                            AppDropdownMenuItem(
                                 text = { Text(deleteAction.label, color = MaterialTheme.colorScheme.error) },
                                 leadingIcon = {
                                     Icon(
@@ -301,7 +304,7 @@ fun DynamicCardV2(
                         }
 
                         // 不感兴趣
-                        DropdownMenuItem(
+                        AppDropdownMenuItem(
                             text = { Text("不感兴趣", color = MaterialTheme.colorScheme.onSurface) },
                             leadingIcon = { 
                                 Icon(

@@ -30,6 +30,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.core.ui.rememberAppClearIcon
 import com.android.purebilibili.core.ui.rememberAppCheckCircleIcon
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.AppModalBottomSheet
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppSwitch
 
 /**
  * 修复壁纸图片 URL (不添加缩放后缀，保持原图质量)
@@ -69,7 +75,7 @@ fun OfficialWallpaperSheet(
     }
 
     // ModalBottomSheet 容器
-    ModalBottomSheet(
+    AppModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = MaterialTheme.colorScheme.background,
@@ -91,7 +97,7 @@ fun OfficialWallpaperSheet(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    IconButton(onClick = onDismiss) {
+                    AppIconButton(onClick = onDismiss) {
                         Icon(clearIcon, contentDescription = "关闭")
                     }
                     
@@ -121,7 +127,7 @@ fun OfficialWallpaperSheet(
                     ) {
                         Text(text = error ?: "加载失败", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.height(12.dp))
-                        Button(onClick = { viewModel.loadOfficialWallpapers() }) {
+                        AppButton(onClick = { viewModel.loadOfficialWallpapers() }) {
                             Text("重试")
                         }
                     }
@@ -198,7 +204,7 @@ fun OfficialWallpaperSheet(
             }
             
             // 3. 底部保存栏
-            Surface(
+            AppSurface(
                 shadowElevation = 8.dp,
                 color = MaterialTheme.colorScheme.surface,
                 modifier = Modifier.fillMaxWidth()
@@ -225,7 +231,7 @@ fun OfficialWallpaperSheet(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface 
                         )
-                        Switch(
+                        AppSwitch(
                             checked = saveToGallery,
                             onCheckedChange = { saveToGallery = it },
                             modifier = Modifier.scale(0.8f) 
@@ -294,7 +300,7 @@ fun OfficialWallpaperSheet(
                             )
                         }
                         
-                        Button(
+                        AppButton(
                             onClick = { 
                                 showAdjustmentSheet = true
                             },
@@ -319,7 +325,7 @@ fun OfficialWallpaperSheet(
                         }
                         
                         // Set as Splash Screen
-                        Button(
+                        AppButton(
                             onClick = { 
                                 showSplashAdjustmentSheet = true
                             },
@@ -333,7 +339,7 @@ fun OfficialWallpaperSheet(
                             )
                         ) {
                             if (splashSaveState is WallpaperSaveState.Loading) {
-                                CircularProgressIndicator(
+                                AppCircularProgressIndicator(
                                     color = Color.White,
                                     modifier = Modifier.size(20.dp),
                                     strokeWidth = 2.dp

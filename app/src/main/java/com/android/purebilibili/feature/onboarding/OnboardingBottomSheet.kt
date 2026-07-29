@@ -54,6 +54,9 @@ import com.airbnb.lottie.compose.*
 import com.android.purebilibili.core.util.responsiveContentWidth
 import com.android.purebilibili.core.ui.LottieUrls
 import com.android.purebilibili.core.ui.rememberAppBottomSheetMotion
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppOutlinedButton
+import com.android.purebilibili.core.ui.components.AppSurface
 
 /**
  *  iOS 风格新手引导底部弹窗
@@ -217,7 +220,7 @@ fun OnboardingBottomSheet(
                     ) {
                         if (pagerState.currentPage < 2) {
                             // 跳过按钮
-                            OutlinedButton(
+                            AppOutlinedButton(
                                 onClick = onDismiss,
                                 modifier = Modifier.weight(1f),
                                 shape = RoundedCornerShape(16.dp),
@@ -233,7 +236,7 @@ fun OnboardingBottomSheet(
                             }
                             
                             // 下一步按钮
-                            Button(
+                            AppButton(
                                 onClick = {
                                     scope.launch {
                                         pagerState.animateScrollToPage(pagerState.currentPage + 1)
@@ -249,7 +252,7 @@ fun OnboardingBottomSheet(
                             }
                         } else {
                             // 最后一页：开始使用
-                            Button(
+                            AppButton(
                                 onClick = onDismiss,
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -405,7 +408,7 @@ private fun WelcomePage(hazeState: HazeState) {
         Spacer(modifier = Modifier.height(32.dp))
         
         // 免责声明
-        Surface(
+        AppSurface(
             color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f),
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier.graphicsLayer {
@@ -792,7 +795,7 @@ private fun FeatureListItem(
     hazeState: HazeState? = null
 ) {
     //  真正的毛玻璃卡片效果
-    Surface(
+    AppSurface(
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier

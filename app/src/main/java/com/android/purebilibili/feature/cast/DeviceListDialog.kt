@@ -19,6 +19,9 @@ import com.android.purebilibili.core.plugin.PluginManager
 import kotlinx.coroutines.flow.combine
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.AppAlertDialog
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 
 private data class PluginRouteEntry(
     val plugin: CastPluginApi,
@@ -76,14 +79,14 @@ fun DeviceListDialog(
         }
     }
 
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismissRequest,
         icon = { Icon(Icons.Rounded.Cast, null) },
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("选择投屏设备")
                 Spacer(Modifier.weight(1f))
-                IconButton(
+                AppIconButton(
                     enabled = !isDiscovering,
                     onClick = {
                         if (!isDiscovering) {
@@ -151,7 +154,7 @@ fun DeviceListDialog(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         com.android.purebilibili.core.util.LogCollector.exportAndShare(context)
                     }
@@ -159,7 +162,7 @@ fun DeviceListDialog(
                     Text("导出日志")
                 }
 
-                TextButton(onClick = onDismissRequest) {
+                AppTextButton(onClick = onDismissRequest) {
                     Text("取消")
                 }
             }

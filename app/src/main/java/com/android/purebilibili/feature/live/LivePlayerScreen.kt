@@ -32,7 +32,10 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.OpenInBrowser
 import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -104,6 +107,7 @@ import dev.chrisbanes.haze.materials.HazeMaterials
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import com.android.purebilibili.core.ui.LocalSharedTransitionScope
 import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
+import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
@@ -111,6 +115,14 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppDropdownMenu
+import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppOutlinedTextField
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppSwitch
+import com.android.purebilibili.core.ui.components.AppTextButton
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -860,7 +872,7 @@ fun LivePlayerScreen(
                             (uiState as LivePlayerState.Error).message,
                             color = roomColorTokens.inputOverlayColor
                         )
-                        Button(onClick = { viewModel.retry() }) { Text("重试") }
+                        AppButton(onClick = { viewModel.retry() }) { Text("重试") }
                     }
                 }
             }
@@ -1024,7 +1036,7 @@ fun LivePlayerScreen(
                             metrics = overlayMetrics
                         )
                     }
-                    Surface(
+                    AppSurface(
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .padding(
@@ -1359,7 +1371,7 @@ private fun LivePortraitOverlayAppBar(
             ),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(
+        AppIconButton(
             onClick = onBack,
             modifier = Modifier.size(liveVisualSpec.playerButtonTouchTargetDp.dp)
         ) {
@@ -1421,7 +1433,7 @@ private fun LivePortraitOverlayAppBar(
             )
         }
         Box {
-            IconButton(
+            AppIconButton(
                 onClick = { onExpandedChange(true) },
                 modifier = Modifier.size(liveVisualSpec.playerButtonTouchTargetDp.dp)
             ) {
@@ -1463,7 +1475,7 @@ private fun LiveRedPocketChip(
     } else {
         info.awardsText.ifBlank { info.danmu.ifBlank { "人气红包" } }
     }
-    Surface(
+    AppSurface(
         onClick = onClick,
         modifier = modifier.heightIn(min = AppSpacingTokens.TripleExtraLarge),
         shape = AppShapes.borderedContainer(ContainerLevel.Pill),
@@ -1515,39 +1527,39 @@ private fun LiveRoomOverflowMenu(
     onShareToMessage: () -> Unit,
     onOpenBrowser: () -> Unit
 ) {
-    DropdownMenu(
+    AppDropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismiss
     ) {
-        DropdownMenuItem(
+        AppDropdownMenuItem(
             text = { Text(if (isFollowing) "取消关注" else "关注主播") },
             onClick = {
                 onDismiss()
                 onFollowClick()
             }
         )
-        DropdownMenuItem(
+        AppDropdownMenuItem(
             text = { Text("画质：$currentQualityDesc") },
             onClick = {
                 onDismiss()
                 onQualityClick()
             }
         )
-        DropdownMenuItem(
+        AppDropdownMenuItem(
             text = { Text("高能榜") },
             onClick = {
                 onDismiss()
                 onOpenRank()
             }
         )
-        DropdownMenuItem(
+        AppDropdownMenuItem(
             text = { Text("发弹幕") },
             onClick = {
                 onDismiss()
                 onOpenSend()
             }
         )
-        DropdownMenuItem(
+        AppDropdownMenuItem(
             text = { Text("屏蔽弹幕") },
             leadingIcon = { Icon(Icons.Outlined.Block, contentDescription = null) },
             onClick = {
@@ -1555,7 +1567,7 @@ private fun LiveRoomOverflowMenu(
                 onOpenBlock()
             }
         )
-        DropdownMenuItem(
+        AppDropdownMenuItem(
             text = { Text("复制链接") },
             leadingIcon = { Icon(Icons.Outlined.ContentCopy, contentDescription = null) },
             onClick = {
@@ -1563,7 +1575,7 @@ private fun LiveRoomOverflowMenu(
                 onCopyLink()
             }
         )
-        DropdownMenuItem(
+        AppDropdownMenuItem(
             text = { Text("分享直播间") },
             leadingIcon = { Icon(Icons.Outlined.Share, contentDescription = null) },
             onClick = {
@@ -1571,7 +1583,7 @@ private fun LiveRoomOverflowMenu(
                 onShare()
             }
         )
-        DropdownMenuItem(
+        AppDropdownMenuItem(
             text = { Text("分享至消息") },
             leadingIcon = { Icon(Icons.AutoMirrored.Outlined.ForwardToInbox, contentDescription = null) },
             onClick = {
@@ -1579,7 +1591,7 @@ private fun LiveRoomOverflowMenu(
                 onShareToMessage()
             }
         )
-        DropdownMenuItem(
+        AppDropdownMenuItem(
             text = { Text("浏览器打开") },
             leadingIcon = { Icon(Icons.Outlined.OpenInBrowser, contentDescription = null) },
             onClick = {
@@ -1595,7 +1607,7 @@ private fun LivePortraitInfoPanel(
     anchorInfoBar: @Composable () -> Unit,
     bodyContent: @Composable () -> Unit
 ) {
-    Surface(
+    AppSurface(
         modifier = Modifier.fillMaxSize(),
         shape = AppShapes.container(ContainerLevel.Sheet),
         color = AppSurfaceTokens.surface(),
@@ -1699,7 +1711,7 @@ private fun LiveLandscapeChatPanel(
 ) {
     val palette = rememberLiveChromePalette()
     val roomColorTokens = resolveLivePiliPlusRoomColorTokens()
-    Surface(
+    AppSurface(
         modifier = modifier,
         shape = AppShapes.borderedContainer(ContainerLevel.Floating),
         color = palette.surface.copy(alpha = if (palette.isDark) 0.72f else 0.90f),
@@ -1748,7 +1760,7 @@ private fun LiveQualityMenu(
         ) { onDismiss() },
         contentAlignment = Alignment.Center
     ) {
-        Surface(
+        AppSurface(
             modifier = Modifier.width(visualSpec.playerQualityDialogWidthDp.dp),
             shape = AppShapes.borderedContainer(ContainerLevel.Dialog),
             color = palette.surfaceElevated,
@@ -1804,7 +1816,7 @@ private fun LiveVideoFitMenu(
             ) { onDismiss() },
         contentAlignment = Alignment.Center
     ) {
-        Surface(
+        AppSurface(
             modifier = Modifier.width(visualSpec.playerQualityDialogWidthDp.dp),
             shape = AppShapes.borderedContainer(ContainerLevel.Dialog),
             color = palette.surfaceElevated,
@@ -1855,7 +1867,7 @@ private fun LiveDanmakuSettingsDialog(
     onOpenBlock: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("弹幕设置") },
         text = {
@@ -1874,7 +1886,7 @@ private fun LiveDanmakuSettingsDialog(
                     currentArea = displayArea,
                     onAreaSelected = onDisplayAreaSelected
                 )
-                Surface(
+                AppSurface(
                     onClick = onOpenBlock,
                     shape = AppShapes.container(ContainerLevel.Card),
                     color = AppSurfaceTokens.surfaceContainerHigh().copy(alpha = 0.72f),
@@ -1895,7 +1907,7 @@ private fun LiveDanmakuSettingsDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text("完成") }
+            AppTextButton(onClick = onDismiss) { Text("完成") }
         }
     )
 }
@@ -1921,7 +1933,7 @@ private fun LiveDanmakuAreaSelector(
         )
     }
 
-    Surface(
+    AppSurface(
         shape = AppShapes.container(ContainerLevel.Card),
         color = AppSurfaceTokens.surfaceContainerHigh().copy(alpha = 0.72f),
         modifier = Modifier.fillMaxWidth()
@@ -1944,7 +1956,7 @@ private fun LiveDanmakuAreaSelector(
             ) {
                 options.forEach { option ->
                     val selected = kotlin.math.abs(currentArea - option.value) < 0.05f
-                    Surface(
+                    AppSurface(
                         onClick = { onAreaSelected(option.value) },
                         shape = AppShapes.borderedContainer(ContainerLevel.Card),
                         color = if (selected) {
@@ -2005,7 +2017,7 @@ private fun LiveSettingSwitchRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(title, modifier = Modifier.weight(1f))
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
+        AppSwitch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
 
@@ -2015,11 +2027,11 @@ private fun LiveDanmakuBlockDialog(
     onDismiss: () -> Unit
 ) {
     var keyword by remember { mutableStateOf("") }
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("屏蔽弹幕") },
         text = {
-            OutlinedTextField(
+            AppOutlinedTextField(
                 value = keyword,
                 onValueChange = { keyword = it },
                 singleLine = true,
@@ -2028,7 +2040,7 @@ private fun LiveDanmakuBlockDialog(
             )
         },
         confirmButton = {
-            TextButton(
+            AppTextButton(
                 enabled = keyword.isNotBlank(),
                 onClick = { onConfirm(keyword) }
             ) {
@@ -2036,7 +2048,7 @@ private fun LiveDanmakuBlockDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("取消") }
+            AppTextButton(onClick = onDismiss) { Text("取消") }
         }
     )
 }
@@ -2052,7 +2064,7 @@ private fun LivePlayerInfoDialog(
     playUrl: String,
     onDismiss: () -> Unit
 ) {
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("播放信息") },
         text = {
@@ -2067,7 +2079,7 @@ private fun LivePlayerInfoDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text("关闭") }
+            AppTextButton(onClick = onDismiss) { Text("关闭") }
         }
     )
 }
@@ -2101,7 +2113,7 @@ private fun LiveShutdownTimerDialog(
     onCancelTimer: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("定时关闭") },
         text = {
@@ -2113,7 +2125,7 @@ private fun LiveShutdownTimerDialog(
                     Text(remainingText, color = MaterialTheme.colorScheme.primary)
                 }
                 listOf(15L, 30L, 60L).forEach { minutes ->
-                    Surface(
+                    AppSurface(
                         onClick = { onSetMinutes(minutes) },
                         shape = AppShapes.container(ContainerLevel.Card),
                         color = AppSurfaceTokens.surfaceContainerHigh().copy(alpha = 0.72f),
@@ -2132,11 +2144,11 @@ private fun LiveShutdownTimerDialog(
         },
         confirmButton = {
             if (activeTargetMillis != null) {
-                TextButton(onClick = onCancelTimer) { Text("取消定时") }
+                AppTextButton(onClick = onCancelTimer) { Text("取消定时") }
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("关闭") }
+            AppTextButton(onClick = onDismiss) { Text("关闭") }
         }
     )
 }

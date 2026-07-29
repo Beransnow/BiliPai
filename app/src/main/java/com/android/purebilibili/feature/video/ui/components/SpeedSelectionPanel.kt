@@ -11,6 +11,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppSlider
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppTextButton
 //  已改用 MaterialTheme.colorScheme.primary
 
 /**
@@ -48,7 +52,7 @@ fun SpeedSelectionMenu(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
+    AppSurface(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
         color = Color.Black.copy(alpha = 0.85f),
@@ -85,7 +89,7 @@ fun SpeedSelectionMenu(
                     )
                     
                     // 滑块
-                    Slider(
+                    AppSlider(
                         value = currentSpeed,
                         onValueChange = onSpeedSelected,
                         valueRange = 0.1f..8.0f,
@@ -107,7 +111,7 @@ fun SpeedSelectionMenu(
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        Button(
+                        AppButton(
                             onClick = { 
                                 val newSpeed = (currentSpeed - 0.1f).coerceAtLeast(0.1f)
                                 onSpeedSelected((newSpeed * 10).toInt() / 10f) 
@@ -118,7 +122,7 @@ fun SpeedSelectionMenu(
                             Text("-0.1")
                         }
                         
-                        Button(
+                        AppButton(
                             onClick = { 
                                 val newSpeed = (currentSpeed + 0.1f).coerceAtMost(8.0f)
                                 onSpeedSelected((newSpeed * 10).toInt() / 10f)
@@ -133,7 +137,7 @@ fun SpeedSelectionMenu(
                     Spacer(modifier = Modifier.height(8.dp))
                     
                     // 返回预设
-                    TextButton(onClick = { isCustomMode = false }) {
+                    AppTextButton(onClick = { isCustomMode = false }) {
                         Text("返回预设选项")
                     }
                 }
@@ -147,7 +151,7 @@ fun SpeedSelectionMenu(
                 
                 PlaybackSpeed.OPTIONS.forEach { speed ->
                     val isSelected = speed == currentSpeed
-                    Surface(
+                    AppSurface(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 2.dp),
@@ -169,7 +173,7 @@ fun SpeedSelectionMenu(
                 }
                 
                 // 自定义按钮
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 6.dp), // 稍微分开一点
@@ -200,7 +204,7 @@ fun SpeedButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
+    AppSurface(
         onClick = onClick,
         modifier = modifier,
         shape = RoundedCornerShape(6.dp),

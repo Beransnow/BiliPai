@@ -11,6 +11,15 @@ import com.android.purebilibili.feature.video.danmaku.resolveDanmakuCloudSyncTog
 import com.android.purebilibili.feature.video.danmaku.mergeDanmakuBlockRuleSections
 import com.android.purebilibili.feature.video.danmaku.parseDanmakuBlockRules
 import com.android.purebilibili.feature.video.danmaku.partitionDanmakuBlockRules
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppFilterChip
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppOutlinedButton
+import com.android.purebilibili.core.ui.components.AppOutlinedTextField
+import com.android.purebilibili.core.ui.components.AppSlider
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppSwitch
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -411,7 +420,7 @@ fun DanmakuSettingsPanel(
                     }
             )
 
-            Surface(
+            AppSurface(
                 modifier = Modifier
                     .then(
                         if (
@@ -484,7 +493,7 @@ fun DanmakuSettingsPanel(
                             )
                         }
                         Spacer(modifier = Modifier.width(8.dp))
-                        IconButton(
+                        AppIconButton(
                             onClick = onDismiss,
                             modifier = Modifier
                                 .size(32.dp)
@@ -511,7 +520,7 @@ fun DanmakuSettingsPanel(
                     Spacer(modifier = Modifier.height(if (isFullscreenStyle) 14.dp else 24.dp))
 
                     if (showSyncSection) {
-                        Surface(
+                        AppSurface(
                             modifier = Modifier.fillMaxWidth(),
                             color = panelColors.itemColor,
                             shape = RoundedCornerShape(16.dp)
@@ -542,7 +551,7 @@ fun DanmakuSettingsPanel(
                                         )
                                     }
                                     Spacer(modifier = Modifier.width(12.dp))
-                                    Switch(
+                                    AppSwitch(
                                         checked = cloudSyncEnabled,
                                         onCheckedChange = onCloudSyncEnabledChange
                                     )
@@ -593,7 +602,7 @@ fun DanmakuSettingsPanel(
                                                     fontWeight = FontWeight.SemiBold
                                                 )
                                             }
-                                            OutlinedButton(
+                                            AppOutlinedButton(
                                                 onClick = onSyncNowClick,
                                                 enabled = syncUiState.status != DanmakuCloudSyncStatus.SYNCING,
                                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
@@ -619,7 +628,7 @@ fun DanmakuSettingsPanel(
                     }
 
                     // Settings Card
-                    Surface(
+                    AppSurface(
                         modifier = Modifier.fillMaxWidth(),
                         color = panelColors.itemColor,
                         shape = RoundedCornerShape(16.dp)
@@ -715,7 +724,7 @@ fun DanmakuSettingsPanel(
                     if (showAdvancedSection) {
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        Surface(
+                        AppSurface(
                             modifier = Modifier.fillMaxWidth(),
                             color = panelColors.itemColor,
                             shape = RoundedCornerShape(16.dp)
@@ -841,7 +850,7 @@ fun DanmakuSettingsPanel(
                 
                     Spacer(modifier = Modifier.height(16.dp))
                 
-                    Surface(
+                    AppSurface(
                         modifier = Modifier.fillMaxWidth(),
                         color = panelColors.itemColor,
                         shape = RoundedCornerShape(16.dp),
@@ -869,7 +878,7 @@ fun DanmakuSettingsPanel(
                                 )
                             }
                             
-                            Switch(
+                            AppSwitch(
                                 checked = mergeDuplicates,
                                 onCheckedChange = onMergeDuplicatesChange,
                                 colors = SwitchDefaults.colors(
@@ -884,7 +893,7 @@ fun DanmakuSettingsPanel(
 
                     if (mergeDuplicates) {
                         Spacer(modifier = Modifier.height(12.dp))
-                        Surface(
+                        AppSurface(
                             modifier = Modifier.fillMaxWidth(),
                             color = panelColors.itemColor,
                             shape = RoundedCornerShape(16.dp)
@@ -926,7 +935,7 @@ fun DanmakuSettingsPanel(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     if (showSmartOcclusionSection) {
-                        Surface(
+                        AppSurface(
                             modifier = Modifier.fillMaxWidth(),
                             color = panelColors.itemColor,
                             shape = RoundedCornerShape(16.dp),
@@ -954,7 +963,7 @@ fun DanmakuSettingsPanel(
                                     )
                                 }
     
-                                Switch(
+                                AppSwitch(
                                     checked = smartOcclusion,
                                     onCheckedChange = onSmartOcclusionChange,
                                     colors = SwitchDefaults.colors(
@@ -970,7 +979,7 @@ fun DanmakuSettingsPanel(
                         Spacer(modifier = Modifier.height(16.dp))
                     }
     
-                    Surface(
+                    AppSurface(
                         modifier = Modifier.fillMaxWidth(),
                         color = panelColors.itemColor,
                         shape = RoundedCornerShape(16.dp)
@@ -1039,7 +1048,7 @@ fun DanmakuSettingsPanel(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     if (showBlockRuleEditor) {
-                        Surface(
+                        AppSurface(
                             modifier = Modifier.fillMaxWidth(),
                             color = panelColors.itemColor,
                             shape = RoundedCornerShape(16.dp)
@@ -1052,7 +1061,7 @@ fun DanmakuSettingsPanel(
                                     fontWeight = FontWeight.Medium
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
-                                OutlinedButton(
+                                AppOutlinedButton(
                                     onClick = { showBlockManager = true },
                                     shape = RoundedCornerShape(10.dp),
                                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
@@ -1094,7 +1103,7 @@ fun DanmakuSettingsPanel(
                                     fontSize = 11.sp
                                 )
                                 Spacer(modifier = Modifier.height(10.dp))
-                                OutlinedTextField(
+                                AppOutlinedTextField(
                                     value = blockRulesRaw,
                                     onValueChange = onBlockRulesRawChange,
                                     placeholder = {
@@ -1179,7 +1188,7 @@ private fun DanmakuBlockManagerDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
-        Surface(
+        AppSurface(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp),
@@ -1213,7 +1222,7 @@ private fun DanmakuBlockManagerDialog(
                             fontSize = 11.sp
                         )
                     }
-                    IconButton(
+                    AppIconButton(
                         onClick = onDismiss,
                         modifier = Modifier
                             .size(32.dp)
@@ -1230,7 +1239,7 @@ private fun DanmakuBlockManagerDialog(
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     listOf("关键词", "正则", "UID(hash)").forEachIndexed { index, label ->
-                        FilterChip(
+                        AppFilterChip(
                             selected = selectedTabIndex == index,
                             onClick = { selectedTabIndex = index },
                             label = {
@@ -1243,7 +1252,7 @@ private fun DanmakuBlockManagerDialog(
                     }
                 }
 
-                OutlinedTextField(
+                AppOutlinedTextField(
                     value = inputValue,
                     onValueChange = { inputValue = it },
                     placeholder = {
@@ -1270,10 +1279,10 @@ private fun DanmakuBlockManagerDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
-                    Button(
+                    AppButton(
                         onClick = {
                             val candidate = inputValue.trim()
-                            if (candidate.isEmpty()) return@Button
+                            if (candidate.isEmpty()) return@AppButton
                             updateCurrentRules { (it + candidate).distinct() }
                             inputValue = ""
                         },
@@ -1283,7 +1292,7 @@ private fun DanmakuBlockManagerDialog(
                     }
                 }
 
-                Surface(
+                AppSurface(
                     modifier = Modifier.fillMaxWidth(),
                     color = panelColors.itemColor,
                     shape = RoundedCornerShape(16.dp)
@@ -1308,7 +1317,7 @@ private fun DanmakuBlockManagerDialog(
                                         fontSize = 13.sp,
                                         modifier = Modifier.weight(1f)
                                     )
-                                    TextButton(
+                                    AppTextButton(
                                         onClick = {
                                             updateCurrentRules { rules ->
                                                 rules.filterIndexed { currentIndex, _ ->
@@ -1332,11 +1341,11 @@ private fun DanmakuBlockManagerDialog(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
-                    TextButton(onClick = onDismiss) {
+                    AppTextButton(onClick = onDismiss) {
                         Text("取消")
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Button(
+                    AppButton(
                         onClick = {
                             onRulesSave(
                                 persistDanmakuBlockManagerSections(
@@ -1381,7 +1390,7 @@ private fun DanmakuFilterSwitchRow(
                 color = colors.titleColor,
                 fontSize = if (fullscreenStyle) 15.sp else 14.sp
             )
-            Switch(
+            AppSwitch(
                 checked = checked,
                 onCheckedChange = onCheckedChange,
                 colors = SwitchDefaults.colors(
@@ -1407,7 +1416,7 @@ private fun PortraitDanmakuDisplayAreaModeSelector(
     onModeChange: (PortraitDanmakuDisplayAreaMode) -> Unit,
     colors: DanmakuSettingsPanelSurfaceColors
 ) {
-    Surface(
+    AppSurface(
         modifier = Modifier.fillMaxWidth(),
         color = colors.itemColor,
         shape = RoundedCornerShape(16.dp)
@@ -1487,7 +1496,7 @@ private fun DanmakuAreaSelector(
         AreaOption(1.0f, "全屏", "铺满")
     )
     
-    Surface(
+    AppSurface(
         modifier = Modifier.fillMaxWidth(),
         color = colors.itemColor,
         shape = RoundedCornerShape(16.dp)
@@ -1611,7 +1620,7 @@ private fun DanmakuSliderItem(
                     modifier = Modifier.weight(1f)
                 )
                 if (resetValue != null) {
-                    IconButton(
+                    AppIconButton(
                         onClick = {
                             localValue = resetValue
                             onValueChange(resetValue)
@@ -1635,7 +1644,7 @@ private fun DanmakuSliderItem(
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Medium
                 )
-                Surface(
+                AppSurface(
                     color = MaterialTheme.colorScheme.primary.copy(0.15f),
                     shape = RoundedCornerShape(6.dp)
                 ) {
@@ -1669,7 +1678,7 @@ private fun DanmakuSliderItem(
                 )
             }
 
-            Slider(
+            AppSlider(
                 value = localValue,
                 onValueChange = { newValue ->
                     localValue = newValue

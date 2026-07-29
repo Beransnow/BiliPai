@@ -60,6 +60,9 @@ import io.github.alexzhirkevich.cupertino.icons.filled.*
 import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import com.android.purebilibili.core.ui.common.copyOnLongPress
 import com.android.purebilibili.core.ui.components.AppAdaptiveSwitch
+import com.android.purebilibili.core.ui.components.AppCard
+import com.android.purebilibili.core.ui.components.AppOutlinedButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.components.rememberAdaptiveSemanticIconTint
 import com.android.purebilibili.core.ui.components.rememberAdaptiveListVisualCapabilities
 import androidx.compose.ui.res.stringResource
@@ -883,7 +886,7 @@ fun ReleaseChannelPinnedCard(
 ) {
     val disclaimerTint = rememberAdaptiveSemanticIconTint(iOSBlue)
     val releaseChannelIcon = rememberAppShareIcon()
-    Card(
+    AppCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
@@ -919,7 +922,7 @@ fun ReleaseChannelPinnedCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                OutlinedButton(
+                AppOutlinedButton(
                     onClick = onGithubClick,
                     modifier = Modifier.weight(1f),
                     contentPadding = PaddingValues(horizontal = 10.dp)
@@ -931,7 +934,7 @@ fun ReleaseChannelPinnedCard(
                         overflow = TextOverflow.Clip
                     )
                 }
-                OutlinedButton(
+                AppOutlinedButton(
                     onClick = onTelegramClick,
                     modifier = Modifier.weight(1f),
                     contentPadding = PaddingValues(horizontal = 10.dp)
@@ -943,7 +946,7 @@ fun ReleaseChannelPinnedCard(
                         overflow = TextOverflow.Clip
                     )
                 }
-                TextButton(
+                AppTextButton(
                     onClick = onDisclaimerClick,
                     modifier = Modifier.weight(1f),
                     contentPadding = PaddingValues(horizontal = 10.dp)
@@ -1701,7 +1704,7 @@ private fun AboutProjectOverviewCard(
     contributors: List<AboutContributor> = AboutContributors
 ) {
     val slogan = remember { AboutSlogans.random() }
-    Card(
+    AppCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),

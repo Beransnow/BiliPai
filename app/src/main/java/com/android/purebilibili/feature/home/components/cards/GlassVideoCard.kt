@@ -2,6 +2,9 @@
 package com.android.purebilibili.feature.home.components.cards
 
 import com.android.purebilibili.core.ui.AppSpacingTokens
+import com.android.purebilibili.core.ui.components.AppDropdownMenu
+import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
+import com.android.purebilibili.core.ui.components.AppSurface
 
 import com.android.purebilibili.core.ui.MediaContrastPalette
 
@@ -366,7 +369,7 @@ fun GlassVideoCard(
                         //  已删除悬浮播放按钮
                         //  时长标签 - 玻璃胶囊
                         if (badgeStylePolicy.coverStyle == HomeVideoBadgeStyle.GLASS) {
-                            Surface(
+                            AppSurface(
                                 modifier = Modifier
                                     .align(Alignment.BottomEnd)
                                     .padding(AppSpacingTokens.Small + AppSpacingTokens.Micro),
@@ -387,7 +390,7 @@ fun GlassVideoCard(
                                 )
                             }
                         } else {
-                            Surface(
+                            AppSurface(
                                 modifier = Modifier
                                     .align(Alignment.BottomEnd)
                                     .padding(AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall, AppSpacingTokens.None, AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall, AppSpacingTokens.Large),
@@ -410,7 +413,7 @@ fun GlassVideoCard(
                         
                         //  [新增] 竖屏标签 - 左上角显示
                         if (video.isVertical && badgeStylePolicy.coverStyle == HomeVideoBadgeStyle.GLASS) {
-                            Surface(
+                            AppSurface(
                                 modifier = Modifier
                                     .align(Alignment.TopStart)
                                     .padding(AppSpacingTokens.Small + AppSpacingTokens.Micro),
@@ -426,7 +429,7 @@ fun GlassVideoCard(
                                 )
                             }
                         } else if (video.isVertical) {
-                            Surface(
+                            AppSurface(
                                 modifier = Modifier
                                     .align(Alignment.TopStart)
                                     .padding(AppSpacingTokens.Small + AppSpacingTokens.Micro),
@@ -502,7 +505,7 @@ fun GlassVideoCard(
                         // 播放量 -  [修复] 只在有播放量时显示
                         if (video.stat.view > 0) {
                             if (badgeStylePolicy.infoStyle == HomeVideoBadgeStyle.GLASS) {
-                                Surface(
+                                AppSurface(
                                     shape = AppShapes.container(ContainerLevel.Pill),
                                     color = inlinePillColors.containerColor,
                                     border = BorderStroke(AppSpacingTokens.Micro * 0.4f, inlinePillColors.borderColor)
@@ -547,11 +550,11 @@ fun GlassVideoCard(
     }
     
     //  [新增] 长按删除菜单
-    DropdownMenu(
+    AppDropdownMenu(
         expanded = showDismissMenu,
         onDismissRequest = { showDismissMenu = false }
     ) {
-        DropdownMenuItem(
+        AppDropdownMenuItem(
             text = { 
                 Text(
                     "🚫 不感兴趣",

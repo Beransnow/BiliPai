@@ -38,6 +38,7 @@ import com.android.purebilibili.core.util.Logger
 import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.data.repository.SearchRepository
 import com.android.purebilibili.core.ui.components.*
+import com.android.purebilibili.core.ui.AppAlertDialog
 import io.github.alexzhirkevich.cupertino.CupertinoSwitch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -576,11 +577,11 @@ class AdFilterPlugin : FeedPlugin {
         
         // 添加UP主对话框
         if (showAddUpDialog) {
-            AlertDialog(
+            AppAlertDialog(
                 onDismissRequest = { showAddUpDialog = false; inputText = "" },
                 title = { Text("添加UP主拉黑") },
                 text = {
-                    OutlinedTextField(
+                    AppOutlinedTextField(
                         value = inputText,
                         onValueChange = { inputText = it },
                         label = { Text("UP主名称") },
@@ -590,7 +591,7 @@ class AdFilterPlugin : FeedPlugin {
                     )
                 },
                 confirmButton = {
-                    TextButton(
+                    AppTextButton(
                         onClick = {
                             if (inputText.isNotBlank()) {
                                 blockedUpNames = blockedUpNames + inputText.trim()
@@ -610,18 +611,18 @@ class AdFilterPlugin : FeedPlugin {
                     ) { Text("添加") }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showAddUpDialog = false; inputText = "" }) { Text("取消") }
+                    AppTextButton(onClick = { showAddUpDialog = false; inputText = "" }) { Text("取消") }
                 }
             )
         }
         
         // 添加关键词对话框
         if (showAddKeywordDialog) {
-            AlertDialog(
+            AppAlertDialog(
                 onDismissRequest = { showAddKeywordDialog = false; inputText = "" },
                 title = { Text("添加屏蔽关键词") },
                 text = {
-                    OutlinedTextField(
+                    AppOutlinedTextField(
                         value = inputText,
                         onValueChange = { inputText = it },
                         label = { Text("关键词") },
@@ -631,7 +632,7 @@ class AdFilterPlugin : FeedPlugin {
                     )
                 },
                 confirmButton = {
-                    TextButton(
+                    AppTextButton(
                         onClick = {
                             if (inputText.isNotBlank()) {
                                 blockedKeywords = blockedKeywords + inputText.trim()
@@ -643,7 +644,7 @@ class AdFilterPlugin : FeedPlugin {
                     ) { Text("添加") }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showAddKeywordDialog = false; inputText = "" }) { Text("取消") }
+                    AppTextButton(onClick = { showAddKeywordDialog = false; inputText = "" }) { Text("取消") }
                 }
             )
         }
@@ -774,7 +775,7 @@ private fun AdFilterInsightPanel(summary: AdFilterInsightSummary) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Surface(
+            AppSurface(
                 shape = RoundedCornerShape(999.dp),
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
             ) {
@@ -1010,7 +1011,7 @@ private fun AdFilterRecordDetailDialog(
     record: AdFilterRecord,
     onDismiss: () -> Unit
 ) {
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("过滤详情") },
         text = {
@@ -1029,7 +1030,7 @@ private fun AdFilterRecordDetailDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
+            AppTextButton(onClick = onDismiss) {
                 Text("知道了")
             }
         }
@@ -1057,7 +1058,7 @@ private fun AdFilterDetailLine(
 
 @Composable
 private fun AdFilterChip(text: String) {
-    Surface(
+    AppSurface(
         shape = RoundedCornerShape(999.dp),
         color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
     ) {
@@ -1142,7 +1143,7 @@ private fun AdFilterCustomListSection(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.weight(1f)
             )
-            Surface(
+            AppSurface(
                 shape = RoundedCornerShape(999.dp),
                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.68f)
             ) {
@@ -1216,7 +1217,7 @@ private fun AdFilterCustomListSection(
                                 )
                             }
                         }
-                        IconButton(
+                        AppIconButton(
                             onClick = { onRemove(item) },
                             modifier = Modifier.size(32.dp)
                         ) {
@@ -1232,7 +1233,7 @@ private fun AdFilterCustomListSection(
             }
         }
 
-        OutlinedButton(
+        AppOutlinedButton(
             onClick = onAddClick,
             modifier = Modifier.fillMaxWidth()
         ) {

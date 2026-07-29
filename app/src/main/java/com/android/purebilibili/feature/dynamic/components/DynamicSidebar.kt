@@ -21,7 +21,11 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 //  Cupertino Icons - iOS SF Symbols 风格图标
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import com.android.purebilibili.core.ui.components.AppDropdownMenu
+import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -436,19 +440,19 @@ fun SidebarUserItem(
             }
         }
 
-        DropdownMenu(
+        AppDropdownMenu(
             expanded = showMenu,
             onDismissRequest = { showMenu = false },
             modifier = Modifier.background(MaterialTheme.colorScheme.surfaceContainer) // 自适应菜单背景
         ) {
-            DropdownMenuItem(
+            AppDropdownMenuItem(
                 text = { Text(if (user.isPinned) "取消置顶" else "置顶", color = MaterialTheme.colorScheme.onSurface) },
                 onClick = {
                     showMenu = false
                     onTogglePin()
                 }
             )
-            DropdownMenuItem(
+            AppDropdownMenuItem(
                 text = { Text(if (user.isHidden) "取消隐藏" else "隐藏", color = MaterialTheme.colorScheme.onSurface) },
                 onClick = {
                     showMenu = false

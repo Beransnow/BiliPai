@@ -44,6 +44,9 @@ import com.android.purebilibili.feature.video.ui.gesture.resolveTwoFingerGesture
 import com.android.purebilibili.feature.video.ui.gesture.resolveTwoFingerSpeedGestureMode
 import com.android.purebilibili.feature.video.playback.policy.resolveDisplayedQualityId
 import com.android.purebilibili.core.ui.motion.AppMotionEasing
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.data.model.response.ViewPoint
 import com.android.purebilibili.feature.video.progress.PbpProgressData
 import com.android.purebilibili.feature.video.progress.buildPbpRidgeSamples
@@ -3962,7 +3965,7 @@ fun VideoPlayerSection(
             enter = fadeIn() + scaleIn(),
             exit = fadeOut() + scaleOut()
         ) {
-            Button(
+            AppButton(
                 onClick = {
                     scale = 1f
                     panX = 0f
@@ -4070,7 +4073,7 @@ fun VideoPlayerSection(
             exit = fadeOut(animationSpec = tween(gestureMotionSpec.longPressHintDurationMillis)) +
                 slideOutVertically(targetOffsetY = { -it })
         ) {
-            Surface(
+            AppSurface(
                 shape = RoundedCornerShape(18.dp),
                 color = Color.Black.copy(alpha = 0.56f),
                 contentColor = Color.White,
@@ -4103,7 +4106,7 @@ fun VideoPlayerSection(
                 slideInVertically(initialOffsetY = { -it / 2 }),
             exit = fadeOut(animationSpec = tween(gestureMotionSpec.longPressHintDurationMillis))
         ) {
-            Surface(
+            AppSurface(
                 shape = RoundedCornerShape(20.dp),
                 color = Color.Black.copy(alpha = 0.62f),
                 contentColor = Color.White,
@@ -4118,7 +4121,7 @@ fun VideoPlayerSection(
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TextButton(
+                        AppTextButton(
                             onClick = {
                                 showLongPressSpeedLockHint = false
                                 hasShownLongPressSpeedLockHintLocally = true
@@ -4133,7 +4136,7 @@ fun VideoPlayerSection(
                         ) {
                             Text("开启锁定")
                         }
-                        TextButton(
+                        AppTextButton(
                             onClick = {
                                 showLongPressSpeedLockHint = false
                                 hasShownLongPressSpeedLockHintLocally = true

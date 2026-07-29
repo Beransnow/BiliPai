@@ -8,6 +8,9 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppOutlinedButton
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -180,7 +183,7 @@ fun FollowButton(
     filled: Boolean = true
 ) {
     if (isFollowing) {
-        OutlinedButton(
+        AppOutlinedButton(
             onClick = onToggle,
             colors = ButtonDefaults.outlinedButtonColors(
                 contentColor = MaterialTheme.colorScheme.primary
@@ -200,7 +203,7 @@ fun FollowButton(
             Text("已追番")
         }
     } else {
-        Button(
+        AppButton(
             onClick = onToggle,
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary
@@ -244,7 +247,7 @@ fun SeasonSelector(
         ) {
             items(seasons, key = { it.seasonId }) { season ->
                 val isCurrentSeason = season.seasonId == currentSeasonId
-                Surface(
+                AppSurface(
                     modifier = Modifier.clickable {
                         if (!isCurrentSeason) {
                             onSeasonClick(season.seasonId)
@@ -283,7 +286,7 @@ fun EpisodeChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
+    AppSurface(
         onClick = onClick,
         modifier = modifier
             .width(140.dp)
@@ -319,7 +322,7 @@ fun EpisodeChip(
                 } else {
                     resolveAdaptiveTertiaryAccentColors(MaterialTheme.colorScheme)
                 }
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(4.dp),
@@ -391,7 +394,7 @@ fun EpisodePreviewRow(
         // 更多按钮
         if (episodes.size > maxPreviewCount) {
             item {
-                Surface(
+                AppSurface(
                     onClick = onShowAll,
                     modifier = Modifier
                         .width(80.dp)

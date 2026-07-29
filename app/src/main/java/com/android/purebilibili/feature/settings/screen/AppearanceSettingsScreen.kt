@@ -21,6 +21,7 @@ import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.animation.*
 import com.android.purebilibili.core.ui.AdaptivePlainTooltipBox
+import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.AppThemeSelection
@@ -163,12 +164,12 @@ fun AppearanceSettingsScreen(
     }
 
     pendingLanguageRestart?.let { pendingLanguage ->
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { pendingLanguageRestart = null },
             title = { Text(restartDialogTitle) },
             text = { Text(restartDialogMessage) },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         pendingLanguageRestart = null
                         coroutineScope.launch {
@@ -184,7 +185,7 @@ fun AppearanceSettingsScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { pendingLanguageRestart = null }) {
+                AppTextButton(onClick = { pendingLanguageRestart = null }) {
                     Text(stringResource(R.string.common_cancel))
                 }
             }
@@ -1973,10 +1974,10 @@ private fun Md3CustomColorPickerDialog(
         }
     }
 
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(
+            AppTextButton(
                 onClick = {
                     haptic(HapticType.LIGHT)
                     onConfirm(normalizeMd3CustomColorHex(pendingHex))
@@ -1986,7 +1987,7 @@ private fun Md3CustomColorPickerDialog(
             }
         },
         dismissButton = {
-            TextButton(
+            AppTextButton(
                 onClick = {
                     haptic(HapticType.LIGHT)
                     onDismiss()
@@ -2201,7 +2202,7 @@ private fun AppearanceUiPresetDescriptionCard(
     val borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)
 
     AdaptivePlainTooltipBox(text = summary) {
-        Surface(
+        AppSurface(
             shape = AppShapes.borderedContainer(ContainerLevel.Dialog),
             color = containerColor,
             contentColor = contentColor,
@@ -2215,7 +2216,7 @@ private fun AppearanceUiPresetDescriptionCard(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.Top
             ) {
-                Surface(
+                AppSurface(
                     modifier = Modifier.size(34.dp),
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.14f),
@@ -2387,12 +2388,12 @@ private fun <T> ThemePresetDropdownSetting(
             )
         }
 
-        DropdownMenu(
+        AppDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
             options.forEach { option ->
-                DropdownMenuItem(
+                AppDropdownMenuItem(
                     text = { Text(option.label) },
                     onClick = {
                         expanded = false

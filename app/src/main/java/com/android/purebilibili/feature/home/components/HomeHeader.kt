@@ -525,9 +525,7 @@ internal fun resolveHomeTopEdgeButtonShape(
 ): Shape {
     return when (chromePolicy.tabPresentation) {
         AppTopTabPresentation.MOVING_CAPSULE -> CircleShape
-        // Preserve the former semantic Dialog radii: 14dp scaled by each native profile.
-        AppTopTabPresentation.MATERIAL_UNDERLINE -> RoundedCornerShape(12.6.dp)
-        AppTopTabPresentation.TONAL_CAPSULE -> RoundedCornerShape(16.1.dp)
+        else -> RoundedCornerShape(resolveHomeTopEdgeButtonCornerRadius(chromePolicy))
     }
 }
 

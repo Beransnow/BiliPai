@@ -30,6 +30,10 @@ import coil.request.ImageRequest
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.TabletAndroid
 import androidx.compose.material.icons.outlined.PhoneAndroid
+import com.android.purebilibili.core.ui.AppModalBottomSheet
+import com.android.purebilibili.core.ui.components.AppCard
+import com.android.purebilibili.core.ui.components.AppSlider
+import com.android.purebilibili.core.ui.components.AppTextButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,7 +51,7 @@ fun WallpaperAdjustmentSheet(
     val currentBias = if (selectedTab == 0) mobileBias else tabletBias
     
     // Bottom Sheet
-    ModalBottomSheet(
+    AppModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = MaterialTheme.colorScheme.surface,
@@ -132,7 +136,7 @@ fun WallpaperAdjustmentSheet(
                 val height = width / aspectRatio
                 
                 // Card simulating the device screen
-                Card(
+                AppCard(
                     shape = RoundedCornerShape(if (selectedTab == 0) 16.dp else 12.dp),
                     elevation = CardDefaults.cardElevation(8.dp),
                     modifier = Modifier.size(width = width, height = height)
@@ -191,7 +195,7 @@ fun WallpaperAdjustmentSheet(
                     Text("底部对齐", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.secondary)
                 }
                 
-                Slider(
+                AppSlider(
                     value = currentBias,
                     onValueChange = { newValue ->
                         if (selectedTab == 0) mobileBias = newValue else tabletBias = newValue
@@ -239,7 +243,7 @@ fun ProfileWallpaperAdjustmentSheet(
         }
     }
 
-    ModalBottomSheet(
+    AppModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = MaterialTheme.colorScheme.surface,
@@ -319,7 +323,7 @@ fun ProfileWallpaperAdjustmentSheet(
                 val width = if (selectedTab == 0) 150.dp else 292.dp
                 val height = width / aspectRatio
 
-                Card(
+                AppCard(
                     shape = RoundedCornerShape(if (selectedTab == 0) 16.dp else 12.dp),
                     elevation = CardDefaults.cardElevation(8.dp),
                     modifier = Modifier.size(width = width, height = height)
@@ -428,7 +432,7 @@ fun ProfileWallpaperAdjustmentSheet(
                     )
                 }
 
-                TextButton(
+                AppTextButton(
                     onClick = { updateCurrentTransform(ProfileWallpaperTransform()) }
                 ) {
                     Text("重置位置")

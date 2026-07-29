@@ -19,6 +19,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,7 +32,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.android.purebilibili.data.model.response.DynamicItem
@@ -199,7 +201,7 @@ fun DynamicCommentSheet(
                     }
                 )
                 Spacer(modifier = Modifier.width(AppSpacingTokens.Small))
-                IconButton(onClick = onDismiss) {
+                AppIconButton(onClick = onDismiss) {
                     Icon(
                         rememberAppClearIcon(),
                         contentDescription = "关闭",
@@ -297,7 +299,7 @@ fun DynamicCommentSheet(
                 
                 Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
                 
-                Button(
+                AppButton(
                     onClick = {
                         if (commentText.isNotBlank()) {
                             onPostComment(commentText)
@@ -328,8 +330,8 @@ private fun DynamicCommentSortControl(
     val safeSelectedIndex = selectedIndex.coerceIn(items.indices)
     Row(
         modifier = Modifier
-            .width(66.dp * items.size)
-            .height(40.dp)
+            .width((AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Large + AppSpacingTokens.Micro) * items.size)
+            .height(AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Small)
             .clip(RoundedCornerShape(policy.pillCornerRadius))
             .background(AppSurfaceTokens.surfaceContainer())
             .padding(AppSpacingTokens.Micro),
@@ -468,7 +470,7 @@ fun DynamicInlineCommentComposer(
             singleLine = true,
         )
         Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
-        Button(
+        AppButton(
             onClick = {
                 onPostComment(commentText)
                 commentText = ""
@@ -662,7 +664,7 @@ private fun CommentItem(
                 }
 
                 Spacer(modifier = Modifier.height(AppSpacingTokens.Small))
-                TextButton(
+                AppTextButton(
                     onClick = { onViewReplies(reply) },
                     contentPadding = PaddingValues(horizontal = AppSpacingTokens.None, vertical = AppSpacingTokens.None)
                 ) {

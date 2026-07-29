@@ -17,6 +17,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.components.AppOutlinedButton
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.data.model.response.AiSummaryData
 import com.android.purebilibili.feature.video.viewmodel.AiSummaryPromptState
 import com.android.purebilibili.feature.video.viewmodel.AiSummaryPromptTone
@@ -42,7 +45,7 @@ fun AiSummaryCard(
     }
     var expanded by remember { mutableStateOf(false) }
 
-    Surface(
+    AppSurface(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 6.dp)
@@ -136,7 +139,7 @@ fun AiSummaryCard(
 
                     if (onCreateNoteDraftClick != null) {
                         Spacer(modifier = Modifier.height(10.dp))
-                        OutlinedButton(
+                        AppOutlinedButton(
                             onClick = onCreateNoteDraftClick,
                             modifier = Modifier.align(Alignment.End)
                         ) {
@@ -172,7 +175,7 @@ fun AiSummaryPromptCard(
         AiSummaryPromptTone.WARNING -> MaterialTheme.colorScheme.error
     }
 
-    Surface(
+    AppSurface(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 6.dp),
@@ -229,7 +232,7 @@ fun AiSummaryPromptCard(
 
             if (!promptState.actionLabel.isNullOrBlank() && onActionClick != null) {
                 Spacer(modifier = Modifier.height(10.dp))
-                TextButton(
+                AppTextButton(
                     onClick = onActionClick,
                     modifier = Modifier.align(Alignment.End)
                 ) {
@@ -283,7 +286,7 @@ private fun OutlineItemRow(
             modifier = Modifier.widthIn(min = 72.dp),
             contentAlignment = Alignment.CenterEnd
         ) {
-            Surface(
+            AppSurface(
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                 shape = RoundedCornerShape(4.dp),
                 modifier = Modifier.clickable(onClick = onClick)

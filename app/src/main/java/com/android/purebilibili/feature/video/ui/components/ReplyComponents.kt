@@ -73,9 +73,12 @@ import com.android.purebilibili.core.ui.common.rememberClipboardCopyHandler
 import com.android.purebilibili.core.ui.OfficialVerifyBadge
 import com.android.purebilibili.core.ui.OfficialVerifyBadgeSpec
 import com.android.purebilibili.core.ui.OfficialVerifyBadgeTone
+import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.core.ui.rememberAppLikeFilledIcon
 import com.android.purebilibili.core.ui.rememberAppLikeIcon
 import com.android.purebilibili.core.ui.resolveOfficialVerifyBadge
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.foundation.text.selection.SelectionContainer
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -1655,7 +1658,7 @@ fun ReplyItemView(
             )
         }
 
-        IconButton(
+        AppIconButton(
             onClick = { showActionSheet = true },
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -2297,7 +2300,7 @@ internal fun FanGroupDecorationBadge(
                     .clip(RoundedCornerShape(2.dp))
             )
         }
-        Surface(
+        AppSurface(
             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
             shape = RoundedCornerShape(5.dp),
             tonalElevation = 0.dp,
@@ -2448,7 +2451,7 @@ internal fun ReplyActionSheet(
             canCopyUsername = canCopyUsername,
         )
     }
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    AppModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()

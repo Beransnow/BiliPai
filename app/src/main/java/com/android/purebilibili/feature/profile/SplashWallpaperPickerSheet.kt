@@ -36,6 +36,13 @@ import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.rememberAppClearIcon
 import com.android.purebilibili.core.ui.rememberAppPhotoIcon
 import com.android.purebilibili.core.ui.rememberAppCheckCircleIcon
+import com.android.purebilibili.core.ui.AppModalBottomSheet
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppOutlinedButton
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppSwitch
 
 /**
  * 🖼️ 开屏壁纸选择器 (用于设置页)
@@ -101,7 +108,7 @@ fun SplashWallpaperPickerSheet(
         SettingsManager.setSplashRandomPoolUris(context, randomPool)
     }
 
-    ModalBottomSheet(
+    AppModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = MaterialTheme.colorScheme.background,
@@ -123,7 +130,7 @@ fun SplashWallpaperPickerSheet(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    IconButton(onClick = onDismiss) {
+                    AppIconButton(onClick = onDismiss) {
                         Icon(clearIcon, contentDescription = "关闭")
                     }
 
@@ -145,7 +152,7 @@ fun SplashWallpaperPickerSheet(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        OutlinedButton(onClick = openCustomWallpaperPicker) {
+                        AppOutlinedButton(onClick = openCustomWallpaperPicker) {
                             Icon(photoIcon, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("从相册选择")
@@ -162,13 +169,13 @@ fun SplashWallpaperPickerSheet(
                     ) {
                         Text(text = error ?: "加载失败", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.height(12.dp))
-                        OutlinedButton(onClick = openCustomWallpaperPicker) {
+                        AppOutlinedButton(onClick = openCustomWallpaperPicker) {
                             Icon(photoIcon, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("从相册选择")
                         }
                         Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = { viewModel.loadOfficialWallpapers() }) {
+                        AppButton(onClick = { viewModel.loadOfficialWallpapers() }) {
                             Text("重试")
                         }
                     }
@@ -181,7 +188,7 @@ fun SplashWallpaperPickerSheet(
                     ) {
                         Text(text = "暂无官方壁纸", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.height(12.dp))
-                        OutlinedButton(onClick = openCustomWallpaperPicker) {
+                        AppOutlinedButton(onClick = openCustomWallpaperPicker) {
                             Icon(photoIcon, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("从相册选择")
@@ -261,7 +268,7 @@ fun SplashWallpaperPickerSheet(
             }
 
             // 3. 底部操作栏
-            Surface(
+            AppSurface(
                 shadowElevation = 8.dp,
                 color = MaterialTheme.colorScheme.surface,
                 modifier = Modifier.fillMaxWidth()
@@ -346,7 +353,7 @@ fun SplashWallpaperPickerSheet(
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
-                            Switch(
+                            AppSwitch(
                                 checked = saveToGallery,
                                 onCheckedChange = { saveToGallery = it },
                                 modifier = Modifier.scale(0.8f)
@@ -355,7 +362,7 @@ fun SplashWallpaperPickerSheet(
                     }
 
                     // 确认按钮
-                    Button(
+                    AppButton(
                         onClick = {
                             saveSelectedWallpaper()
                         },
@@ -366,7 +373,7 @@ fun SplashWallpaperPickerSheet(
                         shape = RoundedCornerShape(25.dp)
                     ) {
                         if (isSaving) {
-                            CircularProgressIndicator(
+                            AppCircularProgressIndicator(
                                 color = Color.White,
                                 modifier = Modifier.size(20.dp),
                                 strokeWidth = 2.dp

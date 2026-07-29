@@ -20,7 +20,14 @@ import com.android.purebilibili.core.plugin.json.JsonRulePlugin
 import com.android.purebilibili.core.plugin.json.Rule
 import com.android.purebilibili.core.theme.iOSBlue
 import com.android.purebilibili.feature.settings.ui.SettingsPageScaffold
+import com.android.purebilibili.core.ui.components.AppCard
+import com.android.purebilibili.core.ui.components.AppDropdownMenu
+import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppOutlinedButton
+import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTextField
+import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
@@ -49,7 +56,7 @@ fun JsonPluginEditorScreen(
         bottomContentPadding = bottomContentPadding,
         scrollHost = SettingsPageScrollHost.External,
         actions = {
-            IconButton(onClick = {
+            AppIconButton(onClick = {
                 val updated = plugin.copy(
                     name = name,
                     description = description,
@@ -99,7 +106,7 @@ fun JsonPluginEditorContent(
     ) {
         // 基本信息
         item {
-            Card(
+            AppCard(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -134,7 +141,7 @@ fun JsonPluginEditorContent(
             ) {
                 Text("过滤规则", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 
-                TextButton(onClick = {
+                AppTextButton(onClick = {
                     onRulesChange(rules + Rule(field = "title", op = "contains", value = JsonPrimitive(""), action = "hide"))
                 }) {
                     Icon(CupertinoIcons.Default.Plus, null, modifier = Modifier.size(16.dp))
@@ -209,7 +216,7 @@ private fun RuleEditor(
     ) }
     var action by remember { mutableStateOf(rule.action) }
     
-    Surface(
+    AppSurface(
         modifier = Modifier
             .fillMaxWidth()
             .clip(AppShapes.container(ContainerLevel.Card)),
@@ -230,7 +237,7 @@ private fun RuleEditor(
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
-                IconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
+                AppIconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
                     Icon(
                         CupertinoIcons.Default.Trash,
                         contentDescription = "删除",
@@ -303,18 +310,18 @@ private fun DropdownSelector(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Box {
-            OutlinedButton(
+            AppOutlinedButton(
                 onClick = { expanded = true },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(value.ifEmpty { "选择..." })
             }
-            DropdownMenu(
+            AppDropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
                 options.forEach { option ->
-                    DropdownMenuItem(
+                    AppDropdownMenuItem(
                         text = { Text(option) },
                         onClick = {
                             onSelect(option)

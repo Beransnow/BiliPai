@@ -63,6 +63,9 @@ import com.android.purebilibili.core.store.DanmakuSettings
 import com.android.purebilibili.core.store.FullscreenAspectRatio
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppSlider
+import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.blur.BlurSurfaceType
 import com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState
 import com.android.purebilibili.core.ui.blur.unifiedBlur
@@ -936,7 +939,7 @@ fun FullscreenPlayerOverlay(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(16.dp)
                     ) {
-                        IconButton(onClick = onNavigateToDetail) {
+                        AppIconButton(onClick = onNavigateToDetail) {
                             Icon(CupertinoIcons.Default.ChevronBackward, "返回详情页", tint = Color.White)
                         }
                         Spacer(Modifier.width(8.dp))
@@ -1003,7 +1006,7 @@ fun FullscreenPlayerOverlay(
                         }
                         
                         //  [新增] 弹幕设置按钮
-                        IconButton(onClick = { showDanmakuSettings = true }) {
+                        AppIconButton(onClick = { showDanmakuSettings = true }) {
                             Icon(CupertinoIcons.Default.Gear, "弹幕设置", tint = Color.White)
                         }
                     }
@@ -1027,7 +1030,7 @@ fun FullscreenPlayerOverlay(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            IconButton(
+                            AppIconButton(
                                 onClick = {
                                     lastInteractionTime = System.currentTimeMillis()
                                     player?.let {
@@ -1057,7 +1060,7 @@ fun FullscreenPlayerOverlay(
                             var isDragging by remember { mutableStateOf(false) }
                             var dragProgress by remember { mutableFloatStateOf(0f) }
                             
-                            Slider(
+                            AppSlider(
                                 value = if (isDragging) {
                                     dragProgress
                                 } else if (displayedProgressState.duration > 0L) {
@@ -1323,7 +1326,7 @@ private fun GestureIndicator(
     }
     val overlayShape = RoundedCornerShape(18.dp)
     if (mode == FullscreenGestureMode.Seek) {
-        Surface(
+        AppSurface(
             modifier = modifier.then(
                 if (hazeState != null) {
                     Modifier.unifiedBlur(
@@ -1396,7 +1399,7 @@ private fun FullscreenControlButton(
     isHighlighted: Boolean = false,
     onClick: () -> Unit
 ) {
-    Surface(
+    AppSurface(
         onClick = onClick,
         shape = RoundedCornerShape(6.dp),
         color = Color.Black.copy(alpha = 0.5f)

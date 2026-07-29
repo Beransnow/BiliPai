@@ -42,6 +42,9 @@ import androidx.compose.material.icons.rounded.MoreVert
 import com.android.purebilibili.feature.video.ui.components.PlaybackSpeed
 import com.android.purebilibili.feature.video.ui.components.VideoAspectRatio
 import com.android.purebilibili.core.theme.BiliPink
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.VideoshotData
 
@@ -330,7 +333,7 @@ fun PortraitFullscreenOverlay(
                     exit = fadeOut(),
                     modifier = Modifier.align(Alignment.Center)
                 ) {
-                    Surface(
+                    AppSurface(
                         color = Color.Black.copy(alpha = 0.72f),
                         shape = RoundedCornerShape(18.dp)
                     ) {
@@ -338,7 +341,7 @@ fun PortraitFullscreenOverlay(
                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            CircularProgressIndicator(
+                            AppCircularProgressIndicator(
                                 modifier = Modifier.size(16.dp),
                                 color = Color.White,
                                 strokeWidth = 2.dp
@@ -465,7 +468,7 @@ private fun PortraitChromeChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
+    AppSurface(
         onClick = onClick,
         modifier = modifier,
         shape = RoundedCornerShape(999.dp),
@@ -518,7 +521,7 @@ private fun PortraitTopControlBar(
             modifier = Modifier.align(Alignment.CenterStart),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(
+            AppIconButton(
                 onClick = onBack,
                 colors = IconButtonDefaults.iconButtonColors(containerColor = Color.Transparent),
                 modifier = Modifier.size(layoutPolicy.topBackButtonSizeDp.dp)
@@ -530,7 +533,7 @@ private fun PortraitTopControlBar(
                     modifier = Modifier.size(layoutPolicy.topBackIconSizeDp.dp)
                 )
             }
-            IconButton(
+            AppIconButton(
                 onClick = onHomeClick,
                 colors = IconButtonDefaults.iconButtonColors(containerColor = Color.Transparent),
                 modifier = Modifier.size(layoutPolicy.topBackButtonSizeDp.dp)
@@ -586,7 +589,7 @@ private fun PortraitTopControlBar(
                     modifier = Modifier.size(layoutPolicy.topActionIconSizeDp.dp)
                 )
             }
-            IconButton(onClick = onSearchClick) {
+            AppIconButton(onClick = onSearchClick) {
                 Icon(
                     imageVector = Icons.Rounded.Search,
                     contentDescription = "搜索",
@@ -595,7 +598,7 @@ private fun PortraitTopControlBar(
                 )
             }
             if (shouldShowPortraitTopMoreAction()) {
-                IconButton(onClick = onMoreClick) {
+                AppIconButton(onClick = onMoreClick) {
                     Icon(
                         imageVector = Icons.Rounded.MoreVert,
                         contentDescription = "菜单",
@@ -666,7 +669,7 @@ private fun PortraitVideoInfo(
             val buttonText = if (isFollowed) "已关注" else "关注"
             val iconVisible = !isFollowed
 
-            Surface(
+            AppSurface(
                 shape = RoundedCornerShape(layoutPolicy.followButtonCornerRadiusDp.dp),
                 color = buttonColor,
                 modifier = Modifier

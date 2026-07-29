@@ -4,6 +4,13 @@ package com.android.purebilibili.feature.home.components
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppBottomNavigationHost
 import com.android.purebilibili.core.ui.AppSpacingTokens
+import com.android.purebilibili.core.ui.components.AppNavigationBar
+import com.android.purebilibili.core.ui.components.AppNavigationBarItem
+import com.android.purebilibili.core.ui.components.AppPlatformNavigationBadge
+import com.android.purebilibili.core.ui.components.AppPlatformNavigationBar
+import com.android.purebilibili.core.ui.components.AppPlatformNavigationBarDisplayMode
+import com.android.purebilibili.core.ui.components.AppPlatformNavigationBarItem
+import com.android.purebilibili.core.ui.components.AppSurface
 
 import com.android.purebilibili.core.ui.OpticalContrastPalette
 
@@ -52,7 +59,11 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PlayCircleOutline
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.WatchLater
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -172,10 +183,6 @@ import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.FastOutSlowInEasing
 import kotlin.math.sign
 import kotlin.math.sqrt
-import top.yukonga.miuix.kmp.basic.Badge as MiuixBadge
-import top.yukonga.miuix.kmp.basic.NavigationBar as MiuixNavigationBar
-import top.yukonga.miuix.kmp.basic.NavigationBarDisplayMode as MiuixNavigationBarDisplayMode
-import top.yukonga.miuix.kmp.basic.NavigationBarItem as MiuixNavigationBarItem
 import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
 import top.yukonga.miuix.kmp.blur.LayerBackdrop as MiuixLayerBackdrop
 import top.yukonga.miuix.kmp.blur.blur as miuixBlur
@@ -1378,15 +1385,11 @@ internal fun resolveAndroidNativePanelOffsetFraction(
     return (velocity / 2200f).coerceIn(-0.18f, 0.18f)
 }
 
-/**
- * Miuix 0.9.3 removed [MiuixNavigationBarDisplayMode.TextOnly] (badges anchor to icons).
- * Keep the MD3-side TextOnly setting, but map it onto the closest upstream mode.
- */
-internal fun Md3BottomBarDisplayMode.toMiuixNavigationDisplayMode(): MiuixNavigationBarDisplayMode {
+internal fun Md3BottomBarDisplayMode.toAppPlatformNavigationDisplayMode(): AppPlatformNavigationBarDisplayMode {
     return when (this) {
-        Md3BottomBarDisplayMode.IconAndText -> MiuixNavigationBarDisplayMode.IconAndText
-        Md3BottomBarDisplayMode.IconOnly -> MiuixNavigationBarDisplayMode.IconOnly
-        Md3BottomBarDisplayMode.TextOnly -> MiuixNavigationBarDisplayMode.IconWithSelectedLabel
+        Md3BottomBarDisplayMode.IconAndText -> AppPlatformNavigationBarDisplayMode.ICON_AND_TEXT
+        Md3BottomBarDisplayMode.IconOnly -> AppPlatformNavigationBarDisplayMode.ICON_ONLY
+        Md3BottomBarDisplayMode.TextOnly -> AppPlatformNavigationBarDisplayMode.ICON_WITH_SELECTED_LABEL
     }
 }
 
@@ -2568,7 +2571,7 @@ private fun MaterialBottomBar(
         return
     }
 
-    Surface(
+    AppSurface(
         modifier = modifier
             .fillMaxWidth()
             .then(
@@ -2592,7 +2595,7 @@ private fun MaterialBottomBar(
         DockedBottomBarSkinContainer(
             decoration = uiSkinDecoration
         ) {
-            NavigationBar(
+            AppNavigationBar(
                 containerColor = Color.Transparent,
                 tonalElevation = AppSpacingTokens.None,
                 modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)
@@ -2601,7 +2604,7 @@ private fun MaterialBottomBar(
                     val itemLabel = resolveBottomNavItemLabel(item)
                     val itemContentDescription = resolveBottomNavItemContentDescription(item)
                     val skinIconPath = uiSkinDecoration?.iconPathFor(item, selected = currentItem == item)
-                    NavigationBarItem(
+                    AppNavigationBarItem(
                         selected = currentItem == item,
                         onClick = {
                             performMaterialBottomBarTap(
@@ -2657,7 +2660,7 @@ private fun MaterialBottomBar(
 
                 if (isTablet && onToggleSidebar != null) {
                     val sidebarLabel = stringResource(R.string.sidebar_toggle)
-                    NavigationBarItem(
+                    AppNavigationBarItem(
                         selected = false,
                         onClick = {
                             performMaterialBottomBarTap(
@@ -2744,7 +2747,7 @@ private fun MiuixBottomBar(
             searchLayoutMode = homeSettings.bottomBarSearchLayoutMode
         )
     }
-    val displayMode = resolveMd3BottomBarDisplayMode(labelMode).toMiuixNavigationDisplayMode()
+    val displayMode = resolveMd3BottomBarDisplayMode(labelMode).toAppPlatformNavigationDisplayMode()
     val glassEnabled = resolveAndroidNativeBottomBarGlassEnabled(
         liquidGlassEnabled = sharedLiquidGlassEnabled,
         blurEnabled = blurEnabled
@@ -2835,7 +2838,7 @@ private fun MiuixBottomBar(
         decoration = uiSkinDecoration,
         modifier = barModifier.background(containerColor)
     ) {
-        MiuixNavigationBar(
+        AppPlatformNavigationBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .then(
@@ -2880,14 +2883,14 @@ private fun MiuixBottomBar(
                         labelScrimAlpha = skinItemColors.labelScrimAlpha
                     )
                 ) {
-                    MiuixNavigationBarItem(
+                    AppPlatformNavigationBarItem(
                         selected = currentItem == item,
                         onClick = onItemTap,
                         icon = resolveMaterialBottomBarIcon(item, currentItem == item),
                         label = itemLabel,
                         badge = reminderBadgeText?.let { badgeText ->
                             {
-                                MiuixBadge {
+                                AppPlatformNavigationBadge {
                                     Text(text = badgeText)
                                 }
                             }

@@ -10,8 +10,13 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.rememberAppCheckCircleIcon
 import com.android.purebilibili.core.ui.rememberAppProfileAddIcon
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppOutlinedTextField
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -133,7 +138,7 @@ fun BangumiPlayerContent(
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Button(
+                AppButton(
                     onClick = {
                         if (isFollowing) {
                             showFollowStatusDialog = true
@@ -185,7 +190,7 @@ fun BangumiPlayerContent(
                     if (detail.episodes.size > 50) {
                         var showJumpDialog by remember { mutableStateOf(false) }
                         
-                        Surface(
+                        AppSurface(
                             onClick = { showJumpDialog = true },
                             color = MaterialTheme.colorScheme.surfaceVariant,
                             shape = AppShapes.container(ContainerLevel.Sheet)
@@ -242,7 +247,7 @@ fun BangumiPlayerContent(
                             val end = minOf((page + 1) * episodesPerPage, detail.episodes.size)
                             val isCurrentPage = page == selectedPage
                             
-                            Surface(
+                            AppSurface(
                                 onClick = { selectedPage = page },
                                 color = if (isCurrentPage) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                                 shape = AppShapes.container(ContainerLevel.Dialog)
@@ -345,13 +350,13 @@ fun BangumiPlayerContent(
     }
 
     if (showFollowStatusDialog) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showFollowStatusDialog = false },
             title = { Text("追番状态") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     BANGUMI_FOLLOW_STATUS_OPTIONS.forEach { option ->
-                        Surface(
+                        AppSurface(
                             onClick = {
                                 showFollowStatusDialog = false
                                 onFollowStatusSelect(option.status)
@@ -375,7 +380,7 @@ fun BangumiPlayerContent(
                 }
             },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         showFollowStatusDialog = false
                         onFollowStatusSelect(BANGUMI_FOLLOW_STATUS_UNFOLLOW)
@@ -385,7 +390,7 @@ fun BangumiPlayerContent(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showFollowStatusDialog = false }) {
+                AppTextButton(onClick = { showFollowStatusDialog = false }) {
                     Text("关闭")
                 }
             }
@@ -417,7 +422,7 @@ fun EpisodeChipSelectable(
 ) {
     val selectedColors = resolveAdaptivePrimaryAccentColors(MaterialTheme.colorScheme)
 
-    Surface(
+    AppSurface(
         modifier = Modifier.clickable(onClick = onClick),
         shape = AppShapes.container(ContainerLevel.Chip),
         color = if (isSelected) selectedColors.backgroundColor else MaterialTheme.colorScheme.surfaceVariant
@@ -444,12 +449,12 @@ fun EpisodeJumpDialog(
     var inputText by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("跳转到第几集") },
         text = {
             Column {
-                OutlinedTextField(
+                AppOutlinedTextField(
                     value = inputText,
                     onValueChange = { 
                         inputText = it.filter { char -> char.isDigit() }
@@ -471,7 +476,7 @@ fun EpisodeJumpDialog(
             }
         },
         confirmButton = {
-            TextButton(
+            AppTextButton(
                 onClick = {
                     val epNumber = inputText.toIntOrNull()
                     if (epNumber == null || epNumber < 1 || epNumber > totalEpisodes) {
@@ -485,7 +490,7 @@ fun EpisodeJumpDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            AppTextButton(onClick = onDismiss) {
                 Text("取消")
             }
         }
@@ -539,7 +544,7 @@ fun BangumiErrorContent(
             // 登录按钮
             if (isLoginRequired) {
                 Spacer(modifier = Modifier.height(24.dp))
-                Button(
+                AppButton(
                     onClick = onLogin,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.primary
@@ -551,9 +556,9 @@ fun BangumiErrorContent(
             if (canRetry) {
                 Spacer(modifier = Modifier.height(if (isLoginRequired) 12.dp else 24.dp))
                 if (isLoginRequired) {
-                    TextButton(onClick = onRetry) { Text("重试") }
+                    AppTextButton(onClick = onRetry) { Text("重试") }
                 } else {
-                    Button(onClick = onRetry) { Text("重试") }
+                    AppButton(onClick = onRetry) { Text("重试") }
                 }
             }
         }

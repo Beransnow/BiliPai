@@ -46,6 +46,9 @@ import androidx.media3.ui.PlayerView
 import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.rememberAppClearIcon
+import com.android.purebilibili.core.ui.components.AppCard
+import com.android.purebilibili.core.ui.components.AppLinearProgressIndicator
+import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.feature.video.usecase.seekPlayerFromUserAction
 import kotlinx.coroutines.delay
 import kotlin.math.abs
@@ -397,7 +400,7 @@ fun MiniPlayerOverlay(
             )
         } else {
             // 正常播放器视图
-            Card(
+            AppCard(
                 modifier = Modifier
                     .offset { IntOffset(animatedOffsetX.roundToInt(), animatedOffsetY.roundToInt()) }
                     .width(miniPlayerWidth)
@@ -596,7 +599,7 @@ fun MiniPlayerOverlay(
                             horizontalArrangement = Arrangement.spacedBy(layoutPolicy.headerButtonSpacingDp.dp)
                         ) {
                             // [新增] 贴边隐藏按钮
-                            Surface(
+                            AppSurface(
                                 onClick = {
                                     // 计算最近的边
                                     val centerX = offsetX + miniPlayerWidthPx / 2
@@ -624,7 +627,7 @@ fun MiniPlayerOverlay(
 
                             // 展开按钮
                             if (onPictureInPictureClick != null) {
-                                Surface(
+                                AppSurface(
                                     onClick = onPictureInPictureClick,
                                     modifier = Modifier.size(layoutPolicy.headerButtonSizeDp.dp),
                                     shape = CircleShape,
@@ -642,7 +645,7 @@ fun MiniPlayerOverlay(
                             }
 
                             // 展开按钮
-                            Surface(
+                            AppSurface(
                                 onClick = { onExpandClick() },
                                 modifier = Modifier.size(layoutPolicy.headerButtonSizeDp.dp),
                                 shape = CircleShape,
@@ -659,7 +662,7 @@ fun MiniPlayerOverlay(
                             }
 
                             // 关闭按钮
-                            Surface(
+                            AppSurface(
                                 onClick = { miniPlayerManager.dismiss() },
                                 modifier = Modifier.size(layoutPolicy.headerButtonSizeDp.dp),
                                 shape = CircleShape,
@@ -694,7 +697,7 @@ fun MiniPlayerOverlay(
                     )
 
                     // 播放/暂停按钮
-                    Surface(
+                    AppSurface(
                         onClick = { 
                             lastInteractionTime = System.currentTimeMillis()
                             player?.let { if (it.isPlaying) it.pause() else it.play() }
@@ -715,7 +718,7 @@ fun MiniPlayerOverlay(
                     
                     // 底部提示
                     if (chrome.showSeekHint) {
-                        Surface(
+                        AppSurface(
                             modifier = Modifier
                                 .align(Alignment.BottomCenter)
                                 .padding(bottom = layoutPolicy.seekHintBottomPaddingDp.dp),
@@ -776,7 +779,7 @@ fun MiniPlayerOverlay(
 
                 // 进度条 - 仅视频模式显示（直播没有进度）
                 if (!miniPlayerManager.isLiveMode && chrome.showProgressBar) {
-                LinearProgressIndicator(
+                AppLinearProgressIndicator(
                     progress = { currentProgress },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -795,7 +798,7 @@ fun MiniPlayerOverlay(
                 }
 
                 if (chrome.showResizeHandle) {
-                    Surface(
+                    AppSurface(
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .size(48.dp)
@@ -880,7 +883,7 @@ private fun StashedMiniPlayerView(
         )
     }
 
-    Surface(
+    AppSurface(
         modifier = modifier
             .width(layoutPolicy.stashedWidthDp.dp)
             .height(layoutPolicy.stashedHeightDp.dp)

@@ -32,7 +32,12 @@ import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridS
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -53,6 +58,9 @@ import coil.compose.AsyncImage
 import coil.imageLoader
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.components.AppPrimaryButton
+import com.android.purebilibili.core.ui.components.AppDropdownMenu
+import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
+import com.android.purebilibili.core.ui.components.AppSmallFloatingActionButton
 import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
 import com.android.purebilibili.core.ui.EmptyState
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
@@ -882,7 +890,7 @@ fun DynamicScreen(
                 enter = fadeIn(animationSpec = AppMotionTokens.standardSpec()) + scaleIn(initialScale = 0.92f),
                 exit = fadeOut(animationSpec = AppMotionTokens.standardSpec()) + scaleOut(targetScale = 0.92f)
             ) {
-                SmallFloatingActionButton(
+                AppSmallFloatingActionButton(
                     onClick = {
                         scope.launch {
                             scrollDynamicFeedToTop(refreshWhenAlreadyAtTop = false)
@@ -1225,18 +1233,18 @@ private fun HorizontalUserList(
                         )
                     }
 
-                    DropdownMenu(
+                    AppDropdownMenu(
                         expanded = showMenu,
                         onDismissRequest = { showMenu = false }
                     ) {
-                        DropdownMenuItem(
+                        AppDropdownMenuItem(
                             text = { Text(if (user.isPinned) "取消置顶" else "置顶") },
                             onClick = {
                                 showMenu = false
                                 onTogglePin(user.uid)
                             }
                         )
-                        DropdownMenuItem(
+                        AppDropdownMenuItem(
                             text = { Text(if (user.isHidden) "取消隐藏" else "隐藏") },
                             onClick = {
                                 showMenu = false

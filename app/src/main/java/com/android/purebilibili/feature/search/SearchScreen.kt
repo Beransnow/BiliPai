@@ -2,6 +2,16 @@
 package com.android.purebilibili.feature.search
 
 import com.android.purebilibili.core.ui.components.AppTab
+import com.android.purebilibili.core.ui.components.AppAssistChip
+import com.android.purebilibili.core.ui.components.AppCheckbox
+import com.android.purebilibili.core.ui.components.AppDropdownMenu
+import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
+import com.android.purebilibili.core.ui.components.AppFilterChip
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppInputChip
+import com.android.purebilibili.core.ui.components.AppSmallFloatingActionButton
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppTextButton
 
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -44,11 +54,17 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 //  Cupertino Icons - iOS SF Symbols 风格图标
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -837,7 +853,7 @@ fun SearchScreen(
                             //  搜索彩蛋消息横幅
                             val easterEggMsg = state.easterEggMessage
                             if (easterEggMsg != null) {
-                                Surface(
+                                AppSurface(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(horizontal = 12.dp, vertical = 6.dp),
@@ -1624,7 +1640,7 @@ fun SearchScreen(
                 enter = fadeIn(animationSpec = tween(180)) + scaleIn(initialScale = 0.92f),
                 exit = fadeOut(animationSpec = tween(140)) + scaleOut(targetScale = 0.92f)
             ) {
-                SmallFloatingActionButton(
+                AppSmallFloatingActionButton(
                     onClick = {
                         scope.launch {
                             if (state.searchType == SearchType.VIDEO) {
@@ -1748,7 +1764,7 @@ fun SearchTopBar(
         Modifier
     }
 
-    Surface(
+    AppSurface(
         modifier = modifier
             .fillMaxWidth()
             .then(entryMotionModifier),
@@ -1766,7 +1782,7 @@ fun SearchTopBar(
                     .padding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal).asPaddingValues()),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = onBack) {
+                AppIconButton(onClick = onBack) {
                     Icon(
                         backIcon,
                         contentDescription = backLabel,
@@ -1799,7 +1815,7 @@ fun SearchTopBar(
 
                 Spacer(modifier = Modifier.width(chromeSpec.horizontalGapDp.dp))
 
-                IconButton(
+                AppIconButton(
                     onClick = onClearQuery,
                     enabled = query.isNotEmpty(),
                     modifier = Modifier.size(chromeSpec.clearActionSizeDp.dp)
@@ -1816,7 +1832,7 @@ fun SearchTopBar(
                     )
                 }
 
-                IconButton(
+                AppIconButton(
                     onClick = { onSearch(resolvedSubmitKeyword) },
                     enabled = canSubmit,
                     modifier = Modifier
@@ -1856,7 +1872,7 @@ fun HistoryChip(
     val historyIcon = rememberAppHistoryIcon()
     val clearIcon = rememberAppClearIcon()
     val deleteLabel = stringResource(R.string.common_delete)
-    androidx.compose.material3.InputChip(
+    AppInputChip(
         selected = false,
         onClick = onClick,
         label = {
@@ -1877,7 +1893,7 @@ fun HistoryChip(
             )
         },
         trailingIcon = {
-            IconButton(
+            AppIconButton(
                 onClick = onDelete,
                 modifier = Modifier.size(24.dp)
             ) {
@@ -1912,7 +1928,7 @@ fun HistoryItem(
         Icon(historyIcon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f), modifier = Modifier.size(20.dp))
         Spacer(modifier = Modifier.width(12.dp))
         Text(text = history.keyword, color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp, modifier = Modifier.weight(1f))
-        IconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
+        AppIconButton(onClick = onDelete, modifier = Modifier.size(24.dp)) {
             Icon(clearIcon, contentDescription = deleteLabel, tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f), modifier = Modifier.size(16.dp))
         }
     }
@@ -1997,7 +2013,7 @@ fun SearchDiscoverySection(
             modifier = Modifier.fillMaxWidth()
         ) {
             list.forEach { keyword -> //  使用动态列表
-                Surface(
+                AppSurface(
                     color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                     shape = RoundedCornerShape(6.dp),
                     modifier = Modifier.clickable { onItemClick(keyword) }
@@ -2050,7 +2066,7 @@ fun SearchHotSection(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
-                Surface(
+                AppSurface(
                     onClick = onToggleHotSearch,
                     shape = RoundedCornerShape(16.dp),
                     color = if (hotSearchEnabled) {
@@ -2155,7 +2171,7 @@ fun SearchHistorySection(
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                TextButton(onClick = onClear) {
+                AppTextButton(onClick = onClear) {
                     Text(clearLabel, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                 }
             }
@@ -2324,12 +2340,12 @@ fun SearchFilterBar(
                         highlighted = currentOrder != SearchOrder.TOTALRANK,
                         onClick = { showOrderMenu = true }
                     )
-                    DropdownMenu(
+                    AppDropdownMenu(
                         expanded = showOrderMenu,
                         onDismissRequest = { showOrderMenu = false }
                     ) {
                         SearchOrder.entries.forEach { order ->
-                            DropdownMenuItem(
+                            AppDropdownMenuItem(
                                 text = { Text(order.displayName) },
                                 onClick = {
                                     onOrderChange(order)
@@ -2348,7 +2364,7 @@ fun SearchFilterBar(
                         highlighted = currentDurations.isNotEmpty(),
                         onClick = { showDurationMenu = true }
                     )
-                    DropdownMenu(
+                    AppDropdownMenu(
                         expanded = showDurationMenu,
                         onDismissRequest = { showDurationMenu = false }
                     ) {
@@ -2358,10 +2374,10 @@ fun SearchFilterBar(
                             } else {
                                 duration in currentDurations
                             }
-                            DropdownMenuItem(
+                            AppDropdownMenuItem(
                                 text = { Text(duration.displayName) },
                                 leadingIcon = {
-                                    Checkbox(
+                                    AppCheckbox(
                                         checked = selected,
                                         onCheckedChange = null
                                     )
@@ -2382,12 +2398,12 @@ fun SearchFilterBar(
                         highlighted = currentVideoTid != 0,
                         onClick = { showVideoTidMenu = true }
                     )
-                    DropdownMenu(
+                    AppDropdownMenu(
                         expanded = showVideoTidMenu,
                         onDismissRequest = { showVideoTidMenu = false }
                     ) {
                         videoTidOptions.forEach { (tid, name) ->
-                            DropdownMenuItem(
+                            AppDropdownMenuItem(
                                 text = { Text(name) },
                                 onClick = {
                                     onVideoTidChange(tid)
@@ -2406,12 +2422,12 @@ fun SearchFilterBar(
                         highlighted = currentUpOrder != SearchUpOrder.DEFAULT,
                         onClick = { showUpOrderMenu = true }
                     )
-                    DropdownMenu(
+                    AppDropdownMenu(
                         expanded = showUpOrderMenu,
                         onDismissRequest = { showUpOrderMenu = false }
                     ) {
                         SearchUpOrder.entries.forEach { order ->
-                            DropdownMenuItem(
+                            AppDropdownMenuItem(
                                 text = { Text(order.displayName) },
                                 onClick = {
                                     onUpOrderChange(order)
@@ -2430,12 +2446,12 @@ fun SearchFilterBar(
                             highlighted = true,
                             onClick = { showUpOrderSortMenu = true }
                         )
-                        DropdownMenu(
+                        AppDropdownMenu(
                             expanded = showUpOrderSortMenu,
                             onDismissRequest = { showUpOrderSortMenu = false }
                         ) {
                             SearchOrderSort.entries.forEach { sort ->
-                                DropdownMenuItem(
+                                AppDropdownMenuItem(
                                     text = { Text(sort.displayName) },
                                     onClick = {
                                         onUpOrderSortChange(sort)
@@ -2454,12 +2470,12 @@ fun SearchFilterBar(
                         highlighted = currentUpUserType != SearchUserType.ALL,
                         onClick = { showUpUserTypeMenu = true }
                     )
-                    DropdownMenu(
+                    AppDropdownMenu(
                         expanded = showUpUserTypeMenu,
                         onDismissRequest = { showUpUserTypeMenu = false }
                     ) {
                         SearchUserType.entries.forEach { userType ->
-                            DropdownMenuItem(
+                            AppDropdownMenuItem(
                                 text = { Text(userType.displayName) },
                                 onClick = {
                                     onUpUserTypeChange(userType)
@@ -2478,12 +2494,12 @@ fun SearchFilterBar(
                             highlighted = currentLiveOrder != SearchLiveOrder.ONLINE,
                             onClick = { showLiveOrderMenu = true }
                         )
-                        DropdownMenu(
+                        AppDropdownMenu(
                             expanded = showLiveOrderMenu,
                             onDismissRequest = { showLiveOrderMenu = false }
                         ) {
                             SearchLiveOrder.entries.forEach { order ->
-                                DropdownMenuItem(
+                                AppDropdownMenuItem(
                                     text = { Text(order.displayName) },
                                     onClick = {
                                         onLiveOrderChange(order)
@@ -2505,7 +2521,7 @@ private fun FilterMenuChip(
     onClick: () -> Unit
 ) {
     val chevronIcon = rememberAppChevronDownIcon()
-    androidx.compose.material3.FilterChip(
+    AppFilterChip(
         selected = highlighted,
         onClick = onClick,
         label = {
@@ -2556,7 +2572,7 @@ private fun SearchResultCardSurface(
         else -> null
     }
     if (onClick != null) {
-        Surface(
+        AppSurface(
             modifier = modifier.fillMaxWidth(),
             onClick = onClick,
             color = color,
@@ -2576,7 +2592,7 @@ private fun SearchResultCardSurface(
             content()
         }
     } else {
-        Surface(
+        AppSurface(
             modifier = modifier.fillMaxWidth(),
             color = color,
             shape = shape,
@@ -2653,7 +2669,7 @@ fun SearchResultCard(
             )
             
             // 时长标签
-            Surface(
+            AppSurface(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(8.dp),
@@ -2903,7 +2919,7 @@ internal fun BangumiSearchResultCard(
             // 番剧信息
             Column(modifier = Modifier.weight(1f)) {
                 if (!categoryLabel.isNullOrBlank()) {
-                    androidx.compose.material3.AssistChip(
+                    AppAssistChip(
                         onClick = {},
                         enabled = false,
                         label = {
@@ -3024,7 +3040,7 @@ internal fun LiveSearchResultCard(
                 
                 // 直播状态标签
                 if (item.live_status == 1) {
-                    Surface(
+                    AppSurface(
                         modifier = Modifier
                             .align(Alignment.TopStart)
                             .padding(4.dp),
@@ -3042,7 +3058,7 @@ internal fun LiveSearchResultCard(
                 
                 // 在线人数
                 if (item.online > 0) {
-                    Surface(
+                    AppSurface(
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .padding(4.dp),
@@ -3158,7 +3174,7 @@ internal fun LiveUserSearchResultCard(
                     )
                     if (cleaned.isLive || cleaned.liveStatus == 1) {
                         Spacer(modifier = Modifier.width(8.dp))
-                        Surface(
+                        AppSurface(
                             color = Color(0xFFFF4081),
                             shape = RoundedCornerShape(4.dp)
                         ) {

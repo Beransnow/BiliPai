@@ -24,11 +24,20 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.rememberAppSemanticVisualPolicy
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppDropdownMenu
+import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
+import com.android.purebilibili.core.ui.components.AppFilterChip
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppOutlinedButton
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.data.model.response.SessionItem
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -65,7 +74,7 @@ fun InboxScreen(
                     totalPrivateUnreadCount(unread).takeIf { it > 0 }?.let { "私信 $it 条未读" }
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    AppIconButton(onClick = onBack) {
                         Icon(rememberAppBackIcon(), contentDescription = "返回")
                     }
                 }
@@ -90,7 +99,7 @@ fun InboxScreen(
                     ) {
                         Text(uiState.error ?: "加载失败")
                         Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = { viewModel.loadSessions() }) {
+                        AppButton(onClick = { viewModel.loadSessions() }) {
                             Text("重试")
                         }
                     }
@@ -189,7 +198,7 @@ fun InboxScreen(
                                                 size = 24.dp
                                             )
                                         } else {
-                                            TextButton(onClick = { viewModel.loadMoreSessions() }) {
+                                            AppTextButton(onClick = { viewModel.loadMoreSessions() }) {
                                                 Text("加载更多")
                                             }
                                         }
@@ -207,7 +216,7 @@ fun InboxScreen(
                         .align(Alignment.BottomCenter)
                         .padding(16.dp),
                     action = {
-                        TextButton(onClick = { viewModel.clearOperationError() }) {
+                        AppTextButton(onClick = { viewModel.clearOperationError() }) {
                             Text("知道了")
                         }
                     }
@@ -219,12 +228,12 @@ fun InboxScreen(
     }
 
     pendingRemoveSession?.let { session ->
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { pendingRemoveSession = null },
             title = { Text("删除会话") },
             text = { Text("会话会从列表中移除，但不会删除聊天记录。") },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         viewModel.removeSession(session)
                         pendingRemoveSession = null
@@ -234,7 +243,7 @@ fun InboxScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { pendingRemoveSession = null }) {
+                AppTextButton(onClick = { pendingRemoveSession = null }) {
                     Text("取消")
                 }
             }
@@ -242,12 +251,12 @@ fun InboxScreen(
     }
 
     pendingInterceptSession?.let { session ->
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { pendingInterceptSession = null },
             title = { Text("移入拦截") },
             text = { Text("后续这类会话会进入拦截分类，仍可在拦截列表中查看和恢复。") },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         viewModel.toggleIntercept(session)
                         pendingInterceptSession = null
@@ -257,7 +266,7 @@ fun InboxScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { pendingInterceptSession = null }) {
+                AppTextButton(onClick = { pendingInterceptSession = null }) {
                     Text("取消")
                 }
             }
@@ -265,12 +274,12 @@ fun InboxScreen(
     }
 
     if (showClearDustbinConfirm) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showClearDustbinConfirm = false },
             title = { Text("清空拦截会话") },
             text = { Text("所有拦截会话会从列表中移除，聊天记录仍由服务端保留。") },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         viewModel.clearDustbinSessions()
                         showClearDustbinConfirm = false
@@ -280,7 +289,7 @@ fun InboxScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showClearDustbinConfirm = false }) {
+                AppTextButton(onClick = { showClearDustbinConfirm = false }) {
                     Text("取消")
                 }
             }
@@ -341,7 +350,7 @@ private fun MessageCenterShortcutCard(
     onClick: () -> Unit
 ) {
     val useGroupedListCards = rememberAppSemanticVisualPolicy().prefersGroupedListCards
-    Surface(
+    AppSurface(
         modifier = modifier
             .height(if (useGroupedListCards) 88.dp else 96.dp)
             .clickable(onClick = onClick),
@@ -430,7 +439,7 @@ private fun MessageSessionCategoryRow(
             contentPadding = PaddingValues(end = 16.dp)
         ) {
             items(items, key = { it.category.name }) { item ->
-                FilterChip(
+                AppFilterChip(
                     selected = item.category == selectedCategory,
                     onClick = { onCategoryClick(item.category) },
                     label = {
@@ -461,7 +470,7 @@ private fun DustbinActionRow(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        OutlinedButton(
+        AppOutlinedButton(
             onClick = onMarkRead,
             enabled = !isOperating,
             modifier = Modifier.weight(1f)
@@ -469,7 +478,7 @@ private fun DustbinActionRow(
             Text("全部已读")
         }
 
-        OutlinedButton(
+        AppOutlinedButton(
             onClick = onClear,
             enabled = !isOperating,
             modifier = Modifier.weight(1f)
@@ -526,7 +535,7 @@ fun SessionListItem(
         session = session
     )
 
-    Surface(
+    AppSurface(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
@@ -633,7 +642,7 @@ fun SessionListItem(
             )
 
             Box {
-                IconButton(
+                AppIconButton(
                     onClick = { showMenu = true },
                     modifier = Modifier.size(24.dp)
                 ) {
@@ -645,18 +654,18 @@ fun SessionListItem(
                     )
                 }
 
-                DropdownMenu(
+                AppDropdownMenu(
                     expanded = showMenu,
                     onDismissRequest = { showMenu = false }
                 ) {
-                    DropdownMenuItem(
+                    AppDropdownMenuItem(
                         text = { Text(if (session.top_ts > 0) "取消置顶" else "置顶") },
                         onClick = {
                             showMenu = false
                             onToggleTop()
                         }
                     )
-                    DropdownMenuItem(
+                    AppDropdownMenuItem(
                         text = { Text(if (session.is_dnd == 1) "关闭免打扰" else "开启免打扰") },
                         onClick = {
                             showMenu = false
@@ -664,7 +673,7 @@ fun SessionListItem(
                         }
                     )
                     if (session.session_type == 1) {
-                        DropdownMenuItem(
+                        AppDropdownMenuItem(
                             text = { Text(if (session.is_intercept == 1) "移出拦截" else "移入拦截") },
                             onClick = {
                                 showMenu = false
@@ -672,7 +681,7 @@ fun SessionListItem(
                             }
                         )
                     }
-                    DropdownMenuItem(
+                    AppDropdownMenuItem(
                         text = { Text("删除会话") },
                         onClick = {
                             showMenu = false

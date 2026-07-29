@@ -44,6 +44,9 @@ import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.ui.rememberAppCommentIcon
 import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
 import com.android.purebilibili.core.ui.rememberAppPlayIcon
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.theme.resolveAdaptivePrimaryAccentColors
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.feature.video.player.MiniPlayerManager
@@ -154,7 +157,7 @@ fun OfflineVideoPlayerScreen(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("视频文件不存在", color = Color.White)
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = onBack) { Text("返回") }
+                AppButton(onClick = onBack) { Text("返回") }
             }
         }
         return
@@ -169,7 +172,7 @@ fun OfflineVideoPlayerScreen(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("视频文件已被删除", color = Color.White)
                 Spacer(modifier = Modifier.height(16.dp))
-                Button(onClick = onBack) { Text("返回") }
+                AppButton(onClick = onBack) { Text("返回") }
             }
         }
         return
@@ -740,7 +743,7 @@ fun OfflineVideoPlayerScreen(
             enter = scaleIn() + fadeIn(),
             exit = scaleOut() + fadeOut()
         ) {
-            Surface(
+            AppSurface(
                 color = Color.Black.copy(alpha = 0.7f),
                 shape = RoundedCornerShape(20.dp)
             ) {
@@ -816,7 +819,7 @@ fun OfflineVideoPlayerScreen(
                     .padding(horizontal = 8.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { if (isFullscreen) toggleFullscreen() else onBack() }) {
+                AppIconButton(onClick = { if (isFullscreen) toggleFullscreen() else onBack() }) {
                     Icon(
                         backIcon,
                         contentDescription = "返回",
@@ -869,9 +872,9 @@ fun OfflineVideoPlayerScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Surface(
+                        AppSurface(
                             onClick = {
-                                val previousTask = episodeQueue.getOrNull(currentEpisodeIndex - 1) ?: return@Surface
+                                val previousTask = episodeQueue.getOrNull(currentEpisodeIndex - 1) ?: return@AppSurface
                                 switchEpisode(previousTask.id)
                             },
                             enabled = currentEpisodeIndex > 0,
@@ -897,9 +900,9 @@ fun OfflineVideoPlayerScreen(
                             color = Color.White.copy(alpha = 0.85f),
                             fontSize = 12.sp
                         )
-                        Surface(
+                        AppSurface(
                             onClick = {
-                                val nextTask = episodeQueue.getOrNull(currentEpisodeIndex + 1) ?: return@Surface
+                                val nextTask = episodeQueue.getOrNull(currentEpisodeIndex + 1) ?: return@AppSurface
                                 switchEpisode(nextTask.id)
                             },
                             enabled = currentEpisodeIndex < episodeQueue.lastIndex,
@@ -930,7 +933,7 @@ fun OfflineVideoPlayerScreen(
                 ) {
                     val activeControlColors = resolveAdaptivePrimaryAccentColors(MaterialTheme.colorScheme)
                     // 播放/暂停按钮
-                    IconButton(
+                    AppIconButton(
                         onClick = {
                             if (player.playbackState == Player.STATE_ENDED) {
                                 player.seekTo(0)
@@ -961,7 +964,7 @@ fun OfflineVideoPlayerScreen(
                     Spacer(modifier = Modifier.weight(1f))
 
                     if (danmakuAvailable) {
-                        Surface(
+                        AppSurface(
                             onClick = { danmakuEnabled = !danmakuEnabled },
                             color = if (danmakuEnabled) {
                                 activeControlColors.backgroundColor.copy(alpha = 0.9f)
@@ -985,7 +988,7 @@ fun OfflineVideoPlayerScreen(
                     }
                     
                     // 📺 全屏按钮
-                    Surface(
+                    AppSurface(
                         onClick = { toggleFullscreen() },
                         color = if (!isFullscreen) {
                             activeControlColors.backgroundColor.copy(alpha = 0.9f)
@@ -1015,7 +1018,7 @@ fun OfflineVideoPlayerScreen(
             enter = scaleIn() + fadeIn(),
             exit = scaleOut() + fadeOut()
         ) {
-            Surface(
+            AppSurface(
                 onClick = { player.play() },
                 color = Color.Black.copy(alpha = 0.5f),
                 shape = CircleShape,
