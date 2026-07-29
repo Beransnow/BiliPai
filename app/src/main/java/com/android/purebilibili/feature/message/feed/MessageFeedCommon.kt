@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.runtime.Composable
@@ -156,7 +156,7 @@ internal fun MessageFeedCard(
     content: @Composable () -> Unit
 ) {
     val surfaceSpec = rememberContentCardSurfaceSpec()
-    Surface(
+    AppSurface(
         modifier = modifier,
         shape = AppShapes.borderedContainer(surfaceSpec.cornerLevel),
         color = if (surfaceSpec.usesTonalContainerTreatment) {

@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -450,7 +450,7 @@ private fun PortraitSubtitlePanel(
             .background(Color.Black.copy(alpha = 0.35f))
             .clickable(onClick = onDismiss)
     ) {
-        Surface(
+        AppSurface(
             modifier = modifier
                 .widthIn(min = 148.dp, max = 228.dp)
                 .clickable(enabled = false) {},
@@ -475,7 +475,7 @@ private fun PortraitSubtitlePanel(
                     hasSecondaryTrack = secondaryAvailable
                 ).forEach { option ->
                     val selected = displayMode == option.mode
-                    Surface(
+                    AppSurface(
                         onClick = {
                             if (option.enabled) onDisplayModeChange(option.mode)
                         },
@@ -511,7 +511,7 @@ private fun PortraitSubtitlePanel(
                         modifier = Modifier.padding(start = 4.dp, top = 2.dp, bottom = 2.dp)
                     )
                     trackOptions.forEach { option ->
-                        Surface(
+                        AppSurface(
                             onClick = { onTrackSelected(option.trackKey) },
                             shape = RoundedCornerShape(8.dp),
                             color = if (option.selected) {
@@ -561,7 +561,7 @@ private fun PortraitSubtitlePanel(
                     modifier = Modifier.padding(start = 4.dp, top = 2.dp)
                 )
                 if (canResetPosition) {
-                    Surface(
+                    AppSurface(
                         onClick = onResetPosition,
                         shape = RoundedCornerShape(8.dp),
                         color = Color.White.copy(alpha = 0.10f),

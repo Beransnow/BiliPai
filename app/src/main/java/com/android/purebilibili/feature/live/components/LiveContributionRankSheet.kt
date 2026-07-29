@@ -13,7 +13,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Text
@@ -110,7 +110,7 @@ fun LiveContributionRankSheet(
                     )
                 }
             }
-            Surface(
+            AppSurface(
                 shape = AppShapes.container(ContainerLevel.Card),
                 color = AppSurfaceTokens.cardContainer()
             ) {

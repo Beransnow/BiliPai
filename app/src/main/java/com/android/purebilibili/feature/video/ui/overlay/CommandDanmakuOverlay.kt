@@ -39,7 +39,7 @@ import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -140,7 +140,7 @@ private fun CommandDanmakuCard(
     val x = resolveCommandDanmakuHorizontalOffsetPx(containerWidth, cardWidthPx, xRatio)
     val y = (containerHeight * yRatio).roundToInt()
 
-    Surface(
+    AppSurface(
         modifier = Modifier
             .offset { IntOffset(x, y) }
             .width(cardWidthDp.dp),
@@ -360,7 +360,7 @@ private fun CommandTripleActionIcon(
     progress: Float,
     color: Color
 ) {
-    Surface(
+    AppSurface(
         shape = CircleShape,
         color = Color.White.copy(alpha = 0.92f),
         contentColor = color,

@@ -36,7 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -88,7 +88,7 @@ fun VideoNoteCard(
         !noteState.saving
     val showSecondaryActions = noteState.privateNoteDocument != null ||
         noteState.status == VideoNoteLoadStatus.ERROR
-    Surface(
+    AppSurface(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 6.dp),
@@ -403,7 +403,7 @@ fun VideoNoteDeleteConfirmDialog(
 
 @Composable
 private fun IconBox() {
-    Surface(
+    AppSurface(
         modifier = Modifier.size(32.dp),
         shape = RoundedCornerShape(12.dp),
         color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)

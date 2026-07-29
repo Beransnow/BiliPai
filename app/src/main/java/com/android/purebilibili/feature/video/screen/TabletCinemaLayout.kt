@@ -58,7 +58,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Text
@@ -332,7 +332,7 @@ internal fun TabletCinemaLayout(
                         onRetryVideoNote = playbackActions.retryVideoNote
                     )
                 } else {
-                    Surface(
+                    AppSurface(
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f),
@@ -449,7 +449,7 @@ private fun CinemaStagePlayer(
         } else {
             playerWidth * 9f / 16f
         }
-        Surface(
+        AppSurface(
             modifier = playerContainerModifier
                 .align(Alignment.Center)
                 .width(playerWidth)
@@ -598,7 +598,7 @@ private fun CinemaMetaPanel(
         }
     }
 
-    Surface(
+    AppSurface(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 0.dp),
@@ -863,7 +863,7 @@ private fun CinemaVideoIntroSection(
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Surface(
+        AppSurface(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp, vertical = 6.dp),
@@ -960,7 +960,7 @@ private fun CinemaSideCurtain(
             modifier = Modifier.fillMaxHeight(),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            Surface(
+            AppSurface(
                 modifier = Modifier
                     .width(20.dp)
                     .fillMaxHeight()
@@ -987,7 +987,7 @@ private fun CinemaSideCurtain(
             }
 
             if (targetState != TabletSideCurtainState.HIDDEN) {
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .width(width)
                         .fillMaxHeight()
@@ -1226,7 +1226,7 @@ private fun CinemaCommentsPane(
                 contentPadding = PaddingValues(bottom = 74.dp)
             ) {
             item {
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp, vertical = 8.dp),

@@ -21,7 +21,7 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -461,7 +461,7 @@ private fun LiveListHeader(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small)
         ) {
-            Surface(
+            AppSurface(
                 onClick = onBack,
                 color = Color.Transparent,
                 shape = CircleShape,
@@ -475,7 +475,7 @@ private fun LiveListHeader(
                     )
                 }
             }
-            Surface(
+            AppSurface(
                 onClick = onSearchClick,
                 color = palette.searchField,
                 shape = AppShapes.container(ContainerLevel.Pill),
@@ -503,7 +503,7 @@ private fun LiveListHeader(
                 }
             }
             Box {
-                Surface(
+                AppSurface(
                     onClick = onInboxClick,
                     color = Color.Transparent,
                     shape = CircleShape,
@@ -537,7 +537,7 @@ private fun LiveListHeader(
                     .semantics { contentDescription = "全部直播分区" },
                 contentAlignment = Alignment.Center,
             ) {
-                Surface(
+                AppSurface(
                     color = palette.surfaceMuted,
                     shape = CircleShape,
                     modifier = Modifier.size(compactChrome.secondaryButtonSizeDp.dp)
@@ -748,7 +748,7 @@ private fun LiveAreaChildChipRow(
     )
     LazyRow(horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Medium)) {
         items(items, key = { it.id }) { child ->
-            Surface(
+            AppSurface(
                 onClick = {
                     onAreaDetailClick(
                         parentAreaId,

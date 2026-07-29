@@ -21,7 +21,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -297,7 +297,7 @@ private fun LiveSortChip(
     onClick: () -> Unit,
 ) {
     val palette = rememberLiveChromePalette()
-    Surface(
+    AppSurface(
         onClick = onClick,
         shape = AppShapes.borderedContainer(ContainerLevel.Pill),
         color = if (selected) palette.accentSoft else palette.surfaceMuted,

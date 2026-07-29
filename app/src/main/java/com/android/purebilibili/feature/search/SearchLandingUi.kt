@@ -35,7 +35,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import com.android.purebilibili.core.ui.components.AppTextButton
@@ -262,7 +262,7 @@ fun SearchSuggestionDropdown(
 ) {
     if (suggestions.isEmpty()) return
 
-    Surface(
+    AppSurface(
         modifier = modifier,
         shape = AppShapes.container(ContainerLevel.Pill),
         tonalElevation = 8.dp,

@@ -44,7 +44,7 @@ import com.android.purebilibili.core.util.responsiveContentWidth
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -404,7 +404,7 @@ private fun LiveFavoriteTagCard(
 ) {
     val colorScheme = MaterialTheme.colorScheme
     Box {
-        Surface(
+        AppSurface(
             onClick = { if (isEditing) onRemove() else onClick() },
             color = AppSurfaceTokens.cardContainer(),
             shape = AppShapes.borderedContainer(ContainerLevel.Card),
@@ -455,7 +455,7 @@ private fun LiveFavoriteTagCard(
                     .clickable(onClick = onRemove),
                 contentAlignment = Alignment.Center,
             ) {
-                Surface(
+                AppSurface(
                     shape = CircleShape,
                     color = colorScheme.errorContainer,
                     modifier = Modifier.size(AppSpacingTokens.ExtraLarge),
@@ -480,7 +480,7 @@ private fun LiveAreaIcon(
 ) {
     val colorScheme = MaterialTheme.colorScheme
     if (imageUrl.isBlank()) {
-        Surface(
+        AppSurface(
             color = AppSurfaceTokens.surfaceContainer(),
             shape = AppShapes.container(ContainerLevel.Tag),
             modifier = modifier
@@ -535,7 +535,7 @@ private fun LiveAreaGridItem(
             )
         }
         if (isEditing && child.id != "0") {
-            Surface(
+            AppSurface(
                 shape = CircleShape,
                 color = if (isFavorite) colorScheme.surfaceVariant else colorScheme.secondaryContainer,
                 modifier = Modifier

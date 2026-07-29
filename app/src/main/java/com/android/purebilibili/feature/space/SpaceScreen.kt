@@ -59,7 +59,7 @@ import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -703,7 +703,7 @@ private fun SpacePlayedVideoLocatePrompt(
             animationSpec = tween(120)
         )
     ) {
-        Surface(
+        AppSurface(
             shape = RoundedCornerShape(18.dp),
             color = MaterialTheme.colorScheme.surfaceContainerHigh,
             tonalElevation = 6.dp,
@@ -2083,7 +2083,7 @@ private fun SpaceHeader(
                         )
 
                         if (userInfo.liveRoom?.liveStatus == 1) {
-                            Surface(
+                            AppSurface(
                                 modifier = Modifier
                                     .align(Alignment.BottomEnd)
                                     .padding(end = 2.dp),
@@ -2131,7 +2131,7 @@ private fun SpaceHeader(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Surface(
+                            AppSurface(
                                 shape = CircleShape,
                                 color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.42f),
                                 border = BorderStroke(
@@ -2297,7 +2297,7 @@ private fun SpaceSearchEntryChip(
     // Use bordered Field shape (not continuous Pill + stroke) so corners stay round
     // and match the real search bar; continuous iOS corners + BorderStroke chamfer.
     val shape = AppShapes.borderedContainer(ContainerLevel.Field)
-    Surface(
+    AppSurface(
         onClick = onClick,
         modifier = modifier
             .fillMaxWidth()
@@ -2456,7 +2456,7 @@ private fun SpaceContributionToolbarDock(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Surface(
+    AppSurface(
         modifier = modifier,
         shape = AppShapes.container(ContainerLevel.Pill),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.22f),
@@ -2946,7 +2946,7 @@ private fun SpaceHomeVideoCard(
             )
 
             if (!badgeLabel.isNullOrBlank()) {
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .padding(8.dp),
@@ -2963,7 +2963,7 @@ private fun SpaceHomeVideoCard(
                 }
             }
 
-            Surface(
+            AppSurface(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(8.dp),
@@ -3097,7 +3097,7 @@ private fun SpaceAggregateMediaCard(
             )
 
             if (item.length.isNotBlank()) {
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(8.dp),
@@ -3423,7 +3423,7 @@ private fun SpaceArchiveListItemRow(
                 modifier = Modifier.fillMaxSize()
             )
             if (!badgeLabel.isNullOrBlank()) {
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .align(Alignment.TopStart)
                         .padding(6.dp),
@@ -3440,7 +3440,7 @@ private fun SpaceArchiveListItemRow(
                 }
             }
             if (duration.isNotBlank()) {
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(6.dp),
@@ -3681,7 +3681,7 @@ private fun SpaceFavoriteFolderRow(
     folder: FavFolder,
     onClick: () -> Unit
 ) {
-    Surface(
+    AppSurface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
@@ -3781,7 +3781,7 @@ private fun SpaceCollectionSummaryCard(
     total: Int,
     onClick: () -> Unit
 ) {
-    Surface(
+    AppSurface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
@@ -3856,7 +3856,7 @@ private fun SpaceCollectionWithPreviewCard(
     previews: List<PreviewMedia>,
     onClick: () -> Unit
 ) {
-    Surface(
+    AppSurface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
@@ -3962,7 +3962,7 @@ private fun SpaceBadgeChip(
     contentColor: Color,
     onClick: (() -> Unit)? = null
 ) {
-    Surface(
+    AppSurface(
         modifier = if (onClick != null) Modifier.clickable { onClick() } else Modifier,
         shape = RoundedCornerShape(999.dp),
         color = containerColor

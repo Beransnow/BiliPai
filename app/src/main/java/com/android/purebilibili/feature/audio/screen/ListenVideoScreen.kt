@@ -43,7 +43,7 @@ import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -267,7 +267,7 @@ private fun ListenVideoHeader(
             }
         }
         nowPlaying?.let { item ->
-            Surface(
+            AppSurface(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onNowPlayingClick(item.bvid, item.coverUrl) },
@@ -587,7 +587,7 @@ private fun MusicEntityCard(
     modifier: Modifier = Modifier,
     circularCover: Boolean = false
 ) {
-    Surface(
+    AppSurface(
         modifier = modifier
             .height(92.dp)
             .clickable(onClick = onClick),

@@ -26,7 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -179,7 +179,7 @@ fun UpPreviewSheet(
             enter = sheetMotion.contentEnter,
             exit = sheetMotion.contentExit,
         ) {
-            Surface(
+            AppSurface(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(screenHeight * 0.72f)
@@ -262,7 +262,7 @@ fun UpPreviewSheet(
                             )
                         }
                         Spacer(Modifier.width(8.dp))
-                        Surface(
+                        AppSurface(
                             onClick = onFollowClick,
                             shape = RoundedCornerShape(999.dp),
                             color = if (isFollowing) {

@@ -40,7 +40,7 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.material3.DropdownMenu
@@ -317,7 +317,7 @@ fun BrandingHeader(isSmall: Boolean = false) {
     val logoSize = if (isSmall) 58.dp else 82.dp
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Surface(
+        AppSurface(
             shape = RoundedCornerShape(999.dp),
             color = palette.segmentTrack,
             border = BorderStroke(1.dp, palette.segmentBorder)
@@ -342,7 +342,7 @@ fun BrandingHeader(isSmall: Boolean = false) {
             }
         }
         Spacer(modifier = Modifier.height(14.dp))
-        Surface(
+        AppSurface(
             modifier = Modifier.size(logoSize),
             shape = RoundedCornerShape(if (isSmall) 18.dp else 26.dp),
             color = palette.segmentSelected,
@@ -571,7 +571,7 @@ fun QrCodeLoginContent(
         }
 
         Spacer(modifier = Modifier.height(14.dp))
-        Surface(
+        AppSurface(
             shape = RoundedCornerShape(999.dp),
             color = palette.segmentTrack,
             border = BorderStroke(1.dp, palette.segmentBorder),
@@ -666,7 +666,7 @@ fun PhoneLoginContent(
         )
 
         Spacer(modifier = Modifier.height(8.dp))
-        Surface(
+        AppSurface(
             shape = RoundedCornerShape(12.dp),
             color = palette.segmentTrack,
             border = BorderStroke(1.dp, palette.segmentBorder),
@@ -758,7 +758,7 @@ fun PhoneLoginContent(
         }
 
         Spacer(modifier = Modifier.height(18.dp))
-        Surface(
+        AppSurface(
             shape = RoundedCornerShape(12.dp),
             color = palette.segmentTrack,
             border = BorderStroke(1.dp, palette.segmentBorder),
@@ -909,7 +909,7 @@ fun ModernTextField(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Surface(
+                    AppSurface(
                         shape = CircleShape,
                         color = palette.segmentTrack
                     ) {
@@ -1015,7 +1015,7 @@ fun TopBar(
 
 @Composable
 private fun LoginPill(text: String, palette: LoginPalette) {
-    Surface(
+    AppSurface(
         shape = RoundedCornerShape(999.dp),
         color = palette.segmentTrack,
         border = BorderStroke(1.dp, palette.segmentBorder)

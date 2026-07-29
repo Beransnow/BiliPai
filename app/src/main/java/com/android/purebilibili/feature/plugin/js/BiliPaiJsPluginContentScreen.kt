@@ -26,7 +26,7 @@ import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -278,7 +278,7 @@ private fun BiliPaiJsMediaItemRow(
         imageUrl == null -> PluginMediaImageState.LOAD_FAILED
         else -> PluginMediaImageState.LOADING
     }
-    Surface(
+    AppSurface(
         modifier = Modifier
             .fillMaxWidth()
             .clip(AppShapes.container(ContainerLevel.Field))
@@ -368,7 +368,7 @@ private fun PluginMediaImagePlaceholder(
             .clip(AppShapes.container(ContainerLevel.Chip)),
         contentAlignment = Alignment.Center
     ) {
-        Surface(
+        AppSurface(
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.72f)
         ) {}

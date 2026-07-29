@@ -35,7 +35,7 @@ import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -472,7 +472,7 @@ private fun PageSelectorItem(
         MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
     }
 
-    Surface(
+    AppSurface(
         onClick = { onClick(index) },
         color = containerColor,
         shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp),

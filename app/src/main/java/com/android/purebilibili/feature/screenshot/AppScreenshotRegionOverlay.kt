@@ -19,7 +19,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -145,7 +145,7 @@ fun AppScreenshotRegionOverlay(
             }
         }
 
-        Surface(
+        AppSurface(
             color = Color.Black.copy(alpha = 0.54f),
             contentColor = Color.White,
             shape = RoundedCornerShape(18.dp),

@@ -23,7 +23,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
@@ -376,7 +376,7 @@ internal fun AudioModeSleepTimerDialog(
                 ) {
                     presetOptions.forEach { minutes ->
                         val isSelected = currentMinutes == minutes
-                        Surface(
+                        AppSurface(
                             onClick = { onSelectPreset(minutes) },
                             shape = RoundedCornerShape(16.dp),
                             color = if (isSelected) {

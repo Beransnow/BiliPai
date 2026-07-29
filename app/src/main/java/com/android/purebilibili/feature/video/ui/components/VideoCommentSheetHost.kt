@@ -40,7 +40,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SmallFloatingActionButton
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
@@ -572,7 +572,7 @@ fun VideoCommentSheetHost(
                 exit = motionSpec.contentExit,
                 modifier = Modifier.align(Alignment.BottomCenter)
             ) {
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(sheetHeight)
@@ -796,7 +796,7 @@ internal fun VideoCommentMainList(
                     contentPadding = WindowInsets.navigationBars.asPaddingValues()
                 ) {
                     item {
-                        Surface(
+                        AppSurface(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = 14.dp, vertical = 8.dp),

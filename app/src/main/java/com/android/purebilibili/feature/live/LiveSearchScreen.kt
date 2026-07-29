@@ -31,7 +31,7 @@ import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -337,7 +337,7 @@ private fun LiveSearchState(message: String? = null) {
 
 @Composable
 private fun LiveSearchUserCard(item: SearchUpItem, onClick: () -> Unit) {
-    Surface(
+    AppSurface(
         onClick = onClick,
         shape = AppShapes.borderedContainer(ContainerLevel.Card),
         color = AppSurfaceTokens.cardContainer(),
