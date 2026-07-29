@@ -21,11 +21,11 @@ import androidx.compose.foundation.verticalScroll
 import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
+import com.android.purebilibili.core.ui.components.AppCheckbox
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.RadioButton
+import com.android.purebilibili.core.ui.components.AppRadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -154,7 +154,7 @@ internal fun BatchDownloadDialog(
                                     .padding(vertical = 6.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Checkbox(
+                                AppCheckbox(
                                     checked = candidate.selected,
                                     onCheckedChange = { checked ->
                                         workingCandidates = workingCandidates.map {
@@ -208,7 +208,7 @@ internal fun BatchDownloadDialog(
                             .padding(vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Checkbox(
+                        AppCheckbox(
                             checked = includeDanmaku,
                             onCheckedChange = { includeDanmaku = it }
                         )
@@ -235,7 +235,7 @@ internal fun BatchDownloadDialog(
                                 .padding(vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            RadioButton(
+                            AppRadioButton(
                                 selected = selectedQuality == qualityId,
                                 onClick = { selectedQuality = qualityId }
                             )

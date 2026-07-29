@@ -17,7 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppSurface
-import androidx.compose.material3.Switch
+import com.android.purebilibili.core.ui.components.AppSwitch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -549,7 +549,7 @@ private fun PortraitSubtitlePanel(
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium
                     )
-                    Switch(
+                    AppSwitch(
                         checked = largeTextEnabled,
                         onCheckedChange = onLargeTextChange
                     )

@@ -11,7 +11,7 @@ import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppOutlinedTextField
-import androidx.compose.material3.Switch
+import com.android.purebilibili.core.ui.components.AppSwitch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -312,7 +312,7 @@ class CdnRegionPlugin : PlaybackCdnPlugin {
                     modifier = Modifier.weight(1f),
                     style = MaterialTheme.typography.bodyMedium
                 )
-                Switch(
+                AppSwitch(
                     checked = strictCustomCdn,
                     onCheckedChange = { strictCustomCdn = it }
                 )
@@ -408,7 +408,7 @@ class CdnRegionPlugin : PlaybackCdnPlugin {
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Text("启用", style = MaterialTheme.typography.bodySmall)
-                Switch(checked = rule.enabled, onCheckedChange = { onChange(rule.copy(enabled = it)) })
+                AppSwitch(checked = rule.enabled, onCheckedChange = { onChange(rule.copy(enabled = it)) })
             }
             AppOutlinedTextField(
                 value = rule.pattern,

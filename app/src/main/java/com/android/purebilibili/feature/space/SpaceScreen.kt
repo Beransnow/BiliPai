@@ -48,7 +48,7 @@ import androidx.compose.material.icons.outlined.ViewAgenda
 import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
+import com.android.purebilibili.core.ui.components.AppCheckbox
 import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.components.AppDropdownMenu
@@ -634,7 +634,7 @@ fun SpaceScreen(
                                         .padding(vertical = 6.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Checkbox(
+                                    AppCheckbox(
                                         checked = followGroupSelectedTagIds.contains(tag.tagid),
                                         onCheckedChange = { viewModel.toggleFollowGroupSelection(tag.tagid) }
                                     )

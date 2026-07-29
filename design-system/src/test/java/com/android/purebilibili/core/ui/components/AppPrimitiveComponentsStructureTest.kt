@@ -30,6 +30,12 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(source.contains(") = CircularProgressIndicator("))
         assertTrue(source.contains("fun AppLinearProgressIndicator("))
         assertTrue(source.contains(") = LinearProgressIndicator("))
+        assertTrue(source.contains("fun AppCheckbox("))
+        assertTrue(source.contains(") = Checkbox("))
+        assertTrue(source.contains("fun AppSwitch("))
+        assertTrue(source.contains(") = Switch("))
+        assertTrue(source.contains("fun AppRadioButton("))
+        assertTrue(source.contains(") = RadioButton("))
     }
 
     private fun loadSource(): String {
