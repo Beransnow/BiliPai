@@ -32,6 +32,10 @@ class AppPreferenceApiStructureTest {
         )
         assertTrue(dialogSource.contains("fun AppAlertDialog("))
         assertTrue(dialogSource.contains(") = AdaptiveAlertDialog("))
+        assertTrue(dialogSource.contains("icon: @Composable (() -> Unit)? = null"))
+        assertTrue(dialogSource.contains("shape: Shape? = null"))
+        assertTrue(dialogSource.contains("containerColor: Color? = null"))
+        assertTrue(dialogSource.contains("tonalElevation: Dp? = null"))
         assertTrue(dialogSource.contains("fun AppDialogAction("))
         assertTrue(dialogSource.contains(") = AdaptiveDialogAction("))
 

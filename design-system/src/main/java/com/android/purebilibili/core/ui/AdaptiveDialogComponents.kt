@@ -8,9 +8,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.purebilibili.core.theme.AndroidNativeVariant
@@ -60,10 +61,15 @@ fun resolveDialogActionLayoutPolicy(
 @Composable
 internal fun AdaptiveAlertDialog(
     onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: @Composable (() -> Unit)? = null,
     title: @Composable (() -> Unit)? = null,
     text: @Composable (() -> Unit)? = null,
     confirmButton: @Composable (() -> Unit)? = null,
     dismissButton: @Composable (() -> Unit)? = null,
+    shape: Shape? = null,
+    containerColor: Color? = null,
+    tonalElevation: Dp? = null,
     presentationProgress: Float = 1f,
     properties: DialogProperties = DialogProperties()
 ) {
@@ -76,6 +82,7 @@ internal fun AdaptiveAlertDialog(
                 onDismissRequest = onDismissRequest,
             ) {
                 MiuixAlertDialogBody(
+                    icon = icon,
                     title = title,
                     text = text,
                     confirmButton = confirmButton,
@@ -90,13 +97,13 @@ internal fun AdaptiveAlertDialog(
                 properties = properties
             ) {
                 Surface(
-                    modifier = Modifier
-                        .widthIn(min = 280.dp, max = 360.dp)
-                        .clip(MaterialTheme.shapes.extraLarge),
-                    color = AppSurfaceTokens.cardContainer(),
-                    tonalElevation = 6.dp
+                    modifier = modifier.widthIn(min = 280.dp, max = 360.dp),
+                    shape = shape ?: MaterialTheme.shapes.extraLarge,
+                    color = containerColor ?: AppSurfaceTokens.cardContainer(),
+                    tonalElevation = tonalElevation ?: 6.dp,
                 ) {
                     MiuixAlertDialogBody(
+                        icon = icon,
                         title = title,
                         text = text,
                         confirmButton = confirmButton,
@@ -109,13 +116,16 @@ internal fun AdaptiveAlertDialog(
         AppAlertDialogRenderer.MATERIAL_ALERT -> {
             AlertDialog(
                 onDismissRequest = onDismissRequest,
+                modifier = modifier,
+                icon = icon,
                 title = title,
                 text = text,
                 confirmButton = { confirmButton?.invoke() ?: Spacer(modifier = Modifier) },
                 dismissButton = dismissButton,
                 properties = properties,
-                shape = MaterialTheme.shapes.extraLarge,
-                containerColor = MaterialTheme.colorScheme.surface
+                shape = shape ?: MaterialTheme.shapes.extraLarge,
+                containerColor = containerColor ?: MaterialTheme.colorScheme.surface,
+                tonalElevation = tonalElevation ?: AlertDialogDefaults.TonalElevation,
             )
             return
         }
@@ -133,13 +143,12 @@ internal fun AdaptiveAlertDialog(
         properties = properties
     ) {
         Surface(
-            modifier = Modifier
-                .width(270.dp) // Standard iOS Alert width
-                .clip(RoundedCornerShape(14.dp)),
-            color = MaterialTheme.colorScheme.surface.copy(
+            modifier = modifier.width(270.dp), // Standard iOS Alert width
+            shape = shape ?: RoundedCornerShape(14.dp),
+            color = containerColor ?: MaterialTheme.colorScheme.surface.copy(
                 alpha = 0.95f * progressVisual.surfaceAlphaMultiplier
-            ), // Slightly transparent mimic
-            tonalElevation = 0.dp
+            ),
+            tonalElevation = tonalElevation ?: 0.dp,
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -149,6 +158,14 @@ internal fun AdaptiveAlertDialog(
                     modifier = Modifier.padding(top = 20.dp, start = 16.dp, end = 16.dp, bottom = 20.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    if (icon != null) {
+                        Box(contentAlignment = Alignment.Center) {
+                            icon()
+                        }
+                        if (title != null || text != null) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
+                    }
                     if (title != null) {
                         ProvideTextStyle(
                             value = MaterialTheme.typography.titleMedium.copy(
@@ -243,6 +260,7 @@ internal fun AdaptiveAlertDialog(
 
 @Composable
 private fun MiuixAlertDialogBody(
+    icon: @Composable (() -> Unit)?,
     title: @Composable (() -> Unit)?,
     text: @Composable (() -> Unit)?,
     confirmButton: @Composable (() -> Unit)?,
@@ -252,9 +270,21 @@ private fun MiuixAlertDialogBody(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        if (icon != null) {
+            Box(
+                modifier = Modifier.padding(top = 12.dp, start = 16.dp, end = 16.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                icon()
+            }
+        }
         if (title != null) {
             Box(
-                modifier = Modifier.padding(top = 8.dp, start = 16.dp, end = 16.dp),
+                modifier = Modifier.padding(
+                    top = if (icon != null) 12.dp else 8.dp,
+                    start = 16.dp,
+                    end = 16.dp,
+                ),
                 contentAlignment = Alignment.Center
             ) {
                 ProvideTextStyle(
