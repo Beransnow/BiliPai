@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DropdownMenu
@@ -109,6 +110,31 @@ fun AppButton(
         defaultElevation = defaultElevation,
         pressedElevation = pressedElevation,
     ),
+    border = border,
+    contentPadding = contentPadding,
+    interactionSource = interactionSource,
+    content = content,
+)
+
+@Composable
+fun AppButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    shape: Shape = ButtonDefaults.shape,
+    colors: ButtonColors = ButtonDefaults.buttonColors(),
+    elevation: androidx.compose.material3.ButtonElevation? = ButtonDefaults.buttonElevation(),
+    border: BorderStroke? = null,
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
+    interactionSource: MutableInteractionSource? = null,
+    content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit,
+) = Button(
+    onClick = onClick,
+    modifier = modifier,
+    enabled = enabled,
+    shape = shape,
+    colors = colors,
+    elevation = elevation,
     border = border,
     contentPadding = contentPadding,
     interactionSource = interactionSource,

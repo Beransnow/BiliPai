@@ -15,6 +15,7 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(source.contains("onClick = onClick"))
         assertTrue(source.contains("fun AppButton("))
         assertTrue(source.contains(") = Button("))
+        assertTrue(source.contains("colors: ButtonColors"))
         assertTrue(source.contains("fun AppIconButton("))
         assertTrue(source.contains(") = IconButton("))
         assertTrue(source.contains("fun AppTextButton("))
