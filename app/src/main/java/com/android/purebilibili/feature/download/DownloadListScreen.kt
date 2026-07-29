@@ -27,6 +27,9 @@ import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.components.AppCard
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
+import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.util.NetworkUtils
 import kotlinx.coroutines.delay
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -65,7 +68,7 @@ fun DownloadListScreen(
             AppTopBar(
                 title = "离线缓存",
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    AppIconButton(onClick = onBack) {
                         Icon(rememberAppBackIcon(), contentDescription = "返回")
                     }
                 },
@@ -172,7 +175,7 @@ private fun DownloadTaskItem(
     onDelete: () -> Unit,
     offlinePlayable: Boolean
 ) {
-    Card(
+    AppCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
@@ -233,7 +236,7 @@ private fun DownloadTaskItem(
                                 Text("排队中", color = Color.White, fontSize = 12.sp)
                             }
                             DownloadStatus.DOWNLOADING, DownloadStatus.MERGING -> {
-                                CircularProgressIndicator(
+                                AppCircularProgressIndicator(
                                     progress = { resolveDownloadTaskProgress(task) },
                                     modifier = Modifier.size(32.dp),
                                     color = Color.White,
@@ -363,7 +366,7 @@ private fun DownloadTaskItem(
             ) {
                 // 暂停/继续
                 if (task.isDownloading || task.canResume) {
-                    IconButton(onClick = onPauseResume) {
+                    AppIconButton(onClick = onPauseResume) {
                         Icon(
                             imageVector = if (task.isDownloading) CupertinoIcons.Default.Pause else CupertinoIcons.Default.Play,
                             contentDescription = if (task.isDownloading) "暂停" else "继续",
@@ -373,7 +376,7 @@ private fun DownloadTaskItem(
                 }
                 
                 // 删除
-                IconButton(onClick = onDelete) {
+                AppIconButton(onClick = onDelete) {
                     Icon(
                         imageVector = CupertinoIcons.Default.Trash,
                         contentDescription = "删除",

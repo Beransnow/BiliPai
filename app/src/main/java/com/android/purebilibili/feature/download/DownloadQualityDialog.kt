@@ -20,6 +20,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.material.icons.Icons
+import com.android.purebilibili.core.ui.components.AppCard
+import com.android.purebilibili.core.ui.components.AppCheckbox
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppOutlinedButton
+import com.android.purebilibili.core.ui.components.AppSurface
 
 /**
  *  下载画质选择对话框
@@ -34,7 +39,7 @@ fun DownloadQualityDialog(
 ) {
     var includeDanmaku by remember { mutableStateOf(true) }
     Dialog(onDismissRequest = onDismiss) {
-        Card(
+        AppCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
@@ -56,7 +61,7 @@ fun DownloadQualityDialog(
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    IconButton(onClick = onDismiss) {
+                    AppIconButton(onClick = onDismiss) {
                         Icon(
                             imageVector = CupertinoIcons.Default.Xmark,
                             contentDescription = "取消",
@@ -85,7 +90,7 @@ fun DownloadQualityDialog(
                         .padding(vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Checkbox(
+                    AppCheckbox(
                         checked = includeDanmaku,
                         onCheckedChange = { includeDanmaku = it }
                     )
@@ -127,7 +132,7 @@ fun DownloadQualityDialog(
                             )
                             if (isVip) {
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Surface(
+                                AppSurface(
                                     color = MaterialTheme.colorScheme.tertiary,
                                     shape = RoundedCornerShape(4.dp)
                                 ) {
@@ -155,7 +160,7 @@ fun DownloadQualityDialog(
                 Spacer(modifier = Modifier.height(8.dp))
                 
                 // 取消按钮
-                OutlinedButton(
+                AppOutlinedButton(
                     onClick = onDismiss,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp)
