@@ -61,7 +61,7 @@ import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -561,7 +561,7 @@ fun SpaceScreen(
                 )
             },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         coroutineScope.launch {
                             if (isBlocked) {
@@ -587,7 +587,7 @@ fun SpaceScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showBlockConfirmDialog = false }) {
+                AppTextButton(onClick = { showBlockConfirmDialog = false }) {
                     Text("取消")
                 }
             }
@@ -672,7 +672,7 @@ fun SpaceScreen(
                 }
             },
             dismissButton = {
-                TextButton(
+                AppTextButton(
                     onClick = { viewModel.dismissFollowGroupDialog() },
                     enabled = !isSavingFollowGroups
                 ) {
@@ -729,10 +729,10 @@ private fun SpacePlayedVideoLocatePrompt(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
-                    TextButton(onClick = onDismiss) {
+                    AppTextButton(onClick = onDismiss) {
                         Text("暂不")
                     }
-                    TextButton(onClick = onConfirm) {
+                    AppTextButton(onClick = onConfirm) {
                         Text("定位")
                     }
                 }
@@ -2652,7 +2652,7 @@ private fun SpaceContributionVideoToolbarActions(
         }
 
         if (spec.showPlayAllText) {
-            TextButton(
+            AppTextButton(
                 onClick = onPlayAllClick,
                 modifier = Modifier.height(40.dp),
                 contentPadding = PaddingValues(horizontal = 8.dp)
@@ -2696,7 +2696,7 @@ private fun SpaceContributionVideoToolbarActions(
 
         Box {
             if (spec.showSortText) {
-                TextButton(
+                AppTextButton(
                     onClick = { menuExpanded = true },
                     modifier = Modifier.height(40.dp),
                     contentPadding = PaddingValues(horizontal = 8.dp)
@@ -2774,7 +2774,7 @@ private fun SpaceSectionHeader(
         )
         Spacer(modifier = Modifier.weight(1f))
         if (onActionClick != null && !actionLabel.isNullOrBlank()) {
-            TextButton(onClick = onActionClick) {
+            AppTextButton(onClick = onActionClick) {
                 Text(actionLabel)
             }
         }

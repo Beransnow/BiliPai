@@ -42,7 +42,7 @@ import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.runtime.Composable
@@ -559,7 +559,7 @@ fun QrCodeLoginContent(
                                 color = palette.qrContent,
                                 fontSize = 13.sp
                             )
-                            TextButton(onClick = onRefresh) {
+                            AppTextButton(onClick = onRefresh) {
                                 Text(text = "重试", color = palette.link)
                             }
                         }
@@ -793,7 +793,7 @@ fun PhoneLoginContent(
                 isLoading = state is LoginState.Loading
             )
             Spacer(modifier = Modifier.height(8.dp))
-            TextButton(
+            AppTextButton(
                 onClick = {
                     focusManager.clearFocus(force = true)
                     keyboardController?.hide()

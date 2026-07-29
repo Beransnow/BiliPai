@@ -25,7 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -312,7 +312,7 @@ private fun AudioModeInitialState(
     onRetry: () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
-        TextButton(
+        AppTextButton(
             onClick = onBack,
             modifier = Modifier
                 .align(Alignment.TopStart)
@@ -331,7 +331,7 @@ private fun AudioModeInitialState(
                     Text("音频加载失败", style = MaterialTheme.typography.headlineSmall)
                     Text(state.msg, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     if (state.canRetry) {
-                        TextButton(onClick = onRetry, modifier = Modifier.height(48.dp)) { Text("重试") }
+                        AppTextButton(onClick = onRetry, modifier = Modifier.height(48.dp)) { Text("重试") }
                     }
                 }
                 else -> {
@@ -425,11 +425,11 @@ internal fun AudioModeSleepTimerDialog(
             }
         },
         confirmButton = {
-            TextButton(
+            AppTextButton(
                 onClick = { parsedCustomMinutes?.let(onConfirmCustom) },
                 enabled = parsedCustomMinutes != null
             ) { Text("应用") }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("取消") } }
+        dismissButton = { AppTextButton(onClick = onDismiss) { Text("取消") } }
     )
 }

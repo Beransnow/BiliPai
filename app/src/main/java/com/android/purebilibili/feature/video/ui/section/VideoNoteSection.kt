@@ -38,7 +38,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -130,7 +130,7 @@ fun VideoNoteCard(
                     AdaptiveLoadingIndicator(size = 18.dp, strokeWidth = 2.dp)
                 }
                 if (defaultCollapsed) {
-                    TextButton(onClick = { userExpanded = !userExpanded }) {
+                    AppTextButton(onClick = { userExpanded = !userExpanded }) {
                         Text(if (showBody) "收起" else "展开")
                     }
                 }
@@ -179,7 +179,7 @@ fun VideoNoteCard(
                             }
                         }
                         if (noteState.status == VideoNoteLoadStatus.ERROR) {
-                            TextButton(onClick = onRetryClick) {
+                            AppTextButton(onClick = onRetryClick) {
                                 Text("重试")
                             }
                         }
@@ -347,7 +347,7 @@ fun VideoNoteEditorSheet(
                     Text("分享")
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                TextButton(onClick = onDismiss) {
+                AppTextButton(onClick = onDismiss) {
                     Text("取消")
                 }
                 Spacer(modifier = Modifier.width(8.dp))
@@ -389,12 +389,12 @@ fun VideoNoteDeleteConfirmDialog(
         title = { Text("删除视频笔记") },
         text = { Text("删除后无法在 BiliPai 内恢复。确认要删除这条笔记吗？") },
         confirmButton = {
-            TextButton(onClick = onConfirm, enabled = !deleting) {
+            AppTextButton(onClick = onConfirm, enabled = !deleting) {
                 Text(if (deleting) "删除中" else "删除")
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss, enabled = !deleting) {
+            AppTextButton(onClick = onDismiss, enabled = !deleting) {
                 Text("取消")
             }
         }

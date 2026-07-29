@@ -25,7 +25,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
@@ -194,14 +194,14 @@ private fun RestReminderDialog(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    TextButton(
+                    AppTextButton(
                         onClick = onSnooze,
                         modifier = Modifier.weight(1f)
                     ) {
                         Text("${snoozeMinutes} 分钟后提醒")
                     }
                     Spacer(modifier = Modifier.width(4.dp))
-                    TextButton(
+                    AppTextButton(
                         onClick = onDismiss,
                         modifier = Modifier.weight(1f)
                     ) {
@@ -213,13 +213,13 @@ private fun RestReminderDialog(
                 }
             } else {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    TextButton(
+                    AppTextButton(
                         onClick = onSnooze,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text("${snoozeMinutes} 分钟后提醒")
                     }
-                    TextButton(
+                    AppTextButton(
                         onClick = onDismiss,
                         modifier = Modifier.fillMaxWidth()
                     ) {

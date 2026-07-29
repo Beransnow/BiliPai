@@ -38,7 +38,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -453,7 +453,7 @@ private fun SearchKeywordSectionHeader(
                 overflow = TextOverflow.Ellipsis
             )
             if (showTrendingAction && enabled && onOpenTrending != null) {
-                TextButton(onClick = onOpenTrending) {
+                AppTextButton(onClick = onOpenTrending) {
                     Text(
                         text = "完整榜单",
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -619,7 +619,7 @@ private fun SearchHistorySectionModern(
                 text = "搜索历史",
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
             )
-            TextButton(onClick = onClear) {
+            AppTextButton(onClick = onClear) {
                 Text("清空")
             }
         }

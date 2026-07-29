@@ -20,7 +20,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.TextButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.text.style.TextOverflow
@@ -667,7 +667,7 @@ private fun TodayWatchPlanCard(
                     modifier = Modifier.weight(1f)
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Micro)) {
-                    TextButton(
+                    AppTextButton(
                         enabled = !isLoading,
                         onClick = onRefresh
                     ) {
@@ -679,7 +679,7 @@ private fun TodayWatchPlanCard(
                         Spacer(modifier = Modifier.width(AppSpacingTokens.ExtraSmall))
                         Text("刷新")
                     }
-                    TextButton(
+                    AppTextButton(
                         onClick = { onCollapsedChange(!collapsed) }
                     ) {
                         Icon(

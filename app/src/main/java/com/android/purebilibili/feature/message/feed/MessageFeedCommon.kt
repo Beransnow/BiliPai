@@ -13,7 +13,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -132,7 +132,7 @@ internal fun MessageFeedLoadMore(
                 size = 24.dp
             )
         } else {
-            TextButton(onClick = onLoadMore) {
+            AppTextButton(onClick = onLoadMore) {
                 Text("加载更多")
             }
         }

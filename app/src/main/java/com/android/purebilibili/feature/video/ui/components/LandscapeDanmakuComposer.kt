@@ -42,7 +42,7 @@ import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -264,7 +264,7 @@ fun LandscapeDanmakuComposer(
                                 }
                             }
                         } else {
-                            TextButton(
+                            AppTextButton(
                                 onClick = { showAdvancedOptions = true },
                                 contentPadding = PaddingValues(horizontal = 0.dp)
                             ) {

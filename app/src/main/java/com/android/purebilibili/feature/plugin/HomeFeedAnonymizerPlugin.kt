@@ -20,7 +20,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -205,10 +205,10 @@ private fun HomeFeedAnonymizerSettingsContent(enabled: Boolean) {
                 )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TextButton(onClick = { refreshKey += 1 }) {
+                AppTextButton(onClick = { refreshKey += 1 }) {
                     Text("刷新统计")
                 }
-                TextButton(
+                AppTextButton(
                     onClick = {
                         HomeFeedAnonymizerRuntime.resetStats()
                         refreshKey += 1
@@ -351,7 +351,7 @@ private fun HomeFeedAnonymizerDetailDialog(
         },
         confirmButton = {
             if (row.url != null) {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         try {
                             uriHandler.openUri(row.url)
@@ -365,7 +365,7 @@ private fun HomeFeedAnonymizerDetailDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            AppTextButton(onClick = onDismiss) {
                 Text("关闭")
             }
         }

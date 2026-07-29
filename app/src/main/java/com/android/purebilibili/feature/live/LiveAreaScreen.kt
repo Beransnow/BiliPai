@@ -45,7 +45,7 @@ import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.TextButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -136,7 +136,7 @@ fun LiveAreaScreen(
                     }
                 },
                 actions = {
-                    TextButton(onClick = { isEditing = !isEditing }) {
+                    AppTextButton(onClick = { isEditing = !isEditing }) {
                         Text(if (isEditing) "完成" else "编辑")
                     }
                 },
@@ -158,7 +158,7 @@ fun LiveAreaScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text = error ?: "", color = colorScheme.onSurfaceVariant)
                     Spacer(Modifier.height(AppSpacingTokens.Small))
-                    TextButton(
+                    AppTextButton(
                         onClick = {
                             isLoading = true
                             error = null

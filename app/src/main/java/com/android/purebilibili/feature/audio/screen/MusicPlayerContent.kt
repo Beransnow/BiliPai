@@ -51,7 +51,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -512,7 +512,7 @@ internal fun MusicPlayerContent(
                     singleLine = true,
                     modifier = Modifier.weight(1f)
                 )
-                TextButton(onClick = { onLyricsSearch(lyricSearchText) }) {
+                AppTextButton(onClick = { onLyricsSearch(lyricSearchText) }) {
                     Text("搜索")
                 }
             }
@@ -1020,10 +1020,10 @@ private fun LyricsPrimaryControls(
         MusicProgress(state, onSeek)
         Row(verticalAlignment = Alignment.CenterVertically) {
             PlaybackControls(state, onPlayPause, onPrevious, onNext, modifier = Modifier.weight(1f))
-            TextButton(onClick = onOpenSettings, modifier = Modifier.height(48.dp)) {
+            AppTextButton(onClick = onOpenSettings, modifier = Modifier.height(48.dp)) {
                 Text("歌词设置", color = MusicContentColor, fontSize = 12.sp)
             }
-            TextButton(onClick = onHideControls, modifier = Modifier.height(48.dp)) {
+            AppTextButton(onClick = onHideControls, modifier = Modifier.height(48.dp)) {
                 Text("收起", color = MusicContentColor, fontSize = 12.sp)
             }
         }
@@ -1075,10 +1075,10 @@ private fun LyricsSettingsContent(
         MusicActionSheetItem(if (showTranslations) "隐藏翻译与罗马音" else "显示翻译与罗马音", onToggleTranslations)
         Text("歌词时间校正 · ${formatLyricsOffset(lyricsOffsetMs)}", color = MusicContentColor.copy(alpha = 0.72f))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextButton(onClick = { onLyricsOffsetChange(-250L) }, modifier = Modifier.height(48.dp)) { Text("歌词提前 0.25 秒") }
-            TextButton(onClick = { onLyricsOffsetChange(250L) }, modifier = Modifier.height(48.dp)) { Text("歌词延后 0.25 秒") }
+            AppTextButton(onClick = { onLyricsOffsetChange(-250L) }, modifier = Modifier.height(48.dp)) { Text("歌词提前 0.25 秒") }
+            AppTextButton(onClick = { onLyricsOffsetChange(250L) }, modifier = Modifier.height(48.dp)) { Text("歌词延后 0.25 秒") }
         }
-        TextButton(onClick = { onLyricsOffsetChange(-lyricsOffsetMs) }, modifier = Modifier.height(48.dp)) { Text("重置歌词时间") }
+        AppTextButton(onClick = { onLyricsOffsetChange(-lyricsOffsetMs) }, modifier = Modifier.height(48.dp)) { Text("重置歌词时间") }
         MusicActionSheetItem("重新匹配歌词", onLyricsRetry)
         MusicActionSheetItem("手动搜索歌词", onOpenLyricsSearch)
     }

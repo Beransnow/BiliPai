@@ -28,7 +28,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -84,7 +84,7 @@ fun LiveReportDialog(
         },
         confirmButton = {},
         dismissButton = {
-            TextButton(onClick = onDismiss) {
+            AppTextButton(onClick = onDismiss) {
                 Text("取消")
             }
         }
@@ -344,7 +344,7 @@ private fun LiveShieldUserSection(
                             .weight(1f)
                             .padding(start = AppSpacingTokens.Medium)
                     )
-                    TextButton(enabled = enabled, onClick = { onUnblockUser(user) }) {
+                    AppTextButton(enabled = enabled, onClick = { onUnblockUser(user) }) {
                         Text("解除")
                     }
                 }

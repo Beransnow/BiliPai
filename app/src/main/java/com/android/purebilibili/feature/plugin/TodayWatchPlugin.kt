@@ -13,7 +13,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -424,7 +424,7 @@ class TodayWatchPlugin : RecommendationPluginApi {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            TextButton(
+            AppTextButton(
                 onClick = { showResetDialog = true }
             ) {
                 Text("清空本地推荐画像与反馈")
@@ -452,7 +452,7 @@ class TodayWatchPlugin : RecommendationPluginApi {
                 title = { Text("清空推荐画像") },
                 text = { Text("确定清空本地推荐画像与不感兴趣反馈吗？该操作不可恢复。") },
                 confirmButton = {
-                    TextButton(
+                    AppTextButton(
                         onClick = {
                             clearPersonalizationData()
                             feedbackSnapshot = TodayWatchFeedbackSnapshot()
@@ -465,7 +465,7 @@ class TodayWatchPlugin : RecommendationPluginApi {
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showResetDialog = false }) {
+                    AppTextButton(onClick = { showResetDialog = false }) {
                         Text("取消")
                     }
                 }
