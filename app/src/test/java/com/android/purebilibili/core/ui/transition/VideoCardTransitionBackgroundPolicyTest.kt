@@ -146,8 +146,8 @@ class VideoCardTransitionBackgroundPolicyTest {
         assertEquals(12f, resolveVideoCardTransitionMaxBlurRadiusPx(MotionTier.Normal))
         assertEquals(12f, resolveVideoCardTransitionMaxBlurRadiusPx(MotionTier.Enhanced))
         assertEquals(0f, resolveVideoCardTransitionMaxBlurRadiusPx(MotionTier.Reduced))
-        assertEquals(2f, resolveVideoCardTransitionBlurQuantumPx(MotionTier.Normal))
-        assertEquals(2f, resolveVideoCardTransitionBlurQuantumPx(MotionTier.Enhanced))
+        assertEquals(1f, resolveVideoCardTransitionBlurQuantumPx(MotionTier.Normal))
+        assertEquals(1f, resolveVideoCardTransitionBlurQuantumPx(MotionTier.Enhanced))
     }
 
     @Test
@@ -182,7 +182,7 @@ class VideoCardTransitionBackgroundPolicyTest {
     @Test
     fun backgroundCornerUsesDeviceRadiusWhenLargerThanFallback() {
         assertEquals(
-            0f,
+            80f,
             resolveVideoCardTransitionBackgroundCornerRadiusPx(
                 depthProgress = 1f,
                 motionTier = MotionTier.Normal,
@@ -191,7 +191,7 @@ class VideoCardTransitionBackgroundPolicyTest {
             ),
             0.0001f,
         )
-        // 页面不缩放时不应用圆角；dp 策略保留给纯函数校验。
+        // 页面后退时使用设备物理圆角，避免冻结层边缘露出直角。
         assertEquals(
             80f / 2.75f,
             resolveVideoCardTransitionBackgroundCornerRadiusDp(
@@ -252,6 +252,41 @@ class VideoCardTransitionBackgroundPolicyTest {
         ).readText()
         assertFalse(backgroundSource.contains("translationX ="))
         assertFalse(backgroundSource.contains("translationY ="))
+    }
+
+    @Test
+    fun relatedAndPartitionSourcesUseTheirOwnDepthScaleBudget() {
+        val relatedReduction = resolveVideoCardTransitionBackgroundScaleReduction(
+            resolveVideoCardTransitionBackgroundSource("video/BV_related"),
+        )
+        val partitionReduction = resolveVideoCardTransitionBackgroundScaleReduction(
+            resolveVideoCardTransitionBackgroundSource("partition"),
+        )
+
+        assertEquals(0.009f, relatedReduction, 0.0001f)
+        assertEquals(0.012f, partitionReduction, 0.0001f)
+        assertEquals(
+            0.991f,
+            resolveVideoCardTransitionContentScale(
+                progress = 1f,
+                phase = VideoCardTransitionBackgroundPhase.OPENING,
+                motionTier = MotionTier.Normal,
+                isGestureRestoreInProgress = false,
+                scaleReduction = relatedReduction,
+            ),
+            0.0001f,
+        )
+        assertEquals(
+            0.988f,
+            resolveVideoCardTransitionContentScale(
+                progress = 1f,
+                phase = VideoCardTransitionBackgroundPhase.OPENING,
+                motionTier = MotionTier.Normal,
+                isGestureRestoreInProgress = false,
+                scaleReduction = partitionReduction,
+            ),
+            0.0001f,
+        )
     }
 
     @Test

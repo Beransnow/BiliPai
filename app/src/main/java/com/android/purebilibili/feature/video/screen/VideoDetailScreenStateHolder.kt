@@ -2827,7 +2827,8 @@ internal fun VideoDetailScreenStateHolder(
                         ).dp
                         val playerTopInset = resolveVideoDetailPortraitPlayerTopInsetDp(
                             stableStatusBarHeightDp = stableStatusBarHeight.value,
-                            hideStatusBars = systemBarsVisibilityPolicy.hideStatusBars
+                            hideStatusBars = systemBarsVisibilityPolicy.hideStatusBars,
+                            isSharedCardTransition = detailShellSharedBoundsEnabled,
                         ).dp
                         val screenWidthDp = configuration.screenWidthDp.dp
                         val screenHeightDp = configuration.screenHeightDp.dp

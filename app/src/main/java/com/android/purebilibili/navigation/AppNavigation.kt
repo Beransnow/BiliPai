@@ -114,6 +114,8 @@ import com.android.purebilibili.core.ui.transition.predictiveBackBackgroundEffec
 import com.android.purebilibili.core.ui.transition.pinSourcePageDuringSharedTransition
 import com.android.purebilibili.core.ui.transition.shouldApplyPredictiveBackBlurToRoute
 import com.android.purebilibili.core.ui.transition.shouldApplyVideoCardTransitionBackgroundToRoute
+import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionBackgroundScaleReduction
+import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionBackgroundSource
 import com.android.purebilibili.core.ui.transition.videoCardTransitionBackgroundEffect
 import androidx.compose.runtime.mutableFloatStateOf
 import com.android.purebilibili.data.model.response.BgmInfo
@@ -1585,6 +1587,11 @@ fun AppNavigation(
                     val entryRoute = key.toLegacyRoute()
                     val backgroundState = LocalVideoCardTransitionBackgroundState.current
                     val predictiveBackState = LocalPredictiveBackBackgroundState.current
+                    val backgroundScaleReduction = resolveVideoCardTransitionBackgroundScaleReduction(
+                        resolveVideoCardTransitionBackgroundSource(
+                            sourceRoute = backgroundState.sourceRouteProvider(),
+                        )
+                    )
                     val shouldApplyBackground = cardTransitionEnabled &&
                         shouldApplyVideoCardTransitionBackgroundToRoute(
                             entryRoute = entryRoute,
@@ -1611,6 +1618,9 @@ fun AppNavigation(
                                             isLightBackgroundProvider = backgroundState.isLightBackgroundProvider,
                                             realtimeBlurEnabledProvider = {
                                                 videoTransitionRealtimeBlurEnabled
+                                            },
+                                            scaleReductionProvider = {
+                                                backgroundScaleReduction
                                             },
                                         )
                                     } else {
