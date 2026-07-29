@@ -155,7 +155,7 @@ import com.android.purebilibili.feature.video.policy.reduceVideoDetailPostScroll
 import com.android.purebilibili.feature.video.policy.reduceVideoDetailPreScroll
 import com.android.purebilibili.feature.video.policy.resolveVideoDetailCollapseProgress
 import com.android.purebilibili.feature.video.subtitle.resolveSubtitlePreferenceSession
-import io.github.alexzhirkevich.cupertino.CupertinoActivityIndicator
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import kotlinx.coroutines.Dispatchers
@@ -261,7 +261,7 @@ internal fun VideoDetailFollowGroupDialog(
                         .padding(vertical = 12.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    CupertinoActivityIndicator()
+                    AdaptiveLoadingIndicator()
                 }
             } else {
                 Column(

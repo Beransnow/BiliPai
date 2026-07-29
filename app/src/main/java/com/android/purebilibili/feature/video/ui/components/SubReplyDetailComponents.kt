@@ -85,7 +85,7 @@ import com.android.purebilibili.core.ui.rememberAppLikeFilledIcon
 import com.android.purebilibili.core.ui.rememberAppLikeIcon
 import com.android.purebilibili.feature.video.viewmodel.CommentUiState
 import com.android.purebilibili.feature.video.viewmodel.SubReplyUiState
-import io.github.alexzhirkevich.cupertino.CupertinoActivityIndicator
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.filled.HandThumbsup
 import io.github.alexzhirkevich.cupertino.icons.outlined.HandThumbsup
@@ -850,7 +850,7 @@ internal fun SubReplyDetailContent(
                                 .padding(16.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            CupertinoActivityIndicator()
+                            AdaptiveLoadingIndicator()
                         }
                     }
                     showManualLoadMore -> {

@@ -26,7 +26,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.android.purebilibili.data.model.response.EmotePackage
 import com.android.purebilibili.data.model.response.EmoteItem
-import io.github.alexzhirkevich.cupertino.CupertinoActivityIndicator
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 
 /**
  * [新增] 表情选择面板组件
@@ -75,7 +75,7 @@ fun EmotePanelSheet(
                         .weight(1f),
                     contentAlignment = Alignment.Center
                 ) {
-                    CupertinoActivityIndicator()
+                    AdaptiveLoadingIndicator()
                 }
             } else if (packages.isEmpty()) {
                 Box(

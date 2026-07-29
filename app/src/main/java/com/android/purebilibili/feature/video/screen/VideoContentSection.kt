@@ -93,7 +93,7 @@ import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSo
 import com.android.purebilibili.feature.video.viewmodel.CommentSortMode
 import com.android.purebilibili.feature.dynamic.components.ImagePreviewDialog
 import com.android.purebilibili.feature.dynamic.components.ImagePreviewTextContent
-import io.github.alexzhirkevich.cupertino.CupertinoActivityIndicator
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.filled.*
 import io.github.alexzhirkevich.cupertino.icons.outlined.*
@@ -1002,7 +1002,7 @@ private fun VideoCommentTab(
             if (isRepliesLoading && replies.isEmpty()) {
                 item {
                     Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
-                        CupertinoActivityIndicator()
+                        AdaptiveLoadingIndicator()
                     }
                 }
             } else if (replies.isEmpty()) {
@@ -1073,12 +1073,12 @@ private fun VideoCommentTab(
                         contentAlignment = Alignment.Center
                     ) {
                         when {
-                            isRepliesLoading -> CupertinoActivityIndicator()
+                            isRepliesLoading -> AdaptiveLoadingIndicator()
                             isRepliesEnd || replies.size >= replyCount -> {
                                 Text("—— end ——", color = commentAppearance.secondaryTextColor, fontSize = 12.sp)
                             }
                             // 当 shouldLoadMore 为 true 时才显示加载指示器
-                            shouldLoadMore -> CupertinoActivityIndicator()
+                            shouldLoadMore -> AdaptiveLoadingIndicator()
                         }
                     }
                 }

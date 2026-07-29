@@ -159,7 +159,7 @@ import com.android.purebilibili.feature.video.policy.resolveVideoDetailCollapseP
 import com.android.purebilibili.feature.video.policy.shouldSkipGesturePlayerCollapseForLayout
 import com.android.purebilibili.feature.video.policy.shouldTrackVideoDetailCollapseMotion
 import com.android.purebilibili.feature.video.subtitle.resolveSubtitlePreferenceSession
-import io.github.alexzhirkevich.cupertino.CupertinoActivityIndicator
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import kotlinx.coroutines.Dispatchers
@@ -3099,8 +3099,7 @@ internal fun VideoDetailScreenStateHolder(
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                                    //  iOS 风格加载
-                                                    CupertinoActivityIndicator()
+                                                    AdaptiveLoadingIndicator()
                                                     Spacer(Modifier.height(16.dp))
                                                     Text(
                                                         text = "正在重试 ${loadingState.retryAttempt}/${loadingState.maxAttempts}...",

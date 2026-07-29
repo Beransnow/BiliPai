@@ -51,7 +51,6 @@ import com.android.purebilibili.feature.home.components.cards.ElegantVideoCard
 import com.android.purebilibili.feature.home.components.cards.LiveRoomCard
 import com.android.purebilibili.feature.home.components.cards.StoryVideoCard
 
-import io.github.alexzhirkevich.cupertino.CupertinoActivityIndicator
 import androidx.compose.ui.Alignment
 import coil.compose.AsyncImage
 import java.io.File
@@ -530,8 +529,8 @@ internal fun HomeCategoryPageContent(
                     contentAlignment = Alignment.Center
                 ) {
                     if (categoryState.isLoading) {
-                        CupertinoActivityIndicator(
-                            modifier = Modifier.size(AppSpacingTokens.ExtraLarge),
+                        AdaptiveLoadingIndicator(
+                            size = AppSpacingTokens.ExtraLarge,
                             color = MaterialTheme.colorScheme.secondary
                         )
                     }

@@ -137,7 +137,7 @@ import com.android.purebilibili.feature.video.viewmodel.VideoPlaybackUiState
 import com.android.purebilibili.feature.video.viewmodel.VideoEngagementUiState
 import com.android.purebilibili.feature.video.viewmodel.withEngagementUiState
 import com.android.purebilibili.feature.video.viewmodel.SubReplyUiState
-import io.github.alexzhirkevich.cupertino.CupertinoActivityIndicator
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -343,7 +343,7 @@ internal fun TabletCinemaLayout(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            CupertinoActivityIndicator()
+                            AdaptiveLoadingIndicator()
                         }
                     }
                 }
@@ -1054,7 +1054,7 @@ private fun CinemaSideCurtain(
                                             modifier = Modifier.fillMaxSize(),
                                             contentAlignment = Alignment.Center
                                         ) {
-                                            CupertinoActivityIndicator()
+                                            AdaptiveLoadingIndicator()
                                         }
                                     }
 
@@ -1300,7 +1300,7 @@ private fun CinemaCommentsPane(
                             .padding(12.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        CupertinoActivityIndicator()
+                        AdaptiveLoadingIndicator()
                     }
                 }
             }
