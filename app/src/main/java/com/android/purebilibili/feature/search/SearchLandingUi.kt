@@ -36,7 +36,7 @@ import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppSurface
-import androidx.compose.material3.SuggestionChip
+import com.android.purebilibili.core.ui.components.AppSuggestionChip
 import androidx.compose.material3.Text
 import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.runtime.Composable
@@ -503,7 +503,7 @@ private fun SearchDiscoverOriginalCell(
     val displaySubtitle = remember(item.subtitle) {
         resolveSearchDiscoverOriginalSubtitle(item.subtitle)
     }
-    SuggestionChip(
+    AppSuggestionChip(
         onClick = onClick,
         label = {
             Column(modifier = Modifier.fillMaxWidth()) {

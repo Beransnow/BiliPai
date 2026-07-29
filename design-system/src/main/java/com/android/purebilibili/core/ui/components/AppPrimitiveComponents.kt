@@ -65,6 +65,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchColors
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TextButton
@@ -708,4 +710,33 @@ fun AppPrimaryScrollableTabRow(
     edgePadding = edgePadding,
     minTabWidth = minTabWidth,
     tabs = tabs,
+)
+
+@Composable
+fun AppSuggestionChip(
+    onClick: () -> Unit,
+    label: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    icon: @Composable (() -> Unit)? = null,
+    shape: Shape = SuggestionChipDefaults.shape,
+    colors: ChipColors = SuggestionChipDefaults.suggestionChipColors(),
+    elevation: ChipElevation? = SuggestionChipDefaults.suggestionChipElevation(),
+    border: BorderStroke? = SuggestionChipDefaults.suggestionChipBorder(enabled),
+    horizontalArrangement: Arrangement.Horizontal = SuggestionChipDefaults.horizontalArrangement(),
+    contentPadding: PaddingValues = SuggestionChipDefaults.ContentPadding,
+    interactionSource: MutableInteractionSource? = null,
+) = SuggestionChip(
+    onClick = onClick,
+    label = label,
+    modifier = modifier,
+    enabled = enabled,
+    icon = icon,
+    shape = shape,
+    colors = colors,
+    elevation = elevation,
+    border = border,
+    horizontalArrangement = horizontalArrangement,
+    contentPadding = contentPadding,
+    interactionSource = interactionSource,
 )

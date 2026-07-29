@@ -59,6 +59,8 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(source.contains(") = PrimaryTabRow("))
         assertTrue(source.contains("fun AppPrimaryScrollableTabRow("))
         assertTrue(source.contains(") = PrimaryScrollableTabRow("))
+        assertTrue(source.contains("fun AppSuggestionChip("))
+        assertTrue(source.contains(") = SuggestionChip("))
     }
 
     private fun loadSource(): String {
