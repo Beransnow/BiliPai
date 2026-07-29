@@ -37,6 +37,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 //  Cupertino Icons - iOS SF Symbols 风格图标
 import androidx.compose.material3.*
+import com.android.purebilibili.core.ui.components.AppFilledIconButton
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -988,7 +990,7 @@ private fun ImagePreviewOverlayContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     // 关闭按钮
-                    FilledIconButton(
+                    AppFilledIconButton(
                         onClick = { triggerDismiss() },
                         colors = IconButtonDefaults.filledIconButtonColors(
                             containerColor = MediaContrastPalette.Scrim.copy(0.5f)
@@ -1097,7 +1099,7 @@ private fun ImagePreviewOverlayContent(
                     }
 
                     if (resolvedText != null) {
-                        FilledIconButton(
+                        AppFilledIconButton(
                             onClick = {
                                 imagePreviewTextVisible =
                                     resolveImagePreviewTextVisibilityAfterToggle(imagePreviewTextVisible)
@@ -1120,7 +1122,7 @@ private fun ImagePreviewOverlayContent(
                     }
                     
                     // 分享按钮
-                    FilledIconButton(
+                    AppFilledIconButton(
                         onClick = {
                             requestShareCurrentImage(currentImageUrl)
                         },
@@ -1147,7 +1149,7 @@ private fun ImagePreviewOverlayContent(
                     Spacer(modifier = Modifier.width(AppSpacingTokens.Small))
 
                     //  下载按钮
-                    FilledIconButton(
+                    AppFilledIconButton(
                         onClick = {
                             requestSaveCurrentImage(currentImageUrl)
                         },
@@ -1215,7 +1217,7 @@ private fun ImagePreviewCommentTopBar(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(
+        AppIconButton(
             onClick = onDismiss,
             modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
         ) {
@@ -1243,7 +1245,7 @@ private fun ImagePreviewCommentTopBar(
                     .padding(horizontal = AppSpacingTokens.Large + AppSpacingTokens.Micro, vertical = AppSpacingTokens.Small - AppSpacingTokens.Micro / 2)
             )
         }
-        IconButton(
+        AppIconButton(
             onClick = onShare,
             enabled = enabled,
             modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)

@@ -13,6 +13,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
+import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -104,7 +105,7 @@ fun DynamicTopBarWithTabs(
                 )
                 
                 //  布局模式切换按钮
-                IconButton(
+                AppIconButton(
                     onClick = {
                         val newMode = if (displayMode == DynamicDisplayMode.SIDEBAR) 
                             DynamicDisplayMode.HORIZONTAL else DynamicDisplayMode.SIDEBAR

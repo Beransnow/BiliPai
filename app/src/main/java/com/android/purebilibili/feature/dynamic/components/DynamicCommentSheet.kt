@@ -19,6 +19,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -199,7 +202,7 @@ fun DynamicCommentSheet(
                     }
                 )
                 Spacer(modifier = Modifier.width(AppSpacingTokens.Small))
-                IconButton(onClick = onDismiss) {
+                AppIconButton(onClick = onDismiss) {
                     Icon(
                         rememberAppClearIcon(),
                         contentDescription = "关闭",
@@ -297,7 +300,7 @@ fun DynamicCommentSheet(
                 
                 Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
                 
-                Button(
+                AppButton(
                     onClick = {
                         if (commentText.isNotBlank()) {
                             onPostComment(commentText)
@@ -468,7 +471,7 @@ fun DynamicInlineCommentComposer(
             singleLine = true,
         )
         Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
-        Button(
+        AppButton(
             onClick = {
                 onPostComment(commentText)
                 commentText = ""
@@ -662,7 +665,7 @@ private fun CommentItem(
                 }
 
                 Spacer(modifier = Modifier.height(AppSpacingTokens.Small))
-                TextButton(
+                AppTextButton(
                     onClick = { onViewReplies(reply) },
                     contentPadding = PaddingValues(horizontal = AppSpacingTokens.None, vertical = AppSpacingTokens.None)
                 ) {
