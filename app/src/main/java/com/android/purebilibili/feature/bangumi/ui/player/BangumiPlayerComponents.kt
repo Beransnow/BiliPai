@@ -60,6 +60,7 @@ import com.android.purebilibili.feature.anime4k.isAnime4KGles3Available
 import com.android.purebilibili.feature.anime4k.resolveAnime4KOutputDecision
 import com.android.purebilibili.feature.video.danmaku.DanmakuManager
 import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
+import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.feature.video.ui.components.AnimatedGesturePercentText
 import com.android.purebilibili.feature.video.ui.components.SponsorSkipButton
 import com.android.purebilibili.feature.video.ui.components.VideoAspectRatio
@@ -721,7 +722,7 @@ fun BangumiGestureIndicator(
             }
         }
         BangumiGestureMode.Seek -> {
-            Surface(
+            AppSurface(
                 modifier = modifier,
                 shape = RoundedCornerShape(18.dp),
                 color = Color.Black.copy(alpha = 0.74f),
@@ -852,7 +853,7 @@ fun BangumiQualityMenu(
             ) { onDismiss() },
         contentAlignment = Alignment.Center
     ) {
-        Surface(
+        AppSurface(
             modifier = Modifier
                 .widthIn(min = 200.dp, max = 280.dp)
                 .clip(RoundedCornerShape(12.dp))
@@ -893,7 +894,7 @@ fun BangumiQualityMenu(
                         
                         if (tag != null) {
                             Spacer(modifier = Modifier.width(8.dp))
-                            Surface(
+                            AppSurface(
                                 color = MaterialTheme.colorScheme.primary,
                                 shape = RoundedCornerShape(4.dp)
                             ) {

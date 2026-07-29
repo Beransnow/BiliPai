@@ -28,7 +28,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -47,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
 import com.android.purebilibili.core.util.HapticType
 import com.android.purebilibili.core.util.rememberHapticFeedback
@@ -152,7 +152,7 @@ private fun Md3GestureLevelRail(
     percent: Int
 ) {
     val shape = RoundedCornerShape(28.dp)
-    Surface(
+    AppSurface(
         shape = shape,
         color = spec.containerColor,
         shadowElevation = 8.dp,
@@ -214,7 +214,7 @@ private fun IosGestureLevelCapsule(
     percent: Int
 ) {
     val shape = RoundedCornerShape(22.dp)
-    Surface(
+    AppSurface(
         shape = shape,
         color = spec.containerColor,
         border = androidx.compose.foundation.BorderStroke(1.dp, spec.borderColor),

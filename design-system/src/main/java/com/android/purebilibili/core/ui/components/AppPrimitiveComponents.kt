@@ -18,6 +18,7 @@ import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Surface
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -109,6 +110,27 @@ fun AppButton(
         pressedElevation = pressedElevation,
     ),
     border = border,
+    contentPadding = contentPadding,
+    interactionSource = interactionSource,
+    content = content,
+)
+
+@Composable
+fun AppTextButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    shape: Shape = ButtonDefaults.textShape,
+    colors: androidx.compose.material3.ButtonColors = ButtonDefaults.textButtonColors(),
+    contentPadding: PaddingValues = ButtonDefaults.TextButtonContentPadding,
+    interactionSource: MutableInteractionSource? = null,
+    content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit,
+) = TextButton(
+    onClick = onClick,
+    modifier = modifier,
+    enabled = enabled,
+    shape = shape,
+    colors = colors,
     contentPadding = contentPadding,
     interactionSource = interactionSource,
     content = content,

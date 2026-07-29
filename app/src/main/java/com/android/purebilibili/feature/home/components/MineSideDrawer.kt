@@ -42,6 +42,7 @@ import com.android.purebilibili.core.ui.rememberAppWatchLaterIcon
 import com.android.purebilibili.core.ui.AppDrawerContainerTreatment
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.components.AppPreference
+import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.UserLevelBadge
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.blur.unifiedBlur
@@ -156,7 +157,7 @@ fun MineSideDrawer(
     val chevronColor = secondaryContentColor.copy(alpha = if (isDark) 0.92f else 0.84f)
 
     // 使用 Surface 替代 ModalDrawerSheet 以绕过最小宽度限制 (240dp)
-    Surface(
+    AppSurface(
         color = drawerBaseColor,
         contentColor = activeContentColor,
         shape = RoundedCornerShape(
@@ -264,7 +265,7 @@ fun MineSideDrawer(
                                 
                                 // VIP 徽章
                                 if (user.isVip) {
-                                    Surface(
+                                    AppSurface(
                                         color = colorScheme.primary,
                                         shape = AppShapes.container(ContainerLevel.Tag)
                                     ) {
@@ -305,7 +306,7 @@ fun MineSideDrawer(
             )
 
             // 2. 常用服务 - iOS 风格列表
-            Surface(
+            AppSurface(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = layoutPolicy.sectionHorizontalPaddingDp.dp),
@@ -400,7 +401,7 @@ fun MineSideDrawer(
             
             // 3. 退出登录按钮
             if (user.isLogin) {
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = layoutPolicy.sectionHorizontalPaddingDp.dp),
