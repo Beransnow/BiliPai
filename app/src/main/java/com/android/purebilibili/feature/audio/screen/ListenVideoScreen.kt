@@ -36,7 +36,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import com.android.purebilibili.core.ui.components.AppButton
-import androidx.compose.material3.CircularProgressIndicator
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -568,7 +568,7 @@ private fun ListenVideoIndexProgress(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+        AppCircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
         Text(
             text = "正在整理收藏夹 $indexedCount/$totalCount",
             style = MaterialTheme.typography.bodySmall,

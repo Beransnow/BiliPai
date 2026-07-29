@@ -34,7 +34,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -384,7 +384,7 @@ fun LandscapeDanmakuComposer(
                         )
                     ) {
                         if (isSending) {
-                            CircularProgressIndicator(
+                            AppCircularProgressIndicator(
                                 modifier = Modifier.size(18.dp),
                                 strokeWidth = 2.dp,
                                 color = MaterialTheme.colorScheme.onPrimary

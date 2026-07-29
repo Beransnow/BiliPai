@@ -40,7 +40,7 @@ import androidx.compose.material.icons.outlined.BlurOn
 import androidx.compose.material.icons.outlined.Speed
 import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -224,7 +224,7 @@ private fun OnboardingBottomControls(
             enabled = !isApplyingSettings
         ) {
             if (isApplyingSettings) {
-                CircularProgressIndicator(
+                AppCircularProgressIndicator(
                     modifier = Modifier.size(20.dp),
                     strokeWidth = 2.dp,
                     color = actionColors.contentColor

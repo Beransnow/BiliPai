@@ -40,11 +40,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
-import androidx.compose.material3.LinearProgressIndicator
+import com.android.purebilibili.core.ui.components.AppLinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.core.ui.components.AppOutlinedTextField
@@ -517,7 +517,7 @@ internal fun MusicPlayerContent(
                 }
             }
             if (state.isLyricsSearching) {
-                CircularProgressIndicator(
+                AppCircularProgressIndicator(
                     color = MusicContentColor,
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
@@ -612,7 +612,7 @@ private fun PlayerPage(
         verticalArrangement = Arrangement.Center
     ) {
         if (state.isLoading && state.coverUrl.isBlank()) {
-            CircularProgressIndicator(color = MusicContentColor)
+            AppCircularProgressIndicator(color = MusicContentColor)
         } else {
             MusicArtwork(
                 coverUrl = state.coverUrl,
@@ -769,7 +769,7 @@ private fun PlaybackControls(
         )
         AppIconButton(onClick = onPlayPause, modifier = Modifier.size(72.dp)) {
             if (state.isBuffering) {
-                CircularProgressIndicator(color = MusicContentColor, modifier = Modifier.size(36.dp))
+                AppCircularProgressIndicator(color = MusicContentColor, modifier = Modifier.size(36.dp))
             } else {
                 Icon(
                     imageVector = if (state.isPlaying) CupertinoIcons.Filled.Pause else CupertinoIcons.Filled.Play,
@@ -1045,7 +1045,7 @@ private fun LyricsImmersiveProgress(
     modifier: Modifier = Modifier
 ) {
     val duration = state.durationMs.coerceAtLeast(1L)
-    LinearProgressIndicator(
+    AppLinearProgressIndicator(
         progress = { state.positionMs.coerceIn(0L, duration).toFloat() / duration.toFloat() },
         modifier = modifier
             .fillMaxWidth()

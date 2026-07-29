@@ -35,7 +35,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
@@ -968,7 +968,7 @@ fun ModernButton(
         contentAlignment = Alignment.Center
     ) {
         if (isLoading) {
-            CircularProgressIndicator(
+            AppCircularProgressIndicator(
                 modifier = Modifier.size(18.dp),
                 color = palette.buttonText,
                 strokeWidth = 2.dp

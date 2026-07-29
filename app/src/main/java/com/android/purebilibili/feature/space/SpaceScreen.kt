@@ -49,14 +49,14 @@ import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.components.AppDropdownMenu
 import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
-import androidx.compose.material3.LinearProgressIndicator
+import com.android.purebilibili.core.ui.components.AppLinearProgressIndicator
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppSurface
@@ -661,7 +661,7 @@ fun SpaceScreen(
                     enabled = !isFollowGroupsLoading && !isSavingFollowGroups
                 ) {
                     if (isSavingFollowGroups) {
-                        CircularProgressIndicator(
+                        AppCircularProgressIndicator(
                             modifier = Modifier.size(16.dp),
                             strokeWidth = 2.dp,
                             color = MaterialTheme.colorScheme.onPrimary
@@ -2979,7 +2979,7 @@ private fun SpaceHomeVideoCard(
             }
 
             if (progressState.showProgressBar) {
-                LinearProgressIndicator(
+                AppLinearProgressIndicator(
                     progress = { progressState.progressFraction },
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
@@ -3456,7 +3456,7 @@ private fun SpaceArchiveListItemRow(
                 }
             }
             if (progressState?.showProgressBar == true) {
-                LinearProgressIndicator(
+                AppLinearProgressIndicator(
                     progress = { progressState.progressFraction },
                     modifier = Modifier
                         .align(Alignment.BottomCenter)

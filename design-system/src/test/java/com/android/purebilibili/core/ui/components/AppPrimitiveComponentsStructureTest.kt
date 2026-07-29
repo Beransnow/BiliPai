@@ -26,6 +26,10 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(source.contains("fun AppModalNavigationDrawer("))
         assertTrue(source.contains("fun AppNavigationDrawerItem("))
         assertTrue(source.contains(") = NavigationDrawerItem("))
+        assertTrue(source.contains("fun AppCircularProgressIndicator("))
+        assertTrue(source.contains(") = CircularProgressIndicator("))
+        assertTrue(source.contains("fun AppLinearProgressIndicator("))
+        assertTrue(source.contains(") = LinearProgressIndicator("))
     }
 
     private fun loadSource(): String {

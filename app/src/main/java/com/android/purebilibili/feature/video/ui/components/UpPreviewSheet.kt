@@ -24,7 +24,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
@@ -311,7 +311,7 @@ fun UpPreviewSheet(
                                     .weight(1f),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                CircularProgressIndicator(
+                                AppCircularProgressIndicator(
                                     modifier = Modifier.size(28.dp),
                                     strokeWidth = 2.dp,
                                     color = colors.followFillColor,
