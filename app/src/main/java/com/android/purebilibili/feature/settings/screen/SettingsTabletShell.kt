@@ -17,7 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationDrawerItem
+import com.android.purebilibili.core.ui.components.AppNavigationDrawerItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -91,7 +91,7 @@ fun SettingsTabletShell(
                     items(categories) { category ->
                         val visual = rememberSettingsEntryVisual(category.searchTarget)
                         val selected = selectedCategory == category
-                        NavigationDrawerItem(
+                        AppNavigationDrawerItem(
                             label = {
                                 Column {
                                     Text(category.title, fontWeight = FontWeight.Medium)

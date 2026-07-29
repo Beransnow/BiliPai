@@ -24,6 +24,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
+import androidx.compose.material3.NavigationDrawerItemColors
+import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.contentColorFor
@@ -296,4 +299,25 @@ fun AppModalNavigationDrawer(
     gesturesEnabled = gesturesEnabled,
     scrimColor = scrimColor,
     content = content,
+)
+
+@Composable
+fun AppNavigationDrawerItem(
+    label: @Composable () -> Unit,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: (@Composable () -> Unit)? = null,
+    badge: (@Composable () -> Unit)? = null,
+    colors: NavigationDrawerItemColors = NavigationDrawerItemDefaults.colors(),
+    interactionSource: MutableInteractionSource? = null,
+) = NavigationDrawerItem(
+    label = label,
+    selected = selected,
+    onClick = onClick,
+    modifier = modifier,
+    icon = icon,
+    badge = badge,
+    colors = colors,
+    interactionSource = interactionSource,
 )

@@ -24,6 +24,8 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(source.contains(") = OutlinedTextField("))
         assertTrue(source.contains("fun AppDropdownMenu("))
         assertTrue(source.contains("fun AppModalNavigationDrawer("))
+        assertTrue(source.contains("fun AppNavigationDrawerItem("))
+        assertTrue(source.contains(") = NavigationDrawerItem("))
     }
 
     private fun loadSource(): String {

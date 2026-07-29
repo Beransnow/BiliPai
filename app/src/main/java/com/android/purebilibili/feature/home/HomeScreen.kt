@@ -40,7 +40,7 @@ import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.zIndex
 import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.ModalNavigationDrawer
+import com.android.purebilibili.core.ui.components.AppModalNavigationDrawer
 import androidx.compose.material3.rememberDrawerState
 import com.android.purebilibili.feature.home.components.MineSideDrawer
 import androidx.compose.ui.graphics.Color
@@ -2228,7 +2228,7 @@ fun HomeScreen(
             } else {
                 AppSpacingTokens.None
             }
-            ModalNavigationDrawer(
+            AppModalNavigationDrawer(
                 drawerState = drawerState,
                 gesturesEnabled = true,
                 scrimColor = MaterialTheme.colorScheme.scrim.copy(
