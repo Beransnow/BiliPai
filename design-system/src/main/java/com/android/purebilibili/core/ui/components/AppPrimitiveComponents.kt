@@ -31,6 +31,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.FloatingActionButtonElevation
@@ -235,6 +236,25 @@ fun AppIconButton(
 )
 
 @Composable
+fun AppFilledIconButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    shape: Shape = IconButtonDefaults.filledShape,
+    colors: IconButtonColors = IconButtonDefaults.filledIconButtonColors(),
+    interactionSource: MutableInteractionSource? = null,
+    content: @Composable () -> Unit,
+) = FilledIconButton(
+    onClick = onClick,
+    modifier = modifier,
+    enabled = enabled,
+    shape = shape,
+    colors = colors,
+    interactionSource = interactionSource,
+    content = content,
+)
+
+@Composable
 fun AppOutlinedTextField(
     value: String,
     onValueChange: (String) -> Unit,
@@ -376,6 +396,19 @@ fun AppCircularProgressIndicator(
     modifier = modifier,
     color = color,
     strokeWidth = strokeWidth,
+    trackColor = trackColor,
+    strokeCap = strokeCap,
+)
+
+@Composable
+fun AppLinearProgressIndicator(
+    modifier: Modifier = Modifier,
+    color: Color = ProgressIndicatorDefaults.linearColor,
+    trackColor: Color = ProgressIndicatorDefaults.linearTrackColor,
+    strokeCap: StrokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
+) = LinearProgressIndicator(
+    modifier = modifier,
+    color = color,
     trackColor = trackColor,
     strokeCap = strokeCap,
 )
