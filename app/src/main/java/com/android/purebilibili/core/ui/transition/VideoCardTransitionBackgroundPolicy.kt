@@ -513,6 +513,16 @@ internal fun shouldUseVideoCardTransitionSnapshotBlur(
     return sdkInt >= Build.VERSION_CODES.S
 }
 
+/** Realtime blur is a user capability setting, not a per-route visual downgrade. */
+internal fun shouldUseVideoCardTransitionRealtimeBlurForSource(
+    sourceRoute: String?,
+    settingEnabled: Boolean,
+): Boolean {
+    @Suppress("UNUSED_VARIABLE")
+    val ignoredSourceRoute = sourceRoute
+    return settingEnabled
+}
+
 /**
  * 每帧内多次读取同一 frame 时，用 (progress, phase, …) 缓存避免重复纯函数计算。
  */

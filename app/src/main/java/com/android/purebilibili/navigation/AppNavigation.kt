@@ -1613,7 +1613,11 @@ fun AppNavigation(
                                             motionTierProvider = backgroundState.motionTierProvider,
                                             isLightBackgroundProvider = backgroundState.isLightBackgroundProvider,
                                             realtimeBlurEnabledProvider = {
-                                                videoTransitionRealtimeBlurEnabled
+                                                com.android.purebilibili.core.ui.transition
+                                                    .shouldUseVideoCardTransitionRealtimeBlurForSource(
+                                                        sourceRoute = backgroundState.sourceRouteProvider(),
+                                                        settingEnabled = videoTransitionRealtimeBlurEnabled,
+                                                    )
                                             },
                                         )
                                     } else {

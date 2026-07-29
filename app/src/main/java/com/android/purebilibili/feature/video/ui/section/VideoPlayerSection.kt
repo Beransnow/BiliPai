@@ -2321,7 +2321,7 @@ fun VideoPlayerSection(
                 isInPipMode = isInPipMode,
                 videoWidth = player.videoSize.width,
                 videoHeight = player.videoSize.height,
-                needsSurfaceRecovery = true
+                needsSurfaceRecovery = false
             )
             if (shouldRebindSurface) {
                 playerViewRef?.let { playerView ->
@@ -2701,7 +2701,7 @@ fun VideoPlayerSection(
             mutableStateOf(coverBootstrapState.isFirstFrameRendered)
         }
         var hasStartedSmoothReveal by remember(bvid) {
-            mutableStateOf(false)
+            mutableStateOf(coverBootstrapState.hasStartedSmoothReveal)
         }
         val revealMotionSpec = remember {
             resolveVideoPlayerRevealMotionSpec()

@@ -73,6 +73,7 @@ import com.android.purebilibili.core.util.HapticType
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope.OverlayClip
 import androidx.compose.animation.core.tween
 import com.android.purebilibili.core.ui.LocalSharedTransitionScope
 import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
@@ -105,6 +106,8 @@ import com.android.purebilibili.core.ui.transition.resolveVideoSharedTransitionV
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.transition.shouldEnableVideoCoverSharedTransition
 import com.android.purebilibili.core.ui.transition.videoCardShellSharedBoundsOrEmpty
+import com.android.purebilibili.core.ui.transition.videoCoverSharedElementKey
+import com.android.purebilibili.core.ui.transition.videoSharedElementBoundsTransformSpec
 import com.android.purebilibili.feature.home.resolveHomeCardEnterAnimationEnabledAtMount
 import com.android.purebilibili.feature.home.resolveHomeCardInfoSurfaceAppearance
 import com.android.purebilibili.feature.home.HomeGlassPillStyle
@@ -751,8 +754,37 @@ internal fun ElegantVideoCard(
             }
         }
 
+        val coverSharedBoundsEnabled = shouldEnableVideoCoverSharedTransition(
+            transitionEnabled = sharedTransitionOwnership.useCoverSharedBounds,
+            hasSharedTransitionScope = sharedTransitionScope != null,
+            hasAnimatedVisibilityScope = animatedVisibilityScope != null,
+        ) && !useCardShellSharedBounds
+        val coverSharedBoundsModifier = if (coverSharedBoundsEnabled) {
+            with(requireNotNull(sharedTransitionScope)) {
+                Modifier.sharedBounds(
+                    sharedContentState = rememberSharedContentState(
+                        key = videoCoverSharedElementKey(
+                            bvid = video.bvid,
+                            sourceRoute = effectiveSharedElementSourceRoute,
+                        )
+                    ),
+                    animatedVisibilityScope = requireNotNull(animatedVisibilityScope),
+                    boundsTransform = { initialBounds, targetBounds ->
+                        videoSharedElementBoundsTransformSpec(
+                            motion = homeSharedTransitionMotionSpec,
+                            initialBounds = initialBounds,
+                            targetBounds = targetBounds,
+                        )
+                    },
+                    clipInOverlayDuringTransition = OverlayClip(coverShape),
+                )
+            }
+        } else {
+            Modifier
+        }
+
         Box(
-            modifier = Modifier
+            modifier = coverSharedBoundsModifier
                 .fillMaxWidth()
                 .testTag("home_video_cover")
                 .aspectRatio(coverAspectRatio)

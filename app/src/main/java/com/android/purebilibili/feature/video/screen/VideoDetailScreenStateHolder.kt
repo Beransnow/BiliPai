@@ -61,6 +61,7 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
@@ -236,6 +237,8 @@ import com.android.purebilibili.feature.video.share.VideoShareSheet
 import com.android.purebilibili.feature.video.viewmodel.PlayerToastPresentation
 import kotlin.math.abs
 import kotlin.math.roundToInt
+
+private const val CONTINUOUS_PLAYER_MORPH_DURATION_MILLIS = 280
 
 private const val VIDEO_DETAIL_COLLAPSE_SIGNAL_IDLE_TIMEOUT_MS = 120L
 
@@ -668,6 +671,24 @@ internal fun VideoDetailScreenStateHolder(
     }
     val entryVisualProgress = remember(entryVisualEnabled) {
         Animatable(if (entryVisualEnabled) 0f else 1f)
+    }
+    val detailInfoRevealProgress = remember(transitionEnabled) {
+        Animatable(if (transitionEnabled) 0f else 1f)
+    }
+
+    LaunchedEffect(transitionEnabled, motionSpec.entryPhaseDurationMillis) {
+        if (!transitionEnabled) {
+            detailInfoRevealProgress.snapTo(1f)
+        } else {
+            detailInfoRevealProgress.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(
+                    durationMillis = motionSpec.entryPhaseDurationMillis.coerceAtLeast(1),
+                    delayMillis = 48,
+                    easing = FastOutSlowInEasing,
+                ),
+            )
+        }
     }
 
     LaunchedEffect(
@@ -1735,6 +1756,113 @@ internal fun VideoDetailScreenStateHolder(
 
     // 📱 [优化] 竖屏视频检测已移至 VideoPlayerState 集中管理
     val isVerticalVideo by playerState.isVerticalVideo.collectAsStateWithLifecycle()
+    val continuousFullscreenTransitionEnabled = transitionEnabled &&
+        isOrientationDrivenFullscreen &&
+        windowSizeClass.isCompactDevice &&
+        !isActivityInMultiWindowMode &&
+        !isVerticalVideo
+    var continuousPlayerPhase by rememberSaveable(currentBvid) {
+        mutableStateOf(
+            if (isLandscape) {
+                ContinuousPlayerTransitionPhase.Fullscreen
+            } else {
+                ContinuousPlayerTransitionPhase.Inline
+            }
+        )
+    }
+    val continuousPlayerProgress = remember(currentBvid) {
+        Animatable(if (isLandscape) 1f else 0f)
+    }
+    val isContinuousPlayerMorphing = continuousFullscreenTransitionEnabled &&
+        (continuousPlayerPhase == ContinuousPlayerTransitionPhase.Expanding ||
+            continuousPlayerPhase == ContinuousPlayerTransitionPhase.Collapsing)
+
+    fun applyContinuousPlayerDecision(decision: ContinuousPlayerTransitionDecision) {
+        continuousPlayerPhase = decision.phase
+        when (decision.orientationRequest) {
+            ContinuousPlayerOrientationRequest.None -> Unit
+            ContinuousPlayerOrientationRequest.Landscape -> {
+                userRequestedFullscreen = true
+                manualPortraitHoldActive = false
+                activity?.requestedOrientation = resolvePhoneFullscreenEnterOrientation(
+                    fullscreenMode = fullscreenMode,
+                    isVerticalVideo = false,
+                ) ?: ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            }
+            ContinuousPlayerOrientationRequest.Portrait -> {
+                userRequestedFullscreen = false
+                manualPortraitHoldActive = true
+                activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            }
+        }
+    }
+
+    LaunchedEffect(
+        continuousFullscreenTransitionEnabled,
+        continuousPlayerPhase,
+        isLandscape,
+    ) {
+        if (!continuousFullscreenTransitionEnabled) return@LaunchedEffect
+        when {
+            isLandscape && continuousPlayerPhase == ContinuousPlayerTransitionPhase.Inline -> {
+                continuousPlayerProgress.snapTo(1f)
+                continuousPlayerPhase = ContinuousPlayerTransitionPhase.Fullscreen
+            }
+            !isLandscape && continuousPlayerPhase == ContinuousPlayerTransitionPhase.Fullscreen -> {
+                continuousPlayerProgress.snapTo(0f)
+                continuousPlayerPhase = ContinuousPlayerTransitionPhase.Inline
+            }
+            else -> applyContinuousPlayerDecision(
+                reduceContinuousPlayerTransition(
+                    phase = continuousPlayerPhase,
+                    event = ContinuousPlayerTransitionEvent.OrientationChanged(isLandscape),
+                )
+            )
+        }
+    }
+
+    LaunchedEffect(continuousFullscreenTransitionEnabled, continuousPlayerPhase) {
+        if (!continuousFullscreenTransitionEnabled) return@LaunchedEffect
+        when (continuousPlayerPhase) {
+            ContinuousPlayerTransitionPhase.Expanding -> {
+                val remaining = (1f - continuousPlayerProgress.value).coerceIn(0f, 1f)
+                continuousPlayerProgress.animateTo(
+                    targetValue = 1f,
+                    animationSpec = tween(
+                        durationMillis = (CONTINUOUS_PLAYER_MORPH_DURATION_MILLIS * remaining)
+                            .roundToInt()
+                            .coerceAtLeast(1),
+                        easing = FastOutSlowInEasing,
+                    ),
+                )
+                applyContinuousPlayerDecision(
+                    reduceContinuousPlayerTransition(
+                        continuousPlayerPhase,
+                        ContinuousPlayerTransitionEvent.ExpansionFinished,
+                    )
+                )
+            }
+            ContinuousPlayerTransitionPhase.Collapsing -> {
+                val remaining = continuousPlayerProgress.value.coerceIn(0f, 1f)
+                continuousPlayerProgress.animateTo(
+                    targetValue = 0f,
+                    animationSpec = tween(
+                        durationMillis = (CONTINUOUS_PLAYER_MORPH_DURATION_MILLIS * remaining)
+                            .roundToInt()
+                            .coerceAtLeast(1),
+                        easing = FastOutSlowInEasing,
+                    ),
+                )
+                applyContinuousPlayerDecision(
+                    reduceContinuousPlayerTransition(
+                        continuousPlayerPhase,
+                        ContinuousPlayerTransitionEvent.CollapseFinished,
+                    )
+                )
+            }
+            else -> Unit
+        }
+    }
     val activeVideoSharedTransitionVisualSpec = remember(
         sourceRouteForSharedElement,
         sharedTransitionSourceCornerDp,
@@ -2223,7 +2351,14 @@ internal fun VideoDetailScreenStateHolder(
         } else {
             pendingFullscreenPositionRestoreMs = -1L
         }
-        toggleVideoDetailFullscreen(
+        if (continuousFullscreenTransitionEnabled) {
+            applyContinuousPlayerDecision(
+                reduceContinuousPlayerTransition(
+                    phase = continuousPlayerPhase,
+                    event = ContinuousPlayerTransitionEvent.Toggle,
+                )
+            )
+        } else toggleVideoDetailFullscreen(
             activity = activity,
             isOrientationDrivenFullscreen = isOrientationDrivenFullscreen,
             isLandscape = isLandscape,
@@ -2324,6 +2459,127 @@ internal fun VideoDetailScreenStateHolder(
             pendingMainReloadBvidAfterPortrait != uiSuccessState?.info?.bvid ||
                 (portraitSyncSnapshotCid > 0L && portraitSyncSnapshotCid != (uiSuccessState?.info?.cid ?: 0L))
             )
+    val showDanmakuDialog by viewModel.showDanmakuDialog.collectAsStateWithLifecycle()
+    val isSendingDanmaku by viewModel.isSendingDanmaku.collectAsStateWithLifecycle()
+    val composerDrafts by viewModel.composerDrafts.collectAsStateWithLifecycle()
+    val danmakuSendPreferenceScope = rememberCoroutineScope()
+    val rememberedDanmakuSendColor by com.android.purebilibili.core.store.SettingsManager
+        .getDanmakuSendColor(context)
+        .collectAsStateWithLifecycle(initialValue = 16777215)
+    val rememberedDanmakuSendMode by com.android.purebilibili.core.store.SettingsManager
+        .getDanmakuSendMode(context)
+        .collectAsStateWithLifecycle(initialValue = 1)
+    val rememberedDanmakuSendFontSize by com.android.purebilibili.core.store.SettingsManager
+        .getDanmakuSendFontSize(context)
+        .collectAsStateWithLifecycle(initialValue = 25)
+    val continuousPlayerUnitState = remember { mutableFloatStateOf(1f) }
+    val continuousPlayerRenderer = rememberUpdatedState<@Composable (ContinuousPlayerHostLayout) -> Unit> { layout ->
+        PortraitInlineVideoPlayerHost(
+            modifier = layout.modifier,
+            animatedViewportWidth = layout.viewportWidth,
+            inlinePlayerAlpha = layout.alpha,
+            inlinePlayerScale = layout.scale,
+            isFullscreen = layout.isFullscreen,
+            playerState = playerState,
+            uiState = uiState,
+            isPipMode = isPipMode,
+            transitionEnabled = detailChildTransitionEnabled,
+            transitionChromeAlphaProvider = videoCardDetailChromeAlphaProvider,
+            onToggleFullscreen = { toggleFullscreen() },
+            playbackActions = playbackActions,
+            onDoubleTapLike = engagementViewModel::toggleLike,
+            onBack = if (layout.isFullscreen) ({ toggleFullscreen() }) else handleBack,
+            onHomeClick = {
+                handleTopBarAction(resolveVideoDetailTopBarAction(isHomeButton = true))
+            },
+            videoPlayerSectionTarget = videoPlayerSectionTarget,
+            sponsorSegment = sponsorSegment,
+            showSponsorSkipButton = showSponsorSkipButton,
+            sleepTimerMinutes = sleepTimerMinutes,
+            viewPoints = viewPoints,
+            pbpProgressData = pbpProgressData,
+            sponsorProgressMarkers = sponsorProgressMarkers,
+            isVerticalVideo = isVerticalVideo &&
+                (allowStandalonePortraitExperience || useOfficialInlinePortraitDetailExperience),
+            onPortraitFullscreen = { enterPortraitFullscreen() },
+            isPortraitFullscreen = isPortraitFullscreen,
+            onPipClick = handlePipClick,
+            codecPreference = codecPreference,
+            secondCodecPreference = secondCodecPreference,
+            audioQualityPreference = audioQualityPreference,
+            onNavigateToAudioMode = {
+                viewModel.setAudioMode(true)
+                presentationState.markNavigatingToAudioMode()
+                onNavigateToAudioMode()
+            },
+            forceCoverOnly = forceCoverOnlyForLiveSafeReturn ||
+                shouldForceBackPreviewPlayerCover(
+                    keepLoadedContentForBackPreview = keepLoadedContentForBackPreview,
+                    bindLivePlayerForBackPreview = bindLivePlayerForBackPreview,
+                ),
+            preserveCurrentFrameOnFullscreenChange = preserveCurrentFrameOnFullscreenChange,
+            liveBackPreview = bindLivePlayerForBackPreview,
+            useTextureSurfaceForNavigation = transitionEnabled,
+            predictiveBackCancelRecoveryGeneration = predictiveBackCancelRecoveryGeneration,
+            allowLivePlayerSharedElement = true,
+            sourceRouteForSharedElement = sourceRouteForSharedElement,
+            suppressSubtitleOverlay = shouldSuppressSubtitleOverlay,
+            subtitleDisplayModePreferenceOverride = subtitleDisplayModeOverride,
+            onSubtitleDisplayModePreferenceOverrideChange = { subtitleDisplayModeOverride = it },
+            fullscreenExtras = ContinuousPlayerFullscreenExtras(
+                danmakuComposerVisible = showDanmakuDialog,
+                onDismissDanmakuComposer = viewModel::hideDanmakuSendDialog,
+                onSendDanmakuComposer = viewModel::sendDanmaku,
+                isSendingDanmakuComposer = isSendingDanmaku,
+                danmakuComposerInitialText = composerDrafts.danmaku.text,
+                danmakuComposerInitialAttentionCommand =
+                    composerDrafts.danmaku.attentionCommand,
+                danmakuComposerInitialColor = rememberedDanmakuSendColor,
+                danmakuComposerInitialMode = rememberedDanmakuSendMode,
+                danmakuComposerInitialFontSize = rememberedDanmakuSendFontSize,
+                onDanmakuComposerDraftChange = viewModel::updateDanmakuDraft,
+                onDanmakuComposerSelectionChange = { color, mode, fontSize ->
+                    danmakuSendPreferenceScope.launch {
+                        com.android.purebilibili.core.store.SettingsManager
+                            .setDanmakuSendColor(context, color)
+                        com.android.purebilibili.core.store.SettingsManager
+                            .setDanmakuSendMode(context, mode)
+                        com.android.purebilibili.core.store.SettingsManager
+                            .setDanmakuSendFontSize(context, fontSize)
+                    }
+                },
+                currentPlayMode = currentPlayMode,
+                onPlayModeClick = { PlaylistManager.togglePlayMode() },
+                onSaveCover = { viewModel.saveCover(context) },
+                onDownloadAudio = { viewModel.downloadAudio(context) },
+                relatedVideos = uiSuccessState?.related.orEmpty(),
+                ugcSeason = uiSuccessState?.info?.ugc_season,
+                isFollowed = engagementState.isFollowing,
+                isLiked = engagementState.isLiked,
+                isCoined = engagementState.coinCount > 0,
+                isFavorited = engagementState.isFavorited,
+                onToggleFollow = engagementViewModel::toggleFollow,
+                onToggleLike = engagementViewModel::toggleLike,
+                onDislike = viewModel::markVideoNotInterested,
+                onCoin = engagementViewModel::openCoinDialog,
+                onToggleFavorite = {
+                    openFavoriteFolders(VideoFavoriteEntryPoint.FullscreenOverlay)
+                },
+                onTriple = engagementViewModel::doTripleAction,
+                onRelatedVideoClick = navigateToRelatedVideo,
+                onPageSelect = viewModel::switchPage,
+                hasFavoritePlaylist = isExternalPlaylist &&
+                    externalPlaylistSource == ExternalPlaylistSource.FAVORITE &&
+                    playlistItems.size > 1,
+                onFavoritePlaylistClick = { showExternalPlaylistQueueSheet = true },
+            ),
+        )
+    }
+    val continuousPlayerContent = remember {
+        movableContentOf<ContinuousPlayerHostLayout> { layout ->
+            continuousPlayerRenderer.value(layout)
+        }
+    }
     // Android 16 ART 曾拒绝校验由 VideoDetailRouteSheetHost 尾随 lambda 生成的超大合成方法
     // （VerifyError: VideoDetailScreen$lambda$N(...BoxScope, Composer, int) 参数过多）。
     // 主布局与覆盖层必须使用两个内容槽，单个局部函数仍会捕获全部状态并生成百参数方法。
@@ -2332,24 +2588,22 @@ internal fun VideoDetailScreenStateHolder(
     fun BoxScope.VideoDetailRouteSheetMainContent() {
             // 📐 [平板适配] 全屏模式过渡动画（只有手机横屏才进入全屏）
         if (isFullscreenMode) {
-                val showDanmakuDialog by viewModel.showDanmakuDialog.collectAsStateWithLifecycle()
-                val isSendingDanmaku by viewModel.isSendingDanmaku.collectAsStateWithLifecycle()
-                val composerDrafts by viewModel.composerDrafts.collectAsStateWithLifecycle()
                 val useInlineDanmakuComposer =
                     com.android.purebilibili.feature.video.ui.components.shouldUseInlineDanmakuComposer(
                         isFullscreenMode = isFullscreenMode
                     )
-                val danmakuSendPreferenceScope = rememberCoroutineScope()
-                val rememberedDanmakuSendColor by com.android.purebilibili.core.store.SettingsManager
-                    .getDanmakuSendColor(context)
-                    .collectAsStateWithLifecycle(initialValue = 16777215)
-                val rememberedDanmakuSendMode by com.android.purebilibili.core.store.SettingsManager
-                    .getDanmakuSendMode(context)
-                    .collectAsStateWithLifecycle(initialValue = 1)
-                val rememberedDanmakuSendFontSize by com.android.purebilibili.core.store.SettingsManager
-                    .getDanmakuSendFontSize(context)
-                    .collectAsStateWithLifecycle(initialValue = 25)
-                VideoPlayerSection(
+                if (continuousFullscreenTransitionEnabled) {
+                    continuousPlayerContent(
+                        ContinuousPlayerHostLayout(
+                            modifier = Modifier.fillMaxSize(),
+                            viewportWidth = configuration.screenWidthDp.dp,
+                            alpha = continuousPlayerUnitState,
+                            scale = continuousPlayerUnitState,
+                            isFullscreen = true,
+                        )
+                    )
+                } else {
+                    VideoPlayerSection(
                     playerState = playerState,
                     uiState = uiState,
                     isFullscreen = true,
@@ -2486,8 +2740,9 @@ internal fun VideoDetailScreenStateHolder(
                     suppressSubtitleOverlay = shouldSuppressSubtitleOverlay,
                     subtitleDisplayModePreferenceOverride = subtitleDisplayModeOverride,
                     onSubtitleDisplayModePreferenceOverrideChange = { subtitleDisplayModeOverride = it },
-                    onSubtitleTrackSelected = viewModel::selectSubtitleTrack
-                )
+                        onSubtitleTrackSelected = viewModel::selectSubtitleTrack
+                    )
+                }
             } else {
                     //  沉浸式布局：视频延伸到状态栏 + 内容区域
                     //  📐 [大屏适配] 仅 Expanded 使用分栏布局
@@ -2793,7 +3048,7 @@ internal fun VideoDetailScreenStateHolder(
                         } else {
                             0.dp
                         }
-                        val animatedViewportHeight = lerp(
+                        val inlineViewportHeight = lerp(
                             expandedViewportHeight,
                             collapsedViewportHeight,
                             effectiveCollapseProgress
@@ -2808,12 +3063,13 @@ internal fun VideoDetailScreenStateHolder(
                         } else {
                             screenWidthDp
                         }
-                        val animatedViewportWidth = lerp(
+                        val inlineViewportWidth = lerp(
                             expandedViewportWidth,
                             collapsedViewportWidth,
                             effectiveCollapseProgress
                         )
-                        val animatedPlayerHeight = animatedViewportHeight + playerTopInset
+                        val inlinePlayerHeight = inlineViewportHeight + playerTopInset
+                        val fullscreenPlayerHeight = screenHeightDp.coerceAtLeast(1.dp)
 
                         //  注意：移除了状态栏黑色 Spacer
                         // 播放器将延伸到状态栏下方，共享元素过渡更流畅
@@ -2915,11 +3171,21 @@ internal fun VideoDetailScreenStateHolder(
                         Box(
                             modifier = playerContainerModifier
                                 .fillMaxWidth()
-                                .height(animatedPlayerHeight)  //  使用动画高度（包含0高度）
+                                .continuousPlayerViewportHeight(
+                                    progressProvider = { continuousPlayerProgress.value },
+                                    inlineHeight = inlinePlayerHeight,
+                                    fullscreenHeight = fullscreenPlayerHeight,
+                                    enabled = continuousFullscreenTransitionEnabled,
+                                )
                                 .background(Color.Black)  // 黑色背景
                                 .clipToBounds()
                                 //  [PiP修复] 捕获视频播放器在屏幕上的位置
                                 .onGloballyPositioned { layoutCoordinates ->
+                                    // Morph height changes every frame. PiP and system-bar bounds only need
+                                    // the settled geometry, so avoid feeding this layout work back into composition.
+                                    if (isContinuousPlayerMorphing) {
+                                        return@onGloballyPositioned
+                                    }
                                     val position = layoutCoordinates.positionInWindow()
                                     val rootPosition = layoutCoordinates.positionInRoot()
                                     val size = layoutCoordinates.size
@@ -2974,10 +3240,20 @@ internal fun VideoDetailScreenStateHolder(
                                         )
                                     }
                             ) {
+                            if (continuousFullscreenTransitionEnabled) {
+                                continuousPlayerContent(
+                                    ContinuousPlayerHostLayout(
+                                        modifier = Modifier.align(Alignment.TopCenter),
+                                        viewportWidth = screenWidthDp,
+                                        alpha = inlinePlayerAlpha,
+                                        scale = inlinePlayerScale,
+                                        isFullscreen = false,
+                                    )
+                                )
+                            } else {
                             PortraitInlineVideoPlayerHost(
                                 modifier = Modifier.align(Alignment.TopCenter),
-                                animatedViewportWidth = animatedViewportWidth,
-                                animatedViewportHeight = animatedViewportHeight,
+                                animatedViewportWidth = inlineViewportWidth,
                                 inlinePlayerAlpha = inlinePlayerAlpha,
                                 inlinePlayerScale = inlinePlayerScale,
                                 playerState = playerState,
@@ -3038,6 +3314,7 @@ internal fun VideoDetailScreenStateHolder(
                                 onSubtitleDisplayModePreferenceOverrideChange = { subtitleDisplayModeOverride = it }
                             )
                             }
+                            }
                         }
 
                         Box(
@@ -3050,7 +3327,19 @@ internal fun VideoDetailScreenStateHolder(
                                         AppSurfaceTokens.background()
                                     }
                                 )
+                                .drawWithContent {
+                                    val reveal = detailInfoRevealProgress.value.coerceIn(0f, 1f)
+                                    clipRect(
+                                        left = 0f,
+                                        top = 0f,
+                                        right = size.width,
+                                        bottom = size.height * reveal,
+                                    ) {
+                                        this@drawWithContent.drawContent()
+                                    }
+                                }
                                 .graphicsLayer {
+                                    val reveal = detailInfoRevealProgress.value.coerceIn(0f, 1f)
                                     val holdFullyOpaque =
                                         suppressEnterFadeAfterBackPreview && !isLeaving
                                     if (liveReturnMorph && !holdFullyOpaque) {
@@ -3072,7 +3361,7 @@ internal fun VideoDetailScreenStateHolder(
                                             frame.alpha
                                         }
                                         translationY = with(videoCardTransitionDensity) {
-                                            frame.translationYDp.dp.toPx()
+                                            (frame.translationYDp + (1f - reveal) * 12f).dp.toPx()
                                         }
                                     } else {
                                         alpha = resolveVideoDetailReturnContentAlpha(
@@ -3082,7 +3371,9 @@ internal fun VideoDetailScreenStateHolder(
                                             liveReturnMorph = false,
                                             isQuickReturn = isQuickReturningFromDetail,
                                         )
-                                        translationY = 0f
+                                        translationY = with(videoCardTransitionDensity) {
+                                            ((1f - reveal) * 12f).dp.toPx()
+                                        }
                                     }
                                 }
                                 // .nestedScroll(nestedScrollConnection) // [Remove] 移除嵌套滚动，确保 Tabs 正常滑动
@@ -3112,7 +3403,9 @@ internal fun VideoDetailScreenStateHolder(
                                                 }
                                             }
                                         } else {
-                                            VideoDetailSkeleton()
+                                            VideoDetailSkeleton(
+                                                animated = isTransitionFinished,
+                                            )
                                         }
                                     }
                                 }
