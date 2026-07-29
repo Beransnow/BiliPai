@@ -257,7 +257,7 @@ class VideoSharedTransitionPolicyTest {
 
     @Test
     fun videoCardShellSharedBounds_includesHorizontalAnchorSources() {
-        assertFalse(shouldUseVideoCardShellSharedBounds("home", transitionEnabled = true))
+        assertTrue(shouldUseVideoCardShellSharedBounds("home", transitionEnabled = true))
         assertTrue(shouldUseVideoCardShellSharedBounds("dynamic", transitionEnabled = true))
         assertTrue(shouldUseVideoCardShellSharedBounds("watch_later", transitionEnabled = true))
         assertTrue(shouldUseVideoCardShellSharedBounds("space", transitionEnabled = true))
@@ -272,7 +272,7 @@ class VideoSharedTransitionPolicyTest {
     }
 
     @Test
-    fun videoCardShellContainerTransform_includesSpaceSources() {
+    fun videoCardShellContainerTransform_includesCardSources() {
         assertTrue(
             shouldUseVideoCardShellContainerTransform(
                 sourceRoute = "home",

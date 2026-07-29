@@ -167,7 +167,7 @@ class AppNavigationNavigation3BridgeStructureTest {
         assertFalse(source.contains("&&\n                            !intent.isVerticalVideo"))
         assertFalse(videoDetailBranch.contains("!shouldUseNativeVideoCardTransition(videoKey)"))
         assertFalse(videoDetailBranch.contains("!shouldUseNativeVideoBackgroundReturnEffect(videoKey)"))
-        assertTrue(videoDetailBranch.contains("transitionEnabled = videoDetailTransitionsEnabled &&"))
+        assertTrue(videoDetailBranch.contains("transitionEnabled = shouldEnableVideoDetailSharedTransition("))
         assertTrue(videoDetailBranch.contains("shouldEnableVideoDetailSharedTransition("))
         assertFalse(videoDetailBranch.contains("nativeVideoBackPreviewVideoKey == videoKey.bvid"))
         assertFalse(videoDetailBranch.contains("hideVideoDetailForNativeBackPreview"))

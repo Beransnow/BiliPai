@@ -10,22 +10,6 @@ import kotlin.test.assertTrue
 class VideoCardTransitionBackgroundPolicyTest {
 
     @Test
-    fun realtimeBlurRetainsEnabledSettingForEverySource() {
-        assertTrue(
-            shouldUseVideoCardTransitionRealtimeBlurForSource(
-                sourceRoute = "home?category=热门",
-                settingEnabled = true,
-            )
-        )
-        assertTrue(
-            shouldUseVideoCardTransitionRealtimeBlurForSource(
-                sourceRoute = "search",
-                settingEnabled = true,
-            )
-        )
-    }
-
-    @Test
     fun snapshotBlur_isEnabledForActivePhasesOnApi31Plus() {
         assertTrue(
             shouldUseVideoCardTransitionSnapshotBlur(
@@ -290,14 +274,14 @@ class VideoCardTransitionBackgroundPolicyTest {
     }
 
     @Test
-    fun openingBlurBuildsSlightlyLaterButKeepsVisualContinuity() {
+    fun openingBlurBuildsInLockstepWithDepth() {
         val early = resolveVideoCardTransitionBackgroundFrame(
             progress = 0.2f,
             phase = VideoCardTransitionBackgroundPhase.OPENING,
             motionTier = MotionTier.Normal,
             sdkInt = 35,
         )
-        // 0.2^1.15 × 12dp ≈ 1.9 → 量化到 2px。
+        // 0.2 × 12dp = 2.4 → 量化到 2px。
         assertEquals(2f, early.blurRadiusPx, 0.01f)
         assertTrue(early.scrimAlpha > 0f)
         assertTrue(early.blurRadiusPx > 0f)

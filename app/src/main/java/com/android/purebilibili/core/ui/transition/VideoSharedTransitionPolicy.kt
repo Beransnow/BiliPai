@@ -355,10 +355,7 @@ internal fun shouldUseVideoCardShellSharedBounds(
     if (!transitionEnabled) return false
     if (shouldSkipVideoCardSharedBoundsMorph(sourceRoute)) return false
     if (shouldUseVideoCoverRelayTransition(sourceRoute)) return false
-    val normalizedSourceRoute = sourceRoute?.substringBefore("?")
-    // 首页只让封面接到详情播放器，避免整张信息卡和详情页根节点一起缩放、裁剪。
-    if (normalizedSourceRoute == HOME_SOURCE_ROUTE) return false
-    return !normalizedSourceRoute.isNullOrBlank()
+    return !sourceRoute?.substringBefore("?").isNullOrBlank()
 }
 
 internal fun shouldUseHomeVideoCardShellContainerTransform(
@@ -397,8 +394,9 @@ internal fun shouldEnableVideoMetadataSharedTransition(
     if (!coverSharedEnabled) return false
     // 卡片容器已经承载整体放大/回收时，标题、UP、统计等不要再各自抢独立 sharedBounds。
     if (useCardContainerSharedBounds) return false
-    // 首页采用封面单元素变形，标题、作者等信息由详情内容区独立展开。
-    if (profile == VideoSharedTransitionProfile.COVER_ONLY) return false
+    // Keep metadata linked during quick return to avoid cover-only snapback.
+    if (isQuickReturnLimited && profile == VideoSharedTransitionProfile.COVER_ONLY) return false
+    // Home 源也启用 metadata sharedBounds，标题/头像/UP名独立共享
     return true
 }
 

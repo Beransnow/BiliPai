@@ -107,7 +107,6 @@ internal class BiliPaiProgrammaticBackDispatcher {
 internal fun BiliPaiNavDisplayHost(
     backStack: List<BiliPaiNavKey>,
     cardTransitionEnabled: Boolean = true,
-    videoDetailTransitionsEnabled: Boolean = true,
     videoCardDepthEffectEnabled: Boolean = cardTransitionEnabled,
     reduceMotion: Boolean = false,
     videoSharedTransitionDurationMillis: Int,
@@ -321,20 +320,16 @@ internal fun BiliPaiNavDisplayHost(
     }
     val popRouteTransition = remember(
         cardTransitionEnabled,
-        videoDetailTransitionsEnabled,
         reduceMotion,
         sourceMetadata,
         safeBackStack,
         activeMainHostRoute,
     ) {
-        if (!videoDetailTransitionsEnabled && safeBackStack.lastOrNull() is BiliPaiNavKey.VideoDetail) {
-            BiliPaiNavRouteTransition.VIDEO_DETAIL_NO_ANIMATION
-        } else if (reduceMotion) {
+        if (reduceMotion) {
             BiliPaiNavRouteTransition.REDUCED_MOTION_FADE
         } else {
             resolveBiliPaiNavDisplayPopRouteTransition(
                 cardTransitionEnabled = cardTransitionEnabled,
-                videoDetailTransitionsEnabled = videoDetailTransitionsEnabled,
                 sourceMetadata = sourceMetadata,
                 fromKey = safeBackStack.lastOrNull(),
                 toKey = safeBackStack.getOrNull(safeBackStack.lastIndex - 1),
@@ -588,7 +583,6 @@ internal fun BiliPaiNavDisplayHost(
     val entryProvider = remember(
         sourceMetadata,
         cardTransitionEnabled,
-        videoDetailTransitionsEnabled,
         reduceMotion,
         visibleBottomBarRoutes,
         activeMainHostRoute,
@@ -597,7 +591,6 @@ internal fun BiliPaiNavDisplayHost(
         biliPaiNavEntryProvider(
             sourceMetadata = sourceMetadata,
             cardTransitionEnabled = cardTransitionEnabled,
-            videoDetailTransitionsEnabled = videoDetailTransitionsEnabled,
             reduceMotion = reduceMotion,
             visibleBottomBarRoutes = visibleBottomBarRoutes,
             activeMainHostRoute = activeMainHostRoute,

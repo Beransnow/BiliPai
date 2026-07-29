@@ -53,7 +53,7 @@ class HomeMotionAndFeedPerformanceStructureTest {
 
         assertTrue(source.contains("remember(isTabletLayout, cardTransitionEnabled)"))
         assertTrue(source.contains("cardTransitionEnabled = cardTransitionEnabled"))
-        assertTrue(source.contains("val shouldApplyBackground = videoDetailTransitionsEnabled &&"))
+        assertTrue(source.contains("val shouldApplyBackground = cardTransitionEnabled &&"))
     }
 
     private fun sourceFile(relativePath: String): String {

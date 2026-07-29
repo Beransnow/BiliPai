@@ -373,7 +373,6 @@ fun AppNavigation(
         )
     }
     val cardTransitionEnabled = appearance.cardTransitionEnabled
-    val videoDetailTransitionsEnabled = false
     val videoTransitionRealtimeBlurEnabled by SettingsManager
         .getVideoTransitionRealtimeBlurEnabled(context)
         .collectAsStateWithLifecycle(initialValue = true)
@@ -1041,7 +1040,6 @@ fun AppNavigation(
         ) {
             resolveBiliPaiBackGestureDecision(
                 cardTransitionEnabled = sharedVideoCardTransitionEnabled,
-                videoDetailTransitionsEnabled = videoDetailTransitionsEnabled,
                 systemBackAction = systemBackAction,
                 currentKey = currentNavigation3Key,
                 previousKey = previousNavigation3Key,
@@ -1073,7 +1071,7 @@ fun AppNavigation(
         val shouldDeferBottomBarReveal = shouldDeferBottomBarRevealOnVideoReturn(
             isReturningFromDetail = navigation3ReturnSession.isReturningFromDetail,
             activeBottomTabRoute = activeBottomTabRoute,
-            cardTransitionEnabled = videoDetailTransitionsEnabled
+            cardTransitionEnabled = cardTransitionEnabled
         )
         val bottomBarMountGate = shouldShowBottomBarForNavigation(
             activeRoute = bottomBarMountRoute,
@@ -1113,12 +1111,12 @@ fun AppNavigation(
                 shouldDelayBottomBarRevealAfterVideoReturn(
                     isReturningFromDetail = navigation3ReturnSession.isReturningFromDetail,
                     isBottomBarDestination = isBottomBarDestination,
-                    cardTransitionEnabled = videoDetailTransitionsEnabled
+                    cardTransitionEnabled = cardTransitionEnabled
                 )
             ) {
                 kotlinx.coroutines.delay(
                     resolveVideoReturnBottomBarRevealDelayMs(
-                        cardTransitionEnabled = videoDetailTransitionsEnabled,
+                        cardTransitionEnabled = cardTransitionEnabled,
                         isQuickReturnFromDetail = navigation3ReturnSession.isQuickReturnFromDetail
                     )
                 )
@@ -1587,8 +1585,7 @@ fun AppNavigation(
                     val entryRoute = key.toLegacyRoute()
                     val backgroundState = LocalVideoCardTransitionBackgroundState.current
                     val predictiveBackState = LocalPredictiveBackBackgroundState.current
-                    val shouldApplyBackground = videoDetailTransitionsEnabled &&
-                        cardTransitionEnabled &&
+                    val shouldApplyBackground = cardTransitionEnabled &&
                         shouldApplyVideoCardTransitionBackgroundToRoute(
                             entryRoute = entryRoute,
                             sourceRoute = backgroundState.sourceRouteProvider(),
@@ -1613,11 +1610,7 @@ fun AppNavigation(
                                             motionTierProvider = backgroundState.motionTierProvider,
                                             isLightBackgroundProvider = backgroundState.isLightBackgroundProvider,
                                             realtimeBlurEnabledProvider = {
-                                                com.android.purebilibili.core.ui.transition
-                                                    .shouldUseVideoCardTransitionRealtimeBlurForSource(
-                                                        sourceRoute = backgroundState.sourceRouteProvider(),
-                                                        settingEnabled = videoTransitionRealtimeBlurEnabled,
-                                                    )
+                                                videoTransitionRealtimeBlurEnabled
                                             },
                                         )
                                     } else {
@@ -2154,10 +2147,9 @@ fun AppNavigation(
                                 onClearReturningFromDetail = {
                                     navigation3ReturnSession = navigation3ReturnSession.clearReturning()
                                 },
-                                transitionEnabled = videoDetailTransitionsEnabled &&
-                                    shouldEnableVideoDetailSharedTransition(
-                                        cardTransitionEnabled = sharedVideoCardTransitionEnabled
-                                    ),
+                                transitionEnabled = shouldEnableVideoDetailSharedTransition(
+                                    cardTransitionEnabled = sharedVideoCardTransitionEnabled
+                                ),
                                 transitionEnterDurationMillis = navMotionSpec.slowFadeDurationMillis,
                                 onBack = {
                                     if (!navigation3ProgrammaticBackDispatcher.dispatch()) {
@@ -3061,9 +3053,7 @@ fun AppNavigation(
                 BiliPaiNavDisplayHost(
                     backStack = navigation3BackStack,
                     cardTransitionEnabled = sharedVideoCardTransitionEnabled,
-                    videoDetailTransitionsEnabled = videoDetailTransitionsEnabled,
-                    videoCardDepthEffectEnabled =
-                        videoDetailTransitionsEnabled && sharedVideoCardTransitionEnabled,
+                    videoCardDepthEffectEnabled = sharedVideoCardTransitionEnabled,
                     reduceMotion = systemReduceMotion,
                     videoSharedTransitionDurationMillis =
                         effectiveVideoCardTransitionDurationMillis,
