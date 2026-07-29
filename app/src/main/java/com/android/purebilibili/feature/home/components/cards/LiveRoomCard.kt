@@ -1,6 +1,7 @@
 package com.android.purebilibili.feature.home.components.cards
 
 import com.android.purebilibili.core.ui.AppSpacingTokens
+import com.android.purebilibili.core.ui.components.AppSurface
 
 import com.android.purebilibili.core.ui.MediaContrastPalette
 /**
@@ -142,7 +143,7 @@ fun LiveRoomCard(
             )
             
             // 🔴 直播标签 - 左上角
-            Surface(
+            AppSurface(
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(AppSpacingTokens.Small),
@@ -160,7 +161,7 @@ fun LiveRoomCard(
             
             // 分区标签 - 右上角
             if (room.areaName.isNotEmpty()) {
-                Surface(
+                AppSurface(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(AppSpacingTokens.Small),

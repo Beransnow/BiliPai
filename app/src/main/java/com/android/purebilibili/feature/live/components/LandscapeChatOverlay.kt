@@ -19,6 +19,7 @@ import androidx.compose.ui.text.SpanStyle
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.feature.live.LiveDanmakuItem
 import com.android.purebilibili.feature.live.LiveStatusPalette
 import com.android.purebilibili.feature.live.resolveLandscapeLiveChatVisualSpec
@@ -111,7 +112,7 @@ private fun LandscapeChatItem(
         // [新增] 粉丝牌 (横屏版，稍微小一点)
         if (item.medalLevel > 0) {
             val color = resolveLiveMedalColor(item.medalColor)
-            Surface(
+            AppSurface(
                 color = color.copy(alpha = 0.8f), // 稍微透明一点
                 shape = AppShapes.container(ContainerLevel.Tag),
                 modifier = Modifier.padding(end = AppSpacingTokens.ExtraSmall)

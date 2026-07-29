@@ -41,6 +41,7 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.feature.live.resolveLiveVisualSpec
 import com.android.purebilibili.feature.live.LiveStatusPalette
 import com.android.purebilibili.feature.video.ui.gesture.GestureLevelKind
@@ -104,7 +105,7 @@ private fun LivePlayerIconButton(
             },
         contentAlignment = Alignment.Center
     ) {
-        Surface(
+        AppSurface(
             shape = CircleShape,
             color = if (selected) palette.accentSoft else palette.scrim.copy(alpha = 0.48f),
             modifier = Modifier
@@ -520,7 +521,7 @@ fun LivePlayerControls(
                         enabled = true,
                         onClick = onOpenBlockSettings
                     )
-                    Surface(
+                    AppSurface(
                         onClick = onToggleDanmaku,
                         shape = AppShapes.container(ContainerLevel.Pill),
                         color = if (isDanmakuEnabled) {
@@ -571,7 +572,7 @@ fun LivePlayerControls(
                     )
                     
                     if (showChatToggle) {
-                        Surface(
+                        AppSurface(
                             onClick = {
                                 com.android.purebilibili.core.util.Logger.d("LivePlayerControls", "Chat toggle clicked, current visible: $isChatVisible")
                                 onToggleChat()
@@ -606,7 +607,7 @@ fun LivePlayerControls(
                     }
 
                     if (videoFitDesc.isNotBlank()) {
-                        Surface(
+                        AppSurface(
                             onClick = onVideoFitClick,
                             shape = AppShapes.container(ContainerLevel.Pill),
                             color = palette.scrim.copy(alpha = 0.42f),
@@ -633,7 +634,7 @@ fun LivePlayerControls(
                     }
 
                     if (currentQualityDesc.isNotBlank()) {
-                        Surface(
+                        AppSurface(
                             onClick = onQualityClick,
                             shape = AppShapes.container(ContainerLevel.Pill),
                             color = palette.scrim.copy(alpha = 0.42f),

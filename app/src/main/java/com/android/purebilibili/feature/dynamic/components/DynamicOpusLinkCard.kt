@@ -20,7 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -39,7 +39,7 @@ internal fun DynamicOpusLinkCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
-    Surface(
+    AppSurface(
         modifier = modifier
             .fillMaxWidth()
             .clip(AppShapes.container(ContainerLevel.Card))

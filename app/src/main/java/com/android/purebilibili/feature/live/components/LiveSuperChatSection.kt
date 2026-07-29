@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -35,7 +35,7 @@ fun LiveSuperChatSection(
         verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Medium)
     ) {
         items(items, key = { "${it.superChatId}_${it.uid}_${it.text}_${it.superChatPrice}" }) { item ->
-            Surface(
+            AppSurface(
                 shape = AppShapes.borderedContainer(ContainerLevel.Card),
                 color = palette.surfaceElevated,
             border = androidx.compose.foundation.BorderStroke(AppSpacingTokens.Micro / 2, palette.border)
