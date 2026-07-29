@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.AlertDialog
+import com.android.purebilibili.core.ui.AppAlertDialog
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -447,7 +447,7 @@ class TodayWatchPlugin : RecommendationPluginApi {
         }
 
         if (showResetDialog) {
-            AlertDialog(
+            AppAlertDialog(
                 onDismissRequest = { showResetDialog = false },
                 title = { Text("清空推荐画像") },
                 text = { Text("确定清空本地推荐画像与不感兴趣反馈吗？该操作不可恢复。") },

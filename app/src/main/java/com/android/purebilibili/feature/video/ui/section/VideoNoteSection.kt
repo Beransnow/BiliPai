@@ -25,7 +25,7 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.FormatColorFill
 import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material3.AlertDialog
+import com.android.purebilibili.core.ui.AppAlertDialog
 import androidx.compose.material3.AssistChip
 import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
@@ -384,7 +384,7 @@ fun VideoNoteDeleteConfirmDialog(
     onDismiss: () -> Unit
 ) {
     if (!visible) return
-    AlertDialog(
+    AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("删除视频笔记") },
         text = { Text("删除后无法在 BiliPai 内恢复。确认要删除这条笔记吗？") },
