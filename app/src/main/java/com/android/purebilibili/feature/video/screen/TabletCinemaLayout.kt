@@ -59,8 +59,8 @@ import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppSurface
-import androidx.compose.material3.Tab
-import androidx.compose.material3.PrimaryTabRow
+import com.android.purebilibili.core.ui.components.AppTab
+import com.android.purebilibili.core.ui.components.AppPrimaryTabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -1019,11 +1019,11 @@ private fun CinemaSideCurtain(
                         }
                     } else {
                         Column(modifier = Modifier.fillMaxSize()) {
-                            PrimaryTabRow(
+                            AppPrimaryTabRow(
                                 selectedTabIndex = pagerState.currentPage,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                Tab(
+                                AppTab(
                                     selected = pagerState.currentPage == 0,
                                     onClick = {
                                         onTabSelected(0)
@@ -1034,7 +1034,7 @@ private fun CinemaSideCurtain(
                                         )
                                     }
                                 )
-                                Tab(
+                                AppTab(
                                     selected = pagerState.currentPage == 1,
                                     onClick = {
                                         onTabSelected(1)

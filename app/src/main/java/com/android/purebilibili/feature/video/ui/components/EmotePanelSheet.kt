@@ -1,6 +1,8 @@
 // 文件路径: feature/video/ui/components/EmotePanelSheet.kt
 package com.android.purebilibili.feature.video.ui.components
 
+import com.android.purebilibili.core.ui.components.AppTab
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -110,7 +112,7 @@ fun EmotePanelSheet(
                     divider = {}
                 ) {
                     packages.forEachIndexed { index, pkg ->
-                        Tab(
+                        AppTab(
                             selected = selectedPackageIndex == index,
                             onClick = { selectedPackageIndex = index },
                             text = {

@@ -47,6 +47,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.ProgressIndicatorDefaults
+import androidx.compose.material3.PrimaryScrollableTabRow
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonColors
 import androidx.compose.material3.RadioButtonDefaults
@@ -63,10 +65,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchColors
 import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -623,4 +628,84 @@ fun AppSmallFloatingActionButton(
     elevation = elevation,
     interactionSource = interactionSource,
     content = content,
+)
+
+@Composable
+fun AppTab(
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    text: @Composable (() -> Unit)? = null,
+    icon: @Composable (() -> Unit)? = null,
+    selectedContentColor: Color = LocalContentColor.current,
+    unselectedContentColor: Color = selectedContentColor,
+    interactionSource: MutableInteractionSource? = null,
+) = Tab(
+    selected = selected,
+    onClick = onClick,
+    modifier = modifier,
+    enabled = enabled,
+    text = text,
+    icon = icon,
+    selectedContentColor = selectedContentColor,
+    unselectedContentColor = unselectedContentColor,
+    interactionSource = interactionSource,
+)
+
+@Composable
+fun AppTab(
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    selectedContentColor: Color = LocalContentColor.current,
+    unselectedContentColor: Color = selectedContentColor,
+    interactionSource: MutableInteractionSource? = null,
+    content: @Composable ColumnScope.() -> Unit,
+) = Tab(
+    selected = selected,
+    onClick = onClick,
+    modifier = modifier,
+    enabled = enabled,
+    selectedContentColor = selectedContentColor,
+    unselectedContentColor = unselectedContentColor,
+    interactionSource = interactionSource,
+    content = content,
+)
+
+@Composable
+fun AppPrimaryTabRow(
+    selectedTabIndex: Int,
+    modifier: Modifier = Modifier,
+    containerColor: Color = TabRowDefaults.primaryContainerColor,
+    contentColor: Color = TabRowDefaults.primaryContentColor,
+    tabs: @Composable () -> Unit,
+) = PrimaryTabRow(
+    selectedTabIndex = selectedTabIndex,
+    modifier = modifier,
+    containerColor = containerColor,
+    contentColor = contentColor,
+    tabs = tabs,
+)
+
+@Composable
+fun AppPrimaryScrollableTabRow(
+    selectedTabIndex: Int,
+    modifier: Modifier = Modifier,
+    scrollState: ScrollState = rememberScrollState(),
+    containerColor: Color = TabRowDefaults.primaryContainerColor,
+    contentColor: Color = TabRowDefaults.primaryContentColor,
+    edgePadding: Dp = TabRowDefaults.ScrollableTabRowEdgeStartPadding,
+    minTabWidth: Dp = TabRowDefaults.ScrollableTabRowMinTabWidth,
+    tabs: @Composable () -> Unit,
+) = PrimaryScrollableTabRow(
+    selectedTabIndex = selectedTabIndex,
+    modifier = modifier,
+    scrollState = scrollState,
+    containerColor = containerColor,
+    contentColor = contentColor,
+    edgePadding = edgePadding,
+    minTabWidth = minTabWidth,
+    tabs = tabs,
 )

@@ -30,9 +30,9 @@ import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppOutlinedTextField
-import androidx.compose.material3.PrimaryTabRow
+import com.android.purebilibili.core.ui.components.AppPrimaryTabRow
 import com.android.purebilibili.core.ui.components.AppSurface
-import androidx.compose.material3.Tab
+import com.android.purebilibili.core.ui.components.AppTab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -240,13 +240,13 @@ fun LiveSearchScreen(
             if (!hasSubmitted) {
                 LiveSearchState("输入关键词后搜索直播间或主播")
             } else {
-                PrimaryTabRow(selectedTabIndex = selectedTab) {
-                    Tab(
+                AppPrimaryTabRow(selectedTabIndex = selectedTab) {
+                    AppTab(
                         selected = selectedTab == 0,
                         onClick = { selectedTab = 0 },
                         text = { Text("正在直播 ${liveResults.size.takeIf { it > 0 } ?: ""}") },
                     )
-                    Tab(
+                    AppTab(
                         selected = selectedTab == 1,
                         onClick = { selectedTab = 1 },
                         text = { Text("主播 ${userResults.size.takeIf { it > 0 } ?: ""}") },

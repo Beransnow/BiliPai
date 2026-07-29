@@ -53,6 +53,12 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(source.contains(") = FloatingActionButton("))
         assertTrue(source.contains("fun AppSmallFloatingActionButton("))
         assertTrue(source.contains(") = SmallFloatingActionButton("))
+        assertTrue(source.contains("fun AppTab("))
+        assertTrue(source.contains(") = Tab("))
+        assertTrue(source.contains("fun AppPrimaryTabRow("))
+        assertTrue(source.contains(") = PrimaryTabRow("))
+        assertTrue(source.contains("fun AppPrimaryScrollableTabRow("))
+        assertTrue(source.contains(") = PrimaryScrollableTabRow("))
     }
 
     private fun loadSource(): String {

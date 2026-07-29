@@ -1,6 +1,8 @@
 // 文件路径: feature/video/ui/components/CommentInputDialog.kt
 package com.android.purebilibili.feature.video.ui.components
 
+import com.android.purebilibili.core.ui.components.AppTab
+
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -649,20 +651,20 @@ fun CommentInputDialog(
                                     modifier = Modifier.height(48.dp)
                                 ) {
                                     // Tab 0: 颜文字
-                                    Tab(
+                                    AppTab(
                                         selected = currentTab == 0,
                                         onClick = { currentTab = 0 },
                                         text = { Text("颜文字") }
                                     )
                                     // Tab 1: Emoji
-                                    Tab(
+                                    AppTab(
                                         selected = currentTab == 1,
                                         onClick = { currentTab = 1 },
                                         text = { Text("Emoji") }
                                     )
                                     // API Packages (Tab 2+)
                                     emotePackages.forEachIndexed { index, pkg ->
-                                        Tab(
+                                        AppTab(
                                             selected = currentTab == index + 2,
                                             onClick = { currentTab = index + 2 },
                                             text = { 

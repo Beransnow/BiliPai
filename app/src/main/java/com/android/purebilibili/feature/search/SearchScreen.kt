@@ -1,6 +1,8 @@
 // 文件路径: feature/search/SearchScreen.kt
 package com.android.purebilibili.feature.search
 
+import com.android.purebilibili.core.ui.components.AppTab
+
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -2204,7 +2206,7 @@ private fun SearchResultTypeTabRow(
     ) {
         tabs.forEachIndexed { index, type ->
             val selected = selectedPage == index
-            Tab(
+            AppTab(
                 selected = selected,
                 onClick = { onTabClick(index, type) },
                 interactionSource = remember { MutableInteractionSource() },

@@ -36,9 +36,9 @@ import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppOutlinedButton
 import com.android.purebilibili.core.ui.components.AppOutlinedTextField
-import androidx.compose.material3.PrimaryScrollableTabRow
+import com.android.purebilibili.core.ui.components.AppPrimaryScrollableTabRow
 import com.android.purebilibili.core.ui.components.AppSurface
-import androidx.compose.material3.Tab
+import com.android.purebilibili.core.ui.components.AppTab
 import androidx.compose.material3.Text
 import com.android.purebilibili.core.ui.AppTopBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -271,13 +271,13 @@ private fun LoginMethodTabs(
     onMethodSelected: (LoginMethod) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    PrimaryScrollableTabRow(
+    AppPrimaryScrollableTabRow(
         selectedTabIndex = resolveAvailableLoginMethods().indexOf(selectedMethod),
         modifier = modifier.fillMaxWidth(),
         edgePadding = 0.dp
     ) {
         resolveAvailableLoginMethods().forEach { method ->
-            Tab(
+            AppTab(
                 selected = method == selectedMethod,
                 onClick = { onMethodSelected(method) },
                 text = { Text(loginMethodLabel(method)) },
