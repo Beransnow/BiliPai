@@ -3079,30 +3079,34 @@ fun VideoPlayerSection(
         }
     }
 
-    val videoSharedTransitionVisualSpec = remember(
-        sourceRouteForSharedElement,
-        forceCoverDuringReturnAnimation,
+    val videoSharedPlaybackIntent = remember(
         keepCoverForManualStart,
-        playerState.player.currentPosition,
-        isFullscreen,
-        isPortraitFullscreen,
-        isVerticalVideo,
         autoPlayOnOpenEnabled,
         hasManualStartPlaybackIntent
     ) {
         val coverFirstBySetting = !autoPlayOnOpenEnabled && !hasManualStartPlaybackIntent
-        val playbackIntent = if (keepCoverForManualStart || coverFirstBySetting) {
+        if (keepCoverForManualStart || coverFirstBySetting) {
             VideoSharedTransitionPlaybackIntent.CoverFirst
         } else {
             resolveVideoSharedTransitionPlaybackIntent(
                 clickToPlayEnabled = autoPlayOnOpenEnabled
             )
         }
+    }
+    val videoSharedTransitionVisualSpec = remember(
+        sourceRouteForSharedElement,
+        forceCoverDuringReturnAnimation,
+        playerState.player.currentPosition,
+        isFullscreen,
+        isPortraitFullscreen,
+        isVerticalVideo,
+        videoSharedPlaybackIntent,
+    ) {
         resolveVideoSharedTransitionVisualSpec(
             sourceRoute = sourceRouteForSharedElement,
             sourceCornerDp = CardPositionManager.lastClickedVideoSourceCornerDp
                 ?: resolveVideoSharedTransitionSourceCornerDp(sourceRouteForSharedElement),
-            playbackIntent = playbackIntent,
+            playbackIntent = videoSharedPlaybackIntent,
             fullscreen = isFullscreen && !isPortraitFullscreen,
             autoPortrait = isPortraitFullscreen || isVerticalVideo,
             initialVertical = isPortraitFullscreen || isVerticalVideo,
@@ -3158,7 +3162,7 @@ fun VideoPlayerSection(
         sourceRouteForSharedElement
     )
     val coverLayerZIndex = resolveVideoPlayerCoverLayerZIndex(
-        playbackIntent = videoSharedTransitionVisualSpec.playbackIntent,
+        playbackIntent = videoSharedPlaybackIntent,
         forceCoverDuringReturnAnimation = forceCoverDuringReturnAnimation,
         shouldKeepCoverForManualStart = keepCoverForManualStart,
     )
