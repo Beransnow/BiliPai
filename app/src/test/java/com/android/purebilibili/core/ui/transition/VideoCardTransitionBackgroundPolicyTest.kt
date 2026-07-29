@@ -122,8 +122,8 @@ class VideoCardTransitionBackgroundPolicyTest {
         assertEquals(0f, frame.blurRadiusPx % 1f)
         assertEquals(0.22f, frame.scrimAlpha)
         assertFalse(frame.useLightScrimTint)
-        assertEquals(1f, frame.contentScale, 0.0001f)
-        assertEquals(0f, frame.cornerRadiusPx, 0.0001f)
+        assertEquals(0.985f, frame.contentScale, 0.0001f)
+        assertTrue(frame.cornerRadiusPx > 0f)
     }
 
     @Test
@@ -170,8 +170,8 @@ class VideoCardTransitionBackgroundPolicyTest {
         // 12dp × 2.75 ≈ 33px；12dp × 1.5 = 18px
         assertEquals(33f, phone.blurRadiusPx, 0.51f)
         assertEquals(18f, tablet.blurRadiusPx, 0.51f)
-        assertEquals(0f, phone.cornerRadiusPx, 0.0001f)
-        assertEquals(0f, tablet.cornerRadiusPx, 0.0001f)
+        assertTrue(phone.cornerRadiusPx > 0f)
+        assertTrue(tablet.cornerRadiusPx > 0f)
         assertEquals(
             33f,
             resolveVideoCardTransitionMaxBlurRadiusPx(MotionTier.Normal, density = 2.75f),
@@ -233,10 +233,10 @@ class VideoCardTransitionBackgroundPolicyTest {
     }
 
     @Test
-    fun backgroundPageNeverShrinksDuringVideoCardTransition() {
+    fun backgroundPageRecedesWithTheSharedCardProgress() {
         VideoCardTransitionBackgroundPhase.entries.forEach { phase ->
             assertEquals(
-                1f,
+                if (phase == VideoCardTransitionBackgroundPhase.IDLE) 1f else 0.985f,
                 resolveVideoCardTransitionContentScale(
                     progress = 1f,
                     phase = phase,
@@ -285,7 +285,7 @@ class VideoCardTransitionBackgroundPolicyTest {
         assertEquals(2f, early.blurRadiusPx, 0.01f)
         assertTrue(early.scrimAlpha > 0f)
         assertTrue(early.blurRadiusPx > 0f)
-        assertEquals(0f, early.cornerRadiusPx, 0.0001f)
+        assertTrue(early.cornerRadiusPx > 0f)
     }
 
     @Test
@@ -419,11 +419,11 @@ class VideoCardTransitionBackgroundPolicyTest {
         assertTrue(start.scrimAlpha > middle.scrimAlpha)
         assertTrue(middle.scrimAlpha > 0f)
         assertEquals(0f, end.scrimAlpha)
-        assertEquals(1f, start.contentScale, 0.0001f)
-        assertEquals(1f, middle.contentScale, 0.0001f)
+        assertEquals(0.985f, start.contentScale, 0.0001f)
+        assertEquals(0.9925f, middle.contentScale, 0.0001f)
         assertEquals(1f, end.contentScale)
-        assertEquals(0f, start.cornerRadiusPx, 0.0001f)
-        assertEquals(0f, middle.cornerRadiusPx, 0.0001f)
+        assertTrue(start.cornerRadiusPx > 0f)
+        assertTrue(middle.cornerRadiusPx > 0f)
         assertEquals(0f, end.cornerRadiusPx, 0.0001f)
     }
 
@@ -451,8 +451,8 @@ class VideoCardTransitionBackgroundPolicyTest {
         assertEquals(12f, frame.blurRadiusPx)
         // HELD 保留与满进度开场一致的压暗，避免详情停留时景深断裂。
         assertEquals(0.22f, frame.scrimAlpha)
-        assertEquals(1f, frame.contentScale, 0.0001f)
-        assertEquals(0f, frame.cornerRadiusPx, 0.0001f)
+        assertEquals(0.985f, frame.contentScale, 0.0001f)
+        assertTrue(frame.cornerRadiusPx > 0f)
     }
 
     @Test
@@ -470,8 +470,8 @@ class VideoCardTransitionBackgroundPolicyTest {
             isGestureRestoreInProgress = true,
         )
 
-        assertEquals(1f, openingScale, 0.0001f)
-        assertEquals(1f, restoreScale, 0.002f)
+        assertEquals(0.985f, openingScale, 0.0001f)
+        assertEquals(0.9925f, restoreScale, 0.002f)
     }
 
     @Test
@@ -503,10 +503,10 @@ class VideoCardTransitionBackgroundPolicyTest {
 
         assertEquals(0f, opening.blurRadiusPx)
         assertTrue(opening.scrimAlpha > 0f)
-        assertEquals(1f, opening.contentScale, 0.0001f)
+        assertEquals(0.985f, opening.contentScale, 0.0001f)
         assertEquals(0f, returning.blurRadiusPx)
         assertTrue(returning.scrimAlpha > 0f)
-        assertEquals(1f, returning.contentScale, 0.0001f)
+        assertEquals(0.985f, returning.contentScale, 0.0001f)
     }
 
     @Test
@@ -519,8 +519,8 @@ class VideoCardTransitionBackgroundPolicyTest {
 
         assertTrue(frame.blurRadiusPx > 0f)
         assertTrue(frame.scrimAlpha > 0f)
-        assertEquals(1f, frame.contentScale, 0.0001f)
-        assertEquals(0f, frame.cornerRadiusPx, 0.0001f)
+        assertEquals(0.99625f, frame.contentScale, 0.0001f)
+        assertTrue(frame.cornerRadiusPx > 0f)
     }
 
     @Test

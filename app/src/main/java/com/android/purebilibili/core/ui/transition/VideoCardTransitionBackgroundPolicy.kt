@@ -26,7 +26,7 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 
 // 景深层（与 Hero 卡片放大配合，progress 0→1 同源）：
-// 1) **页面层不缩放**：状态栏、顶底栏和屏幕边界保持原位
+// 1) 页面整体轻微后退，状态栏、顶底栏和屏幕边界保持原位
 // 2) 页面几何保持原位；shared overlay 中的飞卡独自承担缩放
 // 3) blur：空间纵深（冻结层 + BlurEffect）。半径按 **dp** 定义、按密度换算
 // 4) scrim 压暗：聚焦/可读
@@ -35,11 +35,12 @@ import kotlin.math.roundToInt
 // - 返回：景深 progress 与 shared morph 同墙钟、同 Linear
 private const val VIDEO_CARD_TRANSITION_MAX_BLUR_RADIUS_DP = 12f
 private const val VIDEO_CARD_TRANSITION_BLUR_QUANTUM_PX = 1f
-// 保持遮罩克制，让元素缩小与 shared 卡片放大承担主要层级对比。
+// 页面整体只后退 1.5%；被点击卡片由 shared overlay 自己放大，避免双重缩放。
+internal const val VIDEO_CARD_TRANSITION_BACKGROUND_SCALE_REDUCTION = 0.015f
+// 保持遮罩克制，让页面后退与 shared 卡片放大承担主要层级对比。
 private const val VIDEO_CARD_TRANSITION_MAX_SCRIM_ALPHA_DARK = 0.22f
 private const val VIDEO_CARD_TRANSITION_MAX_SCRIM_ALPHA_LIGHT = 0.10f
 private const val VIDEO_CARD_TRANSITION_REDUCED_SCRIM_ALPHA = 0.08f
-private const val VIDEO_CARD_TRANSITION_MAX_CONTENT_SCALE_REDUCTION = 0f
 /** 景深缩放露出的边缘：至少压到这个 tint 强度，避免浅色主题读成「白条」。 */
 private const val VIDEO_CARD_TRANSITION_SCALE_GAP_MIN_TINT_LIGHT = 0.36f
 private const val VIDEO_CARD_TRANSITION_SCALE_GAP_MIN_TINT_DARK = 0.44f
@@ -115,7 +116,6 @@ internal fun resolveVideoCardTransitionContentScale(
     motionTier: MotionTier,
     isGestureRestoreInProgress: Boolean,
 ): Float {
-    if (VIDEO_CARD_TRANSITION_MAX_CONTENT_SCALE_REDUCTION <= 0f) return 1f
     if (phase == VideoCardTransitionBackgroundPhase.IDLE || motionTier == MotionTier.Reduced) {
         return 1f
     }
@@ -123,7 +123,7 @@ internal fun resolveVideoCardTransitionContentScale(
         progress = progress,
         phase = phase,
     )
-    return 1f - VIDEO_CARD_TRANSITION_MAX_CONTENT_SCALE_REDUCTION * depthProgress
+    return 1f - VIDEO_CARD_TRANSITION_BACKGROUND_SCALE_REDUCTION * depthProgress
 }
 
 internal fun resolveVideoCardTransitionBackgroundFrame(
@@ -246,7 +246,6 @@ internal fun resolveVideoCardTransitionBackgroundCornerRadiusPx(
     deviceCornerRadiusPx: Float = 0f,
 ): Float {
     if (motionTier == MotionTier.Reduced) return 0f
-    if (VIDEO_CARD_TRANSITION_MAX_CONTENT_SCALE_REDUCTION <= 0f) return 0f
     val fullRadiusDp = resolveVideoCardTransitionBackgroundCornerRadiusDp(
         deviceCornerRadiusPx = deviceCornerRadiusPx,
         density = density,
