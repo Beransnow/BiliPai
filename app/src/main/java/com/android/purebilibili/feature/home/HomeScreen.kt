@@ -835,8 +835,8 @@ fun HomeScreen(
     // 各功能面自身的开关(此处为卡片动画开关)仍各自独立。与设置页入场动画共用同一 reduce-motion 判定。
     val systemReduceMotion = rememberSystemReduceMotion()
     val cardAnimationEnabled = homePerformanceConfig.cardAnimationEnabled && !systemReduceMotion
-    // 视频详情转场正在重新设计；首页不再挂 sharedBounds 或返回期延迟。
-    val cardTransitionEnabled = false
+    // 过渡由用户设置控制；系统“减弱动效”开启时统一关闭。
+    val cardTransitionEnabled = homePerformanceConfig.cardTransitionEnabled && !systemReduceMotion
     val isBottomBarLiquidGlassEnabled = homePerformanceConfig.bottomBarLiquidGlassEnabled
     val isLiquidGlassEnabled = homePerformanceConfig.isAnyLiquidGlassEnabled
     val isDataSaverActive = homePerformanceConfig.isDataSaverActive

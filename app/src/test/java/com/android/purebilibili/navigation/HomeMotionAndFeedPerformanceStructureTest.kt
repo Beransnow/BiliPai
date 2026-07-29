@@ -37,10 +37,14 @@ class HomeMotionAndFeedPerformanceStructureTest {
     }
 
     @Test
-    fun homeFeed_doesNotMountVideoSharedBounds() {
+    fun homeFeed_mountsVideoSharedBoundsWhenTransitionIsEnabled() {
         val source = sourceFile("feature/home/HomeScreen.kt")
 
-        assertTrue(source.contains("val cardTransitionEnabled = false"))
+        assertTrue(
+            source.contains(
+                "val cardTransitionEnabled = homePerformanceConfig.cardTransitionEnabled && !systemReduceMotion",
+            ),
+        )
     }
 
     @Test
