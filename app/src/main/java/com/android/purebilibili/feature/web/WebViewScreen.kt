@@ -15,6 +15,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.util.BilibiliNavigationTarget
 import com.android.purebilibili.core.util.BilibiliNavigationTargetParser
 import kotlinx.coroutines.launch
@@ -51,7 +52,7 @@ fun WebViewScreen(
             AppTopBar(
                 title = title ?: "浏览器",
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    AppIconButton(onClick = onBack) {
                         Icon(rememberAppBackIcon(), contentDescription = "Back")
                     }
                 },

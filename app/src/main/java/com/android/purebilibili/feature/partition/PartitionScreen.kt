@@ -59,6 +59,7 @@ import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
 import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
 import com.android.purebilibili.core.util.responsiveContentWidth
 import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.HomeFeedCardStyle
 import com.android.purebilibili.core.store.BottomBarLiquidGlassPreset
@@ -330,7 +331,7 @@ fun PartitionScreen(
             AppTopBar(
                 title = "分区",
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    AppIconButton(onClick = onBack) {
                         Icon(rememberAppBackIcon(), contentDescription = "返回")
                     }
                 },
