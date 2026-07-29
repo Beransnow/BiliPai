@@ -1,12 +1,26 @@
 package com.android.purebilibili.core.ui
 
 import com.android.purebilibili.core.theme.UiPreset
+import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AdaptiveBottomSheetPolicyTest {
+
+    @Test
+    fun `app sheet facade preserves caller content color`() {
+        val path = "src/main/java/com/android/purebilibili/core/ui/AppSheetComponents.kt"
+        val source = listOf(File(path), File("design-system/$path"))
+            .firstOrNull(File::exists)
+            ?.readText()
+            ?: error("Cannot locate AppSheetComponents.kt from ${File(".").absolutePath}")
+
+        assertTrue(source.contains("contentColor: Color = MaterialTheme.colorScheme.onSurface"))
+        assertTrue(source.contains("contentColor = contentColor"))
+        assertTrue(source.contains("content: @Composable ColumnScope.() -> Unit"))
+    }
 
     @Test
     fun `md3 preset should use material drag handle and larger corner radius`() {

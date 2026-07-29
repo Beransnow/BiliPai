@@ -46,7 +46,7 @@ import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
+import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -371,7 +371,7 @@ internal fun MusicPlayerContent(
     }
 
     if (showActions) {
-        ModalBottomSheet(
+        AppModalBottomSheet(
             onDismissRequest = { showActions = false },
             containerColor = backgroundColor.copy(alpha = 0.92f),
             contentColor = MusicContentColor
@@ -427,7 +427,7 @@ internal fun MusicPlayerContent(
     }
 
     if (showQueue) {
-        ModalBottomSheet(
+        AppModalBottomSheet(
             onDismissRequest = { showQueue = false },
             containerColor = backgroundColor.copy(alpha = 0.96f),
             contentColor = MusicContentColor
@@ -488,7 +488,7 @@ internal fun MusicPlayerContent(
     }
 
     if (showLyricsSearch) {
-        ModalBottomSheet(
+        AppModalBottomSheet(
             onDismissRequest = { showLyricsSearch = false },
             containerColor = backgroundColor.copy(alpha = 0.97f),
             contentColor = MusicContentColor
@@ -972,7 +972,7 @@ private fun LyricsPage(
     }
 
     if (showLyricsSettings) {
-        ModalBottomSheet(
+        AppModalBottomSheet(
             onDismissRequest = { showLyricsSettings = false },
             containerColor = glassTintColor.copy(alpha = 0.97f),
             contentColor = MusicContentColor

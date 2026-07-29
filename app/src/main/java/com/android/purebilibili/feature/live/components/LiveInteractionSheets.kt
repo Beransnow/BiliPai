@@ -24,7 +24,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
+import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
@@ -99,7 +99,7 @@ fun LiveEmoticonSheet(
     onDismiss: () -> Unit
 ) {
     val visualSpec = remember { resolveLiveSheetVisualSpec() }
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    AppModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -197,7 +197,7 @@ fun LiveDmBlockSheet(
     onDismiss: () -> Unit
 ) {
     var keyword by remember { mutableStateOf("") }
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    AppModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()

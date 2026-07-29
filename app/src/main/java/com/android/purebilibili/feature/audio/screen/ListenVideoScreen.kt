@@ -42,7 +42,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
+import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -223,7 +223,7 @@ internal fun ListenVideoScreen(
     }
 
     if (state.selectedTitle.isNotBlank()) {
-        ModalBottomSheet(
+        AppModalBottomSheet(
             onDismissRequest = onCloseDetail,
             containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f)
         ) {
