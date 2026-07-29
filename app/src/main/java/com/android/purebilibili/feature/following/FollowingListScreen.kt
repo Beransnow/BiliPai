@@ -44,12 +44,21 @@ import com.android.purebilibili.core.network.NetworkModule
 import com.android.purebilibili.core.store.FollowingCacheStore
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
+import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
 import com.android.purebilibili.core.ui.OfficialVerifyBadge
 import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppCheckbox
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
+import com.android.purebilibili.core.ui.components.AppFilterChip
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppOutlinedButton
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.motion.AppMotionTokens
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.responsiveContentWidth
@@ -681,13 +690,13 @@ fun FollowingListScreen(
             AppTopBar(
                 title = "我的关注",
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    AppIconButton(onClick = onBack) {
                         Icon(rememberAppBackIcon(), contentDescription = "返回")
                     }
                 },
                 actions = {
                     if (uiState is FollowingListUiState.Success) {
-                        TextButton(
+                        AppTextButton(
                             onClick = {
                                 isEditMode = !isEditMode
                                 if (!isEditMode) {
@@ -742,7 +751,7 @@ fun FollowingListScreen(
                                 Spacer(Modifier.height(AppSpacingTokens.Large))
                                 Text(state.message, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Spacer(Modifier.height(AppSpacingTokens.Large))
-                                Button(onClick = { viewModel.loadFollowingList(mid, forceRefresh = true) }) {
+                                AppButton(onClick = { viewModel.loadFollowingList(mid, forceRefresh = true) }) {
                                     Text("重试")
                                 }
                             }
@@ -856,7 +865,7 @@ fun FollowingListScreen(
                                         ) {
                                             groupFilterChips.forEach { chip ->
                                                 val chipFilterId = if (chip.tagid == Long.MIN_VALUE) null else chip.tagid
-                                                FilterChip(
+                                                AppFilterChip(
                                                     selected = selectedGroupFilter == chipFilterId ||
                                                         (selectedGroupFilter == null && chip.tagid == Long.MIN_VALUE),
                                                     onClick = { selectedGroupFilter = chipFilterId },
@@ -933,7 +942,7 @@ fun FollowingListScreen(
                         }
 
                         if (isEditMode) {
-                            Surface(
+                            AppSurface(
                                 tonalElevation = AppSpacingTokens.ExtraSmall - AppSpacingTokens.Micro / 2,
                                 shadowElevation = AppSpacingTokens.ExtraSmall - AppSpacingTokens.Micro / 2
                             ) {
@@ -944,7 +953,7 @@ fun FollowingListScreen(
                                     horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Medium),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    OutlinedButton(
+                                    AppOutlinedButton(
                                         onClick = {
                                             selectedMids = resolveFollowingSelectAll(
                                                 visibleMids = visibleMids,
@@ -958,7 +967,7 @@ fun FollowingListScreen(
                                         Text(if (allVisibleSelected) "取消全选" else "全选当前")
                                     }
 
-                                    OutlinedButton(
+                                    AppOutlinedButton(
                                         onClick = {
                                             showBatchGroupDialog = true
                                             groupDialogLoading = true
@@ -980,13 +989,13 @@ fun FollowingListScreen(
                                         Text("设置分组")
                                     }
 
-                                    Button(
+                                    AppButton(
                                         onClick = { showBatchUnfollowConfirm = true },
                                         enabled = hasSelection && !isBatchUnfollowing,
                                         modifier = Modifier.weight(1f)
                                     ) {
                                         if (isBatchUnfollowing) {
-                                            CircularProgressIndicator(
+                                            AppCircularProgressIndicator(
                                                 modifier = Modifier.size(AppSpacingTokens.Large),
                                                 strokeWidth = AppSpacingTokens.Micro,
                                                 color = MaterialTheme.colorScheme.onPrimary
@@ -1000,14 +1009,14 @@ fun FollowingListScreen(
                         }
 
                         if (showBatchUnfollowConfirm) {
-                            AlertDialog(
+                            AppAlertDialog(
                                 onDismissRequest = {
                                     if (!isBatchUnfollowing) showBatchUnfollowConfirm = false
                                 },
                                 title = { Text("批量取消关注") },
                                 text = { Text("确认取消关注已选择的 $selectedCount 位 UP 主吗？") },
                                 confirmButton = {
-                                    Button(
+                                    AppButton(
                                         onClick = {
                                             val targets = state.users.filter { selectedMids.contains(it.mid) }
                                             scope.launch {
@@ -1031,7 +1040,7 @@ fun FollowingListScreen(
                                     }
                                 },
                                 dismissButton = {
-                                    TextButton(
+                                    AppTextButton(
                                         onClick = { showBatchUnfollowConfirm = false },
                                         enabled = !isBatchUnfollowing
                                     ) {
@@ -1042,7 +1051,7 @@ fun FollowingListScreen(
                         }
 
                         if (showBatchGroupDialog) {
-                            AlertDialog(
+                            AppAlertDialog(
                                 onDismissRequest = {
                                     if (!groupDialogSaving) showBatchGroupDialog = false
                                 },
@@ -1093,7 +1102,7 @@ fun FollowingListScreen(
                                                             .padding(vertical = AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro),
                                                         verticalAlignment = Alignment.CenterVertically
                                                     ) {
-                                                        Checkbox(
+                                                        AppCheckbox(
                                                             checked = groupDialogSelection.contains(tag.tagid),
                                                             onCheckedChange = { checked ->
                                                                 groupDialogSelection = if (checked == true) {
@@ -1121,7 +1130,7 @@ fun FollowingListScreen(
                                     }
                                 },
                                 confirmButton = {
-                                    Button(
+                                    AppButton(
                                         onClick = {
                                             groupDialogSaving = true
                                             scope.launch {
@@ -1141,7 +1150,7 @@ fun FollowingListScreen(
                                         enabled = !groupDialogLoading && !groupDialogSaving
                                     ) {
                                         if (groupDialogSaving) {
-                                            CircularProgressIndicator(
+                                            AppCircularProgressIndicator(
                                                 modifier = Modifier.size(AppSpacingTokens.Large),
                                                 strokeWidth = AppSpacingTokens.Micro,
                                                 color = MaterialTheme.colorScheme.onPrimary
@@ -1152,7 +1161,7 @@ fun FollowingListScreen(
                                     }
                                 },
                                 dismissButton = {
-                                    TextButton(
+                                    AppTextButton(
                                         onClick = { showBatchGroupDialog = false },
                                         enabled = !groupDialogSaving
                                     ) {
@@ -1291,7 +1300,7 @@ private fun FollowingUserItem(
         }
 
         if (isEditMode) {
-            Checkbox(
+            AppCheckbox(
                 checked = isSelected,
                 onCheckedChange = { onClick() }
             )

@@ -46,8 +46,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
+import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppCard
+import com.android.purebilibili.core.ui.components.AppDropdownMenu
+import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppOutlinedTextField
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.EmoteInfo
@@ -98,13 +107,13 @@ fun ChatScreen(
             AppTopBar(
                 title = userName,
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    AppIconButton(onClick = onBack) {
                         Icon(rememberAppBackIcon(), contentDescription = "返回")
                     }
                 },
                 actions = {
                     Box {
-                        IconButton(onClick = { showSessionMenu = true }) {
+                        AppIconButton(onClick = { showSessionMenu = true }) {
                             Icon(Icons.Default.MoreVert, contentDescription = "会话设置")
                         }
                         ChatSessionControlMenu(
@@ -176,7 +185,7 @@ fun ChatScreen(
                     ) {
                         Text(uiState.error ?: "加载失败")
                         Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = { viewModel.loadMessages() }) {
+                        AppButton(onClick = { viewModel.loadMessages() }) {
                             Text("重试")
                         }
                     }
@@ -207,7 +216,7 @@ fun ChatScreen(
                                             size = 24.dp
                                         )
                                     } else {
-                                        TextButton(onClick = { viewModel.loadMoreMessages() }) {
+                                        AppTextButton(onClick = { viewModel.loadMoreMessages() }) {
                                             Text("加载更多")
                                         }
                                     }
@@ -247,7 +256,7 @@ fun ChatScreen(
                         .align(Alignment.BottomCenter)
                         .padding(16.dp),
                     action = {
-                        TextButton(onClick = { viewModel.clearSendError() }) {
+                        AppTextButton(onClick = { viewModel.clearSendError() }) {
                             Text("知道了")
                         }
                     }
@@ -259,7 +268,7 @@ fun ChatScreen(
     }
 
     pendingWithdrawMessage?.let { targetMessage ->
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = {
                 if (uiState.withdrawingMessageKey == null) {
                     pendingWithdrawMessage = null
@@ -268,7 +277,7 @@ fun ChatScreen(
             title = { Text("撤回消息") },
             text = { Text("要撤回这条消息吗？") },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     enabled = uiState.withdrawingMessageKey == null,
                     onClick = {
                         viewModel.withdrawMessage(targetMessage)
@@ -278,7 +287,7 @@ fun ChatScreen(
                 }
             },
             dismissButton = {
-                TextButton(
+                AppTextButton(
                     enabled = uiState.withdrawingMessageKey == null,
                     onClick = {
                         pendingWithdrawMessage = null
@@ -297,12 +306,12 @@ fun ChatScreen(
     }
 
     if (showInterceptConfirm) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showInterceptConfirm = false },
             title = { Text("移入拦截") },
             text = { Text("后续这类会话会进入拦截分类，仍可在拦截列表中查看和恢复。") },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         viewModel.toggleIntercept()
                         showInterceptConfirm = false
@@ -312,7 +321,7 @@ fun ChatScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showInterceptConfirm = false }) {
+                AppTextButton(onClick = { showInterceptConfirm = false }) {
                     Text("取消")
                 }
             }
@@ -332,11 +341,11 @@ private fun ChatSessionControlMenu(
     onToggleIntercept: () -> Unit,
     onRefresh: () -> Unit
 ) {
-    DropdownMenu(
+    AppDropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismiss
     ) {
-        DropdownMenuItem(
+        AppDropdownMenuItem(
             text = {
                 Text(if (controlInfo.isDnd == true) "关闭免打扰" else "开启免打扰")
             },
@@ -345,7 +354,7 @@ private fun ChatSessionControlMenu(
         )
 
         if (sessionType == 1 && controlInfo.showPushSetting) {
-            DropdownMenuItem(
+            AppDropdownMenuItem(
                 text = {
                     Text(if (controlInfo.pushMuted == true) "接收推送" else "关闭推送")
                 },
@@ -355,7 +364,7 @@ private fun ChatSessionControlMenu(
         }
 
         if (sessionType == 1) {
-            DropdownMenuItem(
+            AppDropdownMenuItem(
                 text = {
                     Text(if (controlInfo.isIntercept == true) "移出拦截" else "移入拦截")
                 },
@@ -365,7 +374,7 @@ private fun ChatSessionControlMenu(
         }
 
         if (controlInfo.isLimit == true || controlInfo.reportLimit == true) {
-            DropdownMenuItem(
+            AppDropdownMenuItem(
                 text = {
                     val text = when {
                         controlInfo.isLimit == true && controlInfo.reportLimit == true -> "会话受限，举报也受限"
@@ -379,7 +388,7 @@ private fun ChatSessionControlMenu(
             )
         }
 
-        DropdownMenuItem(
+        AppDropdownMenuItem(
             text = { Text("刷新状态") },
             enabled = !isUpdating,
             onClick = onRefresh
@@ -399,7 +408,7 @@ fun ChatInputBar(
     val showSendAction = text.isNotBlank()
     val isBusy = isSending || isUploadingImage
 
-    Surface(
+    AppSurface(
         tonalElevation = 3.dp,
         shadowElevation = 4.dp
     ) {
@@ -409,7 +418,7 @@ fun ChatInputBar(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            OutlinedTextField(
+            AppOutlinedTextField(
                 value = text,
                 onValueChange = onTextChange,
                 modifier = Modifier.weight(1f),
@@ -422,7 +431,7 @@ fun ChatInputBar(
             
             Spacer(modifier = Modifier.width(8.dp))
             
-            IconButton(
+            AppIconButton(
                 onClick = {
                     if (showSendAction) {
                         onSend()
@@ -656,7 +665,7 @@ fun VideoLinkPreviewCard(
     preview: VideoPreviewInfo,
     onClick: () -> Unit
 ) {
-    Card(
+    AppCard(
         modifier = Modifier
             .widthIn(max = 260.dp)
             .clickable { onClick() },
@@ -765,7 +774,7 @@ fun MessageCardPreviewCard(
     preview: MessageCardPreview,
     onClick: () -> Unit
 ) {
-    Card(
+    AppCard(
         modifier = Modifier
             .widthIn(max = 260.dp)
             .clickable { onClick() },

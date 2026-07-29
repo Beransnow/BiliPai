@@ -51,6 +51,7 @@ import com.android.purebilibili.core.coroutines.AppScope
 import com.android.purebilibili.core.refresh.WatchLaterRefreshBus
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
+import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
 import com.android.purebilibili.core.ui.LocalSharedTransitionScope
@@ -58,6 +59,11 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.components.AppDropdownMenu
+import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppOutlinedButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.ui.rememberAppPlayIcon
@@ -572,7 +578,7 @@ fun WatchLaterScreen(
                         state.totalCount.takeIf { it > 0 } ?: state.items.size
                     ),
                     navigationIcon = {
-                        IconButton(onClick = onBack) {
+                        AppIconButton(onClick = onBack) {
                             Icon(rememberAppBackIcon(), contentDescription = "返回")
                         }
                     },
@@ -580,20 +586,20 @@ fun WatchLaterScreen(
                         if (state.items.isNotEmpty()) {
                             if (isBatchMode) {
                                 val allSelected = selectedBvids.size == state.items.size
-                                TextButton(
+                                AppTextButton(
                                     onClick = {
                                         selectedBvids = if (allSelected) emptySet() else state.items.map { it.bvid }.toSet()
                                     }
                                 ) {
                                     Text(if (allSelected) "取消全选" else "全选")
                                 }
-                                TextButton(
+                                AppTextButton(
                                     enabled = selectedBvids.isNotEmpty(),
                                     onClick = { showBatchDeleteConfirm = true }
                                 ) {
                                     Text("删除(${selectedBvids.size})")
                                 }
-                                TextButton(
+                                AppTextButton(
                                     onClick = {
                                         isBatchMode = false
                                         selectedBvids = emptySet()
@@ -602,12 +608,12 @@ fun WatchLaterScreen(
                                     Text("完成")
                                 }
                             } else {
-                                IconButton(
+                                AppIconButton(
                                     onClick = {
                                         val externalPlaylist = buildExternalPlaylistFromWatchLater(
                                             items = displayedItems,
                                             clickedBvid = displayedItems.firstOrNull()?.bvid
-                                        ) ?: return@IconButton
+                                        ) ?: return@AppIconButton
 
                                         com.android.purebilibili.feature.video.player.PlaylistManager.setExternalPlaylist(
                                             externalPlaylist.playlistItems,
@@ -633,7 +639,7 @@ fun WatchLaterScreen(
                                     )
                                 }
 
-                                TextButton(
+                                AppTextButton(
                                     onClick = {
                                         savedSortOrder = sortOrder.toggled().name
                                     }
@@ -642,7 +648,7 @@ fun WatchLaterScreen(
                                 }
 
                                 Box {
-                                    IconButton(
+                                    AppIconButton(
                                         enabled = !state.isManaging,
                                         onClick = { showManagementMenu = true }
                                     ) {
@@ -652,11 +658,11 @@ fun WatchLaterScreen(
                                             tint = MaterialTheme.colorScheme.primary
                                         )
                                     }
-                                    DropdownMenu(
+                                    AppDropdownMenu(
                                         expanded = showManagementMenu,
                                         onDismissRequest = { showManagementMenu = false }
                                     ) {
-                                        DropdownMenuItem(
+                                        AppDropdownMenuItem(
                                             text = { Text("全部听") },
                                             enabled = !state.isManaging,
                                             onClick = {
@@ -693,7 +699,7 @@ fun WatchLaterScreen(
                                                 }
                                             }
                                         )
-                                        DropdownMenuItem(
+                                        AppDropdownMenuItem(
                                             text = { Text("批量删除") },
                                             enabled = !state.isManaging,
                                             onClick = {
@@ -702,7 +708,7 @@ fun WatchLaterScreen(
                                                 selectedBvids = emptySet()
                                             }
                                         )
-                                        DropdownMenuItem(
+                                        AppDropdownMenuItem(
                                             text = { Text("清空已看") },
                                             enabled = !state.isManaging,
                                             onClick = {
@@ -710,7 +716,7 @@ fun WatchLaterScreen(
                                                 pendingManagementAction = WatchLaterManagementAction.CLEAR_VIEWED
                                             }
                                         )
-                                        DropdownMenuItem(
+                                        AppDropdownMenuItem(
                                             text = { Text("清空全部") },
                                             enabled = !state.isManaging,
                                             onClick = {
@@ -760,7 +766,7 @@ fun WatchLaterScreen(
                             color = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.height(AppSpacingTokens.Small))
-                        OutlinedButton(onClick = { viewModel.loadData() }) {
+                        AppOutlinedButton(onClick = { viewModel.loadData() }) {
                             Text("重试")
                         }
                     }
@@ -868,12 +874,12 @@ fun WatchLaterScreen(
     }
 
     if (showBatchDeleteConfirm) {
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { showBatchDeleteConfirm = false },
             title = { Text("批量删除") },
             text = { Text("确认删除已选择的 ${selectedBvids.size} 个视频吗？") },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         val aidList = state.items
                             .filter { it.bvid in selectedBvids }
@@ -888,7 +894,7 @@ fun WatchLaterScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showBatchDeleteConfirm = false }) {
+                AppTextButton(onClick = { showBatchDeleteConfirm = false }) {
                     Text("取消")
                 }
             }
@@ -902,7 +908,7 @@ fun WatchLaterScreen(
                 action = action
             ).size
         }
-        AlertDialog(
+        AppAlertDialog(
             onDismissRequest = { pendingManagementAction = null },
             title = {
                 Text(
@@ -914,7 +920,7 @@ fun WatchLaterScreen(
             },
             text = { Text(resolveWatchLaterManagementConfirmText(action, affectedCount)) },
             confirmButton = {
-                TextButton(
+                AppTextButton(
                     onClick = {
                         viewModel.runManagementAction(action)
                         pendingManagementAction = null
@@ -924,7 +930,7 @@ fun WatchLaterScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { pendingManagementAction = null }) {
+                AppTextButton(onClick = { pendingManagementAction = null }) {
                     Text("取消")
                 }
             }
@@ -1121,7 +1127,7 @@ private fun WatchLaterVideoCard(
                 modifier = Modifier.size(AppSpacingTokens.ExtraLarge)
             )
         } else {
-            IconButton(
+            AppIconButton(
                 onClick = onDelete,
                 modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
             ) {
