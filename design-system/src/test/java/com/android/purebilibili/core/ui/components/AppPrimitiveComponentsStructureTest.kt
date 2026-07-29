@@ -40,6 +40,9 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(source.contains(") = Slider("))
         assertTrue(source.contains("fun AppOutlinedButton("))
         assertTrue(source.contains(") = OutlinedButton("))
+        assertTrue(source.contains("fun AppCard("))
+        assertTrue(source.contains("content: @Composable ColumnScope.() -> Unit"))
+        assertTrue(source.contains(") = Card("))
     }
 
     private fun loadSource(): String {

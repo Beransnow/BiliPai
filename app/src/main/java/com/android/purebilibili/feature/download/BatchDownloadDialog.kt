@@ -19,7 +19,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import com.android.purebilibili.core.ui.components.AppButton
-import androidx.compose.material3.Card
+import com.android.purebilibili.core.ui.components.AppCard
 import androidx.compose.material3.CardDefaults
 import com.android.purebilibili.core.ui.components.AppCheckbox
 import androidx.compose.material3.FilterChip
@@ -67,7 +67,7 @@ internal fun BatchDownloadDialog(
                 qualityOptionCount = qualityOptions.size
             ).dp
 
-            Card(
+            AppCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(max = dialogMaxHeight),
