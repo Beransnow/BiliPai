@@ -526,6 +526,10 @@ internal fun VideoDetailScreenStateHolder(
         animatedVisibilityScope = entryRootAnimatedVisibilityScope,
         fallbackDurationMillis = homeSharedTransitionMotionSpec.durationMillis,
     )
+    val entryPlaybackReady = rememberVideoDetailEntryPlaybackReady(
+        deferLoad = deferVideoDetailEntryLoad,
+        morphDurationMillis = homeSharedTransitionMotionSpec.durationMillis,
+    )
 
     fun markSecondaryNavigationLeave(expectedBvid: String = currentBvid) {
         miniPlayerManager?.markLeavingByNavigation(expectedBvid = expectedBvid)
@@ -1436,7 +1440,7 @@ internal fun VideoDetailScreenStateHolder(
         cid = playbackTargetCid,
         fallbackResumePositionMs = resumePositionMsFromRoute,
         startPaused = isPortraitFullscreen && !useSharedPortraitPlayer,
-        entryTransitionFinished = entryTransitionFinished,
+        entryTransitionFinished = entryPlaybackReady,
         playbackSessionActive = playbackSessionActiveForMorph,
     )
     LaunchedEffect(isFullscreenMode) {
