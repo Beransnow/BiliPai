@@ -101,7 +101,7 @@ fun SplashWallpaperPickerSheet(
         SettingsManager.setSplashRandomPoolUris(context, randomPool)
     }
 
-    AppModalBottomSheet(
+    ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = MaterialTheme.colorScheme.background,
@@ -151,7 +151,7 @@ fun SplashWallpaperPickerSheet(
                             Text("从相册选择")
                         }
                         Spacer(modifier = Modifier.height(16.dp))
-                        AppLoadingIndicator()
+                        AdaptiveLoadingIndicator()
                     }
                 }
                 error != null && officialWallpapers.isEmpty() -> {
@@ -366,9 +366,9 @@ fun SplashWallpaperPickerSheet(
                         shape = RoundedCornerShape(25.dp)
                     ) {
                         if (isSaving) {
-                            AppLoadingIndicator(
+                            CircularProgressIndicator(
                                 color = Color.White,
-                                size = 20.dp,
+                                modifier = Modifier.size(20.dp),
                                 strokeWidth = 2.dp
                             )
                         } else {

@@ -116,7 +116,7 @@ fun LiveFollowingScreen(
                 navigationIcon = {
                     AppIconButton(onClick = onBack) {
                         Icon(
-                            imageVector = rememberAppBackIcon(),
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "返回",
                         )
                     }
@@ -140,7 +140,7 @@ fun LiveFollowingScreen(
                         },
                     ) {
                         Icon(
-                            imageVector = rememberAppRefreshIcon(),
+                            imageVector = Icons.Outlined.Refresh,
                             contentDescription = if (isRefreshing) "正在刷新" else "刷新",
                         )
                     }
@@ -157,7 +157,7 @@ fun LiveFollowingScreen(
                     .padding(innerPadding),
                 contentAlignment = Alignment.Center,
             ) {
-                AppLoadingIndicator()
+                AdaptiveLoadingIndicator()
             }
             error != null -> Box(
                 modifier = Modifier
@@ -194,7 +194,6 @@ fun LiveFollowingScreen(
                                 viewerCount = item.online,
                                 areaName = item.areaName,
                             ),
-                            visualSpec = visualSpec,
                             onClick = { onLiveClick(item.roomid, item.title, item.uname) },
                         )
                     }

@@ -2,134 +2,142 @@ package com.android.purebilibili.app
 
 import android.os.Build
 
-internal enum class StartupTrigger {
-    APP_CREATE,
-    FIRST_INTERACTIVE,
-    ON_DEMAND,
+internal enum class StartupPhase {
+    BEFORE_FIRST_INTERACTIVE,
+    AFTER_FIRST_INTERACTIVE
 }
 
-internal enum class StartupDispatcher {
+internal enum class StartupCriticality {
+    REQUIRED,
+    DEFERRED
+}
+
+internal enum class StartupThread {
     MAIN,
-    IO,
-    DEFAULT,
+    MAIN_DELAYED,
+    MAIN_IDLE
 }
 
 internal data class AppStartupTask(
     val id: String,
-    val trigger: StartupTrigger,
-    val dispatcher: StartupDispatcher,
-    val delayMs: Long = 0L,
-    val dependencies: Set<String> = emptySet(),
+    val phase: StartupPhase,
+    val criticality: StartupCriticality,
+    val thread: StartupThread,
+    val delayMs: Long = 0L
 )
 
 internal fun defaultAppStartupTasks(
     sdkInt: Int = Build.VERSION.SDK_INT,
     deferredDelayMs: Long = PureApplicationRuntimeConfig.deferredNonCriticalStartupDelayMs(),
-    dex2OatDelayMs: Long = PureApplicationRuntimeConfig.dex2OatProfileInstallDelayMs(),
+    dex2OatDelayMs: Long = PureApplicationRuntimeConfig.dex2OatProfileInstallDelayMs()
 ): List<AppStartupTask> {
-    val playlistTrigger = if (PureApplicationRuntimeConfig.shouldDeferPlaylistRestoreAtStartup()) {
-        StartupTrigger.FIRST_INTERACTIVE
+    val playlistPhase = if (PureApplicationRuntimeConfig.shouldDeferPlaylistRestoreAtStartup()) {
+        StartupPhase.AFTER_FIRST_INTERACTIVE
     } else {
-        StartupTrigger.APP_CREATE
+        StartupPhase.BEFORE_FIRST_INTERACTIVE
     }
-    val telemetryTrigger = if (PureApplicationRuntimeConfig.shouldDeferTelemetryInitAtStartup()) {
-        StartupTrigger.FIRST_INTERACTIVE
+    val playlistThread = if (PureApplicationRuntimeConfig.shouldDeferPlaylistRestoreAtStartup()) {
+        StartupThread.MAIN_DELAYED
     } else {
-        StartupTrigger.APP_CREATE
+        StartupThread.MAIN
+    }
+    val playlistCriticality = if (PureApplicationRuntimeConfig.shouldDeferPlaylistRestoreAtStartup()) {
+        StartupCriticality.DEFERRED
+    } else {
+        StartupCriticality.REQUIRED
+    }
+
+    val telemetryPhase = if (PureApplicationRuntimeConfig.shouldDeferTelemetryInitAtStartup()) {
+        StartupPhase.AFTER_FIRST_INTERACTIVE
+    } else {
+        StartupPhase.BEFORE_FIRST_INTERACTIVE
+    }
+    val telemetryThread = if (PureApplicationRuntimeConfig.shouldDeferTelemetryInitAtStartup()) {
+        StartupThread.MAIN_DELAYED
+    } else {
+        StartupThread.MAIN
+    }
+    val telemetryCriticality = if (PureApplicationRuntimeConfig.shouldDeferTelemetryInitAtStartup()) {
+        StartupCriticality.DEFERRED
+    } else {
+        StartupCriticality.REQUIRED
     }
 
     val tasks = mutableListOf(
-        AppStartupTask("network_module_init", StartupTrigger.APP_CREATE, StartupDispatcher.MAIN),
-        AppStartupTask("token_manager_init", StartupTrigger.APP_CREATE, StartupDispatcher.IO),
+        AppStartupTask(
+            id = "network_module_init",
+            phase = StartupPhase.BEFORE_FIRST_INTERACTIVE,
+            criticality = StartupCriticality.REQUIRED,
+            thread = StartupThread.MAIN
+        ),
+        AppStartupTask(
+            id = "token_manager_init",
+            phase = StartupPhase.BEFORE_FIRST_INTERACTIVE,
+            criticality = StartupCriticality.REQUIRED,
+            thread = StartupThread.MAIN
+        ),
+        // 必须在 video_repository_init / 首页预加载前恢复磁盘 WBI，避免冷启动多打一次 nav。
         AppStartupTask(
             id = "wbi_key_restore",
-            trigger = StartupTrigger.APP_CREATE,
-            dispatcher = StartupDispatcher.IO,
-            dependencies = setOf("token_manager_init"),
+            phase = StartupPhase.BEFORE_FIRST_INTERACTIVE,
+            criticality = StartupCriticality.REQUIRED,
+            thread = StartupThread.MAIN
         ),
         AppStartupTask(
             id = "video_repository_init",
-            trigger = StartupTrigger.APP_CREATE,
-            dispatcher = StartupDispatcher.MAIN,
-            dependencies = setOf("network_module_init", "wbi_key_restore"),
+            phase = StartupPhase.BEFORE_FIRST_INTERACTIVE,
+            criticality = StartupCriticality.REQUIRED,
+            thread = StartupThread.MAIN
         ),
-        AppStartupTask("background_manager_init", StartupTrigger.APP_CREATE, StartupDispatcher.MAIN),
-        AppStartupTask("player_settings_cache_init", StartupTrigger.APP_CREATE, StartupDispatcher.IO),
-        AppStartupTask("home_visual_defaults_restore", StartupTrigger.APP_CREATE, StartupDispatcher.IO),
-        AppStartupTask("plugin_manager_configure", StartupTrigger.APP_CREATE, StartupDispatcher.MAIN),
         AppStartupTask(
-            id = "home_feed_policy_restore",
-            trigger = StartupTrigger.APP_CREATE,
-            dispatcher = StartupDispatcher.IO,
-            dependencies = setOf("plugin_manager_configure"),
+            id = "background_manager_init",
+            phase = StartupPhase.BEFORE_FIRST_INTERACTIVE,
+            criticality = StartupCriticality.REQUIRED,
+            thread = StartupThread.MAIN
         ),
-        AppStartupTask("download_manager_configure", StartupTrigger.APP_CREATE, StartupDispatcher.IO),
+        AppStartupTask(
+            id = "player_settings_cache_init",
+            phase = StartupPhase.BEFORE_FIRST_INTERACTIVE,
+            criticality = StartupCriticality.REQUIRED,
+            thread = StartupThread.MAIN
+        ),
         AppStartupTask(
             id = "notification_channel_init",
-            trigger = StartupTrigger.FIRST_INTERACTIVE,
-            dispatcher = StartupDispatcher.MAIN,
+            phase = StartupPhase.AFTER_FIRST_INTERACTIVE,
+            criticality = StartupCriticality.DEFERRED,
+            thread = StartupThread.MAIN_IDLE
         ),
         AppStartupTask(
             id = "playlist_restore",
-            trigger = playlistTrigger,
-            dispatcher = StartupDispatcher.IO,
-            delayMs = if (playlistTrigger == StartupTrigger.FIRST_INTERACTIVE) deferredDelayMs else 0L,
+            phase = playlistPhase,
+            criticality = playlistCriticality,
+            thread = playlistThread,
+            delayMs = if (playlistThread == StartupThread.MAIN_DELAYED) deferredDelayMs else 0L
         ),
         AppStartupTask(
             id = "telemetry_init",
-            trigger = telemetryTrigger,
-            dispatcher = StartupDispatcher.MAIN,
-            delayMs = if (telemetryTrigger == StartupTrigger.FIRST_INTERACTIVE) deferredDelayMs else 0L,
-            dependencies = setOf("background_manager_init"),
+            phase = telemetryPhase,
+            criticality = telemetryCriticality,
+            thread = telemetryThread,
+            delayMs = if (telemetryThread == StartupThread.MAIN_DELAYED) deferredDelayMs else 0L
         ),
         AppStartupTask(
-            id = "built_in_plugin_restore",
-            trigger = StartupTrigger.FIRST_INTERACTIVE,
-            dispatcher = StartupDispatcher.IO,
-            dependencies = setOf("home_feed_policy_restore"),
-        ),
-        AppStartupTask(
-            id = "json_plugin_restore",
-            trigger = StartupTrigger.FIRST_INTERACTIVE,
-            dispatcher = StartupDispatcher.IO,
-            dependencies = setOf("plugin_manager_configure"),
-        ),
-        AppStartupTask(
-            id = "download_restore",
-            trigger = StartupTrigger.FIRST_INTERACTIVE,
-            dispatcher = StartupDispatcher.IO,
-            dependencies = setOf("download_manager_configure"),
-        ),
-        AppStartupTask(
-            id = "plugin_preferences_sync",
-            trigger = StartupTrigger.FIRST_INTERACTIVE,
-            dispatcher = StartupDispatcher.IO,
-            dependencies = setOf("built_in_plugin_restore"),
-        ),
-        AppStartupTask(
-            id = "launcher_icon_sync",
-            trigger = StartupTrigger.FIRST_INTERACTIVE,
-            dispatcher = StartupDispatcher.IO,
-        ),
+            id = "plugin_init",
+            phase = StartupPhase.AFTER_FIRST_INTERACTIVE,
+            criticality = StartupCriticality.DEFERRED,
+            thread = StartupThread.MAIN_IDLE
+        )
     )
 
     if (PureApplicationRuntimeConfig.shouldRequestDex2OatProfileInstall(sdkInt)) {
         tasks += AppStartupTask(
             id = "dex2oat_profile_install",
-            trigger = StartupTrigger.FIRST_INTERACTIVE,
-            dispatcher = StartupDispatcher.DEFAULT,
-            delayMs = dex2OatDelayMs,
+            phase = StartupPhase.AFTER_FIRST_INTERACTIVE,
+            criticality = StartupCriticality.DEFERRED,
+            thread = StartupThread.MAIN_DELAYED,
+            delayMs = dex2OatDelayMs
         )
     }
 
     return tasks
-}
-
-internal fun validateStartupTaskGraph(tasks: List<AppStartupTask>): Boolean {
-    val ids = tasks.map { it.id }
-    if (ids.any(String::isBlank) || ids.distinct().size != ids.size) return false
-    val knownIds = ids.toSet()
-    return tasks.all { task ->
-        task.delayMs >= 0L && task.id !in task.dependencies && task.dependencies.all(knownIds::contains)
-    }
 }

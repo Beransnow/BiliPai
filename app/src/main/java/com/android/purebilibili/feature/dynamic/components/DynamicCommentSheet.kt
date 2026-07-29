@@ -218,7 +218,7 @@ fun DynamicCommentSheet(
                         .fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
-                    AppLoadingIndicator(size = AppSpacingTokens.DoubleExtraLarge)
+                    AdaptiveLoadingIndicator(size = AppSpacingTokens.DoubleExtraLarge)
                 }
             } else if (comments.isEmpty()) {
                 Box(
@@ -271,7 +271,7 @@ fun DynamicCommentSheet(
                                     .padding(vertical = AppSpacingTokens.Small),
                                 contentAlignment = Alignment.Center
                             ) {
-                                AppLoadingIndicator(size = AppSpacingTokens.ExtraLarge)
+                                AdaptiveLoadingIndicator(size = AppSpacingTokens.ExtraLarge)
                             }
                         }
                     }
@@ -411,7 +411,7 @@ fun LazyListScope.dynamicInlineCommentItems(
                     .padding(vertical = AppSpacingTokens.DoubleExtraLarge),
                 contentAlignment = Alignment.Center,
             ) {
-                AppLoadingIndicator(size = AppSpacingTokens.DoubleExtraLarge)
+                AdaptiveLoadingIndicator(size = AppSpacingTokens.DoubleExtraLarge)
             }
         }
 
@@ -443,7 +443,7 @@ fun LazyListScope.dynamicInlineCommentItems(
                     .padding(vertical = AppSpacingTokens.Medium),
                 contentAlignment = Alignment.Center,
             ) {
-                AppLoadingIndicator(size = AppSpacingTokens.ExtraLarge)
+                AdaptiveLoadingIndicator(size = AppSpacingTokens.ExtraLarge)
             }
         }
     }

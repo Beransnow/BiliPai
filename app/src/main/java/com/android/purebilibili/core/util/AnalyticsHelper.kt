@@ -7,7 +7,6 @@ import android.util.Log
 import com.android.purebilibili.BuildConfig
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.TokenManager
-import com.android.purebilibili.core.ui.performance.WindowJankSummary
 import com.google.firebase.analytics.FirebaseAnalytics
 import java.time.LocalDate
 import java.util.Locale
@@ -862,27 +861,6 @@ object AnalyticsHelper {
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to log home return animation performance", e)
-        }
-    }
-
-    /**
-     * Uploads one bounded, de-identified WindowJankController summary. The summary type cannot
-     * carry URLs, search terms, content IDs, titles, or user fields by construction.
-     */
-    fun logWindowJankSummary(summary: WindowJankSummary) {
-        if (!isEnabled) return
-        try {
-            logAnalyticsEvent("ui_jank_summary") {
-                param("route", summary.route)
-                param("interaction", summary.interaction)
-                param("frame_count", summary.frameCount)
-                param("jank_count", summary.jankCount)
-                param("avg_duration_bucket", summary.averageFrameDurationBucket)
-                param("max_duration_bucket", summary.maxFrameDurationBucket)
-                param("refresh_rate_bucket", summary.refreshRateBucket)
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to log UI jank summary", e)
         }
     }
 }

@@ -19,11 +19,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.North
-import com.android.purebilibili.core.ui.AppLoadingIndicator
-import com.android.purebilibili.core.ui.rememberAppBackIcon
-import com.android.purebilibili.core.ui.rememberAppRefreshIcon
-import com.android.purebilibili.core.ui.rememberAppSearchIcon
+import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Search
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
@@ -33,6 +33,7 @@ import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import com.android.purebilibili.core.ui.AppTopBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
@@ -48,7 +49,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.android.purebilibili.core.ui.AppPullToRefreshBox
+import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
 import com.android.purebilibili.core.ui.globalWallpaperAwareChromeColor
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,7 +69,7 @@ fun SearchTrendingScreen(
                 navigationIcon = {
                     AppIconButton(onClick = onBack) {
                         Icon(
-                            imageVector = rememberAppBackIcon(),
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                             contentDescription = "返回"
                         )
                     }
@@ -76,7 +77,7 @@ fun SearchTrendingScreen(
                 actions = {
                     AppIconButton(onClick = viewModel::refresh) {
                         Icon(
-                            imageVector = rememberAppRefreshIcon(),
+                            imageVector = Icons.Rounded.Refresh,
                             contentDescription = "刷新"
                         )
                     }
@@ -96,7 +97,7 @@ fun SearchTrendingScreen(
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                AppLoadingIndicator()
+                AdaptiveLoadingIndicator()
             }
 
             state.error != null && state.items.isEmpty() -> Box(
@@ -113,9 +114,10 @@ fun SearchTrendingScreen(
             }
 
             // Scaffold padding applied on the box — indicator at content top.
-            else -> AppPullToRefreshBox(
+            else -> AdaptivePullToRefreshBox(
                 isRefreshing = state.isRefreshing,
                 onRefresh = viewModel::refresh,
+                state = pullRefreshState,
                 indicatorTopInset = 0.dp,
                 modifier = Modifier
                     .fillMaxSize()
@@ -191,7 +193,7 @@ private fun SearchTrendingHero() {
             }
         }
         Icon(
-            imageVector = rememberAppSearchIcon(),
+            imageVector = Icons.Rounded.Search,
             contentDescription = null,
             tint = Color.White.copy(alpha = 0.18f),
             modifier = Modifier

@@ -3,7 +3,7 @@ package com.android.purebilibili.feature.home.components
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import com.android.purebilibili.core.store.BottomBarLiquidGlassPreset
-import com.android.purebilibili.core.theme.UiStyle
+import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.core.ui.blur.BlurIntensity
 import kotlin.test.Test
 import kotlin.test.assertEquals

@@ -25,6 +25,12 @@ import androidx.compose.foundation.shape.CircleShape
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowForwardIos
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
+import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
@@ -50,11 +56,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.database.entity.SearchHistory
-import com.android.purebilibili.core.ui.rememberAppChevronForwardIcon
-import com.android.purebilibili.core.ui.rememberAppRefreshIcon
-import com.android.purebilibili.core.ui.rememberAppSearchIcon
-import com.android.purebilibili.core.ui.rememberAppVisibilityOffIcon
-import com.android.purebilibili.core.ui.rememberAppVisibilityOnIcon
 import com.android.purebilibili.core.util.responsiveContentWidth
 
 private const val SEARCH_HIGHLIGHT_START_TOKEN = "§hl§"
@@ -280,7 +281,7 @@ fun SearchSuggestionDropdown(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = rememberAppSearchIcon(),
+                        imageVector = Icons.Rounded.Search,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         modifier = Modifier.size(18.dp)
@@ -405,7 +406,7 @@ private fun SearchKeywordSectionHeader(
                 if (enabled) {
                     AppIconButton(onClick = onRefresh, modifier = Modifier.size(40.dp)) {
                         Icon(
-                            imageVector = rememberAppRefreshIcon(),
+                            imageVector = Icons.Rounded.Refresh,
                             contentDescription = "刷新搜索发现",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(22.dp)
@@ -421,11 +422,7 @@ private fun SearchKeywordSectionHeader(
                     )
                     AppIconButton(onClick = onToggleEnabled, modifier = Modifier.size(40.dp)) {
                         Icon(
-                            imageVector = if (enabled) {
-                                rememberAppVisibilityOffIcon()
-                            } else {
-                                rememberAppVisibilityOnIcon()
-                            },
+                            imageVector = if (enabled) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
                             contentDescription = if (enabled) "隐藏搜索发现" else "显示搜索发现",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(22.dp)
@@ -462,7 +459,7 @@ private fun SearchKeywordSectionHeader(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Icon(
-                        imageVector = rememberAppChevronForwardIcon(),
+                        imageVector = Icons.AutoMirrored.Rounded.ArrowForwardIos,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(14.dp)
@@ -478,7 +475,7 @@ private fun SearchKeywordSectionHeader(
             if (enabled) {
                 AppIconButton(onClick = onRefresh, modifier = Modifier.size(40.dp)) {
                     Icon(
-                        imageVector = rememberAppRefreshIcon(),
+                        imageVector = Icons.Rounded.Refresh,
                         contentDescription = "刷新搜索发现",
                         tint = MaterialTheme.colorScheme.secondary
                     )
@@ -487,11 +484,7 @@ private fun SearchKeywordSectionHeader(
             if (onToggleEnabled != null) {
                 AppIconButton(onClick = onToggleEnabled, modifier = Modifier.size(40.dp)) {
                     Icon(
-                        imageVector = if (enabled) {
-                            rememberAppVisibilityOffIcon()
-                        } else {
-                            rememberAppVisibilityOnIcon()
-                        },
+                        imageVector = if (enabled) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
                         contentDescription = if (enabled) "隐藏搜索发现" else "显示搜索发现",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )

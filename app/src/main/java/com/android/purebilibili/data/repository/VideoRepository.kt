@@ -7,13 +7,11 @@ import com.android.purebilibili.core.network.AppSignUtils
 import com.android.purebilibili.core.network.NetworkModule
 import com.android.purebilibili.core.network.WbiKeyManager
 import com.android.purebilibili.core.network.WbiUtils
-import com.android.purebilibili.core.plugin.PluginManager
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.TokenManager
 import com.android.purebilibili.core.util.NetworkUtils
 import com.android.purebilibili.data.model.response.*
 import com.android.purebilibili.feature.video.progress.PbpProgressData
-import com.android.purebilibili.feature.plugin.HOME_FEED_ANONYMIZER_PLUGIN_ID
 import com.android.purebilibili.feature.video.progress.parsePbpProgressData
 import com.android.purebilibili.feature.video.subtitle.SubtitleCue
 import com.android.purebilibili.feature.video.subtitle.normalizeBilibiliSubtitleUrl
@@ -274,9 +272,6 @@ object VideoRepository {
 
         homePreloadDeferred = scope.async {
             try {
-                // The first feed request observes the authoritative anonymizer policy. This wait
-                // is on the preload IO chain and never blocks Application/Activity main threads.
-                PluginManager.awaitPluginReady(HOME_FEED_ANONYMIZER_PLUGIN_ID)
                 val feedApiType = NetworkModule.appContext
                     ?.let { SettingsManager.getFeedApiTypeSync(it) }
                     ?: SettingsManager.FeedApiType.WEB
@@ -295,8 +290,6 @@ object VideoRepository {
 
                 com.android.purebilibili.core.util.Logger.d("VideoRepo", "🚀 Home data preload finished. Success=${result.isSuccess}")
                 result
-            } catch (cancellation: CancellationException) {
-                throw cancellation
             } catch (e: Exception) {
                 com.android.purebilibili.core.util.Logger.e("VideoRepo", "🚀 Home data preload failed", e)
                 Result.failure<List<VideoItem>>(e).also { preloadedHomeVideos = it }

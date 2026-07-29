@@ -1,7 +1,7 @@
 package com.android.purebilibili.feature.home.components
 
 import java.io.File
-import com.android.purebilibili.core.theme.UiStyle
+import com.android.purebilibili.core.theme.UiPreset
 import androidx.compose.ui.graphics.Color
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -9,18 +9,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class BottomBarLiquidSegmentedControlStructureTest {
-
-    @Test
-    fun `segmented motion reads stable drag state without duplicate press collection`() {
-        val source = loadSource(
-            "app/src/main/java/com/android/purebilibili/feature/home/components/BottomBarLiquidSegmentedControl.kt"
-        )
-
-        assertTrue(source.contains("derivedStateOf { dragState.pressProgress }"))
-        assertTrue(source.contains("Modifier.horizontalDragGesture("))
-        assertTrue(source.contains("resolveSegmentedControlMotionProgress("))
-        assertEquals(1, Regex("""\.collectIsPressedAsState\(\)""").findAll(source).count())
-    }
 
     @Test
     fun `liquid segmented labels keep bottom bar foreground opacity`() {

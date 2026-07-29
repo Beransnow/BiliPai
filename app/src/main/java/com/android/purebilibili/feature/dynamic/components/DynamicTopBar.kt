@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,8 +27,6 @@ import androidx.compose.ui.unit.sp
 import com.android.purebilibili.core.ui.rememberAppGridLayoutIcon
 import com.android.purebilibili.core.ui.rememberAppListLayoutIcon
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
-import com.android.purebilibili.core.ui.rememberAppListLayoutIcon
-import com.android.purebilibili.core.ui.rememberAppStackLayoutIcon
 import com.android.purebilibili.core.ui.resolveGlobalWallpaperProtectiveColor
 import com.android.purebilibili.core.ui.blur.unifiedBlur
 import com.android.purebilibili.feature.dynamic.resolveDynamicTopBarHorizontalPadding
@@ -60,20 +56,6 @@ fun DynamicTopBarWithTabs(
     hazeState: HazeState? = null,
     indicatorPositionProvider: (() -> Float)? = null
 ) {
-    // Pager callers commonly allocate the provider in their own recomposition. Keep the shared
-    // segmented control on one stable callback identity; it samples the latest callback in layer.
-    val latestIndicatorPositionProvider = rememberUpdatedState(indicatorPositionProvider)
-    val latestSelectedTab = rememberUpdatedState(selectedTab)
-    val stableIndicatorPositionProvider = remember(indicatorPositionProvider != null) {
-        if (indicatorPositionProvider == null) {
-            null
-        } else {
-            {
-                latestIndicatorPositionProvider.value?.invoke()
-                    ?: latestSelectedTab.value.toFloat()
-            }
-        }
-    }
     val density = LocalDensity.current
     val statusBarHeight = WindowInsets.statusBars.getTop(density).let { with(density) { it.toDp() } }
     val liquidTabSpec = resolveDynamicTopBarLiquidTabSpec()
@@ -82,8 +64,6 @@ fun DynamicTopBarWithTabs(
     val blurIntensity = currentUnifiedBlurIntensity()
     val backgroundAlpha = BlurStyles.getBackgroundAlpha(blurIntensity)
     val globalWallpaperVisible = LocalGlobalWallpaperBackdropVisible.current
-    val listLayoutIcon = rememberAppListLayoutIcon()
-    val stackLayoutIcon = rememberAppStackLayoutIcon()
     val shouldUseHeaderBlur = shouldUseDynamicTopBarHeaderBlur(
         hasHazeState = hazeState != null,
         globalWallpaperVisible = globalWallpaperVisible
@@ -120,7 +100,7 @@ fun DynamicTopBarWithTabs(
                     tabs = tabs,
                     onTabSelected = onTabSelected,
                     modifier = Modifier.weight(1f),
-                    indicatorPositionProvider = stableIndicatorPositionProvider
+                    indicatorPositionProvider = indicatorPositionProvider
                 )
                 
                 //  布局模式切换按钮

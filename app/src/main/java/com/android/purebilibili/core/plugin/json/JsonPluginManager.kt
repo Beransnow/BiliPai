@@ -9,14 +9,11 @@ import com.android.purebilibili.core.plugin.DanmakuStyle
 import com.android.purebilibili.core.plugin.PluginManager
 import com.android.purebilibili.core.util.Logger
 import com.android.purebilibili.data.model.response.VideoItem
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -54,73 +51,20 @@ object JsonPluginManager {
     val filterStats: StateFlow<Map<String, Int>> = _filterStats.asStateFlow()
     
     private var isInitialized = false
-    private val restoreMutex = Mutex()
     
     /**
      * 初始化
      */
-    suspend fun initialize(context: Context) = restoreMutex.withLock {
-        if (isInitialized) return@withLock
+    fun initialize(context: Context) {
+        if (isInitialized) return
         appContext = context.applicationContext
-
-        try {
-            val (savedSources, enabledStates) = withContext(Dispatchers.IO) {
-                val dir = getPluginDir()
-                val sources = dir.listFiles()
-                    ?.asSequence()
-                    ?.filter { it.extension == "json" }
-                    ?.sortedBy { it.name }
-                    ?.mapNotNull { file ->
-                        runCatching { file.name to file.readText() }
-                            .onFailure { error ->
-                                Logger.w(TAG, " 加载插件文件失败: ${file.name}", error)
-                            }
-                            .getOrNull()
-                    }
-                    ?.toList()
-                    .orEmpty()
-                val enabled = appContext
-                    .getSharedPreferences(ENABLED_PREFS, Context.MODE_PRIVATE)
-                    .all
-                sources to enabled
-            }
-
-            val loaded = withContext(Dispatchers.Default) {
-                savedSources.mapNotNull { (fileName, content) ->
-                    try {
-                        val plugin = json.decodeFromString<JsonRulePlugin>(content)
-                        validatePlugin(plugin)?.let { validationError ->
-                            Logger.w(TAG, " 插件文件无效，已忽略: $fileName ($validationError)")
-                            return@mapNotNull null
-                        }
-                        val enabled = enabledStates["$ENABLED_PREFIX${plugin.id}"] as? Boolean ?: true
-                        LoadedJsonPlugin(plugin, enabled, sourceUrl = null)
-                    } catch (cancellation: CancellationException) {
-                        throw cancellation
-                    } catch (error: Exception) {
-                        // A malformed entry is isolated; valid siblings are still restored.
-                        Logger.w(TAG, " 加载插件失败: $fileName", error)
-                        null
-                    }
-                }
-            }
-
-            val statsMap = withContext(Dispatchers.IO) {
-                appContext.getSharedPreferences(STATS_PREFS, Context.MODE_PRIVATE)
-                    .all
-                    .mapNotNull { (key, value) -> (value as? Int)?.let { key to it } }
-                    .toMap()
-            }
-
-            withContext(Dispatchers.Main.immediate) {
-                _plugins.value = loaded
-                _filterStats.value = statsMap
-                isInitialized = true
-            }
-            Logger.d(TAG, " JsonPluginManager initialized (${loaded.size} plugins)")
-        } catch (cancellation: CancellationException) {
-            throw cancellation
-        }
+        isInitialized = true
+        
+        // 加载已保存的插件
+        loadSavedPlugins()
+        //  加载持久化统计
+        loadFilterStats()
+        Logger.d(TAG, " JsonPluginManager initialized")
     }
     
     /**
@@ -472,6 +416,51 @@ object JsonPluginManager {
     private fun savePlugin(plugin: JsonRulePlugin) {
         val file = File(getPluginDir(), "${plugin.id}.json")
         file.writeText(json.encodeToString(JsonRulePlugin.serializer(), plugin))
+    }
+    
+    private fun loadSavedPlugins() {
+        val dir = getPluginDir()
+        if (!dir.exists()) return
+        
+        val prefs = appContext.getSharedPreferences(ENABLED_PREFS, Context.MODE_PRIVATE)
+        
+        val loaded = dir.listFiles()
+            ?.sortedBy { it.name }
+            ?.mapNotNull { file ->
+            try {
+                if (file.extension != "json") return@mapNotNull null
+                val plugin = json.decodeFromString<JsonRulePlugin>(file.readText())
+                validatePlugin(plugin)?.let {
+                    Logger.w(TAG, " 插件文件无效，已忽略: ${file.name} ($it)")
+                    return@mapNotNull null
+                }
+                val enabled = prefs.getBoolean("$ENABLED_PREFIX${plugin.id}", true)
+                LoadedJsonPlugin(plugin, enabled, sourceUrl = null)
+            } catch (e: Exception) {
+                Logger.w(TAG, " 加载插件失败: ${file.name}")
+                null
+            }
+        } ?: emptyList()
+        
+        _plugins.value = loaded
+        Logger.d(TAG, " 加载了 ${loaded.size} 个 JSON 插件")
+    }
+    
+    /**
+     *  加载持久化过滤统计
+     */
+    private fun loadFilterStats() {
+        val prefs = appContext.getSharedPreferences(STATS_PREFS, Context.MODE_PRIVATE)
+        val statsMap = mutableMapOf<String, Int>()
+        
+        prefs.all.forEach { (key, value) ->
+            if (value is Int) {
+                statsMap[key] = value
+            }
+        }
+        
+        _filterStats.value = statsMap
+        Logger.d(TAG, " 加载了 ${statsMap.size} 个插件的过滤统计")
     }
     
     /**

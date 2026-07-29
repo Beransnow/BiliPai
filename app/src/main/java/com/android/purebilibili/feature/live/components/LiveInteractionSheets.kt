@@ -51,7 +51,6 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
-import com.android.purebilibili.core.ui.components.AppTextField
 import com.android.purebilibili.feature.live.LiveDanmakuItem
 import com.android.purebilibili.feature.live.resolveLiveSheetVisualSpec
 
@@ -231,7 +230,7 @@ fun LiveDmBlockSheet(
                     enabled = isLoggedIn,
                     modifier = Modifier.weight(1f),
                     singleLine = true,
-                    placeholder = "新增屏蔽词",
+                    placeholder = { Text("新增屏蔽词") }
                 )
                 AppButton(
                     enabled = isLoggedIn && keyword.trim().isNotBlank(),

@@ -72,7 +72,6 @@ import com.android.purebilibili.core.ui.TopReadabilityChrome
 import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.ui.rememberAppBookmarkIcon
-import com.android.purebilibili.core.ui.rememberAppChevronForwardIcon
 import com.android.purebilibili.core.ui.rememberAppChevronDownIcon
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
 import com.android.purebilibili.core.ui.rememberAppDownloadIcon
@@ -80,8 +79,6 @@ import com.android.purebilibili.core.ui.rememberAppFolderIcon
 import com.android.purebilibili.core.ui.rememberAppHistoryIcon
 import com.android.purebilibili.core.ui.rememberAppInboxIcon
 import com.android.purebilibili.core.ui.rememberAppCommentIcon
-import com.android.purebilibili.core.ui.rememberAppDeleteIcon
-import com.android.purebilibili.core.ui.rememberAppLinkIcon
 import com.android.purebilibili.core.ui.rememberAppLikeIcon
 import com.android.purebilibili.core.ui.rememberAppMoreIcon
 import com.android.purebilibili.core.ui.rememberAppLockIcon
@@ -97,7 +94,6 @@ import com.android.purebilibili.core.ui.rememberAppLinkIcon
 import com.android.purebilibili.core.ui.rememberAppSemanticVisualPolicy
 import com.android.purebilibili.core.ui.AppSemanticAccentRole
 import com.android.purebilibili.core.ui.components.UserLevelBadge
-import com.android.purebilibili.core.ui.components.AppTextField
 import com.android.purebilibili.core.ui.rememberAppWarningIcon
 import com.android.purebilibili.core.ui.rememberAppWatchLaterIcon
 import com.android.purebilibili.core.ui.wallpaper.ProfileWallpaperTransform
@@ -822,7 +818,7 @@ private fun ProfileSpaceContent(
         )
     }
     if (showPhotoPickerDialog) {
-        AppAlertDialog(
+        AlertDialog(
             onDismissRequest = { showPhotoPickerDialog = false },
             title = { Text("选择照片", fontWeight = FontWeight.Bold) },
             text = { Text("将打开系统相册选择一张照片作为背景。\n\n仅获取选中照片的访问权限，不会访问其他照片。") },
@@ -1985,7 +1981,7 @@ private fun ProfileDynamicCard(
     var pendingDeleteAction by remember(item.id_str) { mutableStateOf<DynamicDeleteAction?>(null) }
 
     pendingDeleteAction?.let { action ->
-        AppAlertDialog(
+        AlertDialog(
             onDismissRequest = { pendingDeleteAction = null },
             icon = { Icon(deleteIcon, contentDescription = null) },
             title = { Text(action.title) },
@@ -2372,7 +2368,7 @@ private fun ProfileEditAccountDialog(
 ) {
     var sign by remember(state.sign) { mutableStateOf(state.sign) }
     val signError = validateProfileSign(sign)
-    AppAlertDialog(
+    AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("编辑资料") },
         text = {
@@ -2380,11 +2376,10 @@ private fun ProfileEditAccountDialog(
                 ProfileReadonlyAccountField("昵称", state.name)
                 ProfileReadonlyAccountField("生日", state.birthday.ifBlank { "未展示" })
                 ProfileReadonlyAccountField("性别", state.sex.ifBlank { "未展示" })
-                AppTextField(
+                OutlinedTextField(
                     value = sign,
                     onValueChange = { sign = it },
-                    label = "签名",
-                    singleLine = false,
+                    label = { Text("签名") },
                     minLines = 3,
                     maxLines = 4,
                     isError = signError != null,
@@ -2622,7 +2617,7 @@ fun MobileProfileContent(
     }
 
     if (showPhotoPickerDialog) {
-        AppAlertDialog(
+        AlertDialog(
             onDismissRequest = { showPhotoPickerDialog = false },
             icon = {
                 Icon(
@@ -2995,9 +2990,10 @@ private fun ProfileWallpaperActionSheet(
     onResetWallpaperClick: () -> Unit,
     isResetEnabled: Boolean
 ) {
-    AppModalBottomSheet(
+    ModalBottomSheet(
         onDismissRequest = onDismiss,
         containerColor = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
     ) {
         Column(
             modifier = Modifier
@@ -4008,7 +4004,7 @@ private fun AccountSwitchDialog(
     onSwitch: (Long) -> Unit,
     onRemove: (Long) -> Unit
 ) {
-    AppAlertDialog(
+    AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("账号切换", fontWeight = FontWeight.Bold) },
         text = {
@@ -4150,7 +4146,7 @@ fun ProfileTripleActionEntry(
     
     // 选择弹窗
     if (showDialog) {
-        AppAlertDialog(
+        AlertDialog(
             onDismissRequest = { showDialog = false },
             title = { Text("🎉 三连成功！") },
             text = { Text("请选择你想解锁的功能：") },

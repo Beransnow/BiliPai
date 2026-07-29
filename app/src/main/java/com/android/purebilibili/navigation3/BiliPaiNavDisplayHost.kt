@@ -22,8 +22,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
@@ -32,7 +30,6 @@ import androidx.lifecycle.viewmodel.MutableCreationExtras
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.animation.SharedTransitionScope
 import androidx.navigation3.runtime.NavEntryDecorator
 import androidx.navigation3.runtime.rememberDecoratedNavEntries
@@ -48,10 +45,6 @@ import androidx.navigationevent.compose.NavigationEventState
 import androidx.navigationevent.compose.rememberNavigationEventState
 import androidx.navigationevent.NavigationEventTransitionState
 import com.android.purebilibili.core.ui.AppSurfaceTokens
-import com.android.purebilibili.core.player.PlayerLeaseRegistry
-import com.android.purebilibili.core.player.PlayerReleaseFence
-import com.android.purebilibili.core.ui.performance.PerformanceObservability
-import com.android.purebilibili.core.ui.performance.PerformanceTraceSection
 import com.android.purebilibili.core.ui.ProvideAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.performance.AppRuntimeVisualGuardTracker
@@ -146,12 +139,6 @@ internal fun BiliPaiNavDisplayHost(
 ) {
     val safeBackStack = remember(backStack) {
         backStack.ifEmpty { listOf(BiliPaiNavKey.MainHost) }
-    }
-    DisposableEffect(safeBackStack) {
-        PerformanceObservability.trace(PerformanceTraceSection.NAVIGATION_EPOCH) {
-            PlayerReleaseFence.navigation.onNavigationEpochAdvanced()
-        }
-        onDispose { }
     }
     val application = LocalContext.current.applicationContext as Application
     var navigationEventState: NavigationEventState<SceneInfo<BiliPaiNavKey>>? = null
@@ -624,8 +611,6 @@ internal fun BiliPaiNavDisplayHost(
             rememberViewModelStoreNavEntryDecorator(),
             NavEntryDecorator(
                 onPop = { key ->
-                    PlayerReleaseFence.navigation.onEntryPopped()
-                    PlayerLeaseRegistry.commitPendingPopTransfers()
                     predictiveBackHandler.onPagePop(
                         contentPageKey = key,
                         animationScope = navigationScope,
@@ -640,9 +625,6 @@ internal fun BiliPaiNavDisplayHost(
                             currentPageKey = safeBackStack.lastOrNull(),
                         )
                     ) {
-                        PlayerReleaseTopEntryLifecycleEffect(
-                            isTopEntry = entry.contentKey == safeBackStack.lastOrNull(),
-                        )
                         entry.Content()
                     }
                 }
@@ -786,27 +768,6 @@ internal fun BiliPaiNavDisplayHost(
                 }
             },
         )
-    }
-}
-
-@Composable
-private fun PlayerReleaseTopEntryLifecycleEffect(isTopEntry: Boolean) {
-    val lifecycle = LocalLifecycleOwner.current.lifecycle
-    DisposableEffect(lifecycle, isTopEntry) {
-        if (!isTopEntry) return@DisposableEffect onDispose { }
-        fun reportIfResumed() {
-            if (lifecycle.currentState == Lifecycle.State.RESUMED) {
-                PlayerReleaseFence.navigation.onTopEntryResumed()
-            }
-        }
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) reportIfResumed()
-        }
-        lifecycle.addObserver(observer)
-        reportIfResumed()
-        onDispose {
-            lifecycle.removeObserver(observer)
-        }
     }
 }
 

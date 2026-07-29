@@ -147,7 +147,7 @@ fun LoadingAnimation(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        AppLoadingIndicator(
+        AdaptiveLoadingIndicator(
             size = size,
             strokeWidth = 2.4.dp,
         )
@@ -165,7 +165,7 @@ fun LoadingAnimation(
 /**
  * Theme-aware loading indicator entry used across feature screens.
  *
- * Historically iOS-only cute person; now routes through [AppLoadingIndicator]
+ * Historically iOS-only cute person; now routes through [AdaptiveLoadingIndicator]
  * so MD3 uses the official morphing [androidx.compose.material3.LoadingIndicator]
  * (dynamic primary) and Miuix uses native progress chrome. iOS keeps the mascot.
  *
@@ -179,7 +179,7 @@ fun CutePersonLoadingIndicator(
     strokeWidth: Dp = 2.dp,
     size: Dp? = null,
 ) {
-    AppLoadingIndicator(
+    AdaptiveLoadingIndicator(
         modifier = modifier,
         size = size,
         color = color,

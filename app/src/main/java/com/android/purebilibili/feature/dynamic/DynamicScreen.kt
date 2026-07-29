@@ -33,6 +33,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,7 +80,6 @@ import com.android.purebilibili.feature.dynamic.components.DynamicUserLiveBadge
 import com.android.purebilibili.feature.dynamic.components.DynamicTopBarWithTabs
 import com.android.purebilibili.core.ui.rememberAppVisibilityOffIcon
 import com.android.purebilibili.core.ui.rememberAppVisibilityOnIcon
-import com.android.purebilibili.core.ui.image.rememberImageRequest
 import com.android.purebilibili.feature.dynamic.components.DynamicDisplayMode
 import com.android.purebilibili.feature.dynamic.components.DynamicCommentSheet
 import com.android.purebilibili.feature.dynamic.components.RepostDialog
@@ -257,6 +257,8 @@ fun DynamicScreen(
     val density = LocalDensity.current
     val statusBarHeight = WindowInsets.statusBars.getTop(density).let { with(density) { it.toDp() } }
     val dynamicListBottomPadding = LocalBottomBarContentPadding.current
+    val pullRefreshState = rememberPullToRefreshState()
+
     // GIF 图片加载器
     val gifImageLoader = context.imageLoader
     val shouldShowBackToTop by remember(activeListState) {
@@ -597,9 +599,10 @@ fun DynamicScreen(
                                 // Overlay top bar (not Scaffold-padded) — anchor indicator under chrome.
                                 val dynamicRefreshIndicatorTopInset =
                                     statusBarHeight + pageListTopExtra
-                                AppPullToRefreshBox(
+                                AdaptivePullToRefreshBox(
                                     isRefreshing = isRefreshing,
                                     onRefresh = { viewModel.refresh(tab.logicalIndex) },
+                                    state = pullRefreshState,
                                     indicatorTopInset = dynamicRefreshIndicatorTopInset,
                                     modifier = Modifier.fillMaxSize()
                                 ) {
@@ -728,9 +731,10 @@ fun DynamicScreen(
                             ).dp
                             val dynamicRefreshIndicatorTopInset =
                                 statusBarHeight + pageListTopExtra
-                            AppPullToRefreshBox(
+                            AdaptivePullToRefreshBox(
                                 isRefreshing = isRefreshing,
                                 onRefresh = { viewModel.refresh(tab.logicalIndex) },
+                                state = pullRefreshState,
                                 indicatorTopInset = dynamicRefreshIndicatorTopInset,
                                 modifier = Modifier.fillMaxSize()
                             ) {
@@ -1163,9 +1167,6 @@ private fun HorizontalUserList(
             items(users, key = { it.uid }) { user ->
                 val isSelected = selectedUserId == user.uid
                 var showMenu by remember { mutableStateOf(false) }
-                val avatarUrl = remember(user.face) {
-                    user.face.let { if (it.startsWith("http://")) it.replace("http://", "https://") else it }
-                }
                 val displayName = if (user.isHidden) {
                     "${user.name}(隐)"
                 } else {
@@ -1196,10 +1197,10 @@ private fun HorizontalUserList(
                                     )
                             ) {
                                 AsyncImage(
-                                    model = rememberImageRequest(
-                                        data = avatarUrl,
-                                        crossfadeEnabled = true,
-                                    ),
+                                    model = coil.request.ImageRequest.Builder(LocalContext.current)
+                                        .data(user.face.let { if (it.startsWith("http://")) it.replace("http://", "https://") else it })
+                                        .crossfade(true)
+                                        .build(),
                                     contentDescription = null,
                                     modifier = Modifier.fillMaxSize().clip(CircleShape),
                                     contentScale = ContentScale.Crop

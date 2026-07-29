@@ -152,7 +152,7 @@ fun SystemNoticeScreen(
                 .padding(paddingValues)
         ) {
             when {
-                uiState.isLoading -> com.android.purebilibili.core.ui.AppLoadingIndicator(
+                uiState.isLoading -> com.android.purebilibili.core.ui.CutePersonLoadingIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
                 uiState.error != null -> MessageFeedError(
@@ -165,7 +165,7 @@ fun SystemNoticeScreen(
                     modifier = Modifier.fillMaxSize()
                 )
                 // Scaffold body already below topBar.
-                else -> AppPullToRefreshBox(
+                else -> AdaptivePullToRefreshBox(
                     isRefreshing = uiState.isRefreshing,
                     onRefresh = viewModel::refresh,
                     indicatorTopInset = 0.dp,

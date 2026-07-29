@@ -71,6 +71,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.android.purebilibili.core.ui.common.CopySelectionDialog
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.rememberStoragePermissionState
@@ -82,7 +83,6 @@ import com.android.purebilibili.core.ui.animation.MaybeDissolvableVideoCard
 import com.android.purebilibili.core.ui.common.rememberClipboardCopyHandler
 import com.android.purebilibili.core.ui.rememberAppLikeFilledIcon
 import com.android.purebilibili.core.ui.rememberAppLikeIcon
-import com.android.purebilibili.core.ui.image.rememberImageRequest
 import com.android.purebilibili.feature.video.viewmodel.CommentUiState
 import com.android.purebilibili.feature.video.viewmodel.SubReplyUiState
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
@@ -1073,10 +1073,10 @@ private fun SubReplyDetailItem(
                 .padding(top = 14.dp, bottom = 14.dp, start = 16.dp, end = 16.dp)
         ) {
             AsyncImage(
-                model = rememberImageRequest(
-                    data = FormatUtils.fixImageUrl(item.member.avatar),
-                    crossfadeEnabled = true,
-                ),
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(FormatUtils.fixImageUrl(item.member.avatar))
+                    .crossfade(true)
+                    .build(),
                 contentDescription = null,
                 modifier = Modifier
                     .size(avatarSize)
@@ -1327,10 +1327,10 @@ private fun SubReplyAuxiliaryBadge(
         val auxiliaryImage = remember(item) { resolveSubReplyAuxiliaryImageUrl(item) }
         if (!auxiliaryImage.isNullOrBlank()) {
             AsyncImage(
-                model = rememberImageRequest(
-                    data = FormatUtils.fixImageUrl(auxiliaryImage),
-                    crossfadeEnabled = true,
-                ),
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(FormatUtils.fixImageUrl(auxiliaryImage))
+                    .crossfade(true)
+                    .build(),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

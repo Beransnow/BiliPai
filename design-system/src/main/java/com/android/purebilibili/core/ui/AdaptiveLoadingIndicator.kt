@@ -18,7 +18,7 @@ import top.yukonga.miuix.kmp.basic.InfiniteProgressIndicator as MiuixInfinitePro
 import top.yukonga.miuix.kmp.basic.ProgressIndicatorDefaults as MiuixProgressIndicatorDefaults
 
 /**
- * Style-neutral indeterminate loading indicator.
+ * Preset-aware indeterminate loading indicator.
  *
  * - iOS: cute person bounce (legacy look preserved).
  * - Material 3: official [LoadingIndicator] (page) or [CircularProgressIndicator] (compact),
@@ -38,7 +38,7 @@ import top.yukonga.miuix.kmp.basic.ProgressIndicatorDefaults as MiuixProgressInd
  *   when null, inferred from [size].
  */
 @Composable
-fun AppLoadingIndicator(
+fun AdaptiveLoadingIndicator(
     modifier: Modifier = Modifier,
     size: Dp? = null,
     color: Color = Color.Unspecified,
@@ -110,22 +110,6 @@ fun AppLoadingIndicator(
         }
     }
 }
-
-/** Compatibility entry point. Feature code should use [AppLoadingIndicator]. */
-@Composable
-fun AdaptiveLoadingIndicator(
-    modifier: Modifier = Modifier,
-    size: Dp? = null,
-    color: Color = Color.Unspecified,
-    strokeWidth: Dp = 2.dp,
-    density: AdaptiveLoadingDensity? = null,
-) = AppLoadingIndicator(
-    modifier = modifier,
-    size = size,
-    color = color,
-    strokeWidth = strokeWidth,
-    density = density,
-)
 
 @Composable
 private fun resolveAdaptiveLoadingDefaultColor(visual: AdaptiveLoadingVisual): Color {

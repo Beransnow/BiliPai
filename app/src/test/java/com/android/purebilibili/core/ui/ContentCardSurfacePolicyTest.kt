@@ -2,7 +2,6 @@ package com.android.purebilibili.core.ui
 
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
-import com.android.purebilibili.core.theme.UiStyle
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -30,41 +29,12 @@ class ContentCardSurfacePolicyTest {
     }
 
     @Test
-    fun appCardRoutesMiuixToNativeCardAndOtherStylesToMaterialSurface() {
-        UiStyle.entries.forEach { uiStyle ->
-            val spec = resolveAppCardVisualSpec(uiStyle, AppCardTone.STANDARD)
-            val expected = if (uiStyle == UiStyle.MIUIX) {
-                AppCardRenderer.MIUIX_CARD
-            } else {
-                AppCardRenderer.MATERIAL_SURFACE
-            }
-            assertEquals(expected, spec.renderer)
-        }
-    }
-
-    @Test
-    fun appCardTonesKeepSemanticSurfaceAndElevationContracts() {
-        val standard = resolveAppCardVisualSpec(UiStyle.MATERIAL3, AppCardTone.STANDARD)
-        val muted = resolveAppCardVisualSpec(UiStyle.MATERIAL3, AppCardTone.MUTED)
-        val glass = resolveAppCardVisualSpec(UiStyle.IOS, AppCardTone.GLASS)
-
-        assertEquals(AppCardContainerRole.CARD, standard.containerRole)
-        assertEquals(1f, standard.borderWidthDp)
-        assertEquals(AppCardContainerRole.SURFACE_VARIANT, muted.containerRole)
-        assertEquals(0.42f, muted.containerAlpha)
-        assertEquals(AppCardContainerRole.SURFACE, glass.containerRole)
-        assertEquals(0.6f, glass.containerAlpha)
-        assertEquals(0f, glass.tonalElevationDp)
-        assertEquals(0f, glass.shadowElevationDp)
-    }
-
-    @Test
-    fun migratedFeatureCardsUseNeutralAppCardWithoutStyleLocals() {
+    fun messageFeedAndSearchSurfacesAdoptSharedPolicy() {
         val messageSource = load("app/src/main/java/com/android/purebilibili/feature/message/feed/MessageFeedCommon.kt")
+        val searchSource = load("app/src/main/java/com/android/purebilibili/feature/search/SearchScreen.kt")
         val dynamicSource = load(
             "app/src/main/java/com/android/purebilibili/feature/dynamic/components/DynamicComponents.kt"
         )
-        val liveSource = load("app/src/main/java/com/android/purebilibili/feature/live/LiveRoomCard.kt")
 
         assertTrue(messageSource.contains("rememberContentCardSurfaceSpec("))
         assertTrue(messageSource.contains("AppShapes.borderedContainer("))

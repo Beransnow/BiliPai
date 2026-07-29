@@ -3,7 +3,6 @@ package com.android.purebilibili.feature.dynamic.components
 
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppSpacingTokens
-import com.android.purebilibili.core.ui.AppAlertDialog
 
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
@@ -41,13 +40,7 @@ import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.common.CopySelectionDialog
-import com.android.purebilibili.core.ui.rememberAppCommentIcon
-import com.android.purebilibili.core.ui.rememberAppDeleteIcon
-import com.android.purebilibili.core.ui.rememberAppLinkIcon
-import com.android.purebilibili.core.ui.rememberAppLikeFilledIcon
-import com.android.purebilibili.core.ui.rememberAppLikeIcon
 import com.android.purebilibili.core.ui.rememberAppMoreIcon
-import com.android.purebilibili.core.ui.rememberAppShareIcon
 import com.android.purebilibili.core.ui.rememberAppVisibilityOffIcon
 import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppDialogAction
@@ -119,13 +112,6 @@ fun DynamicCardV2(
     val cardClickAction = remember(item) { resolveDynamicCardPrimaryAction(item) }
     val watchLaterAid = remember(item) { resolveDynamicWatchLaterAid(item) }
     val deleteAction = remember(item) { resolveDynamicDeleteAction(item) }
-    val watchLaterIcon = rememberAppWatchLaterIcon()
-    val shareIcon = rememberAppShareIcon()
-    val commentIcon = rememberAppCommentIcon()
-    val deleteIcon = rememberAppDeleteIcon()
-    val linkIcon = rememberAppLinkIcon()
-    val likeIcon = rememberAppLikeIcon()
-    val likeFilledIcon = rememberAppLikeFilledIcon()
     var pendingDeleteAction by remember(item.id_str) { mutableStateOf<DynamicDeleteAction?>(null) }
     val isPrimaryClickEnabled = remember(cardClickAction, onArticleClick, onDynamicDetailClick, onPrimaryClickOverride) {
         shouldEnableDynamicCardPrimaryClick(

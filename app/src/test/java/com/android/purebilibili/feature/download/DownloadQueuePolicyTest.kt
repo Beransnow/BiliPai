@@ -2,18 +2,9 @@ package com.android.purebilibili.feature.download
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 class DownloadQueuePolicyTest {
-
-    @Test
-    fun persistedStateCannotBeOverwrittenBeforeSuccessfulRestore() {
-        assertFalse(canPersistDownloadTasks(DownloadRestoreState.NOT_STARTED))
-        assertFalse(canPersistDownloadTasks(DownloadRestoreState.FAILED))
-        assertTrue(canPersistDownloadTasks(DownloadRestoreState.RESTORED))
-    }
 
     @Test
     fun activeTask_blocksQueuedTaskDispatch() {

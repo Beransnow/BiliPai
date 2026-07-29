@@ -76,12 +76,10 @@ class LiveTokenAdoptionStructureTest {
     }
 
     @Test
-    fun shared_live_room_card_receives_resolved_visual_spec_from_screen() {
+    fun shared_live_room_card_uses_preset_aware_minimum_details_height() {
         val source = File(liveRoot, "LiveRoomCard.kt").readText()
 
-        assertTrue(source.contains("visualSpec: LiveVisualSpec"))
-        assertFalse(source.contains("resolveLiveVisualSpec("))
-        assertFalse(source.contains("LocalUiPreset"))
+        assertTrue(source.contains("resolveLiveVisualSpec("))
         assertTrue(source.contains("heightIn(min = visualSpec.roomCardDetailsMinHeightDp.dp)"))
     }
 

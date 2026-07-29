@@ -61,19 +61,6 @@ class HomePullRefreshUiPolicyTest {
     }
 
     @Test
-    fun `home pull motion does not back write layout state into composition`() {
-        val source = loadSource("app/src/main/java/com/android/purebilibili/feature/home/HomeScreen.kt")
-        val pullSection = source
-            .substringAfterLast("val pullRefreshState = rememberPullToRefreshState()")
-            .substringBefore("//  每个页面独立的 GridState")
-
-        assertFalse(pullSection.contains("stablePullOffsetFraction"))
-        assertFalse(pullSection.contains("SideEffect"))
-        assertTrue(pullSection.contains("animatedDragOffsetFraction.value"))
-        assertTrue(pullSection.contains("val calculateDragOffset"))
-    }
-
-    @Test
     fun `resolvePullRefreshThresholdDp returns comfortable trigger distance`() {
         assertEquals(44f, resolvePullRefreshThresholdDp(), 0.001f)
     }

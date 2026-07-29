@@ -9,6 +9,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,9 +28,8 @@ import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.rememberAppSemanticVisualPolicy
 import coil.compose.AsyncImage
-import com.android.purebilibili.core.ui.AppPullToRefreshBox
+import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
 import com.android.purebilibili.core.ui.rememberAppBackIcon
-import com.android.purebilibili.core.ui.rememberAppMoreIcon
 import com.android.purebilibili.data.model.response.SessionItem
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import java.text.SimpleDateFormat
@@ -78,7 +79,7 @@ fun InboxScreen(
         ) {
             when {
                 uiState.isLoading -> {
-                    com.android.purebilibili.core.ui.AppLoadingIndicator(
+                    com.android.purebilibili.core.ui.CutePersonLoadingIndicator(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -103,7 +104,7 @@ fun InboxScreen(
                 }
                 else -> {
                     // Scaffold body already below topBar.
-                    AppPullToRefreshBox(
+                    AdaptivePullToRefreshBox(
                         isRefreshing = uiState.isRefreshing,
                         onRefresh = { viewModel.refresh() },
                         indicatorTopInset = 0.dp
@@ -184,7 +185,7 @@ fun InboxScreen(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         if (uiState.isLoadingMore) {
-                                            com.android.purebilibili.core.ui.AppLoadingIndicator(
+                                            com.android.purebilibili.core.ui.CutePersonLoadingIndicator(
                                                 size = 24.dp
                                             )
                                         } else {
@@ -218,7 +219,7 @@ fun InboxScreen(
     }
 
     pendingRemoveSession?.let { session ->
-        AppAlertDialog(
+        AlertDialog(
             onDismissRequest = { pendingRemoveSession = null },
             title = { Text("删除会话") },
             text = { Text("会话会从列表中移除，但不会删除聊天记录。") },
@@ -241,7 +242,7 @@ fun InboxScreen(
     }
 
     pendingInterceptSession?.let { session ->
-        AppAlertDialog(
+        AlertDialog(
             onDismissRequest = { pendingInterceptSession = null },
             title = { Text("移入拦截") },
             text = { Text("后续这类会话会进入拦截分类，仍可在拦截列表中查看和恢复。") },
@@ -264,7 +265,7 @@ fun InboxScreen(
     }
 
     if (showClearDustbinConfirm) {
-        AppAlertDialog(
+        AlertDialog(
             onDismissRequest = { showClearDustbinConfirm = false },
             title = { Text("清空拦截会话") },
             text = { Text("所有拦截会话会从列表中移除，聊天记录仍由服务端保留。") },
@@ -637,7 +638,7 @@ fun SessionListItem(
                     modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
-                        rememberAppMoreIcon(),
+                        Icons.Default.MoreVert,
                         contentDescription = "更多",
                         modifier = Modifier.size(16.dp),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant

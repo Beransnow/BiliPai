@@ -3,8 +3,18 @@ package com.android.purebilibili.feature.search
 import com.android.purebilibili.core.ui.AppTopTabPresentation
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class SearchTopBarLayoutPolicyTest {
+
+    @Test
+    fun topBarLayout_removesInlineHotToggleAndKeepsPlaceholderSingleLine() {
+        val spec = resolveSearchTopBarLayoutSpec()
+
+        assertFalse(spec.showInlineHotToggle)
+        assertEquals(1, spec.placeholderMaxLines)
+    }
 
     @Test
     fun topBarRowMinHeight_accommodatesInputHeightAndVerticalPadding() {

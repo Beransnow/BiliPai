@@ -64,6 +64,7 @@ import kotlinx.coroutines.launch // [Fix] Import
 //  Cupertino Icons - iOS SF Symbols 风格图标
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.RadioButtonUnchecked
 import androidx.compose.runtime.Composable
@@ -96,10 +97,6 @@ import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.feature.home.LocalHomeScrollOffset
 import com.android.purebilibili.feature.home.policy.resolveBottomBarChromeScrollOffset
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
-import com.android.purebilibili.core.ui.rememberAppCollectionIcon
-import com.android.purebilibili.core.ui.rememberAppFolderIcon
-import com.android.purebilibili.core.ui.rememberAppHeadphonesIcon
-import com.android.purebilibili.core.ui.rememberAppMoreIcon
 import com.android.purebilibili.core.ui.resolveGlobalWallpaperChromeColor
 import com.android.purebilibili.core.theme.BiliPink
 import com.android.purebilibili.core.ui.rememberAppChromeLiquidGlassEnabled
@@ -1083,7 +1080,7 @@ fun CommonListScreen(
                                             onClick = { showFavoriteManagementMenu = true }
                                         ) {
                                             Icon(
-                                                imageVector = rememberAppMoreIcon(),
+                                                imageVector = Icons.Filled.MoreVert,
                                                 contentDescription = "更多管理"
                                             )
                                         }
@@ -1174,7 +1171,7 @@ fun CommonListScreen(
                                             onClick = { showHistoryManagementMenu = true }
                                         ) {
                                             Icon(
-                                                imageVector = rememberAppMoreIcon(),
+                                                imageVector = Icons.Filled.MoreVert,
                                                 contentDescription = "更多管理"
                                             )
                                         }
@@ -1383,7 +1380,7 @@ fun CommonListScreen(
     }
 
     if (showHistoryBatchDeleteConfirm && historyViewModel != null) {
-        AppAlertDialog(
+        AlertDialog(
             onDismissRequest = { showHistoryBatchDeleteConfirm = false },
             title = { Text("批量删除历史") },
             text = { Text("确认删除已选择的 ${selectedHistoryKeys.size} 条历史记录吗？") },
@@ -1417,7 +1414,7 @@ fun CommonListScreen(
     }
 
     if (showFavoriteCleanInvalidConfirm && favoriteViewModel != null) {
-        AppAlertDialog(
+        AlertDialog(
             onDismissRequest = { showFavoriteCleanInvalidConfirm = false },
             title = { Text("清理失效内容") },
             text = {
@@ -1446,7 +1443,7 @@ fun CommonListScreen(
     }
 
     if (showHistoryClearConfirm && historyViewModel != null) {
-        AppAlertDialog(
+        AlertDialog(
             onDismissRequest = { showHistoryClearConfirm = false },
             title = { Text("清空历史") },
             text = { Text(resolveHistoryClearConfirmText(state.items.size)) },
@@ -1471,7 +1468,7 @@ fun CommonListScreen(
     }
 
     if (pendingHistorySingleDeleteKey != null && historyViewModel != null) {
-        AppAlertDialog(
+        AlertDialog(
             onDismissRequest = { pendingHistorySingleDeleteKey = null },
             title = { Text("删除历史记录") },
             text = { Text("确认删除这条历史记录吗？") },

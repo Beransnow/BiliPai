@@ -31,7 +31,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import com.android.purebilibili.core.ui.rememberAppLinkIcon
 import com.android.purebilibili.data.model.response.OpusLinkCard
 
 @Composable

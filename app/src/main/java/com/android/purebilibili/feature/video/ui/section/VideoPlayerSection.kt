@@ -11,9 +11,6 @@ import com.android.purebilibili.feature.video.danmaku.shouldRunDanmakuManualClou
 import com.android.purebilibili.feature.video.danmaku.filterVisibleCommandDanmakuItems
 import com.android.purebilibili.feature.video.danmaku.configureAsPassiveDanmakuOverlay
 import com.android.purebilibili.feature.video.player.MiniPlayerManager
-import com.android.purebilibili.feature.video.back.VideoLocalBackTarget
-import com.android.purebilibili.feature.video.back.VideoLocalBackTargetEffect
-import com.android.purebilibili.feature.video.back.rememberVideoLocalBackAction
 import com.android.purebilibili.feature.video.state.VideoPlayerState
 import com.android.purebilibili.feature.video.viewmodel.VideoPlaybackUiState
 import com.android.purebilibili.feature.video.ui.overlay.FullscreenDoubleTapAction
@@ -85,6 +82,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.foundation.BorderStroke
+import androidx.activity.compose.BackHandler
 //  Cupertino Icons - iOS SF Symbols 风格图标
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.outlined.*
@@ -964,23 +962,6 @@ fun VideoPlayerSection(
     
     // 🔒 [新增] 屏幕锁定状态（全屏时防误触）
     var isScreenLocked by remember { mutableStateOf(false) }
-    val landscapeFullscreenBackKey = remember(playerState) { Any() }
-    VideoLocalBackTargetEffect(
-        key = landscapeFullscreenBackKey,
-        target = VideoLocalBackTarget.EXIT_LANDSCAPE_FULLSCREEN,
-        enabled = isFullscreen && !isScreenLocked,
-        onCommitted = onToggleFullscreen,
-    )
-    val exitLandscapeFullscreen = rememberVideoLocalBackAction(
-        target = VideoLocalBackTarget.EXIT_LANDSCAPE_FULLSCREEN,
-        onCommitted = onToggleFullscreen,
-    )
-    val playerChromeBack = if (isFullscreen) exitLandscapeFullscreen else onBack
-    val playerChromeToggleFullscreen = if (isFullscreen) {
-        exitLandscapeFullscreen
-    } else {
-        onToggleFullscreen
-    }
     LaunchedEffect(isScreenLocked, showControls) {
         if (isScreenLocked && showControls) {
             delay(2_000L)
@@ -2824,10 +2805,6 @@ fun VideoPlayerSection(
                             View.INVISIBLE
                         }
                     },
-                    onRelease = { playerView ->
-                        if (playerView.player === playerState.player) playerView.player = null
-                        if (playerViewRef === playerView) playerViewRef = null
-                    },
                     modifier = with(density) {
                         Modifier
                             .size(
@@ -3449,28 +3426,8 @@ fun VideoPlayerSection(
             }
         }
 
-        // 3. Compose 弹幕共享同一有序播放时钟，避免两个 overlay 独立轮询 player。
+        // 3. 高级弹幕层 (Mode 7) - 覆盖在标准弹幕上方
         val advancedDanmakuList by danmakuManager.advancedDanmakuFlow.collectAsStateWithLifecycle()
-        val commandDanmakuList by danmakuManager.commandDanmakuFlow.collectAsStateWithLifecycle()
-        val visibleCommandDanmakuList = remember(commandDanmakuList, danmakuHideInteractiveCommands) {
-            filterVisibleCommandDanmakuItems(
-                items = commandDanmakuList,
-                hideInteractiveCommands = danmakuHideInteractiveCommands
-            )
-        }
-        val composeDanmakuClock =
-            com.android.purebilibili.feature.video.ui.overlay.rememberDanmakuPlaybackClock(
-                advancedItems = advancedDanmakuList,
-                commandItems = visibleCommandDanmakuList,
-            )
-        if (advancedDanmakuList.isNotEmpty() || visibleCommandDanmakuList.isNotEmpty()) {
-            com.android.purebilibili.feature.video.ui.overlay.DanmakuPlaybackClockEffect(
-                clock = composeDanmakuClock,
-                player = playerState.player,
-                overlayVisible = shouldShowDanmakuLayer,
-                routeResumed = lifecycleState == androidx.lifecycle.Lifecycle.State.RESUMED,
-            )
-        }
 
         if (shouldShowDanmakuLayer && advancedDanmakuList.isNotEmpty()) {
              Box(
@@ -3478,12 +3435,20 @@ fun VideoPlayerSection(
                     .clipToBounds()
             ) {
                 com.android.purebilibili.feature.video.ui.overlay.AdvancedDanmakuOverlay(
-                    clock = composeDanmakuClock,
+                    danmakuList = advancedDanmakuList,
+                    player = playerState.player,
                     modifier = Modifier.fillMaxSize()
                 )
             }
         }
 
+        val commandDanmakuList by danmakuManager.commandDanmakuFlow.collectAsStateWithLifecycle()
+        val visibleCommandDanmakuList = remember(commandDanmakuList, danmakuHideInteractiveCommands) {
+            filterVisibleCommandDanmakuItems(
+                items = commandDanmakuList,
+                hideInteractiveCommands = danmakuHideInteractiveCommands
+            )
+        }
         if (shouldShowDanmakuLayer && visibleCommandDanmakuList.isNotEmpty()) {
             Box(
                 modifier = playerContentModifier
@@ -3491,7 +3456,7 @@ fun VideoPlayerSection(
             ) {
                 com.android.purebilibili.feature.video.ui.overlay.CommandDanmakuOverlay(
                     items = visibleCommandDanmakuList,
-                    clock = composeDanmakuClock,
+                    player = playerState.player,
                     onFollowClick = onToggleFollow,
                     onTripleClick = onTriple,
                     isFollowing = isFollowed,
@@ -4214,12 +4179,12 @@ fun VideoPlayerSection(
                     val id = uiState.qualityIds.getOrNull(index) ?: 0
                     onQualityChange(id)
                 },
-                onBack = playerChromeBack,
+                onBack = onBack,
                 onHomeClick = resolveVideoPlayerOverlayHomeClick(
                     onBack = onBack,
                     onHomeClick = onHomeClick
                 ),
-                onToggleFullscreen = playerChromeToggleFullscreen,
+                onToggleFullscreen = onToggleFullscreen,
                 
                 // 🔒 [新增] 屏幕锁定
                 isScreenLocked = isScreenLocked,
@@ -4819,5 +4784,9 @@ fun VideoPlayerSection(
     val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
     val hapticScope = rememberCoroutineScope()
 
+    // 拦截系统返回事件 (仅在全屏时拦截以处理退出全屏，否则交给系统处理预测性返回)
+    BackHandler(enabled = !isScreenLocked && isFullscreen) {
+        onToggleFullscreen()
+    }
     }
 }

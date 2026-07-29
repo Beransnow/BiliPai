@@ -7,18 +7,6 @@ import org.junit.Test
 class WallpaperPresentationPolicyTest {
 
     @Test
-    fun splashDecodeSizeIsBoundedToWindowPixels() {
-        assertEquals(
-            SplashWallpaperDecodeSize(widthPx = 1440, heightPx = 3200),
-            resolveSplashWallpaperDecodeSize(windowWidthPx = 1440, windowHeightPx = 3200),
-        )
-        assertEquals(
-            SplashWallpaperDecodeSize(widthPx = 1, heightPx = 1),
-            resolveSplashWallpaperDecodeSize(windowWidthPx = 0, windowHeightPx = -1),
-        )
-    }
-
-    @Test
     fun splash_compactWidth_usesFullCrop() {
         assertEquals(
             SplashWallpaperLayout.FULL_CROP,

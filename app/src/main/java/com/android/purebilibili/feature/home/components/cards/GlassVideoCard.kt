@@ -28,6 +28,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -35,6 +36,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.iOSCardTapEffect
 import com.android.purebilibili.core.util.animateEnter
@@ -45,7 +47,6 @@ import com.android.purebilibili.core.theme.LocalCornerRadiusScale
 import com.android.purebilibili.core.theme.iOSCornerRadius
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.components.UpBadgeName
-import com.android.purebilibili.core.ui.image.rememberImageRequest
 import com.android.purebilibili.core.util.HapticType
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
@@ -334,13 +335,13 @@ fun GlassVideoCard(
                     ) {
                         // 由 AsyncImage 根据卡片布局约束选择解码尺寸。
                         AsyncImage(
-                            model = rememberImageRequest(
-                                data = coverUrl,
-                                placeholderMemoryCacheKey = coverCacheKey,
-                                crossfadeEnabled = coverCrossfadeEnabled,
-                                memoryCacheKey = coverCacheKey,
-                                diskCacheKey = coverCacheKey,
-                            ),
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(coverUrl)
+                                .placeholderMemoryCacheKey(coverCacheKey)
+                                .crossfade(coverCrossfadeEnabled)
+                                .memoryCacheKey(coverCacheKey)
+                                .diskCacheKey(coverCacheKey)
+                                .build(),
                             contentDescription = null,
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
@@ -476,10 +477,10 @@ fun GlassVideoCard(
                             leadingContent = if (video.owner.face.isNotBlank()) {
                                 {
                                     AsyncImage(
-                                        model = rememberImageRequest(
-                                            data = FormatUtils.fixImageUrl(video.owner.face),
-                                            crossfadeMillis = 100,
-                                        ),
+                                        model = ImageRequest.Builder(LocalContext.current)
+                                            .data(FormatUtils.fixImageUrl(video.owner.face))
+                                            .crossfade(100)
+                                            .build(),
                                         contentDescription = null,
                                         modifier = Modifier
                                             .size(AppSpacingTokens.Medium + AppSpacingTokens.Micro)

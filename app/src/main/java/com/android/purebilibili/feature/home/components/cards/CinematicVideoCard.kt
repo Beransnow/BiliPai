@@ -44,6 +44,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -52,6 +53,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.android.purebilibili.core.theme.LocalCornerRadiusScale
 import com.android.purebilibili.core.theme.iOSCornerRadius
 import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
@@ -63,7 +65,6 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.components.UpBadgeName
-import com.android.purebilibili.core.ui.image.rememberImageRequest
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.VIDEO_SHARED_COVER_ASPECT_RATIO
@@ -274,13 +275,13 @@ fun CinematicVideoCard(
             
             Box(modifier = Modifier.clip(RoundedCornerShape(cardCornerRadius))) {
                  AsyncImage(
-                    model = rememberImageRequest(
-                        data = coverUrl,
-                        placeholderMemoryCacheKey = coverCacheKey,
-                        crossfadeEnabled = coverCrossfadeEnabled,
-                        memoryCacheKey = coverCacheKey,
-                        diskCacheKey = coverCacheKey,
-                    ),
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(coverUrl)
+                        .placeholderMemoryCacheKey(coverCacheKey)
+                        .crossfade(coverCrossfadeEnabled)
+                        .memoryCacheKey(coverCacheKey)
+                        .diskCacheKey(coverCacheKey)
+                        .build(),
                     contentDescription = null,
                     modifier = coverModifier,
                     contentScale = ContentScale.Crop
@@ -340,11 +341,11 @@ fun CinematicVideoCard(
                          leadingContent = if (video.owner.face.isNotEmpty()) {
                              {
                                  AsyncImage(
-                                    model = rememberImageRequest(
-                                        data = FormatUtils.fixImageUrl(video.owner.face),
-                                        widthPx = 64,
-                                        crossfadeEnabled = true,
-                                    ),
+                                    model = ImageRequest.Builder(LocalContext.current)
+                                        .data(FormatUtils.fixImageUrl(video.owner.face))
+                                        .size(64)
+                                        .crossfade(true)
+                                        .build(),
                                     contentDescription = null,
                                     modifier = Modifier
                                         .size(AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall)

@@ -200,7 +200,7 @@ fun LikeMeScreen(
                 .padding(paddingValues)
         ) {
             when {
-                uiState.isLoading -> com.android.purebilibili.core.ui.AppLoadingIndicator(
+                uiState.isLoading -> com.android.purebilibili.core.ui.CutePersonLoadingIndicator(
                     modifier = Modifier.align(Alignment.Center)
                 )
                 uiState.error != null -> MessageFeedError(
@@ -213,7 +213,7 @@ fun LikeMeScreen(
                     modifier = Modifier.fillMaxSize()
                 )
                 // Scaffold already pads out the top bar — indicator at box top (inset 0).
-                else -> AppPullToRefreshBox(
+                else -> AdaptivePullToRefreshBox(
                     isRefreshing = uiState.isRefreshing,
                     onRefresh = viewModel::refresh,
                     indicatorTopInset = 0.dp,

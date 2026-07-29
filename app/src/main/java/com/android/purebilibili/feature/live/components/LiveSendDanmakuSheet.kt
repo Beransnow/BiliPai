@@ -27,7 +27,6 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
-import com.android.purebilibili.core.ui.components.AppTextField
 import com.android.purebilibili.data.repository.LiveDanmakuPermission
 import com.android.purebilibili.feature.live.LiveDanmakuItem
 
@@ -71,10 +70,9 @@ fun LiveSendDanmakuSheet(
                         value = message,
                         onValueChange = { message = it.take(maxLength) },
                         modifier = Modifier.fillMaxWidth(),
-                        singleLine = false,
                         minLines = 3,
                         maxLines = 4,
-                        placeholder = if (replyTarget == null) "输入弹幕内容" else "输入回复内容",
+                        placeholder = { Text(if (replyTarget == null) "输入弹幕内容" else "输入回复内容") },
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                         keyboardActions = KeyboardActions(onSend = {
                             val content = message.trim()

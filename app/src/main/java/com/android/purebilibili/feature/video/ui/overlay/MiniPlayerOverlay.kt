@@ -422,9 +422,6 @@ fun MiniPlayerOverlay(
                             }
                         },
                         update = { view -> view.player = exoPlayer },
-                        onRelease = { view ->
-                            if (view.player === exoPlayer) view.player = null
-                        },
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(RoundedCornerShape(shellVisual.cardCornerRadiusDp.dp))

@@ -69,7 +69,7 @@ fun OfficialWallpaperSheet(
     }
 
     // ModalBottomSheet 容器
-    AppModalBottomSheet(
+    ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = MaterialTheme.colorScheme.background,
@@ -110,7 +110,7 @@ fun OfficialWallpaperSheet(
             when {
                 isLoading && officialWallpapers.isEmpty() -> {
                     Box(Modifier.fillMaxSize().weight(1f), contentAlignment = Alignment.Center) {
-                        AppLoadingIndicator()
+                        AdaptiveLoadingIndicator()
                     }
                 }
                 error != null && officialWallpapers.isEmpty() -> {
@@ -309,7 +309,7 @@ fun OfficialWallpaperSheet(
                             )
                         ) {
                             if (saveState is WallpaperSaveState.Loading) {
-                                AppLoadingIndicator(
+                                AdaptiveLoadingIndicator(
                                     size = 20.dp,
                                     strokeWidth = 2.dp
                                 )
@@ -333,9 +333,9 @@ fun OfficialWallpaperSheet(
                             )
                         ) {
                             if (splashSaveState is WallpaperSaveState.Loading) {
-                                AppLoadingIndicator(
+                                CircularProgressIndicator(
                                     color = Color.White,
-                                    size = 20.dp,
+                                    modifier = Modifier.size(20.dp),
                                     strokeWidth = 2.dp
                                 )
                             } else {

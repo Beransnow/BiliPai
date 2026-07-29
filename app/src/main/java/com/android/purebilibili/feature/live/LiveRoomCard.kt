@@ -1,6 +1,7 @@
 package com.android.purebilibili.feature.live
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
+import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.LocalSharedTransitionScope
 import com.android.purebilibili.core.ui.transition.liveCoverSharedElementKey
@@ -45,7 +48,6 @@ internal data class LiveRoomCardUiModel(
 @Composable
 internal fun LiveRoomCard(
     model: LiveRoomCardUiModel,
-    visualSpec: LiveVisualSpec,
     onClick: () -> Unit,
     enableSharedCoverTransition: Boolean = false,
 ) {
@@ -58,6 +60,11 @@ internal fun LiveRoomCard(
 
     AppSurface(
         onClick = onClick,
+        shape = AppShapes.borderedContainer(ContainerLevel.Card),
+        color = AppSurfaceTokens.cardContainer(),
+        border = BorderStroke(AppSurfaceTokens.OutlineWidth, palette.border),
+        tonalElevation = AppSpacingTokens.None,
+        shadowElevation = AppSpacingTokens.None,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column {

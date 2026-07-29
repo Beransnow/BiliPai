@@ -55,6 +55,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
@@ -67,6 +68,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
@@ -120,7 +122,6 @@ import com.android.purebilibili.core.ui.adaptive.resolveEffectiveMotionTier
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import androidx.compose.ui.platform.LocalContext
-import com.android.purebilibili.core.ui.image.rememberImageRequest
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -139,7 +140,7 @@ import com.android.purebilibili.data.model.response.SearchTopicItem
 import kotlinx.coroutines.launch
 
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.android.purebilibili.core.ui.AppLoadingIndicator
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 
 internal fun shouldShowSearchHotSection(
     hotItemCount: Int,
@@ -150,6 +151,18 @@ internal fun shouldShowSearchHotHeader(
     hotItemCount: Int,
     hotSearchEnabled: Boolean
 ): Boolean = hotItemCount > 0
+
+internal data class SearchTopBarLayoutSpec(
+    val showInlineHotToggle: Boolean,
+    val placeholderMaxLines: Int
+)
+
+internal fun resolveSearchTopBarLayoutSpec(): SearchTopBarLayoutSpec {
+    return SearchTopBarLayoutSpec(
+        showInlineHotToggle = false,
+        placeholderMaxLines = 1
+    )
+}
 
 internal const val SEARCH_TOP_BAR_VERTICAL_PADDING_DP = 16
 
@@ -1062,7 +1075,7 @@ fun SearchScreen(
                                                     .padding(16.dp),
                                                 contentAlignment = Alignment.Center
                                             ) {
-                                                AppLoadingIndicator(
+                                                AdaptiveLoadingIndicator(
                                                     size = 24.dp,
                                                     strokeWidth = 2.dp
                                                 )
@@ -1152,7 +1165,7 @@ fun SearchScreen(
                                                     .padding(vertical = 16.dp),
                                                 contentAlignment = Alignment.Center
                                             ) {
-                                                AppLoadingIndicator(
+                                                AdaptiveLoadingIndicator(
                                                     size = 24.dp,
                                                     strokeWidth = 2.dp
                                                 )
@@ -1208,7 +1221,7 @@ fun SearchScreen(
                                                     .padding(vertical = 16.dp),
                                                 contentAlignment = Alignment.Center
                                             ) {
-                                                AppLoadingIndicator(
+                                                AdaptiveLoadingIndicator(
                                                     size = 24.dp,
                                                     strokeWidth = 2.dp
                                                 )
@@ -1308,7 +1321,7 @@ fun SearchScreen(
                                                     .padding(vertical = 16.dp),
                                                 contentAlignment = Alignment.Center
                                             ) {
-                                                AppLoadingIndicator(
+                                                AdaptiveLoadingIndicator(
                                                     size = 24.dp,
                                                     strokeWidth = 2.dp
                                                 )
@@ -1430,7 +1443,7 @@ fun SearchScreen(
                                                     .padding(vertical = 16.dp),
                                                 contentAlignment = Alignment.Center
                                             ) {
-                                                AppLoadingIndicator(
+                                                AdaptiveLoadingIndicator(
                                                     size = 24.dp,
                                                     strokeWidth = 2.dp
                                                 )
@@ -2613,12 +2626,11 @@ fun SearchResultCard(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             AsyncImage(
-                model = rememberImageRequest(
-                    data = coverUrl,
-                    widthPx = 480,
-                    heightPx = 300,
-                    crossfadeMillis = 150,
-                ),
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(coverUrl)
+                    .crossfade(150)
+                    .size(480, 300)
+                    .build(),
                 contentDescription = null,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
@@ -2705,10 +2717,10 @@ fun SearchResultCard(
                 leadingContent = if (video.owner.face.isNotBlank()) {
                     {
                         AsyncImage(
-                            model = rememberImageRequest(
-                                data = FormatUtils.fixImageUrl(video.owner.face),
-                                crossfadeEnabled = true,
-                            ),
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(FormatUtils.fixImageUrl(video.owner.face))
+                                .crossfade(true)
+                                .build(),
                             contentDescription = null,
                             modifier = Modifier
                                 .size(12.dp)
@@ -2774,10 +2786,10 @@ internal fun UpSearchResultCard(
             } else Modifier
 
             AsyncImage(
-                model = rememberImageRequest(
-                    data = cleanedItem.upic,
-                    crossfadeEnabled = true,
-                ),
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(cleanedItem.upic)
+                    .crossfade(true)
+                    .build(),
                 contentDescription = cleanedItem.uname,
                 modifier = Modifier
                     .then(avatarModifier)
@@ -2873,10 +2885,10 @@ internal fun BangumiSearchResultCard(
         ) {
             // 封面
             AsyncImage(
-                model = rememberImageRequest(
-                    data = item.cover,
-                    crossfadeEnabled = true,
-                ),
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(item.cover)
+                    .crossfade(true)
+                    .build(),
                 contentDescription = item.title,
                 modifier = Modifier
                     .width(80.dp)
@@ -3096,7 +3108,7 @@ private fun SearchLoadMoreIndicator() {
             .padding(vertical = 16.dp),
         contentAlignment = Alignment.Center
     ) {
-        AppLoadingIndicator(
+        AdaptiveLoadingIndicator(
                                                     size = 24.dp,
                                                     strokeWidth = 2.dp
                                                 )
@@ -3188,10 +3200,10 @@ internal fun TopicSearchResultCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
-                model = rememberImageRequest(
-                    data = cleaned.cover,
-                    crossfadeEnabled = true,
-                ),
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(cleaned.cover)
+                    .crossfade(true)
+                    .build(),
                 contentDescription = cleaned.title,
                 modifier = Modifier
                     .size(64.dp)
@@ -3249,10 +3261,10 @@ internal fun PhotoSearchResultCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
-                model = rememberImageRequest(
-                    data = cleaned.cover,
-                    crossfadeEnabled = true,
-                ),
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(cleaned.cover)
+                    .crossfade(true)
+                    .build(),
                 contentDescription = cleaned.title,
                 modifier = Modifier
                     .size(width = 104.dp, height = 72.dp)
@@ -3316,10 +3328,10 @@ internal fun ArticleSearchResultCard(
         ) {
             if (item.imageUrls.isNotEmpty()) {
                 AsyncImage(
-                    model = rememberImageRequest(
-                        data = FormatUtils.buildSizedImageUrl(item.imageUrls.first(), width = 360, height = 240),
-                        crossfadeEnabled = true,
-                    ),
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(FormatUtils.buildSizedImageUrl(item.imageUrls.first(), width = 360, height = 240))
+                        .crossfade(true)
+                        .build(),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier

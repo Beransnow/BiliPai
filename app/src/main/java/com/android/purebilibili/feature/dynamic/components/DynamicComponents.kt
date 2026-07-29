@@ -1,5 +1,10 @@
 package com.android.purebilibili.feature.dynamic.components
 
+import com.android.purebilibili.core.ui.AppSpacingTokens
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -20,6 +25,10 @@ import com.android.purebilibili.core.ui.rememberContentCardSurfaceSpec
 @Composable
 fun GlassCard(
     modifier: Modifier = Modifier,
+    shape: Shape? = null,
+    backgroundColor: Color? = null,
+    borderColor: Color? = null,
+    borderWidth: Dp? = null,
     content: @Composable BoxScope.() -> Unit
 ) {
     val surfaceSpec = rememberContentCardSurfaceSpec()

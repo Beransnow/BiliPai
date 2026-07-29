@@ -1130,7 +1130,6 @@ open class MainActivity : AppCompatActivity() {
                 )
             val uiPreset = appThemeSettings.uiPreset
             val androidNativeVariant = appThemeSettings.androidNativeVariant
-            val uiStyle = appThemeSettings.uiStyle
             val themeMode = appThemeSettings.themeMode
             val darkThemeStyle = appThemeSettings.darkThemeStyle
             val appLanguage = appThemeSettings.appLanguage
@@ -1247,7 +1246,6 @@ open class MainActivity : AppCompatActivity() {
             PureBiliBiliTheme(
                 uiPreset = uiPreset,
                 androidNativeVariant = androidNativeVariant,
-                uiStyle = uiStyle,
                 themeMode = themeMode,
                 darkTheme = useDarkTheme,
                 dynamicColor = effectiveDynamicColor,

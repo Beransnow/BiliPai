@@ -429,7 +429,6 @@ private fun LiveHomeContent(
             else -> items(contentItems, key = { it.roomId }) { item ->
                 LiveRoomCard(
                     model = item.toLiveRoomCardUiModel(),
-                    visualSpec = visualSpec,
                     enableSharedCoverTransition = true,
                     onClick = { onLiveClick(item.roomId, item.title, item.uname) }
                 )
@@ -470,7 +469,7 @@ private fun LiveListHeader(
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
-                        imageVector = rememberAppBackIcon(),
+                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                         contentDescription = "返回",
                         tint = palette.primaryText
                     )
@@ -491,7 +490,7 @@ private fun LiveListHeader(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = rememberAppSearchIcon(),
+                        imageVector = Icons.Outlined.Search,
                         contentDescription = null,
                         tint = palette.secondaryText
                     )
@@ -512,7 +511,7 @@ private fun LiveListHeader(
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            imageVector = rememberAppNotificationIcon(),
+                            imageVector = Icons.Outlined.NotificationsNone,
                             contentDescription = "开播提醒",
                             tint = palette.primaryText
                         )
@@ -836,7 +835,7 @@ private fun EmptyState(
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = rememberAppNotificationIcon(),
+                imageVector = Icons.Outlined.NotificationsNone,
                 contentDescription = null,
                 tint = palette.secondaryText,
                 modifier = Modifier.size(visualSpec.emptyStateIconSizeDp.dp)

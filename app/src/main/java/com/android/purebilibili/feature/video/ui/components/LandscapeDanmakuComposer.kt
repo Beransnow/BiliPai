@@ -1,5 +1,6 @@
 package com.android.purebilibili.feature.video.ui.components
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -131,6 +132,10 @@ fun LandscapeDanmakuComposer(
     LaunchedEffect(selectedColor, selectedMode, selectedFontSize, visible) {
         if (!visible) return@LaunchedEffect
         onSelectionChange(selectedColor, selectedMode, selectedFontSize)
+    }
+
+    BackHandler(enabled = visible) {
+        onDismiss()
     }
 
     AnimatedVisibility(

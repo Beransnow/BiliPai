@@ -47,6 +47,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -64,29 +65,38 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.media3.common.Player
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.theme.BiliPink
 import com.android.purebilibili.core.ui.AppIcons
 import com.android.purebilibili.feature.video.danmaku.CommandDanmakuItem
 import com.android.purebilibili.feature.video.danmaku.CommandDanmakuType
-import com.android.purebilibili.feature.video.danmaku.DanmakuPlaybackClock
 import kotlinx.coroutines.delay
 import kotlin.math.roundToInt
 
 @Composable
 internal fun CommandDanmakuOverlay(
     items: List<CommandDanmakuItem>,
-    clock: DanmakuPlaybackClock,
+    player: Player,
     onFollowClick: () -> Unit,
     onTripleClick: () -> Unit,
     isFollowing: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    val currentPosition by produceState(initialValue = player.currentPosition, key1 = player) {
+        while (true) {
+            if (player.isPlaying) value = player.currentPosition
+            kotlinx.coroutines.delay(80)
+        }
+    }
     val itemIdentity = remember(items) { items.joinToString(separator = "|") { it.id } }
     var dismissedIds by remember(itemIdentity) { mutableStateOf(emptySet<String>()) }
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
-        val active = clock.activeCommandItems.filter { it.id !in dismissedIds }
+        val active = items.filter {
+            it.id !in dismissedIds &&
+                currentPosition in it.startTimeMs..(it.startTimeMs + it.durationMs)
+        }
         active.forEach { item ->
             key(item.id) {
                 CommandDanmakuCard(

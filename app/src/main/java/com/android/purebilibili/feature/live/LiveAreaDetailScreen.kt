@@ -16,6 +16,8 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
@@ -158,7 +160,7 @@ fun LiveAreaDetailScreen(
                 navigationIcon = {
                     AppIconButton(onClick = onBack) {
                         Icon(
-                            imageVector = rememberAppBackIcon(),
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "返回",
                         )
                     }
@@ -245,7 +247,6 @@ fun LiveAreaDetailScreen(
                     items(rooms, key = { it.roomid }) { room ->
                         LiveRoomCard(
                             model = room.toLiveRoomCardUiModel(),
-                            visualSpec = visualSpec,
                             onClick = { onLiveClick(room.roomid, room.title, room.uname) },
                         )
                     }
@@ -257,7 +258,7 @@ fun LiveAreaDetailScreen(
                                     .padding(vertical = AppSpacingTokens.Medium),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                AppLoadingIndicator()
+                                AdaptiveLoadingIndicator()
                             }
                         }
                     }
@@ -277,7 +278,7 @@ private fun LiveAreaDetailState(
         contentAlignment = Alignment.Center,
     ) {
         if (message == null) {
-            AppLoadingIndicator()
+            AdaptiveLoadingIndicator()
         } else {
             Text(
                 text = message,

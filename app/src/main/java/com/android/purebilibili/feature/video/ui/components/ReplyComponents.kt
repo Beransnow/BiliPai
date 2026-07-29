@@ -76,7 +76,6 @@ import com.android.purebilibili.core.ui.OfficialVerifyBadgeTone
 import com.android.purebilibili.core.ui.rememberAppLikeFilledIcon
 import com.android.purebilibili.core.ui.rememberAppLikeIcon
 import com.android.purebilibili.core.ui.resolveOfficialVerifyBadge
-import com.android.purebilibili.core.ui.image.rememberImageRequest
 import androidx.compose.foundation.text.selection.SelectionContainer
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -1303,10 +1302,10 @@ fun ReplyItemView(
                 Row() {
                     // Avatar
                     AsyncImage(
-                        model = rememberImageRequest(
-                            data = FormatUtils.fixImageUrl(item.member.avatar),
-                            crossfadeEnabled = !lightweightMode,
-                        ),
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(FormatUtils.fixImageUrl(item.member.avatar))
+                            .crossfade(!lightweightMode)
+                            .build(),
                         contentDescription = null,
                         modifier = Modifier
                             .size(layoutPolicy.avatarSizeDp.dp)
@@ -1910,31 +1909,11 @@ fun RichCommentText(
     val topBadgeInlineContent = rememberInlineTopBadgeContent()
     val personalVerifyInlineContent = rememberInlineOfficialVerifyBadgeContent(OfficialVerifyBadgeTone.PERSONAL)
     val organizationVerifyInlineContent = rememberInlineOfficialVerifyBadgeContent(OfficialVerifyBadgeTone.ORGANIZATION)
-    val emoteImageRequests = remember(context, renderableEmoteKeys, emoteMap) {
-        renderableEmoteKeys.associateWith { key ->
-            ImageRequest.Builder(context)
-                .data(emoteMap[key].orEmpty())
-                .crossfade(true)
-                .build()
-        }
-    }
-    val prefixIconImageRequests = remember(context, content?.urls) {
-        buildMap {
-            content?.urls.orEmpty().forEach { (token, richUrl) ->
-                val prefixIcon = richUrl.prefixIcon.takeIf { it.isNotBlank() } ?: return@forEach
-                put(
-                    resolveReplyContentUrlPrefixInlineId(token),
-                    ImageRequest.Builder(context)
-                        .data(FormatUtils.fixImageUrl(prefixIcon))
-                        .crossfade(true)
-                        .build()
-                )
-            }
-        }
-    }
     val inlineContent = remember(
-        emoteImageRequests,
-        prefixIconImageRequests,
+        renderableEmoteKeys,
+        emoteMap,
+        content?.urls,
+        context,
         urlColor,
         upBadgeInlineContent,
         topBadgeInlineContent,
@@ -1942,23 +1921,28 @@ fun RichCommentText(
         organizationVerifyInlineContent
     ) {
         buildMap {
-            emoteImageRequests.forEach { (key, imageRequest) ->
+            renderableEmoteKeys.forEach { key ->
+                val url = emoteMap[key].orEmpty()
                 put(
                     key,
                     InlineTextContent(
                         Placeholder(width = 1.4.em, height = 1.4.em, placeholderVerticalAlign = PlaceholderVerticalAlign.Center)
                     ) {
                         AsyncImage(
-                            model = imageRequest,
+                            model = ImageRequest.Builder(context)
+                                .data(url)
+                                .crossfade(true)
+                                .build(),
                             contentDescription = null,
                             modifier = Modifier.fillMaxSize()
                         )
                     }
                 )
             }
-            prefixIconImageRequests.forEach { (inlineId, imageRequest) ->
+            content?.urls.orEmpty().forEach { (token, richUrl) ->
+                val prefixIcon = richUrl.prefixIcon.takeIf { it.isNotBlank() } ?: return@forEach
                 put(
-                    inlineId,
+                    resolveReplyContentUrlPrefixInlineId(token),
                     InlineTextContent(
                         Placeholder(
                             width = 1.15.em,
@@ -1967,7 +1951,10 @@ fun RichCommentText(
                         )
                     ) {
                         AsyncImage(
-                            model = imageRequest,
+                            model = ImageRequest.Builder(context)
+                                .data(FormatUtils.fixImageUrl(prefixIcon))
+                                .crossfade(true)
+                                .build(),
                             contentDescription = null,
                             colorFilter = ColorFilter.tint(urlColor),
                             modifier = Modifier.fillMaxSize()
@@ -2251,10 +2238,10 @@ private fun FansMedalTag(detail: ReplyFansDetail) {
 @Composable
 private fun NameplateTag(imageUrl: String) {
     AsyncImage(
-        model = rememberImageRequest(
-            data = FormatUtils.fixImageUrl(imageUrl),
-            crossfadeEnabled = true,
-        ),
+        model = ImageRequest.Builder(LocalContext.current)
+            .data(FormatUtils.fixImageUrl(imageUrl))
+            .crossfade(true)
+            .build(),
         contentDescription = "Nameplate",
         modifier = Modifier
             .size(width = 20.dp, height = 12.dp)
@@ -2267,35 +2254,11 @@ internal fun FanGroupDecorationBadge(
     visual: FanGroupTagVisual,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     val layoutPolicy = remember { resolveReplyItemLayoutPolicy() }
-    val fallbackImageUrl = remember(visual.cardBgImageUrl) {
-        normalizeHttpImageUrl(visual.cardBgImageUrl)
-    }
-    val primaryImageUrl = remember(visual.cardBgImageUrl) {
-        resolveDecorationImageUrl(visual.cardBgImageUrl)
-    }
+    val fallbackImageUrl = normalizeHttpImageUrl(visual.cardBgImageUrl)
+    val primaryImageUrl = resolveDecorationImageUrl(visual.cardBgImageUrl)
     var imageUrl by remember(primaryImageUrl, fallbackImageUrl) {
         mutableStateOf(primaryImageUrl)
-    }
-    val crossfadeEnabled = true
-    val decorationImageRequest = remember(
-        context,
-        imageUrl,
-        fallbackImageUrl,
-        crossfadeEnabled,
-    ) {
-        ImageRequest.Builder(context)
-            .data(imageUrl)
-            .listener(
-                onError = { _, _ ->
-                    if (fallbackImageUrl.isNotBlank() && imageUrl != fallbackImageUrl) {
-                        imageUrl = fallbackImageUrl
-                    }
-                }
-            )
-            .crossfade(crossfadeEnabled)
-            .build()
     }
 
     val labelText = remember(visual.fanNumber) { resolveFanGroupLabelText(visual.fanNumber) }
@@ -2312,7 +2275,17 @@ internal fun FanGroupDecorationBadge(
     ) {
         if (primaryImageUrl.isNotBlank()) {
             AsyncImage(
-                model = decorationImageRequest,
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(imageUrl)
+                    .listener(
+                        onError = { _, _ ->
+                            if (fallbackImageUrl.isNotBlank() && imageUrl != fallbackImageUrl) {
+                                imageUrl = fallbackImageUrl
+                            }
+                        }
+                    )
+                    .crossfade(true)
+                    .build(),
                 contentDescription = "Fan group decoration",
                 contentScale = ContentScale.Crop,
                 alignment = Alignment.Center,
@@ -2616,13 +2589,12 @@ fun CommentPictures(
                     .clickable { onImageClick(imageUrls, 0, imageRect) }
             ) {
                 AsyncImage(
-                    model = rememberImageRequest(
-                        data = imageUrls[0],
-                        widthPx = thumbnailDecodeSize.widthPx,
-                        heightPx = thumbnailDecodeSize.heightPx,
-                        referer = "https://www.bilibili.com/",
-                        crossfadeEnabled = true,
-                    ),
+                    model = ImageRequest.Builder(context)
+                        .data(imageUrls[0])
+                        .size(thumbnailDecodeSize.widthPx, thumbnailDecodeSize.heightPx)
+                        .addHeader("Referer", "https://www.bilibili.com/")  //  必需
+                        .crossfade(true)
+                        .build(),
                     contentDescription = null,
                     imageLoader = gifImageLoader,  //  支持 GIF 和其他格式
                     contentScale = ContentScale.Crop,
@@ -2658,13 +2630,12 @@ fun CommentPictures(
                                 contentAlignment = Alignment.Center
                             ) {
                                 AsyncImage(
-                                    model = rememberImageRequest(
-                                        data = imageUrls[globalIndex],
-                                        widthPx = thumbnailDecodeSize.widthPx,
-                                        heightPx = thumbnailDecodeSize.heightPx,
-                                        referer = "https://www.bilibili.com/",
-                                        crossfadeEnabled = true,
-                                    ),
+                                    model = ImageRequest.Builder(context)
+                                        .data(imageUrls[globalIndex])
+                                        .size(thumbnailDecodeSize.widthPx, thumbnailDecodeSize.heightPx)
+                                        .addHeader("Referer", "https://www.bilibili.com/")  //  必需
+                                        .crossfade(true)
+                                        .build(),
                                     contentDescription = null,
                                     imageLoader = gifImageLoader,  //  支持 GIF
                                     contentScale = ContentScale.Crop,

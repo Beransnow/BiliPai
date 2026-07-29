@@ -18,7 +18,6 @@ import com.android.purebilibili.core.ui.transition.normalizeVideoSharedTransitio
 import com.android.purebilibili.core.store.home.HomeSettingsStore
 import com.android.purebilibili.core.store.navigation.NavigationSettingsStore
 import com.android.purebilibili.core.store.player.PlayerSettingsStore
-import com.android.purebilibili.core.store.theme.*
 import com.android.purebilibili.core.theme.AppFontSizePreset
 import com.android.purebilibili.core.theme.AppUiScalePreset
 import com.android.purebilibili.core.theme.AndroidNativeVariant
@@ -526,7 +525,6 @@ data class HomeSettings(
 }
 
 data class AppThemeSettings(
-    val uiStyle: UiStyle = UiStyle.MATERIAL3,
     val uiPreset: UiPreset = UiPreset.MD3,
     val androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3,
     val themeMode: AppThemeMode = AppThemeMode.FOLLOW_SYSTEM,
@@ -1104,6 +1102,8 @@ object SettingsManager {
     private val KEY_THEME_MODE = intPreferencesKey("theme_mode_v2")
     private val KEY_DARK_THEME_STYLE = intPreferencesKey("dark_theme_style_v1")
     private val KEY_APP_LANGUAGE = intPreferencesKey("app_language_v1")
+    private val KEY_UI_PRESET = intPreferencesKey("ui_preset")
+    private val KEY_ANDROID_NATIVE_VARIANT = intPreferencesKey("android_native_variant_v1")
     private val KEY_DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
     private val KEY_MD3_COLOR_SOURCE = stringPreferencesKey("md3_color_source")
     private val KEY_MD3_CUSTOM_COLOR_HEX = stringPreferencesKey("md3_custom_color_hex")
@@ -1762,11 +1762,11 @@ object SettingsManager {
     internal fun mapAppThemeSettingsFromPreferences(preferences: Preferences): AppThemeSettings {
         val rawDpiOverride = preferences[KEY_APP_DPI_OVERRIDE_PERCENT] ?: 0
         val defaultRoleOverrides = ThemeRoleOverrides()
-        val storedUiStyleSettings = resolveStoredUiStyleSettings(preferences)
         return AppThemeSettings(
-            uiStyle = storedUiStyleSettings.uiStyle,
-            uiPreset = storedUiStyleSettings.uiPreset,
-            androidNativeVariant = storedUiStyleSettings.androidNativeVariant,
+            uiPreset = resolveUiPresetPreferenceValue(preferences[KEY_UI_PRESET]),
+            androidNativeVariant = resolveAndroidNativeVariantPreferenceValue(
+                preferences[KEY_ANDROID_NATIVE_VARIANT]
+            ),
             themeMode = resolveThemeModePreference(
                 preferences[KEY_THEME_MODE] ?: AppThemeMode.FOLLOW_SYSTEM.value
             ),
@@ -1932,7 +1932,10 @@ object SettingsManager {
         )
     }
 
-    fun getUiStyle(context: Context): Flow<UiStyle> = UiStyleSettingsStore.getUiStyle(context)
+    fun getUiPreset(context: Context): Flow<UiPreset> = context.settingsDataStore.data
+        .map { preferences ->
+            resolveUiPresetPreferenceValue(preferences[KEY_UI_PRESET])
+        }
 
     suspend fun setUiPreset(context: Context, preset: UiPreset) {
         context.settingsDataStore.edit { preferences ->
@@ -1940,7 +1943,9 @@ object SettingsManager {
         }
     }
     fun getAndroidNativeVariant(context: Context): Flow<AndroidNativeVariant> =
-        UiStyleSettingsStore.getAndroidNativeVariant(context)
+        context.settingsDataStore.data.map { preferences ->
+            resolveAndroidNativeVariantPreferenceValue(preferences[KEY_ANDROID_NATIVE_VARIANT])
+        }
 
     suspend fun setAndroidNativeVariant(context: Context, variant: AndroidNativeVariant) {
         context.settingsDataStore.edit { preferences ->
@@ -4644,21 +4649,6 @@ object SettingsManager {
             value
         }
     }
-
-    // Compatibility accessors used by the startup session coordinator. The cache remains the
-    // synchronous source, while a missing entry is repaired from DataStore off the main thread.
-    suspend fun readLaunchToPortraitFeedOnStartup(context: Context): Boolean =
-        resolveLaunchToPortraitFeedOnStartup(context)
-
-    fun readLaunchToPortraitFeedOnStartupMirror(context: Context): Boolean? =
-        getCachedLaunchToPortraitFeedOnStartup(context)
-
-    fun writeLaunchToPortraitFeedOnStartupMirror(context: Context, value: Boolean) {
-        context.getSharedPreferences(PORTRAIT_STARTUP_CACHE_PREFS, Context.MODE_PRIVATE)
-            .edit()
-            .putBoolean(CACHE_KEY_LAUNCH_TO_PORTRAIT_FEED, value)
-            .apply()
-    }
     
     // --- 竖屏视频判断比例 (高度/宽度 > ratio 视为竖屏，默认 1.0) ---
     fun getVerticalVideoRatio(context: Context): Flow<Float> = context.settingsDataStore.data
@@ -6513,9 +6503,6 @@ object SettingsManager {
                     definition.write(preferences, value) -> appliedKeys += key
                     else -> skippedKeys += key
                 }
-            }
-            if (synchronizeImportedUiStylePreferences(preferences, settings.keys)) {
-                com.android.purebilibili.core.util.Logger.w("SettingsManager", "ui_style_v1 overrode conflicting legacy mirrors")
             }
         }
 

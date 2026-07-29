@@ -8,7 +8,6 @@ import com.android.purebilibili.core.ui.MediaContrastPalette
 
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
-import com.android.purebilibili.core.ui.AppLoadingIndicator
 
 import android.content.ContentValues
 import android.content.Context
@@ -58,7 +57,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.android.purebilibili.core.ui.rememberAppCloseIcon
 import coil.compose.AsyncImage
 import coil.imageLoader
 import coil.request.ImageRequest
@@ -231,9 +229,6 @@ private fun ImagePreviewOverlayContent(
     val shareIcon = rememberAppShareIcon()
     val likeIcon = rememberAppLikeIcon()
     val likeFilledIcon = rememberAppLikeFilledIcon()
-    val downloadIcon = rememberAppDownloadIcon()
-    val visibilityOffIcon = rememberAppVisibilityOffIcon()
-    val visibilityOnIcon = rememberAppVisibilityOnIcon()
     val commentContext = textContent?.commentContext
     val useCommentPreviewChrome = commentContext != null
     var isSaving by remember { mutableStateOf(false) }

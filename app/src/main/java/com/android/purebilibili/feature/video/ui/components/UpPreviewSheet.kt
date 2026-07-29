@@ -56,10 +56,8 @@ import com.android.purebilibili.data.model.response.SpaceVideoItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
-import com.android.purebilibili.feature.video.back.VideoLocalBackTarget
-import com.android.purebilibili.feature.video.back.VideoLocalBackTargetEffect
-import com.android.purebilibili.feature.video.back.rememberVideoLocalBackAction
 
 /**
  * 竖屏详情点 UP 头像：半屏预览（关注 / 进入空间 / 近期投稿网格）。
@@ -85,17 +83,6 @@ fun UpPreviewSheet(
     val screenHeight = configuration.screenHeightDp.dp
     val sheetMotion = rememberAppBottomSheetMotion()
     val colors = resolveUpPreviewSheetSurfaceColors(MaterialTheme.colorScheme)
-    val backKey = remember { Any() }
-    VideoLocalBackTargetEffect(
-        key = backKey,
-        target = VideoLocalBackTarget.PORTRAIT_UP_PREVIEW,
-        enabled = visible,
-        onCommitted = onDismiss,
-    )
-    val dismissViaBackDispatcher = rememberVideoLocalBackAction(
-        target = VideoLocalBackTarget.PORTRAIT_UP_PREVIEW,
-        onCommitted = onDismiss,
-    )
 
     var loading by remember(owner.mid) { mutableStateOf(false) }
     var videos by remember(owner.mid) {
@@ -164,6 +151,8 @@ fun UpPreviewSheet(
         loading = false
     }
 
+    BackHandler(enabled = visible) { onDismiss() }
+
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.BottomCenter,
@@ -180,7 +169,7 @@ fun UpPreviewSheet(
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
-                        onClick = dismissViaBackDispatcher,
+                        onClick = onDismiss,
                     )
             )
         }

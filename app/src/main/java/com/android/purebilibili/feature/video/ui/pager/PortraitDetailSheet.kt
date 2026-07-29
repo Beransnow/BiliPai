@@ -1,5 +1,6 @@
 package com.android.purebilibili.feature.video.ui.pager
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,9 +36,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
-import com.android.purebilibili.feature.video.back.VideoLocalBackTarget
-import com.android.purebilibili.feature.video.back.VideoLocalBackTargetEffect
-import com.android.purebilibili.feature.video.back.rememberVideoLocalBackAction
 
 /**
  * 竖屏视频详情页 (简介)
@@ -63,7 +61,7 @@ fun PortraitDetailSheet(
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
     val sheetMotion = rememberAppBottomSheetMotion()
-
+    
     // 拦截返回键
     BackHandler(enabled = visible) {
         onDismiss()
@@ -86,7 +84,7 @@ fun PortraitDetailSheet(
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null
-                    ) { dismissViaBackDispatcher() }
+                    ) { onDismiss() }
             )
         }
 
@@ -133,7 +131,7 @@ fun PortraitDetailSheet(
                                     fontSize = 13.sp
                                 )
                             }
-                            IconButton(onClick = dismissViaBackDispatcher) {
+                            IconButton(onClick = onDismiss) {
                                 Icon(
                                     imageVector = Icons.Rounded.Close,
                                     contentDescription = "Close",

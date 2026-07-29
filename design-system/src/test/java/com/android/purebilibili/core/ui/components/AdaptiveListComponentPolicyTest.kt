@@ -247,13 +247,6 @@ class AdaptiveListComponentPolicyTest {
     }
 
     @Test
-    fun `top bar search leading icon remains renderer owned`() {
-        assertFalse(shouldShowAdaptiveSearchLeadingIcon(UiPreset.MD3, topBarChrome = true))
-        assertTrue(shouldShowAdaptiveSearchLeadingIcon(UiPreset.IOS, topBarChrome = true))
-        assertTrue(shouldShowAdaptiveSearchLeadingIcon(UiPreset.MD3, topBarChrome = false))
-    }
-
-    @Test
     fun `force expanded search bar uses outlined text field on md3`() {
         val source = listOf(
             java.io.File("design-system/src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt"),

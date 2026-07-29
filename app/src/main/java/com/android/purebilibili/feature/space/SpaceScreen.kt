@@ -30,6 +30,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.Sort
+import androidx.compose.material.icons.outlined.Bolt
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.PlayCircleOutline
@@ -91,6 +99,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.imageLoader
+import coil.request.ImageRequest
 import coil.size.Scale
 import com.android.purebilibili.R
 import com.android.purebilibili.core.ui.AppScaffold
@@ -99,21 +108,6 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
 import com.android.purebilibili.core.ui.OfficialVerifyBadge
-import com.android.purebilibili.core.ui.rememberAppBackIcon
-import com.android.purebilibili.core.ui.rememberAppCloseIcon
-import com.android.purebilibili.core.ui.rememberAppCommentIcon
-import com.android.purebilibili.core.ui.rememberAppCopyIcon
-import com.android.purebilibili.core.ui.rememberAppGridLayoutIcon
-import com.android.purebilibili.core.ui.rememberAppInboxIcon
-import com.android.purebilibili.core.ui.rememberAppLiveStatusIcon
-import com.android.purebilibili.core.ui.rememberAppMoreIcon
-import com.android.purebilibili.core.ui.rememberAppPlayCircleIcon
-import com.android.purebilibili.core.ui.rememberAppSearchIcon
-import com.android.purebilibili.core.ui.rememberAppSortIcon
-import com.android.purebilibili.core.ui.rememberAppStackLayoutIcon
-import com.android.purebilibili.core.ui.rememberAppVisibilityOffIcon
-import com.android.purebilibili.core.ui.rememberAppVisibilityOnIcon
-import com.android.purebilibili.core.ui.image.rememberImageRequest
 import com.android.purebilibili.core.ui.OfficialVerifyBadgeSpec
 import com.android.purebilibili.core.ui.blur.BlurSurfaceType
 import com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState
@@ -273,7 +267,7 @@ fun SpaceScreen(
                     navigationIcon = {
                         AppIconButton(onClick = onBack) {
                             Icon(
-                                imageVector = rememberAppBackIcon(),
+                                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                                 contentDescription = backLabel
                             )
                         }
@@ -287,7 +281,7 @@ fun SpaceScreen(
                         if (canSearch) {
                             AppIconButton(onClick = { viewModel.setSearchMode(!isSearchMode) }) {
                                 Icon(
-                                    imageVector = if (isSearchMode) rememberAppCloseIcon() else rememberAppSearchIcon(),
+                                    imageVector = if (isSearchMode) Icons.Outlined.Close else Icons.Outlined.Search,
                                     contentDescription = if (isSearchMode) "关闭搜索" else "搜索"
                                 )
                             }
@@ -295,7 +289,7 @@ fun SpaceScreen(
                         Box {
                             AppIconButton(onClick = { showMenu = true }) {
                                 Icon(
-                                    imageVector = rememberAppMoreIcon(),
+                                    imageVector = Icons.Outlined.MoreVert,
                                     contentDescription = moreLabel
                                 )
                             }
@@ -315,7 +309,7 @@ fun SpaceScreen(
                                     },
                                     leadingIcon = {
                                         Icon(
-                                            imageVector = rememberAppCopyIcon(),
+                                            imageVector = Icons.Outlined.ContentCopy,
                                             contentDescription = null
                                         )
                                     }
@@ -329,9 +323,9 @@ fun SpaceScreen(
                                     leadingIcon = {
                                         Icon(
                                             imageVector = if (isBlocked) {
-                                                rememberAppVisibilityOnIcon()
+                                                Icons.Outlined.Visibility
                                             } else {
-                                                rememberAppVisibilityOffIcon()
+                                                Icons.Outlined.VisibilityOff
                                             },
                                             contentDescription = null,
                                             tint = if (isBlocked) {
@@ -400,7 +394,7 @@ fun SpaceScreen(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
-                            AppLoadingIndicator()
+                            AdaptiveLoadingIndicator()
                         }
                     }
 
@@ -616,7 +610,7 @@ fun SpaceScreen(
                             .padding(vertical = 16.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        AppLoadingIndicator()
+                        AdaptiveLoadingIndicator()
                     }
                 } else {
                     Column(
@@ -2009,13 +2003,12 @@ private fun SpaceHeader(
         ) {
             if (topPhotoUrl.isNotBlank()) {
                 AsyncImage(
-                    model = rememberImageRequest(
-                        data = topPhotoUrl,
-                        widthPx = 1440,
-                        heightPx = 900,
-                        scale = Scale.FILL,
-                        crossfadeEnabled = true,
-                    ),
+                    model = ImageRequest.Builder(context)
+                        .data(topPhotoUrl)
+                        .size(1440, 900)
+                        .scale(Scale.FILL)
+                        .crossfade(true)
+                        .build(),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -2076,10 +2069,10 @@ private fun SpaceHeader(
                             .clickable(enabled = avatarPreviewEnabled, onClick = onAvatarClick)
                     ) {
                         AsyncImage(
-                            model = rememberImageRequest(
-                                data = FormatUtils.buildSizedImageUrl(userInfo.face, width = 320, height = 320),
-                                crossfadeEnabled = true,
-                            ),
+                            model = ImageRequest.Builder(context)
+                                .data(FormatUtils.buildSizedImageUrl(userInfo.face, width = 320, height = 320))
+                                .crossfade(true)
+                                .build(),
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
@@ -2098,7 +2091,7 @@ private fun SpaceHeader(
                                 color = Color(0xFFFFC107)
                             ) {
                                 Icon(
-                                    imageVector = rememberAppLiveStatusIcon(),
+                                    imageVector = Icons.Outlined.Bolt,
                                     contentDescription = null,
                                     tint = Color.White,
                                     modifier = Modifier
@@ -2157,7 +2150,7 @@ private fun SpaceHeader(
                                     }
                                 ) {
                                     Icon(
-                                        imageVector = rememberAppInboxIcon(),
+                                        imageVector = Icons.Outlined.Email,
                                         contentDescription = "私信",
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -2324,7 +2317,7 @@ private fun SpaceSearchEntryChip(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Icon(
-                imageVector = rememberAppSearchIcon(),
+                imageVector = Icons.Outlined.Search,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(18.dp)
@@ -2665,7 +2658,7 @@ private fun SpaceContributionVideoToolbarActions(
                 contentPadding = PaddingValues(horizontal = 8.dp)
             ) {
                 Icon(
-                    imageVector = rememberAppPlayCircleIcon(),
+                    imageVector = Icons.Outlined.PlayCircleOutline,
                     contentDescription = null,
                     modifier = Modifier.size(17.dp)
                 )
@@ -2683,7 +2676,7 @@ private fun SpaceContributionVideoToolbarActions(
                 modifier = Modifier.size(40.dp)
             ) {
                 Icon(
-                    imageVector = rememberAppPlayCircleIcon(),
+                    imageVector = Icons.Outlined.PlayCircleOutline,
                     contentDescription = "播放全部",
                     tint = MaterialTheme.colorScheme.primary
                 )
@@ -2695,11 +2688,7 @@ private fun SpaceContributionVideoToolbarActions(
             modifier = Modifier.size(40.dp)
         ) {
             Icon(
-                imageVector = if (isSingleColumn) {
-                    rememberAppGridLayoutIcon()
-                } else {
-                    rememberAppStackLayoutIcon()
-                },
+                imageVector = if (isSingleColumn) Icons.Outlined.GridView else Icons.Outlined.ViewAgenda,
                 contentDescription = if (isSingleColumn) "切换为双列" else "切换为单列",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -2713,7 +2702,7 @@ private fun SpaceContributionVideoToolbarActions(
                     contentPadding = PaddingValues(horizontal = 8.dp)
                 ) {
                     Icon(
-                        imageVector = rememberAppSortIcon(),
+                        imageVector = Icons.AutoMirrored.Outlined.Sort,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(17.dp)
@@ -2733,7 +2722,7 @@ private fun SpaceContributionVideoToolbarActions(
                     modifier = Modifier.size(40.dp)
                 ) {
                     Icon(
-                        imageVector = rememberAppSortIcon(),
+                        imageVector = Icons.AutoMirrored.Outlined.Sort,
                         contentDescription = resolveSpaceVideoSortCompactLabel(currentOrder),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -2945,10 +2934,10 @@ private fun SpaceHomeVideoCard(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             AsyncImage(
-                model = rememberImageRequest(
-                    data = FormatUtils.buildSizedImageUrl(video.pic, width = 640, height = 360),
-                    crossfadeEnabled = true,
-                ),
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(FormatUtils.buildSizedImageUrl(video.pic, width = 640, height = 360))
+                    .crossfade(true)
+                    .build(),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -3098,10 +3087,10 @@ private fun SpaceAggregateMediaCard(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             AsyncImage(
-                model = rememberImageRequest(
-                    data = FormatUtils.buildSizedImageUrl(item.cover, width = 640, height = 360),
-                    crossfadeEnabled = true,
-                ),
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(FormatUtils.buildSizedImageUrl(item.cover, width = 640, height = 360))
+                    .crossfade(true)
+                    .build(),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
@@ -3157,10 +3146,10 @@ private fun SpaceAggregatePosterCard(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             AsyncImage(
-                model = rememberImageRequest(
-                    data = FormatUtils.buildSizedImageUrl(item.cover, width = 480, height = 720),
-                    crossfadeEnabled = true,
-                ),
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(FormatUtils.buildSizedImageUrl(item.cover, width = 480, height = 720))
+                    .crossfade(true)
+                    .build(),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
@@ -3258,10 +3247,10 @@ private fun SpaceTopVideoCard(
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 AsyncImage(
-                    model = rememberImageRequest(
-                        data = FormatUtils.buildSizedImageUrl(video.pic, width = 560, height = 352),
-                        crossfadeEnabled = true,
-                    ),
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(FormatUtils.buildSizedImageUrl(video.pic, width = 560, height = 352))
+                        .crossfade(true)
+                        .build(),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -3425,10 +3414,10 @@ private fun SpaceArchiveListItemRow(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             AsyncImage(
-                model = rememberImageRequest(
-                    data = FormatUtils.buildSizedImageUrl(cover, width = 560, height = 350),
-                    crossfadeEnabled = true,
-                ),
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(FormatUtils.buildSizedImageUrl(cover, width = 560, height = 350))
+                    .crossfade(true)
+                    .build(),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
@@ -3506,7 +3495,7 @@ private fun SpaceArchiveListItemRow(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Icon(
-                    imageVector = rememberAppMoreIcon(),
+                    imageVector = Icons.Outlined.MoreVert,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f),
                     modifier = Modifier
@@ -3529,7 +3518,7 @@ private fun SpaceArchiveListItemRow(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Icon(
-                        imageVector = rememberAppPlayCircleIcon(),
+                        imageVector = Icons.Outlined.PlayCircleOutline,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(16.dp)
@@ -3546,7 +3535,7 @@ private fun SpaceArchiveListItemRow(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Icon(
-                        imageVector = rememberAppCommentIcon(),
+                        imageVector = Icons.Outlined.ChatBubbleOutline,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(15.dp)
@@ -3584,10 +3573,10 @@ private fun SpaceAudioListItem(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             AsyncImage(
-                model = rememberImageRequest(
-                    data = FormatUtils.buildSizedImageUrl(audio.cover, width = 256, height = 256),
-                    crossfadeEnabled = true,
-                ),
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(FormatUtils.buildSizedImageUrl(audio.cover, width = 256, height = 256))
+                    .crossfade(true)
+                    .build(),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
@@ -3609,7 +3598,7 @@ private fun SpaceAudioListItem(
             )
         }
         Icon(
-            imageVector = rememberAppPlayCircleIcon(),
+            imageVector = Icons.Outlined.PlayCircleOutline,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(28.dp)
@@ -3659,10 +3648,10 @@ private fun SpaceArticleListItem(
                     key = { it }
                 ) { imageUrl ->
                     AsyncImage(
-                        model = rememberImageRequest(
-                            data = FormatUtils.buildSizedImageUrl(imageUrl, width = 480, height = 320),
-                            crossfadeEnabled = true,
-                        ),
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(FormatUtils.buildSizedImageUrl(imageUrl, width = 480, height = 320))
+                            .crossfade(true)
+                            .build(),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
@@ -3749,15 +3738,16 @@ private fun SpaceBangumiCard(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             AsyncImage(
-                model = rememberImageRequest(
-                    data =
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(
                         FormatUtils.buildSizedImageUrl(
                             item.cover.ifBlank { item.squareCover },
                             width = 480,
                             height = 720
-                        ),
-                    crossfadeEnabled = true,
-                ),
+                        )
+                    )
+                    .crossfade(true)
+                    .build(),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
@@ -3813,10 +3803,10 @@ private fun SpaceCollectionSummaryCard(
                     .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 AsyncImage(
-                    model = rememberImageRequest(
-                        data = FormatUtils.buildSizedImageUrl(cover, width = 480, height = 300),
-                        crossfadeEnabled = true,
-                    ),
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(FormatUtils.buildSizedImageUrl(cover, width = 480, height = 300))
+                        .crossfade(true)
+                        .build(),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -3888,10 +3878,10 @@ private fun SpaceCollectionWithPreviewCard(
                         .background(MaterialTheme.colorScheme.surfaceVariant)
                 ) {
                     AsyncImage(
-                        model = rememberImageRequest(
-                            data = FormatUtils.buildSizedImageUrl(cover, width = 480, height = 300),
-                            crossfadeEnabled = true,
-                        ),
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(FormatUtils.buildSizedImageUrl(cover, width = 480, height = 300))
+                            .crossfade(true)
+                            .build(),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize()
@@ -3931,10 +3921,10 @@ private fun SpaceCollectionWithPreviewCard(
                     items(previews, key = { "${it.cover}_${it.title}" }) { preview ->
                         Column(modifier = Modifier.width(112.dp)) {
                             AsyncImage(
-                                model = rememberImageRequest(
-                                    data = FormatUtils.buildSizedImageUrl(preview.cover, width = 320, height = 200),
-                                    crossfadeEnabled = true,
-                                ),
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(FormatUtils.buildSizedImageUrl(preview.cover, width = 320, height = 200))
+                                    .crossfade(true)
+                                    .build(),
                                 contentDescription = null,
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
@@ -4033,7 +4023,7 @@ private fun SpaceLoadingFooter() {
             .padding(vertical = 18.dp),
         contentAlignment = Alignment.Center
     ) {
-        AppLoadingIndicator(size = 24.dp)
+        AdaptiveLoadingIndicator(size = 24.dp)
     }
 }
 

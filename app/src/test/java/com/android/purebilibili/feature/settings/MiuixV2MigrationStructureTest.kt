@@ -194,7 +194,7 @@ class MiuixV2MigrationStructureTest {
             .toList()
         assertTrue(
             offenders.isEmpty(),
-            "iOSLargeTitleBar should remain iOS-only chrome; migrate feature screens to AppScaffold:\n" +
+            "iOSLargeTitleBar should remain iOS-only chrome; migrate feature screens to AdaptiveScaffold:\n" +
                 offenders.joinToString("\n")
         )
     }

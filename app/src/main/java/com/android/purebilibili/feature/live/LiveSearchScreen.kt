@@ -1,5 +1,6 @@
 package com.android.purebilibili.feature.live
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -55,6 +56,8 @@ import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
+import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
 import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
 import com.android.purebilibili.core.util.LocalWindowSizeClass
@@ -176,7 +179,7 @@ fun LiveSearchScreen(
                 navigationIcon = {
                     AppIconButton(onClick = onBack) {
                         Icon(
-                            imageVector = rememberAppBackIcon(),
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "返回",
                         )
                     }
@@ -214,10 +217,11 @@ fun LiveSearchScreen(
                     },
                     modifier = Modifier.weight(1f),
                     singleLine = true,
-                    placeholder = "搜索房间或主播",
+                    placeholder = { Text("搜索房间或主播") },
                     trailingIcon = {
-                        Icon(imageVector = rememberAppSearchIcon(), contentDescription = null)
+                        Icon(imageVector = Icons.Outlined.Search, contentDescription = null)
                     },
+                    shape = AppShapes.borderedContainer(ContainerLevel.Field),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                     keyboardActions = KeyboardActions(onSearch = { scope.launch { submit() } }),
                 )
@@ -227,7 +231,7 @@ fun LiveSearchScreen(
                     modifier = Modifier.size(AppSpacingTokens.TripleExtraLarge),
                 ) {
                     Icon(
-                        imageVector = rememberAppSearchIcon(),
+                        imageVector = Icons.Outlined.Search,
                         contentDescription = "搜索",
                     )
                 }
@@ -268,7 +272,6 @@ fun LiveSearchScreen(
                         gridItems(liveResults, key = { it.roomid }) { room ->
                             LiveRoomCard(
                                 model = room.toLiveRoomCardUiModel(),
-                                visualSpec = visualSpec,
                                 onClick = { onLiveClick(room.roomid, room.title, room.uname) },
                             )
                         }
@@ -321,7 +324,7 @@ fun LiveSearchScreen(
 private fun LiveSearchState(message: String? = null) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         if (message == null) {
-            AppLoadingIndicator()
+            AdaptiveLoadingIndicator()
         } else {
             Text(
                 text = message,
@@ -336,6 +339,9 @@ private fun LiveSearchState(message: String? = null) {
 private fun LiveSearchUserCard(item: SearchUpItem, onClick: () -> Unit) {
     AppSurface(
         onClick = onClick,
+        shape = AppShapes.borderedContainer(ContainerLevel.Card),
+        color = AppSurfaceTokens.cardContainer(),
+        border = BorderStroke(AppSurfaceTokens.OutlineWidth, AppSurfaceTokens.divider()),
     ) {
         Row(
             modifier = Modifier

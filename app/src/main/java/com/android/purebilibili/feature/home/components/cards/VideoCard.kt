@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.rememberHapticFeedback
 import com.android.purebilibili.core.util.animateEnter
@@ -84,7 +85,6 @@ import androidx.compose.ui.semantics.contentDescription
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.components.UpBadgeName
 import com.android.purebilibili.core.ui.components.resolveUpStatsText
-import com.android.purebilibili.core.ui.image.rememberImageRequest
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
 import com.android.purebilibili.core.ui.transition.LocalVideoCardTransitionBackgroundState
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
@@ -780,15 +780,22 @@ internal fun ElegantVideoCard(
         ) {
             // crossfade 必须进 remember key：若 clearReturning 后才打开 crossfade，
             // 会新建 ImageRequest 导致 Coil 再跑一次淡入闪烁（快速返回尤其明显）。
-            val coverImageRequest = rememberImageRequest(
-                data = requestCoverUrl,
-                widthPx = coverRequestSpec?.widthPx,
-                heightPx = coverRequestSpec?.heightPx,
-                placeholderMemoryCacheKey = requestCoverCacheKey,
-                crossfadeEnabled = coverCrossfadeEnabled,
-                memoryCacheKey = requestCoverCacheKey,
-                diskCacheKey = requestCoverCacheKey,
-            )
+            val coverImageRequest = remember(
+                requestCoverUrl,
+                requestCoverCacheKey,
+                coverCrossfadeEnabled,
+            ) {
+                ImageRequest.Builder(context)
+                    .data(requestCoverUrl)
+                    .apply {
+                        coverRequestSpec?.let { size(it.widthPx, it.heightPx) }
+                    }
+                    .placeholderMemoryCacheKey(requestCoverCacheKey)
+                    .crossfade(coverCrossfadeEnabled)
+                    .memoryCacheKey(requestCoverCacheKey)
+                    .diskCacheKey(requestCoverCacheKey)
+                    .build()
+            }
             AsyncImage(
                 model = coverImageRequest,
                 contentDescription = null,
@@ -1265,13 +1272,12 @@ internal fun ElegantVideoCard(
                             .background(MaterialTheme.colorScheme.surfaceVariant)
 
                         AsyncImage(
-                            model = rememberImageRequest(
-                                data = FormatUtils.fixImageUrl(video.owner.face),
-                                widthPx = 32,
-                                heightPx = 32,
-                                crossfadeMillis = 100,
-                                memoryCacheKey = "avatar_${video.owner.face.hashCode()}",
-                            ),
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(FormatUtils.fixImageUrl(video.owner.face))
+                                .crossfade(100)
+                                .size(32, 32)
+                                .memoryCacheKey("avatar_${video.owner.face.hashCode()}")
+                                .build(),
                             contentDescription = null,
                             modifier = avatarModifier,
                             contentScale = ContentScale.Crop

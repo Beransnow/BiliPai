@@ -128,7 +128,7 @@ internal fun MessageFeedLoadMore(
         contentAlignment = Alignment.Center
     ) {
         if (isLoadingMore) {
-            com.android.purebilibili.core.ui.AppLoadingIndicator(
+            com.android.purebilibili.core.ui.CutePersonLoadingIndicator(
                 size = 24.dp
             )
         } else {

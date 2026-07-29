@@ -1,9 +1,7 @@
 package com.android.purebilibili.feature.onboarding
 
-import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class OnboardingMotionPolicyTest {
@@ -36,18 +34,5 @@ class OnboardingMotionPolicyTest {
         assertEquals(1f, spec.halo.minScale)
         assertEquals(1f, spec.halo.maxScale)
         assertEquals(1f, spec.card.selectedScale)
-    }
-
-    @Test
-    fun pagerOffsetIsReadInsideThePageLayer() {
-        val path = "app/src/main/java/com/android/purebilibili/feature/onboarding/OnboardingScreen.kt"
-        val normalizedPath = path.removePrefix("app/")
-        val sourceFile = listOf(File(path), File(normalizedPath)).firstOrNull { it.exists() }
-        require(sourceFile != null) { "Cannot locate $path from ${File(".").absolutePath}" }
-        val source = sourceFile.readText()
-
-        assertTrue(source.contains("pageOffsetProvider = remember(pagerState, page)"))
-        assertTrue(source.contains("pageOffsetProvider().absoluteValue"))
-        assertFalse(source.contains("pageOffset = pageOffset,"))
     }
 }

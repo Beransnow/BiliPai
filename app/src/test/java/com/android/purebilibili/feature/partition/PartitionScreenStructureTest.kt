@@ -211,22 +211,6 @@ class PartitionScreenStructureTest {
         )
     }
 
-    @Test
-    fun `side rail owns motion without frame back writes or a second list animation`() {
-        val source = loadSource("app/src/main/java/com/android/purebilibili/feature/partition/PartitionScreen.kt")
-        val contentSource = source
-            .substringAfter("fun PartitionContent(")
-            .substringBefore("private fun PartitionSideRailItem(")
-
-        assertTrue(source.contains("internal class PartitionSideRailState("))
-        assertTrue(source.contains(": MotionReader by dragState"))
-        assertTrue(contentSource.contains("graphicsLayer {"))
-        assertTrue(contentSource.contains("sideRailState.videoListPushPx("))
-        assertFalse(contentSource.contains("sideRailVideoPushTargetPx"))
-        assertFalse(contentSource.contains("onVideoListPushChanged"))
-        assertFalse(contentSource.contains("label = \"partitionVideoListPush\""))
-    }
-
     private fun loadSource(path: String): String {
         val normalizedPath = path.removePrefix("app/")
         val sourceFile = listOf(

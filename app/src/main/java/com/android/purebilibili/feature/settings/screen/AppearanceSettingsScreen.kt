@@ -70,7 +70,6 @@ import com.android.purebilibili.core.ui.blur.shouldAllowHomeChromeLiquidGlass
 import com.android.purebilibili.core.ui.getWindowNavigationBarColor
 import com.android.purebilibili.core.ui.rememberAppSparklesIcon
 import com.android.purebilibili.core.ui.setWindowNavigationBarColor
-import com.android.purebilibili.core.ui.image.rememberImageRequest
 import com.android.purebilibili.feature.settings.ui.SettingsPageScaffold
 import com.android.purebilibili.core.util.HapticType
 import com.android.purebilibili.core.util.LocalWindowSizeClass
@@ -1073,10 +1072,10 @@ fun AppearanceSettingsContent(
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     splashRandomPoolPreview.previewUris.forEach { previewUri ->
                                         AsyncImage(
-                                            model = rememberImageRequest(
-                                                data = previewUri,
-                                                crossfadeEnabled = true,
-                                            ),
+                                            model = coil.request.ImageRequest.Builder(context)
+                                                .data(previewUri)
+                                                .crossfade(true)
+                                                .build(),
                                             contentDescription = null,
                                             contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                                             modifier = Modifier
@@ -1136,10 +1135,10 @@ fun AppearanceSettingsContent(
                                 ) {
                                     if (hasSplashWallpaper) {
                                         AsyncImage(
-                                            model = rememberImageRequest(
-                                                data = splashWallpaperUri,
-                                                crossfadeEnabled = true,
-                                            ),
+                                            model = coil.request.ImageRequest.Builder(context)
+                                                .data(splashWallpaperUri)
+                                                .crossfade(true)
+                                                .build(),
                                             contentDescription = null,
                                             contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                                             modifier = Modifier.fillMaxSize()
@@ -1555,10 +1554,10 @@ fun AppearanceSettingsContent(
                             ) {
                                 if (resolvedHomeWallpaperUri.isNotBlank()) {
                                     AsyncImage(
-                                        model = rememberImageRequest(
-                                            data = resolvedHomeWallpaperUri,
-                                            crossfadeEnabled = true,
-                                        ),
+                                        model = coil.request.ImageRequest.Builder(context)
+                                            .data(resolvedHomeWallpaperUri)
+                                            .crossfade(true)
+                                            .build(),
                                         contentDescription = null,
                                         contentScale = androidx.compose.ui.layout.ContentScale.Crop,
                                         modifier = Modifier.fillMaxSize()

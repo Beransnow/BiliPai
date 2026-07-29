@@ -20,6 +20,10 @@ import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.appendInlineContent
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -45,10 +49,6 @@ import coil.compose.AsyncImage
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.rememberAppBackIcon
-import com.android.purebilibili.core.ui.rememberAppMoreIcon
-import com.android.purebilibili.core.ui.rememberAppPhotoIcon
-import com.android.purebilibili.core.ui.rememberAppSendIcon
-import com.android.purebilibili.core.ui.components.AppTextField
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.EmoteInfo
 import com.android.purebilibili.data.model.response.PrivateMessageItem
@@ -105,7 +105,7 @@ fun ChatScreen(
                 actions = {
                     Box {
                         IconButton(onClick = { showSessionMenu = true }) {
-                            Icon(rememberAppMoreIcon(), contentDescription = "会话设置")
+                            Icon(Icons.Default.MoreVert, contentDescription = "会话设置")
                         }
                         ChatSessionControlMenu(
                             expanded = showSessionMenu,
@@ -165,7 +165,7 @@ fun ChatScreen(
         ) {
             when {
                 uiState.isLoading -> {
-                    com.android.purebilibili.core.ui.AppLoadingIndicator(
+                    com.android.purebilibili.core.ui.CutePersonLoadingIndicator(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -203,7 +203,7 @@ fun ChatScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     if (uiState.isLoadingMore) {
-                                        com.android.purebilibili.core.ui.AppLoadingIndicator(
+                                        com.android.purebilibili.core.ui.CutePersonLoadingIndicator(
                                             size = 24.dp
                                         )
                                     } else {
@@ -259,7 +259,7 @@ fun ChatScreen(
     }
 
     pendingWithdrawMessage?.let { targetMessage ->
-        AppAlertDialog(
+        AlertDialog(
             onDismissRequest = {
                 if (uiState.withdrawingMessageKey == null) {
                     pendingWithdrawMessage = null
@@ -297,7 +297,7 @@ fun ChatScreen(
     }
 
     if (showInterceptConfirm) {
-        AppAlertDialog(
+        AlertDialog(
             onDismissRequest = { showInterceptConfirm = false },
             title = { Text("移入拦截") },
             text = { Text("后续这类会话会进入拦截分类，仍可在拦截列表中查看和恢复。") },
@@ -398,8 +398,6 @@ fun ChatInputBar(
 ) {
     val showSendAction = text.isNotBlank()
     val isBusy = isSending || isUploadingImage
-    val photoIcon = rememberAppPhotoIcon()
-    val sendIcon = rememberAppSendIcon()
 
     Surface(
         tonalElevation = 3.dp,
@@ -411,15 +409,15 @@ fun ChatInputBar(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AppTextField(
+            OutlinedTextField(
                 value = text,
                 onValueChange = onTextChange,
                 modifier = Modifier.weight(1f),
-                placeholder = "输入消息...",
-                singleLine = false,
+                placeholder = { Text("输入消息...") },
                 maxLines = 4,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                 keyboardActions = KeyboardActions(onSend = { onSend() }),
+                shape = RoundedCornerShape(24.dp)
             )
             
             Spacer(modifier = Modifier.width(8.dp))
@@ -435,13 +433,13 @@ fun ChatInputBar(
                 enabled = !isBusy
             ) {
                 if (isBusy) {
-                    com.android.purebilibili.core.ui.AppLoadingIndicator(
+                    com.android.purebilibili.core.ui.CutePersonLoadingIndicator(
                         size = 24.dp,
                         strokeWidth = 2.dp
                     )
                 } else {
                     Icon(
-                        imageVector = if (showSendAction) sendIcon else photoIcon,
+                        imageVector = if (showSendAction) Icons.AutoMirrored.Filled.Send else Icons.Filled.AddCircle,
                         contentDescription = if (showSendAction) "发送" else "图片",
                         tint = if (showSendAction) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                     )

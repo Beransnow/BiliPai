@@ -3,7 +3,6 @@ package com.android.purebilibili.feature.home.components
 
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppSpacingTokens
-import com.android.purebilibili.core.ui.MediaContrastPalette
 
 import com.android.purebilibili.core.ui.OpticalContrastPalette
 import com.android.purebilibili.feature.home.HomeVisualPalette
@@ -22,7 +21,6 @@ import androidx.compose.material.icons.outlined.Tv
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.EaseOut
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -35,7 +33,7 @@ import androidx.compose.foundation.gestures.horizontalDrag
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -58,13 +56,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ColorProducer
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.pointer.pointerInput
@@ -113,17 +109,12 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.math.sign
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import com.android.purebilibili.core.ui.motion.BottomBarMotionProfile
 import com.android.purebilibili.core.ui.motion.resolveBottomBarMotionSpec
 import androidx.compose.foundation.combinedClickable // [Added]
 import java.io.File
 
 private const val IOS_TOP_TAB_CONTENT_PADDING_DP = 2f
-private val FullySelectedTopTabFractionProvider: () -> Float = { 1f }
-private val NoOpTopTabClick: () -> Unit = {}
 
 internal fun resolveFloatingIndicatorStartPaddingPx(
     baseInsetPx: Float,
@@ -569,25 +560,13 @@ internal fun performHomeTopBarTap(
  */
 fun Modifier.premiumClickable(onClick: () -> Unit): Modifier = composed {
     val interactionSource = remember { MutableInteractionSource() }
-    val scale = remember { Animatable(1f) }
-    LaunchedEffect(interactionSource) {
-        var animation: Job? = null
-        interactionSource.interactions.collect { interaction ->
-            val target = when (interaction) {
-                is PressInteraction.Press -> 0.92f
-                is PressInteraction.Release,
-                is PressInteraction.Cancel -> 1f
-                else -> return@collect
-            }
-            animation?.cancel()
-            animation = launch { scale.animateTo(target) }
-        }
-    }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.92f else 1f,
+        label = "scale"
+    )
     this
-        .graphicsLayer {
-            scaleX = scale.value
-            scaleY = scale.value
-        }
+        .scale(scale)
         .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
 }
 
@@ -933,30 +912,6 @@ private fun LightweightHomeTopTabs(
     }
     val pagerScrollingProvider = remember(pagerState) {
         { pagerState?.isScrollInProgress == true }
-    }
-    val latestTopTabDragEngaged = rememberUpdatedState(topTabIndicatorDragEngaged)
-    val topTabContentPositionProvider = remember(
-        effectiveRenderer,
-        categories.size,
-        topTabDragState,
-        latestTopTabDragEngaged,
-        currentPositionProvider,
-        selectedContentPositionProvider
-    ) {
-        {
-            val dragActive = latestTopTabDragEngaged.value &&
-                (topTabDragState.readDragging() ||
-                    topTabDragState.isRunning ||
-                    topTabDragState.readPressProgress() > 0.001f)
-            if (dragActive) {
-                topTabDragState.readPosition()
-                    .coerceIn(0f, (categories.size - 1).coerceAtLeast(0).toFloat())
-            } else if (effectiveRenderer == HomeTopTabRenderer.IOS) {
-                selectedContentPositionProvider()
-            } else {
-                currentPositionProvider()
-            }
-        }
     }
 
     LaunchedEffect(selectedIndex, categories.size) {
@@ -1426,7 +1381,7 @@ private fun LightweightHomeTopTabs(
                                     category = category,
                                     categoryKey = categoryKey,
                                     index = index,
-                                    selectionFractionProvider = FullySelectedTopTabFractionProvider,
+                                    selectionFraction = 1f,
                                     selectedIndex = selectedIndex,
                                     showIcon = showIcon,
                                     showText = showText,
@@ -1441,7 +1396,7 @@ private fun LightweightHomeTopTabs(
                                     modifier = Modifier.graphicsLayer(
                                         colorFilter = ColorFilter.tint(topTabExportTintColor)
                                     ),
-                                    onClick = NoOpTopTabClick
+                                    onClick = {}
                                 )
                             }
                         }
@@ -1461,12 +1416,7 @@ private fun LightweightHomeTopTabs(
                         key = { index, category -> categoryKeys.getOrNull(index) ?: category }
                     ) { index, category ->
                         val categoryKey = categoryKeys.getOrNull(index) ?: category
-                        val selectionFractionProvider = remember(index, topTabContentPositionProvider) {
-                            {
-                                (1f - abs(topTabContentPositionProvider() - index.toFloat()))
-                                    .coerceIn(0f, 1f)
-                            }
-                        }
+                        val selectionFraction = (1f - abs(topTabContentPosition - index.toFloat())).coerceIn(0f, 1f)
                         val drawItemContainer = shouldDrawLightweightTopTabItemContainer(
                             presentation = effectivePresentation,
                             skinPlainStyle = skinPlainStyle,
@@ -1491,28 +1441,12 @@ private fun LightweightHomeTopTabs(
                         } else {
                             measuredItemModifier
                         }
-                        val onTabClick = remember(
-                            index,
-                            selectedIndex,
-                            haptic,
-                            onCategorySelected,
-                            scrollChannel
-                        ) {
-                            {
-                                performHomeTopBarTap(haptic = haptic, onClick = {
-                                    when (resolveTopTabClickAction(index, selectedIndex)) {
-                                        TopTabClickAction.SELECT_TAB -> onCategorySelected(index)
-                                        TopTabClickAction.SCROLL_TO_TOP -> scrollChannel?.trySend(Unit)
-                                    }
-                                })
-                            }
-                        }
                         LightweightTopTabItem(
                             presentation = effectivePresentation,
                             category = category,
                             categoryKey = categoryKey,
                             index = index,
-                            selectionFractionProvider = selectionFractionProvider,
+                            selectionFraction = selectionFraction,
                             selectedIndex = selectedIndex,
                             showIcon = showIcon,
                             showText = showText,
@@ -1535,7 +1469,14 @@ private fun LightweightHomeTopTabs(
                                 TopTabLiquidColorMode.NORMAL
                             },
                             modifier = gestureItemModifier,
-                            onClick = onTabClick
+                            onClick = {
+                                performHomeTopBarTap(haptic = haptic, onClick = {
+                                    when (resolveTopTabClickAction(index, selectedIndex)) {
+                                        TopTabClickAction.SELECT_TAB -> onCategorySelected(index)
+                                        TopTabClickAction.SCROLL_TO_TOP -> scrollChannel?.trySend(Unit)
+                                    }
+                                })
+                            }
                         )
                     }
                 }
@@ -1749,7 +1690,7 @@ private fun LightweightTopTabItem(
     category: String,
     categoryKey: String,
     index: Int,
-    selectionFractionProvider: () -> Float,
+    selectionFraction: Float,
     selectedIndex: Int,
     showIcon: Boolean,
     showText: Boolean,
@@ -1768,9 +1709,7 @@ private fun LightweightTopTabItem(
     val chromePolicy = rememberAppTopChromePolicy()
     val colorScheme = MaterialTheme.colorScheme
     val isDarkTheme = isSystemInDarkTheme()
-    // Semantics, glyph choice and font metrics follow the settled route only. Continuous
-    // selection color is pulled by ColorProducer/draw below without recomposing this item.
-    val selected = index == selectedIndex
+    val selected = selectionFraction > 0.5f || index == selectedIndex
     val skinIconPath = skinIconPaths?.pathFor(selected)
     val icon = resolveTopTabCategoryIcon(categoryKey, chromePolicy.iconFamily)
     val selectedColor = when (presentation) {
@@ -1795,24 +1734,14 @@ private fun LightweightTopTabItem(
     } else {
         colorScheme.onSurfaceVariant
     }
-    val contentColor = remember(
-        colorMode,
-        exportMonochromeColor,
-        unselectedColor,
-        selectedColor,
-        selectionFractionProvider
-    ) {
-        ColorProducer {
-            when (colorMode) {
-                TopTabLiquidColorMode.GLASS_EXPORT -> exportMonochromeColor
-                TopTabLiquidColorMode.GLASS_VISIBLE -> unselectedColor
-                TopTabLiquidColorMode.NORMAL -> androidx.compose.ui.graphics.lerp(
-                    unselectedColor,
-                    selectedColor,
-                    selectionFractionProvider()
-                )
-            }
-        }
+    val contentColor = when (colorMode) {
+        TopTabLiquidColorMode.GLASS_EXPORT -> exportMonochromeColor
+        TopTabLiquidColorMode.GLASS_VISIBLE -> unselectedColor
+        TopTabLiquidColorMode.NORMAL -> androidx.compose.ui.graphics.lerp(
+            unselectedColor,
+            selectedColor,
+            selectionFraction
+        )
     }
     val containerColor = when {
         !drawContainer || colorMode == TopTabLiquidColorMode.GLASS_EXPORT -> Color.Transparent
@@ -1846,9 +1775,7 @@ private fun LightweightTopTabItem(
                 }
             )
             .clip(itemShape)
-            .drawBehind {
-                drawRect(containerColorProvider())
-            }
+            .background(containerColor, itemShape)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = if (useClickIndication) LocalIndication.current else null,
@@ -1875,12 +1802,10 @@ private fun LightweightTopTabItem(
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
-                        tint = MediaContrastPalette.Foreground,
-                        modifier = Modifier
-                            .size(resolveTopTabIconSizeDp(if (showText) 0 else 1).dp)
-                            .graphicsLayer {
-                                colorFilter = ColorFilter.tint(contentColor())
-                            }
+                        tint = contentColor,
+                        modifier = Modifier.size(
+                            resolveTopTabIconSizeDp(if (showText) 0 else 1).dp
+                        )
                     )
                 }
             }
@@ -1911,7 +1836,7 @@ private fun LightweightTopTabItem(
                         .height(AppSpacingTokens.Micro)
                         .clip(AppShapes.container(ContainerLevel.Pill))
                         .background(selectedColor)
-                        .graphicsLayer { alpha = selectionFractionProvider() }
+                        .alpha(selectionFraction)
                 )
             }
         }

@@ -189,9 +189,6 @@ fun OfflineVideoPlayerScreen(
     val player = remember(file.absolutePath) {
         ExoPlayer.Builder(context).build()
     }
-    val playerOwner = remember(player) {
-        PlayerLeaseRegistry.acquire(player = player, owner = "offline-player-screen")
-    }
     val offlineSessionRegistered = remember(file.exists(), task.filePath) {
         shouldRegisterOfflinePlaybackSession(
             fileExists = file.exists(),
@@ -338,18 +335,17 @@ fun OfflineVideoPlayerScreen(
         player.playWhenReady = true
     }
 
-    DisposableEffect(player, task.id, playerOwner) {
+    DisposableEffect(player, task.id) {
         danmakuManager.attachPlayer(player)
         onDispose {
             persistCurrentPlaybackPosition(task, player)
             danmakuManager.detachView()
-            if (!miniPlayerManager.detachExternalPlayerForRelease(player)) {
+            if (miniPlayerManager.isPlayerManaged(player)) {
+                miniPlayerManager.dismiss()
+            } else {
                 miniPlayerManager.clearExternalPlayerIfMatches(player)
             }
-            PlayerLeaseRegistry.requestRelease(
-                token = playerOwner,
-                fence = PlayerReleaseFence.navigation,
-            )
+            player.release()
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
             activity?.let { act ->
                 val windowInsetsController = WindowCompat.getInsetsController(act.window, act.window.decorView)
@@ -609,12 +605,6 @@ fun OfflineVideoPlayerScreen(
                     useController = false
                     keepScreenOn = true
                 }
-            },
-            update = { view ->
-                if (view.player !== player) view.player = player
-            },
-            onRelease = { view ->
-                if (view.player === player) view.player = null
             },
             modifier = Modifier.fillMaxSize()
         )

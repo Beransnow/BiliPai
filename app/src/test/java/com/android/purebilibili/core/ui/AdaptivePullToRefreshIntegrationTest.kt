@@ -20,40 +20,6 @@ class AdaptivePullToRefreshIntegrationTest {
     }
 
     @Test
-    fun `app pull refresh entry owns renderer while adaptive api delegates`() {
-        val source = loadSource("app/src/main/java/com/android/purebilibili/core/ui/AdaptivePullToRefreshBox.kt")
-        val appImplementation = source
-            .substringAfter("fun AppPullToRefreshBox(")
-            .substringBefore("/** Compatibility entry point.")
-        val adaptiveCompatibility = source
-            .substringAfter("fun AdaptivePullToRefreshBox(")
-            .substringBefore("/**\n * Default pull-to-refresh chrome")
-
-        assertTrue(appImplementation.contains("MiuixPullToRefresh("))
-        assertTrue(appImplementation.contains("ComfortablePullToRefreshBox("))
-        assertTrue(appImplementation.contains("AdaptivePullToRefreshDefaultIndicator("))
-        assertTrue(appImplementation.contains("content: @Composable BoxScope.() -> Unit"))
-        assertTrue(adaptiveCompatibility.contains(") = AppPullToRefreshBox("))
-        listOf(
-            "isRefreshing",
-            "onRefresh",
-            "modifier",
-            "contentPadding",
-            "indicatorTopInset",
-            "state",
-            "contentAlignment",
-            "indicator",
-            "content",
-        ).forEach { parameter ->
-            assertTrue(
-                "AdaptivePullToRefreshBox must forward $parameter",
-                adaptiveCompatibility.contains("$parameter = $parameter"),
-            )
-        }
-        assertTrue(source.contains("fun BoxScope.AdaptivePullToRefreshDefaultIndicator("))
-    }
-
-    @Test
     fun `home material default pull refresh uses official loading indicator`() {
         val home = loadSource("app/src/main/java/com/android/purebilibili/feature/home/HomeScreen.kt")
         assertTrue(home.contains("PullToRefreshDefaults.LoadingIndicator("))

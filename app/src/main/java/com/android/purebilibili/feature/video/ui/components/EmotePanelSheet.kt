@@ -16,13 +16,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.android.purebilibili.core.ui.image.rememberImageRequest
+import coil.request.ImageRequest
 import com.android.purebilibili.data.model.response.EmotePackage
 import com.android.purebilibili.data.model.response.EmoteItem
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
@@ -173,10 +174,10 @@ private fun EmoteGridItem(
         contentAlignment = Alignment.Center
     ) {
         AsyncImage(
-            model = rememberImageRequest(
-                data = emote.url,
-                crossfadeEnabled = true,
-            ),
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(emote.url)
+                .crossfade(true)
+                .build(),
             contentDescription = emote.text,
             modifier = Modifier.fillMaxSize()
         )

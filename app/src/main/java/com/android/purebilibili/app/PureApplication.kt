@@ -12,7 +12,6 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.StrictMode
-import android.os.SystemClock
 import androidx.profileinstaller.ProfileInstaller
 import com.android.purebilibili.BuildConfig
 import coil.ImageLoader
@@ -80,9 +79,6 @@ class PureApplication : Application(), ImageLoaderFactory, ComponentCallbacks2 {
         PureApplicationRuntimeConfig.createTelemetryBackgroundStateListener()
 
     private val startupOrchestrator by lazy { AppStartupOrchestrator() }
-
-    internal lateinit var startupSessionCoordinator: StartupSessionCoordinator
-        private set
     
     //  Coil 图片加载器 - 优化内存和磁盘缓存
     override fun newImageLoader(): ImageLoader {
@@ -121,7 +117,6 @@ class PureApplication : Application(), ImageLoaderFactory, ComponentCallbacks2 {
     }
     
     override fun onCreate() {
-        val startupSessionStartedAtMs = SystemClock.elapsedRealtime()
         // StrictMode 必须装在任何业务代码之前，否则紧接着的 applyThemePreference()
         // 里那次同步偏好读取就漏检了——而那恰恰是最该被看见的一处。
         installStrictModeForDebugBuilds()
@@ -135,35 +130,20 @@ class PureApplication : Application(), ImageLoaderFactory, ComponentCallbacks2 {
         Logger.init(this)
         CrashReporter.installGlobalExceptionHandler()
 
-        startupSessionCoordinator = StartupSessionCoordinator(
-            sessionStartedAtMs = startupSessionStartedAtMs,
-            readMirror = {
-                SettingsManager.readLaunchToPortraitFeedOnStartupMirror(this@PureApplication)
-            },
-            readAuthoritative = {
-                SettingsManager.readLaunchToPortraitFeedOnStartup(this@PureApplication)
-            },
-            writeMirror = { enabled ->
-                SettingsManager.writeLaunchToPortraitFeedOnStartupMirror(
-                    this@PureApplication,
-                    enabled,
-                )
-            },
-        ).also { coordinator -> coordinator.start(AppScope.ioScope) }
+        // 启动即确保首页视觉默认值生效：底栏悬浮 + 液态玻璃 + 顶部模糊
+        // 冷启动路径不阻塞主线程，迁移改为后台执行。
+        if (PureApplicationRuntimeConfig.shouldBlockStartupForHomeVisualDefaultsMigration()) {
+            runBlocking(Dispatchers.IO) {
+                SettingsManager.ensureHomeVisualDefaults(this@PureApplication)
+            }
+        } else {
+            AppScope.ioScope.launch {
+                SettingsManager.ensureHomeVisualDefaults(this@PureApplication)
+            }
+        }
 
-        startupOrchestrator.start(
-            trigger = StartupTrigger.APP_CREATE,
-            scope = AppScope.ioScope,
-            taskRunner = ::runStartupTask,
-        )
-    }
-
-    internal fun onFirstInteractive() {
-        startupOrchestrator.start(
-            trigger = StartupTrigger.FIRST_INTERACTIVE,
-            scope = AppScope.ioScope,
-            taskRunner = ::runStartupTask,
-        )
+        startupOrchestrator.runImmediate(::runStartupTask)
+        startupOrchestrator.scheduleDeferred(::runStartupTask)
     }
 
     /**
@@ -212,7 +192,7 @@ class PureApplication : Application(), ImageLoaderFactory, ComponentCallbacks2 {
         }
     }
 
-    private suspend fun runStartupTask(task: AppStartupTask) {
+    private fun runStartupTask(task: AppStartupTask) {
         when (task.id) {
             "network_module_init" -> NetworkModule.init(this)
             "token_manager_init" -> TokenManager.init(this)
@@ -229,7 +209,9 @@ class PureApplication : Application(), ImageLoaderFactory, ComponentCallbacks2 {
     }
 
     private fun initPlaylistRestoreNow() {
-        com.android.purebilibili.feature.video.player.PlaylistManager.init(this@PureApplication)
+        AppScope.ioScope.launch {
+            com.android.purebilibili.feature.video.player.PlaylistManager.init(this@PureApplication)
+        }
     }
 
     private fun initTelemetryNow() {
@@ -238,7 +220,7 @@ class PureApplication : Application(), ImageLoaderFactory, ComponentCallbacks2 {
         attachTelemetryListener()
     }
 
-    private suspend fun initPluginStackNow() {
+    private fun initPluginStackNow() {
         PluginManager.initialize(this)
         PluginManager.register(SponsorBlockPlugin())
         PluginManager.register(AdFilterPlugin())
@@ -255,14 +237,17 @@ class PureApplication : Application(), ImageLoaderFactory, ComponentCallbacks2 {
         com.android.purebilibili.core.plugin.json.JsonPluginManager.initialize(this)
         Logger.d(PureApplicationRuntimeConfig.TAG, " JSON plugin system initialized")
 
-        com.android.purebilibili.feature.download.DownloadManager.configure(this, AppScope.ioScope)
+        com.android.purebilibili.feature.download.DownloadManager.init(this)
 
-        val sponsorBlockEnabled = com.android.purebilibili.core.store.SettingsManager
-            .getSponsorBlockEnabled(this@PureApplication)
-            .first()
-        PluginManager.setEnabled("sponsor_block", sponsorBlockEnabled)
-        Logger.d(PureApplicationRuntimeConfig.TAG, " SponsorBlock plugin synced: enabled=$sponsorBlockEnabled")
-        SettingsManager.forceDanmakuDefaults(this@PureApplication)
+        AppScope.ioScope.launch {
+            val sponsorBlockEnabled = com.android.purebilibili.core.store.SettingsManager
+                .getSponsorBlockEnabled(this@PureApplication)
+                .first()
+            PluginManager.setEnabled("sponsor_block", sponsorBlockEnabled)
+            Logger.d(PureApplicationRuntimeConfig.TAG, " SponsorBlock plugin synced: enabled=$sponsorBlockEnabled")
+
+            SettingsManager.forceDanmakuDefaults(this@PureApplication)
+        }
 
         syncAppIconState()
     }

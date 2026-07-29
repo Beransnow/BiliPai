@@ -130,7 +130,7 @@ fun LiveAreaScreen(
                 navigationIcon = {
                     AppIconButton(onClick = onBack) {
                         Icon(
-                            imageVector = rememberAppBackIcon(),
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "返回",
                         )
                     }
@@ -152,7 +152,7 @@ fun LiveAreaScreen(
         ) {
         when {
             isLoading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                AppLoadingIndicator()
+                AdaptiveLoadingIndicator()
             }
             error != null -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -403,7 +403,6 @@ private fun LiveFavoriteTagCard(
     onRemove: () -> Unit
 ) {
     val colorScheme = MaterialTheme.colorScheme
-    val favoriteIcon = rememberAppFavoriteIcon()
     Box {
         AppSurface(
             onClick = { if (isEditing) onRemove() else onClick() },
@@ -462,7 +461,7 @@ private fun LiveFavoriteTagCard(
                     modifier = Modifier.size(AppSpacingTokens.ExtraLarge),
                 ) {
                     Icon(
-                        imageVector = favoriteIcon,
+                        imageVector = Icons.Outlined.StarBorder,
                         contentDescription = "移除常用标签",
                         tint = colorScheme.onErrorContainer,
                         modifier = Modifier.padding(AppSpacingTokens.ExtraSmall)
@@ -513,8 +512,6 @@ private fun LiveAreaGridItem(
     onClick: () -> Unit
 ) {
     val colorScheme = MaterialTheme.colorScheme
-    val favoriteIcon = rememberAppFavoriteIcon()
-    val favoriteFilledIcon = rememberAppFavoriteFilledIcon()
     Box(
         modifier = Modifier
             .height(AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.DoubleExtraLarge)
@@ -547,7 +544,7 @@ private fun LiveAreaGridItem(
                     .size(AppSpacingTokens.Large)
             ) {
                 Icon(
-                    imageVector = if (isFavorite) favoriteFilledIcon else favoriteIcon,
+                    imageVector = if (isFavorite) Icons.Outlined.Star else Icons.Outlined.StarBorder,
                     contentDescription = if (isFavorite) "取消收藏" else "收藏标签",
                     tint = if (isFavorite) colorScheme.onSurfaceVariant else colorScheme.onSecondaryContainer,
                     modifier = Modifier.padding(AppSpacingTokens.Micro)
