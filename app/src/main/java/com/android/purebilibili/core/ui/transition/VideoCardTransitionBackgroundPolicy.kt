@@ -27,7 +27,7 @@ import kotlin.math.roundToInt
 
 // 景深层（与 Hero 卡片放大配合，progress 0→1 同源）：
 // 1) **页面层不缩放**：状态栏、顶底栏和屏幕边界保持原位
-// 2) sibling 视频元素缩小后撤；shared overlay 中的飞卡保持 1
+// 2) 页面几何保持原位；shared overlay 中的飞卡独自承担缩放
 // 3) blur：空间纵深（冻结层 + BlurEffect）。半径按 **dp** 定义、按密度换算
 // 4) scrim 压暗：聚焦/可读
 // - 冻结层：首帧 record 一次后只改 BlurEffect，禁止 live 重录

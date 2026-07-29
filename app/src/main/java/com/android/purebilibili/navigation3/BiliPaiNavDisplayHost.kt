@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -231,8 +232,17 @@ internal fun BiliPaiNavDisplayHost(
         when {
             openedVideoDetail -> {
                 videoCardClock.beginOpening(openingSourceRoute)
-                // fallback：shared 回灌接管前的保底；与 bounds enter 同 duration/easing
+                // 先给详情 AVS 一个 frame 建立 shared 回灌。已建立时不能再启动
+                // fallback Animatable，否则两条曲线在中段交接会让背景顿一下再追卡片。
                 launchVideoCardDepthAnimation {
+                    withFrameNanos { }
+                    if (
+                        videoCardClock.phase != VideoCardTransitionBackgroundPhase.OPENING ||
+                        videoCardClock.hasActiveSharedMorphProgress()
+                    ) {
+                        return@launchVideoCardDepthAnimation
+                    }
+                    // 没有 shared 对端时才使用保底路径；参数仍与 shared bounds 完全同源。
                     videoCardClock.snapFallback(0f)
                     videoCardClock.animateFallbackTo(
                         target = 1f,
@@ -265,23 +275,30 @@ internal fun BiliPaiNavDisplayHost(
                         cancelVideoCardDepthAnimation()
                         videoCardClock.snapClearAndIdle()
                     } else {
-                        val startDepth = videoCardClock.depthProgress()
                         videoCardClock.beginReturning(returningSourceRoute)
-                        val fullDurationMs = resolveVideoCardTransitionReturnFullDurationMillis(
-                            baseDurationMillis = timelineSpec.durationMillis,
-                        )
-                        val morphRemainingMs = resolveVideoCardSharedMorphRemainingDurationMs(
-                            seekFraction = 0f,
-                            fullDurationMs = fullDurationMs,
-                        )
-                        val clearDurationMs = resolveMorphAlignedFallbackDurationMs(
-                            timelineDurationMs = morphRemainingMs,
-                            startDepth = startDepth,
-                            targetDepth = 0f,
-                        )
                         launchVideoCardDepthAnimation {
+                            withFrameNanos { }
+                            if (
+                                videoCardClock.phase != VideoCardTransitionBackgroundPhase.RETURNING ||
+                                videoCardClock.hasActiveSharedMorphProgress()
+                            ) {
+                                return@launchVideoCardDepthAnimation
+                            }
+                            val startDepth = videoCardClock.depthProgress()
+                            val fullDurationMs = resolveVideoCardTransitionReturnFullDurationMillis(
+                                baseDurationMillis = timelineSpec.durationMillis,
+                            )
+                            val morphRemainingMs = resolveVideoCardSharedMorphRemainingDurationMs(
+                                seekFraction = 0f,
+                                fullDurationMs = fullDurationMs,
+                            )
+                            val clearDurationMs = resolveMorphAlignedFallbackDurationMs(
+                                timelineDurationMs = morphRemainingMs,
+                                startDepth = startDepth,
+                                targetDepth = 0f,
+                            )
                             videoCardClock.snapFallback(startDepth)
-                            // shared 回灌优先；fallback 与 morph 同 Linear 满长墙钟
+                            // 无 shared 对端时才使用 fallback；返回曲线固定 Linear。
                             videoCardClock.animateFallbackTo(
                                 target = 0f,
                                 durationMillis = clearDurationMs,
