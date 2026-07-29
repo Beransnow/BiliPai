@@ -54,7 +54,7 @@ import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowLeft
 import androidx.compose.material.icons.outlined.KeyboardDoubleArrowRight
 import androidx.compose.material.icons.outlined.PlaylistPlay
-import androidx.compose.material3.FloatingActionButton
+import com.android.purebilibili.core.ui.components.AppFloatingActionButton
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
@@ -1322,7 +1322,7 @@ private fun CinemaCommentsPane(
             }
             }
 
-        FloatingActionButton(
+        AppFloatingActionButton(
             onClick = commentActions.toggleUpOnly,
             modifier = Modifier
                 .align(Alignment.BottomEnd)

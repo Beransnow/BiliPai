@@ -39,7 +39,7 @@ import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SmallFloatingActionButton
+import com.android.purebilibili.core.ui.components.AppSmallFloatingActionButton
 import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
@@ -891,7 +891,7 @@ private fun VideoCommentBackToTopButton(
         enter = fadeIn(animationSpec = tween(180)) + scaleIn(initialScale = 0.92f),
         exit = fadeOut(animationSpec = tween(140)) + scaleOut(targetScale = 0.92f)
     ) {
-        SmallFloatingActionButton(
+        AppSmallFloatingActionButton(
             onClick = onClick,
             containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
             contentColor = MaterialTheme.colorScheme.primary

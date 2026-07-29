@@ -17,7 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.NotificationsNone
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.Badge
+import com.android.purebilibili.core.ui.components.AppBadge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppOutlinedButton
@@ -518,7 +518,7 @@ private fun LiveListHeader(
                     }
                 }
                 if (livingCount > 0) {
-                    Badge(
+                    AppBadge(
                         containerColor = palette.accentStrong,
                         contentColor = palette.onAccent,
                         modifier = Modifier.align(Alignment.TopEnd)

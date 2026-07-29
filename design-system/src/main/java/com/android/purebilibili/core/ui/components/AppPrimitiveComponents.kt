@@ -18,6 +18,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CardElevation
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgeDefaults
 import androidx.compose.material3.ChipColors
 import androidx.compose.material3.ChipElevation
 import androidx.compose.material3.CircularProgressIndicator
@@ -29,6 +31,9 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.FloatingActionButtonElevation
 import androidx.compose.material3.SelectableChipColors
 import androidx.compose.material3.SelectableChipElevation
 import androidx.compose.material3.IconButton
@@ -48,6 +53,7 @@ import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderColors
 import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
@@ -562,4 +568,59 @@ fun AppFilterChip(
     horizontalArrangement = horizontalArrangement,
     contentPadding = contentPadding,
     interactionSource = interactionSource,
+)
+
+@Composable
+fun AppBadge(
+    modifier: Modifier = Modifier,
+    containerColor: Color = BadgeDefaults.containerColor,
+    contentColor: Color = contentColorFor(containerColor),
+    content: @Composable (androidx.compose.foundation.layout.RowScope.() -> Unit)? = null,
+) = Badge(
+    modifier = modifier,
+    containerColor = containerColor,
+    contentColor = contentColor,
+    content = content,
+)
+
+@Composable
+fun AppFloatingActionButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    shape: Shape = FloatingActionButtonDefaults.shape,
+    containerColor: Color = FloatingActionButtonDefaults.containerColor,
+    contentColor: Color = contentColorFor(containerColor),
+    elevation: FloatingActionButtonElevation = FloatingActionButtonDefaults.elevation(),
+    interactionSource: MutableInteractionSource? = null,
+    content: @Composable () -> Unit,
+) = FloatingActionButton(
+    onClick = onClick,
+    modifier = modifier,
+    shape = shape,
+    containerColor = containerColor,
+    contentColor = contentColor,
+    elevation = elevation,
+    interactionSource = interactionSource,
+    content = content,
+)
+
+@Composable
+fun AppSmallFloatingActionButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    shape: Shape = FloatingActionButtonDefaults.smallShape,
+    containerColor: Color = FloatingActionButtonDefaults.containerColor,
+    contentColor: Color = contentColorFor(containerColor),
+    elevation: FloatingActionButtonElevation = FloatingActionButtonDefaults.elevation(),
+    interactionSource: MutableInteractionSource? = null,
+    content: @Composable () -> Unit,
+) = SmallFloatingActionButton(
+    onClick = onClick,
+    modifier = modifier,
+    shape = shape,
+    containerColor = containerColor,
+    contentColor = contentColor,
+    elevation = elevation,
+    interactionSource = interactionSource,
+    content = content,
 )

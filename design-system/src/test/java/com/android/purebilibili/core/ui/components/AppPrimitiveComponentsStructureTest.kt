@@ -47,6 +47,12 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(source.contains(") = AssistChip("))
         assertTrue(source.contains("fun AppFilterChip("))
         assertTrue(source.contains(") = FilterChip("))
+        assertTrue(source.contains("fun AppBadge("))
+        assertTrue(source.contains(") = Badge("))
+        assertTrue(source.contains("fun AppFloatingActionButton("))
+        assertTrue(source.contains(") = FloatingActionButton("))
+        assertTrue(source.contains("fun AppSmallFloatingActionButton("))
+        assertTrue(source.contains(") = SmallFloatingActionButton("))
     }
 
     private fun loadSource(): String {
