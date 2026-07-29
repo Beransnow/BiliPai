@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
+import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -180,7 +180,7 @@ fun AppScreenshotRegionOverlay(
                 Text("取消")
             }
             Spacer(modifier = Modifier.weight(0.08f))
-            Button(
+            AppButton(
                 onClick = {
                     cropRect?.let(onSaveRegion)
                 },

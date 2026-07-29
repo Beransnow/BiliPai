@@ -38,7 +38,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.BlurOn
 import androidx.compose.material.icons.outlined.Speed
-import androidx.compose.material3.Button
+import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -206,7 +206,7 @@ private fun OnboardingBottomControls(
         }
 
         val actionColors = resolveAdaptivePrimaryAccentColors(MaterialTheme.colorScheme)
-        Button(
+        AppButton(
             onClick = onActionClick,
             modifier = Modifier
                 .fillMaxWidth()

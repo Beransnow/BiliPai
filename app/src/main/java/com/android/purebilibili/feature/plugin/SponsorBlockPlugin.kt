@@ -19,7 +19,7 @@ import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import io.github.alexzhirkevich.cupertino.icons.filled.*
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -569,7 +569,7 @@ private fun SponsorBlockInsightPanel(
                 SponsorBlockCompactStats(summary = summary)
                 SponsorBlockPeriodStats(summary = summary)
                 SponsorBlockFavoriteSection(summary = summary)
-                Button(
+                AppButton(
                     onClick = onShareClick,
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -616,7 +616,7 @@ private fun SponsorBlockSummaryRail(
         }
         SponsorBlockPeriodStats(summary = summary)
         SponsorBlockFavoriteSection(summary = summary)
-        Button(
+        AppButton(
             onClick = onShareClick,
             modifier = Modifier.fillMaxWidth()
         ) {

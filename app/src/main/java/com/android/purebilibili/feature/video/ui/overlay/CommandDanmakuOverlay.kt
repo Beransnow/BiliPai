@@ -33,7 +33,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.ThumbUp
-import androidx.compose.material3.Button
+import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
@@ -231,7 +231,7 @@ private fun AttentionCommandCard(
                 Spacer(Modifier.height(6.dp))
         }
         val label = resolveAttentionCommandLabel(item.attentionType)
-        Button(
+        AppButton(
             onClick = {
                 val action = resolveAttentionCommandClickAction(
                     attentionType = item.attentionType,

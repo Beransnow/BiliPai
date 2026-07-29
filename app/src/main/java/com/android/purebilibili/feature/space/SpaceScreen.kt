@@ -46,7 +46,7 @@ import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.ViewAgenda
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -656,7 +656,7 @@ fun SpaceScreen(
                 }
             },
             confirmButton = {
-                Button(
+                AppButton(
                     onClick = { viewModel.saveFollowGroupSelection() },
                     enabled = !isFollowGroupsLoading && !isSavingFollowGroups
                 ) {
@@ -2162,7 +2162,7 @@ private fun SpaceHeader(
                                 modifier = Modifier.weight(1f),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Button(
+                                AppButton(
                                     onClick = onFollowClick,
                                     modifier = Modifier
                                         .widthIn(min = 112.dp, max = 136.dp)
@@ -4072,7 +4072,7 @@ private fun SpaceErrorSection(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.height(12.dp))
-        Button(onClick = onRetry) {
+        AppButton(onClick = onRetry) {
             Text("重试")
         }
     }
@@ -4094,7 +4094,7 @@ private fun SpaceErrorState(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.height(12.dp))
-            Button(onClick = onRetry) {
+            AppButton(onClick = onRetry) {
                 Text("重试")
             }
         }

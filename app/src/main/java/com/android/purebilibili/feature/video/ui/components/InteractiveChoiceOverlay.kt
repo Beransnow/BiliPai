@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
+import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -69,7 +69,7 @@ fun InteractiveChoiceOverlay(
                         3 -> TextAlign.Right
                         else -> TextAlign.Center
                     }
-                    Button(
+                    AppButton(
                         onClick = { onSelectChoice(choice.edgeId, choice.cid) },
                         modifier = Modifier
                             .align(Alignment.TopStart)
@@ -135,7 +135,7 @@ fun InteractiveChoiceOverlay(
 
                     state.choices.forEach { choice ->
                         val label = if (choice.isDefault) "${choice.text}（默认）" else choice.text
-                        Button(
+                        AppButton(
                             onClick = { onSelectChoice(choice.edgeId, choice.cid) },
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(

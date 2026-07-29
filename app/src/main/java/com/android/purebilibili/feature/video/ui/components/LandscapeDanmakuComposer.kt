@@ -31,7 +31,7 @@ import com.android.purebilibili.core.ui.ContainerLevel
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
+import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
@@ -360,7 +360,7 @@ fun LandscapeDanmakuComposer(
                         )
                     }
 
-                    Button(
+                    AppButton(
                         onClick = {
                             if (text.isNotBlank() && !isSending) {
                                 onSend(

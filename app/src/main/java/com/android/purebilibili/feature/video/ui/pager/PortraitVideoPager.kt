@@ -30,7 +30,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Button
+import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -2488,7 +2488,7 @@ private fun VideoPageItem(
             enter = fadeIn(),
             exit = fadeOut()
         ) {
-            Button(
+            AppButton(
                 onClick = {
                     resetViewportTransform()
                     onPortraitOverlayVisibleChange(true)

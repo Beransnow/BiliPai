@@ -35,7 +35,7 @@ import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Button
+import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.CircularProgressIndicator
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -669,7 +669,7 @@ private fun ListenVideoMessage(
         Text(title, style = MaterialTheme.typography.titleMedium)
         actionLabel?.let { label ->
             Spacer(modifier = Modifier.height(16.dp))
-            Button(onClick = onAction, modifier = Modifier.height(48.dp)) {
+            AppButton(onClick = onAction, modifier = Modifier.height(48.dp)) {
                 Text(label)
             }
         }

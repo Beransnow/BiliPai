@@ -25,7 +25,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.Button
+import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.Icon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
@@ -277,7 +277,7 @@ fun LiveSearchScreen(
                         }
                         if (liveHasMore || liveLoadingMore) {
                             item(span = { GridItemSpan(maxLineSpan) }) {
-                                Button(
+                                AppButton(
                                     enabled = !liveLoadingMore,
                                     modifier = Modifier.fillMaxWidth(),
                                     onClick = { scope.launch { loadMoreLive() } },
@@ -304,7 +304,7 @@ fun LiveSearchScreen(
                         }
                         item {
                             if (userHasMore || userLoadingMore) {
-                                Button(
+                                AppButton(
                                     enabled = !userLoadingMore,
                                     modifier = Modifier.fillMaxWidth(),
                                     onClick = { scope.launch { loadMoreUser() } },

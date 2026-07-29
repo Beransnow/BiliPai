@@ -26,7 +26,7 @@ import androidx.compose.material.icons.outlined.QrCode2
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
-import androidx.compose.material3.Button
+import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
@@ -341,7 +341,7 @@ private fun HighQualityAuthorizationCard(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSecondaryContainer
             )
-            Button(onClick = onAuthorize, modifier = Modifier.fillMaxWidth()) {
+            AppButton(onClick = onAuthorize, modifier = Modifier.fillMaxWidth()) {
                 Text("扫码授权高画质")
             }
             OutlinedButton(onClick = onContinue, modifier = Modifier.fillMaxWidth()) {
@@ -451,7 +451,7 @@ private fun PasswordLoginContent(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-        Button(
+        AppButton(
             onClick = { onSubmit(phone, password) },
             enabled = phone.isNotBlank() && password.isNotBlank() && !isLoading,
             modifier = Modifier.fillMaxWidth()
@@ -501,7 +501,7 @@ private fun SmsLoginContent(
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         if (codeSent || code.isNotEmpty()) {
-            Button(
+            AppButton(
                 onClick = { onSubmitCode(code.toIntOrNull() ?: 0) },
                 enabled = code.length == 6 && !isLoading,
                 modifier = Modifier.fillMaxWidth()
@@ -509,7 +509,7 @@ private fun SmsLoginContent(
                 Text("登录")
             }
         } else {
-            Button(
+            AppButton(
                 onClick = { onRequestCode(phone) },
                 enabled = phone.length >= 6 && !isLoading,
                 modifier = Modifier.fillMaxWidth()
@@ -543,7 +543,7 @@ private fun CookieImportContent(
             minLines = 5,
             modifier = Modifier.fillMaxWidth()
         )
-        Button(
+        AppButton(
             onClick = { onImport(cookieHeader) },
             enabled = cookieHeader.isNotBlank() && !isLoading,
             modifier = Modifier.fillMaxWidth()

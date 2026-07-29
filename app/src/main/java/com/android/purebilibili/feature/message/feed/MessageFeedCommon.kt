@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
+import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.Text
@@ -108,7 +108,7 @@ internal fun MessageFeedError(
         verticalArrangement = Arrangement.Center
     ) {
         Text(text = text, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Button(onClick = onRetry, modifier = Modifier.padding(top = 8.dp)) {
+        AppButton(onClick = onRetry, modifier = Modifier.padding(top = 8.dp)) {
             Text("重试")
         }
     }

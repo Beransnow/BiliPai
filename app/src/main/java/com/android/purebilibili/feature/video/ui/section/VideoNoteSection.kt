@@ -27,7 +27,7 @@ import androidx.compose.material.icons.outlined.FormatColorFill
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
+import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -220,7 +220,7 @@ private fun VideoNotePrimaryActionButton(
     enabled: Boolean,
     onClick: () -> Unit
 ) {
-    Button(
+    AppButton(
         onClick = onClick,
         enabled = enabled
     ) {
@@ -351,7 +351,7 @@ fun VideoNoteEditorSheet(
                     Text("取消")
                 }
                 Spacer(modifier = Modifier.width(8.dp))
-                Button(
+                AppButton(
                     onClick = {
                         val nextMarkdown = richTextState.toMarkdown()
                         val document = markdownToDocument(
