@@ -210,14 +210,16 @@ android {
     }
 }
 
-// AGP 9 removed applicationVariants / outputFileName; rename packaged APKs after package* tasks.
-tasks.configureEach {
-    if (!name.startsWith("package") || name.contains("UnitTest") || name.contains("AndroidTest")) {
-        return@configureEach
-    }
+// AGP 9 removed applicationVariants / outputFileName.
+// Rename only PackageApplication outputs; keep values configuration-cache friendly
+// (no Project/android extension captured inside task actions).
+val biliApkVersionName: String = android.defaultConfig.versionName ?: "0"
+val biliApkOutputsDir = layout.buildDirectory.dir("outputs/apk")
+tasks.withType(com.android.build.gradle.tasks.PackageApplication::class.java).configureEach {
+    val versionName = biliApkVersionName
+    val apkOutputs = biliApkOutputsDir
     doLast {
-        val versionName = android.defaultConfig.versionName ?: "0"
-        val outputsDir = layout.buildDirectory.dir("outputs/apk").get().asFile
+        val outputsDir = apkOutputs.get().asFile
         if (!outputsDir.exists()) return@doLast
         outputsDir.walkTopDown()
             .filter { it.isFile && it.extension == "apk" && !it.name.startsWith("BiliPai-") }
