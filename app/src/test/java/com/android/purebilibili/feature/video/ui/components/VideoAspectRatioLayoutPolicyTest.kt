@@ -33,6 +33,18 @@ class VideoAspectRatioLayoutPolicyTest {
     }
 
     @Test
+    fun `fixed 16 to 9 ratio should letterbox in 16 to 10 tablet fullscreen`() {
+        val layout = resolveVideoViewportLayout(
+            containerWidth = 2560,
+            containerHeight = 1600,
+            aspectRatio = VideoAspectRatio.RATIO_16_9
+        )
+
+        assertEquals(2560, layout.width)
+        assertEquals(1440, layout.height)
+    }
+
+    @Test
     fun `fit mode should keep fullscreen viewport`() {
         val layout = resolveVideoViewportLayout(
             containerWidth = 2400,

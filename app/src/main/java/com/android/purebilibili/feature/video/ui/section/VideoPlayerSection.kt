@@ -2748,6 +2748,19 @@ fun VideoPlayerSection(
                     }
                 }
 
+                // FullscreenMode.NONE keeps the activity orientation, so the PlayerView can move
+                // from the inline viewport to a differently shaped fullscreen viewport while its
+                // resize mode remains FIT. Media3 only requests a layout when resizeMode changes;
+                // force one after the Compose viewport changes so it does not retain the old
+                // measure result (cropped/stretched until the user changes aspect ratio).
+                LaunchedEffect(playerViewRef, viewportLayout, viewportAspectRatio) {
+                    playerViewRef?.let { playerView ->
+                        playerView.post {
+                            playerView.requestLayout()
+                        }
+                    }
+                }
+
                 AndroidView(
                     factory = { ctx ->
                         val useTextureSurface = shouldUseTextureSurfaceForFlip(
