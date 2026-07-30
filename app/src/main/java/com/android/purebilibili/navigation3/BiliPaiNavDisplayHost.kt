@@ -579,6 +579,8 @@ internal fun BiliPaiNavDisplayHost(
         quickReturnFromDetailProvider,
         preferWholeCardReturnProvider,
         morphProgressReporter,
+        videoCardExposureProvider,
+        sourceMetadata,
     ) {
         { key ->
             val entryRoute = key.toLegacyRoute()
