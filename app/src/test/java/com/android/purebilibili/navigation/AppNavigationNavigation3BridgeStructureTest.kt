@@ -463,7 +463,9 @@ class AppNavigationNavigation3BridgeStructureTest {
             .substringAfter("if (bottomBarCanMount)")
             .substringBefore("MainHostTabBackHandler(")
 
-        assertTrue(mainHostBranch.contains("VideoCardTransitionBackgroundRouteContent(bottomPagerNavKeyForItem(currentBottomNavItem))"))
+        assertFalse(mainHostBranch.contains("VideoCardTransitionBackgroundRouteContent(bottomPagerNavKeyForItem(currentBottomNavItem))"))
+        assertTrue(source.contains("val activeMainHostRoute = currentBottomNavItem.route"))
+        assertFalse(source.contains("activeMainHostRoute = activeBottomTabRoute"))
         assertTrue(source.contains("val isVideoDetailDestination = isVideoDetailRoute(currentRoute)"))
         assertTrue(source.contains("val bottomBarMountRoute = if (isVideoDetailDestination)"))
         assertTrue(source.contains("activeRoute = bottomBarMountRoute"))

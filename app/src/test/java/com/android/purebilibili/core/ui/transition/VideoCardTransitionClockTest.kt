@@ -62,6 +62,77 @@ class VideoCardTransitionClockTest {
     }
 
     @Test
+    fun predictiveGestureDepth_mapsBackProgressToBlurClearCurve() {
+        assertEquals(
+            1f,
+            resolveVideoCardPredictiveGestureDepthProgress(
+                phase = VideoCardTransitionBackgroundPhase.HELD,
+                backProgress = 0f,
+                gestureStartDepth = 1f,
+            ),
+            0.0001f,
+        )
+        assertEquals(
+            0.5f,
+            resolveVideoCardPredictiveGestureDepthProgress(
+                phase = VideoCardTransitionBackgroundPhase.HELD,
+                backProgress = 0.5f,
+                gestureStartDepth = 1f,
+            ),
+            0.0001f,
+        )
+        assertEquals(
+            0f,
+            resolveVideoCardPredictiveGestureDepthProgress(
+                phase = VideoCardTransitionBackgroundPhase.HELD,
+                backProgress = 1f,
+                gestureStartDepth = 1f,
+            ),
+            0.0001f,
+        )
+        // 开场中途手势：从当前开场 depth 线性消到 0
+        assertEquals(
+            0.3f,
+            resolveVideoCardPredictiveGestureDepthProgress(
+                phase = VideoCardTransitionBackgroundPhase.OPENING,
+                backProgress = 0.5f,
+                gestureStartDepth = 0.6f,
+            ),
+            0.0001f,
+        )
+    }
+
+    @Test
+    fun heldRestoreUsesFallbackForClearToBlur() {
+        assertEquals(
+            0.35f,
+            resolveVideoCardClockDepthProgress(
+                gestureBackProgress = null,
+                gestureStartDepth = 1f,
+                phase = VideoCardTransitionBackgroundPhase.HELD,
+                sharedMorphActive = false,
+                sharedMorphFraction = null,
+                fallbackProgress = 0.35f,
+                gestureRestoreInProgress = true,
+            ),
+            0.0001f,
+        )
+        assertEquals(
+            1f,
+            resolveVideoCardClockDepthProgress(
+                gestureBackProgress = null,
+                gestureStartDepth = 1f,
+                phase = VideoCardTransitionBackgroundPhase.HELD,
+                sharedMorphActive = false,
+                sharedMorphFraction = null,
+                fallbackProgress = 0.35f,
+                gestureRestoreInProgress = false,
+            ),
+            0.0001f,
+        )
+    }
+
+    @Test
     fun preferSharedOnlyWhenActiveAndHasFraction() {
         assertTrue(
             shouldPreferSharedMorphProgress(

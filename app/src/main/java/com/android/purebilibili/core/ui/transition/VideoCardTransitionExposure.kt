@@ -54,6 +54,9 @@ internal fun resolveVideoCardTransitionRenderDecision(
         )
         VideoCardTransitionExposure.SettledHidden -> VideoCardTransitionRenderDecision(
             retainSourceSnapshot = true,
+            // Keep false so we do not full-recompose the feed under a covering detail page.
+            // Draw path still paints the frozen layer (or live fallback) when this route is
+            // the sole composed scene — see [shouldPaintRetainedSourceWithoutTransitionBackground].
             drawSourceNormally = false,
             drawTransitionBackground = false,
             updateBlurEffect = false,
@@ -76,4 +79,17 @@ internal fun resolveVideoCardTransitionRenderDecision(
             drawNavBackdrop = true,
         )
     }
+}
+
+/**
+ * Nav3 1.2 + [EnterTransition.None]/[ExitTransition.None] can settle the source as the only
+ * composed scene while the card clock is still [VideoCardTransitionBackgroundPhase.HELD]
+ * (SettledHidden). Drawing nothing then yields a pure black frame under the shared-element
+ * overlay. Paint retained snapshot / live content instead of a black hole.
+ */
+internal fun shouldPaintRetainedSourceWithoutTransitionBackground(
+    decision: VideoCardTransitionRenderDecision,
+): Boolean {
+    if (decision.drawTransitionBackground || decision.drawSourceNormally) return false
+    return decision.retainSourceSnapshot
 }

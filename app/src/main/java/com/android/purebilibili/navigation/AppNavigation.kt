@@ -1051,13 +1051,17 @@ fun AppNavigation(
             currentKey = currentNavigation3Key,
             currentBottomItem = currentBottomNavItem
         )
+        // `activeBottomTabRoute` follows the top-most destination (for example `video/...`)
+        // and is intentionally used by bottom-bar visibility. Shared-card return matching needs
+        // the page retained inside MainHost instead, even while VideoDetail is on top.
+        val activeMainHostRoute = currentBottomNavItem.route
         val backGestureDecision = remember(
             cardTransitionEnabled,
             systemBackAction,
             currentNavigation3Key,
             previousNavigation3Key,
             navigation3SourceMetadata,
-            activeBottomTabRoute,
+            activeMainHostRoute,
         ) {
             resolveBiliPaiBackGestureDecision(
                 cardTransitionEnabled = sharedVideoCardTransitionEnabled,
@@ -1065,7 +1069,7 @@ fun AppNavigation(
                 currentKey = currentNavigation3Key,
                 previousKey = previousNavigation3Key,
                 sourceMetadata = navigation3SourceMetadata,
-                activeMainHostRoute = activeBottomTabRoute,
+                activeMainHostRoute = activeMainHostRoute,
             )
         }
         val predictiveBackEnabled = appNavigationSettings.predictiveBackEnabled
@@ -1615,7 +1619,7 @@ fun AppNavigation(
                         shouldApplyVideoCardTransitionBackgroundToRoute(
                             entryRoute = entryRoute,
                             sourceRoute = backgroundState.sourceRouteProvider(),
-                            activeMainHostRoute = activeBottomTabRoute
+                            activeMainHostRoute = activeMainHostRoute
                         )
                     val shouldApplyPredictiveBlur = shouldApplyPredictiveBackBlurToRoute(
                         entryKey = key,
@@ -1686,46 +1690,49 @@ fun AppNavigation(
                             CompositionLocalProvider(
                                 LocalBottomBarVisible provides resolveMainHostBottomBarVisible()
                             ) {
-                                VideoCardTransitionBackgroundRouteContent(bottomPagerNavKeyForItem(currentBottomNavItem)) {
-                                    Box(modifier = Modifier.fillMaxSize()) {
-                                        HorizontalPager(
-                                            modifier = Modifier.fillMaxSize(),
-                                            state = bottomPagerState,
-                                            beyondViewportPageCount = resolveBottomPagerBeyondViewportPageCount(
-                                                pageCount = visibleBottomBarItems.size,
+                                // MainHost 已由 NavDisplay entry 外层的
+                                // VideoCardTransitionBackgroundRouteContent 持有唯一冻结层。
+                                // 此处不能再给 Pager 页挂同一个 snapshotHandle：嵌套
+                                // GraphicsLayer.record 会递归录制自身，返回时只剩 shared 卡片、
+                                // 来源页变黑。页面路由仍通过 Local source route 提供给卡片匹配。
+                                Box(modifier = Modifier.fillMaxSize()) {
+                                    HorizontalPager(
+                                        modifier = Modifier.fillMaxSize(),
+                                        state = bottomPagerState,
+                                        beyondViewportPageCount = resolveBottomPagerBeyondViewportPageCount(
+                                            pageCount = visibleBottomBarItems.size,
+                                            contentReady = bottomPagerContentReady
+                                        ).coerceAtMost(BOTTOM_PAGER_MAX_PRELOAD_DISTANCE),
+                                        userScrollEnabled = shouldEnableBottomPagerUserScroll()
+                                    ) { page ->
+                                        val slotItem = visibleBottomBarItems.getOrNull(page) ?: BottomNavItem.HOME
+                                        if (
+                                            shouldComposeBottomPagerPage(
+                                                item = slotItem,
+                                                page = page,
+                                                currentPage = bottomPagerState.currentPage,
+                                                selectedPage = mainBottomPagerState.selectedPage,
+                                                isNavigating = mainBottomPagerState.isNavigating,
+                                                navigationStartPage = mainBottomPagerState.navigationStartPage,
                                                 contentReady = bottomPagerContentReady
-                                            ).coerceAtMost(BOTTOM_PAGER_MAX_PRELOAD_DISTANCE),
-                                            userScrollEnabled = shouldEnableBottomPagerUserScroll()
-                                        ) { page ->
-                                            val slotItem = visibleBottomBarItems.getOrNull(page) ?: BottomNavItem.HOME
-                                            if (
-                                                shouldComposeBottomPagerPage(
-                                                    item = slotItem,
-                                                    page = page,
-                                                    currentPage = bottomPagerState.currentPage,
-                                                    selectedPage = mainBottomPagerState.selectedPage,
-                                                    isNavigating = mainBottomPagerState.isNavigating,
-                                                    navigationStartPage = mainBottomPagerState.navigationStartPage,
-                                                    contentReady = bottomPagerContentReady
-                                                )
+                                            )
+                                        ) {
+                                            val pageKey = bottomPagerNavKeyForItem(slotItem)
+                                            bottomPagerSaveableStateHolder.SaveableStateProvider(
+                                                resolveBottomPagerSaveableStateKey(slotItem)
                                             ) {
-                                                val pageKey = bottomPagerNavKeyForItem(slotItem)
-                                                bottomPagerSaveableStateHolder.SaveableStateProvider(
-                                                    resolveBottomPagerSaveableStateKey(slotItem)
+                                                CompositionLocalProvider(
+                                                    LocalVideoCardSharedElementSourceRoute provides pageKey.toLegacyRoute()
                                                 ) {
-                                                    CompositionLocalProvider(
-                                                        LocalVideoCardSharedElementSourceRoute provides pageKey.toLegacyRoute()
-                                                    ) {
-                                                        RenderNavigationContent(
-                                                            key = pageKey,
-                                                            isBottomPagerPageActive = page == bottomPagerState.settledPage,
-                                                            isBottomPagerHosted = true,
-                                                        )
-                                                    }
+                                                    RenderNavigationContent(
+                                                        key = pageKey,
+                                                        isBottomPagerPageActive = page == bottomPagerState.settledPage,
+                                                        isBottomPagerHosted = true,
+                                                    )
                                                 }
-                                            } else {
-                                                Box(modifier = Modifier.fillMaxSize())
                                             }
+                                        } else {
+                                            Box(modifier = Modifier.fillMaxSize())
                                         }
                                     }
                                 }
@@ -3119,7 +3126,7 @@ fun AppNavigation(
                     modifier = Modifier.fillMaxSize(),
                     sharedTransitionScope = LocalSharedTransitionScope.current,
                     visibleBottomBarRoutes = visibleBottomBarRoutes,
-                    activeMainHostRoute = activeBottomTabRoute,
+                    activeMainHostRoute = activeMainHostRoute,
                     isLightBackground = isLightBackground,
                 ) { key ->
                     navigation3SaveableStateHolder.SaveableStateProvider(

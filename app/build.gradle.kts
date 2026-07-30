@@ -469,8 +469,9 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
     // JUnit 4 兼容层 (允许 JUnit 5 运行 JUnit 4 测试)
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.10.2")
-    // Kotlin Test (提供 assertEquals, assertTrue 等断言)
-    testImplementation("org.jetbrains.kotlin:kotlin-test:1.9.22")
+    // AGP 9 使用内建 Kotlin 2.4；JUnit Platform 下必须使用同版本的 JUnit 5
+    // 适配层，否则 kotlin.test.Test 不会落到 JVM 测试注解。
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.4.0")
     // MockK for Kotlin mocking
     testImplementation("io.mockk:mockk:1.13.9")
     // Coroutines testing

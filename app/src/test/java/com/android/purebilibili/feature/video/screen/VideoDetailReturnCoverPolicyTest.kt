@@ -1,5 +1,6 @@
 package com.android.purebilibili.feature.video.screen
 
+import com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundPhase
 import com.android.purebilibili.core.ui.transition.VideoCardTransitionVisualTimeline
 import com.android.purebilibili.core.ui.transition.VideoSharedTransitionPlaybackIntent
 import org.junit.Assert.assertEquals
@@ -9,6 +10,34 @@ import org.junit.Test
 import java.io.File
 
 class VideoDetailReturnCoverPolicyTest {
+
+    @Test
+    fun exitTransitionInProgressFallsBackToCardClockReturning() {
+        assertTrue(
+            shouldTreatVideoDetailExitTransitionInProgress(
+                animatedVisibilityTargetIsPostExit = true,
+                videoCardBackgroundPhase = VideoCardTransitionBackgroundPhase.HELD,
+            )
+        )
+        assertTrue(
+            shouldTreatVideoDetailExitTransitionInProgress(
+                animatedVisibilityTargetIsPostExit = false,
+                videoCardBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
+            )
+        )
+        assertFalse(
+            shouldTreatVideoDetailExitTransitionInProgress(
+                animatedVisibilityTargetIsPostExit = false,
+                videoCardBackgroundPhase = VideoCardTransitionBackgroundPhase.HELD,
+            )
+        )
+        assertFalse(
+            shouldTreatVideoDetailExitTransitionInProgress(
+                animatedVisibilityTargetIsPostExit = false,
+                videoCardBackgroundPhase = null,
+            )
+        )
+    }
 
     @Test
     fun `immediate video back target keeps secondary content visible`() {

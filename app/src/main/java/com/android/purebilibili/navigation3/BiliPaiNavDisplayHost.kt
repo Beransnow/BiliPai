@@ -65,6 +65,7 @@ import com.android.purebilibili.core.ui.transition.VideoCardTransitionDiagnostic
 import com.android.purebilibili.core.ui.transition.resolveMorphAlignedFallbackDurationMs
 import com.android.purebilibili.core.ui.transition.resolvePredictiveBackCommitBlurDurationMs
 import com.android.purebilibili.core.ui.transition.resolvePredictiveBackGestureBlurProgress
+import com.android.purebilibili.core.ui.transition.resolveVideoCardPredictiveGestureDepthProgress
 import com.android.purebilibili.core.ui.transition.resolveVideoCardReturnClearStartDepth
 import com.android.purebilibili.core.ui.transition.resolveVideoCardTimelineSpec
 import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionExposure
@@ -190,8 +191,31 @@ internal fun BiliPaiNavDisplayHost(
             )
         }
     }
-    val videoCardBackgroundProgressProvider = remember(videoCardClock) {
-        { videoCardClock.depthProgress() }
+    // 景深读口：预测手势帧优先读 NavigationEvent 的 live progress，保证跟手糊↔清；
+    // 不依赖 SideEffect→beginGesture 的写入时序（否则拖动时可能整段 depth 停在 HELD=1）。
+    val videoCardBackgroundProgressProvider = remember(
+        videoCardClock,
+        videoCardDepthEffectEnabled,
+    ) {
+        {
+            val liveBackProgress =
+                (navigationEventState?.transitionState as? NavigationEventTransitionState.InProgress)
+                    ?.latestEvent
+                    ?.progress
+            if (
+                videoCardDepthEffectEnabled &&
+                liveBackProgress != null &&
+                isVideoCardTransitionBackgroundGesturePhase(videoCardClock.phase)
+            ) {
+                resolveVideoCardPredictiveGestureDepthProgress(
+                    phase = videoCardClock.phase,
+                    backProgress = liveBackProgress,
+                    gestureStartDepth = videoCardClock.gestureStartDepth,
+                )
+            } else {
+                videoCardClock.depthProgress()
+            }
+        }
     }
     val videoCardTransitionJankState = if (!videoCardDepthEffectEnabled) {
         null
@@ -715,7 +739,8 @@ internal fun BiliPaiNavDisplayHost(
         }
     }
 
-    // 预测手势：最高优先级写入 clock，与 shared seek 同一 depth 读口。
+    // 预测手势：写入 clock（cancel/restore 与 chrome 依赖 gesture 状态）；
+    // 景深绘制另见 progressProvider 对 live progress 的直读，避免仅信 SideEffect 时序。
     SideEffect {
         val gestureProgress = nativeVideoBackProgress
         val gestureActive = gestureReturningVideoCard && gestureProgress != null

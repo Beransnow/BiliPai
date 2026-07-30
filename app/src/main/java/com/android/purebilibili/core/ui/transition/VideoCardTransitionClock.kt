@@ -78,6 +78,7 @@ internal class VideoCardTransitionClock {
             sharedMorphActive = sharedMorphActive,
             sharedMorphFraction = sharedMorphFraction,
             fallbackProgress = fallback.value,
+            gestureRestoreInProgress = gestureRestoreInProgress,
         )
     }
 
@@ -253,6 +254,9 @@ internal fun shouldPreferSharedMorphProgress(
  * [VideoCardTransitionBackgroundPhase.HELD] 合同为满糊（1）：shared-only 进场结束后
  * fallback 可能仍停在 0，若直接读 fallback 会在返回首帧瞬间变清晰。
  *
+ * 预测手势取消回弹（[gestureRestoreInProgress]）时 HELD 必须读 fallback，
+ * 才能播清晰→满糊；否则恒 1 会看起来「取消也没有模糊过程」。
+ *
  * [VideoCardTransitionBackgroundPhase.RETURNING]：shared 与 Host fallback **取较大值**。
  * Nav3 Exit.None 下 AVS morph 常瞬间掉到 0，若只信 shared 会直接清晰；Host 的
  * fallback 1→0 才是返回景深连续曲线的保底。
@@ -264,6 +268,7 @@ internal fun resolveVideoCardClockDepthProgress(
     sharedMorphActive: Boolean,
     sharedMorphFraction: Float?,
     fallbackProgress: Float,
+    gestureRestoreInProgress: Boolean = false,
 ): Float {
     if (gestureBackProgress != null) {
         return resolveVideoCardTransitionBackgroundGestureBlurProgress(
@@ -290,9 +295,26 @@ internal fun resolveVideoCardClockDepthProgress(
         return shared
     }
     if (phase == VideoCardTransitionBackgroundPhase.HELD) {
+        if (gestureRestoreInProgress) return fallback
         return 1f
     }
     return fallback
+}
+
+/**
+ * 预测手势进行中：用系统 back progress 直接映射景深（不依赖 SideEffect 写入时钟的时序）。
+ * 手势起点满糊(1)→拖到底清晰(0)；取消回弹走 Host fallback。
+ */
+internal fun resolveVideoCardPredictiveGestureDepthProgress(
+    phase: VideoCardTransitionBackgroundPhase,
+    backProgress: Float,
+    gestureStartDepth: Float,
+): Float {
+    return resolveVideoCardTransitionBackgroundGestureBlurProgress(
+        phase = phase,
+        currentBlurProgress = gestureStartDepth,
+        backProgress = backProgress,
+    )
 }
 
 /**

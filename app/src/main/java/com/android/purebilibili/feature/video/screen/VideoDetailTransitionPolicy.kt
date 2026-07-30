@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.video.screen
 
+import com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundPhase
+
 import androidx.compose.animation.core.Easing
 import com.android.purebilibili.core.ui.transition.VIDEO_CARD_RETURN_LIVE_CONTENT_YIELD_START
 import com.android.purebilibili.core.ui.transition.VideoCardReturnCoverOwnership
@@ -260,6 +262,21 @@ internal fun shouldTreatVideoDetailCardExitAsReturning(
     return isExitTransitionInProgress &&
         sharedBoundsActive &&
         !keepLoadedContentForBackPreview
+}
+
+/**
+ * Whether the detail page should treat the current frame as an exit/return morph.
+ *
+ * Primary signal: AnimatedVisibility [EnterExitState.PostExit].
+ * Fallback for Navigation3 1.2 + [ExitTransition.None]: AVS may settle without a durable
+ * PostExit observation, while [VideoCardTransitionBackgroundPhase.RETURNING] is still true.
+ */
+internal fun shouldTreatVideoDetailExitTransitionInProgress(
+    animatedVisibilityTargetIsPostExit: Boolean,
+    videoCardBackgroundPhase: VideoCardTransitionBackgroundPhase?,
+): Boolean {
+    if (animatedVisibilityTargetIsPostExit) return true
+    return videoCardBackgroundPhase == VideoCardTransitionBackgroundPhase.RETURNING
 }
 
 /**

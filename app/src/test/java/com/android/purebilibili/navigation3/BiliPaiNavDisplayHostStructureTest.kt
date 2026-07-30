@@ -145,6 +145,20 @@ class BiliPaiNavDisplayHostStructureTest {
     }
 
     @Test
+    fun navDisplayHostReadsLivePredictiveProgressForVideoCardDepth() {
+        val source = navDisplayHostSource()
+        val progressProviderBlock = source
+            .substringAfter("val videoCardBackgroundProgressProvider = remember(")
+            .substringBefore("val videoCardTransitionJankState")
+
+        assertTrue(progressProviderBlock.contains("resolveVideoCardPredictiveGestureDepthProgress("))
+        assertTrue(progressProviderBlock.contains("NavigationEventTransitionState.InProgress"))
+        assertTrue(progressProviderBlock.contains("isVideoCardTransitionBackgroundGesturePhase"))
+        assertTrue(progressProviderBlock.contains("latestEvent"))
+        assertTrue(progressProviderBlock.contains("videoCardClock.depthProgress()"))
+    }
+
+    @Test
     fun navDisplayHostIntegratesPredictiveBackGestureBlurPipeline() {
         val source = navDisplayHostSource()
 
