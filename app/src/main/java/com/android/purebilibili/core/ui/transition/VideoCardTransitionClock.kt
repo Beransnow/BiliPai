@@ -101,14 +101,10 @@ internal class VideoCardTransitionClock {
         ) {
             phase = VideoCardTransitionBackgroundPhase.HELD
         }
-        // 返回 shared 跑完：Idle（列表落位）
-        if (!active &&
-            phase == VideoCardTransitionBackgroundPhase.RETURNING &&
-            morphFraction <= 0.001f
-        ) {
-            phase = VideoCardTransitionBackgroundPhase.IDLE
-            sourceRoute = null
-        }
+        // 返回：shared 结束（含详情 dispose / Exit.None 瞬间 PostExit）**不得**立刻 IDLE。
+        // Nav3 NO_OP_SHARED_ELEMENT 常让 shared 先于景深消糊结束；若此处 IDLE，
+        // 源页 effect 与 sourceRoute 被摘掉，背景看不到模糊→清晰。由 Host fallback
+        // animateFallbackTo(0) 结束后 markIdle。
     }
 
     fun clearSharedMorphProgress() {
@@ -256,6 +252,10 @@ internal fun shouldPreferSharedMorphProgress(
  *
  * [VideoCardTransitionBackgroundPhase.HELD] 合同为满糊（1）：shared-only 进场结束后
  * fallback 可能仍停在 0，若直接读 fallback 会在返回首帧瞬间变清晰。
+ *
+ * [VideoCardTransitionBackgroundPhase.RETURNING]：shared 与 Host fallback **取较大值**。
+ * Nav3 Exit.None 下 AVS morph 常瞬间掉到 0，若只信 shared 会直接清晰；Host 的
+ * fallback 1→0 才是返回景深连续曲线的保底。
  */
 internal fun resolveVideoCardClockDepthProgress(
     gestureBackProgress: Float?,
@@ -276,18 +276,23 @@ internal fun resolveVideoCardClockDepthProgress(
             backProgress = gestureBackProgress,
         )
     }
+    val fallback = fallbackProgress.coerceIn(0f, 1f)
     if (shouldPreferSharedMorphProgress(
             sharedMorphActive = sharedMorphActive,
             hasSharedFraction = sharedMorphFraction != null,
             gestureActive = false,
         )
     ) {
-        return sharedMorphFraction!!.coerceIn(0f, 1f)
+        val shared = sharedMorphFraction!!.coerceIn(0f, 1f)
+        if (phase == VideoCardTransitionBackgroundPhase.RETURNING) {
+            return maxOf(shared, fallback)
+        }
+        return shared
     }
     if (phase == VideoCardTransitionBackgroundPhase.HELD) {
         return 1f
     }
-    return fallbackProgress.coerceIn(0f, 1f)
+    return fallback
 }
 
 /**

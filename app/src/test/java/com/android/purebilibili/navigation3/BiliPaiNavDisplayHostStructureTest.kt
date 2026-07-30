@@ -120,14 +120,24 @@ class BiliPaiNavDisplayHostStructureTest {
             .substringAfter("returnedFromVideoDetail -> {")
             .substringBefore("!isCardMorphDestinationNavKey(currentTop)")
 
-        // 单时钟：open/return 走 clock.begin* + fallback，shared morph 回灌优先。
+        // 单时钟：open/return 走 clock.begin* + fallback；返回不因 shared 跳过消糊。
         assertTrue(openingBranch.contains("beginOpening("))
         assertTrue(openingBranch.contains("animateFallbackTo("))
         assertTrue(openingBranch.contains("markHeld()"))
+        assertTrue(openingBranch.contains("hasActiveSharedMorphProgress()"))
         assertTrue(returnBranch.contains("beginReturning("))
         assertTrue(returnBranch.contains("resolveMorphAlignedFallbackDurationMs"))
         assertTrue(returnBranch.contains("timelineSpec.returnEasing"))
         assertTrue(returnBranch.contains("parentSourceRoute"))
+        assertTrue(returnBranch.contains("snapFallback(startDepth)"))
+        assertTrue(returnBranch.contains("animateFallbackTo("))
+        // 返回路径不得再「有 shared 就跳过 fallback」（会丢掉模糊→清晰）。
+        assertFalse(
+            returnBranch.contains(
+                "videoCardClock.phase != VideoCardTransitionBackgroundPhase.RETURNING ||\n" +
+                    "                                videoCardClock.hasActiveSharedMorphProgress()",
+            ),
+        )
         assertTrue(source.contains("safeBackStack.size > previousStack.size"))
         assertTrue(source.contains("safeBackStack.size < previousStack.size"))
         assertTrue(source.contains("isCardMorphDestinationNavKey("))

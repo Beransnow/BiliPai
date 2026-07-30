@@ -21,6 +21,7 @@ class VideoCardTransitionClockTest {
             ),
             0.001f,
         )
+        // RETURNING：shared 与 fallback 取较大值（shared 领先时跟 shared）
         assertEquals(
             0.75f,
             resolveVideoCardClockDepthProgress(
@@ -30,6 +31,19 @@ class VideoCardTransitionClockTest {
                 sharedMorphActive = true,
                 sharedMorphFraction = 0.75f,
                 fallbackProgress = 0.1f,
+            ),
+            0.001f,
+        )
+        // RETURNING：shared 因 Exit.None 瞬间掉到 0 时，保留 fallback 消糊曲线
+        assertEquals(
+            0.8f,
+            resolveVideoCardClockDepthProgress(
+                gestureBackProgress = null,
+                gestureStartDepth = 1f,
+                phase = VideoCardTransitionBackgroundPhase.RETURNING,
+                sharedMorphActive = true,
+                sharedMorphFraction = 0f,
+                fallbackProgress = 0.8f,
             ),
             0.001f,
         )
@@ -133,6 +147,19 @@ class VideoCardTransitionClockTest {
             ),
             0.0001f,
         )
+    }
+
+    @Test
+    fun returnSharedMorphEndDoesNotForceIdle() {
+        val clock = VideoCardTransitionClock()
+        clock.beginOpening("home")
+        clock.reportSharedMorphProgress(morphFraction = 1f, active = false)
+        assertEquals(VideoCardTransitionBackgroundPhase.HELD, clock.phase)
+        clock.beginReturning("home")
+        // 详情 dispose / Exit.None：shared 结束且 fraction≈0 时仍保持 RETURNING，
+        // 留给 Host fallback 跑完模糊→清晰后再 markIdle。
+        clock.reportSharedMorphProgress(morphFraction = 0f, active = false)
+        assertEquals(VideoCardTransitionBackgroundPhase.RETURNING, clock.phase)
     }
 
     @Test

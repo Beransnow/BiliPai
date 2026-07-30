@@ -291,10 +291,11 @@ internal fun BiliPaiNavDisplayHost(
                         )
                         videoCardClock.beginReturning(returningSourceRoute)
                         launchVideoCardDepthAnimation {
-                            withFrameNanos { }
+                            // 返回必须始终跑 fallback 消糊：shared 在 Exit.None 下常瞬间
+                            // fraction=0 或 dispose，若仍「有 shared 就跳过」会完全没有模糊过程。
+                            // depth 读口对 RETURNING 取 max(shared, fallback)，双驱动不打架。
                             if (
-                                videoCardClock.phase != VideoCardTransitionBackgroundPhase.RETURNING ||
-                                videoCardClock.hasActiveSharedMorphProgress()
+                                videoCardClock.phase != VideoCardTransitionBackgroundPhase.RETURNING
                             ) {
                                 return@launchVideoCardDepthAnimation
                             }
@@ -311,7 +312,7 @@ internal fun BiliPaiNavDisplayHost(
                                 targetDepth = 0f,
                             )
                             videoCardClock.snapFallback(startDepth)
-                            // 无 shared 对端时才使用 fallback；返回曲线固定 Linear。
+                            // 返回曲线固定 Linear，与 shared morph 同墙钟。
                             videoCardClock.animateFallbackTo(
                                 target = 0f,
                                 durationMillis = clearDurationMs,
