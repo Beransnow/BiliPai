@@ -78,7 +78,7 @@ class MusicPlayerContentStructureTest {
         assertTrue(!topBar.contains("?: Spacer"))
 
         val glassSurface = source.substringAfter("private fun Modifier.musicGlassSurface(")
-        assertTrue(glassSurface.contains("kernelSuMiuixFloatingDockSurface("))
+        assertTrue(glassSurface.contains("bottomBarMatchedLiquidDockSurface("))
         assertTrue(glassSurface.contains("containerColor = containerColor"))
         assertTrue(!glassSurface.contains("Color.Black.copy"))
     }
@@ -103,7 +103,8 @@ class MusicPlayerContentStructureTest {
         assertTrue(source.contains("MiuixBackdrop?"))
         assertTrue(source.contains("rememberMiuixLayerBackdrop()"))
         assertTrue(source.contains(".miuixLayerBackdrop(musicBackdrop)"))
-        assertTrue(source.contains("kernelSuMiuixFloatingDockSurface("))
+        assertTrue(source.contains("bottomBarMatchedLiquidDockSurface("))
+        assertTrue(!source.contains("kernelSuMiuixFloatingDockSurface("))
         assertTrue(!source.contains("liquidGlassBackground("))
     }
 

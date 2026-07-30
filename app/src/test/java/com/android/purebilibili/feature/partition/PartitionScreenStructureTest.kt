@@ -29,7 +29,7 @@ class PartitionScreenStructureTest {
         assertTrue(source.contains("SettingsManager.getHomeSettings(context)"))
         assertTrue(source.contains("rememberAppChromeLiquidGlassEnabled("))
         assertFalse(source.contains("resolveSharedLiquidGlassChromeEnabled("))
-        assertTrue(source.contains("KernelSuBottomBarIndicatorLayer("))
+        assertTrue(source.contains("BottomBarMatchedLiquidIndicator("))
         assertTrue(source.contains("liquidGlassIndicatorEnabled = liquidGlassIndicatorEnabled"))
         assertFalse(source.contains("partitionSideRailSweepSelection("))
         assertFalse(source.contains("PartitionVideoRow("))
@@ -126,7 +126,7 @@ class PartitionScreenStructureTest {
 
         assertTrue(source.contains("indicatorOffsetPxProvider: () -> Float"))
         assertTrue(source.contains("indicatorTranslationYPx = indicatorOffsetPxProvider()"))
-        assertTrue(source.contains("swapMotionAxes = true"))
+        assertTrue(source.contains("orientation = BottomBarLiquidOrientation.VERTICAL"))
         assertTrue(source.contains("indicatorAlignment = Alignment.TopStart"))
         assertFalse(source.contains("centerLayerOnIndicatorY"))
         assertFalse(source.contains("translationY = panelOffsetPx"))

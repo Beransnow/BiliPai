@@ -766,41 +766,23 @@ internal fun Modifier.homeTopBottomBarMatchedSurface(
         blurIntensity = blurIntensity,
         liquidGlassPreset = liquidGlassPreset
     )
-    if (miuixBackdrop != null) {
-        this.bottomBarMatchedLiquidDockSurface(
-            shape = shape,
-            backdrop = miuixBackdrop,
-            containerColor = containerColor,
-            blurEnabled = isBlurEnabled,
-            glassEnabled = isGlassEnabled,
-            drawShellLens = drawShellLens,
-            blurRadius = tuning.shellBlurRadiusDp.dp,
-            hazeState = hazeState,
-            motionTier = motionTier,
-            isTransitionRunning = isTransitionRunning,
-            forceLowBlurBudget = forceLowBlurBudget,
-            liquidGlassPreset = liquidGlassPreset,
-            isScrollInProgressProvider = { isScrolling },
-            materialScrollProgressOverride = materialScrollProgress
-        )
-    } else {
-        this.kernelSuFloatingDockSurface(
-            shape = shape,
-            backdrop = backdrop,
-            containerColor = containerColor,
-            blurEnabled = isBlurEnabled,
-            glassEnabled = isGlassEnabled,
-            drawShellLens = drawShellLens,
-            blurRadius = tuning.shellBlurRadiusDp.dp,
-            hazeState = hazeState,
-            motionTier = motionTier,
-            isTransitionRunning = isTransitionRunning,
-            forceLowBlurBudget = forceLowBlurBudget,
-            liquidGlassPreset = liquidGlassPreset,
-            isScrolling = isScrolling,
-            materialScrollProgress = materialScrollProgress
-        )
-    }
+    this.bottomBarMatchedLiquidDockSurface(
+        shape = shape,
+        backdrop = miuixBackdrop,
+        legacyBackdrop = backdrop,
+        containerColor = containerColor,
+        blurEnabled = isBlurEnabled,
+        glassEnabled = isGlassEnabled,
+        drawShellLens = drawShellLens,
+        blurRadius = tuning.shellBlurRadiusDp.dp,
+        hazeState = hazeState,
+        motionTier = motionTier,
+        isTransitionRunning = isTransitionRunning,
+        forceLowBlurBudget = forceLowBlurBudget,
+        liquidGlassPreset = liquidGlassPreset,
+        isScrollInProgressProvider = { isScrolling },
+        materialScrollProgressOverride = materialScrollProgress
+    )
 }
 
 @Composable

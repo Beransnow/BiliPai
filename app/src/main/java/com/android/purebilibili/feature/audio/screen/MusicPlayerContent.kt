@@ -99,7 +99,7 @@ import com.android.purebilibili.feature.audio.lyrics.resolveActiveLyricIndex
 import com.android.purebilibili.feature.audio.lyrics.resolveLyricFocusScrollOffsetPx
 import com.android.purebilibili.feature.audio.player.MusicPlayerUiState
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
-import com.android.purebilibili.feature.home.components.kernelSuMiuixFloatingDockSurface
+import com.android.purebilibili.feature.home.components.bottomBarMatchedLiquidDockSurface
 import com.android.purebilibili.feature.video.player.PlayMode
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.filled.BackwardEnd
@@ -1264,7 +1264,7 @@ private fun Modifier.musicGlassSurface(
             fallbackStyle.backgroundAlphaPercent / 100f
         }
     )
-    return kernelSuMiuixFloatingDockSurface(
+    return bottomBarMatchedLiquidDockSurface(
         shape = shape,
         backdrop = miuixBackdrop,
         containerColor = containerColor,

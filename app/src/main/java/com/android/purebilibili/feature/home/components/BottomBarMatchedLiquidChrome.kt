@@ -115,6 +115,7 @@ internal fun rememberBottomBarMatchedLiquidChromeState(
 @Composable
 internal fun BottomBarMatchedLiquidDock(
     backdrop: Backdrop?,
+    legacyBackdrop: KyantBackdrop? = null,
     containerColor: Color,
     shape: Shape,
     blurEnabled: Boolean,
@@ -139,6 +140,7 @@ internal fun BottomBarMatchedLiquidDock(
                 .bottomBarMatchedLiquidDockSurface(
                     shape = shape,
                     backdrop = backdrop,
+                    legacyBackdrop = legacyBackdrop,
                     containerColor = containerColor,
                     blurEnabled = blurEnabled,
                     glassEnabled = glassEnabled,
@@ -161,6 +163,7 @@ internal fun BottomBarMatchedLiquidDock(
 @Composable
 internal fun Modifier.bottomBarMatchedLiquidDockSurface(
     backdrop: Backdrop?,
+    legacyBackdrop: KyantBackdrop? = null,
     containerColor: Color,
     shape: Shape,
     blurEnabled: Boolean,
@@ -186,24 +189,46 @@ internal fun Modifier.bottomBarMatchedLiquidDockSurface(
         ),
         label = "bottomBarMatchedMaterialScrollProgress"
     )
-    kernelSuMiuixFloatingDockSurface(
-        shape = shape,
-        backdrop = backdrop,
-        containerColor = containerColor,
-        blurEnabled = blurEnabled,
-        glassEnabled = glassEnabled,
-        drawShellLens = drawShellLens,
-        blurRadius = blurRadius,
-        hazeState = hazeState,
-        motionTier = motionTier,
-        isTransitionRunning = isTransitionRunning,
-        forceLowBlurBudget = forceLowBlurBudget,
-        liquidGlassPreset = liquidGlassPreset,
-        isScrolling = isScrolling,
-        materialScrollProgress = materialScrollProgressOverride ?: animatedScrollProgress,
-        materialMotionProgress = materialMotionProgress,
-        materialPressProgress = materialPressProgress
-    )
+    val materialScrollProgress = materialScrollProgressOverride ?: animatedScrollProgress
+    if (backdrop != null) {
+        kernelSuMiuixFloatingDockSurface(
+            shape = shape,
+            backdrop = backdrop,
+            containerColor = containerColor,
+            blurEnabled = blurEnabled,
+            glassEnabled = glassEnabled,
+            drawShellLens = drawShellLens,
+            blurRadius = blurRadius,
+            hazeState = hazeState,
+            motionTier = motionTier,
+            isTransitionRunning = isTransitionRunning,
+            forceLowBlurBudget = forceLowBlurBudget,
+            liquidGlassPreset = liquidGlassPreset,
+            isScrolling = isScrolling,
+            materialScrollProgress = materialScrollProgress,
+            materialMotionProgress = materialMotionProgress,
+            materialPressProgress = materialPressProgress
+        )
+    } else {
+        kernelSuFloatingDockSurface(
+            shape = shape,
+            backdrop = legacyBackdrop,
+            containerColor = containerColor,
+            blurEnabled = blurEnabled,
+            glassEnabled = glassEnabled,
+            drawShellLens = drawShellLens,
+            blurRadius = blurRadius,
+            hazeState = hazeState,
+            motionTier = motionTier,
+            isTransitionRunning = isTransitionRunning,
+            forceLowBlurBudget = forceLowBlurBudget,
+            liquidGlassPreset = liquidGlassPreset,
+            isScrolling = isScrolling,
+            materialScrollProgress = materialScrollProgress,
+            materialMotionProgress = materialMotionProgress,
+            materialPressProgress = materialPressProgress
+        )
+    }
 }
 
 /**
@@ -303,6 +328,8 @@ internal fun BoxScope.BottomBarMatchedLiquidIndicator(
     indicatorLayerScaleProgress: Float,
     bottomBarMotionSpec: BottomBarMotionSpec,
     isDarkTheme: Boolean,
+    indicatorSettleReboundTransform: BottomBarClickPulseTransform =
+        BottomBarClickPulseTransform(scaleX = 1f),
     orientation: BottomBarLiquidOrientation = BottomBarLiquidOrientation.HORIZONTAL,
     indicatorAlignment: Alignment = Alignment.CenterStart
 ) {
@@ -351,7 +378,7 @@ internal fun BoxScope.BottomBarMatchedLiquidIndicator(
         contentBackdrop = legacyContentBackdrop,
         backdrop = legacyBackdrop,
         indicatorLensSpec = indicatorLensSpec,
-        indicatorSettleReboundTransform = BottomBarClickPulseTransform(scaleX = 1f),
+        indicatorSettleReboundTransform = indicatorSettleReboundTransform,
         effectivePressProgress = effectivePressProgress,
         indicatorIdleSurfaceColor = indicatorIdleSurfaceColor,
         glassEnabled = glassEnabled,

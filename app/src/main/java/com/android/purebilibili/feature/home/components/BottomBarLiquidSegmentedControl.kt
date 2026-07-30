@@ -59,7 +59,6 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.animation.horizontalDragGesture
-import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity
 import com.android.purebilibili.core.ui.motion.BottomBarMotionProfile
 import com.android.purebilibili.core.ui.motion.BottomBarMotionSpec
@@ -640,55 +639,18 @@ fun BottomBarLiquidSegmentedControl(
             )
         }
 
-        if (useBottomBarMatchedMiuix) {
-            BottomBarMatchedLiquidDock(
-                backdrop = pageMiuixBackdrop,
-                containerColor = containerColor,
-                shape = containerShape,
-                blurEnabled = liquidGlassEnabled,
-                glassEnabled = liquidGlassEnabled,
-                blurRadius = androidNativeTuning.shellBlurRadiusDp.dp,
-                modifier = Modifier.matchParentSize(),
-                liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
-                isScrollInProgressProvider = isScrollInProgressProvider
-            ) {}
-        } else {
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .run {
-                        if (miuixBackdrop != null) {
-                            this.kernelSuMiuixFloatingDockSurface(
-                                shape = containerShape,
-                                backdrop = miuixBackdrop,
-                                containerColor = containerColor,
-                                blurEnabled = liquidGlassEnabled,
-                                glassEnabled = liquidGlassEnabled,
-                                blurRadius = androidNativeTuning.shellBlurRadiusDp.dp,
-                                hazeState = null,
-                                motionTier = MotionTier.Normal,
-                                isTransitionRunning = false,
-                                forceLowBlurBudget = false,
-                                liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset
-                            )
-                        } else {
-                            this.kernelSuFloatingDockSurface(
-                            shape = containerShape,
-                            backdrop = backdrop,
-                            containerColor = containerColor,
-                            blurEnabled = liquidGlassEnabled,
-                            glassEnabled = liquidGlassEnabled,
-                            blurRadius = androidNativeTuning.shellBlurRadiusDp.dp,
-                            hazeState = null,
-                            motionTier = MotionTier.Normal,
-                            isTransitionRunning = false,
-                            forceLowBlurBudget = false,
-                            liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset
-                        )
-                    }
-                    }
-            )
-        }
+        BottomBarMatchedLiquidDock(
+            backdrop = if (useBottomBarMatchedMiuix) pageMiuixBackdrop else miuixBackdrop,
+            legacyBackdrop = backdrop,
+            containerColor = containerColor,
+            shape = containerShape,
+            blurEnabled = liquidGlassEnabled,
+            glassEnabled = liquidGlassEnabled,
+            blurRadius = androidNativeTuning.shellBlurRadiusDp.dp,
+            modifier = Modifier.matchParentSize(),
+            liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
+            isScrollInProgressProvider = isScrollInProgressProvider
+        ) {}
 
         // 1) Visible labels BEHIND the capsule (bottom-bar z-order).
         //    While sliding they stay neutral; theme color is revealed only through glass.
@@ -860,18 +822,19 @@ fun BottomBarLiquidSegmentedControl(
                 isDarkTheme = isDarkTheme
             )
         } else {
-            KernelSuBottomBarIndicatorLayer(
+            BottomBarMatchedLiquidIndicator(
                 visible = true,
                 dockContentAlpha = 1f,
                 indicatorTranslationXPx = with(density) { indicatorOffset.toPx() },
                 indicatorPanelOffsetPx = panelOffsetPx,
-                indicatorSettleReboundTransform = clickPulseTransform,
                 indicatorWidth = indicatorWidth,
                 indicatorHeight = resolvedIndicatorHeight,
                 shellShape = indicatorShape,
                 liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
-                contentBackdrop = tabsBackdrop,
-                backdrop = backdrop,
+                contentBackdrop = null,
+                backdrop = null,
+                legacyContentBackdrop = tabsBackdrop,
+                legacyBackdrop = backdrop,
                 indicatorLensSpec = indicatorLensSpec,
                 effectivePressProgress = lensProgress,
                 indicatorIdleSurfaceColor = indicatorIdleSurfaceColor,
@@ -880,9 +843,9 @@ fun BottomBarLiquidSegmentedControl(
                 velocityItemsPerSecond = dragState.deformationVelocityItemsPerSecond,
                 isDragging = dragState.isDragging,
                 indicatorLayerScaleProgress = indicatorLayerScaleProgress,
-                indicatorLayerScaleTransform = null,
                 bottomBarMotionSpec = motionSpec,
-                isDarkTheme = isDarkTheme
+                isDarkTheme = isDarkTheme,
+                indicatorSettleReboundTransform = clickPulseTransform
             )
         }
 

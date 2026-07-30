@@ -34,6 +34,9 @@ class BottomBarMiuixStructureTest {
     @Test
     fun `android native floating branch renders through kernelsu aligned renderer`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/BottomBar.kt")
+        val sharedChromeSource = loadSource(
+            "app/src/main/java/com/android/purebilibili/feature/home/components/BottomBarMatchedLiquidChrome.kt"
+        )
         val kernelSuRendererSource = source
             .substringAfter("private fun KernelSuAlignedBottomBar(")
             .substringBefore("@Composable\nprivate fun AndroidNativeBottomBarItem(")
@@ -105,7 +108,7 @@ class BottomBarMiuixStructureTest {
             kernelSuRendererSource.contains("shellProgress = backdropPresetProgress.shellProgress")
         )
         assertTrue(kernelSuRendererSource.contains("notifyIndexChangedOnReleaseStart = false"))
-        assertTrue(kernelSuRendererSource.contains("holdPressUntilReleaseTargetSettles = true"))
+        assertTrue(sharedChromeSource.contains("holdPressUntilReleaseTargetSettles = true"))
         assertTrue(kernelSuRendererSource.contains("dampedDragState.updateIndex(index)"))
         assertTrue(source.contains("private const val BOTTOM_BAR_INDICATOR_DRAG_SCALE_TARGET = 88f / 56f"))
         assertFalse(kernelSuAlignedBodySource.contains("var bottomBarTapSwitchPulseKey by remember"))
@@ -171,7 +174,7 @@ class BottomBarMiuixStructureTest {
             .substringBefore("}")
         assertTrue(backdropLayerBlockSource.contains("scaleX = indicatorLayerTransform.scaleX"))
         assertTrue(backdropLayerBlockSource.contains("scaleY = indicatorLayerTransform.scaleY"))
-        assertTrue(kernelSuRendererSource.contains("indicatorLayerScaleTransform = null"))
+        assertTrue(sharedChromeSource.contains("indicatorLayerScaleTransform = null"))
         assertFalse(kernelSuRendererSource.contains("scaleX = dampedDragState.scaleX"))
         assertFalse(indicatorLayerSource.contains("visualIndicatorWidth"))
         assertFalse(kernelSuAlignedBodySource.contains("rememberBottomBarSettleReboundTransform("))
@@ -311,12 +314,12 @@ class BottomBarMiuixStructureTest {
             .substringBefore("@Composable\nprivate fun AndroidNativeBottomBarItem(")
         val refractionCaptureSource = source
             .substringAfter("if (shouldRenderIndicatorContentCapture && miuixBackdrop != null) {")
-            .substringBefore("KernelSuMiuixBottomBarIndicatorLayer(")
+            .substringBefore("BottomBarMatchedLiquidIndicator(")
 
         val shellSource = source
             .substringAfter("private fun KernelSuBottomBarShell(")
             .substringBefore("@Composable\nprivate fun BoxScope.KernelSuMiuixBottomBarIndicatorLayer(")
-        val shellIndex = shellSource.indexOf(".kernelSuMiuixFloatingDockSurface(")
+        val shellIndex = shellSource.indexOf("BottomBarMatchedLiquidDock(")
         val skinIndex = shellSource.indexOf("BottomBarSkinDecorativeTrim(")
         val visibleContentIndex = kernelSuRendererSource.indexOf(
             "val coverage = itemCoverage(index)"
