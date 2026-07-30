@@ -217,9 +217,6 @@ import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.core.util.FormatUtils
 import coil.compose.AsyncImage
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.hazeEffect
-import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
-import dev.chrisbanes.haze.materials.HazeMaterials
 import com.android.purebilibili.feature.video.ui.components.DanmakuContextMenu
 import com.android.purebilibili.feature.video.ui.components.DanmakuBlockActionTarget
 import com.android.purebilibili.feature.video.ui.components.resolveDanmakuBlockActionFeedbackMessage
