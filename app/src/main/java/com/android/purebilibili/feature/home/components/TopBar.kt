@@ -135,8 +135,6 @@ import androidx.compose.foundation.combinedClickable // [Added]
 import java.io.File
 
 private const val IOS_TOP_TAB_CONTENT_PADDING_DP = 2f
-private const val TOP_TAB_INDICATOR_REFRACTION_HEIGHT_DP = 16f
-private const val TOP_TAB_INDICATOR_REFRACTION_AMOUNT_DP = 14f
 
 internal fun resolveFloatingIndicatorStartPaddingPx(
     baseInsetPx: Float,
@@ -1184,7 +1182,7 @@ private fun LightweightHomeTopTabs(
         // as their effective press so the indicator surface fades and lens ramps identically.
         val topTabLensProgress = topTabIndicatorLayerScaleProgress
         // Swipe/press lens progress so theme-tinted glass follows the capsule.
-        val topTabIndicatorLensSpec = resolveTopTabIndicatorLensSpec(
+        val topTabIndicatorLensSpec = resolveBottomBarBackdropPresetIndicatorLens(
             progress = topTabLensProgress
         )
         val md3IndicatorTranslationXPx by remember(topTabIndicatorPosition, itemWidth, md3IndicatorWidth, density, listState) {
@@ -1289,12 +1287,6 @@ private fun LightweightHomeTopTabs(
         val topTabCaptureLensSpec = resolveBottomBarBackdropPresetCaptureLens(
             progress = topTabCaptureLensProgress
         )
-        val topTabCaptureSafeInset = resolveBottomBarCaptureSafeInsetDp(
-            indicatorWidthDp = md3LiquidCapsuleWidth.value,
-            refractionHeightDp = TOP_TAB_INDICATOR_REFRACTION_HEIGHT_DP,
-            refractionAmountDp = TOP_TAB_INDICATOR_REFRACTION_AMOUNT_DP,
-            panelOffsetDp = AppSpacingTokens.ExtraSmall.value
-        ).dp
         val topTabCaptureHighlightAlpha =
             resolveBottomBarLiquidGlassHighlightAlpha(topTabCaptureLensProgress)
         val topTabCaptureBlurRadius = resolveAndroidNativeBottomBarTuning(
@@ -1419,12 +1411,13 @@ private fun LightweightHomeTopTabs(
                         .fillMaxSize()
                         .graphicsLayer { translationX = topTabContentPanelOffsetPx }
                 ) {
-                // Hidden monochrome export row: theme tint → pure primary under glass.
+                // Match the bottom bar: keep the export capture inside the dock band.
+                // When the indicator scales beyond it, the combined backdrop exposes the
+                // page source above and below instead of stretching dock material outward.
                 if (shouldPrimeTopTabLiquidGlassCapture) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .bottomBarMatchedCaptureOverflow(topTabCaptureSafeInset)
                             .clearAndSetSemantics {}
                             .alpha(0f)
                             .zIndex(0f)
@@ -1518,7 +1511,6 @@ private fun LightweightHomeTopTabs(
                         contentAlignment = Alignment.CenterStart
                     ) {
                         Row(
-                            modifier = Modifier.padding(start = topTabCaptureSafeInset),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.Start
                         ) {
@@ -1631,7 +1623,7 @@ private fun LightweightHomeTopTabs(
                     }
                 }
                 // Capsule above labels; panel offset is on parent so do NOT add again here.
-                // clip=false so drag-scale (88/56) can slightly exceed the dock chrome.
+                // clip=false lets the bottom-bar motion transform exceed the dock chrome.
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -2295,16 +2287,6 @@ internal fun resolveTopTabIndicatorScaleProgress(
     pressProgress: Float
 ): Float {
     return maxOf(dragScaleProgress, pressProgress).coerceIn(0f, 1f)
-}
-
-internal fun resolveTopTabIndicatorLensSpec(
-    progress: Float
-): BottomBarBackdropPresetLensSpec {
-    val clamped = progress.coerceIn(0f, 1f)
-    return BottomBarBackdropPresetLensSpec(
-        refractionHeightDp = TOP_TAB_INDICATOR_REFRACTION_HEIGHT_DP * clamped,
-        refractionAmountDp = TOP_TAB_INDICATOR_REFRACTION_AMOUNT_DP * clamped
-    )
 }
 
 internal fun resolveTopTabMatchedPanelOffsetPx(

@@ -20,7 +20,7 @@ class TopTabRefractionPolicyTest {
         assertTrue(source.contains("BottomBarMatchedLiquidIndicator("))
         assertFalse(source.contains("BottomBarLiquidIndicatorSurface("))
         assertTrue(source.contains("resolveBottomBarRefractionMotionProfile("))
-        assertTrue(source.contains("resolveTopTabIndicatorLensSpec("))
+        assertTrue(source.contains("resolveBottomBarBackdropPresetIndicatorLens("))
         assertTrue(source.contains("topTabShouldStretchIndicator"))
         assertTrue(source.contains("val shouldPrimeTopTabLiquidGlassCapture ="))
         assertTrue(source.contains("val topTabContentBackdrop = rememberLayerBackdrop()"))
@@ -35,8 +35,7 @@ class TopTabRefractionPolicyTest {
         assertTrue(source.contains("indicatorLayerScaleProgress = topTabIndicatorLayerScaleProgress"))
         assertTrue(source.contains("val topTabLensProgress = topTabIndicatorLayerScaleProgress"))
         assertTrue(source.contains("val topTabCaptureLensProgress = if (shouldUseLiquidGlassIndicator) 1f else 0f"))
-        assertTrue(source.contains(".bottomBarMatchedCaptureOverflow(topTabCaptureSafeInset)"))
-        assertTrue(source.contains("Modifier.padding(start = topTabCaptureSafeInset)"))
+        assertFalse(source.contains(".bottomBarMatchedCaptureOverflow("))
         assertTrue(source.contains(".miuixDrawBackdrop("))
         assertTrue(source.contains(".drawBackdrop("))
         assertTrue(source.contains("miuixVibrancy()"))
@@ -193,7 +192,7 @@ class TopTabRefractionPolicyTest {
     }
 
     @Test
-    fun `top tab indicator uses bottom bar stretch ratio while sliding`() {
+    fun `top tab indicator reuses bottom bar stretch transform while sliding`() {
         val transform = resolveTopTabIndicatorLayerTransform(
             motionProgress = 1f,
             velocityItemsPerSecond = 0f,
@@ -207,8 +206,6 @@ class TopTabRefractionPolicyTest {
 
         assertEquals(bottom.scaleX, transform.scaleX, 0.001f)
         assertEquals(bottom.scaleY, transform.scaleY, 0.001f)
-        assertEquals(88f / 56f, transform.scaleX, 0.001f)
-        assertEquals(88f / 56f, transform.scaleY, 0.001f)
     }
 
     @Test
@@ -287,28 +284,6 @@ class TopTabRefractionPolicyTest {
             assertEquals(bottom.scaleX, top.scaleX, 0.001f)
             assertEquals(bottom.scaleY, top.scaleY, 0.001f)
         }
-    }
-
-    @Test
-    fun `top tab lens strengthens vertical edge refraction`() {
-        val lens = resolveTopTabIndicatorLensSpec(progress = 1f)
-
-        assertEquals(16f, lens.refractionHeightDp, 0.001f)
-        assertEquals(14f, lens.refractionAmountDp, 0.001f)
-    }
-
-    @Test
-    fun `top tab capture inset covers large overflow and lens sampling outside dock`() {
-        assertEquals(
-            35.42857f,
-            resolveBottomBarCaptureSafeInsetDp(
-                indicatorWidthDp = 54f,
-                refractionHeightDp = 16f,
-                refractionAmountDp = 14f,
-                panelOffsetDp = 4f
-            ),
-            0.001f
-        )
     }
 
     @Test
