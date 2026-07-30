@@ -87,6 +87,7 @@ fun BangumiPlayerContent(
                 labelFontSize = 15.sp,
                 backdrop = selectionBackdrop,
                 tapPressRefractionEnabled = false,
+                isScrollInProgressProvider = { pagerState.isScrollInProgress },
             )
         }
 

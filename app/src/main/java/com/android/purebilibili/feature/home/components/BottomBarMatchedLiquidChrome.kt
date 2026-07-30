@@ -11,6 +11,8 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -23,7 +25,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.draw.clip
 import com.android.purebilibili.core.store.BottomBarLiquidGlassPreset
+import com.android.purebilibili.core.store.HomeSettings
+import com.android.purebilibili.core.store.SettingsManager
+import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.animation.DampedDragAnimationState
 import com.android.purebilibili.core.ui.animation.rememberDampedDragAnimationState
@@ -34,7 +42,11 @@ import com.android.purebilibili.core.ui.motion.emphasizedExitTween
 import com.android.purebilibili.core.ui.motion.softLandingSpring
 import dev.chrisbanes.haze.HazeState
 import com.kyant.backdrop.Backdrop as KyantBackdrop
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import top.yukonga.miuix.kmp.blur.Backdrop
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
+import com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity
 
 internal enum class BottomBarLiquidOrientation {
     HORIZONTAL,
@@ -192,6 +204,73 @@ internal fun Modifier.bottomBarMatchedLiquidDockSurface(
         materialMotionProgress = materialMotionProgress,
         materialPressProgress = materialPressProgress
     )
+}
+
+/**
+ * Content-slot entry point for search fields, comment/action bars, and other inline Chrome.
+ * When global reuse is disabled, [content] is emitted unchanged.
+ */
+@Composable
+internal fun BottomBarMatchedReusableLiquidDock(
+    shape: Shape,
+    modifier: Modifier = Modifier,
+    isScrollInProgressProvider: () -> Boolean = { false },
+    content: @Composable BoxScope.(liquidChromeActive: Boolean) -> Unit
+) {
+    val context = LocalContext.current
+    val homeSettings by SettingsManager
+        .getHomeSettings(context)
+        .collectAsStateWithLifecycle(
+            initialValue = HomeSettings(),
+            context = kotlin.coroutines.EmptyCoroutineContext
+        )
+    val glassEnabled = resolveAndroidNativeBottomBarGlassEnabled(
+        liquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled,
+        blurEnabled = true
+    )
+    if (!homeSettings.androidNativeLiquidGlassEnabled) {
+        Box(modifier = modifier) {
+            content(false)
+        }
+        return
+    }
+
+    val localBackdrop = rememberLayerBackdrop()
+    val isDarkTheme = isSystemInDarkTheme()
+    val blurIntensity = currentUnifiedBlurIntensity()
+    val tuning = resolveAndroidNativeBottomBarTuning(
+        blurEnabled = true,
+        darkTheme = isDarkTheme
+    )
+    val containerColor = resolveAndroidNativeFloatingBottomBarContainerColor(
+        surfaceColor = AppSurfaceTokens.cardContainer(),
+        tuning = tuning,
+        glassEnabled = glassEnabled,
+        blurEnabled = true,
+        blurIntensity = blurIntensity,
+        liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset
+    )
+
+    Box(modifier = modifier.clip(shape)) {
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .layerBackdrop(localBackdrop)
+                .background(AppSurfaceTokens.background(), shape)
+        )
+        BottomBarMatchedLiquidDock(
+            backdrop = localBackdrop,
+            containerColor = containerColor,
+            shape = shape,
+            blurEnabled = true,
+            glassEnabled = glassEnabled,
+            blurRadius = tuning.shellBlurRadiusDp.dp,
+            modifier = Modifier.matchParentSize(),
+            liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
+            isScrollInProgressProvider = isScrollInProgressProvider
+        ) {}
+        content(true)
+    }
 }
 
 /**

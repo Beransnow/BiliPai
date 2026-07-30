@@ -56,7 +56,6 @@ import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.CutePersonLoadingIndicator
 import com.android.purebilibili.core.util.resolveReplaceRefreshPage
 import com.android.purebilibili.core.ui.animation.DampedDragAnimationState
-import com.android.purebilibili.core.ui.animation.rememberDampedDragAnimationState
 import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
 import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
 import com.android.purebilibili.core.util.responsiveContentWidth
@@ -74,9 +73,10 @@ import com.android.purebilibili.data.repository.VideoRepository
 import com.android.purebilibili.feature.common.resolveIndexedVideoLazyKey
 import com.android.purebilibili.feature.home.components.cards.HomeStyleSingleColumnVideoCard
 import com.android.purebilibili.feature.home.resolveHomeFeedCardLayout
-import com.android.purebilibili.feature.home.components.BottomBarClickPulseTransform
 import com.android.purebilibili.feature.home.components.BottomBarIndicatorLayerTransform
-import com.android.purebilibili.feature.home.components.KernelSuBottomBarIndicatorLayer
+import com.android.purebilibili.feature.home.components.BottomBarLiquidOrientation
+import com.android.purebilibili.feature.home.components.BottomBarMatchedLiquidIndicator
+import com.android.purebilibili.feature.home.components.rememberBottomBarMatchedLiquidChromeState
 import com.android.purebilibili.feature.home.components.resolveAndroidNativeIdleIndicatorSurfaceColor
 import com.android.purebilibili.feature.home.components.resolveBottomBarBackdropPresetIndicatorLens
 import com.android.purebilibili.feature.home.components.resolveBottomBarBackdropPresetProgress
@@ -90,8 +90,8 @@ import com.android.purebilibili.feature.home.components.resolveSegmentedControlM
 import com.android.purebilibili.feature.home.components.resolveSegmentedControlMotionSpec
 import com.android.purebilibili.feature.home.components.shouldShowTopTabIcon
 import com.android.purebilibili.feature.home.components.shouldShowTopTabText
-import com.kyant.backdrop.backdrops.layerBackdrop
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeSource
 import com.android.purebilibili.core.ui.blur.unifiedBlur
@@ -442,6 +442,7 @@ fun PartitionContent(
                     end = 4.dp
                 ),
                 liquidGlassIndicatorEnabled = liquidGlassIndicatorEnabled,
+                liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
                 onVideoListPushChanged = { sideRailVideoPushTargetPx = it },
                 onPartitionSelected = { partition ->
                     val bangumiType = resolvePartitionBangumiType(partition.id)
@@ -488,6 +489,7 @@ private fun PartitionSideRail(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues,
     liquidGlassIndicatorEnabled: Boolean,
+    liquidGlassPreset: BottomBarLiquidGlassPreset,
     onVideoListPushChanged: (Float) -> Unit,
     onPartitionSelected: (PartitionCategory) -> Unit
 ) {
@@ -498,14 +500,16 @@ private fun PartitionSideRail(
     val resolvedLabelMode = resolvePartitionSideRailLabelMode(labelMode)
     val showIcon = shouldShowPartitionSideRailIcon(resolvedLabelMode)
     val showText = shouldShowPartitionSideRailText(resolvedLabelMode)
-    val dragState = rememberDampedDragAnimationState(
+    val matchedChromeState = rememberBottomBarMatchedLiquidChromeState(
         initialIndex = selectedIndex,
         itemCount = partitions.size,
-        motionSpec = motionSpec,
+        orientation = BottomBarLiquidOrientation.VERTICAL,
+        isScrollInProgressProvider = { listState.isScrollInProgress },
         onIndexChanged = { index ->
             partitions.getOrNull(index)?.let(onPartitionSelected)
         }
     )
+    val dragState = matchedChromeState.dragState
     LaunchedEffect(selectedIndex) {
         dragState.updateIndex(selectedIndex)
     }
@@ -535,6 +539,7 @@ private fun PartitionSideRail(
             itemSlotHeightPx = itemSlotHeightPx,
             indicatorOffsetPxProvider = currentIndicatorOffsetPxProvider,
             liquidGlassIndicatorEnabled = liquidGlassIndicatorEnabled,
+            liquidGlassPreset = liquidGlassPreset,
             backdrop = railBackdrop,
             maxVideoPushPx = maxVideoPushPx,
             horizontalPadding = indicatorHorizontalPadding,
@@ -582,7 +587,8 @@ private fun PartitionSideRailMovingIndicator(
     itemSlotHeightPx: Float,
     indicatorOffsetPxProvider: () -> Float,
     liquidGlassIndicatorEnabled: Boolean,
-    backdrop: com.kyant.backdrop.Backdrop,
+    liquidGlassPreset: BottomBarLiquidGlassPreset,
+    backdrop: top.yukonga.miuix.kmp.blur.Backdrop,
     maxVideoPushPx: Float,
     horizontalPadding: PartitionSideRailIndicatorHorizontalPadding,
     onVideoListPushChanged: (Float) -> Unit
@@ -626,17 +632,16 @@ private fun PartitionSideRailMovingIndicator(
         val density = LocalDensity.current
         val indicatorWidth = (maxWidth - horizontalPadding.start - horizontalPadding.end)
             .coerceAtLeast(0.dp)
-        KernelSuBottomBarIndicatorLayer(
+        BottomBarMatchedLiquidIndicator(
             visible = true,
             dockContentAlpha = 1f,
             indicatorTranslationXPx = with(density) { horizontalPadding.start.toPx() },
             indicatorTranslationYPx = indicatorOffsetPxProvider(),
             indicatorPanelOffsetPx = 0f,
-            indicatorSettleReboundTransform = BottomBarClickPulseTransform(scaleX = 1f),
             indicatorWidth = indicatorWidth,
             indicatorHeight = PartitionSideRailItemHeight,
             shellShape = shape,
-            liquidGlassPreset = BottomBarLiquidGlassPreset.BILIPAI_TUNED,
+            liquidGlassPreset = liquidGlassPreset,
             contentBackdrop = backdrop,
             backdrop = backdrop,
             indicatorLensSpec = indicatorLensSpec,
@@ -647,10 +652,9 @@ private fun PartitionSideRailMovingIndicator(
             velocityItemsPerSecond = dragState.deformationVelocityItemsPerSecond,
             isDragging = dragState.isDragging,
             indicatorLayerScaleProgress = indicatorLayerScaleProgress,
-            indicatorLayerScaleTransform = null,
             bottomBarMotionSpec = motionSpec,
             isDarkTheme = isDarkTheme,
-            swapMotionAxes = true,
+            orientation = BottomBarLiquidOrientation.VERTICAL,
             indicatorAlignment = Alignment.TopStart
         )
     }

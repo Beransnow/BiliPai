@@ -1287,7 +1287,10 @@ fun CommonListScreen(
                                     forceLiquidChrome = homeSettings.androidNativeLiquidGlassEnabled,
                                     liquidGlassEffectsEnabled = true,
                                     dragSelectionEnabled = historyFilterChrome.dragSelectionEnabled,
-                                    tapPressRefractionEnabled = true
+                                    tapPressRefractionEnabled = true,
+                                    isScrollInProgressProvider = {
+                                        primaryGridState.isScrollInProgress
+                                    }
                                 )
                             } else {
                                 LazyRow(

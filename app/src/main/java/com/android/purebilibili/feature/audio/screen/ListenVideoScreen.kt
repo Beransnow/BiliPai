@@ -201,7 +201,8 @@ internal fun ListenVideoScreen(
                 preferInlineContentStyle = false,
                 indicatorPositionProvider = {
                     pagerState.currentPage + pagerState.currentPageOffsetFraction
-                }
+                },
+                isScrollInProgressProvider = { pagerState.isScrollInProgress }
             )
             Spacer(modifier = Modifier.height(8.dp))
             HorizontalPager(

@@ -299,6 +299,7 @@ internal fun MusicPlayerContent(
                             indicatorIdleSurfaceColorOverride = Color.White.copy(alpha = 0.18f),
                             selectedTextColorOverride = MusicContentColor,
                             unselectedTextColorOverride = MusicContentColor.copy(alpha = 0.90f),
+                            isScrollInProgressProvider = { pagerState.isScrollInProgress },
                             indicatorPositionProvider = {
                                 resolveMusicPagerIndicatorPosition(
                                     currentPage = pagerState.currentPage,

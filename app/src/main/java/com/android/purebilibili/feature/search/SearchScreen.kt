@@ -157,6 +157,7 @@ import kotlinx.coroutines.launch
 
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.feature.home.components.BottomBarMatchedReusableLiquidDock
 
 internal fun shouldShowSearchHotSection(
     hotItemCount: Int,
@@ -1612,6 +1613,7 @@ fun SearchScreen(
                 entryMotionSpec = entryMotionSpec,
                 entryMotionKey = entryMotionKey,
                 onEntryMotionFinished = onEntryMotionConsumed,
+                isScrollInProgressProvider = { isSearchResultsScrolling },
                 modifier = Modifier
                     .align(Alignment.TopCenter)
                     .then(
@@ -1696,6 +1698,7 @@ fun SearchTopBar(
     entryMotionSpec: SearchEntryMotionSpec? = null,
     entryMotionKey: Int = 0,
     onEntryMotionFinished: (Int) -> Unit = {},
+    isScrollInProgressProvider: () -> Boolean = { false },
     modifier: Modifier = Modifier
 ) {
     val topChromePolicy = rememberAppTopChromePolicy()
@@ -1792,26 +1795,34 @@ fun SearchTopBar(
 
                 Spacer(modifier = Modifier.width(4.dp))
 
-                AppSearchField(
-                    query = query,
-                    onQueryChange = onQueryChange,
-                    onSearch = { if (canSubmit) onSearch(resolvedSubmitKeyword) },
-                    onClear = onClearQuery,
-                    presentation = AppSearchFieldPresentation.TOP_BAR,
-                    autoFocusEnabled = autoFocusEnabled && query.isEmpty(),
-                    focusRequester = focusRequester,
+                BottomBarMatchedReusableLiquidDock(
+                    shape = RoundedCornerShape(chromeSpec.inputCornerRadiusDp.dp),
                     modifier = Modifier
                         .weight(1f)
                         .defaultMinSize(minHeight = chromeSpec.inputHeightDp.dp),
-                    placeholder = placeholder,
-                    containerColor = if (chromeSpec.useFilledSearchAction) {
-                        AppSurfaceTokens.surfaceContainerHigh()
-                    } else {
-                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
-                    },
-                    heightOverride = chromeSpec.inputHeightDp.dp,
-                    interactionSource = searchInteractionSource,
-                )
+                    isScrollInProgressProvider = isScrollInProgressProvider
+                ) { liquidChromeActive ->
+                    AppSearchField(
+                        query = query,
+                        onQueryChange = onQueryChange,
+                        onSearch = { if (canSubmit) onSearch(resolvedSubmitKeyword) },
+                        onClear = onClearQuery,
+                        presentation = AppSearchFieldPresentation.TOP_BAR,
+                        autoFocusEnabled = autoFocusEnabled && query.isEmpty(),
+                        focusRequester = focusRequester,
+                        modifier = Modifier.fillMaxSize(),
+                        placeholder = placeholder,
+                        containerColor = if (liquidChromeActive) {
+                            Color.Transparent
+                        } else if (chromeSpec.useFilledSearchAction) {
+                            AppSurfaceTokens.surfaceContainerHigh()
+                        } else {
+                            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+                        },
+                        heightOverride = chromeSpec.inputHeightDp.dp,
+                        interactionSource = searchInteractionSource,
+                    )
+                }
 
                 Spacer(modifier = Modifier.width(chromeSpec.horizontalGapDp.dp))
 

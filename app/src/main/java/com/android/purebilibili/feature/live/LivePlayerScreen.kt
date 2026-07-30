@@ -1687,7 +1687,8 @@ private fun LivePrimaryInteractionPanel(
                 height = segmentedSpec.heightDp.dp,
                 indicatorHeight = segmentedSpec.indicatorHeightDp.dp,
                 labelFontSize = segmentedSpec.labelFontSizeSp.sp,
-                backdrop = selectionBackdrop
+                backdrop = selectionBackdrop,
+                isScrollInProgressProvider = { pagerState.isScrollInProgress }
             )
         }
         HorizontalPager(

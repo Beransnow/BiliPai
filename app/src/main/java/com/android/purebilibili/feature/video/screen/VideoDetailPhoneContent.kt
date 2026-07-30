@@ -48,8 +48,8 @@ import com.android.purebilibili.feature.video.viewmodel.VideoEngagementUiState
 import com.android.purebilibili.feature.video.viewmodel.VideoPlaybackUiState
 import com.android.purebilibili.feature.video.viewmodel.withEngagementUiState
 import com.android.purebilibili.feature.video.player.PlaylistItem
-import com.kyant.backdrop.backdrops.layerBackdrop
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
@@ -356,6 +356,11 @@ internal fun VideoDetailPhoneSuccessContentLayer(
                                     bottomInputBarBackdrop
                                 } else {
                                     null
+                                },
+                                isScrollInProgressProvider = {
+                                    introListState.isScrollInProgress ||
+                                        commentListState.isScrollInProgress ||
+                                        videoContentPagerState.isScrollInProgress
                                 }
                             )
                         }

@@ -48,12 +48,12 @@ import com.android.purebilibili.core.ui.rememberAppCoinIcon
 import com.android.purebilibili.core.ui.rememberAppLikeFilledIcon
 import com.android.purebilibili.core.ui.rememberAppLikeIcon
 import com.android.purebilibili.core.ui.rememberAppShareIcon
-import com.android.purebilibili.feature.home.components.kernelSuFloatingDockSurface
+import com.android.purebilibili.feature.home.components.BottomBarMatchedLiquidDock
 import com.android.purebilibili.feature.home.components.resolveAndroidNativeBottomBarTuning
 import com.android.purebilibili.feature.home.components.resolveAndroidNativeFloatingBottomBarContainerColor
 import com.android.purebilibili.feature.home.components.resolveBottomBarDarkTheme
 import com.android.purebilibili.feature.home.components.resolveSharedBottomBarCapsuleShape
-import com.kyant.backdrop.Backdrop
+import top.yukonga.miuix.kmp.blur.Backdrop
 
 internal const val BOTTOM_INPUT_BAR_PLACEHOLDER_MIN_CONTRAST = 4.5f
 
@@ -102,6 +102,7 @@ fun BottomInputBar(
     onShareClick: () -> Unit,
     onCommentClick: () -> Unit,
     backdrop: Backdrop? = null,
+    isScrollInProgressProvider: () -> Boolean = { false },
 ) {
     val context = LocalContext.current
     val homeSettings by SettingsManager
@@ -123,7 +124,8 @@ fun BottomInputBar(
             onFavoriteClick = onFavoriteClick,
             onCoinClick = onCoinClick,
             onShareClick = onShareClick,
-            onCommentClick = onCommentClick
+            onCommentClick = onCommentClick,
+            isScrollInProgressProvider = isScrollInProgressProvider
         )
     } else {
         DockedSolidBottomInputBar(
@@ -196,6 +198,7 @@ private fun FloatingLiquidBottomInputBar(
     onCoinClick: () -> Unit,
     onShareClick: () -> Unit,
     onCommentClick: () -> Unit,
+    isScrollInProgressProvider: () -> Boolean,
 ) {
     val blurIntensity = currentUnifiedBlurIntensity()
     val isDarkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.chromeBackground())
@@ -232,22 +235,16 @@ private fun FloatingLiquidBottomInputBar(
             .padding(bottom = bottomInset),
         contentAlignment = Alignment.BottomCenter
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .kernelSuFloatingDockSurface(
-                    shape = shellShape,
-                    backdrop = backdrop,
-                    containerColor = containerColor,
-                    blurEnabled = true,
-                    glassEnabled = true,
-                    blurRadius = tuning.shellBlurRadiusDp.dp,
-                    hazeState = null,
-                    motionTier = MotionTier.Normal,
-                    isTransitionRunning = false,
-                    forceLowBlurBudget = false,
-                    liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset
-                )
+        BottomBarMatchedLiquidDock(
+            backdrop = backdrop,
+            containerColor = containerColor,
+            shape = shellShape,
+            blurEnabled = true,
+            glassEnabled = true,
+            blurRadius = tuning.shellBlurRadiusDp.dp,
+            modifier = Modifier.fillMaxWidth(),
+            liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
+            isScrollInProgressProvider = isScrollInProgressProvider
         ) {
             FloatingLiquidBottomInputBarContentRow(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
@@ -299,34 +296,27 @@ private fun FloatingLiquidBottomInputBarContentRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         // Same liquid dock surface as home bottom-bar search capsule (sibling glass, not solid chip).
-        Box(
+        BottomBarMatchedLiquidDock(
+            backdrop = backdrop,
+            containerColor = commentFieldContainerColor,
+            shape = commentFieldShape,
+            blurEnabled = true,
+            glassEnabled = true,
+            blurRadius = blurRadius,
             modifier = Modifier
                 .weight(1f)
                 .height(36.dp)
-                .kernelSuFloatingDockSurface(
-                    shape = commentFieldShape,
-                    backdrop = backdrop,
-                    containerColor = commentFieldContainerColor,
-                    blurEnabled = true,
-                    glassEnabled = true,
-                    drawShellLens = false,
-                    blurRadius = blurRadius,
-                    hazeState = null,
-                    motionTier = MotionTier.Normal,
-                    isTransitionRunning = false,
-                    forceLowBlurBudget = false,
-                    liquidGlassPreset = liquidGlassPreset
-                )
                 .clickable { onCommentClick() }
                 .padding(horizontal = 12.dp),
-            contentAlignment = Alignment.CenterStart
+            liquidGlassPreset = liquidGlassPreset
         ) {
             AppText(
                 text = "评论 UP 主和大家...",
                 color = inputTextColor,
                 fontSize = 14.sp,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.align(Alignment.CenterStart)
             )
         }
 

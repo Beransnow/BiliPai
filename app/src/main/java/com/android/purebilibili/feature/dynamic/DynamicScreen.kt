@@ -93,6 +93,8 @@ import com.android.purebilibili.feature.dynamic.components.DynamicCommentSheet
 import com.android.purebilibili.feature.dynamic.components.RepostDialog
 import com.android.purebilibili.feature.dynamic.components.DynamicSubReplyPreviewHost
 import com.android.purebilibili.feature.home.LocalHomeScrollOffset
+import com.android.purebilibili.feature.home.components.BottomBarMatchedDockEdge
+import com.android.purebilibili.feature.home.components.BottomBarMatchedDockVisibility
 import com.android.purebilibili.feature.home.policy.resolveBottomBarChromeScrollOffset
 import dev.chrisbanes.haze.HazeState
 import com.android.purebilibili.core.ui.blur.hazeSourceCompat
@@ -660,10 +662,9 @@ fun DynamicScreen(
                             }
 
                             // 顶栏（下滑折叠，回顶复现）
-                            androidx.compose.animation.AnimatedVisibility(
+                            BottomBarMatchedDockVisibility(
                                 visible = !shouldCollapseTopBar,
-                                enter = expandVertically(animationSpec = AppMotionTokens.standardSpec()) + fadeIn(animationSpec = AppMotionTokens.standardSpec()),
-                                exit = shrinkVertically(animationSpec = AppMotionTokens.standardSpec()) + fadeOut(animationSpec = AppMotionTokens.standardSpec()),
+                                edge = BottomBarMatchedDockEdge.TOP,
                                 modifier = Modifier.align(Alignment.TopCenter)
                             ) {
                                 DynamicTopBarWithTabs(
@@ -680,7 +681,11 @@ fun DynamicScreen(
                                     displayMode = displayMode,
                                     onDisplayModeChange = { viewModel.setDisplayMode(it) },
                                     hazeState = hazeState,
-                                    indicatorPositionProvider = dynamicTabIndicatorPositionProvider
+                                    indicatorPositionProvider = dynamicTabIndicatorPositionProvider,
+                                    isScrollInProgressProvider = {
+                                        activeListState?.isScrollInProgress == true ||
+                                            pagerState.isScrollInProgress
+                                    }
                                 )
                             }
 
@@ -819,10 +824,9 @@ fun DynamicScreen(
                                 )
                                 Column(modifier = Modifier.fillMaxWidth()) {
                                     // 顶栏（下滑折叠，回顶复现）
-                                    AnimatedVisibility(
+                                    BottomBarMatchedDockVisibility(
                                         visible = !shouldCollapseTopBar,
-                                        enter = expandVertically(animationSpec = AppMotionTokens.standardSpec()) + fadeIn(animationSpec = AppMotionTokens.standardSpec()),
-                                        exit = shrinkVertically(animationSpec = AppMotionTokens.standardSpec()) + fadeOut(animationSpec = AppMotionTokens.standardSpec())
+                                        edge = BottomBarMatchedDockEdge.TOP
                                     ) {
                                         DynamicTopBarWithTabs(
                                             selectedTab = displayedTabIndex,
@@ -838,7 +842,11 @@ fun DynamicScreen(
                                             displayMode = displayMode,
                                             onDisplayModeChange = { viewModel.setDisplayMode(it) },
                                             hazeState = hazeState,
-                                            indicatorPositionProvider = dynamicTabIndicatorPositionProvider
+                                            indicatorPositionProvider = dynamicTabIndicatorPositionProvider,
+                                            isScrollInProgressProvider = {
+                                                activeListState?.isScrollInProgress == true ||
+                                                    pagerState.isScrollInProgress
+                                            }
                                         )
                                     }
 
