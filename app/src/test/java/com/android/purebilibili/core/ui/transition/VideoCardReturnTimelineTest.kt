@@ -132,6 +132,36 @@ class VideoCardReturnTimelineTest {
     }
 
     @Test
+    fun forceCoverOnly_requiresCommittedReturnNotJustLeavingVisual() {
+        // 预测 seek：离开态 true 但未提交 → 不得 forceCover
+        assertFalse(
+            shouldForceCoverOnlyForReturnOwnership(
+                ownership = VideoCardReturnCoverOwnership.RESIDENT_COVER,
+                useReturningVisualState = true,
+                forceCoverOnlyOnReturn = false,
+                isCommittedCardReturn = false,
+            )
+        )
+        assertTrue(
+            shouldForceCoverOnlyForReturnOwnership(
+                ownership = VideoCardReturnCoverOwnership.RESIDENT_COVER,
+                useReturningVisualState = true,
+                forceCoverOnlyOnReturn = false,
+                isCommittedCardReturn = true,
+            )
+        )
+        // live 仍永远不 forceCover
+        assertFalse(
+            shouldForceCoverOnlyForReturnOwnership(
+                ownership = VideoCardReturnCoverOwnership.LIVE_SURFACE,
+                useReturningVisualState = true,
+                forceCoverOnlyOnReturn = false,
+                isCommittedCardReturn = true,
+            )
+        )
+    }
+
+    @Test
     fun coverOwnership_tableCoversLiveResidentAndFallback() {
         data class Case(
             val name: String,

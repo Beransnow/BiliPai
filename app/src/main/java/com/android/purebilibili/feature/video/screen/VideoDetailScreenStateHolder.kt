@@ -1138,13 +1138,20 @@ internal fun VideoDetailScreenStateHolder(
         isCardReturnExitInProgress = isCardReturnExitInProgress
     )
     // 离开态：次要内容淡出等。ImmediatePlayback live morph 时不把视觉交给常驻封面。
+    // 注意：预测 seek 中 isCardReturnExitInProgress 会为 true，但这不是「已提交」。
+    val isSessionReturningToCard = isReturningFromDetail &&
+        transitionEnabled &&
+        sharedBoundsActive &&
+        !keepLoadedContentForBackPreview
     val useReturningVideoDetailVisualState = shouldUseReturningVideoDetailVisualState(
         forceCoverOnlyForReturn = forceCoverOnlyForReturn,
         isCardReturnExitInProgress = isCardReturnExitInProgress,
-        isSessionReturningToCard = isReturningFromDetail &&
-            transitionEnabled &&
-            sharedBoundsActive &&
-            !keepLoadedContentForBackPreview,
+        isSessionReturningToCard = isSessionReturningToCard,
+    )
+    // 封面/播放器 handoff 只认已提交（按钮返回或 markReturning），预测跟手阶段保持实时画面。
+    val isCommittedCardReturn = shouldTreatVideoDetailCardReturnAsCommitted(
+        isActuallyLeaving = isActuallyLeaving,
+        isSessionReturningToCard = isSessionReturningToCard,
     )
     val hasResidentReturnCover = coverUrl.isNotBlank()
     val detailContentReadyForLiveReturnMorph = shouldTreatVideoDetailContentReadyForLiveReturnMorph(
@@ -1550,14 +1557,15 @@ internal fun VideoDetailScreenStateHolder(
     val liveReturnMorph = isLiveReturnMorphFromOwnership(returnCoverOwnership)
     val useResidentCoverForCommittedReturn = shouldHandResidentCoverFromOwnership(
         ownership = returnCoverOwnership,
-        useReturningVisualState = useReturningVideoDetailVisualState,
+        useReturningVisualState = isCommittedCardReturn,
         hasResidentCover = hasResidentReturnCover,
     )
-    // live morph 时绝不 forceCoverOnly，避免 shell 一镜到底被封面盖死。
+    // live morph 时绝不 forceCoverOnly；预测 seek 未提交时也不 forceCover，避免封面瞬间盖住播放器。
     val forceCoverOnlyForLiveSafeReturn = shouldForceCoverOnlyForReturnOwnership(
         ownership = returnCoverOwnership,
         useReturningVisualState = useReturningVideoDetailVisualState,
         forceCoverOnlyOnReturn = forceCoverOnlyForReturn,
+        isCommittedCardReturn = isCommittedCardReturn,
     )
     val videoCardDepthBackgroundState = LocalVideoCardTransitionBackgroundState.current
     val videoCardTransitionDensity = LocalDensity.current
@@ -3141,6 +3149,7 @@ internal fun VideoDetailScreenStateHolder(
                             Modifier
                         }
 
+                        // isLeaving：离开态（正文让位等）；封面/播放器 handoff 用 isCommittedCardReturn。
                         val isLeaving = useReturningVideoDetailVisualState
                         val crossfadeCoverUrl = remember(coverUrl) {
                             if (coverUrl.isNotBlank()) {
@@ -3229,7 +3238,7 @@ internal fun VideoDetailScreenStateHolder(
                                         .graphicsLayer {
                                             alpha = resolveVideoDetailReturnCoverAlpha(
                                                 transitionProgress = detailTransitionProgress.value,
-                                                isCommittedCardReturn = isLeaving,
+                                                isCommittedCardReturn = isCommittedCardReturn,
                                                 hasResidentCover = hasResidentReturnCover,
                                                 liveReturnMorph = liveReturnMorph,
                                             )
@@ -3244,7 +3253,7 @@ internal fun VideoDetailScreenStateHolder(
                                     .graphicsLayer {
                                         alpha = resolveVideoDetailReturnPlayerAlpha(
                                             transitionProgress = detailTransitionProgress.value,
-                                            isCommittedCardReturn = isLeaving,
+                                            isCommittedCardReturn = isCommittedCardReturn,
                                             hasResidentCover = hasResidentReturnCover,
                                             liveReturnMorph = liveReturnMorph,
                                         )
@@ -3376,7 +3385,7 @@ internal fun VideoDetailScreenStateHolder(
                                     } else {
                                         alpha = resolveVideoDetailReturnContentAlpha(
                                             transitionProgress = detailTransitionProgress.value,
-                                            isCommittedCardReturn = isLeaving,
+                                            isCommittedCardReturn = isCommittedCardReturn,
                                             holdFullyOpaqueAfterBackPreview = holdFullyOpaque,
                                             liveReturnMorph = false,
                                             isQuickReturn = isQuickReturningFromDetail,

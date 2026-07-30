@@ -340,16 +340,23 @@ internal fun resolveReturnSessionLockedCoverOwnership(
 
 /**
  * 是否应对播放器强制封面-only（掐 live surface）。
- * live ownership 时永远 false，保证 shell morph 实时画面。
+ *
+ * - live ownership 时永远 false，保证 shell morph 实时画面
+ * - 仅 **已提交** 返回才 forceCover；预测 seek 离开态不能掐 surface
+ *   （否则手势一瞬间封面盖住播放器）
+ *
+ * [isCommittedCardReturn] 默认跟 [useReturningVisualState] 兼容旧调用；
+ * 详情接线应传入真正的提交信号（markReturning / isActuallyLeaving）。
  */
 internal fun shouldForceCoverOnlyForReturnOwnership(
     ownership: VideoCardReturnCoverOwnership,
     useReturningVisualState: Boolean,
     forceCoverOnlyOnReturn: Boolean,
+    isCommittedCardReturn: Boolean = useReturningVisualState,
 ): Boolean {
     if (isVideoCardLiveReturnMorphOwnership(ownership)) return false
     if (forceCoverOnlyOnReturn) return true
-    return useReturningVisualState &&
+    return isCommittedCardReturn &&
         ownership != VideoCardReturnCoverOwnership.LIVE_SURFACE
 }
 

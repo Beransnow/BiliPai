@@ -278,6 +278,114 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
+    fun `predictive seek exit is leaving but not committed until markReturning`() {
+        // targetState=PostExit 的 seek：离开态 true，但尚未松手提交
+        assertTrue(
+            shouldUseReturningVideoDetailVisualState(
+                forceCoverOnlyForReturn = false,
+                isCardReturnExitInProgress = true,
+                isSessionReturningToCard = false,
+            )
+        )
+        assertFalse(
+            shouldTreatVideoDetailCardReturnAsCommitted(
+                isActuallyLeaving = false,
+                isSessionReturningToCard = false,
+            )
+        )
+        // 松手提交 / 按钮返回后才 committed
+        assertTrue(
+            shouldTreatVideoDetailCardReturnAsCommitted(
+                isActuallyLeaving = false,
+                isSessionReturningToCard = true,
+            )
+        )
+        assertTrue(
+            shouldTreatVideoDetailCardReturnAsCommitted(
+                isActuallyLeaving = true,
+                isSessionReturningToCard = false,
+            )
+        )
+    }
+
+    @Test
+    fun `uncommitted predictive seek keeps live player and zero cover even when exit is in progress`() {
+        // 与 StateHolder 接线一致：isCommitted=false 时 live 路径封面永不盖住播放器
+        assertEquals(
+            0f,
+            resolveVideoDetailReturnCoverAlpha(
+                transitionProgress = 0.7f,
+                isCommittedCardReturn = false,
+                hasResidentCover = true,
+                liveReturnMorph = true,
+            ),
+            0.0001f,
+        )
+        assertEquals(
+            1f,
+            resolveVideoDetailReturnPlayerAlpha(
+                transitionProgress = 0.7f,
+                isCommittedCardReturn = false,
+                hasResidentCover = true,
+                liveReturnMorph = true,
+            ),
+            0.0001f,
+        )
+        // 已提交但未到 handoff 窗口：仍保持实时画面
+        assertEquals(
+            0f,
+            resolveVideoDetailReturnCoverAlpha(
+                transitionProgress = 0.5f,
+                isCommittedCardReturn = true,
+                hasResidentCover = true,
+                liveReturnMorph = true,
+            ),
+            0.0001f,
+        )
+        assertEquals(
+            1f,
+            resolveVideoDetailReturnPlayerAlpha(
+                transitionProgress = 0.5f,
+                isCommittedCardReturn = true,
+                hasResidentCover = true,
+                liveReturnMorph = true,
+            ),
+            0.0001f,
+        )
+    }
+
+    @Test
+    fun `forceCoverOnly stays off during uncommitted leaving for resident path`() {
+        assertFalse(
+            com.android.purebilibili.core.ui.transition.shouldForceCoverOnlyForReturnOwnership(
+                ownership = com.android.purebilibili.core.ui.transition.VideoCardReturnCoverOwnership.RESIDENT_COVER,
+                useReturningVisualState = true,
+                forceCoverOnlyOnReturn = false,
+                isCommittedCardReturn = false,
+            )
+        )
+        assertTrue(
+            com.android.purebilibili.core.ui.transition.shouldForceCoverOnlyForReturnOwnership(
+                ownership = com.android.purebilibili.core.ui.transition.VideoCardReturnCoverOwnership.RESIDENT_COVER,
+                useReturningVisualState = true,
+                forceCoverOnlyOnReturn = false,
+                isCommittedCardReturn = true,
+            )
+        )
+    }
+
+    @Test
+    fun `detail state holder splits committed return from predictive exit leaving`() {
+        val source = File(
+            "src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreenStateHolder.kt"
+        ).readText()
+        assertTrue(source.contains("shouldTreatVideoDetailCardReturnAsCommitted("))
+        assertTrue(source.contains("isCommittedCardReturn = isCommittedCardReturn"))
+        assertFalse(source.contains("isCommittedCardReturn = isLeaving"))
+        assertTrue(source.contains("isCommittedCardReturn = isCommittedCardReturn,"))
+    }
+
+    @Test
     fun `live return morph keeps player visible before the landing handoff`() {
         assertEquals(
             0f,
@@ -819,7 +927,10 @@ class VideoDetailReturnCoverPolicyTest {
             .substringAfter("val useReturningVideoDetailVisualState = shouldUseReturningVideoDetailVisualState(")
             .substringBefore("val handleTopBarAction")
         assertTrue(call.contains("isCardReturnExitInProgress = isCardReturnExitInProgress"))
-        assertTrue(call.contains("isSessionReturningToCard = isReturningFromDetail"))
+        // session 先算 isSessionReturningToCard（含 transition/shared 门闩），再传入
+        assertTrue(source.contains("val isSessionReturningToCard = isReturningFromDetail &&"))
+        assertTrue(call.contains("isSessionReturningToCard = isSessionReturningToCard"))
+        assertTrue(source.contains("shouldTreatVideoDetailCardReturnAsCommitted("))
         assertTrue(transitionHostSource.contains("video-detail-shared-morph-clock"))
     }
 

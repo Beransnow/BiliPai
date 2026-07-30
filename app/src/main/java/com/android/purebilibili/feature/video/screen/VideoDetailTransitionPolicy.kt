@@ -44,6 +44,22 @@ internal fun shouldUseReturningVideoDetailVisualState(
 }
 
 /**
+ * 是否已**提交**卡片返回（可与封面做 landing handoff）。
+ *
+ * 与 [shouldUseReturningVideoDetailVisualState] 不同：
+ * - 预测返回 seek 中 `targetState=PostExit` 会让离开态为 true，但尚未松手提交
+ * - 封面/播放器 alpha 的 handoff **只认提交**，否则手势一开始封面会盖死实时画面
+ *
+ * 提交信号：按钮返回 [isActuallyLeaving]，或导航层 [isSessionReturningToCard]（markReturning）。
+ */
+internal fun shouldTreatVideoDetailCardReturnAsCommitted(
+    isActuallyLeaving: Boolean,
+    isSessionReturningToCard: Boolean,
+): Boolean {
+    return isActuallyLeaving || isSessionReturningToCard
+}
+
+/**
  * 详情 → 来源卡片 sharedBounds：实时画面跟手缩小（一镜到底）。
  * 实现收口到 [shouldUseVideoCardLiveReturnMorph]（[VideoCardReturnTimeline]）。
  */
