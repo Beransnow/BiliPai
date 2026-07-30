@@ -13,8 +13,6 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.layout.WindowInsets
@@ -34,7 +32,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.material3.MaterialTheme
@@ -155,6 +152,8 @@ import com.android.purebilibili.core.plugin.skin.rememberUiSkinState
 // import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi (Removed)
 import com.android.purebilibili.feature.home.components.FrostedBottomBar
 import com.android.purebilibili.feature.home.components.BottomNavItem
+import com.android.purebilibili.feature.home.components.BottomBarMatchedDockEdge
+import com.android.purebilibili.feature.home.components.BottomBarMatchedDockVisibility
 import com.android.purebilibili.feature.home.components.rememberBottomBarUiSkinDecoration
 import com.android.purebilibili.feature.profile.shouldShowProfileHistoryService
 import com.android.purebilibili.core.store.AppNavigationSettings
@@ -3117,26 +3116,11 @@ fun AppNavigation(
                     .zIndex(1f)
 
                 Box(modifier = bottomBarModifier) {
-                    AnimatedVisibility(
+                    BottomBarMatchedDockVisibility(
                         visibleState = bottomBarVisibilityState,
-                        enter = slideInVertically(
-                            animationSpec = softLandingSpring(),
-                            initialOffsetY = { it }
-                        ) + fadeIn(animationSpec = emphasizedEnterTween(navMotionSpec.slowFadeDurationMillis)) +
-                            scaleIn(
-                                animationSpec = softLandingSpring(),
-                                initialScale = 0.96f,
-                                transformOrigin = TransformOrigin(0.5f, 1f)
-                            ),
-                        exit = slideOutVertically(
-                            animationSpec = emphasizedExitTween(navMotionSpec.fastFadeDurationMillis),
-                            targetOffsetY = { it }
-                        ) + fadeOut(animationSpec = emphasizedExitTween(navMotionSpec.fastFadeDurationMillis)) +
-                            scaleOut(
-                                animationSpec = emphasizedExitTween(navMotionSpec.fastFadeDurationMillis),
-                                targetScale = 0.92f,
-                                transformOrigin = TransformOrigin(0.5f, 1f)
-                            )
+                        edge = BottomBarMatchedDockEdge.BOTTOM,
+                        enterFadeDurationMillis = navMotionSpec.slowFadeDurationMillis,
+                        exitFadeDurationMillis = navMotionSpec.fastFadeDurationMillis
                     ) {
                         if (isBottomBarFloating) {
                             Box(

@@ -96,7 +96,6 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.animation.DampedDragAnimationState
-import com.android.purebilibili.core.ui.animation.rememberDampedDragAnimationState
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity
 import com.kyant.backdrop.Backdrop
@@ -104,6 +103,10 @@ import com.kyant.backdrop.backdrops.LayerBackdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberCombinedBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
+import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
+import com.android.purebilibili.feature.home.components.liquid.rememberCombinedBackdrop as rememberMiuixCombinedBackdrop
 import dev.chrisbanes.haze.HazeState
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -734,6 +737,7 @@ internal fun Modifier.homeTopBottomBarMatchedSurface(
     shape: Shape,
     hazeState: HazeState?,
     backdrop: LayerBackdrop?,
+    miuixBackdrop: MiuixBackdrop? = null,
     liquidGlassStyle: LiquidGlassStyle,
     liquidGlassTuning: LiquidGlassTuning?,
     liquidGlassPreset: BottomBarLiquidGlassPreset = BottomBarLiquidGlassPreset.BILIPAI_TUNED,
@@ -762,22 +766,41 @@ internal fun Modifier.homeTopBottomBarMatchedSurface(
         blurIntensity = blurIntensity,
         liquidGlassPreset = liquidGlassPreset
     )
-    this.kernelSuFloatingDockSurface(
-        shape = shape,
-        backdrop = backdrop,
-        containerColor = containerColor,
-        blurEnabled = isBlurEnabled,
-        glassEnabled = isGlassEnabled,
-        drawShellLens = drawShellLens,
-        blurRadius = tuning.shellBlurRadiusDp.dp,
-        hazeState = hazeState,
-        motionTier = motionTier,
-        isTransitionRunning = isTransitionRunning,
-        forceLowBlurBudget = forceLowBlurBudget,
-        liquidGlassPreset = liquidGlassPreset,
-        isScrolling = isScrolling,
-        materialScrollProgress = materialScrollProgress
-    )
+    if (miuixBackdrop != null) {
+        this.bottomBarMatchedLiquidDockSurface(
+            shape = shape,
+            backdrop = miuixBackdrop,
+            containerColor = containerColor,
+            blurEnabled = isBlurEnabled,
+            glassEnabled = isGlassEnabled,
+            drawShellLens = drawShellLens,
+            blurRadius = tuning.shellBlurRadiusDp.dp,
+            hazeState = hazeState,
+            motionTier = motionTier,
+            isTransitionRunning = isTransitionRunning,
+            forceLowBlurBudget = forceLowBlurBudget,
+            liquidGlassPreset = liquidGlassPreset,
+            isScrollInProgressProvider = { isScrolling },
+            materialScrollProgressOverride = materialScrollProgress
+        )
+    } else {
+        this.kernelSuFloatingDockSurface(
+            shape = shape,
+            backdrop = backdrop,
+            containerColor = containerColor,
+            blurEnabled = isBlurEnabled,
+            glassEnabled = isGlassEnabled,
+            drawShellLens = drawShellLens,
+            blurRadius = tuning.shellBlurRadiusDp.dp,
+            hazeState = hazeState,
+            motionTier = motionTier,
+            isTransitionRunning = isTransitionRunning,
+            forceLowBlurBudget = forceLowBlurBudget,
+            liquidGlassPreset = liquidGlassPreset,
+            isScrolling = isScrolling,
+            materialScrollProgress = materialScrollProgress
+        )
+    }
 }
 
 @Composable
@@ -797,7 +820,9 @@ private fun LightweightHomeTopTabs(
     isLiquidGlassEnabled: Boolean = false,
     liquidGlassStyle: LiquidGlassStyle = LiquidGlassStyle.CLASSIC,
     liquidGlassTuning: LiquidGlassTuning? = null,
+    liquidGlassPreset: BottomBarLiquidGlassPreset = BottomBarLiquidGlassPreset.BILIPAI_TUNED,
     backdrop: LayerBackdrop? = null,
+    miuixBackdrop: MiuixBackdrop? = null,
     topTabSkinIconPaths: Map<String, TopTabSkinIconPaths> = emptyMap(),
     partitionSkinIconPath: String? = null,
     hasOuterChromeSurface: Boolean = false,
@@ -821,17 +846,16 @@ private fun LightweightHomeTopTabs(
     val safeSelectedIndex = selectedIndex.coerceIn(0, (categories.size - 1).coerceAtLeast(0))
     val topTabDragMotionSpec = remember { resolveSegmentedControlMotionSpec() }
     var topTabIndicatorDragEngaged by remember { mutableStateOf(false) }
-    val topTabDragState = rememberDampedDragAnimationState(
+    val matchedChromeState = rememberBottomBarMatchedLiquidChromeState(
         initialIndex = safeSelectedIndex,
         itemCount = categories.size.coerceAtLeast(1),
-        motionSpec = topTabDragMotionSpec,
-        holdPressUntilReleaseTargetSettles = true,
         onIndexChanged = { index ->
             if (index in categories.indices) {
                 onCategorySelected(index)
             }
         }
     )
+    val topTabDragState = matchedChromeState.dragState
     LaunchedEffect(topTabDragState.settledReleaseCount) {
         if (topTabDragState.settledReleaseCount > 0) {
             topTabIndicatorDragEngaged = false
@@ -1233,6 +1257,14 @@ private fun LightweightHomeTopTabs(
             indicatorVisualPolicy = topTabIndicatorVisualPolicy
         )
         val topTabContentBackdrop = rememberLayerBackdrop()
+        val topTabMiuixContentBackdrop = rememberMiuixLayerBackdrop()
+        val effectiveTopTabMiuixContentBackdrop = if (
+            shouldRenderTopTabIndicatorBackdrop && miuixBackdrop != null
+        ) {
+            rememberMiuixCombinedBackdrop(miuixBackdrop, topTabMiuixContentBackdrop)
+        } else {
+            topTabMiuixContentBackdrop
+        }
         val effectiveTopTabIndicatorContentBackdrop: Backdrop? = when {
             !shouldRenderTopTabIndicatorBackdrop ||
                 !topTabIndicatorBackdropPolicy.useIndicatorBackdrop -> null
@@ -1368,6 +1400,7 @@ private fun LightweightHomeTopTabs(
                             .alpha(0f)
                             .zIndex(0f)
                             .layerBackdrop(topTabContentBackdrop)
+                            .miuixLayerBackdrop(topTabMiuixContentBackdrop)
                             .graphicsLayer {
                                 // Only mirror LazyRow content origin (padding - scroll). No extra panel offset.
                                 translationX = topTabHorizontalPaddingPx - topTabListScrollOffsetPx
@@ -1498,7 +1531,7 @@ private fun LightweightHomeTopTabs(
                             itemWidthDp = itemWidth.value,
                             horizontalGapDp = dockIndicatorHorizontalGap.value
                         ).dp
-                        KernelSuBottomBarIndicatorLayer(
+                        BottomBarMatchedLiquidIndicator(
                             visible = true,
                             dockContentAlpha = 1f,
                             indicatorTranslationXPx = resolveTopTabDockIndicatorOffsetPx(
@@ -1508,14 +1541,15 @@ private fun LightweightHomeTopTabs(
                                 }
                             ),
                             indicatorPanelOffsetPx = 0f,
-                            indicatorSettleReboundTransform = BottomBarClickPulseTransform(scaleX = 1f),
                             indicatorWidth = indicatorWidth,
                             indicatorHeight = dockIndicatorHeight,
                             shellShape = capsuleShape,
-                            liquidGlassPreset = BottomBarLiquidGlassPreset.BILIPAI_TUNED,
+                            liquidGlassPreset = liquidGlassPreset,
                             // Prefer export capture so capsule shows theme-tinted glyphs.
-                            contentBackdrop = topTabContentBackdrop,
-                            backdrop = effectiveTopTabIndicatorContentBackdrop ?: backdrop,
+                            contentBackdrop = effectiveTopTabMiuixContentBackdrop,
+                            backdrop = miuixBackdrop,
+                            legacyContentBackdrop = topTabContentBackdrop,
+                            legacyBackdrop = effectiveTopTabIndicatorContentBackdrop ?: backdrop,
                             indicatorLensSpec = topTabIndicatorLensSpec,
                             effectivePressProgress = topTabLensProgress,
                             indicatorIdleSurfaceColor = resolveIosTopTabCapsuleContainerColor(
@@ -1528,25 +1562,25 @@ private fun LightweightHomeTopTabs(
                             velocityItemsPerSecond = topTabIndicatorLayerVelocityItemsPerSecond,
                             isDragging = topTabShouldStretchIndicator,
                             indicatorLayerScaleProgress = topTabIndicatorLayerScaleProgress,
-                            indicatorLayerScaleTransform = null,
                             bottomBarMotionSpec = topTabDragMotionSpec,
                             isDarkTheme = isDarkTheme
                         )
                     }
                     if (shouldUseMd3DockBackedCapsule) {
-                        KernelSuBottomBarIndicatorLayer(
+                        BottomBarMatchedLiquidIndicator(
                             visible = true,
                             dockContentAlpha = 1f,
                             indicatorTranslationXPx = md3LiquidCapsuleTranslationXPx,
                             indicatorPanelOffsetPx = 0f,
-                            indicatorSettleReboundTransform = BottomBarClickPulseTransform(scaleX = 1f),
                             indicatorWidth = md3LiquidCapsuleWidth,
                             indicatorHeight = dockIndicatorHeight,
                             shellShape = resolveSharedBottomBarCapsuleShape(),
-                            liquidGlassPreset = BottomBarLiquidGlassPreset.BILIPAI_TUNED,
+                            liquidGlassPreset = liquidGlassPreset,
                             // Prefer export capture so capsule shows theme-tinted glyphs.
-                            contentBackdrop = topTabContentBackdrop,
-                            backdrop = effectiveTopTabIndicatorContentBackdrop ?: backdrop,
+                            contentBackdrop = effectiveTopTabMiuixContentBackdrop,
+                            backdrop = miuixBackdrop,
+                            legacyContentBackdrop = topTabContentBackdrop,
+                            legacyBackdrop = effectiveTopTabIndicatorContentBackdrop ?: backdrop,
                             indicatorLensSpec = topTabIndicatorLensSpec,
                             effectivePressProgress = topTabLensProgress,
                             indicatorIdleSurfaceColor = resolveAndroidNativeIdleIndicatorSurfaceColor(
@@ -1557,26 +1591,26 @@ private fun LightweightHomeTopTabs(
                             velocityItemsPerSecond = topTabIndicatorLayerVelocityItemsPerSecond,
                             isDragging = topTabShouldStretchIndicator,
                             indicatorLayerScaleProgress = topTabIndicatorLayerScaleProgress,
-                            indicatorLayerScaleTransform = null,
                             bottomBarMotionSpec = topTabDragMotionSpec,
                             isDarkTheme = isDarkTheme
                         )
                     }
                     if (shouldUseMd3LiquidCapsule) {
                         val capsuleShape = resolveSharedBottomBarCapsuleShape()
-                        KernelSuBottomBarIndicatorLayer(
+                        BottomBarMatchedLiquidIndicator(
                             visible = true,
                             dockContentAlpha = 1f,
                             indicatorTranslationXPx = md3LiquidCapsuleTranslationXPx,
                             indicatorPanelOffsetPx = 0f,
-                            indicatorSettleReboundTransform = BottomBarClickPulseTransform(scaleX = 1f),
                             indicatorWidth = md3LiquidCapsuleWidth,
                             indicatorHeight = dockIndicatorHeight,
                             shellShape = capsuleShape,
-                            liquidGlassPreset = BottomBarLiquidGlassPreset.BILIPAI_TUNED,
+                            liquidGlassPreset = liquidGlassPreset,
                             // Prefer export capture so capsule shows theme-tinted glyphs.
-                            contentBackdrop = topTabContentBackdrop,
-                            backdrop = effectiveTopTabIndicatorContentBackdrop ?: backdrop,
+                            contentBackdrop = effectiveTopTabMiuixContentBackdrop,
+                            backdrop = miuixBackdrop,
+                            legacyContentBackdrop = topTabContentBackdrop,
+                            legacyBackdrop = effectiveTopTabIndicatorContentBackdrop ?: backdrop,
                             indicatorLensSpec = topTabIndicatorLensSpec,
                             effectivePressProgress = topTabLensProgress,
                             indicatorIdleSurfaceColor = if (isDarkTheme) {
@@ -1589,7 +1623,6 @@ private fun LightweightHomeTopTabs(
                             velocityItemsPerSecond = topTabIndicatorLayerVelocityItemsPerSecond,
                             isDragging = topTabShouldStretchIndicator,
                             indicatorLayerScaleProgress = topTabIndicatorLayerScaleProgress,
-                            indicatorLayerScaleTransform = null,
                             bottomBarMotionSpec = topTabDragMotionSpec,
                             isDarkTheme = isDarkTheme
                         )
@@ -1861,8 +1894,10 @@ fun CategoryTabRow(
     isLiquidGlassEnabled: Boolean = false,
     liquidGlassStyle: LiquidGlassStyle = LiquidGlassStyle.CLASSIC,
     liquidGlassTuning: LiquidGlassTuning? = null,
+    liquidGlassPreset: BottomBarLiquidGlassPreset = BottomBarLiquidGlassPreset.BILIPAI_TUNED,
     hazeState: HazeState? = null,
     backdrop: LayerBackdrop? = null,
+    miuixBackdrop: MiuixBackdrop? = null,
     isFloatingStyle: Boolean = false,
     edgeToEdge: Boolean = false,
     hasOuterChromeSurface: Boolean = false,
@@ -1902,7 +1937,9 @@ fun CategoryTabRow(
         isLiquidGlassEnabled = isLiquidGlassEnabled,
         liquidGlassStyle = liquidGlassStyle,
         liquidGlassTuning = liquidGlassTuning,
+        liquidGlassPreset = liquidGlassPreset,
         backdrop = backdrop,
+        miuixBackdrop = miuixBackdrop,
         topTabSkinIconPaths = topTabSkinIconPaths,
         partitionSkinIconPath = partitionSkinIconPath,
         hasOuterChromeSurface = hasOuterChromeSurface,

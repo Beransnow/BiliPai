@@ -20,6 +20,8 @@ import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.lazy.staggeredgrid.*  // 🌊 瀑布流布局
 import com.kyant.backdrop.backdrops.layerBackdrop // [Fix] Import for modifier
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -290,6 +292,7 @@ fun HomeScreen(
     val targetVideoItemState = remember { mutableStateOf<VideoItem?>(null) }
     var pendingNotInterestedVideo by remember { mutableStateOf<VideoItem?>(null) }
     val homeBackdrop = rememberLayerBackdrop()
+    val homeMiuixBackdrop = rememberMiuixLayerBackdrop()
 
     val coroutineScope = rememberCoroutineScope() // 用于双击回顶动画
     val headerSettleMotionSpec = AppMotionTokens.standardSpec<Float>()
@@ -1480,6 +1483,7 @@ fun HomeScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .layerBackdrop(homeBackdrop)
+                            .miuixLayerBackdrop(homeMiuixBackdrop)
                             // 首页使用 Pager + Lazy 子层，source 挂在外层容器更稳定。
                             .hazeSourceCompat(state = hazeState)
                     ) {
@@ -2022,6 +2026,7 @@ fun HomeScreen(
             pullProgress = 0f, // [Fix] Outer header doesn't track inner pull state
             pagerState = pagerState,
             backdrop = homeBackdrop,
+            miuixBackdrop = homeMiuixBackdrop,
             homeSettings = effectiveHomeSettings,
             topTabsVisible = resolveHomeTopTabsVisible(
                 isDelayedForCardSettle = delayTopTabsUntilCardSettled,

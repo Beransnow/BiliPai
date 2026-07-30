@@ -1296,6 +1296,7 @@ internal fun Modifier.homeTopChromeSurface(
     surfaceColor: Color,
     hazeState: HazeState?,
     backdrop: LayerBackdrop?,
+    miuixBackdrop: top.yukonga.miuix.kmp.blur.Backdrop? = null,
     liquidStyle: LiquidGlassStyle,
     liquidGlassTuning: LiquidGlassTuning? = null,
     liquidGlassPreset: BottomBarLiquidGlassPreset = BottomBarLiquidGlassPreset.BILIPAI_TUNED,
@@ -1316,6 +1317,7 @@ internal fun Modifier.homeTopChromeSurface(
             shape = shape,
             hazeState = hazeState,
             backdrop = backdrop,
+            miuixBackdrop = miuixBackdrop,
             liquidGlassStyle = liquidStyle,
             liquidGlassTuning = liquidGlassTuning,
             liquidGlassPreset = liquidGlassPreset,
@@ -1390,6 +1392,7 @@ fun HomeHeader(
     pagerState: androidx.compose.foundation.pager.PagerState? = null, // [New] PagerState for sync
     // [New] LayerBackdrop for liquid glass effect
     backdrop: com.kyant.backdrop.backdrops.LayerBackdrop? = null,
+    miuixBackdrop: top.yukonga.miuix.kmp.blur.Backdrop? = null,
     homeSettings: com.android.purebilibili.core.store.HomeSettings? = null,
     topTabsVisible: Boolean = true,
     topTabsCollapsed: Boolean = false,
@@ -1993,6 +1996,7 @@ fun HomeHeader(
             tabSurfaceColor = skinTintedTabSurfaceColor,
             hazeState = hazeState,
             backdrop = backdrop,
+            miuixBackdrop = miuixBackdrop,
             liquidStyle = liquidStyle,
             liquidGlassTuning = liquidGlassTuning,
             liquidGlassPreset = bottomBarLiquidGlassPreset,
@@ -2056,8 +2060,10 @@ fun HomeHeader(
                 ) && isGlassSupported,
                 liquidGlassStyle = liquidStyle,
                 liquidGlassTuning = liquidGlassTuning,
+                liquidGlassPreset = bottomBarLiquidGlassPreset,
                 hazeState = hazeState,
                 backdrop = backdrop,
+                miuixBackdrop = miuixBackdrop,
                 isFloatingStyle = isTabFloating,
                 edgeToEdge = integratedCollapsedTopBar,
                 hasOuterChromeSurface = drawTopTabDockChrome,
@@ -2098,6 +2104,7 @@ fun HomeHeader(
                         ),
                         hazeState = hazeState,
                         backdrop = backdrop,
+                        miuixBackdrop = miuixBackdrop,
                         liquidStyle = liquidStyle,
                         liquidGlassTuning = liquidGlassTuning,
                         liquidGlassPreset = bottomBarLiquidGlassPreset,
@@ -2419,12 +2426,14 @@ fun HomeHeader(
                                                     shape = searchContainerShape,
                                                     hazeState = hazeState,
                                                     backdrop = backdrop,
+                                                    miuixBackdrop = miuixBackdrop,
                                                     liquidGlassStyle = liquidStyle,
                                                     liquidGlassTuning = liquidGlassTuning,
                                                     liquidGlassPreset = bottomBarLiquidGlassPreset,
                                                     motionTier = motionTier,
                                                     isTransitionRunning = topChromeMotionPolicy.isTransitionRunning,
-                                                    forceLowBlurBudget = forceLowBlurBudget
+                                                    forceLowBlurBudget = forceLowBlurBudget,
+                                                    isScrolling = topChromeMotionPolicy.isScrolling
                                                 )
                                             } else {
                                                 Modifier.homeTopChromeSurface(
@@ -2532,13 +2541,15 @@ fun HomeHeader(
                                                             shape = edgeButtonShape,
                                                             hazeState = hazeState,
                                                             backdrop = backdrop,
+                                                            miuixBackdrop = miuixBackdrop,
                                                             liquidGlassStyle = liquidStyle,
                                                             liquidGlassTuning = liquidGlassTuning,
                                                             liquidGlassPreset = bottomBarLiquidGlassPreset,
                                                             motionTier = motionTier,
                                                             isTransitionRunning = topChromeMotionPolicy.isTransitionRunning,
                                                             forceLowBlurBudget = forceLowBlurBudget,
-                                                            drawShellLens = false
+                                                            drawShellLens = false,
+                                                            isScrolling = topChromeMotionPolicy.isScrolling
                                                         )
                                                 } else {
                                                     Modifier

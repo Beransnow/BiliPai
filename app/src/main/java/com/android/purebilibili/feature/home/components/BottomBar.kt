@@ -136,7 +136,6 @@ import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import io.github.alexzhirkevich.cupertino.icons.filled.*
 import com.android.purebilibili.core.ui.animation.DampedDragAnimationState
-import com.android.purebilibili.core.ui.animation.rememberDampedDragAnimationState
 import com.android.purebilibili.core.ui.animation.horizontalDragGesture
 import com.android.purebilibili.feature.home.LocalHomeScrollOffset
 import com.android.purebilibili.feature.home.HomeVisualPalette
@@ -1204,6 +1203,15 @@ internal fun Modifier.kernelSuMiuixFloatingDockSurface(
         blurEnabled = blurEnabled,
         hasHazeState = hazeState != null
     )
+    val materialSpec = resolveBottomBarGlassMaterialSpec(
+        preset = liquidGlassPreset,
+        isDarkTheme = isDarkTheme,
+        isScrolling = isScrolling,
+        scrollProgress = materialScrollProgress,
+        glassEnabled = renderGlassEffects,
+        motionProgress = materialMotionProgress,
+        pressProgress = materialPressProgress
+    )
     val baseHighlight = rememberGravityRotatedHighlight(iosIndicatorSpecular, extraDegrees = -45f)
 
     this
@@ -1230,7 +1238,8 @@ internal fun Modifier.kernelSuMiuixFloatingDockSurface(
                         shadow = ComposeShadow(
                             radius = AppSpacingTokens.Small + AppSpacingTokens.Micro,
                             color = OpticalContrastPalette.Shadow,
-                            alpha = if (isDarkTheme) 0.2f else 0.1f
+                            alpha = (if (isDarkTheme) 0.2f else 0.1f) *
+                                materialSpec.shadowAlphaScale
                         )
                     )
                     .miuixDrawBackdrop(
@@ -1238,12 +1247,20 @@ internal fun Modifier.kernelSuMiuixFloatingDockSurface(
                         shape = { shape },
                         effects = {
                             if (renderGlassEffects) {
-                                miuixVibrancy()
-                                miuixBlur(AppSpacingTokens.ExtraSmall.toPx(), AppSpacingTokens.ExtraSmall.toPx())
-                                if (drawShellLens) {
+                                if (materialSpec.vibrancy) {
+                                    miuixVibrancy()
+                                }
+                                val resolvedBlurRadius =
+                                    materialSpec.blurRadiusDp?.dp ?: AppSpacingTokens.ExtraSmall
+                                miuixBlur(resolvedBlurRadius.toPx(), resolvedBlurRadius.toPx())
+                                if (
+                                    drawShellLens &&
+                                    materialSpec.shellRefractionHeightDp > 0f &&
+                                    materialSpec.shellRefractionAmountDp > 0f
+                                ) {
                                     miuixLens(
-                                        refractionHeight = AppSpacingTokens.ExtraLarge.toPx(),
-                                        refractionAmount = AppSpacingTokens.ExtraLarge.toPx()
+                                        refractionHeight = materialSpec.shellRefractionHeightDp.dp.toPx(),
+                                        refractionAmount = materialSpec.shellRefractionAmountDp.dp.toPx()
                                     )
                                 }
                             } else if (blurEnabled && !useHazeBlur) {
@@ -1252,7 +1269,13 @@ internal fun Modifier.kernelSuMiuixFloatingDockSurface(
                             }
                         },
                         highlight = {
-                            baseHighlight.copy(alpha = if (renderGlassEffects) 0.75f else 0f)
+                            baseHighlight.copy(
+                                alpha = if (renderGlassEffects) {
+                                    0.75f * materialSpec.highlightWidthScale
+                                } else {
+                                    0f
+                                }
+                            )
                         },
                         layerBlock = if (renderGlassEffects) {
                             {
@@ -1264,8 +1287,29 @@ internal fun Modifier.kernelSuMiuixFloatingDockSurface(
                         } else null,
                         onDrawSurface = {
                             drawRect(containerColor)
+                            if (materialSpec.foregroundTint.alpha > 0f) {
+                                drawRect(materialSpec.foregroundTint)
+                            }
                         }
                     )
+                    .run {
+                        val innerRimGlow = materialSpec.innerRimGlow
+                        if (renderGlassEffects && innerRimGlow != null) {
+                            miuixInnerShadow(shape = shape) {
+                                MiuixInnerShadow(
+                                    radius = innerRimGlow.radiusDp.dp,
+                                    color = if (isDarkTheme) {
+                                        OpticalContrastPalette.Highlight
+                                    } else {
+                                        OpticalContrastPalette.Shadow
+                                    },
+                                    alpha = innerRimGlow.alpha
+                                )
+                            }
+                        } else {
+                            this
+                        }
+                    }
             } else {
                 background(containerColor, shape)
             }
@@ -3078,12 +3122,11 @@ private fun KernelSuAlignedBottomBar(
         darkTheme = isDarkTheme
     )
     val totalItems = allItems.size.coerceAtLeast(1)
-    val dampedDragState = rememberDampedDragAnimationState(
+    val matchedChromeState = rememberBottomBarMatchedLiquidChromeState(
         initialIndex = selectedIndex,
         itemCount = totalItems,
-        motionSpec = bottomBarMotionSpec,
         notifyIndexChangedOnReleaseStart = false,
-        holdPressUntilReleaseTargetSettles = true,
+        isScrollInProgressProvider = { isFeedScrollInProgress },
         onIndexChanged = { index ->
             when {
                 index in visibleItems.indices -> onItemClick(visibleItems[index])
@@ -3091,6 +3134,7 @@ private fun KernelSuAlignedBottomBar(
             }
         }
     )
+    val dampedDragState = matchedChromeState.dragState
     LaunchedEffect(selectedIndex, isValidSelection, dampedDragState) {
         if (isValidSelection) {
             dampedDragState.updateIndex(selectedIndex)
@@ -3674,12 +3718,13 @@ private fun KernelSuAlignedBottomBar(
                     }
                 }
 
-                KernelSuMiuixBottomBarIndicatorLayer(
+                BottomBarMatchedLiquidIndicator(
                     visible = selectedIndex in visibleItems.indices,
                     dockContentAlpha = dockContentAlpha,
                     indicatorTranslationXPx = indicatorTranslationXPx,
                     indicatorPanelOffsetPx = presetPanelOffsets.indicatorPanelOffsetPx,
                     indicatorWidth = indicatorWidth,
+                    indicatorHeight = BOTTOM_BAR_INDICATOR_DOCK_BAND_HEIGHT_DP.dp,
                     shellShape = shellShape,
                     liquidGlassPreset = liquidGlassPreset,
                     contentBackdrop = contentBackdrop,
@@ -3693,7 +3738,6 @@ private fun KernelSuAlignedBottomBar(
                     velocityItemsPerSecond = dampedDragState.deformationVelocityItemsPerSecond,
                     isDragging = dampedDragState.isDragging,
                     indicatorLayerScaleProgress = indicatorLayerScaleProgress,
-                    indicatorLayerScaleTransform = null,
                     bottomBarMotionSpec = bottomBarMotionSpec,
                     isDarkTheme = isDarkTheme
                 )
@@ -3860,7 +3904,13 @@ private fun KernelSuBottomBarShell(
     content: @Composable BoxScope.() -> Unit
 ) {
     Box(modifier = modifier) {
-        Box(
+        BottomBarMatchedLiquidDock(
+            backdrop = miuixBackdrop,
+            containerColor = containerColor,
+            shape = shellShape,
+            blurEnabled = blurEnabled,
+            glassEnabled = glassEnabled,
+            blurRadius = blurRadius,
             modifier = Modifier
                 .matchParentSize()
                 .graphicsLayer {
@@ -3872,25 +3922,17 @@ private fun KernelSuBottomBarShell(
                     }
                     scaleX = edgeCompressionScaleX * bumpScale
                     scaleY = bumpScale
-                }
-                .kernelSuMiuixFloatingDockSurface(
-                    shape = shellShape,
-                    backdrop = miuixBackdrop,
-                    containerColor = containerColor,
-                    blurEnabled = blurEnabled,
-                    glassEnabled = glassEnabled,
-                    blurRadius = blurRadius,
-                    hazeState = hazeState,
-                    motionTier = motionTier,
-                    isTransitionRunning = isTransitionRunning,
-                    forceLowBlurBudget = forceLowBlurBudget,
-                    liquidGlassPreset = liquidGlassPreset,
-                    isScrolling = isScrolling,
-                    materialScrollProgress = materialScrollProgress,
-                    materialMotionProgress = materialMotionProgress,
-                    materialPressProgress = materialPressProgress
-                )
-        )
+                },
+            hazeState = hazeState,
+            motionTier = motionTier,
+            isTransitionRunning = isTransitionRunning,
+            forceLowBlurBudget = forceLowBlurBudget,
+            liquidGlassPreset = liquidGlassPreset,
+            isScrollInProgressProvider = { isScrolling },
+            materialScrollProgressOverride = materialScrollProgress,
+            materialMotionProgress = materialMotionProgress,
+            materialPressProgress = materialPressProgress
+        ) {}
 
         BottomBarSkinDecorativeTrim(
             decoration = uiSkinDecoration,
