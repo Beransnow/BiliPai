@@ -71,23 +71,14 @@ internal class VideoCardTransitionClock {
      * 所有视觉层必须走这里，禁止再读独立 Animatable。
      */
     fun depthProgress(): Float {
-        val gesture = gestureBackProgress
-        if (gesture != null) {
-            return resolveVideoCardTransitionBackgroundGestureBlurProgress(
-                phase = when (phase) {
-                    VideoCardTransitionBackgroundPhase.OPENING ->
-                        VideoCardTransitionBackgroundPhase.OPENING
-                    else -> VideoCardTransitionBackgroundPhase.HELD
-                },
-                currentBlurProgress = gestureStartDepth,
-                backProgress = gesture,
-            )
-        }
-        val shared = sharedMorphFraction
-        if (sharedMorphActive && shared != null) {
-            return shared.coerceIn(0f, 1f)
-        }
-        return fallback.value.coerceIn(0f, 1f)
+        return resolveVideoCardClockDepthProgress(
+            gestureBackProgress = gestureBackProgress,
+            gestureStartDepth = gestureStartDepth,
+            phase = phase,
+            sharedMorphActive = sharedMorphActive,
+            sharedMorphFraction = sharedMorphFraction,
+            fallbackProgress = fallback.value,
+        )
     }
 
     /**
@@ -262,6 +253,9 @@ internal fun shouldPreferSharedMorphProgress(
 
 /**
  * 解析最终 depth（纯函数，供测试）。
+ *
+ * [VideoCardTransitionBackgroundPhase.HELD] 合同为满糊（1）：shared-only 进场结束后
+ * fallback 可能仍停在 0，若直接读 fallback 会在返回首帧瞬间变清晰。
  */
 internal fun resolveVideoCardClockDepthProgress(
     gestureBackProgress: Float?,
@@ -290,7 +284,30 @@ internal fun resolveVideoCardClockDepthProgress(
     ) {
         return sharedMorphFraction!!.coerceIn(0f, 1f)
     }
+    if (phase == VideoCardTransitionBackgroundPhase.HELD) {
+        return 1f
+    }
     return fallbackProgress.coerceIn(0f, 1f)
+}
+
+/**
+ * 返回消糊动画起点。
+ *
+ * 已有真实进度（手势 / shared / fallback）时原样采用；若 HELD/RETURNING 却读到 ~0，
+ * 视为 shared-only 进场未写入 fallback，强制从满糊起，保证模糊→清晰连续曲线。
+ */
+internal fun resolveVideoCardReturnClearStartDepth(
+    phase: VideoCardTransitionBackgroundPhase,
+    currentDepth: Float,
+): Float {
+    val clamped = currentDepth.coerceIn(0f, 1f)
+    if (clamped > 0.001f) return clamped
+    return when (phase) {
+        VideoCardTransitionBackgroundPhase.HELD,
+        VideoCardTransitionBackgroundPhase.RETURNING,
+        -> 1f
+        else -> clamped
+    }
 }
 
 /**

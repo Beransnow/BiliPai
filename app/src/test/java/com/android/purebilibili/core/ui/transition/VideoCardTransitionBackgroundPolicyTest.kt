@@ -10,6 +10,29 @@ import kotlin.test.assertTrue
 class VideoCardTransitionBackgroundPolicyTest {
 
     @Test
+    fun detachedSourceInvalidatesRecordedSnapshotBeforeBackPreview() {
+        val state = VideoCardTransitionSnapshotLayerState().apply {
+            freezeRecording = true
+            hasRecordedContent = true
+            lastBlurRadiusPx = 12f
+            lastCornerRadiusPx = 24f
+        }
+
+        state.invalidateRecordedContent()
+
+        assertFalse(state.freezeRecording)
+        assertFalse(state.hasRecordedContent)
+        assertTrue(state.lastBlurRadiusPx.isNaN())
+        assertTrue(state.lastCornerRadiusPx.isNaN())
+    }
+
+    @Test
+    fun transitionMotionTierOnlyReducesForSystemReduceMotion() {
+        assertEquals(MotionTier.Normal, resolveVideoCardTransitionMotionTier(reduceMotion = false))
+        assertEquals(MotionTier.Reduced, resolveVideoCardTransitionMotionTier(reduceMotion = true))
+    }
+
+    @Test
     fun snapshotBlur_isEnabledForActivePhasesOnApi31Plus() {
         assertTrue(
             shouldUseVideoCardTransitionSnapshotBlur(
@@ -86,6 +109,9 @@ class VideoCardTransitionBackgroundPolicyTest {
         assertFalse(decision.drawTransitionBackground)
         assertFalse(decision.updateBlurEffect)
         assertFalse(decision.drawNavBackdrop)
+        // When the source is the sole composed scene under HELD, draw path still paints
+        // the retained layer (or live fallback) to avoid pure black under shared overlay.
+        assertTrue(shouldPaintRetainedSourceWithoutTransitionBackground(decision))
         assertFalse(
             shouldUseVideoCardTransitionSnapshotBlur(
                 exposure = exposure,
@@ -94,6 +120,17 @@ class VideoCardTransitionBackgroundPolicyTest {
                 sdkInt = 35,
             )
         )
+    }
+
+    @Test
+    fun paintRetainedSourceOnlyWhenSettledHiddenStyleDecision() {
+        val idle = resolveVideoCardTransitionRenderDecision(VideoCardTransitionExposure.Idle)
+        val returning = resolveVideoCardTransitionRenderDecision(VideoCardTransitionExposure.Returning)
+        val settled = resolveVideoCardTransitionRenderDecision(VideoCardTransitionExposure.SettledHidden)
+
+        assertFalse(shouldPaintRetainedSourceWithoutTransitionBackground(idle))
+        assertFalse(shouldPaintRetainedSourceWithoutTransitionBackground(returning))
+        assertTrue(shouldPaintRetainedSourceWithoutTransitionBackground(settled))
     }
 
     @Test
@@ -654,6 +691,20 @@ class VideoCardTransitionBackgroundPolicyTest {
                 activeMainHostRoute = "dynamic"
             )
         )
+        assertFalse(
+            shouldApplyVideoCardTransitionBackgroundToRoute(
+                entryRoute = "main_host",
+                sourceRoute = "home",
+                activeMainHostRoute = "video/BV1"
+            )
+        )
+        assertTrue(
+            shouldApplyVideoCardTransitionBackgroundToRoute(
+                entryRoute = "home",
+                sourceRoute = "home",
+                activeMainHostRoute = "video/BV1"
+            )
+        )
         assertTrue(
             shouldApplyVideoCardTransitionBackgroundToRoute(
                 entryRoute = "search",
@@ -842,7 +893,20 @@ class VideoCardTransitionBackgroundPolicyTest {
         assertTrue(
             shouldSnapClearVideoCardDepthBlurOnQuickReturn(
                 isQuickReturnFromDetail = true,
+                phase = VideoCardTransitionBackgroundPhase.OPENING,
+            )
+        )
+        // HELD / RETURNING（含快速返回）必须走连续消糊，禁止 snap 瞬间清晰。
+        assertFalse(
+            shouldSnapClearVideoCardDepthBlurOnQuickReturn(
+                isQuickReturnFromDetail = true,
                 phase = VideoCardTransitionBackgroundPhase.HELD,
+            )
+        )
+        assertFalse(
+            shouldSnapClearVideoCardDepthBlurOnQuickReturn(
+                isQuickReturnFromDetail = true,
+                phase = VideoCardTransitionBackgroundPhase.RETURNING,
             )
         )
         assertFalse(

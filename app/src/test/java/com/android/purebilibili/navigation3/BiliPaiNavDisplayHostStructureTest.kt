@@ -215,7 +215,9 @@ class BiliPaiNavDisplayHostStructureTest {
         assertTrue(preOnBack.contains("VideoCardTransitionBackgroundPhase.OPENING"))
         assertTrue(preOnBack.contains("beginReturning("))
         assertTrue(preOnBack.contains("resolveMorphAlignedFallbackDurationMs"))
+        assertTrue(preOnBack.contains("resolveVideoCardReturnClearStartDepth("))
         assertTrue(preOnBack.contains("shouldSnapClearVideoCardDepthBlurOnQuickReturn("))
+        // OPENING 打断仍可 snap；HELD/RETURNING 快速返回走 beginReturning + 连续消糊。
         assertTrue(preOnBack.contains("snapClearAndIdle()"))
     }
 
@@ -255,14 +257,15 @@ class BiliPaiNavDisplayHostStructureTest {
             .substringAfter("val videoCardTransitionJankState =")
             .substringBefore("TrackJankStateValue(")
 
-        assertTrue(source.contains("AppRuntimeVisualGuardTracker.decision.collectAsStateWithLifecycle()"))
+        assertFalse(source.contains("AppRuntimeVisualGuardTracker.decision.collectAsStateWithLifecycle()"))
         assertTrue(source.contains("stateName = VIDEO_CARD_TRANSITION_JANK_STATE"))
         assertTrue(trackingBlock.contains("PredictiveReturn"))
         assertTrue(trackingBlock.contains("GestureRestore"))
         assertTrue(trackingBlock.contains("VideoCardTransitionBackgroundPhase.OPENING"))
         assertTrue(trackingBlock.contains("VideoCardTransitionBackgroundPhase.RETURNING"))
         assertFalse(trackingBlock.contains("VideoCardTransitionBackgroundPhase.HELD"))
-        assertTrue(source.contains("runtimeGuardDecision.effectiveMotionTier"))
+        assertTrue(source.contains("resolveVideoCardTransitionMotionTier(reduceMotion)"))
+        assertFalse(source.contains("runtimeGuardDecision.effectiveMotionTier"))
         assertTrue(source.contains("stateValue = videoCardTransitionJankState"))
     }
 

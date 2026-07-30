@@ -29,7 +29,6 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.MutableCreationExtras
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.compose.animation.SharedTransitionScope
 import androidx.navigation3.runtime.NavEntryDecorator
@@ -47,7 +46,6 @@ import androidx.navigationevent.NavigationEventTransitionState
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ProvideAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.adaptive.MotionTier
-import com.android.purebilibili.core.ui.performance.AppRuntimeVisualGuardTracker
 import com.android.purebilibili.core.ui.performance.TrackJankStateValue
 import com.android.purebilibili.core.ui.performance.VIDEO_CARD_TRANSITION_JANK_STATE
 import com.android.purebilibili.core.ui.transition.LocalPredictiveBackBackgroundState
@@ -67,8 +65,10 @@ import com.android.purebilibili.core.ui.transition.VideoCardTransitionDiagnostic
 import com.android.purebilibili.core.ui.transition.resolveMorphAlignedFallbackDurationMs
 import com.android.purebilibili.core.ui.transition.resolvePredictiveBackCommitBlurDurationMs
 import com.android.purebilibili.core.ui.transition.resolvePredictiveBackGestureBlurProgress
+import com.android.purebilibili.core.ui.transition.resolveVideoCardReturnClearStartDepth
 import com.android.purebilibili.core.ui.transition.resolveVideoCardTimelineSpec
 import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionExposure
+import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionMotionTier
 import com.android.purebilibili.core.ui.transition.rememberVideoCardTransitionSnapshotHandle
 import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionReturnFullDurationMillis
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedMorphRemainingDurationMs
@@ -193,8 +193,6 @@ internal fun BiliPaiNavDisplayHost(
     val videoCardBackgroundProgressProvider = remember(videoCardClock) {
         { videoCardClock.depthProgress() }
     }
-    val runtimeGuardDecision by
-        AppRuntimeVisualGuardTracker.decision.collectAsStateWithLifecycle()
     val videoCardTransitionJankState = if (!videoCardDepthEffectEnabled) {
         null
     } else {
@@ -210,9 +208,9 @@ internal fun BiliPaiNavDisplayHost(
         stateName = VIDEO_CARD_TRANSITION_JANK_STATE,
         stateValue = videoCardTransitionJankState,
     )
-    // 默认保留完整 12dp 景深；系统减弱动画或连续转场掉帧时降为 scrim-only。
-    val transitionBackgroundMotionTier =
-        if (reduceMotion) MotionTier.Reduced else runtimeGuardDecision.effectiveMotionTier
+    // 用户开启实时模糊时稳定保留完整 12dp 景深；仅系统“减少动态效果”降为 scrim-only。
+    // 来源页采用一次冻结录制，不能再由运行时掉帧记忆永久关掉后续开合模糊。
+    val transitionBackgroundMotionTier = resolveVideoCardTransitionMotionTier(reduceMotion)
     var previousVideoCardTransitionBackStack by remember {
         mutableStateOf(safeBackStack)
     }
@@ -286,6 +284,11 @@ internal fun BiliPaiNavDisplayHost(
                         cancelVideoCardDepthAnimation()
                         videoCardClock.snapClearAndIdle()
                     } else {
+                        // 在 beginReturning 清掉手势/相位前锁定消糊起点，避免 HELD 后 fallback=0 直接清晰。
+                        val startDepth = resolveVideoCardReturnClearStartDepth(
+                            phase = videoCardClock.phase,
+                            currentDepth = videoCardClock.depthProgress(),
+                        )
                         videoCardClock.beginReturning(returningSourceRoute)
                         launchVideoCardDepthAnimation {
                             withFrameNanos { }
@@ -295,7 +298,6 @@ internal fun BiliPaiNavDisplayHost(
                             ) {
                                 return@launchVideoCardDepthAnimation
                             }
-                            val startDepth = videoCardClock.depthProgress()
                             val fullDurationMs = resolveVideoCardTransitionReturnFullDurationMillis(
                                 baseDurationMillis = timelineSpec.durationMillis,
                             )
@@ -482,7 +484,11 @@ internal fun BiliPaiNavDisplayHost(
                     null
                 } else {
                     val gestureFractionAtCommit = videoCardClock.gestureBackProgress
-                    val blurAtCommit = videoCardClock.depthProgress()
+                    // 锁定起点须在 beginReturning 之前：手势 depth / HELD 满糊都在此刻有效。
+                    val blurAtCommit = resolveVideoCardReturnClearStartDepth(
+                        phase = videoCardClock.phase,
+                        currentDepth = videoCardClock.depthProgress(),
+                    )
                     videoCardClock.beginReturning(morphSource)
                     val fullDurationMs = resolveVideoCardTransitionReturnFullDurationMillis(
                         baseDurationMillis = timelineSpec.durationMillis,

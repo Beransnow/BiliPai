@@ -115,6 +115,52 @@ class VideoCardTransitionClockTest {
         assertEquals(0.4f, clock.depthProgress(), 0.0001f)
         clock.reportSharedMorphProgress(morphFraction = 1f, active = false)
         assertEquals(VideoCardTransitionBackgroundPhase.HELD, clock.phase)
+        // shared-only 进场结束后 fallback 可能仍为 0；HELD 合同仍是满糊。
+        assertEquals(1f, clock.depthProgress(), 0.0001f)
+    }
+
+    @Test
+    fun heldPhaseKeepsFullDepthWhenFallbackNeverSeeded() {
+        assertEquals(
+            1f,
+            resolveVideoCardClockDepthProgress(
+                gestureBackProgress = null,
+                gestureStartDepth = 1f,
+                phase = VideoCardTransitionBackgroundPhase.HELD,
+                sharedMorphActive = false,
+                sharedMorphFraction = null,
+                fallbackProgress = 0f,
+            ),
+            0.0001f,
+        )
+    }
+
+    @Test
+    fun returnClearStartDepth_recoversFullBlurWhenHeldReadsZero() {
+        assertEquals(
+            1f,
+            resolveVideoCardReturnClearStartDepth(
+                phase = VideoCardTransitionBackgroundPhase.HELD,
+                currentDepth = 0f,
+            ),
+            0.0001f,
+        )
+        assertEquals(
+            0.6f,
+            resolveVideoCardReturnClearStartDepth(
+                phase = VideoCardTransitionBackgroundPhase.HELD,
+                currentDepth = 0.6f,
+            ),
+            0.0001f,
+        )
+        assertEquals(
+            0f,
+            resolveVideoCardReturnClearStartDepth(
+                phase = VideoCardTransitionBackgroundPhase.OPENING,
+                currentDepth = 0f,
+            ),
+            0.0001f,
+        )
     }
 
     @Test
