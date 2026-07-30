@@ -33,13 +33,13 @@ class AnimationSettingsScreenStructureTest {
     }
 
     @Test
-    fun animationSettingsScreen_exposesLiveReturnPreviewToggle() {
+    fun animationSettingsScreen_doesNotExposeLiveReturnPreviewToggle() {
         val source = animationSettingsSource()
 
-        assertTrue(source.contains("title = \"预测返回预览实时画面\""))
-        assertTrue(source.contains("checked = videoTransitionLiveReturnPreviewEnabled"))
-        assertTrue(source.contains("setVideoTransitionLiveReturnPreviewEnabled"))
-        assertTrue(source.contains("enabled = state.cardTransitionEnabled"))
+        assertFalse(source.contains("预测返回预览实时画面"))
+        assertFalse(source.contains("videoTransitionLiveReturnPreviewEnabled"))
+        assertFalse(source.contains("setVideoTransitionLiveReturnPreviewEnabled"))
+        assertFalse(source.contains("getVideoTransitionLiveReturnPreviewEnabled"))
     }
 
     private fun animationSettingsSource(): String {

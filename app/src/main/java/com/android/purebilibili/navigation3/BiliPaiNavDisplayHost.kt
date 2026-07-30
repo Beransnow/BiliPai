@@ -122,8 +122,8 @@ internal fun BiliPaiNavDisplayHost(
     onNativeVideoBackCancelled: (currentKey: BiliPaiNavKey?, targetKey: BiliPaiNavKey?) -> Unit = { _, _ -> },
     isQuickReturnFromDetail: Boolean = false,
     /**
-     * 关闭「预测返回预览实时画面」时为 true：
-     * 源卡标题与封面同步落位；详情侧会走 RESIDENT_COVER 而非 LIVE_SURFACE。
+     * 为 true 时源卡标题与封面同步落位（不走 live 叠字延迟）。
+     * 产品路径固定为实时预览，默认 false；仅供快速返回等内部场景。
      */
     preferWholeCardReturn: Boolean = false,
     /**

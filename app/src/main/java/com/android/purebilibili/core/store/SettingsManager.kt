@@ -1270,9 +1270,6 @@ object SettingsManager {
     private val KEY_CARD_TRANSITION_ENABLED = booleanPreferencesKey("card_transition_enabled")
     private val KEY_VIDEO_TRANSITION_REALTIME_BLUR_ENABLED =
         booleanPreferencesKey("video_transition_realtime_blur_enabled")
-    /** 预测性返回 / 返回 morph 是否预览实时画面（LIVE_SURFACE）。关闭后封面+标题整体落位。 */
-    private val KEY_VIDEO_TRANSITION_LIVE_RETURN_PREVIEW_ENABLED =
-        booleanPreferencesKey("video_transition_live_return_preview_enabled")
     private val KEY_VIDEO_SHARED_TRANSITION_SPEED =
         intPreferencesKey("video_shared_transition_speed")
     private val KEY_VIDEO_SHARED_TRANSITION_CUSTOM_DURATION_MILLIS =
@@ -2539,22 +2536,6 @@ object SettingsManager {
     suspend fun setVideoTransitionRealtimeBlurEnabled(context: Context, value: Boolean) {
         context.settingsDataStore.edit { preferences ->
             preferences[KEY_VIDEO_TRANSITION_REALTIME_BLUR_ENABLED] = value
-        }
-    }
-
-    /**
-     * 预测性返回手势过程中是否预览实时画面。
-     * 默认开启（当前一镜到底 live morph）；关闭后走封面路径，封面与标题作为整体落位。
-     */
-    fun getVideoTransitionLiveReturnPreviewEnabled(context: Context): Flow<Boolean> =
-        context.settingsDataStore.data
-            .map { preferences ->
-                preferences[KEY_VIDEO_TRANSITION_LIVE_RETURN_PREVIEW_ENABLED] ?: true
-            }
-
-    suspend fun setVideoTransitionLiveReturnPreviewEnabled(context: Context, value: Boolean) {
-        context.settingsDataStore.edit { preferences ->
-            preferences[KEY_VIDEO_TRANSITION_LIVE_RETURN_PREVIEW_ENABLED] = value
         }
     }
 
@@ -6326,10 +6307,6 @@ object SettingsManager {
             BooleanShareablePreferenceDefinition(KEY_CARD_TRANSITION_ENABLED, SettingsShareSection.APPEARANCE),
             BooleanShareablePreferenceDefinition(
                 KEY_VIDEO_TRANSITION_REALTIME_BLUR_ENABLED,
-                SettingsShareSection.APPEARANCE
-            ),
-            BooleanShareablePreferenceDefinition(
-                KEY_VIDEO_TRANSITION_LIVE_RETURN_PREVIEW_ENABLED,
                 SettingsShareSection.APPEARANCE
             ),
             IntShareablePreferenceDefinition(KEY_VIDEO_SHARED_TRANSITION_SPEED, SettingsShareSection.APPEARANCE),

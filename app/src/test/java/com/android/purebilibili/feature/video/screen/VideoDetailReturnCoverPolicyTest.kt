@@ -811,19 +811,19 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun `detail state holder gates live morph with live return preview setting`() {
+    fun `detail state holder always keeps live return preview without settings gate`() {
         val source = File(
             "src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreenStateHolder.kt"
         ).readText()
 
-        assertTrue(source.contains("getVideoTransitionLiveReturnPreviewEnabled"))
-        assertTrue(source.contains("liveReturnPreviewEnabled = liveReturnPreviewEnabled"))
+        assertFalse(source.contains("getVideoTransitionLiveReturnPreviewEnabled"))
+        assertFalse(source.contains("liveReturnPreviewEnabled"))
     }
 
     @Test
-    fun `live return preview disabled forces resident cover ownership`() {
+    fun `live return morph stays enabled when gate conditions are met`() {
         assertEquals(
-            com.android.purebilibili.core.ui.transition.VideoCardReturnCoverOwnership.RESIDENT_COVER,
+            com.android.purebilibili.core.ui.transition.VideoCardReturnCoverOwnership.LIVE_SURFACE,
             resolveVideoDetailReturnCoverOwnership(
                 transitionEnabled = true,
                 sharedBoundsActive = true,
@@ -832,10 +832,9 @@ class VideoDetailReturnCoverPolicyTest {
                 detailContentReady = true,
                 hasResidentCover = true,
                 hasRenderableLiveFrame = true,
-                liveReturnPreviewEnabled = false,
             ),
         )
-        assertFalse(
+        assertTrue(
             shouldUseLiveReturnMorph(
                 transitionEnabled = true,
                 sharedBoundsActive = true,
@@ -843,7 +842,6 @@ class VideoDetailReturnCoverPolicyTest {
                 playbackIntent = VideoSharedTransitionPlaybackIntent.ImmediatePlayback,
                 detailContentReady = true,
                 hasRenderableLiveFrame = true,
-                liveReturnPreviewEnabled = false,
             ),
         )
     }

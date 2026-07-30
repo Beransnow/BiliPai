@@ -450,32 +450,7 @@ class VideoCardReturnTimelineTest {
     }
 
     @Test
-    fun liveMorph_disabledByLiveReturnPreviewSetting() {
-        assertFalse(
-            shouldUseVideoCardLiveReturnMorph(
-                transitionEnabled = true,
-                sharedBoundsActive = true,
-                keepLoadedContentForBackPreview = false,
-                playbackIntent = VideoSharedTransitionPlaybackIntent.ImmediatePlayback,
-                detailContentReady = true,
-                hasRenderableLiveFrame = true,
-                liveReturnPreviewEnabled = false,
-            )
-        )
-        assertEquals(
-            VideoCardReturnCoverOwnership.RESIDENT_COVER,
-            resolveVideoCardReturnCoverOwnership(
-                transitionEnabled = true,
-                sharedBoundsActive = true,
-                keepLoadedContentForBackPreview = false,
-                playbackIntent = VideoSharedTransitionPlaybackIntent.ImmediatePlayback,
-                detailContentReady = true,
-                hasResidentCover = true,
-                hasRenderableLiveFrame = true,
-                liveReturnPreviewEnabled = false,
-            ),
-        )
-        // 默认开启时仍走 LIVE
+    fun liveMorph_alwaysUsesLiveSurfaceWhenGateConditionsMet() {
         assertTrue(
             shouldUseVideoCardLiveReturnMorph(
                 transitionEnabled = true,
@@ -484,8 +459,19 @@ class VideoCardReturnTimelineTest {
                 playbackIntent = VideoSharedTransitionPlaybackIntent.ImmediatePlayback,
                 detailContentReady = true,
                 hasRenderableLiveFrame = true,
-                liveReturnPreviewEnabled = true,
             )
+        )
+        assertEquals(
+            VideoCardReturnCoverOwnership.LIVE_SURFACE,
+            resolveVideoCardReturnCoverOwnership(
+                transitionEnabled = true,
+                sharedBoundsActive = true,
+                keepLoadedContentForBackPreview = false,
+                playbackIntent = VideoSharedTransitionPlaybackIntent.ImmediatePlayback,
+                detailContentReady = true,
+                hasResidentCover = true,
+                hasRenderableLiveFrame = true,
+            ),
         )
     }
 

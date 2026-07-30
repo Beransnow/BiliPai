@@ -412,7 +412,7 @@ internal fun resolveVideoCardReturnDepthBlurRemainingDurationMs(
 /**
  * 是否允许 live morph（实时 surface 跟壳缩）。
  *
- * - [liveReturnPreviewEnabled] 关闭时永远 false：优先封面+标题整体落位
+ * 预测返回始终预览实时画面；仅在以下条件不满足时回落封面：
  * - 详情正文未就绪时关闭，避免 Loading 骨架被缩进卡片位
  * - 无首帧 / 强制封面 UI 时关闭，避免黑壳缩回（回落 RESIDENT handoff）
  */
@@ -423,10 +423,8 @@ internal fun shouldUseVideoCardLiveReturnMorph(
     playbackIntent: VideoSharedTransitionPlaybackIntent,
     detailContentReady: Boolean,
     hasRenderableLiveFrame: Boolean = true,
-    liveReturnPreviewEnabled: Boolean = true,
 ): Boolean {
-    return liveReturnPreviewEnabled &&
-        transitionEnabled &&
+    return transitionEnabled &&
         sharedBoundsActive &&
         !keepLoadedContentForBackPreview &&
         playbackIntent == VideoSharedTransitionPlaybackIntent.ImmediatePlayback &&
@@ -453,7 +451,6 @@ internal fun resolveVideoCardReturnCoverOwnership(
     detailContentReady: Boolean,
     hasResidentCover: Boolean,
     hasRenderableLiveFrame: Boolean = true,
-    liveReturnPreviewEnabled: Boolean = true,
 ): VideoCardReturnCoverOwnership {
     if (!transitionEnabled || !sharedBoundsActive) {
         return VideoCardReturnCoverOwnership.FALLBACK_NO_SHARED
@@ -465,7 +462,6 @@ internal fun resolveVideoCardReturnCoverOwnership(
         playbackIntent = playbackIntent,
         detailContentReady = detailContentReady,
         hasRenderableLiveFrame = hasRenderableLiveFrame,
-        liveReturnPreviewEnabled = liveReturnPreviewEnabled,
     )
     if (live) {
         return VideoCardReturnCoverOwnership.LIVE_SURFACE

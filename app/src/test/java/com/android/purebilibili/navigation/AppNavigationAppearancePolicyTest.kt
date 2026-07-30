@@ -164,7 +164,7 @@ class AppNavigationAppearancePolicyTest {
     }
 
     @Test
-    fun appNavigationWiresLiveReturnPreviewToWholeCardReturn() {
+    fun appNavigationAlwaysKeepsLiveReturnPreview() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/navigation/AppNavigation.kt")
         val navHostSource = loadSource(
             "app/src/main/java/com/android/purebilibili/navigation3/BiliPaiNavDisplayHost.kt"
@@ -173,9 +173,9 @@ class AppNavigationAppearancePolicyTest {
             .substringAfter("BiliPaiNavDisplayHost(")
             .substringBefore(") { key ->")
 
-        assertTrue(source.contains("videoTransitionLiveReturnPreviewEnabled"))
-        assertTrue(source.contains("getVideoTransitionLiveReturnPreviewEnabled"))
-        assertTrue(navHostCall.contains("preferWholeCardReturn = !videoTransitionLiveReturnPreviewEnabled"))
+        assertFalse(source.contains("getVideoTransitionLiveReturnPreviewEnabled"))
+        assertFalse(source.contains("videoTransitionLiveReturnPreviewEnabled"))
+        assertTrue(navHostCall.contains("preferWholeCardReturn = false"))
         assertTrue(navHostSource.contains("preferWholeCardReturnProvider"))
         assertTrue(navHostSource.contains("preferWholeCardReturn: Boolean = false"))
     }
