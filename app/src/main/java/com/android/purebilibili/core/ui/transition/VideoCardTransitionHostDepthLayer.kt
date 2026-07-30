@@ -60,6 +60,7 @@ internal fun VideoCardTransitionHostDepthLayer(
                     !shouldPaintHostOwnedDepthLayer(
                         exposure = exposure,
                         hasRecordedContent = snapshotState.hasRecordedContent,
+                        displayListStale = snapshotState.displayListStale,
                         motionTier = motionTier,
                         realtimeBlurEnabled = realtimeBlur,
                     )
@@ -111,21 +112,29 @@ internal fun VideoCardTransitionHostDepthLayer(
 }
 
 /**
- * Host 层何时绘制：有冻结内容，且**源页当前不会画同一 GraphicsLayer**。
+ * Host 层何时绘制：有**可用**冻结内容，且**源页当前不会画同一 GraphicsLayer**。
  *
  * - [SettledHidden] / [Restoring]：SinglePane 通常只 compose 详情，Host 在 NavDisplay
- *   下独画满糊（或回弹）层，预测首帧/取消回弹不依赖 previousScene。
- * - [BackPreview] / [Returning] / [Opening]：源页 effect 自己 drawLayer；同一
- *   GraphicsLayer 每帧只能画一次，Host 让位。
+ *   下独画满糊（或回弹）层。
+ * - display list 在源 dispose 后会 stale：此时禁止 Host 画空层（全黑），等源页重录。
+ * - [BackPreview] / [Returning] / [Opening]：源页 effect 自己 drawLayer；Host 让位。
  */
 internal fun shouldPaintHostOwnedDepthLayer(
     exposure: VideoCardTransitionExposure,
     hasRecordedContent: Boolean,
+    displayListStale: Boolean = false,
     motionTier: MotionTier,
     realtimeBlurEnabled: Boolean,
     sdkInt: Int = Build.VERSION.SDK_INT,
 ): Boolean {
-    if (!hasRecordedContent) return false
+    if (
+        !isVideoCardTransitionSnapshotDrawable(
+            hasRecordedContent = hasRecordedContent,
+            displayListStale = displayListStale,
+        )
+    ) {
+        return false
+    }
     if (motionTier == MotionTier.Reduced) return false
     if (!realtimeBlurEnabled) return false
     if (sdkInt < Build.VERSION_CODES.S) return false

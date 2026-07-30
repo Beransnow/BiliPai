@@ -33,6 +33,29 @@ class VideoCardTransitionBackgroundPolicyTest {
     }
 
     @Test
+    fun hostOwnedSourceDetachMarksDisplayListStaleForRerecord() {
+        val state = VideoCardTransitionSnapshotLayerState().apply {
+            freezeRecording = true
+            hasRecordedContent = true
+            displayListStale = false
+            lastBlurRadiusPx = 12f
+        }
+        state.markDisplayListStale()
+        assertTrue(state.displayListStale)
+        assertTrue(state.hasRecordedContent)
+        assertFalse(
+            isVideoCardTransitionSnapshotDrawable(
+                hasRecordedContent = state.hasRecordedContent,
+                displayListStale = state.displayListStale,
+            ),
+        )
+        state.markDisplayListFresh()
+        assertFalse(state.displayListStale)
+        assertTrue(state.hasRecordedContent)
+        assertTrue(state.freezeRecording)
+    }
+
+    @Test
     fun transitionMotionTierOnlyReducesForSystemReduceMotion() {
         assertEquals(MotionTier.Normal, resolveVideoCardTransitionMotionTier(reduceMotion = false))
         assertEquals(MotionTier.Reduced, resolveVideoCardTransitionMotionTier(reduceMotion = true))

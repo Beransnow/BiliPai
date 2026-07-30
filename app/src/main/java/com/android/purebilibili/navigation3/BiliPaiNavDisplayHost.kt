@@ -817,7 +817,12 @@ internal fun BiliPaiNavDisplayHost(
         isReturningToVideoDetail = isCardMorphDestinationNavKey(targetBackKey),
     )
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            // 转场中途若冻结层 stale / 源页尚未重录，避免窗口默认黑底「无真实背景」。
+            .background(AppSurfaceTokens.groupedListContainer()),
+    ) {
         val settingsSubtreeBackdrop =
             (currentBackKey != null && isSettingsSubtreeNavKey(currentBackKey)) ||
                 (targetBackKey != null && isSettingsSubtreeNavKey(targetBackKey))

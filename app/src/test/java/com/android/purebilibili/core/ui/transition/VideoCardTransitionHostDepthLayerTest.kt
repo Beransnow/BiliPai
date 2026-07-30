@@ -14,6 +14,7 @@ class VideoCardTransitionHostDepthLayerTest {
             shouldPaintHostOwnedDepthLayer(
                 exposure = VideoCardTransitionExposure.SettledHidden,
                 hasRecordedContent = true,
+                displayListStale = false,
                 motionTier = MotionTier.Normal,
                 realtimeBlurEnabled = true,
                 sdkInt = 35,
@@ -23,6 +24,7 @@ class VideoCardTransitionHostDepthLayerTest {
             shouldPaintHostOwnedDepthLayer(
                 exposure = VideoCardTransitionExposure.Restoring,
                 hasRecordedContent = true,
+                displayListStale = false,
                 motionTier = MotionTier.Normal,
                 realtimeBlurEnabled = true,
                 sdkInt = 35,
@@ -33,6 +35,7 @@ class VideoCardTransitionHostDepthLayerTest {
             shouldPaintHostOwnedDepthLayer(
                 exposure = VideoCardTransitionExposure.BackPreview,
                 hasRecordedContent = true,
+                displayListStale = false,
                 motionTier = MotionTier.Normal,
                 realtimeBlurEnabled = true,
                 sdkInt = 35,
@@ -42,6 +45,7 @@ class VideoCardTransitionHostDepthLayerTest {
             shouldPaintHostOwnedDepthLayer(
                 exposure = VideoCardTransitionExposure.Returning,
                 hasRecordedContent = true,
+                displayListStale = false,
                 motionTier = MotionTier.Normal,
                 realtimeBlurEnabled = true,
                 sdkInt = 35,
@@ -51,6 +55,7 @@ class VideoCardTransitionHostDepthLayerTest {
             shouldPaintHostOwnedDepthLayer(
                 exposure = VideoCardTransitionExposure.Opening,
                 hasRecordedContent = true,
+                displayListStale = false,
                 motionTier = MotionTier.Normal,
                 realtimeBlurEnabled = true,
                 sdkInt = 35,
@@ -59,11 +64,22 @@ class VideoCardTransitionHostDepthLayerTest {
     }
 
     @Test
-    fun hostLayerRequiresRecordedContentAndRealtimeBlur() {
+    fun hostLayerNeverPaintsStaleOrMissingDisplayList() {
+        assertFalse(
+            shouldPaintHostOwnedDepthLayer(
+                exposure = VideoCardTransitionExposure.SettledHidden,
+                hasRecordedContent = true,
+                displayListStale = true,
+                motionTier = MotionTier.Normal,
+                realtimeBlurEnabled = true,
+                sdkInt = 35,
+            ),
+        )
         assertFalse(
             shouldPaintHostOwnedDepthLayer(
                 exposure = VideoCardTransitionExposure.SettledHidden,
                 hasRecordedContent = false,
+                displayListStale = false,
                 motionTier = MotionTier.Normal,
                 realtimeBlurEnabled = true,
                 sdkInt = 35,
@@ -73,6 +89,7 @@ class VideoCardTransitionHostDepthLayerTest {
             shouldPaintHostOwnedDepthLayer(
                 exposure = VideoCardTransitionExposure.SettledHidden,
                 hasRecordedContent = true,
+                displayListStale = false,
                 motionTier = MotionTier.Reduced,
                 realtimeBlurEnabled = true,
                 sdkInt = 35,
@@ -82,6 +99,7 @@ class VideoCardTransitionHostDepthLayerTest {
             shouldPaintHostOwnedDepthLayer(
                 exposure = VideoCardTransitionExposure.SettledHidden,
                 hasRecordedContent = true,
+                displayListStale = false,
                 motionTier = MotionTier.Normal,
                 realtimeBlurEnabled = false,
                 sdkInt = 35,
@@ -91,11 +109,19 @@ class VideoCardTransitionHostDepthLayerTest {
             shouldPaintHostOwnedDepthLayer(
                 exposure = VideoCardTransitionExposure.SettledHidden,
                 hasRecordedContent = true,
+                displayListStale = false,
                 motionTier = MotionTier.Normal,
                 realtimeBlurEnabled = true,
                 sdkInt = 30,
             ),
         )
+    }
+
+    @Test
+    fun snapshotDrawableRequiresFreshDisplayList() {
+        assertTrue(isVideoCardTransitionSnapshotDrawable(hasRecordedContent = true, displayListStale = false))
+        assertFalse(isVideoCardTransitionSnapshotDrawable(hasRecordedContent = true, displayListStale = true))
+        assertFalse(isVideoCardTransitionSnapshotDrawable(hasRecordedContent = false, displayListStale = false))
     }
 
     @Test

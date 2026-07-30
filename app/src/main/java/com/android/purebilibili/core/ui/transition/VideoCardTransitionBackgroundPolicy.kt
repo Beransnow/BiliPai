@@ -634,18 +634,44 @@ internal class VideoCardTransitionSnapshotLayerState {
     val frameCache = VideoCardTransitionBackgroundFrameCache()
     var freezeRecording: Boolean = false
     var hasRecordedContent: Boolean = false
+    /**
+     * Host 共享层在来源 Scene dispose 后 display list 往往已失效（黑/空），
+     * 但 [hasRecordedContent] 仍为 true。返回/预测时必须重录真实首页，禁止再 draw 空层。
+     */
+    var displayListStale: Boolean = false
     var lastBlurRadiusPx: Float = Float.NaN
     var lastCornerRadiusPx: Float = Float.NaN
 
     fun invalidateRecordedContent() {
         freezeRecording = false
         hasRecordedContent = false
+        displayListStale = false
         lastBlurRadiusPx = Float.NaN
         lastCornerRadiusPx = Float.NaN
     }
 
+    fun markDisplayListStale() {
+        // 保留 hasRecordedContent 语义给调试；绘制侧以 stale 为准强制重录。
+        displayListStale = true
+        freezeRecording = false
+        lastBlurRadiusPx = Float.NaN
+        lastCornerRadiusPx = Float.NaN
+    }
+
+    fun markDisplayListFresh() {
+        hasRecordedContent = true
+        displayListStale = false
+        freezeRecording = true
+    }
+
     fun reset() = invalidateRecordedContent()
 }
+
+/** 冻结层是否可安全 drawLayer（有内容且 display list 未过期）。 */
+internal fun isVideoCardTransitionSnapshotDrawable(
+    hasRecordedContent: Boolean,
+    displayListStale: Boolean,
+): Boolean = hasRecordedContent && !displayListStale
 
 internal class VideoCardTransitionSnapshotHandle(
     val contentLayer: androidx.compose.ui.graphics.layer.GraphicsLayer,
@@ -755,13 +781,16 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
     val snapshotState = snapshotHandle?.state ?: fallbackSnapshotState
     val view = LocalView.current
     var deviceCornerRadiusPx by remember { mutableFloatStateOf(0f) }
-    // Host 共享 handle：来源 Scene 被 SinglePane 卸掉时禁止 invalidate，否则预测返回无糊。
-    // 仅本地 fallback 层在 dispose 时清理。
+    // Host 共享 handle：dispose 时不 wipe 会话，但标记 display list 过期。
+    // 源页再次 compose（预测/返回）时强制重录真实首页，避免 draw 空层全黑。
     DisposableEffect(snapshotState, contentLayer, isHostOwnedSnapshot) {
         onDispose {
             if (shouldInvalidateSnapshotOnSourceDispose(isHostOwnedSnapshot = isHostOwnedSnapshot)) {
                 contentLayer.renderEffect = null
                 snapshotState.invalidateRecordedContent()
+            } else {
+                contentLayer.renderEffect = null
+                snapshotState.markDisplayListStale()
             }
         }
     }
@@ -796,18 +825,24 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
                 // 新开一场：允许首帧 record；draw 侧只录一次后冻结。
                 snapshotState.freezeRecording = false
                 snapshotState.hasRecordedContent = false
+                snapshotState.displayListStale = false
                 withFrameNanos { }
                 snapshotState.freezeRecording = true
             }
             VideoCardTransitionExposure.BackPreview,
             VideoCardTransitionExposure.Returning,
             VideoCardTransitionExposure.Restoring -> {
-                // Host 层应已有 OPENING 冻结内容；仅在缺失时允许补录。
-                if (!snapshotState.hasRecordedContent) {
+                // 源页重新挂上：若 dispose 后 DL 已 stale，必须允许重录真实背景。
+                if (!isVideoCardTransitionSnapshotDrawable(
+                        hasRecordedContent = snapshotState.hasRecordedContent,
+                        displayListStale = snapshotState.displayListStale,
+                    )
+                ) {
                     snapshotState.freezeRecording = false
                     withFrameNanos { }
+                } else {
+                    snapshotState.freezeRecording = true
                 }
-                snapshotState.freezeRecording = true
             }
             VideoCardTransitionExposure.SettledHidden -> {
                 snapshotState.freezeRecording = true
@@ -821,7 +856,7 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
     }
 
     SideEffect {
-        // Host 拥有层时 SettledHidden 不 clear Blur——保持满糊待命预测手势。
+        // Host 拥有层时 SettledHidden 不在源页 clear（源页通常已 dispose）。
         if (!renderDecision.updateBlurEffect) {
             if (isHostOwnedSnapshot &&
                 exposure == VideoCardTransitionExposure.SettledHidden
@@ -852,8 +887,13 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
             if (activeDecision.drawSourceNormally) {
                 drawContent()
             } else if (shouldPaintRetainedSourceWithoutTransitionBackground(activeDecision)) {
-                // SettledHidden 且源页仍是唯一 composed scene：Host 层尚未接管时防黑屏。
-                if (snapshotState.hasRecordedContent) {
+                // SettledHidden 且源页仍是唯一 composed scene：有可用快照则画，否则 live 防黑屏。
+                if (
+                    isVideoCardTransitionSnapshotDrawable(
+                        hasRecordedContent = snapshotState.hasRecordedContent,
+                        displayListStale = snapshotState.displayListStale,
+                    )
+                ) {
                     drawLayer(contentLayer)
                     VideoCardTransitionDiagnostics.onSourceLayerDrawn()
                 } else {
@@ -893,14 +933,17 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
             return@drawWithContent
         }
 
-        // OPENING 首帧 record；预测/返回若 Host 层仍在则直接复用，禁止无谓重录。
-        if (!snapshotState.hasRecordedContent) {
+        // OPENING 首录；预测/返回若 DL stale 或缺失则重录真实首页——禁止 draw 空层全黑。
+        val needsRecord = !isVideoCardTransitionSnapshotDrawable(
+            hasRecordedContent = snapshotState.hasRecordedContent,
+            displayListStale = snapshotState.displayListStale,
+        )
+        if (needsRecord) {
             contentLayer.record {
                 this@drawWithContent.drawContent()
             }
             if (size.width > 0f && size.height > 0f) {
-                snapshotState.hasRecordedContent = true
-                snapshotState.freezeRecording = true
+                snapshotState.markDisplayListFresh()
                 VideoCardTransitionDiagnostics.onSnapshotRecorded()
             } else {
                 // 尺寸未就绪：先画 live 内容，避免纯黑；下一帧再尝试 record。
