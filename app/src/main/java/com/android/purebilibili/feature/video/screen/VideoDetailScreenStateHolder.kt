@@ -299,6 +299,10 @@ internal fun VideoDetailScreenStateHolder(
         .getHomeUpBadgesVisible(context)
         .collectAsStateWithLifecycle(initialValue = true
         )
+    // 预测返回是否预览实时画面；关闭后强制 RESIDENT_COVER，封面+标题整体落位。
+    val liveReturnPreviewEnabled by com.android.purebilibili.core.store.SettingsManager
+        .getVideoTransitionLiveReturnPreviewEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = true)
     val motionSpec = remember(transitionEnterDurationMillis) {
         resolveVideoDetailMotionSpec(transitionEnterDurationMillis)
     }
@@ -1524,6 +1528,7 @@ internal fun VideoDetailScreenStateHolder(
         detailContentReady = detailContentReadyForLiveReturnMorph,
         hasResidentCover = hasResidentReturnCover,
         hasRenderableLiveFrame = hasRenderableLiveFrameForReturn,
+        liveReturnPreviewEnabled = liveReturnPreviewEnabled,
     )
     // 返回会话 ownership：可升 LIVE（保实时画面），禁止 LIVE 降级（防闪）。
     var lockedReturnCoverOwnership by remember(bvid) {

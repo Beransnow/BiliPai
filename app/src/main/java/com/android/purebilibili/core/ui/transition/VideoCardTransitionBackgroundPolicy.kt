@@ -117,6 +117,11 @@ internal data class VideoCardTransitionBackgroundState(
     val isReturnGestureInProgressProvider: () -> Boolean = { false },
     val isGestureRestoreInProgressProvider: () -> Boolean = { false },
     val isQuickReturnFromDetailProvider: () -> Boolean = { false },
+    /**
+     * 关闭「预测返回预览实时画面」时为 true：
+     * 源卡标题/UP 与封面同步全显，整体落位，不走 live 叠字延迟。
+     */
+    val preferWholeCardReturnProvider: () -> Boolean = { false },
     val motionTierProvider: () -> MotionTier = { MotionTier.Normal },
     val isLightBackgroundProvider: () -> Boolean = { false },
 )

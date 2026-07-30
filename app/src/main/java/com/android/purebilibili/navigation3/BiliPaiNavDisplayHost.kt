@@ -122,6 +122,11 @@ internal fun BiliPaiNavDisplayHost(
     onNativeVideoBackCancelled: (currentKey: BiliPaiNavKey?, targetKey: BiliPaiNavKey?) -> Unit = { _, _ -> },
     isQuickReturnFromDetail: Boolean = false,
     /**
+     * 关闭「预测返回预览实时画面」时为 true：
+     * 源卡标题与封面同步落位；详情侧会走 RESIDENT_COVER 而非 LIVE_SURFACE。
+     */
+    preferWholeCardReturn: Boolean = false,
+    /**
      * 系统/预测返回在启动景深收尾前调用：标记返回会话并返回是否快速返回。
      * performBack 里 onBack 更晚，不能只靠 [isQuickReturnFromDetail] 快照。
      */
@@ -532,6 +537,7 @@ internal fun BiliPaiNavDisplayHost(
     val quickReturnFromDetailProvider = remember {
         { isQuickReturnFromDetailUpdated }
     }
+    val preferWholeCardReturnProvider = rememberUpdatedState(preferWholeCardReturn)
     val scopedContent: @Composable (BiliPaiNavKey) -> Unit = remember(
         content,
         application,
@@ -542,6 +548,7 @@ internal fun BiliPaiNavDisplayHost(
         transitionBackgroundMotionTier,
         isLightBackground,
         quickReturnFromDetailProvider,
+        preferWholeCardReturnProvider,
         morphProgressReporter,
     ) {
         { key ->
@@ -569,6 +576,9 @@ internal fun BiliPaiNavDisplayHost(
                                 videoCardClock.gestureRestoreInProgress
                             },
                             isQuickReturnFromDetailProvider = quickReturnFromDetailProvider,
+                            preferWholeCardReturnProvider = {
+                                preferWholeCardReturnProvider.value
+                            },
                             motionTierProvider = {
                                 transitionBackgroundMotionTier
                             },

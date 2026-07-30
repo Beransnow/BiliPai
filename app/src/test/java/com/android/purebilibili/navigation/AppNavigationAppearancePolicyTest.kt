@@ -164,6 +164,23 @@ class AppNavigationAppearancePolicyTest {
     }
 
     @Test
+    fun appNavigationWiresLiveReturnPreviewToWholeCardReturn() {
+        val source = loadSource("app/src/main/java/com/android/purebilibili/navigation/AppNavigation.kt")
+        val navHostSource = loadSource(
+            "app/src/main/java/com/android/purebilibili/navigation3/BiliPaiNavDisplayHost.kt"
+        )
+        val navHostCall = source
+            .substringAfter("BiliPaiNavDisplayHost(")
+            .substringBefore(") { key ->")
+
+        assertTrue(source.contains("videoTransitionLiveReturnPreviewEnabled"))
+        assertTrue(source.contains("getVideoTransitionLiveReturnPreviewEnabled"))
+        assertTrue(navHostCall.contains("preferWholeCardReturn = !videoTransitionLiveReturnPreviewEnabled"))
+        assertTrue(navHostSource.contains("preferWholeCardReturnProvider"))
+        assertTrue(navHostSource.contains("preferWholeCardReturn: Boolean = false"))
+    }
+
+    @Test
     fun transitionRealtimeBlurDoesNotDependOnRemovedBackgroundScaleSetting() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/navigation/AppNavigation.kt")
         val navHostSource = loadSource(

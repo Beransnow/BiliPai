@@ -420,6 +420,46 @@ class VideoCardReturnTimelineTest {
     }
 
     @Test
+    fun liveMorph_disabledByLiveReturnPreviewSetting() {
+        assertFalse(
+            shouldUseVideoCardLiveReturnMorph(
+                transitionEnabled = true,
+                sharedBoundsActive = true,
+                keepLoadedContentForBackPreview = false,
+                playbackIntent = VideoSharedTransitionPlaybackIntent.ImmediatePlayback,
+                detailContentReady = true,
+                hasRenderableLiveFrame = true,
+                liveReturnPreviewEnabled = false,
+            )
+        )
+        assertEquals(
+            VideoCardReturnCoverOwnership.RESIDENT_COVER,
+            resolveVideoCardReturnCoverOwnership(
+                transitionEnabled = true,
+                sharedBoundsActive = true,
+                keepLoadedContentForBackPreview = false,
+                playbackIntent = VideoSharedTransitionPlaybackIntent.ImmediatePlayback,
+                detailContentReady = true,
+                hasResidentCover = true,
+                hasRenderableLiveFrame = true,
+                liveReturnPreviewEnabled = false,
+            ),
+        )
+        // 默认开启时仍走 LIVE
+        assertTrue(
+            shouldUseVideoCardLiveReturnMorph(
+                transitionEnabled = true,
+                sharedBoundsActive = true,
+                keepLoadedContentForBackPreview = false,
+                playbackIntent = VideoSharedTransitionPlaybackIntent.ImmediatePlayback,
+                detailContentReady = true,
+                hasRenderableLiveFrame = true,
+                liveReturnPreviewEnabled = true,
+            )
+        )
+    }
+
+    @Test
     fun liveMorph_withoutFirstFrameFallsBackToResidentCover() {
         assertFalse(
             shouldTreatLiveSurfaceRenderableForReturnMorph(

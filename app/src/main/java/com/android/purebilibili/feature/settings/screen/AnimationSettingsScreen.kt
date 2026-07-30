@@ -133,6 +133,9 @@ fun AnimationSettingsContent(
     val videoTransitionRealtimeBlurEnabled by SettingsManager
         .getVideoTransitionRealtimeBlurEnabled(context)
         .collectAsStateWithLifecycle(initialValue = true)
+    val videoTransitionLiveReturnPreviewEnabled by SettingsManager
+        .getVideoTransitionLiveReturnPreviewEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = true)
     val effectiveEntranceSpec = rememberEffectiveEntranceMotionSpec()
     // 开关开着、但有效参数被降级为不动画 → 系统减弱动效在生效。
     val entranceDowngradedBySystem = uiEntranceAnimationEnabled && !effectiveEntranceSpec.animate
@@ -240,6 +243,23 @@ fun AnimationSettingsContent(
                             subtitle = "过渡期间对背景使用实时模糊效果，关闭可降低 GPU 负载",
                             checked = videoTransitionRealtimeBlurEnabled,
                             onCheckedChange = { viewModel.toggleVideoTransitionRealtimeBlur(it) },
+                            iconTint = iOSTeal
+                        )
+                        AppPreferenceDivider()
+                        AppSwitchPreference(
+                            icon = rememberSettingsSemanticIcon(SettingsIconRole.CARD_TRANSITION_ANIMATION),
+                            title = "预测返回预览实时画面",
+                            subtitle = "开启时返回手势中跟手预览正在播放的画面；关闭后封面与标题始终作为整体落位，优先稳定",
+                            checked = videoTransitionLiveReturnPreviewEnabled,
+                            onCheckedChange = { enabled ->
+                                scope.launch {
+                                    SettingsManager.setVideoTransitionLiveReturnPreviewEnabled(
+                                        context,
+                                        enabled,
+                                    )
+                                }
+                            },
+                            enabled = state.cardTransitionEnabled,
                             iconTint = iOSTeal
                         )
                         AppPreferenceDivider()

@@ -377,6 +377,9 @@ fun AppNavigation(
     val videoTransitionRealtimeBlurEnabled by SettingsManager
         .getVideoTransitionRealtimeBlurEnabled(context)
         .collectAsStateWithLifecycle(initialValue = true)
+    val videoTransitionLiveReturnPreviewEnabled by SettingsManager
+        .getVideoTransitionLiveReturnPreviewEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = true)
     val isBottomBarBlurEnabled = appearance.bottomBarBlurEnabled
     val bottomBarLabelMode = appearance.bottomBarLabelMode
     val isBottomBarFloating = appearance.bottomBarFloating
@@ -3079,6 +3082,7 @@ fun AppNavigation(
                         }
                     },
                     isQuickReturnFromDetail = navigation3ReturnSession.isQuickReturnFromDetail,
+                    preferWholeCardReturn = !videoTransitionLiveReturnPreviewEnabled,
                     onPrepareVideoCardSharedReturn = {
                         val previousKey =
                             navigation3BackStack.getOrNull(navigation3BackStack.lastIndex - 1)

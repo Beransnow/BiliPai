@@ -907,6 +907,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    fun toggleVideoTransitionLiveReturnPreview(value: Boolean) {
+        viewModelScope.launch {
+            SettingsManager.setVideoTransitionLiveReturnPreviewEnabled(context, value)
+        }
+    }
+
     fun setVideoSharedTransitionSpeed(speed: VideoSharedTransitionSpeed) {
         viewModelScope.launch {
             SettingsManager.setVideoSharedTransitionSpeed(context, speed)

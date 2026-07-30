@@ -703,6 +703,44 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
+    fun `detail state holder gates live morph with live return preview setting`() {
+        val source = File(
+            "src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreenStateHolder.kt"
+        ).readText()
+
+        assertTrue(source.contains("getVideoTransitionLiveReturnPreviewEnabled"))
+        assertTrue(source.contains("liveReturnPreviewEnabled = liveReturnPreviewEnabled"))
+    }
+
+    @Test
+    fun `live return preview disabled forces resident cover ownership`() {
+        assertEquals(
+            com.android.purebilibili.core.ui.transition.VideoCardReturnCoverOwnership.RESIDENT_COVER,
+            resolveVideoDetailReturnCoverOwnership(
+                transitionEnabled = true,
+                sharedBoundsActive = true,
+                keepLoadedContentForBackPreview = false,
+                playbackIntent = VideoSharedTransitionPlaybackIntent.ImmediatePlayback,
+                detailContentReady = true,
+                hasResidentCover = true,
+                hasRenderableLiveFrame = true,
+                liveReturnPreviewEnabled = false,
+            ),
+        )
+        assertFalse(
+            shouldUseLiveReturnMorph(
+                transitionEnabled = true,
+                sharedBoundsActive = true,
+                keepLoadedContentForBackPreview = false,
+                playbackIntent = VideoSharedTransitionPlaybackIntent.ImmediatePlayback,
+                detailContentReady = true,
+                hasRenderableLiveFrame = true,
+                liveReturnPreviewEnabled = false,
+            ),
+        )
+    }
+
+    @Test
     fun `missing return cover keeps player visible instead of revealing black`() {
         assertEquals(0f, resolveVideoDetailReturnCoverAlpha(0.2f, true, false), 0.0001f)
         assertEquals(1f, resolveVideoDetailReturnPlayerAlpha(0.2f, true, false), 0.0001f)

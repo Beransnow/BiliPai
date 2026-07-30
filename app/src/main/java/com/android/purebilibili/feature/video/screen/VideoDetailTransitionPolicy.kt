@@ -54,6 +54,7 @@ internal fun shouldUseLiveReturnMorph(
     playbackIntent: VideoSharedTransitionPlaybackIntent,
     detailContentReady: Boolean = true,
     hasRenderableLiveFrame: Boolean = true,
+    liveReturnPreviewEnabled: Boolean = true,
 ): Boolean = shouldUseVideoCardLiveReturnMorph(
     transitionEnabled = transitionEnabled,
     sharedBoundsActive = sharedBoundsActive,
@@ -61,6 +62,7 @@ internal fun shouldUseLiveReturnMorph(
     playbackIntent = playbackIntent,
     detailContentReady = detailContentReady,
     hasRenderableLiveFrame = hasRenderableLiveFrame,
+    liveReturnPreviewEnabled = liveReturnPreviewEnabled,
 )
 
 /**
@@ -112,6 +114,7 @@ internal fun resolveVideoDetailReturnCoverOwnership(
     detailContentReady: Boolean,
     hasResidentCover: Boolean,
     hasRenderableLiveFrame: Boolean = true,
+    liveReturnPreviewEnabled: Boolean = true,
 ) = resolveVideoCardReturnCoverOwnership(
     transitionEnabled = transitionEnabled,
     sharedBoundsActive = sharedBoundsActive,
@@ -120,6 +123,7 @@ internal fun resolveVideoDetailReturnCoverOwnership(
     detailContentReady = detailContentReady,
     hasResidentCover = hasResidentCover,
     hasRenderableLiveFrame = hasRenderableLiveFrame,
+    liveReturnPreviewEnabled = liveReturnPreviewEnabled,
 )
 
 internal fun isLiveReturnMorphFromOwnership(
