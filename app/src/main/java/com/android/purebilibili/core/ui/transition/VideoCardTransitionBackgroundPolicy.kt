@@ -47,7 +47,6 @@ private const val VIDEO_CARD_TRANSITION_REDUCED_SCRIM_ALPHA = 0.08f
 /** 景深缩放露出的边缘：至少压到这个 tint 强度，避免浅色主题读成「白条」。 */
 private const val VIDEO_CARD_TRANSITION_SCALE_GAP_MIN_TINT_LIGHT = 0.36f
 private const val VIDEO_CARD_TRANSITION_SCALE_GAP_MIN_TINT_DARK = 0.44f
-private val VIDEO_CARD_TRANSITION_LIGHT_SCRIM_TINT = Color(0xFF8E8E93)
 private val VIDEO_CARD_TRANSITION_DARK_GAP_BASE = Color(0xFF121212)
 
 /**
@@ -656,6 +655,51 @@ internal class VideoCardTransitionSnapshotHandle(
         contentLayer.renderEffect = null
         state.lastBlurRadiusPx = Float.NaN
     }
+
+    fun releaseSession() {
+        clearRenderEffect()
+        state.reset()
+    }
+}
+
+/** 浅色 scrim 色，供 Host 景深层与源页 effect 共用。 */
+internal val VIDEO_CARD_TRANSITION_LIGHT_SCRIM_TINT = Color(0xFF8E8E93)
+
+/**
+ * 把 [frame] 写到冻结 [contentLayer]（scale / 圆角 / BlurEffect），不负责 draw。
+ */
+internal fun applyVideoCardTransitionSnapshotFrame(
+    contentLayer: androidx.compose.ui.graphics.layer.GraphicsLayer,
+    snapshotState: VideoCardTransitionSnapshotLayerState,
+    frame: VideoCardTransitionBackgroundFrame,
+    canvasSize: androidx.compose.ui.geometry.Size,
+) {
+    contentLayer.pivotOffset = Offset(canvasSize.width / 2f, canvasSize.height / 2f)
+    contentLayer.scaleX = frame.contentScale
+    contentLayer.scaleY = frame.contentScale
+    if (frame.cornerRadiusPx != snapshotState.lastCornerRadiusPx) {
+        snapshotState.lastCornerRadiusPx = frame.cornerRadiusPx
+        if (frame.cornerRadiusPx > 0.01f) {
+            contentLayer.setRoundRectOutline(cornerRadius = frame.cornerRadiusPx)
+            contentLayer.clip = true
+        } else {
+            contentLayer.setRectOutline()
+            contentLayer.clip = false
+        }
+    }
+    if (frame.blurRadiusPx != snapshotState.lastBlurRadiusPx) {
+        snapshotState.lastBlurRadiusPx = frame.blurRadiusPx
+        contentLayer.renderEffect = if (frame.blurRadiusPx > 0.01f) {
+            BlurEffect(
+                radiusX = frame.blurRadiusPx,
+                radiusY = frame.blurRadiusPx,
+                edgeTreatment = TileMode.Clamp,
+            )
+        } else {
+            null
+        }
+        VideoCardTransitionDiagnostics.onBlurEffectUpdated()
+    }
 }
 
 @Composable
@@ -683,13 +727,14 @@ internal fun shouldLiveRecordVideoCardTransitionSnapshot(
 }
 
 /**
- * 卡片开合景深：
- * - OPENING：首帧 record 一次后立刻冻结，BlurEffect 跟进度（完整 12dp 观感）
- * - HELD：来源 Scene 存活时保留冻结层；Scene 被 Nav3 卸载时仅标记 display list 失效
- * - BACK PREVIEW / RETURNING：失效后首帧补录一次，此后只更新 layer 属性
- * - IDLE：释放并恢复普通绘制
+ * 卡片开合景深（来源路由上的录制 / 绘制端）：
+ * - OPENING：首帧 record 进 Host [snapshotHandle]，BlurEffect 跟进度
+ * - HELD / 预测 / 返回：Host 拥有冻结层生命周期；本 Modifier **dispose 不得 invalidate**
+ *   Host 快照。源页若仍在 composition，可继续用同一层跟手改半径；否则由
+ *   [VideoCardTransitionHostDepthLayer] 在 NavDisplay 下绘制。
+ * - IDLE：Host 释放会话
  * - API 31 以下 / 实时模糊关闭：保留 scrim 与元素级缩放
- * - Reduced：只保留轻 scrim，元素不缩放
+ * - Reduced：只保留轻 scrim
  */
 @Composable
 internal fun Modifier.videoCardTransitionBackgroundEffect(
@@ -705,18 +750,19 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
 ): Modifier {
     val fallbackContentLayer = rememberGraphicsLayer()
     val fallbackSnapshotState = remember { VideoCardTransitionSnapshotLayerState() }
+    val isHostOwnedSnapshot = snapshotHandle != null
     val contentLayer = snapshotHandle?.contentLayer ?: fallbackContentLayer
     val snapshotState = snapshotHandle?.state ?: fallbackSnapshotState
     val view = LocalView.current
     var deviceCornerRadiusPx by remember { mutableFloatStateOf(0f) }
-    // Navigation3 SinglePane 会在详情稳态把来源 Scene 移出 Composition。GraphicsLayer
-    // handle 虽由 Host 保留，但它录制的 display list 已不能视为有效；若仍保留
-    // hasRecordedContent=true，预测返回会直接 draw 一个空 layer，表现为整页黑屏。
-    // 在来源节点真正脱离时失效标记；返回首帧由下方 draw 路径只重录一次。
-    DisposableEffect(snapshotState, contentLayer) {
+    // Host 共享 handle：来源 Scene 被 SinglePane 卸掉时禁止 invalidate，否则预测返回无糊。
+    // 仅本地 fallback 层在 dispose 时清理。
+    DisposableEffect(snapshotState, contentLayer, isHostOwnedSnapshot) {
         onDispose {
-            contentLayer.renderEffect = null
-            snapshotState.invalidateRecordedContent()
+            if (shouldInvalidateSnapshotOnSourceDispose(isHostOwnedSnapshot = isHostOwnedSnapshot)) {
+                contentLayer.renderEffect = null
+                snapshotState.invalidateRecordedContent()
+            }
         }
     }
     // insets 首帧可能为空；每次重组刷新，开场前通常已就绪。
@@ -737,14 +783,17 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
         realtimeBlurEnabledProvider() &&
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
-    LaunchedEffect(phase, exposure, retainSnapshot) {
+    LaunchedEffect(phase, exposure, retainSnapshot, isHostOwnedSnapshot) {
         if (!retainSnapshot) {
-            snapshotState.reset()
+            // Host 会话层由 Host IDLE 释放；源页不得因 SettledHidden 误 reset。
+            if (!isHostOwnedSnapshot) {
+                snapshotState.reset()
+            }
             return@LaunchedEffect
         }
         when (exposure) {
             VideoCardTransitionExposure.Opening -> {
-                // 允许首帧立刻 record（完整模糊观感）；draw 侧只录一次后冻结。
+                // 新开一场：允许首帧 record；draw 侧只录一次后冻结。
                 snapshotState.freezeRecording = false
                 snapshotState.hasRecordedContent = false
                 withFrameNanos { }
@@ -753,6 +802,7 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
             VideoCardTransitionExposure.BackPreview,
             VideoCardTransitionExposure.Returning,
             VideoCardTransitionExposure.Restoring -> {
+                // Host 层应已有 OPENING 冻结内容；仅在缺失时允许补录。
                 if (!snapshotState.hasRecordedContent) {
                     snapshotState.freezeRecording = false
                     withFrameNanos { }
@@ -762,13 +812,23 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
             VideoCardTransitionExposure.SettledHidden -> {
                 snapshotState.freezeRecording = true
             }
-            VideoCardTransitionExposure.Idle -> snapshotState.reset()
+            VideoCardTransitionExposure.Idle -> {
+                if (!isHostOwnedSnapshot) {
+                    snapshotState.reset()
+                }
+            }
         }
     }
 
     SideEffect {
+        // Host 拥有层时 SettledHidden 不 clear Blur——保持满糊待命预测手势。
         if (!renderDecision.updateBlurEffect) {
-            snapshotHandle?.clearRenderEffect() ?: run {
+            if (isHostOwnedSnapshot &&
+                exposure == VideoCardTransitionExposure.SettledHidden
+            ) {
+                return@SideEffect
+            }
+            if (!isHostOwnedSnapshot) {
                 contentLayer.renderEffect = null
                 snapshotState.lastBlurRadiusPx = Float.NaN
             }
@@ -792,8 +852,7 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
             if (activeDecision.drawSourceNormally) {
                 drawContent()
             } else if (shouldPaintRetainedSourceWithoutTransitionBackground(activeDecision)) {
-                // SettledHidden while this route is the composed top scene (Nav3 1.2 + None/None
-                // can settle before the clock leaves HELD). Never leave a pure black hole.
+                // SettledHidden 且源页仍是唯一 composed scene：Host 层尚未接管时防黑屏。
                 if (snapshotState.hasRecordedContent) {
                     drawLayer(contentLayer)
                     VideoCardTransitionDiagnostics.onSourceLayerDrawn()
@@ -834,8 +893,7 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
             return@drawWithContent
         }
 
-        // 只 record 一次：立刻有完整模糊观感，又避免 OPENING 每帧重录 feed 卡顿。
-        // 返回时若冻结层在 HELD 期间丢失（源页被 SinglePane 卸掉），允许补录一帧。
+        // OPENING 首帧 record；预测/返回若 Host 层仍在则直接复用，禁止无谓重录。
         if (!snapshotState.hasRecordedContent) {
             contentLayer.record {
                 this@drawWithContent.drawContent()
@@ -859,32 +917,12 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
             }
         }
 
-        contentLayer.pivotOffset = Offset(size.width / 2f, size.height / 2f)
-        contentLayer.scaleX = frame.contentScale
-        contentLayer.scaleY = frame.contentScale
-        if (frame.cornerRadiusPx != snapshotState.lastCornerRadiusPx) {
-            snapshotState.lastCornerRadiusPx = frame.cornerRadiusPx
-            if (frame.cornerRadiusPx > 0.01f) {
-                contentLayer.setRoundRectOutline(cornerRadius = frame.cornerRadiusPx)
-                contentLayer.clip = true
-            } else {
-                contentLayer.setRectOutline()
-                contentLayer.clip = false
-            }
-        }
-        if (frame.blurRadiusPx != snapshotState.lastBlurRadiusPx) {
-            snapshotState.lastBlurRadiusPx = frame.blurRadiusPx
-            contentLayer.renderEffect = if (frame.blurRadiusPx > 0.01f) {
-                BlurEffect(
-                    radiusX = frame.blurRadiusPx,
-                    radiusY = frame.blurRadiusPx,
-                    edgeTreatment = TileMode.Clamp,
-                )
-            } else {
-                null
-            }
-            VideoCardTransitionDiagnostics.onBlurEffectUpdated()
-        }
+        applyVideoCardTransitionSnapshotFrame(
+            contentLayer = contentLayer,
+            snapshotState = snapshotState,
+            frame = frame,
+            canvasSize = size,
+        )
         if (shouldDrawVideoCardTransitionScaleGapFill(frame.contentScale)) {
             drawRect(
                 resolveVideoCardTransitionScaleGapFillColor(

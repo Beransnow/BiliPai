@@ -27,6 +27,12 @@ class VideoCardTransitionBackgroundPolicyTest {
     }
 
     @Test
+    fun hostOwnedSnapshotMustNotInvalidateWhenSourceDetaches() {
+        assertFalse(shouldInvalidateSnapshotOnSourceDispose(isHostOwnedSnapshot = true))
+        assertTrue(shouldInvalidateSnapshotOnSourceDispose(isHostOwnedSnapshot = false))
+    }
+
+    @Test
     fun transitionMotionTierOnlyReducesForSystemReduceMotion() {
         assertEquals(MotionTier.Normal, resolveVideoCardTransitionMotionTier(reduceMotion = false))
         assertEquals(MotionTier.Reduced, resolveVideoCardTransitionMotionTier(reduceMotion = true))

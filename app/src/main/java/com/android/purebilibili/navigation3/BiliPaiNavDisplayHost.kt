@@ -75,8 +75,10 @@ import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionRet
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedMorphRemainingDurationMs
 import com.android.purebilibili.core.ui.transition.isVideoCardTransitionBackgroundGesturePhase
 import com.android.purebilibili.core.ui.transition.shouldApplyPredictiveBackGestureBlur
+import com.android.purebilibili.core.ui.transition.shouldReleaseHostOwnedDepthLayer
 import com.android.purebilibili.core.ui.transition.shouldShowVideoCardTransitionNavBackdrop
 import com.android.purebilibili.core.ui.transition.shouldSnapClearVideoCardDepthBlurOnQuickReturn
+import com.android.purebilibili.core.ui.transition.VideoCardTransitionHostDepthLayer
 import com.android.purebilibili.core.ui.transition.VideoCardTransitionNavBackdrop
 import com.android.purebilibili.feature.settings.isSettingsSubtreeNavKey
 import com.android.purebilibili.navigation.isVideoCardReturnTargetRoute
@@ -803,11 +805,9 @@ internal fun BiliPaiNavDisplayHost(
     val effectiveVideoCardExposure = videoCardExposureProvider()
     LaunchedEffect(effectiveVideoCardExposure) {
         VideoCardTransitionDiagnostics.onExposureChanged(effectiveVideoCardExposure)
-        if (
-            effectiveVideoCardExposure == VideoCardTransitionExposure.SettledHidden ||
-            effectiveVideoCardExposure == VideoCardTransitionExposure.Idle
-        ) {
-            videoCardSnapshotHandle.clearRenderEffect()
+        // 仅 IDLE 释放 Host 冻结景深层。SettledHidden 必须保留满糊层，供预测手势首帧使用。
+        if (shouldReleaseHostOwnedDepthLayer(effectiveVideoCardExposure)) {
+            videoCardSnapshotHandle.releaseSession()
         }
     }
     val showVideoCardNavBackdrop = shouldShowVideoCardTransitionNavBackdrop(
@@ -828,6 +828,18 @@ internal fun BiliPaiNavDisplayHost(
                     .background(AppSurfaceTokens.groupedListContainer()),
             )
         }
+        // 会话级景深：在 NavDisplay 之下持有 OPENING 录制的冻结层；HELD/预测/返回只改半径。
+        VideoCardTransitionHostDepthLayer(
+            enabled = videoCardDepthEffectEnabled,
+            snapshotHandle = videoCardSnapshotHandle,
+            progressProvider = videoCardBackgroundProgressProvider,
+            phaseProvider = { videoCardClock.phase },
+            exposureProvider = videoCardExposureProvider,
+            isGestureRestoreInProgressProvider = { videoCardClock.gestureRestoreInProgress },
+            motionTierProvider = { transitionBackgroundMotionTier },
+            isLightBackgroundProvider = { isLightBackground },
+            realtimeBlurEnabledProvider = { true },
+        )
         VideoCardTransitionNavBackdrop(
             visible = showVideoCardNavBackdrop,
             progressProvider = videoCardBackgroundProgressProvider,

@@ -79,11 +79,30 @@ class HomeVideoTransitionBackgroundStructureTest {
         assertTrue(source.contains("freezeRecording"))
         assertTrue(source.contains("contentLayer.record"))
         assertTrue(source.contains("BlurEffect("))
-        assertTrue(source.contains("DisposableEffect(snapshotState, contentLayer)"))
+        assertTrue(source.contains("DisposableEffect(snapshotState, contentLayer, isHostOwnedSnapshot)"))
+        assertTrue(source.contains("shouldInvalidateSnapshotOnSourceDispose"))
         assertTrue(source.contains("snapshotState.invalidateRecordedContent()"))
         // 冻结后不得每帧对 live content 再挂 android RenderEffect
         assertFalse(source.contains("android.graphics.RenderEffect"))
         assertFalse(source.contains("createBlurEffect("))
+    }
+
+    @Test
+    fun navDisplayHostOwnsSessionDepthLayerUnderNavDisplay() {
+        val source = navDisplayHostSource()
+        assertTrue(source.contains("VideoCardTransitionHostDepthLayer("))
+        assertTrue(source.contains("shouldReleaseHostOwnedDepthLayer("))
+        assertTrue(source.contains("videoCardSnapshotHandle.releaseSession()"))
+        // SettledHidden 不得再 clear 糊层，否则预测手势无满糊起点
+        assertFalse(
+            source.contains(
+                "effectiveVideoCardExposure == VideoCardTransitionExposure.SettledHidden ||",
+            ),
+        )
+        val boxBlock = source
+            .substringAfter("Box(modifier = modifier.fillMaxSize())")
+            .substringBefore("private fun ProvideNavigation3ViewModelApplicationExtras")
+        assertTrue(boxBlock.indexOf("VideoCardTransitionHostDepthLayer") < boxBlock.indexOf("NavDisplay("))
     }
 
     private fun homeScreenSource(): String {
