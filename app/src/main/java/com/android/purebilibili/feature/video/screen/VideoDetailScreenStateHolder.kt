@@ -316,8 +316,13 @@ internal fun VideoDetailScreenStateHolder(
             isQuickReturn = isQuickReturningFromDetail,
         )
     }
-    val sharedTransitionSourceCornerDp = remember(sourceRouteForSharedElement) {
-        CardPositionManager.lastClickedVideoSourceCornerDp
+    val frozenTransitionSourceCornerDp =
+        LocalVideoCardTransitionBackgroundState.current.sourceCornerDpProvider()
+    val sharedTransitionSourceCornerDp = remember(
+        sourceRouteForSharedElement,
+        frozenTransitionSourceCornerDp,
+    ) {
+        frozenTransitionSourceCornerDp
             ?: resolveVideoSharedTransitionSourceCornerDp(sourceRouteForSharedElement)
     }
     val videoSharedPlaybackIntent = remember(context, startAudioFromRoute) {

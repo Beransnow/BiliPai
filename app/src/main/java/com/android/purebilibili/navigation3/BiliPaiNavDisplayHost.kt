@@ -63,10 +63,14 @@ import com.android.purebilibili.core.ui.transition.VideoCardMorphProgressReporte
 import com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundPhase
 import com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundState
 import com.android.purebilibili.core.ui.transition.VideoCardTransitionClock
+import com.android.purebilibili.core.ui.transition.VideoCardTransitionExposure
+import com.android.purebilibili.core.ui.transition.VideoCardTransitionDiagnostics
 import com.android.purebilibili.core.ui.transition.resolveMorphAlignedFallbackDurationMs
 import com.android.purebilibili.core.ui.transition.resolvePredictiveBackCommitBlurDurationMs
 import com.android.purebilibili.core.ui.transition.resolvePredictiveBackGestureBlurProgress
 import com.android.purebilibili.core.ui.transition.resolveVideoCardTimelineSpec
+import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionExposure
+import com.android.purebilibili.core.ui.transition.rememberVideoCardTransitionSnapshotHandle
 import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionReturnFullDurationMillis
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedMorphRemainingDurationMs
 import com.android.purebilibili.core.ui.transition.isVideoCardTransitionBackgroundGesturePhase
@@ -153,6 +157,7 @@ internal fun BiliPaiNavDisplayHost(
         resolveVideoCardTimelineSpec(videoSharedTransitionDurationMillis)
     }
     val predictiveBackBackgroundProgress = remember { Animatable(0f) }
+    val videoCardSnapshotHandle = rememberVideoCardTransitionSnapshotHandle()
     val isQuickReturnFromDetailUpdated by rememberUpdatedState(isQuickReturnFromDetail)
     var videoCardReturnGestureInProgress by remember { mutableStateOf(false) }
     // fallback Animatable 唯一 owner：OPENING / RETURNING / cancel 互斥。
@@ -166,9 +171,11 @@ internal fun BiliPaiNavDisplayHost(
         cancelVideoCardDepthAnimation()
         var job: Job? = null
         job = navigationScope.launch {
+            VideoCardTransitionDiagnostics.onDepthAnimationJobChanged(active = true)
             try {
                 block()
             } finally {
+                VideoCardTransitionDiagnostics.onDepthAnimationJobChanged(active = false)
                 if (videoCardDepthAnimationJob === job) {
                     videoCardDepthAnimationJob = null
                 }
@@ -423,7 +430,9 @@ internal fun BiliPaiNavDisplayHost(
     }
     val performBack: (() -> Unit) -> Unit = { commitTransitionCallBack ->
         if (navigationBackJob?.isActive != true) {
-            navigationBackJob = navigationScope.launch {
+            val newBackJob = navigationScope.launch(start = kotlinx.coroutines.CoroutineStart.LAZY) {
+            VideoCardTransitionDiagnostics.onNavigationBackJobChanged(active = true)
+            try {
             val predictiveBlurAtCommit = predictiveBackBackgroundProgressProvider()
             val shouldFadePredictiveBlur = shouldApplyPredictiveBackGestureBlur(
                 routeTransition = popRouteTransition,
@@ -519,7 +528,13 @@ internal fun BiliPaiNavDisplayHost(
             onBack()
             videoBlurFadeJob?.join()
             predictiveBackBackgroundProgress.snapTo(0f)
+            } finally {
+                VideoCardTransitionDiagnostics.onNavigationBackJobChanged(active = false)
+                navigationBackJob = null
             }
+            }
+            navigationBackJob = newBackJob
+            newBackJob.start()
         }
     }
     val latestProgrammaticBackAction = rememberUpdatedState<() -> Unit> {
@@ -536,6 +551,20 @@ internal fun BiliPaiNavDisplayHost(
     }
     val quickReturnFromDetailProvider = remember {
         { isQuickReturnFromDetailUpdated }
+    }
+    val videoCardExposureProvider = remember(
+        videoCardClock,
+        gestureReturningVideoCard,
+    ) {
+        {
+            val nativeGestureActive = gestureReturningVideoCard &&
+                navigationEventState?.transitionState is NavigationEventTransitionState.InProgress
+            resolveVideoCardTransitionExposure(
+                phase = videoCardClock.phase,
+                predictiveBackInProgress = nativeGestureActive,
+                gestureRestoreInProgress = videoCardClock.gestureRestoreInProgress,
+            )
+        }
     }
     val preferWholeCardReturnProvider = rememberUpdatedState(preferWholeCardReturn)
     val scopedContent: @Composable (BiliPaiNavKey) -> Unit = remember(
@@ -569,6 +598,11 @@ internal fun BiliPaiNavDisplayHost(
                             phaseProvider = {
                                 videoCardClock.phase
                             },
+                            exposureProvider = videoCardExposureProvider,
+                            sourceCornerDpProvider = {
+                                sourceMetadata.sourceCornerDp
+                            },
+                            snapshotHandle = videoCardSnapshotHandle,
                             isReturnGestureInProgressProvider = {
                                 videoCardReturnGestureInProgress
                             },
@@ -679,8 +713,8 @@ internal fun BiliPaiNavDisplayHost(
     SideEffect {
         val gestureProgress = nativeVideoBackProgress
         val gestureActive = gestureReturningVideoCard && gestureProgress != null
-        if (gestureActive && gestureProgress != null) {
-            videoCardClock.beginGesture(gestureProgress)
+        if (gestureActive) {
+            videoCardClock.beginGesture(requireNotNull(gestureProgress))
         } else if (videoCardReturnGestureInProgress) {
             videoCardClock.endGesture()
         }
@@ -735,9 +769,19 @@ internal fun BiliPaiNavDisplayHost(
         },
     )
 
+    val effectiveVideoCardExposure = videoCardExposureProvider()
+    LaunchedEffect(effectiveVideoCardExposure) {
+        VideoCardTransitionDiagnostics.onExposureChanged(effectiveVideoCardExposure)
+        if (
+            effectiveVideoCardExposure == VideoCardTransitionExposure.SettledHidden ||
+            effectiveVideoCardExposure == VideoCardTransitionExposure.Idle
+        ) {
+            videoCardSnapshotHandle.clearRenderEffect()
+        }
+    }
     val showVideoCardNavBackdrop = shouldShowVideoCardTransitionNavBackdrop(
         cardTransitionEnabled = videoCardDepthEffectEnabled,
-        phase = videoCardClock.phase,
+        exposure = effectiveVideoCardExposure,
         isVideoDetailOnStack = isCardMorphDestinationNavKey(currentBackKey),
         isReturningToVideoDetail = isCardMorphDestinationNavKey(targetBackKey),
     )

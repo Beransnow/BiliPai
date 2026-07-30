@@ -49,6 +49,7 @@ import com.android.purebilibili.feature.video.ui.gesture.resolveTwoFingerGesture
 import com.android.purebilibili.feature.video.ui.gesture.resolveTwoFingerSpeedGestureMode
 import com.android.purebilibili.feature.video.playback.policy.resolveDisplayedQualityId
 import com.android.purebilibili.core.ui.motion.AppMotionEasing
+import com.android.purebilibili.core.ui.transition.LocalVideoCardTransitionBackgroundState
 import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTextButton
@@ -152,7 +153,6 @@ import com.android.purebilibili.core.ui.transition.resolveVideoSharedTransitionP
 import com.android.purebilibili.core.ui.transition.resolveVideoSharedTransitionSourceCornerDp
 import com.android.purebilibili.core.ui.transition.resolveVideoSharedTransitionVisualSpec
 import com.android.purebilibili.core.ui.transition.videoSharedElementBoundsTransformSpec
-import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.HapticType
 import com.android.purebilibili.core.util.Logger
@@ -3136,8 +3136,11 @@ fun VideoPlayerSection(
             )
         }
     }
+    val transitionSourceCornerDp =
+        LocalVideoCardTransitionBackgroundState.current.sourceCornerDpProvider()
     val videoSharedTransitionVisualSpec = remember(
         sourceRouteForSharedElement,
+        transitionSourceCornerDp,
         forceCoverDuringReturnAnimation,
         playerState.player.currentPosition,
         isFullscreen,
@@ -3147,7 +3150,7 @@ fun VideoPlayerSection(
     ) {
         resolveVideoSharedTransitionVisualSpec(
             sourceRoute = sourceRouteForSharedElement,
-            sourceCornerDp = CardPositionManager.lastClickedVideoSourceCornerDp
+            sourceCornerDp = transitionSourceCornerDp
                 ?: resolveVideoSharedTransitionSourceCornerDp(sourceRouteForSharedElement),
             playbackIntent = videoSharedPlaybackIntent,
             fullscreen = isFullscreen && !isPortraitFullscreen,
