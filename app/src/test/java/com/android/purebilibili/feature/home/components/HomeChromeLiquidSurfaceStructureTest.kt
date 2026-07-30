@@ -184,19 +184,16 @@ class HomeChromeLiquidSurfaceStructureTest {
                 topBarSource.contains("val shouldPrimeTopTabLiquidGlassCapture =") &&
                 topBarSource.contains("val topTabContentBackdrop = rememberLayerBackdrop()") &&
                 topBarSource.contains("val topTabMiuixContentBackdrop = rememberMiuixLayerBackdrop()") &&
-                topBarSource.contains("rememberCombinedBackdrop(backdrop, topTabContentBackdrop)") &&
-                topBarSource.contains("rememberMiuixCombinedBackdrop(miuixBackdrop, topTabMiuixContentBackdrop)") &&
                 topBarSource.contains("layerBackdrop(topTabContentBackdrop)") &&
                 topBarSource.contains("miuixLayerBackdrop(topTabMiuixContentBackdrop)") &&
+                topBarSource.contains(".background(topTabIndicatorCaptureSurfaceColor)") &&
                 topBarSource.contains("ColorFilter.tint(topTabExportTintColor)") &&
                 topBarSource.contains("TopTabLiquidColorMode.GLASS_EXPORT") &&
                 topBarSource.contains("TopTabLiquidColorMode.GLASS_VISIBLE") &&
                 topBarSource.contains("resolveSharedLiquidExportMonochromeColor(") &&
-                topBarSource.contains("shouldRenderBottomBarIndicatorBackdrop(") &&
-                topBarSource.contains("val glassLayersAlwaysOn = shouldUseLiquidGlassIndicator") &&
                 topBarSource.contains("resolveTopTabIndicatorBackdropPolicy(") &&
-                topBarSource.contains("allowIdleGlassEffect = false") &&
-                topBarSource.contains("contentBackdrop = effectiveTopTabMiuixContentBackdrop") &&
+                topBarSource.contains("contentBackdrop = topTabMiuixContentBackdrop") &&
+                topBarSource.contains("backdrop = topTabIndicatorMiuixBackdrop") &&
                 topBarSource.contains("legacyContentBackdrop = topTabContentBackdrop") &&
                 topBarSource.contains("topTabListScrollOffsetPx") &&
                 topBarSource.contains("One shared shift for export") &&
@@ -209,7 +206,9 @@ class HomeChromeLiquidSurfaceStructureTest {
             topBarSource.contains("backdrop = tabsBackdrop") ||
                 topBarSource.contains(".layerBackdrop(tabsBackdrop)") ||
                 topBarSource.contains("rememberCombinedBackdrop(backdrop, tabsBackdrop)") ||
-                topBarSource.contains("rememberCombinedBackdrop(backdrop, tabContentBackdrop)")
+                topBarSource.contains("rememberCombinedBackdrop(backdrop, tabContentBackdrop)") ||
+                topBarSource.contains("rememberCombinedBackdrop(backdrop, topTabContentBackdrop)") ||
+                topBarSource.contains("rememberMiuixCombinedBackdrop(miuixBackdrop, topTabMiuixContentBackdrop)")
         )
         assertFalse(
             "top tab indicator should not keep its old custom indicator renderer",

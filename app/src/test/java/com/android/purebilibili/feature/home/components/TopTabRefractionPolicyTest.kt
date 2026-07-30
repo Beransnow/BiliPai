@@ -24,15 +24,17 @@ class TopTabRefractionPolicyTest {
         assertTrue(source.contains("topTabShouldStretchIndicator"))
         assertTrue(source.contains("val shouldPrimeTopTabLiquidGlassCapture ="))
         assertTrue(source.contains("val topTabContentBackdrop = rememberLayerBackdrop()"))
-        assertTrue(source.contains("val effectiveTopTabMiuixContentBackdrop"))
-        assertTrue(source.contains("rememberCombinedBackdrop(backdrop, topTabContentBackdrop)"))
-        assertTrue(source.contains("rememberMiuixCombinedBackdrop(miuixBackdrop, topTabMiuixContentBackdrop)"))
-        assertTrue(source.contains("contentBackdrop = effectiveTopTabMiuixContentBackdrop"))
+        assertTrue(source.contains("val topTabIndicatorMiuixBackdrop"))
+        assertFalse(source.contains("rememberCombinedBackdrop(backdrop, topTabContentBackdrop)"))
+        assertFalse(source.contains("rememberMiuixCombinedBackdrop(miuixBackdrop, topTabMiuixContentBackdrop)"))
+        assertTrue(source.contains("contentBackdrop = topTabMiuixContentBackdrop"))
+        assertTrue(source.contains("backdrop = topTabIndicatorMiuixBackdrop"))
         assertTrue(source.contains("legacyContentBackdrop = topTabContentBackdrop"))
-        assertTrue(source.contains("val glassLayersAlwaysOn = shouldUseLiquidGlassIndicator"))
         assertTrue(source.contains("resolveTopTabIndicatorBackdropPolicy("))
         assertTrue(source.contains("isDragging = topTabShouldStretchIndicator"))
         assertTrue(source.contains("indicatorLayerScaleProgress = topTabIndicatorLayerScaleProgress"))
+        assertTrue(source.contains(".background(topTabIndicatorCaptureSurfaceColor)"))
+        assertTrue(source.contains("resolveBottomBarIdleIndicatorSurfaceColor("))
         assertFalse(source.contains("indicatorHeight = 4.dp"))
     }
 
@@ -170,7 +172,7 @@ class TopTabRefractionPolicyTest {
             position = 1.32f,
             velocity = 860f,
             isDragging = true,
-            motionSpec = resolveBottomBarMotionSpec(BottomBarMotionProfile.IOS_FLOATING)
+            motionSpec = resolveBottomBarMotionSpec(BottomBarMotionProfile.ANDROID_NATIVE_FLOATING)
         )
 
         assertEquals(1f, top.lensAmountScale, 0.001f)
@@ -202,11 +204,10 @@ class TopTabRefractionPolicyTest {
     }
 
     @Test
-    fun `pager sliding uses velocity deformation without drag enlargement`() {
+    fun `pager sliding keeps bottom bar drag enlargement`() {
         assertEquals(
-            0f,
+            0.2f,
             resolveTopTabIndicatorScaleProgress(
-                pagerSliding = true,
                 dragScaleProgress = 0.2f,
                 pressProgress = 0f
             ),
@@ -222,9 +223,42 @@ class TopTabRefractionPolicyTest {
         assertEquals(
             0.6f,
             resolveTopTabIndicatorScaleProgress(
-                pagerSliding = false,
                 dragScaleProgress = 0.2f,
                 pressProgress = 0.6f
+            ),
+            0.001f
+        )
+    }
+
+    @Test
+    fun `pager sliding applies bottom bar panel offset in both directions`() {
+        assertEquals(
+            3.2f,
+            resolveTopTabMatchedPanelOffsetPx(
+                dragPanelOffsetPx = 0f,
+                pagerPanelOffsetFraction = 0.8f,
+                maxOffsetPx = 4f,
+                dragActive = false
+            ),
+            0.001f
+        )
+        assertEquals(
+            -2f,
+            resolveTopTabMatchedPanelOffsetPx(
+                dragPanelOffsetPx = 0f,
+                pagerPanelOffsetFraction = -0.5f,
+                maxOffsetPx = 4f,
+                dragActive = false
+            ),
+            0.001f
+        )
+        assertEquals(
+            1.25f,
+            resolveTopTabMatchedPanelOffsetPx(
+                dragPanelOffsetPx = 1.25f,
+                pagerPanelOffsetFraction = -0.5f,
+                maxOffsetPx = 4f,
+                dragActive = true
             ),
             0.001f
         )
@@ -292,7 +326,7 @@ class TopTabRefractionPolicyTest {
 
         assertFalse(idle.useCombinedBackdrop)
         assertTrue(idle.useIndicatorBackdrop)
-        assertTrue(moving.useCombinedBackdrop)
+        assertFalse(moving.useCombinedBackdrop)
         assertTrue(moving.useIndicatorBackdrop)
     }
 
@@ -371,7 +405,9 @@ class TopTabRefractionPolicyTest {
         assertFalse(source.contains("drawBackdrop("))
         assertFalse(source.contains(".layerBackdrop(tabsBackdrop)"))
         assertFalse(source.contains("rememberCombinedBackdrop(backdrop, tabsBackdrop)"))
-        assertTrue(source.contains("rememberCombinedBackdrop(backdrop, topTabContentBackdrop)"))
+        assertFalse(source.contains("rememberCombinedBackdrop(backdrop, topTabContentBackdrop)"))
+        assertFalse(source.contains("rememberMiuixCombinedBackdrop(miuixBackdrop, topTabMiuixContentBackdrop)"))
+        assertTrue(source.contains("backdrop = topTabIndicatorMiuixBackdrop"))
         assertTrue(source.contains("if (shouldPrimeTopTabLiquidGlassCapture)"))
         assertTrue(source.contains("layerBackdrop(topTabContentBackdrop)"))
     }

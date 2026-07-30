@@ -98,15 +98,12 @@ import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.animation.DampedDragAnimationState
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity
-import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.backdrops.LayerBackdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
-import com.kyant.backdrop.backdrops.rememberCombinedBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
 import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
-import com.android.purebilibili.feature.home.components.liquid.rememberCombinedBackdrop as rememberMiuixCombinedBackdrop
 import dev.chrisbanes.haze.HazeState
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -116,8 +113,6 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.math.sign
 import kotlinx.coroutines.delay
-import com.android.purebilibili.core.ui.motion.BottomBarMotionProfile
-import com.android.purebilibili.core.ui.motion.resolveBottomBarMotionSpec
 import androidx.compose.foundation.combinedClickable // [Added]
 import java.io.File
 
@@ -1085,7 +1080,7 @@ private fun LightweightHomeTopTabs(
             }
         }
         val topTabIndicatorDragScaleProgress = rememberBottomBarIndicatorDragScaleProgress(
-            isDragging = topTabDragActive
+            isDragging = topTabShouldStretchIndicator
         )
         val topTabPressProgress = if (topTabDragActive) {
             topTabDragState.pressProgress
@@ -1093,7 +1088,6 @@ private fun LightweightHomeTopTabs(
             0f
         }
         val topTabIndicatorLayerScaleProgress = resolveTopTabIndicatorScaleProgress(
-            pagerSliding = !topTabDragActive && topTabShouldStretchIndicator,
             dragScaleProgress = topTabIndicatorDragScaleProgress,
             pressProgress = topTabPressProgress
         )
@@ -1117,7 +1111,7 @@ private fun LightweightHomeTopTabs(
             refractionProgress = topTabRefractionMotionProfile.progress,
             tapPressRefractionEnabled = true
         )
-        val topTabPanelOffsetPx by remember(density, itemWidth, categories.size, topTabDragState) {
+        val topTabDragPanelOffsetPx by remember(density, itemWidth, categories.size, topTabDragState) {
             derivedStateOf {
                 val dockWidthPx = with(density) {
                     (itemWidth * categories.size.coerceAtLeast(1)).toPx()
@@ -1130,26 +1124,19 @@ private fun LightweightHomeTopTabs(
                 )
             }
         }
-        val topTabBackdropPresetProgress = resolveBottomBarBackdropPresetProgress(
-            motionProgress = topTabMotionProgress,
-            verticalProgress = 0f,
-            pressProgress = topTabPressProgress
+        val topTabPanelOffsetPx = resolveTopTabMatchedPanelOffsetPx(
+            dragPanelOffsetPx = topTabDragPanelOffsetPx,
+            pagerPanelOffsetFraction = topTabRefractionMotionProfile.indicatorPanelOffsetFraction,
+            maxOffsetPx = with(density) { AppSpacingTokens.ExtraSmall.toPx() },
+            dragActive = topTabDragActive
         )
         // Swipe/press lens progress so theme-tinted glass follows the capsule.
         val topTabIndicatorLensSpec = resolveBottomBarBackdropPresetIndicatorLens(
             progress = resolveSharedLiquidIndicatorLensProgress(
                 pressProgress = topTabPressProgress,
                 motionProgress = topTabMotionProgress,
-                isDragging = topTabDragActive
+                isDragging = topTabShouldStretchIndicator
             )
-        )
-        val topTabIndicatorHighlightAlpha = resolveBottomBarLiquidGlassHighlightAlpha(
-            motionProgress = topTabBackdropPresetProgress.indicatorProgress
-        )
-        val topTabIndicatorGlowAlpha = resolveBottomBarIndicatorGlowAlpha(
-            glassEnabled = topTabDragActive || isLiquidGlassEnabled,
-            pressProgress = topTabPressProgress,
-            motionProgress = topTabMotionProgress
         )
         val md3IndicatorTranslationXPx by remember(topTabIndicatorPosition, itemWidth, md3IndicatorWidth, density, listState) {
             derivedStateOf {
@@ -1212,52 +1199,44 @@ private fun LightweightHomeTopTabs(
             isLiquidGlassEnabled &&
                 !skinPlainStyle &&
                 !hasSkinStickerIcons
-        val isTopTabIndicatorInteractionActive =
-            topTabDragActive || topTabShouldStretchIndicator || topTabPressProgress > 0.001f
+        val topTabContentBackdrop = rememberLayerBackdrop()
+        val topTabMiuixContentBackdrop = rememberMiuixLayerBackdrop()
         val topTabIndicatorVisualPolicy = resolveTopTabIndicatorVisualPolicy(
             position = topTabIndicatorPosition,
             interacting = indicatorIsInteracting,
             velocityPxPerSecond = topTabMotionVelocityPxPerSecond,
             useNeutralIndicatorTint = shouldUseLiquidGlassIndicator
         )
-        val shouldRenderTopTabIndicatorBackdropRaw = shouldRenderBottomBarIndicatorBackdrop(
-            glassEnabled = shouldUseLiquidGlassIndicator,
-            hasContentBackdrop = true,
-            indicatorProgress = topTabMotionProgress,
-            isTransitionRunning = isTransitionRunning,
-            isBottomBarInteractionActive = isTopTabIndicatorInteractionActive,
-            allowIdleGlassEffect = false,
-            allowTransitionIndicatorPulse = topTabPressProgress > 0.001f
-        )
-        // [KSU 对齐] 玻璃开启时指示器采样层常驻，避免 idle ↔ 交互切换时 tabsBackdrop 为空导致折射瞬态。
-        val glassLayersAlwaysOn = shouldUseLiquidGlassIndicator
-        val shouldRenderTopTabIndicatorBackdrop =
-            glassLayersAlwaysOn || shouldRenderTopTabIndicatorBackdropRaw
         val topTabIndicatorBackdropPolicy = resolveTopTabIndicatorBackdropPolicy(
             effectiveLiquidGlassEnabled = shouldUseLiquidGlassIndicator,
-            hasBackdrop = backdrop != null,
+            hasBackdrop = backdrop != null || miuixBackdrop != null,
             indicatorVisualPolicy = topTabIndicatorVisualPolicy
         )
-        val topTabContentBackdrop = rememberLayerBackdrop()
-        val topTabMiuixContentBackdrop = rememberMiuixLayerBackdrop()
-        val effectiveTopTabMiuixContentBackdrop = if (
-            shouldRenderTopTabIndicatorBackdrop && miuixBackdrop != null
-        ) {
-            rememberMiuixCombinedBackdrop(miuixBackdrop, topTabMiuixContentBackdrop)
-        } else {
-            topTabMiuixContentBackdrop
-        }
-        val effectiveTopTabIndicatorContentBackdrop: Backdrop? = when {
-            !shouldRenderTopTabIndicatorBackdrop ||
-                !topTabIndicatorBackdropPolicy.useIndicatorBackdrop -> null
-            topTabIndicatorBackdropPolicy.useCombinedBackdrop && backdrop != null ->
-                rememberCombinedBackdrop(backdrop, topTabContentBackdrop)
-            else -> topTabContentBackdrop
-        }
+        // Keep the indicator on the sibling export capture only. Sampling the page backdrop
+        // directly makes the capsule refract high-contrast video thumbnails unlike the
+        // bottom bar's stable frosted selection surface.
+        val topTabIndicatorMiuixBackdrop =
+            if (topTabIndicatorBackdropPolicy.useIndicatorBackdrop && miuixBackdrop != null) {
+                topTabMiuixContentBackdrop
+            } else {
+                null
+            }
+        val topTabIndicatorLegacyBackdrop =
+            if (topTabIndicatorBackdropPolicy.useIndicatorBackdrop && backdrop != null) {
+                topTabContentBackdrop
+            } else {
+                null
+            }
+        val topTabIndicatorCaptureSurfaceColor =
+            resolveKernelSuBottomBarContainerColor(darkTheme = isDarkTheme)
+        val topTabIndicatorIdleSurfaceColor = resolveBottomBarIdleIndicatorSurfaceColor(
+            preset = liquidGlassPreset,
+            darkTheme = isDarkTheme
+        )
         val topTabLensProgress = resolveSharedLiquidIndicatorLensProgress(
             pressProgress = topTabPressProgress,
             motionProgress = topTabMotionProgress,
-            isDragging = topTabDragActive
+            isDragging = topTabShouldStretchIndicator
         )
         val useTopTabGlassColorPath = resolveSharedLiquidIndicatorUseGlassColorPath(
             liquidGlassEnabled = shouldUseLiquidGlassIndicator,
@@ -1383,6 +1362,7 @@ private fun LightweightHomeTopTabs(
                             .zIndex(0f)
                             .layerBackdrop(topTabContentBackdrop)
                             .miuixLayerBackdrop(topTabMiuixContentBackdrop)
+                            .background(topTabIndicatorCaptureSurfaceColor)
                             .graphicsLayer {
                                 // Only mirror LazyRow content origin (padding - scroll). No extra panel offset.
                                 translationX = topTabHorizontalPaddingPx - topTabListScrollOffsetPx
@@ -1528,16 +1508,13 @@ private fun LightweightHomeTopTabs(
                             shellShape = capsuleShape,
                             liquidGlassPreset = liquidGlassPreset,
                             // Prefer export capture so capsule shows theme-tinted glyphs.
-                            contentBackdrop = effectiveTopTabMiuixContentBackdrop,
-                            backdrop = miuixBackdrop,
+                            contentBackdrop = topTabMiuixContentBackdrop,
+                            backdrop = topTabIndicatorMiuixBackdrop,
                             legacyContentBackdrop = topTabContentBackdrop,
-                            legacyBackdrop = effectiveTopTabIndicatorContentBackdrop ?: backdrop,
+                            legacyBackdrop = topTabIndicatorLegacyBackdrop,
                             indicatorLensSpec = topTabIndicatorLensSpec,
                             effectivePressProgress = topTabLensProgress,
-                            indicatorIdleSurfaceColor = resolveIosTopTabCapsuleContainerColor(
-                                isDarkTheme = isDarkTheme,
-                                selectionFraction = 1f
-                            ),
+                            indicatorIdleSurfaceColor = topTabIndicatorIdleSurfaceColor,
                             glassEnabled = shouldUseLiquidGlassIndicator,
                             indicatorEffectsEnabled = shouldUseLiquidGlassIndicator,
                             motionProgress = topTabMotionProgress,
@@ -1559,15 +1536,13 @@ private fun LightweightHomeTopTabs(
                             shellShape = resolveSharedBottomBarCapsuleShape(),
                             liquidGlassPreset = liquidGlassPreset,
                             // Prefer export capture so capsule shows theme-tinted glyphs.
-                            contentBackdrop = effectiveTopTabMiuixContentBackdrop,
-                            backdrop = miuixBackdrop,
+                            contentBackdrop = topTabMiuixContentBackdrop,
+                            backdrop = topTabIndicatorMiuixBackdrop,
                             legacyContentBackdrop = topTabContentBackdrop,
-                            legacyBackdrop = effectiveTopTabIndicatorContentBackdrop ?: backdrop,
+                            legacyBackdrop = topTabIndicatorLegacyBackdrop,
                             indicatorLensSpec = topTabIndicatorLensSpec,
                             effectivePressProgress = topTabLensProgress,
-                            indicatorIdleSurfaceColor = resolveAndroidNativeIdleIndicatorSurfaceColor(
-                                darkTheme = isDarkTheme
-                            ),
+                            indicatorIdleSurfaceColor = topTabIndicatorIdleSurfaceColor,
                             glassEnabled = true,
                             motionProgress = topTabMotionProgress,
                             velocityItemsPerSecond = topTabIndicatorLayerVelocityItemsPerSecond,
@@ -1589,17 +1564,13 @@ private fun LightweightHomeTopTabs(
                             shellShape = capsuleShape,
                             liquidGlassPreset = liquidGlassPreset,
                             // Prefer export capture so capsule shows theme-tinted glyphs.
-                            contentBackdrop = effectiveTopTabMiuixContentBackdrop,
-                            backdrop = miuixBackdrop,
+                            contentBackdrop = topTabMiuixContentBackdrop,
+                            backdrop = topTabIndicatorMiuixBackdrop,
                             legacyContentBackdrop = topTabContentBackdrop,
-                            legacyBackdrop = effectiveTopTabIndicatorContentBackdrop ?: backdrop,
+                            legacyBackdrop = topTabIndicatorLegacyBackdrop,
                             indicatorLensSpec = topTabIndicatorLensSpec,
                             effectivePressProgress = topTabLensProgress,
-                            indicatorIdleSurfaceColor = if (isDarkTheme) {
-                                OpticalContrastPalette.Highlight.copy(alpha = 0.1f)
-                            } else {
-                                OpticalContrastPalette.Shadow.copy(alpha = 0.1f)
-                            },
+                            indicatorIdleSurfaceColor = topTabIndicatorIdleSurfaceColor,
                             glassEnabled = true,
                             motionProgress = topTabMotionProgress,
                             velocityItemsPerSecond = topTabIndicatorLayerVelocityItemsPerSecond,
@@ -2113,7 +2084,8 @@ internal fun resolveTopTabStaticIndicatorVisualPolicy(
 internal fun resolveTopTabIndicatorLayerTransform(
     motionProgress: Float,
     velocityItemsPerSecond: Float,
-    motionSpec: com.android.purebilibili.core.ui.motion.BottomBarMotionSpec = resolveBottomBarMotionSpec()
+    motionSpec: com.android.purebilibili.core.ui.motion.BottomBarMotionSpec =
+        resolveSegmentedControlMotionSpec()
 ): BottomBarIndicatorLayerTransform {
     val bottomBarTransform = resolveBottomBarIndicatorLayerTransform(
         motionProgress = motionProgress,
@@ -2126,12 +2098,20 @@ internal fun resolveTopTabIndicatorLayerTransform(
 }
 
 internal fun resolveTopTabIndicatorScaleProgress(
-    pagerSliding: Boolean,
     dragScaleProgress: Float,
     pressProgress: Float
 ): Float {
-    if (pagerSliding) return 0f
     return maxOf(dragScaleProgress, pressProgress).coerceIn(0f, 1f)
+}
+
+internal fun resolveTopTabMatchedPanelOffsetPx(
+    dragPanelOffsetPx: Float,
+    pagerPanelOffsetFraction: Float,
+    maxOffsetPx: Float,
+    dragActive: Boolean
+): Float {
+    if (dragActive) return dragPanelOffsetPx
+    return pagerPanelOffsetFraction.coerceIn(-1f, 1f) * maxOffsetPx.coerceAtLeast(0f)
 }
 
 internal fun resolveTopTabNeutralIndicatorColor(
@@ -2171,12 +2151,11 @@ internal fun resolveTopTabIndicatorBackdropPolicy(
         )
     }
 
-    val useContentBackdrop = indicatorVisualPolicy.shouldRefract && effectiveLiquidGlassEnabled
-    val useBackdrop = indicatorVisualPolicy.shouldRefract && hasBackdrop
-    val useCombinedBackdrop = useContentBackdrop && useBackdrop
     return TopTabIndicatorBackdropPolicy(
         useIndicatorBackdrop = true,
-        useCombinedBackdrop = useCombinedBackdrop
+        // The top dock may sit directly over high-contrast video covers. Keep the moving
+        // capsule on its frosted sibling capture instead of combining the raw page source.
+        useCombinedBackdrop = false
     )
 }
 
@@ -2211,7 +2190,7 @@ internal fun resolveTopTabRefractionMotionProfile(
             exportPanelOffsetFraction = 0f
         )
     }
-    val bottomMotionSpec = resolveBottomBarMotionSpec(BottomBarMotionProfile.IOS_FLOATING)
+    val bottomMotionSpec = resolveSegmentedControlMotionSpec()
     val bottomProfile = resolveBottomBarRefractionMotionProfile(
         position = position,
         velocity = velocityPxPerSecond,
