@@ -51,6 +51,14 @@ internal class VideoCardTransitionClock {
     var gestureRestoreInProgress: Boolean by mutableStateOf(false)
         private set
 
+    /**
+     * 返回消糊起点（同步写入）。shared-only 进场后 fallback Animatable 常仍为 0，
+     * beginReturning 若只改 phase，在 suspend snapFallback 跑到之前 depth 会读成 0 → 无糊。
+     * 此 floor 在 snapFallback 前顶住满糊（或手势提交时的 depth），snap 后清空。
+     */
+    var returnDepthFloor: Float? by mutableStateOf(null)
+        private set
+
     private val fallback = Animatable(0f)
 
     /**
@@ -79,6 +87,7 @@ internal class VideoCardTransitionClock {
             sharedMorphFraction = sharedMorphFraction,
             fallbackProgress = fallback.value,
             gestureRestoreInProgress = gestureRestoreInProgress,
+            returnDepthFloor = returnDepthFloor,
         )
     }
 
@@ -122,15 +131,22 @@ internal class VideoCardTransitionClock {
         phase = VideoCardTransitionBackgroundPhase.OPENING
         gestureBackProgress = null
         gestureRestoreInProgress = false
+        returnDepthFloor = null
         clearSharedMorphProgress()
     }
 
-    fun beginReturning(sourceRoute: String?) {
+    /**
+     * @param startDepth 消糊起点。HELD 稳态后必须为 1（满糊），否则 shared-only 进场
+     * 留下的 fallback=0 会让返回首帧立刻清晰、看不到模糊过程。
+     */
+    fun beginReturning(sourceRoute: String?, startDepth: Float = 1f) {
         this.sourceRoute = sourceRoute
+        // 同步钉死起点，再改 phase，保证本帧 depth 已是满糊。
+        returnDepthFloor = startDepth.coerceIn(0f, 1f)
         phase = VideoCardTransitionBackgroundPhase.RETURNING
         gestureBackProgress = null
         gestureRestoreInProgress = false
-        // 保留 shared 回灌通道；fallback 从当前 depth 起
+        // 保留 shared 回灌通道；fallback 由 Host 再 snap 后 animate
     }
 
     fun markHeld() {
@@ -138,6 +154,7 @@ internal class VideoCardTransitionClock {
             phase == VideoCardTransitionBackgroundPhase.RETURNING
         ) {
             phase = VideoCardTransitionBackgroundPhase.HELD
+            returnDepthFloor = null
         }
     }
 
@@ -146,6 +163,7 @@ internal class VideoCardTransitionClock {
         sourceRoute = null
         gestureBackProgress = null
         gestureRestoreInProgress = false
+        returnDepthFloor = null
         clearSharedMorphProgress()
     }
 
@@ -170,6 +188,8 @@ internal class VideoCardTransitionClock {
 
     suspend fun snapFallback(value: Float) {
         fallback.snapTo(value.coerceIn(0f, 1f))
+        // fallback 已接管；清 floor 才能继续 animate 到 0。
+        returnDepthFloor = null
     }
 
     /**
@@ -184,6 +204,7 @@ internal class VideoCardTransitionClock {
         val safeDuration = durationMillis.coerceAtLeast(0)
         if (safeDuration <= 0) {
             fallback.snapTo(target.coerceIn(0f, 1f))
+            returnDepthFloor = null
             return
         }
         fallback.animateTo(
@@ -196,6 +217,7 @@ internal class VideoCardTransitionClock {
         clearSharedMorphProgress()
         gestureBackProgress = null
         gestureRestoreInProgress = false
+        returnDepthFloor = null
         fallback.snapTo(0f)
         phase = VideoCardTransitionBackgroundPhase.IDLE
     }
@@ -257,9 +279,9 @@ internal fun shouldPreferSharedMorphProgress(
  * 预测手势取消回弹（[gestureRestoreInProgress]）时 HELD 必须读 fallback，
  * 才能播清晰→满糊；否则恒 1 会看起来「取消也没有模糊过程」。
  *
- * [VideoCardTransitionBackgroundPhase.RETURNING]：shared 与 Host fallback **取较大值**。
- * Nav3 Exit.None 下 AVS morph 常瞬间掉到 0，若只信 shared 会直接清晰；Host 的
- * fallback 1→0 才是返回景深连续曲线的保底。
+ * [VideoCardTransitionBackgroundPhase.RETURNING]：shared / fallback / [returnDepthFloor]
+ * 取较大值。HELD 稳态后 fallback 常为 0；floor 在 snapFallback 前顶住满糊，避免返回
+ * 首帧 depth=0 导致「完全进详情后再返回完全没有模糊」。
  */
 internal fun resolveVideoCardClockDepthProgress(
     gestureBackProgress: Float?,
@@ -269,6 +291,7 @@ internal fun resolveVideoCardClockDepthProgress(
     sharedMorphFraction: Float?,
     fallbackProgress: Float,
     gestureRestoreInProgress: Boolean = false,
+    returnDepthFloor: Float? = null,
 ): Float {
     if (gestureBackProgress != null) {
         return resolveVideoCardTransitionBackgroundGestureBlurProgress(
@@ -281,7 +304,11 @@ internal fun resolveVideoCardClockDepthProgress(
             backProgress = gestureBackProgress,
         )
     }
-    val fallback = fallbackProgress.coerceIn(0f, 1f)
+    val fallback = resolveReturningDepthWithFloor(
+        phase = phase,
+        fallbackProgress = fallbackProgress,
+        returnDepthFloor = returnDepthFloor,
+    )
     if (shouldPreferSharedMorphProgress(
             sharedMorphActive = sharedMorphActive,
             hasSharedFraction = sharedMorphFraction != null,
@@ -295,10 +322,24 @@ internal fun resolveVideoCardClockDepthProgress(
         return shared
     }
     if (phase == VideoCardTransitionBackgroundPhase.HELD) {
-        if (gestureRestoreInProgress) return fallback
+        if (gestureRestoreInProgress) return fallbackProgress.coerceIn(0f, 1f)
         return 1f
     }
     return fallback
+}
+
+/**
+ * RETURNING 时用 [returnDepthFloor] 顶住 snap 前的 0 fallback，保证消糊从满糊起。
+ */
+internal fun resolveReturningDepthWithFloor(
+    phase: VideoCardTransitionBackgroundPhase,
+    fallbackProgress: Float,
+    returnDepthFloor: Float?,
+): Float {
+    val fallback = fallbackProgress.coerceIn(0f, 1f)
+    if (phase != VideoCardTransitionBackgroundPhase.RETURNING) return fallback
+    val floor = returnDepthFloor?.coerceIn(0f, 1f) ?: return fallback
+    return maxOf(fallback, floor)
 }
 
 /**

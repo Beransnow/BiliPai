@@ -226,11 +226,93 @@ class VideoCardTransitionClockTest {
         clock.beginOpening("home")
         clock.reportSharedMorphProgress(morphFraction = 1f, active = false)
         assertEquals(VideoCardTransitionBackgroundPhase.HELD, clock.phase)
-        clock.beginReturning("home")
+        clock.beginReturning("home", startDepth = 1f)
         // 详情 dispose / Exit.None：shared 结束且 fraction≈0 时仍保持 RETURNING，
         // 留给 Host fallback 跑完模糊→清晰后再 markIdle。
         clock.reportSharedMorphProgress(morphFraction = 0f, active = false)
         assertEquals(VideoCardTransitionBackgroundPhase.RETURNING, clock.phase)
+    }
+
+    @Test
+    fun returnAfterHeldKeepsFullBlurUntilFallbackSnaps() {
+        // shared-only 进场：fallback 仍为 0，HELD 合同 depth=1。
+        assertEquals(
+            1f,
+            resolveVideoCardClockDepthProgress(
+                gestureBackProgress = null,
+                gestureStartDepth = 1f,
+                phase = VideoCardTransitionBackgroundPhase.HELD,
+                sharedMorphActive = false,
+                sharedMorphFraction = null,
+                fallbackProgress = 0f,
+            ),
+            0.0001f,
+        )
+        // 刚 beginReturning：fallback 仍 0，floor 顶住满糊（否则首帧无模糊过程）
+        assertEquals(
+            1f,
+            resolveVideoCardClockDepthProgress(
+                gestureBackProgress = null,
+                gestureStartDepth = 1f,
+                phase = VideoCardTransitionBackgroundPhase.RETURNING,
+                sharedMorphActive = false,
+                sharedMorphFraction = null,
+                fallbackProgress = 0f,
+                returnDepthFloor = 1f,
+            ),
+            0.0001f,
+        )
+        assertEquals(
+            1f,
+            resolveReturningDepthWithFloor(
+                phase = VideoCardTransitionBackgroundPhase.RETURNING,
+                fallbackProgress = 0f,
+                returnDepthFloor = 1f,
+            ),
+            0.0001f,
+        )
+        // snap 后 floor 清空，fallback 动画 0.4→0 可见消糊
+        assertEquals(
+            0.4f,
+            resolveVideoCardClockDepthProgress(
+                gestureBackProgress = null,
+                gestureStartDepth = 1f,
+                phase = VideoCardTransitionBackgroundPhase.RETURNING,
+                sharedMorphActive = false,
+                sharedMorphFraction = null,
+                fallbackProgress = 0.4f,
+                returnDepthFloor = null,
+            ),
+            0.0001f,
+        )
+        // shared 瞬间 0 时仍被 floor 顶住
+        assertEquals(
+            1f,
+            resolveVideoCardClockDepthProgress(
+                gestureBackProgress = null,
+                gestureStartDepth = 1f,
+                phase = VideoCardTransitionBackgroundPhase.RETURNING,
+                sharedMorphActive = true,
+                sharedMorphFraction = 0f,
+                fallbackProgress = 0f,
+                returnDepthFloor = 1f,
+            ),
+            0.0001f,
+        )
+    }
+
+    @Test
+    fun clock_beginReturning_setsDepthFloorSynchronously() {
+        val clock = VideoCardTransitionClock()
+        clock.beginOpening("home")
+        clock.reportSharedMorphProgress(morphFraction = 1f, active = false)
+        assertEquals(1f, clock.depthProgress(), 0.0001f)
+        // fallback 未写入仍为 0
+        clock.beginReturning("home", startDepth = 1f)
+        assertEquals(VideoCardTransitionBackgroundPhase.RETURNING, clock.phase)
+        assertEquals(1f, clock.returnDepthFloor)
+        // 关键：snapFallback 之前 depth 已是满糊
+        assertEquals(1f, clock.depthProgress(), 0.0001f)
     }
 
     @Test

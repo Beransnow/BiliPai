@@ -126,6 +126,7 @@ class BiliPaiNavDisplayHostStructureTest {
         assertTrue(openingBranch.contains("markHeld()"))
         assertTrue(openingBranch.contains("hasActiveSharedMorphProgress()"))
         assertTrue(returnBranch.contains("beginReturning("))
+        assertTrue(returnBranch.contains("startDepth = startDepth"))
         assertTrue(returnBranch.contains("resolveMorphAlignedFallbackDurationMs"))
         assertTrue(returnBranch.contains("timelineSpec.returnEasing"))
         assertTrue(returnBranch.contains("parentSourceRoute"))

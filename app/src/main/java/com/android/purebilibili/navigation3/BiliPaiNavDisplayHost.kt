@@ -310,16 +310,20 @@ internal fun BiliPaiNavDisplayHost(
                         cancelVideoCardDepthAnimation()
                         videoCardClock.snapClearAndIdle()
                     } else {
-                        // 在 beginReturning 清掉手势/相位前锁定消糊起点，避免 HELD 后 fallback=0 直接清晰。
+                        // HELD 稳态 depth 合同为 1，但 fallback Animatable 常为 0。
+                        // beginReturning(startDepth) 同步钉 floor，避免首帧清晰、无模糊过程。
                         val startDepth = resolveVideoCardReturnClearStartDepth(
                             phase = videoCardClock.phase,
                             currentDepth = videoCardClock.depthProgress(),
                         )
-                        videoCardClock.beginReturning(returningSourceRoute)
+                        videoCardClock.beginReturning(
+                            sourceRoute = returningSourceRoute,
+                            startDepth = startDepth,
+                        )
                         launchVideoCardDepthAnimation {
                             // 返回必须始终跑 fallback 消糊：shared 在 Exit.None 下常瞬间
                             // fraction=0 或 dispose，若仍「有 shared 就跳过」会完全没有模糊过程。
-                            // depth 读口对 RETURNING 取 max(shared, fallback)，双驱动不打架。
+                            // depth 读口对 RETURNING 取 max(shared, fallback, floor)。
                             if (
                                 videoCardClock.phase != VideoCardTransitionBackgroundPhase.RETURNING
                             ) {
@@ -516,7 +520,10 @@ internal fun BiliPaiNavDisplayHost(
                         phase = videoCardClock.phase,
                         currentDepth = videoCardClock.depthProgress(),
                     )
-                    videoCardClock.beginReturning(morphSource)
+                    videoCardClock.beginReturning(
+                        sourceRoute = morphSource,
+                        startDepth = blurAtCommit,
+                    )
                     val fullDurationMs = resolveVideoCardTransitionReturnFullDurationMillis(
                         baseDurationMillis = timelineSpec.durationMillis,
                     )
