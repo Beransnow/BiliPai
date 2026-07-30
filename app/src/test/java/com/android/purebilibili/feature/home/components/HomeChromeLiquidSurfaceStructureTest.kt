@@ -186,13 +186,16 @@ class HomeChromeLiquidSurfaceStructureTest {
                 topBarSource.contains("val topTabMiuixContentBackdrop = rememberMiuixLayerBackdrop()") &&
                 topBarSource.contains("layerBackdrop(topTabContentBackdrop)") &&
                 topBarSource.contains("miuixLayerBackdrop(topTabMiuixContentBackdrop)") &&
-                topBarSource.contains(".background(topTabIndicatorCaptureSurfaceColor)") &&
+                topBarSource.contains("rememberMiuixCombinedBackdrop(miuixBackdrop, topTabMiuixContentBackdrop)") &&
+                topBarSource.contains(".miuixDrawBackdrop(") &&
+                topBarSource.contains(".drawBackdrop(") &&
+                topBarSource.contains("drawRect(topTabIndicatorCaptureSurfaceColor)") &&
                 topBarSource.contains("ColorFilter.tint(topTabExportTintColor)") &&
                 topBarSource.contains("TopTabLiquidColorMode.GLASS_EXPORT") &&
                 topBarSource.contains("TopTabLiquidColorMode.GLASS_VISIBLE") &&
                 topBarSource.contains("resolveSharedLiquidExportMonochromeColor(") &&
                 topBarSource.contains("resolveTopTabIndicatorBackdropPolicy(") &&
-                topBarSource.contains("contentBackdrop = topTabMiuixContentBackdrop") &&
+                topBarSource.contains("contentBackdrop = effectiveTopTabMiuixContentBackdrop") &&
                 topBarSource.contains("backdrop = topTabIndicatorMiuixBackdrop") &&
                 topBarSource.contains("legacyContentBackdrop = topTabContentBackdrop") &&
                 topBarSource.contains("topTabListScrollOffsetPx") &&
@@ -207,8 +210,7 @@ class HomeChromeLiquidSurfaceStructureTest {
                 topBarSource.contains(".layerBackdrop(tabsBackdrop)") ||
                 topBarSource.contains("rememberCombinedBackdrop(backdrop, tabsBackdrop)") ||
                 topBarSource.contains("rememberCombinedBackdrop(backdrop, tabContentBackdrop)") ||
-                topBarSource.contains("rememberCombinedBackdrop(backdrop, topTabContentBackdrop)") ||
-                topBarSource.contains("rememberMiuixCombinedBackdrop(miuixBackdrop, topTabMiuixContentBackdrop)")
+                topBarSource.contains("rememberCombinedBackdrop(backdrop, topTabContentBackdrop)")
         )
         assertFalse(
             "top tab indicator should not keep its old custom indicator renderer",
