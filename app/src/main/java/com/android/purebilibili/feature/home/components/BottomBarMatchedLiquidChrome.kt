@@ -24,10 +24,12 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.layout.layout
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.draw.clip
 import com.android.purebilibili.core.store.BottomBarLiquidGlassPreset
 import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.SettingsManager
@@ -40,6 +42,7 @@ import com.android.purebilibili.core.ui.motion.BottomBarMotionSpec
 import com.android.purebilibili.core.ui.motion.emphasizedEnterTween
 import com.android.purebilibili.core.ui.motion.emphasizedExitTween
 import com.android.purebilibili.core.ui.motion.softLandingSpring
+import com.android.purebilibili.feature.home.components.liquid.rememberCombinedBackdrop
 import dev.chrisbanes.haze.HazeState
 import com.kyant.backdrop.Backdrop as KyantBackdrop
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -56,6 +59,32 @@ internal enum class BottomBarLiquidOrientation {
 internal enum class BottomBarMatchedDockEdge {
     TOP,
     BOTTOM
+}
+
+internal fun Modifier.bottomBarMatchedCaptureOverflow(inset: Dp): Modifier = layout { measurable, constraints ->
+    if (!constraints.hasBoundedWidth || !constraints.hasBoundedHeight) {
+        val placeable = measurable.measure(constraints)
+        layout(placeable.width, placeable.height) {
+            placeable.placeRelative(0, 0)
+        }
+    } else {
+        val insetPx = inset.roundToPx().coerceAtLeast(0)
+        val expandedWidth = (constraints.maxWidth.toLong() + insetPx.toLong() * 2L)
+            .coerceAtMost(Constraints.Infinity.toLong())
+            .toInt()
+        val expandedHeight = (constraints.maxHeight.toLong() + insetPx.toLong() * 2L)
+            .coerceAtMost(Constraints.Infinity.toLong())
+            .toInt()
+        val placeable = measurable.measure(
+            Constraints.fixed(
+                width = expandedWidth,
+                height = expandedHeight
+            )
+        )
+        layout(constraints.maxWidth, constraints.maxHeight) {
+            placeable.placeRelative(-insetPx, -insetPx)
+        }
+    }
 }
 
 /**
@@ -239,6 +268,8 @@ internal fun Modifier.bottomBarMatchedLiquidDockSurface(
 internal fun BottomBarMatchedReusableLiquidDock(
     shape: Shape,
     modifier: Modifier = Modifier,
+    backdrop: Backdrop? = null,
+    liquidGlassEffectsEnabled: Boolean = true,
     isScrollInProgressProvider: () -> Boolean = { false },
     content: @Composable BoxScope.(liquidChromeActive: Boolean) -> Unit
 ) {
@@ -253,7 +284,7 @@ internal fun BottomBarMatchedReusableLiquidDock(
         liquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled,
         blurEnabled = true
     )
-    if (!homeSettings.androidNativeLiquidGlassEnabled) {
+    if (!homeSettings.androidNativeLiquidGlassEnabled || !liquidGlassEffectsEnabled) {
         Box(modifier = modifier) {
             content(false)
         }
@@ -261,6 +292,11 @@ internal fun BottomBarMatchedReusableLiquidDock(
     }
 
     val localBackdrop = rememberLayerBackdrop()
+    val effectiveBackdrop = if (backdrop != null) {
+        rememberCombinedBackdrop(localBackdrop, backdrop)
+    } else {
+        localBackdrop
+    }
     val isDarkTheme = isSystemInDarkTheme()
     val blurIntensity = currentUnifiedBlurIntensity()
     val tuning = resolveAndroidNativeBottomBarTuning(
@@ -275,16 +311,25 @@ internal fun BottomBarMatchedReusableLiquidDock(
         blurIntensity = blurIntensity,
         liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset
     )
+    val fullCaptureLensSpec = resolveBottomBarBackdropPresetCaptureLens(progress = 1f)
+    val captureSafeInset = resolveBottomBarCaptureSafeInsetDp(
+        indicatorWidthDp = 0f,
+        refractionHeightDp = fullCaptureLensSpec.refractionHeightDp,
+        refractionAmountDp = fullCaptureLensSpec.refractionAmountDp,
+        panelOffsetDp = 0f
+    ).dp
 
-    Box(modifier = modifier.clip(shape)) {
+    Box(modifier = modifier) {
         Box(
             modifier = Modifier
                 .matchParentSize()
+                .bottomBarMatchedCaptureOverflow(captureSafeInset)
+                .alpha(0f)
                 .layerBackdrop(localBackdrop)
-                .background(AppSurfaceTokens.background(), shape)
+                .background(AppSurfaceTokens.background())
         )
         BottomBarMatchedLiquidDock(
-            backdrop = localBackdrop,
+            backdrop = effectiveBackdrop,
             containerColor = containerColor,
             shape = shape,
             blurEnabled = true,

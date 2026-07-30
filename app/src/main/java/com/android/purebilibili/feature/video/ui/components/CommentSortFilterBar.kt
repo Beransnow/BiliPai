@@ -23,6 +23,7 @@ import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import com.android.purebilibili.feature.video.viewmodel.CommentSortMode
 import com.kyant.backdrop.Backdrop
+import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
@@ -63,7 +64,8 @@ fun CommentSortFilterBar(
     upOnly: Boolean = false,
     onUpOnlyToggle: () -> Unit = {},
     modifier: Modifier = Modifier,
-    backdrop: Backdrop? = null
+    backdrop: Backdrop? = null,
+    miuixBackdrop: MiuixBackdrop? = null
 ) {
     val sortModes = remember { CommentSortMode.entries.toList() }
     val appearance = rememberVideoCommentAppearance()
@@ -113,7 +115,8 @@ fun CommentSortFilterBar(
                 onScaleChange = { index ->
                     sortModes.getOrNull(index)?.let(onSortModeChange)
                 },
-                backdrop = backdrop
+                backdrop = backdrop,
+                miuixBackdrop = miuixBackdrop
             )
         }
     }
@@ -127,7 +130,8 @@ fun CommentSegmentedControl(
     items: List<String>,
     selectedIndex: Int,
     onScaleChange: (Int) -> Unit,
-    backdrop: Backdrop? = null
+    backdrop: Backdrop? = null,
+    miuixBackdrop: MiuixBackdrop? = null
 ) {
     val context = LocalContext.current
     val homeSettings by SettingsManager
@@ -145,6 +149,7 @@ fun CommentSegmentedControl(
         indicatorHeight = spec.indicatorHeightDp.dp,
         labelFontSize = 13.sp,
         backdrop = backdrop,
+        miuixBackdrop = miuixBackdrop,
         forceLiquidChrome = homeSettings.androidNativeLiquidGlassEnabled,
         liquidGlassEffectsEnabled = backdrop != null,
         tapPressRefractionEnabled = false

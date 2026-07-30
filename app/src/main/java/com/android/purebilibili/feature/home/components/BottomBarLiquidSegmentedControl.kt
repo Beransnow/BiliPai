@@ -605,7 +605,6 @@ fun BottomBarLiquidSegmentedControl(
         // The local page source and export source are siblings. Neither source contains
         // the liquid target, so the combined path cannot recursively sample itself.
         val hasExternalBackdrop = backdrop != null
-        val hasMiuixExternalBackdrop = useBottomBarMatchedMiuix || miuixBackdrop != null
         val containerBackdrop = backdrop
         val captureLensProgress = resolveSharedLiquidIndicatorCaptureLensProgress(
             lensProgress = lensProgress,
@@ -615,6 +614,13 @@ fun BottomBarLiquidSegmentedControl(
         val captureLensSpec = resolveBottomBarBackdropPresetCaptureLens(
             progress = captureLensProgress
         )
+        val captureSafeLensSpec = resolveBottomBarBackdropPresetCaptureLens(progress = 1f)
+        val captureSafeInset = resolveBottomBarCaptureSafeInsetDp(
+            indicatorWidthDp = indicatorWidth.value,
+            refractionHeightDp = captureSafeLensSpec.refractionHeightDp,
+            refractionAmountDp = captureSafeLensSpec.refractionAmountDp,
+            panelOffsetDp = AppSpacingTokens.ExtraSmall.value
+        ).dp
         // Indicator capsule lens follows swipe, not only finger-down press.
         val indicatorLensSpec = resolveBottomBarBackdropPresetIndicatorLens(
             progress = lensProgress
@@ -633,14 +639,16 @@ fun BottomBarLiquidSegmentedControl(
             Box(
                 modifier = Modifier
                     .matchParentSize()
+                    .bottomBarMatchedCaptureOverflow(captureSafeInset)
+                    .alpha(0f)
                     .miuixLayerBackdrop(localPageMiuixBackdrop)
-                    .background(AppSurfaceTokens.background(), containerShape)
+                    .background(AppSurfaceTokens.background())
                     .clearAndSetSemantics {}
             )
         }
 
         BottomBarMatchedLiquidDock(
-            backdrop = if (useBottomBarMatchedMiuix) pageMiuixBackdrop else miuixBackdrop,
+            backdrop = if (useBottomBarMatchedMiuix) pageMiuixBackdrop else null,
             legacyBackdrop = backdrop,
             containerColor = containerColor,
             shape = containerShape,
@@ -683,7 +691,7 @@ fun BottomBarLiquidSegmentedControl(
                 .clearAndSetSemantics {}
                 .alpha(0f)
                 .run {
-                    if (hasMiuixExternalBackdrop) {
+                    if (useBottomBarMatchedMiuix) {
                         this.miuixLayerBackdrop(tabsMiuixBackdrop)
                             .graphicsLayer { translationX = exportPanelOffsetPx }
                             .run {
@@ -787,29 +795,6 @@ fun BottomBarLiquidSegmentedControl(
                 liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
                 contentBackdrop = combinedMiuixBackdrop,
                 backdrop = pageMiuixBackdrop,
-                indicatorLensSpec = indicatorLensSpec,
-                effectivePressProgress = lensProgress,
-                indicatorIdleSurfaceColor = indicatorIdleSurfaceColor,
-                glassEnabled = liquidGlassEnabled,
-                motionProgress = motionProgress,
-                velocityItemsPerSecond = dragState.deformationVelocityItemsPerSecond,
-                isDragging = dragState.isDragging,
-                indicatorLayerScaleProgress = indicatorLayerScaleProgress,
-                bottomBarMotionSpec = motionSpec,
-                isDarkTheme = isDarkTheme
-            )
-        } else if (miuixBackdrop != null) {
-            BottomBarMatchedLiquidIndicator(
-                visible = true,
-                dockContentAlpha = 1f,
-                indicatorTranslationXPx = with(density) { indicatorOffset.toPx() },
-                indicatorPanelOffsetPx = panelOffsetPx,
-                indicatorWidth = indicatorWidth,
-                indicatorHeight = resolvedIndicatorHeight,
-                shellShape = indicatorShape,
-                liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
-                contentBackdrop = tabsMiuixBackdrop,
-                backdrop = miuixBackdrop,
                 indicatorLensSpec = indicatorLensSpec,
                 effectivePressProgress = lensProgress,
                 indicatorIdleSurfaceColor = indicatorIdleSurfaceColor,

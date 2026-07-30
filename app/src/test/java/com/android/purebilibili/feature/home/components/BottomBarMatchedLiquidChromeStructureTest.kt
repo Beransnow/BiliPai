@@ -27,6 +27,8 @@ class BottomBarMatchedLiquidChromeStructureTest {
         assertTrue(source.contains("resolveBottomBarMaterialScrollAnimationDurationMillis(isScrolling)"))
         assertTrue(source.contains("KernelSuMiuixBottomBarIndicatorLayer("))
         assertTrue(source.contains("KernelSuBottomBarIndicatorLayer("))
+        assertTrue(source.contains("rememberCombinedBackdrop(localBackdrop, backdrop)"))
+        assertTrue(source.contains("bottomBarMatchedCaptureOverflow(captureSafeInset)"))
     }
 
     @Test
@@ -85,13 +87,15 @@ class BottomBarMatchedLiquidChromeStructureTest {
         assertTrue(dynamicScreen.contains("BottomBarMatchedDockVisibility("))
         assertTrue(dynamicScreen.contains("edge = BottomBarMatchedDockEdge.TOP"))
         assertTrue(search.contains("BottomBarMatchedReusableLiquidDock("))
-        assertTrue(bottomInput.contains("BottomBarMatchedLiquidDock("))
+        assertTrue(bottomInput.contains("BottomBarMatchedReusableLiquidDock("))
+        assertFalse(bottomInput.contains("BottomBarMatchedLiquidDock("))
         assertFalse(bottomInput.contains(".kernelSuFloatingDockSurface("))
         assertTrue(partition.contains("rememberBottomBarMatchedLiquidChromeState("))
         assertTrue(partition.contains("BottomBarMatchedLiquidIndicator("))
         assertTrue(partition.contains("orientation = BottomBarLiquidOrientation.VERTICAL"))
         assertFalse(partition.contains("KernelSuBottomBarIndicatorLayer("))
-        assertTrue(musicPlayer.contains("bottomBarMatchedLiquidDockSurface("))
+        assertTrue(musicPlayer.contains("BottomBarMatchedReusableLiquidDock("))
+        assertFalse(musicPlayer.contains("bottomBarMatchedLiquidDockSurface("))
         assertFalse(musicPlayer.contains("kernelSuMiuixFloatingDockSurface("))
     }
 

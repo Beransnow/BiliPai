@@ -43,6 +43,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
 import com.android.purebilibili.core.ui.motion.AppMotionTokens
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -93,13 +94,12 @@ import coil.imageLoader
 import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.android.purebilibili.core.lifecycle.BackgroundManager
-import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.feature.audio.lyrics.LyricLine
 import com.android.purebilibili.feature.audio.lyrics.resolveActiveLyricIndex
 import com.android.purebilibili.feature.audio.lyrics.resolveLyricFocusScrollOffsetPx
 import com.android.purebilibili.feature.audio.player.MusicPlayerUiState
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
-import com.android.purebilibili.feature.home.components.bottomBarMatchedLiquidDockSurface
+import com.android.purebilibili.feature.home.components.BottomBarMatchedReusableLiquidDock
 import com.android.purebilibili.feature.video.player.PlayMode
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.filled.BackwardEnd
@@ -244,7 +244,7 @@ internal fun MusicPlayerContent(
                                 onPrevious = onPrevious,
                                 onNext = onNext,
                                 onPlayModeChange = onPlayModeChange,
-                                glassTintColor = backgroundColor,
+                                miuixBackdrop = musicBackdrop,
                                 modifier = Modifier.padding(bottom = 70.dp)
                             )
                         } else {
@@ -289,16 +289,10 @@ internal fun MusicPlayerContent(
                                 .padding(horizontal = 72.dp, vertical = 8.dp),
                             height = 52.dp,
                             indicatorHeight = 46.dp,
-                            forceLiquidChrome = true,
                             liquidGlassEffectsEnabled = glassEnabled,
                             preferInlineContentStyle = false,
                             backdrop = selectionBackdrop,
-                            containerColorOverride = backgroundColor.copy(
-                                alpha = if (glassEnabled) 0.18f else 0.48f
-                            ),
-                            indicatorIdleSurfaceColorOverride = Color.White.copy(alpha = 0.18f),
-                            selectedTextColorOverride = MusicContentColor,
-                            unselectedTextColorOverride = MusicContentColor.copy(alpha = 0.90f),
+                            miuixBackdrop = musicBackdrop,
                             isScrollInProgressProvider = { pagerState.isScrollInProgress },
                             indicatorPositionProvider = {
                                 resolveMusicPagerIndicatorPosition(
@@ -336,7 +330,7 @@ internal fun MusicPlayerContent(
                     onPrevious = onPrevious,
                     onNext = onNext,
                     onPlayModeChange = onPlayModeChange,
-                    glassTintColor = backgroundColor,
+                    miuixBackdrop = musicBackdrop,
                     modifier = Modifier.weight(1f)
                 )
                 LyricsPage(
@@ -365,7 +359,6 @@ internal fun MusicPlayerContent(
         if (!isInPipMode) {
             MusicTopBar(
                 glassEnabled = glassEnabled,
-                glassTintColor = backgroundColor,
                 miuixBackdrop = musicBackdrop,
                 onBack = onBack,
                 onMore = { showActions = true },
@@ -606,7 +599,7 @@ private fun PlayerPage(
     onPrevious: (() -> Unit)?,
     onNext: (() -> Unit)?,
     onPlayModeChange: (PlayMode) -> Unit,
-    glassTintColor: Color,
+    miuixBackdrop: MiuixBackdrop?,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -656,7 +649,7 @@ private fun PlayerPage(
         MusicPlayModeDock(
             mode = state.playMode,
             glassEnabled = glassEnabled,
-            glassTintColor = glassTintColor,
+            miuixBackdrop = miuixBackdrop,
             onPlayModeChange = onPlayModeChange
         )
     }
@@ -666,7 +659,7 @@ private fun PlayerPage(
 private fun MusicPlayModeDock(
     mode: PlayMode,
     glassEnabled: Boolean,
-    glassTintColor: Color,
+    miuixBackdrop: MiuixBackdrop?,
     onPlayModeChange: (PlayMode) -> Unit
 ) {
     BottomBarLiquidSegmentedControl(
@@ -680,14 +673,8 @@ private fun MusicPlayModeDock(
         indicatorHeight = 46.dp,
         labelFontSize = 13.sp,
         liquidGlassEffectsEnabled = glassEnabled,
-        forceLiquidChrome = true,
         preferInlineContentStyle = false,
-        containerColorOverride = glassTintColor.copy(
-            alpha = if (glassEnabled) 0.18f else 0.48f
-        ),
-        indicatorIdleSurfaceColorOverride = Color.White.copy(alpha = 0.18f),
-        selectedTextColorOverride = MusicContentColor,
-        unselectedTextColorOverride = MusicContentColor.copy(alpha = 0.64f)
+        miuixBackdrop = miuixBackdrop
     )
 }
 
@@ -888,14 +875,12 @@ private fun LyricsPage(
                     GlassTextButton(
                         "重新匹配",
                         glassEnabled,
-                        glassTintColor,
                         miuixBackdrop,
                         onLyricsRetry
                     )
                     GlassTextButton(
                         "手动搜索",
                         glassEnabled,
-                        glassTintColor,
                         miuixBackdrop,
                         onOpenLyricsSearch
                     )
@@ -945,7 +930,6 @@ private fun LyricsPage(
             LyricsPrimaryControls(
                 state = state,
                 glassEnabled = glassEnabled,
-                glassTintColor = glassTintColor,
                 miuixBackdrop = miuixBackdrop,
                 onPlayPause = onPlayPause,
                 onSeek = onSeek,
@@ -968,7 +952,6 @@ private fun LyricsPage(
             GlassTextButton(
                 label = "回到当前歌词",
                 glassEnabled = glassEnabled,
-                glassTintColor = glassTintColor,
                 miuixBackdrop = miuixBackdrop,
                 onClick = { isAutoFollowPaused = false },
                 modifier = Modifier
@@ -1003,7 +986,6 @@ private fun LyricsPage(
 private fun LyricsPrimaryControls(
     state: MusicPlayerUiState,
     glassEnabled: Boolean,
-    glassTintColor: Color,
     miuixBackdrop: MiuixBackdrop?,
     onPlayPause: () -> Unit,
     onSeek: (Long) -> Unit,
@@ -1012,26 +994,35 @@ private fun LyricsPrimaryControls(
     onOpenSettings: () -> Unit,
     onHideControls: () -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .musicGlassSurface(
-                glassEnabled,
-                AppShapes.container(ContainerLevel.Floating),
-                glassTintColor,
-                miuixBackdrop
-            )
-            .padding(horizontal = 14.dp, vertical = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    val shape = AppShapes.container(ContainerLevel.Floating)
+    BottomBarMatchedReusableLiquidDock(
+        shape = shape,
+        modifier = Modifier.fillMaxWidth(),
+        backdrop = miuixBackdrop,
+        liquidGlassEffectsEnabled = glassEnabled
     ) {
-        MusicProgress(state, onSeek)
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            PlaybackControls(state, onPlayPause, onPrevious, onNext, modifier = Modifier.weight(1f))
-            AppTextButton(onClick = onOpenSettings, modifier = Modifier.height(48.dp)) {
-                AppText("歌词设置", color = MusicContentColor, fontSize = 12.sp)
-            }
-            AppTextButton(onClick = onHideControls, modifier = Modifier.height(48.dp)) {
-                AppText("收起", color = MusicContentColor, fontSize = 12.sp)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(
+                    if (it) {
+                        Modifier
+                    } else {
+                        Modifier.background(AppSurfaceTokens.cardContainer(), shape)
+                    }
+                )
+                .padding(horizontal = 14.dp, vertical = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            MusicProgress(state, onSeek)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                PlaybackControls(state, onPlayPause, onPrevious, onNext, modifier = Modifier.weight(1f))
+                AppTextButton(onClick = onOpenSettings, modifier = Modifier.height(48.dp)) {
+                    AppText("歌词设置", color = MusicContentColor, fontSize = 12.sp)
+                }
+                AppTextButton(onClick = onHideControls, modifier = Modifier.height(48.dp)) {
+                    AppText("收起", color = MusicContentColor, fontSize = 12.sp)
+                }
             }
         }
     }
@@ -1163,7 +1154,6 @@ private fun buildLyricText(line: LyricLine, isCurrent: Boolean, positionMs: Long
 @Composable
 private fun MusicTopBar(
     glassEnabled: Boolean,
-    glassTintColor: Color,
     miuixBackdrop: MiuixBackdrop?,
     onBack: () -> Unit,
     onMore: () -> Unit,
@@ -1174,7 +1164,6 @@ private fun MusicTopBar(
             CupertinoIcons.Outlined.ChevronDown,
             "返回",
             glassEnabled,
-            glassTintColor,
             miuixBackdrop,
             onBack
         )
@@ -1182,7 +1171,6 @@ private fun MusicTopBar(
             CupertinoIcons.Outlined.Ellipsis,
             "更多操作",
             glassEnabled,
-            glassTintColor,
             miuixBackdrop,
             onMore
         )
@@ -1194,17 +1182,29 @@ private fun GlassIconButton(
     icon: ImageVector,
     description: String,
     glassEnabled: Boolean,
-    glassTintColor: Color,
     miuixBackdrop: MiuixBackdrop?,
     onClick: () -> Unit
 ) {
-    AppIconButton(
-        onClick = onClick,
-        modifier = Modifier
-            .size(48.dp)
-            .musicGlassSurface(glassEnabled, CircleShape, glassTintColor, miuixBackdrop)
+    BottomBarMatchedReusableLiquidDock(
+        shape = CircleShape,
+        modifier = Modifier.size(48.dp),
+        backdrop = miuixBackdrop,
+        liquidGlassEffectsEnabled = glassEnabled
     ) {
-        AppIcon(icon, contentDescription = description, tint = MusicContentColor)
+        AppIconButton(
+            onClick = onClick,
+            modifier = Modifier
+                .matchParentSize()
+                .then(
+                    if (it) {
+                        Modifier
+                    } else {
+                        Modifier.background(AppSurfaceTokens.cardContainer(), CircleShape)
+                    }
+                )
+        ) {
+            AppIcon(icon, contentDescription = description, tint = MusicContentColor)
+        }
     }
 }
 
@@ -1212,25 +1212,34 @@ private fun GlassIconButton(
 private fun GlassTextButton(
     label: String,
     glassEnabled: Boolean,
-    glassTintColor: Color,
     miuixBackdrop: MiuixBackdrop?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(
+    val shape = AppShapes.container(ContainerLevel.Pill)
+    BottomBarMatchedReusableLiquidDock(
+        shape = shape,
         modifier = modifier
-            .height(48.dp)
-            .musicGlassSurface(
-                glassEnabled,
-                AppShapes.container(ContainerLevel.Pill),
-                glassTintColor,
-                miuixBackdrop
-            )
-            .clickable(onClick = onClick)
-            .padding(horizontal = 15.dp),
-        contentAlignment = Alignment.Center
+            .height(48.dp),
+        backdrop = miuixBackdrop,
+        liquidGlassEffectsEnabled = glassEnabled
     ) {
-        AppText(label, color = MusicContentColor, style = MaterialTheme.typography.labelMedium)
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .then(
+                    if (it) {
+                        Modifier
+                    } else {
+                        Modifier.background(AppSurfaceTokens.cardContainer(), shape)
+                    }
+                )
+                .clickable(onClick = onClick)
+                .padding(horizontal = 15.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            AppText(label, color = MusicContentColor, style = MaterialTheme.typography.labelMedium)
+        }
     }
 }
 
@@ -1246,36 +1255,6 @@ private fun MusicActionSheetItem(label: String, onClick: () -> Unit) {
     ) {
         AppText(label, color = MusicContentColor, style = MaterialTheme.typography.bodyLarge)
     }
-}
-
-@Composable
-private fun Modifier.musicGlassSurface(
-    glassEnabled: Boolean,
-    shape: androidx.compose.ui.graphics.Shape,
-    tintColor: Color,
-    miuixBackdrop: MiuixBackdrop?
-): Modifier {
-    val fallbackStyle = resolveMusicGlassFallbackStyle()
-    val canDrawBackdrop = glassEnabled && miuixBackdrop != null
-    val containerColor = tintColor.copy(
-        alpha = if (canDrawBackdrop) {
-            0.18f
-        } else {
-            fallbackStyle.backgroundAlphaPercent / 100f
-        }
-    )
-    return bottomBarMatchedLiquidDockSurface(
-        shape = shape,
-        backdrop = miuixBackdrop,
-        containerColor = containerColor,
-        blurEnabled = canDrawBackdrop,
-        glassEnabled = canDrawBackdrop,
-        blurRadius = 20.dp,
-        hazeState = null,
-        motionTier = MotionTier.Normal,
-        isTransitionRunning = false,
-        forceLowBlurBudget = false
-    )
 }
 
 private suspend fun loadMusicArtwork(

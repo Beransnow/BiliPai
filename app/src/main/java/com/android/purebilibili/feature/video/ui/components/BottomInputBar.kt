@@ -23,7 +23,6 @@ import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,18 +39,12 @@ import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.resolveGlobalLiquidGlassReuseEnabled
 import com.android.purebilibili.core.theme.calculateContrastRatio
-import com.android.purebilibili.core.ui.AppSurfaceTokens
-import com.android.purebilibili.core.ui.adaptive.MotionTier
-import com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity
 import com.android.purebilibili.core.ui.rememberAppBookmarkIcon
 import com.android.purebilibili.core.ui.rememberAppCoinIcon
 import com.android.purebilibili.core.ui.rememberAppLikeFilledIcon
 import com.android.purebilibili.core.ui.rememberAppLikeIcon
 import com.android.purebilibili.core.ui.rememberAppShareIcon
-import com.android.purebilibili.feature.home.components.BottomBarMatchedLiquidDock
-import com.android.purebilibili.feature.home.components.resolveAndroidNativeBottomBarTuning
-import com.android.purebilibili.feature.home.components.resolveAndroidNativeFloatingBottomBarContainerColor
-import com.android.purebilibili.feature.home.components.resolveBottomBarDarkTheme
+import com.android.purebilibili.feature.home.components.BottomBarMatchedReusableLiquidDock
 import com.android.purebilibili.feature.home.components.resolveSharedBottomBarCapsuleShape
 import top.yukonga.miuix.kmp.blur.Backdrop
 
@@ -116,7 +109,6 @@ fun BottomInputBar(
         FloatingLiquidBottomInputBar(
             modifier = modifier,
             backdrop = backdrop,
-            homeSettings = homeSettings,
             isLiked = isLiked,
             isFavorited = isFavorited,
             isCoined = isCoined,
@@ -189,7 +181,6 @@ private fun DockedSolidBottomInputBar(
 private fun FloatingLiquidBottomInputBar(
     modifier: Modifier,
     backdrop: Backdrop?,
-    homeSettings: HomeSettings,
     isLiked: Boolean,
     isFavorited: Boolean,
     isCoined: Boolean,
@@ -200,26 +191,6 @@ private fun FloatingLiquidBottomInputBar(
     onCommentClick: () -> Unit,
     isScrollInProgressProvider: () -> Boolean,
 ) {
-    val blurIntensity = currentUnifiedBlurIntensity()
-    val isDarkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.chromeBackground())
-    val tuning = remember(isDarkTheme) {
-        resolveAndroidNativeBottomBarTuning(
-            blurEnabled = true,
-            darkTheme = isDarkTheme
-        )
-    }
-    val containerColor = resolveAndroidNativeFloatingBottomBarContainerColor(
-        surfaceColor = MaterialTheme.colorScheme.surfaceContainer,
-        tuning = tuning,
-        glassEnabled = true,
-        blurEnabled = true,
-        blurIntensity = blurIntensity,
-        liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset
-    )
-    // Match home search capsule: same glass material, slightly clearer so the field reads as a control.
-    val commentFieldContainerColor = containerColor.copy(
-        alpha = (containerColor.alpha * 0.72f).coerceIn(0.18f, 0.55f)
-    )
     val shellShape = resolveSharedBottomBarCapsuleShape()
     val inputTextColor = resolveBottomInputBarPlaceholderTextColor(
         inputContainerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -231,28 +202,20 @@ private fun FloatingLiquidBottomInputBar(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = tuning.outerHorizontalPaddingDp.dp)
+            .padding(horizontal = 20.dp)
             .padding(bottom = bottomInset),
         contentAlignment = Alignment.BottomCenter
     ) {
-        BottomBarMatchedLiquidDock(
-            backdrop = backdrop,
-            containerColor = containerColor,
+        BottomBarMatchedReusableLiquidDock(
             shape = shellShape,
-            blurEnabled = true,
-            glassEnabled = true,
-            blurRadius = tuning.shellBlurRadiusDp.dp,
             modifier = Modifier.fillMaxWidth(),
-            liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
+            backdrop = backdrop,
             isScrollInProgressProvider = isScrollInProgressProvider
         ) {
             FloatingLiquidBottomInputBarContentRow(
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
                 backdrop = backdrop,
-                commentFieldContainerColor = commentFieldContainerColor,
                 commentFieldShape = shellShape,
-                blurRadius = tuning.shellBlurRadiusDp.dp,
-                liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
                 inputTextColor = inputTextColor,
                 isLiked = isLiked,
                 isFavorited = isFavorited,
@@ -271,10 +234,7 @@ private fun FloatingLiquidBottomInputBar(
 private fun FloatingLiquidBottomInputBarContentRow(
     modifier: Modifier,
     backdrop: Backdrop?,
-    commentFieldContainerColor: Color,
     commentFieldShape: androidx.compose.ui.graphics.Shape,
-    blurRadius: Dp,
-    liquidGlassPreset: com.android.purebilibili.core.store.BottomBarLiquidGlassPreset,
     inputTextColor: Color,
     isLiked: Boolean,
     isFavorited: Boolean,
@@ -295,20 +255,14 @@ private fun FloatingLiquidBottomInputBarContentRow(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Same liquid dock surface as home bottom-bar search capsule (sibling glass, not solid chip).
-        BottomBarMatchedLiquidDock(
-            backdrop = backdrop,
-            containerColor = commentFieldContainerColor,
+        BottomBarMatchedReusableLiquidDock(
             shape = commentFieldShape,
-            blurEnabled = true,
-            glassEnabled = true,
-            blurRadius = blurRadius,
             modifier = Modifier
                 .weight(1f)
                 .height(36.dp)
                 .clickable { onCommentClick() }
                 .padding(horizontal = 12.dp),
-            liquidGlassPreset = liquidGlassPreset
+            backdrop = backdrop
         ) {
             AppText(
                 text = "评论 UP 主和大家...",

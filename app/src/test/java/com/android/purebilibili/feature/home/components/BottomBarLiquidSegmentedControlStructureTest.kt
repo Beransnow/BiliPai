@@ -60,6 +60,30 @@ class BottomBarLiquidSegmentedControlStructureTest {
     }
 
     @Test
+    fun `segmented capture expands past full drag scale lens and panel offset`() {
+        assertEquals(
+            92f,
+            resolveBottomBarCaptureSafeInsetDp(
+                indicatorWidthDp = 224f,
+                refractionHeightDp = 24f,
+                refractionAmountDp = 24f,
+                panelOffsetDp = 4f
+            ),
+            0.001f
+        )
+        assertEquals(
+            24f,
+            resolveBottomBarCaptureSafeInsetDp(
+                indicatorWidthDp = 0f,
+                refractionHeightDp = 24f,
+                refractionAmountDp = 24f,
+                panelOffsetDp = 0f
+            ),
+            0.001f
+        )
+    }
+
+    @Test
     fun `segmented indicator reduces height for cramped slots to stay capsule shaped`() {
         assertEquals(
             37.5f,
@@ -288,6 +312,12 @@ class BottomBarLiquidSegmentedControlStructureTest {
         assertTrue(source.contains("BOTTOM_BAR_LIQUID_SEGMENTED_CONTROL_INDICATOR_HEIGHT_DP = 56"))
         assertTrue(source.contains("val localPageMiuixBackdrop = rememberMiuixLayerBackdrop()"))
         assertTrue(source.contains(".miuixLayerBackdrop(localPageMiuixBackdrop)"))
+        assertTrue(source.contains("bottomBarMatchedCaptureOverflow(captureSafeInset)"))
+        assertTrue(source.contains(".background(AppSurfaceTokens.background())"))
+        val hiddenExport = source
+            .substringAfter("// 2) Hidden export capture")
+            .substringBefore("// 3) Capsule on top")
+        assertFalse(hiddenExport.contains("bottomBarMatchedCaptureOverflow("))
         assertTrue(source.contains("rememberMiuixCombinedBackdrop("))
         assertTrue(source.contains("shouldDrawSegmentedControlExportCaptureBackdrop("))
         assertTrue(source.contains("resolveBottomBarBackdropPresetCaptureLens("))

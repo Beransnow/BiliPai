@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -54,6 +55,7 @@ import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
 import com.android.purebilibili.core.ui.rememberAppPlayIcon
 import com.android.purebilibili.core.ui.rememberAppSettingsIcon
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
+import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.AppTopTabPresentation
 import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
 import com.android.purebilibili.core.ui.components.AppSmallFloatingActionButton
@@ -67,6 +69,9 @@ import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.backdrops.LayerBackdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
+import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
 import com.android.purebilibili.data.model.response.RelatedVideo
 import com.android.purebilibili.data.model.response.ReplyItem
 import com.android.purebilibili.data.model.response.VideoTag
@@ -522,9 +527,17 @@ fun VideoContentSection(
 
     // 采样层只挂在 Tab 页滚动内容上；排序栏/顶栏分段控件必须在捕获区外，避免 drawBackdrop 自引用导致 RenderThread 栈溢出。
     val videoContentChromeBackdrop = rememberLayerBackdrop()
+    val videoContentMiuixBackdrop = rememberMiuixLayerBackdrop()
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .alpha(0f)
+                .miuixLayerBackdrop(videoContentMiuixBackdrop)
+                .background(AppSurfaceTokens.background())
+        )
         // Inline 弹幕设置不是 Dialog，必须在详情内容之后绘制，避免被列表盖住。
         Column(
             modifier = Modifier.fillMaxSize()
@@ -540,7 +553,8 @@ fun VideoContentSection(
                 modifier = Modifier,
                 isPlayerCollapsed = isPlayerCollapsed,
                 onRestorePlayer = onRestorePlayer,
-                backdrop = videoContentChromeBackdrop
+                backdrop = videoContentChromeBackdrop,
+                miuixBackdrop = videoContentMiuixBackdrop
             )
 
             HorizontalPager(
@@ -653,7 +667,8 @@ fun VideoContentSection(
                         onToggleTopComment = onToggleTopComment,
                         showIdentityDecorations = showIdentityDecorations,
                         lightweightCommentRendering = lightweightCommentRendering,
-                        chromeBackdrop = videoContentChromeBackdrop
+                        chromeBackdrop = videoContentChromeBackdrop,
+                        chromeMiuixBackdrop = videoContentMiuixBackdrop
                     )
                 }
             }
@@ -948,7 +963,8 @@ private fun VideoCommentTab(
     onToggleTopComment: (ReplyItem) -> Unit,
     showIdentityDecorations: Boolean,
     lightweightCommentRendering: Boolean,
-    chromeBackdrop: LayerBackdrop? = null
+    chromeBackdrop: LayerBackdrop? = null,
+    chromeMiuixBackdrop: MiuixBackdrop? = null
 ) {
     val commentAppearance = rememberVideoCommentAppearance()
     val scope = rememberCoroutineScope()
@@ -988,7 +1004,8 @@ private fun VideoCommentTab(
             onSortModeChange = onSortModeChange,
             upOnly = upOnlyFilter,
             onUpOnlyToggle = onUpOnlyToggle,
-            backdrop = chromeBackdrop
+            backdrop = chromeBackdrop,
+            miuixBackdrop = chromeMiuixBackdrop
         )
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             LazyColumn(
@@ -1428,7 +1445,8 @@ private fun VideoContentTabBar(
     modifier: Modifier = Modifier,
     isPlayerCollapsed: Boolean = false,
     onRestorePlayer: () -> Unit = {},
-    backdrop: Backdrop? = null
+    backdrop: Backdrop? = null,
+    miuixBackdrop: MiuixBackdrop? = null
 ) {
     val context = LocalContext.current
     val homeSettings by SettingsManager
@@ -1484,6 +1502,7 @@ private fun VideoContentTabBar(
                 indicatorHeight = liquidChromeSpec.segmentedControlIndicatorHeightDp.dp,
                 labelFontSize = liquidChromeSpec.labelFontSizeSp.sp,
                 backdrop = backdrop,
+                miuixBackdrop = miuixBackdrop,
                 forceLiquidChrome = homeSettings.androidNativeLiquidGlassEnabled,
                 liquidGlassEffectsEnabled = liquidChromeSpec.liquidGlassEffectsEnabled,
                 // Avoid extra press refraction in this compact in-content chrome.

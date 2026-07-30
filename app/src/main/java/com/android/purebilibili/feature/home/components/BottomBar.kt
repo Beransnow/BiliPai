@@ -1515,6 +1515,22 @@ internal data class BottomBarIndicatorVisualPolicy(
 
 internal const val BOTTOM_BAR_REFRACTION_IDLE_HOLD_MS = 96L
 private const val BOTTOM_BAR_INDICATOR_DRAG_SCALE_TARGET = 88f / 56f
+
+internal fun resolveBottomBarCaptureSafeInsetDp(
+    indicatorWidthDp: Float,
+    refractionHeightDp: Float,
+    refractionAmountDp: Float,
+    panelOffsetDp: Float
+): Float {
+    val scaleOverflowDp = (
+        indicatorWidthDp.coerceAtLeast(0f) *
+            (BOTTOM_BAR_INDICATOR_DRAG_SCALE_TARGET - 1f) /
+            2f
+        )
+    return scaleOverflowDp +
+        maxOf(refractionHeightDp, refractionAmountDp).coerceAtLeast(0f) +
+        kotlin.math.abs(panelOffsetDp)
+}
 private const val KSU_INDICATOR_VELOCITY_NORMALIZATION_DIVISOR = 10f
 private const val KSU_INDICATOR_VELOCITY_SCALE_X_MULTIPLIER = 0.75f
 private const val KSU_INDICATOR_VELOCITY_SCALE_Y_MULTIPLIER = 0.25f
