@@ -292,6 +292,8 @@ composeCompiler {
 
 dependencies {
     val miuixVersion = "0.9.3"
+    val navigation3Version = "1.2.0-alpha07"
+    val navigationEventVersion = "1.2.0-alpha03"
     val material3Version = "1.5.0-alpha25"
     val media3Version = "1.10.1"
     val lifecycleVersion = "2.11.0"
@@ -367,20 +369,19 @@ dependencies {
     implementation("io.github.alexzhirkevich:cupertino-icons-extended:0.1.0-alpha04")
     
     // --- 3.6 Navigation3 (Compose 自有返回栈与预测性返回迁移层) ---
-    implementation("androidx.navigation3:navigation3-runtime:1.2.0-alpha07")
-    // navigation3-ui 使用 Miuix fork：在 androidx 同包名下提供 NavDisplayTransitionEffects
-    // (blockInputDuringTransition / enableCornerClip / dimAmount)，与 InstallerX 对齐，
-    // 在转场期间屏蔽触摸拦截以消除预测性返回手势冲突。
-    implementation("top.yukonga.miuix.kmp:miuix-navigation3-ui-android:$miuixVersion") {
+    // Navigation3 runtime 与 UI 属于 atomic group，必须严格同版。Miuix 0.9.3 的 Nav3 UI
+    // 仍编译于 runtime 1.1.4，不能与 1.2.0-alpha07 混装；使用官方同版 UI 以获得
+    // alpha07 的 SceneState.previousScenes 修复，确保预测返回目标 Scene 被正确绘制。
+    implementation("androidx.navigation3:navigation3-runtime:$navigation3Version")
+    implementation("androidx.navigation3:navigation3-ui:$navigation3Version") {
         exclude(group = "androidx.navigationevent", module = "navigationevent-compose")
-        exclude(group = "org.jetbrains.androidx.navigationevent", module = "navigationevent-compose")
     }
     // 预测式返回：使用本地 vendored 版 androidx.navigationevent.compose（位于
     // app/src/main/java/androidx/navigationevent/compose/），以便在 onBackCompleted 里
     // 把 transitionState 的提交延迟到用户回调内执行，保证 scale/aosp 退出动画能在
     // InProgress 状态下读取到最新手势数据。下面排除上游同 group 的 compose 产物，避免与
     // 本地源码冲突。
-    implementation("androidx.navigationevent:navigationevent:1.2.0-alpha03")
+    implementation("androidx.navigationevent:navigationevent:$navigationEventVersion")
     
     // --- 3.7 Startup (应用初始化) ---
     implementation("androidx.startup:startup-runtime:1.2.0")

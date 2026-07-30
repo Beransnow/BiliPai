@@ -37,13 +37,12 @@ import androidx.navigation3.runtime.rememberDecoratedNavEntries
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.LocalNavAnimatedContentScope
 import androidx.navigation3.ui.NavDisplay
-import androidx.navigation3.ui.NavDisplayTransitionEffects
 import androidx.navigation3.scene.SceneInfo
 import androidx.navigation3.scene.SinglePaneSceneStrategy
+import androidx.navigation3.scene.rememberNavigationEventState
 import androidx.navigation3.scene.rememberSceneState
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.NavigationEventState
-import androidx.navigationevent.compose.rememberNavigationEventState
 import androidx.navigationevent.NavigationEventTransitionState
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ProvideAnimatedVisibilityScope
@@ -696,12 +695,10 @@ internal fun BiliPaiNavDisplayHost(
         onBack = { performBack { } }
     )
     val scene = sceneState.currentScene
-    val currentInfo = SceneInfo(scene)
-    val previousSceneInfos = sceneState.previousScenes.map { SceneInfo(it) }
-    navigationEventState = rememberNavigationEventState(
-        currentInfo = currentInfo,
-        backInfo = previousSceneInfos
-    )
+    // Navigation3 1.2.0-alpha07 owns SceneInfo projection from the corrected previousScenes list.
+    // Do not reconstruct it manually: alpha07 specifically fixes the predictive target lookup to
+    // start at the top-most non-overlay scene, which keeps the real source page behind the return.
+    navigationEventState = rememberNavigationEventState(sceneState)
     val transitionState = navigationEventState.transitionState
     val inProgressState = transitionState as? NavigationEventTransitionState.InProgress
     val nativeVideoBackProgress = inProgressState?.latestEvent?.progress
@@ -811,13 +808,8 @@ internal fun BiliPaiNavDisplayHost(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.TopStart,
             sizeTransform = null,
-            // 页面自身已经提供了方向、淡入和预测返回效果。关闭 Navigation3 默认的
-            // 圆角裁剪与 dim，可避免转场期间额外的离屏层和整页重绘。
-            transitionEffects = NavDisplayTransitionEffects(
-                enableCornerClip = false,
-                dimAmount = 0f,
-                blockInputDuringTransition = false,
-            ),
+            // 页面自身提供方向、淡入和预测返回效果。官方 Nav3 UI 不额外添加 Miuix
+            // 的圆角裁剪、dim 或输入拦截，因此与此前三项全部关闭的视觉配置等价。
             transitionSpec = {
                 with(predictiveBackHandler) {
                     onTransitionSpec()

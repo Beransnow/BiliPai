@@ -21,12 +21,18 @@ class BiliPaiNavDisplayHostStructureTest {
         assertFalse(source.contains("videoCardTransitionController"))
         assertFalse(source.contains("LocalVideoCardTransitionSession"))
         assertTrue(source.contains("predictivePopTransitionSpec"))
-        val transitionEffects = source
-            .substringAfter("transitionEffects = NavDisplayTransitionEffects(")
-            .substringBefore("),")
-        assertTrue(transitionEffects.contains("enableCornerClip = false"))
-        assertTrue(transitionEffects.contains("dimAmount = 0f"))
-        assertTrue(transitionEffects.contains("blockInputDuringTransition = false"))
+        assertFalse(source.contains("NavDisplayTransitionEffects"))
+        assertFalse(source.contains("transitionEffects ="))
+    }
+
+    @Test
+    fun navigation3RuntimeAndUiUseTheSameOfficialAlpha07Version() {
+        val buildFile = buildFileSource()
+
+        assertTrue(buildFile.contains("val navigation3Version = \"1.2.0-alpha07\""))
+        assertTrue(buildFile.contains("androidx.navigation3:navigation3-runtime:\$navigation3Version"))
+        assertTrue(buildFile.contains("androidx.navigation3:navigation3-ui:\$navigation3Version"))
+        assertFalse(buildFile.contains("miuix-navigation3-ui-android"))
     }
 
     @Test
@@ -52,6 +58,7 @@ class BiliPaiNavDisplayHostStructureTest {
         val source = navDisplayHostSource()
 
         assertTrue(source.contains("rememberNavigationEventState("))
+        assertTrue(source.contains("rememberNavigationEventState(sceneState)"))
         assertTrue(source.contains("NavigationBackHandler("))
         assertTrue(source.contains("onBackCompleted = performBack"))
         assertTrue(source.contains("onBackCancelled"))
