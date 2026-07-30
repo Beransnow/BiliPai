@@ -654,6 +654,11 @@ fun BottomBarLiquidSegmentedControl(
             shape = containerShape,
             blurEnabled = liquidGlassEnabled,
             glassEnabled = liquidGlassEnabled,
+            // Inline segmented controls often sit directly above horizontal separators.
+            // Refracting the entire shell pulls those edges into the vertical center and
+            // makes them look like dashed strokes between labels. The moving indicator
+            // keeps its own lens, so the interactive liquid-glass response is preserved.
+            drawShellLens = false,
             blurRadius = androidNativeTuning.shellBlurRadiusDp.dp,
             modifier = Modifier.matchParentSize(),
             liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,

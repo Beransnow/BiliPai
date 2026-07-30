@@ -42,6 +42,9 @@ class BottomBarMatchedLiquidChromeStructureTest {
         val segmented = loadSource(
             "app/src/main/java/com/android/purebilibili/feature/home/components/BottomBarLiquidSegmentedControl.kt"
         )
+        val sharedChrome = loadSource(
+            "app/src/main/java/com/android/purebilibili/feature/home/components/BottomBarMatchedLiquidChrome.kt"
+        )
 
         listOf(bottomBar, topBar, segmented).forEach { source ->
             assertTrue(source.contains("rememberBottomBarMatchedLiquidChromeState("))
@@ -52,6 +55,8 @@ class BottomBarMatchedLiquidChromeStructureTest {
         assertFalse(topBar.contains(".kernelSuFloatingDockSurface("))
         assertFalse(topBar.contains(".kernelSuMiuixFloatingDockSurface("))
         assertTrue(segmented.contains("BottomBarMatchedLiquidDock("))
+        assertTrue(segmented.contains("drawShellLens = false"))
+        assertTrue(sharedChrome.contains("drawShellLens = drawShellLens"))
         assertFalse(segmented.contains(".kernelSuFloatingDockSurface("))
         assertFalse(segmented.contains(".kernelSuMiuixFloatingDockSurface("))
         assertFalse(segmented.contains("KernelSuBottomBarIndicatorLayer("))

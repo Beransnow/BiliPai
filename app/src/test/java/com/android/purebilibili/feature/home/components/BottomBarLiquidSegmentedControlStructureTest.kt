@@ -306,6 +306,7 @@ class BottomBarLiquidSegmentedControlStructureTest {
         assertTrue(source.contains("rememberBottomBarMatchedLiquidChromeState("))
         assertTrue(source.contains("BottomBarMatchedLiquidDock("))
         assertTrue(source.contains("BottomBarMatchedLiquidIndicator("))
+        assertTrue(source.contains("drawShellLens = false"))
         assertTrue(source.contains("resolveSharedLiquidIndicatorPanelOffsetPx("))
         assertTrue(source.contains("horizontalDragGesture("))
         assertTrue(source.contains("BOTTOM_BAR_LIQUID_SEGMENTED_CONTROL_HEIGHT_DP = 58"))
