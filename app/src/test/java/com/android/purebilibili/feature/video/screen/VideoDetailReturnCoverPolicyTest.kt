@@ -384,7 +384,7 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun `forceCoverOnly stays off during uncommitted leaving for resident path`() {
+    fun `forceCoverOnly stays off unless explicitly requested for resident path`() {
         assertFalse(
             com.android.purebilibili.core.ui.transition.shouldForceCoverOnlyForReturnOwnership(
                 ownership = com.android.purebilibili.core.ui.transition.VideoCardReturnCoverOwnership.RESIDENT_COVER,
@@ -393,7 +393,8 @@ class VideoDetailReturnCoverPolicyTest {
                 isCommittedCardReturn = false,
             )
         )
-        assertTrue(
+        // 提交返回也不得自动 forceCover，否则一点返回就掐 player
+        assertFalse(
             com.android.purebilibili.core.ui.transition.shouldForceCoverOnlyForReturnOwnership(
                 ownership = com.android.purebilibili.core.ui.transition.VideoCardReturnCoverOwnership.RESIDENT_COVER,
                 useReturningVisualState = true,

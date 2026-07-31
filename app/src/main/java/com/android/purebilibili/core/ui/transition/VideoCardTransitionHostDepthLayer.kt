@@ -112,15 +112,13 @@ internal fun VideoCardTransitionHostDepthLayer(
 }
 
 /**
- * Host 层何时绘制：有**可用**冻结内容，且应由 Host 独占该 GraphicsLayer。
+ * Host 层何时绘制：有**可用**冻结内容，且源页不会盖住 Host 时。
  *
- * - [SettledHidden]：详情盖住时预热满糊，供预测首帧。
- * - [BackPreview]：预测手势必须继续由 Host 画冻结层并跟手 1→0。
- *   源页在 SinglePane 下常 dispose/重挂；若 Host 让位，用户会看到清晰 live 首页（无糊）。
- * - [Restoring]：取消回弹 Host 继续画清晰→满糊。
- * - [Returning]：提交返回时若源尚未稳定接管，Host 仍可画消糊（与源约定 host-owned 时源不画同 layer）。
- * - display list stale / 无内容：禁止画空层。
- * - [Opening] / [Idle]：开场由源页 live record；Idle 不画。
+ * - [SettledHidden]：详情盖住，Host 预热满糊（须 drawable，禁空层）。
+ * - [Restoring]：取消回弹，源可能尚未稳定，Host 画清晰→满糊。
+ * - [BackPreview]/[Returning]：源页会 recompose 盖住 Host，由**源页**画糊；
+ *   Host 不画，避免与源抢同一 layer，也避免空层黑屏。
+ * - stale / 无内容：永不 paint（防黑屏）。
  */
 internal fun shouldPaintHostOwnedDepthLayer(
     exposure: VideoCardTransitionExposure,
@@ -143,10 +141,10 @@ internal fun shouldPaintHostOwnedDepthLayer(
     if (sdkInt < Build.VERSION_CODES.S) return false
     return when (exposure) {
         VideoCardTransitionExposure.SettledHidden,
-        VideoCardTransitionExposure.BackPreview,
         VideoCardTransitionExposure.Restoring,
-        VideoCardTransitionExposure.Returning,
         -> true
+        VideoCardTransitionExposure.BackPreview,
+        VideoCardTransitionExposure.Returning,
         VideoCardTransitionExposure.Opening,
         VideoCardTransitionExposure.Idle,
         -> false
@@ -173,10 +171,13 @@ internal fun shouldInvalidateSnapshotOnSourceDispose(
 ): Boolean = !isHostOwnedSnapshot
 
 /**
- * Host 会话层：源 dispose 时是否把冻结 DL 标 stale 强制重录。
- * false = 保留 OPENING 满糊冻结帧，预测返回从满糊跟手消糊，避免重录清晰 live。
+ * Host 会话层：源 dispose 时是否把冻结 DL 标 stale。
+ *
+ * **必须 true**：源 dispose 后 GraphicsLayer display list 常已失效（黑/空），
+ * 但 hasRecordedContent 仍可能为 true。不标 stale 会 draw 空层 → 返回/预测整屏黑。
+ * 重录后仍可对半径做 1→0 跟手模糊（满糊起点靠 HELD depth 合同 / gestureStartDepth=1）。
  */
-internal fun shouldMarkDisplayListStaleOnHostOwnedSourceDispose(): Boolean = false
+internal fun shouldMarkDisplayListStaleOnHostOwnedSourceDispose(): Boolean = true
 
 /**
  * 仅 IDLE 才释放 Host 快照 / BlurEffect；SettledHidden 必须保留满糊层。

@@ -179,6 +179,7 @@ import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.transition.LocalVideoCardTransitionBackgroundState
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.VideoSharedTransitionPlaybackIntent
+import com.android.purebilibili.core.ui.transition.resolveVideoDetailShellOverlayCornerDp
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedTransitionMotionSpec
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedTransitionEnterEasing
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedTransitionReturnEasing
@@ -3177,7 +3178,14 @@ internal fun VideoDetailScreenStateHolder(
                                             )
                                         },
                                         clipInOverlayDuringTransition = OverlayClip(
-                                            RoundedCornerShape(activeVideoSharedTransitionVisualSpec.targetCornerDp.dp)
+                                            RoundedCornerShape(
+                                                resolveVideoDetailShellOverlayCornerDp(
+                                                    visualSpec = activeVideoSharedTransitionVisualSpec,
+                                                    liveReturnMorph = liveReturnMorph,
+                                                    isReturningVisualState =
+                                                        useReturningVideoDetailVisualState,
+                                                ).dp
+                                            )
                                         )
                                     )
                             }

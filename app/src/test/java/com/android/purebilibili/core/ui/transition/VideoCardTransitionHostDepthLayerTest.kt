@@ -30,8 +30,8 @@ class VideoCardTransitionHostDepthLayerTest {
                 sdkInt = 35,
             ),
         )
-        // BackPreview / Returning：Host 继续画冻结层（满糊起跟手消糊），源页 yield 同 layer。
-        assertTrue(
+        // BackPreview / Returning：源页自己画糊；Host 不画，避免空层黑屏。
+        assertFalse(
             shouldPaintHostOwnedDepthLayer(
                 exposure = VideoCardTransitionExposure.BackPreview,
                 hasRecordedContent = true,
@@ -41,7 +41,7 @@ class VideoCardTransitionHostDepthLayerTest {
                 sdkInt = 35,
             ),
         )
-        assertTrue(
+        assertFalse(
             shouldPaintHostOwnedDepthLayer(
                 exposure = VideoCardTransitionExposure.Returning,
                 hasRecordedContent = true,
@@ -181,7 +181,7 @@ class VideoCardTransitionHostDepthLayerTest {
     }
 
     @Test
-    fun hostOwnedDisposeKeepsFrozenSnapshotNotStale() {
-        assertFalse(shouldMarkDisplayListStaleOnHostOwnedSourceDispose())
+    fun hostOwnedDisposeMarksDisplayListStaleToAvoidBlackFrame() {
+        assertTrue(shouldMarkDisplayListStaleOnHostOwnedSourceDispose())
     }
 }
