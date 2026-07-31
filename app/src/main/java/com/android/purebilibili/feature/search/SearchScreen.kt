@@ -536,7 +536,7 @@ fun SearchScreen(
     onInitialKeywordConsumed: (String) -> Unit = {},
     onBack: () -> Unit,
     onOpenTrending: () -> Unit,
-    onVideoClick: (String, Long) -> Unit,
+    onVideoClick: (String, Long, String) -> Unit,
     onWebClick: (String, String) -> Unit,
     onUpClick: (Long) -> Unit,  //  点击UP主跳转到空间
     onBangumiClick: (Long) -> Unit, //  点击番剧/影视跳转详情
@@ -1040,7 +1040,7 @@ fun SearchScreen(
                                                     )
                                                 ) {
                                                     is SearchResultNavigationTarget.Video ->
-                                                        onVideoClick(target.bvid, 0)
+                                                        onVideoClick(target.bvid, 0, video.pic)
                                                     is SearchResultNavigationTarget.Web ->
                                                         onWebClick(target.url, target.title)
                                                     else -> Unit
