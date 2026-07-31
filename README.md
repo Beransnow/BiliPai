@@ -245,6 +245,7 @@ BiliPai 依赖并参考了多个优秀开源项目：
 | [AndroidLiquidGlass](https://github.com/Kyant0/AndroidLiquidGlass) | 液态玻璃效果 |
 | [Compose Cupertino](https://github.com/alexzhirkevich/compose-cupertino) | iOS 风格组件 |
 | [Miuix](https://github.com/compose-miuix-ui/miuix) | Miuix 风格组件 |
+| [BiliPai-miuix](https://github.com/Piracola/BiliPai-miuix) | UI 组件 facade / design-system 重构贡献（@piracola） |
 | [Lottie](https://github.com/airbnb/lottie-android) | 矢量动画 |
 | [Coil](https://github.com/coil-kt/coil) | 图片加载 |
 | [Retrofit](https://github.com/square/retrofit) / [OkHttp](https://github.com/square/okhttp) | 网络请求 |

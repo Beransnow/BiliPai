@@ -1,5 +1,70 @@
 # Changelog
 
+## v9.9.9.6 (2026-07-31)
+
+### 版本信息
+
+- 版本号从 `9.9.9.5` 升级到 `9.9.9.6`，`versionCode` 从 `270` 升级到 `271`。
+- 更新范围：自最近已发布基线 `v9.9.8.9` 至本版本（含中间未单独发版的 `9.9.9.x` 迭代）。
+
+### 特别致谢：UI 系统重构
+
+**衷心感谢 [Piracola/BiliPai-miuix](https://github.com/Piracola/BiliPai-miuix)（@piracola）对本期 UI 体系的大体量重构与持续贡献。**
+
+本周期约有 **百余次** 与 facade / design-system / 组件中心化相关的提交，由上游 fork 合入并在主线落地，包括但不限于：
+
+- 将功能页控件统一收敛到 **design-system 中性组件门面**（按钮、卡片、Chip、Tab、进度、滑条、输入框、对话框、BottomSheet、抽屉、下拉菜单等）。
+- 路由 Scaffold / TopBar / 导航与刷新能力进入 **共享 chrome 与 policy**，减少 feature 内散落 Material 直调。
+- 完成 bangumi、dynamic、settings、profile、video、home、list、messaging、download、live、onboarding 等模块的 **组件 facade 迁移**。
+- 完善 fork 设计系统实现保留、中性 primitive 扩展，以及 facade 收尾与过渡抛光。
+- 共享 **液态玻璃（liquid glass）chrome**：底栏、顶栏 dock、分段指示与复用面统一折射与指示器表现，并补齐 parity 测试与文档约定。
+
+没有上述重构，后续主题变体、动效与跨页视觉一致性将难以维持。**再次向 Piracola 致谢。**
+
+### 相对 v9.9.8.9 的完整更新摘要
+
+#### 构建与导航基础
+
+- 升级 **AGP 9.3.1 / Gradle 9.5**，清理过时 R8 钉扎；APK 重命名与 configuration-cache 兼容修复。
+- Navigation3 对齐 **1.2.0-alpha07** 运行时与预测返回目标解析。
+
+#### 视频卡片过渡、景深与预测返回
+
+- 卡片进场/返回 **单时钟 morph**、景深冻结层 Host 持有、预测返回 live progress 跟手。
+- 持续优化返回模糊起点（满糊预热）、shared morph 与消糊对齐、settled 播放态返回性能预算。
+- 一镜到底 live surface 保活、提交返回末段封面接管；修复返回黑屏、预测返回清晰/模糊与落位闪烁等多轮问题。
+- 首页过渡景深缩放、封面预加载与过渡设置开关对齐；连续播放器 morph 能力加固。
+
+#### 液态玻璃与首页 chrome
+
+- 底栏 liquid chrome 抽取共享，顶栏 dock 图标/折射/指示器与分段玻璃伪影修复。
+- 分区液态玻璃背景与复用面 parity 门禁。
+
+#### 播放器与详情
+
+- 全屏 FILL 滑动视口重测、全屏切换保留当前帧、预测返回保留实时画面至提交落位。
+- 竖屏/横屏与相关推荐过渡、空间已播定位提示等细节修复。
+
+#### 其他功能与体验
+
+- 动态表情图渲染与转发原文打开；搜索顶栏固定高度。
+- 收藏：点击收藏统一打开 **收藏夹选择面板**，支持勾选自己的多个收藏夹（见下）。
+- 文档/路线图与 baseline profile 相关测试门禁扩展（部分接线曾回退未验证路径）。
+
+#### 收藏体验（本版）
+
+- 点击收藏不再静默写入默认夹：打开「添加到收藏夹」面板。
+- 面板提示：**可勾选一个或多个收藏夹，将视频收藏到自己的收藏夹**。
+
+### 主要合并与贡献线索
+
+- `merge: integrate Piracola UI enhancements`
+- `merge: integrate Piracola component facade migration`
+- `merge: integrate Piracola facade completion`
+- 主线动画/导航/首页过渡与发布整理由 **@Jay3-yy** 持续整合。
+
+---
+
 ## v9.9.8.9 (2026-07-26)
 
 ### 版本信息

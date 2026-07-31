@@ -919,6 +919,7 @@ internal fun VideoDetailScreenStateHolder(
     val openFavoriteFolders: (VideoFavoriteEntryPoint) -> Unit = { entryPoint ->
         when (resolveVideoFavoriteAction(entryPoint)) {
             VideoFavoriteAction.ToggleFavorite -> engagementViewModel.toggleFavorite()
+            VideoFavoriteAction.OpenFavoriteFolders -> viewModel.showFavoriteFolderDialog()
         }
     }
 
