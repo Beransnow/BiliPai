@@ -1173,7 +1173,10 @@ internal fun VideoDetailScreenStateHolder(
             // 有 shell sharedBounds 时延后停播，避免一镜到底落位前 surface 被掐掉。
             miniPlayerManager?.markLeavingByNavigation(
                 expectedBvid = currentBvid,
-                deferPlaybackStop = detailShellSharedBoundsEnabled,
+                deferPlaybackStop = shouldDeferPlaybackStopForSharedLiveReturn(
+                    cardTransitionEnabled = detailShellSharedBoundsEnabled,
+                    hasSourceRoute = true,
+                ),
             )
 
             restoreStatusBar() // 立即恢复状态栏（动画开始前）
@@ -1576,6 +1579,40 @@ internal fun VideoDetailScreenStateHolder(
             )
         }
     }
+    // Settled 返回运动预算：保 LIVE 一镜到底，旁路减负。
+    // 注意：不在 composition 读 morph progress（会每帧重绘整棵详情树）；
+    // 相位只用 committed / exit 布尔信号；细粒度 alpha 仍在 graphicsLayer 内读 progress。
+    val returnSessionPhase = resolveVideoDetailReturnSessionPhase(
+        isCommittedCardReturn = isCommittedCardReturn,
+        isExitTransitionInProgress = isCardReturnExitInProgress,
+        settleProgress = when {
+            !isCommittedCardReturn -> 0f
+            // 退出过渡进行中：按 Morph 预算（弹幕/控制层减负，不停播）。
+            isCardReturnExitInProgress -> 0.4f
+            // 提交后过渡信号已结束：Settle，允许停播收尾。
+            else -> 1f
+        },
+    )
+    // 次要内容：committed 时 Freeze；quick return 正文 alpha 直接 0 时可 Detach。
+    val returnSecondaryContentAlphaPreview = when {
+        !isCommittedCardReturn -> 1f
+        isQuickReturningFromDetail -> 0f
+        else -> 0.5f // Freeze，不 Detach，避免壳高度跳变
+    }
+    val returnVisualBudget = resolveVideoDetailReturnVisualBudget(
+        phase = returnSessionPhase,
+        hasRenderableLiveFrame = hasRenderableLiveFrameForReturn,
+        reduceMotion = videoCardDepthBackgroundState.motionTierProvider() ==
+            com.android.purebilibili.core.ui.adaptive.MotionTier.Reduced,
+        secondaryContentAlpha = returnSecondaryContentAlphaPreview,
+    )
+    // Live morph 强制 playerMode=LiveMorph 时，有帧才 Live；无帧 Resident（与 ownership 一致）。
+    val effectiveDanmakuEnabledForDetail =
+        danmakuEnabledForDetail && !shouldPauseHideDanmakuForReturnBudget(returnVisualBudget)
+    val detachSecondaryContentForReturn =
+        shouldDetachSecondaryContentForReturnBudget(returnVisualBudget)
+    val suppressOverlayControlsForReturn =
+        shouldSuppressOverlayControlsForReturnBudget(returnVisualBudget)
     val routedCommentInteractionActive =
         openCommentRootRpidFromRoute > 0L &&
             (subReplyState.visible || subReplyState.isLoading)
@@ -2466,13 +2503,15 @@ internal fun VideoDetailScreenStateHolder(
             currentBvid = currentBvid
         )
     }
-    val shouldSuppressSubtitleOverlay = useSharedPortraitPlayer &&
+    val shouldSuppressSubtitleOverlay = suppressOverlayControlsForReturn || (
+        useSharedPortraitPlayer &&
         !isPortraitFullscreen &&
         pendingMainReloadBvidAfterPortrait != null &&
         (
             pendingMainReloadBvidAfterPortrait != uiSuccessState?.info?.bvid ||
                 (portraitSyncSnapshotCid > 0L && portraitSyncSnapshotCid != (uiSuccessState?.info?.cid ?: 0L))
             )
+        )
     val showDanmakuDialog by viewModel.showDanmakuDialog.collectAsStateWithLifecycle()
     val isSendingDanmaku by viewModel.isSendingDanmaku.collectAsStateWithLifecycle()
     val composerDrafts by viewModel.composerDrafts.collectAsStateWithLifecycle()
@@ -3399,6 +3438,9 @@ internal fun VideoDetailScreenStateHolder(
                             when {
                                 suppressPhoneDetailBodyForDirectPortrait &&
                                     uiState !is VideoPlaybackUiState.Error -> Unit
+                                // 返回 morph 次要内容 alpha 已近 0：跳过 composition，壳仍 fillMaxSize。
+                                detachSecondaryContentForReturn &&
+                                    uiState !is VideoPlaybackUiState.Error -> Unit
                                 uiState is VideoPlaybackUiState.Loading -> {
                                     val loadingState = uiState as VideoPlaybackUiState.Loading
                                     Box(modifier = Modifier.fillMaxSize()) {
@@ -3463,7 +3505,7 @@ internal fun VideoDetailScreenStateHolder(
                                         isCommentThreadVisible = subReplyState.visible,
                                         showFavoriteFolderDialog = showFavoriteFolderDialog,
                                         downloadProgress = downloadProgress,
-                                        danmakuEnabledForDetail = danmakuEnabledForDetail,
+                                        danmakuEnabledForDetail = effectiveDanmakuEnabledForDetail,
                                         isQuickReturnLimitedForSharedElements =
                                             isReturningFromDetail && isQuickReturningFromDetail,
                                         transitionEnabled = detailChildTransitionEnabled,

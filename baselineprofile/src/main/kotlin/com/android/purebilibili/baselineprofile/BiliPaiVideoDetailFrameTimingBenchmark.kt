@@ -87,6 +87,19 @@ class BiliPaiVideoDetailFrameTimingBenchmark {
         pauseBeforeMeasure = true,
     )
 
+    /** Settled + playing, then top-bar back — primary jank path for this perf track. */
+    @Test
+    fun videoCardSettledPlayingThenTopBack_compilationPartial() =
+        benchmarkVideoCardSettledPlayingReturn(closeAction = VideoCardCloseAction.TopBack)
+
+    @Test
+    fun videoCardSettledPlayingThenSystemBack_compilationPartial() =
+        benchmarkVideoCardSettledPlayingReturn(closeAction = VideoCardCloseAction.SystemBack)
+
+    @Test
+    fun videoCardSettledPlayingThenPredictiveComplete_compilationPartial() =
+        benchmarkVideoCardSettledPlayingReturn(closeAction = VideoCardCloseAction.PredictiveComplete)
+
     @Test
     fun videoCardEightRoundTrips_compilationPartial() =
         benchmarkRule.measureRepeated(
@@ -189,6 +202,56 @@ class BiliPaiVideoDetailFrameTimingBenchmark {
                 }
             }
         }
+
+    /**
+     * Measure frame timing for: open card → wait until playing → idle → return home.
+     * Requires click-to-play / autoplay so the pause control appears (live morph path).
+     */
+    private fun benchmarkVideoCardSettledPlayingReturn(
+        closeAction: VideoCardCloseAction,
+    ) = benchmarkRule.measureRepeated(
+        packageName = TARGET_PACKAGE_NAME,
+        metrics = listOf(FrameTimingMetric()),
+        compilationMode = CompilationMode.Partial(),
+        iterations = FRAME_TIMING_BENCHMARK_ITERATIONS,
+        startupMode = WARM,
+        setupBlock = {
+            pressHome()
+            startActivityAndWait()
+            waitForHomeVideoCard()
+        },
+    ) {
+        openFirstHomeVideoCard()
+        waitUntilSettledPlaying()
+        SystemClock.sleep(SETTLED_PLAYING_IDLE_BEFORE_RETURN_MS)
+        when (closeAction) {
+            VideoCardCloseAction.TopBack -> {
+                requireNotNull(
+                    device.wait(Until.findObject(By.desc("返回")), UI_WAIT_TIMEOUT_MS)
+                ).click()
+            }
+            VideoCardCloseAction.SystemBack -> device.pressBack()
+            VideoCardCloseAction.PredictiveComplete ->
+                performPredictiveBackGesture(commit = true)
+            VideoCardCloseAction.PredictiveCancel ->
+                error("Settled-playing-return benchmark only measures committed returns")
+        }
+        waitForHomeVideoCard()
+    }
+
+    private fun MacrobenchmarkScope.waitUntilSettledPlaying() {
+        revealPlayerControls()
+        val pauseControl = device.wait(
+            Until.findObject(By.desc("暂停")),
+            PLAYER_CONTROL_WAIT_TIMEOUT_MS,
+        )
+        assumeTrue(
+            "Configure playback-on-open so settled playing path is available",
+            pauseControl != null,
+        )
+        device.waitForIdle()
+        SystemClock.sleep(SETTLED_PLAYING_READY_EXTRA_MS)
+    }
 
     private fun benchmarkVideoCardSettledState(
         expectedControlDescription: String,
@@ -357,6 +420,10 @@ class BiliPaiVideoDetailFrameTimingBenchmark {
         const val UI_WAIT_TIMEOUT_MS = 8_000L
         const val PLAYER_CONTROL_WAIT_TIMEOUT_MS = 2_000L
         const val SETTLED_STATE_SAMPLE_MS = 2_500L
+        /** Extra settle after pause control is visible before measuring return. */
+        const val SETTLED_PLAYING_READY_EXTRA_MS = 1_500L
+        /** Brief idle on settled playing detail before committing return. */
+        const val SETTLED_PLAYING_IDLE_BEFORE_RETURN_MS = 300L
         const val PREDICTIVE_BACK_GESTURE_STEPS = 12
         const val PREDICTIVE_BACK_STEP_DELAY_MS = 8L
     }

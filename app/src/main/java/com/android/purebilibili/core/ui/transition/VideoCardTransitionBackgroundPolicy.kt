@@ -36,6 +36,8 @@ import kotlin.math.roundToInt
 // - 返回：景深 progress 与 shared morph 同墙钟、同 Linear
 private const val VIDEO_CARD_TRANSITION_MAX_BLUR_RADIUS_DP = 12f
 private const val VIDEO_CARD_TRANSITION_BLUR_QUANTUM_PX = 1f
+/** 返回消糊段更粗量化，降低 BlurEffect 每帧更新次数。 */
+internal const val VIDEO_CARD_TRANSITION_RETURN_BLUR_QUANTUM_PX = 4f
 // 页面整体只后退 1.5%；被点击卡片由 shared overlay 自己放大，避免双重缩放。
 internal const val VIDEO_CARD_TRANSITION_BACKGROUND_SCALE_REDUCTION = 0.015f
 private const val VIDEO_CARD_TRANSITION_RELATED_SCALE_REDUCTION = 0.009f
@@ -211,10 +213,15 @@ internal fun resolveVideoCardTransitionBackgroundFrame(
         0f
     }
 
+    val blurQuantumPx = resolveVideoCardTransitionBlurQuantumPx(
+        motionTier = motionTier,
+        phase = phase,
+    )
     return VideoCardTransitionBackgroundFrame(
         blurRadiusPx = quantizeVideoCardTransitionBlurRadius(
             radiusPx = rawBlurRadiusPx,
             maxRadiusPx = maxBlurRadiusPx,
+            quantumPx = blurQuantumPx,
         ),
         scrimAlpha = when (phase) {
             VideoCardTransitionBackgroundPhase.OPENING,
@@ -1037,22 +1044,32 @@ internal fun resolveVideoCardTransitionMaxBlurRadiusPx(
     }
 }
 
+/**
+ * Blur 半径量化步长。
+ * RETURNING 用更粗步长（默认 4px）减少 BlurEffect 更新次数，保一镜到底同时降 GPU 抖动；
+ * OPENING/HELD 仍用细步长，避免开场虚化阶梯感。
+ */
 internal fun resolveVideoCardTransitionBlurQuantumPx(
     motionTier: MotionTier,
+    phase: VideoCardTransitionBackgroundPhase = VideoCardTransitionBackgroundPhase.IDLE,
 ): Float {
     @Suppress("UNUSED_PARAMETER")
     val ignored = motionTier
-    return VIDEO_CARD_TRANSITION_BLUR_QUANTUM_PX
+    return if (phase == VideoCardTransitionBackgroundPhase.RETURNING) {
+        VIDEO_CARD_TRANSITION_RETURN_BLUR_QUANTUM_PX
+    } else {
+        VIDEO_CARD_TRANSITION_BLUR_QUANTUM_PX
+    }
 }
 
 private fun quantizeVideoCardTransitionBlurRadius(
     radiusPx: Float,
     maxRadiusPx: Float,
+    quantumPx: Float = VIDEO_CARD_TRANSITION_BLUR_QUANTUM_PX,
 ): Float {
     if (radiusPx <= 0f || maxRadiusPx <= 0f) return 0f
-    return ((radiusPx / VIDEO_CARD_TRANSITION_BLUR_QUANTUM_PX).roundToInt() *
-        VIDEO_CARD_TRANSITION_BLUR_QUANTUM_PX)
-        .coerceIn(0f, maxRadiusPx)
+    val step = quantumPx.coerceAtLeast(0.5f)
+    return ((radiusPx / step).roundToInt() * step).coerceIn(0f, maxRadiusPx)
 }
 
 private fun normalizeVideoCardTransitionRoute(route: String?): String? {

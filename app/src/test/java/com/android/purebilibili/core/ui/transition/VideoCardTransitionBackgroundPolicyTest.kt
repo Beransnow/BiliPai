@@ -564,8 +564,8 @@ class VideoCardTransitionBackgroundPolicyTest {
         )
 
         assertEquals(12f, start.blurRadiusPx)
-        // 同源时间线轻微滞后建立，progress=0.5 仍约为 6px（density1）。
-        assertEquals(6f, middle.blurRadiusPx, 1f)
+        // RETURNING 使用 4px 量化：progress=0.5 → raw≈6 → quantize 到 4 或 8。
+        assertTrue(middle.blurRadiusPx in setOf(4f, 8f))
         assertTrue(middle.blurRadiusPx in 1f..<start.blurRadiusPx)
         assertEquals(0f, end.blurRadiusPx)
         assertTrue(start.scrimAlpha > middle.scrimAlpha)

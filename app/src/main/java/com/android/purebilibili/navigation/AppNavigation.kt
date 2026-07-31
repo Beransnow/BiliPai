@@ -1441,8 +1441,11 @@ fun AppNavigation(
                     // 卡片过渡开启时延后停播：完整进入后再返回需要 live surface 跟壳缩。
                     manager.markLeavingByNavigation(
                         expectedBvid = videoKey.bvid,
-                        deferPlaybackStop = cardTransitionEnabled &&
-                            !videoKey.sourceRoute.isNullOrBlank(),
+                        deferPlaybackStop = com.android.purebilibili.feature.video.screen
+                            .shouldDeferPlaybackStopForSharedLiveReturn(
+                                cardTransitionEnabled = cardTransitionEnabled,
+                                hasSourceRoute = !videoKey.sourceRoute.isNullOrBlank(),
+                            ),
                     )
                 }
             }
