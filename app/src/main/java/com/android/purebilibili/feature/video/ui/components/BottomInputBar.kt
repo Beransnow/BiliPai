@@ -210,8 +210,8 @@ private fun FloatingLiquidBottomInputBar(
             shape = shellShape,
             modifier = Modifier.fillMaxWidth(),
             backdrop = backdrop,
-            // 悬浮评论条同样是小胶囊：关 shell lens，避免安卓原生液态玻璃边沿虾线。
-            drawShellLens = false,
+            // 外层整条保留液态玻璃（含 shell lens）；内层提示框不再嵌套 liquid dock。
+            drawShellLens = true,
             isScrollInProgressProvider = isScrollInProgressProvider
         ) {
             FloatingLiquidBottomInputBarContentRow(
