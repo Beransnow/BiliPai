@@ -1036,4 +1036,58 @@ class VideoDetailReturnCoverPolicyTest {
             )
         )
     }
+
+    @Test
+    fun committedReturn_doesNotCoverPlayerUntilHandoff() {
+        // transitionProgress 1 = 详情全屏 settle 0；cover 必须为 0
+        assertEquals(
+            0f,
+            resolveVideoDetailReturnCoverAlpha(
+                transitionProgress = 1f,
+                isCommittedCardReturn = true,
+                hasResidentCover = true,
+                liveReturnMorph = true,
+            ),
+            0.0001f,
+        )
+        assertEquals(
+            1f,
+            resolveVideoDetailReturnPlayerAlpha(
+                transitionProgress = 1f,
+                isCommittedCardReturn = true,
+                hasResidentCover = true,
+                liveReturnMorph = true,
+            ),
+            0.0001f,
+        )
+        // 非 live / CoverFirst：提交后封面立即接管，避免无帧黑壳
+        assertEquals(
+            1f,
+            resolveVideoDetailReturnCoverAlpha(
+                transitionProgress = 1f,
+                isCommittedCardReturn = true,
+                hasResidentCover = true,
+                liveReturnMorph = false,
+            ),
+            0.0001f,
+        )
+        assertEquals(
+            0f,
+            resolveVideoDetailReturnPlayerAlpha(
+                transitionProgress = 1f,
+                isCommittedCardReturn = true,
+                hasResidentCover = true,
+                liveReturnMorph = false,
+            ),
+            0.0001f,
+        )
+        // settle 过 handoff 后才抬封面（progress 约 0.05 → settle 0.95）
+        val coverNearEnd = resolveVideoDetailReturnCoverAlpha(
+            transitionProgress = 0.05f,
+            isCommittedCardReturn = true,
+            hasResidentCover = true,
+            liveReturnMorph = true,
+        )
+        assertTrue(coverNearEnd > 0.5f)
+    }
 }

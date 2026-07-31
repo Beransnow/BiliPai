@@ -351,4 +351,30 @@ class VideoCardTransitionClockTest {
         // Continuity at 0.5 is not 0.5
         assertTrue(spec.enterEasing.transform(0.5f) > 0.5f)
     }
+
+    @Test
+    fun gestureStartDepth_heldAlwaysFullBlur() {
+        assertEquals(
+            1f,
+            resolveVideoCardGestureStartDepth(
+                phase = VideoCardTransitionBackgroundPhase.HELD,
+                currentDepth = 0f,
+            ),
+        )
+        assertEquals(
+            1f,
+            resolveVideoCardGestureStartDepth(
+                phase = VideoCardTransitionBackgroundPhase.HELD,
+                currentDepth = 0.4f,
+            ),
+        )
+        assertEquals(
+            0.55f,
+            resolveVideoCardGestureStartDepth(
+                phase = VideoCardTransitionBackgroundPhase.OPENING,
+                currentDepth = 0.55f,
+            ),
+            0.0001f,
+        )
+    }
 }

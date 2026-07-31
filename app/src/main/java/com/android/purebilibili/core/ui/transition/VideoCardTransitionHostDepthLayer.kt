@@ -112,12 +112,15 @@ internal fun VideoCardTransitionHostDepthLayer(
 }
 
 /**
- * Host 层何时绘制：有**可用**冻结内容，且**源页当前不会画同一 GraphicsLayer**。
+ * Host 层何时绘制：有**可用**冻结内容，且应由 Host 独占该 GraphicsLayer。
  *
- * - [SettledHidden] / [Restoring]：SinglePane 通常只 compose 详情，Host 在 NavDisplay
- *   下独画满糊（或回弹）层。
- * - display list 在源 dispose 后会 stale：此时禁止 Host 画空层（全黑），等源页重录。
- * - [BackPreview] / [Returning] / [Opening]：源页 effect 自己 drawLayer；Host 让位。
+ * - [SettledHidden]：详情盖住时预热满糊，供预测首帧。
+ * - [BackPreview]：预测手势必须继续由 Host 画冻结层并跟手 1→0。
+ *   源页在 SinglePane 下常 dispose/重挂；若 Host 让位，用户会看到清晰 live 首页（无糊）。
+ * - [Restoring]：取消回弹 Host 继续画清晰→满糊。
+ * - [Returning]：提交返回时若源尚未稳定接管，Host 仍可画消糊（与源约定 host-owned 时源不画同 layer）。
+ * - display list stale / 无内容：禁止画空层。
+ * - [Opening] / [Idle]：开场由源页 live record；Idle 不画。
  */
 internal fun shouldPaintHostOwnedDepthLayer(
     exposure: VideoCardTransitionExposure,
@@ -140,10 +143,10 @@ internal fun shouldPaintHostOwnedDepthLayer(
     if (sdkInt < Build.VERSION_CODES.S) return false
     return when (exposure) {
         VideoCardTransitionExposure.SettledHidden,
-        VideoCardTransitionExposure.Restoring,
-        -> true
         VideoCardTransitionExposure.BackPreview,
+        VideoCardTransitionExposure.Restoring,
         VideoCardTransitionExposure.Returning,
+        -> true
         VideoCardTransitionExposure.Opening,
         VideoCardTransitionExposure.Idle,
         -> false
@@ -168,6 +171,12 @@ internal fun resolveHostOwnedDepthProgress(
 internal fun shouldInvalidateSnapshotOnSourceDispose(
     isHostOwnedSnapshot: Boolean,
 ): Boolean = !isHostOwnedSnapshot
+
+/**
+ * Host 会话层：源 dispose 时是否把冻结 DL 标 stale 强制重录。
+ * false = 保留 OPENING 满糊冻结帧，预测返回从满糊跟手消糊，避免重录清晰 live。
+ */
+internal fun shouldMarkDisplayListStaleOnHostOwnedSourceDispose(): Boolean = false
 
 /**
  * 仅 IDLE 才释放 Host 快照 / BlurEffect；SettledHidden 必须保留满糊层。

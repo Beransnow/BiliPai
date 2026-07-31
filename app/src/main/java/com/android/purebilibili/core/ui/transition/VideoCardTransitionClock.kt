@@ -169,7 +169,11 @@ internal class VideoCardTransitionClock {
 
     fun beginGesture(backProgress: Float) {
         if (gestureBackProgress == null) {
-            gestureStartDepth = depthProgress()
+            // HELD 合同为满糊：不得采到 0（fallback 稳态常为 0），否则整段手势无糊。
+            gestureStartDepth = resolveVideoCardGestureStartDepth(
+                phase = phase,
+                currentDepth = depthProgress(),
+            )
         }
         gestureBackProgress = backProgress.coerceIn(0f, 1f)
     }
@@ -283,6 +287,22 @@ internal fun shouldPreferSharedMorphProgress(
  * 取较大值。HELD 稳态后 fallback 常为 0；floor 在 snapFallback 前顶住满糊，避免返回
  * 首帧 depth=0 导致「完全进详情后再返回完全没有模糊」。
  */
+
+/**
+ * 预测手势起点 depth。HELD 强制 1（满糊合同）；其余用当前 depth（OPENING 可能未满）。
+ */
+internal fun resolveVideoCardGestureStartDepth(
+    phase: VideoCardTransitionBackgroundPhase,
+    currentDepth: Float,
+): Float {
+    return when (phase) {
+        VideoCardTransitionBackgroundPhase.HELD -> 1f
+        VideoCardTransitionBackgroundPhase.OPENING -> currentDepth.coerceIn(0f, 1f)
+        VideoCardTransitionBackgroundPhase.RETURNING,
+        VideoCardTransitionBackgroundPhase.IDLE -> currentDepth.coerceIn(0f, 1f)
+    }
+}
+
 internal fun resolveVideoCardClockDepthProgress(
     gestureBackProgress: Float?,
     gestureStartDepth: Float,

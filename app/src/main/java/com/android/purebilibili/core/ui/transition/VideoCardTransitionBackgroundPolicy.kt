@@ -560,6 +560,20 @@ internal fun resolveVideoCardTransitionScaleGapFillColor(
  * 是否用「冻结 display list + 动态 blur/scale」路径。
  * Reduced / API<31 走轻量 scrim-only，避免无收益的 layer 开销。
  */
+/**
+ * Host 在 NavDisplay **下方**。预测/返回时源页会重新 compose 并盖住 Host，
+ * 因此 [BackPreview]/[Returning]/[Restoring] **必须由源页自己画冻结层+模糊**。
+ *
+ * 仅 [SettledHidden] 时详情盖住源页：源可跳过同 layer 绘制，交给 Host 预热满糊。
+ */
+internal fun shouldSourceYieldDepthLayerToHost(
+    isHostOwnedSnapshot: Boolean,
+    exposure: VideoCardTransitionExposure,
+): Boolean {
+    if (!isHostOwnedSnapshot) return false
+    return exposure == VideoCardTransitionExposure.SettledHidden
+}
+
 internal fun shouldUseVideoCardTransitionSnapshotBlur(
     exposure: VideoCardTransitionExposure,
     motionTier: MotionTier,
@@ -796,8 +810,12 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
                 contentLayer.renderEffect = null
                 snapshotState.invalidateRecordedContent()
             } else {
+                // Host 会话层：保留 OPENING 冻结帧。仅清 renderEffect。
                 contentLayer.renderEffect = null
-                snapshotState.markDisplayListStale()
+                snapshotState.lastBlurRadiusPx = Float.NaN
+                if (shouldMarkDisplayListStaleOnHostOwnedSourceDispose()) {
+                    snapshotState.markDisplayListStale()
+                }
             }
         }
     }
@@ -890,6 +908,16 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
         val activePhase = phaseProvider()
         val activeExposure = exposureProvider()
         val activeDecision = resolveVideoCardTransitionRenderDecision(activeExposure)
+        // SettledHidden + Host 预热：源页不必再画同 layer（详情盖住时不可见）。
+        // 切勿在 BackPreview 画清晰 live——会盖住景深，表现为「预测返回一直清晰」。
+        if (
+            shouldSourceYieldDepthLayerToHost(
+                isHostOwnedSnapshot = isHostOwnedSnapshot,
+                exposure = activeExposure,
+            )
+        ) {
+            return@drawWithContent
+        }
         if (!activeDecision.drawTransitionBackground) {
             if (activeDecision.drawSourceNormally) {
                 drawContent()

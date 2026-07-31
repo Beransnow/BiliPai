@@ -177,6 +177,7 @@ internal fun resolveVideoDetailReturnCoverAlpha(
     liveReturnMorph: Boolean = false,
 ): Float {
     if (!hasResidentCover) return 0f
+    // 一镜到底：仅 settle 末段抬封面，禁止一点返回就盖住实时播放器。
     if (liveReturnMorph) {
         return resolveVideoDetailLiveReturnLandingHandoffAlpha(
             transitionProgress = transitionProgress,
@@ -184,6 +185,7 @@ internal fun resolveVideoDetailReturnCoverAlpha(
         )
     }
     val progress = transitionProgress.coerceIn(0f, 1f)
+    // CoverFirst / 无 live 帧：提交后封面立即接管，避免黑壳。
     return if (isCommittedCardReturn) 1f else 1f - progress
 }
 
