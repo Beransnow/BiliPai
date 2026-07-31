@@ -3189,17 +3189,23 @@ internal fun VideoDetailScreenStateHolder(
                         )
 
                         //  为播放器容器添加共享元素标记（封面 ↔ 播放器区域映射）
+                        // shell 已接管时禁止再挂 cover sharedBounds（默认 Center 会往屏幕中心飞）。
                         val isFullscreenTarget = activeVideoSharedTransitionVisualSpec.fillTargetViewport
-                        val playerContainerModifier = if (
-                            shouldEnableVideoCoverSharedTransition(
-                                transitionEnabled = detailChildTransitionEnabled,
-                                hasSharedTransitionScope = sharedTransitionScope != null,
-                                hasAnimatedVisibilityScope = animatedVisibilityScope != null
-                            ) &&
-                            activeVideoSharedTransitionVisualSpec.useCoverSharedBounds &&
-                            videoSharedPlaybackIntent == VideoSharedTransitionPlaybackIntent.ImmediatePlayback &&
-                            !forceCoverOnlyForReturn
-                        ) {
+                        val attachPlayerCoverSharedBounds =
+                            com.android.purebilibili.core.ui.transition.shouldAttachVideoDetailCoverSharedBounds(
+                                coverSharedBoundsEnabled =
+                                    shouldEnableVideoCoverSharedTransition(
+                                        transitionEnabled = detailChildTransitionEnabled,
+                                        hasSharedTransitionScope = sharedTransitionScope != null,
+                                        hasAnimatedVisibilityScope = animatedVisibilityScope != null
+                                    ) &&
+                                        activeVideoSharedTransitionVisualSpec.useCoverSharedBounds,
+                                detailShellSharedBoundsEnabled = detailShellSharedBoundsEnabled,
+                                immediatePlayback = videoSharedPlaybackIntent ==
+                                    VideoSharedTransitionPlaybackIntent.ImmediatePlayback,
+                                forceCoverOnlyForReturn = forceCoverOnlyForReturn,
+                            )
+                        val playerContainerModifier = if (attachPlayerCoverSharedBounds) {
                             with(requireNotNull(sharedTransitionScope)) {
                                 Modifier
                                     .sharedBounds(
@@ -3225,6 +3231,10 @@ internal fun VideoDetailScreenStateHolder(
                                                 durationMillis = duration
                                             )
                                         },
+                                        resizeMode = com.android.purebilibili.core.ui.transition
+                                            .resolveVideoCardSharedBoundsResizeMode(
+                                                fillFullscreenShell = isFullscreenTarget,
+                                            ),
                                         clipInOverlayDuringTransition = OverlayClip(
                                             RoundedCornerShape(
                                                 resolveVideoDetailShellOverlayCornerDp(

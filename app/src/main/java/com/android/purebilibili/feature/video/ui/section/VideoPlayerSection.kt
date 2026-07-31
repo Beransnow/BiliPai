@@ -3286,6 +3286,8 @@ fun VideoPlayerSection(
                             targetBounds = targetBounds
                         )
                     },
+                    resizeMode = com.android.purebilibili.core.ui.transition
+                        .resolveVideoCardSharedBoundsResizeMode(),
                     clipInOverlayDuringTransition = OverlayClip(coverCardShape)
                 )
             }

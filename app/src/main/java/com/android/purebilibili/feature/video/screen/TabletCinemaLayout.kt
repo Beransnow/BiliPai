@@ -431,6 +431,8 @@ private fun CinemaStagePlayer(
             Modifier.sharedBounds(
                 sharedContentState = rememberSharedContentState(key = com.android.purebilibili.core.ui.transition.videoCoverSharedElementKey(bvid)),
                 animatedVisibilityScope = requireNotNull(animatedVisibilityScope),
+                resizeMode = com.android.purebilibili.core.ui.transition
+                    .resolveVideoCardSharedBoundsResizeMode(),
                 clipInOverlayDuringTransition = OverlayClip(
                     RoundedCornerShape(12.dp)
                 )
