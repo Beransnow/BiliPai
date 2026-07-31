@@ -112,13 +112,12 @@ internal fun VideoCardTransitionHostDepthLayer(
 }
 
 /**
- * Host 层何时绘制：有**可用**冻结内容，且源页不会盖住 Host 时。
+ * Host 层何时绘制：有**可用**冻结内容时。
  *
- * - [SettledHidden]：详情盖住，Host 预热满糊（须 drawable，禁空层）。
- * - [Restoring]：取消回弹，源可能尚未稳定，Host 画清晰→满糊。
- * - [BackPreview]/[Returning]：源页会 recompose 盖住 Host，由**源页**画糊；
- *   Host 不画，避免与源抢同一 layer，也避免空层黑屏。
  * - stale / 无内容：永不 paint（防黑屏）。
+ * - [SettledHidden]：详情下预热满糊。
+ * - [BackPreview]/[Returning]/[Restoring]：drawable 时垫跟手/消糊景深；
+ *   源 dispose 后 DL 失效时 stale=true，Host 不画，等源重录。
  */
 internal fun shouldPaintHostOwnedDepthLayer(
     exposure: VideoCardTransitionExposure,
@@ -140,11 +139,14 @@ internal fun shouldPaintHostOwnedDepthLayer(
     if (!realtimeBlurEnabled) return false
     if (sdkInt < Build.VERSION_CODES.S) return false
     return when (exposure) {
+        // SettledHidden：详情下预热（须 drawable）。
+        // BackPreview/Returning：drawable 时 Host 在 NavDisplay 下垫一层跟手糊；
+        // 源页重录后会在其上画同 layer。stale 时 Host 不画（防黑），源 live/重录接手。
         VideoCardTransitionExposure.SettledHidden,
-        VideoCardTransitionExposure.Restoring,
-        -> true
         VideoCardTransitionExposure.BackPreview,
+        VideoCardTransitionExposure.Restoring,
         VideoCardTransitionExposure.Returning,
+        -> true
         VideoCardTransitionExposure.Opening,
         VideoCardTransitionExposure.Idle,
         -> false
@@ -171,13 +173,14 @@ internal fun shouldInvalidateSnapshotOnSourceDispose(
 ): Boolean = !isHostOwnedSnapshot
 
 /**
- * Host 会话层：源 dispose 时是否把冻结 DL 标 stale。
+ * Host 会话层：源 dispose 时是否标 displayListStale。
  *
- * **必须 true**：源 dispose 后 GraphicsLayer display list 常已失效（黑/空），
- * 但 hasRecordedContent 仍可能为 true。不标 stale 会 draw 空层 → 返回/预测整屏黑。
- * 重录后仍可对半径做 1→0 跟手模糊（满糊起点靠 HELD depth 合同 / gestureStartDepth=1）。
+ * **false**：完整进详情后仍保留 OPENING 冻结帧，SettledHidden Host 可预热满糊；
+ * 否则（旧 true）dispose→stale→Host 不画 → 只有开场中断返回有糊、看完再返回无糊。
+ * 源页刷新改走 [VideoCardTransitionSnapshotLayerState.needsSourceRefresh]。
+ * 若冻结帧在部分机型 dispose 后变空，BackPreview 源页重录会换上真实首页。
  */
-internal fun shouldMarkDisplayListStaleOnHostOwnedSourceDispose(): Boolean = true
+internal fun shouldMarkDisplayListStaleOnHostOwnedSourceDispose(): Boolean = false
 
 /**
  * 仅 IDLE 才释放 Host 快照 / BlurEffect；SettledHidden 必须保留满糊层。

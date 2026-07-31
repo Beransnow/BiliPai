@@ -1086,4 +1086,27 @@ class VideoCardTransitionBackgroundPolicyTest {
         assertEquals(gapFill, lowProgress)
         assertTrue(lowProgress.red < 0.92f)
     }
+
+    @Test
+    fun hostOwnedSourceDetachRequestsRefreshWithoutMarkingStale() {
+        val state = VideoCardTransitionSnapshotLayerState().apply {
+            freezeRecording = true
+            hasRecordedContent = true
+            displayListStale = false
+            lastBlurRadiusPx = 12f
+        }
+        state.markSourceDetachedForRefresh()
+        assertTrue(state.needsSourceRefresh)
+        assertTrue(state.hasRecordedContent)
+        assertFalse(state.displayListStale)
+        // Host 仍可认为 OPENING 帧 drawable，SettledHidden 能预热满糊
+        assertTrue(
+            isVideoCardTransitionSnapshotDrawable(
+                hasRecordedContent = state.hasRecordedContent,
+                displayListStale = state.displayListStale,
+            ),
+        )
+        state.markDisplayListFresh()
+        assertFalse(state.needsSourceRefresh)
+    }
 }

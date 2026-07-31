@@ -30,8 +30,8 @@ class VideoCardTransitionHostDepthLayerTest {
                 sdkInt = 35,
             ),
         )
-        // BackPreview / Returning：源页自己画糊；Host 不画，避免空层黑屏。
-        assertFalse(
+        // BackPreview / Returning：drawable 时 Host 可垫景深；stale 时不画。
+        assertTrue(
             shouldPaintHostOwnedDepthLayer(
                 exposure = VideoCardTransitionExposure.BackPreview,
                 hasRecordedContent = true,
@@ -41,11 +41,21 @@ class VideoCardTransitionHostDepthLayerTest {
                 sdkInt = 35,
             ),
         )
-        assertFalse(
+        assertTrue(
             shouldPaintHostOwnedDepthLayer(
                 exposure = VideoCardTransitionExposure.Returning,
                 hasRecordedContent = true,
                 displayListStale = false,
+                motionTier = MotionTier.Normal,
+                realtimeBlurEnabled = true,
+                sdkInt = 35,
+            ),
+        )
+        assertFalse(
+            shouldPaintHostOwnedDepthLayer(
+                exposure = VideoCardTransitionExposure.BackPreview,
+                hasRecordedContent = true,
+                displayListStale = true,
                 motionTier = MotionTier.Normal,
                 realtimeBlurEnabled = true,
                 sdkInt = 35,
@@ -152,9 +162,9 @@ class VideoCardTransitionHostDepthLayerTest {
     }
 
     @Test
-    fun sourceYieldsOnlyWhenSettledHiddenUnderHost() {
-        // 仅 SettledHidden：详情盖住时源可跳过；预测/返回源必须自己画糊。
-        assertTrue(
+    fun sourceNeverYieldsEmptyDrawToHost() {
+        // 空 yield 会黑洞；源页始终自己画 live/冻结层。
+        assertFalse(
             shouldSourceYieldDepthLayerToHost(
                 isHostOwnedSnapshot = true,
                 exposure = VideoCardTransitionExposure.SettledHidden,
@@ -166,22 +176,10 @@ class VideoCardTransitionHostDepthLayerTest {
                 exposure = VideoCardTransitionExposure.BackPreview,
             ),
         )
-        assertFalse(
-            shouldSourceYieldDepthLayerToHost(
-                isHostOwnedSnapshot = true,
-                exposure = VideoCardTransitionExposure.Returning,
-            ),
-        )
-        assertFalse(
-            shouldSourceYieldDepthLayerToHost(
-                isHostOwnedSnapshot = false,
-                exposure = VideoCardTransitionExposure.SettledHidden,
-            ),
-        )
     }
 
     @Test
-    fun hostOwnedDisposeMarksDisplayListStaleToAvoidBlackFrame() {
-        assertTrue(shouldMarkDisplayListStaleOnHostOwnedSourceDispose())
+    fun hostOwnedDisposeDoesNotMarkStaleSoHeldBlurSurvives() {
+        assertFalse(shouldMarkDisplayListStaleOnHostOwnedSourceDispose())
     }
 }

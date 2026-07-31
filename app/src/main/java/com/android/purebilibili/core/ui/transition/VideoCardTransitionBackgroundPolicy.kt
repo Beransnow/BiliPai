@@ -566,13 +566,16 @@ internal fun resolveVideoCardTransitionScaleGapFillColor(
  *
  * 仅 [SettledHidden] 时详情盖住源页：源可跳过同 layer 绘制，交给 Host 预热满糊。
  */
+/**
+ * 历史 API：曾让 SettledHidden 源页空画交给 Host。
+ * 空画在源仍 compose 时会黑洞；Host 也常因 stale 不 paint → 整屏黑。
+ * 现恒 false：源页始终走完整 draw 路径（live 或冻结层）。
+ */
+@Suppress("UNUSED_PARAMETER")
 internal fun shouldSourceYieldDepthLayerToHost(
     isHostOwnedSnapshot: Boolean,
     exposure: VideoCardTransitionExposure,
-): Boolean {
-    if (!isHostOwnedSnapshot) return false
-    return exposure == VideoCardTransitionExposure.SettledHidden
-}
+): Boolean = false
 
 internal fun shouldUseVideoCardTransitionSnapshotBlur(
     exposure: VideoCardTransitionExposure,
@@ -660,6 +663,12 @@ internal class VideoCardTransitionSnapshotLayerState {
      * 但 [hasRecordedContent] 仍为 true。返回/预测时必须重录真实首页，禁止再 draw 空层。
      */
     var displayListStale: Boolean = false
+    /**
+     * 源页 dispose 后置 true：下一次源页挂上 BackPreview/Returning 时强制重录真实首页。
+     * 与 [displayListStale] 不同：不阻止 Host 在 SettledHidden 用 OPENING 冻结帧预热满糊
+     * （中断开场仍有糊；完整进入后 Host 仍可持满糊，直到源页重录刷新）。
+     */
+    var needsSourceRefresh: Boolean = false
     var lastBlurRadiusPx: Float = Float.NaN
     var lastCornerRadiusPx: Float = Float.NaN
 
@@ -667,6 +676,7 @@ internal class VideoCardTransitionSnapshotLayerState {
         freezeRecording = false
         hasRecordedContent = false
         displayListStale = false
+        needsSourceRefresh = false
         lastBlurRadiusPx = Float.NaN
         lastCornerRadiusPx = Float.NaN
     }
@@ -682,7 +692,14 @@ internal class VideoCardTransitionSnapshotLayerState {
     fun markDisplayListFresh() {
         hasRecordedContent = true
         displayListStale = false
+        needsSourceRefresh = false
         freezeRecording = true
+    }
+
+    fun markSourceDetachedForRefresh() {
+        // 不标 displayListStale：Host SettledHidden 仍可尝试画 OPENING 满糊预热。
+        needsSourceRefresh = true
+        lastBlurRadiusPx = Float.NaN
     }
 
     fun reset() = invalidateRecordedContent()
@@ -810,12 +827,11 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
                 contentLayer.renderEffect = null
                 snapshotState.invalidateRecordedContent()
             } else {
-                // Host 会话层：保留 OPENING 冻结帧。仅清 renderEffect。
+                // Host 会话层：保留 OPENING 冻结帧供 SettledHidden 满糊预热。
+                // 不标 displayListStale（否则完整进详情后 Host 无法预热 → 返回无糊）。
+                // 仅标记 needsSourceRefresh，源页再次挂上时重录真实首页。
                 contentLayer.renderEffect = null
-                snapshotState.lastBlurRadiusPx = Float.NaN
-                if (shouldMarkDisplayListStaleOnHostOwnedSourceDispose()) {
-                    snapshotState.markDisplayListStale()
-                }
+                snapshotState.markSourceDetachedForRefresh()
             }
         }
     }
@@ -857,12 +873,13 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
             VideoCardTransitionExposure.BackPreview,
             VideoCardTransitionExposure.Returning,
             VideoCardTransitionExposure.Restoring -> {
-                // 源页重新挂上：若 dispose 后 DL 已 stale，必须允许重录真实背景。
-                if (!isVideoCardTransitionSnapshotDrawable(
+                // 源页重新挂上：stale 或 dispose 后的 needsSourceRefresh 都允许重录。
+                val mustRefresh = snapshotState.needsSourceRefresh ||
+                    !isVideoCardTransitionSnapshotDrawable(
                         hasRecordedContent = snapshotState.hasRecordedContent,
                         displayListStale = snapshotState.displayListStale,
                     )
-                ) {
+                if (mustRefresh) {
                     snapshotState.freezeRecording = false
                     withFrameNanos { }
                 } else {
@@ -908,27 +925,36 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
         val activePhase = phaseProvider()
         val activeExposure = exposureProvider()
         val activeDecision = resolveVideoCardTransitionRenderDecision(activeExposure)
-        // SettledHidden + Host 预热：源页不必再画同 layer（详情盖住时不可见）。
-        // 切勿在 BackPreview 画清晰 live——会盖住景深，表现为「预测返回一直清晰」。
-        if (
-            shouldSourceYieldDepthLayerToHost(
-                isHostOwnedSnapshot = isHostOwnedSnapshot,
-                exposure = activeExposure,
-            )
-        ) {
-            return@drawWithContent
-        }
+        // SettledHidden：详情盖住时源页通常已 dispose；若仍 compose，画 live 防黑洞，
+        // 不要 return 空画。Host 在 drawable 时另画冻结层。
+        // BackPreview/Returning 绝不能 yield 空画。
         if (!activeDecision.drawTransitionBackground) {
             if (activeDecision.drawSourceNormally) {
                 drawContent()
             } else if (shouldPaintRetainedSourceWithoutTransitionBackground(activeDecision)) {
-                // SettledHidden 且源页仍是唯一 composed scene：有可用快照则画，否则 live 防黑屏。
+                // SettledHidden：有可用快照则按满糊画；否则 live 防黑。
                 if (
                     isVideoCardTransitionSnapshotDrawable(
                         hasRecordedContent = snapshotState.hasRecordedContent,
                         displayListStale = snapshotState.displayListStale,
                     )
                 ) {
+                    val heldFrame = snapshotState.frameCache.resolve(
+                        progress = 1f,
+                        phase = VideoCardTransitionBackgroundPhase.HELD,
+                        motionTier = motionTierProvider(),
+                        isLightBackground = isLightBackgroundProvider(),
+                        isGestureRestoreInProgress = false,
+                        density = density,
+                        deviceCornerRadiusPx = deviceCornerRadiusPx,
+                        scaleReduction = scaleReductionProvider(),
+                    )
+                    applyVideoCardTransitionSnapshotFrame(
+                        contentLayer = contentLayer,
+                        snapshotState = snapshotState,
+                        frame = heldFrame,
+                        canvasSize = size,
+                    )
                     drawLayer(contentLayer)
                     VideoCardTransitionDiagnostics.onSourceLayerDrawn()
                 } else {
@@ -968,20 +994,16 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
             return@drawWithContent
         }
 
-        // OPENING 首录；预测/返回若 DL stale 或缺失则重录真实首页——禁止 draw 空层全黑。
-        val needsRecord = !isVideoCardTransitionSnapshotDrawable(
-            hasRecordedContent = snapshotState.hasRecordedContent,
-            displayListStale = snapshotState.displayListStale,
-        )
+        // OPENING 首录；预测/返回 DL stale 时重录。
+        // 防黑：失效层绝不 drawLayer。防无糊：成功 record 后只画带 BlurEffect 的冻结层，
+        // 不要先 drawContent 再叠层——部分机型上 live 底会压过/闪掉景深。
+        val needsRecord = snapshotState.needsSourceRefresh ||
+            !isVideoCardTransitionSnapshotDrawable(
+                hasRecordedContent = snapshotState.hasRecordedContent,
+                displayListStale = snapshotState.displayListStale,
+            )
         if (needsRecord) {
-            contentLayer.record {
-                this@drawWithContent.drawContent()
-            }
-            if (size.width > 0f && size.height > 0f) {
-                snapshotState.markDisplayListFresh()
-                VideoCardTransitionDiagnostics.onSnapshotRecorded()
-            } else {
-                // 尺寸未就绪：先画 live 内容，避免纯黑；下一帧再尝试 record。
+            if (size.width <= 0f || size.height <= 0f) {
                 drawContent()
                 if (frame.scrimAlpha > 0.001f) {
                     val scrimColor = if (frame.useLightScrimTint) {
@@ -993,6 +1015,31 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
                 }
                 return@drawWithContent
             }
+            contentLayer.record {
+                this@drawWithContent.drawContent()
+            }
+            snapshotState.markDisplayListFresh()
+            // 强制下一帧路径重绑 BlurEffect（dispose 时 renderEffect 已清）。
+            snapshotState.lastBlurRadiusPx = Float.NaN
+            VideoCardTransitionDiagnostics.onSnapshotRecorded()
+        }
+
+        val canDrawFrozenLayer = isVideoCardTransitionSnapshotDrawable(
+            hasRecordedContent = snapshotState.hasRecordedContent,
+            displayListStale = snapshotState.displayListStale,
+        )
+        if (!canDrawFrozenLayer) {
+            // 唯一允许的清晰 live：冻结层不可用时（防黑）。
+            drawContent()
+            if (frame.scrimAlpha > 0.001f) {
+                val scrimColor = if (frame.useLightScrimTint) {
+                    VIDEO_CARD_TRANSITION_LIGHT_SCRIM_TINT
+                } else {
+                    Color.Black
+                }
+                drawRect(scrimColor.copy(alpha = frame.scrimAlpha))
+            }
+            return@drawWithContent
         }
 
         applyVideoCardTransitionSnapshotFrame(
