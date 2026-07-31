@@ -33,6 +33,10 @@ class BottomInputBarStructureTest {
         assertTrue(source.contains("FloatingLiquidBottomInputBar("))
         assertTrue(source.contains("FloatingLiquidBottomInputBarContentRow("))
         assertTrue(source.contains("BottomBarMatchedReusableLiquidDock("))
+        // 外壳液态玻璃，内层提示框禁止再嵌套 liquid dock（防虾线 + 保证横向 padding）。
+        assertTrue(source.contains("drawShellLens = false"))
+        assertTrue(source.contains(".padding(horizontal = 12.dp)"))
+        assertTrue(source.contains("评论 UP 主和大家"))
         assertFalse(source.contains("BottomBarMatchedLiquidDock("))
         assertTrue(!source.contains(".kernelSuFloatingDockSurface("))
         assertTrue(source.contains("resolveSharedBottomBarCapsuleShape()"))

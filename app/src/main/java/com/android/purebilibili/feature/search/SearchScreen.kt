@@ -1801,6 +1801,9 @@ fun SearchTopBar(
                         .weight(1f)
                         // 固定输入高度：禁止 fillMaxSize 吃掉 Column 剩余高度变成竖条胶囊。
                         .height(chromeSpec.inputHeightDp.dp),
+                    // 搜索小胶囊关闭 shell lens，避免安卓原生液态玻璃边沿「虾线」
+                    // （iOS/MD3 主题复用底栏玻璃时尤其明显）。
+                    drawShellLens = false,
                     isScrollInProgressProvider = isScrollInProgressProvider
                 ) { liquidChromeActive ->
                     AppSearchField(
