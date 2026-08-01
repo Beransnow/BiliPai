@@ -2014,6 +2014,16 @@ object SettingsManager {
         }
     }
 
+    /** Atomically stores a custom seed and switches MD3 away from the wallpaper palette. */
+    suspend fun applyMd3CustomColor(context: Context, hex: String) {
+        val normalizedHex = normalizeMd3CustomColorHex(hex)
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_MD3_COLOR_SOURCE] = Md3ColorSource.CUSTOM.name
+            preferences[KEY_DYNAMIC_COLOR] = false
+            preferences[KEY_MD3_CUSTOM_COLOR_HEX] = normalizedHex
+        }
+    }
+
     fun getThemeRoleOverrides(context: Context): Flow<ThemeRoleOverrides> =
         context.settingsDataStore.data.map { preferences ->
             mapAppThemeSettingsFromPreferences(preferences).themeRoleOverrides
