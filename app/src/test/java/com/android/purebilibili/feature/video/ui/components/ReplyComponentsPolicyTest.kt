@@ -950,6 +950,7 @@ class ReplyComponentsPolicyTest {
 
         assertTrue(decorationSource.contains("contentScale = ContentScale.Fit"))
         assertFalse(decorationSource.contains("contentScale = ContentScale.Crop"))
+        assertTrue(decorationSource.contains(".size(Size.ORIGINAL)"))
         assertTrue(decorationSource.contains(".transformations(TransparentBoundsCropTransformation)"))
         assertTrue(decorationSource.contains("text = \"NO.\""))
         assertTrue(decorationSource.contains("layoutPolicy.decorationImageWidthDp.dp"))

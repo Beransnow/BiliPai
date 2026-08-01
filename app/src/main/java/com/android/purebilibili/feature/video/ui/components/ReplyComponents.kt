@@ -2373,6 +2373,8 @@ internal fun FanGroupDecorationBadge(
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(primaryImageUrl)
+                    // 先保留原始像素，再裁透明边缘；否则裁剪后的主体会被放大而发糊。
+                    .size(Size.ORIGINAL)
                     .transformations(TransparentBoundsCropTransformation)
                     .crossfade(true)
                     .build(),
