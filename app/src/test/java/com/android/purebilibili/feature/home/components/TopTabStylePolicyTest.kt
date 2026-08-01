@@ -356,6 +356,20 @@ class TopTabStylePolicyTest {
     }
 
     @Test
+    fun `liquid top tab indicator stays below visible tab icons`() {
+        val source = sourceText("app/src/main/java/com/android/purebilibili/feature/home/components/TopBar.kt")
+        val visibleTabsBlock = source
+            .substringAfter("LazyRow(\n                    state = listState,")
+            .substringBefore("// Keep the indicator between its capture layer")
+        val indicatorLayerBlock = source
+            .substringAfter("// Keep the indicator between its capture layer")
+            .substringBefore("} // shared panel-offset group")
+
+        assertTrue(visibleTabsBlock.contains(".zIndex(2f)"))
+        assertTrue(indicatorLayerBlock.contains(".zIndex(1f)"))
+    }
+
+    @Test
     fun `ios lightweight top tab capsule uses gray white while content keeps theme primary`() {
         val colorScheme = lightColorScheme(primary = Color(0xFF2D6A4F))
         val capsuleColor = resolveIosTopTabCapsuleContainerColor(

@@ -1547,7 +1547,10 @@ private fun LightweightHomeTopTabs(
                     state = listState,
                     modifier = Modifier
                         .fillMaxSize()
-                        .zIndex(0f),
+                        // The visible glyphs must stay above the liquid indicator. Its
+                        // backdrop capture remains below both layers, so the indicator can
+                        // still refract the dock without covering the selected icon.
+                        .zIndex(2f),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Start,
                     contentPadding = topTabContentPadding
@@ -1622,8 +1625,9 @@ private fun LightweightHomeTopTabs(
                         )
                     }
                 }
-                // Capsule above labels; panel offset is on parent so do NOT add again here.
-                // clip=false lets the bottom-bar motion transform exceed the dock chrome.
+                // Keep the indicator between its capture layer and the visible tab content.
+                // The parent owns the panel offset; clip=false lets the bottom-bar motion
+                // transform exceed the dock chrome.
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
