@@ -284,8 +284,8 @@ class VideoCardScrollLiteVisualPolicyTest {
     }
 
     @Test
-    fun homeCardChrome_revealsWithSettleProgressDuringReturnMorph() {
-        assertTrue(
+    fun homeCardChrome_movesWithCoverDuringEveryReturnMorph() {
+        assertFalse(
             shouldSuppressHomeCardVisualDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -295,7 +295,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             )
         )
         assertEquals(
-            0f,
+            1f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -305,50 +305,30 @@ class VideoCardScrollLiteVisualPolicyTest {
             ),
             0.001f,
         )
-        // 最后 32% 落位：settle=0.8 → 已过 revealStart(0.68)，开始淡入
-        val midReveal = resolveHomeCardChromeAlphaDuringShellReturnMorph(
-            useCardContainerSharedBounds = true,
-            isSharedMorphSourceCard = true,
-            isReturningFromDetail = true,
-            transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
-            isSharedTransitionActive = true,
-            transitionBackgroundProgress = 0.2f,
-        )
-        assertTrue(midReveal > 0f && midReveal < 1f)
         assertEquals(
-            resolveHomeCardChromeEarlyRevealAlpha(settleProgress = 0.8f),
-            midReveal,
-            0.001f,
-        )
-        // 中段 settle=0.1 < 0.68：标题仍藏，避免叠 live
-        assertEquals(
-            0f,
+            1f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
                 isReturningFromDetail = true,
+                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
                 isSharedTransitionActive = true,
-                transitionBackgroundProgress = 0.9f,
+                transitionBackgroundProgress = 0.2f,
             ),
             0.001f,
         )
-        // shared 停了但 depth 未落位：继续跟 settle，禁止硬切 1（那是标题闪的根因之一）
-        val afterMorphStillReturning = resolveHomeCardChromeAlphaDuringShellReturnMorph(
-            useCardContainerSharedBounds = true,
-            isSharedMorphSourceCard = true,
-            isReturningFromDetail = true,
-            transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
-            isSharedTransitionActive = false,
-            isVideoCardReturnGestureInProgress = false,
-            transitionBackgroundProgress = 0.4f,
-        )
         assertEquals(
-            resolveHomeCardChromeEarlyRevealAlpha(settleProgress = 0.6f),
-            afterMorphStillReturning,
+            1f,
+            resolveHomeCardChromeAlphaDuringShellReturnMorph(
+                useCardContainerSharedBounds = true,
+                isSharedMorphSourceCard = true,
+                isReturningFromDetail = true,
+                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
+                isSharedTransitionActive = false,
+                transitionBackgroundProgress = 0.4f,
+            ),
             0.001f,
         )
-        assertTrue(afterMorphStillReturning in 0f..1f && afterMorphStillReturning < 1f)
-        // depth 已落位（progress≈0）→ 全显
         assertEquals(
             1f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
@@ -372,10 +352,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             ),
             0.001f,
         )
-        // revealStart=0.68：0.15 仍藏字，1.0 全显
-        assertEquals(0f, resolveHomeCardChromeEarlyRevealAlpha(settleProgress = 0.15f), 0.001f)
-        assertEquals(1f, resolveHomeCardChromeEarlyRevealAlpha(settleProgress = 1f), 0.001f)
-        // 快速返回：源卡标题立刻全显（详情正文须同步立刻让位）
+        // 快速返回与完整进入后返回使用同一可见策略。
         assertEquals(
             1f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
@@ -388,7 +365,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             ),
             0.001f,
         )
-        // 关闭实时画面预览：封面与标题整体落位，标题立刻全显
+        // 关闭实时画面预览同样不引入独立文字动画。
         assertEquals(
             1f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
@@ -424,7 +401,7 @@ class VideoCardScrollLiteVisualPolicyTest {
     }
 
     @Test
-    fun horizontalCardChrome_followsOpeningAndReturnProgress() {
+    fun horizontalCardChrome_followsOpeningButStaysAlignedWithCoverOnReturn() {
         val openingStart = resolveHorizontalCardChromeMotionFrame(
             useCardContainerSharedBounds = true,
             isSharedMorphSourceCard = true,
@@ -459,8 +436,8 @@ class VideoCardScrollLiteVisualPolicyTest {
             transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
             transitionBackgroundProgress = 0.16f,
         )
-        assertEquals(0.5f, returnReveal.alpha, 0.001f)
-        assertEquals(0.16f, returnReveal.translationProgress, 0.001f)
+        assertEquals(1f, returnReveal.alpha, 0.001f)
+        assertEquals(0f, returnReveal.translationProgress, 0.001f)
 
         val landed = resolveHorizontalCardChromeMotionFrame(
             useCardContainerSharedBounds = true,
