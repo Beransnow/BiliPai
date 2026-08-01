@@ -259,6 +259,10 @@ data class ReplyMember(
     @SerialName("fans_detail")
     val fansDetail: ReplyFansDetail? = null,
 
+    // 评论接口同时返回传统 pendant 与 user_sailing(.v2).pendant。
+    // 前者使用 pid，后者使用 id；渲染时只需其图片字段，故共用同一可选模型。
+    val pendant: ReplySailingPendant? = null,
+
     val nameplate: ReplyNameplate? = null,
 
     @Serializable(with = FlexibleImageUrlSerializer::class)

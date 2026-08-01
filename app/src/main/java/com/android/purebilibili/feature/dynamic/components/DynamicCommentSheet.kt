@@ -19,7 +19,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import com.android.purebilibili.core.ui.components.AppButton
@@ -31,19 +30,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.android.purebilibili.data.model.response.DynamicItem
 import com.android.purebilibili.data.model.response.ReplyItem
 import com.android.purebilibili.feature.dynamic.DynamicViewModel
 import com.android.purebilibili.feature.dynamic.resolveDynamicCommentSheetTotalCount
 import com.android.purebilibili.feature.video.ui.components.CommentPictures
 import com.android.purebilibili.feature.video.ui.components.RichCommentText
+import com.android.purebilibili.feature.video.ui.components.ReplyMemberAvatar
 import com.android.purebilibili.feature.video.ui.components.FanGroupDecorationBadge
 import com.android.purebilibili.feature.video.ui.components.resolveFanGroupDecorationCardBgs
 import com.android.purebilibili.feature.video.ui.components.resolveFanGroupVisualFromMemberAndSailing
@@ -529,16 +527,11 @@ private fun CommentItem(
     }
     
     Row(modifier = modifier.fillMaxWidth()) {
-        // 头像
-        AsyncImage(
-            model = member.avatar.let { 
-                if (it.startsWith("http://")) it.replace("http://", "https://") else it 
-            },
-            contentDescription = null,
-            modifier = Modifier
-                .size(AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall)
-                .clip(CircleShape),
-            contentScale = ContentScale.Crop
+        ReplyMemberAvatar(
+            member = member,
+            placeholderColor = MaterialTheme.colorScheme.surfaceVariant,
+            lightweightMode = false,
+            modifier = Modifier.size(AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall)
         )
         
         Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
