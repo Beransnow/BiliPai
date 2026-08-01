@@ -1559,38 +1559,23 @@ fun AppNavigation(
                         // 必须添加 hazeSource，否则底栏的 hazeEffect 无法获取背景内容，导致模糊失效
                         .then(if (mainHazeState != null) Modifier.hazeSourceCompat(mainHazeState) else Modifier)
                 ) {
-                    // Wallpaper-only source for card badge realtime blur (not nested under
-                    // the badge effect). Bottom bar still samples via mainHazeState above.
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .then(
-                                if (wallpaperHazeState != null) {
-                                    Modifier.hazeSourceCompat(wallpaperHazeState)
-                                } else {
-                                    Modifier
-                                }
-                            )
-                    ) {
-                        DepthSyncedGlobalHomeWallpaperBackdrop(
-                            wallpaperUri = globalHomeWallpaperUri,
-                            appearance = globalHomeWallpaperAppearance,
-                            baseColor = backgroundColor,
-                            depthProgressProvider = {
-                                videoCardTransitionClock.depthProgress()
-                            },
-                            depthPhaseProvider = {
-                                videoCardTransitionClock.phase
-                            },
-                            depthGestureRestoreProvider = {
-                                videoCardTransitionClock.gestureRestoreInProgress
-                            },
-                            isDataSaverActive = isDataSaverActiveForGlobalWallpaper,
-                            isLightBackground = isLightBackground,
-                            // Transition depth blur is independent of badge haze sampling.
-                            realtimeBlurEnabled = videoTransitionRealtimeBlurEnabled,
-                        )
-                    }
+                    DepthSyncedGlobalHomeWallpaperBackdrop(
+                        wallpaperUri = globalHomeWallpaperUri,
+                        appearance = globalHomeWallpaperAppearance,
+                        baseColor = backgroundColor,
+                        depthProgressProvider = {
+                            videoCardTransitionClock.depthProgress()
+                        },
+                        depthPhaseProvider = {
+                            videoCardTransitionClock.phase
+                        },
+                        depthGestureRestoreProvider = {
+                            videoCardTransitionClock.gestureRestoreInProgress
+                        },
+                        isDataSaverActive = isDataSaverActiveForGlobalWallpaper,
+                        isLightBackground = isLightBackground,
+                        realtimeBlurEnabled = videoTransitionRealtimeBlurEnabled,
+                    )
                 fun bottomPagerNavKeyForItem(item: BottomNavItem): BiliPaiNavKey {
                     return when (item) {
                         BottomNavItem.HOME -> BiliPaiNavKey.Home
