@@ -499,6 +499,7 @@ fun VideoPlayerSection(
     predictiveBackCancelRecoveryGeneration: Int = 0,
     allowLivePlayerSharedElement: Boolean = true,
     sourceRouteForSharedElement: String? = null,
+    preserveSourceCardCornerDuringSharedReturn: Boolean = false,
     suppressSubtitleOverlay: Boolean = false,
     subtitleDisplayModePreferenceOverride: SubtitleDisplayMode? = null,
     onSubtitleDisplayModePreferenceOverrideChange: (SubtitleDisplayMode) -> Unit = {},
@@ -3360,7 +3361,14 @@ fun VideoPlayerSection(
         },
         modifier = Modifier.zIndex(coverLayerZIndex)
     ) {
-        val coverCardShape = RoundedCornerShape(videoSharedTransitionVisualSpec.targetCornerDp.dp)
+        val coverCardShape = RoundedCornerShape(
+            resolveVideoPlayerCoverCornerDp(
+                sourceCornerDp = videoSharedTransitionVisualSpec.sourceCornerDp,
+                playerCornerDp = videoSharedTransitionVisualSpec.targetCornerDp,
+                preserveSourceCardCornerDuringSharedReturn =
+                    preserveSourceCardCornerDuringSharedReturn,
+            ).dp
+        )
         val sharedCoverOverlayModifier = if (coverOverlaySharedBoundsEnabled) {
             with(requireNotNull(sharedTransitionScope)) {
                 Modifier.sharedBounds(

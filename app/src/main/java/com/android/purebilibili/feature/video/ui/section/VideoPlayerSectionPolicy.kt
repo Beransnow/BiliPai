@@ -36,6 +36,24 @@ internal const val LONG_PRESS_SPEED_LOCK_ZONE_HEIGHT_DP = 96
 internal const val FOREGROUND_SURFACE_RECOVERY_DELAY_MS = 80L
 internal const val FOREGROUND_SURFACE_RECOVERY_TIMEOUT_MS = 1200L
 
+/**
+ * Shared card-return 期间，播放器内层封面必须与外层 shared shell 使用同一来源卡圆角。
+ *
+ * 否则外层 overlay 已按来源卡裁切、内层封面仍按播放器圆角裁切，卸层落位时会发生
+ * 一帧的双重形变，看起来像封面轻微抖动。
+ */
+internal fun resolveVideoPlayerCoverCornerDp(
+    sourceCornerDp: Int,
+    playerCornerDp: Int,
+    preserveSourceCardCornerDuringSharedReturn: Boolean,
+): Int {
+    return if (preserveSourceCardCornerDuringSharedReturn) {
+        sourceCornerDp.coerceAtLeast(0)
+    } else {
+        playerCornerDp.coerceAtLeast(0)
+    }
+}
+
 internal data class LongPressSpeedLockSensitivityPolicy(
     val lockZoneHeightDp: Int,
     val minDragDistanceDp: Int

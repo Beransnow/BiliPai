@@ -2629,6 +2629,8 @@ internal fun VideoDetailScreenStateHolder(
             predictiveBackCancelRecoveryGeneration = predictiveBackCancelRecoveryGeneration,
             allowLivePlayerSharedElement = true,
             sourceRouteForSharedElement = sourceRouteForSharedElement,
+            preserveSourceCardCornerDuringSharedReturn =
+                detailShellSharedBoundsEnabled && useReturningVideoDetailVisualState,
             suppressSubtitleOverlay = shouldSuppressSubtitleOverlay,
             subtitleDisplayModePreferenceOverride = subtitleDisplayModeOverride,
             onSubtitleDisplayModePreferenceOverrideChange = { subtitleDisplayModeOverride = it },
@@ -3444,6 +3446,9 @@ internal fun VideoDetailScreenStateHolder(
                                 predictiveBackCancelRecoveryGeneration = predictiveBackCancelRecoveryGeneration,
                                 allowLivePlayerSharedElement = true,
                                 sourceRouteForSharedElement = sourceRouteForSharedElement,
+                                preserveSourceCardCornerDuringSharedReturn =
+                                    detailShellSharedBoundsEnabled &&
+                                        useReturningVideoDetailVisualState,
                                 suppressSubtitleOverlay = shouldSuppressSubtitleOverlay,
                                 subtitleDisplayModePreferenceOverride = subtitleDisplayModeOverride,
                                 onSubtitleDisplayModePreferenceOverrideChange = { subtitleDisplayModeOverride = it }

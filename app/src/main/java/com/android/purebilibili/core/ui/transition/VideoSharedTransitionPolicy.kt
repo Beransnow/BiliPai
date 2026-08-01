@@ -295,7 +295,7 @@ internal fun resolveVideoSharedTransitionVisualSpec(
         else -> VideoSharedTransitionTargetMode.InlinePlayer
     }
     val targetCornerDp = when {
-        // 返回：详情壳保持播放器圆角（直角/小圆角），列表卡圆角在源卡 shell。
+        // 返回：播放器常态仍用自身圆角；shell / 内层封面的实际裁切由返回策略统一到来源卡。
         isReturning -> playerCornerDp.coerceAtLeast(0)
         targetMode == VideoSharedTransitionTargetMode.LandscapeFullscreen -> 0
         targetMode == VideoSharedTransitionTargetMode.PortraitFullscreen -> 0

@@ -130,6 +130,7 @@ internal fun PortraitInlineVideoPlayerHost(
     predictiveBackCancelRecoveryGeneration: Int,
     allowLivePlayerSharedElement: Boolean,
     sourceRouteForSharedElement: String?,
+    preserveSourceCardCornerDuringSharedReturn: Boolean = false,
     suppressSubtitleOverlay: Boolean,
     subtitleDisplayModePreferenceOverride: SubtitleDisplayMode?,
     onSubtitleDisplayModePreferenceOverrideChange: (SubtitleDisplayMode) -> Unit,
@@ -248,6 +249,8 @@ internal fun PortraitInlineVideoPlayerHost(
             predictiveBackCancelRecoveryGeneration = predictiveBackCancelRecoveryGeneration,
             allowLivePlayerSharedElement = allowLivePlayerSharedElement,
             sourceRouteForSharedElement = sourceRouteForSharedElement,
+            preserveSourceCardCornerDuringSharedReturn =
+                preserveSourceCardCornerDuringSharedReturn,
             suppressSubtitleOverlay = suppressSubtitleOverlay,
             subtitleDisplayModePreferenceOverride = subtitleDisplayModePreferenceOverride,
             onSubtitleDisplayModePreferenceOverrideChange = onSubtitleDisplayModePreferenceOverrideChange,
