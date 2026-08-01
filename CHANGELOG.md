@@ -48,6 +48,11 @@
 - 修复 Miuix 主题打开「查看更新日志」时的 `NavigationBackHandler` ABI 崩溃。
 - 修复更新弹窗编译问题、旧版 `NavigationBackHandler` 兼容性，以及 CI 性能守卫相关问题。
 
+#### 致谢
+
+- CDN 签名候选、分片级选线与预取设计参考 [Bili Pilot](https://github.com/siwei-yuan/bili-pilot)；BiliPai 为独立 Kotlin 实现，未复制其 JavaScript 代码。
+- 空降助手的数据与 API 来自 [BilibiliSponsorBlock](https://github.com/hanydd/BilibiliSponsorBlock)，浏览与控制 UI 参考 [PiliPlus](https://github.com/bggRGjQaUbCoE/PiliPlus)。
+
 ---
 
 ## v9.9.9.6 (2026-07-31)
