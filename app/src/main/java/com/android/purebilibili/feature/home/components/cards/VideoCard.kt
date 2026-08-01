@@ -25,7 +25,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -96,7 +95,6 @@ import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.components.UpBadgeName
 import com.android.purebilibili.core.ui.components.resolveUpStatsText
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
-import com.android.purebilibili.core.ui.transition.LocalVideoCardTransitionBackgroundState
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.VideoSharedTransitionMotionSpec
 import com.android.purebilibili.core.ui.transition.VideoSharedTransitionVisualSpec
@@ -709,14 +707,6 @@ internal fun ElegantVideoCard(
                 lastClickedVideoSourceKey = CardPositionManager.lastClickedVideoSourceKey,
             )
         }
-        val videoCardTransitionBackgroundState = LocalVideoCardTransitionBackgroundState.current
-        val hideCoverDuringShellMorph = shouldHideHomeCardCoverDuringShellMorph(
-            useCardContainerSharedBounds = useCardShellSharedBounds,
-            isSharedMorphSourceCard = isCoverSharedReturnTarget,
-            isReturningFromDetail = isReturningFromVideoDetail,
-            transitionBackgroundPhase = videoCardTransitionBackgroundState.phaseProvider(),
-            isVideoCardReturnGestureInProgress = videoCardTransitionBackgroundState.isReturnGestureInProgressProvider(),
-        )
         val coverCrossfadeEnabled = shouldEnableVideoCardCoverCrossfade(
             isScrollInProgress = scrollLiteModeEnabled,
             isReturningFromDetail = isReturningFromVideoDetail,
@@ -802,6 +792,12 @@ internal fun ElegantVideoCard(
         Box(
             modifier = coverSharedBoundsModifier
                 .fillMaxWidth()
+                .videoCardShellReturnCoverAlpha(
+                    enabled = useCardShellSharedBounds,
+                    bvid = video.bvid,
+                    sourceRoute = effectiveSharedElementSourceRoute,
+                    isReturningFromDetail = isReturningFromVideoDetail,
+                )
                 .testTag("home_video_cover")
                 .aspectRatio(coverAspectRatio)
                 .clip(coverShape)
@@ -855,10 +851,7 @@ internal fun ElegantVideoCard(
                 model = coverImageRequest,
                 contentDescription = null,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .graphicsLayer {
-                        alpha = if (hideCoverDuringShellMorph) 0f else 1f
-                    },
+                    .fillMaxSize(),
                 // 官方粉版：居中 Crop；16:9 框配 16:9 投稿封面时基本不裁
                 contentScale = ContentScale.Crop,
                 alignment = Alignment.Center,

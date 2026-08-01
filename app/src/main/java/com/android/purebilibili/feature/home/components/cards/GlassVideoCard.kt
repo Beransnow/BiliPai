@@ -335,6 +335,12 @@ fun GlassVideoCard(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
+                            .videoCardShellReturnCoverAlpha(
+                                enabled = useCardShellSharedBounds,
+                                bvid = video.bvid,
+                                sourceRoute = effectiveSharedElementSourceRoute,
+                                isReturningFromDetail = isReturningFromVideoDetail,
+                            )
                             .clip(RoundedCornerShape(coverCornerRadius))
                     ) {
                         // 由 AsyncImage 根据卡片布局约束选择解码尺寸。
@@ -347,7 +353,8 @@ fun GlassVideoCard(
                                 .diskCacheKey(coverCacheKey)
                                 .build(),
                             contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier
+                                .fillMaxSize(),
                             contentScale = ContentScale.Crop
                         )
                         

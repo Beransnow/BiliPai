@@ -320,6 +320,12 @@ internal fun StoryVideoCard(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .videoCardShellReturnCoverAlpha(
+                    enabled = useCardShellSharedBounds,
+                    bvid = video.bvid,
+                    sourceRoute = effectiveSharedElementSourceRoute,
+                    isReturningFromDetail = isReturningFromVideoDetail,
+                )
                 .testTag("home_story_video_cover")
                 .aspectRatio(coverAspectRatio)
                 .clip(coverShape)

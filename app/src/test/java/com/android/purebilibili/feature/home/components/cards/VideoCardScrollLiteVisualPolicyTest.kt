@@ -243,49 +243,49 @@ class VideoCardScrollLiteVisualPolicyTest {
     }
 
     @Test
-    fun homeCardCover_neverHidesDuringShellMorph() {
-        // OPENING 也不再藏封面：快速返回打断时避免落位露出 surfaceVariant。
-        assertFalse(
-            shouldHideHomeCardCoverDuringShellMorph(
-                useCardContainerSharedBounds = true,
-                isSharedMorphSourceCard = true,
-                isReturningFromDetail = false,
-                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.OPENING,
-                isVideoCardReturnGestureInProgress = false,
-            )
-        )
-        assertFalse(
-            shouldHideHomeCardCoverDuringShellMorph(
+    fun homeCardSourceVisual_waitsForLiveReturnHandoff() {
+        assertEquals(
+            0f,
+            resolveHomeCardReturnSourceVisualAlpha(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
                 isReturningFromDetail = true,
                 transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
                 isVideoCardReturnGestureInProgress = false,
-            )
+                transitionBackgroundProgress = 1f,
+            ),
+            0.001f,
         )
-        assertFalse(
-            shouldHideHomeCardCoverDuringShellMorph(
+        assertEquals(
+            0.5f,
+            resolveHomeCardReturnSourceVisualAlpha(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
-                isReturningFromDetail = false,
-                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.IDLE,
+                isReturningFromDetail = true,
+                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
                 isVideoCardReturnGestureInProgress = false,
-            )
+                transitionBackgroundProgress = 0.06f,
+            ),
+            0.001f,
         )
-        assertFalse(
-            shouldHideHomeCardCoverDuringShellMorph(
+        assertEquals(
+            1f,
+            resolveHomeCardReturnSourceVisualAlpha(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
-                isReturningFromDetail = false,
-                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.OPENING,
-                isVideoCardReturnGestureInProgress = true,
-            )
+                isReturningFromDetail = true,
+                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
+                isVideoCardReturnGestureInProgress = false,
+                transitionBackgroundProgress = 1f,
+                preferWholeCardReturn = true,
+            ),
+            0.001f,
         )
     }
 
     @Test
-    fun homeCardChrome_movesWithCoverDuringEveryReturnMorph() {
-        assertFalse(
+    fun homeCardChrome_usesTheSameLiveReturnHandoffAsCover() {
+        assertTrue(
             shouldSuppressHomeCardVisualDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -295,7 +295,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             )
         )
         assertEquals(
-            1f,
+            0f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -306,7 +306,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             0.001f,
         )
         assertEquals(
-            1f,
+            0f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -318,7 +318,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             0.001f,
         )
         assertEquals(
-            1f,
+            0f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -330,14 +330,14 @@ class VideoCardScrollLiteVisualPolicyTest {
             0.001f,
         )
         assertEquals(
-            1f,
+            0.5f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
                 isReturningFromDetail = true,
                 transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
                 isSharedTransitionActive = false,
-                transitionBackgroundProgress = 0f,
+                transitionBackgroundProgress = 0.06f,
             ),
             0.001f,
         )
@@ -352,9 +352,9 @@ class VideoCardScrollLiteVisualPolicyTest {
             ),
             0.001f,
         )
-        // 快速返回与完整进入后返回使用同一可见策略。
+        // 快速返回仍可能保留 LIVE surface，仍须等待同一交接窗口。
         assertEquals(
-            1f,
+            0f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -365,7 +365,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             ),
             0.001f,
         )
-        // 关闭实时画面预览同样不引入独立文字动画。
+        // 显式整卡回退没有 LIVE surface，可立即显示。
         assertEquals(
             1f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
@@ -436,7 +436,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
             transitionBackgroundProgress = 0.16f,
         )
-        assertEquals(1f, returnReveal.alpha, 0.001f)
+        assertEquals(0f, returnReveal.alpha, 0.001f)
         assertEquals(0f, returnReveal.translationProgress, 0.001f)
 
         val landed = resolveHorizontalCardChromeMotionFrame(
