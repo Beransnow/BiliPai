@@ -1091,7 +1091,9 @@ private fun LyricsPrimaryControls(
         shape = shape,
         modifier = Modifier.fillMaxWidth(),
         backdrop = miuixBackdrop,
-        liquidGlassEffectsEnabled = glassEnabled
+        liquidGlassEffectsEnabled = glassEnabled,
+        // 这是歌词页的独立浮动面板，不是贴边整壳底栏；lens 的扩张采样会破坏圆角外轮廓。
+        drawShellLens = false,
     ) {
         Column(
             modifier = Modifier
