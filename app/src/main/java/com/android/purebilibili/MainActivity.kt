@@ -91,6 +91,7 @@ import com.android.purebilibili.feature.plugin.EyeProtectionOverlay
 import com.android.purebilibili.feature.settings.AppUpdateAutoCheckGate
 import com.android.purebilibili.feature.settings.AppUpdateCheckResult
 import com.android.purebilibili.feature.settings.AppUpdateChecker
+import com.android.purebilibili.feature.settings.AppUpdateDialogHost
 import com.android.purebilibili.feature.settings.AppUpdateDownloadState
 import com.android.purebilibili.feature.settings.AppUpdateDownloadStatus
 import com.android.purebilibili.feature.settings.AppUpdateInstallAction
@@ -1100,6 +1101,7 @@ open class MainActivity : AppCompatActivity() {
             val uriHandler = LocalUriHandler.current
             val scope = rememberCoroutineScope()
             var startupUpdateCheckResult by remember { mutableStateOf<AppUpdateCheckResult?>(null) }
+            // Legacy state remains only for the retired in-place dialog path below.
             var startupUpdateDownloadState by remember { mutableStateOf(AppUpdateDownloadState()) }
             var pendingCrashSnapshotPath by remember {
                 mutableStateOf(Logger.getPendingCrashSnapshotPath(context))
@@ -1724,6 +1726,14 @@ open class MainActivity : AppCompatActivity() {
                     )
 
                     startupUpdateCheckResult?.let { info ->
+                        AppUpdateDialogHost(
+                            update = info,
+                            onDismissRequest = { startupUpdateCheckResult = null },
+                        )
+                    }
+
+                    if (false) {
+                    startupUpdateCheckResult?.let { info ->
                         val resolvedReleaseNotes = remember(info.releaseNotes) {
                             resolveUpdateReleaseNotesText(info.releaseNotes)
                         }
@@ -1801,6 +1811,7 @@ open class MainActivity : AppCompatActivity() {
                                         Spacer(modifier = Modifier.height(6.dp))
                                         Text(
                                             text = when (startupUpdateDownloadState.status) {
+                                                AppUpdateDownloadStatus.QUEUED -> "等待网络后开始下载"
                                                 AppUpdateDownloadStatus.DOWNLOADING ->
                                                     "下载中 ${(startupUpdateDownloadState.progress * 100).toInt()}%"
                                                 AppUpdateDownloadStatus.COMPLETED -> "下载完成，正在准备安装"
@@ -1888,6 +1899,7 @@ open class MainActivity : AppCompatActivity() {
                                 }) { Text("稍后") }
                             }
                         )
+                    }
                     }
 
                     if (
