@@ -69,6 +69,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -185,6 +186,7 @@ fun SpaceScreen(
     val dynamicInteractionViewModel: DynamicViewModel = viewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val likedDynamics by dynamicInteractionViewModel.likedDynamics.collectAsStateWithLifecycle()
+    val forwardCountDeltas = remember { mutableStateMapOf<String, Int>() }
     val followGroupDialogVisible by viewModel.followGroupDialogVisible.collectAsStateWithLifecycle()
     val followGroupTags by viewModel.followGroupTags.collectAsStateWithLifecycle()
     val followGroupSelectedTagIds by viewModel.followGroupSelectedTagIds.collectAsStateWithLifecycle()
@@ -467,6 +469,7 @@ fun SpaceScreen(
                             onAvatarClick = { showAvatarPreview = true },
                             dynamicCardItems = dynamicCardItems,
                             likedDynamics = likedDynamics,
+                            forwardCountDeltas = forwardCountDeltas,
                             onSpaceDynamicCommentClick = dynamicInteractionViewModel::openCommentSheet,
                             onSpaceDynamicRepostClick = { repostDynamicId = it },
                             onSpaceDynamicLikeClick = { dynamicId ->
@@ -544,7 +547,10 @@ fun SpaceScreen(
                         message,
                         android.widget.Toast.LENGTH_SHORT
                     ).show()
-                    if (success) repostDynamicId = null
+                    if (success) {
+                        forwardCountDeltas[dynamicId] = (forwardCountDeltas[dynamicId] ?: 0) + 1
+                        repostDynamicId = null
+                    }
                     onComplete(success)
                 }
             }
@@ -786,6 +792,7 @@ private fun SpaceContent(
     onAvatarClick: () -> Unit,
     dynamicCardItems: List<com.android.purebilibili.data.model.response.DynamicItem>,
     likedDynamics: Set<String>,
+    forwardCountDeltas: Map<String, Int>,
     onSpaceDynamicCommentClick: (com.android.purebilibili.data.model.response.DynamicItem) -> Unit,
     onSpaceDynamicRepostClick: (String) -> Unit,
     onSpaceDynamicLikeClick: (String) -> Unit,
@@ -1385,7 +1392,8 @@ private fun SpaceContent(
                             onRepostClick = onSpaceDynamicRepostClick,
                             onLikeClick = onSpaceDynamicLikeClick,
                             onDeleteClick = onSpaceDynamicDeleteClick,
-                            isLiked = likedDynamics.contains(dynamic.id_str)
+                            isLiked = likedDynamics.contains(dynamic.id_str),
+                            forwardCountDelta = forwardCountDeltas[dynamic.id_str] ?: 0
                         )
                     }
 

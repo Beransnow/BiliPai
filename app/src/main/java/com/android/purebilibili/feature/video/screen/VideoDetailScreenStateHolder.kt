@@ -1980,7 +1980,9 @@ internal fun VideoDetailScreenStateHolder(
             isVerticalVideo = isVerticalVideo,
             isPortraitFullscreen = isPortraitFullscreen,
             currentRequestedOrientation = activity?.requestedOrientation,
-            isInMultiWindowMode = isActivityInMultiWindowMode
+            isInMultiWindowMode = isActivityInMultiWindowMode,
+            preferPortraitForExpandedScreen =
+                windowSizeClass.isExpandedScreen && !windowSizeClass.isCompactDevice
         ) ?: return@LaunchedEffect
 
         if (activity?.requestedOrientation != requestedOrientation) {

@@ -1508,6 +1508,15 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
                         )
                     )
                 if (response.code == 0) {
+                    val currentState = mapDynamicTimelineItems(_uiState.value) { items ->
+                        applyDynamicForwardCountIncrement(items, dynamicId)
+                    }
+                    _uiState.value = currentState.copy(
+                        userItems = applyDynamicForwardCountIncrement(
+                            items = currentState.userItems,
+                            dynamicId = dynamicId
+                        ).toImmutableList()
+                    )
                     onResult(true, "转发成功")
                 } else {
                     onResult(false, response.message.ifBlank { "转发失败" })

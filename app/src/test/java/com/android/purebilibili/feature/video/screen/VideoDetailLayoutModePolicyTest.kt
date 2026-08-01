@@ -374,6 +374,21 @@ class VideoDetailLayoutModePolicyTest {
     }
 
     @Test
+    fun phoneOrientationPolicy_expandedScreenDefaultsAutoFullscreenToPortrait() {
+        assertEquals(
+            ActivityInfo.SCREEN_ORIENTATION_PORTRAIT,
+            resolvePhoneVideoRequestedOrientation(
+                autoRotateEnabled = true,
+                fullscreenMode = FullscreenMode.AUTO,
+                isCompactDevice = false,
+                isOrientationDrivenFullscreen = false,
+                isFullscreenMode = true,
+                preferPortraitForExpandedScreen = true
+            )
+        )
+    }
+
+    @Test
     fun phoneOrientationPolicy_autoRotateEnabled_defaultsToPortraitUntilSensorRequestsLandscape() {
         assertEquals(
             ActivityInfo.SCREEN_ORIENTATION_PORTRAIT,

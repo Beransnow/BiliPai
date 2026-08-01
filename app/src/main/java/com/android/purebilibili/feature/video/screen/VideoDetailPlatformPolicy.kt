@@ -458,14 +458,15 @@ internal fun shouldApplyStartFullscreenOrientationRequest(
 
 internal fun resolvePhoneFullscreenEnterOrientation(
     fullscreenMode: com.android.purebilibili.core.store.FullscreenMode,
-    isVerticalVideo: Boolean
+    isVerticalVideo: Boolean,
+    preferPortraitForExpandedScreen: Boolean = false
 ): Int? {
     return when (fullscreenMode) {
         com.android.purebilibili.core.store.FullscreenMode.NONE -> null
         com.android.purebilibili.core.store.FullscreenMode.VERTICAL -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         com.android.purebilibili.core.store.FullscreenMode.HORIZONTAL -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
         com.android.purebilibili.core.store.FullscreenMode.AUTO -> {
-            if (isVerticalVideo) ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            if (isVerticalVideo || preferPortraitForExpandedScreen) ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             else ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
         }
     }
@@ -522,7 +523,8 @@ internal fun resolvePhoneVideoRequestedOrientation(
     isVerticalVideo: Boolean = false,
     isPortraitFullscreen: Boolean = false,
     currentRequestedOrientation: Int? = null,
-    isInMultiWindowMode: Boolean = false
+    isInMultiWindowMode: Boolean = false,
+    preferPortraitForExpandedScreen: Boolean = false
 ): Int? {
     if (isInMultiWindowMode) {
         return null
@@ -535,7 +537,8 @@ internal fun resolvePhoneVideoRequestedOrientation(
         return if (isFullscreenMode || manualFullscreenRequested) {
             resolvePhoneFullscreenEnterOrientation(
                 fullscreenMode = fullscreenMode,
-                isVerticalVideo = isVerticalVideo
+                isVerticalVideo = isVerticalVideo,
+                preferPortraitForExpandedScreen = preferPortraitForExpandedScreen
             )
         } else {
             ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
@@ -563,7 +566,8 @@ internal fun resolvePhoneVideoRequestedOrientation(
             manualFullscreenRequested -> {
                 resolvePhoneFullscreenEnterOrientation(
                     fullscreenMode = fullscreenMode,
-                    isVerticalVideo = isVerticalVideo
+                    isVerticalVideo = isVerticalVideo,
+                    preferPortraitForExpandedScreen = preferPortraitForExpandedScreen
                 ) ?: ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
             }
             isFullscreenMode -> resolveCurrentExactLandscapeOrientation(currentRequestedOrientation)
@@ -577,7 +581,8 @@ internal fun resolvePhoneVideoRequestedOrientation(
     return if (isFullscreenMode) {
         resolvePhoneFullscreenEnterOrientation(
             fullscreenMode = fullscreenMode,
-            isVerticalVideo = isVerticalVideo
+            isVerticalVideo = isVerticalVideo,
+            preferPortraitForExpandedScreen = preferPortraitForExpandedScreen
         ) ?: ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
     } else {
         ActivityInfo.SCREEN_ORIENTATION_PORTRAIT

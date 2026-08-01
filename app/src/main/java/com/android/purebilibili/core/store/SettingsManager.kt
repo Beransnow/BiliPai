@@ -1996,31 +1996,24 @@ object SettingsManager {
             )
         }
 
-    suspend fun setMd3ColorSource(context: Context, source: Md3ColorSource) {
-        context.settingsDataStore.edit { preferences ->
-            preferences[KEY_MD3_COLOR_SOURCE] = source.name
-            // 保持旧 key 同步，避免旧入口或导入旧配置时出现来源状态不一致。
-            preferences[KEY_DYNAMIC_COLOR] = source == Md3ColorSource.FOLLOW_WALLPAPER
-        }
+    suspend fun setMd3ColorSource(context: Context, source: Md3ColorSource) = context.settingsDataStore.edit { preferences ->
+        preferences[KEY_MD3_COLOR_SOURCE] = source.name
+        // 保持旧 key 同步，避免旧入口或导入旧配置时出现来源状态不一致。
+        preferences[KEY_DYNAMIC_COLOR] = source == Md3ColorSource.FOLLOW_WALLPAPER
     }
 
-    fun getMd3CustomColorHex(context: Context): Flow<String> = context.settingsDataStore.data
-        .map { preferences -> normalizeMd3CustomColorHex(preferences[KEY_MD3_CUSTOM_COLOR_HEX]) }
-
-    suspend fun setMd3CustomColorHex(context: Context, hex: String) {
-        context.settingsDataStore.edit { preferences ->
-            preferences[KEY_MD3_CUSTOM_COLOR_HEX] = normalizeMd3CustomColorHex(hex)
-        }
+    fun getMd3CustomColorHex(context: Context): Flow<String> = context.settingsDataStore.data.map {
+        normalizeMd3CustomColorHex(it[KEY_MD3_CUSTOM_COLOR_HEX])
     }
 
-    /** Atomically stores a custom seed and switches MD3 away from the wallpaper palette. */
-    suspend fun applyMd3CustomColor(context: Context, hex: String) {
-        val normalizedHex = normalizeMd3CustomColorHex(hex)
-        context.settingsDataStore.edit { preferences ->
-            preferences[KEY_MD3_COLOR_SOURCE] = Md3ColorSource.CUSTOM.name
-            preferences[KEY_DYNAMIC_COLOR] = false
-            preferences[KEY_MD3_CUSTOM_COLOR_HEX] = normalizedHex
-        }
+    suspend fun setMd3CustomColorHex(context: Context, hex: String) = context.settingsDataStore.edit { preferences ->
+        preferences[KEY_MD3_CUSTOM_COLOR_HEX] = normalizeMd3CustomColorHex(hex)
+    }
+
+    suspend fun applyMd3CustomColor(context: Context, hex: String) = context.settingsDataStore.edit { preferences ->
+        preferences[KEY_MD3_COLOR_SOURCE] = Md3ColorSource.CUSTOM.name
+        preferences[KEY_DYNAMIC_COLOR] = false
+        preferences[KEY_MD3_CUSTOM_COLOR_HEX] = normalizeMd3CustomColorHex(hex)
     }
 
     fun getThemeRoleOverrides(context: Context): Flow<ThemeRoleOverrides> =
