@@ -1,5 +1,6 @@
 package com.android.purebilibili.feature.video.ui.components
 
+import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -44,8 +45,12 @@ import com.android.purebilibili.core.ui.rememberAppCoinIcon
 import com.android.purebilibili.core.ui.rememberAppLikeFilledIcon
 import com.android.purebilibili.core.ui.rememberAppLikeIcon
 import com.android.purebilibili.core.ui.rememberAppShareIcon
+import com.android.purebilibili.core.ui.blur.hazeEffectCompat
+import com.android.purebilibili.core.ui.blur.shouldAllowRuntimeShaderBackedHazeEffect
 import com.android.purebilibili.feature.home.components.BottomBarMatchedReusableLiquidDock
 import com.android.purebilibili.feature.home.components.resolveSharedBottomBarCapsuleShape
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.blur.materials.HazeMaterials
 import top.yukonga.miuix.kmp.blur.Backdrop
 
 internal const val BOTTOM_INPUT_BAR_PLACEHOLDER_MIN_CONTRAST = 4.5f
@@ -72,6 +77,18 @@ internal fun shouldUseFloatingLiquidBottomInputBar(
     androidNativeLiquidGlassEnabled: Boolean
 ): Boolean = resolveGlobalLiquidGlassReuseEnabled(androidNativeLiquidGlassEnabled)
 
+/** The comment bar follows the bottom-bar blur preference when liquid glass is not active. */
+internal fun shouldUseFrostedBottomInputBar(
+    bottomBarBlurEnabled: Boolean,
+    floatingLiquidGlass: Boolean,
+    hasHazeState: Boolean,
+    sdkInt: Int
+): Boolean =
+    bottomBarBlurEnabled &&
+        !floatingLiquidGlass &&
+        hasHazeState &&
+        shouldAllowRuntimeShaderBackedHazeEffect(sdkInt)
+
 internal fun resolveBottomInputBarContentBottomPadding(
     showBar: Boolean,
     floatingLiquidGlass: Boolean,
@@ -95,6 +112,7 @@ fun BottomInputBar(
     onShareClick: () -> Unit,
     onCommentClick: () -> Unit,
     backdrop: Backdrop? = null,
+    hazeState: HazeState? = null,
     isScrollInProgressProvider: () -> Boolean = { false },
 ) {
     val context = LocalContext.current
@@ -103,6 +121,12 @@ fun BottomInputBar(
         .collectAsStateWithLifecycle(initialValue = HomeSettings())
     val floatingLiquidGlass = shouldUseFloatingLiquidBottomInputBar(
         androidNativeLiquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled
+    )
+    val frostedBottomBar = shouldUseFrostedBottomInputBar(
+        bottomBarBlurEnabled = homeSettings.isBottomBarBlurEnabled,
+        floatingLiquidGlass = floatingLiquidGlass,
+        hasHazeState = hazeState != null,
+        sdkInt = Build.VERSION.SDK_INT
     )
 
     if (floatingLiquidGlass) {
@@ -122,6 +146,8 @@ fun BottomInputBar(
     } else {
         DockedSolidBottomInputBar(
             modifier = modifier,
+            hazeState = hazeState,
+            frostedBottomBar = frostedBottomBar,
             isLiked = isLiked,
             isFavorited = isFavorited,
             isCoined = isCoined,
@@ -137,6 +163,8 @@ fun BottomInputBar(
 @Composable
 private fun DockedSolidBottomInputBar(
     modifier: Modifier,
+    hazeState: HazeState?,
+    frostedBottomBar: Boolean,
     isLiked: Boolean,
     isFavorited: Boolean,
     isCoined: Boolean,
@@ -154,10 +182,23 @@ private fun DockedSolidBottomInputBar(
     )
 
     AppSurface(
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 8.dp,
-        shadowElevation = 8.dp,
-        modifier = modifier.fillMaxWidth()
+        color = MaterialTheme.colorScheme.surface.copy(
+            alpha = if (frostedBottomBar) 0.76f else 1f
+        ),
+        tonalElevation = if (frostedBottomBar) 0.dp else 8.dp,
+        shadowElevation = if (frostedBottomBar) 0.dp else 8.dp,
+        modifier = modifier
+            .fillMaxWidth()
+            .then(
+                if (frostedBottomBar && hazeState != null) {
+                    Modifier.hazeEffectCompat(
+                        state = hazeState,
+                        style = HazeMaterials.ultraThin()
+                    )
+                } else {
+                    Modifier
+                }
+            )
     ) {
         BottomInputBarContentRow(
             modifier = Modifier

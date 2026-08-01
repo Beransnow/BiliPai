@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 class BottomInputBarStructureTest {
 
     @Test
-    fun bottomInputBar_keepsSolidDockedPathWhenLiquidReuseOff() {
+    fun bottomInputBar_keepsSolidDockedPathWhenLiquidReuseAndBlurAreOff() {
         val source = File("src/main/java/com/android/purebilibili/feature/video/ui/components/BottomInputBar.kt")
             .readText()
 
@@ -50,6 +50,42 @@ class BottomInputBarStructureTest {
     fun floatingLiquidGate_followsGlobalReuseMasterOnly() {
         assertTrue(shouldUseFloatingLiquidBottomInputBar(androidNativeLiquidGlassEnabled = true))
         assertFalse(shouldUseFloatingLiquidBottomInputBar(androidNativeLiquidGlassEnabled = false))
+    }
+
+    @Test
+    fun frostedCommentBar_followsBottomBarBlurPreferenceWhenLiquidGlassIsOff() {
+        assertTrue(
+            shouldUseFrostedBottomInputBar(
+                bottomBarBlurEnabled = true,
+                floatingLiquidGlass = false,
+                hasHazeState = true,
+                sdkInt = 33
+            )
+        )
+        assertFalse(
+            shouldUseFrostedBottomInputBar(
+                bottomBarBlurEnabled = false,
+                floatingLiquidGlass = false,
+                hasHazeState = true,
+                sdkInt = 33
+            )
+        )
+        assertFalse(
+            shouldUseFrostedBottomInputBar(
+                bottomBarBlurEnabled = true,
+                floatingLiquidGlass = true,
+                hasHazeState = true,
+                sdkInt = 33
+            )
+        )
+        assertFalse(
+            shouldUseFrostedBottomInputBar(
+                bottomBarBlurEnabled = true,
+                floatingLiquidGlass = false,
+                hasHazeState = false,
+                sdkInt = 33
+            )
+        )
     }
 
     @Test
