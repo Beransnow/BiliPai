@@ -1606,12 +1606,11 @@ internal fun VideoDetailScreenStateHolder(
             else -> 1f
         },
     )
-    // 次要内容：committed 时 Freeze；quick return 正文 alpha 直接 0 时可 Detach。
-    val returnSecondaryContentAlphaPreview = when {
-        !isCommittedCardReturn -> 1f
-        isQuickReturningFromDetail -> 0f
-        else -> 0.5f // Freeze，不 Detach，避免壳高度跳变
-    }
+    // 已提交返回时，播放器由 shared morph 接管；非共享正文立即让位，避免与来源卡标题叠层。
+    val returnSecondaryContentAlphaPreview =
+        resolveVideoDetailReturnSecondaryContentAlphaPreview(
+            isCommittedCardReturn = isCommittedCardReturn,
+        )
     val returnVisualBudget = resolveVideoDetailReturnVisualBudget(
         phase = returnSessionPhase,
         hasRenderableLiveFrame = hasRenderableLiveFrameForReturn,
