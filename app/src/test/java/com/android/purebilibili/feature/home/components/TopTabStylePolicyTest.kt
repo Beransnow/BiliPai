@@ -356,7 +356,7 @@ class TopTabStylePolicyTest {
     }
 
     @Test
-    fun `liquid top tab indicator stays below visible tab icons`() {
+    fun `liquid top tab glyphs switch below indicator while glass is moving`() {
         val source = sourceText("app/src/main/java/com/android/purebilibili/feature/home/components/TopBar.kt")
         val visibleTabsBlock = source
             .substringAfter("LazyRow(\n                    state = listState,")
@@ -365,7 +365,8 @@ class TopTabStylePolicyTest {
             .substringAfter("// Keep the indicator between its capture layer")
             .substringBefore("} // shared panel-offset group")
 
-        assertTrue(visibleTabsBlock.contains(".zIndex(2f)"))
+        assertTrue(source.contains("val topTabVisibleContentZIndex = if (useTopTabGlassColorPath) 0f else 2f"))
+        assertTrue(visibleTabsBlock.contains(".zIndex(topTabVisibleContentZIndex)"))
         assertTrue(indicatorLayerBlock.contains(".zIndex(1f)"))
     }
 

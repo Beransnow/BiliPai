@@ -1301,6 +1301,7 @@ private fun LightweightHomeTopTabs(
             liquidGlassEnabled = shouldUseLiquidGlassIndicator,
             lensProgress = topTabLensProgress
         )
+        val topTabVisibleContentZIndex = if (useTopTabGlassColorPath) 0f else 2f
         val topTabThemeColor = MaterialTheme.colorScheme.primary
         val topTabExportTintColor = resolveAndroidNativeExportTintColor(
             themeColor = topTabThemeColor,
@@ -1547,10 +1548,10 @@ private fun LightweightHomeTopTabs(
                     state = listState,
                     modifier = Modifier
                         .fillMaxSize()
-                        // The visible glyphs must stay above the liquid indicator. Its
-                        // backdrop capture remains below both layers, so the indicator can
-                        // still refract the dock without covering the selected icon.
-                        .zIndex(2f),
+                        // At rest, keep glyphs visible above the idle capsule. During the
+                        // glass motion path they must sit below it, so exported tint moves
+                        // with the indicator instead of leaving the old glyph color on top.
+                        .zIndex(topTabVisibleContentZIndex),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Start,
                     contentPadding = topTabContentPadding
