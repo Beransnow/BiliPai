@@ -96,6 +96,7 @@ import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.android.purebilibili.core.store.TabletCommentPanelWidthPreset
 import com.android.purebilibili.core.ui.transition.VIDEO_SHARED_COVER_ASPECT_RATIO
+import com.android.purebilibili.core.ui.transition.resolveVideoSharedTransitionSourceCornerDp
 import com.android.purebilibili.core.ui.transition.shouldEnableVideoCoverSharedTransition
 import com.android.purebilibili.core.util.ShareUtils
 import com.android.purebilibili.data.model.response.BgmInfo
@@ -424,6 +425,10 @@ private fun CinemaStagePlayer(
     val success = uiState as? VideoPlaybackUiState.Success
     val sharedTransitionScope = LocalSharedTransitionScope.current
     val animatedVisibilityScope = LocalAnimatedVisibilityScope.current
+    val sourceRoute = LocalVideoCardSharedElementSourceRoute.current
+    val sharedCoverShape = remember(sourceRoute) {
+        RoundedCornerShape(resolveVideoSharedTransitionSourceCornerDp(sourceRoute).dp)
+    }
     val playerContainerModifier = if (
         shouldEnableVideoCoverSharedTransition(
             transitionEnabled = transitionEnabled,
@@ -437,9 +442,7 @@ private fun CinemaStagePlayer(
                 animatedVisibilityScope = requireNotNull(animatedVisibilityScope),
                 resizeMode = com.android.purebilibili.core.ui.transition
                     .resolveVideoCardSharedBoundsResizeMode(),
-                clipInOverlayDuringTransition = OverlayClip(
-                    RoundedCornerShape(12.dp)
-                )
+                clipInOverlayDuringTransition = OverlayClip(sharedCoverShape)
             )
         }
     } else {
