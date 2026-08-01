@@ -50,9 +50,9 @@ class VideoContentTabBarPolicyTest {
         val policy = resolveVideoContentTabBarDanmakuActionLayoutPolicy(widthDp = 412)
 
         assertEquals("发弹幕", policy.sendLabel)
-        assertEquals(36, policy.secondaryControlHeightDp)
+        assertEquals(40, policy.secondaryControlHeightDp)
         assertEquals(20, policy.secondaryControlCornerRadiusDp)
-        assertEquals(36, policy.settingsButtonSizeDp)
+        assertEquals(40, policy.settingsButtonSizeDp)
         assertEquals(18, policy.settingsIconSizeDp)
     }
 
@@ -73,10 +73,23 @@ class VideoContentTabBarPolicyTest {
             )
         )
         assertEquals("发弹幕", policy.sendLabel)
-        assertEquals(36, policy.secondaryControlHeightDp)
+        assertEquals(40, policy.secondaryControlHeightDp)
         assertEquals(20, policy.secondaryControlCornerRadiusDp)
-        assertEquals(36, policy.settingsButtonSizeDp)
+        assertEquals(40, policy.settingsButtonSizeDp)
         assertEquals(18, policy.settingsIconSizeDp)
+    }
+
+    @Test
+    fun `danmaku action controls share the tab bar visual grid`() {
+        val compact = resolveVideoContentTabBarDanmakuActionLayoutPolicy(widthDp = 393)
+        val regular = resolveVideoContentTabBarDanmakuActionLayoutPolicy(widthDp = 412)
+
+        listOf(compact, regular).forEach { policy ->
+            assertEquals(40, policy.secondaryControlHeightDp)
+            assertEquals(policy.secondaryControlHeightDp, policy.settingsButtonSizeDp)
+            assertEquals(policy.toggleVerticalPaddingDp, policy.sendVerticalPaddingDp)
+            assertEquals(policy.toggleTextSizeSp, policy.sendTextSizeSp)
+        }
     }
 
     @Test

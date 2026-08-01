@@ -246,16 +246,16 @@ internal fun resolveVideoContentTabBarDanmakuActionLayoutPolicy(widthDp: Int): V
         VideoContentTabBarDanmakuActionLayoutPolicy(
             toggleIconSizeDp = 14,
             toggleHorizontalPaddingDp = 8,
-            toggleVerticalPaddingDp = 5,
-            toggleTextSizeSp = 10,
+            toggleVerticalPaddingDp = 6,
+            toggleTextSizeSp = 11,
             toggleTrailingPaddingDp = 6,
             sendHorizontalPaddingDp = 10,
-            sendVerticalPaddingDp = 7,
+            sendVerticalPaddingDp = 6,
             sendTextSizeSp = 11,
             sendLabel = "发弹幕",
-            secondaryControlHeightDp = 36,
+            secondaryControlHeightDp = 40,
             secondaryControlCornerRadiusDp = AppChromeSizeTokens.CompactControlCornerRadiusDp,
-            settingsButtonSizeDp = 36,
+            settingsButtonSizeDp = 40,
             settingsIconSizeDp = 18,
             settingsLeadingPaddingDp = 4
         )
@@ -263,16 +263,16 @@ internal fun resolveVideoContentTabBarDanmakuActionLayoutPolicy(widthDp: Int): V
         VideoContentTabBarDanmakuActionLayoutPolicy(
             toggleIconSizeDp = 16,
             toggleHorizontalPaddingDp = 10,
-            toggleVerticalPaddingDp = 6,
-            toggleTextSizeSp = 11,
+            toggleVerticalPaddingDp = 8,
+            toggleTextSizeSp = 12,
             toggleTrailingPaddingDp = 8,
             sendHorizontalPaddingDp = 12,
             sendVerticalPaddingDp = 8,
             sendTextSizeSp = 12,
             sendLabel = "发弹幕",
-            secondaryControlHeightDp = 36,
+            secondaryControlHeightDp = 40,
             secondaryControlCornerRadiusDp = AppChromeSizeTokens.CompactControlCornerRadiusDp,
-            settingsButtonSizeDp = 36,
+            settingsButtonSizeDp = 40,
             settingsIconSizeDp = 18,
             settingsLeadingPaddingDp = 6
         )
