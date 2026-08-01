@@ -676,7 +676,7 @@ class ReplyComponentsPolicyTest {
         assertEquals(36, policy.avatarSizeDp)
         assertEquals(8, policy.avatarContentSpacingDp)
         assertEquals(40, policy.actionButtonSizeDp)
-        assertEquals(78, policy.decorationWidthReserveDp)
+        assertEquals(88, policy.decorationWidthReserveDp)
         assertEquals(56, policy.dividerStartPaddingDp)
         assertEquals(
             292,
@@ -747,6 +747,13 @@ class ReplyComponentsPolicyTest {
         assertEquals("CO.008502", resolveFanGroupLabelText("008502"))
         assertEquals("CO.008502", resolveFanGroupLabelText("8502"))
         assertEquals("", resolveFanGroupLabelText("abc"))
+    }
+
+    @Test
+    fun `fan group number keeps the API visible number for official no label`() {
+        assertEquals("008502", resolveFanGroupNumberText("8502"))
+        assertEquals("008502", resolveFanGroupNumberText("008502"))
+        assertEquals("", resolveFanGroupNumberText("abc"))
     }
 
     @Test
@@ -943,6 +950,8 @@ class ReplyComponentsPolicyTest {
 
         assertTrue(decorationSource.contains("contentScale = ContentScale.Fit"))
         assertFalse(decorationSource.contains("contentScale = ContentScale.Crop"))
+        assertTrue(decorationSource.contains(".transformations(TransparentBoundsCropTransformation)"))
+        assertTrue(decorationSource.contains("text = \"NO.\""))
         assertTrue(decorationSource.contains("layoutPolicy.decorationImageWidthDp.dp"))
         assertTrue(decorationSource.contains("layoutPolicy.decorationImageHeightDp.dp"))
     }

@@ -4,6 +4,7 @@ import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 
 import android.content.Intent
+import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
@@ -44,6 +45,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import coil.size.Size
+import coil.transform.Transformation
 import coil.imageLoader
 //  已改用 MaterialTheme.colorScheme.primary
 import com.android.purebilibili.core.store.SettingsManager
@@ -117,6 +120,42 @@ const val COMMENT_VIEW_ALL_REPLIES_TAG_PREFIX = "comment_view_all_replies_"
 
 private val replyVideoTitleCache = ConcurrentHashMap<String, String>()
 
+/**
+ * 官方 cardbg 经常是 972×162 的透明画布，实际角色图案只占其中一小部分。
+ * 在解码线程裁掉全透明边缘，才能以官方预期的视觉尺寸显示内容而不裁掉图案。
+ */
+private object TransparentBoundsCropTransformation : Transformation {
+    override val cacheKey: String = "comment_transparent_bounds_crop_v1"
+
+    override suspend fun transform(input: Bitmap, size: Size): Bitmap {
+        if (!input.hasAlpha()) return input
+
+        var left = input.width
+        var top = input.height
+        var right = -1
+        var bottom = -1
+        for (y in 0 until input.height) {
+            for (x in 0 until input.width) {
+                if ((input.getPixel(x, y) ushr 24) > 4) {
+                    left = minOf(left, x)
+                    top = minOf(top, y)
+                    right = maxOf(right, x)
+                    bottom = maxOf(bottom, y)
+                }
+            }
+        }
+        if (right < left || bottom < top) return input
+
+        val cropWidth = right - left + 1
+        val cropHeight = bottom - top + 1
+        return if (cropWidth == input.width && cropHeight == input.height) {
+            input
+        } else {
+            Bitmap.createBitmap(input, left, top, cropWidth, cropHeight)
+        }
+    }
+}
+
 internal data class ReplyItemLayoutPolicy(
     val horizontalPaddingDp: Int,
     val avatarSizeDp: Int,
@@ -139,10 +178,10 @@ internal fun resolveReplyItemLayoutPolicy(): ReplyItemLayoutPolicy {
         avatarSizeDp = 36,
         avatarContentSpacingDp = 8,
         actionButtonSizeDp = 40,
-        decorationWidthReserveDp = 78,
+        decorationWidthReserveDp = 88,
         decorationImageWidthDp = 64,
-        decorationImageHeightDp = 46,
-        decorationMinWidthDp = 78
+        decorationImageHeightDp = 52,
+        decorationMinWidthDp = 88
     )
 }
 
@@ -916,6 +955,11 @@ internal fun resolveFanGroupLabelText(fanNumber: String): String {
     val digits = fanNumber.filter(Char::isDigit)
     if (digits.isBlank()) return ""
     return "CO.${digits.padStart(6, '0')}"
+}
+
+internal fun resolveFanGroupNumberText(fanNumber: String): String {
+    val digits = fanNumber.filter(Char::isDigit)
+    return digits.takeIf { it.isNotBlank() }?.padStart(6, '0').orEmpty()
 }
 
 internal fun resolveFanGroupLabelTextColor(
@@ -2318,16 +2362,18 @@ internal fun FanGroupDecorationBadge(
     val layoutPolicy = remember { resolveReplyItemLayoutPolicy() }
     val primaryImageUrl = resolveDecorationImageUrl(visual.cardBgImageUrl)
 
-    val labelText = remember(visual.fanNumber) { resolveFanGroupLabelText(visual.fanNumber) }
-    if (labelText.isBlank() && primaryImageUrl.isBlank()) return
-    Box(
+    val fanNumberText = remember(visual.fanNumber) { resolveFanGroupNumberText(visual.fanNumber) }
+    if (fanNumberText.isBlank() && primaryImageUrl.isBlank()) return
+    Row(
         modifier = modifier.widthIn(min = layoutPolicy.decorationMinWidthDp.dp),
-        contentAlignment = Alignment.CenterEnd
+        horizontalArrangement = Arrangement.spacedBy(2.dp, Alignment.End),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         if (primaryImageUrl.isNotBlank()) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(primaryImageUrl)
+                    .transformations(TransparentBoundsCropTransformation)
                     .crossfade(true)
                     .build(),
                 contentDescription = "Fan group decoration",
@@ -2340,26 +2386,32 @@ internal fun FanGroupDecorationBadge(
                         height = layoutPolicy.decorationImageHeightDp.dp
                     )
             )
-        } else {
+        }
+        if (fanNumberText.isNotBlank()) {
             val textColor = resolveFanGroupLabelTextColor(
                 fanColorHex = visual.fanColorHex,
                 backgroundColor = MaterialTheme.colorScheme.surface,
                 fallbackColor = MaterialTheme.colorScheme.onSurface
             )
-            AppSurface(
-                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.88f),
-                shape = RoundedCornerShape(5.dp),
-                tonalElevation = 0.dp,
-                shadowElevation = 0.dp
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(0.dp)
             ) {
                 AppText(
-                    text = labelText,
-                    fontSize = 12.sp,
-                    lineHeight = 14.sp,
+                    text = "NO.",
+                    fontSize = 7.sp,
+                    lineHeight = 8.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = textColor,
-                    maxLines = 1,
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                    maxLines = 1
+                )
+                AppText(
+                    text = fanNumberText,
+                    fontSize = 8.sp,
+                    lineHeight = 9.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = textColor,
+                    maxLines = 1
                 )
             }
         }
