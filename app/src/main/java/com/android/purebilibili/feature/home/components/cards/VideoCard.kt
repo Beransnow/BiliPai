@@ -59,6 +59,8 @@ import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.rememberHapticFeedback
 import com.android.purebilibili.core.util.animateEnter
 import com.android.purebilibili.core.util.CardPositionManager
+import com.android.purebilibili.core.util.HomeCoverReturnPrefetchEntry
+import com.android.purebilibili.core.util.HomeCoverReturnPrefetchRegistry
 import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.core.theme.BiliPink
 import com.android.purebilibili.core.store.HomeCardBadgeEffectMode
@@ -536,6 +538,17 @@ internal fun ElegantVideoCard(
         coverCacheKey = cache
         coverUrl = url
         premiumBadgeLabel = badge
+    }
+    // 返回预热：组合即可见，上报 (bvid, url, cacheKey)，供详情返回时按同一 cacheKey
+    // prefetch，避免首页 scene 重建后封面重新解码造成落位闪变。
+    SideEffect {
+        HomeCoverReturnPrefetchRegistry.onCardVisible(
+            HomeCoverReturnPrefetchEntry(
+                bvid = video.bvid.trim(),
+                url = coverUrl,
+                cacheKey = coverCacheKey,
+            )
+        )
     }
     val onlineCount = rememberVideoCardOnlineCount(
         video = video,

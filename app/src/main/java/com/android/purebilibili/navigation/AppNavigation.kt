@@ -90,6 +90,9 @@ import com.android.purebilibili.feature.dynamic.LocalDynamicScrollChannel
 import com.android.purebilibili.feature.dynamic.components.ImagePreviewOverlayHost
 import com.android.purebilibili.feature.live.shouldStopLivePlaybackOnRouteDispose
 import com.android.purebilibili.core.util.CardPositionManager
+import com.android.purebilibili.core.util.HomeCoverReturnPrefetchRegistry
+import com.android.purebilibili.core.util.prefetchHomeCoverImages
+import com.android.purebilibili.core.util.resolveHomeCoverReturnPrefetchCandidates
 import com.android.purebilibili.core.util.BilibiliNavigationTarget
 import com.android.purebilibili.core.util.BilibiliNavigationTargetParser
 import com.android.purebilibili.resolveShortcutRoute
@@ -1077,8 +1080,29 @@ fun AppNavigation(
             )
         }
         val predictiveBackEnabled = appNavigationSettings.predictiveBackEnabled
-        val predictiveBackAnimationStyle = BiliPaiPredictiveBackAnimationStyle.DEFAULT
-        val predictiveBackExitDirection = "auto"
+        // 返回封面预热：每次进入详情(栈顶 key 变化)重置一次，预测手势首帧 / 返回提交
+        // 各触发一次。Coil 对相同 cacheKey 幂等，重复调用无网络开销。
+        val homeCoverPrefetchTriggered = remember(currentNavigation3Key) {
+            mutableStateOf(false)
+        }
+        fun maybePrefetchHomeCoversForVideoReturn() {
+            if (homeCoverPrefetchTriggered.value) return
+            homeCoverPrefetchTriggered.value = true
+            val sourceBvid = (currentNavigation3Key as? BiliPaiNavKey.VideoDetail)?.bvid
+            val candidates = resolveHomeCoverReturnPrefetchCandidates(
+                visibleEntries = HomeCoverReturnPrefetchRegistry.snapshot(),
+                sourceBvid = sourceBvid,
+            )
+            prefetchHomeCoverImages(context = context, entries = candidates)
+        }
+        // 预测返回样式/方向从设置读取。style 为 legacy 存储值(默认 "scale"),
+        // 经 fromStorageValue 归一化后由策略层按 routeTransition 分发,不再改变 handler 选择;
+        // exitDirection 默认 "auto" 时走 autoDerived(卡片来源方向),显式值(follow_gesture /
+        // always_left / always_right)直接覆盖。
+        val predictiveBackAnimationStyle = BiliPaiPredictiveBackAnimationStyle.fromStorageValue(
+            appNavigationSettings.predictiveBackAnimationStyle,
+        )
+        val predictiveBackExitDirection = appNavigationSettings.predictiveBackExitDirection
         val shouldInterceptTabBack = backGestureDecision.interceptSystemBack
         val isVideoDetailDestination = isVideoDetailRoute(currentRoute)
         val bottomBarMountRoute = if (isVideoDetailDestination) {
@@ -3133,6 +3157,12 @@ fun AppNavigation(
                     sourceMetadata = navigation3SourceMetadata,
                     programmaticBackDispatcher = navigation3ProgrammaticBackDispatcher,
                     onBack = { performSystemBackAction() },
+                    onNativeVideoBackProgress = { _, _, progress ->
+                        // 手势首帧即预热首页封面，为松手落位争取网络/磁盘加载时间。
+                        if (progress > 0f) {
+                            maybePrefetchHomeCoversForVideoReturn()
+                        }
+                    },
                     onNativeVideoBackCancelled = { currentKey, targetKey ->
                         if (shouldRecoverVideoPlayerAfterBackCancellation(currentKey, targetKey)) {
                             predictiveBackCancelRecoveryGeneration += 1
@@ -3142,6 +3172,8 @@ fun AppNavigation(
                     // 预测返回始终预览实时画面（一镜到底）；不再提供「封面整体落位」开关。
                     preferWholeCardReturn = false,
                     onPrepareVideoCardSharedReturn = {
+                        // 普通返回(顶部按钮/系统手势提交)兜底预热。
+                        maybePrefetchHomeCoversForVideoReturn()
                         val previousKey =
                             navigation3BackStack.getOrNull(navigation3BackStack.lastIndex - 1)
                         markNavigation3VideoReturnBeforeBackAction(targetKey = previousKey)
