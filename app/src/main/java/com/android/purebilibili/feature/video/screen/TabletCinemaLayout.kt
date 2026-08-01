@@ -1060,7 +1060,11 @@ private fun CinemaSideCurtain(
 
                             HorizontalPager(
                                 state = pagerState,
-                                userScrollEnabled = true,
+                                userScrollEnabled = shouldEnableVideoContentHorizontalPagerSwipe(
+                                    currentPage = pagerState.currentPage,
+                                    commentPageIndex = 0,
+                                    isPagerScrollInProgress = pagerState.isScrollInProgress,
+                                ),
                                 modifier = Modifier.fillMaxSize()
                             ) { page ->
                                 when {

@@ -511,7 +511,11 @@ private fun TabletSecondaryContent(
         
         HorizontalPager(
             state = pagerState,
-            userScrollEnabled = true,
+            userScrollEnabled = shouldEnableVideoContentHorizontalPagerSwipe(
+                currentPage = pagerState.currentPage,
+                commentPageIndex = 0,
+                isPagerScrollInProgress = pagerState.isScrollInProgress,
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
