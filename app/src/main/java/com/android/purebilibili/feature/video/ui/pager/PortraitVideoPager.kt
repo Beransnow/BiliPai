@@ -122,6 +122,7 @@ import com.android.purebilibili.core.store.PlaybackCompletionBehavior
 import com.android.purebilibili.core.store.PortraitDanmakuDisplayAreaMode
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.TokenManager
+import com.android.purebilibili.core.store.player.PlayerSettingsStore
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.repository.VideoRepository
 import com.android.purebilibili.data.model.response.Dash
@@ -384,11 +385,11 @@ fun PortraitVideoPager(
         resolvePortraitQualityLabel(portraitDisplayedQuality)
     }
     val portraitInitialRememberedAudioQuality = remember(context) {
-        SettingsManager.getAudioQualitySync(context)
+        PlayerSettingsStore.getCachedLastSelectedAudioQuality(context)
     }
     val portraitInitialAudioQuality = remember(context, portraitInitialRememberedAudioQuality) {
         resolveRequestedAudioQuality(
-            defaultAudioQuality = SettingsManager.getDefaultAudioQualitySync(context),
+            defaultAudioQuality = PlayerSettingsStore.getCachedDefaultAudioQuality(context),
             rememberedAudioQuality = portraitInitialRememberedAudioQuality
         )
     }
@@ -895,7 +896,7 @@ fun PortraitVideoPager(
             portraitRequestedAudioQuality
         } else {
             resolveRequestedAudioQuality(
-                defaultAudioQuality = SettingsManager.getDefaultAudioQualitySync(context),
+                defaultAudioQuality = PlayerSettingsStore.getCachedDefaultAudioQuality(context),
                 rememberedAudioQuality = portraitRememberedAudioQuality
             )
         }
