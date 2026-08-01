@@ -4385,6 +4385,7 @@ fun VideoPlayerSection(
                 //  [关键] 传入设置状态和调试信息
                 insightMode = playerInsightMode,
                 debugInfo = debugInfo,
+                playerViewportSize = measuredPlayerViewportSize,
                 diagnosticEvents = diagnosticEvents,
                 pendingUserAction = pendingUserAction,
                 hasPendingSeekResume = sharedSeekSession.pendingSeekPositionMs != null,
