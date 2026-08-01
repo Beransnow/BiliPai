@@ -40,6 +40,24 @@ internal fun resolveBottomControlBarBottomPaddingDp(
     }
 }
 
+/**
+ * Keeps the inline player's scrubber anchored to the video edge when its status bar is hidden.
+ *
+ * In that immersive detail-page state the portrait chrome has less vertical space, so placing
+ * the progress bar above the controls makes it appear in the middle of the video frame.
+ */
+internal fun resolveVideoDetailProgressPlacement(
+    requestedPlacement: PlayerProgressPlacement,
+    isFullscreen: Boolean,
+    isStatusBarVisible: Boolean
+): PlayerProgressPlacement {
+    return if (!isFullscreen && !isStatusBarVisible) {
+        PlayerProgressPlacement.BOTTOM_EDGE
+    } else {
+        requestedPlacement
+    }
+}
+
 fun resolveBottomControlBarLayoutPolicy(
     widthDp: Int
 ): BottomControlBarLayoutPolicy {

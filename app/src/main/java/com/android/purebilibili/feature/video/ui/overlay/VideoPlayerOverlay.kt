@@ -991,6 +991,17 @@ fun VideoPlayerOverlay(
         isScreenActive = true,
         isPortraitFullscreen = false,
     ).hideStatusBars
+    val effectiveProgressPlacement = remember(
+        progressPlacement,
+        isFullscreen,
+        playerChromeStatusBarVisible
+    ) {
+        resolveVideoDetailProgressPlacement(
+            requestedPlacement = progressPlacement,
+            isFullscreen = isFullscreen,
+            isStatusBarVisible = playerChromeStatusBarVisible
+        )
+    }
 
     DisposableEffect(player) {
         currentSpeed = player.playbackParameters.speed
@@ -1499,7 +1510,7 @@ fun VideoPlayerOverlay(
                         compact = !isFullscreen
                     ),
                     onPlaybackOrderClick = { showPlaybackOrderSheet = true },
-                    progressPlacement = progressPlacement
+                    progressPlacement = effectiveProgressPlacement
                 )
                 }
             }
