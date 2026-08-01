@@ -25,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect // 新增
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -662,15 +663,31 @@ fun AppNavigation(
             cardFullyVisible = CardPositionManager.isCardFullyVisible,
             isSingleColumnCard = CardPositionManager.isSingleColumnCard,
         )
+        var lastVideoDetailOpenId by remember { mutableLongStateOf(0L) }
         fun pushNavigation3KeyDirect(key: BiliPaiNavKey) {
-            navigation3BackStack = when (key) {
+            val sessionScopedKey = when (key) {
+                is BiliPaiNavKey.VideoDetail -> {
+                    if (key.openId > 0L) {
+                        key
+                    } else {
+                        val nextOpenId = maxOf(
+                            SystemClock.uptimeMillis(),
+                            lastVideoDetailOpenId + 1L,
+                        )
+                        lastVideoDetailOpenId = nextOpenId
+                        key.copy(openId = nextOpenId)
+                    }
+                }
+                else -> key
+            }
+            navigation3BackStack = when (sessionScopedKey) {
                 is BiliPaiNavKey.SettingsCategory -> pushOrReplaceSettingsCategoryNavKey(
                     currentStack = navigation3BackStack,
-                    key = key,
+                    key = sessionScopedKey,
                 )
                 else -> pushBiliPaiNavKey(
                     currentStack = navigation3BackStack,
-                    key = key,
+                    key = sessionScopedKey,
                 )
             }
         }
