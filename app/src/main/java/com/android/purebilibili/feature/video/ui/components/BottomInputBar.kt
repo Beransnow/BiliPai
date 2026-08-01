@@ -1,6 +1,5 @@
 package com.android.purebilibili.feature.video.ui.components
 
-import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -45,12 +44,13 @@ import com.android.purebilibili.core.ui.rememberAppCoinIcon
 import com.android.purebilibili.core.ui.rememberAppLikeFilledIcon
 import com.android.purebilibili.core.ui.rememberAppLikeIcon
 import com.android.purebilibili.core.ui.rememberAppShareIcon
-import com.android.purebilibili.core.ui.blur.hazeEffectCompat
-import com.android.purebilibili.core.ui.blur.shouldAllowRuntimeShaderBackedHazeEffect
+import com.android.purebilibili.core.ui.blur.BlurSurfaceType
+import com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity
+import com.android.purebilibili.core.ui.blur.unifiedBlur
 import com.android.purebilibili.feature.home.components.BottomBarMatchedReusableLiquidDock
+import com.android.purebilibili.feature.home.components.resolveBottomBarSurfaceColor
 import com.android.purebilibili.feature.home.components.resolveSharedBottomBarCapsuleShape
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.blur.materials.HazeMaterials
 import top.yukonga.miuix.kmp.blur.Backdrop
 
 internal const val BOTTOM_INPUT_BAR_PLACEHOLDER_MIN_CONTRAST = 4.5f
@@ -81,13 +81,11 @@ internal fun shouldUseFloatingLiquidBottomInputBar(
 internal fun shouldUseFrostedBottomInputBar(
     bottomBarBlurEnabled: Boolean,
     floatingLiquidGlass: Boolean,
-    hasHazeState: Boolean,
-    sdkInt: Int
+    hasHazeState: Boolean
 ): Boolean =
     bottomBarBlurEnabled &&
         !floatingLiquidGlass &&
-        hasHazeState &&
-        shouldAllowRuntimeShaderBackedHazeEffect(sdkInt)
+        hasHazeState
 
 internal fun resolveBottomInputBarContentBottomPadding(
     showBar: Boolean,
@@ -125,8 +123,7 @@ fun BottomInputBar(
     val frostedBottomBar = shouldUseFrostedBottomInputBar(
         bottomBarBlurEnabled = homeSettings.isBottomBarBlurEnabled,
         floatingLiquidGlass = floatingLiquidGlass,
-        hasHazeState = hazeState != null,
-        sdkInt = Build.VERSION.SDK_INT
+        hasHazeState = hazeState != null
     )
 
     if (floatingLiquidGlass) {
@@ -174,6 +171,12 @@ private fun DockedSolidBottomInputBar(
     onShareClick: () -> Unit,
     onCommentClick: () -> Unit,
 ) {
+    val surfaceColor = MaterialTheme.colorScheme.surface
+    val bottomBarColor = resolveBottomBarSurfaceColor(
+        surfaceColor = surfaceColor,
+        blurEnabled = frostedBottomBar,
+        blurIntensity = currentUnifiedBlurIntensity()
+    )
     val inputContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest
     val inputTextColor = resolveBottomInputBarPlaceholderTextColor(
         inputContainerColor = inputContainerColor,
@@ -182,18 +185,16 @@ private fun DockedSolidBottomInputBar(
     )
 
     AppSurface(
-        color = MaterialTheme.colorScheme.surface.copy(
-            alpha = if (frostedBottomBar) 0.76f else 1f
-        ),
+        color = bottomBarColor,
         tonalElevation = if (frostedBottomBar) 0.dp else 8.dp,
         shadowElevation = if (frostedBottomBar) 0.dp else 8.dp,
         modifier = modifier
             .fillMaxWidth()
             .then(
                 if (frostedBottomBar && hazeState != null) {
-                    Modifier.hazeEffectCompat(
-                        state = hazeState,
-                        style = HazeMaterials.ultraThin()
+                    Modifier.unifiedBlur(
+                        hazeState = hazeState,
+                        surfaceType = BlurSurfaceType.BOTTOM_BAR
                     )
                 } else {
                     Modifier

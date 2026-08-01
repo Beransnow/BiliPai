@@ -58,34 +58,41 @@ class BottomInputBarStructureTest {
             shouldUseFrostedBottomInputBar(
                 bottomBarBlurEnabled = true,
                 floatingLiquidGlass = false,
-                hasHazeState = true,
-                sdkInt = 33
+                hasHazeState = true
             )
         )
         assertFalse(
             shouldUseFrostedBottomInputBar(
                 bottomBarBlurEnabled = false,
                 floatingLiquidGlass = false,
-                hasHazeState = true,
-                sdkInt = 33
+                hasHazeState = true
             )
         )
         assertFalse(
             shouldUseFrostedBottomInputBar(
                 bottomBarBlurEnabled = true,
                 floatingLiquidGlass = true,
-                hasHazeState = true,
-                sdkInt = 33
+                hasHazeState = true
             )
         )
         assertFalse(
             shouldUseFrostedBottomInputBar(
                 bottomBarBlurEnabled = true,
                 floatingLiquidGlass = false,
-                hasHazeState = false,
-                sdkInt = 33
+                hasHazeState = false
             )
         )
+    }
+
+    @Test
+    fun frostedCommentBar_reusesHomeBottomBarBlurPipeline() {
+        val source = File("src/main/java/com/android/purebilibili/feature/video/ui/components/BottomInputBar.kt")
+            .readText()
+
+        assertTrue(source.contains("resolveBottomBarSurfaceColor("))
+        assertTrue(source.contains("Modifier.unifiedBlur("))
+        assertTrue(source.contains("surfaceType = BlurSurfaceType.BOTTOM_BAR"))
+        assertFalse(source.contains("HazeMaterials.ultraThin()"))
     }
 
     @Test
