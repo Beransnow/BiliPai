@@ -1086,7 +1086,8 @@ private fun LyricsPrimaryControls(
     onOpenSettings: () -> Unit,
     onHideControls: () -> Unit
 ) {
-    val shape = AppShapes.container(ContainerLevel.Floating)
+    // Miuix 玻璃高光会描边；iOS 连续圆角的 Generic outline 在该路径会退化成倒角。
+    val shape = AppShapes.borderedContainer(ContainerLevel.Floating)
     BottomBarMatchedReusableLiquidDock(
         shape = shape,
         modifier = Modifier.fillMaxWidth(),
