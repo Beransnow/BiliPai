@@ -993,13 +993,11 @@ fun VideoPlayerOverlay(
     ).hideStatusBars
     val effectiveProgressPlacement = remember(
         progressPlacement,
-        isFullscreen,
-        playerChromeStatusBarVisible
+        isFullscreen
     ) {
         resolveVideoDetailProgressPlacement(
             requestedPlacement = progressPlacement,
-            isFullscreen = isFullscreen,
-            isStatusBarVisible = playerChromeStatusBarVisible
+            isFullscreen = isFullscreen
         )
     }
 

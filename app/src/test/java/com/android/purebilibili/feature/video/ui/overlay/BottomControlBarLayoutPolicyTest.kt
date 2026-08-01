@@ -94,33 +94,23 @@ class BottomControlBarLayoutPolicyTest {
     }
 
     @Test
-    fun immersiveInlinePlayer_pinsProgressToVideoBottomEdge() {
+    fun inlineDetailPlayer_pinsProgressToVideoBottomEdge() {
         assertEquals(
             PlayerProgressPlacement.BOTTOM_EDGE,
             resolveVideoDetailProgressPlacement(
                 requestedPlacement = PlayerProgressPlacement.ABOVE_CONTROLS,
-                isFullscreen = false,
-                isStatusBarVisible = false
+                isFullscreen = false
             )
         )
     }
 
     @Test
-    fun visibleStatusBarAndFullscreen_keepRequestedProgressPlacement() {
+    fun fullscreen_keepsRequestedProgressPlacement() {
         assertEquals(
             PlayerProgressPlacement.ABOVE_CONTROLS,
             resolveVideoDetailProgressPlacement(
                 requestedPlacement = PlayerProgressPlacement.ABOVE_CONTROLS,
-                isFullscreen = false,
-                isStatusBarVisible = true
-            )
-        )
-        assertEquals(
-            PlayerProgressPlacement.ABOVE_CONTROLS,
-            resolveVideoDetailProgressPlacement(
-                requestedPlacement = PlayerProgressPlacement.ABOVE_CONTROLS,
-                isFullscreen = true,
-                isStatusBarVisible = false
+                isFullscreen = true
             )
         )
     }
