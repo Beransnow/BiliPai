@@ -1024,7 +1024,7 @@ fun HomeScreen(
         )
     }
     
-    if (!view.isInEditMode) {
+    if (!view.isInEditMode && shouldApplyHomeSystemBars(isTopLevelActive)) {
         SideEffect {
             val window = (context as? android.app.Activity)?.window ?: return@SideEffect
             val insetsController = androidx.core.view.WindowCompat.getInsetsController(window, view)
