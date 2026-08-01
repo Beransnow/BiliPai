@@ -69,6 +69,8 @@ import kotlinx.serialization.json.jsonPrimitive
 import java.io.File
 import kotlin.math.abs
 
+const val DEFAULT_AUDIO_QUALITY_FOLLOW_LAST = -2
+
 // 声明 DataStore 扩展属性
 internal val Context.settingsDataStore by preferencesDataStore(name = "settings_prefs")
 
@@ -4693,6 +4695,7 @@ object SettingsManager {
     private val KEY_VIDEO_CODEC = stringPreferencesKey("video_codec_preference")
     private val KEY_VIDEO_SECOND_CODEC = stringPreferencesKey("video_second_codec_preference")
     private val KEY_AUDIO_QUALITY = intPreferencesKey("audio_quality_preference")
+    private val KEY_DEFAULT_AUDIO_QUALITY = intPreferencesKey("default_audio_quality")
     private val KEY_SUBSCRIBED_COLLECTION_IDS = stringPreferencesKey("subscribed_collection_ids")
     private val KEY_COLLECTION_SORT_PREFERENCES = stringPreferencesKey("collection_sort_preferences")
     
@@ -4892,6 +4895,27 @@ object SettingsManager {
     fun getAudioQualitySync(context: Context): Int {
         return context.getSharedPreferences("quality_settings", Context.MODE_PRIVATE)
             .getInt("audio_quality", -1)
+    }
+
+    // 新视频的默认音质；默认跟随播放器上次手动选择。
+    fun getDefaultAudioQuality(context: Context): Flow<Int> = context.settingsDataStore.data
+        .map { preferences ->
+            preferences[KEY_DEFAULT_AUDIO_QUALITY] ?: DEFAULT_AUDIO_QUALITY_FOLLOW_LAST
+        }
+
+    suspend fun setDefaultAudioQuality(context: Context, value: Int) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_DEFAULT_AUDIO_QUALITY] = value
+        }
+        context.getSharedPreferences("quality_settings", Context.MODE_PRIVATE)
+            .edit()
+            .putInt("default_audio_quality", value)
+            .commit()
+    }
+
+    fun getDefaultAudioQualitySync(context: Context): Int {
+        return context.getSharedPreferences("quality_settings", Context.MODE_PRIVATE)
+            .getInt("default_audio_quality", DEFAULT_AUDIO_QUALITY_FOLLOW_LAST)
     }
 
     // --- 评论默认排序 (1=回复,2=最新,3=最热,4=点赞) ---
@@ -6350,6 +6374,7 @@ object SettingsManager {
             StringShareablePreferenceDefinition(KEY_VIDEO_CODEC, SettingsShareSection.PLAYBACK),
             StringShareablePreferenceDefinition(KEY_VIDEO_SECOND_CODEC, SettingsShareSection.PLAYBACK),
             IntShareablePreferenceDefinition(KEY_AUDIO_QUALITY, SettingsShareSection.PLAYBACK),
+            IntShareablePreferenceDefinition(KEY_DEFAULT_AUDIO_QUALITY, SettingsShareSection.PLAYBACK),
             BooleanShareablePreferenceDefinition(KEY_AUTO_HIGHEST_QUALITY, SettingsShareSection.PLAYBACK),
             BooleanShareablePreferenceDefinition(KEY_SPONSOR_BLOCK_ENABLED, SettingsShareSection.PLAYBACK),
             BooleanShareablePreferenceDefinition(KEY_SPONSOR_BLOCK_AUTO_SKIP, SettingsShareSection.PLAYBACK),

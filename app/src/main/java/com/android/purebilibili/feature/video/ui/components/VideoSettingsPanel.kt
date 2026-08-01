@@ -56,6 +56,7 @@ import com.android.purebilibili.data.model.response.AiAudioInfo
 import com.android.purebilibili.feature.plugin.CdnLineDiagnostic
 import com.android.purebilibili.feature.anime4k.Anime4KBypassReason
 import com.android.purebilibili.feature.anime4k.Anime4KPreset
+import com.android.purebilibili.feature.video.playback.audio.AudioQualityOption
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
@@ -193,6 +194,7 @@ fun VideoSettingsPanel(
     currentSecondCodec: String = "avc1",
     onSecondCodecChange: (String) -> Unit = {},
     currentAudioQuality: Int = -1,
+    availableAudioQualities: List<AudioQualityOption> = emptyList(),
     onAudioQualityChange: (Int) -> Unit = {},
     anime4kEnabled: Boolean = false,
     anime4kAvailable: Boolean = false,
@@ -686,7 +688,7 @@ fun VideoSettingsPanel(
                 SettingsDivider()
             }
 
-            // [New] 音频画质选择
+            // 音质入口始终保留，具体选项仍以当前播放资源真实返回的数据为准。
             item {
                 Column(
                     modifier = Modifier
@@ -709,15 +711,10 @@ fun VideoSettingsPanel(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         
-                        val audioLabel = when(currentAudioQuality) {
-                            -1 -> "自动"
-                            30280 -> "192K"
-                            30232 -> "132K"
-                            30216 -> "64K"
-                            30250 -> "杜比全景声"
-                            30251 -> "Hi-Res无损"
-                            else -> "其他"
-                        }
+                        val audioLabel = availableAudioQualities
+                            .firstOrNull { it.preferenceId == currentAudioQuality }
+                            ?.label
+                            ?: "自动"
                         AppText(
                             text = audioLabel,
                             fontSize = 13.sp,
@@ -729,26 +726,30 @@ fun VideoSettingsPanel(
                         modifier = Modifier.horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        val audios = listOf(
-                            -1 to "自动", 
-                            30280 to "192K", 
-                            30250 to "杜比", 
-                            30251 to "Hi-Res"
-                        )
-                        audios.forEach { (code, label) ->
-                            val isSelected = currentAudioQuality == code
+                        availableAudioQualities.forEach { option ->
+                            val isSelected = currentAudioQuality == option.preferenceId
                             AppSurface(
-                                onClick = { onAudioQualityChange(code) },
+                                onClick = { onAudioQualityChange(option.preferenceId) },
                                 shape = RoundedCornerShape(16.dp),
                                 color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
-                                modifier = Modifier.height(32.dp)
+                                modifier = Modifier.height(48.dp)
                             ) {
-                                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 12.dp)) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    modifier = Modifier.padding(horizontal = 14.dp)
+                                ) {
                                     AppText(
-                                        text = label,
+                                        text = option.label,
                                         fontSize = 13.sp,
                                         color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
+                                    if (option.isHiRes) {
+                                        HiResBadge()
+                                    }
+                                    if (option.isDolby) {
+                                        DolbyBadge()
+                                    }
                                 }
                             }
                         }
@@ -756,7 +757,6 @@ fun VideoSettingsPanel(
                 }
                 SettingsDivider()
             }
-            item { SettingsDivider() }
 
              // [New] 音频语言选择 (AI Translation)
             if (aiAudioInfo?.items?.isNotEmpty() == true) {

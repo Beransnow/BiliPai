@@ -13,6 +13,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.Tracks
+import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.ExoPlayer
 import com.android.purebilibili.core.cache.PlayUrlCache
 import com.android.purebilibili.core.cooldown.PlaybackCooldownManager
@@ -85,6 +86,11 @@ import com.android.purebilibili.feature.video.playback.loader.PlaybackLoadConfig
 import com.android.purebilibili.feature.video.playback.loader.PlaybackLoadResult
 import com.android.purebilibili.feature.video.playback.loader.PlaybackLoader
 import com.android.purebilibili.feature.video.playback.dash.AdaptiveDashPlaybackSource
+import com.android.purebilibili.feature.video.playback.audio.AudioFallbackReason
+import com.android.purebilibili.feature.video.playback.audio.AudioQualityOption
+import com.android.purebilibili.feature.video.playback.audio.AUDIO_QUALITY_AUTO
+import com.android.purebilibili.feature.video.playback.audio.isPremiumAudioPlaybackFailure
+import com.android.purebilibili.feature.video.playback.audio.resolveRequestedAudioQuality
 import com.android.purebilibili.feature.video.playback.policy.PlaybackPostLoadTask
 import com.android.purebilibili.feature.video.playback.policy.PlaybackQualityMode
 import com.android.purebilibili.feature.video.playback.policy.PlaybackHeartbeatSnapshot
@@ -496,6 +502,11 @@ sealed class VideoPlaybackUiState {
         val pendingPlaybackTransitionPositionMs: Long? = null,
         val cachedDashVideos: List<DashVideo> = emptyList(),
         val cachedDashAudios: List<DashAudio> = emptyList(),
+        val cachedDash: Dash? = null,
+        val requestedAudioQuality: Int = -1,
+        val selectedAudioQuality: Int = -1,
+        val availableAudioQualities: List<AudioQualityOption> = emptyList(),
+        val audioFallbackReason: AudioFallbackReason? = null,
         val isQualitySwitching: Boolean = false,
         val requestedQuality: Int? = null,
         val isLoggedIn: Boolean = false,
@@ -1360,9 +1371,7 @@ class VideoPlaybackViewModel : ViewModel() {
         val current = _uiState.value as? VideoPlaybackUiState.Success ?: return true
         if (current.isQualitySwitching) return true
 
-        val audioPreference = appContext?.let {
-            com.android.purebilibili.core.store.SettingsManager.getAudioQualitySync(it)
-        } ?: -1
+        val audioPreference = current.requestedAudioQuality
         if (!shouldRefreshPremiumAudioForPlaybackSpeedChange(
                 requestedAudioQuality = audioPreference,
                 previousPlaybackSpeed = previousSpeed,
@@ -1388,7 +1397,7 @@ class VideoPlaybackViewModel : ViewModel() {
         audioPreference: Int,
         currentPos: Long,
         playWhenReady: Boolean
-    ) {
+    ): Boolean {
         val sessionBlockedCodecs = playbackSessionStore.state.value.blockedVideoCodecs
         val videoCodecPreference = resolveEffectiveVideoCodecPreference(
             requestCodecOverride = null,
@@ -1405,6 +1414,7 @@ class VideoPlaybackViewModel : ViewModel() {
             qualityId = current.currentQuality,
             cachedVideos = current.cachedDashVideos,
             cachedAudios = current.cachedDashAudios,
+            cachedDash = current.cachedDash,
             currentPos = currentPos,
             durationMs = current.videoDurationMs,
             playbackQualityMode = current.playbackQualityMode,
@@ -1426,10 +1436,11 @@ class VideoPlaybackViewModel : ViewModel() {
             isHevcSupported = isHevcSupported,
             isAv1Supported = isAv1Supported,
             playWhenReady = playWhenReady
-        ) ?: return
+        ) ?: return false
 
         val nextCachedDashVideos = result.cachedDashVideos.ifEmpty { current.cachedDashVideos }
         val nextCachedDashAudios = result.cachedDashAudios.ifEmpty { current.cachedDashAudios }
+        val nextCachedDash = result.cachedDash ?: current.cachedDash
         val cdnSelection = resolvePlaybackCdnCandidateSelection(
             videoUrl = result.videoUrl,
             audioUrl = result.audioUrl,
@@ -1457,6 +1468,12 @@ class VideoPlaybackViewModel : ViewModel() {
             adaptiveDashSource = cdnSelection.adaptiveDashSource,
             cachedDashVideos = nextCachedDashVideos,
             cachedDashAudios = nextCachedDashAudios,
+            cachedDash = nextCachedDash,
+            requestedAudioQuality = result.requestedAudioQuality,
+            selectedAudioQuality = result.selectedAudioQuality,
+            availableAudioQualities = result.availableAudioQualities
+                .ifEmpty { current.availableAudioQualities },
+            audioFallbackReason = result.audioFallbackReason,
             allVideoUrls = cdnSelection.allVideoUrls,
             allAudioUrls = cdnSelection.allAudioUrls,
             cdnCandidateSources = cdnSelection.candidateSources,
@@ -1466,6 +1483,7 @@ class VideoPlaybackViewModel : ViewModel() {
             qualityLabels = result.qualityLabels.ifEmpty { current.qualityLabels },
             switchableQualityIds = result.switchableQualityIds.ifEmpty { current.switchableQualityIds }
         )
+        return true
     }
     
     //  SponsorBlock (via Plugin)
@@ -2224,6 +2242,24 @@ class VideoPlaybackViewModel : ViewModel() {
         override fun onPlayerError(error: PlaybackException) {
             cancelPlaybackStallRecovery()
             Logger.w("PlayerVM", "Playback error: ${error.errorCodeName}, message=${error.message}")
+            val current = _uiState.value as? VideoPlaybackUiState.Success
+            val exoPlaybackError = error as? ExoPlaybackException
+            if (
+                current != null &&
+                isPremiumAudioPlaybackFailure(
+                    errorCode = error.errorCode,
+                    selectedAudioQuality = current.selectedAudioQuality,
+                    rendererName = exoPlaybackError?.rendererName,
+                    rendererSampleMimeType = exoPlaybackError?.rendererFormat?.sampleMimeType
+                )
+            ) {
+                Logger.w(
+                    "PlayerVM",
+                    "Hi-Res audio decoder failed; switching current playback to AAC"
+                )
+                fallbackFromPremiumAudioPlaybackError()
+                return
+            }
             recordCurrentCdnHealthEvent(CdnHealthEvent.PLAYER_ERROR)
             fallbackFromCdnRewrite(reason = "player_error")
         }
@@ -3067,8 +3103,13 @@ class VideoPlaybackViewModel : ViewModel() {
                     )
                 } ?: 64
                 //  [新增] 获取音频/视频偏好
-                val audioQualityPreference = appContext?.let { 
-                    com.android.purebilibili.core.store.SettingsManager.getAudioQualitySync(it) 
+                val audioQualityPreference = appContext?.let { context ->
+                    resolveRequestedAudioQuality(
+                        defaultAudioQuality = com.android.purebilibili.core.store.SettingsManager
+                            .getDefaultAudioQualitySync(context),
+                        rememberedAudioQuality = com.android.purebilibili.core.store.SettingsManager
+                            .getAudioQualitySync(context)
+                    )
                 } ?: -1
                 val settingsCodecPreference = appContext?.let {
                     com.android.purebilibili.core.store.SettingsManager.getVideoCodecSync(it)
@@ -3228,6 +3269,11 @@ class VideoPlaybackViewModel : ViewModel() {
                             switchableQualityIds = result.switchableQualityIds,
                             cachedDashVideos = result.cachedDashVideos,
                             cachedDashAudios = result.cachedDashAudios,
+                            cachedDash = result.cachedDash,
+                            requestedAudioQuality = result.requestedAudioQuality,
+                            selectedAudioQuality = result.selectedAudioQuality,
+                            availableAudioQualities = result.availableAudioQualities,
+                            audioFallbackReason = result.audioFallbackReason,
                             emoteMap = result.emoteMap,
                             isLoggedIn = result.isLoggedIn,
                             isVip = result.isVip,
@@ -3543,9 +3589,7 @@ class VideoPlaybackViewModel : ViewModel() {
         val videoSecondCodecPreference = _videoSecondCodecPreference.value
         val isHevcSupported = com.android.purebilibili.core.util.MediaUtils.isHevcSupported()
         val isAv1Supported = com.android.purebilibili.core.util.MediaUtils.isAv1Supported()
-        val audioQualityPreference = appContext?.let {
-            com.android.purebilibili.core.store.SettingsManager.getAudioQualitySync(it)
-        } ?: -1
+        val audioQualityPreference = current.requestedAudioQuality
         val hdrPlaybackQualityMode = PlaybackQualityMode.LOCKED(125)
 
         val selection = playbackUseCase.resolvePlaybackSelection(
@@ -3600,6 +3644,11 @@ class VideoPlaybackViewModel : ViewModel() {
                 adaptiveDashSource = selection.adaptiveDashSource,
                 cachedDashVideos = selection.cachedDashVideos,
                 cachedDashAudios = selection.cachedDashAudios,
+                cachedDash = selection.cachedDash,
+                requestedAudioQuality = selection.requestedAudioQuality,
+                selectedAudioQuality = selection.selectedAudioQuality,
+                availableAudioQualities = selection.availableAudioQualities,
+                audioFallbackReason = selection.audioFallbackReason,
                 qualityIds = selection.qualityIds,
                 qualityLabels = selection.qualityLabels,
                 switchableQualityIds = selection.switchableQualityIds,
@@ -4818,6 +4867,7 @@ class VideoPlaybackViewModel : ViewModel() {
     
     private val _audioQualityPreference = MutableStateFlow(-1)
     val audioQualityPreference = _audioQualityPreference.asStateFlow()
+    private var premiumAudioFallbackInProgress = false
     
     fun setVideoCodec(codec: String) {
         _videoCodecPreference.value = codec // Optimistic update
@@ -4841,22 +4891,113 @@ class VideoPlaybackViewModel : ViewModel() {
     }
 
     fun setAudioQuality(audioQuality: Int) {
-        _audioQualityPreference.value = audioQuality // Optimistic update
-        com.android.purebilibili.core.util.Logger.d("VideoPlaybackViewModel", "🎵 setAudioQuality called with: $audioQuality")
-        //  [调试] 显示 Toast 提示
-        val label = when(audioQuality) {
-            -1 -> "自动"
-            30280 -> "192K"
-            30250 -> "杜比全景声"
-            30251 -> "Hi-Res无损"
-            else -> "未知($audioQuality)"
+        val previousAudioQuality = _audioQualityPreference.value
+        _audioQualityPreference.value = audioQuality
+        Logger.d("VideoPlaybackViewModel", "🎵 setAudioQuality called with: $audioQuality")
+        viewModelScope.launch {
+            val current = _uiState.value as? VideoPlaybackUiState.Success
+            val player = exoPlayer
+            if (current == null || player == null) {
+                appContext?.let {
+                    com.android.purebilibili.core.store.SettingsManager.setAudioQuality(it, audioQuality)
+                }
+                return@launch
+            }
+
+            val switched = refreshPlaybackAudioForSpeedCompatibility(
+                current = current,
+                audioPreference = audioQuality,
+                currentPos = player.currentPosition.coerceAtLeast(0L),
+                playWhenReady = player.playWhenReady
+            )
+            if (!switched) {
+                _audioQualityPreference.value = previousAudioQuality
+                toast("音质切换失败，请稍后重试")
+                return@launch
+            }
+
+            appContext?.let {
+                com.android.purebilibili.core.store.SettingsManager.setAudioQuality(it, audioQuality)
+            }
+            val nextState = _uiState.value as? VideoPlaybackUiState.Success
+            val selectedLabel = nextState?.availableAudioQualities
+                ?.firstOrNull { it.preferenceId == nextState.selectedAudioQuality }
+                ?.label
+                ?: when (nextState?.selectedAudioQuality) {
+                    30250 -> "杜比全景声"
+                    30251 -> "Hi-Res 无损"
+                    else -> "AAC"
+                }
+            val message = when (nextState?.audioFallbackReason) {
+                AudioFallbackReason.SPEED_INCOMPATIBLE ->
+                    "当前倍速暂不支持所选音质，已临时使用 $selectedLabel"
+                AudioFallbackReason.REQUESTED_UNAVAILABLE ->
+                    "当前视频不支持所选音质，已使用 $selectedLabel"
+                AudioFallbackReason.DECODER_ERROR ->
+                    "当前设备无法稳定解码所选音质，已临时使用 $selectedLabel"
+                AudioFallbackReason.NO_PLAYABLE_AUDIO ->
+                    "当前视频没有可用音轨"
+                null -> "✓ 已切换至 $selectedLabel"
+            }
+            toast(message, PlayerToastPresentation.CenteredHighlight)
         }
-        toast("切换音质为: $label")
+    }
+
+    internal fun fallbackFromPremiumAudioPlaybackError() {
+        if (premiumAudioFallbackInProgress) return
+
+        val current = _uiState.value as? VideoPlaybackUiState.Success ?: return
+        val player = exoPlayer ?: return
+        val hasStandardAudio = current.availableAudioQualities.any { option ->
+            option.preferenceId == AUDIO_QUALITY_AUTO
+        }
+        if (!hasStandardAudio) {
+            player.pause()
+            viewModelScope.launch {
+                toast("当前设备无法解码该 Hi-Res 音轨，且没有可回退的 AAC 音轨")
+            }
+            return
+        }
+
+        val requestedAudioQuality = current.requestedAudioQuality
+        val currentPos = player.currentPosition.coerceAtLeast(0L)
+        val playWhenReady = resolvePlaybackIntentForSourceReplacement(
+            playWhenReady = player.playWhenReady,
+            isPlaying = player.isPlaying
+        )
+        premiumAudioFallbackInProgress = true
+        playbackCdnFallbackJob?.cancel()
+        playbackCdnFallbackJob = null
+        playbackCdnFallbackState = PlaybackCdnFallbackState.Inactive
 
         viewModelScope.launch {
-            appContext?.let { 
-                com.android.purebilibili.core.store.SettingsManager.setAudioQuality(it, audioQuality)
-                reloadVideo() // Reload to apply new audio quality
+            try {
+                val switched = refreshPlaybackAudioForSpeedCompatibility(
+                    current = current,
+                    audioPreference = AUDIO_QUALITY_AUTO,
+                    currentPos = currentPos,
+                    playWhenReady = playWhenReady
+                )
+                val updated = _uiState.value as? VideoPlaybackUiState.Success
+                if (switched && updated?.selectedAudioQuality == AUDIO_QUALITY_AUTO) {
+                    _uiState.value = updated.copy(
+                        requestedAudioQuality = requestedAudioQuality,
+                        audioFallbackReason = AudioFallbackReason.DECODER_ERROR
+                    )
+                    toast(
+                        "当前设备无法稳定解码 Hi-Res，已临时切换至 AAC",
+                        PlayerToastPresentation.CenteredHighlight
+                    )
+                } else {
+                    player.pause()
+                    toast("Hi-Res 解码失败，AAC 回退也未能完成")
+                }
+            } catch (error: Exception) {
+                Logger.w("PlayerVM", "Hi-Res audio fallback failed: ${error.message}")
+                player.pause()
+                toast("Hi-Res 解码失败，AAC 回退也未能完成")
+            } finally {
+                premiumAudioFallbackInProgress = false
             }
         }
     }
@@ -6874,10 +7015,7 @@ class VideoPlaybackViewModel : ViewModel() {
         
         viewModelScope.launch {
             try {
-                // [新增] 获取当前音频偏好
-                val audioPref = appContext?.let { 
-                    com.android.purebilibili.core.store.SettingsManager.getAudioQualitySync(it) 
-                } ?: -1
+                val audioPref = current.requestedAudioQuality
                 val sessionBlockedCodecs = playbackSessionStore.state.value.blockedVideoCodecs
                 val videoCodecPreference = resolveEffectiveVideoCodecPreference(
                     requestCodecOverride = null,
@@ -6895,6 +7033,7 @@ class VideoPlaybackViewModel : ViewModel() {
                     qualityId = qualityId,
                     cachedVideos = current.cachedDashVideos,
                     cachedAudios = current.cachedDashAudios,
+                    cachedDash = current.cachedDash,
                     currentPos = currentPos,
                     durationMs = current.videoDurationMs,
                     playbackQualityMode = playbackQualityMode,
@@ -6921,6 +7060,7 @@ class VideoPlaybackViewModel : ViewModel() {
                 if (result != null) {
                     val nextCachedDashVideos = result.cachedDashVideos.ifEmpty { current.cachedDashVideos }
                     val nextCachedDashAudios = result.cachedDashAudios.ifEmpty { current.cachedDashAudios }
+                    val nextCachedDash = result.cachedDash ?: current.cachedDash
                     val cdnSelection = resolvePlaybackCdnCandidateSelection(
                         videoUrl = result.videoUrl,
                         audioUrl = result.audioUrl,
@@ -6937,6 +7077,11 @@ class VideoPlaybackViewModel : ViewModel() {
                             adaptiveDashSource = result.adaptiveDashSource,
                             cachedDashVideos = nextCachedDashVideos,
                             cachedDashAudios = nextCachedDashAudios,
+                            cachedDash = nextCachedDash,
+                            requestedAudioQuality = result.requestedAudioQuality,
+                            selectedAudioQuality = result.selectedAudioQuality,
+                            availableAudioQualities = result.availableAudioQualities,
+                            audioFallbackReason = result.audioFallbackReason,
                             qualityIds = result.qualityIds,
                             qualityLabels = result.qualityLabels,
                             switchableQualityIds = result.switchableQualityIds,
@@ -7011,8 +7156,13 @@ class VideoPlaybackViewModel : ViewModel() {
                     val videoSecondCodecPreference = appContext?.let {
                         com.android.purebilibili.core.store.SettingsManager.getVideoSecondCodecSync(it)
                     } ?: AVC_CODEC_KEY
-                    val audioQualityPreference = appContext?.let { 
-                        com.android.purebilibili.core.store.SettingsManager.getAudioQualitySync(it) 
+                    val audioQualityPreference = appContext?.let { context ->
+                        resolveRequestedAudioQuality(
+                            defaultAudioQuality = com.android.purebilibili.core.store.SettingsManager
+                                .getDefaultAudioQualitySync(context),
+                            rememberedAudioQuality = com.android.purebilibili.core.store.SettingsManager
+                                .getAudioQualitySync(context)
+                        )
                     } ?: -1
                     
                     val isHevcSupported = com.android.purebilibili.core.util.MediaUtils.isHevcSupported()
@@ -7064,6 +7214,11 @@ class VideoPlaybackViewModel : ViewModel() {
                             switchableQualityIds = selection.switchableQualityIds,
                             cachedDashVideos = selection.cachedDashVideos,
                             cachedDashAudios = selection.cachedDashAudios,
+                            cachedDash = selection.cachedDash,
+                            requestedAudioQuality = selection.requestedAudioQuality,
+                            selectedAudioQuality = selection.selectedAudioQuality,
+                            availableAudioQualities = selection.availableAudioQualities,
+                            audioFallbackReason = selection.audioFallbackReason,
                             currentCdnIndex = 0,
                             allVideoUrls = cdnSelection.allVideoUrls,
                             allAudioUrls = cdnSelection.allAudioUrls,
@@ -7203,9 +7358,7 @@ class VideoPlaybackViewModel : ViewModel() {
             val videoSecondCodecPreference = appContext?.let {
                 com.android.purebilibili.core.store.SettingsManager.getVideoSecondCodecSync(it)
             } ?: AVC_CODEC_KEY
-            val audioQualityPreference = appContext?.let {
-                com.android.purebilibili.core.store.SettingsManager.getAudioQualitySync(it)
-            } ?: -1
+            val audioQualityPreference = current.requestedAudioQuality
 
             val isHevcSupported = com.android.purebilibili.core.util.MediaUtils.isHevcSupported()
             val isAv1Supported = resolveEffectiveAv1Support(
@@ -7254,6 +7407,11 @@ class VideoPlaybackViewModel : ViewModel() {
                 switchableQualityIds = selection.switchableQualityIds,
                 cachedDashVideos = selection.cachedDashVideos,
                 cachedDashAudios = selection.cachedDashAudios,
+                cachedDash = selection.cachedDash,
+                requestedAudioQuality = selection.requestedAudioQuality,
+                selectedAudioQuality = selection.selectedAudioQuality,
+                availableAudioQualities = selection.availableAudioQualities,
+                audioFallbackReason = selection.audioFallbackReason,
                 currentCdnIndex = 0,
                 allVideoUrls = cdnSelection.allVideoUrls,
                 allAudioUrls = cdnSelection.allAudioUrls,
@@ -7671,6 +7829,11 @@ class VideoPlaybackViewModel : ViewModel() {
         val adaptiveDashSource: AdaptiveDashPlaybackSource?,
         val cachedDashVideos: List<DashVideo>,
         val cachedDashAudios: List<DashAudio>,
+        val cachedDash: Dash? = null,
+        val requestedAudioQuality: Int = -1,
+        val selectedAudioQuality: Int = -1,
+        val availableAudioQualities: List<AudioQualityOption> = emptyList(),
+        val audioFallbackReason: AudioFallbackReason? = null,
         val qualityIds: List<Int>,
         val qualityLabels: List<String>,
         val switchableQualityIds: List<Int>,
@@ -8156,6 +8319,12 @@ class VideoPlaybackViewModel : ViewModel() {
                 .ifEmpty { current.switchableQualityIds },
             cachedDashVideos = payload.cachedDashVideos,
             cachedDashAudios = payload.cachedDashAudios,
+            cachedDash = payload.cachedDash ?: current.cachedDash,
+            requestedAudioQuality = payload.requestedAudioQuality,
+            selectedAudioQuality = payload.selectedAudioQuality,
+            availableAudioQualities = payload.availableAudioQualities
+                .ifEmpty { current.availableAudioQualities },
+            audioFallbackReason = payload.audioFallbackReason,
             currentCdnIndex = 0,
             allVideoUrls = cdnSelection.allVideoUrls,
             allAudioUrls = cdnSelection.allAudioUrls,
