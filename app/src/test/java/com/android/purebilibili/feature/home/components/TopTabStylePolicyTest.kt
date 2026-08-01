@@ -371,6 +371,15 @@ class TopTabStylePolicyTest {
     }
 
     @Test
+    fun `dragging an offscreen top tab synchronizes its viewport`() {
+        val source = sourceText("app/src/main/java/com/android/purebilibili/feature/home/components/TopBar.kt")
+
+        assertTrue(source.contains("val topTabDragTargetIndex = topTabDragPosition.roundToInt()"))
+        assertTrue(source.contains("LaunchedEffect(topTabDragActive, topTabDragTargetIndex, isViewportSyncEnabled)"))
+        assertTrue(source.contains("listState.scrollToItem(topTabDragTargetIndex)"))
+    }
+
+    @Test
     fun `ios lightweight top tab capsule uses gray white while content keeps theme primary`() {
         val colorScheme = lightColorScheme(primary = Color(0xFF2D6A4F))
         val capsuleColor = resolveIosTopTabCapsuleContainerColor(

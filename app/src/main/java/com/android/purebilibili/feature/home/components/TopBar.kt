@@ -849,6 +849,7 @@ private fun LightweightHomeTopTabs(
     wrapDockWidth: Boolean? = null,
     isTransitionRunning: Boolean = false,
     showPartitionAction: Boolean = true,
+    isViewportSyncEnabled: Boolean = true,
     forceMaterialUnderline: Boolean = false
 ) {
     val chromePolicy = rememberAppTopChromePolicy()
@@ -1075,6 +1076,8 @@ private fun LightweightHomeTopTabs(
                 topTabDragState.value.coerceIn(0f, (categories.size - 1).coerceAtLeast(0).toFloat())
             }
         }
+        val topTabDragTargetIndex = topTabDragPosition.roundToInt()
+            .coerceIn(0, (categories.size - 1).coerceAtLeast(0))
         val topTabDragActive by remember(topTabDragState, topTabIndicatorDragEngaged) {
             derivedStateOf {
                 topTabIndicatorDragEngaged &&
@@ -1088,6 +1091,15 @@ private fun LightweightHomeTopTabs(
             selectedContentPosition
         } else {
             currentPosition
+        }
+        LaunchedEffect(topTabDragActive, topTabDragTargetIndex, isViewportSyncEnabled) {
+            if (!isViewportSyncEnabled || !topTabDragActive) return@LaunchedEffect
+            val visibleItems = listState.layoutInfo.visibleItemsInfo
+            val firstVisibleIndex = visibleItems.firstOrNull()?.index ?: return@LaunchedEffect
+            val lastVisibleIndex = visibleItems.lastOrNull()?.index ?: return@LaunchedEffect
+            if (topTabDragTargetIndex !in firstVisibleIndex..lastVisibleIndex) {
+                listState.scrollToItem(topTabDragTargetIndex)
+            }
         }
         val iosCapsulePosition = if (topTabDragActive) topTabDragPosition else selectedContentPosition
         val indicatorIsInteracting = pagerIsDragging || pagerIsScrolling || topTabDragActive
@@ -2089,6 +2101,7 @@ fun CategoryTabRow(
         wrapDockWidth = wrapDockWidth,
         isTransitionRunning = isTransitionRunning,
         showPartitionAction = showPartitionAction,
+        isViewportSyncEnabled = isViewportSyncEnabled,
         forceMaterialUnderline = forceMaterialUnderline
     )
 }
