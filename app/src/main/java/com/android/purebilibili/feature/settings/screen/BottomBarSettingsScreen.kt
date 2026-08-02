@@ -272,6 +272,8 @@ fun BottomBarSettingsContent(
     val homeTopRightAction by SettingsManager.getHomeTopRightAction(context)
         .collectAsStateWithLifecycle(initialValue = HomeTopRightAction.SETTINGS)
     val tabletUseSidebar by SettingsManager.getTabletUseSidebar(context).collectAsStateWithLifecycle(initialValue = false)
+    val sidebarAccountSwitcherEnabled by SettingsManager.getSidebarAccountSwitcherEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = true)
     
     // 可编辑的本地状态
     var localOrder by remember(order) { mutableStateOf(order) }
@@ -1134,6 +1136,18 @@ fun BottomBarSettingsContent(
                             onCheckedChange = { checked ->
                                 scope.launch {
                                     SettingsManager.setTabletUseSidebar(context, checked)
+                                }
+                            },
+                            iconTint = com.android.purebilibili.core.theme.iOSBlue
+                        )
+                        AppSwitchPreference(
+                            icon = CupertinoIcons.Outlined.ArrowLeftArrowRight,
+                            title = "侧边栏账号切换",
+                            subtitle = "在首页侧边栏底部显示账号切换按钮",
+                            checked = sidebarAccountSwitcherEnabled,
+                            onCheckedChange = { checked ->
+                                scope.launch {
+                                    SettingsManager.setSidebarAccountSwitcherEnabled(context, checked)
                                 }
                             },
                             iconTint = com.android.purebilibili.core.theme.iOSBlue
