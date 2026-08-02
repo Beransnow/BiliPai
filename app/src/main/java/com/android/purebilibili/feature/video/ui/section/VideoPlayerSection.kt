@@ -25,6 +25,9 @@ import com.android.purebilibili.feature.video.ui.overlay.resolveBottomControlBar
 import com.android.purebilibili.feature.video.ui.overlay.resolveVideoProgressBarLayoutPolicy
 import com.android.purebilibili.feature.video.ui.overlay.resolveLandscapeEndDrawerReservedWidthDp
 import com.android.purebilibili.feature.video.ui.overlay.resolveLandscapeEndDrawerLayoutPolicy
+import com.android.purebilibili.feature.video.ui.overlay.VIDEO_STATUS_BAR_AMBIENT_CAPTURE_INTERVAL_MS
+import com.android.purebilibili.feature.video.ui.overlay.VIDEO_STATUS_BAR_AMBIENT_SAMPLE_HEIGHT_PX
+import com.android.purebilibili.feature.video.ui.overlay.VIDEO_STATUS_BAR_AMBIENT_SAMPLE_WIDTH_PX
 import com.android.purebilibili.feature.video.ui.components.SponsorSkipButton
 import com.android.purebilibili.feature.video.ui.components.SponsorContributionOverlay
 import com.android.purebilibili.feature.video.viewmodel.SponsorContributionUiState
@@ -1033,12 +1036,14 @@ fun VideoPlayerSection(
         val playerView = playerViewRef ?: return@LaunchedEffect
         while (isActive) {
             if (playerView.isAttachedToWindow && playerView.width > 0 && playerView.height > 0) {
-                captureVideoAmbientFrame(playerView)?.let { bitmap ->
-                    statusBarAmbientFrame.value = bitmap.asImageBitmap()
-                }
+                statusBarAmbientFrame.value = captureVideoAmbientFrame(
+                    playerView = playerView,
+                    targetWidth = VIDEO_STATUS_BAR_AMBIENT_SAMPLE_WIDTH_PX,
+                    targetHeight = VIDEO_STATUS_BAR_AMBIENT_SAMPLE_HEIGHT_PX,
+                )?.asImageBitmap()
             }
             if (!observedIsPlaying) break
-            delay(320L)
+            delay(VIDEO_STATUS_BAR_AMBIENT_CAPTURE_INTERVAL_MS)
         }
     }
 

@@ -736,8 +736,6 @@ internal fun ElegantVideoCard(
                 motionSpec = homeSharedTransitionMotionSpec,
                 clipShape = cardShellShape
             )
-            .clip(cardShellShape)
-            .background(AppSurfaceTokens.cardContainer())
         Column(
             modifier = cardContainerModifier
         ) {

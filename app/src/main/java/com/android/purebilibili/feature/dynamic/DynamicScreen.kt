@@ -62,7 +62,6 @@ import com.android.purebilibili.core.ui.components.AppDropdownMenu
 import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import com.android.purebilibili.core.ui.components.AppSmallFloatingActionButton
 import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
-import com.android.purebilibili.core.ui.EmptyState
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -71,6 +70,7 @@ import com.android.purebilibili.core.ui.LoadingAnimation
 import com.android.purebilibili.core.ui.TopReadabilityChrome
 import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
+import com.android.purebilibili.core.ui.rememberAppDynamicIcon
 import com.android.purebilibili.core.ui.resolveGlobalWallpaperChromeColor
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.util.responsiveContentWidth
@@ -789,6 +789,14 @@ fun DynamicScreen(
                                             android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
                                         }
                                     },
+                                    onManageAction = { action ->
+                                        viewModel.handleManageAction(action) { _, msg ->
+                                            android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
+                                    onLoadReplyInteractionStatus = { oid, type, onLoaded ->
+                                        viewModel.loadReplyInteractionStatus(oid, type, onLoaded)
+                                    },
                                     likedDynamics = likedDynamics,
                                     modifier = Modifier
                                         .hazeSourceCompat(hazeState)
@@ -969,6 +977,8 @@ private fun DynamicList(
     onLikeClick: (String) -> Unit = {},
     onWatchLaterClick: (Long) -> Unit = {},
     onDeleteClick: (DynamicDeleteAction) -> Unit = {},
+    onManageAction: (com.android.purebilibili.feature.dynamic.components.DynamicManageAction) -> Unit = {},
+    onLoadReplyInteractionStatus: ((oid: Long, type: Int, onLoaded: (com.android.purebilibili.data.model.response.ReplyInteractionData?) -> Unit) -> Unit)? = null,
     likedDynamics: Set<String> = emptySet(),
     modifier: Modifier = Modifier
 ) {
@@ -986,8 +996,16 @@ private fun DynamicList(
             onLikeClick = onLikeClick,
             onWatchLaterClick = onWatchLaterClick,
             onDeleteClick = onDeleteClick,
+            onManageAction = onManageAction,
+            onLoadReplyInteractionStatus = onLoadReplyInteractionStatus,
             isLiked = likedDynamics.contains(item.id_str)
         )
+    }
+    val showSkeleton = filteredItems.isEmpty() && activeLoading
+    val skeletonPulse = if (showSkeleton) {
+        com.android.purebilibili.feature.dynamic.components.rememberDynamicFeedSkeletonPulse()
+    } else {
+        0f
     }
 
     LazyVerticalStaggeredGrid(
@@ -1003,6 +1021,19 @@ private fun DynamicList(
             .responsiveContentWidth(maxWidth = resolveDynamicTimelineMaxWidth())
             .fillMaxSize()
     ) {
+        // 首屏骨架屏（列表为空且加载中时显示，对齐 PiliPlus dynSkeleton）
+        if (showSkeleton) {
+            items(
+                count = com.android.purebilibili.feature.dynamic.components.DYNAMIC_FEED_SKELETON_ITEM_COUNT,
+                key = { index -> "dynamic_skeleton_$index" },
+                contentType = { "dynamic_skeleton" }
+            ) { _ ->
+                com.android.purebilibili.feature.dynamic.components.DynamicFeedSkeletonCard(
+                    pulse = skeletonPulse
+                )
+            }
+        }
+
         // 空状态
         if (filteredItems.isEmpty() && !activeLoading && activeError == null) {
             item(
@@ -1010,9 +1041,13 @@ private fun DynamicList(
                 contentType = "dynamic_empty_state",
                 span = StaggeredGridItemSpan.FullLine
             ) {
-                EmptyState(
-                    message = if (selectedTab == 4 && !isSelectedUserTabActive) "选择一个UP查看专属动态" else "暂无动态",
-                    actionText = if (selectedTab == 4 && !isSelectedUserTabActive) "从左侧或顶部 UP 列表中选择一个用户" else "登录后查看关注 UP主 的动态",
+                DynamicEmptyState(
+                    title = if (selectedTab == 4 && !isSelectedUserTabActive) "选择一个 UP 查看动态" else "暂无动态",
+                    subtitle = if (selectedTab == 4 && !isSelectedUserTabActive) {
+                        "从左侧或顶部的 UP 列表中选择一个用户"
+                    } else {
+                        "登录后即可查看关注 UP 主的最新动态"
+                    },
                     modifier = Modifier.height(AppSpacingTokens.TripleExtraLarge * 6 + AppSpacingTokens.Medium)
                 )
             }
@@ -1086,6 +1121,49 @@ private fun DynamicList(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun DynamicEmptyState(
+    title: String,
+    subtitle: String,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = AppSpacingTokens.ExtraLarge),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Large)
+                .clip(CircleShape)
+                .background(AppSurfaceTokens.surfaceContainerHigh()),
+            contentAlignment = Alignment.Center,
+        ) {
+            AppIcon(
+                imageVector = rememberAppDynamicIcon(),
+                contentDescription = null,
+                modifier = Modifier.size(AppSpacingTokens.DoubleExtraLarge),
+                tint = MaterialTheme.colorScheme.primary,
+            )
+        }
+        Spacer(modifier = Modifier.height(AppSpacingTokens.Large))
+        AppText(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall))
+        AppText(
+            text = subtitle,
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            color = AppSurfaceTokens.onSurfaceVariantActions(),
+        )
     }
 }
 
