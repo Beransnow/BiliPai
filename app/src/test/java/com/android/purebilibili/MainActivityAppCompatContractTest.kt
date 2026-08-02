@@ -146,8 +146,6 @@ class MainActivityAppCompatContractTest {
         val iconNames = listOf(
             "ic_launcher_blue_snow_maid.png",
             "ic_launcher_blue_snow_maid_round.png",
-            "ic_launcher_blue_snow_maid_announcement.png",
-            "ic_launcher_blue_snow_maid_announcement_round.png",
             "ic_launcher_blue_snow_maid_front.png",
             "ic_launcher_blue_snow_maid_front_round.png",
             "ic_launcher_3d.png",
@@ -242,6 +240,15 @@ class MainActivityAppCompatContractTest {
                 .contains("#FF090A0C"),
             "Announcement icon should use the same near-black outer shell in dark mode"
         )
+        val announcementFallbackRows = readPngRgbaRows(
+            loadResourceFile("mipmap-night-xxxhdpi/ic_launcher_blue_snow_maid_announcement_round.png")
+        )
+        val announcementCorner = announcementFallbackRows.first().take(4)
+        assertTrue(
+            announcementCorner[0] == 9 && announcementCorner[1] == 10 &&
+                announcementCorner[2] == 12 && announcementCorner[3] == 255,
+            "Announcement fallback icon should cover the complete launcher mask with a near-black shell"
+        )
 
         mapOf(
             "mdpi" to (48 to 108),
@@ -253,8 +260,6 @@ class MainActivityAppCompatContractTest {
             listOf(
                 "ic_launcher_blue_snow_maid.png",
                 "ic_launcher_blue_snow_maid_round.png",
-                "ic_launcher_blue_snow_maid_announcement.png",
-                "ic_launcher_blue_snow_maid_announcement_round.png",
                 "ic_launcher_blue_snow_maid_front.png",
                 "ic_launcher_blue_snow_maid_front_round.png"
             ).forEach { fileName ->
