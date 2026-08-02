@@ -238,6 +238,7 @@ fun PortraitVideoPager(
     viewModel: VideoPlaybackViewModel,
     engagementViewModel: VideoEngagementViewModel,
     sharedPlayer: ExoPlayer? = null,
+    useTextureSurfaceForNavigation: Boolean = false,
     initialStartPositionMs: Long = 0L,
     onProgressUpdate: (String, Long, Long) -> Unit = { _, _, _ -> },
     onExitSnapshot: (String, Long, Long) -> Unit = { _, _, _ -> },
@@ -1414,6 +1415,7 @@ fun PortraitVideoPager(
                 onTripleAction = engagementViewModel::doTripleAction,
                 onOpenCoinDialog = engagementViewModel::openCoinDialog,
                 exoPlayer = exoPlayer, // [核心] 传递共享播放器
+                useTextureSurfaceForNavigation = useTextureSurfaceForNavigation,
                 currentPlayingBvid = currentPlayingBvid, // [修复] 传递当前播放的 BVID 用于校验
                 currentPlayingCid = currentPlayingCid,
                 currentPlayingAid = currentPlayingAid,
@@ -1576,6 +1578,7 @@ private fun VideoPageItem(
     onTripleAction: (Long?, String?, Boolean?, Int?, Boolean?, ((TripleActionResult) -> Unit)?) -> Unit,
     onOpenCoinDialog: () -> Unit,
     exoPlayer: ExoPlayer,
+    useTextureSurfaceForNavigation: Boolean,
     currentPlayingBvid: String?, // [新增]
     currentPlayingCid: Long,
     currentPlayingAid: Long,
@@ -2315,7 +2318,17 @@ private fun VideoPageItem(
                     ) {
                         AndroidView(
                             factory = { ctx ->
-                                PlayerView(ctx).apply {
+                                val basePlayerView = if (useTextureSurfaceForNavigation) {
+                                    android.view.LayoutInflater.from(ctx)
+                                        .inflate(
+                                            com.android.purebilibili.R.layout.view_player_texture,
+                                            null,
+                                            false,
+                                        ) as PlayerView
+                                } else {
+                                    PlayerView(ctx)
+                                }
+                                basePlayerView.apply {
                                     playerViewRef = this
                                     player = exoPlayer
                                     useController = false
