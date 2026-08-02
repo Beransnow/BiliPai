@@ -1409,6 +1409,19 @@ data class DynamicDeleteRequest(
     val rid_str: String? = null
 )
 
+@kotlinx.serialization.Serializable
+data class DynamicTopRequest(
+    val dyn_str: String
+)
+
+// 动态可见范围设置：object_id 为 JSON 字符串 {"dyn_id":"...","dyn_type":N}，
+// action 取 "private_pub"（仅自己）/ "public_pub"（公开）。
+@kotlinx.serialization.Serializable
+data class DynamicVisibilityRequest(
+    val object_id: String,
+    val action: String
+)
+
 internal fun buildDynamicRepostRequest(
     dynamicId: String,
     content: String
@@ -1549,11 +1562,61 @@ interface DynamicApi {
         @retrofit2.http.Body body: DynamicRepostRequest
     ): SimpleApiResponse
 
+    //  发布纯文本动态（multipart form，type=4 表示纯文本）
+    @retrofit2.http.Multipart
+    @retrofit2.http.POST("https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/create")
+    suspend fun createDynamic(
+        @retrofit2.http.Part("dynamic_id") dynamicId: Int = 0,
+        @retrofit2.http.Part("type") type: Int = 4,
+        @retrofit2.http.Part("rid") rid: Int = 0,
+        @retrofit2.http.Part("content") content: String,
+        @retrofit2.http.Part("csrf") csrf: String
+    ): SimpleApiResponse
+
     @retrofit2.http.POST("x/dynamic/feed/operate/remove")
     suspend fun deleteDynamic(
         @Query("csrf") csrf: String,
         @Query("platform") platform: String = "web",
         @retrofit2.http.Body body: DynamicDeleteRequest
+    ): SimpleApiResponse
+
+    //  置顶 / 取消置顶动态（仅自己的动态，JSON body {"dyn_str": "..."}）
+    @retrofit2.http.POST("x/dynamic/feed/space/set_top")
+    suspend fun setDynamicTop(
+        @Query("csrf") csrf: String,
+        @retrofit2.http.Body body: DynamicTopRequest
+    ): SimpleApiResponse
+
+    @retrofit2.http.POST("x/dynamic/feed/space/rm_top")
+    suspend fun removeDynamicTop(
+        @Query("csrf") csrf: String,
+        @retrofit2.http.Body body: DynamicTopRequest
+    ): SimpleApiResponse
+
+    //  动态可见范围（公开 / 仅自己）
+    @retrofit2.http.POST("x/dynamic/feed/dyn/private_pub_setting")
+    suspend fun setDynamicVisibility(
+        @Query("csrf") csrf: String,
+        @Query("platform") platform: String = "web",
+        @retrofit2.http.Body body: DynamicVisibilityRequest
+    ): SimpleApiResponse
+
+    //  评论互动状态（评论精选 / 评论开关），oid 取 basic.comment_id_str
+    @GET("x/v2/reply/subject/interaction-status")
+    suspend fun getReplyInteractionStatus(
+        @Query("oid") oid: Long,
+        @Query("type") type: Int,
+        @Query("web_location") webLocation: Double = 333.1369
+    ): ReplyInteractionResponse
+
+    //  修改评论互动：action 1=开启精选 2=停止精选 3=关闭评论 4=恢复评论
+    @retrofit2.http.FormUrlEncoded
+    @retrofit2.http.POST("x/v2/reply/subject/modify")
+    suspend fun modifyReplySubject(
+        @retrofit2.http.Field("oid") oid: Long,
+        @retrofit2.http.Field("type") type: Int,
+        @retrofit2.http.Field("action") action: Int,
+        @retrofit2.http.Field("csrf") csrf: String
     ): SimpleApiResponse
 }
 

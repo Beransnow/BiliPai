@@ -568,6 +568,27 @@ data class DynamicDisputeModule(
     val jump_url: String = ""
 )
 
+// --- 评论互动设置（评论精选 / 评论开关） ---
+// API: x/v2/reply/subject/interaction-status
+@Serializable
+data class ReplyInteractionResponse(
+    val code: Int = 0,
+    val message: String = "",
+    val data: ReplyInteractionData? = null
+)
+
+@Serializable
+data class ReplyInteractionData(
+    val up_reply_selection: ReplyInteractionStatus? = null,
+    val up_reply: ReplyInteractionStatus? = null
+)
+
+@Serializable
+data class ReplyInteractionStatus(
+    val status: Int = 0, // 1 = 开启中
+    val can_modify: Boolean = false
+)
+
 @Serializable
 data class DynamicMoreModule(
     val three_point_items: List<DynamicThreePointItem> = emptyList()

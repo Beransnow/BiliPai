@@ -183,18 +183,32 @@ fun DynamicCommentSheet(
                 .fillMaxWidth()
                 .fillMaxHeight(0.7f)
         ) {
-            // 标题栏
+            // 标题、数量和排序保持在同一视觉层级，关闭按钮保留 48dp 触控区。
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = AppSpacingTokens.Large, vertical = AppSpacingTokens.Medium),
+                    .padding(
+                        start = AppSpacingTokens.Large,
+                        top = AppSpacingTokens.Small,
+                        end = AppSpacingTokens.Small,
+                        bottom = AppSpacingTokens.Medium,
+                    ),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                AppText(
-                    text = "评论 ${if (totalCount > 0) "($totalCount)" else ""}",  //  [修改] 使用 totalCount
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Column {
+                    AppText(
+                        text = "评论",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    if (totalCount > 0) {
+                        AppText(
+                            text = "$totalCount 条评论",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = AppSurfaceTokens.onSurfaceVariantActions(),
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.weight(1f))
                 DynamicCommentSortControl(
                     items = sortModeLabels,
@@ -203,8 +217,10 @@ fun DynamicCommentSheet(
                         sortModes.getOrNull(index)?.let(onSortModeChange)
                     }
                 )
-                Spacer(modifier = Modifier.width(AppSpacingTokens.Small))
-                AppIconButton(onClick = onDismiss) {
+                AppIconButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.size(AppSpacingTokens.TripleExtraLarge),
+                ) {
                     AppIcon(
                         rememberAppClearIcon(),
                         contentDescription = "关闭",
@@ -212,9 +228,7 @@ fun DynamicCommentSheet(
                     )
                 }
             }
-            
-            AppHorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-            
+
             // 评论列表
             if (isLoading) {
                 Box(
@@ -232,17 +246,35 @@ fun DynamicCommentSheet(
                         .fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        AppIcon(
-                            rememberAppCommentIcon(),
-                            contentDescription = null,
-                            modifier = Modifier.size(AppSpacingTokens.TripleExtraLarge),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.3f)
-                        )
-                        Spacer(modifier = Modifier.height(AppSpacingTokens.Medium))
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(horizontal = AppSpacingTokens.ExtraLarge),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Large)
+                                .clip(AppShapes.container(ContainerLevel.Pill))
+                                .background(AppSurfaceTokens.surfaceContainerHigh()),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            AppIcon(
+                                rememberAppCommentIcon(),
+                                contentDescription = null,
+                                modifier = Modifier.size(AppSpacingTokens.DoubleExtraLarge),
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(AppSpacingTokens.Large))
                         AppText(
-                            "暂无评论",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.5f)
+                            text = "还没有评论",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall))
+                        AppText(
+                            text = "来聊聊你对这条动态的看法",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = AppSurfaceTokens.onSurfaceVariantActions(),
                         )
                     }
                 }
@@ -252,8 +284,11 @@ fun DynamicCommentSheet(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth(),
-                    contentPadding = PaddingValues(AppSpacingTokens.Large),
-                    verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Large)
+                    contentPadding = PaddingValues(
+                        horizontal = AppSpacingTokens.Large,
+                        vertical = AppSpacingTokens.Small,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Medium)
                 ) {
                     items(comments, key = { it.rpid }) { reply ->
                         CommentItem(
@@ -282,42 +317,22 @@ fun DynamicCommentSheet(
                     }
                 }
             }
-            
-            AppHorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-            
-            // 评论输入框
-            Row(
+
+            DynamicCommentComposer(
+                value = commentText,
+                onValueChange = { commentText = it },
+                onSubmit = {
+                    onPostComment(it)
+                    commentText = ""
+                },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(AppSpacingTokens.Large),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                AppTextField(
-                    value = commentText,
-                    onValueChange = { commentText = it },
-                    modifier = Modifier.weight(1f),
-                    placeholder = "发一条友善的评论",
-                    singleLine = true
-                )
-                
-                Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
-                
-                AppButton(
-                    onClick = {
-                        if (commentText.isNotBlank()) {
-                            onPostComment(commentText)
-                            commentText = ""
-                        }
-                    },
-                    enabled = commentText.isNotBlank(),
-                    shape = AppShapes.container(ContainerLevel.Sheet)
-                ) {
-                    AppText("发送")
-                }
-            }
-            
-            // 底部安全区
-            Spacer(modifier = Modifier.height(AppSpacingTokens.Large))
+                    .background(AppSurfaceTokens.surfaceContainer())
+                    .padding(
+                        horizontal = AppSpacingTokens.Large,
+                        vertical = AppSpacingTokens.Medium,
+                    ),
+            )
         }
     }
 }
@@ -377,8 +392,8 @@ private data class DynamicCommentSortControlSpec(
 )
 
 private fun resolveDynamicCommentSortControlSpec() = DynamicCommentSortControlSpec(
-    itemWidthDp = 66,
-    heightDp = 40,
+    itemWidthDp = 58,
+    heightDp = 48,
 )
 
 /** Inline comments for dynamic detail, rendered by the detail screen's LazyColumn. */
@@ -469,29 +484,48 @@ fun LazyListScope.dynamicInlineCommentItems(
 @Composable
 fun DynamicInlineCommentComposer(
     onPostComment: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     var commentText by remember { mutableStateOf("") }
-    Row(
-        modifier = Modifier
+    DynamicCommentComposer(
+        value = commentText,
+        onValueChange = { commentText = it },
+        onSubmit = {
+            onPostComment(it)
+            commentText = ""
+        },
+        modifier = modifier
             .fillMaxWidth()
             .padding(AppSpacingTokens.Large),
+    )
+}
+
+@Composable
+private fun DynamicCommentComposer(
+    value: String,
+    onValueChange: (String) -> Unit,
+    onSubmit: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val trimmedComment = value.trim()
+    Row(
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         AppTextField(
-            value = commentText,
-            onValueChange = { commentText = it },
+            value = value,
+            onValueChange = onValueChange,
             modifier = Modifier.weight(1f),
             placeholder = "发一条友善的评论",
             singleLine = true,
         )
         Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
         AppButton(
-            onClick = {
-                onPostComment(commentText)
-                commentText = ""
-            },
-            enabled = commentText.isNotBlank(),
-            shape = AppShapes.container(ContainerLevel.Sheet),
+            onClick = { onSubmit(trimmedComment) },
+            enabled = trimmedComment.isNotEmpty(),
+            modifier = Modifier.height(AppSpacingTokens.TripleExtraLarge),
+            shape = AppShapes.container(ContainerLevel.Pill),
+            contentPadding = PaddingValues(horizontal = AppSpacingTokens.Large),
         ) {
             AppText("发送")
         }
