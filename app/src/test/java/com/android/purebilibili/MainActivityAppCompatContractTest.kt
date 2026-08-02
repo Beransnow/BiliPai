@@ -214,8 +214,8 @@ class MainActivityAppCompatContractTest {
         val announcementWidthRatio =
             (announcementOpaqueXs.max() - announcementOpaqueXs.min() + 1).toFloat() / announcementWidth
         assertTrue(
-            announcementWidthRatio in 0.53f..0.55f,
-            "Announcement foreground should leave a little more breathing room inside Android's adaptive-icon safe zone"
+            announcementWidthRatio in 0.48f..0.50f,
+            "Announcement foreground should leave comfortable breathing room inside Android's adaptive-icon safe zone"
         )
 
         listOf(
