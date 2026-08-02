@@ -214,7 +214,7 @@ class MainActivityAppCompatContractTest {
         val announcementWidthRatio =
             (announcementOpaqueXs.max() - announcementOpaqueXs.min() + 1).toFloat() / announcementWidth
         assertTrue(
-            announcementWidthRatio in 0.50f..0.53f,
+            announcementWidthRatio in 0.56f..0.58f,
             "Announcement foreground should fit Android's adaptive-icon safe zone without clipping the character"
         )
 
@@ -239,6 +239,11 @@ class MainActivityAppCompatContractTest {
             loadResourceText("drawable-night/ic_launcher_blue_snow_maid_announcement_background.xml")
                 .contains("#FF090A0C"),
             "Announcement icon should use the same near-black outer shell in dark mode"
+        )
+        assertTrue(
+            loadResourceText("mipmap-night-anydpi-v26/ic_launcher_blue_snow_maid_announcement.xml")
+                .contains("@drawable/ic_launcher_blue_snow_maid_announcement_background_dark"),
+            "Announcement adaptive icon should select an explicit all-black background in dark mode"
         )
         val announcementFallbackRows = readPngRgbaRows(
             loadResourceFile("mipmap-night-xxxhdpi/ic_launcher_blue_snow_maid_announcement_round.png")
