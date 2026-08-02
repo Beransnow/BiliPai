@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.feature.anime4k.Anime4KBypassReason
 import com.android.purebilibili.feature.anime4k.Anime4KPreset
+import com.android.purebilibili.feature.anime4k.FSR_SHARPNESS_SLIDER_STEPS
 import com.android.purebilibili.feature.anime4k.VideoEnhancementAlgorithm
 import com.android.purebilibili.feature.anime4k.resolveAnime4KPresetLabel
 import kotlin.math.roundToInt
@@ -105,6 +106,7 @@ internal fun FsrSharpnessOptions(
             value = safeSharpness,
             onValueChange = onSharpnessChange,
             valueRange = 0f..1f,
+            steps = FSR_SHARPNESS_SLIDER_STEPS,
             modifier = Modifier.fillMaxWidth()
         )
     }

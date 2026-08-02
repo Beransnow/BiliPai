@@ -72,6 +72,7 @@ import com.android.purebilibili.feature.video.playback.policy.resolveDisplayedPl
 import com.android.purebilibili.core.store.PlayerProgressPlacement
 import com.android.purebilibili.feature.anime4k.Anime4KPreset
 import com.android.purebilibili.feature.anime4k.DEFAULT_FSR_SHARPNESS
+import com.android.purebilibili.feature.anime4k.FSR_SHARPNESS_SLIDER_STEPS
 import com.android.purebilibili.feature.anime4k.VideoEnhancementAlgorithm
 import com.android.purebilibili.feature.anime4k.resolveAnime4KPresetLabel
 import kotlin.math.roundToInt
@@ -1410,6 +1411,7 @@ private fun VideoEnhancementSettingsPanel(
                     value = fsrSharpness.coerceIn(0f, 1f),
                     onValueChange = onFsrSharpnessChange,
                     valueRange = 0f..1f,
+                    steps = FSR_SHARPNESS_SLIDER_STEPS,
                     modifier = Modifier.fillMaxWidth()
                 )
             }

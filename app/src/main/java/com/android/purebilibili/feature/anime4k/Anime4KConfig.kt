@@ -33,6 +33,8 @@ enum class Anime4KPreset {
 }
 
 const val DEFAULT_FSR_SHARPNESS: Float = 0.9f
+/** 0 到 1 之间保留 9 个离散点，使锐化滑条每档变化 0.1。 */
+const val FSR_SHARPNESS_SLIDER_STEPS: Int = 9
 const val FSR_MAX_SOURCE_TO_OUTPUT_SCALE: Float = 1.2f
 
 /** AMD RCAS 的 0 表示最强，数值每增加 1 表示锐度减半。 */

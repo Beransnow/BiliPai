@@ -19,10 +19,25 @@ class VideoEnhancementSettingsStructureTest {
         assertTrue(sharedSource.contains("VideoEnhancementAlgorithm.entries.forEach"))
         assertTrue(sharedSource.contains("text = \"FSR 锐化\""))
         assertTrue(sharedSource.contains("onValueChange = onSharpnessChange"))
+        assertTrue(sharedSource.contains("steps = FSR_SHARPNESS_SLIDER_STEPS"))
+    }
+
+    @Test
+    fun `横屏与竖屏FSR锐化均使用零点一档位`() {
+        val landscapeSource = overlaySource("BottomControlBar.kt")
+        val portraitSource = source("Anime4KSettingsUi.kt")
+
+        assertTrue(landscapeSource.contains("steps = FSR_SHARPNESS_SLIDER_STEPS"))
+        assertTrue(portraitSource.contains("steps = FSR_SHARPNESS_SLIDER_STEPS"))
     }
 
     private fun source(fileName: String): String = listOf(
         File("app/src/main/java/com/android/purebilibili/feature/video/ui/components/$fileName"),
         File("src/main/java/com/android/purebilibili/feature/video/ui/components/$fileName")
+    ).first { it.exists() }.readText()
+
+    private fun overlaySource(fileName: String): String = listOf(
+        File("app/src/main/java/com/android/purebilibili/feature/video/ui/overlay/$fileName"),
+        File("src/main/java/com/android/purebilibili/feature/video/ui/overlay/$fileName")
     ).first { it.exists() }.readText()
 }
