@@ -157,6 +157,7 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
         loadCachedDynamics()
         rebuildFollowedUsers()
         observeFollowStateChanges()
+        loadUplistUpdates()
     }
 
     fun activateStartupLoads() {
@@ -506,6 +507,8 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
         _selectedUserId.value = uid
         
         if (uid != null) {
+            //  [新增] 点击 UP 后清除其未读红点
+            clearUplistUpdate(uid)
             val localMatchCount = _uiState.value.timelinePage("all").items.count { item ->
                 item.modules.module_author?.mid == uid
             }
@@ -828,7 +831,40 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
                 showRefreshIndicator = true,
                 selectedTab = selectedTab
             )
+            loadUplistUpdates()
         }
+    }
+
+    //  [新增] 拉取关注 UP 列表未读标记（红点数据源，尽力而为）
+    fun loadUplistUpdates() {
+        viewModelScope.launch {
+            try {
+                val csrf = TokenManager.csrfCache
+                if (csrf.isNullOrEmpty()) return@launch
+                val response = NetworkModule.dynamicApi.getDynamicUplist()
+                if (response.code != 0) return@launch
+                val mids = response.data?.items
+                    ?.filter { it.has_update == 1 }
+                    ?.mapNotNull { it.user_profile?.info?.uid }
+                    ?.filter { it > 0L }
+                    .orEmpty()
+                _uiState.value = _uiState.value.copy(
+                    uplistUpdateMids = mids.toImmutableSet()
+                )
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                // 红点为尽力而为，失败静默
+            }
+        }
+    }
+
+    //  [新增] 点击 UP 后清除该用户红点
+    fun clearUplistUpdate(mid: Long) {
+        if (mid <= 0L) return
+        _uiState.value = _uiState.value.copy(
+            uplistUpdateMids = (_uiState.value.uplistUpdateMids - mid).toImmutableSet()
+        )
     }
     
     fun loadMore(selectedTab: Int = _selectedTab.value) {
@@ -1537,7 +1573,7 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    //  [新增] 发布纯文本动态（对齐 PiliPlus 动态页发布入口）
+    //  [新增] 发布纯文本动态（对齐 PiliPlus 动态页发布入口，成功后延迟校验防 shadow-ban）
     fun publishDynamic(content: String, onResult: (Boolean, String) -> Unit) {
         val trimmed = content.trim()
         if (trimmed.isEmpty()) {
@@ -1558,9 +1594,25 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
                 if (response.code == 0) {
                     onResult(true, "发布成功")
                     refresh(selectedTab = _selectedTab.value)
+                    //  防 shadow-ban：延迟后拉详情验证动态真实可见（对齐 PiliPlus checkCreatedDyn）
+                    val createdId = response.data?.dynamic_id_str
+                    if (createdId.isNullOrBlank()) return@launch
+                    try {
+                        delay(DYNAMIC_CREATE_ANTIFRAUD_DELAY_MS)
+                        val verify = NetworkModule.dynamicApi.getDynamicDetail(id = createdId)
+                        if (verify.code != 0 || verify.data?.item == null) {
+                            onResult(true, "发布成功，但动态可能暂未生效（可在网页端确认）")
+                        }
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (_: Exception) {
+                        // 发布已成功，后置校验失败不应把发布结果反转为失败。
+                    }
                 } else {
                     onResult(false, response.message.ifBlank { "发布失败" })
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 onResult(false, e.message ?: "网络错误")
             }
@@ -1732,6 +1784,8 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
         private const val USER_SELECTION_DEBOUNCE_MS = 120L
         private const val PREFS_DYNAMIC_CACHE = "dynamic_cache"
         private const val PREFS_DYNAMIC_USERS = "dynamic_user_prefs"
+        //  发布动态后延迟校验时间（对齐 PiliPlus checkCreatedDyn 的 5 秒）
+        private const val DYNAMIC_CREATE_ANTIFRAUD_DELAY_MS = 5_000L
         private const val KEY_DYNAMIC_CACHE = "dynamic_items_cache"
         private const val KEY_DYNAMIC_CACHE_TIME = "dynamic_cache_time"
         private const val KEY_PINNED_USERS = "dynamic_pinned_users"
@@ -1774,7 +1828,9 @@ data class DynamicUiState(
     val errorSource: DynamicFeedErrorSource = DynamicFeedErrorSource.NONE,
     val timelinePages: PersistentMap<String, DynamicTimelinePageState> = persistentMapOf(),
     //  [新增] 临时屏蔽的动态 id（仅内存，重启恢复）
-    val tempBannedDynamicIds: ImmutableSet<String> = persistentSetOf()
+    val tempBannedDynamicIds: ImmutableSet<String> = persistentSetOf(),
+    //  [新增] 关注 UP 列表未读（有更新的 mid 集合，来自 uplist 接口）
+    val uplistUpdateMids: ImmutableSet<Long> = persistentSetOf()
 )
 
 data class DynamicTimelinePageState(

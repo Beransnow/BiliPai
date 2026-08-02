@@ -505,7 +505,7 @@ fun GlassVideoCard(
                             badgeTextColor = onSurfaceVariant.copy(alpha = 0.85f),
                             badgeBackgroundColor = onSurfaceVariant.copy(alpha = 0.12f),
                             showUpBadge = showUpBadge,
-                            modifier = Modifier.weight(1f, fill = false)
+                            modifier = Modifier.weight(1f)
                         )
                         
                         Spacer(modifier = Modifier.width(AppSpacingTokens.Small))

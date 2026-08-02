@@ -53,6 +53,7 @@ import com.android.purebilibili.core.ui.rememberAppChevronDownIcon
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
 import com.android.purebilibili.core.ui.rememberAppCommentIcon
 import com.android.purebilibili.core.ui.rememberAppVisibilityOnIcon
+import com.android.purebilibili.core.ui.rememberAppShareIcon
 import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppDialogAction
 import com.android.purebilibili.core.ui.rememberAppHistoryIcon
@@ -392,6 +393,36 @@ fun DynamicCardV2(
                                 val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
                                 clipboard.setPrimaryClip(android.content.ClipData.newPlainText("动态链接", dynamicUrl))
                                 android.widget.Toast.makeText(context, "已复制链接", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        )
+
+                        //  [新增] 分享动态（系统分享，对齐 PiliPlus 分享面板）
+                        AppDropdownMenuItem(
+                            text = { AppText("分享动态", color = MaterialTheme.colorScheme.onSurface) },
+                            leadingIcon = {
+                                AppIcon(
+                                    rememberAppShareIcon(),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall),
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                            },
+                            onClick = {
+                                showMoreMenu = false
+                                val dynamicUrl = "https://t.bilibili.com/${item.id_str}"
+                                val descText = content?.desc?.text?.take(100).orEmpty()
+                                val shareText = if (descText.isNotBlank()) {
+                                    "$descText\n$dynamicUrl"
+                                } else {
+                                    "分享动态\n$dynamicUrl"
+                                }
+                                val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                                    this.type = "text/plain"
+                                    putExtra(android.content.Intent.EXTRA_TEXT, shareText)
+                                }
+                                context.startActivity(
+                                    android.content.Intent.createChooser(shareIntent, "分享动态")
+                                )
                             }
                         )
                         

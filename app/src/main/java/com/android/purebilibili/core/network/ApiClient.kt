@@ -845,6 +845,19 @@ interface BilibiliApi {
     @GET
     suspend fun getDanmakuSpecialDm(@retrofit2.http.Url url: String): ResponseBody
 
+    // [新增] 打分弹幕提交 (x/v2/dm/command/grade/post)
+    // 互动投票/打分弹幕的提交端点；grade_score 为偶数，最大 10
+    @retrofit2.http.FormUrlEncoded
+    @retrofit2.http.POST("x/v2/dm/command/grade/post")
+    suspend fun gradeDanmaku(
+        @retrofit2.http.Field("aid") aid: Long,               // 稿件 aid
+        @retrofit2.http.Field("cid") cid: Long,               // 分P cid
+        @retrofit2.http.Field("progress") progress: Long,      // 弹幕出现时间 (毫秒)
+        @retrofit2.http.Field("grade_id") gradeId: Long,       // 打分/投票 ID
+        @retrofit2.http.Field("grade_score") gradeScore: Int,  // 分数 (偶数，最大 10)
+        @retrofit2.http.Field("csrf") csrf: String
+    ): com.android.purebilibili.data.model.response.SimpleApiResponse
+
     // [新增] 撤回弹幕 (2分钟内可撤回，每天3次)
     @retrofit2.http.FormUrlEncoded
     @retrofit2.http.POST("x/dm/recall")
@@ -1571,7 +1584,11 @@ interface DynamicApi {
         @retrofit2.http.Part("rid") rid: Int = 0,
         @retrofit2.http.Part("content") content: String,
         @retrofit2.http.Part("csrf") csrf: String
-    ): SimpleApiResponse
+    ): DynamicCreateResponse
+
+    //  关注 UP 列表（含未读标记 has_update，供 UP 列表红点使用）
+    @GET("https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/w_dyn_uplist")
+    suspend fun getDynamicUplist(): UplistResponse
 
     @retrofit2.http.POST("x/dynamic/feed/operate/remove")
     suspend fun deleteDynamic(

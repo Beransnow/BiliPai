@@ -190,6 +190,12 @@ private data class VideoCardSharedTransitionSpecs(
     val visual: VideoSharedTransitionVisualSpec
 )
 
+private data class VideoCardScreenMetrics(
+    val widthPx: Float,
+    val heightPx: Float,
+    val density: Float
+)
+
 internal data class HomeVideoCardMetadataColors(
     val upNameColor: Color,
     val upMetaColor: Color,
@@ -207,6 +213,121 @@ internal fun resolveHomeVideoCardMetadataColors(
         upBadgeTextColor = onSurfaceColor.copy(alpha = 0.68f),
         upBadgeBackgroundColor = onSurfaceColor.copy(alpha = 0.10f),
         publishTimeColor = onSurfaceColor.copy(alpha = 0.72f)
+    )
+}
+
+private fun resolveVideoCardMetadataModifier(
+    hasTrailingCardAction: Boolean
+): Modifier {
+    return Modifier
+        .fillMaxWidth()
+        .then(
+            if (hasTrailingCardAction) {
+                Modifier.padding(end = AppChromeSizeTokens.MinimumTouchTarget)
+            } else {
+                Modifier
+            }
+        )
+}
+
+private fun resolveVideoCardMetadataRowModifier(): Modifier = Modifier.fillMaxWidth()
+
+@Composable
+private fun VideoCardOwnerMetadata(
+    video: VideoItem,
+    isFollowing: Boolean,
+    showUpBadge: Boolean,
+    upFollowerCount: Int?,
+    upVideoCount: Int?,
+    infoBadgeStyle: HomeVideoBadgeStyle,
+    inlinePillColors: HomeGlassResolvedColors,
+    metadataColors: HomeVideoCardMetadataColors,
+    onUpClick: ((Long) -> Unit)?,
+    modifier: Modifier = Modifier
+) {
+    val contentTypography = feedContentTypography()
+    val upClickMid = video.owner.mid.takeIf { it > 0L && onUpClick != null }
+    val ownerModifier = modifier
+        .fillMaxWidth()
+        .then(
+            if (upClickMid != null) {
+                Modifier.clickable { onUpClick?.invoke(upClickMid) }
+            } else {
+                Modifier
+            }
+        )
+
+    UpBadgeName(
+        name = video.owner.name,
+        metaText = resolveUpStatsText(
+            followerCount = upFollowerCount,
+            videoCount = upVideoCount
+        ),
+        badgeTrailingContent = if (isFollowing) {
+            {
+                if (infoBadgeStyle == HomeVideoBadgeStyle.GLASS) {
+                    AppSurface(
+                        modifier = Modifier.wrapContentSize(),
+                        shape = AppShapes.container(ContainerLevel.Pill),
+                        color = inlinePillColors.containerColor,
+                        border = BorderStroke(
+                            AppSpacingTokens.Micro * 0.4f,
+                            inlinePillColors.borderColor
+                        )
+                    ) {
+                        AppText(
+                            text = "已关注",
+                            style = contentTypography.coverBadge,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(
+                                horizontal = AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro,
+                                vertical = AppSpacingTokens.Micro
+                            )
+                        )
+                    }
+                } else {
+                    AppText(
+                        text = "已关注",
+                        style = contentTypography.coverBadge,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        } else {
+            null
+        },
+        leadingContent = if (video.owner.face.isNotEmpty()) {
+            {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(FormatUtils.fixImageUrl(video.owner.face))
+                        .crossfade(100)
+                        .size(32, 32)
+                        .memoryCacheKey("avatar_${video.owner.face.hashCode()}")
+                        .build(),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(AppSpacingTokens.Medium + AppSpacingTokens.Micro)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentScale = ContentScale.Crop
+                )
+            }
+        } else {
+            null
+        },
+        nameStyle = contentTypography.author,
+        nameColor = metadataColors.upNameColor,
+        metaColor = metadataColors.upMetaColor,
+        badgeTextColor = metadataColors.upBadgeTextColor,
+        badgeBackgroundColor = metadataColors.upBadgeBackgroundColor,
+        // 未关注时不再渲染空的尾部槽位，避免继续占用作者名的可用宽度；
+        // 已关注时由真实的尾部内容自行占位。
+        reserveTrailingSlot = false,
+        trailingSlotMinWidth = 0.dp,
+        trailingSlotMinHeight = AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall,
+        showUpBadge = showUpBadge,
+        modifier = ownerModifier
     )
 }
 
@@ -572,19 +693,16 @@ internal fun ElegantVideoCard(
     //  获取屏幕尺寸用于计算归一化坐标
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current
-    val screenWidthPx: Float
-    val screenHeightPx: Float
-    val densityValue: Float
-    remember(configuration.screenWidthDp, configuration.screenHeightDp, density) {
-        Triple(
-            with(density) { configuration.screenWidthDp.dp.toPx() },
-            with(density) { configuration.screenHeightDp.dp.toPx() },
-            density.density
+    val screenMetrics = remember(
+        configuration.screenWidthDp,
+        configuration.screenHeightDp,
+        density
+    ) {
+        VideoCardScreenMetrics(
+            widthPx = with(density) { configuration.screenWidthDp.dp.toPx() },
+            heightPx = with(density) { configuration.screenHeightDp.dp.toPx() },
+            density = density.density
         )
-    }.let { (w, h, d) ->
-        screenWidthPx = w
-        screenHeightPx = h
-        densityValue = d
     }
     
     //  记录卡片位置（非 Compose State，避免滚动时触发高频重组）
@@ -603,7 +721,7 @@ internal fun ElegantVideoCard(
         menuOffset = resolveVideoCardMenuOffset(
             rootBoundsInRoot = cardCoordsRef.value?.takeIf { it.isAttached }?.boundsInRoot(),
             anchorBoundsInRoot = anchorCoords?.takeIf { it.isAttached }?.boundsInRoot(),
-            density = densityValue,
+            density = screenMetrics.density,
             pressOffsetInAnchorPx = pressOffset
         )
         showDismissMenu = true
@@ -615,9 +733,9 @@ internal fun ElegantVideoCard(
                 bvid = video.bvid,
                 sourceRoute = effectiveSharedElementSourceRoute,
                 bounds = bounds,
-                screenWidth = screenWidthPx,
-                screenHeight = screenHeightPx,
-                density = densityValue,
+                screenWidth = screenMetrics.widthPx,
+                screenHeight = screenMetrics.heightPx,
+                density = screenMetrics.density,
                 sourceCornerDp = cardCornerRadius.value.roundToInt()
             )
         }
@@ -1206,95 +1324,24 @@ internal fun ElegantVideoCard(
         Spacer(modifier = Modifier.height(if (compactMetadata) AppSpacingTokens.ExtraSmall else AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro))
 
         Column(
-            modifier = if (hasTrailingCardAction) {
-                Modifier.padding(end = AppChromeSizeTokens.MinimumTouchTarget)
-            } else {
-                Modifier
-            }
+            modifier = resolveVideoCardMetadataModifier(hasTrailingCardAction)
         ) {
         val metadataColors = resolveHomeVideoCardMetadataColors(
             onSurfaceColor = MaterialTheme.colorScheme.onSurface
         )
 
-        //  底部信息行 - 官方 B 站风格
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall)
-        ) {
-            //  [HIG] UP主名称 - 13sp footnote 标准
-            //  共享元素过渡 - UP主名称
-            val upClickMid = video.owner.mid.takeIf { it > 0L && onUpClick != null }
-            var upNameModifier = Modifier.weight(1f, fill = false)
-            if (upClickMid != null) {
-                upNameModifier = upNameModifier.clickable { onUpClick?.invoke(upClickMid) }
-            }
-            
-            val followBadgeModifier = Modifier.wrapContentSize()
-
-            UpBadgeName(
-                name = video.owner.name,
-                metaText = resolveUpStatsText(
-                    followerCount = upFollowerCount,
-                    videoCount = upVideoCount
-                ),
-                badgeTrailingContent = if (isFollowing) {
-                    {
-                        if (badgeStylePolicy.infoStyle == HomeVideoBadgeStyle.GLASS) {
-                            AppSurface(
-                                modifier = followBadgeModifier,
-                                shape = AppShapes.container(ContainerLevel.Pill),
-                                color = inlinePillColors.containerColor,
-                                border = BorderStroke(AppSpacingTokens.Micro * 0.4f, inlinePillColors.borderColor)
-                            ) {
-                                AppText(
-                                    text = "已关注",
-                                    style = contentTypography.coverBadge,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.padding(horizontal = AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro, vertical = AppSpacingTokens.Micro)
-                                )
-                            }
-                        } else {
-                            AppText(
-                                text = "已关注",
-                                modifier = followBadgeModifier,
-                                style = contentTypography.coverBadge,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                } else null,
-                leadingContent = if (video.owner.face.isNotEmpty()) {
-                    {
-                        val avatarModifier = Modifier
-                            .size(AppSpacingTokens.Medium + AppSpacingTokens.Micro)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
-
-                        AsyncImage(
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(FormatUtils.fixImageUrl(video.owner.face))
-                                .crossfade(100)
-                                .size(32, 32)
-                                .memoryCacheKey("avatar_${video.owner.face.hashCode()}")
-                                .build(),
-                            contentDescription = null,
-                            modifier = avatarModifier,
-                            contentScale = ContentScale.Crop
-                        )
-                    }
-                } else null,
-                nameStyle = contentTypography.author,
-                nameColor = metadataColors.upNameColor,
-                metaColor = metadataColors.upMetaColor,
-                badgeTextColor = metadataColors.upBadgeTextColor,
-                badgeBackgroundColor = metadataColors.upBadgeBackgroundColor,
-                reserveTrailingSlot = true,
-                trailingSlotMinHeight = AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall,
-                showUpBadge = showUpBadge,
-                modifier = upNameModifier
-            )
-            
-        }
+        VideoCardOwnerMetadata(
+            video = video,
+            isFollowing = isFollowing,
+            showUpBadge = showUpBadge,
+            upFollowerCount = upFollowerCount,
+            upVideoCount = upVideoCount,
+            infoBadgeStyle = badgeStylePolicy.infoStyle,
+            inlinePillColors = inlinePillColors,
+            metadataColors = metadataColors,
+            onUpClick = onUpClick,
+            modifier = resolveVideoCardMetadataRowModifier()
+        )
 
         VideoCardDurationPublishRow(
             durationText = durationText.takeIf { showDurationOutside }.orEmpty(),
@@ -1378,7 +1425,10 @@ internal fun ElegantVideoCard(
                         AppText(
                             text = onlineCount,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = contentTypography.statistic.copy(fontWeight = FontWeight.Medium)
+                            style = contentTypography.statistic.copy(fontWeight = FontWeight.Medium),
+                            maxLines = 1,
+                            softWrap = false,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }

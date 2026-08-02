@@ -3697,6 +3697,27 @@ fun VideoPlayerSection(
                     player = playerState.player,
                     onFollowClick = onToggleFollow,
                     onTripleClick = onTriple,
+                    onVoteSubmit = { item, option ->
+                        val success = uiState as? VideoPlaybackUiState.Success
+                        val score = option.score
+                        if (success != null && score != null && item.voteId.isNotBlank()) {
+                            settingsScope.launch {
+                                val result = com.android.purebilibili.data.repository.DanmakuRepository.submitGradeDanmaku(
+                                    aid = success.info.aid,
+                                    cid = success.info.cid,
+                                    progress = item.startTimeMs,
+                                    gradeId = item.voteId,
+                                    gradeScore = score
+                                )
+                                if (result.isFailure) {
+                                    android.util.Log.w(
+                                        "VideoPlayerSection",
+                                        "Vote submit failed: ${result.exceptionOrNull()?.message}"
+                                    )
+                                }
+                            }
+                        }
+                    },
                     isFollowing = isFollowed,
                     modifier = Modifier.fillMaxSize()
                 )

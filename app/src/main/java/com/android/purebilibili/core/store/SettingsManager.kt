@@ -490,7 +490,7 @@ data class HomeSettings(
     val isHeaderCollapseEnabled: Boolean = true,
     val gridColumnCount: Int = 0, // [New] 网格列数 (0=自动, 1-6=固定)
     val homeFeedCardWidthPreset: HomeFeedCardWidthPreset = HomeFeedCardWidthPreset.AUTO,
-    val homeFeedCardStyle: HomeFeedCardStyle = HomeFeedCardStyle.OFFICIAL,
+    val homeFeedCardStyle: HomeFeedCardStyle = HomeFeedCardStyle.CURRENT,
     val homeHeroCarouselEnabled: Boolean = true,
     val homeHeroCarouselAutoplayEnabled: Boolean = false,
     val cardAnimationEnabled: Boolean = false,    //  卡片进场动画（默认关闭）
@@ -1400,7 +1400,7 @@ object SettingsManager {
                 preferences[KEY_HOME_FEED_CARD_WIDTH_PRESET] ?: HomeFeedCardWidthPreset.AUTO.value
             ),
             homeFeedCardStyle = HomeFeedCardStyle.fromValue(
-                preferences[KEY_HOME_FEED_CARD_STYLE] ?: HomeFeedCardStyle.OFFICIAL.value
+                preferences[KEY_HOME_FEED_CARD_STYLE] ?: HomeFeedCardStyle.CURRENT.value
             ),
             homeHeroCarouselEnabled = preferences[KEY_HOME_HERO_CAROUSEL_ENABLED] ?: true,
             homeHeroCarouselAutoplayEnabled =
@@ -2468,7 +2468,7 @@ object SettingsManager {
     fun getHomeFeedCardStyle(context: Context): Flow<HomeFeedCardStyle> =
         context.settingsDataStore.data.map { preferences ->
             HomeFeedCardStyle.fromValue(
-                preferences[KEY_HOME_FEED_CARD_STYLE] ?: HomeFeedCardStyle.OFFICIAL.value
+                preferences[KEY_HOME_FEED_CARD_STYLE] ?: HomeFeedCardStyle.CURRENT.value
             )
         }
 
@@ -6154,6 +6154,35 @@ object SettingsManager {
     suspend fun setDynamicLayoutDirection(context: Context, direction: DynamicLayoutDirection) {
         context.settingsDataStore.edit { preferences -> 
             preferences[KEY_DYNAMIC_PAGE_LAYOUT_DIRECTION] = direction.value 
+        }
+    }
+
+    // ========== [新增] 动态 Feed 布局模式（对齐 PiliPlus dynamicsWaterfallFlow） ==========
+
+    private val KEY_DYNAMIC_FEED_LAYOUT_MODE = intPreferencesKey("dynamic_feed_layout_mode")
+
+    /**
+     *  动态 Feed 布局模式
+     * - 0: 瀑布流（默认，多列自适应）
+     * - 1: 列表（单列居中）
+     */
+    enum class DynamicFeedLayoutMode(val value: Int, val label: String) {
+        WATERFALL(0, "瀑布流"),
+        LIST(1, "列表");
+
+        companion object {
+            fun fromValue(value: Int): DynamicFeedLayoutMode = entries.find { it.value == value } ?: WATERFALL
+        }
+    }
+
+    fun getDynamicFeedLayoutMode(context: Context): Flow<DynamicFeedLayoutMode> = context.settingsDataStore.data
+        .map { preferences ->
+            DynamicFeedLayoutMode.fromValue(preferences[KEY_DYNAMIC_FEED_LAYOUT_MODE] ?: 0)
+        }
+
+    suspend fun setDynamicFeedLayoutMode(context: Context, mode: DynamicFeedLayoutMode) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_DYNAMIC_FEED_LAYOUT_MODE] = mode.value
         }
     }
 

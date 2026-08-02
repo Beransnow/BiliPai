@@ -21,6 +21,14 @@ import kotlin.test.assertTrue
 class SubReplyDetailPresentationPolicyTest {
 
     @Test
+    fun `sub reply detail avatar size matches the main comment list`() {
+        assertEquals(
+            resolveReplyItemLayoutPolicy().avatarSizeDp,
+            resolveSubReplyDetailAvatarSizeDp()
+        )
+    }
+
+    @Test
     fun `section title should include current reply count`() {
         assertEquals("相关回复共14条", resolveSubReplyDetailSectionTitle(replyCount = 14))
         assertEquals(
