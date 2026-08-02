@@ -760,7 +760,7 @@ class TopTabStylePolicyTest {
         assertTrue(itemSource.contains("alpha(selectionFraction)"))
         assertTrue(itemSource.indexOf("AsyncImage(") < itemSource.indexOf("TopTabBlendedIcon("))
         assertTrue(itemSource.contains("else {"))
-        assertTrue(itemSource.contains("resolveTopTabCategoryIcon("))
+        assertTrue(itemSource.contains("resolveMiuixPreferredTopTabCategoryIcon("))
         assertTrue(itemSource.contains("selected = false"))
         assertTrue(itemSource.contains("selected = true"))
         assertTrue(rowCallSource.contains("iconFamily = topTabIconFamily"))

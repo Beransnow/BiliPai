@@ -3,8 +3,8 @@ package com.android.purebilibili.feature.home.components
 
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppBottomNavigationHost
-import com.android.purebilibili.core.ui.AppSemanticIconFamily
 import com.android.purebilibili.core.ui.AppSpacingTokens
+import com.android.purebilibili.core.ui.rememberAppSemanticVisualPolicy
 import com.android.purebilibili.core.ui.components.AppNavigationBar
 import com.android.purebilibili.core.ui.components.AppNavigationBarItem
 import com.android.purebilibili.core.ui.components.AppPlatformNavigationBadge
@@ -38,8 +38,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.MenuOpen
 import com.android.purebilibili.core.ui.components.AppIcon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -110,10 +108,6 @@ import com.android.purebilibili.core.theme.BottomBarColorPalette  // 调色板
 import com.android.purebilibili.core.theme.LocalCornerRadiusScale
 import com.android.purebilibili.core.theme.iOSCornerRadius
 import kotlinx.coroutines.launch  //  延迟导航
-//  Cupertino Icons - iOS SF Symbols 风格图标
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
 import com.android.purebilibili.core.ui.animation.DampedDragAnimationState
 import com.android.purebilibili.core.ui.animation.horizontalDragGesture
 import com.android.purebilibili.feature.home.LocalHomeScrollOffset
@@ -168,6 +162,9 @@ import top.yukonga.miuix.kmp.blur.highlight.LightSource
 import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
 import top.yukonga.miuix.kmp.blur.sensor.rememberDeviceTilt
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Search
+import top.yukonga.miuix.kmp.icon.extended.Sidebar
 
 private val iosIndicatorSpecular: MiuixHighlight = MiuixHighlight(
     width = AppSpacingTokens.Micro / 2,
@@ -229,7 +226,7 @@ private fun rememberGravityRotatedHighlight(
 }
 
 /**
- * 底部导航项枚举 -  使用 iOS SF Symbols 风格图标
+ * 底部导航项枚举 - 使用 Miuix 优先的统一图标策略
  * [HIG] 所有图标包含 contentDescription 用于无障碍访问
  */
 enum class BottomNavItem(
@@ -246,8 +243,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_home,
         R.string.bottom_nav_home,
         emptyList(),
-        { CupertinoBottomNavigationIcon("HOME", selected = true) },
-        { CupertinoBottomNavigationIcon("HOME", selected = false) },
+        { MiuixBottomNavigationIcon("HOME", selected = true) },
+        { MiuixBottomNavigationIcon("HOME", selected = false) },
         ScreenRoutes.Home.route
     ),
     DYNAMIC(
@@ -255,8 +252,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_dynamic,
         R.string.bottom_nav_dynamic,
         emptyList(),
-        { CupertinoBottomNavigationIcon("DYNAMIC", selected = true) },
-        { CupertinoBottomNavigationIcon("DYNAMIC", selected = false) },
+        { MiuixBottomNavigationIcon("DYNAMIC", selected = true) },
+        { MiuixBottomNavigationIcon("DYNAMIC", selected = false) },
         ScreenRoutes.Dynamic.route
     ),
     STORY(
@@ -264,8 +261,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_story,
         R.string.bottom_nav_story,
         emptyList(),
-        { CupertinoBottomNavigationIcon("STORY", selected = true) },
-        { CupertinoBottomNavigationIcon("STORY", selected = false) },
+        { MiuixBottomNavigationIcon("STORY", selected = true) },
+        { MiuixBottomNavigationIcon("STORY", selected = false) },
         ScreenRoutes.Story.baseRoute
     ),
     HISTORY(
@@ -273,8 +270,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_history,
         R.string.bottom_nav_history_desc,
         listOf("历史记录"),
-        { CupertinoBottomNavigationIcon("HISTORY", selected = true) },
-        { CupertinoBottomNavigationIcon("HISTORY", selected = false) },
+        { MiuixBottomNavigationIcon("HISTORY", selected = true) },
+        { MiuixBottomNavigationIcon("HISTORY", selected = false) },
         ScreenRoutes.History.route
     ),
     LISTEN_VIDEO(
@@ -282,8 +279,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_listen_video,
         R.string.bottom_nav_listen_video_desc,
         listOf("音乐"),
-        { CupertinoBottomNavigationIcon("LISTEN_VIDEO", selected = true) },
-        { CupertinoBottomNavigationIcon("LISTEN_VIDEO", selected = false) },
+        { MiuixBottomNavigationIcon("LISTEN_VIDEO", selected = true) },
+        { MiuixBottomNavigationIcon("LISTEN_VIDEO", selected = false) },
         ScreenRoutes.ListenVideo.route
     ),
     PROFILE(
@@ -291,8 +288,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_profile,
         R.string.bottom_nav_profile_desc,
         listOf("个人中心"),
-        { CupertinoBottomNavigationIcon("PROFILE", selected = true) },
-        { CupertinoBottomNavigationIcon("PROFILE", selected = false) },
+        { MiuixBottomNavigationIcon("PROFILE", selected = true) },
+        { MiuixBottomNavigationIcon("PROFILE", selected = false) },
         ScreenRoutes.Profile.route
     ),
     FAVORITE(
@@ -300,8 +297,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_favorite,
         R.string.bottom_nav_favorite_desc,
         listOf("收藏夹"),
-        { CupertinoBottomNavigationIcon("FAVORITE", selected = true) },
-        { CupertinoBottomNavigationIcon("FAVORITE", selected = false) },
+        { MiuixBottomNavigationIcon("FAVORITE", selected = true) },
+        { MiuixBottomNavigationIcon("FAVORITE", selected = false) },
         ScreenRoutes.Favorite.route
     ),
     LIVE(
@@ -309,8 +306,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_live,
         R.string.bottom_nav_live,
         emptyList(),
-        { CupertinoBottomNavigationIcon("LIVE", selected = true) },
-        { CupertinoBottomNavigationIcon("LIVE", selected = false) },
+        { MiuixBottomNavigationIcon("LIVE", selected = true) },
+        { MiuixBottomNavigationIcon("LIVE", selected = false) },
         ScreenRoutes.LiveList.route
     ),
     WATCHLATER(
@@ -318,8 +315,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_watch_later,
         R.string.bottom_nav_watch_later_desc,
         listOf("稍后再看"),
-        { CupertinoBottomNavigationIcon("WATCHLATER", selected = true) },
-        { CupertinoBottomNavigationIcon("WATCHLATER", selected = false) },
+        { MiuixBottomNavigationIcon("WATCHLATER", selected = true) },
+        { MiuixBottomNavigationIcon("WATCHLATER", selected = false) },
         ScreenRoutes.WatchLater.route
     ),
     SETTINGS(
@@ -327,8 +324,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_settings,
         R.string.bottom_nav_settings,
         emptyList(),
-        { CupertinoBottomNavigationIcon("SETTINGS", selected = true) },
-        { CupertinoBottomNavigationIcon("SETTINGS", selected = false) },
+        { MiuixBottomNavigationIcon("SETTINGS", selected = true) },
+        { MiuixBottomNavigationIcon("SETTINGS", selected = false) },
         ScreenRoutes.Settings.route
     ),
     PLUGINS(
@@ -336,21 +333,22 @@ enum class BottomNavItem(
         R.string.plugins_center_title,
         R.string.plugins_center_title,
         listOf("插件中心"),
-        { CupertinoBottomNavigationIcon("PLUGINS", selected = true) },
-        { CupertinoBottomNavigationIcon("PLUGINS", selected = false) },
+        { MiuixBottomNavigationIcon("PLUGINS", selected = true) },
+        { MiuixBottomNavigationIcon("PLUGINS", selected = false) },
         ScreenRoutes.PluginsSettings.createRoute()
     )
 }
 
 @Composable
-private fun CupertinoBottomNavigationIcon(
+private fun MiuixBottomNavigationIcon(
     tabId: String,
     selected: Boolean,
 ) {
+    val fallbackIconFamily = rememberAppSemanticVisualPolicy().iconFamily
     AppIcon(
-        imageVector = resolveHomeNavigationIcon(
+        imageVector = resolveMiuixPreferredHomeNavigationIcon(
             tabId = tabId,
-            iconFamily = AppSemanticIconFamily.CUPERTINO,
+            fallbackIconFamily = fallbackIconFamily,
             selected = selected,
         ),
         contentDescription = null,
@@ -2618,7 +2616,7 @@ private fun MaterialBottomBar(
                                         )
                                     } else {
                                         AppIcon(
-                                            imageVector = resolveMaterialBottomBarIcon(item = item, selected = currentItem == item),
+                                            imageVector = resolveHomeNavigationBarIcon(item = item, selected = currentItem == item),
                                             contentDescription = itemContentDescription
                                         )
                                     }
@@ -2664,7 +2662,7 @@ private fun MaterialBottomBar(
                         icon = {
                             if (showIcon) {
                                 AppIcon(
-                                    imageVector = Icons.AutoMirrored.Outlined.MenuOpen,
+                                    imageVector = MiuixIcons.Sidebar,
                                     contentDescription = sidebarLabel
                                 )
                             } else {
@@ -2878,7 +2876,7 @@ private fun MiuixBottomBar(
                     AppPlatformNavigationBarItem(
                         selected = currentItem == item,
                         onClick = onItemTap,
-                        icon = resolveMaterialBottomBarIcon(item, currentItem == item),
+                        icon = resolveHomeNavigationBarIcon(item, currentItem == item),
                         label = itemLabel,
                         badge = reminderBadgeText?.let { badgeText ->
                             {
@@ -2892,7 +2890,7 @@ private fun MiuixBottomBar(
                     MiuixDockedBottomBarItem(
                         selected = currentItem == item,
                         onClick = onItemTap,
-                        icon = resolveMaterialBottomBarIcon(item, currentItem == item),
+                        icon = resolveHomeNavigationBarIcon(item, currentItem == item),
                         label = itemLabel,
                         showIcon = showIcon,
                         showText = showText,
@@ -2916,7 +2914,7 @@ private fun MiuixBottomBar(
                             onClick = onToggleSidebar
                         )
                     },
-                    icon = Icons.AutoMirrored.Outlined.MenuOpen,
+                    icon = MiuixIcons.Sidebar,
                     label = sidebarLabel,
                     showIcon = showIcon,
                     showText = showText,
@@ -3816,7 +3814,10 @@ private fun KernelSuAlignedBottomBar(
                                 )
                             } else {
                                 AppIcon(
-                                    imageVector = CupertinoIcons.Filled.House,
+                                    imageVector = resolveHomeNavigationBarIcon(
+                                        item = BottomNavItem.HOME,
+                                        selected = currentItem == BottomNavItem.HOME,
+                                    ),
                                     contentDescription = null,
                                     tint = if (currentItem == BottomNavItem.HOME) selectedColor else unselectedColor,
                                     modifier = Modifier
@@ -4502,7 +4503,7 @@ private fun KernelSuBottomBarSearchVisualContent(
             contentAlignment = Alignment.Center
         ) {
             AppIcon(
-                imageVector = CupertinoIcons.Default.MagnifyingGlass,
+                imageVector = MiuixIcons.Search,
                 contentDescription = "搜索",
                 tint = contentColor,
                 modifier = Modifier
@@ -4724,13 +4725,13 @@ private fun RowScope.AndroidNativeBottomBarItem(
                             }
                             item == null && iconStyle == SharedFloatingBottomBarIconStyle.CUPERTINO -> {
                                 AppIcon(
-                                    imageVector = CupertinoIcons.Outlined.SidebarLeft,
+                                    imageVector = MiuixIcons.Sidebar,
                                     contentDescription = label
                                 )
                             }
                             item == null -> {
                                 AppIcon(
-                                    imageVector = Icons.AutoMirrored.Outlined.MenuOpen,
+                                    imageVector = MiuixIcons.Sidebar,
                                     contentDescription = label
                                 )
                             }
@@ -4785,12 +4786,13 @@ private fun RowScope.AndroidNativeBottomBarItem(
     }
 }
 
-internal fun resolveMaterialBottomBarIcon(
+@Composable
+internal fun resolveHomeNavigationBarIcon(
     item: BottomNavItem,
     selected: Boolean
-): ImageVector = resolveHomeNavigationIcon(
+): ImageVector = resolveMiuixPreferredHomeNavigationIcon(
     tabId = item.name,
-    iconFamily = AppSemanticIconFamily.MATERIAL,
+    fallbackIconFamily = rememberAppSemanticVisualPolicy().iconFamily,
     selected = selected,
 )
 
@@ -4838,12 +4840,12 @@ private fun BottomBarBlendedMaterialIcon(
             unreadCount = unreadCount
         ) {
             AppIcon(
-                imageVector = resolveMaterialBottomBarIcon(item, selected = false),
+                imageVector = resolveHomeNavigationBarIcon(item, selected = false),
                 contentDescription = contentDescription,
                 modifier = Modifier.alpha(1f - clampedSelectedAlpha)
             )
             AppIcon(
-                imageVector = resolveMaterialBottomBarIcon(item, selected = true),
+                imageVector = resolveHomeNavigationBarIcon(item, selected = true),
                 contentDescription = null,
                 modifier = Modifier.alpha(clampedSelectedAlpha)
             )

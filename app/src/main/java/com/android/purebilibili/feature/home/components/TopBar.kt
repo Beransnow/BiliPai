@@ -435,6 +435,20 @@ internal fun resolveTopTabPartitionIcon(iconFamily: AppSemanticIconFamily): Imag
     return resolveHomeNavigationIcon("PARTITION", iconFamily)
 }
 
+@Composable
+internal fun resolveMiuixPreferredTopTabCategoryIcon(
+    categoryKey: String,
+    fallbackIconFamily: AppSemanticIconFamily,
+    selected: Boolean = false,
+): ImageVector {
+    val category = resolveTopTabCategoryForIcon(categoryKey)
+    return resolveMiuixPreferredHomeNavigationIcon(
+        tabId = category?.name ?: "PARTITION",
+        fallbackIconFamily = fallbackIconFamily,
+        selected = selected,
+    )
+}
+
 internal enum class Md3TopTabRowVariant {
     UNDERLINE_FIXED
 }
@@ -1748,7 +1762,10 @@ private fun LightweightHomeTopTabs(
                         )
                     } else {
                         AppIcon(
-                            resolveTopTabPartitionIcon(topTabIconFamily),
+                            resolveMiuixPreferredHomeNavigationIcon(
+                                tabId = "PARTITION",
+                                fallbackIconFamily = topTabIconFamily,
+                            ),
                             contentDescription = "浏览全部分区",
                             tint = skinPlainContentColor ?: MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(actionIconSize)
@@ -1806,14 +1823,14 @@ private fun LightweightTopTabItem(
     val isDarkTheme = isSystemInDarkTheme()
     val selected = selectionFraction > 0.5f || index == selectedIndex
     val skinIconPath = skinIconPaths?.pathFor(selected)
-    val unselectedIcon = resolveTopTabCategoryIcon(
+    val unselectedIcon = resolveMiuixPreferredTopTabCategoryIcon(
         categoryKey = categoryKey,
-        iconFamily = iconFamily,
+        fallbackIconFamily = iconFamily,
         selected = false
     )
-    val selectedIcon = resolveTopTabCategoryIcon(
+    val selectedIcon = resolveMiuixPreferredTopTabCategoryIcon(
         categoryKey = categoryKey,
-        iconFamily = iconFamily,
+        fallbackIconFamily = iconFamily,
         selected = true
     )
     val selectedColor = when (presentation) {
@@ -2459,14 +2476,14 @@ fun CategoryTabItem(
      val normalizedLabelMode = normalizeTopTabLabelMode(labelMode)
      val showIcon = shouldShowTopTabIcon(normalizedLabelMode)
      val showText = shouldShowTopTabText(normalizedLabelMode)
-     val unselectedIcon = resolveTopTabCategoryIcon(
+     val unselectedIcon = resolveMiuixPreferredTopTabCategoryIcon(
          categoryKey = categoryKey,
-         iconFamily = chromePolicy.iconFamily,
+         fallbackIconFamily = chromePolicy.iconFamily,
          selected = false
      )
-     val selectedIcon = resolveTopTabCategoryIcon(
+     val selectedIcon = resolveMiuixPreferredTopTabCategoryIcon(
          categoryKey = categoryKey,
-         iconFamily = chromePolicy.iconFamily,
+         fallbackIconFamily = chromePolicy.iconFamily,
          selected = true
      )
      val iconSize = resolveTopTabIconSizeDp(normalizedLabelMode).dp

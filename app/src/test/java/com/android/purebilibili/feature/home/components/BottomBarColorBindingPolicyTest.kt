@@ -68,15 +68,15 @@ class BottomBarColorBindingPolicyTest {
     }
 
     @Test
-    fun `bottom bar selected icons use the shared filled policy`() {
+    fun `bottom bar selected icons use the Miuix preferred policy`() {
         val source = File("src/main/java/com/android/purebilibili/feature/home/components/BottomBar.kt")
             .readText()
 
         assertTrue(
             BottomNavItem.entries.all { item ->
-                source.contains("CupertinoBottomNavigationIcon(\"${item.name}\", selected = true)")
+                source.contains("MiuixBottomNavigationIcon(\"${item.name}\", selected = true)")
             },
-            "Bottom bar selected icons should use filled symbols so the whole selected icon is tinted by the theme color."
+            "Bottom bar items should all enter through the Miuix-preferred icon policy."
         )
     }
 
@@ -88,8 +88,8 @@ class BottomBarColorBindingPolicyTest {
             .substringAfter("WATCHLATER(")
             .substringBefore("    ),")
 
-        assertTrue(watchLaterBlock.contains("CupertinoBottomNavigationIcon(\"WATCHLATER\", selected = true)"))
-        assertTrue(watchLaterBlock.contains("CupertinoBottomNavigationIcon(\"WATCHLATER\", selected = false)"))
+        assertTrue(watchLaterBlock.contains("MiuixBottomNavigationIcon(\"WATCHLATER\", selected = true)"))
+        assertTrue(watchLaterBlock.contains("MiuixBottomNavigationIcon(\"WATCHLATER\", selected = false)"))
         assertFalse(watchLaterBlock.contains("Bookmark"))
         assertTrue(
             source.contains("tabId = item.name")
