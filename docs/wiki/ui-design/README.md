@@ -8,6 +8,8 @@
 > 维护角色：设计系统维护者  
 > 相关文档：[Miuix 对齐记录](../MIUIX_ALIGNMENT.md) · [架构说明](../ARCHITECTURE.md) · [QA 手册](../QA.md)
 
+## 初学者解释
+
 这套手册是 BiliPai 前端 UI 的正式设计合同。它同时回答三类问题：界面元素**是什么**（What）、为什么要这样设计（Why）、设计与 Compose 代码应当怎样落地（How）。它不修改当前 UI，也不把当前代码中的每个写法都当成正确标准。
 
 ## 初学者怎样阅读
@@ -29,7 +31,7 @@ flowchart LR
 - **差距**：当前实现与目标规范之间的距离，集中登记在[差距台账](10_GAP_LEDGER.md)。
 - **验收**：用自动检查或人工操作判断规则是否满足，见[验收手册](09_ACCEPTANCE.md)。
 
-## 规范等级
+## 规范要求与等级
 
 | 等级 | 含义 | 初学者判断方法 |
 |---|---|---|
@@ -85,7 +87,7 @@ flowchart LR
 - [设置](pages/SETTINGS.md)
 - [账号、工具与 Web](pages/ACCOUNT_TOOLS_WEB.md)
 
-## 代码事实基线
+## 代码映射与事实基线
 
 | 事实 | 当前入口 |
 |---|---|
@@ -107,4 +109,3 @@ flowchart LR
 2. `PAGE_CATALOG.md` 必须恰好登记源码中的 61 个 `BiliPaiNavKey`。
 3. 每份规范都必须同时出现初学者解释、规范要求、代码映射、当前差距和验收方法。
 4. 运行 `:app:testDebugUnitTest --tests '*UiDesignDocumentationStructureTest'`。
-
