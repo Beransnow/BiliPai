@@ -106,6 +106,23 @@ class AppIconAliasMappingTest {
                 appearance = AppIconAppearance.LIGHT
             )
         )
+        assertEquals(
+            "$packageName.MainActivityAliasBlueSnowMaidAnnouncementLight",
+            resolveAppIconLauncherAlias(
+                packageName,
+                "icon_blue_snow_maid_announcement",
+                appearance = AppIconAppearance.LIGHT
+            )
+        )
+        assertEquals(
+            "$packageName.MainActivityAliasBlueSnowMaidAnnouncementDarkNoIcon",
+            resolveAppIconLauncherAlias(
+                packageName,
+                "icon_blue_snow_maid_announcement",
+                splashIconVisible = false,
+                appearance = AppIconAppearance.DARK
+            )
+        )
     }
 
     @Test
@@ -135,6 +152,8 @@ class AppIconAliasMappingTest {
         assertTrue(aliases.contains("com.android.purebilibili.MainActivityAliasBlueSnowMaidNoIcon"))
         assertTrue(aliases.contains("com.android.purebilibili.MainActivityAliasBlueSnowMaidAnnouncement"))
         assertTrue(aliases.contains("com.android.purebilibili.MainActivityAliasBlueSnowMaidAnnouncementNoIcon"))
+        assertTrue(aliases.contains("com.android.purebilibili.MainActivityAliasBlueSnowMaidAnnouncementLight"))
+        assertTrue(aliases.contains("com.android.purebilibili.MainActivityAliasBlueSnowMaidAnnouncementDarkNoIcon"))
         assertTrue(aliases.contains("com.android.purebilibili.MainActivityAliasBlueSnowMaidFront"))
         assertTrue(aliases.contains("com.android.purebilibili.MainActivityAliasBlueSnowMaidFrontNoIcon"))
         assertTrue(aliases.contains("com.android.purebilibili.MainActivityAliasBlueSnowMaidLight"))

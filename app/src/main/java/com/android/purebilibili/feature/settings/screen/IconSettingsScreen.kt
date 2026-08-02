@@ -101,6 +101,10 @@ internal fun resolveIconOptionPreviewRes(
             R.mipmap.ic_launcher_blue_snow_maid_light_round
         "icon_blue_snow_maid" to AppIconAppearance.DARK ->
             R.mipmap.ic_launcher_blue_snow_maid_dark_round
+        "icon_blue_snow_maid_announcement" to AppIconAppearance.LIGHT ->
+            R.mipmap.ic_launcher_blue_snow_maid_announcement_light_round
+        "icon_blue_snow_maid_announcement" to AppIconAppearance.DARK ->
+            R.mipmap.ic_launcher_blue_snow_maid_announcement_dark_round
         "icon_blue_snow_maid_front" to AppIconAppearance.LIGHT ->
             R.mipmap.ic_launcher_blue_snow_maid_front_light_round
         "icon_blue_snow_maid_front" to AppIconAppearance.DARK ->

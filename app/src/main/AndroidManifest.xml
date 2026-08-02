@@ -192,6 +192,26 @@
             android:supportsPictureInPicture="true" />
 
         <activity
+            android:name=".MainActivitySplashBlueSnowMaidAnnouncementLight"
+            android:exported="false"
+            android:enabled="true"
+            android:icon="@mipmap/ic_launcher_blue_snow_maid_announcement_light"
+            android:roundIcon="@mipmap/ic_launcher_blue_snow_maid_announcement_light_round"
+            android:theme="@style/Theme.PureBiliBili.Splash.BlueSnowMaidAnnouncementLight"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|mnc|colorMode|density|smallestScreenSize|uiMode"
+            android:supportsPictureInPicture="true" />
+
+        <activity
+            android:name=".MainActivitySplashBlueSnowMaidAnnouncementDark"
+            android:exported="false"
+            android:enabled="true"
+            android:icon="@mipmap/ic_launcher_blue_snow_maid_announcement_dark"
+            android:roundIcon="@mipmap/ic_launcher_blue_snow_maid_announcement_dark_round"
+            android:theme="@style/Theme.PureBiliBili.Splash.BlueSnowMaidAnnouncementDark"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|mnc|colorMode|density|smallestScreenSize|uiMode"
+            android:supportsPictureInPicture="true" />
+
+        <activity
             android:name=".MainActivitySplashBlueSnowMaidFront"
             android:exported="false"
             android:enabled="true"
@@ -380,6 +400,36 @@
             <meta-data
                 android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityAliasBlueSnowMaidAnnouncementLight"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_blue_snow_maid_announcement_light"
+            android:roundIcon="@mipmap/ic_launcher_blue_snow_maid_announcement_light_round"
+            android:label="@string/app_name"
+            android:targetActivity=".MainActivitySplashBlueSnowMaidAnnouncementLight">
+            <intent-filter android:priority="1">
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityAliasBlueSnowMaidAnnouncementDark"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_blue_snow_maid_announcement_dark"
+            android:roundIcon="@mipmap/ic_launcher_blue_snow_maid_announcement_dark_round"
+            android:label="@string/app_name"
+            android:targetActivity=".MainActivitySplashBlueSnowMaidAnnouncementDark">
+            <intent-filter android:priority="1">
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity-alias>
 
         <!-- 蓝雪女仆正面版 Launcher -->
@@ -628,6 +678,36 @@
             <meta-data
                 android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityAliasBlueSnowMaidAnnouncementLightNoIcon"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_blue_snow_maid_announcement_light"
+            android:roundIcon="@mipmap/ic_launcher_blue_snow_maid_announcement_light_round"
+            android:label="@string/app_name"
+            android:targetActivity=".MainActivitySplashNoIcon">
+            <intent-filter android:priority="1">
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
+        </activity-alias>
+
+        <activity-alias
+            android:name=".MainActivityAliasBlueSnowMaidAnnouncementDarkNoIcon"
+            android:enabled="false"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher_blue_snow_maid_announcement_dark"
+            android:roundIcon="@mipmap/ic_launcher_blue_snow_maid_announcement_dark_round"
+            android:label="@string/app_name"
+            android:targetActivity=".MainActivitySplashNoIcon">
+            <intent-filter android:priority="1">
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <meta-data android:name="android.app.shortcuts" android:resource="@xml/shortcuts" />
         </activity-alias>
 
         <activity-alias

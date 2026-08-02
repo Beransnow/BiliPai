@@ -214,8 +214,8 @@ class MainActivityAppCompatContractTest {
         val announcementWidthRatio =
             (announcementOpaqueXs.max() - announcementOpaqueXs.min() + 1).toFloat() / announcementWidth
         assertTrue(
-            announcementWidthRatio in 0.50f..0.53f,
-            "Announcement foreground should fit Android's adaptive-icon safe zone without clipping the character"
+            announcementWidthRatio in 0.48f..0.50f,
+            "Announcement foreground should leave comfortable breathing room inside Android's adaptive-icon safe zone"
         )
 
         listOf(
@@ -239,6 +239,11 @@ class MainActivityAppCompatContractTest {
             loadResourceText("drawable-night/ic_launcher_blue_snow_maid_announcement_background.xml")
                 .contains("#FF090A0C"),
             "Announcement icon should use the same near-black outer shell in dark mode"
+        )
+        assertTrue(
+            loadResourceText("mipmap-night-anydpi-v26/ic_launcher_blue_snow_maid_announcement.xml")
+                .contains("@drawable/ic_launcher_blue_snow_maid_announcement_background_dark"),
+            "Announcement adaptive icon should select an explicit all-black background in dark mode"
         )
         val announcementFallbackRows = readPngRgbaRows(
             loadResourceFile("mipmap-night-xxxhdpi/ic_launcher_blue_snow_maid_announcement_round.png")
@@ -289,7 +294,11 @@ class MainActivityAppCompatContractTest {
 
     @Test
     fun fixedMaidAppearanceResources_shouldMatchTheirLightAndDarkMasters() {
-        listOf("ic_launcher_blue_snow_maid", "ic_launcher_blue_snow_maid_front")
+        listOf(
+            "ic_launcher_blue_snow_maid",
+            "ic_launcher_blue_snow_maid_announcement",
+            "ic_launcher_blue_snow_maid_front"
+        )
             .forEach { stem ->
                 listOf("", "_round", "_foreground").forEach { suffix ->
                     val lightMaster = loadResourceFile("mipmap-xxxhdpi/$stem$suffix.png")
@@ -303,14 +312,28 @@ class MainActivityAppCompatContractTest {
 
         val lightAdaptive = loadResourceText("mipmap-anydpi-v26/ic_launcher_blue_snow_maid_light.xml")
         val darkAdaptive = loadResourceText("mipmap-anydpi-v26/ic_launcher_blue_snow_maid_dark.xml")
+        val announcementLightAdaptive =
+            loadResourceText("mipmap-anydpi-v26/ic_launcher_blue_snow_maid_announcement_light.xml")
+        val announcementDarkAdaptive =
+            loadResourceText("mipmap-anydpi-v26/ic_launcher_blue_snow_maid_announcement_dark.xml")
         assertTrue(lightAdaptive.contains("@drawable/ic_launcher_blue_snow_maid_background_light"))
         assertTrue(darkAdaptive.contains("@drawable/ic_launcher_blue_snow_maid_background_dark"))
+        assertTrue(announcementLightAdaptive.contains("@drawable/ic_launcher_blue_snow_maid_background_light"))
+        assertTrue(announcementDarkAdaptive.contains("@drawable/ic_launcher_blue_snow_maid_background_dark"))
         assertTrue(
             loadResourceText("drawable/splash_icon_blue_snow_maid_light.xml")
                 .contains("#FFFFFFFF")
         )
         assertTrue(
             loadResourceText("drawable/splash_icon_blue_snow_maid_dark.xml")
+                .contains("#FF090A0C")
+        )
+        assertTrue(
+            loadResourceText("drawable/splash_icon_blue_snow_maid_announcement_light.xml")
+                .contains("#FFFFFFFF")
+        )
+        assertTrue(
+            loadResourceText("drawable/splash_icon_blue_snow_maid_announcement_dark.xml")
                 .contains("#FF090A0C")
         )
     }
@@ -322,6 +345,8 @@ class MainActivityAppCompatContractTest {
         mapOf(
             "MainActivityAliasBlueSnowMaid" to SplashAliasContract("MainActivitySplashBlueSnowMaid", "Theme.PureBiliBili.Splash.BlueSnowMaid", "ic_launcher_blue_snow_maid", splashActivityRoundIcon = "@mipmap/ic_launcher_blue_snow_maid_round"),
             "MainActivityAliasBlueSnowMaidAnnouncement" to SplashAliasContract("MainActivitySplashBlueSnowMaidAnnouncement", "Theme.PureBiliBili.Splash.BlueSnowMaidAnnouncement", "ic_launcher_blue_snow_maid_announcement", splashActivityRoundIcon = "@mipmap/ic_launcher_blue_snow_maid_announcement_round"),
+            "MainActivityAliasBlueSnowMaidAnnouncementLight" to SplashAliasContract("MainActivitySplashBlueSnowMaidAnnouncementLight", "Theme.PureBiliBili.Splash.BlueSnowMaidAnnouncementLight", "ic_launcher_blue_snow_maid_announcement_light", splashActivityRoundIcon = "@mipmap/ic_launcher_blue_snow_maid_announcement_light_round"),
+            "MainActivityAliasBlueSnowMaidAnnouncementDark" to SplashAliasContract("MainActivitySplashBlueSnowMaidAnnouncementDark", "Theme.PureBiliBili.Splash.BlueSnowMaidAnnouncementDark", "ic_launcher_blue_snow_maid_announcement_dark", splashActivityRoundIcon = "@mipmap/ic_launcher_blue_snow_maid_announcement_dark_round"),
             "MainActivityAliasBlueSnowMaidFront" to SplashAliasContract("MainActivitySplashBlueSnowMaidFront", "Theme.PureBiliBili.Splash.BlueSnowMaidFront", "ic_launcher_blue_snow_maid_front", splashActivityRoundIcon = "@mipmap/ic_launcher_blue_snow_maid_front_round"),
             "MainActivityAliasBlueSnowMaidLight" to SplashAliasContract("MainActivitySplashBlueSnowMaidLight", "Theme.PureBiliBili.Splash.BlueSnowMaidLight", "ic_launcher_blue_snow_maid_light", splashActivityRoundIcon = "@mipmap/ic_launcher_blue_snow_maid_light_round"),
             "MainActivityAliasBlueSnowMaidDark" to SplashAliasContract("MainActivitySplashBlueSnowMaidDark", "Theme.PureBiliBili.Splash.BlueSnowMaidDark", "ic_launcher_blue_snow_maid_dark", splashActivityRoundIcon = "@mipmap/ic_launcher_blue_snow_maid_dark_round"),
@@ -390,6 +415,8 @@ class MainActivityAppCompatContractTest {
         listOf(
             "MainActivityAliasBlueSnowMaidNoIcon" to "ic_launcher_blue_snow_maid",
             "MainActivityAliasBlueSnowMaidAnnouncementNoIcon" to "ic_launcher_blue_snow_maid_announcement",
+            "MainActivityAliasBlueSnowMaidAnnouncementLightNoIcon" to "ic_launcher_blue_snow_maid_announcement_light",
+            "MainActivityAliasBlueSnowMaidAnnouncementDarkNoIcon" to "ic_launcher_blue_snow_maid_announcement_dark",
             "MainActivityAliasBlueSnowMaidFrontNoIcon" to "ic_launcher_blue_snow_maid_front",
             "MainActivityAliasBlueSnowMaidLightNoIcon" to "ic_launcher_blue_snow_maid_light",
             "MainActivityAliasBlueSnowMaidDarkNoIcon" to "ic_launcher_blue_snow_maid_dark",
@@ -429,6 +456,10 @@ class MainActivityAppCompatContractTest {
             "com.android.purebilibili.MainActivitySplashBlueSnowMaid" to R.drawable.splash_icon_blue_snow_maid,
             "com.android.purebilibili.MainActivityAliasBlueSnowMaidAnnouncement" to R.mipmap.ic_launcher_blue_snow_maid_announcement,
             "com.android.purebilibili.MainActivitySplashBlueSnowMaidAnnouncement" to R.drawable.splash_icon_blue_snow_maid_announcement,
+            "com.android.purebilibili.MainActivityAliasBlueSnowMaidAnnouncementLight" to R.mipmap.ic_launcher_blue_snow_maid_announcement_light,
+            "com.android.purebilibili.MainActivitySplashBlueSnowMaidAnnouncementLight" to R.drawable.splash_icon_blue_snow_maid_announcement_light,
+            "com.android.purebilibili.MainActivityAliasBlueSnowMaidAnnouncementDark" to R.mipmap.ic_launcher_blue_snow_maid_announcement_dark,
+            "com.android.purebilibili.MainActivitySplashBlueSnowMaidAnnouncementDark" to R.drawable.splash_icon_blue_snow_maid_announcement_dark,
             "com.android.purebilibili.MainActivityAliasBlueSnowMaidFront" to R.mipmap.ic_launcher_blue_snow_maid_front,
             "com.android.purebilibili.MainActivitySplashBlueSnowMaidFront" to R.drawable.splash_icon_blue_snow_maid_front,
             "com.android.purebilibili.MainActivityAliasBlueSnowMaidLight" to R.mipmap.ic_launcher_blue_snow_maid_light,
