@@ -56,6 +56,7 @@ import com.android.purebilibili.data.model.response.AiAudioInfo
 import com.android.purebilibili.feature.plugin.CdnLineDiagnostic
 import com.android.purebilibili.feature.anime4k.Anime4KBypassReason
 import com.android.purebilibili.feature.anime4k.Anime4KPreset
+import com.android.purebilibili.feature.anime4k.DEFAULT_FSR_SHARPNESS
 import com.android.purebilibili.feature.anime4k.VideoEnhancementAlgorithm
 import com.android.purebilibili.feature.video.playback.audio.AudioQualityOption
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -202,8 +203,11 @@ fun VideoSettingsPanel(
     anime4kBypassReason: Anime4KBypassReason = Anime4KBypassReason.DISABLED,
     videoEnhancementAlgorithm: VideoEnhancementAlgorithm = VideoEnhancementAlgorithm.ANIME4K,
     anime4kPreset: Anime4KPreset = Anime4KPreset.FAST,
+    fsrSharpness: Float = DEFAULT_FSR_SHARPNESS,
     onAnime4kToggle: (Boolean) -> Unit = {},
+    onVideoEnhancementAlgorithmChange: (VideoEnhancementAlgorithm) -> Unit = {},
     onAnime4kPresetChange: (Anime4KPreset) -> Unit = {},
+    onFsrSharpnessChange: (Float) -> Unit = {},
     // [New] 音频语言 (AI Translation)
     aiAudioInfo: AiAudioInfo? = null,
     currentAudioLang: String? = null,
@@ -363,15 +367,28 @@ fun VideoSettingsPanel(
                         }
                     )
                     AnimatedVisibility(
-                        visible = anime4kEnabled &&
-                            anime4kAvailable &&
-                            videoEnhancementAlgorithm == VideoEnhancementAlgorithm.ANIME4K
+                        visible = anime4kEnabled && anime4kAvailable
                     ) {
-                        Anime4KPresetOptions(
-                            preset = anime4kPreset,
-                            onPresetChange = onAnime4kPresetChange,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                        )
+                        Column(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            VideoEnhancementAlgorithmOptions(
+                                algorithm = videoEnhancementAlgorithm,
+                                onAlgorithmChange = onVideoEnhancementAlgorithmChange
+                            )
+                            if (videoEnhancementAlgorithm == VideoEnhancementAlgorithm.ANIME4K) {
+                                Anime4KPresetOptions(
+                                    preset = anime4kPreset,
+                                    onPresetChange = onAnime4kPresetChange
+                                )
+                            } else {
+                                FsrSharpnessOptions(
+                                    sharpness = fsrSharpness,
+                                    onSharpnessChange = onFsrSharpnessChange
+                                )
+                            }
+                        }
                     }
                 }
                 SettingsDivider()

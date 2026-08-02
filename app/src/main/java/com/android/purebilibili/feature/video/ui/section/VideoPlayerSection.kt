@@ -4936,6 +4936,7 @@ fun VideoPlayerSection(
                 anime4kBypassReason = anime4kBypassReason,
                 videoEnhancementAlgorithm = anime4kConfig.algorithm,
                 anime4kPreset = anime4kConfig.preset,
+                fsrSharpness = anime4kConfig.fsrSharpness,
                 onAnime4kToggle = { enabled ->
                     anime4kPipelineFailed = false
                     videoEnhancementSessionOverride = enabled
@@ -4951,6 +4952,9 @@ fun VideoPlayerSection(
                 },
                 onAnime4kPresetChange = { preset ->
                     anime4kPlugin?.setPreset(preset)
+                },
+                onFsrSharpnessChange = { sharpness ->
+                    anime4kPlugin?.setFsrSharpness(sharpness)
                 },
                 // [New] AI Audio
                 aiAudioInfo = uiState.aiAudio,

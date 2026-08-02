@@ -35,6 +35,21 @@ class Anime4KConfigUpdateStructureTest {
         assertFalse(setConfig.contains("releaseInputSurface()"))
     }
 
+    @Test
+    fun `FSR锐度变化只更新逐帧uniform不重建管线`() {
+        val source = source("Anime4KPipelineRenderer.kt")
+        val setConfig = source.substring(
+            startIndex = source.indexOf("fun setConfig(value: Anime4KConfig)"),
+            endIndex = source.indexOf("fun setInputSize")
+        )
+
+        assertTrue(setConfig.contains("val pipelineChanged ="))
+        assertTrue(
+            setConfig.indexOf("if (!pipelineChanged) return") <
+                setConfig.indexOf("notifiedFirstFrame = false")
+        )
+    }
+
     private fun source(fileName: String): String = listOf(
         File("app/src/main/java/com/android/purebilibili/feature/anime4k/gl/$fileName"),
         File("src/main/java/com/android/purebilibili/feature/anime4k/gl/$fileName")

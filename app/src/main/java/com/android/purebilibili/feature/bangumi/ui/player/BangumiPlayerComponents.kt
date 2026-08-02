@@ -690,6 +690,7 @@ fun BangumiPlayerView(
             anime4kBypassReason = anime4kBypassReason,
             videoEnhancementAlgorithm = anime4kConfig.algorithm,
             anime4kPreset = anime4kConfig.preset,
+            fsrSharpness = anime4kConfig.fsrSharpness,
             onAnime4kToggle = { enabled ->
                 anime4kPipelineFailed = false
                 videoEnhancementSessionOverride = enabled
@@ -705,6 +706,9 @@ fun BangumiPlayerView(
             },
             onAnime4kPresetChange = { preset ->
                 anime4kPlugin?.setPreset(preset)
+            },
+            onFsrSharpnessChange = { sharpness ->
+                anime4kPlugin?.setFsrSharpness(sharpness)
             },
             onShowMessage = onShowMessage
         )

@@ -71,6 +71,7 @@ import com.android.purebilibili.feature.video.subtitle.resolveSubtitleDisplayOpt
 import com.android.purebilibili.feature.video.playback.policy.resolveDisplayedPlaybackTransitionPosition
 import com.android.purebilibili.core.store.PlayerProgressPlacement
 import com.android.purebilibili.feature.anime4k.Anime4KPreset
+import com.android.purebilibili.feature.anime4k.DEFAULT_FSR_SHARPNESS
 import com.android.purebilibili.feature.anime4k.VideoEnhancementAlgorithm
 import com.android.purebilibili.feature.anime4k.resolveAnime4KPresetLabel
 import kotlin.math.roundToInt
@@ -397,9 +398,11 @@ fun BottomControlBar(
     anime4kAvailable: Boolean = false,
     videoEnhancementAlgorithm: VideoEnhancementAlgorithm = VideoEnhancementAlgorithm.ANIME4K,
     anime4kPreset: Anime4KPreset = Anime4KPreset.FAST,
+    fsrSharpness: Float = DEFAULT_FSR_SHARPNESS,
     onAnime4kToggle: (Boolean) -> Unit = {},
     onVideoEnhancementAlgorithmChange: (VideoEnhancementAlgorithm) -> Unit = {},
     onAnime4kPresetChange: (Anime4KPreset) -> Unit = {},
+    onFsrSharpnessChange: (Float) -> Unit = {},
     
     // Quality
     currentAudioQualityLabel: String = "音质",
@@ -1179,11 +1182,13 @@ fun BottomControlBar(
                 enabled = anime4kEnabled,
                 algorithm = videoEnhancementAlgorithm,
                 preset = anime4kPreset,
+                fsrSharpness = fsrSharpness,
                 minWidthDp = maxOf(220, floatingPanelMinWidthDp),
                 maxHeightDp = videoEnhancementPanelMaxHeightDp,
                 onCheckedChange = onAnime4kToggle,
                 onAlgorithmChange = onVideoEnhancementAlgorithmChange,
-                onPresetChange = onAnime4kPresetChange
+                onPresetChange = onAnime4kPresetChange,
+                onFsrSharpnessChange = onFsrSharpnessChange
             )
         }
     }
@@ -1282,11 +1287,13 @@ private fun VideoEnhancementSettingsPanel(
     enabled: Boolean,
     algorithm: VideoEnhancementAlgorithm,
     preset: Anime4KPreset,
+    fsrSharpness: Float,
     minWidthDp: Int,
     maxHeightDp: Int,
     onCheckedChange: (Boolean) -> Unit,
     onAlgorithmChange: (VideoEnhancementAlgorithm) -> Unit,
-    onPresetChange: (Anime4KPreset) -> Unit
+    onPresetChange: (Anime4KPreset) -> Unit,
+    onFsrSharpnessChange: (Float) -> Unit
 ) {
     AppSurface(
         color = Color.Black.copy(alpha = 0.82f),
@@ -1377,6 +1384,34 @@ private fun VideoEnhancementSettingsPanel(
                         )
                     }
                 }
+            } else {
+                AppHorizontalDivider(color = Color.White.copy(alpha = 0.10f))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    AppText(
+                        text = "FSR 锐化",
+                        color = Color.White.copy(alpha = 0.72f),
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    AppText(
+                        text = "${(fsrSharpness.coerceIn(0f, 1f) * 100).roundToInt()}%",
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                Slider(
+                    value = fsrSharpness.coerceIn(0f, 1f),
+                    onValueChange = onFsrSharpnessChange,
+                    valueRange = 0f..1f,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
 
             AppText(

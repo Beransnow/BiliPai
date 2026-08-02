@@ -128,15 +128,12 @@ internal class Anime4KPipelineRenderer(
     }
 
     fun setConfig(value: Anime4KConfig) {
-        if (
-            config.algorithm == value.algorithm &&
-            config.preset == value.preset &&
-            config.fsrSharpness == value.fsrSharpness
-        ) {
-            return
-        }
+        val pipelineChanged = config.algorithm != value.algorithm || config.preset != value.preset
+        if (!pipelineChanged && config.fsrSharpness == value.fsrSharpness) return
         try {
             config = value
+            // FSR 锐度是逐帧上传的 uniform，拖动滑条时无需重建 shader/FBO 管线。
+            if (!pipelineChanged) return
             notifiedFirstFrame = false
             fboManager.release()
             resetPerformanceStats()

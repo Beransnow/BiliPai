@@ -85,9 +85,11 @@ internal fun BangumiPlayerOverlayHost(
     anime4kBypassReason: Anime4KBypassReason,
     videoEnhancementAlgorithm: VideoEnhancementAlgorithm,
     anime4kPreset: Anime4KPreset,
+    fsrSharpness: Float,
     onAnime4kToggle: (Boolean) -> Unit,
     onVideoEnhancementAlgorithmChange: (VideoEnhancementAlgorithm) -> Unit,
     onAnime4kPresetChange: (Anime4KPreset) -> Unit,
+    onFsrSharpnessChange: (Float) -> Unit,
     onShowMessage: (String) -> Unit
 ) {
     val context = LocalContext.current
@@ -173,9 +175,11 @@ internal fun BangumiPlayerOverlayHost(
         anime4kBypassReason = anime4kBypassReason,
         videoEnhancementAlgorithm = videoEnhancementAlgorithm,
         anime4kPreset = anime4kPreset,
+        fsrSharpness = fsrSharpness,
         onAnime4kToggle = onAnime4kToggle,
         onVideoEnhancementAlgorithmChange = onVideoEnhancementAlgorithmChange,
         onAnime4kPresetChange = onAnime4kPresetChange,
+        onFsrSharpnessChange = onFsrSharpnessChange,
         onQualityChange = onQualityChange,
         onPipClick = {},
         onCaptureScreenshot = onCaptureScreenshot,

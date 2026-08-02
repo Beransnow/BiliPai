@@ -23,6 +23,10 @@ class BangumiAnime4KStructureTest {
         assertTrue(overlaySource.contains("anime4kBypassReason = anime4kBypassReason"))
         assertTrue(overlaySource.contains("onVideoEnhancementAlgorithmChange = onVideoEnhancementAlgorithmChange"))
         assertTrue(overlaySource.contains("onAnime4kPresetChange = onAnime4kPresetChange"))
+        assertTrue(overlaySource.contains("fsrSharpness = fsrSharpness"))
+        assertTrue(overlaySource.contains("onFsrSharpnessChange = onFsrSharpnessChange"))
+        assertTrue(playerSource.contains("fsrSharpness = anime4kConfig.fsrSharpness"))
+        assertTrue(playerSource.contains("anime4kPlugin?.setFsrSharpness(sharpness)"))
     }
 
     private fun sourceOf(path: String): String =

@@ -25,7 +25,7 @@ class VideoEnhancementMoreMenuStructureTest {
     }
 
     @Test
-    fun `二级菜单承载当前视频开关和算法模型选择`() {
+    fun `二级菜单承载当前视频开关算法模型和FSR锐化`() {
         val source = bottomControlBarSource()
 
         assertTrue(source.contains("VideoEnhancementSettingsPanel("))
@@ -33,6 +33,9 @@ class VideoEnhancementMoreMenuStructureTest {
         assertTrue(source.contains("onAlgorithmChange = onVideoEnhancementAlgorithmChange"))
         assertTrue(source.contains("VideoEnhancementAlgorithm.entries.forEach"))
         assertTrue(source.contains("Anime4K 模型"))
+        assertTrue(source.contains("text = \"FSR 锐化\""))
+        assertTrue(source.contains("onValueChange = onFsrSharpnessChange"))
+        assertTrue(source.contains("fsrSharpness = fsrSharpness"))
         assertTrue(source.contains("算法与模型会沿用上次选择"))
     }
 
