@@ -16,6 +16,21 @@ import kotlin.test.assertTrue
 class VideoPlayerSectionPolicyTest {
 
     @Test
+    fun autoFullscreen_snapshotDoesNotReenterAfterFullscreenPlayerIsRecreated() {
+        assertFalse(
+            shouldToggleAutoFullscreenForCurrentPlaybackSnapshot(
+                autoEnterFullscreenEnabled = true,
+                autoExitFullscreenEnabled = false,
+                allowPlaybackStateAutoFullscreen = true,
+                playbackState = Player.STATE_READY,
+                playWhenReady = true,
+                hasAutoEnteredFullscreen = false,
+                isFullscreen = false,
+            )
+        )
+    }
+
+    @Test
     fun coverCorner_sharedReturnKeepsFrozenSourceCardCorner() {
         assertEquals(
             18,

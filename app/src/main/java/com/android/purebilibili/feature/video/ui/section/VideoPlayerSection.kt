@@ -114,7 +114,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -129,6 +131,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -187,6 +190,7 @@ import com.android.purebilibili.feature.video.usecase.playPlayerFromUserAction
 import com.android.purebilibili.feature.video.usecase.seekPlayerFromUserAction
 import com.android.purebilibili.feature.video.usecase.togglePlayerPlaybackFromUserAction
 import com.android.purebilibili.feature.video.util.captureAndSaveVideoScreenshot
+import com.android.purebilibili.feature.video.util.captureVideoAmbientFrame
 import com.android.purebilibili.feature.video.playback.session.PlaybackSeekSessionState
 import com.android.purebilibili.feature.video.playback.session.SEEK_PLAYBACK_RECOVERY_DELAY_MS
 import com.android.purebilibili.feature.video.playback.session.shouldAttemptPlaybackRecoveryAfterSeek
@@ -374,6 +378,7 @@ fun VideoPlayerSection(
     uiState: VideoPlaybackUiState,
     isFullscreen: Boolean,
     isInPipMode: Boolean,
+    contentTopInset: Dp = 0.dp,
     transitionEnabled: Boolean = true,
     transitionChromeAlphaProvider: () -> Float = { 1f },
     onToggleFullscreen: () -> Unit,
@@ -888,36 +893,6 @@ fun VideoPlayerSection(
     val latestOnToggleFullscreen by rememberUpdatedState(onToggleFullscreen)
     val latestWillContinueToNextAfterEnd by rememberUpdatedState(willContinueToNextAfterEnd)
     val latestAutoExitFullscreenMode by rememberUpdatedState(autoExitFullscreenMode)
-    LaunchedEffect(
-        playerState.player,
-        autoEnterFullscreenEnabled,
-        autoExitFullscreenEnabled,
-        autoExitFullscreenMode,
-        allowPlaybackStateAutoFullscreen,
-        willContinueToNextAfterEnd,
-        bvid,
-        isFullscreen
-    ) {
-        val playbackState = playerState.player.playbackState
-        val playWhenReady = playerState.player.playWhenReady
-        if (shouldToggleAutoFullscreenForCurrentPlaybackSnapshot(
-                autoEnterFullscreenEnabled = autoEnterFullscreenEnabled,
-                autoExitFullscreenEnabled = autoExitFullscreenEnabled,
-                allowPlaybackStateAutoFullscreen = allowPlaybackStateAutoFullscreen,
-                playbackState = playbackState,
-                playWhenReady = playWhenReady,
-                hasAutoEnteredFullscreen = hasAutoEnteredFullscreen,
-                isFullscreen = latestIsFullscreen,
-                willContinueToNextItem = latestWillContinueToNextAfterEnd,
-                autoExitFullscreenMode = latestAutoExitFullscreenMode,
-            )
-        ) {
-            if (playbackState == Player.STATE_READY && playWhenReady && !latestIsFullscreen) {
-                hasAutoEnteredFullscreen = true
-            }
-            latestOnToggleFullscreen()
-        }
-    }
     DisposableEffect(
         playerState.player,
         autoEnterFullscreenEnabled,
@@ -990,6 +965,10 @@ fun VideoPlayerSection(
     val playerDiagnosticLoggingEnabled by SettingsManager
         .getPlayerDiagnosticLoggingEnabled(context)
         .collectAsStateWithLifecycle(initialValue = true)
+    val currentPlaybackIdentity = remember(bvid, uiState) {
+        val success = uiState as? VideoPlaybackUiState.Success
+        "${bvid}_${success?.info?.cid ?: 0L}"
+    }
 
     // 控制器显示状态
     var showControls by remember(bvid) { mutableStateOf(INITIAL_PLAYER_CONTROLS_VISIBLE) }
@@ -997,6 +976,7 @@ fun VideoPlayerSection(
         mutableStateOf(INITIAL_PLAYER_CHROME_AUTO_HIDE_HANDLED)
     }
     var playerViewRef by remember { mutableStateOf<PlayerView?>(null) }
+    val statusBarAmbientFrame = remember(bvid) { mutableStateOf<ImageBitmap?>(null) }
     var measuredPlayerViewportSize by remember(bvid) { mutableStateOf(IntSize.Zero) }
     var measuredBottomControlsHeightPx by remember(bvid) { mutableIntStateOf(0) }
     
@@ -1015,6 +995,32 @@ fun VideoPlayerSection(
             if (shouldBlockAppScreenshot) {
                 AppScreenshotGestureBlockState.fullscreenPlayerLocked = false
             }
+        }
+    }
+
+    val shouldCaptureStatusBarAmbientFrame = contentTopInset.value > 0f &&
+        !isFullscreen &&
+        !isInPipMode &&
+        hostLifecycleStarted
+    LaunchedEffect(
+        playerViewRef,
+        shouldCaptureStatusBarAmbientFrame,
+        observedIsPlaying,
+        currentPlaybackIdentity,
+    ) {
+        if (!shouldCaptureStatusBarAmbientFrame) {
+            statusBarAmbientFrame.value = null
+            return@LaunchedEffect
+        }
+        val playerView = playerViewRef ?: return@LaunchedEffect
+        while (isActive) {
+            if (playerView.isAttachedToWindow && playerView.width > 0 && playerView.height > 0) {
+                captureVideoAmbientFrame(playerView)?.let { bitmap ->
+                    statusBarAmbientFrame.value = bitmap.asImageBitmap()
+                }
+            }
+            if (!observedIsPlaying) break
+            delay(320L)
         }
     }
 
@@ -1271,10 +1277,6 @@ fun VideoPlayerSection(
     val overlayDrawerHazeState = com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState()
     var showEndDrawer by remember { mutableStateOf(false) }
     var endDrawerInitialTab by remember { mutableIntStateOf(0) }
-    val currentPlaybackIdentity = remember(bvid, uiState) {
-        val success = uiState as? VideoPlaybackUiState.Success
-        "${bvid}_${success?.info?.cid ?: 0L}"
-    }
     val endDrawerReservedWidthDp = resolveLandscapeEndDrawerReservedWidthDp(
         drawerVisible = showEndDrawer,
         isFullscreen = isFullscreen,
@@ -1478,6 +1480,7 @@ fun VideoPlayerSection(
         .hazeSourceCompat(overlayDrawerHazeState)
     val playerContentModifier = Modifier
         .fillMaxSize()
+        .padding(top = contentTopInset)
         .padding(end = animatedEndDrawerReservedWidth)
 
     // 应用共享元素
@@ -4971,7 +4974,9 @@ fun VideoPlayerSection(
                 onPageSelect = onPageSelect,
                 hasFavoritePlaylist = hasFavoritePlaylist,
                 onFavoritePlaylistClick = onFavoritePlaylistClick,
-                drawerHazeState = overlayDrawerHazeState
+                drawerHazeState = overlayDrawerHazeState,
+                statusBarAmbientFrame = statusBarAmbientFrame,
+                statusBarBackdropHeight = contentTopInset,
             )
             }
 

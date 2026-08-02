@@ -124,7 +124,7 @@ private val replyVideoTitleCache = ConcurrentHashMap<String, String>()
  * 官方 cardbg 经常是 972×162 的透明画布，实际角色图案只占其中一小部分。
  * 在解码线程裁掉全透明边缘，才能以官方预期的视觉尺寸显示内容而不裁掉图案。
  */
-private object TransparentBoundsCropTransformation : Transformation {
+internal object TransparentBoundsCropTransformation : Transformation {
     override val cacheKey: String = "comment_transparent_bounds_crop_v1"
 
     override suspend fun transform(input: Bitmap, size: Size): Bitmap {
@@ -178,10 +178,10 @@ internal fun resolveReplyItemLayoutPolicy(): ReplyItemLayoutPolicy {
         avatarSizeDp = 36,
         avatarContentSpacingDp = 8,
         actionButtonSizeDp = 40,
-        decorationWidthReserveDp = 88,
-        decorationImageWidthDp = 64,
-        decorationImageHeightDp = 52,
-        decorationMinWidthDp = 88
+        decorationWidthReserveDp = 64,
+        decorationImageWidthDp = 44,
+        decorationImageHeightDp = 36,
+        decorationMinWidthDp = 64
     )
 }
 
@@ -874,8 +874,8 @@ internal fun resolveVisibleSubReplies(
 }
 
 internal fun resolveInitialSubReplyPreviewExpanded(
-    previewReplyCount: Int
-): Boolean = previewReplyCount > 0
+    @Suppress("UNUSED_PARAMETER") previewReplyCount: Int
+): Boolean = false
 
 internal fun shouldShowInlineSubReplyToggle(
     previewReplyCount: Int,

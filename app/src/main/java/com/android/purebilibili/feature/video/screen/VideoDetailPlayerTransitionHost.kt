@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import com.android.purebilibili.data.model.response.ViewPoint
 import com.android.purebilibili.feature.video.progress.PbpProgressData
@@ -25,6 +26,7 @@ internal data class ContinuousPlayerHostLayout(
     val alpha: State<Float>,
     val scale: State<Float>,
     val isFullscreen: Boolean,
+    val contentTopInset: Dp = 0.dp,
 )
 
 internal data class ContinuousPlayerFullscreenExtras(
@@ -94,6 +96,7 @@ internal fun Modifier.continuousPlayerViewportHeight(
 internal fun PortraitInlineVideoPlayerHost(
     modifier: Modifier,
     animatedViewportWidth: Dp,
+    contentTopInset: Dp = 0.dp,
     inlinePlayerAlpha: State<Float>,
     inlinePlayerScale: State<Float>,
     isFullscreen: Boolean = false,
@@ -153,6 +156,7 @@ internal fun PortraitInlineVideoPlayerHost(
             uiState = uiState,
             isFullscreen = isFullscreen,
             isInPipMode = isPipMode,
+            contentTopInset = contentTopInset,
             transitionEnabled = transitionEnabled,
             transitionChromeAlphaProvider = transitionChromeAlphaProvider,
             onToggleFullscreen = onToggleFullscreen,

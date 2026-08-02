@@ -101,7 +101,6 @@ import com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState
 import com.android.purebilibili.core.store.PortraitPlayerCollapseMode
 import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
 import com.android.purebilibili.core.ui.AppSurfaceTokens
-import com.android.purebilibili.core.ui.components.AppSurface
 //  已改用 MaterialTheme.colorScheme.primary
 
 import com.android.purebilibili.data.model.response.RelatedVideo
@@ -867,7 +866,7 @@ internal fun VideoDetailScreenStateHolder(
             initialValue = windowSizeClass.isTabletDevice,
             lifecycle = lifecycleOwner.lifecycle
         )
-    val hideVideoPageStatusBar by com.android.purebilibili.core.store.SettingsManager
+    val immersiveVideoPageStatusBar by com.android.purebilibili.core.store.SettingsManager
         .getHideVideoPageStatusBar(context)
         .collectAsStateWithLifecycle(
             initialValue = com.android.purebilibili.core.store.SettingsManager
@@ -2482,13 +2481,13 @@ internal fun VideoDetailScreenStateHolder(
     val systemBarsVisibilityPolicy = remember(
         isFullscreenMode,
         isPortraitFullscreen,
-        hideVideoPageStatusBar,
+        immersiveVideoPageStatusBar,
         isPipMode,
         isScreenActive
     ) {
         resolveVideoDetailSystemBarsVisibilityPolicy(
             isFullscreenMode = isFullscreenMode,
-            hideVideoPageStatusBar = hideVideoPageStatusBar,
+            hideVideoPageStatusBar = immersiveVideoPageStatusBar,
             isInPipMode = isPipMode,
             isScreenActive = isScreenActive,
             isPortraitFullscreen = isPortraitFullscreen
@@ -2588,6 +2587,7 @@ internal fun VideoDetailScreenStateHolder(
         PortraitInlineVideoPlayerHost(
             modifier = layout.modifier,
             animatedViewportWidth = layout.viewportWidth,
+            contentTopInset = layout.contentTopInset,
             inlinePlayerAlpha = layout.alpha,
             inlinePlayerScale = layout.scale,
             isFullscreen = layout.isFullscreen,
@@ -2866,36 +2866,6 @@ internal fun VideoDetailScreenStateHolder(
                     )
                 }
 
-                // 🎬 [播放账号] 全屏时叠加当前播放账号徽章，让用户感知会员账号已生效
-                val playbackAccountBadgeLabel = remember {
-                    com.android.purebilibili.core.network.NetworkModule.playbackAccount()?.let { account ->
-                        if (account.mid != com.android.purebilibili.core.store.TokenManager.midCache) {
-                            buildString {
-                                append("🎬 ")
-                                append(account.name.ifBlank { "UID ${account.mid}" })
-                                if (account.isVip) append(" · 大会员")
-                            }
-                        } else {
-                            null
-                        }
-                    }
-                }
-                if (playbackAccountBadgeLabel != null) {
-                    AppSurface(
-                        shape = RoundedCornerShape(14.dp),
-                        color = Color.Black.copy(alpha = 0.45f),
-                        contentColor = Color.White,
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .padding(start = 12.dp, top = 12.dp)
-                    ) {
-                        AppText(
-                            text = playbackAccountBadgeLabel,
-                            fontSize = 12.sp,
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-                        )
-                    }
-                }
             } else {
                     //  沉浸式布局：视频延伸到状态栏 + 内容区域
                     //  📐 [大屏适配] 仅 Expanded 使用分栏布局
@@ -2982,6 +2952,7 @@ internal fun VideoDetailScreenStateHolder(
                         val playerTopInset = resolveVideoDetailPortraitPlayerTopInsetDp(
                             stableStatusBarHeightDp = stableStatusBarHeight.value,
                             hideStatusBars = systemBarsVisibilityPolicy.hideStatusBars,
+                            immersiveStatusBarBackdropEnabled = immersiveVideoPageStatusBar,
                             isSharedCardTransition = detailShellSharedBoundsEnabled,
                         ).dp
                         val screenWidthDp = configuration.screenWidthDp.dp
@@ -3403,7 +3374,6 @@ internal fun VideoDetailScreenStateHolder(
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .padding(top = playerTopInset)
                                     .graphicsLayer {
                                         alpha = resolveVideoDetailReturnPlayerAlpha(
                                             transitionProgress = detailTransitionProgress.value,
@@ -3421,12 +3391,14 @@ internal fun VideoDetailScreenStateHolder(
                                         alpha = inlinePlayerAlpha,
                                         scale = inlinePlayerScale,
                                         isFullscreen = false,
+                                        contentTopInset = playerTopInset,
                                     )
                                 )
                             } else {
                             PortraitInlineVideoPlayerHost(
                                 modifier = Modifier.align(Alignment.TopCenter),
                                 animatedViewportWidth = inlineViewportWidth,
+                                contentTopInset = playerTopInset,
                                 inlinePlayerAlpha = inlinePlayerAlpha,
                                 inlinePlayerScale = inlinePlayerScale,
                                 playerState = playerState,
@@ -3933,6 +3905,7 @@ internal fun VideoDetailScreenStateHolder(
             isPortraitFullscreen = isPortraitFullscreen,
             videoPlayerRootBottomPx = videoPlayerRootBottomPx,
             hideStatusBars = systemBarsVisibilityPolicy.hideStatusBars,
+            immersiveStatusBarBackdropEnabled = immersiveVideoPageStatusBar,
             currentVideoPositionMsProvider = {
                 playerState.player.currentPosition.coerceAtLeast(0L)
             },

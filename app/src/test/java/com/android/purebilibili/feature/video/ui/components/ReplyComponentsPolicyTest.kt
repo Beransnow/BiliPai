@@ -676,7 +676,7 @@ class ReplyComponentsPolicyTest {
         assertEquals(36, policy.avatarSizeDp)
         assertEquals(8, policy.avatarContentSpacingDp)
         assertEquals(40, policy.actionButtonSizeDp)
-        assertEquals(88, policy.decorationWidthReserveDp)
+        assertEquals(64, policy.decorationWidthReserveDp)
         assertEquals(56, policy.dividerStartPaddingDp)
         assertEquals(
             292,
@@ -687,7 +687,7 @@ class ReplyComponentsPolicyTest {
             resolveReplyItemHeaderEndPaddingDp(hasPiliPlusDecoration = false, policy = policy)
         )
         assertEquals(
-            118,
+            104,
             resolveReplyItemHeaderEndPaddingDp(hasPiliPlusDecoration = true, policy = policy)
         )
         assertEquals(
@@ -1064,8 +1064,8 @@ class ReplyComponentsPolicyTest {
     }
 
     @Test
-    fun `sub reply preview expands by default when replies are already returned`() {
-        assertTrue(resolveInitialSubReplyPreviewExpanded(previewReplyCount = 2))
+    fun `sub reply preview starts collapsed so the configured preview limit applies`() {
+        assertFalse(resolveInitialSubReplyPreviewExpanded(previewReplyCount = 2))
         assertFalse(resolveInitialSubReplyPreviewExpanded(previewReplyCount = 0))
     }
 
