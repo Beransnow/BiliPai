@@ -184,7 +184,6 @@ class MainActivityAppCompatContractTest {
 
         listOf(
             "ic_launcher_blue_snow_maid_foreground.png",
-            "ic_launcher_blue_snow_maid_announcement_foreground.png",
             "ic_launcher_blue_snow_maid_front_foreground.png"
         ).forEach { fileName ->
             val rows = readPngRgbaRows(loadResourceFile("mipmap-xxxhdpi/$fileName"))
@@ -202,6 +201,24 @@ class MainActivityAppCompatContractTest {
                 "$fileName should occupy about 58% of the 108dp adaptive layer so the portrait stays prominent without losing the white shell"
             )
         }
+
+        val announcementRows = readPngRgbaRows(
+            loadResourceFile("mipmap-xxxhdpi/ic_launcher_blue_snow_maid_announcement_foreground.png")
+        )
+        val announcementWidth = announcementRows.first().size / 4
+        val announcementOpaqueXs = buildList {
+            announcementRows.forEach { row ->
+                for (x in 0 until announcementWidth) {
+                    if (row[x * 4 + 3] != 0) add(x)
+                }
+            }
+        }
+        val announcementWidthRatio =
+            (announcementOpaqueXs.max() - announcementOpaqueXs.min() + 1).toFloat() / announcementWidth
+        assertTrue(
+            announcementWidthRatio in 0.50f..0.53f,
+            "Announcement foreground should fit Android's adaptive-icon safe zone without clipping the character"
+        )
 
         listOf(
             "ic_launcher_blue_snow_maid_monochrome.png",
