@@ -77,6 +77,7 @@ import com.android.purebilibili.feature.video.playback.audio.AudioQualityOption
 import com.android.purebilibili.feature.video.playback.audio.resolveAudioQualityControlPresentation
 import com.android.purebilibili.feature.common.resolveIndexedVideoLazyKey
 import com.android.purebilibili.feature.video.progress.PbpRidgeSample
+import com.android.purebilibili.feature.anime4k.VideoEnhancementAlgorithm
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.components.AppIconButton
@@ -105,6 +106,7 @@ import com.android.purebilibili.core.util.Logger
 import com.android.purebilibili.core.util.NetworkUtils
 import com.android.purebilibili.feature.anime4k.Anime4KBypassReason
 import com.android.purebilibili.feature.anime4k.Anime4KPreset
+import com.android.purebilibili.feature.anime4k.DEFAULT_FSR_SHARPNESS
 
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -402,9 +404,10 @@ internal fun shouldShowPersistentBottomProgressBar(
 internal fun shouldAutoHideInlineControlsAfterDelay(
     controlsVisible: Boolean,
     isPlaying: Boolean,
-    isSeekScrubbing: Boolean
+    isSeekScrubbing: Boolean,
+    floatingPanelVisible: Boolean = false
 ): Boolean {
-    return controlsVisible && isPlaying && !isSeekScrubbing
+    return controlsVisible && isPlaying && !isSeekScrubbing && !floatingPanelVisible
 }
 
 internal fun shouldCancelSeekScrubWhenControlsHidden(
@@ -614,9 +617,13 @@ fun VideoPlayerOverlay(
     anime4kEnabled: Boolean = false,
     anime4kAvailable: Boolean = false,
     anime4kBypassReason: Anime4KBypassReason = Anime4KBypassReason.DISABLED,
+    videoEnhancementAlgorithm: VideoEnhancementAlgorithm = VideoEnhancementAlgorithm.ANIME4K,
     anime4kPreset: Anime4KPreset = Anime4KPreset.FAST,
+    fsrSharpness: Float = DEFAULT_FSR_SHARPNESS,
     onAnime4kToggle: (Boolean) -> Unit = {},
+    onVideoEnhancementAlgorithmChange: (VideoEnhancementAlgorithm) -> Unit = {},
     onAnime4kPresetChange: (Anime4KPreset) -> Unit = {},
+    onFsrSharpnessChange: (Float) -> Unit = {},
     // [New] AI Audio Translation
     aiAudioInfo: com.android.purebilibili.data.model.response.AiAudioInfo? = null,
     currentAudioLang: String? = null,
@@ -686,6 +693,7 @@ fun VideoPlayerOverlay(
     }
     var showPlaybackOrderSheet by remember { mutableStateOf(false) }
     var showPageSelectorSheet by remember { mutableStateOf(false) }
+    var bottomControlFloatingPanelVisible by remember { mutableStateOf(false) }
     // 换集后强制关掉分集/菜单等全屏遮罩，避免 Dialog/Sheet 残留挡触摸。
     LaunchedEffect(bvid, cid) {
         showPageSelectorSheet = false
@@ -1182,12 +1190,18 @@ fun VideoPlayerOverlay(
         else viewPoints.lastOrNull { effectiveProgressState.current >= it.fromMs }?.content
     }
 
-    LaunchedEffect(isVisible, effectiveIsPlaying, isSeekScrubbing) {
+    LaunchedEffect(
+        isVisible,
+        effectiveIsPlaying,
+        isSeekScrubbing,
+        bottomControlFloatingPanelVisible
+    ) {
         if (
             shouldAutoHideInlineControlsAfterDelay(
                 controlsVisible = isVisible,
                 isPlaying = effectiveIsPlaying,
-                isSeekScrubbing = isSeekScrubbing
+                isSeekScrubbing = isSeekScrubbing,
+                floatingPanelVisible = bottomControlFloatingPanelVisible
             )
         ) {
             delay(4000)
@@ -1195,7 +1209,8 @@ fun VideoPlayerOverlay(
                 shouldAutoHideInlineControlsAfterDelay(
                     controlsVisible = isVisible,
                     isPlaying = effectiveIsPlaying,
-                    isSeekScrubbing = isSeekScrubbing
+                    isSeekScrubbing = isSeekScrubbing,
+                    floatingPanelVisible = bottomControlFloatingPanelVisible
                 )
             ) {
                 onToggleVisible()
@@ -1516,9 +1531,13 @@ fun VideoPlayerOverlay(
                     subtitleControlCallbacks = subtitleControlCallbacks,
                     anime4kEnabled = anime4kEnabled,
                     anime4kAvailable = anime4kAvailable,
+                    videoEnhancementAlgorithm = videoEnhancementAlgorithm,
                     anime4kPreset = anime4kPreset,
+                    fsrSharpness = fsrSharpness,
                     onAnime4kToggle = onAnime4kToggle,
+                    onVideoEnhancementAlgorithmChange = onVideoEnhancementAlgorithmChange,
                     onAnime4kPresetChange = onAnime4kPresetChange,
+                    onFsrSharpnessChange = onFsrSharpnessChange,
                     currentAudioQualityLabel = audioQualityPresentation.label,
                     isHiResAudioSelected = audioQualityPresentation.showHiResBadge,
                     isDolbyAudioSelected = audioQualityPresentation.showDolbyBadge,
@@ -1546,6 +1565,9 @@ fun VideoPlayerOverlay(
                         compact = !isFullscreen
                     ),
                     onPlaybackOrderClick = { showPlaybackOrderSheet = true },
+                    onFloatingPanelVisibilityChange = { visible ->
+                        bottomControlFloatingPanelVisible = visible
+                    },
                     progressPlacement = effectiveProgressPlacement
                 )
                 }
@@ -2109,9 +2131,13 @@ fun VideoPlayerOverlay(
                 anime4kEnabled = anime4kEnabled,
                 anime4kAvailable = anime4kAvailable,
                 anime4kBypassReason = anime4kBypassReason,
+                videoEnhancementAlgorithm = videoEnhancementAlgorithm,
                 anime4kPreset = anime4kPreset,
+                fsrSharpness = fsrSharpness,
                 onAnime4kToggle = onAnime4kToggle,
+                onVideoEnhancementAlgorithmChange = onVideoEnhancementAlgorithmChange,
                 onAnime4kPresetChange = onAnime4kPresetChange,
+                onFsrSharpnessChange = onFsrSharpnessChange,
                 // [New] AI Audio
                 aiAudioInfo = aiAudioInfo,
                 currentAudioLang = currentAudioLang,
