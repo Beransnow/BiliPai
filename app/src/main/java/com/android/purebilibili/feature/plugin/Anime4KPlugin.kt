@@ -26,6 +26,7 @@ import com.android.purebilibili.core.plugin.PluginStore
 import com.android.purebilibili.core.util.Logger
 import com.android.purebilibili.feature.anime4k.Anime4KConfig
 import com.android.purebilibili.feature.anime4k.Anime4KPreset
+import com.android.purebilibili.feature.anime4k.FSR_SHARPNESS_SLIDER_STEPS
 import com.android.purebilibili.feature.anime4k.VideoEnhancementAlgorithm
 import com.android.purebilibili.feature.anime4k.VideoEnhancementConfigLoadGuard
 import com.android.purebilibili.feature.anime4k.decodeVideoEnhancementConfig
@@ -189,6 +190,7 @@ class Anime4KPlugin : Plugin {
                     value = configSnapshot.fsrSharpness,
                     onValueChange = ::setFsrSharpness,
                     valueRange = 0f..1f,
+                    steps = FSR_SHARPNESS_SLIDER_STEPS,
                     valueLabel = "${(configSnapshot.fsrSharpness * 100).toInt()}%"
                 )
             }

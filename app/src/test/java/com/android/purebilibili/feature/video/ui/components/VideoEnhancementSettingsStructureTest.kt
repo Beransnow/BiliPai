@@ -31,6 +31,14 @@ class VideoEnhancementSettingsStructureTest {
         assertTrue(portraitSource.contains("steps = FSR_SHARPNESS_SLIDER_STEPS"))
     }
 
+    @Test
+    fun `插件设置页FSR锐化也使用零点一档位`() {
+        val pluginSource = pluginSource("Anime4KPlugin.kt")
+
+        assertTrue(pluginSource.contains("title = \"FSR 锐化强度\""))
+        assertTrue(pluginSource.contains("steps = FSR_SHARPNESS_SLIDER_STEPS"))
+    }
+
     private fun source(fileName: String): String = listOf(
         File("app/src/main/java/com/android/purebilibili/feature/video/ui/components/$fileName"),
         File("src/main/java/com/android/purebilibili/feature/video/ui/components/$fileName")
@@ -39,5 +47,10 @@ class VideoEnhancementSettingsStructureTest {
     private fun overlaySource(fileName: String): String = listOf(
         File("app/src/main/java/com/android/purebilibili/feature/video/ui/overlay/$fileName"),
         File("src/main/java/com/android/purebilibili/feature/video/ui/overlay/$fileName")
+    ).first { it.exists() }.readText()
+
+    private fun pluginSource(fileName: String): String = listOf(
+        File("app/src/main/java/com/android/purebilibili/feature/plugin/$fileName"),
+        File("src/main/java/com/android/purebilibili/feature/plugin/$fileName")
     ).first { it.exists() }.readText()
 }
