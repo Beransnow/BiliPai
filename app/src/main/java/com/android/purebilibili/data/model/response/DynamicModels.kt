@@ -568,6 +568,73 @@ data class DynamicDisputeModule(
     val jump_url: String = ""
 )
 
+// --- 评论互动设置（评论精选 / 评论开关） ---
+// API: x/v2/reply/subject/interaction-status
+@Serializable
+data class ReplyInteractionResponse(
+    val code: Int = 0,
+    val message: String = "",
+    val data: ReplyInteractionData? = null
+)
+
+@Serializable
+data class ReplyInteractionData(
+    val up_reply_selection: ReplyInteractionStatus? = null,
+    val up_reply: ReplyInteractionStatus? = null
+)
+
+@Serializable
+data class ReplyInteractionStatus(
+    val status: Int = 0, // 1 = 开启中
+    val can_modify: Boolean = false
+)
+
+// --- 关注 UP 列表（含未读标记，供 UP 列表红点） ---
+// API: dynamic_svr/v1/dynamic_svr/w_dyn_uplist
+@Serializable
+data class UplistResponse(
+    val code: Int = 0,
+    val message: String = "",
+    val data: UplistData? = null
+)
+
+@Serializable
+data class UplistData(
+    val items: List<UplistItem> = emptyList()
+)
+
+@Serializable
+data class UplistItem(
+    val user_profile: UplistUserProfile? = null,
+    @SerialName("has_update") val has_update: Int = 0
+)
+
+@Serializable
+data class UplistUserProfile(
+    val info: UplistUserInfo? = null
+)
+
+@Serializable
+data class UplistUserInfo(
+    val uid: Long = 0,
+    val uname: String = "",
+    val face: String = ""
+)
+
+// --- 发布纯文本动态响应（防 shadow-ban 校验用） ---
+// API: dynamic_svr/v1/dynamic_svr/create
+@Serializable
+data class DynamicCreateResponse(
+    val code: Int = 0,
+    val message: String = "",
+    val data: DynamicCreateData? = null
+)
+
+@Serializable
+data class DynamicCreateData(
+    @SerialName("dynamic_id_str") val dynamic_id_str: String = ""
+)
+
 @Serializable
 data class DynamicMoreModule(
     val three_point_items: List<DynamicThreePointItem> = emptyList()

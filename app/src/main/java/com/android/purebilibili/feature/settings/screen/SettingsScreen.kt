@@ -151,6 +151,9 @@ fun SettingsScreen(
     val dynamicTopBarCollapseOnScroll by SettingsManager
         .getDynamicTopBarCollapseOnScroll(context)
         .collectAsStateWithLifecycle(initialValue = false)
+    val dynamicFeedLayoutMode by SettingsManager
+        .getDynamicFeedLayoutMode(context)
+        .collectAsStateWithLifecycle(initialValue = com.android.purebilibili.core.store.SettingsManager.DynamicFeedLayoutMode.WATERFALL)
     
     // Local UI State
     var showCacheDialog by remember { mutableStateOf(false) }
@@ -1065,6 +1068,12 @@ fun SettingsScreen(
                             SettingsManager.setDynamicTopBarCollapseOnScroll(context, enabled)
                         }
                     },
+                    dynamicFeedLayoutMode = dynamicFeedLayoutMode,
+                    onDynamicFeedLayoutModeChange = { mode ->
+                        scope.launch {
+                            SettingsManager.setDynamicFeedLayoutMode(context, mode)
+                        }
+                    },
                     dynamicVisibleTabIds = dynamicVisibleTabIds,
                     onDynamicTabVisibilityChange = { tabId ->
                         scope.launch {
@@ -1182,6 +1191,8 @@ private fun MobileSettingsNavLayout(
     onDynamicAllTabHorizontalUserListVisibleChange: (Boolean) -> Unit,
     dynamicTopBarCollapseOnScroll: Boolean,
     onDynamicTopBarCollapseOnScrollChange: (Boolean) -> Unit,
+    dynamicFeedLayoutMode: com.android.purebilibili.core.store.SettingsManager.DynamicFeedLayoutMode,
+    onDynamicFeedLayoutModeChange: (com.android.purebilibili.core.store.SettingsManager.DynamicFeedLayoutMode) -> Unit,
     dynamicVisibleTabIds: Set<String>,
     onDynamicTabVisibilityChange: (String) -> Unit,
     homeRefreshCount: Int,
@@ -1239,6 +1250,7 @@ private fun MobileSettingsNavLayout(
         onDynamicImagePreviewTextVisibleChange = onDynamicImagePreviewTextVisibleChange,
         onDynamicAllTabHorizontalUserListVisibleChange = onDynamicAllTabHorizontalUserListVisibleChange,
         onDynamicTopBarCollapseOnScrollChange = onDynamicTopBarCollapseOnScrollChange,
+        onDynamicFeedLayoutModeChange = onDynamicFeedLayoutModeChange,
         onDynamicTabVisibilityChange = onDynamicTabVisibilityChange,
         onHomeRefreshCountChange = onHomeRefreshCountChange,
     )
@@ -1270,6 +1282,7 @@ private fun MobileSettingsNavLayout(
         dynamicImagePreviewTextVisible = dynamicImagePreviewTextVisible,
         dynamicAllTabHorizontalUserListVisible = dynamicAllTabHorizontalUserListVisible,
         dynamicTopBarCollapseOnScroll = dynamicTopBarCollapseOnScroll,
+        dynamicFeedLayoutMode = dynamicFeedLayoutMode,
         dynamicVisibleTabIds = dynamicVisibleTabIds,
         homeRefreshCount = homeRefreshCount,
     )

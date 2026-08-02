@@ -652,7 +652,7 @@ fun HomeScreen(
         .collectAsStateWithLifecycle(initialValue = false)
     val homeFeedCardStyle by SettingsManager
         .getHomeFeedCardStyle(context)
-        .collectAsStateWithLifecycle(initialValue = com.android.purebilibili.core.store.HomeFeedCardStyle.OFFICIAL,
+        .collectAsStateWithLifecycle(initialValue = com.android.purebilibili.core.store.HomeFeedCardStyle.CURRENT,
             context = kotlin.coroutines.EmptyCoroutineContext)
     val homeFeedCardLayout = remember(homeFeedCardStyle) {
         resolveHomeFeedCardLayout(homeFeedCardStyle)
@@ -1704,6 +1704,19 @@ fun HomeScreen(
                                      verticalArrangement = Arrangement.spacedBy(homeFeedCardLayout.verticalItemSpacingDp.dp),
                                      modifier = Modifier.fillMaxSize()
                                  ) {
+                                     // [新增] 用户启用首页横幅时，骨架顶部渲染横幅占位，
+                                     // 与加载完成后的 HomeHeroCarousel 布局对齐
+                                     if (category == HomeCategory.RECOMMEND && homeSettings.homeHeroCarouselEnabled) {
+                                         item(
+                                             key = "home_hero_carousel_skeleton",
+                                             contentType = "home_hero_carousel_skeleton",
+                                             span = { GridItemSpan(gridColumns) }
+                                         ) {
+                                             HomeFeedHeroCarouselSkeleton(
+                                                 pulse = skeletonPulse
+                                             )
+                                         }
+                                     }
                                      // [Fix] Dynamic skeleton count to fill tablet screens (at least 5 rows)
                                      val skeletonItemCount = gridColumns * 5
                                      items(

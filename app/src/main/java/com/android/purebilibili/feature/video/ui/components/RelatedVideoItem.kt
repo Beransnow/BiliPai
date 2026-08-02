@@ -417,7 +417,7 @@ fun RelatedVideoGridRow(
     val scope = rememberCoroutineScope()
     val homeFeedCardStyle by SettingsManager
         .getHomeFeedCardStyle(context)
-        .collectAsStateWithLifecycle(initialValue = HomeFeedCardStyle.OFFICIAL)
+        .collectAsStateWithLifecycle(initialValue = HomeFeedCardStyle.CURRENT)
     val cardLayout = remember(homeFeedCardStyle) {
         resolveHomeFeedCardLayout(homeFeedCardStyle)
     }

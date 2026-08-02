@@ -242,6 +242,7 @@ internal data class SettingsRootCategoryActions(
     val onDynamicImagePreviewTextVisibleChange: (Boolean) -> Unit,
     val onDynamicAllTabHorizontalUserListVisibleChange: (Boolean) -> Unit,
     val onDynamicTopBarCollapseOnScrollChange: (Boolean) -> Unit,
+    val onDynamicFeedLayoutModeChange: (com.android.purebilibili.core.store.SettingsManager.DynamicFeedLayoutMode) -> Unit,
     val onDynamicTabVisibilityChange: (String) -> Unit,
     val onHomeRefreshCountChange: (Int) -> Unit
 )
@@ -274,6 +275,7 @@ internal data class SettingsRootCategoryState(
     val dynamicImagePreviewTextVisible: Boolean,
     val dynamicAllTabHorizontalUserListVisible: Boolean,
     val dynamicTopBarCollapseOnScroll: Boolean,
+    val dynamicFeedLayoutMode: com.android.purebilibili.core.store.SettingsManager.DynamicFeedLayoutMode,
     val dynamicVisibleTabIds: Set<String>,
     val homeRefreshCount: Int
 )
@@ -712,6 +714,8 @@ internal fun SettingsRootCategoryContent(
                             dynamicTopBarCollapseOnScroll = state.dynamicTopBarCollapseOnScroll,
                             onDynamicTopBarCollapseOnScrollChange =
                                 actions.onDynamicTopBarCollapseOnScrollChange,
+                            dynamicFeedLayoutMode = state.dynamicFeedLayoutMode,
+                            onDynamicFeedLayoutModeChange = actions.onDynamicFeedLayoutModeChange,
                             dynamicVisibleTabIds = state.dynamicVisibleTabIds,
                             onDynamicTabVisibilityChange = actions.onDynamicTabVisibilityChange,
                             homeRefreshCount = state.homeRefreshCount,
@@ -1033,6 +1037,8 @@ fun FeedApiSection(
     onDynamicAllTabHorizontalUserListVisibleChange: (Boolean) -> Unit,
     dynamicTopBarCollapseOnScroll: Boolean,
     onDynamicTopBarCollapseOnScrollChange: (Boolean) -> Unit,
+    dynamicFeedLayoutMode: com.android.purebilibili.core.store.SettingsManager.DynamicFeedLayoutMode,
+    onDynamicFeedLayoutModeChange: (com.android.purebilibili.core.store.SettingsManager.DynamicFeedLayoutMode) -> Unit,
     dynamicVisibleTabIds: Set<String>,
     onDynamicTabVisibilityChange: (String) -> Unit,
     homeRefreshCount: Int,
@@ -1119,6 +1125,43 @@ fun FeedApiSection(
             checked = dynamicTopBarCollapseOnScroll,
             onCheckedChange = onDynamicTopBarCollapseOnScrollChange,
             iconTint = feedTint
+        )
+        SettingsAdaptiveDivider()
+        //  [新增] 动态 Feed 布局模式（对齐 PiliPlus dynamicsWaterfallFlow）
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            AppIcon(
+                imageVector = feedIcon,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                tint = feedTint
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                AppText(
+                    text = "动态 Feed 布局",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                AppText(
+                    text = "瀑布流多列自适应；列表单列居中",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        AppSegmentedControl(
+            options = com.android.purebilibili.core.store.SettingsManager.DynamicFeedLayoutMode.entries.map { mode ->
+                com.android.purebilibili.core.ui.components.AppSegmentOption(
+                    value = mode,
+                    label = mode.label
+                )
+            },
+            selectedValue = dynamicFeedLayoutMode,
+            onSelectionChange = onDynamicFeedLayoutModeChange
         )
         SettingsAdaptiveDivider()
         FeedDynamicTabVisibilityItem(

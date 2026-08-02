@@ -703,7 +703,7 @@ fun SearchScreen(
     val showOnlineCount by SettingsManager.getShowOnlineCount(context).collectAsStateWithLifecycle(initialValue = false)
     val homeFeedCardStyle by SettingsManager
         .getHomeFeedCardStyle(context)
-        .collectAsStateWithLifecycle(initialValue = HomeFeedCardStyle.OFFICIAL)
+        .collectAsStateWithLifecycle(initialValue = HomeFeedCardStyle.CURRENT)
     val cardLayout = remember(homeFeedCardStyle) {
         resolveHomeFeedCardLayout(homeFeedCardStyle)
     }

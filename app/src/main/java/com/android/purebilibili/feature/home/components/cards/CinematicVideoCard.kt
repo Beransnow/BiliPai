@@ -371,7 +371,8 @@ fun CinematicVideoCard(
                          nameColor = MediaContrastPalette.Foreground.copy(alpha = 0.9f),
                          badgeTextColor = MediaContrastPalette.Foreground.copy(alpha = 0.92f),
                          badgeBorderColor = MediaContrastPalette.Foreground.copy(alpha = 0.45f),
-                         showUpBadge = showUpBadge
+                         showUpBadge = showUpBadge,
+                         modifier = Modifier.weight(1f)
                      )
                      
                      // 播放量

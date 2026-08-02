@@ -3937,6 +3937,7 @@ internal fun VideoDetailScreenStateHolder(
             playbackViewModel = viewModel,
             engagementViewModel = engagementViewModel,
             sharedPlayer = if (useSharedPortraitPlayer) playerState.player else null,
+            useTextureSurfaceForNavigation = transitionEnabled,
             onBack = { presentationState.setPortraitFullscreen(false) },
             onHomeClick = {
                 presentationState.setPortraitFullscreen(false)

@@ -25,6 +25,9 @@ import com.android.purebilibili.feature.video.ui.overlay.resolveBottomControlBar
 import com.android.purebilibili.feature.video.ui.overlay.resolveVideoProgressBarLayoutPolicy
 import com.android.purebilibili.feature.video.ui.overlay.resolveLandscapeEndDrawerReservedWidthDp
 import com.android.purebilibili.feature.video.ui.overlay.resolveLandscapeEndDrawerLayoutPolicy
+import com.android.purebilibili.feature.video.ui.overlay.VIDEO_STATUS_BAR_AMBIENT_CAPTURE_INTERVAL_MS
+import com.android.purebilibili.feature.video.ui.overlay.VIDEO_STATUS_BAR_AMBIENT_SAMPLE_HEIGHT_PX
+import com.android.purebilibili.feature.video.ui.overlay.VIDEO_STATUS_BAR_AMBIENT_SAMPLE_WIDTH_PX
 import com.android.purebilibili.feature.video.ui.components.SponsorSkipButton
 import com.android.purebilibili.feature.video.ui.components.SponsorContributionOverlay
 import com.android.purebilibili.feature.video.viewmodel.SponsorContributionUiState
@@ -170,6 +173,7 @@ import com.android.purebilibili.feature.anime4k.Anime4KConfig
 import com.android.purebilibili.feature.anime4k.Anime4KBypassReason
 import com.android.purebilibili.feature.anime4k.ANIME4K_FIRST_FRAME_FALLBACK_TIMEOUT_MS
 import com.android.purebilibili.feature.anime4k.isAnime4KGles3Available
+import com.android.purebilibili.feature.anime4k.resolveInitialVideoEnhancementEnabled
 import com.android.purebilibili.feature.anime4k.resolveAnime4KOutputDecision
 import com.android.purebilibili.feature.anime4k.shouldFallbackAnime4KBeforeFirstFrame
 import com.android.purebilibili.feature.anime4k.gl.Anime4KGLSurfaceView
@@ -533,8 +537,21 @@ fun VideoPlayerSection(
     var anime4kInputSurface by remember(playerState.player) { mutableStateOf<Surface?>(null) }
     var anime4kDisplayedFirstFrame by remember(bvid, playerState.player) { mutableStateOf(false) }
     var anime4kSurfaceViewRef by remember(playerState.player) { mutableStateOf<Anime4KGLSurfaceView?>(null) }
+    var videoEnhancementSessionOverride by remember(bvid, playerState.player) {
+        mutableStateOf<Boolean?>(null)
+    }
+    val videoEnhancementSessionRequested = videoEnhancementSessionOverride
+        ?: resolveInitialVideoEnhancementEnabled(
+            pluginEnabled = anime4kPluginInfo?.enabled == true,
+            config = anime4kConfig
+        )
+    val videoEnhancementEnabled = anime4kPluginInfo?.enabled == true &&
+        videoEnhancementSessionRequested
+    LaunchedEffect(anime4kConfig.algorithm) {
+        anime4kPipelineFailed = false
+    }
     val anime4kOutputDecision = remember(
-        anime4kPluginInfo?.enabled,
+        videoEnhancementEnabled,
         anime4kGlesAvailable,
         anime4kPipelineFailed,
         videoInputFormat,
@@ -543,7 +560,7 @@ fun VideoPlayerSection(
         lifecycleState
     ) {
         resolveAnime4KOutputDecision(
-            pluginEnabled = anime4kPluginInfo?.enabled == true,
+            pluginEnabled = videoEnhancementEnabled,
             glAvailable = anime4kGlesAvailable && !anime4kPipelineFailed,
             colorTransfer = videoInputFormat?.colorInfo?.colorTransfer ?: 0,
             sampleMimeType = videoInputFormat?.sampleMimeType,
@@ -1019,12 +1036,14 @@ fun VideoPlayerSection(
         val playerView = playerViewRef ?: return@LaunchedEffect
         while (isActive) {
             if (playerView.isAttachedToWindow && playerView.width > 0 && playerView.height > 0) {
-                captureVideoAmbientFrame(playerView)?.let { bitmap ->
-                    statusBarAmbientFrame.value = bitmap.asImageBitmap()
-                }
+                statusBarAmbientFrame.value = captureVideoAmbientFrame(
+                    playerView = playerView,
+                    targetWidth = VIDEO_STATUS_BAR_AMBIENT_SAMPLE_WIDTH_PX,
+                    targetHeight = VIDEO_STATUS_BAR_AMBIENT_SAMPLE_HEIGHT_PX,
+                )?.asImageBitmap()
             }
             if (!observedIsPlaying) break
-            delay(320L)
+            delay(VIDEO_STATUS_BAR_AMBIENT_CAPTURE_INTERVAL_MS)
         }
     }
 
@@ -3692,6 +3711,27 @@ fun VideoPlayerSection(
                     player = playerState.player,
                     onFollowClick = onToggleFollow,
                     onTripleClick = onTriple,
+                    onVoteSubmit = { item, option ->
+                        val success = uiState as? VideoPlaybackUiState.Success
+                        val score = option.score
+                        if (success != null && score != null && item.voteId.isNotBlank()) {
+                            settingsScope.launch {
+                                val result = com.android.purebilibili.data.repository.DanmakuRepository.submitGradeDanmaku(
+                                    aid = success.info.aid,
+                                    cid = success.info.cid,
+                                    progress = item.startTimeMs,
+                                    gradeId = item.voteId,
+                                    gradeScore = score
+                                )
+                                if (result.isFailure) {
+                                    android.util.Log.w(
+                                        "VideoPlayerSection",
+                                        "Vote submit failed: ${result.exceptionOrNull()?.message}"
+                                    )
+                                }
+                            }
+                        }
+                    },
                     isFollowing = isFollowed,
                     modifier = Modifier.fillMaxSize()
                 )
@@ -4917,18 +4957,30 @@ fun VideoPlayerSection(
                 selectedAudioQuality = uiState.selectedAudioQuality,
                 availableAudioQualities = uiState.availableAudioQualities,
                 onAudioQualityChange = onAudioQualityChange,
-                anime4kEnabled = anime4kPluginInfo?.enabled == true,
+                anime4kEnabled = videoEnhancementEnabled,
                 anime4kAvailable = anime4kGlesAvailable,
                 anime4kBypassReason = anime4kBypassReason,
+                videoEnhancementAlgorithm = anime4kConfig.algorithm,
                 anime4kPreset = anime4kConfig.preset,
+                fsrSharpness = anime4kConfig.fsrSharpness,
                 onAnime4kToggle = { enabled ->
                     anime4kPipelineFailed = false
+                    videoEnhancementSessionOverride = enabled
                     settingsScope.launch {
-                        PluginManager.setEnabled(Anime4KPlugin.PLUGIN_ID, enabled)
+                        if (enabled && anime4kPluginInfo?.enabled != true) {
+                            PluginManager.setEnabled(Anime4KPlugin.PLUGIN_ID, true)
+                        }
+                        Anime4KPlugin.getInstance()?.rememberCurrentVideoEnabled(enabled)
                     }
+                },
+                onVideoEnhancementAlgorithmChange = { algorithm ->
+                    anime4kPlugin?.setAlgorithm(algorithm)
                 },
                 onAnime4kPresetChange = { preset ->
                     anime4kPlugin?.setPreset(preset)
+                },
+                onFsrSharpnessChange = { sharpness ->
+                    anime4kPlugin?.setFsrSharpness(sharpness)
                 },
                 // [New] AI Audio
                 aiAudioInfo = uiState.aiAudio,

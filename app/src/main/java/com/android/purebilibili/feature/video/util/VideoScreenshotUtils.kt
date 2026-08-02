@@ -133,8 +133,9 @@ suspend fun captureVideoScreenshot(
 
 /**
  * Captures a deliberately small current-frame sample for ambient player chrome.
- * SurfaceView PixelCopy writes directly into the small destination so the live status-bar
- * backdrop does not allocate a full-resolution screenshot on every refresh.
+ * The caller renders the top edge of this sample into the status bar. SurfaceView PixelCopy
+ * writes directly into the small destination so frequent live Haze refreshes do not allocate
+ * a full-resolution screenshot.
  */
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 suspend fun captureVideoAmbientFrame(
