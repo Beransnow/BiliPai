@@ -61,6 +61,7 @@ internal data class ContinuousPlayerFullscreenExtras(
     val onPageSelect: (Int) -> Unit,
     val hasFavoritePlaylist: Boolean,
     val onFavoritePlaylistClick: () -> Unit,
+    val onLandscapeCommentClick: () -> Unit,
 )
 
 /**
@@ -163,6 +164,11 @@ internal fun PortraitInlineVideoPlayerHost(
             onQualityChange = { qid -> playbackActions.changeQuality(qid) },
             onBack = onBack,
             onHomeClick = onHomeClick,
+            onLandscapeCommentClick = if (isFullscreen) {
+                fullscreenExtras?.onLandscapeCommentClick ?: {}
+            } else {
+                {}
+            },
             onDanmakuInputClick = { playbackActions.showDanmakuSendDialog() },
             danmakuComposerVisible = isFullscreen &&
                 fullscreenExtras?.danmakuComposerVisible == true,
