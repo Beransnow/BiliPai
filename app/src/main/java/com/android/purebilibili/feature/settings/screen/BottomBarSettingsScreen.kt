@@ -57,7 +57,6 @@ import com.android.purebilibili.core.ui.AppSemanticIconFamily
 import com.android.purebilibili.core.ui.rememberAppSemanticVisualPolicy
 import com.android.purebilibili.core.ui.adaptive.resolveDeviceUiProfile
 import com.android.purebilibili.core.ui.adaptive.resolveEffectiveMotionTier
-import com.android.purebilibili.feature.home.components.resolveHomeNavigationIcon
 import com.android.purebilibili.feature.settings.ui.SettingsPageScaffold
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import kotlinx.coroutines.launch
@@ -86,12 +85,12 @@ data class TopTabConfig(
 internal fun resolveBottomBarTabIcon(
     id: String,
     iconFamily: AppSemanticIconFamily = AppSemanticIconFamily.CUPERTINO,
-): ImageVector = resolveHomeNavigationIcon(id, iconFamily, selected = false)
+): ImageVector = resolveSettingsNavigationPreviewIcon(id, iconFamily, selected = false)
 
 internal fun resolveTopTabIcon(
     id: String,
     iconFamily: AppSemanticIconFamily = AppSemanticIconFamily.CUPERTINO,
-): ImageVector = resolveHomeNavigationIcon(id, iconFamily, selected = false)
+): ImageVector = resolveSettingsNavigationPreviewIcon(id, iconFamily, selected = false)
 
 /**
  * 所有可用的底栏项目

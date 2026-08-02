@@ -32,10 +32,10 @@ class HomeNavigationIconPolicyTest {
     }
 
     @Test
-    fun `uses the active theme only when Miuix has no equivalent icon`() {
+    fun `uses Miuix for roles that previously depended on the active theme`() {
         listOf("PROFILE", "PLUGINS", "FOLLOW", "POPULAR", "ANIME", "KNOWLEDGE", "TECH").forEach { tabId ->
             assertEquals(
-                HomeNavigationIconSource.THEME_FALLBACK,
+                HomeNavigationIconSource.MIUIX,
                 resolveMiuixPreferredHomeNavigationIconSource(tabId),
             )
         }

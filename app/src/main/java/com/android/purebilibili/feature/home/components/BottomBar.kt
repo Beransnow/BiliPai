@@ -4,7 +4,6 @@ package com.android.purebilibili.feature.home.components
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppBottomNavigationHost
 import com.android.purebilibili.core.ui.AppSpacingTokens
-import com.android.purebilibili.core.ui.rememberAppSemanticVisualPolicy
 import com.android.purebilibili.core.ui.components.AppNavigationBar
 import com.android.purebilibili.core.ui.components.AppNavigationBarItem
 import com.android.purebilibili.core.ui.components.AppPlatformNavigationBadge
@@ -344,11 +343,9 @@ private fun MiuixBottomNavigationIcon(
     tabId: String,
     selected: Boolean,
 ) {
-    val fallbackIconFamily = rememberAppSemanticVisualPolicy().iconFamily
     AppIcon(
         imageVector = resolveMiuixPreferredHomeNavigationIcon(
             tabId = tabId,
-            fallbackIconFamily = fallbackIconFamily,
             selected = selected,
         ),
         contentDescription = null,
@@ -4792,7 +4789,6 @@ internal fun resolveHomeNavigationBarIcon(
     selected: Boolean
 ): ImageVector = resolveMiuixPreferredHomeNavigationIcon(
     tabId = item.name,
-    fallbackIconFamily = rememberAppSemanticVisualPolicy().iconFamily,
     selected = selected,
 )
 

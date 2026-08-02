@@ -34,10 +34,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.isSystemInDarkTheme
-//  Cupertino Icons - iOS SF Symbols 风格图标
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
@@ -70,7 +66,6 @@ import androidx.compose.ui.util.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.android.purebilibili.core.ui.AppSemanticIconFamily
 import com.android.purebilibili.core.ui.AppTopTabPresentation
 import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
 import com.android.purebilibili.core.util.FormatUtils
@@ -102,6 +97,9 @@ import top.yukonga.miuix.kmp.blur.blur as miuixBlur
 import top.yukonga.miuix.kmp.blur.drawBackdrop as miuixDrawBackdrop
 import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Search
+import top.yukonga.miuix.kmp.icon.extended.Settings
 import dev.chrisbanes.haze.HazeState
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -395,17 +393,6 @@ internal fun shouldShowTopTabText(mode: Int): Boolean {
     return normalized == 0 || normalized == 2
 }
 
-internal fun resolveTopTabIconFamily(
-    chromeIconFamily: AppSemanticIconFamily,
-    useBottomBarMatchedChrome: Boolean
-): AppSemanticIconFamily {
-    return if (useBottomBarMatchedChrome) {
-        AppSemanticIconFamily.CUPERTINO
-    } else {
-        chromeIconFamily
-    }
-}
-
 internal fun resolveMd3TopTabLabelMode(requestedLabelMode: Int): Int =
     normalizeTopTabLabelMode(requestedLabelMode)
 
@@ -418,33 +405,14 @@ private fun resolveTopTabCategoryForIcon(categoryKey: String): HomeCategory? {
     }
 }
 
-internal fun resolveTopTabCategoryIcon(
-    categoryKey: String,
-    iconFamily: AppSemanticIconFamily = AppSemanticIconFamily.CUPERTINO,
-    selected: Boolean = false
-): ImageVector {
-    val category = resolveTopTabCategoryForIcon(categoryKey)
-    return resolveHomeNavigationIcon(
-        tabId = category?.name ?: "PARTITION",
-        iconFamily = iconFamily,
-        selected = selected,
-    )
-}
-
-internal fun resolveTopTabPartitionIcon(iconFamily: AppSemanticIconFamily): ImageVector {
-    return resolveHomeNavigationIcon("PARTITION", iconFamily)
-}
-
 @Composable
 internal fun resolveMiuixPreferredTopTabCategoryIcon(
     categoryKey: String,
-    fallbackIconFamily: AppSemanticIconFamily,
     selected: Boolean = false,
 ): ImageVector {
     val category = resolveTopTabCategoryForIcon(categoryKey)
     return resolveMiuixPreferredHomeNavigationIcon(
         tabId = category?.name ?: "PARTITION",
-        fallbackIconFamily = fallbackIconFamily,
         selected = selected,
     )
 }
@@ -666,7 +634,7 @@ fun FluidHomeTopBar(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         AppIcon(
-                            CupertinoIcons.Default.MagnifyingGlass,
+                            MiuixIcons.Search,
                             null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.5f),
                             modifier = Modifier.size(AppSpacingTokens.Large + AppSpacingTokens.Micro)
@@ -690,7 +658,7 @@ fun FluidHomeTopBar(
                     modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
                 ) {
                     AppIcon(
-                        CupertinoIcons.Default.Gearshape,
+                        MiuixIcons.Settings,
                         contentDescription = "设置",
                         tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                         modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro)
@@ -815,10 +783,6 @@ private fun LightweightHomeTopTabs(
     val haptic = com.android.purebilibili.core.util.rememberHapticFeedback()
     val scrollChannel = com.android.purebilibili.feature.home.LocalHomeScrollChannel.current
     val normalizedLabelMode = normalizeTopTabLabelMode(labelMode)
-    val topTabIconFamily = resolveTopTabIconFamily(
-        chromeIconFamily = chromePolicy.iconFamily,
-        useBottomBarMatchedChrome = isFloatingStyle || hasOuterChromeSurface
-    )
     val showIcon = shouldShowTopTabIcon(normalizedLabelMode)
     val showText = shouldShowTopTabText(normalizedLabelMode)
     val effectivePresentation = if (skinPlainStyle || forceMaterialUnderline) {
@@ -1490,7 +1454,6 @@ private fun LightweightHomeTopTabs(
                                 val categoryKey = categoryKeys.getOrNull(index) ?: category
                                 LightweightTopTabItem(
                                     presentation = effectivePresentation,
-                                    iconFamily = topTabIconFamily,
                                     category = category,
                                     categoryKey = categoryKey,
                                     index = index,
@@ -1559,7 +1522,6 @@ private fun LightweightHomeTopTabs(
                         }
                         LightweightTopTabItem(
                             presentation = effectivePresentation,
-                            iconFamily = topTabIconFamily,
                             category = category,
                             categoryKey = categoryKey,
                             index = index,
@@ -1764,7 +1726,6 @@ private fun LightweightHomeTopTabs(
                         AppIcon(
                             resolveMiuixPreferredHomeNavigationIcon(
                                 tabId = "PARTITION",
-                                fallbackIconFamily = topTabIconFamily,
                             ),
                             contentDescription = "浏览全部分区",
                             tint = skinPlainContentColor ?: MaterialTheme.colorScheme.onSurfaceVariant,
@@ -1799,7 +1760,6 @@ internal enum class TopTabLiquidColorMode {
 @Composable
 private fun LightweightTopTabItem(
     presentation: AppTopTabPresentation,
-    iconFamily: AppSemanticIconFamily,
     category: String,
     categoryKey: String,
     index: Int,
@@ -1825,12 +1785,10 @@ private fun LightweightTopTabItem(
     val skinIconPath = skinIconPaths?.pathFor(selected)
     val unselectedIcon = resolveMiuixPreferredTopTabCategoryIcon(
         categoryKey = categoryKey,
-        fallbackIconFamily = iconFamily,
         selected = false
     )
     val selectedIcon = resolveMiuixPreferredTopTabCategoryIcon(
         categoryKey = categoryKey,
-        fallbackIconFamily = iconFamily,
         selected = true
     )
     val selectedColor = when (presentation) {
@@ -2478,12 +2436,10 @@ fun CategoryTabItem(
      val showText = shouldShowTopTabText(normalizedLabelMode)
      val unselectedIcon = resolveMiuixPreferredTopTabCategoryIcon(
          categoryKey = categoryKey,
-         fallbackIconFamily = chromePolicy.iconFamily,
          selected = false
      )
      val selectedIcon = resolveMiuixPreferredTopTabCategoryIcon(
          categoryKey = categoryKey,
-         fallbackIconFamily = chromePolicy.iconFamily,
          selected = true
      )
      val iconSize = resolveTopTabIconSizeDp(normalizedLabelMode).dp

@@ -23,7 +23,6 @@ import io.github.alexzhirkevich.cupertino.icons.outlined.Lightbulb
 import io.github.alexzhirkevich.cupertino.icons.outlined.PersonCropCircleBadgePlus
 import io.github.alexzhirkevich.cupertino.icons.outlined.Bell
 import io.github.alexzhirkevich.cupertino.icons.outlined.Star
-import com.android.purebilibili.feature.home.components.resolveHomeNavigationIcon
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -81,7 +80,7 @@ class BottomBarSettingsScreenIconPolicyTest {
         ).forEach { tabId ->
             AppSemanticIconFamily.entries.forEach { family ->
                 assertSameVectorAsset(
-                    resolveHomeNavigationIcon(tabId, family, selected = false),
+                    resolveSettingsNavigationPreviewIcon(tabId, family, selected = false),
                     resolveBottomBarTabIcon(tabId, family),
                 )
             }

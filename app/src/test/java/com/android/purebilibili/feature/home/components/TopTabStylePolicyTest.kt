@@ -763,7 +763,7 @@ class TopTabStylePolicyTest {
         assertTrue(itemSource.contains("resolveMiuixPreferredTopTabCategoryIcon("))
         assertTrue(itemSource.contains("selected = false"))
         assertTrue(itemSource.contains("selected = true"))
-        assertTrue(rowCallSource.contains("iconFamily = topTabIconFamily"))
+        assertFalse(rowCallSource.contains("iconFamily = topTabIconFamily"))
     }
 
     @Test
