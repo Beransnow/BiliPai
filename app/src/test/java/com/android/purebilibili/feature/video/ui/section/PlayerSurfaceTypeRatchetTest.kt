@@ -7,7 +7,7 @@ import kotlin.test.assertTrue
 class PlayerSurfaceTypeRatchetTest {
 
     @Test
-    fun navigationTransformPlayerViewUsesTextureViewSoItCanFollowSharedBounds() {
+    fun playerViewUsesSurfaceViewSoHdrMetadataCanReachTheDisplay() {
         val layout = listOf(
             "src/main/res/layout/view_player_texture.xml",
             "app/src/main/res/layout/view_player_texture.xml"
@@ -16,6 +16,6 @@ class PlayerSurfaceTypeRatchetTest {
             .firstOrNull(File::exists)
             ?: error("找不到 PlayerView 布局")
 
-        assertTrue(layout.readText().contains("app:surface_type=\"texture_view\""))
+        assertTrue(layout.readText().contains("app:surface_type=\"surface_view\""))
     }
 }

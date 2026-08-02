@@ -87,3 +87,41 @@ internal fun Modifier.videoCardShellReturnChromeAlpha(
         }
     }
 }
+
+/**
+ * 保留来源卡封面资源，但让其像素与详情 live surface 使用同一返回交接窗口。
+ */
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+internal fun Modifier.videoCardShellReturnCoverAlpha(
+    enabled: Boolean,
+    bvid: String,
+    sourceRoute: String?,
+    isReturningFromDetail: Boolean = false,
+): Modifier {
+    if (!enabled || bvid.isBlank()) return this
+    val bgState = LocalVideoCardTransitionBackgroundState.current
+    val isSharedMorphSourceCard = remember(
+        bvid,
+        sourceRoute,
+        CardPositionManager.lastClickedVideoSourceKey,
+    ) {
+        isVideoCardSharedReturnTarget(
+            bvid = bvid,
+            sourceRoute = sourceRoute,
+            lastClickedVideoSourceKey = CardPositionManager.lastClickedVideoSourceKey,
+        )
+    }
+    return graphicsLayer {
+        alpha = resolveHomeCardReturnSourceVisualAlpha(
+            useCardContainerSharedBounds = enabled,
+            isSharedMorphSourceCard = isSharedMorphSourceCard,
+            isReturningFromDetail = isReturningFromDetail,
+            transitionBackgroundPhase = bgState.phaseProvider(),
+            isVideoCardReturnGestureInProgress = bgState.isReturnGestureInProgressProvider(),
+            transitionBackgroundProgress = bgState.progressProvider(),
+            // 快速返回仍可能是 LIVE surface；只有显式整卡回退才允许提前全显。
+            preferWholeCardReturn = bgState.preferWholeCardReturnProvider(),
+        )
+    }
+}

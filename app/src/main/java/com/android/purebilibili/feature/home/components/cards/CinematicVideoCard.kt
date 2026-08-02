@@ -272,6 +272,12 @@ fun CinematicVideoCard(
             val coverModifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(VIDEO_SHARED_COVER_ASPECT_RATIO) // 统一共享比例
+                .videoCardShellReturnCoverAlpha(
+                    enabled = useCardShellSharedBounds,
+                    bvid = video.bvid,
+                    sourceRoute = effectiveSharedElementSourceRoute,
+                    isReturningFromDetail = isReturningFromVideoDetail,
+                )
             
             Box(modifier = Modifier.clip(RoundedCornerShape(cardCornerRadius))) {
                  AsyncImage(
@@ -294,6 +300,12 @@ fun CinematicVideoCard(
                     .fillMaxWidth()
                     .height(AppSpacingTokens.TripleExtraLarge * 4 - AppSpacingTokens.Medium)
                     .align(Alignment.BottomCenter)
+                    .videoCardShellReturnCoverAlpha(
+                        enabled = useCardShellSharedBounds,
+                        bvid = video.bvid,
+                        sourceRoute = effectiveSharedElementSourceRoute,
+                        isReturningFromDetail = isReturningFromVideoDetail,
+                    )
                     .background(
                         Brush.verticalGradient(
                             colors = listOf(
