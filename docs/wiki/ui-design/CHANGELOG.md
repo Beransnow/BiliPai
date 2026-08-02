@@ -4,7 +4,7 @@
 > 规范版本：1.0.0-draft  
 > 状态：草案  
 > 最后核对日期：2026-08-02  
-> 适用提交：4443e72ff  
+> 适用提交：901a11954  
 > 维护角色：设计系统维护者  
 > 相关文档：[维护流程](11_MAINTENANCE.md) · [总目录](README.md)
 
@@ -39,6 +39,14 @@
 ### How：使用方式
 
 从[总目录](README.md)进入；开发页面时依次查页面档案、母版、组件和 Token；发现实现不符时在[差距台账](10_GAP_LEDGER.md)登记。
+
+### P005 搜索试点：共享内容状态
+
+**What**：新增 `AppErrorState`、`AppEmptyState`，并在综合搜索中区分首次错误、分页错误、热榜/发现局部错误与空结果。
+
+**Why**：已有结果不应因下一页失败而消失；整页失败和局部失败需要不同的恢复动作与播报语义。
+
+**How**：使用 `AppContentStatePresentation.PAGE/INLINE`；通过 `SearchContentStatePolicy` 决定 body/footer；按 `SearchViewModel` 的错误字段维护状态；其他页面迁移前继续保留旧实现。
 
 ## 当前差距
 

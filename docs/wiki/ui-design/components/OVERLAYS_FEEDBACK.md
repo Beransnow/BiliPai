@@ -4,7 +4,7 @@
 > 规范版本：1.0.0-draft  
 > 状态：草案  
 > 最后核对日期：2026-08-02  
-> 适用提交：4443e72ff  
+> 适用提交：901a11954  
 > 维护角色：设计系统维护者  
 > 相关文档：[组件目录](README.md) · [无障碍](../07_ACCESSIBILITY.md)
 
@@ -70,7 +70,7 @@
 | Compose 入口 | 当前 `AppDropdownMenu`、`AppDropdownMenuItem` |
 | 当前差距 / 验收 | 领域 Popup 仍存在；检查屏幕边缘、键盘/遥控焦点和长文案 |
 
-### C405/C406 共享错误与空状态（目标待建）
+### C405/C406 共享错误与空状态
 
 | 字段 | `AppErrorState` | `AppEmptyState` |
 |---|---|---|
@@ -84,7 +84,8 @@
 | 响应式 | 局部失败留在所属区块 | 不用巨型插画占满宽屏 |
 | 三风格 | 图标/表面可变 | 图标/表面可变 |
 | 目标入口 | `AppErrorState` | `AppEmptyState` |
-| 差距/验收 | 当前至少两份 `ErrorState` | 页面空状态分散；实施见 UI-GAP-003 |
+| 当前入口 | `design-system/.../AppContentStateComponents.kt` | `design-system/.../AppContentStateComponents.kt` |
+| 差距/验收 | P005 已使用 PAGE/INLINE；其他页面仍待迁移 | P005 已使用 PAGE；其他页面空状态仍待迁移 |
 
 ## Compose 短示例
 
@@ -107,9 +108,8 @@ AppAlertDialog(
 
 ## 当前差距
 
-对话框、Sheet、Snackbar 已有公共入口；错误与空状态尚未收口，Toast、局部提示和 Dialog 的选择边界仍需逐页审计。
+对话框、Sheet、Snackbar 已有公共入口。共享错误与空状态组件已经建立，P005 综合搜索完成首轮试点；Toast、局部提示和 Dialog 的选择边界仍需逐页审计。
 
 ## 验收方法
 
 检查打开/关闭/提交失败/返回/点外/键盘/旋转；焦点进入弹层并在关闭后恢复；长中文文案和 1.3 倍字体不截断按钮；Snackbar 不遮底栏或迷你播放器。
-

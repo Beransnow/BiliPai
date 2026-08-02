@@ -67,17 +67,19 @@
 
 | 字段 | 内容 |
 |---|---|
-| 领域 / 优先级 / 状态 | 反馈 / P1 / 待评估 |
+| 领域 / 优先级 / 状态 | 反馈 / P1 / 进行中（P005 试点完成） |
 | 维护角色 | 设计系统维护者、各页面维护者 |
-| 现状证据 | 至少两份 `ErrorState`，页面对空、离线、未登录的处理不一致 |
-| 目标 | 建立共享状态组件，明确标题、说明、主要恢复动作、次要动作与局部/整页变体 |
+| 现状证据 | 旧 `LottieComponents.EmptyState/ErrorState` 与 feature 私有实现仍存在；P005 原先把分页失败写入整页 `error` |
+| 目标 | 通过 `AppContentStateComponents.kt` 建立共享状态组件，明确标题、说明、主要恢复动作、次要动作与 PAGE/INLINE 变体 |
 | Why | 错误必须可恢复，不能与空状态或未登录混淆 |
 | 影响 | 全部网络页面与分页列表 |
-| 修改入口 | 共享状态组件目录、各 Screen 的 uiState 分支 |
+| 修改入口 | `AppContentStateComponents.kt`、`SearchContentStatePolicy.kt`、`SearchViewModel.kt`、`SearchScreen.kt` |
 | 依赖 / 风险 | 需保留页面已加载的可用数据；不能统一成整页遮挡 |
-| 实施步骤 | 建立状态语义 → 设计共享 API → 先迁移搜索/消息 → 扩展到其他页面 |
-| 自动验证 | 状态映射 policy 测试、文案结构测试 |
+| 实施步骤 | 建立状态语义 → 设计共享 API → P005 试点 → 按阶段迁移消息和其他页面 |
+| 自动验证 | `AppContentStatePolicyTest`、`SearchContentStatePolicyTest`、搜索 feature 测试、文档结构测试 |
 | 人工验证 | 断网、重试、部分数据、分页失败、未登录逐项检查 |
+
+**P005 试点证据（901a11954）**：已建立 `AppErrorState`/`AppEmptyState`，结果页按 body/footer policy 分离首次失败与分页失败；分页失败保留已有列表、页码和继续重试能力；热榜与搜索发现保留各自错误字段；系统返回和顶部返回先关闭建议/键盘。其余页面仍标记为待迁移，不能把本试点视为全局完成。
 
 ### UI-GAP-004：合并用户等级标签
 
