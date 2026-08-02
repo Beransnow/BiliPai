@@ -785,12 +785,6 @@ internal fun ElegantVideoCard(
         Box(
             modifier = coverSharedBoundsModifier
                 .fillMaxWidth()
-                .videoCardShellReturnCoverAlpha(
-                    enabled = useCardShellSharedBounds,
-                    bvid = video.bvid,
-                    sourceRoute = effectiveSharedElementSourceRoute,
-                    isReturningFromDetail = isReturningFromVideoDetail,
-                )
                 .testTag("home_video_cover")
                 .aspectRatio(coverAspectRatio)
                 .clip(coverShape)
