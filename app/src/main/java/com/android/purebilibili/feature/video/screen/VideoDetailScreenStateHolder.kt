@@ -860,6 +860,7 @@ internal fun VideoDetailScreenStateHolder(
 
     // 📐 [大屏适配] 仅 Expanded 才启用平板分栏布局
     val windowSizeClass = com.android.purebilibili.core.util.LocalWindowSizeClass.current
+    val isFlatFoldable = com.android.purebilibili.core.util.rememberIsFlatFoldable()
     val horizontalAdaptationEnabled by com.android.purebilibili.core.store.SettingsManager
         .getHorizontalAdaptationEnabled(context)
         .collectAsStateWithLifecycle(
@@ -1967,7 +1968,8 @@ internal fun VideoDetailScreenStateHolder(
         userRequestedFullscreen,
         manualPortraitHoldActive,
         isVerticalVideo,
-        isPortraitFullscreen
+        isPortraitFullscreen,
+        isFlatFoldable
     ) {
         val requestedOrientation = resolvePhoneVideoRequestedOrientation(
             autoRotateEnabled = autoRotateEnabled,
@@ -1982,9 +1984,9 @@ internal fun VideoDetailScreenStateHolder(
             isPortraitFullscreen = isPortraitFullscreen,
             currentRequestedOrientation = activity?.requestedOrientation,
             isInMultiWindowMode = isActivityInMultiWindowMode,
-            // 用稳定设备宽度（smallestScreenWidthDp）判定，避免 isExpandedScreen 随横竖屏翻转，
-            // 导致中等宽度平板全屏时目标方向在 LANDSCAPE/PORTRAIT 之间反复振荡。
-            preferPortraitForExpandedScreen = !windowSizeClass.isCompactDevice
+            // 仅折叠屏完全展开的内屏沿用原版默认竖屏。不要以窗口宽度推断：它会随旋转
+            // 改变，也无法区分普通平板和大屏手机。
+            preferPortraitForFlatFoldable = isFlatFoldable
         ) ?: return@LaunchedEffect
 
         if (activity?.requestedOrientation != requestedOrientation) {

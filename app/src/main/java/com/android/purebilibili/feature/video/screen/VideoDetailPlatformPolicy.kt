@@ -459,14 +459,14 @@ internal fun shouldApplyStartFullscreenOrientationRequest(
 internal fun resolvePhoneFullscreenEnterOrientation(
     fullscreenMode: com.android.purebilibili.core.store.FullscreenMode,
     isVerticalVideo: Boolean,
-    preferPortraitForExpandedScreen: Boolean = false
+    preferPortraitForFlatFoldable: Boolean = false
 ): Int? {
     return when (fullscreenMode) {
         com.android.purebilibili.core.store.FullscreenMode.NONE -> null
         com.android.purebilibili.core.store.FullscreenMode.VERTICAL -> ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         com.android.purebilibili.core.store.FullscreenMode.HORIZONTAL -> ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
         com.android.purebilibili.core.store.FullscreenMode.AUTO -> {
-            if (isVerticalVideo || preferPortraitForExpandedScreen) ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            if (isVerticalVideo || preferPortraitForFlatFoldable) ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
             else ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
         }
     }
@@ -524,8 +524,12 @@ internal fun resolvePhoneVideoRequestedOrientation(
     isPortraitFullscreen: Boolean = false,
     currentRequestedOrientation: Int? = null,
     isInMultiWindowMode: Boolean = false,
-    preferPortraitForExpandedScreen: Boolean = false
+    preferPortraitForFlatFoldable: Boolean = false
 ): Int? {
+    // A size class alone can classify a tablet or a large phone as a foldable. Keep this
+    // preference out of compact layouts even if an upstream caller misclassifies the device.
+    val preferPortraitForFoldableInnerScreen =
+        !isCompactDevice && preferPortraitForFlatFoldable
     if (isInMultiWindowMode) {
         return null
     }
@@ -538,7 +542,7 @@ internal fun resolvePhoneVideoRequestedOrientation(
             resolvePhoneFullscreenEnterOrientation(
                 fullscreenMode = fullscreenMode,
                 isVerticalVideo = isVerticalVideo,
-                preferPortraitForExpandedScreen = preferPortraitForExpandedScreen
+                preferPortraitForFlatFoldable = preferPortraitForFoldableInnerScreen
             )
         } else {
             ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
@@ -567,7 +571,7 @@ internal fun resolvePhoneVideoRequestedOrientation(
                 resolvePhoneFullscreenEnterOrientation(
                     fullscreenMode = fullscreenMode,
                     isVerticalVideo = isVerticalVideo,
-                    preferPortraitForExpandedScreen = preferPortraitForExpandedScreen
+                    preferPortraitForFlatFoldable = preferPortraitForFoldableInnerScreen
                 ) ?: ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
             }
             isFullscreenMode -> resolveCurrentExactLandscapeOrientation(currentRequestedOrientation)
@@ -582,7 +586,7 @@ internal fun resolvePhoneVideoRequestedOrientation(
         resolvePhoneFullscreenEnterOrientation(
             fullscreenMode = fullscreenMode,
             isVerticalVideo = isVerticalVideo,
-            preferPortraitForExpandedScreen = preferPortraitForExpandedScreen
+            preferPortraitForFlatFoldable = preferPortraitForFoldableInnerScreen
         ) ?: ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
     } else {
         ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
