@@ -54,7 +54,7 @@ class Anime4KPlugin : Plugin {
     override val id: String = PLUGIN_ID
     override val name: String = "画质增强"
     override val description: String = "提供 Anime4K 与 AMD FSR 1.0 实时画质增强"
-    override val version: String = "0.3.0"
+    override val version: String = "0.4.0"
     override val author: String = "BiliPai项目组"
     override val capabilityManifest: PluginCapabilityManifest = PluginCapabilityManifest(
         pluginId = id,

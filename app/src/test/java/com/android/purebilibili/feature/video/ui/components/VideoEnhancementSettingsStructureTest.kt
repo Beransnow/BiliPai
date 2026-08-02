@@ -35,6 +35,7 @@ class VideoEnhancementSettingsStructureTest {
     fun `插件设置页FSR锐化也使用零点一档位`() {
         val pluginSource = pluginSource("Anime4KPlugin.kt")
 
+        assertTrue(pluginSource.contains("override val version: String = \"0.4.0\""))
         assertTrue(pluginSource.contains("title = \"FSR 锐化强度\""))
         assertTrue(pluginSource.contains("steps = FSR_SHARPNESS_SLIDER_STEPS"))
     }
