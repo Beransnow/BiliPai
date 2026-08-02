@@ -220,6 +220,11 @@ class MainActivityAppCompatContractTest {
                 .contains("#FF090A0C"),
             "Dark mode adaptive icons should use the near-black outer shell"
         )
+        assertTrue(
+            loadResourceText("drawable-night/ic_launcher_blue_snow_maid_announcement_background.xml")
+                .contains("#FF090A0C"),
+            "Announcement icon should use the same near-black outer shell in dark mode"
+        )
 
         mapOf(
             "mdpi" to (48 to 108),
