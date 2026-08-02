@@ -66,6 +66,7 @@ import com.android.purebilibili.core.ui.components.AppAdaptiveSwitch
 import com.android.purebilibili.core.ui.components.AppCard
 import com.android.purebilibili.core.ui.components.AppOutlinedButton
 import com.android.purebilibili.core.ui.components.AppTextButton
+import com.android.purebilibili.core.ui.components.rememberAdaptivePreferenceIconContentColor
 import com.android.purebilibili.core.ui.components.rememberAdaptiveSemanticIconTint
 import com.android.purebilibili.core.ui.components.rememberAdaptiveListVisualCapabilities
 import androidx.compose.ui.res.stringResource
@@ -286,7 +287,8 @@ internal fun SettingsRootCategoryNavigationSection(
     state: SettingsRootCategoryState
 ) {
     val visual = rememberSettingsEntryVisual(category.searchTarget)
-    val effectiveIconTint = rememberAdaptiveSemanticIconTint(visual.iconTint)
+    val effectiveIconTint = visual.iconTint
+    val iconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
     val chevronRotation by animateFloatAsState(
         targetValue = if (isExpanded) 90f else 0f,
         animationSpec = tween(durationMillis = 200),
@@ -307,20 +309,20 @@ internal fun SettingsRootCategoryNavigationSection(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(AppShapes.container(ContainerLevel.Chip))
-                        .background(effectiveIconTint.copy(alpha = 0.14f)),
+                        .background(effectiveIconTint),
                     contentAlignment = Alignment.Center
                 ) {
                     when {
                         visual.icon != null -> AppIcon(
                             imageVector = visual.icon,
                             contentDescription = null,
-                            tint = effectiveIconTint,
+                            tint = iconContentColor,
                             modifier = Modifier.size(22.dp)
                         )
                         visual.iconResId != null -> AppIcon(
                             painter = painterResource(id = visual.iconResId),
                             contentDescription = null,
-                            tint = effectiveIconTint,
+                            tint = iconContentColor,
                             modifier = Modifier.size(22.dp)
                         )
                     }
@@ -407,6 +409,8 @@ private fun SettingsRootCategoryRow(
     onClick: () -> Unit,
 ) {
     val visualSpec = resolveSettingsVisualSpec()
+    val effectiveIconTint = iconTint
+    val iconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -421,20 +425,20 @@ private fun SettingsRootCategoryRow(
             modifier = Modifier
                 .size(visualSpec.categoryIconBubbleSize)
                 .clip(AppShapes.container(ContainerLevel.Field))
-                .background(iconTint.copy(alpha = 0.16f)),
+                .background(effectiveIconTint),
             contentAlignment = Alignment.Center,
         ) {
             when {
                 iconPainter != null -> AppIcon(
                     painter = iconPainter,
                     contentDescription = null,
-                    tint = iconTint,
+                    tint = iconContentColor,
                     modifier = Modifier.size(visualSpec.categoryIconSize),
                 )
                 icon != null -> AppIcon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = iconTint,
+                    tint = iconContentColor,
                     modifier = Modifier.size(visualSpec.categoryIconSize),
                 )
             }
@@ -1148,6 +1152,8 @@ private fun FeedDynamicTabVisibilityItem(
     val listCapabilities = rememberAdaptiveListVisualCapabilities()
     val visualSpec = listCapabilities.componentSpec
     val rowSpec = listCapabilities.rowSpec
+    val effectiveIconTint = iconTint
+    val iconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -1161,13 +1167,13 @@ private fun FeedDynamicTabVisibilityItem(
                 modifier = Modifier
                     .size(visualSpec.iconContainerSizeDp.dp)
                     .clip(RoundedCornerShape(visualSpec.iconCornerRadiusDp.dp))
-                    .background(iconTint.copy(alpha = visualSpec.iconBackgroundAlpha)),
+                    .background(effectiveIconTint),
                 contentAlignment = Alignment.Center
             ) {
                 AppIcon(
                     icon,
                     contentDescription = null,
-                    tint = iconTint,
+                    tint = iconContentColor,
                     modifier = Modifier.size(visualSpec.iconGlyphSizeDp.dp)
                 )
             }

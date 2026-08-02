@@ -19,6 +19,7 @@ import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppNavigationDrawerItem
 import com.android.purebilibili.core.ui.components.AppText
+import com.android.purebilibili.core.ui.components.rememberAdaptivePreferenceIconContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -90,6 +91,8 @@ fun SettingsTabletShell(
                 ) {
                     items(categories) { category ->
                         val visual = rememberSettingsEntryVisual(category.searchTarget)
+                        val effectiveIconTint = visual.iconTint
+                        val iconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
                         val selected = selectedCategory == category
                         AppNavigationDrawerItem(
                             label = {
@@ -110,14 +113,14 @@ fun SettingsTabletShell(
                                     modifier = Modifier
                                         .size(resolveSettingsVisualSpec().categoryIconBubbleSize)
                                         .clip(AppShapes.container(ContainerLevel.Field))
-                                        .background(visual.iconTint.copy(alpha = 0.16f)),
+                                        .background(effectiveIconTint),
                                     contentAlignment = Alignment.Center,
                                 ) {
                                     if (visual.icon != null) {
                                         AppIcon(
                                             imageVector = visual.icon,
                                             contentDescription = null,
-                                            tint = visual.iconTint,
+                                            tint = iconContentColor,
                                             modifier = Modifier.size(resolveSettingsVisualSpec().categoryIconSize),
                                         )
                                     }

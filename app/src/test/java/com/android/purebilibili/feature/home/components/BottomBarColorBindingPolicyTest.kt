@@ -68,23 +68,13 @@ class BottomBarColorBindingPolicyTest {
     }
 
     @Test
-    fun `bottom bar selected icons use filled symbols`() {
+    fun `bottom bar selected icons use the shared filled policy`() {
         val source = File("src/main/java/com/android/purebilibili/feature/home/components/BottomBar.kt")
             .readText()
-        val selectedSymbols = listOf(
-            "House",
-            "Bell",
-            "PlayCircle",
-            "Clock",
-            "Person",
-            "Star",
-            "Video",
-            "Gearshape"
-        )
 
         assertTrue(
-            selectedSymbols.all { symbol ->
-                source.contains("{ AppIcon(CupertinoIcons.Filled.$symbol, contentDescription = null) }")
+            BottomNavItem.entries.all { item ->
+                source.contains("CupertinoBottomNavigationIcon(\"${item.name}\", selected = true)")
             },
             "Bottom bar selected icons should use filled symbols so the whole selected icon is tinted by the theme color."
         )
@@ -98,13 +88,11 @@ class BottomBarColorBindingPolicyTest {
             .substringAfter("WATCHLATER(")
             .substringBefore("    ),")
 
-        assertTrue(watchLaterBlock.contains("CupertinoIcons.Filled.Clock"))
-        assertTrue(watchLaterBlock.contains("CupertinoIcons.Outlined.Clock"))
+        assertTrue(watchLaterBlock.contains("CupertinoBottomNavigationIcon(\"WATCHLATER\", selected = true)"))
+        assertTrue(watchLaterBlock.contains("CupertinoBottomNavigationIcon(\"WATCHLATER\", selected = false)"))
         assertFalse(watchLaterBlock.contains("Bookmark"))
         assertTrue(
-            source.contains(
-                "BottomNavItem.WATCHLATER -> if (selected) Icons.Filled.WatchLater else Icons.Outlined.WatchLater"
-            )
+            source.contains("tabId = item.name")
         )
     }
 

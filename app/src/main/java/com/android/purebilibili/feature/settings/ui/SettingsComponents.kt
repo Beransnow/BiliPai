@@ -25,6 +25,7 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.blur.BlurIntensity
 import com.android.purebilibili.core.ui.components.rememberAdaptiveSemanticIconTint
+import com.android.purebilibili.core.ui.components.rememberAdaptivePreferenceIconContentColor
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
 import io.github.alexzhirkevich.cupertino.icons.filled.*
 import io.github.alexzhirkevich.cupertino.icons.outlined.*
@@ -146,7 +147,8 @@ fun BlurIntensityOption(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    val effectiveIconTint = rememberAdaptiveSemanticIconTint(iconTint)
+    val effectiveIconTint = iconTint
+    val iconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -169,7 +171,20 @@ fun BlurIntensityOption(
             Spacer(modifier = Modifier.width(8.dp))
         }
         
-        AppIcon(icon, contentDescription = null, tint = effectiveIconTint, modifier = Modifier.size(20.dp))
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(AppShapes.container(ContainerLevel.Field))
+                .background(effectiveIconTint),
+            contentAlignment = Alignment.Center,
+        ) {
+            AppIcon(
+                icon,
+                contentDescription = null,
+                tint = iconContentColor,
+                modifier = Modifier.size(20.dp),
+            )
+        }
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             AppText(title, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)

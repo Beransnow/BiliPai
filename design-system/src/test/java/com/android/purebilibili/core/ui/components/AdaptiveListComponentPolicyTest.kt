@@ -114,6 +114,35 @@ class AdaptiveListComponentPolicyTest {
     }
 
     @Test
+    fun `filled settings icons should use opaque containers and contrasting glyphs`() {
+        val colorScheme = lightColorScheme(primary = Color(0xFF3366CC))
+
+        assertEquals(
+            1f,
+            resolveAdaptivePreferenceIconBackgroundAlpha(
+                treatment = AppPreferenceIconTreatment.FILLED,
+                tonalAlpha = 0.14f,
+            ),
+        )
+        assertEquals(
+            colorScheme.onPrimary,
+            resolveAdaptivePreferenceIconContentColor(colorScheme.primary, colorScheme),
+        )
+        assertEquals(
+            Color.White,
+            resolveAdaptivePreferenceIconContentColor(iOSBlue, colorScheme),
+        )
+        assertEquals(
+            iOSBlue,
+            resolveAdaptivePreferenceIconContainerColor(
+                iconTint = iOSBlue,
+                semanticTint = colorScheme.secondary,
+                treatment = AppPreferenceIconTreatment.FILLED,
+            ),
+        )
+    }
+
+    @Test
     fun `md3 preset without dynamic color should collapse legacy accent tints to primary`() {
         val colorScheme = darkColorScheme()
 

@@ -23,6 +23,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -115,6 +116,15 @@ data class AdaptiveListComponentVisualSpec(
     val dividerThicknessDp: Float,
     val dividerStartIndentDp: Int
 )
+
+enum class AppPreferenceIconTreatment {
+    TONAL,
+    FILLED,
+}
+
+val LocalAppPreferenceIconTreatment = staticCompositionLocalOf {
+    AppPreferenceIconTreatment.TONAL
+}
 
 internal data class AdaptiveSwitchVisualSpec(
     val usePlatformDefaults: Boolean,
@@ -351,6 +361,36 @@ internal fun resolveAdaptiveSemanticIconTint(
     }
 }
 
+internal fun resolveAdaptivePreferenceIconContainerColor(
+    iconTint: Color,
+    semanticTint: Color,
+    treatment: AppPreferenceIconTreatment,
+): Color = if (treatment == AppPreferenceIconTreatment.FILLED) iconTint else semanticTint
+
+internal fun resolveAdaptivePreferenceIconContentColor(
+    containerColor: Color,
+    colorScheme: ColorScheme,
+): Color {
+    if (containerColor == Color.Unspecified) return Color.Unspecified
+    val opaqueContainer = containerColor.copy(alpha = 1f)
+    return when (opaqueContainer) {
+        colorScheme.primary.copy(alpha = 1f) -> colorScheme.onPrimary
+        colorScheme.secondary.copy(alpha = 1f) -> colorScheme.onSecondary
+        colorScheme.tertiary.copy(alpha = 1f) -> colorScheme.onTertiary
+        colorScheme.error.copy(alpha = 1f) -> colorScheme.onError
+        colorScheme.primaryContainer.copy(alpha = 1f) -> colorScheme.onPrimaryContainer
+        colorScheme.secondaryContainer.copy(alpha = 1f) -> colorScheme.onSecondaryContainer
+        colorScheme.tertiaryContainer.copy(alpha = 1f) -> colorScheme.onTertiaryContainer
+        colorScheme.errorContainer.copy(alpha = 1f) -> colorScheme.onErrorContainer
+        else -> if (opaqueContainer.luminance() >= 0.72f) Color.Black else Color.White
+    }
+}
+
+internal fun resolveAdaptivePreferenceIconBackgroundAlpha(
+    treatment: AppPreferenceIconTreatment,
+    tonalAlpha: Float,
+): Float = if (treatment == AppPreferenceIconTreatment.FILLED) 1f else tonalAlpha
+
 internal fun resolveAdaptiveSwitchVisualSpec(
     uiPreset: UiPreset,
     colorScheme: ColorScheme
@@ -390,6 +430,27 @@ fun rememberAdaptiveSemanticIconTint(
             colorScheme = colorScheme,
             useSemanticAccentRoles = dynamicColorActive
         )
+    }
+}
+
+@Composable
+fun rememberAdaptivePreferenceIconContentColor(
+    containerColor: Color,
+): Color {
+    val colorScheme = MaterialTheme.colorScheme
+    return remember(containerColor, colorScheme) {
+        resolveAdaptivePreferenceIconContentColor(containerColor, colorScheme)
+    }
+}
+
+@Composable
+fun rememberAdaptivePreferenceIconContainerColor(
+    iconTint: Color,
+): Color {
+    val treatment = LocalAppPreferenceIconTreatment.current
+    val semanticTint = rememberAdaptiveSemanticIconTint(iconTint)
+    return remember(iconTint, semanticTint, treatment) {
+        resolveAdaptivePreferenceIconContainerColor(iconTint, semanticTint, treatment)
     }
 }
 
@@ -747,7 +808,18 @@ internal fun AdaptiveSwitchPreferenceContent(
     val rowSpec = remember(uiPreset, androidNativeVariant) {
         resolveAdaptiveListRowVisualSpec(uiPreset, androidNativeVariant)
     }
-    val effectiveIconTint = rememberAdaptiveSemanticIconTint(iconTint, uiPreset)
+    val iconTreatment = LocalAppPreferenceIconTreatment.current
+    val effectiveIconTint = rememberAdaptivePreferenceIconContainerColor(iconTint)
+    val filledIconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
+    val iconContentColor = if (iconTreatment == AppPreferenceIconTreatment.FILLED) {
+        filledIconContentColor
+    } else {
+        effectiveIconTint
+    }
+    val iconBackgroundAlpha = resolveAdaptivePreferenceIconBackgroundAlpha(
+        iconTreatment,
+        visualSpec.iconBackgroundAlpha,
+    )
     val cornerRadiusScale = LocalCornerRadiusScale.current
     val iconCornerRadius = if (uiPreset == UiPreset.MD3) visualSpec.iconCornerRadiusDp.dp else iOSCornerRadius.Small * cornerRadiusScale
     if (shouldRouteIosSwitchItemToMiuixSwitchPreference(uiPreset, androidNativeVariant)) {
@@ -776,13 +848,13 @@ internal fun AdaptiveSwitchPreferenceContent(
                             modifier = Modifier
                                 .size(visualSpec.iconContainerSizeDp.dp)
                                 .clip(RoundedCornerShape(visualSpec.iconCornerRadiusDp.dp))
-                                .background(effectiveIconTint.copy(alpha = visualSpec.iconBackgroundAlpha)),
+                                .background(effectiveIconTint.copy(alpha = iconBackgroundAlpha)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = icon,
                                 contentDescription = null,
-                                tint = effectiveIconTint,
+                                tint = iconContentColor,
                                 modifier = Modifier.size(visualSpec.iconGlyphSizeDp.dp)
                             )
                         }
@@ -810,13 +882,13 @@ internal fun AdaptiveSwitchPreferenceContent(
                     modifier = Modifier
                         .size(visualSpec.iconContainerSizeDp.dp)
                         .clip(RoundedCornerShape(visualSpec.iconCornerRadiusDp.dp))
-                        .background(effectiveIconTint.copy(alpha = visualSpec.iconBackgroundAlpha)),
+                        .background(effectiveIconTint.copy(alpha = iconBackgroundAlpha)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
-                        tint = effectiveIconTint,
+                        tint = iconContentColor,
                         modifier = Modifier.size(visualSpec.iconGlyphSizeDp.dp)
                     )
                 }
@@ -852,13 +924,13 @@ internal fun AdaptiveSwitchPreferenceContent(
                 modifier = Modifier
                     .size(visualSpec.iconContainerSizeDp.dp)
                     .clip(RoundedCornerShape(iconCornerRadius))
-                    .background(effectiveIconTint.copy(alpha = visualSpec.iconBackgroundAlpha)),
+                    .background(effectiveIconTint.copy(alpha = iconBackgroundAlpha)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     icon,
                     contentDescription = null,
-                    tint = effectiveIconTint,
+                    tint = iconContentColor,
                     modifier = Modifier.size(visualSpec.iconGlyphSizeDp.dp)
                 )
             }
@@ -903,7 +975,18 @@ fun AdaptiveSliderPreferenceRenderer(
     val rowSpec = remember(uiPreset, androidNativeVariant) {
         resolveAdaptiveListRowVisualSpec(uiPreset, androidNativeVariant)
     }
-    val effectiveIconTint = rememberAdaptiveSemanticIconTint(iconTint, uiPreset)
+    val iconTreatment = LocalAppPreferenceIconTreatment.current
+    val effectiveIconTint = rememberAdaptivePreferenceIconContainerColor(iconTint)
+    val filledIconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
+    val iconContentColor = if (iconTreatment == AppPreferenceIconTreatment.FILLED) {
+        filledIconContentColor
+    } else {
+        effectiveIconTint
+    }
+    val iconBackgroundAlpha = resolveAdaptivePreferenceIconBackgroundAlpha(
+        iconTreatment,
+        visualSpec.iconBackgroundAlpha,
+    )
     val cornerRadiusScale = LocalCornerRadiusScale.current
     val iconCornerRadius = if (uiPreset == UiPreset.MD3) {
         visualSpec.iconCornerRadiusDp.dp
@@ -931,13 +1014,13 @@ fun AdaptiveSliderPreferenceRenderer(
                         modifier = Modifier
                             .size(visualSpec.iconContainerSizeDp.dp)
                             .clip(RoundedCornerShape(visualSpec.iconCornerRadiusDp.dp))
-                            .background(effectiveIconTint.copy(alpha = visualSpec.iconBackgroundAlpha)),
+                            .background(effectiveIconTint.copy(alpha = iconBackgroundAlpha)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
-                            tint = effectiveIconTint,
+                            tint = iconContentColor,
                             modifier = Modifier.size(visualSpec.iconGlyphSizeDp.dp)
                         )
                     }
@@ -963,13 +1046,13 @@ fun AdaptiveSliderPreferenceRenderer(
                     modifier = Modifier
                         .size(visualSpec.iconContainerSizeDp.dp)
                         .clip(RoundedCornerShape(iconCornerRadius))
-                        .background(effectiveIconTint.copy(alpha = visualSpec.iconBackgroundAlpha)),
+                        .background(effectiveIconTint.copy(alpha = iconBackgroundAlpha)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
-                        tint = effectiveIconTint,
+                        tint = iconContentColor,
                         modifier = Modifier.size(visualSpec.iconGlyphSizeDp.dp)
                     )
                 }
@@ -1033,7 +1116,18 @@ internal fun AdaptivePreferenceContent(
     val rowSpec = remember(uiPreset, androidNativeVariant) {
         resolveAdaptiveListRowVisualSpec(uiPreset, androidNativeVariant)
     }
-    val effectiveIconTint = rememberAdaptiveSemanticIconTint(iconTint, uiPreset)
+    val iconTreatment = LocalAppPreferenceIconTreatment.current
+    val effectiveIconTint = rememberAdaptivePreferenceIconContainerColor(iconTint)
+    val filledIconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
+    val iconContentColor = if (iconTreatment == AppPreferenceIconTreatment.FILLED) {
+        filledIconContentColor
+    } else {
+        effectiveIconTint
+    }
+    val iconBackgroundAlpha = resolveAdaptivePreferenceIconBackgroundAlpha(
+        iconTreatment,
+        visualSpec.iconBackgroundAlpha,
+    )
     val cornerRadiusScale = LocalCornerRadiusScale.current
     val iconCornerRadius = if (uiPreset == UiPreset.MD3) visualSpec.iconCornerRadiusDp.dp else iOSCornerRadius.Small * cornerRadiusScale
     val clickableRenderer = resolveAppClickableItemRenderer(
@@ -1061,13 +1155,13 @@ internal fun AdaptivePreferenceContent(
                             modifier = Modifier
                                 .size(visualSpec.iconContainerSizeDp.dp)
                                 .clip(RoundedCornerShape(visualSpec.iconCornerRadiusDp.dp))
-                                .background(effectiveIconTint.copy(alpha = visualSpec.iconBackgroundAlpha)),
+                                .background(effectiveIconTint.copy(alpha = iconBackgroundAlpha)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = icon,
                                 contentDescription = null,
-                                tint = effectiveIconTint,
+                                tint = iconContentColor,
                                 modifier = Modifier.size(visualSpec.iconGlyphSizeDp.dp)
                             )
                         }
@@ -1082,7 +1176,7 @@ internal fun AdaptivePreferenceContent(
                                     if (effectiveIconTint == Color.Unspecified) {
                                         Color.Transparent
                                     } else {
-                                        effectiveIconTint.copy(alpha = visualSpec.iconBackgroundAlpha)
+                                        effectiveIconTint.copy(alpha = iconBackgroundAlpha)
                                     }
                                 ),
                             contentAlignment = Alignment.Center
@@ -1090,7 +1184,7 @@ internal fun AdaptivePreferenceContent(
                             Icon(
                                 painter = iconPainter,
                                 contentDescription = null,
-                                tint = effectiveIconTint,
+                                tint = iconContentColor,
                                 modifier = Modifier.size(visualSpec.iconGlyphSizeDp.dp)
                             )
                         }
@@ -1136,13 +1230,13 @@ internal fun AdaptivePreferenceContent(
                             modifier = Modifier
                                 .size(visualSpec.iconContainerSizeDp.dp)
                                 .clip(RoundedCornerShape(visualSpec.iconCornerRadiusDp.dp))
-                                .background(effectiveIconTint.copy(alpha = visualSpec.iconBackgroundAlpha)),
+                                .background(effectiveIconTint.copy(alpha = iconBackgroundAlpha)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = icon,
                                 contentDescription = null,
-                                tint = effectiveIconTint,
+                                tint = iconContentColor,
                                 modifier = Modifier.size(visualSpec.iconGlyphSizeDp.dp)
                             )
                         }
@@ -1157,7 +1251,7 @@ internal fun AdaptivePreferenceContent(
                                     if (effectiveIconTint == Color.Unspecified) {
                                         Color.Transparent
                                     } else {
-                                        effectiveIconTint.copy(alpha = visualSpec.iconBackgroundAlpha)
+                                        effectiveIconTint.copy(alpha = iconBackgroundAlpha)
                                     }
                                 ),
                             contentAlignment = Alignment.Center
@@ -1165,7 +1259,7 @@ internal fun AdaptivePreferenceContent(
                             Icon(
                                 painter = iconPainter,
                                 contentDescription = null,
-                                tint = effectiveIconTint,
+                                tint = iconContentColor,
                                 modifier = Modifier.size(visualSpec.iconGlyphSizeDp.dp)
                             )
                         }
@@ -1218,21 +1312,21 @@ internal fun AdaptivePreferenceContent(
                         modifier = Modifier
                             .size(visualSpec.iconContainerSizeDp.dp)
                             .clip(RoundedCornerShape(iconCornerRadius))
-                            .background(effectiveIconTint.copy(alpha = visualSpec.iconBackgroundAlpha)),
+                            .background(effectiveIconTint.copy(alpha = iconBackgroundAlpha)),
                         contentAlignment = Alignment.Center
                     ) {
                         if (icon != null) {
                             Icon(
                                 icon,
                                 contentDescription = null,
-                                tint = effectiveIconTint,
+                                tint = iconContentColor,
                                 modifier = Modifier.size(visualSpec.iconGlyphSizeDp.dp)
                             )
                         } else if (iconPainter != null) {
                             Icon(
                                 painter = iconPainter,
                                 contentDescription = null,
-                                tint = effectiveIconTint,
+                                tint = iconContentColor,
                                 modifier = Modifier.size(visualSpec.iconGlyphSizeDp.dp)
                             )
                         }
@@ -1366,7 +1460,18 @@ fun AdaptivePreferenceGridItemRenderer(
     val visualSpec = remember(uiPreset, androidNativeVariant) {
         resolveAdaptiveListComponentVisualSpec(uiPreset, androidNativeVariant)
     }
-    val effectiveIconTint = rememberAdaptiveSemanticIconTint(iconTint, uiPreset)
+    val iconTreatment = LocalAppPreferenceIconTreatment.current
+    val effectiveIconTint = rememberAdaptivePreferenceIconContainerColor(iconTint)
+    val filledIconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
+    val iconContentColor = if (iconTreatment == AppPreferenceIconTreatment.FILLED) {
+        filledIconContentColor
+    } else {
+        effectiveIconTint
+    }
+    val iconBackgroundAlpha = resolveAdaptivePreferenceIconBackgroundAlpha(
+        iconTreatment,
+        visualSpec.iconBackgroundAlpha,
+    )
     val cornerRadiusScale = LocalCornerRadiusScale.current
     val itemCornerRadius = if (uiPreset == UiPreset.MD3) visualSpec.gridCornerRadiusDp.dp else iOSCornerRadius.Medium * cornerRadiusScale
     val resolvedContainerColor = resolveGlobalWallpaperListContainerColor(
@@ -1389,13 +1494,13 @@ fun AdaptivePreferenceGridItemRenderer(
             modifier = Modifier
                 .size(48.dp)
                 .clip(RoundedCornerShape(iOSCornerRadius.Small * cornerRadiusScale))
-                .background(effectiveIconTint.copy(alpha = visualSpec.iconBackgroundAlpha)),
+                .background(effectiveIconTint.copy(alpha = iconBackgroundAlpha)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = effectiveIconTint,
+                tint = iconContentColor,
                 modifier = Modifier.size(26.dp)
             )
         }

@@ -4,23 +4,6 @@ import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.TrendingUp
-import androidx.compose.material.icons.outlined.DynamicFeed
-import androidx.compose.material.icons.outlined.Extension
-import androidx.compose.material.icons.outlined.History
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.GridView
-import androidx.compose.material.icons.outlined.Lightbulb
-import androidx.compose.material.icons.outlined.LibraryMusic
-import androidx.compose.material.icons.outlined.LiveTv
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.PlayCircleOutline
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.SmartToy
-import androidx.compose.material.icons.outlined.StarBorder
-import androidx.compose.material.icons.outlined.Tv
-import androidx.compose.material.icons.outlined.WatchLater
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -74,6 +57,7 @@ import com.android.purebilibili.core.ui.AppSemanticIconFamily
 import com.android.purebilibili.core.ui.rememberAppSemanticVisualPolicy
 import com.android.purebilibili.core.ui.adaptive.resolveDeviceUiProfile
 import com.android.purebilibili.core.ui.adaptive.resolveEffectiveMotionTier
+import com.android.purebilibili.feature.home.components.resolveHomeNavigationIcon
 import com.android.purebilibili.feature.settings.ui.SettingsPageScaffold
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import kotlinx.coroutines.launch
@@ -102,70 +86,12 @@ data class TopTabConfig(
 internal fun resolveBottomBarTabIcon(
     id: String,
     iconFamily: AppSemanticIconFamily = AppSemanticIconFamily.CUPERTINO,
-): ImageVector {
-    return when (iconFamily) {
-        AppSemanticIconFamily.MATERIAL -> when (id) {
-            "HOME" -> Icons.Outlined.Home
-            "DYNAMIC" -> Icons.Outlined.DynamicFeed
-            "STORY" -> Icons.Outlined.PlayCircleOutline
-            "HISTORY" -> Icons.Outlined.History
-            "LISTEN_VIDEO" -> Icons.Outlined.LibraryMusic
-            "PROFILE" -> Icons.Outlined.Person
-            "FAVORITE" -> Icons.Outlined.StarBorder
-            "LIVE" -> Icons.Outlined.LiveTv
-            "WATCHLATER" -> Icons.Outlined.WatchLater
-            "SETTINGS" -> Icons.Outlined.Settings
-            "PLUGINS" -> Icons.Outlined.Extension
-            else -> Icons.Outlined.Home
-        }
-        AppSemanticIconFamily.CUPERTINO -> when (id) {
-            "HOME" -> CupertinoIcons.Default.House
-            "DYNAMIC" -> CupertinoIcons.Default.RectangleStack
-            "STORY" -> CupertinoIcons.Default.PlayCircle
-            "HISTORY" -> CupertinoIcons.Default.Clock
-            "LISTEN_VIDEO" -> CupertinoIcons.Default.MusicNote
-            "PROFILE" -> CupertinoIcons.Default.PersonCircle
-            "FAVORITE" -> CupertinoIcons.Default.Star
-            "LIVE" -> CupertinoIcons.Default.Video
-            "WATCHLATER" -> CupertinoIcons.Outlined.Clock
-            "SETTINGS" -> CupertinoIcons.Default.Gearshape
-            "PLUGINS" -> CupertinoIcons.Default.Puzzlepiece
-            else -> CupertinoIcons.Default.House
-        }
-    }
-}
+): ImageVector = resolveHomeNavigationIcon(id, iconFamily, selected = false)
 
 internal fun resolveTopTabIcon(
     id: String,
     iconFamily: AppSemanticIconFamily = AppSemanticIconFamily.CUPERTINO,
-): ImageVector {
-    return when (iconFamily) {
-        AppSemanticIconFamily.MATERIAL -> when (id) {
-            "RECOMMEND" -> Icons.Outlined.Home
-            "FOLLOW" -> Icons.Outlined.Person
-            "POPULAR" -> Icons.AutoMirrored.Outlined.TrendingUp
-            "LIVE" -> Icons.Outlined.LiveTv
-            "ANIME" -> Icons.Outlined.Tv
-            "GAME" -> Icons.Outlined.PlayCircleOutline
-            "PARTITION" -> Icons.Outlined.GridView
-            "KNOWLEDGE" -> Icons.Outlined.Lightbulb
-            "TECH" -> Icons.Outlined.SmartToy
-            else -> Icons.Outlined.Home
-        }
-        AppSemanticIconFamily.CUPERTINO -> when (id) {
-            "RECOMMEND" -> CupertinoIcons.Default.House
-            "FOLLOW" -> CupertinoIcons.Default.PersonCropCircleBadgePlus
-            "POPULAR" -> CupertinoIcons.Default.ChartBar
-            "LIVE" -> CupertinoIcons.Default.Video
-            "ANIME" -> CupertinoIcons.Default.Tv
-            "GAME" -> CupertinoIcons.Default.PlayCircle
-            "PARTITION" -> CupertinoIcons.Outlined.Grid
-            "KNOWLEDGE" -> CupertinoIcons.Default.Lightbulb
-            "TECH" -> CupertinoIcons.Default.Cpu
-            else -> CupertinoIcons.Default.House
-        }
-    }
-}
+): ImageVector = resolveHomeNavigationIcon(id, iconFamily, selected = false)
 
 /**
  * 所有可用的底栏项目
@@ -1393,6 +1319,7 @@ private fun BottomBarTabItem(
 ) {
     //  获取项目当前颜色
     val itemColor = BottomBarColors.getColorByIndex(colorIndex)
+    val iconContentColor = rememberAdaptivePreferenceIconContentColor(itemColor)
     
     //  颜色选择弹窗状态
     var showColorPicker by remember { mutableStateOf(false) }
@@ -1408,14 +1335,14 @@ private fun BottomBarTabItem(
             modifier = Modifier
                 .size(36.dp)
                 .clip(AppShapes.container(ContainerLevel.Field))
-                .background(itemColor.copy(alpha = 0.12f))
+                .background(itemColor)
                 .clickable { showColorPicker = true },
             contentAlignment = Alignment.Center
         ) {
             AppIcon(
                 imageVector = tab.icon,
                 contentDescription = null,
-                tint = itemColor,
+                tint = iconContentColor,
                 modifier = Modifier.size(20.dp)
             )
         }

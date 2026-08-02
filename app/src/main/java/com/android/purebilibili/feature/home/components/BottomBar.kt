@@ -3,6 +3,7 @@ package com.android.purebilibili.feature.home.components
 
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppBottomNavigationHost
+import com.android.purebilibili.core.ui.AppSemanticIconFamily
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.components.AppNavigationBar
 import com.android.purebilibili.core.ui.components.AppNavigationBarItem
@@ -39,28 +40,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.MenuOpen
-import androidx.compose.material.icons.filled.CollectionsBookmark
-import androidx.compose.material.icons.filled.Extension
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.LiveTv
-import androidx.compose.material.icons.filled.LibraryMusic
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PlayCircle
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.WatchLater
-import androidx.compose.material.icons.outlined.CollectionsBookmark
-import androidx.compose.material.icons.outlined.Extension
-import androidx.compose.material.icons.outlined.History
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.LiveTv
-import androidx.compose.material.icons.outlined.LibraryMusic
-import androidx.compose.material.icons.outlined.NotificationsNone
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.PlayCircleOutline
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.WatchLater
 import com.android.purebilibili.core.ui.components.AppIcon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -267,8 +246,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_home,
         R.string.bottom_nav_home,
         emptyList(),
-        { AppIcon(CupertinoIcons.Filled.House, contentDescription = null) },
-        { AppIcon(CupertinoIcons.Outlined.House, contentDescription = null) },
+        { CupertinoBottomNavigationIcon("HOME", selected = true) },
+        { CupertinoBottomNavigationIcon("HOME", selected = false) },
         ScreenRoutes.Home.route
     ),
     DYNAMIC(
@@ -276,8 +255,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_dynamic,
         R.string.bottom_nav_dynamic,
         emptyList(),
-        { AppIcon(CupertinoIcons.Filled.Bell, contentDescription = null) },
-        { AppIcon(CupertinoIcons.Outlined.Bell, contentDescription = null) },
+        { CupertinoBottomNavigationIcon("DYNAMIC", selected = true) },
+        { CupertinoBottomNavigationIcon("DYNAMIC", selected = false) },
         ScreenRoutes.Dynamic.route
     ),
     STORY(
@@ -285,8 +264,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_story,
         R.string.bottom_nav_story,
         emptyList(),
-        { AppIcon(CupertinoIcons.Filled.PlayCircle, contentDescription = null) },
-        { AppIcon(CupertinoIcons.Outlined.PlayCircle, contentDescription = null) },
+        { CupertinoBottomNavigationIcon("STORY", selected = true) },
+        { CupertinoBottomNavigationIcon("STORY", selected = false) },
         ScreenRoutes.Story.baseRoute
     ),
     HISTORY(
@@ -294,8 +273,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_history,
         R.string.bottom_nav_history_desc,
         listOf("历史记录"),
-        { AppIcon(CupertinoIcons.Filled.Clock, contentDescription = null) },
-        { AppIcon(CupertinoIcons.Outlined.Clock, contentDescription = null) },
+        { CupertinoBottomNavigationIcon("HISTORY", selected = true) },
+        { CupertinoBottomNavigationIcon("HISTORY", selected = false) },
         ScreenRoutes.History.route
     ),
     LISTEN_VIDEO(
@@ -303,18 +282,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_listen_video,
         R.string.bottom_nav_listen_video_desc,
         listOf("音乐"),
-        {
-            AppIcon(
-                painter = painterResource(R.drawable.ic_bottom_nav_listen_video_selected),
-                contentDescription = null
-            )
-        },
-        {
-            AppIcon(
-                painter = painterResource(R.drawable.ic_bottom_nav_listen_video),
-                contentDescription = null
-            )
-        },
+        { CupertinoBottomNavigationIcon("LISTEN_VIDEO", selected = true) },
+        { CupertinoBottomNavigationIcon("LISTEN_VIDEO", selected = false) },
         ScreenRoutes.ListenVideo.route
     ),
     PROFILE(
@@ -322,8 +291,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_profile,
         R.string.bottom_nav_profile_desc,
         listOf("个人中心"),
-        { AppIcon(CupertinoIcons.Filled.Person, contentDescription = null) },
-        { AppIcon(CupertinoIcons.Outlined.Person, contentDescription = null) },
+        { CupertinoBottomNavigationIcon("PROFILE", selected = true) },
+        { CupertinoBottomNavigationIcon("PROFILE", selected = false) },
         ScreenRoutes.Profile.route
     ),
     FAVORITE(
@@ -331,8 +300,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_favorite,
         R.string.bottom_nav_favorite_desc,
         listOf("收藏夹"),
-        { AppIcon(CupertinoIcons.Filled.Star, contentDescription = null) },
-        { AppIcon(CupertinoIcons.Outlined.Star, contentDescription = null) },
+        { CupertinoBottomNavigationIcon("FAVORITE", selected = true) },
+        { CupertinoBottomNavigationIcon("FAVORITE", selected = false) },
         ScreenRoutes.Favorite.route
     ),
     LIVE(
@@ -340,8 +309,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_live,
         R.string.bottom_nav_live,
         emptyList(),
-        { AppIcon(CupertinoIcons.Filled.Video, contentDescription = null) },
-        { AppIcon(CupertinoIcons.Outlined.Video, contentDescription = null) },
+        { CupertinoBottomNavigationIcon("LIVE", selected = true) },
+        { CupertinoBottomNavigationIcon("LIVE", selected = false) },
         ScreenRoutes.LiveList.route
     ),
     WATCHLATER(
@@ -349,8 +318,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_watch_later,
         R.string.bottom_nav_watch_later_desc,
         listOf("稍后再看"),
-        { AppIcon(CupertinoIcons.Filled.Clock, contentDescription = null) },
-        { AppIcon(CupertinoIcons.Outlined.Clock, contentDescription = null) },
+        { CupertinoBottomNavigationIcon("WATCHLATER", selected = true) },
+        { CupertinoBottomNavigationIcon("WATCHLATER", selected = false) },
         ScreenRoutes.WatchLater.route
     ),
     SETTINGS(
@@ -358,8 +327,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_settings,
         R.string.bottom_nav_settings,
         emptyList(),
-        { AppIcon(CupertinoIcons.Filled.Gearshape, contentDescription = null) },
-        { AppIcon(CupertinoIcons.Default.Gearshape, contentDescription = null) },
+        { CupertinoBottomNavigationIcon("SETTINGS", selected = true) },
+        { CupertinoBottomNavigationIcon("SETTINGS", selected = false) },
         ScreenRoutes.Settings.route
     ),
     PLUGINS(
@@ -367,9 +336,24 @@ enum class BottomNavItem(
         R.string.plugins_center_title,
         R.string.plugins_center_title,
         listOf("插件中心"),
-        { AppIcon(CupertinoIcons.Default.Puzzlepiece, contentDescription = null) },
-        { AppIcon(CupertinoIcons.Outlined.PuzzlepieceExtension, contentDescription = null) },
+        { CupertinoBottomNavigationIcon("PLUGINS", selected = true) },
+        { CupertinoBottomNavigationIcon("PLUGINS", selected = false) },
         ScreenRoutes.PluginsSettings.createRoute()
+    )
+}
+
+@Composable
+private fun CupertinoBottomNavigationIcon(
+    tabId: String,
+    selected: Boolean,
+) {
+    AppIcon(
+        imageVector = resolveHomeNavigationIcon(
+            tabId = tabId,
+            iconFamily = AppSemanticIconFamily.CUPERTINO,
+            selected = selected,
+        ),
+        contentDescription = null,
     )
 }
 
@@ -4804,19 +4788,11 @@ private fun RowScope.AndroidNativeBottomBarItem(
 internal fun resolveMaterialBottomBarIcon(
     item: BottomNavItem,
     selected: Boolean
-): ImageVector = when (item) {
-    BottomNavItem.HOME -> if (selected) Icons.Filled.Home else Icons.Outlined.Home
-    BottomNavItem.DYNAMIC -> if (selected) Icons.Filled.Notifications else Icons.Outlined.NotificationsNone
-    BottomNavItem.STORY -> if (selected) Icons.Filled.PlayCircle else Icons.Outlined.PlayCircleOutline
-    BottomNavItem.HISTORY -> if (selected) Icons.Filled.History else Icons.Outlined.History
-    BottomNavItem.LISTEN_VIDEO -> if (selected) Icons.Filled.LibraryMusic else Icons.Outlined.LibraryMusic
-    BottomNavItem.PROFILE -> if (selected) Icons.Filled.Person else Icons.Outlined.Person
-    BottomNavItem.FAVORITE -> if (selected) Icons.Filled.CollectionsBookmark else Icons.Outlined.CollectionsBookmark
-    BottomNavItem.LIVE -> if (selected) Icons.Filled.LiveTv else Icons.Outlined.LiveTv
-    BottomNavItem.WATCHLATER -> if (selected) Icons.Filled.WatchLater else Icons.Outlined.WatchLater
-    BottomNavItem.SETTINGS -> if (selected) Icons.Filled.Settings else Icons.Outlined.Settings
-    BottomNavItem.PLUGINS -> if (selected) Icons.Filled.Extension else Icons.Outlined.Extension
-}
+): ImageVector = resolveHomeNavigationIcon(
+    tabId = item.name,
+    iconFamily = AppSemanticIconFamily.MATERIAL,
+    selected = selected,
+)
 
 @Composable
 private fun BottomBarBlendedCupertinoIcon(

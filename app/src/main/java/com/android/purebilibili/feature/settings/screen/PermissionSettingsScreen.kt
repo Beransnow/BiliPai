@@ -274,7 +274,8 @@ private fun PermissionItem(
     onOpenSettings: (() -> Unit)?
 ) {
     val visualSpec = rememberAdaptiveListVisualCapabilities().componentSpec
-    val effectiveIconTint = rememberAdaptiveSemanticIconTint(info.iconTint)
+    val effectiveIconTint = info.iconTint
+    val iconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
     val grantedTint = rememberAdaptiveSemanticIconTint(iOSGreen)
     val deniedTint = rememberAdaptiveSemanticIconTint(com.android.purebilibili.core.theme.iOSRed)
     Row(
@@ -289,13 +290,13 @@ private fun PermissionItem(
             modifier = Modifier
                 .size(visualSpec.iconContainerSizeDp.dp)
                 .clip(RoundedCornerShape(visualSpec.iconCornerRadiusDp.dp))
-                .background(effectiveIconTint.copy(alpha = visualSpec.iconBackgroundAlpha)),
+                .background(effectiveIconTint),
             contentAlignment = Alignment.Center
         ) {
             AppIcon(
                 info.icon,
                 contentDescription = null,
-                tint = effectiveIconTint,
+                tint = iconContentColor,
                 modifier = Modifier.size(visualSpec.iconGlyphSizeDp.dp)
             )
         }

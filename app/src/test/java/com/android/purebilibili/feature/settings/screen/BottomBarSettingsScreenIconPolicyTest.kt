@@ -2,7 +2,7 @@ package com.android.purebilibili.feature.settings
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.TrendingUp
-import androidx.compose.material.icons.outlined.DynamicFeed
+import androidx.compose.material.icons.outlined.NotificationsNone
 import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Lightbulb
@@ -10,7 +10,7 @@ import androidx.compose.material.icons.outlined.LiveTv
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.SmartToy
-import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material.icons.outlined.CollectionsBookmark
 import androidx.compose.material.icons.outlined.WatchLater
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.android.purebilibili.core.ui.AppSemanticIconFamily
@@ -21,8 +21,9 @@ import io.github.alexzhirkevich.cupertino.icons.outlined.Cpu
 import io.github.alexzhirkevich.cupertino.icons.outlined.Grid
 import io.github.alexzhirkevich.cupertino.icons.outlined.Lightbulb
 import io.github.alexzhirkevich.cupertino.icons.outlined.PersonCropCircleBadgePlus
-import io.github.alexzhirkevich.cupertino.icons.outlined.RectangleStack
+import io.github.alexzhirkevich.cupertino.icons.outlined.Bell
 import io.github.alexzhirkevich.cupertino.icons.outlined.Star
+import com.android.purebilibili.feature.home.components.resolveHomeNavigationIcon
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -30,7 +31,7 @@ class BottomBarSettingsScreenIconPolicyTest {
 
     @Test
     fun bottomBarIconPolicy_usesSemanticIconsForSecondaryTabs() {
-        assertSameVectorAsset(CupertinoIcons.Outlined.RectangleStack, resolveBottomBarTabIcon("DYNAMIC", AppSemanticIconFamily.CUPERTINO))
+        assertSameVectorAsset(CupertinoIcons.Outlined.Bell, resolveBottomBarTabIcon("DYNAMIC", AppSemanticIconFamily.CUPERTINO))
         assertSameVectorAsset(CupertinoIcons.Outlined.Star, resolveBottomBarTabIcon("FAVORITE", AppSemanticIconFamily.CUPERTINO))
         assertSameVectorAsset(CupertinoIcons.Outlined.Clock, resolveBottomBarTabIcon("WATCHLATER", AppSemanticIconFamily.CUPERTINO))
     }
@@ -38,8 +39,8 @@ class BottomBarSettingsScreenIconPolicyTest {
     @Test
     fun bottomBarIconPolicy_usesMaterialIconFamily() {
         assertSameVectorAsset(Icons.Outlined.Home, resolveBottomBarTabIcon("HOME", AppSemanticIconFamily.MATERIAL))
-        assertSameVectorAsset(Icons.Outlined.DynamicFeed, resolveBottomBarTabIcon("DYNAMIC", AppSemanticIconFamily.MATERIAL))
-        assertSameVectorAsset(Icons.Outlined.StarBorder, resolveBottomBarTabIcon("FAVORITE", AppSemanticIconFamily.MATERIAL))
+        assertSameVectorAsset(Icons.Outlined.NotificationsNone, resolveBottomBarTabIcon("DYNAMIC", AppSemanticIconFamily.MATERIAL))
+        assertSameVectorAsset(Icons.Outlined.CollectionsBookmark, resolveBottomBarTabIcon("FAVORITE", AppSemanticIconFamily.MATERIAL))
         assertSameVectorAsset(Icons.Outlined.WatchLater, resolveBottomBarTabIcon("WATCHLATER", AppSemanticIconFamily.MATERIAL))
         assertSameVectorAsset(Icons.Outlined.LiveTv, resolveBottomBarTabIcon("LIVE", AppSemanticIconFamily.MATERIAL))
         assertSameVectorAsset(Icons.Outlined.Settings, resolveBottomBarTabIcon("SETTINGS", AppSemanticIconFamily.MATERIAL))
@@ -61,6 +62,30 @@ class BottomBarSettingsScreenIconPolicyTest {
         assertSameVectorAsset(Icons.Outlined.GridView, resolveTopTabIcon("PARTITION", AppSemanticIconFamily.MATERIAL))
         assertSameVectorAsset(Icons.Outlined.Lightbulb, resolveTopTabIcon("KNOWLEDGE", AppSemanticIconFamily.MATERIAL))
         assertSameVectorAsset(Icons.Outlined.SmartToy, resolveTopTabIcon("TECH", AppSemanticIconFamily.MATERIAL))
+    }
+
+    @Test
+    fun settingsPreviewIconPolicy_matchesHomeNavigationPolicy() {
+        listOf(
+            "HOME",
+            "DYNAMIC",
+            "STORY",
+            "HISTORY",
+            "LISTEN_VIDEO",
+            "PROFILE",
+            "FAVORITE",
+            "LIVE",
+            "WATCHLATER",
+            "SETTINGS",
+            "PLUGINS",
+        ).forEach { tabId ->
+            AppSemanticIconFamily.entries.forEach { family ->
+                assertSameVectorAsset(
+                    resolveHomeNavigationIcon(tabId, family, selected = false),
+                    resolveBottomBarTabIcon(tabId, family),
+                )
+            }
+        }
     }
 
     private fun assertSameVectorAsset(expected: ImageVector, actual: ImageVector) {

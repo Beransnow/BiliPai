@@ -11,26 +11,6 @@ import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.OpticalContrastPalette
 import com.android.purebilibili.feature.home.HomeVisualPalette
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
-import androidx.compose.material.icons.automirrored.outlined.MenuOpen
-import androidx.compose.material.icons.automirrored.outlined.TrendingUp
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Lightbulb
-import androidx.compose.material.icons.filled.LiveTv
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.SmartToy
-import androidx.compose.material.icons.filled.SportsEsports
-import androidx.compose.material.icons.filled.Tv
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Lightbulb
-import androidx.compose.material.icons.outlined.LiveTv
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.SmartToy
-import androidx.compose.material.icons.outlined.SportsEsports
-import androidx.compose.material.icons.outlined.TrendingUp
-import androidx.compose.material.icons.outlined.Tv
-
 import androidx.compose.animation.*
 import androidx.compose.animation.core.EaseOut
 import androidx.compose.animation.core.Spring
@@ -444,50 +424,15 @@ internal fun resolveTopTabCategoryIcon(
     selected: Boolean = false
 ): ImageVector {
     val category = resolveTopTabCategoryForIcon(categoryKey)
-    return when (iconFamily) {
-        AppSemanticIconFamily.MATERIAL -> when (category) {
-            HomeCategory.RECOMMEND -> if (selected) Icons.Filled.Home else Icons.Outlined.Home
-            HomeCategory.FOLLOW -> if (selected) Icons.Filled.Person else Icons.Outlined.Person
-            HomeCategory.POPULAR -> if (selected) {
-                Icons.AutoMirrored.Filled.TrendingUp
-            } else {
-                Icons.AutoMirrored.Outlined.TrendingUp
-            }
-            HomeCategory.LIVE -> if (selected) Icons.Filled.LiveTv else Icons.Outlined.LiveTv
-            HomeCategory.ANIME -> if (selected) Icons.Filled.Tv else Icons.Outlined.Tv
-            HomeCategory.GAME -> if (selected) Icons.Filled.SportsEsports else Icons.Outlined.SportsEsports
-            HomeCategory.KNOWLEDGE -> if (selected) Icons.Filled.Lightbulb else Icons.Outlined.Lightbulb
-            HomeCategory.TECH -> if (selected) Icons.Filled.SmartToy else Icons.Outlined.SmartToy
-            else -> Icons.AutoMirrored.Outlined.MenuOpen
-        }
-        AppSemanticIconFamily.CUPERTINO -> when (category) {
-            HomeCategory.RECOMMEND -> if (selected) CupertinoIcons.Filled.House else CupertinoIcons.Outlined.House
-            HomeCategory.FOLLOW -> if (selected) {
-                CupertinoIcons.Filled.PersonCropCircleBadgePlus
-            } else {
-                CupertinoIcons.Outlined.PersonCropCircleBadgePlus
-            }
-            HomeCategory.POPULAR -> if (selected) CupertinoIcons.Filled.ChartBar else CupertinoIcons.Outlined.ChartBar
-            HomeCategory.LIVE -> if (selected) CupertinoIcons.Filled.Video else CupertinoIcons.Outlined.Video
-            HomeCategory.ANIME -> if (selected) CupertinoIcons.Filled.Tv else CupertinoIcons.Outlined.Tv
-            HomeCategory.GAME -> if (selected) {
-                CupertinoIcons.Filled.Gamecontroller
-            } else {
-                CupertinoIcons.Outlined.Gamecontroller
-            }
-            HomeCategory.KNOWLEDGE -> if (selected) CupertinoIcons.Filled.Lightbulb else CupertinoIcons.Outlined.Lightbulb
-            HomeCategory.TECH -> if (selected) CupertinoIcons.Filled.Cpu else CupertinoIcons.Outlined.Cpu
-            else -> CupertinoIcons.Outlined.ListBullet
-        }
-    }
+    return resolveHomeNavigationIcon(
+        tabId = category?.name ?: "PARTITION",
+        iconFamily = iconFamily,
+        selected = selected,
+    )
 }
 
 internal fun resolveTopTabPartitionIcon(iconFamily: AppSemanticIconFamily): ImageVector {
-    return if (iconFamily == AppSemanticIconFamily.MATERIAL) {
-        Icons.AutoMirrored.Outlined.MenuOpen
-    } else {
-        CupertinoIcons.Default.ListBullet
-    }
+    return resolveHomeNavigationIcon("PARTITION", iconFamily)
 }
 
 internal enum class Md3TopTabRowVariant {
