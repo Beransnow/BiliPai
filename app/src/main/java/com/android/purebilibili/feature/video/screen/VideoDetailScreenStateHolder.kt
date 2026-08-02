@@ -3991,6 +3991,7 @@ internal fun VideoDetailScreenStateHolder(
             context = context,
             viewModel = viewModel,
             isFullscreenMode = isFullscreenMode,
+            isPortraitFullscreen = isPortraitFullscreen,
             danmakuManager = danmakuManager,
         )
     }

@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.IntSize
 import androidx.media3.common.Player
+import com.android.purebilibili.core.store.DanmakuSettingsScope
 import com.android.purebilibili.core.store.DanmakuPanelWidthMode
 import com.android.purebilibili.core.store.PortraitDanmakuDisplayAreaMode
 import com.android.purebilibili.core.theme.BiliPink
@@ -509,6 +510,7 @@ fun VideoPlayerOverlay(
     danmakuFullscreenPanelWidthMode: DanmakuPanelWidthMode = DanmakuPanelWidthMode.THIRD,
     portraitDanmakuDisplayAreaMode: PortraitDanmakuDisplayAreaMode =
         PortraitDanmakuDisplayAreaMode.VIDEO_VIEWPORT,
+    danmakuSettingsScope: DanmakuSettingsScope = DanmakuSettingsScope.PORTRAIT,
     showDanmakuSyncSection: Boolean = false,
     danmakuCloudSyncEnabled: Boolean = true,
     danmakuSyncUiState: DanmakuCloudSyncUiState = DanmakuCloudSyncUiState(),
@@ -1947,9 +1949,7 @@ fun VideoPlayerOverlay(
         if (showDanmakuSettings) {
             DanmakuSettingsPanel(
                 isFullscreen = isFullscreen,
-                settingsScope = com.android.purebilibili.core.store.resolveDanmakuSettingsScope(
-                    isLandscape = isFullscreen
-                ),
+                settingsScope = danmakuSettingsScope,
                 opacity = danmakuOpacity,
                 fontScale = danmakuFontScale,
                 showAdvancedSection = true,
