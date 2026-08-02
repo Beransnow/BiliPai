@@ -146,6 +146,8 @@ class MainActivityAppCompatContractTest {
         val iconNames = listOf(
             "ic_launcher_blue_snow_maid.png",
             "ic_launcher_blue_snow_maid_round.png",
+            "ic_launcher_blue_snow_maid_announcement.png",
+            "ic_launcher_blue_snow_maid_announcement_round.png",
             "ic_launcher_blue_snow_maid_front.png",
             "ic_launcher_blue_snow_maid_front_round.png",
             "ic_launcher_3d.png",
@@ -182,6 +184,7 @@ class MainActivityAppCompatContractTest {
 
         listOf(
             "ic_launcher_blue_snow_maid_foreground.png",
+            "ic_launcher_blue_snow_maid_announcement_foreground.png",
             "ic_launcher_blue_snow_maid_front_foreground.png"
         ).forEach { fileName ->
             val rows = readPngRgbaRows(loadResourceFile("mipmap-xxxhdpi/$fileName"))
@@ -228,6 +231,8 @@ class MainActivityAppCompatContractTest {
             listOf(
                 "ic_launcher_blue_snow_maid.png",
                 "ic_launcher_blue_snow_maid_round.png",
+                "ic_launcher_blue_snow_maid_announcement.png",
+                "ic_launcher_blue_snow_maid_announcement_round.png",
                 "ic_launcher_blue_snow_maid_front.png",
                 "ic_launcher_blue_snow_maid_front_round.png"
             ).forEach { fileName ->
@@ -238,6 +243,7 @@ class MainActivityAppCompatContractTest {
             }
             listOf(
                 "ic_launcher_blue_snow_maid_foreground.png",
+                "ic_launcher_blue_snow_maid_announcement_foreground.png",
                 "ic_launcher_blue_snow_maid_front_foreground.png"
             ).forEach { fileName ->
                 val header = readPngHeader(loadResourceFile("mipmap-night-$density/$fileName"))
@@ -288,6 +294,7 @@ class MainActivityAppCompatContractTest {
 
         mapOf(
             "MainActivityAliasBlueSnowMaid" to SplashAliasContract("MainActivitySplashBlueSnowMaid", "Theme.PureBiliBili.Splash.BlueSnowMaid", "ic_launcher_blue_snow_maid", splashActivityRoundIcon = "@mipmap/ic_launcher_blue_snow_maid_round"),
+            "MainActivityAliasBlueSnowMaidAnnouncement" to SplashAliasContract("MainActivitySplashBlueSnowMaidAnnouncement", "Theme.PureBiliBili.Splash.BlueSnowMaidAnnouncement", "ic_launcher_blue_snow_maid_announcement", splashActivityRoundIcon = "@mipmap/ic_launcher_blue_snow_maid_announcement_round"),
             "MainActivityAliasBlueSnowMaidFront" to SplashAliasContract("MainActivitySplashBlueSnowMaidFront", "Theme.PureBiliBili.Splash.BlueSnowMaidFront", "ic_launcher_blue_snow_maid_front", splashActivityRoundIcon = "@mipmap/ic_launcher_blue_snow_maid_front_round"),
             "MainActivityAliasBlueSnowMaidLight" to SplashAliasContract("MainActivitySplashBlueSnowMaidLight", "Theme.PureBiliBili.Splash.BlueSnowMaidLight", "ic_launcher_blue_snow_maid_light", splashActivityRoundIcon = "@mipmap/ic_launcher_blue_snow_maid_light_round"),
             "MainActivityAliasBlueSnowMaidDark" to SplashAliasContract("MainActivitySplashBlueSnowMaidDark", "Theme.PureBiliBili.Splash.BlueSnowMaidDark", "ic_launcher_blue_snow_maid_dark", splashActivityRoundIcon = "@mipmap/ic_launcher_blue_snow_maid_dark_round"),
@@ -355,6 +362,7 @@ class MainActivityAppCompatContractTest {
 
         listOf(
             "MainActivityAliasBlueSnowMaidNoIcon" to "ic_launcher_blue_snow_maid",
+            "MainActivityAliasBlueSnowMaidAnnouncementNoIcon" to "ic_launcher_blue_snow_maid_announcement",
             "MainActivityAliasBlueSnowMaidFrontNoIcon" to "ic_launcher_blue_snow_maid_front",
             "MainActivityAliasBlueSnowMaidLightNoIcon" to "ic_launcher_blue_snow_maid_light",
             "MainActivityAliasBlueSnowMaidDarkNoIcon" to "ic_launcher_blue_snow_maid_dark",
@@ -392,6 +400,8 @@ class MainActivityAppCompatContractTest {
         mapOf(
             "com.android.purebilibili.MainActivityAliasBlueSnowMaid" to R.mipmap.ic_launcher_blue_snow_maid,
             "com.android.purebilibili.MainActivitySplashBlueSnowMaid" to R.drawable.splash_icon_blue_snow_maid,
+            "com.android.purebilibili.MainActivityAliasBlueSnowMaidAnnouncement" to R.mipmap.ic_launcher_blue_snow_maid_announcement,
+            "com.android.purebilibili.MainActivitySplashBlueSnowMaidAnnouncement" to R.drawable.splash_icon_blue_snow_maid_announcement,
             "com.android.purebilibili.MainActivityAliasBlueSnowMaidFront" to R.mipmap.ic_launcher_blue_snow_maid_front,
             "com.android.purebilibili.MainActivitySplashBlueSnowMaidFront" to R.drawable.splash_icon_blue_snow_maid_front,
             "com.android.purebilibili.MainActivityAliasBlueSnowMaidLight" to R.mipmap.ic_launcher_blue_snow_maid_light,
