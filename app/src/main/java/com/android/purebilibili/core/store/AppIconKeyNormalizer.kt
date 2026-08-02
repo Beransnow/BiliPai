@@ -23,6 +23,7 @@ fun resolveAppIconAppearance(storedValue: Int): AppIconAppearance {
 
 private val CANONICAL_APP_ICON_KEYS = setOf(
     "icon_blue_snow_maid",
+    "icon_blue_snow_maid_announcement",
     "icon_blue_snow_maid_front",
     "icon_3d",
     "icon_bilipai",
@@ -33,6 +34,7 @@ private val CANONICAL_APP_ICON_KEYS = setOf(
 
 private val LAUNCHER_ALIAS_SUFFIX_BY_KEY = mapOf(
     "icon_blue_snow_maid" to "MainActivityAliasBlueSnowMaid",
+    "icon_blue_snow_maid_announcement" to "MainActivityAliasBlueSnowMaidAnnouncement",
     "icon_blue_snow_maid_front" to "MainActivityAliasBlueSnowMaidFront",
     "icon_3d" to "MainActivityAlias3DLauncher",
     "icon_bilipai" to "MainActivityAliasBiliPai",
@@ -43,6 +45,7 @@ private val LAUNCHER_ALIAS_SUFFIX_BY_KEY = mapOf(
 
 private val NO_ICON_LAUNCHER_ALIAS_SUFFIX_BY_KEY = mapOf(
     "icon_blue_snow_maid" to "MainActivityAliasBlueSnowMaidNoIcon",
+    "icon_blue_snow_maid_announcement" to "MainActivityAliasBlueSnowMaidAnnouncementNoIcon",
     "icon_blue_snow_maid_front" to "MainActivityAliasBlueSnowMaidFrontNoIcon",
     "icon_3d" to "MainActivityAlias3DNoIcon",
     "icon_bilipai" to "MainActivityAliasBiliPaiNoIcon",
@@ -86,6 +89,7 @@ fun normalizeAppIconKey(rawKey: String?): String {
 
     return when (key) {
         "default", "Blue Snow Maid", "蓝雪女仆" -> "icon_blue_snow_maid"
+        "Blue Snow Maid Announcement", "蓝雪女仆·喇叭", "蓝雪女仆喇叭" -> "icon_blue_snow_maid_announcement"
         "Blue Snow Maid Front", "蓝雪女仆·正面", "蓝雪女仆正面" -> "icon_blue_snow_maid_front"
         "3D" -> "icon_3d"
         "BiliPai", "bilipai", "Icon BiliPai" -> "icon_bilipai"
