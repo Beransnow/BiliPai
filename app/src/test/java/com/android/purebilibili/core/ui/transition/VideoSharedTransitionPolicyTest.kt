@@ -863,12 +863,12 @@ class VideoSharedTransitionPolicyTest {
         )
 
         assertEquals(VideoSharedTransitionTargetMode.InlineCover, spec.targetMode)
-        // 详情壳飞行用播放器圆角，不是列表卡 8dp
+        // 返回期共享层保持来源卡 8dp，避免落位时再从直角切回圆角。
         assertEquals(12, spec.targetCornerDp)
         assertFalse(spec.fillTargetViewport)
         assertTrue(spec.suppressCoverFade)
         assertEquals(
-            0,
+            8,
             resolveVideoDetailShellOverlayCornerDp(
                 visualSpec = spec,
                 liveReturnMorph = true,

@@ -12,6 +12,8 @@ import com.android.purebilibili.feature.video.ui.components.GesturePercentMotion
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.ui.PlayerView
+import com.android.purebilibili.core.store.DanmakuSettingsScope
+import com.android.purebilibili.core.store.resolveDanmakuSettingsScope
 import com.android.purebilibili.feature.video.playback.session.PlaybackSeekSessionState
 import com.android.purebilibili.feature.video.playback.session.shouldUsePlaybackSeekSessionPosition
 import kotlin.math.abs
@@ -35,6 +37,24 @@ private const val LONG_PRESS_SPEED_UNLOCK_HOLD_MS = 1_000L
 internal const val LONG_PRESS_SPEED_LOCK_ZONE_HEIGHT_DP = 96
 internal const val FOREGROUND_SURFACE_RECOVERY_DELAY_MS = 80L
 internal const val FOREGROUND_SURFACE_RECOVERY_TIMEOUT_MS = 1200L
+
+/**
+ * Shared card-return 期间，播放器内层封面必须与外层 shared shell 使用同一来源卡圆角。
+ *
+ * 否则外层 overlay 已按来源卡裁切、内层封面仍按播放器圆角裁切，卸层落位时会发生
+ * 一帧的双重形变，看起来像封面轻微抖动。
+ */
+internal fun resolveVideoPlayerCoverCornerDp(
+    sourceCornerDp: Int,
+    playerCornerDp: Int,
+    preserveSourceCardCornerDuringSharedReturn: Boolean,
+): Int {
+    return if (preserveSourceCardCornerDuringSharedReturn) {
+        sourceCornerDp.coerceAtLeast(0)
+    } else {
+        playerCornerDp.coerceAtLeast(0)
+    }
+}
 
 internal data class LongPressSpeedLockSensitivityPolicy(
     val lockZoneHeightDp: Int,
@@ -467,6 +487,20 @@ internal fun shouldShowDanmakuLayers(
     if (!danmakuEnabled || isPortraitFullscreen) return false
     if (isInPipMode && pipNoDanmakuEnabled) return false
     return true
+}
+
+/**
+ * Fullscreen is not by itself an orientation. During the transition into or out of the
+ * portrait-fullscreen experience both flags can briefly be true, but those frames must keep
+ * reading and writing the portrait danmaku profile.
+ */
+internal fun resolveVideoPlayerDanmakuSettingsScope(
+    isFullscreen: Boolean,
+    isPortraitFullscreen: Boolean,
+): DanmakuSettingsScope {
+    return resolveDanmakuSettingsScope(
+        isLandscape = isFullscreen && !isPortraitFullscreen
+    )
 }
 
 /**

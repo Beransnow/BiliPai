@@ -506,10 +506,10 @@ data class HomeSettings(
     val runtimeVisualGuardEnabled: Boolean = true,
     val compactVideoStatsOnCover: Boolean = true, //  播放量/评论数显示在封面底部（默认开启）
     val lowQualityHomeCoverInDataSaver: Boolean = false, // 省流量时首页封面使用低清晰度
-    val showHomeCoverGlassBadges: Boolean = true, // 兼容旧字段：由 [homeCardBadgeEffectMode] 推导
-    val showHomeInfoGlassBadges: Boolean = true, // 兼容旧字段：由 [homeCardBadgeEffectMode] 推导
-    val homeCardBadgeEffectMode: HomeCardBadgeEffectMode = HomeCardBadgeEffectMode.SOFT_GLASS,
-    /** Title/UP strip under cover — blur and liquid glass are independent. */
+    // 卡片标签 / 信息区玻璃效果已下线，保留字段仅为兼容旧数据结构。
+    val showHomeCoverGlassBadges: Boolean = false,
+    val showHomeInfoGlassBadges: Boolean = false,
+    val homeCardBadgeEffectMode: HomeCardBadgeEffectMode = HomeCardBadgeEffectMode.OFF,
     val homeCardInfoGlassMode: HomeCardInfoGlassMode = HomeCardInfoGlassMode.OFF,
     val homeWallpaperEffectMode: HomeWallpaperEffectMode = HomeWallpaperEffectMode.SOFT_BLUR,
     val homeWallpaperEffectScope: HomeWallpaperEffectScope = HomeWallpaperEffectScope.HOME_ONLY,
@@ -1421,12 +1421,11 @@ object SettingsManager {
             compactVideoStatsOnCover = preferences[KEY_COMPACT_VIDEO_STATS_ON_COVER] ?: true,
             lowQualityHomeCoverInDataSaver =
                 preferences[KEY_LOW_QUALITY_HOME_COVER_IN_DATA_SAVER] ?: false,
-            showHomeCoverGlassBadges = resolveHomeCardBadgeEffectMode(preferences)
-                != HomeCardBadgeEffectMode.OFF,
-            showHomeInfoGlassBadges = resolveHomeCardBadgeEffectMode(preferences)
-                != HomeCardBadgeEffectMode.OFF,
-            homeCardBadgeEffectMode = resolveHomeCardBadgeEffectMode(preferences),
-            homeCardInfoGlassMode = resolveHomeCardInfoGlassMode(preferences),
+            // 已下线：忽略旧数据，确保历史上开启过实时模糊/液态玻璃的用户不会继续走该路径。
+            showHomeCoverGlassBadges = false,
+            showHomeInfoGlassBadges = false,
+            homeCardBadgeEffectMode = HomeCardBadgeEffectMode.OFF,
+            homeCardInfoGlassMode = HomeCardInfoGlassMode.OFF,
             homeWallpaperEffectMode = HomeWallpaperEffectMode.fromValue(
                 preferences[KEY_HOME_WALLPAPER_EFFECT_MODE] ?: HomeWallpaperEffectMode.SOFT_BLUR.value
             ),
@@ -1997,21 +1996,24 @@ object SettingsManager {
             )
         }
 
-    suspend fun setMd3ColorSource(context: Context, source: Md3ColorSource) {
-        context.settingsDataStore.edit { preferences ->
-            preferences[KEY_MD3_COLOR_SOURCE] = source.name
-            // 保持旧 key 同步，避免旧入口或导入旧配置时出现来源状态不一致。
-            preferences[KEY_DYNAMIC_COLOR] = source == Md3ColorSource.FOLLOW_WALLPAPER
-        }
+    suspend fun setMd3ColorSource(context: Context, source: Md3ColorSource) = context.settingsDataStore.edit { preferences ->
+        preferences[KEY_MD3_COLOR_SOURCE] = source.name
+        // 保持旧 key 同步，避免旧入口或导入旧配置时出现来源状态不一致。
+        preferences[KEY_DYNAMIC_COLOR] = source == Md3ColorSource.FOLLOW_WALLPAPER
     }
 
-    fun getMd3CustomColorHex(context: Context): Flow<String> = context.settingsDataStore.data
-        .map { preferences -> normalizeMd3CustomColorHex(preferences[KEY_MD3_CUSTOM_COLOR_HEX]) }
+    fun getMd3CustomColorHex(context: Context): Flow<String> = context.settingsDataStore.data.map {
+        normalizeMd3CustomColorHex(it[KEY_MD3_CUSTOM_COLOR_HEX])
+    }
 
-    suspend fun setMd3CustomColorHex(context: Context, hex: String) {
-        context.settingsDataStore.edit { preferences ->
-            preferences[KEY_MD3_CUSTOM_COLOR_HEX] = normalizeMd3CustomColorHex(hex)
-        }
+    suspend fun setMd3CustomColorHex(context: Context, hex: String) = context.settingsDataStore.edit { preferences ->
+        preferences[KEY_MD3_CUSTOM_COLOR_HEX] = normalizeMd3CustomColorHex(hex)
+    }
+
+    suspend fun applyMd3CustomColor(context: Context, hex: String) = context.settingsDataStore.edit { preferences ->
+        preferences[KEY_MD3_COLOR_SOURCE] = Md3ColorSource.CUSTOM.name
+        preferences[KEY_DYNAMIC_COLOR] = false
+        preferences[KEY_MD3_CUSTOM_COLOR_HEX] = normalizeMd3CustomColorHex(hex)
     }
 
     fun getThemeRoleOverrides(context: Context): Flow<ThemeRoleOverrides> =

@@ -104,6 +104,7 @@ fun DynamicDetailScreen(
     val commentSortMode by interactionViewModel.dynamicCommentSortMode.collectAsStateWithLifecycle()
     val subReplyState by interactionViewModel.subReplyState.collectAsStateWithLifecycle()
     var showRepostDialog by remember { mutableStateOf<String?>(null) }
+    var forwardCountDelta by remember(dynamicId) { mutableIntStateOf(0) }
     val detailListState = rememberLazyListState()
     val detailScrollScope = rememberCoroutineScope()
     var showImagePreview by remember { mutableStateOf(false) }
@@ -224,7 +225,8 @@ fun DynamicDetailScreen(
                                     if (success) onBack()
                                 }
                             },
-                            isLiked = likedDynamics.contains(state.item.id_str)
+                            isLiked = likedDynamics.contains(state.item.id_str),
+                            forwardCountDelta = forwardCountDelta
                         )
                     }
                     item(key = "dynamic_detail_comment_header") {
@@ -283,7 +285,10 @@ fun DynamicDetailScreen(
                         onRepost = { content: String, onComplete: (Boolean) -> Unit ->
                             interactionViewModel.repostDynamic(repostDynamicId, content) { success, msg ->
                                 android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
-                                if (success) showRepostDialog = null
+                                if (success) {
+                                    forwardCountDelta++
+                                    showRepostDialog = null
+                                }
                                 onComplete(success)
                             }
                         }

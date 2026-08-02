@@ -16,6 +16,30 @@ import kotlin.test.assertTrue
 class VideoPlayerSectionPolicyTest {
 
     @Test
+    fun coverCorner_sharedReturnKeepsFrozenSourceCardCorner() {
+        assertEquals(
+            18,
+            resolveVideoPlayerCoverCornerDp(
+                sourceCornerDp = 18,
+                playerCornerDp = 12,
+                preserveSourceCardCornerDuringSharedReturn = true,
+            )
+        )
+    }
+
+    @Test
+    fun coverCorner_normalPlayerKeepsPlayerCorner() {
+        assertEquals(
+            12,
+            resolveVideoPlayerCoverCornerDp(
+                sourceCornerDp = 18,
+                playerCornerDp = 12,
+                preserveSourceCardCornerDuringSharedReturn = false,
+            )
+        )
+    }
+
+    @Test
     fun playerControls_areHiddenWhenEnteringVideo() {
         assertFalse(INITIAL_PLAYER_CONTROLS_VISIBLE)
         assertTrue(INITIAL_PLAYER_CHROME_AUTO_HIDE_HANDLED)
@@ -363,6 +387,31 @@ class VideoPlayerSectionPolicyTest {
                 portraitDisplayAreaMode =
                     com.android.purebilibili.core.store.PortraitDanmakuDisplayAreaMode.VIDEO_VIEWPORT,
                 isLandscapeFullscreen = false
+            )
+        )
+    }
+
+    @Test
+    fun danmakuSettingsScope_keepsPortraitProfileDuringPortraitFullscreenTransition() {
+        assertEquals(
+            com.android.purebilibili.core.store.DanmakuSettingsScope.LANDSCAPE,
+            resolveVideoPlayerDanmakuSettingsScope(
+                isFullscreen = true,
+                isPortraitFullscreen = false
+            )
+        )
+        assertEquals(
+            com.android.purebilibili.core.store.DanmakuSettingsScope.PORTRAIT,
+            resolveVideoPlayerDanmakuSettingsScope(
+                isFullscreen = true,
+                isPortraitFullscreen = true
+            )
+        )
+        assertEquals(
+            com.android.purebilibili.core.store.DanmakuSettingsScope.PORTRAIT,
+            resolveVideoPlayerDanmakuSettingsScope(
+                isFullscreen = false,
+                isPortraitFullscreen = false
             )
         )
     }

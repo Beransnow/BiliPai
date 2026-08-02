@@ -101,6 +101,7 @@ import com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState
 import com.android.purebilibili.core.store.PortraitPlayerCollapseMode
 import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
 import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.components.AppSurface
 //  已改用 MaterialTheme.colorScheme.primary
 
 import com.android.purebilibili.data.model.response.RelatedVideo
@@ -859,6 +860,7 @@ internal fun VideoDetailScreenStateHolder(
 
     // 📐 [大屏适配] 仅 Expanded 才启用平板分栏布局
     val windowSizeClass = com.android.purebilibili.core.util.LocalWindowSizeClass.current
+    val isFlatFoldable = com.android.purebilibili.core.util.rememberIsFlatFoldable()
     val horizontalAdaptationEnabled by com.android.purebilibili.core.store.SettingsManager
         .getHorizontalAdaptationEnabled(context)
         .collectAsStateWithLifecycle(
@@ -1966,7 +1968,8 @@ internal fun VideoDetailScreenStateHolder(
         userRequestedFullscreen,
         manualPortraitHoldActive,
         isVerticalVideo,
-        isPortraitFullscreen
+        isPortraitFullscreen,
+        isFlatFoldable
     ) {
         val requestedOrientation = resolvePhoneVideoRequestedOrientation(
             autoRotateEnabled = autoRotateEnabled,
@@ -1980,7 +1983,10 @@ internal fun VideoDetailScreenStateHolder(
             isVerticalVideo = isVerticalVideo,
             isPortraitFullscreen = isPortraitFullscreen,
             currentRequestedOrientation = activity?.requestedOrientation,
-            isInMultiWindowMode = isActivityInMultiWindowMode
+            isInMultiWindowMode = isActivityInMultiWindowMode,
+            // 仅折叠屏完全展开的内屏沿用原版默认竖屏。不要以窗口宽度推断：它会随旋转
+            // 改变，也无法区分普通平板和大屏手机。
+            preferPortraitForFlatFoldable = isFlatFoldable
         ) ?: return@LaunchedEffect
 
         if (activity?.requestedOrientation != requestedOrientation) {
@@ -2629,6 +2635,8 @@ internal fun VideoDetailScreenStateHolder(
             predictiveBackCancelRecoveryGeneration = predictiveBackCancelRecoveryGeneration,
             allowLivePlayerSharedElement = true,
             sourceRouteForSharedElement = sourceRouteForSharedElement,
+            preserveSourceCardCornerDuringSharedReturn =
+                detailShellSharedBoundsEnabled && useReturningVideoDetailVisualState,
             suppressSubtitleOverlay = shouldSuppressSubtitleOverlay,
             subtitleDisplayModePreferenceOverride = subtitleDisplayModeOverride,
             onSubtitleDisplayModePreferenceOverrideChange = { subtitleDisplayModeOverride = it },
@@ -2856,6 +2864,37 @@ internal fun VideoDetailScreenStateHolder(
                     onSubtitleDisplayModePreferenceOverrideChange = { subtitleDisplayModeOverride = it },
                         onSubtitleTrackSelected = viewModel::selectSubtitleTrack
                     )
+                }
+
+                // 🎬 [播放账号] 全屏时叠加当前播放账号徽章，让用户感知会员账号已生效
+                val playbackAccountBadgeLabel = remember {
+                    com.android.purebilibili.core.network.NetworkModule.playbackAccount()?.let { account ->
+                        if (account.mid != com.android.purebilibili.core.store.TokenManager.midCache) {
+                            buildString {
+                                append("🎬 ")
+                                append(account.name.ifBlank { "UID ${account.mid}" })
+                                if (account.isVip) append(" · 大会员")
+                            }
+                        } else {
+                            null
+                        }
+                    }
+                }
+                if (playbackAccountBadgeLabel != null) {
+                    AppSurface(
+                        shape = RoundedCornerShape(14.dp),
+                        color = Color.Black.copy(alpha = 0.45f),
+                        contentColor = Color.White,
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(start = 12.dp, top = 12.dp)
+                    ) {
+                        AppText(
+                            text = playbackAccountBadgeLabel,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                        )
+                    }
                 }
             } else {
                     //  沉浸式布局：视频延伸到状态栏 + 内容区域
@@ -3444,6 +3483,9 @@ internal fun VideoDetailScreenStateHolder(
                                 predictiveBackCancelRecoveryGeneration = predictiveBackCancelRecoveryGeneration,
                                 allowLivePlayerSharedElement = true,
                                 sourceRouteForSharedElement = sourceRouteForSharedElement,
+                                preserveSourceCardCornerDuringSharedReturn =
+                                    detailShellSharedBoundsEnabled &&
+                                        useReturningVideoDetailVisualState,
                                 suppressSubtitleOverlay = shouldSuppressSubtitleOverlay,
                                 subtitleDisplayModePreferenceOverride = subtitleDisplayModeOverride,
                                 onSubtitleDisplayModePreferenceOverrideChange = { subtitleDisplayModeOverride = it }
@@ -3690,6 +3732,54 @@ internal fun VideoDetailScreenStateHolder(
                                                     )
                                                 }
                                             }
+
+                                            //  🎬 [引导] 大会员受限时，提示用已保存的大会员账号播放
+                                            val isVipRequiredError =
+                                                errorState.error is com.android.purebilibili.data.model.VideoLoadError.VipRequired ||
+                                                    (errorState.error as? com.android.purebilibili.data.model.VideoLoadError.ApiError)?.code == -10403 ||
+                                                    (errorState.error as? com.android.purebilibili.data.model.VideoLoadError.UnknownError)
+                                                        ?.throwable?.message?.contains("大会员") == true
+                                            if (isVipRequiredError) {
+                                                val vipPlaybackCandidates = remember(errorState.error) {
+                                                    val currentPlaybackMid = com.android.purebilibili.core.network.NetworkModule
+                                                        .playbackAccount()?.mid
+                                                    com.android.purebilibili.core.store.AccountSessionStore
+                                                        .getAccounts(context)
+                                                        .filter { account ->
+                                                            account.isVip &&
+                                                                account.sessData.isNotBlank() &&
+                                                                account.mid != currentPlaybackMid
+                                                        }
+                                                }
+                                                val vipCandidate = vipPlaybackCandidates.firstOrNull()
+                                                if (vipCandidate != null) {
+                                                    Spacer(Modifier.height(16.dp))
+                                                    AppButton(
+                                                        onClick = {
+                                                            com.android.purebilibili.core.store.AccountSessionStore
+                                                                .setPlaybackAccountMid(context, vipCandidate.mid)
+                                                            android.widget.Toast.makeText(
+                                                                context,
+                                                                "已使用「${vipCandidate.name.ifBlank { "UID ${vipCandidate.mid}" }}」的大会员播放",
+                                                                android.widget.Toast.LENGTH_SHORT
+                                                            ).show()
+                                                            viewModel.retry()
+                                                        },
+                                                        colors = ButtonDefaults.buttonColors(
+                                                            containerColor = MaterialTheme.colorScheme.tertiary
+                                                        )
+                                                    ) {
+                                                        AppText("使用「${vipCandidate.name.ifBlank { "UID ${vipCandidate.mid}" }}」的大会员播放")
+                                                    }
+                                                    Spacer(Modifier.height(8.dp))
+                                                    AppText(
+                                                        text = "可在「我的 - 账号与播放」中更换播放账号",
+                                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                        fontSize = 12.sp,
+                                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                                    )
+                                                }
+                                            }
                                     }
                                 }
                             }
@@ -3901,6 +3991,7 @@ internal fun VideoDetailScreenStateHolder(
             context = context,
             viewModel = viewModel,
             isFullscreenMode = isFullscreenMode,
+            isPortraitFullscreen = isPortraitFullscreen,
             danmakuManager = danmakuManager,
         )
     }

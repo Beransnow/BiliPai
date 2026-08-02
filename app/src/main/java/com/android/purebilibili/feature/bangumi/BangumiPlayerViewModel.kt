@@ -9,6 +9,7 @@ import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.TokenManager
 import com.android.purebilibili.core.store.player.PlayerSettingsStore
 import com.android.purebilibili.core.util.MediaUtils
+import com.android.purebilibili.core.plugin.PluginManager
 import com.android.purebilibili.data.model.response.*
 import com.android.purebilibili.data.repository.ActionRepository
 import com.android.purebilibili.data.repository.BangumiRepository
@@ -22,6 +23,7 @@ import com.android.purebilibili.feature.video.playback.audio.resolveAudioStreamS
 import com.android.purebilibili.feature.video.playback.audio.resolveRequestedAudioQuality
 import com.android.purebilibili.feature.video.playback.policy.shouldRefreshPremiumAudioForPlaybackSpeedChange
 import com.android.purebilibili.feature.video.usecase.VideoInteractionUseCase
+import com.android.purebilibili.feature.plugin.PlaybackCdnPlugin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -349,6 +351,28 @@ class BangumiPlayerViewModel : BasePlayerViewModel() {
     }
     
     /**
+     * 番剧视频编码偏好：设备支持 HEVC 时优先 hev1（HDR/杜比视界轨道基本为 HEVC），
+     * 不支持时回退 avc1 保证可解码。
+     */
+    private fun resolveBangumiPreferredCodec(): String =
+        if (MediaUtils.isHevcSupported()) "hev1" else "avc1"
+
+    /**
+     * 番剧首次加载的请求画质：会员且设备支持 HDR/HEVC 时直接上探 HDR 档，
+     * 与普通视频的自动最高画质行为对齐；无权限时服务端会自然降档返回。
+     */
+    private fun resolveBangumiInitialQuality(): Int {
+        val isVip = com.android.purebilibili.data.repository.VideoRepository.isPlaybackVip()
+        val isLoggedIn = com.android.purebilibili.data.repository.VideoRepository.isPlaybackLoggedIn()
+        return when {
+            isVip && MediaUtils.isHdrSupported() && MediaUtils.isHevcSupported() -> 125
+            isVip -> 112
+            isLoggedIn -> 80
+            else -> 64
+        }
+    }
+
+    /**
      * 获取播放地址
      */
     private suspend fun fetchPlayUrl(
@@ -360,6 +384,7 @@ class BangumiPlayerViewModel : BasePlayerViewModel() {
         com.android.purebilibili.core.util.Logger.d("BangumiPlayerVM", "🎬 fetchPlayUrl: epId=${episode.id}, cid=${episode.cid}")
         val playUrlResult = BangumiRepository.getBangumiPlayUrl(
             epId = episode.id,
+            qn = resolveBangumiInitialQuality(),
             cid = episode.cid,
             bvid = episode.bvid,
             seasonId = detail.seasonId
@@ -385,8 +410,8 @@ class BangumiPlayerViewModel : BasePlayerViewModel() {
             if (playData.dash != null) {
                 // DASH 格式
                 val dash = playData.dash
-                //  [修复] 优先使用 AVC 编码，确保所有设备都能解码
-                val video = dash.getBestVideo(playData.quality, preferCodec = "avc1")
+                //  设备支持 HEVC 时优先 hev1（HDR/杜比视界轨道基本为 HEVC），否则回退 avc1 保证可解码
+                val video = dash.getBestVideo(playData.quality, preferCodec = resolveBangumiPreferredCodec())
                 val audio = audioSelection?.selected?.track
                 
                 com.android.purebilibili.core.util.Logger.d("BangumiPlayerVM", "📹 DASH videos: ${dash.video.size}, audios: ${dash.audio?.size ?: 0}")
@@ -402,6 +427,24 @@ class BangumiPlayerViewModel : BasePlayerViewModel() {
                 if (audioUrl.isNullOrEmpty() && audio?.backupUrl?.isNotEmpty() == true) {
                     audioUrl = audio.backupUrl.firstOrNull()
                 }
+
+                // Keep the complete signed playurl candidates intact. The CDN plugin may only
+                // reorder these addresses in its safe mode; it never synthesizes a new host.
+                PluginManager.getEnabledPlugins(PlaybackCdnPlugin::class).firstOrNull()
+                    ?.rewritePlaybackCandidates(
+                        videoUrls = buildList {
+                            videoUrl?.takeIf { it.isNotBlank() }?.let(::add)
+                            video?.backupUrl.orEmpty().filter { it.isNotBlank() }.forEach(::add)
+                        },
+                        audioUrls = buildList {
+                            audioUrl?.takeIf { it.isNotBlank() }?.let(::add)
+                            audio?.backupUrl.orEmpty().filter { it.isNotBlank() }.forEach(::add)
+                        }
+                    )
+                    ?.let { rewrite ->
+                        videoUrl = rewrite.videoUrls.firstOrNull() ?: videoUrl
+                        audioUrl = rewrite.audioUrls.firstOrNull()?.takeIf { it.isNotBlank() } ?: audioUrl
+                    }
                 
                 com.android.purebilibili.core.util.Logger.d("BangumiPlayerVM", " DASH: video=${videoUrl?.take(60)}..., audio=${audioUrl?.take(40)}...")
                 
@@ -460,9 +503,9 @@ class BangumiPlayerViewModel : BasePlayerViewModel() {
                 )
             )
             val (isLoggedIn, isVip) = resolveBangumiPlaybackAuthState(
-                hasSessionCookie = !TokenManager.sessDataCache.isNullOrEmpty(),
-                hasAccessToken = !TokenManager.accessTokenCache.isNullOrEmpty(),
-                cachedIsVip = TokenManager.isVipCache,
+                hasSessionCookie = com.android.purebilibili.data.repository.VideoRepository.hasPlaybackSessionCookie(),
+                hasAccessToken = !com.android.purebilibili.data.repository.VideoRepository.playbackAccessToken().isNullOrEmpty(),
+                cachedIsVip = com.android.purebilibili.data.repository.VideoRepository.isPlaybackVip(),
                 seasonUserVip = detail.userStatus?.vip == 1
             )
 
@@ -596,8 +639,8 @@ class BangumiPlayerViewModel : BasePlayerViewModel() {
                 }
                 
                 if (dash != null) {
-                    //  [修复] 优先使用 AVC 编码，确保所有设备都能解码
-                    val video = dash.getBestVideo(qualityId, preferCodec = "avc1")
+                    //  设备支持 HEVC 时优先 hev1（HDR/杜比视界轨道基本为 HEVC），否则回退 avc1 保证可解码
+                    val video = dash.getBestVideo(qualityId, preferCodec = resolveBangumiPreferredCodec())
                     val audio = audioSelection?.selected?.track
                     videoUrl = video?.getValidUrl()
                     audioUrl = audio?.getValidUrl()

@@ -246,16 +246,16 @@ internal fun resolveVideoContentTabBarDanmakuActionLayoutPolicy(widthDp: Int): V
         VideoContentTabBarDanmakuActionLayoutPolicy(
             toggleIconSizeDp = 14,
             toggleHorizontalPaddingDp = 8,
-            toggleVerticalPaddingDp = 5,
-            toggleTextSizeSp = 10,
+            toggleVerticalPaddingDp = 6,
+            toggleTextSizeSp = 11,
             toggleTrailingPaddingDp = 6,
             sendHorizontalPaddingDp = 10,
-            sendVerticalPaddingDp = 7,
+            sendVerticalPaddingDp = 6,
             sendTextSizeSp = 11,
             sendLabel = "发弹幕",
-            secondaryControlHeightDp = 36,
+            secondaryControlHeightDp = 40,
             secondaryControlCornerRadiusDp = AppChromeSizeTokens.CompactControlCornerRadiusDp,
-            settingsButtonSizeDp = 36,
+            settingsButtonSizeDp = 40,
             settingsIconSizeDp = 18,
             settingsLeadingPaddingDp = 4
         )
@@ -263,16 +263,16 @@ internal fun resolveVideoContentTabBarDanmakuActionLayoutPolicy(widthDp: Int): V
         VideoContentTabBarDanmakuActionLayoutPolicy(
             toggleIconSizeDp = 16,
             toggleHorizontalPaddingDp = 10,
-            toggleVerticalPaddingDp = 6,
-            toggleTextSizeSp = 11,
+            toggleVerticalPaddingDp = 8,
+            toggleTextSizeSp = 12,
             toggleTrailingPaddingDp = 8,
             sendHorizontalPaddingDp = 12,
             sendVerticalPaddingDp = 8,
             sendTextSizeSp = 12,
             sendLabel = "发弹幕",
-            secondaryControlHeightDp = 36,
+            secondaryControlHeightDp = 40,
             secondaryControlCornerRadiusDp = AppChromeSizeTokens.CompactControlCornerRadiusDp,
-            settingsButtonSizeDp = 36,
+            settingsButtonSizeDp = 40,
             settingsIconSizeDp = 18,
             settingsLeadingPaddingDp = 6
         )
@@ -307,6 +307,18 @@ internal fun resolveVideoContentEffectiveSelectedTabIndex(
         current
     }
 }
+
+/**
+ * 简介与评论页之间始终支持横向分页。
+ *
+ * 评论列表的纵向滚动会由其 [LazyColumn] 正常处理；不要在评论页禁用 Pager，
+ * 否则用户无法通过左/右滑动返回简介。
+ */
+internal fun shouldEnableVideoContentHorizontalPagerSwipe(
+    currentPage: Int,
+    commentPageIndex: Int,
+    isPagerScrollInProgress: Boolean,
+): Boolean = true
 
 /**
  * 视频详情内容区域
@@ -563,7 +575,11 @@ fun VideoContentSection(
                     isVideoPlaying = isVideoPlaying,
                     selectedTabIndex = pagerState.currentPage
                 ),
-                userScrollEnabled = true,
+                userScrollEnabled = shouldEnableVideoContentHorizontalPagerSwipe(
+                    currentPage = pagerState.currentPage,
+                    commentPageIndex = 1,
+                    isPagerScrollInProgress = pagerState.isScrollInProgress,
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)

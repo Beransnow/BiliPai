@@ -25,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect // 新增
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -662,15 +663,31 @@ fun AppNavigation(
             cardFullyVisible = CardPositionManager.isCardFullyVisible,
             isSingleColumnCard = CardPositionManager.isSingleColumnCard,
         )
+        var lastVideoDetailOpenId by remember { mutableLongStateOf(0L) }
         fun pushNavigation3KeyDirect(key: BiliPaiNavKey) {
-            navigation3BackStack = when (key) {
+            val sessionScopedKey = when (key) {
+                is BiliPaiNavKey.VideoDetail -> {
+                    if (key.openId > 0L) {
+                        key
+                    } else {
+                        val nextOpenId = maxOf(
+                            SystemClock.uptimeMillis(),
+                            lastVideoDetailOpenId + 1L,
+                        )
+                        lastVideoDetailOpenId = nextOpenId
+                        key.copy(openId = nextOpenId)
+                    }
+                }
+                else -> key
+            }
+            navigation3BackStack = when (sessionScopedKey) {
                 is BiliPaiNavKey.SettingsCategory -> pushOrReplaceSettingsCategoryNavKey(
                     currentStack = navigation3BackStack,
-                    key = key,
+                    key = sessionScopedKey,
                 )
                 else -> pushBiliPaiNavKey(
                     currentStack = navigation3BackStack,
-                    key = key,
+                    key = sessionScopedKey,
                 )
             }
         }
@@ -1418,27 +1435,6 @@ fun AppNavigation(
         // Capture the wallpaper and navigation content together so transparent wallpaper-aware
         // pages feed the same background into the floating dock as Home.
         val bottomBarBackdrop = rememberMiuixLayerBackdrop()
-        // Wallpaper-only Haze source for card badge frosted glass. Must stay separate from
-        // mainHazeState: badges live inside the main content source tree, and reusing that
-        // state for hazeEffect causes HWUI prepareTree stack overflow.
-        //
-        // 条件挂载：这个 state 只有卡片角标实时模糊 / 信息区实时模糊两个消费者，
-        // 两者默认都关闭。为 null 时，本文件与 HomeScreen 里的两处 hazeSourceCompat
-        // 会一并跳过——默认档因此省掉两层全屏 record。判定见
-        // HomeWallpaperHazeSourcePolicy。
-        val wallpaperHazeSourceEnabled = com.android.purebilibili.feature.home
-            .shouldMountWallpaperHazeSource(
-                badgeEffectMode = effectiveHomeSettings.homeCardBadgeEffectMode,
-                infoGlassMode = effectiveHomeSettings.homeCardInfoGlassMode
-            )
-        val wallpaperHazeState = if (mainHazeState != null && wallpaperHazeSourceEnabled) {
-            com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState(
-                initialBlurEnabled = true
-            )
-        } else {
-            null
-        }
-
         CompositionLocalProvider(
             LocalSetBottomBarVisible provides setBottomBarVisible,
             LocalBottomBarVisible provides finalBottomBarVisible,
@@ -1446,7 +1442,8 @@ fun AppNavigation(
             LocalGlobalWallpaperBackdropVisible provides exposeGlobalHomeWallpaperChrome,
             LocalPredictiveBackGestureEnabled provides predictiveBackEnabled,
             com.android.purebilibili.core.ui.LocalMainHazeState provides mainHazeState,
-            com.android.purebilibili.core.ui.LocalWallpaperHazeState provides wallpaperHazeState,
+            // 卡片标签 / 信息区实时玻璃效果已下线，不再为首页建立额外 Haze 录制树。
+            com.android.purebilibili.core.ui.LocalWallpaperHazeState provides null,
             com.android.purebilibili.feature.home.LocalHomeScrollChannel provides homeScrollChannel,
             LocalDynamicScrollChannel provides dynamicScrollChannel,
             com.android.purebilibili.feature.home.LocalHomeScrollOffset provides scrollOffsetState,
@@ -1562,38 +1559,23 @@ fun AppNavigation(
                         // 必须添加 hazeSource，否则底栏的 hazeEffect 无法获取背景内容，导致模糊失效
                         .then(if (mainHazeState != null) Modifier.hazeSourceCompat(mainHazeState) else Modifier)
                 ) {
-                    // Wallpaper-only source for card badge realtime blur (not nested under
-                    // the badge effect). Bottom bar still samples via mainHazeState above.
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .then(
-                                if (wallpaperHazeState != null) {
-                                    Modifier.hazeSourceCompat(wallpaperHazeState)
-                                } else {
-                                    Modifier
-                                }
-                            )
-                    ) {
-                        DepthSyncedGlobalHomeWallpaperBackdrop(
-                            wallpaperUri = globalHomeWallpaperUri,
-                            appearance = globalHomeWallpaperAppearance,
-                            baseColor = backgroundColor,
-                            depthProgressProvider = {
-                                videoCardTransitionClock.depthProgress()
-                            },
-                            depthPhaseProvider = {
-                                videoCardTransitionClock.phase
-                            },
-                            depthGestureRestoreProvider = {
-                                videoCardTransitionClock.gestureRestoreInProgress
-                            },
-                            isDataSaverActive = isDataSaverActiveForGlobalWallpaper,
-                            isLightBackground = isLightBackground,
-                            // Transition depth blur is independent of badge haze sampling.
-                            realtimeBlurEnabled = videoTransitionRealtimeBlurEnabled,
-                        )
-                    }
+                    DepthSyncedGlobalHomeWallpaperBackdrop(
+                        wallpaperUri = globalHomeWallpaperUri,
+                        appearance = globalHomeWallpaperAppearance,
+                        baseColor = backgroundColor,
+                        depthProgressProvider = {
+                            videoCardTransitionClock.depthProgress()
+                        },
+                        depthPhaseProvider = {
+                            videoCardTransitionClock.phase
+                        },
+                        depthGestureRestoreProvider = {
+                            videoCardTransitionClock.gestureRestoreInProgress
+                        },
+                        isDataSaverActive = isDataSaverActiveForGlobalWallpaper,
+                        isLightBackground = isLightBackground,
+                        realtimeBlurEnabled = videoTransitionRealtimeBlurEnabled,
+                    )
                 fun bottomPagerNavKeyForItem(item: BottomNavItem): BiliPaiNavKey {
                     return when (item) {
                         BottomNavItem.HOME -> BiliPaiNavKey.Home

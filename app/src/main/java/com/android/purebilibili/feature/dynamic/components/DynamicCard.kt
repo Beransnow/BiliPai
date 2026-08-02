@@ -87,7 +87,8 @@ fun DynamicCardV2(
     onLikeClick: (dynamicId: String) -> Unit = {},
     onWatchLaterClick: ((aid: Long) -> Unit)? = null,
     onDeleteClick: ((DynamicDeleteAction) -> Unit)? = null,
-    isLiked: Boolean = false
+    isLiked: Boolean = false,
+    forwardCountDelta: Int = 0
 ) {
     val author = item.modules.module_author
     val content = item.modules.module_dynamic
@@ -697,7 +698,7 @@ fun DynamicCardV2(
         ) {
             // 转发按钮
             ActionButton(
-                count = statModule.forward.count,
+                count = (statModule.forward.count + forwardCountDelta).coerceAtLeast(0),
                 label = "转发",
                 enabled = !statModule.forward.forbidden,
                 onClick = { onRepostClick(item.id_str) },
