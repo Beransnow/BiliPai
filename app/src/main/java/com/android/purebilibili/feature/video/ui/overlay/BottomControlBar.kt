@@ -8,6 +8,8 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
@@ -477,6 +479,12 @@ fun BottomControlBar(
             controlRowHeightDp = maxOf(layoutPolicy.playButtonSizeDp, layoutPolicy.danmakuInputHeightDp),
             gapDp = 20
         )
+    }
+    val videoEnhancementPanelMaxHeightDp = remember(
+        configuration.screenHeightDp,
+        floatingPanelBottomOffsetDp
+    ) {
+        (configuration.screenHeightDp - floatingPanelBottomOffsetDp - 48).coerceAtLeast(120)
     }
     val progressLayoutPolicy = remember(configuration.screenWidthDp) {
         resolveVideoProgressBarLayoutPolicy(
@@ -1153,6 +1161,7 @@ fun BottomControlBar(
                 algorithm = videoEnhancementAlgorithm,
                 preset = anime4kPreset,
                 minWidthDp = maxOf(220, floatingPanelMinWidthDp),
+                maxHeightDp = videoEnhancementPanelMaxHeightDp,
                 onCheckedChange = onAnime4kToggle,
                 onAlgorithmChange = onVideoEnhancementAlgorithmChange,
                 onPresetChange = onAnime4kPresetChange
@@ -1180,6 +1189,7 @@ private fun FloatingControlPanelDialog(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.safeDrawing)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
@@ -1254,6 +1264,7 @@ private fun VideoEnhancementSettingsPanel(
     algorithm: VideoEnhancementAlgorithm,
     preset: Anime4KPreset,
     minWidthDp: Int,
+    maxHeightDp: Int,
     onCheckedChange: (Boolean) -> Unit,
     onAlgorithmChange: (VideoEnhancementAlgorithm) -> Unit,
     onPresetChange: (Anime4KPreset) -> Unit
@@ -1269,6 +1280,8 @@ private fun VideoEnhancementSettingsPanel(
         Column(
             modifier = Modifier
                 .width(minWidthDp.dp)
+                .heightIn(max = maxHeightDp.dp)
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
@@ -1306,16 +1319,21 @@ private fun VideoEnhancementSettingsPanel(
                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
             )
 
-            VideoEnhancementAlgorithm.entries.forEach { option ->
-                MoreActionTextButton(
-                    label = when (option) {
-                        VideoEnhancementAlgorithm.ANIME4K -> "Anime4K（动漫）"
-                        VideoEnhancementAlgorithm.FSR_1_0 -> "AMD FSR 1.0（通用）"
-                    },
-                    highlighted = algorithm == option,
-                    minWidthDp = minWidthDp - 28,
-                    onClick = { onAlgorithmChange(option) }
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                VideoEnhancementAlgorithm.entries.forEach { option ->
+                    VideoEnhancementChoice(
+                        label = when (option) {
+                            VideoEnhancementAlgorithm.ANIME4K -> "Anime4K\n动漫"
+                            VideoEnhancementAlgorithm.FSR_1_0 -> "FSR 1.0\n通用"
+                        },
+                        selected = algorithm == option,
+                        modifier = Modifier.weight(1f),
+                        onClick = { onAlgorithmChange(option) }
+                    )
+                }
             }
 
             if (algorithm == VideoEnhancementAlgorithm.ANIME4K) {
@@ -1327,16 +1345,62 @@ private fun VideoEnhancementSettingsPanel(
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                 )
-                listOf(Anime4KPreset.FAST, Anime4KPreset.QUALITY).forEach { option ->
-                    MoreActionTextButton(
-                        label = resolveAnime4KPresetLabel(option),
-                        highlighted = preset == option,
-                        minWidthDp = minWidthDp - 28,
-                        onClick = { onPresetChange(option) }
-                    )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    listOf(Anime4KPreset.FAST, Anime4KPreset.QUALITY).forEach { option ->
+                        VideoEnhancementChoice(
+                            label = resolveAnime4KPresetLabel(option),
+                            selected = preset == option,
+                            modifier = Modifier.weight(1f),
+                            onClick = { onPresetChange(option) }
+                        )
+                    }
                 }
             }
+
+            AppText(
+                text = "算法与模型会沿用上次选择",
+                color = Color.White.copy(alpha = 0.56f),
+                fontSize = 11.sp,
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+            )
         }
+    }
+}
+
+@Composable
+private fun VideoEnhancementChoice(
+    label: String,
+    selected: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = modifier
+            .heightIn(min = 48.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(
+                if (selected) {
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.22f)
+                } else {
+                    Color.White.copy(alpha = 0.06f)
+                }
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 6.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        AppText(
+            text = label,
+            color = if (selected) MaterialTheme.colorScheme.primary else Color.White,
+            textAlign = TextAlign.Center,
+            fontSize = 12.sp,
+            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 

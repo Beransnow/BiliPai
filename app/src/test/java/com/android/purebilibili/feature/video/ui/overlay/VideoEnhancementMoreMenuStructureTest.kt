@@ -26,6 +26,18 @@ class VideoEnhancementMoreMenuStructureTest {
         assertTrue(source.contains("onAlgorithmChange = onVideoEnhancementAlgorithmChange"))
         assertTrue(source.contains("VideoEnhancementAlgorithm.entries.forEach"))
         assertTrue(source.contains("Anime4K 模型"))
+        assertTrue(source.contains("算法与模型会沿用上次选择"))
+    }
+
+    @Test
+    fun `二级菜单避让系统栏并在低高度横屏可滚动`() {
+        val source = bottomControlBarSource()
+
+        assertTrue(source.contains("windowInsetsPadding(WindowInsets.safeDrawing)"))
+        assertTrue(source.contains("maxHeightDp = videoEnhancementPanelMaxHeightDp"))
+        assertTrue(source.contains(".heightIn(max = maxHeightDp.dp)"))
+        assertTrue(source.contains(".verticalScroll(rememberScrollState())"))
+        assertTrue(source.contains("VideoEnhancementChoice("))
     }
 
     private fun bottomControlBarSource(): String = listOf(

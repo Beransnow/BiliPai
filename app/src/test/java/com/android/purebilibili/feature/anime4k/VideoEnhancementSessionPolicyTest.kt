@@ -80,7 +80,7 @@ class VideoEnhancementSessionPolicyTest {
     }
 
     @Test
-    fun `首次开启记忆必须确认性能警告`() {
+    fun `首次开启记忆必须确认遗忘风险提醒`() {
         assertTrue(
             shouldConfirmRememberAcrossVideosChange(
                 currentValue = false,

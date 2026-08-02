@@ -137,6 +137,7 @@ internal class Anime4KPipelineRenderer(
         }
         try {
             config = value
+            notifiedFirstFrame = false
             fboManager.release()
             resetPerformanceStats()
             prepareRenderPipeline(value)

@@ -188,7 +188,7 @@ class Anime4KPlugin : Plugin {
             AppSwitchPreference(
                 title = "跨视频记忆开启状态",
                 subtitle = if (configSnapshot.rememberAcrossVideos) {
-                    "后续视频会沿用最近一次开关状态"
+                    "后续视频沿用开关；只有实际增强时才有性能开销"
                 } else {
                     "默认关闭；每个视频需要单独开启"
                 },
@@ -214,11 +214,12 @@ class Anime4KPlugin : Plugin {
         if (showRememberWarning) {
             AppAlertDialog(
                 onDismissRequest = { showRememberWarning = false },
-                title = { AppText("持续开启可能影响性能") },
+                title = { AppText("是否记住后续视频的开关？") },
                 text = {
                     AppText(
-                        "画质增强会持续占用 GPU，可能增加耗电和发热，并在性能不足时造成掉帧。" +
-                            "开启记忆后，后续视频会沿用最近一次开关状态。"
+                        "开启记忆本身不会占用性能，它只会让后续视频沿用最近一次开关。" +
+                            "请留意播放器中的开启状态，避免之后忘记关闭，在较高分辨率视频上持续增强而出现发热、耗电或卡顿。" +
+                            "HDR 等自动旁路场景不会执行增强。"
                     )
                 },
                 confirmButton = {
@@ -231,7 +232,7 @@ class Anime4KPlugin : Plugin {
                             showRememberWarning = false
                         }
                     ) {
-                        AppText("仍要开启")
+                        AppText("开启记忆")
                     }
                 },
                 dismissButton = {
