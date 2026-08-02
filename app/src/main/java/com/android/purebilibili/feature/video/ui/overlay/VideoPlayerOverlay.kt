@@ -77,6 +77,7 @@ import com.android.purebilibili.feature.video.playback.audio.AudioQualityOption
 import com.android.purebilibili.feature.video.playback.audio.resolveAudioQualityControlPresentation
 import com.android.purebilibili.feature.common.resolveIndexedVideoLazyKey
 import com.android.purebilibili.feature.video.progress.PbpRidgeSample
+import com.android.purebilibili.feature.anime4k.VideoEnhancementAlgorithm
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.components.AppIconButton
@@ -614,6 +615,7 @@ fun VideoPlayerOverlay(
     anime4kEnabled: Boolean = false,
     anime4kAvailable: Boolean = false,
     anime4kBypassReason: Anime4KBypassReason = Anime4KBypassReason.DISABLED,
+    videoEnhancementAlgorithm: VideoEnhancementAlgorithm = VideoEnhancementAlgorithm.ANIME4K,
     anime4kPreset: Anime4KPreset = Anime4KPreset.FAST,
     onAnime4kToggle: (Boolean) -> Unit = {},
     onAnime4kPresetChange: (Anime4KPreset) -> Unit = {},
@@ -1516,6 +1518,7 @@ fun VideoPlayerOverlay(
                     subtitleControlCallbacks = subtitleControlCallbacks,
                     anime4kEnabled = anime4kEnabled,
                     anime4kAvailable = anime4kAvailable,
+                    videoEnhancementAlgorithm = videoEnhancementAlgorithm,
                     anime4kPreset = anime4kPreset,
                     onAnime4kToggle = onAnime4kToggle,
                     onAnime4kPresetChange = onAnime4kPresetChange,
@@ -2109,6 +2112,7 @@ fun VideoPlayerOverlay(
                 anime4kEnabled = anime4kEnabled,
                 anime4kAvailable = anime4kAvailable,
                 anime4kBypassReason = anime4kBypassReason,
+                videoEnhancementAlgorithm = videoEnhancementAlgorithm,
                 anime4kPreset = anime4kPreset,
                 onAnime4kToggle = onAnime4kToggle,
                 onAnime4kPresetChange = onAnime4kPresetChange,

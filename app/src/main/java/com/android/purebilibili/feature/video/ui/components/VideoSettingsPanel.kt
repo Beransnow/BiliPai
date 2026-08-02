@@ -56,6 +56,7 @@ import com.android.purebilibili.data.model.response.AiAudioInfo
 import com.android.purebilibili.feature.plugin.CdnLineDiagnostic
 import com.android.purebilibili.feature.anime4k.Anime4KBypassReason
 import com.android.purebilibili.feature.anime4k.Anime4KPreset
+import com.android.purebilibili.feature.anime4k.VideoEnhancementAlgorithm
 import com.android.purebilibili.feature.video.playback.audio.AudioQualityOption
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -199,6 +200,7 @@ fun VideoSettingsPanel(
     anime4kEnabled: Boolean = false,
     anime4kAvailable: Boolean = false,
     anime4kBypassReason: Anime4KBypassReason = Anime4KBypassReason.DISABLED,
+    videoEnhancementAlgorithm: VideoEnhancementAlgorithm = VideoEnhancementAlgorithm.ANIME4K,
     anime4kPreset: Anime4KPreset = Anime4KPreset.FAST,
     onAnime4kToggle: (Boolean) -> Unit = {},
     onAnime4kPresetChange: (Anime4KPreset) -> Unit = {},
@@ -349,7 +351,7 @@ fun VideoSettingsPanel(
                 Column(modifier = Modifier.fillMaxWidth()) {
                     VideoSettingsSwitchRow(
                         icon = qualityIcon,
-                        title = "Anime4K 超分辨率",
+                        title = "画质增强",
                         subtitle = resolveAnime4KSettingsSubtitle(
                             enabled = anime4kEnabled,
                             available = anime4kAvailable,
@@ -360,7 +362,11 @@ fun VideoSettingsPanel(
                             if (anime4kAvailable) onAnime4kToggle(enabled)
                         }
                     )
-                    AnimatedVisibility(visible = anime4kEnabled && anime4kAvailable) {
+                    AnimatedVisibility(
+                        visible = anime4kEnabled &&
+                            anime4kAvailable &&
+                            videoEnhancementAlgorithm == VideoEnhancementAlgorithm.ANIME4K
+                    ) {
                         Anime4KPresetOptions(
                             preset = anime4kPreset,
                             onPresetChange = onAnime4kPresetChange,

@@ -70,6 +70,7 @@ import com.android.purebilibili.feature.video.subtitle.resolveSubtitleDisplayOpt
 import com.android.purebilibili.feature.video.playback.policy.resolveDisplayedPlaybackTransitionPosition
 import com.android.purebilibili.core.store.PlayerProgressPlacement
 import com.android.purebilibili.feature.anime4k.Anime4KPreset
+import com.android.purebilibili.feature.anime4k.VideoEnhancementAlgorithm
 import com.android.purebilibili.feature.anime4k.resolveAnime4KPresetLabel
 import kotlin.math.roundToInt
 
@@ -392,6 +393,7 @@ fun BottomControlBar(
     subtitleControlCallbacks: SubtitleControlCallbacks = SubtitleControlCallbacks(),
     anime4kEnabled: Boolean = false,
     anime4kAvailable: Boolean = false,
+    videoEnhancementAlgorithm: VideoEnhancementAlgorithm = VideoEnhancementAlgorithm.ANIME4K,
     anime4kPreset: Anime4KPreset = Anime4KPreset.FAST,
     onAnime4kToggle: (Boolean) -> Unit = {},
     onAnime4kPresetChange: (Anime4KPreset) -> Unit = {},
@@ -1105,6 +1107,7 @@ fun BottomControlBar(
                     if (anime4kAvailable) {
                         Anime4KMoreAction(
                             enabled = anime4kEnabled,
+                            algorithm = videoEnhancementAlgorithm,
                             preset = anime4kPreset,
                             onCheckedChange = onAnime4kToggle,
                             onPresetChange = onAnime4kPresetChange
@@ -1221,6 +1224,7 @@ private fun MoreActionTextButton(
 @Composable
 private fun Anime4KMoreAction(
     enabled: Boolean,
+    algorithm: VideoEnhancementAlgorithm,
     preset: Anime4KPreset,
     onCheckedChange: (Boolean) -> Unit,
     onPresetChange: (Anime4KPreset) -> Unit
@@ -1238,9 +1242,12 @@ private fun Anime4KMoreAction(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                AppText("Anime4K", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                AppText("画质增强", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
                 AppText(
-                    text = if (enabled) "模型：${resolveAnime4KPresetLabel(preset)}" else "实时超分辨率",
+                    text = when (algorithm) {
+                        VideoEnhancementAlgorithm.ANIME4K -> "Anime4K · ${resolveAnime4KPresetLabel(preset)}"
+                        VideoEnhancementAlgorithm.FSR_1_0 -> "AMD FSR 1.0 · 通用增强"
+                    },
                     color = Color.White.copy(alpha = 0.68f),
                     fontSize = 11.sp
                 )
@@ -1250,7 +1257,9 @@ private fun Anime4KMoreAction(
                 onCheckedChange = onCheckedChange
             )
         }
-        AnimatedVisibility(visible = enabled) {
+        AnimatedVisibility(
+            visible = enabled && algorithm == VideoEnhancementAlgorithm.ANIME4K
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
