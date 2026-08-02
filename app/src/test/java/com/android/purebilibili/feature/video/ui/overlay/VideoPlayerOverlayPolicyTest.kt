@@ -1000,6 +1000,18 @@ class VideoPlayerOverlayPolicyTest {
     }
 
     @Test
+    fun inlineControlsAutoHide_staysOffWhileFloatingPanelVisible() {
+        assertFalse(
+            shouldAutoHideInlineControlsAfterDelay(
+                controlsVisible = true,
+                isPlaying = true,
+                isSeekScrubbing = false,
+                floatingPanelVisible = true
+            )
+        )
+    }
+
+    @Test
     fun hiddenInlineControls_cancelActiveSeekScrub() {
         assertTrue(
             shouldCancelSeekScrubWhenControlsHidden(

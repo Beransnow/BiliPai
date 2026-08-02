@@ -10,11 +10,18 @@ class VideoEnhancementMoreMenuStructureTest {
     @Test
     fun `一级更多菜单只保留紧凑画质增强入口`() {
         val source = bottomControlBarSource()
+        val primaryMenu = source.substring(
+            startIndex = source.indexOf("if (showMoreActionsPanel"),
+            endIndex = source.indexOf("if (showVideoEnhancementPanel")
+        )
 
         assertTrue(source.contains("label = \"画质增强\""))
         assertTrue(source.contains("showVideoEnhancementPanel = true"))
         assertTrue(source.contains("highlighted = anime4kEnabled"))
         assertFalse(source.contains("Anime4KMoreAction("))
+        assertTrue(primaryMenu.contains("FlowRow("))
+        assertTrue(primaryMenu.contains("maxItemsInEachRow = 2"))
+        assertFalse(primaryMenu.contains("verticalScroll"))
     }
 
     @Test
@@ -38,6 +45,15 @@ class VideoEnhancementMoreMenuStructureTest {
         assertTrue(source.contains(".heightIn(max = maxHeightDp.dp)"))
         assertTrue(source.contains(".verticalScroll(rememberScrollState())"))
         assertTrue(source.contains("VideoEnhancementChoice("))
+    }
+
+    @Test
+    fun `浮动菜单打开时通知播放器暂停控制栏自动隐藏`() {
+        val source = bottomControlBarSource()
+
+        assertTrue(source.contains("onFloatingPanelVisibilityChange: (Boolean) -> Unit = {}"))
+        assertTrue(source.contains("currentFloatingPanelVisibilityCallback.value(floatingPanelVisible)"))
+        assertTrue(source.contains("currentFloatingPanelVisibilityCallback.value(false)"))
     }
 
     private fun bottomControlBarSource(): String = listOf(

@@ -361,6 +361,7 @@ private fun Modifier.consumeTap(onTap: () -> Unit): Modifier {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BottomControlBar(
     isPlaying: Boolean,
@@ -425,6 +426,7 @@ fun BottomControlBar(
     onPlaybackOrderClick: () -> Unit = {},
     progressPlacement: PlayerProgressPlacement = PlayerProgressPlacement.ABOVE_CONTROLS,
     onPipClick: () -> Unit = {},
+    onFloatingPanelVisibilityChange: (Boolean) -> Unit = {},
     
     modifier: Modifier = Modifier
 ) {
@@ -452,6 +454,9 @@ fun BottomControlBar(
     }
     val moreActionItemMinWidthDp = remember(configuration.screenWidthDp) {
         resolveMoreActionItemMinWidthDp(widthDp = configuration.screenWidthDp)
+    }
+    val moreActionsPanelWidthDp = remember(moreActionItemMinWidthDp) {
+        moreActionItemMinWidthDp * 2 + 32
     }
     val moreButtonAnchorOffsetDp = remember(configuration.screenWidthDp) {
         resolveMoreActionsButtonAnchorOffsetDp(widthDp = configuration.screenWidthDp)
@@ -535,6 +540,16 @@ fun BottomControlBar(
     var showMoreActionsPanel by remember { mutableStateOf(false) }
     var showSubtitlePanel by remember { mutableStateOf(false) }
     var showVideoEnhancementPanel by remember { mutableStateOf(false) }
+    val floatingPanelVisible = showMoreActionsPanel || showSubtitlePanel || showVideoEnhancementPanel
+    val currentFloatingPanelVisibilityCallback = rememberUpdatedState(onFloatingPanelVisibilityChange)
+    LaunchedEffect(floatingPanelVisible) {
+        currentFloatingPanelVisibilityCallback.value(floatingPanelVisible)
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            currentFloatingPanelVisibilityCallback.value(false)
+        }
+    }
     LaunchedEffect(isFullscreen) {
         if (!isFullscreen) {
             showMoreActionsPanel = false
@@ -1058,11 +1073,15 @@ fun BottomControlBar(
                     color = Color.White.copy(alpha = 0.2f)
                 )
             ) {
-                Column(
+                FlowRow(
                     modifier = Modifier
-                        .width(floatingPanelMinWidthDp.dp)
+                        .width(moreActionsPanelWidthDp.dp)
                         .padding(horizontal = 12.dp, vertical = 10.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
+                    maxItemsInEachRow = 2,
+                    horizontalArrangement = Arrangement.spacedBy(
+                        space = 8.dp,
+                        alignment = Alignment.CenterHorizontally
+                    ),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     if (showEpisodeInMoreActions) {
