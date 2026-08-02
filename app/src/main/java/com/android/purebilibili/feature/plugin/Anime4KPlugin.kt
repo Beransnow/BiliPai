@@ -27,6 +27,7 @@ import com.android.purebilibili.core.util.Logger
 import com.android.purebilibili.feature.anime4k.Anime4KConfig
 import com.android.purebilibili.feature.anime4k.Anime4KPreset
 import com.android.purebilibili.feature.anime4k.VideoEnhancementAlgorithm
+import com.android.purebilibili.feature.anime4k.VideoEnhancementConfigLoadGuard
 import com.android.purebilibili.feature.anime4k.decodeVideoEnhancementConfig
 import com.android.purebilibili.feature.anime4k.encodeVideoEnhancementConfig
 import com.android.purebilibili.feature.anime4k.resolveConfigAfterRememberAcrossVideosChange
@@ -64,6 +65,7 @@ class Anime4KPlugin : Plugin {
 
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var config = Anime4KConfig()
+    private val configLoadGuard = VideoEnhancementConfigLoadGuard()
     private val _configState = MutableStateFlow(config)
     val configState: StateFlow<Anime4KConfig> = _configState.asStateFlow()
 
@@ -100,6 +102,7 @@ class Anime4KPlugin : Plugin {
 
     private fun updateConfig(value: Anime4KConfig) {
         if (config == value) return
+        configLoadGuard.markLocalChange()
         config = value
         _configState.value = value
         ioScope.launch {
@@ -116,7 +119,7 @@ class Anime4KPlugin : Plugin {
     }
 
     private suspend fun loadConfig() {
-        config = runCatching {
+        val loadedConfig = runCatching {
             val raw = PluginStore.getConfigJson(PluginManager.getContext(), id)
             if (raw.isNullOrBlank()) {
                 Anime4KConfig()
@@ -126,6 +129,11 @@ class Anime4KPlugin : Plugin {
         }.onFailure { error ->
             Logger.e(TAG, "读取画质增强配置失败", error)
         }.getOrDefault(Anime4KConfig())
+        if (!configLoadGuard.shouldApplyLoadedConfig()) {
+            Logger.d(TAG, "保留本次进程中刚修改的画质增强配置")
+            return
+        }
+        config = loadedConfig
         _configState.value = config
     }
 
