@@ -111,6 +111,10 @@ internal data class SubReplyDetailLayoutPolicy(
     val overlayRootCommentEntry: Boolean
 )
 
+/** Keeps the thread-detail avatar bound in sync with the main comment list. */
+internal fun resolveSubReplyDetailAvatarSizeDp(): Int =
+    resolveReplyItemLayoutPolicy().avatarSizeDp
+
 internal data class SubReplyAuxiliaryBadgeVisualSpec(
     val imageSizeDp: Int,
     val imageCornerRadiusDp: Int,
@@ -981,7 +985,7 @@ private fun SubReplyDetailItem(
             }
         }
     }
-    val avatarSize = if (isRootItem) 44.dp else 40.dp
+    val avatarSize = remember { resolveSubReplyDetailAvatarSizeDp().dp }
     val nameColor = if (item.member.vip?.vipStatus == 1) {
         appearance.accentColor
     } else {
@@ -1100,17 +1104,12 @@ private fun SubReplyDetailItem(
                 .fillMaxWidth()
                 .padding(top = 14.dp, bottom = 14.dp, start = 16.dp, end = 16.dp)
         ) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(FormatUtils.fixImageUrl(item.member.avatar))
-                    .crossfade(true)
-                    .build(),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(avatarSize)
-                    .clip(CircleShape)
-                    .background(appearance.placeholderColor)
-                    .clickable { onAvatarClick(item.member.mid) }
+            ReplyMemberAvatar(
+                member = item.member,
+                placeholderColor = appearance.placeholderColor,
+                lightweightMode = false,
+                modifier = Modifier.size(avatarSize),
+                onClick = { onAvatarClick(item.member.mid) }
             )
 
             Spacer(modifier = Modifier.width(12.dp))
