@@ -618,6 +618,7 @@ fun VideoPlayerOverlay(
     videoEnhancementAlgorithm: VideoEnhancementAlgorithm = VideoEnhancementAlgorithm.ANIME4K,
     anime4kPreset: Anime4KPreset = Anime4KPreset.FAST,
     onAnime4kToggle: (Boolean) -> Unit = {},
+    onVideoEnhancementAlgorithmChange: (VideoEnhancementAlgorithm) -> Unit = {},
     onAnime4kPresetChange: (Anime4KPreset) -> Unit = {},
     // [New] AI Audio Translation
     aiAudioInfo: com.android.purebilibili.data.model.response.AiAudioInfo? = null,
@@ -1521,6 +1522,7 @@ fun VideoPlayerOverlay(
                     videoEnhancementAlgorithm = videoEnhancementAlgorithm,
                     anime4kPreset = anime4kPreset,
                     onAnime4kToggle = onAnime4kToggle,
+                    onVideoEnhancementAlgorithmChange = onVideoEnhancementAlgorithmChange,
                     onAnime4kPresetChange = onAnime4kPresetChange,
                     currentAudioQualityLabel = audioQualityPresentation.label,
                     isHiResAudioSelected = audioQualityPresentation.showHiResBadge,

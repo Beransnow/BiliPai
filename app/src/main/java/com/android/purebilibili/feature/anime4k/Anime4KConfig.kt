@@ -33,10 +33,33 @@ enum class Anime4KPreset {
 }
 
 const val DEFAULT_FSR_SHARPNESS: Float = 0.9f
+const val FSR_MAX_SOURCE_TO_OUTPUT_SCALE: Float = 1.2f
 
 /** AMD RCAS 的 0 表示最强，数值每增加 1 表示锐度减半。 */
 fun resolveFsrRcasSharpnessStops(strength: Float): Float {
     return 2f * (1f - strength.coerceIn(0f, 1f))
+}
+
+/**
+ * 低码率原生分辨率视频也允许执行 FSR：源视频宽高不超过显示区域的 1.2 倍时，
+ * 使用 EASU + RCAS 做放大或 1:1 重建；明显高于屏幕分辨率的视频继续直出。
+ */
+fun shouldApplyFsr1Enhancement(
+    sourceWidth: Int,
+    sourceHeight: Int,
+    outputWidth: Int,
+    outputHeight: Int,
+    maxSourceToOutputScale: Float = FSR_MAX_SOURCE_TO_OUTPUT_SCALE
+): Boolean {
+    if (
+        sourceWidth <= 0 || sourceHeight <= 0 ||
+        outputWidth <= 0 || outputHeight <= 0 ||
+        maxSourceToOutputScale <= 0f
+    ) {
+        return false
+    }
+    return sourceWidth <= outputWidth * maxSourceToOutputScale &&
+        sourceHeight <= outputHeight * maxSourceToOutputScale
 }
 
 /** FSR 1.0 官方建议的最大 4 倍面积缩放，即每条边最多 2 倍。 */

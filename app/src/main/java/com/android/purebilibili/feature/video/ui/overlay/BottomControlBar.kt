@@ -62,7 +62,6 @@ import com.android.purebilibili.feature.video.ui.components.SeekPreviewBubbleSim
 import com.android.purebilibili.feature.video.ui.components.VideoAspectRatio
 import com.android.purebilibili.feature.video.ui.components.DolbyBadge
 import com.android.purebilibili.feature.video.ui.components.HiResBadge
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.ui.draw.clip
 import com.android.purebilibili.feature.video.subtitle.SubtitleDisplayMode
 import com.android.purebilibili.feature.video.subtitle.SubtitleTrackOption
@@ -396,6 +395,7 @@ fun BottomControlBar(
     videoEnhancementAlgorithm: VideoEnhancementAlgorithm = VideoEnhancementAlgorithm.ANIME4K,
     anime4kPreset: Anime4KPreset = Anime4KPreset.FAST,
     onAnime4kToggle: (Boolean) -> Unit = {},
+    onVideoEnhancementAlgorithmChange: (VideoEnhancementAlgorithm) -> Unit = {},
     onAnime4kPresetChange: (Anime4KPreset) -> Unit = {},
     
     // Quality
@@ -526,10 +526,12 @@ fun BottomControlBar(
     }
     var showMoreActionsPanel by remember { mutableStateOf(false) }
     var showSubtitlePanel by remember { mutableStateOf(false) }
+    var showVideoEnhancementPanel by remember { mutableStateOf(false) }
     LaunchedEffect(isFullscreen) {
         if (!isFullscreen) {
             showMoreActionsPanel = false
             showSubtitlePanel = false
+            showVideoEnhancementPanel = false
         }
     }
     val showPlaybackOrderLabel = remember(isFullscreen, playbackOrderLabel) {
@@ -862,6 +864,7 @@ fun BottomControlBar(
                             showSubtitlePanel = nextShowSubtitlePanel
                             if (nextShowSubtitlePanel) {
                                 showMoreActionsPanel = false
+                                showVideoEnhancementPanel = false
                             }
                         }
                     ) {
@@ -890,6 +893,7 @@ fun BottomControlBar(
                                 showMoreActionsPanel = !showMoreActionsPanel
                                 if (showMoreActionsPanel) {
                                     showSubtitlePanel = false
+                                    showVideoEnhancementPanel = false
                                 }
                             }
                             .padding(
@@ -1105,12 +1109,14 @@ fun BottomControlBar(
                         )
                     }
                     if (anime4kAvailable) {
-                        Anime4KMoreAction(
-                            enabled = anime4kEnabled,
-                            algorithm = videoEnhancementAlgorithm,
-                            preset = anime4kPreset,
-                            onCheckedChange = onAnime4kToggle,
-                            onPresetChange = onAnime4kPresetChange
+                        MoreActionTextButton(
+                            label = "画质增强",
+                            highlighted = anime4kEnabled,
+                            minWidthDp = moreActionItemMinWidthDp,
+                            onClick = {
+                                showMoreActionsPanel = false
+                                showVideoEnhancementPanel = true
+                            }
                         )
                     }
                     if (
@@ -1130,6 +1136,27 @@ fun BottomControlBar(
                     }
                 }
             }
+        }
+    }
+
+    if (showVideoEnhancementPanel && anime4kAvailable) {
+        FloatingControlPanelDialog(
+            onDismissRequest = { showVideoEnhancementPanel = false },
+            panelModifier = Modifier
+                .padding(
+                    end = moreActionsPanelEndPaddingDp.dp,
+                    bottom = floatingPanelBottomOffsetDp.dp
+                )
+        ) {
+            VideoEnhancementSettingsPanel(
+                enabled = anime4kEnabled,
+                algorithm = videoEnhancementAlgorithm,
+                preset = anime4kPreset,
+                minWidthDp = maxOf(220, floatingPanelMinWidthDp),
+                onCheckedChange = onAnime4kToggle,
+                onAlgorithmChange = onVideoEnhancementAlgorithmChange,
+                onPresetChange = onAnime4kPresetChange
+            )
         }
     }
 }
@@ -1222,88 +1249,94 @@ private fun MoreActionTextButton(
 }
 
 @Composable
-private fun Anime4KMoreAction(
+private fun VideoEnhancementSettingsPanel(
     enabled: Boolean,
     algorithm: VideoEnhancementAlgorithm,
     preset: Anime4KPreset,
+    minWidthDp: Int,
     onCheckedChange: (Boolean) -> Unit,
+    onAlgorithmChange: (VideoEnhancementAlgorithm) -> Unit,
     onPresetChange: (Anime4KPreset) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 4.dp, vertical = 2.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+    AppSurface(
+        color = Color.Black.copy(alpha = 0.82f),
+        shape = RoundedCornerShape(16.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            width = 1.dp,
+            color = Color.White.copy(alpha = 0.2f)
+        )
     ) {
-        Row(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 48.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                AppText("画质增强", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                AppText(
-                    text = when (algorithm) {
-                        VideoEnhancementAlgorithm.ANIME4K -> "Anime4K · ${resolveAnime4KPresetLabel(preset)}"
-                        VideoEnhancementAlgorithm.FSR_1_0 -> "AMD FSR 1.0 · 通用增强"
-                    },
-                    color = Color.White.copy(alpha = 0.68f),
-                    fontSize = 11.sp
-                )
-            }
-            AppSwitch(
-                checked = enabled,
-                onCheckedChange = onCheckedChange
-            )
-        }
-        AnimatedVisibility(
-            visible = enabled && algorithm == VideoEnhancementAlgorithm.ANIME4K
+                .width(minWidthDp.dp)
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                listOf(
-                    Anime4KPreset.FAST,
-                    Anime4KPreset.QUALITY
-                ).forEach { option ->
-                    Anime4KIntensityOption(
+                Column(modifier = Modifier.weight(1f)) {
+                    AppText(
+                        text = "画质增强",
+                        color = Color.White,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    AppText(
+                        text = if (enabled) "当前视频已开启" else "当前视频已关闭",
+                        color = Color.White.copy(alpha = 0.68f),
+                        fontSize = 11.sp
+                    )
+                }
+                AppSwitch(
+                    checked = enabled,
+                    onCheckedChange = onCheckedChange
+                )
+            }
+
+            AppHorizontalDivider(color = Color.White.copy(alpha = 0.10f))
+            AppText(
+                text = "增强算法",
+                color = Color.White.copy(alpha = 0.72f),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+            )
+
+            VideoEnhancementAlgorithm.entries.forEach { option ->
+                MoreActionTextButton(
+                    label = when (option) {
+                        VideoEnhancementAlgorithm.ANIME4K -> "Anime4K（动漫）"
+                        VideoEnhancementAlgorithm.FSR_1_0 -> "AMD FSR 1.0（通用）"
+                    },
+                    highlighted = algorithm == option,
+                    minWidthDp = minWidthDp - 28,
+                    onClick = { onAlgorithmChange(option) }
+                )
+            }
+
+            if (algorithm == VideoEnhancementAlgorithm.ANIME4K) {
+                AppHorizontalDivider(color = Color.White.copy(alpha = 0.10f))
+                AppText(
+                    text = "Anime4K 模型",
+                    color = Color.White.copy(alpha = 0.72f),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                )
+                listOf(Anime4KPreset.FAST, Anime4KPreset.QUALITY).forEach { option ->
+                    MoreActionTextButton(
                         label = resolveAnime4KPresetLabel(option),
-                        selected = preset == option,
-                        modifier = Modifier.weight(1f),
+                        highlighted = preset == option,
+                        minWidthDp = minWidthDp - 28,
                         onClick = { onPresetChange(option) }
                     )
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun Anime4KIntensityOption(
-    label: String,
-    selected: Boolean,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = modifier
-            .heightIn(min = 48.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(
-                if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.3f) else Color.White.copy(alpha = 0.1f)
-            )
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
-    ) {
-        AppText(
-            text = label,
-            color = if (selected) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.86f),
-            fontSize = 12.sp,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
-            maxLines = 1
-        )
     }
 }
 

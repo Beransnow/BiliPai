@@ -14,6 +14,7 @@ import com.android.purebilibili.feature.anime4k.resolveAnime4KInputSize
 import com.android.purebilibili.feature.anime4k.resolveAnime4KRenderProfile
 import com.android.purebilibili.feature.anime4k.resolveFsr1TargetSize
 import com.android.purebilibili.feature.anime4k.resolveFsrRcasSharpnessStops
+import com.android.purebilibili.feature.anime4k.shouldApplyFsr1Enhancement
 import kotlin.math.roundToInt
 
 internal class Anime4KPipelineRenderer(
@@ -259,8 +260,15 @@ internal class Anime4KPipelineRenderer(
         )
         val requestedWidth = (outputWidth * displayTransform.scaleX).roundToInt()
         val requestedHeight = (outputHeight * displayTransform.scaleY).roundToInt()
-        if (requestedWidth <= sourceWidth && requestedHeight <= sourceHeight) {
-            // FSR 1.0 是空间放大器；原生尺寸或缩小显示不伪装成“原生锐化”。
+        if (
+            !shouldApplyFsr1Enhancement(
+                sourceWidth = sourceWidth,
+                sourceHeight = sourceHeight,
+                outputWidth = requestedWidth,
+                outputHeight = requestedHeight
+            )
+        ) {
+            // 明显高于屏幕分辨率的视频已经有足够采样信息，避免额外 GPU 负载。
             val nativeSize = resolveAnime4KInputSize(sourceWidth, sourceHeight, maxTextureSize)
             val nativeTarget = fboManager.obtain(
                 width = nativeSize.first,

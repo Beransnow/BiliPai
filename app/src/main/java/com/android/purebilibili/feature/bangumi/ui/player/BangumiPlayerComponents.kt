@@ -700,6 +700,9 @@ fun BangumiPlayerView(
                     Anime4KPlugin.getInstance()?.rememberCurrentVideoEnabled(enabled)
                 }
             },
+            onVideoEnhancementAlgorithmChange = { algorithm ->
+                anime4kPlugin?.setAlgorithm(algorithm)
+            },
             onAnime4kPresetChange = { preset ->
                 anime4kPlugin?.setPreset(preset)
             },

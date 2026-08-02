@@ -86,6 +86,7 @@ internal fun BangumiPlayerOverlayHost(
     videoEnhancementAlgorithm: VideoEnhancementAlgorithm,
     anime4kPreset: Anime4KPreset,
     onAnime4kToggle: (Boolean) -> Unit,
+    onVideoEnhancementAlgorithmChange: (VideoEnhancementAlgorithm) -> Unit,
     onAnime4kPresetChange: (Anime4KPreset) -> Unit,
     onShowMessage: (String) -> Unit
 ) {
@@ -173,6 +174,7 @@ internal fun BangumiPlayerOverlayHost(
         videoEnhancementAlgorithm = videoEnhancementAlgorithm,
         anime4kPreset = anime4kPreset,
         onAnime4kToggle = onAnime4kToggle,
+        onVideoEnhancementAlgorithmChange = onVideoEnhancementAlgorithmChange,
         onAnime4kPresetChange = onAnime4kPresetChange,
         onQualityChange = onQualityChange,
         onPipClick = {},
