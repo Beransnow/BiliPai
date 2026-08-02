@@ -9,6 +9,7 @@
 - [架构说明](ARCHITECTURE.md)
 - [AI 导航指南](AI.md)
 - [Miuix 对齐记录](MIUIX_ALIGNMENT.md)
+- [UI 设计规范](ui-design/README.md)
 - [液态玻璃复用与首页底栏同源规范](LIQUID_GLASS_REUSE_PARITY.md)
 - [发布流程](RELEASE_WORKFLOW.md)
 - [QA 测试手册](QA.md)
@@ -29,6 +30,8 @@
 6. 若调整了 AI 入口或文档优先级，需同步 `AI.txt`、`llm.txt`、`llms.txt` 与 `docs/wiki/AI.md`
 
 ## 快速入口
+
+- 设计与 Compose 组件规则：[UI 设计规范](ui-design/README.md)
 
 - Android 主代码：`app/src/main/java/com/android/purebilibili`
 - 测试代码：`app/src/test/java/com/android/purebilibili`
