@@ -37,6 +37,12 @@ const val DEFAULT_FSR_SHARPNESS: Float = 0.9f
 const val FSR_SHARPNESS_SLIDER_STEPS: Int = 9
 const val FSR_MAX_SOURCE_TO_OUTPUT_SCALE: Float = 1.2f
 
+/** 将历史连续滑条值归一化为当前 0.1 档位，避免出现 69% 一类残留显示。 */
+fun normalizeFsrSharpness(strength: Float): Float {
+    if (!strength.isFinite()) return DEFAULT_FSR_SHARPNESS
+    return (strength.coerceIn(0f, 1f) * 10f).roundToInt() / 10f
+}
+
 /** AMD RCAS 的 0 表示最强，数值每增加 1 表示锐度减半。 */
 fun resolveFsrRcasSharpnessStops(strength: Float): Float {
     return 2f * (1f - strength.coerceIn(0f, 1f))
@@ -113,7 +119,8 @@ internal fun decodeVideoEnhancementConfig(raw: String): Anime4KConfig {
         // 旧中间档与 Kazumi 效率链相同，升级后继续归并到效率档。
         return Anime4KConfig(preset = Anime4KPreset.FAST)
     }
-    return videoEnhancementJson.decodeFromString(raw)
+    val decoded = videoEnhancementJson.decodeFromString<Anime4KConfig>(raw)
+    return decoded.copy(fsrSharpness = normalizeFsrSharpness(decoded.fsrSharpness))
 }
 
 /** 与 Kazumi 一致，只提供效率和质量两档。 */

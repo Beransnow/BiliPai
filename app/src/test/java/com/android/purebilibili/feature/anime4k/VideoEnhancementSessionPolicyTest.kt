@@ -118,6 +118,20 @@ class VideoEnhancementSessionPolicyTest {
     }
 
     @Test
+    fun `历史连续锐化值归一化到最近的零点一档位`() {
+        assertEquals(0.7f, normalizeFsrSharpness(0.69f), 0.0001f)
+        assertEquals(0f, normalizeFsrSharpness(-0.2f), 0.0001f)
+        assertEquals(1f, normalizeFsrSharpness(1.2f), 0.0001f)
+    }
+
+    @Test
+    fun `读取旧配置时同步归一化锐化档位`() {
+        val config = decodeVideoEnhancementConfig("""{"fsrSharpness":0.69}""")
+
+        assertEquals(0.7f, config.fsrSharpness, 0.0001f)
+    }
+
+    @Test
     fun `FSR 每条边最多放大两倍且保持宽高比`() {
         assertEquals(
             2560 to 1440,

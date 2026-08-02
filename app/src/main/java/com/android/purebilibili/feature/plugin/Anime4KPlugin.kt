@@ -31,6 +31,7 @@ import com.android.purebilibili.feature.anime4k.VideoEnhancementAlgorithm
 import com.android.purebilibili.feature.anime4k.VideoEnhancementConfigLoadGuard
 import com.android.purebilibili.feature.anime4k.decodeVideoEnhancementConfig
 import com.android.purebilibili.feature.anime4k.encodeVideoEnhancementConfig
+import com.android.purebilibili.feature.anime4k.normalizeFsrSharpness
 import com.android.purebilibili.feature.anime4k.resolveConfigAfterRememberAcrossVideosChange
 import com.android.purebilibili.feature.anime4k.resolveConfigAfterVideoEnhancementToggle
 import com.android.purebilibili.feature.anime4k.resolveAnime4KPresetLabel
@@ -84,7 +85,7 @@ class Anime4KPlugin : Plugin {
     }
 
     fun setFsrSharpness(strength: Float) {
-        updateConfig(config.copy(fsrSharpness = strength.coerceIn(0f, 1f)))
+        updateConfig(config.copy(fsrSharpness = normalizeFsrSharpness(strength)))
     }
 
     fun setRememberAcrossVideos(enabled: Boolean, currentVideoEnabled: Boolean) {
