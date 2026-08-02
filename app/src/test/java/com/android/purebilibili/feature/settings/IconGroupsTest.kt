@@ -37,6 +37,10 @@ class IconGroupsTest {
             resolveIconOptionPreviewRes("icon_blue_snow_maid_front", AppIconAppearance.LIGHT)
         )
         assertEquals(
+            R.mipmap.ic_launcher_blue_snow_maid_announcement_dark_round,
+            resolveIconOptionPreviewRes("icon_blue_snow_maid_announcement", AppIconAppearance.DARK)
+        )
+        assertEquals(
             R.mipmap.ic_launcher_bilipai_round,
             resolveIconOptionPreviewRes("icon_bilipai", AppIconAppearance.DARK)
         )

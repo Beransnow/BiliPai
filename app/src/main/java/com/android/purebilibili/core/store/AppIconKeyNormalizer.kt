@@ -7,6 +7,7 @@ const val DEFAULT_APP_ICON_KEY = "icon_blue_snow_maid"
 
 private val MAID_APP_ICON_KEYS = setOf(
     "icon_blue_snow_maid",
+    "icon_blue_snow_maid_announcement",
     "icon_blue_snow_maid_front"
 )
 
@@ -57,6 +58,8 @@ private val NO_ICON_LAUNCHER_ALIAS_SUFFIX_BY_KEY = mapOf(
 private val FIXED_MAID_LAUNCHER_ALIAS_SUFFIX_BY_KEY_AND_APPEARANCE = mapOf(
     ("icon_blue_snow_maid" to AppIconAppearance.LIGHT) to "MainActivityAliasBlueSnowMaidLight",
     ("icon_blue_snow_maid" to AppIconAppearance.DARK) to "MainActivityAliasBlueSnowMaidDark",
+    ("icon_blue_snow_maid_announcement" to AppIconAppearance.LIGHT) to "MainActivityAliasBlueSnowMaidAnnouncementLight",
+    ("icon_blue_snow_maid_announcement" to AppIconAppearance.DARK) to "MainActivityAliasBlueSnowMaidAnnouncementDark",
     ("icon_blue_snow_maid_front" to AppIconAppearance.LIGHT) to "MainActivityAliasBlueSnowMaidFrontLight",
     ("icon_blue_snow_maid_front" to AppIconAppearance.DARK) to "MainActivityAliasBlueSnowMaidFrontDark"
 )
@@ -64,6 +67,8 @@ private val FIXED_MAID_LAUNCHER_ALIAS_SUFFIX_BY_KEY_AND_APPEARANCE = mapOf(
 private val FIXED_MAID_NO_ICON_ALIAS_SUFFIX_BY_KEY_AND_APPEARANCE = mapOf(
     ("icon_blue_snow_maid" to AppIconAppearance.LIGHT) to "MainActivityAliasBlueSnowMaidLightNoIcon",
     ("icon_blue_snow_maid" to AppIconAppearance.DARK) to "MainActivityAliasBlueSnowMaidDarkNoIcon",
+    ("icon_blue_snow_maid_announcement" to AppIconAppearance.LIGHT) to "MainActivityAliasBlueSnowMaidAnnouncementLightNoIcon",
+    ("icon_blue_snow_maid_announcement" to AppIconAppearance.DARK) to "MainActivityAliasBlueSnowMaidAnnouncementDarkNoIcon",
     ("icon_blue_snow_maid_front" to AppIconAppearance.LIGHT) to "MainActivityAliasBlueSnowMaidFrontLightNoIcon",
     ("icon_blue_snow_maid_front" to AppIconAppearance.DARK) to "MainActivityAliasBlueSnowMaidFrontDarkNoIcon"
 )
