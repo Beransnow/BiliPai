@@ -191,6 +191,7 @@ fun HomeScreen(
     onAvatarClick: () -> Unit,
     onProfileClick: () -> Unit,
     onLogout: (() -> Unit)? = null,
+    onAccountSwitchClick: (() -> Unit)? = null,
     onSettingsClick: () -> Unit,
     onSearchClick: () -> Unit,
     //  新增：动态页面回调
@@ -1798,9 +1799,9 @@ fun HomeScreen(
                                      smartVisualGuardEnabled = false,
                                      isDataSaverActive = isDataSaverActive,
                                      preferLowQualityCover = homeSettings.lowQualityHomeCoverInDataSaver,
-                                     compactStatsOnCover = false,
+                                     compactStatsOnCover = homeSettings.compactVideoStatsOnCover,
                                      showCoverGlassBadges = homeSettings.showHomeCoverGlassBadges,
-                                     // 统计行位于封面外时保持轻量，避免每个胶囊在滚动期持续采样 Haze。
+                                     // 信息区标签保持轻量；贴封面统计由卡片复用封面标签样式渲染。
                                      showInfoGlassBadges = false,
                                      badgeEffectMode = homeSettings.homeCardBadgeEffectMode,
                                      infoGlassMode = homeSettings.homeCardInfoGlassMode,
@@ -2248,6 +2249,7 @@ fun HomeScreen(
                         onInboxClick = onInboxClick,
                         onSettingsClick = onSettingsClick,
                         onProfileClick = onProfileClick,
+                        onAccountSwitchClick = onAccountSwitchClick,
                         hazeState = hazeState,
                         isBlurEnabled = isHeaderBlurEnabled,
                         bottomOverlayHeight = drawerBottomOverlayHeight

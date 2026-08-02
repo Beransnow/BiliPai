@@ -72,6 +72,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import coil.size.Size
 import com.android.purebilibili.core.ui.common.CopySelectionDialog
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.rememberStoragePermissionState
@@ -116,6 +117,11 @@ internal data class SubReplyAuxiliaryBadgeVisualSpec(
     val imageLabelSpacingDp: Int,
     val labelFontSizeSp: Int,
     val labelLineHeightSp: Int
+)
+
+internal data class SubReplyAuxiliaryDecoration(
+    val imageUrl: String?,
+    val label: String?
 )
 
 internal data class SubReplyDetailListScrollResetKey(
@@ -173,11 +179,11 @@ internal fun resolveSubReplyDetailLayoutPolicy(
 
 internal fun resolveSubReplyAuxiliaryBadgeVisualSpec(): SubReplyAuxiliaryBadgeVisualSpec {
     return SubReplyAuxiliaryBadgeVisualSpec(
-        imageSizeDp = 46,
-        imageCornerRadiusDp = 12,
-        imageLabelSpacingDp = 8,
-        labelFontSizeSp = 12,
-        labelLineHeightSp = 12
+        imageSizeDp = 36,
+        imageCornerRadiusDp = 10,
+        imageLabelSpacingDp = 4,
+        labelFontSizeSp = 10,
+        labelLineHeightSp = 10
     )
 }
 
@@ -371,6 +377,21 @@ internal fun resolveSubReplyAuxiliaryImageUrl(item: ReplyItem): String? {
     ).firstOrNull { it.isNotBlank() }
 }
 
+internal fun resolveSubReplyAuxiliaryDecoration(
+    item: ReplyItem
+): SubReplyAuxiliaryDecoration? {
+    val imageUrl = resolveSubReplyAuxiliaryImageUrl(item)
+    val label = resolveSubReplyAuxiliaryLabel(item)
+    return if (imageUrl.isNullOrBlank() && label.isNullOrBlank()) {
+        null
+    } else {
+        SubReplyAuxiliaryDecoration(
+            imageUrl = imageUrl,
+            label = label
+        )
+    }
+}
+
 @Composable
 internal fun VideoInlineSubReplyDetailContent(
     state: SubReplyUiState,
@@ -391,7 +412,8 @@ internal fun VideoInlineSubReplyDetailContent(
     onReportComment: (Long, Int) -> Unit,
     onUrlClick: (String) -> Unit,
     showIdentityDecorations: Boolean,
-    onAvatarClick: (String) -> Unit
+    onAvatarClick: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val rootReply = state.rootReply
     if (!state.visible || rootReply == null) return
@@ -430,7 +452,8 @@ internal fun VideoInlineSubReplyDetailContent(
         showIdentityDecorations = showIdentityDecorations,
         onAvatarClick = onAvatarClick,
         maxTimestampMs = maxTimestampMs,
-        targetReplyId = state.targetReplyId
+        targetReplyId = state.targetReplyId,
+        modifier = modifier,
     )
 }
 
@@ -465,7 +488,8 @@ internal fun SubReplyDetailContent(
     onAvatarClick: ((String) -> Unit)? = null,
     maxTimestampMs: Long? = null,
     remoteReplyCount: Int = 0,
-    targetReplyId: Long = 0
+    targetReplyId: Long = 0,
+    modifier: Modifier = Modifier,
 ) {
     val layoutPolicy = remember {
         resolveSubReplyDetailLayoutPolicy(showRootCommentEntry = false)
@@ -639,7 +663,7 @@ internal fun SubReplyDetailContent(
     }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(appearance.panelColor)
     ) {
@@ -710,7 +734,11 @@ internal fun SubReplyDetailContent(
                             onAvatarClick = { onAvatarClick?.invoke(it) ?: Unit },
                             showConversationAction = false,
                             onConversationClick = null,
-                            auxiliaryLabel = null,
+                            auxiliaryDecoration = if (showIdentityDecorations) {
+                                resolveSubReplyAuxiliaryDecoration(rootReply)
+                            } else {
+                                null
+                            },
                             showTrailingDivider = false
                         )
                     }
@@ -831,8 +859,8 @@ internal fun SubReplyDetailContent(
                                     conversationAnchor = item
                                 }
                             },
-                            auxiliaryLabel = if (showIdentityDecorations) {
-                                resolveSubReplyAuxiliaryLabel(item)
+                            auxiliaryDecoration = if (showIdentityDecorations) {
+                                resolveSubReplyAuxiliaryDecoration(item)
                             } else {
                                 null
                             },
@@ -893,7 +921,7 @@ private fun SubReplyDetailItem(
     onAvatarClick: (String) -> Unit,
     showConversationAction: Boolean,
     onConversationClick: (() -> Unit)?,
-    auxiliaryLabel: String?,
+    auxiliaryDecoration: SubReplyAuxiliaryDecoration?,
     showTrailingDivider: Boolean
 ) {
     val backgroundColor by animateColorAsState(
@@ -1127,11 +1155,10 @@ private fun SubReplyDetailItem(
                         )
                     }
 
-                    if (!isRootItem && auxiliaryLabel != null) {
+                    if (auxiliaryDecoration != null) {
                         Spacer(modifier = Modifier.width(12.dp))
                         SubReplyAuxiliaryBadge(
-                            item = item,
-                            auxiliaryLabel = auxiliaryLabel,
+                            decoration = auxiliaryDecoration,
                             appearance = appearance
                         )
                     }
@@ -1316,37 +1343,41 @@ private fun SubReplyDetailStaggeredReveal(
 
 @Composable
 private fun SubReplyAuxiliaryBadge(
-    item: ReplyItem,
-    auxiliaryLabel: String,
+    decoration: SubReplyAuxiliaryDecoration,
     appearance: SubReplyDetailAppearance
 ) {
     val visualSpec = remember { resolveSubReplyAuxiliaryBadgeVisualSpec() }
     Column(
         horizontalAlignment = Alignment.End
     ) {
-        val auxiliaryImage = remember(item) { resolveSubReplyAuxiliaryImageUrl(item) }
-        if (!auxiliaryImage.isNullOrBlank()) {
+        if (!decoration.imageUrl.isNullOrBlank()) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(FormatUtils.fixImageUrl(auxiliaryImage))
+                    .data(resolveDecorationImageUrl(decoration.imageUrl))
+                    .size(Size.ORIGINAL)
+                    .transformations(TransparentBoundsCropTransformation)
                     .crossfade(true)
                     .build(),
                 contentDescription = null,
-                contentScale = ContentScale.Crop,
+                contentScale = ContentScale.Fit,
                 modifier = Modifier
                     .size(visualSpec.imageSizeDp.dp)
                     .clip(RoundedCornerShape(visualSpec.imageCornerRadiusDp.dp))
                     .background(appearance.placeholderColor)
             )
-            Spacer(modifier = Modifier.height(visualSpec.imageLabelSpacingDp.dp))
+            if (!decoration.label.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(visualSpec.imageLabelSpacingDp.dp))
+            }
         }
-        AppText(
-            text = auxiliaryLabel.replace("NO.", "NO.\n"),
-            fontSize = visualSpec.labelFontSizeSp.sp,
-            lineHeight = visualSpec.labelLineHeightSp.sp,
-            color = appearance.auxiliaryTint,
-            fontWeight = FontWeight.SemiBold
-        )
+        if (!decoration.label.isNullOrBlank()) {
+            AppText(
+                text = decoration.label.replace("NO.", "NO.\n"),
+                fontSize = visualSpec.labelFontSizeSp.sp,
+                lineHeight = visualSpec.labelLineHeightSp.sp,
+                color = appearance.auxiliaryTint,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
     }
 }
 

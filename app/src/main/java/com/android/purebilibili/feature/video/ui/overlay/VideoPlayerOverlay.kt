@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontFamily
@@ -62,6 +63,8 @@ import com.android.purebilibili.feature.video.ui.components.VideoSettingsPanel
 import com.android.purebilibili.feature.video.ui.components.ChapterListPanel
 import com.android.purebilibili.feature.video.ui.components.PagesSelector
 import com.android.purebilibili.feature.video.ui.components.resolveCurrentUgcEpisodeLazyListIndex
+import com.android.purebilibili.feature.video.ui.components.LandscapeSidePanel
+import com.android.purebilibili.feature.video.ui.components.LandscapeSidePanelEdge
 import com.android.purebilibili.data.model.response.SponsorProgressMarker
 import com.android.purebilibili.data.model.response.ViewPoint
 import com.android.purebilibili.data.repository.VideoRepository
@@ -435,6 +438,9 @@ fun VideoPlayerOverlay(
     onQualitySelected: (Int) -> Unit,
 
     onBack: () -> Unit,
+    onLandscapeCommentClick: () -> Unit = {},
+    landscapeCommentPanelVisible: Boolean = false,
+    landscapeCommentPanelOnLeft: Boolean = true,
     onHomeClick: () -> Unit = onBack,
     onToggleFullscreen: () -> Unit,
     // [New] Player Data for Download
@@ -655,6 +661,8 @@ fun VideoPlayerOverlay(
     hasFavoritePlaylist: Boolean = false,
     onFavoritePlaylistClick: () -> Unit = {},
     drawerHazeState: HazeState? = null,
+    statusBarAmbientFrame: State<ImageBitmap?>? = null,
+    statusBarBackdropHeight: androidx.compose.ui.unit.Dp = 0.dp,
 ) {
     var showQualityMenu by remember { mutableStateOf(false) }
     var showAudioQualityMenu by remember { mutableStateOf(false) }
@@ -980,15 +988,15 @@ fun VideoPlayerOverlay(
         .getPlaybackCompletionBehavior(context)
         .collectAsStateWithLifecycle(initialValue = PlaybackCompletionBehavior.CONTINUE_CURRENT_LOGIC
         )
-    // 「播放页隐藏状态栏」+ 全屏/沉浸：系统栏隐藏时顶栏不 pad；栏仍显示时必须避让防重叠。
-    val hideVideoPageStatusBar by SettingsManager
+    // The legacy preference key now enables the inline-player Haze status-bar backdrop.
+    val immersiveVideoPageStatusBar by SettingsManager
         .getHideVideoPageStatusBar(context)
         .collectAsStateWithLifecycle(
             initialValue = SettingsManager.getHideVideoPageStatusBarSync(context),
         )
     val playerChromeStatusBarVisible = !resolveVideoDetailSystemBarsVisibilityPolicy(
         isFullscreenMode = isFullscreen,
-        hideVideoPageStatusBar = hideVideoPageStatusBar,
+        hideVideoPageStatusBar = immersiveVideoPageStatusBar,
         isInPipMode = false,
         isScreenActive = true,
         isPortraitFullscreen = false,
@@ -1023,9 +1031,18 @@ fun VideoPlayerOverlay(
             widthDp = configuration.screenWidthDp
         )
     }
+    val landscapeCommentReservedWidth = if (landscapeCommentPanelVisible) {
+        resolveLandscapeEndDrawerLayoutPolicy(configuration.screenWidthDp).drawerWidthDp.dp
+    } else {
+        0.dp
+    }
     val overlayContentModifier = Modifier
         .fillMaxSize()
-        .padding(end = endDrawerReservedWidth)
+        .padding(
+            start = if (landscapeCommentPanelOnLeft) landscapeCommentReservedWidth else 0.dp,
+            end = endDrawerReservedWidth +
+                if (landscapeCommentPanelOnLeft) 0.dp else landscapeCommentReservedWidth,
+        )
 
     // 📺 按需权限请求
     val dlnaPermissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
@@ -1275,6 +1292,14 @@ fun VideoPlayerOverlay(
         modifier = Modifier
             .fillMaxSize()
     ) {
+        if (!isFullscreen && immersiveVideoPageStatusBar) {
+            ImmersiveStatusBarBackdrop(
+                ambientFrame = statusBarAmbientFrame,
+                height = statusBarBackdropHeight,
+                modifier = Modifier.align(Alignment.TopCenter),
+            )
+        }
+
         // --- 1. 顶部渐变遮罩 ---
         AnimatedVisibility(
             visible = isVisible,
@@ -1290,13 +1315,23 @@ fun VideoPlayerOverlay(
                     .fillMaxWidth()
                     .height(overlayVisualPolicy.topScrimHeightDp.dp)
                     .background(
-                        Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Black.copy(alpha = 0.75f),
-                                Color.Black.copy(alpha = 0.1f),
-                                Color.Transparent
+                        if (immersiveVideoPageStatusBar && !isFullscreen) {
+                            Brush.verticalGradient(
+                                colorStops = arrayOf(
+                                    0f to Color.Transparent,
+                                    0.2f to Color.Black.copy(alpha = 0.52f),
+                                    1f to Color.Transparent,
+                                )
                             )
-                        )
+                        } else {
+                            Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Black.copy(alpha = 0.75f),
+                                    Color.Black.copy(alpha = 0.1f),
+                                    Color.Transparent
+                                )
+                            )
+                        }
                     )
             )
         }
@@ -1379,6 +1414,7 @@ fun VideoPlayerOverlay(
                                 ShareUtils.shareVideo(context, title, bvid)
                             }
                         },
+                        onCommentClick = onLandscapeCommentClick,
                         onCastClick = onCastClickAction,
                         showCastButton = playerControlVisibility.showCastButton,
                         onMoreClick = {
@@ -2649,10 +2685,11 @@ fun LandscapeEndDrawer(
     } else {
         Color.Black.copy(alpha = 0.10f)
     }
+    var requestDrawerDismiss by remember { mutableStateOf<(() -> Unit)?>(null) }
     AnimatedVisibility(
         visible = visible,
-        enter = slideInHorizontally(initialOffsetX = { it }) + fadeIn(),
-        exit = slideOutHorizontally(targetOffsetX = { it }) + fadeOut(),
+        enter = fadeIn(),
+        exit = fadeOut(),
         modifier = modifier
     ) {
         Row(modifier = Modifier.fillMaxSize()) {
@@ -2664,18 +2701,24 @@ fun LandscapeEndDrawer(
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
-                        onClick = onDismiss
+                        onClick = { requestDrawerDismiss?.invoke() ?: onDismiss() }
                     )
             )
             
-            // 抽屉内容
-            AppSurface(
-                modifier = Modifier
-                    .width(layoutPolicy.drawerWidthDp.dp)
-                    .fillMaxHeight(),
-                color = Color.Transparent,
-                contentColor = MaterialTheme.colorScheme.onSurface
-            ) {
+            // 抽屉内容：横向拖动会跟手，松开后根据距离和速度回弹或关闭。
+            LandscapeSidePanel(
+                visible = true,
+                edge = LandscapeSidePanelEdge.End,
+                width = layoutPolicy.drawerWidthDp.dp,
+                onDismiss = onDismiss,
+                modifier = Modifier.fillMaxHeight(),
+            ) { requestDismiss ->
+                SideEffect { requestDrawerDismiss = requestDismiss }
+                AppSurface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = Color.Transparent,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                ) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -2874,6 +2917,7 @@ fun LandscapeEndDrawer(
                             }
                         }
                     }
+                }
                 }
             }
         }

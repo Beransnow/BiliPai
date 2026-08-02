@@ -52,6 +52,7 @@ import com.android.purebilibili.feature.home.shouldExposeGlobalHomeWallpaperChro
 import com.android.purebilibili.feature.home.shouldRenderGlobalHomeWallpaperBackdrop
 import com.android.purebilibili.feature.login.LoginScreen
 import com.android.purebilibili.feature.profile.ProfileScreen
+import com.android.purebilibili.feature.profile.AccountSwitchDialog
 import com.android.purebilibili.feature.search.ArticleNavigationTarget
 import com.android.purebilibili.feature.search.resolveArticleNavigationTarget
 import com.android.purebilibili.feature.search.SearchEntryMotionSource
@@ -161,6 +162,7 @@ import com.android.purebilibili.feature.home.components.BottomBarMatchedDockVisi
 import com.android.purebilibili.feature.home.components.rememberBottomBarUiSkinDecoration
 import com.android.purebilibili.feature.profile.shouldShowProfileHistoryService
 import com.android.purebilibili.core.store.AppNavigationSettings
+import com.android.purebilibili.core.store.AccountSessionStore
 import com.android.purebilibili.core.store.HomeWallpaperEffectScope
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.navigation.NavigationSettingsStore
@@ -543,6 +545,26 @@ fun AppNavigation(
         val appNavigationSettings by SettingsManager.getAppNavigationSettings(context).collectAsStateWithLifecycle(initialValue = AppNavigationSettings(),
             context = kotlin.coroutines.EmptyCoroutineContext
         )
+        var sidebarAccountSwitcherVisible by rememberSaveable { mutableStateOf(false) }
+        var sidebarAccountSessionGeneration by remember { mutableIntStateOf(0) }
+        val sidebarAccounts = remember(
+            accountSessionRefreshGeneration,
+            sidebarAccountSessionGeneration,
+        ) {
+            AccountSessionStore.getAccounts(context)
+        }
+        val sidebarActiveAccountMid = remember(
+            accountSessionRefreshGeneration,
+            sidebarAccountSessionGeneration,
+        ) {
+            AccountSessionStore.getActiveAccountMid(context)
+        }
+        val sidebarPlaybackAccountMid = remember(
+            accountSessionRefreshGeneration,
+            sidebarAccountSessionGeneration,
+        ) {
+            AccountSessionStore.getPlaybackAccountMid(context)
+        }
         val playerInteractionSettings by SettingsManager.getPlayerInteractionSettings(context)
             .collectAsStateWithLifecycle(
                 initialValue = com.android.purebilibili.core.store.PlayerInteractionSettings(),
@@ -1510,6 +1532,49 @@ fun AppNavigation(
                     AppSystemBackAction.FINISH_ACTIVITY -> context.findActivity()?.finish()
                 }
             }
+            if (sidebarAccountSwitcherVisible) {
+                AccountSwitchDialog(
+                    accounts = sidebarAccounts,
+                    activeAccountMid = sidebarActiveAccountMid,
+                    playbackAccountMid = sidebarPlaybackAccountMid,
+                    onDismiss = { sidebarAccountSwitcherVisible = false },
+                    onAddAccount = {
+                        sidebarAccountSwitcherVisible = false
+                        pushNavigation3Key(BiliPaiNavKey.Login)
+                    },
+                    onSwitch = { mid ->
+                        coroutineScope.launch {
+                            if (!AccountSessionStore.activateAccount(context, mid)) {
+                                Toast.makeText(context, "切换账号失败", Toast.LENGTH_SHORT).show()
+                                return@launch
+                            }
+                            sidebarAccountSessionGeneration += 1
+                            accountSessionRefreshGeneration += 1
+                            homeViewModel.refresh()
+                            sidebarAccountSwitcherVisible = false
+                            Toast.makeText(context, "已切换账号", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    onSetPlayback = { mid ->
+                        if (AccountSessionStore.setPlaybackAccountMid(context, mid)) {
+                            sidebarAccountSessionGeneration += 1
+                        } else {
+                            Toast.makeText(context, "播放账号不可用，请重新登录后再试", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                    },
+                    onRemove = { mid ->
+                        if (mid == sidebarActiveAccountMid) {
+                            Toast.makeText(context, "请先切换到其他账号后再移除当前账号", Toast.LENGTH_SHORT)
+                                .show()
+                        } else if (AccountSessionStore.removeAccount(context, mid)) {
+                            sidebarAccountSessionGeneration += 1
+                        } else {
+                            Toast.makeText(context, "移除账号失败", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                )
+            }
             Box(modifier = Modifier.fillMaxSize()) {
             Row(modifier = Modifier.fillMaxSize()) {
                 if (windowSizeClass.shouldUseSideNavigation && isBottomBarDestination) {
@@ -1538,7 +1603,14 @@ fun AppNavigation(
                                 coroutineScope.launch {
                                     SettingsManager.setTabletUseSidebar(context, false)
                                 }
-                            }
+                            },
+                            onAccountSwitchClick = if (
+                                appNavigationSettings.sidebarAccountSwitcherEnabled
+                            ) {
+                                { sidebarAccountSwitcherVisible = true }
+                            } else {
+                                null
+                            },
                         )
                     }
                 }
@@ -1769,6 +1841,13 @@ fun AppNavigation(
                                         com.android.purebilibili.core.util.AnalyticsHelper.logLogout()
                                         homeViewModel.refresh()
                                     }
+                                },
+                                onAccountSwitchClick = if (
+                                    appNavigationSettings.sidebarAccountSwitcherEnabled
+                                ) {
+                                    { sidebarAccountSwitcherVisible = true }
+                                } else {
+                                    null
                                 },
                                 onSettingsClick = { pushNavigation3Route(ScreenRoutes.Settings.route) },
                                 onPluginsClick = { pushNavigation3Key(BiliPaiNavKey.PluginsSettings()) },
