@@ -68,6 +68,7 @@ import com.android.purebilibili.core.util.WindowWidthSizeClass
 import com.android.purebilibili.core.util.rememberHapticFeedback
 import dev.chrisbanes.haze.HazeState
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
+import io.github.alexzhirkevich.cupertino.icons.outlined.ArrowLeftArrowRight
 import io.github.alexzhirkevich.cupertino.icons.outlined.SidebarRight
 import kotlinx.coroutines.launch
 
