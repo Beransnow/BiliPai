@@ -19,6 +19,10 @@ permissions:
   attestations: write
   id-token: write
 
+# Temporary distribution policy: GitHub mirrors source only; APKs are published in Telegram.
+env:
+  GITHUB_APK_DISTRIBUTION_ENABLED: "false"
+
 jobs:
   quality-guards:
     runs-on: ubuntu-latest
@@ -208,14 +212,14 @@ jobs:
 
       - name: Generate artifact attestation
         id: attest_release
-        if: startsWith(github.ref, 'refs/tags/v') && steps.set_build_type.outputs.build_type == 'release'
+        if: env.GITHUB_APK_DISTRIBUTION_ENABLED == 'true' && startsWith(github.ref, 'refs/tags/v') && steps.set_build_type.outputs.build_type == 'release'
         uses: actions/attest-build-provenance@v3
         with:
           subject-checksums: ${{ github.workspace }}/build/release-evidence/checksums.txt
           show-summary: true
 
       - name: Collect attestation evidence
-        if: startsWith(github.ref, 'refs/tags/v') && steps.set_build_type.outputs.build_type == 'release'
+        if: env.GITHUB_APK_DISTRIBUTION_ENABLED == 'true' && startsWith(github.ref, 'refs/tags/v') && steps.set_build_type.outputs.build_type == 'release'
         env:
           DIST_DIR: ${{ github.workspace }}/build/release-evidence
           ATTESTATION_URL: ${{ steps.attest_release.outputs.attestation-url }}
@@ -246,6 +250,7 @@ jobs:
           PY
       
       - name: Upload Build Artifacts
+        if: env.GITHUB_APK_DISTRIBUTION_ENABLED == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: BiliPai
@@ -254,7 +259,7 @@ jobs:
           if-no-files-found: error
 
       - name: Publish GitHub Release Assets
-        if: startsWith(github.ref, 'refs/tags/v') && steps.set_build_type.outputs.build_type == 'release'
+        if: env.GITHUB_APK_DISTRIBUTION_ENABLED == 'true' && startsWith(github.ref, 'refs/tags/v') && steps.set_build_type.outputs.build_type == 'release'
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}

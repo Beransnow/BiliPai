@@ -6,6 +6,9 @@
 
 统一版本发布动作，避免出现“代码已发版但 README/Wiki 未同步”的情况。
 
+> [!IMPORTANT]
+> 临时分发策略：GitHub 仅同步源码，不上传 APK Artifact 或 Release 附件。最新 APK 仅发布到[官方 Telegram 群组](https://t.me/+x5K_TmoFXso3MGM9)，并随消息提供版本、文件名、源码提交和 SHA-256。
+
 ## 标准步骤
 
 1. 更新版本号  
@@ -52,7 +55,7 @@
 
 - [ ] `app/build.gradle.kts` 版本号正确
 - [ ] Git 标签、Changelog、构建元数据与 APK 文件名使用同一 `versionName`
-- [ ] CI 仅上传 `BiliPai-<version>.apk` 或 `BiliPai-<version>-dev.apk`，不上传 AGP 内部 `app-*.apk`
+- [ ] GitHub Actions 与 GitHub Releases 未上传 APK；Telegram 发布消息包含规范文件名、源码提交和 SHA-256
 - [ ] `CHANGELOG.md` 新版本段存在
 - [ ] 更新范围使用上一个 GitHub Release 标签，未把未发布的中间版本误作基准
 - [ ] `README.md` 已同步最新版本与已完成功能

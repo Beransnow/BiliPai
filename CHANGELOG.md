@@ -6,7 +6,7 @@
 
 - BiliPai 从本版本开始启用全新的 `0.x` 语义化版本纪元，当前 `versionCode` 为 `282`。
 - 应用 ID、签名、配置数据和历史发布记录保持不变；`versionCode` 继续单调递增。
-- 正式发布产物统一命名为 `BiliPai-0.1.0.apk`。
+- 正式发布产物统一命名为 `BiliPai-0.1.0.apk`，现阶段仅通过官方 Telegram 群组分发。
 
 ### 更新范围
 
@@ -59,8 +59,8 @@
 #### 版本与发布
 
 - 更新检查优先使用 `build-metadata.json` 中的 `versionCode`，并按发布时间识别跨版本纪元的最新稳定版。
-- Release 与 Dev 构建分别导出 `BiliPai-0.1.0.apk` 和 `BiliPai-0.1.0-dev.apk`；CI 不再把 AGP 内部的 `app-*.apk` 作为交付文件。
-- 历史 9.x 安装首次迁移至 0.x 时需要手动下载安装；进入 0.x 后恢复正常应用内更新。
+- Release 与 Dev 构建分别导出 `BiliPai-0.1.0.apk` 和 `BiliPai-0.1.0-dev.apk`；GitHub 暂时只同步源码，不再上传 APK Artifact 或 Release 附件。
+- 历史 9.x 安装首次迁移至 0.x 时需要手动下载安装；最新 APK 统一从[官方 Telegram 群组](https://t.me/+x5K_TmoFXso3MGM9)获取。
 
 ---
 
