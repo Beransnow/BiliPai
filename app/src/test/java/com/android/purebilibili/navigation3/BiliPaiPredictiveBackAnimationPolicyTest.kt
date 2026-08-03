@@ -35,7 +35,6 @@ class BiliPaiPredictiveBackAnimationPolicyTest {
         )
 
         assertTrue(function.contains("resolveSettingsIosPredictivePopContentTransform("))
-        assertTrue(function.contains("exitDirectionSign = resolveBiliPaiPredictiveBackExitDirectionSign(swipeEdge)"))
         assertFalse(function.contains("durationMillis = 550"))
         assertFalse(function.contains("EnterTransition.None"))
     }
@@ -74,13 +73,12 @@ class BiliPaiPredictiveBackAnimationPolicyTest {
     }
 
     @Test
-    fun sharedElementPredictivePop_movesTopLayerWithGestureWhileKeepingTargetStill() {
+    fun sharedElementPredictivePop_keepsRouteLayerStillForCardReturn() {
         val function = sharedElementPredictivePopFunction()
 
-        assertTrue(function.contains("slideOutHorizontally"))
+        assertFalse(function.contains("slideOutHorizontally"))
         assertFalse(function.contains("slideInHorizontally"))
-        assertTrue(function.contains("resolveBiliPaiPredictiveBackSlideOffsetX(swipeEdge)"))
-        assertTrue(function.contains("targetContentEnter = EnterTransition.None"))
+        assertTrue(function.contains("noOpSharedElementContentTransform()"))
         assertFalse(function.contains("initialContentExit = fadeOut("))
     }
 
@@ -90,23 +88,6 @@ class BiliPaiPredictiveBackAnimationPolicyTest {
         assertTrue(source.contains("skipToLookaheadPosition()"))
         assertTrue(source.contains("isUnderlyingSourcePage"))
         assertTrue(source.contains("translationX = 0f"))
-    }
-
-    @Test
-    fun predictiveHandlers_keepSwipeEdgeForCommittedPopContinuity() {
-        val defaultSource = defaultPredictiveBackSource()
-        val sharedSource = sharedElementPredictiveBackSource()
-        val settingsSource = listOf(
-            File("app/src/main/java/com/android/purebilibili/navigation3/predictiveback/BiliPaiSettingsIosPredictiveBackAnimation.kt"),
-            File("src/main/java/com/android/purebilibili/navigation3/predictiveback/BiliPaiSettingsIosPredictiveBackAnimation.kt"),
-        ).first { it.exists() }.readText()
-
-        assertTrue(defaultSource.contains("private var committedSwipeEdge: Int? = null"))
-        assertTrue(defaultSource.contains("onPredictivePopTransitionSpec(swipeEdge)"))
-        assertTrue(sharedSource.contains("private var committedSwipeEdge: Int? = null"))
-        assertTrue(sharedSource.contains("onPredictivePopTransitionSpec(swipeEdge)"))
-        assertTrue(settingsSource.contains("private var committedExitDirectionSign: Int? = null"))
-        assertTrue(settingsSource.contains("exitDirectionSign = committedExitDirectionSign ?: 1"))
     }
 
     @Test
@@ -132,23 +113,24 @@ class BiliPaiPredictiveBackAnimationPolicyTest {
     }
 
     @Test
-    fun defaultPredictivePop_followsPhysicalGestureEdge() {
+    fun defaultPredictivePop_honorsExitDirection() {
         val source = defaultPredictiveBackSource()
 
-        assertTrue(source.contains("resolveBiliPaiPredictiveBackSlideOffsetX(swipeEdge)"))
-        assertFalse(source.contains("ALWAYS_RIGHT ->"))
-        assertFalse(source.contains("ALWAYS_LEFT ->"))
+        assertTrue(source.contains("exitDirection: BiliPaiPredictiveBackExitDirection"))
+        assertTrue(source.contains("FOLLOW_GESTURE ->"))
+        assertTrue(source.contains("swipeEdge != NavigationEvent.EDGE_RIGHT"))
+        assertTrue(source.contains("offset -> -offset"))
     }
 
     @Test
-    fun defaultHandler_doesNotApplyLegacyDirectionOverrides() {
+    fun defaultHandler_receivesResolvedExitDirection() {
         val source = listOf(
             File("app/src/main/java/com/android/purebilibili/navigation3/predictiveback/BiliPaiPredictiveBackAnimationPolicy.kt"),
             File("src/main/java/com/android/purebilibili/navigation3/predictiveback/BiliPaiPredictiveBackAnimationPolicy.kt")
         ).first { it.exists() }.readText()
 
-        assertTrue(source.contains("BiliPaiDefaultPredictiveBackAnimation()"))
-        assertFalse(source.contains("BiliPaiDefaultPredictiveBackAnimation(exitDirection = exitDirection)"))
+        assertTrue(source.contains("BiliPaiDefaultPredictiveBackAnimation(exitDirection = exitDirection)"))
+        assertFalse(source.contains("BiliPaiDefaultPredictiveBackAnimation()"))
     }
 
     @Test
