@@ -33,6 +33,7 @@ import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import io.github.alexzhirkevich.cupertino.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -466,6 +467,14 @@ fun AppearanceSettingsContent(
     val selectedCustomThemeColor = remember(state.md3CustomColorHex) {
         parseMd3CustomColorHex(state.md3CustomColorHex)
     }
+    val selectedThemeColorName = remember(selectedCustomThemeColor) {
+        val selectedIndex = ThemeColors.indexOf(selectedCustomThemeColor)
+        ThemeColorNames.getOrNull(selectedIndex) ?: "自定义"
+    }
+    var themeColorPaletteExpanded by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(showThemeColorPicker) {
+        if (!showThemeColorPicker) themeColorPaletteExpanded = false
+    }
     val colorStyleOptions = remember { resolveColorStyleOptions() }
     val colorSpecOptions = remember { resolveColorSpecOptions() }
     val fontPickerLauncher = rememberLauncherForActivityResult(
@@ -691,17 +700,30 @@ fun AppearanceSettingsContent(
                             visible = showThemeColorPicker,
                             enter =   androidx.compose.animation.expandVertically() +   androidx.compose.animation.fadeIn(),
                             exit =   androidx.compose.animation.shrinkVertically() +   androidx.compose.animation.fadeOut()
-                        ) {
-                            Column(modifier = Modifier.padding(top = 16.dp)) {
-                                //  Theme Color Label
-                                AppText(
-                                    "主题色", 
-                                    style = MaterialTheme.typography.labelSmall, 
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(bottom = 12.dp)
-                                )
+	                        ) {
+	                            Column(modifier = Modifier.padding(top = 16.dp)) {
+	                                AppPreferenceDivider()
+	                                AppPreference(
+	                                    icon = rememberSettingsSemanticIcon(SettingsIconRole.DYNAMIC_COLOR),
+	                                    title = "主题色：$selectedThemeColorName",
+	                                    subtitle = if (themeColorPaletteExpanded) {
+	                                        "当前 ${state.md3CustomColorHex}；点按收起色板"
+	                                    } else {
+	                                        "当前 ${state.md3CustomColorHex}；点按展开预设色板"
+	                                    },
+	                                    value = if (themeColorPaletteExpanded) "收起" else "展开",
+	                                    onClick = { themeColorPaletteExpanded = !themeColorPaletteExpanded },
+	                                    iconTint = selectedCustomThemeColor,
+	                                )
+
+	                                AnimatedVisibility(
+	                                    visible = themeColorPaletteExpanded,
+	                                    enter = expandVertically() + fadeIn(),
+	                                    exit = shrinkVertically() + fadeOut(),
+	                                ) {
+	                                    Column(modifier = Modifier.padding(top = 12.dp)) {
                                 
-                                //  [新增] 实时主题色预览
+	                                //  [新增] 实时主题色预览
                                 Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -860,12 +882,14 @@ fun AppearanceSettingsContent(
                                             // Fill empty spots if last row has fewer than 5 items
                                             if (rowColors.size < 5) {
                                                 repeat(5 - rowColors.size) {
-                                                     Spacer(modifier = Modifier.weight(1f))
+                                                    Spacer(modifier = Modifier.weight(1f))
                                                 }
                                             }
                                         }
                                     }
                                 }
+                            }
+                        }
                             }
                         }
                     }
