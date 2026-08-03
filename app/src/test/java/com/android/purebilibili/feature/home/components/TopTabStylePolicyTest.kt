@@ -161,8 +161,9 @@ class TopTabStylePolicyTest {
         val material3 = topStyle(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
         val miuix = topStyle(UiPreset.MD3, AndroidNativeVariant.MIUIX)
 
-        assertNotEquals(ios.searchBarHeight, material3.searchBarHeight)
-        assertNotEquals(material3.searchBarHeight, miuix.searchBarHeight)
+        assertEquals(ios.searchBarHeight, material3.searchBarHeight)
+        assertEquals(material3.searchBarHeight, miuix.searchBarHeight)
+        assertNotEquals(material3.unifiedPanelCornerRadius, miuix.unifiedPanelCornerRadius)
         assertEquals(AppTopTabPresentation.TONAL_CAPSULE, ios.presentation)
         assertEquals(AppTopTabPresentation.TONAL_CAPSULE, material3.presentation)
         assertEquals(AppTopTabPresentation.TONAL_CAPSULE, miuix.presentation)
@@ -207,42 +208,42 @@ class TopTabStylePolicyTest {
     @Test
     fun `miuix top settings button follows action button metrics while other presets keep existing size`() {
         assertEquals(
-            40.dp,
+            36.dp,
             resolveHomeTopSettingsButtonSize(
                 uiPreset = UiPreset.IOS,
                 androidNativeVariant = AndroidNativeVariant.MATERIAL3
             )
         )
         assertEquals(
-            40.dp,
+            36.dp,
             resolveHomeTopSettingsButtonSize(
                 uiPreset = UiPreset.MD3,
                 androidNativeVariant = AndroidNativeVariant.MATERIAL3
             )
         )
         assertEquals(
-            44.dp,
+            40.dp,
             resolveHomeTopSettingsButtonSize(
                 uiPreset = UiPreset.MD3,
                 androidNativeVariant = AndroidNativeVariant.MIUIX
             )
         )
         assertEquals(
-            20.dp,
+            18.dp,
             resolveHomeTopSettingsIconSize(
                 uiPreset = UiPreset.IOS,
                 androidNativeVariant = AndroidNativeVariant.MATERIAL3
             )
         )
         assertEquals(
-            20.dp,
+            18.dp,
             resolveHomeTopSettingsIconSize(
                 uiPreset = UiPreset.MD3,
                 androidNativeVariant = AndroidNativeVariant.MATERIAL3
             )
         )
         assertEquals(
-            22.dp,
+            18.dp,
             resolveHomeTopSettingsIconSize(
                 uiPreset = UiPreset.MD3,
                 androidNativeVariant = AndroidNativeVariant.MIUIX

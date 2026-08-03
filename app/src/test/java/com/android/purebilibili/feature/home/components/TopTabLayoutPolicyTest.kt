@@ -44,6 +44,20 @@ class TopTabLayoutPolicyTest {
     }
 
     @Test
+    fun textOnlyTabsKeepRoomForTwoChineseCharactersOnNarrowScreens() {
+        // 52dp minus each side's 8dp item padding leaves 36dp for a two-character label.
+        assertEquals(
+            52f,
+            resolveMd3TopTabItemWidthDp(
+                containerWidthDp = 248f,
+                visibleSlots = 5,
+                labelMode = 2
+            ),
+            0.001f
+        )
+    }
+
+    @Test
     fun `md3 top tabs use compact scrollable item widths instead of fixed four slots`() {
         assertEquals(3, resolveMd3TopTabVisibleSlots())
         assertEquals(106.666f, resolveMd3TopTabItemWidthDp(containerWidthDp = 320f), 0.001f)

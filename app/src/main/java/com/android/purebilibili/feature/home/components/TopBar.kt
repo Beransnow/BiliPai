@@ -1665,25 +1665,20 @@ private fun LightweightHomeTopTabs(
                     } else {
                         MaterialTheme.colorScheme.primary
                     }
-                    val indicatorBottomPadding = if (skinPlainStyle) {
-                        resolveHomeSkinTopTabIndicatorBottomPadding()
-                    } else {
-                        resolveMd3TopTabIndicatorBottomPadding()
-                    }
                     if (!shouldUseMd3DockBackedCapsule && !shouldUseMd3LiquidCapsule) {
+                        // A soft rounded rectangle makes the selected tab clear without the harsh underline.
                         Box(
                             modifier = Modifier
-                                .align(Alignment.BottomStart)
-                                .padding(bottom = indicatorBottomPadding)
+                                .align(Alignment.CenterStart)
                                 .graphicsLayer {
-                                    translationX = md3IndicatorTranslationXPx
+                                    translationX = md3LiquidCapsuleTranslationXPx
                                     scaleX = topTabIndicatorLayerTransform.scaleX
                                     scaleY = topTabIndicatorLayerTransform.scaleY
                                 }
-                                .width(md3IndicatorWidth)
-                                .height(AppSpacingTokens.Micro)
-                                .clip(AppShapes.container(ContainerLevel.Pill))
-                                .background(indicatorColor)
+                                .width(md3LiquidCapsuleWidth)
+                                .height(dockIndicatorHeight)
+                                .clip(RoundedCornerShape(CompactTopTabIndicatorCornerDp.dp))
+                                .background(indicatorColor.copy(alpha = 0.12f))
                         )
                     }
                 }

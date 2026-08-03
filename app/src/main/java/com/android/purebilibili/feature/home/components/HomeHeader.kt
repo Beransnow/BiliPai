@@ -493,7 +493,10 @@ internal fun resolveHomeTopSearchRowHorizontalPadding(
 internal fun resolveHomeTopSearchPillHeight(
     chromePolicy: AppTopChromePolicy,
 ): Dp {
-    return resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).searchPillHeight
+    // Keep the search field compact enough to match the smaller edge controls.
+    return resolveHomeTopPresetStyle(chromePolicy, labelMode = 2)
+        .searchPillHeight
+        .coerceAtMost(52.dp)
 }
 
 internal fun resolveHomeTopSearchContentHorizontalPadding(
@@ -530,17 +533,19 @@ internal fun resolveHomeTopEdgeButtonShape(
     }
 }
 
-internal fun resolveHomeTopAvatarOuterSize(): Dp = AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Small
+internal fun resolveHomeTopAvatarOuterSize(): Dp = AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall
 
-internal fun resolveHomeTopAvatarInnerSize(): Dp = AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Small
+internal fun resolveHomeTopAvatarInnerSize(): Dp = AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall
 
 internal fun resolveHomeTopSettingsButtonSize(
     chromePolicy: AppTopChromePolicy,
 ): Dp {
     return if (chromePolicy.tabPresentation == AppTopTabPresentation.TONAL_CAPSULE) {
-        resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).actionButtonSizeDocked
+        resolveHomeTopPresetStyle(chromePolicy, labelMode = 2)
+            .actionButtonSizeDocked
+            .coerceAtMost(40.dp)
     } else {
-        AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Small
+        AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall
     }
 }
 
@@ -548,9 +553,11 @@ internal fun resolveHomeTopSettingsIconSize(
     chromePolicy: AppTopChromePolicy,
 ): Dp {
     return if (chromePolicy.tabPresentation == AppTopTabPresentation.TONAL_CAPSULE) {
-        resolveHomeTopPresetStyle(chromePolicy, labelMode = 2).actionIconSizeDocked
+        resolveHomeTopPresetStyle(chromePolicy, labelMode = 2)
+            .actionIconSizeDocked
+            .coerceAtMost(18.dp)
     } else {
-        AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall
+        AppSpacingTokens.Large + AppSpacingTokens.Micro
     }
 }
 

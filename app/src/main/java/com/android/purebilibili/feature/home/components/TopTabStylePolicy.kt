@@ -157,7 +157,8 @@ internal fun resolveHomeTopPresetStyle(
                 ),
                 spacing = HomeTopSpacingStyle(
                     edgeControlGap = 6.dp,
-                    embeddedTabHorizontalPadding = 0.dp,
+                    // Align the category strip with the avatar/search/settings row.
+                    embeddedTabHorizontalPadding = 14.dp,
                     searchToTabs = 6.dp,
                     tabsToContent = 6.dp,
                     searchCollapseExtra = 0.dp,
@@ -196,7 +197,7 @@ internal fun resolveHomeTopPresetStyle(
                 presentation = AppTopTabPresentation.TONAL_CAPSULE,
                 indicatorStyle = TopTabIndicatorStyle.MATERIAL,
                 search = HomeTopSearchStyle(
-                    barHeight = 50.dp,
+                    barHeight = 48.dp,
                     revealDeadZone = 0.dp,
                     rowHorizontalPadding = 14.dp,
                     pillHeight = compactChrome.primaryHeightDp.dp,
@@ -215,7 +216,8 @@ internal fun resolveHomeTopPresetStyle(
                 ),
                 spacing = HomeTopSpacingStyle(
                     edgeControlGap = 7.dp,
-                    embeddedTabHorizontalPadding = 0.dp,
+                    // Align the category strip with the avatar/search/settings row.
+                    embeddedTabHorizontalPadding = 14.dp,
                     searchToTabs = 6.dp,
                     tabsToContent = 6.dp,
                     searchCollapseExtra = 5.dp,
@@ -254,7 +256,7 @@ internal fun resolveHomeTopPresetStyle(
                 presentation = AppTopTabPresentation.TONAL_CAPSULE,
                 indicatorStyle = TopTabIndicatorStyle.MATERIAL,
                 search = HomeTopSearchStyle(
-                    barHeight = 52.dp,
+                    barHeight = 48.dp,
                     revealDeadZone = 0.dp,
                     rowHorizontalPadding = 16.dp,
                     pillHeight = compactChrome.primaryHeightDp.dp,
@@ -273,7 +275,8 @@ internal fun resolveHomeTopPresetStyle(
                 ),
                 spacing = HomeTopSpacingStyle(
                     edgeControlGap = 8.dp,
-                    embeddedTabHorizontalPadding = 0.dp,
+                    // Align the category strip with the avatar/search/settings row.
+                    embeddedTabHorizontalPadding = 16.dp,
                     searchToTabs = 6.dp,
                     tabsToContent = 6.dp,
                     searchCollapseExtra = 5.dp,
