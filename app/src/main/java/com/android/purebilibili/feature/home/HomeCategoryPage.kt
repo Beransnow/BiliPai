@@ -59,7 +59,7 @@ import androidx.compose.runtime.snapshots.Snapshot
 
 internal fun resolveHomeCategoryVideoGridKey(
     video: VideoItem,
-    index: Int
+    duplicateOrdinal: Int
 ): String {
     val primaryId = when {
         video.bvid.isNotBlank() -> video.bvid
@@ -68,7 +68,21 @@ internal fun resolveHomeCategoryVideoGridKey(
         video.cid > 0L -> "cid_${video.cid}"
         else -> "${video.owner.mid}_${video.title.hashCode()}_${video.pubdate}"
     }
-    return "home_video_${primaryId}_$index"
+    return "home_video_${primaryId}_$duplicateOrdinal"
+}
+
+/**
+ * Keeps a video's lazy-grid identity stable when unrelated items are inserted or removed before it.
+ * Duplicate API entries still receive distinct keys through their occurrence ordinal.
+ */
+internal fun resolveHomeCategoryVideoGridKeys(videos: List<VideoItem>): List<String> {
+    val occurrences = mutableMapOf<String, Int>()
+    return videos.map { video ->
+        val identity = resolveHomeHeroCarouselDedupKey(video)
+        val duplicateOrdinal = occurrences.getOrDefault(identity, 0)
+        occurrences[identity] = duplicateOrdinal + 1
+        resolveHomeCategoryVideoGridKey(video, duplicateOrdinal)
+    }
 }
 
 internal fun resolveHomeHeroCarouselDedupKey(video: VideoItem): String {
@@ -376,6 +390,7 @@ internal fun HomeCategoryPageContent(
             }
 
             if (visibleGridVideos.isNotEmpty()) {
+                val videoGridKeys = resolveHomeCategoryVideoGridKeys(visibleGridVideos)
                 val shouldShowOldContentDivider = category == HomeCategory.RECOMMEND &&
                     (
                         (oldContentAnchorBvid != null && visibleGridVideos.any { it.bvid == oldContentAnchorBvid }) ||
@@ -399,7 +414,7 @@ internal fun HomeCategoryPageContent(
                     }
 
                     item(
-                        key = resolveHomeCategoryVideoGridKey(video, index),
+                        key = videoGridKeys[index],
                         contentType = "home_video_card"
                     ) {
                         val mountedDuringScroll = remember(video.bvid, video.id, video.cid) {

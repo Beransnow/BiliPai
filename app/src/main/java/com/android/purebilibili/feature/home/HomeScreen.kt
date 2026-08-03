@@ -480,7 +480,9 @@ fun HomeScreen(
             } else {
                 gridStates[currentCategory]
             }
-            if (gridState != null) {
+            // Video clicks freeze the anchor synchronously before navigation starts. Do not replace
+            // that clean snapshot with coordinates sampled after shared-bounds has begun remeasuring.
+            if (gridState != null && pendingFeedScrollAnchor == null) {
                 pendingFeedScrollAnchor = captureHomeFeedScrollAnchor(
                     category = currentCategory,
                     popularSubCategory = popularSubCategory,
@@ -1402,9 +1404,29 @@ fun HomeScreen(
     //  包装 onVideoClick：点击视频时先隐藏底栏再导航
     val wrappedOnVideoClick: (HomeVideoClickRequest) -> Unit = remember(
         onVideoClick,
-        setBottomBarVisible
+        setBottomBarVisible,
+        currentCategory,
+        popularSubCategory,
+        gridStates,
+        popularGridStates
     ) {
         { request ->
+            val activeGridState = if (currentCategory == HomeCategory.POPULAR) {
+                popularGridStates[popularSubCategory]
+            } else {
+                gridStates[currentCategory]
+            }
+            // Capture before changing chrome/navigation state. Shared-bounds can remeasure the
+            // underlying LazyGrid as soon as navigation starts, which is too late for a clean anchor.
+            if (activeGridState != null) {
+                pendingFeedScrollAnchor = captureHomeFeedScrollAnchor(
+                    category = currentCategory,
+                    popularSubCategory = popularSubCategory,
+                    firstVisibleItemIndex = activeGridState.firstVisibleItemIndex,
+                    firstVisibleItemScrollOffset = activeGridState.firstVisibleItemScrollOffset,
+                    headerOffsetPx = headerOffsetHeightPx
+                )
+            }
             hideTopTabsForForwardDetailNav = true
             delayTopTabsUntilCardSettled = false
             setBottomBarVisible(false)

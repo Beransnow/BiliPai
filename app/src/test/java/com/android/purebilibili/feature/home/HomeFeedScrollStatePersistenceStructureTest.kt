@@ -19,6 +19,23 @@ class HomeFeedScrollStatePersistenceStructureTest {
     }
 
     @Test
+    fun `video navigation freezes feed anchor before shared transition starts`() {
+        val source = loadSource("app/src/main/java/com/android/purebilibili/feature/home/HomeScreen.kt")
+        val clickSource = source
+            .substringAfter("val wrappedOnVideoClick: (HomeVideoClickRequest) -> Unit")
+            .substringBefore("val onTodayWatchVideoClick")
+
+        val captureIndex = clickSource.indexOf("pendingFeedScrollAnchor = captureHomeFeedScrollAnchor(")
+        val transitionStartIndex = clickSource.indexOf("hideTopTabsForForwardDetailNav = true")
+        val navigationIndex = clickSource.indexOf("onVideoClick(request)")
+
+        assertTrue(captureIndex >= 0)
+        assertTrue(captureIndex < transitionStartIndex)
+        assertTrue(transitionStartIndex < navigationIndex)
+        assertTrue(source.contains("gridState != null && pendingFeedScrollAnchor == null"))
+    }
+
+    @Test
     fun `home skin atmosphere is fixed in header instead of pager backdrop`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/home/HomeScreen.kt")
         val headerCallSource = source
