@@ -60,9 +60,12 @@ internal fun resolveHomeFeedCardLayout(
 
         HomeFeedCardStyle.OFFICIAL -> HomeFeedCardLayout(
             coverAspectRatio = coverAspectRatio,
-            outerPaddingDp = 4,
-            itemSpacingDp = 4,
-            verticalItemSpacingDp = 6,
+            // 4:3 cards carry more visual mass than the wider variants. Give
+            // each card a full 8dp gutter and a little more row separation so
+            // adjacent covers do not read as one continuous image wall.
+            outerPaddingDp = 8,
+            itemSpacingDp = 8,
+            verticalItemSpacingDp = 10,
             storyCardHorizontalPaddingDp = 0,
             compactMetadata = true
         )

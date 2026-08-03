@@ -27,9 +27,9 @@ class HomeFeedCardStylePolicyTest {
         // 4:3 列表框 + 居中 Crop（CDN 源 16:9 会裁左右）
         assertEquals(HOME_FEED_OFFICIAL_COVER_ASPECT_RATIO, layout.coverAspectRatio, 0.0001f)
         assertEquals(4f / 3f, resolveHomeFeedCoverAspectRatio(HomeFeedCardStyle.OFFICIAL), 0.0001f)
-        assertEquals(4, layout.outerPaddingDp)
-        assertEquals(4, layout.itemSpacingDp)
-        assertEquals(6, layout.verticalItemSpacingDp)
+        assertEquals(8, layout.outerPaddingDp)
+        assertEquals(8, layout.itemSpacingDp)
+        assertEquals(10, layout.verticalItemSpacingDp)
         assertEquals(0, layout.storyCardHorizontalPaddingDp)
         assertEquals(true, layout.compactMetadata)
         assertEquals("4:3", HomeFeedCardStyle.OFFICIAL.label)
