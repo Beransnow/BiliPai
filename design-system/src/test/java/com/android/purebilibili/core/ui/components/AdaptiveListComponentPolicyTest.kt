@@ -179,6 +179,30 @@ class AdaptiveListComponentPolicyTest {
     }
 
     @Test
+    fun `miuix variant should preserve colorful settings icon tints`() {
+        val colorScheme = darkColorScheme()
+
+        assertEquals(
+            iOSPurple,
+            resolveAdaptiveSemanticIconTint(
+                iconTint = iOSPurple,
+                uiPreset = UiPreset.MD3,
+                colorScheme = colorScheme,
+                androidNativeVariant = AndroidNativeVariant.MIUIX,
+            ),
+        )
+        assertEquals(
+            iOSRed,
+            resolveAdaptiveSemanticIconTint(
+                iconTint = iOSRed,
+                uiPreset = UiPreset.MD3,
+                colorScheme = colorScheme,
+                androidNativeVariant = AndroidNativeVariant.MIUIX,
+            ),
+        )
+    }
+
+    @Test
     fun `md3 preset should defer switch colors to material defaults`() {
         val colorScheme = darkColorScheme()
 

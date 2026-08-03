@@ -344,14 +344,19 @@ internal fun resolveAdaptiveSemanticIconTint(
     iconTint: Color,
     uiPreset: UiPreset,
     colorScheme: ColorScheme,
-    useSemanticAccentRoles: Boolean = true
+    useSemanticAccentRoles: Boolean = true,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3,
 ): Color {
-    if (uiPreset != UiPreset.MD3 || iconTint == Color.Unspecified) {
+    if (
+        uiPreset != UiPreset.MD3 ||
+        androidNativeVariant != AndroidNativeVariant.MATERIAL3 ||
+        iconTint == Color.Unspecified
+    ) {
         return iconTint
     }
     // Settings icons are navigation affordances rather than status indicators.
     // MD3 therefore uses the active theme accent consistently across the whole
-    // settings hierarchy; the iOS preset keeps its familiar per-item colors.
+    // settings hierarchy; iOS and MIUIX keep their familiar per-item colors.
     return colorScheme.primary
 }
 
@@ -418,12 +423,14 @@ fun rememberAdaptiveSemanticIconTint(
     dynamicColorActive: Boolean = LocalDynamicColorActive.current
 ): Color {
     val colorScheme = MaterialTheme.colorScheme
-    return remember(iconTint, uiPreset, dynamicColorActive, colorScheme) {
+    val androidNativeVariant = LocalAndroidNativeVariant.current
+    return remember(iconTint, uiPreset, dynamicColorActive, colorScheme, androidNativeVariant) {
         resolveAdaptiveSemanticIconTint(
             iconTint = iconTint,
             uiPreset = uiPreset,
             colorScheme = colorScheme,
-            useSemanticAccentRoles = dynamicColorActive
+            useSemanticAccentRoles = dynamicColorActive,
+            androidNativeVariant = androidNativeVariant,
         )
     }
 }
