@@ -35,4 +35,6 @@ BiliPai 从 `0.1.0 / versionCode 282` 开始启用新的 `0.x` 语义化版本�
 - `build-metadata.json` 中的 `versionName`；
 - 交付 APK 文件名中的版本。
 
+发布说明的比较基准和固定格式见 [更新日志撰写规范](CHANGELOG_GUIDE.md)。
+
 Release APK 固定命名为 `BiliPai-<versionName>.apk`，例如 `BiliPai-0.1.0.apk`；Dev 验证包命名为 `BiliPai-<versionName>-dev.apk`。AGP 的内部中间文件名不作为发布附件或用户交付名称。

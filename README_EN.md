@@ -456,6 +456,8 @@ cd BiliPai
 ./gradlew :app:assembleDev
 ```
 
+The installable artifact is exported to `app/build/outputs/bilipai/dev/BiliPai-0.1.0-dev.apk`. Release builds use `app/build/outputs/bilipai/release/BiliPai-0.1.0.apk`; AGP's internal `app-*.apk` files are not delivery artifacts.
+
 ---
 
 ## 🤝 Contributing

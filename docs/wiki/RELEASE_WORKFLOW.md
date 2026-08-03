@@ -16,7 +16,8 @@
 
 2. 更新发布日志  
    - 文件：`CHANGELOG.md`
-   - 要求：新增本版本段落，记录核心能力、修复点、验证结果
+   - 格式：遵循 [更新日志撰写规范](CHANGELOG_GUIDE.md)
+   - 要求：以 GitHub 上一个实际发布标签为比较基准，根据完整提交范围归纳用户可感知能力、修复、兼容性和发布变化
 
 3. 同步 README  
    - 文件：`README.md`、`README_EN.md`
@@ -39,6 +40,7 @@
    - 至少执行一次 QA 基础检查清单（见 `docs/wiki/QA.md`）
    - 推荐：`./gradlew :app:testDebugUnitTest`
    - 需要生成可安装测试包时使用 `./gradlew :app:assembleDev`；不要把 `debug` 或 `smooth` 产物作为测试交付包
+   - Dev 交付包必须出现在 `app/build/outputs/bilipai/dev/`，Release 交付包必须出现在 `app/build/outputs/bilipai/release/`
 
 8. 提交与推送
    - 建议拆分为：
@@ -50,7 +52,9 @@
 
 - [ ] `app/build.gradle.kts` 版本号正确
 - [ ] Git 标签、Changelog、构建元数据与 APK 文件名使用同一 `versionName`
+- [ ] CI 仅上传 `BiliPai-<version>.apk` 或 `BiliPai-<version>-dev.apk`，不上传 AGP 内部 `app-*.apk`
 - [ ] `CHANGELOG.md` 新版本段存在
+- [ ] 更新范围使用上一个 GitHub Release 标签，未把未发布的中间版本误作基准
 - [ ] `README.md` 已同步最新版本与已完成功能
 - [ ] `README_EN.md` 已同步最新版本与 Latest
 - [ ] `docs/wiki/ROADMAP.md` 已同步当前优先级和完成条件

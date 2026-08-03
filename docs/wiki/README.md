@@ -13,6 +13,7 @@
 - [液态玻璃复用与首页底栏同源规范](LIQUID_GLASS_REUSE_PARITY.md)
 - [发布流程](RELEASE_WORKFLOW.md)
 - [版本规范](VERSIONING.md)
+- [更新日志撰写规范](CHANGELOG_GUIDE.md)
 - [QA 测试手册](QA.md)
 - [用户常见问题](FAQ.md)
 - [直播 API 历史调研](LIVE_API_RESEARCH.md)

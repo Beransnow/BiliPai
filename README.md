@@ -182,6 +182,8 @@ cd BiliPai
 ./gradlew :app:assembleDev
 ```
 
+完成后可安装交付包位于 `app/build/outputs/bilipai/dev/BiliPai-0.1.0-dev.apk`。正式发布构建对应输出 `app/build/outputs/bilipai/release/BiliPai-0.1.0.apk`；AGP 内部的 `app-*.apk` 不作为交付文件。
+
 `google-services.json` 是可选项：放入 `app/` 后启用 Firebase Crashlytics / Analytics；缺失时构建脚本会跳过相关能力。
 
 ## 文档入口
