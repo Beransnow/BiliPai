@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppNavigationDrawerItem
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.rememberAdaptivePreferenceIconContentColor
+import com.android.purebilibili.core.ui.components.rememberAdaptivePreferenceIconContainerColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -92,7 +93,7 @@ fun SettingsTabletShell(
                 ) {
                     items(categories) { category ->
                         val visual = rememberSettingsEntryVisual(category.searchTarget)
-                        val effectiveIconTint = visual.iconTint
+                        val effectiveIconTint = rememberAdaptivePreferenceIconContainerColor(visual.iconTint)
                         val iconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
                         val selected = selectedCategory?.let(::canonicalSettingsRootCategory) == category
                         AppNavigationDrawerItem(

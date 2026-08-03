@@ -63,17 +63,9 @@ import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
 import com.android.purebilibili.core.ui.resolveCompactCapsuleChromeSpec
 import com.android.purebilibili.core.theme.iOSCornerRadius
-import com.android.purebilibili.core.theme.iOSBlue
-import com.android.purebilibili.core.theme.iOSGreen
-import com.android.purebilibili.core.theme.iOSOrange
-import com.android.purebilibili.core.theme.iOSPink
-import com.android.purebilibili.core.theme.iOSPurple
-import com.android.purebilibili.core.theme.iOSRed
-import com.android.purebilibili.core.theme.iOSSystemGray
-import com.android.purebilibili.core.theme.iOSTeal
-import com.android.purebilibili.core.theme.iOSYellow
 import com.android.purebilibili.core.ui.LocalAppThemeConfig
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
+import com.android.purebilibili.core.ui.adaptiveSquircleBackground
 import io.github.alexzhirkevich.cupertino.CupertinoSwitch
 import io.github.alexzhirkevich.cupertino.CupertinoSwitchDefaults
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
@@ -347,6 +339,7 @@ private fun isDefaultListContainerColor(
         opaqueColor == colorScheme.surfaceContainerHigh.copy(alpha = 1f)
 }
 
+@Suppress("UNUSED_PARAMETER")
 internal fun resolveAdaptiveSemanticIconTint(
     iconTint: Color,
     uiPreset: UiPreset,
@@ -356,22 +349,18 @@ internal fun resolveAdaptiveSemanticIconTint(
     if (uiPreset != UiPreset.MD3 || iconTint == Color.Unspecified) {
         return iconTint
     }
-    val unifiedAccent = colorScheme.primary
-    return when (iconTint) {
-        iOSGreen -> unifiedAccent
-        iOSBlue, iOSTeal -> if (useSemanticAccentRoles) colorScheme.secondary else unifiedAccent
-        iOSPurple, iOSPink, iOSOrange, iOSYellow -> if (useSemanticAccentRoles) colorScheme.tertiary else unifiedAccent
-        iOSRed -> colorScheme.error
-        iOSSystemGray -> colorScheme.onSurfaceVariant
-        else -> iconTint
-    }
+    // Settings icons are navigation affordances rather than status indicators.
+    // MD3 therefore uses the active theme accent consistently across the whole
+    // settings hierarchy; the iOS preset keeps its familiar per-item colors.
+    return colorScheme.primary
 }
 
+@Suppress("UNUSED_PARAMETER")
 internal fun resolveAdaptivePreferenceIconContainerColor(
     iconTint: Color,
     semanticTint: Color,
     treatment: AppPreferenceIconTreatment,
-): Color = if (treatment == AppPreferenceIconTreatment.FILLED) iconTint else semanticTint
+): Color = semanticTint
 
 internal fun resolveAdaptivePreferenceIconContentColor(
     containerColor: Color,
@@ -866,8 +855,10 @@ internal fun AdaptiveSwitchPreferenceContent(
                         Box(
                             modifier = Modifier
                                 .size(visualSpec.iconContainerSizeDp.dp)
-                                .clip(RoundedCornerShape(visualSpec.iconCornerRadiusDp.dp))
-                                .background(effectiveIconTint.copy(alpha = iconBackgroundAlpha)),
+                                .adaptiveSquircleBackground(
+                                    color = effectiveIconTint.copy(alpha = iconBackgroundAlpha),
+                                    cornerRadius = visualSpec.iconCornerRadiusDp.dp,
+                                ),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -900,8 +891,10 @@ internal fun AdaptiveSwitchPreferenceContent(
                 Box(
                     modifier = Modifier
                         .size(visualSpec.iconContainerSizeDp.dp)
-                        .clip(RoundedCornerShape(visualSpec.iconCornerRadiusDp.dp))
-                        .background(effectiveIconTint.copy(alpha = iconBackgroundAlpha)),
+                        .adaptiveSquircleBackground(
+                            color = effectiveIconTint.copy(alpha = iconBackgroundAlpha),
+                            cornerRadius = visualSpec.iconCornerRadiusDp.dp,
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -942,8 +935,10 @@ internal fun AdaptiveSwitchPreferenceContent(
             Box(
                 modifier = Modifier
                     .size(visualSpec.iconContainerSizeDp.dp)
-                    .clip(RoundedCornerShape(iconCornerRadius))
-                    .background(effectiveIconTint.copy(alpha = iconBackgroundAlpha)),
+                    .adaptiveSquircleBackground(
+                        color = effectiveIconTint.copy(alpha = iconBackgroundAlpha),
+                        cornerRadius = iconCornerRadius,
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -1032,8 +1027,10 @@ fun AdaptiveSliderPreferenceRenderer(
                     Box(
                         modifier = Modifier
                             .size(visualSpec.iconContainerSizeDp.dp)
-                            .clip(RoundedCornerShape(visualSpec.iconCornerRadiusDp.dp))
-                            .background(effectiveIconTint.copy(alpha = iconBackgroundAlpha)),
+                            .adaptiveSquircleBackground(
+                                color = effectiveIconTint.copy(alpha = iconBackgroundAlpha),
+                                cornerRadius = visualSpec.iconCornerRadiusDp.dp,
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -1064,8 +1061,10 @@ fun AdaptiveSliderPreferenceRenderer(
                 Box(
                     modifier = Modifier
                         .size(visualSpec.iconContainerSizeDp.dp)
-                        .clip(RoundedCornerShape(iconCornerRadius))
-                        .background(effectiveIconTint.copy(alpha = iconBackgroundAlpha)),
+                        .adaptiveSquircleBackground(
+                            color = effectiveIconTint.copy(alpha = iconBackgroundAlpha),
+                            cornerRadius = iconCornerRadius,
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -1173,8 +1172,10 @@ internal fun AdaptivePreferenceContent(
                         Box(
                             modifier = Modifier
                                 .size(visualSpec.iconContainerSizeDp.dp)
-                                .clip(RoundedCornerShape(visualSpec.iconCornerRadiusDp.dp))
-                                .background(effectiveIconTint.copy(alpha = iconBackgroundAlpha)),
+                                .adaptiveSquircleBackground(
+                                    color = effectiveIconTint.copy(alpha = iconBackgroundAlpha),
+                                    cornerRadius = visualSpec.iconCornerRadiusDp.dp,
+                                ),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -1190,13 +1191,13 @@ internal fun AdaptivePreferenceContent(
                         Box(
                             modifier = Modifier
                                 .size(visualSpec.iconContainerSizeDp.dp)
-                                .clip(RoundedCornerShape(visualSpec.iconCornerRadiusDp.dp))
-                                .background(
-                                    if (effectiveIconTint == Color.Unspecified) {
+                                .adaptiveSquircleBackground(
+                                    color = if (effectiveIconTint == Color.Unspecified) {
                                         Color.Transparent
                                     } else {
                                         effectiveIconTint.copy(alpha = iconBackgroundAlpha)
-                                    }
+                                    },
+                                    cornerRadius = visualSpec.iconCornerRadiusDp.dp,
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
@@ -1243,13 +1244,13 @@ internal fun AdaptivePreferenceContent(
                 Box(
                     modifier = Modifier
                         .size(visualSpec.iconContainerSizeDp.dp)
-                        .clip(RoundedCornerShape(visualSpec.iconCornerRadiusDp.dp))
-                        .background(
-                            if (effectiveIconTint == Color.Unspecified) {
+                        .adaptiveSquircleBackground(
+                            color = if (effectiveIconTint == Color.Unspecified) {
                                 Color.Transparent
                             } else {
-                                effectiveIconTint.copy(alpha = visualSpec.iconBackgroundAlpha)
-                            }
+                                effectiveIconTint.copy(alpha = iconBackgroundAlpha)
+                            },
+                            cornerRadius = visualSpec.iconCornerRadiusDp.dp,
                         ),
                     contentAlignment = Alignment.Center
                 ) {
@@ -1257,7 +1258,7 @@ internal fun AdaptivePreferenceContent(
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
-                            tint = effectiveIconTint,
+                            tint = iconContentColor,
                             modifier = Modifier.size(visualSpec.iconGlyphSizeDp.dp)
                         )
                     } else if (iconPainter != null) {
@@ -1336,8 +1337,10 @@ internal fun AdaptivePreferenceContent(
                         Box(
                             modifier = Modifier
                                 .size(visualSpec.iconContainerSizeDp.dp)
-                                .clip(RoundedCornerShape(visualSpec.iconCornerRadiusDp.dp))
-                                .background(effectiveIconTint.copy(alpha = iconBackgroundAlpha)),
+                                .adaptiveSquircleBackground(
+                                    color = effectiveIconTint.copy(alpha = iconBackgroundAlpha),
+                                    cornerRadius = visualSpec.iconCornerRadiusDp.dp,
+                                ),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
@@ -1353,13 +1356,13 @@ internal fun AdaptivePreferenceContent(
                         Box(
                             modifier = Modifier
                                 .size(visualSpec.iconContainerSizeDp.dp)
-                                .clip(RoundedCornerShape(visualSpec.iconCornerRadiusDp.dp))
-                                .background(
-                                    if (effectiveIconTint == Color.Unspecified) {
+                                .adaptiveSquircleBackground(
+                                    color = if (effectiveIconTint == Color.Unspecified) {
                                         Color.Transparent
                                     } else {
                                         effectiveIconTint.copy(alpha = iconBackgroundAlpha)
-                                    }
+                                    },
+                                    cornerRadius = visualSpec.iconCornerRadiusDp.dp,
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
@@ -1414,8 +1417,10 @@ internal fun AdaptivePreferenceContent(
                     Box(
                         modifier = Modifier
                             .size(visualSpec.iconContainerSizeDp.dp)
-                            .clip(RoundedCornerShape(iconCornerRadius))
-                            .background(effectiveIconTint.copy(alpha = iconBackgroundAlpha)),
+                            .adaptiveSquircleBackground(
+                                color = effectiveIconTint.copy(alpha = iconBackgroundAlpha),
+                                cornerRadius = iconCornerRadius,
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
                         if (icon != null) {
@@ -1596,8 +1601,10 @@ fun AdaptivePreferenceGridItemRenderer(
         Box(
             modifier = Modifier
                 .size(48.dp)
-                .clip(RoundedCornerShape(iOSCornerRadius.Small * cornerRadiusScale))
-                .background(effectiveIconTint.copy(alpha = iconBackgroundAlpha)),
+                .adaptiveSquircleBackground(
+                    color = effectiveIconTint.copy(alpha = iconBackgroundAlpha),
+                    cornerRadius = iOSCornerRadius.Small * cornerRadiusScale,
+                ),
             contentAlignment = Alignment.Center
         ) {
             Icon(

@@ -51,6 +51,7 @@ import com.android.purebilibili.core.ui.rememberAppWarningIcon
 import com.android.purebilibili.core.ui.rememberAppAnalyticsIcon
 import com.android.purebilibili.core.ui.animation.entrance
 import com.android.purebilibili.core.ui.AppShapes
+import com.android.purebilibili.core.ui.adaptiveSquircleBackground
 import com.android.purebilibili.core.ui.AppSemanticAccentRole
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
@@ -65,6 +66,7 @@ import com.android.purebilibili.core.ui.components.AppCard
 import com.android.purebilibili.core.ui.components.AppOutlinedButton
 import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.components.rememberAdaptivePreferenceIconContentColor
+import com.android.purebilibili.core.ui.components.rememberAdaptivePreferenceIconContainerColor
 import com.android.purebilibili.core.ui.components.rememberAdaptiveSemanticIconTint
 import com.android.purebilibili.core.ui.components.rememberAdaptiveListVisualCapabilities
 import androidx.compose.ui.res.stringResource
@@ -273,7 +275,7 @@ internal fun SettingsRootCategoryNavigationSection(
     state: SettingsRootCategoryState
 ) {
     val visual = rememberSettingsEntryVisual(category.searchTarget)
-    val effectiveIconTint = visual.iconTint
+    val effectiveIconTint = rememberAdaptivePreferenceIconContainerColor(visual.iconTint)
     val iconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
     val chevronRotation by animateFloatAsState(
         targetValue = if (isExpanded) 90f else 0f,
@@ -390,7 +392,7 @@ private fun SettingsRootCategoryRow(
     modifier: Modifier = Modifier,
 ) {
     val visualSpec = resolveSettingsVisualSpec()
-    val effectiveIconTint = iconTint
+    val effectiveIconTint = rememberAdaptivePreferenceIconContainerColor(iconTint)
     val iconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
     Row(
         modifier = modifier
@@ -1341,7 +1343,7 @@ private fun FeedDynamicTabVisibilityItem(
     val listCapabilities = rememberAdaptiveListVisualCapabilities()
     val visualSpec = listCapabilities.componentSpec
     val rowSpec = listCapabilities.rowSpec
-    val effectiveIconTint = iconTint
+    val effectiveIconTint = rememberAdaptivePreferenceIconContainerColor(iconTint)
     val iconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
     Column(
         modifier = Modifier
@@ -1355,8 +1357,10 @@ private fun FeedDynamicTabVisibilityItem(
             Box(
                 modifier = Modifier
                     .size(visualSpec.iconContainerSizeDp.dp)
-                    .clip(RoundedCornerShape(visualSpec.iconCornerRadiusDp.dp))
-                    .background(effectiveIconTint),
+                    .adaptiveSquircleBackground(
+                        color = effectiveIconTint,
+                        cornerRadius = visualSpec.iconCornerRadiusDp.dp,
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 AppIcon(

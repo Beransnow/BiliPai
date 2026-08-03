@@ -29,6 +29,7 @@ import com.android.purebilibili.core.ui.resolveBottomSafeAreaPadding
 import com.android.purebilibili.core.ui.animation.EntranceGroup
 import com.android.purebilibili.core.ui.animation.entrance
 import com.android.purebilibili.core.ui.components.rememberAdaptivePreferenceIconContentColor
+import com.android.purebilibili.core.ui.components.rememberAdaptivePreferenceIconContainerColor
 import com.android.purebilibili.core.ui.components.rememberAdaptiveSemanticIconTint
 import com.android.purebilibili.core.ui.components.AppPreferenceSectionTitle
 import com.android.purebilibili.feature.settings.ui.SettingsPageScaffold
@@ -216,7 +217,7 @@ private fun TipItem(
     title: String,
     content: String
 ) {
-    val effectiveIconTint = iconTint
+    val effectiveIconTint = rememberAdaptivePreferenceIconContainerColor(iconTint)
     val iconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
     Row(
         modifier = Modifier

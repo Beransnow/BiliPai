@@ -88,11 +88,11 @@ class AdaptiveListComponentPolicyTest {
     }
 
     @Test
-    fun `md3 preset should map legacy ios accent tints to semantic colors`() {
+    fun `md3 preset should map all settings icon tints to theme primary`() {
         val colorScheme = darkColorScheme()
 
         assertEquals(
-            colorScheme.secondary,
+            colorScheme.primary,
             resolveAdaptiveSemanticIconTint(iOSBlue, UiPreset.MD3, colorScheme)
         )
         assertEquals(
@@ -100,15 +100,15 @@ class AdaptiveListComponentPolicyTest {
             resolveAdaptiveSemanticIconTint(iOSGreen, UiPreset.MD3, colorScheme)
         )
         assertEquals(
-            colorScheme.tertiary,
+            colorScheme.primary,
             resolveAdaptiveSemanticIconTint(iOSPurple, UiPreset.MD3, colorScheme)
         )
         assertEquals(
-            colorScheme.error,
+            colorScheme.primary,
             resolveAdaptiveSemanticIconTint(iOSRed, UiPreset.MD3, colorScheme)
         )
         assertEquals(
-            colorScheme.onSurfaceVariant,
+            colorScheme.primary,
             resolveAdaptiveSemanticIconTint(iOSSystemGray, UiPreset.MD3, colorScheme)
         )
     }
@@ -133,7 +133,7 @@ class AdaptiveListComponentPolicyTest {
             resolveAdaptivePreferenceIconContentColor(iOSBlue, colorScheme),
         )
         assertEquals(
-            iOSBlue,
+            colorScheme.secondary,
             resolveAdaptivePreferenceIconContainerColor(
                 iconTint = iOSBlue,
                 semanticTint = colorScheme.secondary,
@@ -159,11 +159,11 @@ class AdaptiveListComponentPolicyTest {
             resolveAdaptiveSemanticIconTint(iOSGreen, UiPreset.MD3, colorScheme, useSemanticAccentRoles = false)
         )
         assertEquals(
-            colorScheme.error,
+            colorScheme.primary,
             resolveAdaptiveSemanticIconTint(iOSRed, UiPreset.MD3, colorScheme, useSemanticAccentRoles = false)
         )
         assertEquals(
-            colorScheme.onSurfaceVariant,
+            colorScheme.primary,
             resolveAdaptiveSemanticIconTint(iOSSystemGray, UiPreset.MD3, colorScheme, useSemanticAccentRoles = false)
         )
     }

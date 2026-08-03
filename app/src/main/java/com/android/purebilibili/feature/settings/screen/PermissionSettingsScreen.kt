@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.android.purebilibili.R
 import com.android.purebilibili.core.ui.components.*
+import com.android.purebilibili.core.ui.adaptiveSquircleBackground
 import com.android.purebilibili.core.ui.animation.EntranceGroup
 import com.android.purebilibili.core.ui.animation.entrance
 import com.android.purebilibili.feature.settings.ui.SettingsPageScaffold
@@ -274,7 +275,7 @@ private fun PermissionItem(
     onOpenSettings: (() -> Unit)?
 ) {
     val visualSpec = rememberAdaptiveListVisualCapabilities().componentSpec
-    val effectiveIconTint = info.iconTint
+    val effectiveIconTint = rememberAdaptivePreferenceIconContainerColor(info.iconTint)
     val iconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
     val grantedTint = rememberAdaptiveSemanticIconTint(iOSGreen)
     val deniedTint = rememberAdaptiveSemanticIconTint(com.android.purebilibili.core.theme.iOSRed)
@@ -289,8 +290,10 @@ private fun PermissionItem(
         Box(
             modifier = Modifier
                 .size(visualSpec.iconContainerSizeDp.dp)
-                .clip(RoundedCornerShape(visualSpec.iconCornerRadiusDp.dp))
-                .background(effectiveIconTint),
+                .adaptiveSquircleBackground(
+                    color = effectiveIconTint,
+                    cornerRadius = visualSpec.iconCornerRadiusDp.dp,
+                ),
             contentAlignment = Alignment.Center
         ) {
             AppIcon(
