@@ -37,6 +37,7 @@ import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.feature.settings.SettingsHomeSearchEntry
 import com.android.purebilibili.feature.settings.SettingsRootCategory
+import com.android.purebilibili.feature.settings.canonicalSettingsRootCategory
 import com.android.purebilibili.feature.settings.rememberSettingsEntryVisual
 import com.android.purebilibili.feature.settings.resolveSettingsRootCategoryOrder
 import com.android.purebilibili.feature.settings.resolveSettingsTabletLayoutPolicy
@@ -93,7 +94,7 @@ fun SettingsTabletShell(
                         val visual = rememberSettingsEntryVisual(category.searchTarget)
                         val effectiveIconTint = visual.iconTint
                         val iconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
-                        val selected = selectedCategory == category
+                        val selected = selectedCategory?.let(::canonicalSettingsRootCategory) == category
                         AppNavigationDrawerItem(
                             label = {
                                 Column {

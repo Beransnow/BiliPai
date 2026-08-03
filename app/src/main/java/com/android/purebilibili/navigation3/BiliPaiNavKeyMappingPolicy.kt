@@ -135,7 +135,7 @@ internal fun legacyRouteToBiliPaiNavKey(route: String?): BiliPaiNavKey {
         normalized == ScreenRoutes.Settings.route -> BiliPaiNavKey.Settings
         routeBase == "settings_category" && segments.size >= 2 -> {
             val category = SettingsRootCategory.entries.firstOrNull { it.name == segments[1] }
-                ?: SettingsRootCategory.APPEARANCE_INTERACTION
+                ?: SettingsRootCategory.APPEARANCE_THEME
             BiliPaiNavKey.SettingsCategory(category = category)
         }
         normalized == "settings_search" -> BiliPaiNavKey.SettingsSearch

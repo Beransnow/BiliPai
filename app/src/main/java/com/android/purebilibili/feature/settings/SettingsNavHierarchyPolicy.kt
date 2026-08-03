@@ -60,18 +60,18 @@ private val SETTINGS_DIRECT_REACH_PARENTS: Set<String> = setOf(
 )
 
 private val ROUTE_TO_CATEGORY: Map<String, SettingsRootCategory> = mapOf(
-    "appearance_settings" to SettingsRootCategory.APPEARANCE_INTERACTION,
-    "animation_settings" to SettingsRootCategory.APPEARANCE_INTERACTION,
-    "icon_settings" to SettingsRootCategory.APPEARANCE_INTERACTION,
-    "bottom_bar_settings" to SettingsRootCategory.APPEARANCE_INTERACTION,
-    "playback_settings" to SettingsRootCategory.CONTENT_PLAYBACK,
-    "permission_settings" to SettingsRootCategory.PRIVACY_STORAGE,
-    "settings_share" to SettingsRootCategory.PRIVACY_STORAGE,
-    "webdav_backup" to SettingsRootCategory.PRIVACY_STORAGE,
-    "plugins_settings" to SettingsRootCategory.SYSTEM_ABOUT,
-    "js_plugin" to SettingsRootCategory.SYSTEM_ABOUT,
-    "external_media" to SettingsRootCategory.SYSTEM_ABOUT,
-    "tips_settings" to SettingsRootCategory.SYSTEM_ABOUT,
+    "appearance_settings" to SettingsRootCategory.APPEARANCE_THEME,
+    "animation_settings" to SettingsRootCategory.NAVIGATION_INTERACTION,
+    "icon_settings" to SettingsRootCategory.APPEARANCE_THEME,
+    "bottom_bar_settings" to SettingsRootCategory.NAVIGATION_INTERACTION,
+    "playback_settings" to SettingsRootCategory.PLAYBACK_QUALITY,
+    "permission_settings" to SettingsRootCategory.PRIVACY_PERMISSION,
+    "settings_share" to SettingsRootCategory.STORAGE_BACKUP,
+    "webdav_backup" to SettingsRootCategory.STORAGE_BACKUP,
+    "plugins_settings" to SettingsRootCategory.PLUGINS_EXTENSIONS,
+    "js_plugin" to SettingsRootCategory.PLUGINS_EXTENSIONS,
+    "external_media" to SettingsRootCategory.PLUGINS_EXTENSIONS,
+    "tips_settings" to SettingsRootCategory.PLUGINS_EXTENSIONS,
     "open_source_licenses" to SettingsRootCategory.SYSTEM_ABOUT,
 )
 
@@ -121,7 +121,7 @@ internal fun resolveSettingsRootCategoryForRoute(routeBase: String?): SettingsRo
 
 internal fun resolveSettingsRootCategoryForNavKey(key: BiliPaiNavKey): SettingsRootCategory? {
     return when (key) {
-        is BiliPaiNavKey.SettingsCategory -> key.category
+        is BiliPaiNavKey.SettingsCategory -> canonicalSettingsRootCategory(key.category)
         else -> resolveSettingsRootCategoryForRoute(key.routeBase)
     }
 }

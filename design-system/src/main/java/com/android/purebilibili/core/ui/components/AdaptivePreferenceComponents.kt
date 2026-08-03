@@ -718,8 +718,14 @@ fun AdaptivePreferenceGroupRenderer(
     containerColor: Color = MaterialTheme.colorScheme.surface,
     shape: androidx.compose.ui.graphics.Shape? = null,
     border: androidx.compose.foundation.BorderStroke? = null,
+    presentation: AppPreferenceGroupPresentation = AppPreferenceGroupPresentation.CARD,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    if (presentation == AppPreferenceGroupPresentation.FLAT) {
+        Column(modifier = modifier, content = content)
+        return
+    }
+
     val uiPreset = LocalUiPreset.current
     val androidNativeVariant = LocalAndroidNativeVariant.current
     val cornerRadiusScale = LocalCornerRadiusScale.current

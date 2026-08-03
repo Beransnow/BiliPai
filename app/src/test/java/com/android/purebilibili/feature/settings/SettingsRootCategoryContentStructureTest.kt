@@ -66,7 +66,7 @@ class SettingsRootCategoryContentStructureTest {
     }
 
     @Test
-    fun mobileSettingsRoot_usesCategoryListWithSearchEntryAndAboutSection() {
+    fun mobileSettingsRoot_usesOnlySearchAndDirectCategoryList() {
         val source = listOf(
             File("app/src/main/java/com/android/purebilibili/feature/settings/screen/SettingsScreen.kt"),
             File("src/main/java/com/android/purebilibili/feature/settings/screen/SettingsScreen.kt")
@@ -74,7 +74,10 @@ class SettingsRootCategoryContentStructureTest {
 
         assertTrue(source.contains("SettingsHomeSearchEntry("))
         assertTrue(source.contains("SettingsRootCategoryListSection("))
-        assertTrue(source.contains("SettingsAboutHomeSection("))
+        val homeBlock = source
+            .substringAfter("SettingsNavDestination.Home -> {")
+            .substringBefore("is SettingsNavDestination.Category -> {")
+        assertFalse(homeBlock.contains("SettingsAboutHomeSection("))
         assertTrue(source.contains("MobileSettingsNavLayout("))
     }
 
@@ -108,12 +111,14 @@ class SettingsRootCategoryContentStructureTest {
             .substringAfter("internal fun SettingsRootCategoryContent(")
             .substringBefore("@Composable\nfun SupportToolsSection(")
 
-        assertTrue(contentBlock.contains("Column {\n        when (category)"))
+        assertTrue(contentBlock.contains("val resolvedCategory = canonicalSettingsRootCategory(category)"))
+        assertTrue(contentBlock.contains("when (resolvedCategory)"))
         assertTrue(contentBlock.contains("SettingsDetailGroup("))
         assertTrue(contentBlock.contains("SettingsDetailEntrySection("))
         assertFalse(contentBlock.contains("SettingsSceneShortcutSection("))
-        assertTrue(contentBlock.contains("SettingsRootCategory.CONTENT_PLAYBACK -> {"))
-        assertTrue(contentBlock.contains("SettingsRootCategory.PRIVACY_STORAGE -> {"))
+        assertTrue(contentBlock.contains("SettingsRootCategory.PLAYBACK_QUALITY -> {"))
+        assertTrue(contentBlock.contains("SettingsRootCategory.PRIVACY_PERMISSION -> {"))
+        assertTrue(contentBlock.contains("SettingsRootCategory.PLUGINS_EXTENSIONS -> {"))
         assertTrue(contentBlock.contains("SettingsRootCategory.SYSTEM_ABOUT -> {"))
     }
 

@@ -1299,13 +1299,6 @@ private fun MobileSettingsNavLayout(
                             onCategoryClick = onCategoryClick,
                         )
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    SettingsAboutHomeSection(
-                        onGithubClick = onGithubClick,
-                        onTelegramClick = onTelegramClick,
-                        onCheckUpdateClick = onCheckUpdateClick,
-                        onDonateClick = onDonateClick,
-                    )
                     Spacer(modifier = Modifier.height(16.dp))
                 }
             }

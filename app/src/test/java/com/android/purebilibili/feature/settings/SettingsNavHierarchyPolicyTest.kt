@@ -174,9 +174,10 @@ class SettingsNavHierarchyPolicyTest {
 
     @Test
     fun resolveSettingsRootCategoryForNavKey_readsCategoryKey() {
+        @Suppress("DEPRECATION")
         val category = resolveSettingsRootCategoryForNavKey(
             BiliPaiNavKey.SettingsCategory(SettingsRootCategory.CONTENT_PLAYBACK)
         )
-        assertEquals(SettingsRootCategory.CONTENT_PLAYBACK, category)
+        assertEquals(SettingsRootCategory.PLAYBACK_QUALITY, category)
     }
 }

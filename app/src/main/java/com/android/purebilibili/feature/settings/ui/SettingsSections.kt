@@ -10,7 +10,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,7 +29,6 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -95,6 +93,7 @@ import com.android.purebilibili.core.ui.components.AppPreference as SettingClick
 import com.android.purebilibili.core.ui.common.rememberClipboardCopyHandler
 import com.android.purebilibili.core.ui.components.AppPreferenceDivider as SettingsDivider
 import com.android.purebilibili.core.ui.components.AppSliderPreference as SettingSliderItem
+import com.android.purebilibili.core.ui.components.AppPreferenceGroupPresentation
 
 
 
@@ -112,25 +111,8 @@ private fun SettingsAdaptiveDivider() {
 private fun SettingsCardGroup(
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val listCapabilities = rememberAdaptiveListVisualCapabilities()
-    val isDark = AppSurfaceTokens.groupedListContainer().luminance() < 0.45f
-    val darkTintBase = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
-    val baseCardContainer = AppSurfaceTokens.cardContainer()
-    val containerColor = if (isDark) {
-        darkTintBase.compositeOver(baseCardContainer)
-    } else {
-        baseCardContainer
-    }
-    val borderColor = if (isDark) {
-        Color.White.copy(alpha = 0.06f)
-    } else {
-        MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.32f)
-    }
-
     SettingsGroup(
-        containerColor = containerColor,
-        shape = listCapabilities.adaptGroupShape(AppShapes.container(ContainerLevel.Dialog)),
-        border = BorderStroke(0.6.dp, borderColor)
+        presentation = AppPreferenceGroupPresentation.FLAT,
     ) {
         content()
     }
@@ -377,23 +359,19 @@ internal fun SettingsRootCategoryListSection(
     categories: List<SettingsRootCategory>,
     onCategoryClick: (SettingsRootCategory) -> Unit
 ) {
-    val visualSpec = resolveSettingsVisualSpec()
-
-    SettingsDetailGroup(title = "分类") {
-        SettingsCardGroup {
-            categories.forEachIndexed { index, category ->
-                val visual = rememberSettingsEntryVisual(category.searchTarget)
-                SettingsRootCategoryRow(
-                    title = category.title,
-                    subtitle = category.subtitle,
-                    icon = visual.icon,
-                    iconPainter = visual.iconResId?.let { painterResource(id = it) },
-                    iconTint = visual.iconTint,
-                    onClick = { onCategoryClick(category) },
-                )
-                if (index != categories.lastIndex) {
-                    SettingsAdaptiveDivider()
-                }
+    SettingsCardGroup {
+        categories.forEachIndexed { index, category ->
+            val visual = rememberSettingsEntryVisual(category.searchTarget)
+            SettingsRootCategoryRow(
+                title = category.title,
+                subtitle = category.subtitle,
+                icon = visual.icon,
+                iconPainter = visual.iconResId?.let { painterResource(id = it) },
+                iconTint = visual.iconTint,
+                onClick = { onCategoryClick(category) },
+            )
+            if (index != categories.lastIndex) {
+                SettingsAdaptiveDivider()
             }
         }
     }
@@ -407,12 +385,13 @@ private fun SettingsRootCategoryRow(
     iconPainter: androidx.compose.ui.graphics.painter.Painter?,
     iconTint: Color,
     onClick: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val visualSpec = resolveSettingsVisualSpec()
     val effectiveIconTint = iconTint
     val iconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(
@@ -616,8 +595,180 @@ internal fun SettingsRootCategoryContent(
     actions: SettingsRootCategoryActions,
     state: SettingsRootCategoryState
 ) {
+    val resolvedCategory = canonicalSettingsRootCategory(category)
     Column {
-        when (category) {
+        when (resolvedCategory) {
+            SettingsRootCategory.APPEARANCE_THEME -> {
+                SettingsRootCategoryEntranceSection {
+                    SettingsDetailGroup(title = "外观与主题") {
+                        SettingsDetailEntrySection(
+                            entries = listOf(
+                                SettingsDetailEntry(
+                                    target = SettingsSearchTarget.INTERFACE_THEME,
+                                    title = "外观设置",
+                                    value = "UI 预设、主题、字体、DPI、图标与开屏",
+                                    onClick = actions.onAppearanceClick,
+                                ),
+                            ),
+                        )
+                    }
+                }
+            }
+            SettingsRootCategory.PLAYBACK_QUALITY -> {
+                SettingsRootCategoryEntranceSection {
+                    SettingsDetailGroup(title = "播放与画质") {
+                        SettingsDetailEntrySection(
+                            entries = listOf(
+                                SettingsDetailEntry(
+                                    target = SettingsSearchTarget.PLAYBACK_QUALITY,
+                                    title = "播放器设置",
+                                    value = "解码、画质、字幕、全屏方向与手势",
+                                    onClick = actions.onPlaybackClick,
+                                ),
+                            ),
+                        )
+                    }
+                }
+            }
+            SettingsRootCategory.HOME_RECOMMENDATION -> {
+                SettingsRootCategoryEntranceSection {
+                    SettingsDetailGroup(title = "首页展示") {
+                        SettingsDetailEntrySection(
+                            entries = listOf(
+                                SettingsDetailEntry(
+                                    target = SettingsSearchTarget.HOME_FEED,
+                                    title = "首页样式与推荐卡片",
+                                    value = "卡片样式、壁纸效果与推荐流宽度",
+                                    onClick = actions.onAppearanceClick,
+                                ),
+                            ),
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                SettingsRootCategoryEntranceSection {
+                    SettingsDetailGroup(title = "推荐流与动态") {
+                        FeedApiSection(
+                            feedApiType = state.feedApiType,
+                            onFeedApiTypeChange = actions.onFeedApiTypeChange,
+                            incrementalTimelineRefreshEnabled = state.incrementalTimelineRefreshEnabled,
+                            onIncrementalTimelineRefreshChange = actions.onIncrementalTimelineRefreshChange,
+                            dynamicImagePreviewTextVisible = state.dynamicImagePreviewTextVisible,
+                            onDynamicImagePreviewTextVisibleChange = actions.onDynamicImagePreviewTextVisibleChange,
+                            dynamicAllTabHorizontalUserListVisible = state.dynamicAllTabHorizontalUserListVisible,
+                            onDynamicAllTabHorizontalUserListVisibleChange =
+                                actions.onDynamicAllTabHorizontalUserListVisibleChange,
+                            dynamicTopBarCollapseOnScroll = state.dynamicTopBarCollapseOnScroll,
+                            onDynamicTopBarCollapseOnScrollChange =
+                                actions.onDynamicTopBarCollapseOnScrollChange,
+                            dynamicFeedLayoutMode = state.dynamicFeedLayoutMode,
+                            onDynamicFeedLayoutModeChange = actions.onDynamicFeedLayoutModeChange,
+                            dynamicVisibleTabIds = state.dynamicVisibleTabIds,
+                            onDynamicTabVisibilityChange = actions.onDynamicTabVisibilityChange,
+                            homeRefreshCount = state.homeRefreshCount,
+                            onHomeRefreshCountChange = actions.onHomeRefreshCountChange,
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                SettingsRootCategoryEntranceSection {
+                    SettingsDetailGroup(title = "互动") {
+                        SettingsDetailEntrySection(
+                            entries = listOf(
+                                SettingsDetailEntry(
+                                    target = SettingsSearchTarget.INTERACTION_COMMENT,
+                                    title = "互动与评论",
+                                    value = "评论、点赞、简介与内容预览",
+                                    onClick = actions.onPlaybackClick,
+                                ),
+                            ),
+                        )
+                    }
+                }
+            }
+            SettingsRootCategory.NAVIGATION_INTERACTION -> {
+                SettingsRootCategoryEntranceSection {
+                    SettingsDetailGroup(title = "导航") {
+                        SettingsDetailEntrySection(
+                            entries = listOf(
+                                SettingsDetailEntry(
+                                    target = SettingsSearchTarget.NAVIGATION,
+                                    title = "导航与标签",
+                                    value = "底栏、顶部标签、平板侧边栏与项目顺序",
+                                    onClick = actions.onBottomBarClick,
+                                ),
+                            ),
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                SettingsRootCategoryEntranceSection {
+                    SettingsDetailGroup(title = "交互与动效") {
+                        SettingsDetailEntrySection(
+                            entries = listOf(
+                                SettingsDetailEntry(
+                                    target = SettingsSearchTarget.ANIMATION,
+                                    title = "动效与触感",
+                                    value = "页面过渡、共享元素、触感反馈与动态图标",
+                                    onClick = actions.onAnimationClick,
+                                ),
+                            ),
+                        )
+                    }
+                }
+            }
+            SettingsRootCategory.PRIVACY_PERMISSION -> {
+                SettingsRootCategoryEntranceSection {
+                    SettingsDetailGroup(title = "隐私与权限") {
+                        PrivacySection(
+                            privacyModeEnabled = state.privacyModeEnabled,
+                            privacyContentAuthenticationEnabled = state.privacyContentAuthenticationEnabled,
+                            onPrivacyModeChange = actions.onPrivacyModeChange,
+                            onPrivacyContentAuthenticationChange = actions.onPrivacyContentAuthenticationChange,
+                            onPermissionClick = actions.onPermissionClick,
+                            onBlockedListClick = actions.onBlockedListClick,
+                        )
+                    }
+                }
+            }
+            SettingsRootCategory.STORAGE_BACKUP -> {
+                SettingsRootCategoryEntranceSection {
+                    SettingsDetailGroup(title = "存储与备份") {
+                        DataStorageSection(
+                            customDownloadPath = state.customDownloadPath,
+                            customImageSavePath = state.customImageSavePath,
+                            cacheSize = state.cacheSize,
+                            onSettingsShareClick = actions.onSettingsShareClick,
+                            onWebDavBackupClick = actions.onWebDavBackupClick,
+                            onDownloadPathClick = actions.onDownloadPathClick,
+                            onImageSavePathClick = actions.onImageSavePathClick,
+                            onClearCacheClick = actions.onClearCacheClick,
+                        )
+                    }
+                }
+            }
+            SettingsRootCategory.PLUGINS_EXTENSIONS -> {
+                SettingsRootCategoryEntranceSection {
+                    SettingsDetailGroup(title = "插件与扩展") {
+                        DeveloperSection(
+                            crashTrackingEnabled = state.crashTrackingEnabled,
+                            analyticsEnabled = state.analyticsEnabled,
+                            pluginCount = state.pluginCount,
+                            onCrashTrackingChange = actions.onCrashTrackingChange,
+                            onAnalyticsChange = actions.onAnalyticsChange,
+                            onPluginsClick = actions.onPluginsClick,
+                            onExportLogsClick = actions.onExportLogsClick,
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                SettingsRootCategoryEntranceSection {
+                    SupportToolsSection(
+                        onTipsClick = actions.onTipsClick,
+                        onOpenLinksClick = actions.onOpenLinksClick,
+                    )
+                }
+            }
             SettingsRootCategory.APPEARANCE_INTERACTION -> {
                 SettingsRootCategoryEntranceSection {
                     SettingsDetailGroup(title = "显示与交互") {
@@ -781,7 +932,7 @@ internal fun SettingsRootCategoryContent(
             }
             SettingsRootCategory.SYSTEM_ABOUT -> {
                 SettingsRootCategoryEntranceSection {
-                    SettingsDetailGroup(title = "诊断与插件") {
+                    SettingsDetailGroup(title = "系统诊断") {
                         SettingsDetailEntrySection(
                             entries = listOf(
                                 SettingsDetailEntry(
@@ -791,16 +942,6 @@ internal fun SettingsRootCategoryContent(
                                     onClick = actions.onPlaybackClick
                                 )
                             )
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        DeveloperSection(
-                            crashTrackingEnabled = state.crashTrackingEnabled,
-                            analyticsEnabled = state.analyticsEnabled,
-                            pluginCount = state.pluginCount,
-                            onCrashTrackingChange = actions.onCrashTrackingChange,
-                            onAnalyticsChange = actions.onAnalyticsChange,
-                            onPluginsClick = actions.onPluginsClick,
-                            onExportLogsClick = actions.onExportLogsClick
                         )
                     }
                 }
@@ -842,13 +983,6 @@ internal fun SettingsRootCategoryContent(
                         onGithubClick = actions.onGithubClick,
                         onTelegramClick = actions.onTelegramClick,
                         onDisclaimerClick = actions.onDisclaimerClick
-                    )
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                SettingsRootCategoryEntranceSection {
-                    SupportToolsSection(
-                        onTipsClick = actions.onTipsClick,
-                        onOpenLinksClick = actions.onOpenLinksClick
                     )
                 }
             }
