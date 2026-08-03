@@ -265,7 +265,7 @@ androidComponents {
                 outputDirectory.set(layout.buildDirectory.dir("outputs/bilipai/$variantName"))
             }
             tasks.matching { task -> task.name == "assemble$capitalizedVariantName" }
-                .configureEach { task -> task.dependsOn(exportTask) }
+                .configureEach { dependsOn(exportTask) }
         }
     }
 }
