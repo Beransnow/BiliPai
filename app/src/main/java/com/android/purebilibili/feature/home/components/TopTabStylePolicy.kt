@@ -135,7 +135,7 @@ internal fun resolveHomeTopPresetStyle(
     return when (chromePolicy.tabPresentation) {
         AppTopTabPresentation.MOVING_CAPSULE -> {
             HomeTopPresetStyle(
-                presentation = AppTopTabPresentation.TONAL_CAPSULE,
+                presentation = chromePolicy.tabPresentation,
                 indicatorStyle = TopTabIndicatorStyle.CAPSULE,
                 search = HomeTopSearchStyle(
                     barHeight = 48.dp,
@@ -194,7 +194,9 @@ internal fun resolveHomeTopPresetStyle(
         }
         AppTopTabPresentation.TONAL_CAPSULE -> {
             HomeTopPresetStyle(
-                presentation = AppTopTabPresentation.TONAL_CAPSULE,
+                // The home renderer routes this preset through its moving MD3 capsule,
+                // which can reuse the same liquid-glass indicator as the bottom bar.
+                presentation = AppTopTabPresentation.MATERIAL_UNDERLINE,
                 indicatorStyle = TopTabIndicatorStyle.MATERIAL,
                 search = HomeTopSearchStyle(
                     barHeight = 48.dp,
@@ -253,7 +255,7 @@ internal fun resolveHomeTopPresetStyle(
         }
         AppTopTabPresentation.MATERIAL_UNDERLINE -> {
             HomeTopPresetStyle(
-                presentation = AppTopTabPresentation.TONAL_CAPSULE,
+                presentation = chromePolicy.tabPresentation,
                 indicatorStyle = TopTabIndicatorStyle.MATERIAL,
                 search = HomeTopSearchStyle(
                     barHeight = 48.dp,

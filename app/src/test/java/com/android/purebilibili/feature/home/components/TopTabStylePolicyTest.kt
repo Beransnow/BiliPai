@@ -138,19 +138,19 @@ class TopTabStylePolicyTest {
     @Test
     fun `home top tab presentation routes by preset and native variant`() {
         assertEquals(
-            AppTopTabPresentation.TONAL_CAPSULE,
+            AppTopTabPresentation.MOVING_CAPSULE,
             topStyle(UiPreset.IOS, AndroidNativeVariant.MATERIAL3).presentation
         )
         assertEquals(
-            AppTopTabPresentation.TONAL_CAPSULE,
+            AppTopTabPresentation.MATERIAL_UNDERLINE,
             topStyle(UiPreset.MD3, AndroidNativeVariant.MATERIAL3).presentation
         )
         assertEquals(
-            AppTopTabPresentation.TONAL_CAPSULE,
+            AppTopTabPresentation.MATERIAL_UNDERLINE,
             topStyle(UiPreset.MD3, AndroidNativeVariant.MIUIX).presentation
         )
         assertEquals(
-            AppTopTabPresentation.TONAL_CAPSULE,
+            AppTopTabPresentation.MATERIAL_UNDERLINE,
             topStyle(UiPreset.MD3, AndroidNativeVariant.MIUIX, labelMode = 0).presentation
         )
     }
@@ -164,9 +164,9 @@ class TopTabStylePolicyTest {
         assertEquals(ios.searchBarHeight, material3.searchBarHeight)
         assertEquals(material3.searchBarHeight, miuix.searchBarHeight)
         assertNotEquals(material3.unifiedPanelCornerRadius, miuix.unifiedPanelCornerRadius)
-        assertEquals(AppTopTabPresentation.TONAL_CAPSULE, ios.presentation)
-        assertEquals(AppTopTabPresentation.TONAL_CAPSULE, material3.presentation)
-        assertEquals(AppTopTabPresentation.TONAL_CAPSULE, miuix.presentation)
+        assertEquals(AppTopTabPresentation.MOVING_CAPSULE, ios.presentation)
+        assertEquals(AppTopTabPresentation.MATERIAL_UNDERLINE, material3.presentation)
+        assertEquals(AppTopTabPresentation.MATERIAL_UNDERLINE, miuix.presentation)
         assertEquals(TopTabIndicatorStyle.CAPSULE, ios.indicatorStyle)
         assertEquals(TopTabIndicatorStyle.MATERIAL, material3.indicatorStyle)
         assertEquals(TopTabIndicatorStyle.MATERIAL, miuix.indicatorStyle)
@@ -176,7 +176,7 @@ class TopTabStylePolicyTest {
     fun `miuix icon modes use the shared compact top tab geometry`() {
         val iconAndText = topStyle(UiPreset.MD3, AndroidNativeVariant.MIUIX, labelMode = 0)
 
-        assertEquals(AppTopTabPresentation.TONAL_CAPSULE, iconAndText.presentation)
+        assertEquals(AppTopTabPresentation.MATERIAL_UNDERLINE, iconAndText.presentation)
         assertEquals(36.dp, iconAndText.tabRowHeightDocked)
         assertEquals(40.dp, iconAndText.tabRowHeightFloating)
         assertEquals(30.dp, iconAndText.md3VisualSpec.selectedCapsuleHeight)

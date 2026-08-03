@@ -225,7 +225,7 @@ private fun rememberGravityRotatedHighlight(
 }
 
 /**
- * 底部导航项枚举 - 使用 Miuix 优先的统一图标策略
+ * 底部导航项枚举 - 使用 iOS SF Symbols 风格的描边/填充成对图标。
  * [HIG] 所有图标包含 contentDescription 用于无障碍访问
  */
 enum class BottomNavItem(
@@ -242,8 +242,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_home,
         R.string.bottom_nav_home,
         emptyList(),
-        { MiuixBottomNavigationIcon("HOME", selected = true) },
-        { MiuixBottomNavigationIcon("HOME", selected = false) },
+        { AppIcon(CupertinoIcons.Filled.House, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Outlined.House, contentDescription = null) },
         ScreenRoutes.Home.route
     ),
     DYNAMIC(
@@ -251,8 +251,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_dynamic,
         R.string.bottom_nav_dynamic,
         emptyList(),
-        { MiuixBottomNavigationIcon("DYNAMIC", selected = true) },
-        { MiuixBottomNavigationIcon("DYNAMIC", selected = false) },
+        { AppIcon(CupertinoIcons.Filled.Bell, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Outlined.Bell, contentDescription = null) },
         ScreenRoutes.Dynamic.route
     ),
     STORY(
@@ -260,8 +260,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_story,
         R.string.bottom_nav_story,
         emptyList(),
-        { MiuixBottomNavigationIcon("STORY", selected = true) },
-        { MiuixBottomNavigationIcon("STORY", selected = false) },
+        { AppIcon(CupertinoIcons.Filled.PlayCircle, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Outlined.PlayCircle, contentDescription = null) },
         ScreenRoutes.Story.baseRoute
     ),
     HISTORY(
@@ -269,8 +269,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_history,
         R.string.bottom_nav_history_desc,
         listOf("历史记录"),
-        { MiuixBottomNavigationIcon("HISTORY", selected = true) },
-        { MiuixBottomNavigationIcon("HISTORY", selected = false) },
+        { AppIcon(CupertinoIcons.Filled.Clock, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Outlined.Clock, contentDescription = null) },
         ScreenRoutes.History.route
     ),
     LISTEN_VIDEO(
@@ -278,8 +278,18 @@ enum class BottomNavItem(
         R.string.bottom_nav_listen_video,
         R.string.bottom_nav_listen_video_desc,
         listOf("音乐"),
-        { MiuixBottomNavigationIcon("LISTEN_VIDEO", selected = true) },
-        { MiuixBottomNavigationIcon("LISTEN_VIDEO", selected = false) },
+        {
+            AppIcon(
+                painter = painterResource(R.drawable.ic_bottom_nav_listen_video_selected),
+                contentDescription = null,
+            )
+        },
+        {
+            AppIcon(
+                painter = painterResource(R.drawable.ic_bottom_nav_listen_video),
+                contentDescription = null,
+            )
+        },
         ScreenRoutes.ListenVideo.route
     ),
     PROFILE(
@@ -287,8 +297,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_profile,
         R.string.bottom_nav_profile_desc,
         listOf("个人中心"),
-        { MiuixBottomNavigationIcon("PROFILE", selected = true) },
-        { MiuixBottomNavigationIcon("PROFILE", selected = false) },
+        { AppIcon(CupertinoIcons.Filled.Person, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Outlined.Person, contentDescription = null) },
         ScreenRoutes.Profile.route
     ),
     FAVORITE(
@@ -296,8 +306,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_favorite,
         R.string.bottom_nav_favorite_desc,
         listOf("收藏夹"),
-        { MiuixBottomNavigationIcon("FAVORITE", selected = true) },
-        { MiuixBottomNavigationIcon("FAVORITE", selected = false) },
+        { AppIcon(CupertinoIcons.Filled.Star, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Outlined.Star, contentDescription = null) },
         ScreenRoutes.Favorite.route
     ),
     LIVE(
@@ -305,8 +315,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_live,
         R.string.bottom_nav_live,
         emptyList(),
-        { MiuixBottomNavigationIcon("LIVE", selected = true) },
-        { MiuixBottomNavigationIcon("LIVE", selected = false) },
+        { AppIcon(CupertinoIcons.Filled.Video, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Outlined.Video, contentDescription = null) },
         ScreenRoutes.LiveList.route
     ),
     WATCHLATER(
@@ -314,8 +324,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_watch_later,
         R.string.bottom_nav_watch_later_desc,
         listOf("稍后再看"),
-        { MiuixBottomNavigationIcon("WATCHLATER", selected = true) },
-        { MiuixBottomNavigationIcon("WATCHLATER", selected = false) },
+        { AppIcon(CupertinoIcons.Filled.Clock, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Outlined.Clock, contentDescription = null) },
         ScreenRoutes.WatchLater.route
     ),
     SETTINGS(
@@ -323,8 +333,8 @@ enum class BottomNavItem(
         R.string.bottom_nav_settings,
         R.string.bottom_nav_settings,
         emptyList(),
-        { MiuixBottomNavigationIcon("SETTINGS", selected = true) },
-        { MiuixBottomNavigationIcon("SETTINGS", selected = false) },
+        { AppIcon(CupertinoIcons.Filled.Gearshape, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Default.Gearshape, contentDescription = null) },
         ScreenRoutes.Settings.route
     ),
     PLUGINS(
@@ -332,23 +342,9 @@ enum class BottomNavItem(
         R.string.plugins_center_title,
         R.string.plugins_center_title,
         listOf("插件中心"),
-        { MiuixBottomNavigationIcon("PLUGINS", selected = true) },
-        { MiuixBottomNavigationIcon("PLUGINS", selected = false) },
+        { AppIcon(CupertinoIcons.Default.Puzzlepiece, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Outlined.PuzzlepieceExtension, contentDescription = null) },
         ScreenRoutes.PluginsSettings.createRoute()
-    )
-}
-
-@Composable
-private fun MiuixBottomNavigationIcon(
-    tabId: String,
-    selected: Boolean,
-) {
-    AppIcon(
-        imageVector = resolveMiuixPreferredHomeNavigationIcon(
-            tabId = tabId,
-            selected = selected,
-        ),
-        contentDescription = null,
     )
 }
 
@@ -2401,7 +2397,7 @@ private fun CupertinoBottomBar(
             tuning = tuning,
             glassEnabled = glassEnabled,
             liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
-            iconStyle = SharedFloatingBottomBarIconStyle.MATERIAL,
+            iconStyle = SharedFloatingBottomBarIconStyle.CUPERTINO,
             haptic = haptic,
             hazeState = hazeState,
             motionTier = motionTier,
@@ -2786,7 +2782,7 @@ private fun MiuixBottomBar(
             tuning = tuning,
             glassEnabled = glassEnabled,
             liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
-            iconStyle = SharedFloatingBottomBarIconStyle.MATERIAL,
+            iconStyle = SharedFloatingBottomBarIconStyle.CUPERTINO,
             haptic = haptic,
             hazeState = hazeState,
             motionTier = motionTier,
@@ -4809,19 +4805,13 @@ private fun BottomBarBlendedCupertinoIcon(
                 modifier = Modifier.alpha(1f - clampedSelectedAlpha),
                 contentAlignment = Alignment.Center
             ) {
-                AppIcon(
-                    imageVector = resolveHomeNavigationBarIcon(item, selected = false),
-                    contentDescription = null
-                )
+                item.unselectedIcon()
             }
             Box(
                 modifier = Modifier.alpha(clampedSelectedAlpha),
                 contentAlignment = Alignment.Center
             ) {
-                AppIcon(
-                    imageVector = resolveHomeNavigationBarIcon(item, selected = true),
-                    contentDescription = null
-                )
+                item.selectedIcon()
             }
         }
     }
