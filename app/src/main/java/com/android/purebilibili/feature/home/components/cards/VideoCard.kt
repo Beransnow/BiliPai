@@ -205,10 +205,12 @@ internal data class HomeVideoCardMetadataColors(
 )
 
 internal fun resolveHomeVideoCardMetadataColors(
-    onSurfaceColor: Color
+    onSurfaceColor: Color,
+    onSurfaceVariantColor: Color,
 ): HomeVideoCardMetadataColors {
     return HomeVideoCardMetadataColors(
-        upNameColor = onSurfaceColor,
+        // 作者信息降为次级语义色，让标题保持卡片内的第一视觉层级。
+        upNameColor = onSurfaceVariantColor,
         upMetaColor = onSurfaceColor.copy(alpha = 0.82f),
         upBadgeTextColor = onSurfaceColor.copy(alpha = 0.68f),
         upBadgeBackgroundColor = onSurfaceColor.copy(alpha = 0.10f),
@@ -1334,7 +1336,8 @@ internal fun ElegantVideoCard(
             modifier = resolveVideoCardMetadataModifier(hasTrailingCardAction)
         ) {
         val metadataColors = resolveHomeVideoCardMetadataColors(
-            onSurfaceColor = MaterialTheme.colorScheme.onSurface
+            onSurfaceColor = MaterialTheme.colorScheme.onSurface,
+            onSurfaceVariantColor = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         VideoCardOwnerMetadata(

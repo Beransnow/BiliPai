@@ -448,7 +448,7 @@ internal fun StoryVideoCard(
                     }
                 } else null,
                 nameStyle = contentTypography.author.copy(fontWeight = FontWeight.Medium),
-                nameColor = MaterialTheme.colorScheme.primary,
+                nameColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 metaColor = MaterialTheme.colorScheme.primary,
                 badgeTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
                 badgeBackgroundColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f),

@@ -254,11 +254,15 @@ class VideoCardScrollLiteVisualPolicyTest {
     }
 
     @Test
-    fun `home video metadata uses on surface colors for readable up and publish text`() {
+    fun `home video metadata keeps creator secondary to title`() {
         val onSurface = Color(0xFF1D1B20)
-        val colors = resolveHomeVideoCardMetadataColors(onSurface)
+        val onSurfaceVariant = Color(0xFF49454F)
+        val colors = resolveHomeVideoCardMetadataColors(
+            onSurfaceColor = onSurface,
+            onSurfaceVariantColor = onSurfaceVariant,
+        )
 
-        assertEquals(onSurface, colors.upNameColor)
+        assertEquals(onSurfaceVariant, colors.upNameColor)
         assertEquals(onSurface.copy(alpha = 0.82f), colors.upMetaColor)
         assertEquals(onSurface.copy(alpha = 0.68f), colors.upBadgeTextColor)
         assertEquals(onSurface.copy(alpha = 0.10f), colors.upBadgeBackgroundColor)
