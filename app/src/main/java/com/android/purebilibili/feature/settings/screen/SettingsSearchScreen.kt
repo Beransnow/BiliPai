@@ -27,6 +27,7 @@ import com.android.purebilibili.feature.settings.SettingsPageScrollHost
 import com.android.purebilibili.feature.settings.SettingsRootCategory
 import com.android.purebilibili.feature.settings.SettingsRootCategoryEntranceSection
 import com.android.purebilibili.feature.settings.SettingsSearchBarSection
+import com.android.purebilibili.feature.settings.SettingsSearchFocusController
 import com.android.purebilibili.feature.settings.SettingsSearchResult
 import com.android.purebilibili.feature.settings.SettingsSearchResultsSection
 import com.android.purebilibili.feature.settings.SettingsViewModel
