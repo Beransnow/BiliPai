@@ -256,7 +256,7 @@ fun AnimationSettingsContent(
                             iconTint = iOSTeal
                         )
                         AppPreferenceDivider()
-                        AppSegmentedPreference(
+                        SettingsSingleChoicePreference(
                             title = "共享元素速度：${state.videoSharedTransitionSpeed.label}",
                             subtitle = "连续性缓出 + 柔和回弹；自定义只调整时长",
                             options = sharedTransitionSpeedOptions,
@@ -264,46 +264,24 @@ fun AnimationSettingsContent(
                             onSelectionChange = viewModel::setVideoSharedTransitionSpeed
                         )
                         if (state.videoSharedTransitionSpeed == VideoSharedTransitionSpeed.CUSTOM) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 10.dp)
-                            ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    AppText(
-                                        text = "自定义时长",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                    AppText(
-                                        text = "${customTransitionDurationMillis}ms",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = FontWeight.Medium,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                }
-                                AppSlider(
-                                    value = customTransitionDurationMillis.toFloat(),
-                                    onValueChange = { value ->
-                                        customTransitionDurationMillis = snapCustomTransitionDuration(value)
-                                    },
-                                    onValueChangeFinished = {
-                                        viewModel.setVideoSharedTransitionCustomDurationMillis(
-                                            customTransitionDurationMillis
-                                        )
-                                    },
-                                    valueRange = VIDEO_SHARED_TRANSITION_CUSTOM_MIN_MILLIS.toFloat()..
-                                        VIDEO_SHARED_TRANSITION_CUSTOM_MAX_MILLIS.toFloat(),
-                                    steps = (
-                                        (VIDEO_SHARED_TRANSITION_CUSTOM_MAX_MILLIS -
-                                            VIDEO_SHARED_TRANSITION_CUSTOM_MIN_MILLIS) / 20
-                                        ) - 1
-                                )
-                            }
+                            AppPreferenceDivider()
+                            AppSliderDialogPreference(
+                                title = "自定义时长",
+                                subtitle = "共享元素过渡持续时间",
+                                value = customTransitionDurationMillis.toFloat(),
+                                onValueChange = { value ->
+                                    val snappedValue = snapCustomTransitionDuration(value)
+                                    customTransitionDurationMillis = snappedValue
+                                    viewModel.setVideoSharedTransitionCustomDurationMillis(snappedValue)
+                                },
+                                valueRange = VIDEO_SHARED_TRANSITION_CUSTOM_MIN_MILLIS.toFloat()..
+                                    VIDEO_SHARED_TRANSITION_CUSTOM_MAX_MILLIS.toFloat(),
+                                steps = (
+                                    (VIDEO_SHARED_TRANSITION_CUSTOM_MAX_MILLIS -
+                                        VIDEO_SHARED_TRANSITION_CUSTOM_MIN_MILLIS) / 20
+                                    ) - 1,
+                                valueFormatter = { value -> "${value.roundToInt()}ms" },
+                            )
                         }
                         AppPreferenceDivider()
                         Column(

@@ -128,6 +128,10 @@ val LocalAppPreferenceIconTreatment = staticCompositionLocalOf {
     AppPreferenceIconTreatment.TONAL
 }
 
+val LocalAppPreferenceGroupPresentation = staticCompositionLocalOf {
+    AppPreferenceGroupPresentation.CARD
+}
+
 internal data class AdaptiveSwitchVisualSpec(
     val usePlatformDefaults: Boolean,
     val checkedThumbColor: Color,
@@ -721,7 +725,14 @@ fun AdaptivePreferenceGroupRenderer(
     presentation: AppPreferenceGroupPresentation = AppPreferenceGroupPresentation.CARD,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    if (presentation == AppPreferenceGroupPresentation.FLAT) {
+    val resolvedPresentation = if (
+        LocalAppPreferenceGroupPresentation.current == AppPreferenceGroupPresentation.FLAT
+    ) {
+        AppPreferenceGroupPresentation.FLAT
+    } else {
+        presentation
+    }
+    if (resolvedPresentation == AppPreferenceGroupPresentation.FLAT) {
         Column(modifier = modifier, content = content)
         return
     }

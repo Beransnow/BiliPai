@@ -92,7 +92,7 @@ import com.android.purebilibili.core.ui.components.AppSwitchPreference as Settin
 import com.android.purebilibili.core.ui.components.AppPreference as SettingClickableItem
 import com.android.purebilibili.core.ui.common.rememberClipboardCopyHandler
 import com.android.purebilibili.core.ui.components.AppPreferenceDivider as SettingsDivider
-import com.android.purebilibili.core.ui.components.AppSliderPreference as SettingSliderItem
+import com.android.purebilibili.core.ui.components.AppSliderDialogPreference as SettingSliderItem
 import com.android.purebilibili.core.ui.components.AppPreferenceGroupPresentation
 
 
@@ -1182,40 +1182,15 @@ fun FeedApiSection(
     val previewTextIcon = rememberSettingsSemanticIcon(SettingsIconRole.DYNAMIC_PREVIEW_TEXT)
     val topBarCollapseIcon = rememberSettingsSemanticIcon(SettingsIconRole.NAVIGATION)
     SettingsCardGroup {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                AppIcon(
-                    imageVector = feedIcon,
-                    contentDescription = null,
-                    modifier = Modifier.size(24.dp),
-                    tint = feedTint
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    AppText(
-                        text = "推荐流类型",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    AppText(
-                        text = feedApiType.description,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-
-            AppSegmentedControl(
-                options = resolveFeedApiSegmentOptions(),
-                selectedValue = feedApiType,
-                onSelectionChange = onFeedApiTypeChange
-            )
-        }
+        SettingsSingleChoicePreference(
+            title = "推荐流类型",
+            subtitle = feedApiType.description,
+            options = resolveFeedApiSegmentOptions(),
+            selectedValue = feedApiType,
+            icon = feedIcon,
+            iconTint = feedTint,
+            onSelectionChange = onFeedApiTypeChange,
+        )
         SettingsAdaptiveDivider()
         SettingSwitchItem(
             icon = refreshIcon,
@@ -1257,33 +1232,9 @@ fun FeedApiSection(
             iconTint = feedTint
         )
         SettingsAdaptiveDivider()
-        //  [新增] 动态 Feed 布局模式（对齐 PiliPlus dynamicsWaterfallFlow）
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            AppIcon(
-                imageVector = feedIcon,
-                contentDescription = null,
-                modifier = Modifier.size(24.dp),
-                tint = feedTint
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                AppText(
-                    text = "动态 Feed 布局",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                AppText(
-                    text = "瀑布流多列自适应；列表单列居中",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        AppSegmentedControl(
+        SettingsSingleChoicePreference(
+            title = "动态 Feed 布局",
+            subtitle = "瀑布流多列自适应；列表单列居中",
             options = com.android.purebilibili.core.store.SettingsManager.DynamicFeedLayoutMode.entries.map { mode ->
                 com.android.purebilibili.core.ui.components.AppSegmentOption(
                     value = mode,
@@ -1291,7 +1242,9 @@ fun FeedApiSection(
                 )
             },
             selectedValue = dynamicFeedLayoutMode,
-            onSelectionChange = onDynamicFeedLayoutModeChange
+            icon = feedIcon,
+            iconTint = feedTint,
+            onSelectionChange = onDynamicFeedLayoutModeChange,
         )
         SettingsAdaptiveDivider()
         FeedDynamicTabVisibilityItem(
@@ -1309,7 +1262,7 @@ fun FeedApiSection(
             onValueChange = { value -> onHomeRefreshCountChange(value.roundToInt()) },
             valueRange = resolveHomeRefreshSliderRange(),
             steps = resolveHomeRefreshSliderSteps(),
-            valueLabel = homeRefreshCount.toString(),
+            valueFormatter = { value -> value.roundToInt().toString() },
             iconTint = incrementalRefreshTint
         )
     }

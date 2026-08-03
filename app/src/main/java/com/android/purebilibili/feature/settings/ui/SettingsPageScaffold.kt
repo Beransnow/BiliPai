@@ -34,7 +34,9 @@ import com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppPreferenceIconTreatment
+import com.android.purebilibili.core.ui.components.AppPreferenceGroupPresentation
 import com.android.purebilibili.core.ui.components.LocalAppPreferenceIconTreatment
+import com.android.purebilibili.core.ui.components.LocalAppPreferenceGroupPresentation
 import com.android.purebilibili.feature.settings.SettingsPageScrollHost
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -66,6 +68,7 @@ internal fun SettingsPageScaffold(
     CompositionLocalProvider(
         LocalGlobalWallpaperBackdropVisible provides false,
         LocalAppPreferenceIconTreatment provides AppPreferenceIconTreatment.FILLED,
+        LocalAppPreferenceGroupPresentation provides AppPreferenceGroupPresentation.FLAT,
     ) {
         AppScaffold(
             modifier = modifier,
