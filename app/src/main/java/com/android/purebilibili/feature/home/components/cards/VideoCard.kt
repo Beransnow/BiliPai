@@ -843,6 +843,12 @@ internal fun ElegantVideoCard(
         val cardShellShape = remember(cardCornerRadius) {
             RoundedCornerShape(cardCornerRadius)
         }
+        // 卡片表面留在首页布局层，不进入 sharedBounds overlay；否则打开详情时
+        // 主题 surface 色会随整卡形变并盖住播放器实时画面，表现为灰色色块。
+        val cardSurfaceModifier = Modifier
+            .fillMaxWidth()
+            .clip(cardShellShape)
+            .background(AppSurfaceTokens.cardContainer())
         val cardContainerModifier = Modifier
             .fillMaxWidth()
             .videoCardShellSharedBoundsOrEmpty(
@@ -854,11 +860,10 @@ internal fun ElegantVideoCard(
                 motionSpec = homeSharedTransitionMotionSpec,
                 clipShape = cardShellShape
             )
-            .clip(cardShellShape)
-            .background(AppSurfaceTokens.cardContainer())
-        Column(
-            modifier = cardContainerModifier
-        ) {
+        Box(modifier = cardSurfaceModifier) {
+            Column(
+                modifier = cardContainerModifier
+            ) {
         //  [性能优化] 封面圆角形状缓存（避免重组时重复创建）
         val coverShape = remember(cardCornerRadius) {
             RoundedCornerShape(
@@ -1492,7 +1497,8 @@ internal fun ElegantVideoCard(
             }
         }
 
-    }
+            }
+        }
     }
         
         // 菜单需要挂在一个本地小锚点上，避免 DropdownMenu 在整张卡片根节点右侧 fallback 时反向偏移。
