@@ -48,8 +48,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.purebilibili.R
-import com.android.purebilibili.core.store.BottomBarSearchAutoExpandMode
-import com.android.purebilibili.core.store.BottomBarSearchLayoutMode
 import com.android.purebilibili.core.store.CommonListHeaderCollapseMode
 import com.android.purebilibili.core.store.HomeDurationStyle
 import com.android.purebilibili.core.store.HomeFeedCardStyle
@@ -88,20 +86,28 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
  *  外观设置二级页面
  * iOS 风格设计
  */
+enum class AppearanceSettingsContentMode {
+    APPEARANCE,
+    HOME,
+}
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 @Composable
 fun AppearanceSettingsScreen(
     viewModel: SettingsViewModel = viewModel(),
     onBack: () -> Unit,
-    onNavigateToIconSettings: () -> Unit = {},  //  [新增] 图标设置导航
-    onNavigateToAnimationSettings: () -> Unit = {}  //  [新增] 动画设置导航
+    onNavigateToIconSettings: () -> Unit = {},
+    contentMode: AppearanceSettingsContentMode = AppearanceSettingsContentMode.APPEARANCE,
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope()
     var pendingLanguageRestart by remember { mutableStateOf<AppLanguage?>(null) }
     val backLabel = stringResource(R.string.common_back)
-    val screenTitle = stringResource(R.string.appearance_settings_title)
+    val screenTitle = when (contentMode) {
+        AppearanceSettingsContentMode.APPEARANCE -> stringResource(R.string.appearance_settings_title)
+        AppearanceSettingsContentMode.HOME -> "首页设置"
+    }
     val restartDialogTitle = stringResource(R.string.app_language_restart_dialog_title)
     val restartDialogMessage = stringResource(R.string.app_language_restart_dialog_message)
     val restartDialogConfirm = stringResource(R.string.app_language_restart_dialog_confirm)
@@ -148,7 +154,7 @@ fun AppearanceSettingsScreen(
             AppearanceSettingsContent(
                 state = state,
                 onNavigateToIconSettings = onNavigateToIconSettings,
-                onNavigateToAnimationSettings = onNavigateToAnimationSettings,
+                contentMode = contentMode,
                 viewModel = viewModel,
                 context = context,
                 onAppLanguageChange = { language ->
@@ -190,14 +196,24 @@ fun AppearanceSettingsScreen(
     }
 }
 
-
+@Composable
+fun HomeSettingsScreen(
+    viewModel: SettingsViewModel = viewModel(),
+    onBack: () -> Unit,
+) {
+    AppearanceSettingsScreen(
+        viewModel = viewModel,
+        onBack = onBack,
+        contentMode = AppearanceSettingsContentMode.HOME,
+    )
+}
 
 @Composable
 fun AppearanceSettingsContent(
     modifier: Modifier = Modifier,
     state: SettingsUiState,
     onNavigateToIconSettings: () -> Unit,
-    onNavigateToAnimationSettings: () -> Unit,
+    contentMode: AppearanceSettingsContentMode,
     viewModel: SettingsViewModel,
     context: android.content.Context,
     onAppLanguageChange: (AppLanguage) -> Unit
@@ -212,8 +228,16 @@ fun AppearanceSettingsContent(
     val isTablet = configuration.screenWidthDp >= 600 // Material Design 3 中型屏幕断点
     LaunchedEffect(focusRequest?.token, isTablet) {
         val request = focusRequest ?: return@LaunchedEffect
-        if (request.target != SettingsSearchTarget.APPEARANCE) return@LaunchedEffect
-        val index = resolveAppearanceSettingsScrollIndex(request.focusId, isTablet) ?: return@LaunchedEffect
+        val expectedTarget = when (contentMode) {
+            AppearanceSettingsContentMode.APPEARANCE -> SettingsSearchTarget.APPEARANCE
+            AppearanceSettingsContentMode.HOME -> SettingsSearchTarget.HOME_FEED
+        }
+        if (request.target != expectedTarget) return@LaunchedEffect
+        val index = when (contentMode) {
+            AppearanceSettingsContentMode.APPEARANCE ->
+                resolveAppearanceSettingsScrollIndex(request.focusId, isTablet)
+            AppearanceSettingsContentMode.HOME -> resolveHomeSettingsScrollIndex(request.focusId)
+        } ?: return@LaunchedEffect
         listState.animateScrollToItem(index)
         SettingsSearchFocusController.clear(request.token)
     }
@@ -396,19 +420,6 @@ fun AppearanceSettingsContent(
             AppSegmentOption(HomeWallpaperEffectScope.GLOBAL, "全局")
         )
     }
-    val bottomBarSearchAutoExpandOptions = remember {
-        listOf(
-            AppSegmentOption(BottomBarSearchAutoExpandMode.DISABLED, "不自动"),
-            AppSegmentOption(BottomBarSearchAutoExpandMode.EXPAND_WHEN_SCROLLING_DOWN, "下滑展开"),
-            AppSegmentOption(BottomBarSearchAutoExpandMode.EXPAND_AT_HOME_TOP, "顶部展开")
-        )
-    }
-    val bottomBarSearchLayoutOptions = remember {
-        listOf(
-            AppSegmentOption(BottomBarSearchLayoutMode.FULL_DOCK, "完整底栏"),
-            AppSegmentOption(BottomBarSearchLayoutMode.HOME_AND_SEARCH, "首页+搜索")
-        )
-    }
     val homeUpBadgesVisible by SettingsManager
         .getHomeUpBadgesVisible(context)
         .collectAsStateWithLifecycle(initialValue = true)
@@ -480,7 +491,8 @@ fun AppearanceSettingsContent(
         // [Fix] 为可展开配置项增加安全底部留白，避免“小屏+展开”时显示不全
         contentPadding = PaddingValues(bottom = contentBottomPadding)
     ) {
-        
+        if (contentMode == AppearanceSettingsContentMode.APPEARANCE) {
+
         //  主题与颜色
         item { 
             Box(modifier = Modifier.entrance()) {
@@ -1213,59 +1225,12 @@ fun AppearanceSettingsContent(
                         onClick = onNavigateToIconSettings,
                         iconTint = iOSPurple
                     )
-                    AppPreferenceDivider()
-                    // 动画设置
-	                    AppPreference(
-	                        icon = rememberSettingsSemanticIcon(SettingsIconRole.ANIMATION),
-                        title = "动画与效果",
-                        value = if (state.cardAnimationEnabled) "已开启" else "已关闭",
-                        onClick = onNavigateToAnimationSettings,
-                        iconTint = iOSPink
-                    )
-
-                    AppPreferenceDivider()
-	                    AppSwitchPreference(
-	                        icon = rememberSettingsSemanticIcon(SettingsIconRole.OPEN_LINKS),
-                        title = "底栏搜索入口",
-                        subtitle = "在悬浮底栏右侧显示搜索入口",
-                        checked = state.bottomBarSearchEnabled,
-                        onCheckedChange = { viewModel.toggleBottomBarSearch(it) },
-                        iconTint = iOSTeal
-                    )
-
-                    AppPreferenceDivider()
-                    SettingsSingleChoicePreference(
-                        title = "底栏搜索布局",
-                        subtitle = "完整底栏保留全部入口；首页+搜索只保留首页刷新和搜索",
-                        options = bottomBarSearchLayoutOptions,
-                        selectedValue = state.bottomBarSearchLayoutMode,
-                        enabled = state.bottomBarSearchEnabled,
-                        onSelectionChange = { viewModel.setBottomBarSearchLayoutMode(it) }
-                    )
-
-                    AppPreferenceDivider()
-                    SettingsSingleChoicePreference(
-                        title = "搜索框自动展开",
-                        subtitle = "选择回到首页顶部或向下浏览时自动展开",
-                        options = bottomBarSearchAutoExpandOptions,
-                        selectedValue = state.bottomBarSearchAutoExpandMode,
-                        enabled = state.bottomBarSearchEnabled,
-                        onSelectionChange = { viewModel.setBottomBarSearchAutoExpandMode(it) }
-                    )
-
-                    AppPreferenceDivider()
-                    // 触感反馈
-	                    AppSwitchPreference(
-	                        icon = rememberSettingsSemanticIcon(SettingsIconRole.FULLSCREEN_GESTURE),
-                        title = "触感反馈",
-                        checked = state.hapticFeedbackEnabled,
-                        onCheckedChange = { viewModel.toggleHapticFeedback(it) },
-                        iconTint = iOSBlue
-                    )
                 }
             }
         } // End of Personalization item
+        }
 
+        if (contentMode == AppearanceSettingsContentMode.HOME) {
             //  首页与列表
             item { 
                 Box(modifier = Modifier.entrance()) {
@@ -1285,7 +1250,7 @@ fun AppearanceSettingsContent(
                                 AppSegmentOption(mode.value, mode.title)
                             },
                             selectedValue = displayMode,
-                            icon = rememberSettingsSemanticIcon(SettingsIconRole.DISPLAY_STYLE),
+                            icon = rememberSettingsSemanticIcon(SettingsIconRole.HOME_FEED),
                             iconTint = displayModeTint,
                             onSelectionChange = viewModel::setDisplayMode,
                         )
@@ -1550,97 +1515,42 @@ fun AppearanceSettingsContent(
                         ) {
                             Column {
                                 AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
-                                    ) {
-                                        AppIcon(
-                                            CupertinoIcons.Default.ListBullet,
-                                            contentDescription = null,
-                                            tint = com.android.purebilibili.core.theme.iOSBlue,
-                                            modifier = Modifier.size(24.dp)
+                                SettingsSingleChoicePreference(
+                                    icon = CupertinoIcons.Default.ListBullet,
+                                    iconTint = com.android.purebilibili.core.theme.iOSBlue,
+                                    title = "网格列数",
+                                    subtitle = if (state.gridColumnCount == 0) {
+                                        "自适应（默认）"
+                                    } else {
+                                        "固定 ${state.gridColumnCount} 列"
+                                    },
+                                    options = (0..6).map { count ->
+                                        AppSegmentOption(
+                                            value = count,
+                                            label = if (count == 0) "自动" else "$count 列",
                                         )
-                                        Spacer(modifier = Modifier.width(16.dp))
-                                        Column {
-                                            AppText(
-                                                text = "网格列数",
-                                                style = MaterialTheme.typography.bodyLarge,
-                                                color = MaterialTheme.colorScheme.onSurface
-                                            )
-                                            AppText(
-                                                text = if (state.gridColumnCount == 0) "自适应 (默认)" else "固定 ${state.gridColumnCount} 列",
-                                                style = MaterialTheme.typography.bodySmall,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        }
-                                    }
-                                    
-                                    // 列数选择器
-                                    LazyRow(
-                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        item {
-                                            // 自动
-                                            val isSelected = state.gridColumnCount == 0
-                                            Box(
-                                                modifier = Modifier
-                                                    .height(36.dp)
-                                                    .clip(AppShapes.container(ContainerLevel.Field))
-                                                    .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                                                    .clickable { viewModel.setGridColumnCount(0) }
-                                                    .padding(horizontal = 16.dp),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                AppText(
-                                                    text = "自动",
-                                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                                                    style = MaterialTheme.typography.labelMedium,
-                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                                                )
-                                            }
-                                        }
-                                        items(6, key = { it }) { i ->
-                                            val count = i + 1
-                                            val isSelected = state.gridColumnCount == count
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(36.dp) // Square for numbers
-                                                    .clip(AppShapes.container(ContainerLevel.Field))
-                                                    .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                                                    .clickable { viewModel.setGridColumnCount(count) },
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                AppText(
-                                                    text = "$count",
-                                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                                                    style = MaterialTheme.typography.labelMedium,
-                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
-                                                )
-                                            }
-                                        }
-                                    }
-
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                    SettingsSingleChoicePreference(
-                                        title = "推荐流卡片宽度：${state.homeFeedCardWidthPreset.label}",
-                                        subtitle = if (state.gridColumnCount > 0) {
-                                            "当前固定 ${state.gridColumnCount} 列优先生效，自动列数时使用该宽度"
-                                        } else {
-                                            "自动列数时控制首页推荐卡片的最小宽度"
-                                        },
-                                        options = resolveHomeFeedCardWidthPresetSegmentOptions(),
-                                        selectedValue = state.homeFeedCardWidthPreset,
-                                        onSelectionChange = viewModel::setHomeFeedCardWidthPreset
-                                    )
-                                }
+                                    },
+                                    selectedValue = state.gridColumnCount,
+                                    onSelectionChange = viewModel::setGridColumnCount,
+                                )
+                                AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
+                                SettingsSingleChoicePreference(
+                                    title = "推荐流卡片宽度",
+                                    subtitle = if (state.gridColumnCount > 0) {
+                                        "当前固定 ${state.gridColumnCount} 列优先生效，自动列数时使用该宽度"
+                                    } else {
+                                        "自动列数时控制首页推荐卡片的最小宽度"
+                                    },
+                                    options = resolveHomeFeedCardWidthPresetSegmentOptions(),
+                                    selectedValue = state.homeFeedCardWidthPreset,
+                                    onSelectionChange = viewModel::setHomeFeedCardWidthPreset,
+                                )
                             }
                         }
                     }
                 }
             }
-        
+        }
 
     }
     }

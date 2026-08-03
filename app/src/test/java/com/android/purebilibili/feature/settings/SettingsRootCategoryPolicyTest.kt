@@ -50,6 +50,10 @@ class SettingsRootCategoryPolicyTest {
             resolveSettingsRootCategoryForSearchTarget(SettingsSearchTarget.FULLSCREEN_GESTURE),
         )
         assertEquals(
+            SettingsRootCategory.PLAYBACK_QUALITY,
+            resolveSettingsRootCategoryForSearchTarget(SettingsSearchTarget.INTERACTION_COMMENT),
+        )
+        assertEquals(
             SettingsRootCategory.NAVIGATION_INTERACTION,
             resolveSettingsRootCategoryForSearchTarget(SettingsSearchTarget.ANIMATION),
         )
@@ -64,6 +68,14 @@ class SettingsRootCategoryPolicyTest {
         assertEquals(
             SettingsRootCategory.SYSTEM_ABOUT,
             resolveSettingsRootCategoryForSearchTarget(SettingsSearchTarget.TELEGRAM),
+        )
+        assertEquals(
+            SettingsRootCategory.SYSTEM_ABOUT,
+            resolveSettingsRootCategoryForSearchTarget(SettingsSearchTarget.TIPS),
+        )
+        assertEquals(
+            SettingsRootCategory.SYSTEM_ABOUT,
+            resolveSettingsRootCategoryForSearchTarget(SettingsSearchTarget.EXPORT_LOGS),
         )
     }
 

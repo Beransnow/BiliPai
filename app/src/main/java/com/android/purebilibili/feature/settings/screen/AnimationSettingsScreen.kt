@@ -189,6 +189,15 @@ fun AnimationSettingsContent(
                             },
                             iconTint = iOSGreen
                         )
+                        AppPreferenceDivider()
+                        AppSwitchPreference(
+                            icon = rememberSettingsSemanticIcon(SettingsIconRole.FULLSCREEN_GESTURE),
+                            title = "触感反馈",
+                            subtitle = "为导航、切换与关键操作提供触感反馈",
+                            checked = state.hapticFeedbackEnabled,
+                            onCheckedChange = viewModel::toggleHapticFeedback,
+                            iconTint = iOSBlue,
+                        )
                         if (entranceDowngradedBySystem) {
                             AppPreferenceDivider()
                             Column(
@@ -404,27 +413,6 @@ fun AnimationSettingsContent(
                                 onIntensityChange = { viewModel.setBlurIntensity(it) }
                             )
                         }
-                    }
-                }
-            }
-            
-            // 📐 底栏样式
-            item {
-                Box(modifier = Modifier.entrance()) {
-                    AppPreferenceSectionTitle("底栏入口")
-                }
-            }
-            item {
-                Box(modifier = Modifier.entrance()) {
-                    AppPreferenceGroup {
-	                        AppSwitchPreference(
-	                            icon = rememberSettingsSemanticIcon(SettingsIconRole.FLOATING_BOTTOM_BAR),
-                            title = "悬浮底栏",
-                            subtitle = "关闭后底栏将沉浸式贴底显示",
-                            checked = state.isBottomBarFloating,
-                            onCheckedChange = { viewModel.toggleBottomBarFloating(it) },
-                            iconTint = iOSPurple
-                        )
                     }
                 }
             }

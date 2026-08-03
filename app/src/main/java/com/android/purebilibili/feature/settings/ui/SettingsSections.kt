@@ -186,6 +186,7 @@ internal data class SettingsDetailEntry(
 
 internal data class SettingsRootCategoryActions(
     val onAppearanceClick: () -> Unit,
+    val onHomeClick: () -> Unit,
     val onAnimationClick: () -> Unit,
     val onPlaybackClick: () -> Unit,
     val onBottomBarClick: () -> Unit,
@@ -629,6 +630,21 @@ internal fun SettingsRootCategoryContent(
                         )
                     }
                 }
+                Spacer(modifier = Modifier.height(12.dp))
+                SettingsRootCategoryEntranceSection {
+                    SettingsDetailGroup(title = "互动与评论") {
+                        SettingsDetailEntrySection(
+                            entries = listOf(
+                                SettingsDetailEntry(
+                                    target = SettingsSearchTarget.INTERACTION_COMMENT,
+                                    title = "互动、评论与内容预览",
+                                    value = "评论、点赞、简介与视频内容交互",
+                                    onClick = actions.onPlaybackClick,
+                                ),
+                            ),
+                        )
+                    }
+                }
             }
             SettingsRootCategory.HOME_RECOMMENDATION -> {
                 SettingsRootCategoryEntranceSection {
@@ -639,7 +655,7 @@ internal fun SettingsRootCategoryContent(
                                     target = SettingsSearchTarget.HOME_FEED,
                                     title = "首页样式与推荐卡片",
                                     value = "卡片样式、壁纸效果与推荐流宽度",
-                                    onClick = actions.onAppearanceClick,
+                                    onClick = actions.onHomeClick,
                                 ),
                             ),
                         )
@@ -667,21 +683,6 @@ internal fun SettingsRootCategoryContent(
                             onDynamicTabVisibilityChange = actions.onDynamicTabVisibilityChange,
                             homeRefreshCount = state.homeRefreshCount,
                             onHomeRefreshCountChange = actions.onHomeRefreshCountChange,
-                        )
-                    }
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                SettingsRootCategoryEntranceSection {
-                    SettingsDetailGroup(title = "互动") {
-                        SettingsDetailEntrySection(
-                            entries = listOf(
-                                SettingsDetailEntry(
-                                    target = SettingsSearchTarget.INTERACTION_COMMENT,
-                                    title = "互动与评论",
-                                    value = "评论、点赞、简介与内容预览",
-                                    onClick = actions.onPlaybackClick,
-                                ),
-                            ),
                         )
                     }
                 }
@@ -750,23 +751,11 @@ internal fun SettingsRootCategoryContent(
             SettingsRootCategory.PLUGINS_EXTENSIONS -> {
                 SettingsRootCategoryEntranceSection {
                     SettingsDetailGroup(title = "插件与扩展") {
-                        DeveloperSection(
-                            crashTrackingEnabled = state.crashTrackingEnabled,
-                            analyticsEnabled = state.analyticsEnabled,
+                        PluginCenterSection(
                             pluginCount = state.pluginCount,
-                            onCrashTrackingChange = actions.onCrashTrackingChange,
-                            onAnalyticsChange = actions.onAnalyticsChange,
                             onPluginsClick = actions.onPluginsClick,
-                            onExportLogsClick = actions.onExportLogsClick,
                         )
                     }
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-                SettingsRootCategoryEntranceSection {
-                    SupportToolsSection(
-                        onTipsClick = actions.onTipsClick,
-                        onOpenLinksClick = actions.onOpenLinksClick,
-                    )
                 }
             }
             SettingsRootCategory.APPEARANCE_INTERACTION -> {
@@ -933,6 +922,14 @@ internal fun SettingsRootCategoryContent(
             SettingsRootCategory.SYSTEM_ABOUT -> {
                 SettingsRootCategoryEntranceSection {
                     SettingsDetailGroup(title = "系统诊断") {
+                        DiagnosticsSection(
+                            crashTrackingEnabled = state.crashTrackingEnabled,
+                            analyticsEnabled = state.analyticsEnabled,
+                            onCrashTrackingChange = actions.onCrashTrackingChange,
+                            onAnalyticsChange = actions.onAnalyticsChange,
+                            onExportLogsClick = actions.onExportLogsClick,
+                        )
+                        SettingsAdaptiveDivider()
                         SettingsDetailEntrySection(
                             entries = listOf(
                                 SettingsDetailEntry(
@@ -942,6 +939,15 @@ internal fun SettingsRootCategoryContent(
                                     onClick = actions.onPlaybackClick
                                 )
                             )
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(12.dp))
+                SettingsRootCategoryEntranceSection {
+                    SettingsDetailGroup(title = "帮助与系统") {
+                        SupportToolsSection(
+                            onTipsClick = actions.onTipsClick,
+                            onOpenLinksClick = actions.onOpenLinksClick,
                         )
                     }
                 }
@@ -1473,6 +1479,65 @@ fun DataStorageSection(
             onClick = onClearCacheClick,
             iconTint = clearCacheVisual.iconTint,
             showChevron = showExplicitActionChevron
+        )
+    }
+}
+
+@Composable
+private fun PluginCenterSection(
+    pluginCount: Int,
+    onPluginsClick: () -> Unit,
+) {
+    val pluginsVisual = rememberSettingsEntryVisual(SettingsSearchTarget.PLUGINS)
+    SettingsCardGroup {
+        SettingClickableItem(
+            icon = pluginsVisual.icon,
+            iconPainter = pluginsVisual.iconResId?.let { painterResource(id = it) },
+            title = "插件中心",
+            value = "$pluginCount 个已启用",
+            onClick = onPluginsClick,
+            iconTint = pluginsVisual.iconTint,
+        )
+    }
+}
+
+@Composable
+private fun DiagnosticsSection(
+    crashTrackingEnabled: Boolean,
+    analyticsEnabled: Boolean,
+    onCrashTrackingChange: (Boolean) -> Unit,
+    onAnalyticsChange: (Boolean) -> Unit,
+    onExportLogsClick: () -> Unit,
+) {
+    val crashTrackingTint = rememberSettingsEntryTint(AppSemanticAccentRole.SECONDARY, iOSTeal)
+    val analyticsTint = rememberSettingsEntryTint(AppSemanticAccentRole.PRIMARY, iOSBlue)
+    val exportLogsVisual = rememberSettingsEntryVisual(SettingsSearchTarget.EXPORT_LOGS)
+    SettingsCardGroup {
+        SettingSwitchItem(
+            icon = rememberSettingsSemanticIcon(SettingsIconRole.CRASH_TRACKING),
+            title = "崩溃追踪",
+            subtitle = "默认开启，仅用于定位崩溃与严重故障",
+            checked = crashTrackingEnabled,
+            onCheckedChange = onCrashTrackingChange,
+            iconTint = crashTrackingTint,
+        )
+        SettingsAdaptiveDivider()
+        SettingSwitchItem(
+            icon = rememberSettingsSemanticIcon(SettingsIconRole.ANALYTICS),
+            title = "使用情况统计",
+            subtitle = "默认开启，用于匿名统计每日活跃与基础使用情况",
+            checked = analyticsEnabled,
+            onCheckedChange = onAnalyticsChange,
+            iconTint = analyticsTint,
+        )
+        SettingsAdaptiveDivider()
+        SettingClickableItem(
+            icon = exportLogsVisual.icon,
+            iconPainter = exportLogsVisual.iconResId?.let { painterResource(id = it) },
+            title = "导出日志",
+            value = "播放器诊断与问题反馈",
+            onClick = onExportLogsClick,
+            iconTint = exportLogsVisual.iconTint,
         )
     }
 }

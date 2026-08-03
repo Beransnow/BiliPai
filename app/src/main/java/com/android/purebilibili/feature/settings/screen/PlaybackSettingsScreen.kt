@@ -4,7 +4,6 @@ import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
 
 import com.android.purebilibili.core.ui.components.AppSegmentOption
-import com.android.purebilibili.core.ui.components.AppRadioButton
 import android.app.AppOpsManager
 import android.content.Context
 import android.content.Intent
@@ -129,7 +128,6 @@ fun PlaybackSettingsContent(
 
 
     var showPipPermissionDialog by remember { mutableStateOf(false) }
-    var showPlayerInsightModeDialog by remember { mutableStateOf(false) }
     val playbackInsightScope = rememberCoroutineScope()
 
     // 获取动态圆角用于统一风格
@@ -223,41 +221,6 @@ fun PlaybackSettingsContent(
             dismissButton = {
                 com.android.purebilibili.core.ui.AppDialogAction(onClick = { showPipPermissionDialog = false }) {
                     AppText("暂不开启", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
-        )
-    }
-
-    if (showPlayerInsightModeDialog) {
-        com.android.purebilibili.core.ui.AppAlertDialog(
-            onDismissRequest = { showPlayerInsightModeDialog = false },
-            title = { AppText("播放器洞察") },
-            text = {
-                Column {
-                    listOf(
-                        PlayerSettingsStore.PlayerInsightMode.OFF to "关闭",
-                        PlayerSettingsStore.PlayerInsightMode.SMART to "智能显示",
-                        PlayerSettingsStore.PlayerInsightMode.ALWAYS to "始终显示"
-                    ).forEach { (mode, label) ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .heightIn(min = 48.dp)
-                                .clickable {
-                                    playbackInsightScope.launch {
-                                        SettingsManager.setPlayerInsightMode(context, mode)
-                                    }
-                                    showPlayerInsightModeDialog = false
-                                },
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            AppRadioButton(
-                                selected = playerInsightMode == mode,
-                                onClick = null
-                            )
-                            AppText(label, color = MaterialTheme.colorScheme.onSurface)
-                        }
-                    }
                 }
             }
         )
@@ -615,7 +578,7 @@ fun PlaybackSettingsContent(
                 Box(modifier = Modifier.entrance()) {
                     val scope = rememberCoroutineScope()
                     AppPreferenceGroup {
-	                        AppPreference(
+	                        SettingsSingleChoicePreference(
                             icon = rememberSettingsSemanticIcon(SettingsIconRole.PLAYER_STATS),
                             title = "播放器洞察",
                             subtitle = when (playerInsightMode) {
@@ -623,13 +586,18 @@ fun PlaybackSettingsContent(
                                 PlayerSettingsStore.PlayerInsightMode.SMART -> "控制栏出现时显示；观测到掉帧或软件解码时主动保留"
                                 PlayerSettingsStore.PlayerInsightMode.ALWAYS -> "常驻显示实测的编解码、码率与播放状态"
                             },
-                            value = when (playerInsightMode) {
-                                PlayerSettingsStore.PlayerInsightMode.OFF -> "关闭"
-                                PlayerSettingsStore.PlayerInsightMode.SMART -> "智能"
-                                PlayerSettingsStore.PlayerInsightMode.ALWAYS -> "常驻"
+                            options = listOf(
+                                AppSegmentOption(PlayerSettingsStore.PlayerInsightMode.OFF, "关闭"),
+                                AppSegmentOption(PlayerSettingsStore.PlayerInsightMode.SMART, "智能显示"),
+                                AppSegmentOption(PlayerSettingsStore.PlayerInsightMode.ALWAYS, "始终显示"),
+                            ),
+                            selectedValue = playerInsightMode,
+                            onSelectionChange = { mode ->
+                                playbackInsightScope.launch {
+                                    SettingsManager.setPlayerInsightMode(context, mode)
+                                }
                             },
-                            onClick = { showPlayerInsightModeDialog = true },
-                            iconTint = iOSSystemGray
+                            iconTint = iOSSystemGray,
                         )
                         AppPreferenceDivider()
 	                        AppSwitchPreference(
@@ -1089,7 +1057,7 @@ private fun PlaybackInteractionSettingsSection(
         )
         AppPreferenceDivider()
         AppSwitchPreference(
-            icon = rememberSettingsSemanticIcon(SettingsIconRole.PLAYBACK),
+            icon = rememberSettingsSemanticIcon(SettingsIconRole.PLAYBACK_QUALITY),
             title = "UP 主页看过视频定位提示",
             subtitle = if (spacePlayedVideoLocatePromptEnabled) {
                 "每次从视频进入该 UP 主页时显示，可一键定位到对应投稿"
@@ -1122,7 +1090,7 @@ private fun PlaybackInteractionSettingsSection(
         )
         AppPreferenceDivider()
 	        AppSwitchPreference(
-	            icon = rememberSettingsSemanticIcon(SettingsIconRole.PLAYBACK),
+	            icon = rememberSettingsSemanticIcon(SettingsIconRole.BACKGROUND_PLAYBACK),
             title = "列表/收藏夹连续播放",
             subtitle = "控制收藏夹、稍后再看、合集等列表播放完后是否继续下一条",
             checked = externalPlaylistAutoContinueEnabled,

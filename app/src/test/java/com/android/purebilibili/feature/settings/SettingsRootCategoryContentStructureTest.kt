@@ -249,7 +249,7 @@ class SettingsRootCategoryContentStructureTest {
 
         val aboutBlock = source
             .substringAfter("SettingsRootCategory.SYSTEM_ABOUT -> {")
-            .substringBefore("SupportToolsSection(")
+            .substringBefore("@Composable\nfun SupportToolsSection(")
 
         assertTrue(aboutBlock.indexOf("AboutSection(") < aboutBlock.indexOf("ReleaseChannelPinnedCard("))
         assertFalse(aboutBlock.contains("FollowAuthorSection("))
@@ -355,7 +355,8 @@ class SettingsRootCategoryContentStructureTest {
                 playback.indexOf("AppPreferenceSectionTitle(\"互动与评论\")")
         )
         assertTrue(animation.contains("AppPreferenceSectionTitle(\"玻璃效果\")"))
-        assertTrue(animation.contains("AppPreferenceSectionTitle(\"底栏入口\")"))
+        assertTrue(animation.contains("title = \"触感反馈\""))
+        assertFalse(animation.contains("AppPreferenceSectionTitle(\"底栏入口\")"))
     }
 
     @Test

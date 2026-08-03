@@ -90,6 +90,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onOpenSourceLicensesClick: () -> Unit,
     onAppearanceClick: () -> Unit = {},
+    onHomeClick: () -> Unit = {},
     onAnimationClick: () -> Unit = {},
     onPlaybackClick: () -> Unit = {},
     onPermissionClick: () -> Unit = {},
@@ -975,6 +976,7 @@ fun SettingsScreen(
                     onCategoryClick = onCategoryClick,
                     onSearchOpen = onSearchOpen,
                     onAppearanceClick = onAppearanceClick,
+                    onHomeClick = onHomeClick,
                     onAnimationClick = onAnimationClick,
                     onPlaybackClick = onPlaybackClick,
                     onPermissionClick = onPermissionClick,
@@ -1123,6 +1125,7 @@ private fun MobileSettingsNavLayout(
     onCategoryClick: (SettingsRootCategory) -> Unit,
     onSearchOpen: () -> Unit,
     onAppearanceClick: () -> Unit,
+    onHomeClick: () -> Unit,
     onAnimationClick: () -> Unit,
     onPlaybackClick: () -> Unit,
     onPermissionClick: () -> Unit,
@@ -1212,6 +1215,7 @@ private fun MobileSettingsNavLayout(
     val backLabel = stringResource(R.string.common_back)
     val rootCategoryActions = SettingsRootCategoryActions(
         onAppearanceClick = onAppearanceClick,
+        onHomeClick = onHomeClick,
         onAnimationClick = onAnimationClick,
         onPlaybackClick = onPlaybackClick,
         onBottomBarClick = onNavigateToBottomBarSettings,

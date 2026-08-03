@@ -101,10 +101,10 @@ internal fun resolveSettingsRootCategoryForSearchTarget(
 
     SettingsSearchTarget.PLAYBACK_QUALITY,
     SettingsSearchTarget.PLAYBACK,
-    SettingsSearchTarget.FULLSCREEN_GESTURE -> SettingsRootCategory.PLAYBACK_QUALITY
+    SettingsSearchTarget.FULLSCREEN_GESTURE,
+    SettingsSearchTarget.INTERACTION_COMMENT -> SettingsRootCategory.PLAYBACK_QUALITY
 
-    SettingsSearchTarget.HOME_FEED,
-    SettingsSearchTarget.INTERACTION_COMMENT -> SettingsRootCategory.HOME_RECOMMENDATION
+    SettingsSearchTarget.HOME_FEED -> SettingsRootCategory.HOME_RECOMMENDATION
 
     SettingsSearchTarget.ANIMATION,
     SettingsSearchTarget.NAVIGATION,
@@ -121,9 +121,7 @@ internal fun resolveSettingsRootCategoryForSearchTarget(
     SettingsSearchTarget.IMAGE_SAVE_PATH,
     SettingsSearchTarget.CLEAR_CACHE -> SettingsRootCategory.STORAGE_BACKUP
 
-    SettingsSearchTarget.PLUGINS,
-    SettingsSearchTarget.TIPS,
-    SettingsSearchTarget.OPEN_LINKS -> SettingsRootCategory.PLUGINS_EXTENSIONS
+    SettingsSearchTarget.PLUGINS -> SettingsRootCategory.PLUGINS_EXTENSIONS
 
     SettingsSearchTarget.DIAGNOSTICS,
     SettingsSearchTarget.EXPORT_LOGS,
@@ -136,7 +134,9 @@ internal fun resolveSettingsRootCategoryForSearchTarget(
     SettingsSearchTarget.DISCLAIMER,
     SettingsSearchTarget.TELEGRAM,
     SettingsSearchTarget.TWITTER,
-    SettingsSearchTarget.DONATE -> SettingsRootCategory.SYSTEM_ABOUT
+    SettingsSearchTarget.DONATE,
+    SettingsSearchTarget.TIPS,
+    SettingsSearchTarget.OPEN_LINKS -> SettingsRootCategory.SYSTEM_ABOUT
 }
 
 internal fun isSceneSettingsSearchTarget(target: SettingsSearchTarget): Boolean = target in setOf(
