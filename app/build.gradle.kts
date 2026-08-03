@@ -402,6 +402,7 @@ dependencies {
     implementation("androidx.media3:media3-datasource:$media3Version")
     implementation("androidx.media3:media3-datasource-okhttp:$media3Version")
     implementation("androidx.media3:media3-session:$media3Version")
+    implementation(project(":dolby-ffmpeg-decoder"))
 
     // --- 5. Danmaku (弹幕引擎) ---
     // 🔥 使用 ByteDance DanmakuRenderEngine - 轻量级高性能弹幕渲染引擎
