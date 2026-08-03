@@ -36,6 +36,29 @@ class HomeFeedScrollStatePersistenceStructureTest {
     }
 
     @Test
+    fun `avatar preference does not change card bounds during predictive return`() {
+        val screenSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/HomeScreen.kt")
+        val pageSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/HomeCategoryPage.kt")
+        val storySource = loadSource(
+            "app/src/main/java/com/android/purebilibili/feature/home/components/cards/StoryVideoCard.kt"
+        )
+        val standardCardSource = loadSource(
+            "app/src/main/java/com/android/purebilibili/feature/home/components/cards/VideoCard.kt"
+        )
+
+        assertTrue(screenSource.contains("var settledShowHomeUpAvatars by rememberSaveable"))
+        assertTrue(screenSource.contains("isReturnGestureInProgressProvider()"))
+        assertTrue(screenSource.contains("!videoCardReturnGestureInProgress && !isReturningFromVideoDetail"))
+        assertTrue(screenSource.contains("showUpAvatars = settledShowHomeUpAvatars"))
+
+        // 关闭后不创建头像节点，也不创建兜底头像节点；Row 的 spacedBy 只作用于实际子项。
+        assertTrue(pageSource.contains("if (showUpAvatars && video.owner.face.isNotBlank())"))
+        assertTrue(pageSource.contains("} else if (showUpAvatars) {"))
+        assertTrue(storySource.contains("leadingContent = if (showUpAvatar && video.owner.face.isNotEmpty())"))
+        assertTrue(standardCardSource.contains("leadingContent = if (showUpAvatar && video.owner.face.isNotEmpty())"))
+    }
+
+    @Test
     fun `home skin atmosphere is fixed in header instead of pager backdrop`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/home/HomeScreen.kt")
         val headerCallSource = source

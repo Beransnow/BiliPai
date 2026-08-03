@@ -76,6 +76,9 @@ class BottomBarColorBindingPolicyTest {
         assertTrue(source.contains("CupertinoIcons.Outlined.House"))
         assertTrue(source.contains("CupertinoIcons.Filled.Bell"))
         assertTrue(source.contains("CupertinoIcons.Outlined.Bell"))
+        assertTrue(source.contains("CupertinoIcons.Filled.PuzzlepieceExtension"))
+        assertTrue(source.contains("CupertinoIcons.Outlined.PuzzlepieceExtension"))
+        assertFalse(source.contains("CupertinoIcons.Default.Puzzlepiece"))
         assertFalse(source.contains("private fun MiuixBottomNavigationIcon("))
     }
 

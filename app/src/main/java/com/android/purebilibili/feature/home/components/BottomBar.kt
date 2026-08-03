@@ -345,7 +345,7 @@ enum class BottomNavItem(
         R.string.plugins_center_title,
         R.string.plugins_center_title,
         listOf("插件中心"),
-        { AppIcon(CupertinoIcons.Default.Puzzlepiece, contentDescription = null) },
+        { AppIcon(CupertinoIcons.Filled.PuzzlepieceExtension, contentDescription = null) },
         { AppIcon(CupertinoIcons.Outlined.PuzzlepieceExtension, contentDescription = null) },
         ScreenRoutes.PluginsSettings.createRoute()
     )

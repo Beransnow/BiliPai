@@ -136,6 +136,7 @@ import dev.chrisbanes.haze.HazeState
 import com.android.purebilibili.core.ui.blur.hazeSourceCompat
 import com.android.purebilibili.core.ui.LocalSharedTransitionScope  //  共享过渡
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
+import com.android.purebilibili.core.ui.transition.LocalVideoCardTransitionBackgroundState
 import com.android.purebilibili.core.ui.animation.DissolvableVideoCard  //  粒子消散动画
 import com.android.purebilibili.core.ui.animation.jiggleOnDissolve      // 📳 iOS 风格抖动效果
 import com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState
@@ -647,6 +648,24 @@ fun HomeScreen(
     val homeSettings by SettingsManager.getHomeSettings(context).collectAsStateWithLifecycle(initialValue = com.android.purebilibili.core.store.HomeSettings(),
         context = kotlin.coroutines.EmptyCoroutineContext
     )
+    val videoCardTransitionBackgroundState = LocalVideoCardTransitionBackgroundState.current
+    val videoCardReturnGestureInProgress =
+        videoCardTransitionBackgroundState.isReturnGestureInProgressProvider()
+    var settledShowHomeUpAvatars by rememberSaveable {
+        mutableStateOf(homeSettings.showHomeUpAvatars)
+    }
+    LaunchedEffect(
+        homeSettings.showHomeUpAvatars,
+        videoCardReturnGestureInProgress,
+        isReturningFromVideoDetail,
+    ) {
+        // 首页作为预测返回的底层页重新进入活跃状态时，DataStore 可能正好补发新值。
+        // 在手势/整卡落位期间改变作者行高度会让 sharedBounds 的目标边界跳动；先沿用
+        // 首页上次稳定展示的值，落位完成后再应用，同时关闭头像时仍不保留横向头像槽。
+        if (!videoCardReturnGestureInProgress && !isReturningFromVideoDetail) {
+            settledShowHomeUpAvatars = homeSettings.showHomeUpAvatars
+        }
+    }
     val dissolvingVideos by viewModel.dissolvingVideos.collectAsStateWithLifecycle()
     val followingMids by viewModel.followingMids.collectAsStateWithLifecycle()
     val showOnlineCount by SettingsManager
@@ -1849,7 +1868,7 @@ fun HomeScreen(
                                      wallpaperTintEnabled = homeWallpaperBackdropAppearance.visible,
                                      wallpaperEffectMode = homeSettings.homeWallpaperEffectMode,
                                      showUpBadges = homeSettings.showHomeUpBadges,
-                                     showUpAvatars = homeSettings.showHomeUpAvatars,
+                                     showUpAvatars = settledShowHomeUpAvatars,
                                      homeDurationStyle = homeSettings.homeDurationStyle,
                                      homeFeedCardStyle = homeFeedCardStyle,
                                      homeHeroCarouselEnabled = homeSettings.homeHeroCarouselEnabled,
