@@ -2621,6 +2621,14 @@ fun AppNavigation(
                                     pushNavigation3Key(BiliPaiNavKey.Live(roomId = roomId.toString(), title = title, uname = uname))
                                 },
                                 onSearchClick = { pushNavigation3Key(BiliPaiNavKey.LiveSearch) },
+                                onMatchClick = {
+                                    pushNavigation3Key(
+                                        BiliPaiNavKey.Web(
+                                            url = "https://www.bilibili.com/match/",
+                                            title = "电竞赛事"
+                                        )
+                                    )
+                                },
                                 onAreaListClick = { pushNavigation3Key(BiliPaiNavKey.LiveArea) },
                                 onFollowingClick = { pushNavigation3Key(BiliPaiNavKey.LiveFollowing) },
                                 onAreaDetailClick = { parentAreaId, areaId, title ->
