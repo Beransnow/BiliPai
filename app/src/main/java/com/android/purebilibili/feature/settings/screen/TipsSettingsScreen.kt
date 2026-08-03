@@ -5,6 +5,7 @@ import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +29,7 @@ import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.resolveBottomSafeAreaPadding
 import com.android.purebilibili.core.ui.animation.EntranceGroup
 import com.android.purebilibili.core.ui.animation.entrance
+import com.android.purebilibili.core.ui.components.rememberAdaptivePreferenceIconContentColor
 import com.android.purebilibili.core.ui.components.rememberAdaptiveSemanticIconTint
 import com.android.purebilibili.core.ui.components.AppPreferenceSectionTitle
 import com.android.purebilibili.feature.settings.ui.SettingsPageScaffold
@@ -215,21 +217,28 @@ private fun TipItem(
     title: String,
     content: String
 ) {
-    val effectiveIconTint = rememberAdaptiveSemanticIconTint(iconTint)
+    val effectiveIconTint = iconTint
+    val iconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
         verticalAlignment = Alignment.Top
     ) {
-        AppIcon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = effectiveIconTint,
+        Box(
             modifier = Modifier
-                .size(20.dp)
-                .padding(top = 2.dp)
-        )
+                .size(36.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(effectiveIconTint),
+            contentAlignment = Alignment.Center,
+        ) {
+            AppIcon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconContentColor,
+                modifier = Modifier.size(20.dp),
+            )
+        }
         Spacer(modifier = Modifier.width(12.dp))
         Column {
             AppText(

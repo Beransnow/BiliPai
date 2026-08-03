@@ -15,6 +15,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -2325,7 +2326,8 @@ private fun <T> ThemePresetDropdownSetting(
     iconTint: Color
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val effectiveIconTint = rememberAdaptiveSemanticIconTint(iconTint)
+    val effectiveIconTint = iconTint
+    val iconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
 
     Box {
         Row(
@@ -2337,12 +2339,20 @@ private fun <T> ThemePresetDropdownSetting(
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AppIcon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = effectiveIconTint,
-                modifier = Modifier.size(24.dp)
-            )
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(effectiveIconTint),
+                contentAlignment = Alignment.Center,
+            ) {
+                AppIcon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = iconContentColor,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
             Spacer(modifier = Modifier.width(16.dp))
             AppText(
                 text = title,

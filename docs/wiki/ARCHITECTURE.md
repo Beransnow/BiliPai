@@ -80,6 +80,8 @@ Feature UI
 
 ## 视觉与自适应
 
+正式 UI 设计合同、三风格边界、组件入口和页面档案见 [UI 设计规范](ui-design/README.md)。本页继续说明技术架构，不重复设计规则。
+
 - `design-system` 提供 MD3、Miuix 与 iOS facade，feature 只消费语义 token 和能力接口。
 - Haze、Miuix blur 与 Backdrop 都受平台能力、运行时视觉预算和转场安全门控约束。
 - 手机使用底栏/单栏为主；平板和折叠屏使用 rail、双栏或影院布局。
