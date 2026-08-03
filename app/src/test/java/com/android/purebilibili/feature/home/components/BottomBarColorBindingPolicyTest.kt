@@ -81,6 +81,20 @@ class BottomBarColorBindingPolicyTest {
     }
 
     @Test
+    fun `floating bottom bar keeps the shared Miuix mapping instead of switching to Cupertino icons`() {
+        val source = File("src/main/java/com/android/purebilibili/feature/home/components/BottomBar.kt")
+            .readText()
+        val floatingIconSource = source
+            .substringAfter("private fun BottomBarBlendedCupertinoIcon(")
+            .substringBefore("private fun BottomBarBlendedMaterialIcon(")
+
+        assertTrue(floatingIconSource.contains("resolveHomeNavigationBarIcon(item, selected = false)"))
+        assertTrue(floatingIconSource.contains("resolveHomeNavigationBarIcon(item, selected = true)"))
+        assertFalse(floatingIconSource.contains("item.unselectedIcon()"))
+        assertFalse(floatingIconSource.contains("item.selectedIcon()"))
+    }
+
+    @Test
     fun `watch later bottom bar icons use clock semantics`() {
         val source = File("src/main/java/com/android/purebilibili/feature/home/components/BottomBar.kt")
             .readText()

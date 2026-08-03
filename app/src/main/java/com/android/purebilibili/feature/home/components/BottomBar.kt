@@ -4809,13 +4809,19 @@ private fun BottomBarBlendedCupertinoIcon(
                 modifier = Modifier.alpha(1f - clampedSelectedAlpha),
                 contentAlignment = Alignment.Center
             ) {
-                item.unselectedIcon()
+                AppIcon(
+                    imageVector = resolveHomeNavigationBarIcon(item, selected = false),
+                    contentDescription = null
+                )
             }
             Box(
                 modifier = Modifier.alpha(clampedSelectedAlpha),
                 contentAlignment = Alignment.Center
             ) {
-                item.selectedIcon()
+                AppIcon(
+                    imageVector = resolveHomeNavigationBarIcon(item, selected = true),
+                    contentDescription = null
+                )
             }
         }
     }

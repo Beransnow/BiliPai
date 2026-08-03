@@ -71,7 +71,6 @@ import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.HapticType
 import com.android.purebilibili.feature.home.UserState
-import com.android.purebilibili.feature.home.HomeCategory
 import com.android.purebilibili.feature.home.resolveHomeTopCategories
 import com.android.purebilibili.core.store.BottomBarLiquidGlassPreset
 import com.android.purebilibili.core.store.LiquidGlassStyle
@@ -135,7 +134,10 @@ internal fun resolveTopTabRowHorizontalPaddingDp(
 internal fun resolveTopTabDockIndicatorHorizontalGapDp(hasOuterChromeSurface: Boolean): Float =
     if (hasOuterChromeSurface) 2f else 2f
 
-internal fun resolveTopTabDockIndicatorVerticalGapDp(hasOuterChromeSurface: Boolean): Float = 1f
+/**
+ * 顶部 Tab 的视觉背景保持 30dp 高；36dp 行高留出上下各 3dp 的呼吸空间。
+ */
+internal fun resolveTopTabDockIndicatorVerticalGapDp(hasOuterChromeSurface: Boolean): Float = 3f
 
 internal fun resolveTopTabDockIndicatorWidthDp(
     itemWidthDp: Float,
@@ -395,27 +397,6 @@ internal fun shouldShowTopTabText(mode: Int): Boolean {
 
 internal fun resolveMd3TopTabLabelMode(requestedLabelMode: Int): Int =
     normalizeTopTabLabelMode(requestedLabelMode)
-
-private fun resolveTopTabCategoryForIcon(categoryKey: String): HomeCategory? {
-    val normalizedKey = categoryKey.trim()
-    if (normalizedKey.isEmpty()) return null
-
-    return HomeCategory.entries.firstOrNull { category ->
-        category.name.equals(normalizedKey, ignoreCase = true) || category.label == normalizedKey
-    }
-}
-
-@Composable
-internal fun resolveMiuixPreferredTopTabCategoryIcon(
-    categoryKey: String,
-    selected: Boolean = false,
-): ImageVector {
-    val category = resolveTopTabCategoryForIcon(categoryKey)
-    return resolveMiuixPreferredHomeNavigationIcon(
-        tabId = category?.name ?: "PARTITION",
-        selected = selected,
-    )
-}
 
 internal enum class Md3TopTabRowVariant {
     UNDERLINE_FIXED
@@ -901,7 +882,7 @@ private fun LightweightHomeTopTabs(
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
-            .height(rowHeight)
+            .heightIn(min = rowHeight)
             .padding(
                 horizontal = resolveTopTabRowHorizontalPaddingDp(
                     isFloatingStyle = isFloatingStyle,
@@ -1724,9 +1705,7 @@ private fun LightweightHomeTopTabs(
                         )
                     } else {
                         AppIcon(
-                            resolveMiuixPreferredHomeNavigationIcon(
-                                tabId = "PARTITION",
-                            ),
+                            resolveTopTabMaterialIcon("PARTITION"),
                             contentDescription = "浏览全部分区",
                             tint = skinPlainContentColor ?: MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(actionIconSize)
@@ -1783,14 +1762,7 @@ private fun LightweightTopTabItem(
     val isDarkTheme = isSystemInDarkTheme()
     val selected = selectionFraction > 0.5f || index == selectedIndex
     val skinIconPath = skinIconPaths?.pathFor(selected)
-    val unselectedIcon = resolveMiuixPreferredTopTabCategoryIcon(
-        categoryKey = categoryKey,
-        selected = false
-    )
-    val selectedIcon = resolveMiuixPreferredTopTabCategoryIcon(
-        categoryKey = categoryKey,
-        selected = true
-    )
+    val categoryIcon = resolveTopTabMaterialIcon(categoryKey)
     val selectedColor = when (presentation) {
         AppTopTabPresentation.MOVING_CAPSULE -> if (skinPlainStyle) {
             skinPlainContentColor ?: colorScheme.onSurface
@@ -1862,12 +1834,12 @@ private fun LightweightTopTabItem(
             ),
         contentAlignment = Alignment.Center
     ) {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = AppSpacingTokens.Small),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             if (showIcon) {
                 if (!skinIconPath.isNullOrBlank()) {
@@ -1879,8 +1851,8 @@ private fun LightweightTopTabItem(
                     )
                 } else {
                     TopTabBlendedIcon(
-                        unselectedIcon = unselectedIcon,
-                        selectedIcon = selectedIcon,
+                        unselectedIcon = categoryIcon,
+                        selectedIcon = categoryIcon,
                         selectedAlpha = selectionFraction,
                         tint = contentColor,
                         modifier = Modifier.size(
@@ -1890,7 +1862,7 @@ private fun LightweightTopTabItem(
                 }
             }
             if (showIcon && showText) {
-                Spacer(modifier = Modifier.height(resolveTopTabIconTextSpacingDp(0).dp))
+                Spacer(modifier = Modifier.width(resolveTopTabIconTextSpacingDp(0).dp))
             }
             if (showText) {
                 val labelMode = when {
@@ -1937,6 +1909,15 @@ private fun TopTabBlendedIcon(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
+        if (unselectedIcon == selectedIcon) {
+            AppIcon(
+                imageVector = unselectedIcon,
+                contentDescription = null,
+                tint = tint,
+                modifier = Modifier.matchParentSize()
+            )
+            return
+        }
         AppIcon(
             imageVector = unselectedIcon,
             contentDescription = null,
@@ -2434,14 +2415,7 @@ fun CategoryTabItem(
      val normalizedLabelMode = normalizeTopTabLabelMode(labelMode)
      val showIcon = shouldShowTopTabIcon(normalizedLabelMode)
      val showText = shouldShowTopTabText(normalizedLabelMode)
-     val unselectedIcon = resolveMiuixPreferredTopTabCategoryIcon(
-         categoryKey = categoryKey,
-         selected = false
-     )
-     val selectedIcon = resolveMiuixPreferredTopTabCategoryIcon(
-         categoryKey = categoryKey,
-         selected = true
-     )
+     val categoryIcon = resolveTopTabMaterialIcon(categoryKey)
      val iconSize = resolveTopTabIconSizeDp(normalizedLabelMode).dp
      val textSize = resolveTopTabLabelTextSizeSp(normalizedLabelMode).sp
      val textLineHeight = resolveTopTabLabelLineHeightSp(normalizedLabelMode).sp
@@ -2482,9 +2456,9 @@ fun CategoryTabItem(
          contentAlignment = Alignment.Center
      ) {
          if (showIcon && showText) {
-             Column(
-                 horizontalAlignment = Alignment.CenterHorizontally,
-                 verticalArrangement = Arrangement.Center,
+             Row(
+                 horizontalArrangement = Arrangement.Center,
+                 verticalAlignment = Alignment.CenterVertically,
                  modifier = Modifier.graphicsLayer {
                      scaleX = targetScale
                      scaleY = targetScale
@@ -2492,15 +2466,13 @@ fun CategoryTabItem(
                  }
              ) {
                 TopTabBlendedIcon(
-                     unselectedIcon = unselectedIcon,
-                     selectedIcon = selectedIcon,
+                     unselectedIcon = categoryIcon,
+                     selectedIcon = categoryIcon,
                      selectedAlpha = selectionFraction,
                      tint = contentColor,
-                     modifier = Modifier
-                         .size(iconSize)
-                         .offset(y = (-0.5).dp)
+                     modifier = Modifier.size(iconSize)
                  )
-                 Spacer(modifier = Modifier.height(iconTextSpacing))
+                 Spacer(modifier = Modifier.width(iconTextSpacing))
                  AppText(
                      text = category,
                      color = contentColor,
@@ -2512,9 +2484,9 @@ fun CategoryTabItem(
                  )
              }
          } else if (showIcon) {
-             TopTabBlendedIcon(
-                 unselectedIcon = unselectedIcon,
-                 selectedIcon = selectedIcon,
+            TopTabBlendedIcon(
+                unselectedIcon = categoryIcon,
+                selectedIcon = categoryIcon,
                  selectedAlpha = selectionFraction,
                  tint = contentColor,
                  modifier = Modifier

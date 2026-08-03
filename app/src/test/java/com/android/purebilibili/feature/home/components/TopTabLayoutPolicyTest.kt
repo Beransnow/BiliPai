@@ -403,13 +403,13 @@ class TopTabLayoutPolicyTest {
     }
 
     @Test
-    fun `top tab item content policy avoids clipping icon plus text`() {
-        assertEquals(42f, resolveTopTabContentMinHeightDp(labelMode = 0), 0.001f)
-        assertEquals(42f, resolveTopTabContentMinHeightDp(labelMode = 1), 0.001f)
-        assertEquals(42f, resolveTopTabContentMinHeightDp(labelMode = 2), 0.001f)
-        assertEquals(2f, resolveTopTabContentVerticalPaddingDp(labelMode = 0), 0.001f)
-        assertEquals(4f, resolveTopTabContentVerticalPaddingDp(labelMode = 1), 0.001f)
-        assertEquals(4f, resolveTopTabContentVerticalPaddingDp(labelMode = 2), 0.001f)
+    fun `top tab item content policy keeps icon plus text inside the compact background`() {
+        assertEquals(30f, resolveTopTabContentMinHeightDp(labelMode = 0), 0.001f)
+        assertEquals(30f, resolveTopTabContentMinHeightDp(labelMode = 1), 0.001f)
+        assertEquals(30f, resolveTopTabContentMinHeightDp(labelMode = 2), 0.001f)
+        assertEquals(5f, resolveTopTabContentVerticalPaddingDp(labelMode = 0), 0.001f)
+        assertEquals(5f, resolveTopTabContentVerticalPaddingDp(labelMode = 1), 0.001f)
+        assertEquals(5f, resolveTopTabContentVerticalPaddingDp(labelMode = 2), 0.001f)
     }
 
     @Test
