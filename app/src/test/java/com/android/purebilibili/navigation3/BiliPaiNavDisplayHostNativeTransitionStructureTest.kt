@@ -53,10 +53,19 @@ class BiliPaiNavDisplayHostNativeTransitionStructureTest {
             "onNativeVideoBackCancelled(currentBackKey, targetBackKey)"
         )
         val depthRestoreIndex = cancelSource.indexOf("videoCardClock.animateFallbackTo(")
+        val restoreFlagIndex = cancelSource.indexOf("videoCardClock.beginGestureRestore()")
+        val restoreLaunchIndex = cancelSource.indexOf(
+            "navigationScope.launch",
+            startIndex = restoreFlagIndex,
+        )
 
         assertTrue(playerRecoveryIndex >= 0)
         assertTrue(depthRestoreIndex >= 0)
         assertTrue(playerRecoveryIndex < depthRestoreIndex)
+        assertTrue(restoreFlagIndex >= 0)
+        assertTrue(restoreLaunchIndex >= 0)
+        assertTrue(restoreFlagIndex < playerRecoveryIndex)
+        assertTrue(restoreFlagIndex < restoreLaunchIndex)
         assertTrue(
             cancelSource.countOccurrences(
                 "onNativeVideoBackCancelled(currentBackKey, targetBackKey)"

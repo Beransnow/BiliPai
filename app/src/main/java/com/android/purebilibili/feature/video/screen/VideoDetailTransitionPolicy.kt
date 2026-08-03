@@ -175,7 +175,11 @@ internal fun resolveVideoDetailReturnCoverAlpha(
     isCommittedCardReturn: Boolean,
     hasResidentCover: Boolean,
     liveReturnMorph: Boolean = false,
+    keepLivePlayerForPredictiveBack: Boolean = false,
 ): Float {
+    // Predictive seek and its cancel restore are previews, not committed returns. The resident
+    // cover must never follow the seek fraction here or it flashes over the live player on cancel.
+    if (keepLivePlayerForPredictiveBack) return 0f
     if (!hasResidentCover) return 0f
     // 一镜到底：仅 settle 末段抬封面，禁止一点返回就盖住实时播放器。
     if (liveReturnMorph) {
@@ -194,7 +198,9 @@ internal fun resolveVideoDetailReturnPlayerAlpha(
     isCommittedCardReturn: Boolean,
     hasResidentCover: Boolean,
     liveReturnMorph: Boolean = false,
+    keepLivePlayerForPredictiveBack: Boolean = false,
 ): Float {
+    if (keepLivePlayerForPredictiveBack) return 1f
     if (liveReturnMorph) {
         if (!hasResidentCover) return 1f
         return 1f - resolveVideoDetailLiveReturnLandingHandoffAlpha(

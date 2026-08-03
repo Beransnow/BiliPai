@@ -3511,8 +3511,8 @@ internal fun VideoDetailScreenStateHolder(
                                     videoPlayerBounds = nextBounds
                                 }
                         ) {
-                            // 常驻封面叠层：CoverFirst / 非 live morph 时改 alpha；
-                            // ImmediatePlayback live morph 保持 cover=0、player=1 一镜到底。
+                            // 常驻封面叠层：仅已提交的 CoverFirst 返回才接管；预测 seek / cancel
+                            // 始终保持 cover=0、player=1，避免回到详情页时闪出一帧封面。
                             if (residentCoverImageRequest != null) {
                                 AsyncImage(
                                     model = residentCoverImageRequest,
@@ -3525,6 +3525,11 @@ internal fun VideoDetailScreenStateHolder(
                                                 isCommittedCardReturn = isCommittedCardReturn,
                                                 hasResidentCover = hasResidentReturnCover,
                                                 liveReturnMorph = liveReturnMorph,
+                                                keepLivePlayerForPredictiveBack =
+                                                    videoCardDepthBackgroundState
+                                                        .isReturnGestureInProgressProvider() ||
+                                                        videoCardDepthBackgroundState
+                                                            .isGestureRestoreInProgressProvider(),
                                             )
                                         },
                                     contentScale = ContentScale.Crop
@@ -3539,6 +3544,11 @@ internal fun VideoDetailScreenStateHolder(
                                             isCommittedCardReturn = isCommittedCardReturn,
                                             hasResidentCover = hasResidentReturnCover,
                                             liveReturnMorph = liveReturnMorph,
+                                            keepLivePlayerForPredictiveBack =
+                                                videoCardDepthBackgroundState
+                                                    .isReturnGestureInProgressProvider() ||
+                                                    videoCardDepthBackgroundState
+                                                        .isGestureRestoreInProgressProvider(),
                                         )
                                     }
                             ) {

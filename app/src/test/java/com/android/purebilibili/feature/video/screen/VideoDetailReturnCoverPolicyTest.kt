@@ -616,20 +616,58 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun `uncommitted predictive cover-first return keeps following transition progress`() {
+    fun `uncommitted predictive cover-first return never draws cover over live player`() {
         assertEquals(
-            0.2f,
-            resolveVideoDetailReturnCoverAlpha(0.8f, false, true, liveReturnMorph = false),
+            0f,
+            resolveVideoDetailReturnCoverAlpha(
+                transitionProgress = 0.8f,
+                isCommittedCardReturn = false,
+                hasResidentCover = true,
+                liveReturnMorph = false,
+                keepLivePlayerForPredictiveBack = true,
+            ),
             0.0001f,
         )
         assertEquals(
-            0.8f,
-            resolveVideoDetailReturnPlayerAlpha(0.8f, false, true, liveReturnMorph = false),
+            1f,
+            resolveVideoDetailReturnPlayerAlpha(
+                transitionProgress = 0.8f,
+                isCommittedCardReturn = false,
+                hasResidentCover = true,
+                liveReturnMorph = false,
+                keepLivePlayerForPredictiveBack = true,
+            ),
             0.0001f,
         )
         assertEquals(
             0.8f,
             resolveVideoDetailReturnContentAlpha(0.8f, false, liveReturnMorph = false),
+            0.0001f,
+        )
+    }
+
+    @Test
+    fun `predictive cancel recovery keeps live player even if committed state is stale`() {
+        assertEquals(
+            0f,
+            resolveVideoDetailReturnCoverAlpha(
+                transitionProgress = 0.6f,
+                isCommittedCardReturn = true,
+                hasResidentCover = true,
+                liveReturnMorph = false,
+                keepLivePlayerForPredictiveBack = true,
+            ),
+            0.0001f,
+        )
+        assertEquals(
+            1f,
+            resolveVideoDetailReturnPlayerAlpha(
+                transitionProgress = 0.6f,
+                isCommittedCardReturn = true,
+                hasResidentCover = true,
+                liveReturnMorph = false,
+                keepLivePlayerForPredictiveBack = true,
+            ),
             0.0001f,
         )
     }

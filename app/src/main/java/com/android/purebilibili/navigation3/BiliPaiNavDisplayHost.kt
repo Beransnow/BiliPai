@@ -785,16 +785,20 @@ internal fun BiliPaiNavDisplayHost(
             val cancelledPredictiveBlur = predictiveBackBackgroundProgressProvider()
             videoCardReturnGestureInProgress = false
             videoCardClock.endGesture()
-            // Rebind the live player surface immediately. Waiting for the independent depth
-            // restore animation lets the resident cover own one frame over the player.
-            onNativeVideoBackCancelled(currentBackKey, targetBackKey)
             val videoCardRestoreRunning =
                 isVideoCardTransitionBackgroundGesturePhase(videoCardClock.phase) &&
                     cancelledVideoCardBlur < 1f
+            if (videoCardRestoreRunning) {
+                // Set synchronously before NavDisplay starts its cancel transition. Launching this
+                // state change in the coroutine leaves one draw frame where the cover can reappear.
+                videoCardClock.beginGestureRestore()
+            }
+            // Rebind the live player surface immediately. Waiting for the independent depth
+            // restore animation lets the resident cover own one frame over the player.
+            onNativeVideoBackCancelled(currentBackKey, targetBackKey)
             // 手势取消：depth 独立复原到满值，与详情页回弹一致。
             if (videoCardRestoreRunning) {
                 navigationScope.launch {
-                    videoCardClock.beginGestureRestore()
                     try {
                         videoCardClock.snapFallback(cancelledVideoCardBlur)
                         videoCardClock.animateFallbackTo(
