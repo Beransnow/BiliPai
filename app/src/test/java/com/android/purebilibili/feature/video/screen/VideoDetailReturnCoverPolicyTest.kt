@@ -474,6 +474,51 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
+    fun `predictive commit keeps live handoff on continuous morph clock`() {
+        // 松手提交时 AVS 可能短暂投影到 PostExit=0；实时路径必须继续使用手势提交点，
+        // 否则 0 会被误判为完全落位，常驻封面盖住播放器一帧。
+        val progress = resolveVideoDetailReturnVisualProgress(
+            animatedVisibilityProgress = 0f,
+            morphDepthProgress = 0.72f,
+            liveReturnMorph = true,
+        )
+        assertEquals(0.72f, progress, 0.0001f)
+        assertEquals(
+            0f,
+            resolveVideoDetailReturnCoverAlpha(
+                transitionProgress = progress,
+                isCommittedCardReturn = true,
+                hasResidentCover = true,
+                liveReturnMorph = true,
+            ),
+            0.0001f,
+        )
+        assertEquals(
+            1f,
+            resolveVideoDetailReturnPlayerAlpha(
+                transitionProgress = progress,
+                isCommittedCardReturn = true,
+                hasResidentCover = true,
+                liveReturnMorph = true,
+            ),
+            0.0001f,
+        )
+    }
+
+    @Test
+    fun `resident return keeps animated visibility progress`() {
+        assertEquals(
+            0.24f,
+            resolveVideoDetailReturnVisualProgress(
+                animatedVisibilityProgress = 0.24f,
+                morphDepthProgress = 0.72f,
+                liveReturnMorph = false,
+            ),
+            0.0001f,
+        )
+    }
+
+    @Test
     fun `quick committed live return hides detail content immediately to avoid dual title flash`() {
         // 源卡 chrome 快速返回立刻全显；详情标题必须马上让位，否则卸层时标题闪一下。
         assertEquals(

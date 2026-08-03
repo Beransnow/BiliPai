@@ -193,6 +193,24 @@ internal fun resolveVideoDetailReturnCoverAlpha(
     return if (isCommittedCardReturn) 1f else 1f - progress
 }
 
+/**
+ * 返回画面交接使用的唯一进度源。
+ *
+ * 预测返回松手时，Nav3 会把 seek 阶段切换为已提交的 exit transition；这次切换中
+ * AnimatedVisibility 的 progress 可能短暂投影到端点。实时 shared morph 若读取该值，
+ * 会把常驻封面误判为已经落位并盖住播放器一帧。LIVE 路径因此只读与 sharedBounds、
+ * 手势和提交补间连续的 card morph depth；封面优先/非 shared 路径继续使用 AVS。
+ */
+internal fun resolveVideoDetailReturnVisualProgress(
+    animatedVisibilityProgress: Float,
+    morphDepthProgress: Float,
+    liveReturnMorph: Boolean,
+): Float = if (liveReturnMorph) {
+    morphDepthProgress.coerceIn(0f, 1f)
+} else {
+    animatedVisibilityProgress.coerceIn(0f, 1f)
+}
+
 internal fun resolveVideoDetailReturnPlayerAlpha(
     transitionProgress: Float,
     isCommittedCardReturn: Boolean,

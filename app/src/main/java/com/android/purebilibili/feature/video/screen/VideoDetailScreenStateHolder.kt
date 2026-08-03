@@ -3521,7 +3521,15 @@ internal fun VideoDetailScreenStateHolder(
                                         .fillMaxSize()
                                         .graphicsLayer {
                                             alpha = resolveVideoDetailReturnCoverAlpha(
-                                                transitionProgress = detailTransitionProgress.value,
+                                                transitionProgress =
+                                                    resolveVideoDetailReturnVisualProgress(
+                                                        animatedVisibilityProgress =
+                                                            detailTransitionProgress.value,
+                                                        morphDepthProgress =
+                                                            videoCardDepthBackgroundState
+                                                                .progressProvider(),
+                                                        liveReturnMorph = liveReturnMorph,
+                                                    ),
                                                 isCommittedCardReturn = isCommittedCardReturn,
                                                 hasResidentCover = hasResidentReturnCover,
                                                 liveReturnMorph = liveReturnMorph,
@@ -3540,7 +3548,15 @@ internal fun VideoDetailScreenStateHolder(
                                     .fillMaxSize()
                                     .graphicsLayer {
                                         alpha = resolveVideoDetailReturnPlayerAlpha(
-                                            transitionProgress = detailTransitionProgress.value,
+                                            transitionProgress =
+                                                resolveVideoDetailReturnVisualProgress(
+                                                    animatedVisibilityProgress =
+                                                        detailTransitionProgress.value,
+                                                    morphDepthProgress =
+                                                        videoCardDepthBackgroundState
+                                                            .progressProvider(),
+                                                    liveReturnMorph = liveReturnMorph,
+                                                ),
                                             isCommittedCardReturn = isCommittedCardReturn,
                                             hasResidentCover = hasResidentReturnCover,
                                             liveReturnMorph = liveReturnMorph,
