@@ -564,7 +564,12 @@ fun PortraitVideoPager(
     val exoPlayer = sharedPlayer ?: remember(context) {
         val audioFocusEnabled = SettingsManager.getAudioFocusEnabledSync(context)
         ExoPlayer.Builder(context)
-            .setRenderersFactory(HiResCompatibleRenderersFactory(context))
+            .setRenderersFactory(
+                HiResCompatibleRenderersFactory(context)
+                    .setExtensionRendererMode(
+                        androidx.media3.exoplayer.DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON
+                    )
+            )
             .setAudioAttributes(
                 androidx.media3.common.AudioAttributes.Builder()
                     .setUsage(androidx.media3.common.C.USAGE_MEDIA)
