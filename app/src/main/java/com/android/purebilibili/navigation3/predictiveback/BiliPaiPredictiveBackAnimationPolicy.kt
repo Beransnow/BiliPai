@@ -9,7 +9,8 @@ internal fun resolveBiliPaiPredictiveBackAnimationHandler(
     // 避免重蹈「SCALE 预览 vs 提交动画分裂」的历史问题(见 CHANGELOG 预测返回统一条目)。
     @Suppress("UNUSED_PARAMETER")
     style: BiliPaiPredictiveBackAnimationStyle = BiliPaiPredictiveBackAnimationStyle.SCALE,
-    exitDirection: BiliPaiPredictiveBackExitDirection = BiliPaiPredictiveBackExitDirection.ALWAYS_RIGHT,
+    @Suppress("UNUSED_PARAMETER")
+    exitDirection: BiliPaiPredictiveBackExitDirection = BiliPaiPredictiveBackExitDirection.FOLLOW_GESTURE,
 ): BiliPaiPredictiveBackAnimationHandler {
     if (!predictiveBackEnabled) {
         return BiliPaiDisabledPredictiveBackAnimation()
@@ -20,5 +21,5 @@ internal fun resolveBiliPaiPredictiveBackAnimationHandler(
     if (routeTransition == BiliPaiNavRouteTransition.SETTINGS_IOS_PUSH_POP) {
         return BiliPaiSettingsIosPredictiveBackAnimation()
     }
-    return BiliPaiDefaultPredictiveBackAnimation(exitDirection = exitDirection)
+    return BiliPaiDefaultPredictiveBackAnimation()
 }

@@ -176,6 +176,8 @@ class BiliPaiNavContentTransformPolicyStructureTest {
 
         assertTrue(predictiveFunction.contains("tween("))
         assertTrue(predictiveFunction.contains("navigationSlideSpring(").not())
+        assertTrue(predictiveFunction.contains("exitDirectionSign: Int = 1"))
+        assertTrue(predictiveFunction.contains("if (exitDirectionSign < 0) -fullWidth else fullWidth"))
     }
 
     @Test

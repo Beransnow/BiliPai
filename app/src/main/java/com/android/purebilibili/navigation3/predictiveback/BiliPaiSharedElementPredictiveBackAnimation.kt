@@ -5,6 +5,9 @@ import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -16,10 +19,14 @@ import com.android.purebilibili.core.ui.LocalSharedTransitionScope
 import com.android.purebilibili.navigation3.BiliPaiNavKey
 
 internal class BiliPaiSharedElementPredictiveBackAnimation : BiliPaiPredictiveBackAnimationHandler {
+    private var committedSwipeEdge: Int? = null
+
     override suspend fun onBackPressed(
         transitionState: NavigationEventTransitionState?,
         currentPageKey: BiliPaiNavKey?,
-    ) = Unit
+    ) {
+        committedSwipeEdge = (transitionState as? InProgress)?.latestEvent?.swipeEdge
+    }
 
     @OptIn(ExperimentalSharedTransitionApi::class)
     @Composable
@@ -48,10 +55,19 @@ internal class BiliPaiSharedElementPredictiveBackAnimation : BiliPaiPredictiveBa
 
     override fun AnimatedContentTransitionScope<Scene<BiliPaiNavKey>>.onPredictivePopTransitionSpec(
         swipeEdge: Int,
-    ): ContentTransform = noOpSharedElementContentTransform()
+    ): ContentTransform = ContentTransform(
+        // 来源页继续由 decorator 钉住；只让顶层详情顺着手势边缘退出。
+        targetContentEnter = EnterTransition.None,
+        initialContentExit = slideOutHorizontally(
+            targetOffsetX = resolveBiliPaiPredictiveBackSlideOffsetX(swipeEdge),
+            animationSpec = tween(durationMillis = 550, easing = LinearEasing),
+        ),
+        sizeTransform = null,
+    )
 
     override fun AnimatedContentTransitionScope<Scene<BiliPaiNavKey>>.onPopTransitionSpec(): ContentTransform =
-        noOpSharedElementContentTransform()
+        committedSwipeEdge?.let { swipeEdge -> onPredictivePopTransitionSpec(swipeEdge) }
+            ?: noOpSharedElementContentTransform()
 
     private fun noOpSharedElementContentTransform(): ContentTransform =
         ContentTransform(

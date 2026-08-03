@@ -43,6 +43,7 @@ fun resolveSettingsIosPushForwardContentTransform(
 
 fun resolveSettingsIosPushPopContentTransform(
     durationMillis: Int = SETTINGS_IOS_PUSH_DURATION_MS,
+    exitDirectionSign: Int = 1,
 ): ContentTransform {
     if (durationMillis <= 0) {
         return EnterTransition.None togetherWith ExitTransition.None
@@ -50,14 +51,15 @@ fun resolveSettingsIosPushPopContentTransform(
     // 返回可能承接预测手势的 seek 进度，保持固定时长 tween，避免松手提交时
     // 从手势曲线突然切到 spring 造成速度跳变。
     val spec = tween<IntOffset>(durationMillis = durationMillis, easing = EaseInOut)
+    val normalizedDirectionSign = if (exitDirectionSign < 0) -1 else 1
     val parallaxOffset: (Int) -> Int = { width ->
-        -(width * SETTINGS_IOS_PUSH_PARALLAX_FACTOR).toInt()
+        -(normalizedDirectionSign * width * SETTINGS_IOS_PUSH_PARALLAX_FACTOR).toInt()
     }
     return slideInHorizontally(
         initialOffsetX = parallaxOffset,
         animationSpec = spec,
     ) togetherWith slideOutHorizontally(
-        targetOffsetX = { fullWidth -> fullWidth },
+        targetOffsetX = { fullWidth -> normalizedDirectionSign * fullWidth },
         animationSpec = spec,
     )
 }
@@ -73,6 +75,7 @@ fun resolveSettingsIosPushPopContentTransform(
  */
 fun resolveSettingsIosPredictivePopContentTransform(
     durationMillis: Int = SETTINGS_IOS_PUSH_DURATION_MS,
+    exitDirectionSign: Int = 1,
 ): ContentTransform {
     if (durationMillis <= 0) {
         return EnterTransition.None togetherWith ExitTransition.None
@@ -80,7 +83,9 @@ fun resolveSettingsIosPredictivePopContentTransform(
     return ContentTransform(
         targetContentEnter = EnterTransition.None,
         initialContentExit = slideOutHorizontally(
-            targetOffsetX = { fullWidth -> fullWidth },
+            targetOffsetX = { fullWidth ->
+                if (exitDirectionSign < 0) -fullWidth else fullWidth
+            },
             animationSpec = tween(durationMillis = durationMillis, easing = LinearEasing),
         ),
     )

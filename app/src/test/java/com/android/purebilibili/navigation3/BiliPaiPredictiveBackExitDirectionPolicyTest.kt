@@ -1,6 +1,7 @@
 package com.android.purebilibili.navigation3
 
 import com.android.purebilibili.navigation3.predictiveback.BiliPaiPredictiveBackExitDirection
+import com.android.purebilibili.navigation3.predictiveback.resolveBiliPaiPredictiveBackExitDirectionSign
 import com.android.purebilibili.navigation3.predictiveback.resolveBiliPaiAutoPredictiveBackExitDirection
 import com.android.purebilibili.navigation3.predictiveback.resolveBiliPaiPredictiveBackExitDirection
 import kotlin.test.Test
@@ -18,42 +19,58 @@ class BiliPaiPredictiveBackExitDirectionPolicyTest {
     }
 
     @Test
-    fun autoDerived_cardFromLeft_exitsRight() {
+    fun autoDerived_cardFromLeft_stillFollowsGesture() {
         val direction = resolveBiliPaiAutoPredictiveBackExitDirection(
             popRouteTransition = BiliPaiNavRouteTransition.CLASSIC_CARD,
             cardSourceDirection = BiliPaiNavCardSourceDirection.SOURCE_LEFT,
         )
-        assertEquals(BiliPaiPredictiveBackExitDirection.ALWAYS_RIGHT, direction)
+        assertEquals(BiliPaiPredictiveBackExitDirection.FOLLOW_GESTURE, direction)
     }
 
     @Test
-    fun autoDerived_cardFromRight_exitsLeft() {
+    fun autoDerived_cardFromRight_stillFollowsGesture() {
         val direction = resolveBiliPaiAutoPredictiveBackExitDirection(
             popRouteTransition = BiliPaiNavRouteTransition.CLASSIC_CARD,
             cardSourceDirection = BiliPaiNavCardSourceDirection.SOURCE_RIGHT,
         )
-        assertEquals(BiliPaiPredictiveBackExitDirection.ALWAYS_LEFT, direction)
+        assertEquals(BiliPaiPredictiveBackExitDirection.FOLLOW_GESTURE, direction)
     }
 
     @Test
-    fun storageAuto_usesAutoDerived() {
+    fun storageAuto_followsGesture() {
         val autoDerived = BiliPaiPredictiveBackExitDirection.ALWAYS_RIGHT
         assertEquals(
-            autoDerived,
+            BiliPaiPredictiveBackExitDirection.FOLLOW_GESTURE,
             resolveBiliPaiPredictiveBackExitDirection("auto", autoDerived),
         )
     }
 
     @Test
-    fun storageOverride_takesPrecedence() {
+    fun legacyStorageOverride_doesNotOverridePhysicalGestureDirection() {
         val autoDerived = BiliPaiPredictiveBackExitDirection.ALWAYS_RIGHT
         assertEquals(
-            BiliPaiPredictiveBackExitDirection.ALWAYS_LEFT,
+            BiliPaiPredictiveBackExitDirection.FOLLOW_GESTURE,
             resolveBiliPaiPredictiveBackExitDirection("always_left", autoDerived),
         )
         assertEquals(
             BiliPaiPredictiveBackExitDirection.FOLLOW_GESTURE,
             resolveBiliPaiPredictiveBackExitDirection("follow_gesture", autoDerived),
+        )
+    }
+
+    @Test
+    fun swipeEdge_resolvesPhysicalExitDirection() {
+        assertEquals(
+            1,
+            resolveBiliPaiPredictiveBackExitDirectionSign(androidx.navigationevent.NavigationEvent.EDGE_LEFT),
+        )
+        assertEquals(
+            -1,
+            resolveBiliPaiPredictiveBackExitDirectionSign(androidx.navigationevent.NavigationEvent.EDGE_RIGHT),
+        )
+        assertEquals(
+            1,
+            resolveBiliPaiPredictiveBackExitDirectionSign(androidx.navigationevent.NavigationEvent.EDGE_NONE),
         )
     }
 }

@@ -4,27 +4,15 @@ import com.android.purebilibili.navigation3.BiliPaiNavCardSourceDirection
 import com.android.purebilibili.navigation3.BiliPaiNavRouteTransition
 
 internal fun resolveBiliPaiAutoPredictiveBackExitDirection(
-    popRouteTransition: BiliPaiNavRouteTransition,
-    cardSourceDirection: BiliPaiNavCardSourceDirection,
+    @Suppress("UNUSED_PARAMETER") popRouteTransition: BiliPaiNavRouteTransition,
+    @Suppress("UNUSED_PARAMETER") cardSourceDirection: BiliPaiNavCardSourceDirection,
 ): BiliPaiPredictiveBackExitDirection {
-    if (popRouteTransition == BiliPaiNavRouteTransition.NO_OP_SHARED_ELEMENT) {
-        return BiliPaiPredictiveBackExitDirection.FOLLOW_GESTURE
-    }
-    return when (cardSourceDirection) {
-        BiliPaiNavCardSourceDirection.SOURCE_LEFT -> BiliPaiPredictiveBackExitDirection.ALWAYS_RIGHT
-        BiliPaiNavCardSourceDirection.SOURCE_RIGHT -> BiliPaiPredictiveBackExitDirection.ALWAYS_LEFT
-        BiliPaiNavCardSourceDirection.NONE -> BiliPaiPredictiveBackExitDirection.FOLLOW_GESTURE
-    }
+    return BiliPaiPredictiveBackExitDirection.FOLLOW_GESTURE
 }
 
 internal fun resolveBiliPaiPredictiveBackExitDirection(
-    storageValue: String?,
-    autoDerived: BiliPaiPredictiveBackExitDirection,
+    @Suppress("UNUSED_PARAMETER") storageValue: String?,
+    @Suppress("UNUSED_PARAMETER") autoDerived: BiliPaiPredictiveBackExitDirection,
 ): BiliPaiPredictiveBackExitDirection {
-    return when (storageValue) {
-        "follow_gesture" -> BiliPaiPredictiveBackExitDirection.FOLLOW_GESTURE
-        "always_right" -> BiliPaiPredictiveBackExitDirection.ALWAYS_RIGHT
-        "always_left" -> BiliPaiPredictiveBackExitDirection.ALWAYS_LEFT
-        else -> autoDerived
-    }
+    return BiliPaiPredictiveBackExitDirection.FOLLOW_GESTURE
 }
