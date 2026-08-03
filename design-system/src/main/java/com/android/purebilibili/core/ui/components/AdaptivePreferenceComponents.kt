@@ -1116,10 +1116,98 @@ internal fun AdaptivePreferenceContent(
         )
         return
     }
-    if (
-        clickableRenderer == AppClickableItemRenderer.MD3_BASIC ||
-        clickableRenderer == AppClickableItemRenderer.MIUIX_BASIC
-    ) {
+    if (clickableRenderer == AppClickableItemRenderer.MD3_BASIC) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = rowSpec.minTouchTargetHeightDp.dp)
+                .clickable(enabled = onClick != null) { onClick?.invoke() }
+                .padding(
+                    horizontal = rowSpec.insideHorizontalPaddingDp.dp,
+                    vertical = rowSpec.insideVerticalPaddingDp.dp
+                ),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (icon != null || iconPainter != null) {
+                Box(
+                    modifier = Modifier
+                        .size(visualSpec.iconContainerSizeDp.dp)
+                        .clip(RoundedCornerShape(visualSpec.iconCornerRadiusDp.dp))
+                        .background(
+                            if (effectiveIconTint == Color.Unspecified) {
+                                Color.Transparent
+                            } else {
+                                effectiveIconTint.copy(alpha = visualSpec.iconBackgroundAlpha)
+                            }
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (icon != null) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = effectiveIconTint,
+                            modifier = Modifier.size(visualSpec.iconGlyphSizeDp.dp)
+                        )
+                    } else if (iconPainter != null) {
+                        Icon(
+                            painter = iconPainter,
+                            contentDescription = null,
+                            tint = effectiveIconTint,
+                            modifier = Modifier.size(visualSpec.iconGlyphSizeDp.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(14.dp))
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = textColor
+                )
+                if (subtitle != null) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = subtitleColor
+                    )
+                }
+            }
+            if (trailingContent != null || !value.isNullOrBlank() || (onClick != null && showChevron)) {
+                Spacer(modifier = Modifier.width(rowSpec.trailingSpacingDp.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    trailingContent?.invoke()
+                    if (!value.isNullOrBlank()) {
+                        Text(
+                            text = value,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = valueColor,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.End,
+                            modifier = Modifier
+                                .widthIn(max = 128.dp)
+                                .onLongPressAction(
+                                    enabled = enableCopy && onCopyRequest != null,
+                                    onLongPress = { onCopyRequest?.invoke(copyValue ?: value, title) },
+                                )
+                        )
+                    }
+                    if (onClick != null && showChevron) {
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                            contentDescription = null,
+                            tint = chevronTint,
+                            modifier = Modifier.size(rowSpec.trailingIconSizeDp.dp)
+                        )
+                    }
+                }
+            }
+        }
+        return
+    }
+    if (clickableRenderer == AppClickableItemRenderer.MIUIX_BASIC) {
         BasicComponent(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1179,11 +1267,7 @@ internal fun AdaptivePreferenceContent(
                 if (!value.isNullOrBlank()) {
                     Text(
                         text = value,
-                        style = if (clickableRenderer == AppClickableItemRenderer.MIUIX_BASIC) {
-                            MaterialTheme.typography.bodySmall
-                        } else {
-                            MaterialTheme.typography.bodyMedium
-                        },
+                        style = MaterialTheme.typography.bodySmall,
                         color = AppSurfaceTokens.onSurfaceVariantSummary(),
                         modifier = Modifier.onLongPressAction(
                             enabled = enableCopy && onCopyRequest != null,

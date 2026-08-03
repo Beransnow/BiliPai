@@ -149,6 +149,23 @@ class SettingsRootCategoryContentStructureTest {
     }
 
     @Test
+    fun mobileSettingsRootCategorySummariesAreNotTruncated() {
+        val source = listOf(
+            File("app/src/main/java/com/android/purebilibili/feature/settings/ui/SettingsSections.kt"),
+            File("src/main/java/com/android/purebilibili/feature/settings/ui/SettingsSections.kt")
+        ).first { it.exists() }.readText().replace("\r\n", "\n")
+        val navigationSection = source
+            .substringAfter("internal fun SettingsRootCategoryNavigationSection(")
+            .substringBefore("internal fun SettingsRootCategoryListSection(")
+        val categoryRow = source
+            .substringAfter("private fun SettingsRootCategoryRow(")
+            .substringBefore("internal fun SettingsAboutHomeSection(")
+
+        assertFalse(navigationSection.contains("maxLines = 2"))
+        assertFalse(categoryRow.contains("maxLines = 2"))
+    }
+
+    @Test
     fun mobileSettingsRootUsesNav3ScreensInsteadOfInlineDrillDown() {
         val screenSource = listOf(
             File("app/src/main/java/com/android/purebilibili/feature/settings/screen/SettingsScreen.kt"),

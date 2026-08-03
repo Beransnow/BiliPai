@@ -279,11 +279,16 @@ internal fun resolveMd3TopTabVisibleSlots(): Int = 3
 internal fun resolveMd3TopTabLayoutVisibleSlots(
     categoryCount: Int,
     labelMode: Int,
-    showPartitionAction: Boolean
+    showPartitionAction: Boolean,
+    fontScale: Float = 1f
 ): Int {
     val hasSupportedLabelMode = normalizeTopTabLabelMode(labelMode) in 0..2
     return if (!showPartitionAction && hasSupportedLabelMode && categoryCount >= 4) {
-        categoryCount.coerceAtMost(6)
+        if (fontScale > 1.15f) {
+            categoryCount.coerceAtMost(4)
+        } else {
+            categoryCount.coerceAtMost(6)
+        }
     } else {
         resolveMd3TopTabVisibleSlots()
     }
@@ -965,6 +970,7 @@ private fun LightweightHomeTopTabs(
     val pagerScrollingProvider = remember(pagerState) {
         { pagerState?.isScrollInProgress == true }
     }
+    val density = LocalDensity.current
 
     LaunchedEffect(selectedIndex, categories.size) {
         selectedItemLeftInWindowPx = Float.NaN
@@ -1004,7 +1010,8 @@ private fun LightweightHomeTopTabs(
                 visibleSlots = resolveMd3TopTabLayoutVisibleSlots(
                     categoryCount = categories.size,
                     labelMode = normalizedLabelMode,
-                    showPartitionAction = showPartitionAction
+                    showPartitionAction = showPartitionAction,
+                    fontScale = density.fontScale
                 )
             )
         }
@@ -1027,7 +1034,6 @@ private fun LightweightHomeTopTabs(
         } else {
             maxWidth.value
         }
-        val density = LocalDensity.current
         // Match the bottom bar's actual app-surface luminance. The system theme can differ
         // from the active app theme and previously produced a dark gray capture on light pages.
         val isDarkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.background())
@@ -1945,7 +1951,9 @@ private fun LightweightTopTabItem(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = AppSpacingTokens.Small),
+                .padding(
+                    horizontal = if (showText && !showIcon) 0.dp else AppSpacingTokens.Small
+                ),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {

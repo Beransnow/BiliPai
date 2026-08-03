@@ -261,6 +261,28 @@ class TopTabLayoutPolicyTest {
     }
 
     @Test
+    fun `md3 top tabs become scrollable instead of truncating labels at large font scale`() {
+        assertEquals(
+            4,
+            resolveMd3TopTabLayoutVisibleSlots(
+                categoryCount = 6,
+                labelMode = 2,
+                showPartitionAction = false,
+                fontScale = 1.3f
+            )
+        )
+        assertEquals(
+            6,
+            resolveMd3TopTabLayoutVisibleSlots(
+                categoryCount = 6,
+                labelMode = 2,
+                showPartitionAction = false,
+                fontScale = 1.15f
+            )
+        )
+    }
+
+    @Test
     fun `md3 top tabs keep compact scrollable slots for external partition action`() {
         assertEquals(
             3,
@@ -431,4 +453,3 @@ class TopTabLayoutPolicyTest {
         )
     }
 }
-

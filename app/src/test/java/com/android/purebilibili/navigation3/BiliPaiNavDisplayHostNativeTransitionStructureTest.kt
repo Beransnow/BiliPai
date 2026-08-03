@@ -30,6 +30,43 @@ class BiliPaiNavDisplayHostNativeTransitionStructureTest {
         assertTrue(source.contains("rememberUpdatedState(sourceMetadata)"))
     }
 
+    @Test
+    fun predictiveCommitMarksCardReturnBeforeWaitingForNativePop() {
+        val performBackSource = loadSource()
+            .substringAfter("val performBack:")
+            .substringBefore("val latestProgrammaticBackAction")
+        val prepareIndex = performBackSource.indexOf("onPrepareVideoCardSharedReturn()")
+        val nativePopWaitIndex = performBackSource.indexOf("predictiveBlurFadeJob?.join()")
+
+        assertTrue(prepareIndex >= 0)
+        assertTrue(nativePopWaitIndex >= 0)
+        assertTrue(prepareIndex < nativePopWaitIndex)
+        assertTrue(performBackSource.countOccurrences("onPrepareVideoCardSharedReturn()") == 1)
+    }
+
+    @Test
+    fun predictiveCancelRestoresLivePlayerBeforeDepthAnimation() {
+        val cancelSource = loadSource()
+            .substringAfter("onBackCancelled = {")
+            .substringBefore("commitTransition()")
+        val playerRecoveryIndex = cancelSource.indexOf(
+            "onNativeVideoBackCancelled(currentBackKey, targetBackKey)"
+        )
+        val depthRestoreIndex = cancelSource.indexOf("videoCardClock.animateFallbackTo(")
+
+        assertTrue(playerRecoveryIndex >= 0)
+        assertTrue(depthRestoreIndex >= 0)
+        assertTrue(playerRecoveryIndex < depthRestoreIndex)
+        assertTrue(
+            cancelSource.countOccurrences(
+                "onNativeVideoBackCancelled(currentBackKey, targetBackKey)"
+            ) == 1
+        )
+    }
+
+    private fun String.countOccurrences(needle: String): Int =
+        windowed(size = needle.length, step = 1).count { it == needle }
+
     private fun loadSource(): String {
         return listOf(
             File("app/src/main/java/com/android/purebilibili/navigation3/BiliPaiNavDisplayHost.kt"),
