@@ -988,6 +988,12 @@ fun HomeScreen(
             cardWidthPreset = homeSettings.homeFeedCardWidthPreset
         )
     }
+    val homeFeedCoverAspectRatio = remember(homeFeedCardStyle, gridColumns) {
+        resolveHomeFeedCoverAspectRatio(
+            style = homeFeedCardStyle,
+            gridColumns = gridColumns,
+        )
+    }
     
     
     val tabletUseSidebar = appNavigationSettings.tabletUseSidebar
@@ -1751,7 +1757,7 @@ fun HomeScreen(
                                              wallpaperTintEnabled = homeWallpaperBackdropAppearance.visible,
                                              wallpaperEffectMode = homeSettings.homeWallpaperEffectMode,
                                              isDataSaverActive = isDataSaverActive,
-                                             coverAspectRatio = homeFeedCardLayout.coverAspectRatio
+                                             coverAspectRatio = homeFeedCoverAspectRatio
                                          )
                                      }
                                  }

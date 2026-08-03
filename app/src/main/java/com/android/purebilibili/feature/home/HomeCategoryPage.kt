@@ -194,8 +194,11 @@ internal fun HomeCategoryPageContent(
     val sourceRoute = remember(category) {
         resolveHomeCategoryVideoSourceRoute(category)
     }
-    val cardLayout = remember(homeFeedCardStyle) {
-        resolveHomeFeedCardLayout(homeFeedCardStyle)
+    val cardLayout = remember(homeFeedCardStyle, gridColumns) {
+        resolveHomeFeedCardLayout(
+            style = homeFeedCardStyle,
+            gridColumns = gridColumns,
+        )
     }
     TrackScrollJank(
         scrollableState = gridState,

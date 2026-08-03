@@ -26,7 +26,13 @@ internal const val HOME_FEED_CURRENT_COVER_ASPECT_RATIO = HOME_FEED_FULL_COVER_A
 /**
  * 解析首页/相关推荐等视频卡封面框比例。
  */
-internal fun resolveHomeFeedCoverAspectRatio(style: HomeFeedCardStyle): Float {
+internal fun resolveHomeFeedCoverAspectRatio(
+    style: HomeFeedCardStyle,
+    gridColumns: Int = 2,
+): Float {
+    // 单列封面横跨整个内容区，4:3 / 16:10 会占用过多纵向空间；统一回到投稿源
+    // 常见的 16:9。双列及以上继续尊重用户选择的卡片风格。
+    if (gridColumns <= 1) return HOME_FEED_FULL_COVER_ASPECT_RATIO
     return when (style) {
         HomeFeedCardStyle.CURRENT -> HOME_FEED_FULL_COVER_ASPECT_RATIO
         HomeFeedCardStyle.OFFICIAL -> HOME_FEED_OFFICIAL_COVER_ASPECT_RATIO
@@ -34,8 +40,14 @@ internal fun resolveHomeFeedCoverAspectRatio(style: HomeFeedCardStyle): Float {
     }
 }
 
-internal fun resolveHomeFeedCardLayout(style: HomeFeedCardStyle): HomeFeedCardLayout {
-    val coverAspectRatio = resolveHomeFeedCoverAspectRatio(style)
+internal fun resolveHomeFeedCardLayout(
+    style: HomeFeedCardStyle,
+    gridColumns: Int = 2,
+): HomeFeedCardLayout {
+    val coverAspectRatio = resolveHomeFeedCoverAspectRatio(
+        style = style,
+        gridColumns = gridColumns,
+    )
     return when (style) {
         HomeFeedCardStyle.CURRENT -> HomeFeedCardLayout(
             coverAspectRatio = coverAspectRatio,

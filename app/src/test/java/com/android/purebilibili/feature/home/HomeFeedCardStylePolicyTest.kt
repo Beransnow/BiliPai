@@ -50,4 +50,35 @@ class HomeFeedCardStylePolicyTest {
         assertEquals(2, HomeFeedCardStyle.PILIPLUS.value)
         assertEquals(HomeFeedCardStyle.PILIPLUS, HomeFeedCardStyle.fromValue(2))
     }
+
+    @Test
+    fun singleColumn_usesSixteenByNineForEveryCardStyle() {
+        HomeFeedCardStyle.entries.forEach { style ->
+            assertEquals(
+                HOME_FEED_FULL_COVER_ASPECT_RATIO,
+                resolveHomeFeedCoverAspectRatio(style = style, gridColumns = 1),
+                0.0001f,
+            )
+        }
+    }
+
+    @Test
+    fun multipleColumns_keepSelectedCardStyleRatio() {
+        assertEquals(
+            HOME_FEED_OFFICIAL_COVER_ASPECT_RATIO,
+            resolveHomeFeedCoverAspectRatio(
+                style = HomeFeedCardStyle.OFFICIAL,
+                gridColumns = 2,
+            ),
+            0.0001f,
+        )
+        assertEquals(
+            HOME_FEED_PILIPLUS_COVER_ASPECT_RATIO,
+            resolveHomeFeedCoverAspectRatio(
+                style = HomeFeedCardStyle.PILIPLUS,
+                gridColumns = 3,
+            ),
+            0.0001f,
+        )
+    }
 }
