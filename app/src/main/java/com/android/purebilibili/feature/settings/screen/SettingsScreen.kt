@@ -382,7 +382,10 @@ fun SettingsScreen(
         if (!silent) {
             updateStatusText = "检查中..."
         }
-        val result = AppUpdateChecker.check(com.android.purebilibili.BuildConfig.VERSION_NAME)
+        val result = AppUpdateChecker.check(
+            currentVersion = com.android.purebilibili.BuildConfig.VERSION_NAME,
+            currentVersionCode = com.android.purebilibili.BuildConfig.VERSION_CODE
+        )
         result.onSuccess { info ->
             viewModel.recordReleaseEvidence(info)
             updateStatusText = info.message

@@ -1,6 +1,6 @@
 # BiliPai Wiki
 
-最后更新：2026-08-02（按当前源码与构建配置校对）
+最后更新：2026-08-04（按当前源码与构建配置校对）
 
 ## 目录
 
@@ -12,6 +12,7 @@
 - [UI 设计规范](ui-design/README.md)
 - [液态玻璃复用与首页底栏同源规范](LIQUID_GLASS_REUSE_PARITY.md)
 - [发布流程](RELEASE_WORKFLOW.md)
+- [版本规范](VERSIONING.md)
 - [QA 测试手册](QA.md)
 - [用户常见问题](FAQ.md)
 - [直播 API 历史调研](LIVE_API_RESEARCH.md)

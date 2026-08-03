@@ -5,11 +5,11 @@
 </p>
 
 <p align="center">
-  <sub>Last updated: 2026-08-02 · Current build: 9.9.9.8.6 · Latest documented release: v9.9.9.8.6</sub>
+  <sub>Last updated: 2026-08-04 · Current build: 0.1.0 · Latest documented release: v0.1.0</sub>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-9.9.9.8.6-fb7299?style=flat-square" alt="Release">
+  <img src="https://img.shields.io/badge/Release-0.1.0-fb7299?style=flat-square" alt="Release">
   <img src="https://img.shields.io/github/stars/jay3-yy/BiliPai?style=flat-square&color=yellow" alt="Stars">
   <img src="https://img.shields.io/github/forks/jay3-yy/BiliPai?style=flat-square&color=green" alt="Forks">
   <img src="https://img.shields.io/github/last-commit/jay3-yy/BiliPai?style=flat-square&color=purple" alt="Last Commit">
@@ -438,12 +438,13 @@ See the [current roadmap](docs/wiki/ROADMAP.md) for priorities, completion crite
 
 See full changelog: [CHANGELOG.md](CHANGELOG.md)
 
-### Latest (v9.9.9.8.6 · 2026-08-02)
+### Latest (v0.1.0 · 2026-08-04)
 
 - Tablet side navigation now offers an optional account-switcher button with the full account-and-playback selector.
 - Tablet fullscreen stays landscape; interactive landscape comment and thread panels keep playback visible.
 - Bangumi playback restores direct video output and can prefer HDR/HEVC when the device and playback account permit it.
-- The current build and latest documented release are `9.9.9.8.6 / versionCode 278`.
+- BiliPai now starts a new `0.x` version epoch at `0.1.0 / versionCode 282`; Android version codes continue increasing.
+- Existing 9.x users need one manual APK installation to enter the new epoch; in-app updates resume within 0.x.
 
 ---
 

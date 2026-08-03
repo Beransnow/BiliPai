@@ -1,6 +1,6 @@
 # 发布流程（维护版）
 
-最后更新：2026-08-02（按当前文档链路校对）
+最后更新：2026-08-04（按当前文档链路校对）
 
 ## 目标
 
@@ -10,7 +10,8 @@
 
 1. 更新版本号  
    - 文件：`app/build.gradle.kts`
-   - 规则：`versionCode + 1`，`versionName` 递增
+   - 规则：`versionCode + 1`，`versionName` 按 [版本规范](VERSIONING.md) 递增
+   - 标签：稳定版标签必须为 `v<versionName>`，例如 `v0.1.0`
    - 注意：若 `versionName` 已领先公开文档，发布前必须补齐 `CHANGELOG.md` 与 README/Wiki
 
 2. 更新发布日志  
@@ -48,6 +49,7 @@
 ## 发布检查清单
 
 - [ ] `app/build.gradle.kts` 版本号正确
+- [ ] Git 标签、Changelog、构建元数据与 APK 文件名使用同一 `versionName`
 - [ ] `CHANGELOG.md` 新版本段存在
 - [ ] `README.md` 已同步最新版本与已完成功能
 - [ ] `README_EN.md` 已同步最新版本与 Latest

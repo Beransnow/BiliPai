@@ -14,7 +14,7 @@
 </p>
 
 <p>
-  <img src="https://img.shields.io/badge/Release-9.9.9.8.6-007AFF?style=flat-square&labelColor=ffffff" alt="Release 9.9.9.8.6" />
+  <img src="https://img.shields.io/badge/Release-0.1.0-007AFF?style=flat-square&labelColor=ffffff" alt="Release 0.1.0" />
   <img src="https://img.shields.io/badge/Android-8.0%2B-34C759?style=flat-square&logo=android&logoColor=white" alt="Android 8.0+" />
   <img src="https://img.shields.io/badge/Kotlin-100%25-7F52FF?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin" />
   <img src="https://img.shields.io/badge/License-Non--Commercial-FF3B30?style=flat-square" alt="Non-Commercial License" />
@@ -42,7 +42,7 @@
   </a>
 </p>
 
-<sub>README 更新：2026-08-02 · 当前构建版本以 app/build.gradle.kts 为准 · 已发布版本以 <a href="CHANGELOG.md">CHANGELOG.md</a> 为准</sub>
+<sub>README 更新：2026-08-04 · 当前构建版本以 app/build.gradle.kts 为准 · 已发布版本以 <a href="CHANGELOG.md">CHANGELOG.md</a> 为准</sub>
 
 </div>
 
@@ -196,11 +196,12 @@ cd BiliPai
 | QA 手册 | [docs/wiki/QA.md](docs/wiki/QA.md) |
 | 用户问答 | [docs/wiki/FAQ.md](docs/wiki/FAQ.md) |
 | 发布流程 | [docs/wiki/RELEASE_WORKFLOW.md](docs/wiki/RELEASE_WORKFLOW.md) |
+| 版本规范 | [docs/wiki/VERSIONING.md](docs/wiki/VERSIONING.md) |
 | 变更日志 | [CHANGELOG.md](CHANGELOG.md) |
 
 ## 最近更新
 
-当前构建为 `9.9.9.8.6 / versionCode 278`；最新完整发布记录为 `v9.9.9.8.6`。公开发布状态与下载请以 [GitHub Releases](https://github.com/jay3-yy/BiliPai/releases) 和 [CHANGELOG.md](CHANGELOG.md) 为准：
+当前构建为 `0.1.0 / versionCode 282`；最新完整发布记录为 `v0.1.0`。这是 BiliPai 的全新 `0.x` 版本纪元，公开发布状态与下载请以 [GitHub Releases](https://github.com/jay3-yy/BiliPai/releases) 和 [CHANGELOG.md](CHANGELOG.md) 为准：
 
 - 构建基线升级至 AGP 9.3.1 / Gradle 9.5 / Compose BOM 2026.06.01。
 - Navigation3 runtime/UI 对齐至官方 `1.2.0-alpha07`，继续收敛预测返回真实来源页与整卡稳定性。
