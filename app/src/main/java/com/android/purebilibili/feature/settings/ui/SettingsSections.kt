@@ -152,7 +152,7 @@ fun GeneralSection(
             icon = appearanceVisual.icon,
             iconPainter = appearanceVisual.iconResId?.let { painterResource(id = it) },
             title = "外观设置",
-            value = "主题、图标、模糊效果",
+            value = "界面风格、颜色、字体和显示大小",
             onClick = onAppearanceClick,
             iconTint = appearanceVisual.iconTint
         )
@@ -161,7 +161,7 @@ fun GeneralSection(
             icon = playbackVisual.icon,
             iconPainter = playbackVisual.iconResId?.let { painterResource(id = it) },
             title = "播放设置",
-            value = "解码、手势、后台播放",
+            value = "清晰度、倍速、小窗、后台播放和全屏操作",
             onClick = onPlaybackClick,
             iconTint = playbackVisual.iconTint
         )
@@ -170,7 +170,7 @@ fun GeneralSection(
             icon = bottomBarVisual.icon,
             iconPainter = bottomBarVisual.iconResId?.let { painterResource(id = it) },
             title = "导航设置",
-            value = "底栏、顶部标签、平板侧边栏",
+            value = "底栏、顶部入口、图标文字和排列顺序",
             onClick = onBottomBarClick,
             iconTint = bottomBarVisual.iconTint
         )
@@ -181,6 +181,7 @@ internal data class SettingsDetailEntry(
     val target: SettingsSearchTarget,
     val title: String,
     val value: String,
+    val openFocus: SettingsSceneDetailFocus? = null,
     val onClick: () -> Unit
 )
 
@@ -567,9 +568,9 @@ internal fun SettingsDetailEntrySection(
                 title = entry.title,
                 subtitle = entry.value,
                 onClick = {
-                    resolveSettingsSceneDetailFocus(entry.target)?.let { detailFocus ->
+                    entry.openFocus?.let { detailFocus ->
                         SettingsSearchFocusController.submit(detailFocus.target, detailFocus.focusId)
-                    }
+                    } ?: SettingsSearchFocusController.clear()
                     entry.onClick()
                 },
                 iconTint = visual.iconTint
@@ -607,7 +608,11 @@ internal fun SettingsRootCategoryContent(
                                 SettingsDetailEntry(
                                     target = SettingsSearchTarget.INTERFACE_THEME,
                                     title = "外观设置",
-                                    value = "UI 预设、主题、字体、DPI、图标与开屏",
+                                    value = "选择界面风格、颜色、字体、显示大小和启动画面",
+                                    openFocus = SettingsSceneDetailFocus(
+                                        SettingsSearchTarget.APPEARANCE,
+                                        SettingsSearchFocusIds.APPEARANCE_THEME,
+                                    ),
                                     onClick = actions.onAppearanceClick,
                                 ),
                             ),
@@ -623,7 +628,11 @@ internal fun SettingsRootCategoryContent(
                                 SettingsDetailEntry(
                                     target = SettingsSearchTarget.PLAYBACK_QUALITY,
                                     title = "播放器设置",
-                                    value = "解码、画质、字幕、全屏方向与手势",
+                                    value = "调整解码、清晰度、倍速、小窗和全屏操作",
+                                    openFocus = SettingsSceneDetailFocus(
+                                        SettingsSearchTarget.PLAYBACK,
+                                        SettingsSearchFocusIds.PLAYBACK_DECODER,
+                                    ),
                                     onClick = actions.onPlaybackClick,
                                 ),
                             ),
@@ -638,7 +647,11 @@ internal fun SettingsRootCategoryContent(
                                 SettingsDetailEntry(
                                     target = SettingsSearchTarget.INTERACTION_COMMENT,
                                     title = "互动、评论与内容预览",
-                                    value = "评论、点赞、简介与视频内容交互",
+                                    value = "调整评论显示、点赞操作、视频简介和内容入口",
+                                    openFocus = SettingsSceneDetailFocus(
+                                        SettingsSearchTarget.PLAYBACK,
+                                        SettingsSearchFocusIds.PLAYBACK_INTERACTION,
+                                    ),
                                     onClick = actions.onPlaybackClick,
                                 ),
                             ),
@@ -654,7 +667,11 @@ internal fun SettingsRootCategoryContent(
                                 SettingsDetailEntry(
                                     target = SettingsSearchTarget.HOME_FEED,
                                     title = "首页样式与推荐卡片",
-                                    value = "卡片样式、壁纸效果与推荐流宽度",
+                                    value = "调整卡片布局、壁纸、UP 信息和视频时长",
+                                    openFocus = SettingsSceneDetailFocus(
+                                        SettingsSearchTarget.HOME_FEED,
+                                        SettingsSearchFocusIds.HOME_OVERVIEW,
+                                    ),
                                     onClick = actions.onHomeClick,
                                 ),
                             ),
@@ -695,7 +712,11 @@ internal fun SettingsRootCategoryContent(
                                 SettingsDetailEntry(
                                     target = SettingsSearchTarget.NAVIGATION,
                                     title = "导航与标签",
-                                    value = "底栏、顶部标签、平板侧边栏与项目顺序",
+                                    value = "选择底栏和顶部入口，并调整图标、文字和顺序",
+                                    openFocus = SettingsSceneDetailFocus(
+                                        SettingsSearchTarget.BOTTOM_BAR,
+                                        SettingsSearchFocusIds.BOTTOM_BAR_START,
+                                    ),
                                     onClick = actions.onBottomBarClick,
                                 ),
                             ),
@@ -710,7 +731,11 @@ internal fun SettingsRootCategoryContent(
                                 SettingsDetailEntry(
                                     target = SettingsSearchTarget.ANIMATION,
                                     title = "动效与触感",
-                                    value = "页面过渡、共享元素、触感反馈与动态图标",
+                                    value = "控制页面动画、视频转场、振动反馈和玻璃效果",
+                                    openFocus = SettingsSceneDetailFocus(
+                                        SettingsSearchTarget.ANIMATION,
+                                        SettingsSearchFocusIds.ANIMATION_START,
+                                    ),
                                     onClick = actions.onAnimationClick,
                                 ),
                             ),
@@ -766,7 +791,11 @@ internal fun SettingsRootCategoryContent(
                                 SettingsDetailEntry(
                                     target = SettingsSearchTarget.INTERFACE_THEME,
                                     title = "外观设置",
-                                    value = "UI 预设、主题、字体、DPI、动态图标与开屏",
+                                    value = "选择界面风格、颜色、字体、显示大小和启动画面",
+                                    openFocus = SettingsSceneDetailFocus(
+                                        SettingsSearchTarget.APPEARANCE,
+                                        SettingsSearchFocusIds.APPEARANCE_THEME,
+                                    ),
                                     onClick = actions.onAppearanceClick
                                 )
                             )
@@ -781,7 +810,11 @@ internal fun SettingsRootCategoryContent(
                                 SettingsDetailEntry(
                                     target = SettingsSearchTarget.ANIMATION,
                                     title = "动效与图标",
-                                    value = "过渡动画、触感反馈、动态图标与底栏搜索入口",
+                                    value = "控制页面动画、视频转场、振动反馈和玻璃效果",
+                                    openFocus = SettingsSceneDetailFocus(
+                                        SettingsSearchTarget.ANIMATION,
+                                        SettingsSearchFocusIds.ANIMATION_START,
+                                    ),
                                     onClick = actions.onAnimationClick
                                 )
                             )
@@ -796,7 +829,11 @@ internal fun SettingsRootCategoryContent(
                                 SettingsDetailEntry(
                                     target = SettingsSearchTarget.NAVIGATION,
                                     title = "导航与标签",
-                                    value = "底栏、顶部标签、平板侧边栏与底栏项目顺序",
+                                    value = "选择底栏和顶部入口，并调整图标、文字和顺序",
+                                    openFocus = SettingsSceneDetailFocus(
+                                        SettingsSearchTarget.BOTTOM_BAR,
+                                        SettingsSearchFocusIds.BOTTOM_BAR_START,
+                                    ),
                                     onClick = actions.onBottomBarClick
                                 )
                             )
@@ -811,7 +848,11 @@ internal fun SettingsRootCategoryContent(
                                 SettingsDetailEntry(
                                     target = SettingsSearchTarget.FULLSCREEN_GESTURE,
                                     title = "全屏与手势",
-                                    value = "在播放设置内 · 全屏方向与手势控制",
+                                    value = "设置自动横屏、亮度音量手势和全屏返回方式",
+                                    openFocus = SettingsSceneDetailFocus(
+                                        SettingsSearchTarget.PLAYBACK,
+                                        SettingsSearchFocusIds.PLAYBACK_FULLSCREEN,
+                                    ),
                                     onClick = actions.onPlaybackClick
                                 )
                             )
@@ -827,8 +868,12 @@ internal fun SettingsRootCategoryContent(
                                 SettingsDetailEntry(
                                     target = SettingsSearchTarget.HOME_FEED,
                                     title = "首页样式与壁纸",
-                                    value = "卡片样式、壁纸效果与推荐流宽度",
-                                    onClick = actions.onAppearanceClick
+                                    value = "调整卡片布局、壁纸、UP 信息和视频时长",
+                                    openFocus = SettingsSceneDetailFocus(
+                                        SettingsSearchTarget.HOME_FEED,
+                                        SettingsSearchFocusIds.HOME_OVERVIEW,
+                                    ),
+                                    onClick = actions.onHomeClick
                                 )
                             )
                         )
@@ -867,7 +912,11 @@ internal fun SettingsRootCategoryContent(
                                 SettingsDetailEntry(
                                     target = SettingsSearchTarget.PLAYBACK_QUALITY,
                                     title = "播放与画质",
-                                    value = "在播放设置内 · 解码、画质与倍速",
+                                    value = "选择解码方式、默认清晰度、音质和播放速度",
+                                    openFocus = SettingsSceneDetailFocus(
+                                        SettingsSearchTarget.PLAYBACK,
+                                        SettingsSearchFocusIds.PLAYBACK_NETWORK,
+                                    ),
                                     onClick = actions.onPlaybackClick
                                 )
                             )
@@ -882,7 +931,11 @@ internal fun SettingsRootCategoryContent(
                                 SettingsDetailEntry(
                                     target = SettingsSearchTarget.INTERACTION_COMMENT,
                                     title = "互动与评论",
-                                    value = "在播放设置内 · 评论、点赞与简介",
+                                    value = "调整评论显示、点赞操作、视频简介和内容入口",
+                                    openFocus = SettingsSceneDetailFocus(
+                                        SettingsSearchTarget.PLAYBACK,
+                                        SettingsSearchFocusIds.PLAYBACK_INTERACTION,
+                                    ),
                                     onClick = actions.onPlaybackClick
                                 )
                             )
@@ -935,7 +988,11 @@ internal fun SettingsRootCategoryContent(
                                 SettingsDetailEntry(
                                     target = SettingsSearchTarget.DIAGNOSTICS,
                                     title = "播放器诊断",
-                                    value = "在播放设置内 · 诊断日志与统计",
+                                    value = "出现黑屏、卡顿或画质切换失败时用于排查问题",
+                                    openFocus = SettingsSceneDetailFocus(
+                                        SettingsSearchTarget.PLAYBACK,
+                                        SettingsSearchFocusIds.PLAYBACK_DEBUG,
+                                    ),
                                     onClick = actions.onPlaybackClick
                                 )
                             )
@@ -1189,7 +1246,7 @@ fun FeedApiSection(
     val topBarCollapseIcon = rememberSettingsSemanticIcon(SettingsIconRole.NAVIGATION)
     SettingsCardGroup {
         SettingsSingleChoicePreference(
-            title = "推荐流类型",
+            title = "首页推荐来源",
             subtitle = feedApiType.description,
             options = resolveFeedApiSegmentOptions(),
             selectedValue = feedApiType,
@@ -1200,8 +1257,8 @@ fun FeedApiSection(
         SettingsAdaptiveDivider()
         SettingSwitchItem(
             icon = refreshIcon,
-            title = "动态增量刷新",
-            subtitle = "下拉刷新时不重置列表，仅在顶部插入新内容",
+            title = "刷新时保留当前列表",
+            subtitle = "下拉刷新只把新动态加到顶部，不重新排列已看到的内容",
             checked = incrementalTimelineRefreshEnabled,
             onCheckedChange = onIncrementalTimelineRefreshChange,
             iconTint = incrementalRefreshTint
@@ -1218,8 +1275,8 @@ fun FeedApiSection(
         SettingsAdaptiveDivider()
         SettingSwitchItem(
             icon = visibilityIcon,
-            title = "全部动态显示 UP 主栏",
-            subtitle = "关闭后，“全部”tab 顶部不再弹出 UP 主横向栏，UP tab 仍可选择关注用户",
+            title = "“全部”页显示关注用户栏",
+            subtitle = "关闭后隐藏顶部横向用户列表，“UP主”页仍可选择关注用户",
             checked = dynamicAllTabHorizontalUserListVisible,
             onCheckedChange = onDynamicAllTabHorizontalUserListVisibleChange,
             iconTint = feedTint
@@ -1227,7 +1284,7 @@ fun FeedApiSection(
         SettingsAdaptiveDivider()
         SettingSwitchItem(
             icon = topBarCollapseIcon,
-            title = "动态顶栏下滑折叠",
+            title = "浏览动态时收起顶部栏",
             subtitle = if (dynamicTopBarCollapseOnScroll) {
                 "列表下滑时折叠 Tab 顶栏；横向 UP 主栏仍会单独收起"
             } else {
@@ -1239,8 +1296,8 @@ fun FeedApiSection(
         )
         SettingsAdaptiveDivider()
         SettingsSingleChoicePreference(
-            title = "动态 Feed 布局",
-            subtitle = "瀑布流多列自适应；列表单列居中",
+            title = "动态页面布局",
+            subtitle = "瀑布流会按屏幕宽度显示多列；列表模式固定为单列",
             options = com.android.purebilibili.core.store.SettingsManager.DynamicFeedLayoutMode.entries.map { mode ->
                 com.android.purebilibili.core.ui.components.AppSegmentOption(
                     value = mode,

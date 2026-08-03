@@ -30,7 +30,7 @@ class SettingsRootCategoryContentStructureTest {
     }
 
     @Test
-    fun detailEntrySection_submitsDetailFocusBeforeOpeningEntry() {
+    fun detailEntrySection_usesExplicitFocusAndClearsStaleRequests() {
         val source = listOf(
             File("app/src/main/java/com/android/purebilibili/feature/settings/ui/SettingsSections.kt"),
             File("src/main/java/com/android/purebilibili/feature/settings/ui/SettingsSections.kt")
@@ -40,10 +40,26 @@ class SettingsRootCategoryContentStructureTest {
             .substringAfter("internal fun SettingsDetailEntrySection(")
             .substringBefore("internal fun SettingsRootCategoryContent(")
 
-        assertTrue(sectionBlock.contains("resolveSettingsSceneDetailFocus(entry.target)?.let"))
+        assertTrue(sectionBlock.contains("entry.openFocus?.let"))
         assertTrue(sectionBlock.contains("SettingsSearchFocusController.submit(detailFocus.target, detailFocus.focusId)"))
+        assertTrue(sectionBlock.contains("?: SettingsSearchFocusController.clear()"))
         assertTrue(sectionBlock.contains("entry.onClick()"))
         assertTrue(sectionBlock.contains("subtitle = entry.value"))
+    }
+
+    @Test
+    fun broadSettingsEntriesOpenAtPageStartWhileSubtopicEntriesUsePreciseFocus() {
+        val source = listOf(
+            File("app/src/main/java/com/android/purebilibili/feature/settings/ui/SettingsSections.kt"),
+            File("src/main/java/com/android/purebilibili/feature/settings/ui/SettingsSections.kt")
+        ).first { it.exists() }.readText().replace("\r\n", "\n")
+
+        assertTrue(source.contains("SettingsSearchFocusIds.PLAYBACK_DECODER"))
+        assertTrue(source.contains("SettingsSearchFocusIds.BOTTOM_BAR_START"))
+        assertTrue(source.contains("SettingsSearchFocusIds.ANIMATION_START"))
+        assertTrue(source.contains("SettingsSearchFocusIds.PLAYBACK_INTERACTION"))
+        assertTrue(source.contains("SettingsSearchFocusIds.PLAYBACK_FULLSCREEN"))
+        assertTrue(source.contains("SettingsSearchFocusIds.PLAYBACK_DEBUG"))
     }
 
     @Test
@@ -189,6 +205,20 @@ class SettingsRootCategoryContentStructureTest {
         assertTrue(searchScreenExists)
         assertTrue(screenSource.contains("SettingsNavDestination"))
         assertFalse(screenSource.contains("SettingsRootDrillDownNavigator("))
+    }
+
+    @Test
+    fun settingsSearchSubmitsResultFocusBeforeOpeningDetailPage() {
+        val source = listOf(
+            File("app/src/main/java/com/android/purebilibili/feature/settings/screen/SettingsSearchScreen.kt"),
+            File("src/main/java/com/android/purebilibili/feature/settings/screen/SettingsSearchScreen.kt")
+        ).first { it.exists() }.readText().replace("\r\n", "\n")
+
+        assertTrue(source.contains("SettingsSearchFocusController.submit(result.target, result.focusId)"))
+        assertTrue(
+            source.indexOf("SettingsSearchFocusController.submit(result.target, result.focusId)") <
+                source.indexOf("onSearchResultClick(result)")
+        )
     }
 
     @Test

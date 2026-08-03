@@ -237,7 +237,7 @@ fun PlaybackSettingsContent(
             //  解码设置
             item {
                 Box(modifier = Modifier.entrance()) {
-                    AppPreferenceSectionTitle("解码")
+                    AppPreferenceSectionTitle("视频解码")
                 }
             }
             item {
@@ -249,16 +249,16 @@ fun PlaybackSettingsContent(
                         AppSegmentOption("av01", "AV1")
                     )
                     fun codecDescription(codec: String): String = when (codec) {
-                        "avc1" -> "兼容性最佳"
-                        "hev1" -> "推荐，画质与体积更平衡"
-                        "av01" -> "高压缩，设备要求更高"
+                        "avc1" -> "兼容设备最多，其他编码无法播放时优先尝试"
+                        "hev1" -> "画质与流量更平衡，多数新设备推荐"
+                        "av01" -> "更节省流量，但需要较新的设备支持"
                         else -> "未知"
                     }
                     AppPreferenceGroup {
                         AppSwitchPreference(
                             icon = rememberSettingsSemanticIcon(SettingsIconRole.HARDWARE_DECODER),
                             title = "启用硬件解码",
-                            subtitle = "关闭后可尝试规避模拟器或特定设备绿屏，但可能更耗电/更卡顿",
+                            subtitle = "推荐保持开启；只有遇到绿屏或无法播放时再尝试关闭，关闭后更耗电",
                             checked = state.hwDecode,
                             onCheckedChange = {
                                 viewModel.toggleHwDecode(it)
@@ -269,7 +269,7 @@ fun PlaybackSettingsContent(
                         )
                         AppPreferenceDivider()
                         SettingsSingleChoicePreference(
-                            title = "首选编码：${resolveSelectionLabel(codecOptions, videoCodecPreference, fallbackLabel = "AVC")}",
+                            title = "优先使用：${resolveSelectionLabel(codecOptions, videoCodecPreference, fallbackLabel = "AVC")}",
                             subtitle = codecDescription(videoCodecPreference),
                             options = codecOptions,
                             selectedValue = videoCodecPreference,
@@ -282,7 +282,7 @@ fun PlaybackSettingsContent(
                         )
                         AppPreferenceDivider()
                         SettingsSingleChoicePreference(
-                            title = "次选编码：${resolveSelectionLabel(codecOptions, videoSecondCodecPreference, fallbackLabel = "HEVC")}",
+                            title = "无法播放时改用：${resolveSelectionLabel(codecOptions, videoSecondCodecPreference, fallbackLabel = "HEVC")}",
                             subtitle = codecDescription(videoSecondCodecPreference),
                             options = codecOptions,
                             selectedValue = videoSecondCodecPreference,
@@ -339,7 +339,7 @@ fun PlaybackSettingsContent(
                                     }
                                 },
                                 title = "默认播放速度",
-                                subtitle = "拖动滑杆自定义，常用档位可一键选择",
+                                subtitle = "新视频默认使用此速度；开启“记忆上次速度”后以后者为准",
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }
@@ -381,7 +381,7 @@ fun PlaybackSettingsContent(
 	                        AppSwitchPreference(
 	                            icon = rememberSettingsSemanticIcon(SettingsIconRole.STOP_ON_EXIT),
                             title = "离开播放页后停止",
-                            subtitle = "不进入小窗/画中画，也不保留后台播放",
+                            subtitle = "开启后，返回其他页面时立即停止，也不会进入小窗或后台播放",
                             checked = stopPlaybackOnExit,
                             onCheckedChange = {
                                 scope.launch {
@@ -412,11 +412,11 @@ fun PlaybackSettingsContent(
                         AppPreferenceDivider()
 	                        AppSwitchPreference(
 	                            icon = rememberSettingsSemanticIcon(SettingsIconRole.AUDIO_FOCUS),
-                            title = "占用音频焦点",
+                            title = "播放时暂停其他应用的声音",
                             subtitle = if (audioFocusEnabled) {
-                                "已开启：会优先接管系统媒体音频焦点"
+                                "播放视频时会请求其他音乐或视频应用暂停"
                             } else {
-                                "关闭后可以与其它 APP 同时播放"
+                                "关闭后可能与其他应用同时发声"
                             },
                             checked = audioFocusEnabled,
                             onCheckedChange = {
@@ -429,11 +429,11 @@ fun PlaybackSettingsContent(
                         )
                         AppPreferenceDivider()
                         SettingsSingleChoicePreference(
-                            title = "后台播放模式：${if (modeControlsEnabled) miniPlayerMode.label else "已覆盖"}",
+                            title = "离开播放页后的方式：${if (modeControlsEnabled) miniPlayerMode.label else "暂不生效"}",
                             subtitle = if (stopPlaybackOnExit) {
-                                "已由“离开播放页后停止”覆盖，后台模式暂不生效"
+                                "请先关闭“离开播放页后停止”"
                             } else if (!backgroundPlaybackEnabled) {
-                                "已关闭“后台播放”，后台模式暂不生效"
+                                "请先开启“后台播放”"
                             } else {
                                 miniPlayerMode.description
                             },
@@ -580,11 +580,11 @@ fun PlaybackSettingsContent(
                     AppPreferenceGroup {
 	                        SettingsSingleChoicePreference(
                             icon = rememberSettingsSemanticIcon(SettingsIconRole.PLAYER_STATS),
-                            title = "播放器洞察",
+                            title = "屏幕显示播放状态",
                             subtitle = when (playerInsightMode) {
                                 PlayerSettingsStore.PlayerInsightMode.OFF -> "不显示播放状态信息"
-                                PlayerSettingsStore.PlayerInsightMode.SMART -> "控制栏出现时显示；观测到掉帧或软件解码时主动保留"
-                                PlayerSettingsStore.PlayerInsightMode.ALWAYS -> "常驻显示实测的编解码、码率与播放状态"
+                                PlayerSettingsStore.PlayerInsightMode.SMART -> "打开控制栏时显示；发生掉帧或软件解码时保持可见"
+                                PlayerSettingsStore.PlayerInsightMode.ALWAYS -> "始终显示编码、码率、掉帧等播放信息"
                             },
                             options = listOf(
                                 AppSegmentOption(PlayerSettingsStore.PlayerInsightMode.OFF, "关闭"),
@@ -615,11 +615,11 @@ fun PlaybackSettingsContent(
                         AppPreferenceDivider()
 	                        AppSwitchPreference(
 	                            icon = rememberSettingsSemanticIcon(SettingsIconRole.PLAYER_DIAGNOSTICS),
-                            title = "DASH 分段请求（实验性）",
+                            title = "分段加载兼容模式（实验性）",
                             subtitle = if (dashSegmentRequestsEnabled) {
-                                "使用本地 MPD 请求初始化段和索引段；兼容性异常时可关闭回退旧路径"
+                                "用于部分视频的分段加载；若出现无法播放或卡住，请关闭此项"
                             } else {
-                                "默认关闭：使用已验证的分离音视频合并播放路径"
+                                "默认关闭，使用兼容性更好的常规加载方式"
                             },
                             checked = dashSegmentRequestsEnabled,
                             onCheckedChange = {
@@ -730,9 +730,9 @@ fun PlaybackSettingsContent(
 	                            icon = rememberSettingsSemanticIcon(SettingsIconRole.AUTO_HIGHEST_QUALITY),
                             title = "自动最高画质",
                             subtitle = if (autoHighestQualityEnabled) {
-                                "已开启，按每个视频实际最高可播档自动选择；没有 4K/HDR 时不会当作异常"
+                                "每个视频都会自动选择当前账号和设备可播放的最高画质"
                             } else {
-                                "全局开关，开启后覆盖下方默认画质；默认画质会作为关闭后的偏好保留"
+                                "关闭后按下方的无线网络和移动网络默认画质播放"
                             },
                             checked = autoHighestQualityEnabled,
                             onCheckedChange = {
@@ -783,7 +783,7 @@ fun PlaybackSettingsContent(
                         val effectiveQualityLabel = getQualityLabel(effectiveQuality)
 
                         SettingsSingleChoicePreference(
-                            title = "流量默认画质：${getQualityLabel(mobileQuality)}",
+                            title = "移动网络默认画质：${getQualityLabel(mobileQuality)}",
                             subtitle = when {
                                 autoHighestQualityEnabled ->
                                     "已被自动最高画质覆盖；仅作为关闭自动最高后的流量偏好保留"
@@ -1111,8 +1111,8 @@ private fun PlaybackInteractionSettingsSection(
             AppSegmentOption(PlaybackCompletionBehavior.CONTINUE_CURRENT_LOGIC, "自动")
         )
         SettingsSingleChoicePreference(
-            title = "选择播放顺序：${playbackCompletionBehavior.label}",
-            subtitle = "自动模式下普通单视频暂停，分P/合集继续下一集；列表连续播放建议选择顺序",
+            title = "视频播完后：${playbackCompletionBehavior.label}",
+            subtitle = "“自动”会在单个视频结束后暂停，在分P或合集内继续下一集",
             options = playbackOrderOptions,
             selectedValue = playbackCompletionBehavior,
             onSelectionChange = { behavior ->

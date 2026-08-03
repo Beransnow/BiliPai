@@ -22,6 +22,7 @@ object SettingsSearchFocusIds {
     const val PLAYBACK_DATA_SAVER = "playback_data_saver"
 
     const val BOTTOM_BAR_BEHAVIOR = "bottom_bar_behavior"
+    const val BOTTOM_BAR_START = "bottom_bar_start"
     const val BOTTOM_BAR_DISPLAY = "bottom_bar_display"
     const val BOTTOM_BAR_TOP_TABS = "bottom_bar_top_tabs"
     const val BOTTOM_BAR_TABLET = "bottom_bar_tablet"
@@ -29,6 +30,7 @@ object SettingsSearchFocusIds {
     const val BOTTOM_BAR_AVAILABLE = "bottom_bar_available"
 
     const val ANIMATION_VISUAL_EFFECTS = "animation_visual_effects"
+    const val ANIMATION_START = "animation_start"
 }
 
 data class SettingsSearchFocusRequest(
@@ -102,6 +104,7 @@ internal fun resolveBottomBarSettingsScrollIndex(
     focusId: String
 ): Int? {
     return when (focusId) {
+        SettingsSearchFocusIds.BOTTOM_BAR_START -> 0
         SettingsSearchFocusIds.BOTTOM_BAR_BEHAVIOR -> 1
         SettingsSearchFocusIds.BOTTOM_BAR_DISPLAY -> 3
         SettingsSearchFocusIds.BOTTOM_BAR_TOP_TABS -> 5
@@ -116,6 +119,7 @@ internal fun resolveAnimationSettingsScrollIndex(
     focusId: String
 ): Int? {
     return when (focusId) {
+        SettingsSearchFocusIds.ANIMATION_START -> 0
         SettingsSearchFocusIds.ANIMATION_VISUAL_EFFECTS -> 4
         else -> null
     }

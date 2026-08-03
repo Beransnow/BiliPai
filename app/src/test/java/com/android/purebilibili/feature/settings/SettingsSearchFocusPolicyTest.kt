@@ -29,6 +29,7 @@ class SettingsSearchFocusPolicyTest {
 
     @Test
     fun bottomBarFocusIndex_mapsAvailableItemsSection() {
+        assertEquals(0, resolveBottomBarSettingsScrollIndex(SettingsSearchFocusIds.BOTTOM_BAR_START))
         assertEquals(1, resolveBottomBarSettingsScrollIndex(SettingsSearchFocusIds.BOTTOM_BAR_BEHAVIOR))
         assertEquals(11, resolveBottomBarSettingsScrollIndex(SettingsSearchFocusIds.BOTTOM_BAR_AVAILABLE))
         assertEquals(7, resolveBottomBarSettingsScrollIndex(SettingsSearchFocusIds.BOTTOM_BAR_TABLET))
@@ -36,6 +37,7 @@ class SettingsSearchFocusPolicyTest {
 
     @Test
     fun animationFocusIndex_mapsVisualEffectsSection() {
+        assertEquals(0, resolveAnimationSettingsScrollIndex(SettingsSearchFocusIds.ANIMATION_START))
         assertEquals(
             4,
             resolveAnimationSettingsScrollIndex(SettingsSearchFocusIds.ANIMATION_VISUAL_EFFECTS)

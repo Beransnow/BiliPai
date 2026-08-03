@@ -625,7 +625,7 @@ fun AppearanceSettingsContent(
                             icon = rememberSettingsSemanticIcon(SettingsIconRole.DYNAMIC_COLOR),
                             title = "自定义 MD3 颜色",
                             subtitle = if (state.md3ColorSource == Md3ColorSource.CUSTOM) {
-                                "使用 HSV 取色器或 HEX 输入精确选择"
+                                "可直接使用取色器，也可输入 #RRGGBB 色值"
                             } else {
                                 "当前跟随系统壁纸；确认后切换为自定义颜色"
                             },
@@ -951,7 +951,7 @@ fun AppearanceSettingsContent(
 
 	                        AppSwitchPreference(
 	                            icon = rememberSettingsSemanticIcon(SettingsIconRole.DISPLAY_STYLE),
-                            title = "应用内 DPI 覆盖",
+                            title = "应用显示缩放（高级）",
                             subtitle = resolveDpiOverrideSubtitle(
                                 systemDensityDpi = displayMetricsSnapshot.systemDensityDpi,
                                 systemSmallestWidthDp = displayMetricsSnapshot.systemSmallestWidthDp,
@@ -973,8 +973,8 @@ fun AppearanceSettingsContent(
                         ) {
                             Column(modifier = Modifier.padding(top = 16.dp)) {
                                 SettingsSingleChoicePreference(
-                                    title = "应用 DPI：${resolveDisplayedAppDpiPercent(state.appDpiOverridePercent)}%",
-                                    subtitle = "按当前设备 DPI 进行应用内覆盖，不修改系统设置",
+                                    title = "显示缩放：${resolveDisplayedAppDpiPercent(state.appDpiOverridePercent)}%",
+                                    subtitle = "只调整 BiliPai 内文字和控件的整体大小，不修改系统显示设置",
                                     options = resolveAppDpiOverrideSegmentOptions(),
                                     selectedValue = resolveDisplayedAppDpiPercent(state.appDpiOverridePercent),
                                     onSelectionChange = { percent ->

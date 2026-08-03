@@ -10,42 +10,42 @@ enum class SettingsRootCategory(
 ) {
     APPEARANCE_THEME(
         title = "外观与主题",
-        subtitle = "界面风格、主题、字体与图标",
+        subtitle = "调整界面风格、颜色、字体、大小和图标",
         searchTarget = SettingsSearchTarget.INTERFACE_THEME,
     ),
     PLAYBACK_QUALITY(
         title = "播放与画质",
-        subtitle = "解码、清晰度、字幕与播放行为",
+        subtitle = "设置清晰度、倍速、字幕、小窗和全屏操作",
         searchTarget = SettingsSearchTarget.PLAYBACK_QUALITY,
     ),
     HOME_RECOMMENDATION(
         title = "首页与推荐",
-        subtitle = "首页展示、推荐流与动态内容",
+        subtitle = "调整首页卡片、推荐内容和动态页面",
         searchTarget = SettingsSearchTarget.HOME_FEED,
     ),
     NAVIGATION_INTERACTION(
         title = "导航与交互",
-        subtitle = "底栏、顶部标签、动效与手势",
+        subtitle = "管理底栏、顶部入口、页面动画和振动反馈",
         searchTarget = SettingsSearchTarget.NAVIGATION,
     ),
     PRIVACY_PERMISSION(
         title = "隐私与权限",
-        subtitle = "隐私模式、系统权限与黑名单",
+        subtitle = "管理历史记录、系统权限和已屏蔽的 UP 主",
         searchTarget = SettingsSearchTarget.PRIVACY_PERMISSION,
     ),
     STORAGE_BACKUP(
         title = "存储与备份",
-        subtitle = "下载路径、缓存、导入导出与同步",
+        subtitle = "管理下载位置、缓存、设置迁移和云备份",
         searchTarget = SettingsSearchTarget.DATA_BACKUP,
     ),
     PLUGINS_EXTENSIONS(
         title = "插件与扩展",
-        subtitle = "插件、扩展能力与相关数据采集",
+        subtitle = "管理已安装插件和可选扩展功能",
         searchTarget = SettingsSearchTarget.PLUGINS,
     ),
     SYSTEM_ABOUT(
         title = "系统与关于",
-        subtitle = "诊断、版本、更新、开源与支持",
+        subtitle = "排查问题、检查更新并查看应用信息",
         searchTarget = SettingsSearchTarget.DIAGNOSTICS,
     ),
 

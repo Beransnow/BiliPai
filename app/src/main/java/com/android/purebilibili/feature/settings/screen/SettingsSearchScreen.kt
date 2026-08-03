@@ -93,6 +93,7 @@ fun SettingsSearchScreen(
                             if (isSceneSettingsSearchTarget(result.target) && category != null) {
                                 onCategoryClick(category)
                             } else {
+                                SettingsSearchFocusController.submit(result.target, result.focusId)
                                 onSearchResultClick(result)
                             }
                         },

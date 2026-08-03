@@ -341,7 +341,7 @@ fun BottomBarSettingsContent(
                         AppPreferenceDivider()
                         SettingsSingleChoicePreference(
                             title = "底栏搜索布局",
-                            subtitle = "完整底栏保留全部入口；首页+搜索只保留首页刷新和搜索",
+                            subtitle = "选择显示完整导航，或只保留首页和搜索两个入口",
                             options = BottomBarSearchLayoutMode.entries.map { mode ->
                                 AppSegmentOption(mode, mode.label)
                             },
@@ -354,7 +354,7 @@ fun BottomBarSettingsContent(
                         AppPreferenceDivider()
                         SettingsSingleChoicePreference(
                             title = "搜索框自动展开",
-                            subtitle = "选择回到首页顶部或向下浏览时自动展开",
+                            subtitle = "选择在回到首页顶部或开始浏览内容时展开搜索框",
                             options = BottomBarSearchAutoExpandMode.entries.map { mode ->
                                 AppSegmentOption(mode, mode.label)
                             },
