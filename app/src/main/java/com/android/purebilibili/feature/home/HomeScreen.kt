@@ -1849,6 +1849,7 @@ fun HomeScreen(
                                      wallpaperTintEnabled = homeWallpaperBackdropAppearance.visible,
                                      wallpaperEffectMode = homeSettings.homeWallpaperEffectMode,
                                      showUpBadges = homeSettings.showHomeUpBadges,
+                                     showUpAvatars = homeSettings.showHomeUpAvatars,
                                      homeDurationStyle = homeSettings.homeDurationStyle,
                                      homeFeedCardStyle = homeFeedCardStyle,
                                      homeHeroCarouselEnabled = homeSettings.homeHeroCarouselEnabled,

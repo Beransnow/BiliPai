@@ -239,6 +239,7 @@ private fun VideoCardOwnerMetadata(
     video: VideoItem,
     isFollowing: Boolean,
     showUpBadge: Boolean,
+    showUpAvatar: Boolean,
     upFollowerCount: Int?,
     upVideoCount: Int?,
     infoBadgeStyle: HomeVideoBadgeStyle,
@@ -298,7 +299,7 @@ private fun VideoCardOwnerMetadata(
         } else {
             null
         },
-        leadingContent = if (video.owner.face.isNotEmpty()) {
+        leadingContent = if (showUpAvatar && video.owner.face.isNotEmpty()) {
             {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
@@ -489,6 +490,7 @@ internal fun ElegantVideoCard(
     wallpaperTintEnabled: Boolean = false,
     wallpaperEffectMode: HomeWallpaperEffectMode = HomeWallpaperEffectMode.SOFT_BLUR,
     showUpBadge: Boolean = true,
+    showUpAvatar: Boolean = true,
     homeDurationStyle: HomeDurationStyle = HomeDurationStyle.OUTSIDE_COVER,
     // 默认跟官方双列 4:3；首页会传入 resolveHomeFeedCardLayout 的比例覆盖
     coverAspectRatio: Float = 4f / 3f,
@@ -1344,6 +1346,7 @@ internal fun ElegantVideoCard(
             video = video,
             isFollowing = isFollowing,
             showUpBadge = showUpBadge,
+            showUpAvatar = showUpAvatar,
             upFollowerCount = upFollowerCount,
             upVideoCount = upVideoCount,
             infoBadgeStyle = badgeStylePolicy.infoStyle,

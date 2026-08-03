@@ -155,6 +155,7 @@ internal fun HomeCategoryPageContent(
     wallpaperTintEnabled: Boolean = false,
     wallpaperEffectMode: HomeWallpaperEffectMode = HomeWallpaperEffectMode.SOFT_BLUR,
     showUpBadges: Boolean = true,
+    showUpAvatars: Boolean = true,
     homeDurationStyle: HomeDurationStyle = HomeDurationStyle.OUTSIDE_COVER,
     homeFeedCardStyle: HomeFeedCardStyle = HomeFeedCardStyle.CURRENT,
     homeHeroCarouselEnabled: Boolean = true,
@@ -371,6 +372,7 @@ internal fun HomeCategoryPageContent(
                             collapsed = todayWatchCollapsed,
                             cardConfig = todayWatchCardConfig,
                             showUpBadges = showUpBadges,
+                            showUpAvatars = showUpAvatars,
                             onModeChange = onTodayWatchModeChange,
                             onCollapsedChange = onTodayWatchCollapsedChange,
                             onRefresh = onTodayWatchRefresh,
@@ -457,6 +459,7 @@ internal fun HomeCategoryPageContent(
                                         showCoverGlassBadges = showCoverGlassBadges,
                                         showInfoGlassBadges = showInfoGlassBadges,
                                         showUpBadge = showUpBadges,
+                                        showUpAvatar = showUpAvatars,
                                         homeDurationStyle = homeDurationStyle,
                                         coverAspectRatio = cardLayout.coverAspectRatio,
                                         cardHorizontalPadding = cardLayout.storyCardHorizontalPaddingDp.dp,
@@ -505,6 +508,7 @@ internal fun HomeCategoryPageContent(
                                         wallpaperTintEnabled = wallpaperTintEnabled,
                                         wallpaperEffectMode = wallpaperEffectMode,
                                         showUpBadge = showUpBadges,
+                                        showUpAvatar = showUpAvatars,
                                         homeDurationStyle = homeDurationStyle,
                                         coverAspectRatio = cardLayout.coverAspectRatio,
                                         compactMetadata = cardLayout.compactMetadata,
@@ -637,6 +641,7 @@ private fun TodayWatchPlanCard(
     collapsed: Boolean,
     cardConfig: TodayWatchCardUiConfig,
     showUpBadges: Boolean,
+    showUpAvatars: Boolean,
     onModeChange: (TodayWatchMode) -> Unit,
     onCollapsedChange: (Boolean) -> Unit,
     onRefresh: () -> Unit,
@@ -855,7 +860,7 @@ private fun TodayWatchPlanCard(
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.primary
                                 )
-                                if (video.owner.face.isNotBlank()) {
+                                if (showUpAvatars && video.owner.face.isNotBlank()) {
                                     AsyncImage(
                                         model = video.owner.face,
                                         contentDescription = video.owner.name,
@@ -864,7 +869,7 @@ private fun TodayWatchPlanCard(
                                             .size(AppSpacingTokens.ExtraLarge)
                                             .clip(CircleShape)
                                     )
-                                } else {
+                                } else if (showUpAvatars) {
                                     Box(
                                         modifier = Modifier
                                             .size(AppSpacingTokens.ExtraLarge)

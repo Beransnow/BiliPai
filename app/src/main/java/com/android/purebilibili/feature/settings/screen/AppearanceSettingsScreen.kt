@@ -423,6 +423,9 @@ fun AppearanceSettingsContent(
     val homeUpBadgesVisible by SettingsManager
         .getHomeUpBadgesVisible(context)
         .collectAsStateWithLifecycle(initialValue = true)
+    val homeUpAvatarsVisible by SettingsManager
+        .getHomeUpAvatarsVisible(context)
+        .collectAsStateWithLifecycle(initialValue = true)
     val homeDurationStyle by SettingsManager
         .getHomeDurationStyle(context)
         .collectAsStateWithLifecycle(initialValue = HomeDurationStyle.OUTSIDE_COVER)
@@ -1472,8 +1475,8 @@ fun AppearanceSettingsContent(
                         }
 
                         AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
-	                        AppSwitchPreference(
-	                            icon = rememberSettingsSemanticIcon(SettingsIconRole.HOME_UP_BADGES),
+                        AppSwitchPreference(
+                            icon = rememberSettingsSemanticIcon(SettingsIconRole.HOME_UP_BADGES),
                             title = "UP主标识",
                             subtitle = if (homeUpBadgesVisible) {
                                 "首页和相关推荐显示 UP 标识"
@@ -1487,6 +1490,24 @@ fun AppearanceSettingsContent(
                                 }
                             },
                             iconTint = com.android.purebilibili.core.theme.iOSBlue
+                        )
+
+                        AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
+                        AppSwitchPreference(
+                            icon = rememberSettingsSemanticIcon(SettingsIconRole.HOME_UP_AVATAR),
+                            title = "UP主头像",
+                            subtitle = if (homeUpAvatarsVisible) {
+                                "首页视频卡片显示 UP 主头像"
+                            } else {
+                                "隐藏头像，为 UP 主名称留出更多空间"
+                            },
+                            checked = homeUpAvatarsVisible,
+                            onCheckedChange = {
+                                scope.launch {
+                                    SettingsManager.setHomeUpAvatarsVisible(context, it)
+                                }
+                            },
+                            iconTint = com.android.purebilibili.core.theme.iOSPurple
                         )
 
                         AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))

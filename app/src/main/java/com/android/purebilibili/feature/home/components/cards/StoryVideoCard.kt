@@ -104,6 +104,7 @@ internal fun StoryVideoCard(
     showCoverGlassBadges: Boolean = false,
     showInfoGlassBadges: Boolean = false,
     showUpBadge: Boolean = true,
+    showUpAvatar: Boolean = true,
     homeDurationStyle: HomeDurationStyle = HomeDurationStyle.OUTSIDE_COVER,
     coverAspectRatio: Float = 4f / 3f,
     cardHorizontalPadding: Dp = AppSpacingTokens.None,
@@ -432,7 +433,7 @@ internal fun StoryVideoCard(
                     followerCount = upFollowerCount,
                     videoCount = upVideoCount
                 ),
-                leadingContent = if (video.owner.face.isNotEmpty()) {
+                leadingContent = if (showUpAvatar && video.owner.face.isNotEmpty()) {
                     {
                         AsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)
