@@ -83,18 +83,18 @@ internal class MainBottomPagerState(
     }
 
     /**
-     * KernelSU / Navigation3 style: seek the pager to an **absolute** position derived from
-     * system predictive progress (like SeekableTransitionState), not a fragile delta chain.
+     * KernelSU / Navigation3 style absolute seek from system predictive progress.
      *
-     * Far tabs (rightmost → home) are the worst case: each progress tick used to cancel the
-     * previous suspend `scrollBy` when progress was a LaunchedEffect key. Absolute correction
-     * from current offset keeps the gesture responsive even when frames drop.
+     * - Non-suspend [PagerState.dispatchRawDelta]: like SeekableTransitionState.seekTo — each
+     *   progress tick corrects toward the absolute offset and is never cancelled by the next tick.
+     * - Do **not** flip [selectedPage] during the drag (that made the bottom bar jump to home
+     *   while content stayed put, then snap back on cancel).
      */
-    suspend fun seekPredictiveReturnToPage(
+    fun seekPredictiveReturnToPage(
         targetIndex: Int,
         progress: Float,
     ) {
-        val safeTargetIndex = targetIndex.coerceIn(0, pagerState.pageCount - 1)
+        val safeTargetIndex = targetIndex.coerceIn(0, (pagerState.pageCount - 1).coerceAtLeast(0))
         val session = predictiveReturnSession ?: run {
             val pageStepPx = (
                 pagerState.layoutInfo.pageSize + pagerState.layoutInfo.pageSpacing
@@ -105,8 +105,7 @@ internal class MainBottomPagerState(
             navJob = null
             previousJob?.cancel()
             navigationStartPage = pagerState.currentPage
-            // Pre-select home so only start + target need real content during the far jump.
-            selectedPage = safeTargetIndex
+            // Keep selectedPage on the start tab until commit/cancel settles ownership.
             isNavigating = true
             PredictivePagerReturnSession(
                 startPage = pagerState.currentPage,
@@ -136,14 +135,8 @@ internal class MainBottomPagerState(
         )
         val deltaPx = targetScrollPx - currentScrollPx
         if (abs(deltaPx) > 0.5f) {
-            try {
-                pagerState.scroll(scrollPriority = MutatePriority.UserInput) {
-                    scrollBy(deltaPx)
-                }
-            } catch (_: IllegalStateException) {
-                // Measurement races can reject scroll; leave lastProgress so the next tick retries.
-                return
-            }
+            // Synchronous correction — never cancelled by the next progress sample.
+            pagerState.dispatchRawDelta(deltaPx)
         }
         session.lastProgress = normalizedProgress
     }
@@ -152,7 +145,9 @@ internal class MainBottomPagerState(
     fun commitPredictiveReturnToPage(targetIndex: Int): Boolean {
         val session = predictiveReturnSession ?: return false
         predictiveReturnSession = null
-        val safeTargetIndex = targetIndex.coerceIn(0, pagerState.pageCount - 1)
+        val safeTargetIndex = targetIndex.coerceIn(0, (pagerState.pageCount - 1).coerceAtLeast(0))
+        // Own the target tab chrome only when the gesture actually commits.
+        selectedPage = safeTargetIndex
         settlePredictiveReturn(
             targetPage = safeTargetIndex,
             fallbackPage = session.targetPage,
@@ -165,6 +160,7 @@ internal class MainBottomPagerState(
     fun cancelPredictiveReturn() {
         val session = predictiveReturnSession ?: return
         predictiveReturnSession = null
+        selectedPage = session.startPage
         settlePredictiveReturn(
             targetPage = session.startPage,
             fallbackPage = session.startPage,
