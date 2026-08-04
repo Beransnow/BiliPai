@@ -10,6 +10,67 @@ import kotlin.test.assertTrue
 class VideoContentTabBarPolicyTest {
 
     @Test
+    fun `comment scroll past threshold collapses intro comment tab bar`() {
+        assertFalse(
+            shouldCollapseVideoContentTabBarForCommentScroll(
+                selectedTabIndex = 1,
+                firstVisibleItemIndex = 0,
+                firstVisibleItemScrollOffset = 0,
+            )
+        )
+        assertFalse(
+            shouldCollapseVideoContentTabBarForCommentScroll(
+                selectedTabIndex = 1,
+                firstVisibleItemIndex = 0,
+                firstVisibleItemScrollOffset = 47,
+            )
+        )
+        assertTrue(
+            shouldCollapseVideoContentTabBarForCommentScroll(
+                selectedTabIndex = 1,
+                firstVisibleItemIndex = 0,
+                firstVisibleItemScrollOffset = 48,
+            )
+        )
+        assertTrue(
+            shouldCollapseVideoContentTabBarForCommentScroll(
+                selectedTabIndex = 1,
+                firstVisibleItemIndex = 2,
+                firstVisibleItemScrollOffset = 0,
+            )
+        )
+    }
+
+    @Test
+    fun `return to comment list top expands tab bar again`() {
+        // 回顶：index 0 且 offset 低于阈值 → 展开
+        assertFalse(
+            shouldCollapseVideoContentTabBarForCommentScroll(
+                selectedTabIndex = 1,
+                firstVisibleItemIndex = 0,
+                firstVisibleItemScrollOffset = 12,
+            )
+        )
+    }
+
+    @Test
+    fun `intro tab never collapses content tab bar from comment list state`() {
+        assertFalse(
+            shouldCollapseVideoContentTabBarForCommentScroll(
+                selectedTabIndex = 0,
+                firstVisibleItemIndex = 5,
+                firstVisibleItemScrollOffset = 900,
+            )
+        )
+    }
+
+    @Test
+    fun `tab bar collapse animation duration follows layout motion budget`() {
+        assertEquals(220, resolveVideoContentTabBarCollapseAnimationMillis(animateLayout = true))
+        assertEquals(0, resolveVideoContentTabBarCollapseAnimationMillis(animateLayout = false))
+    }
+
+    @Test
     fun `tab bar layout reserves trailing danmaku action area`() {
         val spec = resolveVideoContentTabBarLayoutSpec(widthDp = 412)
 

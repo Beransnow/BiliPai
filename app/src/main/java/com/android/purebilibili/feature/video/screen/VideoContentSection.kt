@@ -320,6 +320,31 @@ internal fun shouldEnableVideoContentHorizontalPagerSwipe(
     isPagerScrollInProgress: Boolean,
 ): Boolean = true
 
+/** 评论列表离开顶部多少像素后开始收起「简介 | 评论」分段。 */
+internal const val VIDEO_CONTENT_TAB_BAR_COMMENT_COLLAPSE_THRESHOLD_PX = 48
+
+/**
+ * 评论 Tab 下滑浏览时收起主分段（简介/评论 + 弹幕入口），把高度让给列表；
+ * **回顶（列表回到顶部阈值内）自动展开**，保证仍能切回简介。
+ *
+ * 排序条（最热/最新）不在此策略内，始终保留在评论页顶部。
+ */
+internal fun shouldCollapseVideoContentTabBarForCommentScroll(
+    selectedTabIndex: Int,
+    firstVisibleItemIndex: Int,
+    firstVisibleItemScrollOffset: Int,
+    commentPageIndex: Int = 1,
+    thresholdPx: Int = VIDEO_CONTENT_TAB_BAR_COMMENT_COLLAPSE_THRESHOLD_PX,
+): Boolean {
+    if (selectedTabIndex != commentPageIndex) return false
+    if (firstVisibleItemIndex > 0) return true
+    return firstVisibleItemScrollOffset >= thresholdPx.coerceAtLeast(0)
+}
+
+internal fun resolveVideoContentTabBarCollapseAnimationMillis(
+    animateLayout: Boolean,
+): Int = if (animateLayout) 220 else 0
+
 /**
  * 视频详情内容区域
  * 从 VideoDetailScreen.kt 提取出来，提高代码可维护性
@@ -537,6 +562,20 @@ fun VideoContentSection(
             }
     }
 
+    // 评论下滑收起「简介|评论」分段；回顶自然展开。简介 Tab 始终展开。
+    val collapseTabBarForCommentScroll by remember {
+        derivedStateOf {
+            shouldCollapseVideoContentTabBarForCommentScroll(
+                selectedTabIndex = pagerState.currentPage,
+                firstVisibleItemIndex = commentListState.firstVisibleItemIndex,
+                firstVisibleItemScrollOffset = commentListState.firstVisibleItemScrollOffset,
+            )
+        }
+    }
+    val tabBarCollapseAnimationMillis = resolveVideoContentTabBarCollapseAnimationMillis(
+        animateLayout = animateVideoDetailLayout,
+    )
+
     // 采样层只挂在 Tab 页滚动内容上；排序栏/顶栏分段控件必须在捕获区外，避免 drawBackdrop 自引用导致 RenderThread 栈溢出。
     val videoContentChromeBackdrop = rememberLayerBackdrop()
     val videoContentMiuixBackdrop = rememberMiuixLayerBackdrop()
@@ -554,20 +593,48 @@ fun VideoContentSection(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            VideoContentTabBar(
-                tabs = tabs,
-                selectedTabIndex = pagerState.currentPage,
-                onTabSelected = onTabSelected,
-                onDanmakuSendClick = onDanmakuSendClick,
-                danmakuEnabled = danmakuEnabled,
-                onDanmakuToggle = onDanmakuToggle,
-                onDanmakuSettingsClick = { showDanmakuSettings = true },
-                modifier = Modifier,
-                isPlayerCollapsed = isPlayerCollapsed,
-                onRestorePlayer = onRestorePlayer,
-                backdrop = videoContentChromeBackdrop,
-                miuixBackdrop = videoContentMiuixBackdrop
-            )
+            AnimatedVisibility(
+                visible = !collapseTabBarForCommentScroll,
+                enter = expandVertically(
+                    animationSpec = tween(
+                        durationMillis = tabBarCollapseAnimationMillis,
+                        easing = FastOutSlowInEasing,
+                    ),
+                    expandFrom = Alignment.Top,
+                ) + fadeIn(
+                    animationSpec = tween(
+                        durationMillis = tabBarCollapseAnimationMillis,
+                        easing = FastOutSlowInEasing,
+                    ),
+                ),
+                exit = shrinkVertically(
+                    animationSpec = tween(
+                        durationMillis = tabBarCollapseAnimationMillis,
+                        easing = FastOutSlowInEasing,
+                    ),
+                    shrinkTowards = Alignment.Top,
+                ) + fadeOut(
+                    animationSpec = tween(
+                        durationMillis = tabBarCollapseAnimationMillis,
+                        easing = FastOutSlowInEasing,
+                    ),
+                ),
+            ) {
+                VideoContentTabBar(
+                    tabs = tabs,
+                    selectedTabIndex = pagerState.currentPage,
+                    onTabSelected = onTabSelected,
+                    onDanmakuSendClick = onDanmakuSendClick,
+                    danmakuEnabled = danmakuEnabled,
+                    onDanmakuToggle = onDanmakuToggle,
+                    onDanmakuSettingsClick = { showDanmakuSettings = true },
+                    modifier = Modifier,
+                    isPlayerCollapsed = isPlayerCollapsed,
+                    onRestorePlayer = onRestorePlayer,
+                    backdrop = videoContentChromeBackdrop,
+                    miuixBackdrop = videoContentMiuixBackdrop
+                )
+            }
 
             HorizontalPager(
                 state = pagerState,
