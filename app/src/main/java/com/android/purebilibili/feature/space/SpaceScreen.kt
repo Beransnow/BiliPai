@@ -2042,8 +2042,8 @@ private fun SpaceHeader(
 
     // PiliPlus 式布局：
     // - hero 背景 156dp
-    // - 头像 80dp 左下，底部 32dp 伸出背景
-    // - stats + 私信/关注 同一行排在头像右侧，避免叠在 hero 上与数据/透明顶栏冲突
+    // - 头像 80dp 左下，底部 32dp 伸出背景；stats 独占头像右侧，数字不被按钮挤扁
+    // - 私信/关注 下沉到名字行右侧（信息区中部），避开顶栏与 stats 争宽
     // - 名字/sign/UID 在 hero 下方
     // - 滚动折叠：整体内容随 collapseFraction 上移 + 淡出（视差折叠）
     val heroHeight = 156.dp
@@ -2122,7 +2122,7 @@ private fun SpaceHeader(
                 )
             }
 
-            // 头像（左下）+ stats + 私信/关注（同行排布，互不叠压）
+            // 头像（左下）+ stats（右侧均分，不再和操作按钮抢宽度）
             Row(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
@@ -2183,48 +2183,27 @@ private fun SpaceHeader(
 
                 Spacer(modifier = Modifier.width(12.dp))
 
-                // stats（可收缩）+ 私信/关注（固定宽度，避免叠在 stats 上）
                 Row(
                     modifier = Modifier
                         .weight(1f)
                         .padding(bottom = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier.weight(1f),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        metrics.forEachIndexed { index, metric ->
-                            SpaceHeaderStat(
-                                label = metric.label,
-                                value = metric.value,
-                                modifier = Modifier.weight(1f)
-                            )
-                            if (index < metrics.lastIndex) {
-                                SpaceHeaderMetricDivider()
-                            }
+                    metrics.forEachIndexed { index, metric ->
+                        SpaceHeaderStat(
+                            label = metric.label,
+                            value = metric.value,
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (index < metrics.lastIndex) {
+                            SpaceHeaderMetricDivider()
                         }
                     }
-
-                    SpaceHeaderRelationActions(
-                        followLabel = followLabel,
-                        isFollowed = userInfo.isFollowed,
-                        followButtonColors = followButtonColors,
-                        onMessageClick = {
-                            android.widget.Toast.makeText(
-                                context,
-                                "暂不支持私信",
-                                android.widget.Toast.LENGTH_SHORT
-                            ).show()
-                        },
-                        onFollowClick = onFollowClick
-                    )
                 }
             }
         }
 
-        // 信息区（名字行独立收缩 + 徽标行 FlowRow 换行，杜绝截断）
+        // 信息区中部：名字 + 等级 + 私信/关注（按钮下沉，stats 不再被挤扁）
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -2233,20 +2212,39 @@ private fun SpaceHeader(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                AppText(
-                    text = userInfo.name,
-                    modifier = Modifier
-                        .weight(1f, fill = false)
-                        .copyOnLongPress(userInfo.name, "UP主名称"),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (userInfo.vip.status == 1) Color(0xFFFF6699) else MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    AppText(
+                        text = userInfo.name,
+                        modifier = Modifier
+                            .weight(1f, fill = false)
+                            .copyOnLongPress(userInfo.name, "UP主名称"),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = if (userInfo.vip.status == 1) Color(0xFFFF6699) else MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    UserLevelBadge(level = userInfo.level)
+                }
+                SpaceHeaderRelationActions(
+                    followLabel = followLabel,
+                    isFollowed = userInfo.isFollowed,
+                    followButtonColors = followButtonColors,
+                    onMessageClick = {
+                        android.widget.Toast.makeText(
+                            context,
+                            "暂不支持私信",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                    },
+                    onFollowClick = onFollowClick
                 )
-                UserLevelBadge(level = userInfo.level)
             }
 
             val hasExtraBadges =
