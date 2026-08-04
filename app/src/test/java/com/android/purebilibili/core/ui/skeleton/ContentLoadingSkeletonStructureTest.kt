@@ -17,8 +17,10 @@ class ContentLoadingSkeletonStructureTest {
         assertTrue(source.contains("fun MediaListRowSkeleton("))
         assertTrue(source.contains("fun UserListRowSkeleton("))
         assertTrue(source.contains("fun ContentMediaListSkeleton("))
-        assertTrue(source.contains("VideoGridItemSkeleton("))
-        assertTrue(source.contains("shimmerEffect()"))
+        assertTrue(source.contains("rememberContentSkeletonPulse("))
+        // Home-style soft pulse; no left-right shimmer sweep flicker.
+        assertTrue(source.contains("RepeatMode.Reverse"))
+        assertFalse(source.contains("shimmerEffect()"))
     }
 
     @Test

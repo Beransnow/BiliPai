@@ -143,41 +143,17 @@ fun <T> rememberDebounceCallback(
 }
 
 /**
- * 一个假的视频卡片组件 (用于 Loading 时占位)
+ * 视频网格骨架（历史列表等）。
+ * 使用与首页一致的柔和 alpha 脉冲，避免 shimmer 扫光闪烁。
  */
 @Composable
 fun VideoGridItemSkeleton(coverAspectRatio: Float = 4f / 3f) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 12.dp)
-    ) {
-        // 封面占位
-        Box(
-            modifier = Modifier
-                .aspectRatio(coverAspectRatio)
-                .clip(RoundedCornerShape(8.dp))
-                .shimmerEffect() // ✨ 加上闪光特效
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        // 标题占位 (两行)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .height(16.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .shimmerEffect()
-        )
-        Spacer(modifier = Modifier.height(6.dp))
-        // 作者占位
-        Box(
-            modifier = Modifier
-                .fillMaxWidth(0.5f)
-                .height(12.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .shimmerEffect()
-        )
-    }
+    val pulse = com.android.purebilibili.core.ui.skeleton.rememberContentSkeletonPulse()
+    val blockColor = com.android.purebilibili.core.ui.skeleton.rememberContentSkeletonBlockColor(pulse)
+    com.android.purebilibili.core.ui.skeleton.ContentVideoGridItemSkeleton(
+        coverAspectRatio = coverAspectRatio,
+        blockColor = blockColor,
+    )
 }
 
 // =============================================================================
