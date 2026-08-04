@@ -206,11 +206,6 @@ internal fun shouldComposeBottomPagerPage(
     navigationStartPage: Int,
     contentReady: Boolean
 ): Boolean {
-    // Far tab → home predictive/animated jumps scroll across intermediate slots. Composing every
-    // tab (especially the rightmost distance) freezes the gesture; keep only start/target/current.
-    if (isNavigating) {
-        return page == navigationStartPage || page == selectedPage || page == currentPage
-    }
     if (item == BottomNavItem.STORY || item == BottomNavItem.SETTINGS || item == BottomNavItem.PLUGINS) {
         return page == currentPage || page == selectedPage
     }
