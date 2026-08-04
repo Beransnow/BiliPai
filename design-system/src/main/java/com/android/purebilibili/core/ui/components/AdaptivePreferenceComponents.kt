@@ -1304,8 +1304,11 @@ internal fun AdaptivePreferenceContent(
                             style = MaterialTheme.typography.bodyMedium,
                             color = valueColor,
                             textAlign = androidx.compose.ui.text.style.TextAlign.End,
+                            maxLines = 1,
+                            softWrap = false,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                             modifier = Modifier
-                                .widthIn(max = 128.dp)
+                                .widthIn(max = 160.dp)
                                 .onLongPressAction(
                                     enabled = enableCopy && onCopyRequest != null,
                                     onLongPress = { onCopyRequest?.invoke(copyValue ?: value, title) },
