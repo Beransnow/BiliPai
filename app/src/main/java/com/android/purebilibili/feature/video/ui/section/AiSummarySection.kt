@@ -247,9 +247,12 @@ fun AiSummaryPromptCard(
 }
 
 /** 主条目圆点 + 间距；子条目与标题列左缘对齐。 */
-private val OutlineBulletSlotWidth = 18.dp
-/** 时间戳列固定宽，保证 mm:ss 芯片右缘对齐。 */
-private val OutlineTimestampColumnWidth = 72.dp
+internal val OutlineBulletSlotWidth = 18.dp
+/**
+ * 时间戳列固定宽。芯片必须 [fillMaxWidth]，否则比例数字会让时钟图标左右参差
+ * （右缘对齐时左缘仍不齐）。
+ */
+internal val OutlineTimestampColumnWidth = 76.dp
 
 @Composable
 private fun OutlineItemRow(
@@ -291,22 +294,26 @@ private fun OutlineItemRow(
                 .padding(end = 8.dp),
         )
 
-        // 固定宽度时间列 + 右对齐，多行标题时与首行顶对齐。
+        // 固定列宽 + 满宽芯片 + 表内居中，时钟图标与 mm:ss 形成垂直列。
         Box(
             modifier = Modifier
                 .width(OutlineTimestampColumnWidth)
                 .padding(top = 2.dp),
-            contentAlignment = Alignment.TopEnd,
+            contentAlignment = Alignment.TopCenter,
         ) {
             AppSurface(
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                 shape = RoundedCornerShape(4.dp),
-                modifier = Modifier.clickable(onClick = onClick),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onClick),
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp, vertical = 2.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.End,
+                    horizontalArrangement = Arrangement.Center,
                 ) {
                     AppIcon(
                         imageVector = Icons.Outlined.Schedule,
@@ -314,10 +321,12 @@ private fun OutlineItemRow(
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.size(12.dp),
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(3.dp))
                     AppText(
-                        text = formatTimestamp(timestamp),
-                        style = MaterialTheme.typography.labelSmall,
+                        text = formatAiSummaryTimestamp(timestamp),
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontFeatureSettings = "tnum",
+                        ),
                         color = MaterialTheme.colorScheme.primary,
                         maxLines = 1,
                     )
@@ -327,8 +336,10 @@ private fun OutlineItemRow(
     }
 }
 
-private fun formatTimestamp(seconds: Long): String {
-    val m = seconds / 60
-    val s = seconds % 60
+/** mm:ss，秒级时间点；使用等宽数字特性减少视觉漂移。 */
+internal fun formatAiSummaryTimestamp(seconds: Long): String {
+    val safe = seconds.coerceAtLeast(0L)
+    val m = safe / 60
+    val s = safe % 60
     return "%02d:%02d".format(m, s)
 }
