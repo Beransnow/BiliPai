@@ -2045,9 +2045,10 @@ fun HomeHeader(
             onTabsCollapsedChange = onTopTabsCollapsedChange,
             drawChromeSurface = drawTopTabDockChrome,
             useBottomBarMatchedSurface = useTopTabBottomBarMatchedDock,
-            // 顶部分类 dock 关闭 shell lens：refraction 边沿采样会出「虾线」（亮/暗细边），
-            // 与搜索小胶囊 / homeTopChromeSurface 策略一致；底栏大壳可保留 lens。
-            drawMatchedShellLens = false,
+            // 顶部分类 dock：soft shell lens（保留上下滑动液态折射，贴近指示器；
+            // 强度低于底栏整壳，避免矮 dock 边沿虾线）。搜索小胶囊仍关 lens。
+            drawMatchedShellLens = useTopTabBottomBarMatchedDock,
+            matchedShellLensIntensity = TOP_DOCK_SHELL_LENS_INTENSITY,
             // Floating / matched dock: length follows icon+text × tab count (no full-bleed empty glass).
             wrapDockWidth = wrapTopTabDockWidth,
             dockCategoryCount = topCategories.size,

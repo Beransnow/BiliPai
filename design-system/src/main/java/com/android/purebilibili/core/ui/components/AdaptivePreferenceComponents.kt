@@ -1211,10 +1211,16 @@ internal fun AdaptivePreferenceContent(
                         text = value,
                         style = MaterialTheme.typography.bodySmall,
                         color = valueColor,
-                        modifier = Modifier.onLongPressAction(
-                            enabled = enableCopy && onCopyRequest != null,
-                            onLongPress = { onCopyRequest?.invoke(copyValue ?: value, title) },
-                        )
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.End,
+                        modifier = Modifier
+                            .widthIn(max = 120.dp)
+                            .onLongPressAction(
+                                enabled = enableCopy && onCopyRequest != null,
+                                onLongPress = { onCopyRequest?.invoke(copyValue ?: value, title) },
+                            )
                     )
                 }
             }
@@ -1269,14 +1275,18 @@ internal fun AdaptivePreferenceContent(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = textColor
+                    color = textColor,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                 )
                 if (subtitle != null) {
                     Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = subtitle,
                         style = MaterialTheme.typography.bodySmall,
-                        color = subtitleColor
+                        color = subtitleColor,
+                        maxLines = 2,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                     )
                 }
             }
@@ -1294,7 +1304,7 @@ internal fun AdaptivePreferenceContent(
                             softWrap = false,
                             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                             modifier = Modifier
-                                .widthIn(max = 160.dp)
+                                .widthIn(max = 120.dp)
                                 .onLongPressAction(
                                     enabled = enableCopy && onCopyRequest != null,
                                     onLongPress = { onCopyRequest?.invoke(copyValue ?: value, title) },
@@ -1379,10 +1389,16 @@ internal fun AdaptivePreferenceContent(
                         text = value,
                         style = MaterialTheme.typography.bodySmall,
                         color = AppSurfaceTokens.onSurfaceVariantSummary(),
-                        modifier = Modifier.onLongPressAction(
-                            enabled = enableCopy && onCopyRequest != null,
-                            onLongPress = { onCopyRequest?.invoke(copyValue ?: value, title) },
-                        )
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.End,
+                        modifier = Modifier
+                            .widthIn(max = 120.dp)
+                            .onLongPressAction(
+                                enabled = enableCopy && onCopyRequest != null,
+                                onLongPress = { onCopyRequest?.invoke(copyValue ?: value, title) },
+                            )
                     )
                     Spacer(modifier = Modifier.width(rowSpec.trailingSpacingDp.dp))
                 }
@@ -1471,12 +1487,13 @@ internal fun AdaptivePreferenceContent(
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
         } else {
+            // Title stays single-line so long search labels don't wrap under the trailing section path.
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.bodyLarge,
                     color = textColor,
-                    maxLines = if (subtitle != null) 2 else 1,
+                    maxLines = 1,
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                     textAlign = androidx.compose.ui.text.style.TextAlign.Start
                 )
@@ -1494,19 +1511,24 @@ internal fun AdaptivePreferenceContent(
         }
         
         if (!centered) {
+            Spacer(modifier = Modifier.width(rowSpec.trailingSpacingDp.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 trailingContent?.invoke()
-                if (value != null) {
+                if (!value.isNullOrBlank()) {
                     Text(
-                        text = value, 
-                        style = MaterialTheme.typography.bodyMedium, 
+                        text = value,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = valueColor,
                         maxLines = 1,
+                        softWrap = false,
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                        modifier = Modifier.onLongPressAction(
-                            enabled = enableCopy && onCopyRequest != null,
-                            onLongPress = { onCopyRequest?.invoke(copyValue ?: value, title) },
-                        )
+                        textAlign = androidx.compose.ui.text.style.TextAlign.End,
+                        modifier = Modifier
+                            .widthIn(max = 120.dp)
+                            .onLongPressAction(
+                                enabled = enableCopy && onCopyRequest != null,
+                                onLongPress = { onCopyRequest?.invoke(copyValue ?: value, title) },
+                            )
                     )
                 }
                 if (onClick != null && showChevron) {
