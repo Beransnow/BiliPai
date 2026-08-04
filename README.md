@@ -208,7 +208,7 @@ cd BiliPai
 
 当前构建为 `0.1.0 / versionCode 282`；最新完整发布记录为 `v0.1.0`。这是 BiliPai 的全新 `0.x` 版本纪元；源码状态以 GitHub 和 [CHANGELOG.md](CHANGELOG.md) 为准，APK 仅通过[官方 Telegram 群组](https://t.me/+x5K_TmoFXso3MGM9)更新：
 
-- 构建基线升级至 AGP 9.3.1 / Gradle 9.5 / Compose BOM 2026.06.01。
+- 构建基线升级至 AGP 9.3.1 / Gradle 9.5 / Compose BOM 2026.06.00。
 - Navigation3 runtime/UI 对齐至官方 `1.2.0-alpha07`，继续收敛预测返回真实来源页与整卡稳定性。
 - 视频详情整卡过渡新增冻结会话、稳态隐藏景深层和连续播放器返回策略，并扩展性能门槛。
 - 首页顶部、底部、分段控件和详情操作区复用同源液态玻璃 chrome。
