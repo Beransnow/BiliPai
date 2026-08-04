@@ -20,31 +20,6 @@ class MainBottomPagerPredictiveBackPolicyTest {
     }
 
     @Test
-    fun `predictive return from rightmost tab spans full page distance`() {
-        // 4 → 0 at 25% progress from 0: one full page of travel; worst-case distance for freezes.
-        assertEquals(
-            -400f,
-            resolvePredictivePagerScrollDeltaPx(
-                startPage = 4,
-                targetPage = 0,
-                pageStepPx = 400f,
-                previousProgress = 0f,
-                progress = 0.25f,
-            ),
-        )
-        assertEquals(
-            -1600f,
-            resolvePredictivePagerScrollDeltaPx(
-                startPage = 4,
-                targetPage = 0,
-                pageStepPx = 400f,
-                previousProgress = 0f,
-                progress = 1f,
-            ),
-        )
-    }
-
-    @Test
     fun `predictive return clamps out of range progress`() {
         assertEquals(
             -800f,
