@@ -246,6 +246,11 @@ fun AiSummaryPromptCard(
     }
 }
 
+/** 主条目圆点 + 间距；子条目与标题列左缘对齐。 */
+private val OutlineBulletSlotWidth = 18.dp
+/** 时间戳列固定宽，保证 mm:ss 芯片右缘对齐。 */
+private val OutlineTimestampColumnWidth = 72.dp
+
 @Composable
 private fun OutlineItemRow(
     title: String,
@@ -257,58 +262,64 @@ private fun OutlineItemRow(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = 6.dp, horizontal = if (isSubItem) 16.dp else 4.dp),
-        verticalAlignment = Alignment.Top
+            .padding(vertical = 6.dp, horizontal = 4.dp),
+        verticalAlignment = Alignment.Top,
     ) {
-        if (!isSubItem) {
-            Box(
-                modifier = Modifier
-                    .padding(top = 6.dp)
-                    .size(6.dp)
-                    .clip(androidx.compose.foundation.shape.CircleShape)
-                    .background(MaterialTheme.colorScheme.primary)
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-        } else {
-             Spacer(modifier = Modifier.width(4.dp)) // Indent for sub items aligned with bullet?
-        }
-        
-        Column(
+        // 固定前导槽：主条目标圆点，子条目留白，标题列左缘一致。
+        Box(
             modifier = Modifier
-                .weight(1f)
-                .padding(end = 12.dp)
+                .width(OutlineBulletSlotWidth)
+                .padding(top = 6.dp),
+            contentAlignment = Alignment.TopStart,
         ) {
-             AppText(
-                text = title,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            if (!isSubItem) {
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .clip(androidx.compose.foundation.shape.CircleShape)
+                        .background(MaterialTheme.colorScheme.primary),
+                )
+            }
         }
 
+        AppText(
+            text = title,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = 8.dp),
+        )
+
+        // 固定宽度时间列 + 右对齐，多行标题时与首行顶对齐。
         Box(
-            modifier = Modifier.widthIn(min = 72.dp),
-            contentAlignment = Alignment.CenterEnd
+            modifier = Modifier
+                .width(OutlineTimestampColumnWidth)
+                .padding(top = 2.dp),
+            contentAlignment = Alignment.TopEnd,
         ) {
             AppSurface(
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                 shape = RoundedCornerShape(4.dp),
-                modifier = Modifier.clickable(onClick = onClick)
+                modifier = Modifier.clickable(onClick = onClick),
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.End,
                 ) {
                     AppIcon(
                         imageVector = CupertinoIcons.Outlined.Clock,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(12.dp)
+                        modifier = Modifier.size(12.dp),
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     AppText(
                         text = formatTimestamp(timestamp),
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
                     )
                 }
             }
