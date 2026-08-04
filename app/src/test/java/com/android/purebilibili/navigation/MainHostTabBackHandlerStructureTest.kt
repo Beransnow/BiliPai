@@ -15,9 +15,9 @@ class MainHostTabBackHandlerStructureTest {
         assertTrue(source.contains("rememberNavigationEventState(NavigationEventInfo.None)"))
         assertTrue(source.contains("LocalPredictiveBackGestureEnabled.current"))
         assertTrue(source.contains("NavigationEventTransitionState.InProgress"))
-        // KernelSU / NavDisplay style: continuous snapshotFlow seek, not LaunchedEffect(progress).
+        // KernelSU / NavDisplay style: continuous snapshotFlow + non-suspend absolute seek.
         assertTrue(source.contains("snapshotFlow"))
-        assertTrue(source.contains("collectLatest"))
+        assertTrue(source.contains("distinctUntilChanged()"))
         assertTrue(source.contains("onPredictiveProgress(progress)"))
         assertTrue(source.contains("onPredictiveCancelled()"))
         assertTrue(source.contains("onPredictiveCompleted()"))

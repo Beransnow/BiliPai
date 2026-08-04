@@ -36,7 +36,7 @@ class BottomPagerStatePersistenceStructureTest {
         val source = loadSource("app/src/main/java/com/android/purebilibili/navigation/MainBottomPagerState.kt")
         val switchNavigationSource = source
             .substringAfter("fun switchToPage(")
-            .substringBefore("Applies the system predictive-back progress")
+            .substringBefore("fun seekPredictiveReturnToPage(")
 
         assertTrue(source.contains("navigationStartPage"))
         assertTrue(switchNavigationSource.contains("pagerState.scrollToPage(safeTargetIndex)"))
@@ -50,9 +50,10 @@ class BottomPagerStatePersistenceStructureTest {
     fun `predictive tab return drives pager progress and settles only the remainder`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/navigation/MainBottomPagerState.kt")
 
-        assertTrue(source.contains("suspend fun seekPredictiveReturnToPage("))
-        assertTrue(source.contains("pagerState.scroll(scrollPriority = MutatePriority.UserInput)"))
-        assertTrue(source.contains("scrollBy(deltaPx)"))
+        // KernelSU-style absolute seek: synchronous dispatchRawDelta, not cancelable scroll{}.
+        assertTrue(source.contains("fun seekPredictiveReturnToPage("))
+        assertFalse(source.contains("suspend fun seekPredictiveReturnToPage("))
+        assertTrue(source.contains("pagerState.dispatchRawDelta(deltaPx)"))
         assertTrue(source.contains("progressDistance = 1f - session.lastProgress"))
         assertTrue(source.contains("progressDistance = session.lastProgress"))
     }
