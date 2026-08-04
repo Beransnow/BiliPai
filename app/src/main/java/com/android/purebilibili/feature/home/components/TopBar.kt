@@ -812,6 +812,12 @@ internal fun resolveIosTopTabCapsuleContainerColor(
     return baseColor.copy(alpha = 0.28f * selectedAlpha)
 }
 
+/**
+ * Soft shell lens for short top docks: keeps scroll-time refraction/vibrancy closer to the
+ * moving indicator, while staying below full bottom-bar rim strength that causes 虾线.
+ */
+internal const val TOP_DOCK_SHELL_LENS_INTENSITY = 0.55f
+
 internal fun Modifier.homeTopBottomBarMatchedSurface(
     renderMode: HomeTopChromeRenderMode,
     shape: Shape,
@@ -825,6 +831,7 @@ internal fun Modifier.homeTopBottomBarMatchedSurface(
     isTransitionRunning: Boolean,
     forceLowBlurBudget: Boolean,
     drawShellLens: Boolean = true,
+    shellLensIntensity: Float = 1f,
     isScrolling: Boolean = false,
     materialScrollProgress: Float = if (isScrolling) 1f else 0f
 ): Modifier = composed {
@@ -854,6 +861,7 @@ internal fun Modifier.homeTopBottomBarMatchedSurface(
         blurEnabled = isBlurEnabled,
         glassEnabled = isGlassEnabled,
         drawShellLens = drawShellLens,
+        shellLensIntensity = shellLensIntensity,
         blurRadius = tuning.shellBlurRadiusDp.dp,
         hazeState = hazeState,
         motionTier = motionTier,
