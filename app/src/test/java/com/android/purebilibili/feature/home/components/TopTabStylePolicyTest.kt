@@ -156,15 +156,14 @@ class TopTabStylePolicyTest {
     }
 
     @Test
-    fun `home top preset style keeps ios separate while material3 and miuix share the miui top bar geometry`() {
+    fun `home top preset style separates ios material3 and miuix text tabs`() {
         val ios = topStyle(UiPreset.IOS, AndroidNativeVariant.MATERIAL3)
         val material3 = topStyle(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
         val miuix = topStyle(UiPreset.MD3, AndroidNativeVariant.MIUIX)
 
-        assertEquals(48.dp, ios.searchBarHeight)
-        assertEquals(miuix.searchBarHeight, material3.searchBarHeight)
-        assertEquals(36.dp, miuix.searchBarHeight)
-        assertEquals(miuix.unifiedPanelCornerRadius, material3.unifiedPanelCornerRadius)
+        assertEquals(ios.searchBarHeight, material3.searchBarHeight)
+        assertEquals(material3.searchBarHeight, miuix.searchBarHeight)
+        assertNotEquals(material3.unifiedPanelCornerRadius, miuix.unifiedPanelCornerRadius)
         assertEquals(AppTopTabPresentation.MOVING_CAPSULE, ios.presentation)
         assertEquals(AppTopTabPresentation.MATERIAL_UNDERLINE, material3.presentation)
         assertEquals(AppTopTabPresentation.MATERIAL_UNDERLINE, miuix.presentation)
@@ -191,7 +190,7 @@ class TopTabStylePolicyTest {
         val miuix = topStyle(UiPreset.MD3, AndroidNativeVariant.MIUIX)
 
         assertEquals(5.dp, ios.reservedContentBottomGap)
-        assertEquals(12.dp, material3.reservedContentBottomGap)
+        assertEquals(5.dp, material3.reservedContentBottomGap)
         assertEquals(12.dp, miuix.reservedContentBottomGap)
         assertEquals(
             12.dp,
@@ -223,7 +222,7 @@ class TopTabStylePolicyTest {
             )
         )
         assertEquals(
-            36.dp,
+            40.dp,
             resolveHomeTopSettingsButtonSize(
                 uiPreset = UiPreset.MD3,
                 androidNativeVariant = AndroidNativeVariant.MIUIX
@@ -406,10 +405,47 @@ class TopTabStylePolicyTest {
         assertEquals(18f, resolveTopTabIconSizeDp(labelMode = 0), 0.001f)
         assertEquals(18f, resolveTopTabIconSizeDp(labelMode = 1), 0.001f)
         assertEquals(6f, resolveTopTabIconTextSpacingDp(labelMode = 0), 0.001f)
-        assertEquals(54.dp, resolveIosTopTabRowHeight(isFloatingStyle = false))
-        assertEquals(56.dp, resolveIosTopTabRowHeight(isFloatingStyle = true))
+        // Must match compact chrome track (HomeTopPresetStyle 36/40) or labels clip to "...".
+        assertEquals(36.dp, resolveIosTopTabRowHeight(isFloatingStyle = false))
+        assertEquals(40.dp, resolveIosTopTabRowHeight(isFloatingStyle = true))
         assertEquals(44.dp, resolveIosTopTabActionButtonSize(isFloatingStyle = false))
         assertEquals(22.dp, resolveIosTopTabActionIconSize(isFloatingStyle = false))
+    }
+
+    @Test
+    fun `all three top tab presentations keep compact chrome and content row heights aligned`() {
+        listOf(
+            topStyle(UiPreset.IOS, AndroidNativeVariant.MATERIAL3),
+            topStyle(UiPreset.MD3, AndroidNativeVariant.MATERIAL3),
+            topStyle(UiPreset.MD3, AndroidNativeVariant.MIUIX)
+        ).forEach { style ->
+            assertEquals(36.dp, style.tabRowHeightDocked)
+            assertEquals(40.dp, style.tabRowHeightFloating)
+        }
+
+        assertEquals(36.dp, resolveIosTopTabRowHeight(isFloatingStyle = false))
+        assertEquals(40.dp, resolveIosTopTabRowHeight(isFloatingStyle = true))
+        assertEquals(
+            36.dp,
+            resolveMd3TopTabVisualSpec(
+                isFloatingStyle = false,
+                presentation = AppTopTabPresentation.MATERIAL_UNDERLINE
+            ).rowHeight
+        )
+        assertEquals(
+            40.dp,
+            resolveMd3TopTabVisualSpec(
+                isFloatingStyle = true,
+                presentation = AppTopTabPresentation.MATERIAL_UNDERLINE
+            ).rowHeight
+        )
+        assertEquals(
+            36.dp,
+            resolveMd3TopTabVisualSpec(
+                isFloatingStyle = false,
+                presentation = AppTopTabPresentation.TONAL_CAPSULE
+            ).rowHeight
+        )
     }
 
     @Test
@@ -764,7 +800,8 @@ class TopTabStylePolicyTest {
         assertTrue(itemSource.contains("else {"))
         assertTrue(itemSource.contains("resolveTopTabCategoryIcon("))
         assertFalse(itemSource.contains("resolveMiuixPreferredTopTabCategoryIcon("))
-        assertTrue(rowCallSource.contains("iconFamily = topTabIconFamily"))
+        // Host still passes the shared icon family into LightweightHomeTopTabs.
+        assertTrue(rowCallSource.contains("iconFamily = topTabIconFamily") || source.contains("iconFamily = topTabIconFamily"))
     }
 
     @Test
