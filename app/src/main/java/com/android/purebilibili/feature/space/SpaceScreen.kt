@@ -403,12 +403,10 @@ fun SpaceScreen(
             ) {
                 when (val state = uiState) {
                     SpaceUiState.Loading -> {
-                        Box(
+                        com.android.purebilibili.core.ui.skeleton.ContentMediaListSkeleton(
                             modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            AdaptiveLoadingIndicator()
-                        }
+                            itemCount = 8,
+                        )
                     }
 
                     is SpaceUiState.Error -> {

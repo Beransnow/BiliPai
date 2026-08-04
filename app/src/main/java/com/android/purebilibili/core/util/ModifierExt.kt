@@ -22,13 +22,15 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.theme.UiPreset
 
 /**
- * 骨架屏闪光特效 Modifier
+ * 骨架屏闪光特效 Modifier（深浅色主题自适应）。
  */
 fun Modifier.shimmerEffect(): Modifier = composed {
     var size by remember { mutableStateOf(IntSize.Zero) }
@@ -41,14 +43,21 @@ fun Modifier.shimmerEffect(): Modifier = composed {
         ),
         label = "shimmer_offset"
     )
+    val isDark = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+    val base = if (isDark) {
+        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.10f)
+    } else {
+        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f)
+    }
+    val highlight = if (isDark) {
+        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.18f)
+    } else {
+        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.14f)
+    }
 
     background(
         brush = Brush.linearGradient(
-            colors = listOf(
-                Color(0xFFE0E0E0), // 浅灰
-                Color(0xFFF5F5F5), // 亮灰 (高光)
-                Color(0xFFE0E0E0), // 浅灰
-            ),
+            colors = listOf(base, highlight, base),
             start = Offset(startOffsetX, 0f),
             end = Offset(startOffsetX + size.width.toFloat(), size.height.toFloat())
         )
