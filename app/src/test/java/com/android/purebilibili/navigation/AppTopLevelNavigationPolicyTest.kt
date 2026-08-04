@@ -574,63 +574,65 @@ class AppTopLevelNavigationPolicyTest {
     }
 
     @Test
-    fun bottomPagerDuringNavigation_composesOnlyStartAndTargetBeforeReady() {
+    fun bottomPagerDuringNavigation_composesOnlyStartTargetAndCurrent() {
         assertTrue(
             shouldComposeBottomPagerPage(
                 item = BottomNavItem.HOME,
                 page = 0,
                 currentPage = 1,
-                selectedPage = 3,
+                selectedPage = 0,
                 isNavigating = true,
-                navigationStartPage = 0,
-                contentReady = false
+                navigationStartPage = 4,
+                contentReady = true
             )
         )
         assertTrue(
             shouldComposeBottomPagerPage(
-                item = BottomNavItem.PROFILE,
-                page = 3,
-                currentPage = 1,
-                selectedPage = 3,
+                item = BottomNavItem.LIVE,
+                page = 4,
+                currentPage = 3,
+                selectedPage = 0,
                 isNavigating = true,
-                navigationStartPage = 0,
-                contentReady = false
+                navigationStartPage = 4,
+                contentReady = true
             )
         )
-        assertFalse(
+        // Mid-scroll current page stays composed.
+        assertTrue(
             shouldComposeBottomPagerPage(
                 item = BottomNavItem.DYNAMIC,
                 page = 1,
                 currentPage = 1,
-                selectedPage = 3,
+                selectedPage = 0,
                 isNavigating = true,
-                navigationStartPage = 0,
-                contentReady = false
+                navigationStartPage = 4,
+                contentReady = true
             )
         )
+        // Other intermediate pages stay empty (far tab → home must not mount every mid page).
         assertFalse(
             shouldComposeBottomPagerPage(
                 item = BottomNavItem.HISTORY,
                 page = 2,
-                currentPage = 1,
-                selectedPage = 3,
+                currentPage = 3,
+                selectedPage = 0,
                 isNavigating = true,
-                navigationStartPage = 0,
-                contentReady = false
+                navigationStartPage = 4,
+                contentReady = true
             )
         )
     }
 
     @Test
-    fun bottomPagerAfterReady_allowsNonStoryPagesToStayComposed() {
+    fun bottomPagerAfterReady_keepsSettledPagesComposedWhenNotNavigating() {
         assertTrue(
             shouldComposeBottomPagerPage(
                 item = BottomNavItem.DYNAMIC,
                 page = 1,
                 currentPage = 1,
                 selectedPage = 3,
-                isNavigating = true,
-                navigationStartPage = 0,
+                isNavigating = false,
+                navigationStartPage = 1,
                 contentReady = true
             )
         )
@@ -640,8 +642,8 @@ class AppTopLevelNavigationPolicyTest {
                 page = 2,
                 currentPage = 1,
                 selectedPage = 3,
-                isNavigating = true,
-                navigationStartPage = 0,
+                isNavigating = false,
+                navigationStartPage = 1,
                 contentReady = true
             )
         )
