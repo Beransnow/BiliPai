@@ -206,6 +206,11 @@ internal fun shouldComposeBottomPagerPage(
     navigationStartPage: Int,
     contentReady: Boolean
 ): Boolean {
+    // KernelSU / NavDisplay predictive seek only keeps the two endpoints live. Far tab → home
+    // must not mount every intermediate bottom tab or the gesture freezes under load.
+    if (isNavigating) {
+        return page == navigationStartPage || page == selectedPage || page == currentPage
+    }
     if (item == BottomNavItem.STORY || item == BottomNavItem.SETTINGS || item == BottomNavItem.PLUGINS) {
         return page == currentPage || page == selectedPage
     }

@@ -83,9 +83,12 @@ internal class MainBottomPagerState(
     }
 
     /**
-     * Applies the system predictive-back progress directly to the bottom pager. The pager remains
-     * at the currently selected tab until the gesture commits, so tab chrome and page ownership
-     * do not change beneath the user's finger.
+     * KernelSU / Navigation3 style: seek the pager to an **absolute** position derived from
+     * system predictive progress (like SeekableTransitionState), not a fragile delta chain.
+     *
+     * Far tabs (rightmost → home) are the worst case: each progress tick used to cancel the
+     * previous suspend `scrollBy` when progress was a LaunchedEffect key. Absolute correction
+     * from current offset keeps the gesture responsive even when frames drop.
      */
     suspend fun seekPredictiveReturnToPage(
         targetIndex: Int,
@@ -102,6 +105,8 @@ internal class MainBottomPagerState(
             navJob = null
             previousJob?.cancel()
             navigationStartPage = pagerState.currentPage
+            // Pre-select home so only start + target need real content during the far jump.
+            selectedPage = safeTargetIndex
             isNavigating = true
             PredictivePagerReturnSession(
                 startPage = pagerState.currentPage,
@@ -113,16 +118,31 @@ internal class MainBottomPagerState(
         if (session.targetPage != safeTargetIndex) return
 
         val normalizedProgress = progress.coerceIn(0f, 1f)
-        val deltaPx = resolvePredictivePagerScrollDeltaPx(
+        val pageStepPx = session.pageStepPx.takeIf { it > 0f } ?: (
+            pagerState.layoutInfo.pageSize + pagerState.layoutInfo.pageSpacing
+            ).toFloat()
+        if (pageStepPx <= 0f) return
+
+        val targetScrollPx = resolvePredictivePagerTargetScrollPx(
             startPage = session.startPage,
             targetPage = session.targetPage,
-            pageStepPx = session.pageStepPx,
-            previousProgress = session.lastProgress,
+            pageStepPx = pageStepPx,
             progress = normalizedProgress,
         )
-        if (deltaPx != 0f) {
-            pagerState.scroll(scrollPriority = MutatePriority.UserInput) {
-                scrollBy(deltaPx)
+        val currentScrollPx = resolvePredictivePagerCurrentScrollPx(
+            currentPage = pagerState.currentPage,
+            currentPageOffsetFraction = pagerState.currentPageOffsetFraction,
+            pageStepPx = pageStepPx,
+        )
+        val deltaPx = targetScrollPx - currentScrollPx
+        if (abs(deltaPx) > 0.5f) {
+            try {
+                pagerState.scroll(scrollPriority = MutatePriority.UserInput) {
+                    scrollBy(deltaPx)
+                }
+            } catch (_: IllegalStateException) {
+                // Measurement races can reject scroll; leave lastProgress so the next tick retries.
+                return
             }
         }
         session.lastProgress = normalizedProgress
@@ -249,6 +269,26 @@ internal fun resolvePredictivePagerScrollDeltaPx(
 ): Float {
     val progressDelta = progress.coerceIn(0f, 1f) - previousProgress.coerceIn(0f, 1f)
     return (targetPage - startPage) * pageStepPx * progressDelta
+}
+
+/** Absolute scroll position for predictive seek (KernelSU / SeekableTransition style). */
+internal fun resolvePredictivePagerTargetScrollPx(
+    startPage: Int,
+    targetPage: Int,
+    pageStepPx: Float,
+    progress: Float,
+): Float {
+    if (pageStepPx <= 0f) return 0f
+    return (startPage + (targetPage - startPage) * progress.coerceIn(0f, 1f)) * pageStepPx
+}
+
+internal fun resolvePredictivePagerCurrentScrollPx(
+    currentPage: Int,
+    currentPageOffsetFraction: Float,
+    pageStepPx: Float,
+): Float {
+    if (pageStepPx <= 0f) return 0f
+    return (currentPage + currentPageOffsetFraction) * pageStepPx
 }
 
 internal fun resolvePredictivePagerSettleDurationMillis(
