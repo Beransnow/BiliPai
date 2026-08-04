@@ -5,11 +5,11 @@
 </p>
 
 <p align="center">
-  <sub>Last updated: 2026-08-04 · Current build: 0.1.0 · Latest documented release: v0.1.0</sub>
+  <sub>Last updated: 2026-08-05 · Current build: 26.0805.1 · Latest documented release: v26.0805.1</sub>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Release-0.1.0-fb7299?style=flat-square" alt="Release">
+  <img src="https://img.shields.io/badge/Release-26.0805.1-fb7299?style=flat-square" alt="Release">
   <img src="https://img.shields.io/github/stars/jay3-yy/BiliPai?style=flat-square&color=yellow" alt="Stars">
   <img src="https://img.shields.io/github/forks/jay3-yy/BiliPai?style=flat-square&color=green" alt="Forks">
   <img src="https://img.shields.io/github/last-commit/jay3-yy/BiliPai?style=flat-square&color=purple" alt="Last Commit">
@@ -447,13 +447,13 @@ See the [current roadmap](docs/wiki/ROADMAP.md) for priorities, completion crite
 
 See full changelog: [CHANGELOG.md](CHANGELOG.md)
 
-### Latest (v0.1.0 · 2026-08-04)
+### Latest (v26.0805.1 · 2026-08-05)
 
-- Tablet side navigation now offers an optional account-switcher button with the full account-and-playback selector.
-- Tablet fullscreen stays landscape; interactive landscape comment and thread panels keep playback visible.
-- Bangumi playback restores direct video output and can prefer HDR/HEVC when the device and playback account permit it.
-- BiliPai now starts a new `0.x` version epoch at `0.1.0 / versionCode 282`; Android version codes continue increasing.
-- Existing 9.x users need one manual APK installation to enter the new epoch; APK updates are temporarily distributed through Telegram only.
+- Calendar build IDs: `YY.MMDD.N` (two-digit year), current `26.0805.1` / `versionCode 283`.
+- Settings search rows no longer overlap title and section path; top category dock soft liquid glass restored.
+- AI summary timestamps align in a fixed full-width column.
+- SMS login supports international regions via passport country list and Material bottom-sheet picker.
+- APK updates remain Telegram-only for now.
 
 ---
 
@@ -465,7 +465,7 @@ cd BiliPai
 ./gradlew :app:assembleDev
 ```
 
-The installable artifact is exported to `app/build/outputs/bilipai/dev/BiliPai-0.1.0-dev.apk`. Release builds use `app/build/outputs/bilipai/release/BiliPai-0.1.0.apk`; AGP's internal `app-*.apk` files are not delivery artifacts.
+The installable artifact is exported to `app/build/outputs/bilipai/dev/BiliPai-26.0805.1-dev.apk`. Release builds use `app/build/outputs/bilipai/release/BiliPai-26.0805.1.apk`; AGP's internal `app-*.apk` files are not delivery artifacts.
 
 ---
 

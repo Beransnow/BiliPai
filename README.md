@@ -14,7 +14,7 @@
 </p>
 
 <p>
-  <img src="https://img.shields.io/badge/Release-0.1.0-007AFF?style=flat-square&labelColor=ffffff" alt="Release 0.1.0" />
+  <img src="https://img.shields.io/badge/Release-26.0805.1-007AFF?style=flat-square&labelColor=ffffff" alt="Release 26.0805.1" />
   <img src="https://img.shields.io/badge/Android-8.0%2B-34C759?style=flat-square&logo=android&logoColor=white" alt="Android 8.0+" />
   <img src="https://img.shields.io/badge/Kotlin-100%25-7F52FF?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin" />
   <img src="https://img.shields.io/badge/License-Non--Commercial-FF3B30?style=flat-square" alt="Non-Commercial License" />
@@ -185,7 +185,7 @@ cd BiliPai
 ./gradlew :app:assembleDev
 ```
 
-完成后可安装交付包位于 `app/build/outputs/bilipai/dev/BiliPai-0.1.0-dev.apk`。正式发布构建对应输出 `app/build/outputs/bilipai/release/BiliPai-0.1.0.apk`；AGP 内部的 `app-*.apk` 不作为交付文件。
+完成后可安装交付包位于 `app/build/outputs/bilipai/dev/BiliPai-26.0805.1-dev.apk`。正式发布构建对应输出 `app/build/outputs/bilipai/release/BiliPai-26.0805.1.apk`；AGP 内部的 `app-*.apk` 不作为交付文件。
 
 `google-services.json` 是可选项：放入 `app/` 后启用 Firebase Crashlytics / Analytics；缺失时构建脚本会跳过相关能力。
 
@@ -206,7 +206,7 @@ cd BiliPai
 
 ## 最近更新
 
-当前构建为 `0.1.0 / versionCode 282`；最新完整发布记录为 `v0.1.0`。这是 BiliPai 的全新 `0.x` 版本纪元；源码状态以 GitHub 和 [CHANGELOG.md](CHANGELOG.md) 为准，APK 仅通过[官方 Telegram 群组](https://t.me/+x5K_TmoFXso3MGM9)更新：
+当前构建为 `26.0805.1 / versionCode 283`（日历号 `YY.MMDD.N`）；最新完整发布记录为 `v26.0805.1`。源码状态以 GitHub 和 [CHANGELOG.md](CHANGELOG.md) 为准，APK 仅通过[官方 Telegram 群组](https://t.me/+x5K_TmoFXso3MGM9)更新：
 
 - 构建基线升级至 AGP 9.3.1 / Gradle 9.5 / Compose BOM 2026.06.00。
 - Navigation3 runtime/UI 对齐至官方 `1.2.0-alpha07`，继续收敛预测返回真实来源页与整卡稳定性。
