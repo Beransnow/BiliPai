@@ -129,14 +129,14 @@ class SpaceScreenStructureTest {
     }
 
     @Test
-    fun `space follow actions sit on the identity row below metrics`() {
+    fun `space follow actions sit under the name as a start-aligned action row`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt")
 
         assertTrue(source.contains("SpaceHeaderRelationActions("))
         assertTrue(source.contains("contentDescription = \"私信\""))
         assertTrue(
-            source.contains("信息区中部：名字 + 等级 + 私信/关注"),
-            "relation actions should live in the name/identity band, not the avatar metrics row"
+            source.contains("名字独占一行 → 操作按钮贴名字下方左对齐"),
+            "relation actions should sit under the name, not end-stretched beside it"
         )
         assertFalse(source.contains("resolveSpaceHeaderActionTopPaddingDp("))
         assertFalse(source.contains("topChromeInset = scaffoldPadding.calculateTopPadding()"))

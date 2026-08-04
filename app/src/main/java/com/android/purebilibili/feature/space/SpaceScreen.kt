@@ -2042,9 +2042,9 @@ private fun SpaceHeader(
 
     // PiliPlus 式布局：
     // - hero 背景 156dp
-    // - 头像 80dp 左下，底部 32dp 伸出背景；stats 独占头像右侧，数字不被按钮挤扁
-    // - 私信/关注 下沉到名字行右侧（信息区中部），避开顶栏与 stats 争宽
-    // - 名字/sign/UID 在 hero 下方
+    // - 头像 80dp 左下，底部 32dp 伸出背景；stats 独占头像右侧
+    // - 名字/等级单独一行；私信/关注紧贴名字下方左对齐，避免和名字抢行或漂在右侧空白
+    // - 徽标 / sign / UID 继续在信息区下方
     // - 滚动折叠：整体内容随 collapseFraction 上移 + 淡出（视差折叠）
     val heroHeight = 156.dp
     val avatarSize = 80.dp
@@ -2203,7 +2203,7 @@ private fun SpaceHeader(
             }
         }
 
-        // 信息区中部：名字 + 等级 + 私信/关注（按钮下沉，stats 不再被挤扁）
+        // 信息区：名字独占一行 → 操作按钮贴名字下方左对齐 → 徽标/简介
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -2212,40 +2212,36 @@ private fun SpaceHeader(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Row(
-                    modifier = Modifier.weight(1f),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    AppText(
-                        text = userInfo.name,
-                        modifier = Modifier
-                            .weight(1f, fill = false)
-                            .copyOnLongPress(userInfo.name, "UP主名称"),
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (userInfo.vip.status == 1) Color(0xFFFF6699) else MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    UserLevelBadge(level = userInfo.level)
-                }
-                SpaceHeaderRelationActions(
-                    followLabel = followLabel,
-                    isFollowed = userInfo.isFollowed,
-                    followButtonColors = followButtonColors,
-                    onMessageClick = {
-                        android.widget.Toast.makeText(
-                            context,
-                            "暂不支持私信",
-                            android.widget.Toast.LENGTH_SHORT
-                        ).show()
-                    },
-                    onFollowClick = onFollowClick
+                AppText(
+                    text = userInfo.name,
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .copyOnLongPress(userInfo.name, "UP主名称"),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (userInfo.vip.status == 1) Color(0xFFFF6699) else MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
+                UserLevelBadge(level = userInfo.level)
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
+            SpaceHeaderRelationActions(
+                followLabel = followLabel,
+                isFollowed = userInfo.isFollowed,
+                followButtonColors = followButtonColors,
+                onMessageClick = {
+                    android.widget.Toast.makeText(
+                        context,
+                        "暂不支持私信",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
+                },
+                onFollowClick = onFollowClick
+            )
 
             val hasExtraBadges =
                 (userInfo.vip.status == 1 && userInfo.vip.label.text.isNotBlank()) ||
@@ -4052,6 +4048,7 @@ private fun SpaceHeaderRelationActions(
     onFollowClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Compact chips under the name: start-aligned reading order, not end-stretched.
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
@@ -4066,14 +4063,14 @@ private fun SpaceHeaderRelationActions(
             )
         ) {
             AppIconButton(
-                modifier = Modifier.size(36.dp),
+                modifier = Modifier.size(34.dp),
                 onClick = onMessageClick
             ) {
                 AppIcon(
                     imageVector = Icons.Outlined.Email,
                     contentDescription = "私信",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(17.dp)
                 )
             }
         }
@@ -4081,14 +4078,14 @@ private fun SpaceHeaderRelationActions(
         AppButton(
             onClick = onFollowClick,
             modifier = Modifier
-                .widthIn(min = 84.dp, max = 104.dp)
-                .height(36.dp),
+                .widthIn(min = 80.dp, max = 100.dp)
+                .height(34.dp),
             shape = RoundedCornerShape(999.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = followButtonColors.backgroundColor,
                 contentColor = followButtonColors.textColor
             ),
-            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp)
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
