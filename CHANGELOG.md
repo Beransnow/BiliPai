@@ -1,5 +1,28 @@
 # Changelog
 
+## v26.0805.1 (2026-08-05)
+
+### 版本信息
+
+- 启用日历构建号 `YY.MMDD.N`：`26.0805.1`，`versionCode` 为 `283`。
+- `YY` 为两位年，`MMDD` 为月日，`N` 为当日第几次正式构建；新旧比较仍以 `versionCode` 为准。
+- 正式产物命名：`BiliPai-26.0805.1.apk`；Dev：`BiliPai-26.0805.1-dev.apk`。
+- 规范见 [docs/wiki/VERSIONING.md](docs/wiki/VERSIONING.md)。
+
+### 本构建相对 v0.1.0 的用户向变更摘要
+
+- 设置搜索结果行避免标题与分区路径混叠。
+- 顶部分类 Dock soft shell lens：恢复滑动液态玻璃并压低边沿虾线。
+- AI 总结时间戳列满宽对齐。
+- 短信登录支持国际冠字码（passport 国家列表 + Material 底部表选择）。
+
+### 更新范围
+
+- 基准版本：`v0.1.0`。
+- 提交范围：以 GitHub `main` 为准。
+
+---
+
 ## v0.1.0 (2026-08-04)
 
 ### 版本信息
