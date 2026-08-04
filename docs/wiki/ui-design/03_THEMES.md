@@ -6,7 +6,7 @@
 > 最后核对日期：2026-08-02  
 > 适用提交：4443e72ff  
 > 维护角色：设计系统维护者  
-> 相关文档：[设计方向](01_DIRECTION.md) · [基础令牌](02_FOUNDATIONS.md)
+> 相关文档：[设计方向](01_DIRECTION.md) · [基础令牌](02_FOUNDATIONS.md) · [前端架构与主题精简优化计划](../FRONTEND_ARCHITECTURE_THEME_SIMPLIFICATION_PLAN.md)
 
 ## 初学者解释
 

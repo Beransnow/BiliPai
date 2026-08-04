@@ -1170,15 +1170,6 @@ private fun LightweightHomeTopTabs(
             dragScaleProgress = topTabIndicatorDragScaleProgress,
             pressProgress = topTabPressProgress
         )
-        // Match home bottom bar: velocity stretch from items/sec only (no dragState.scale compound).
-        val topTabIndicatorLayerTransform = resolveBottomBarIndicatorLayerTransform(
-            motionProgress = topTabPressProgress,
-            velocityItemsPerSecond = topTabIndicatorLayerVelocityItemsPerSecond,
-            isDragging = topTabShouldStretchIndicator,
-            dragScaleProgress = topTabIndicatorLayerScaleProgress,
-            dragScaleTransform = null,
-            motionSpec = topTabDragMotionSpec
-        )
         val topTabRefractionMotionProfile = resolveBottomBarRefractionMotionProfile(
             position = topTabIndicatorPosition,
             velocity = topTabMotionVelocityPxPerSecond,
@@ -1216,19 +1207,6 @@ private fun LightweightHomeTopTabs(
         val topTabIndicatorLensSpec = resolveBottomBarBackdropPresetIndicatorLens(
             progress = topTabLensProgress
         )
-        val md3IndicatorTranslationXPx by remember(topTabIndicatorPosition, itemWidth, md3IndicatorWidth, density, listState) {
-            derivedStateOf {
-                with(density) {
-                    resolveMd3TopTabIndicatorTranslationPx(
-                        absolutePagerPosition = topTabIndicatorPosition,
-                        itemWidthPx = itemWidth.toPx(),
-                        rowScrollOffsetPx = rowScrollOffsetPx,
-                        indicatorWidthPx = md3IndicatorWidth.toPx(),
-                        contentPaddingPx = md3ContentPadding.toPx()
-                    )
-                }
-            }
-        }
         val md3LiquidCapsuleWidth = resolveTopTabDockIndicatorWidthDp(
             itemWidthDp = itemWidth.value,
             horizontalGapDp = dockIndicatorHorizontalGap.value,
@@ -1237,11 +1215,14 @@ private fun LightweightHomeTopTabs(
         val dockIndicatorHeight = resolveTopTabDockIndicatorHeightDp(
             rowHeightDp = rowHeight.value,
             verticalGapDp = dockIndicatorVerticalGap.value,
-            // Prefer near-full dock fill at rest (bottom-bar like); drag scale overflows.
+            // Prefer near-full dock fill at rest; the selected-tab pill keeps the same
+            // breathing gap above and below so it never bleeds past the tab row.
             minHeightDp = resolveTopTabVisualTuning().floatingIndicatorHeightDp,
             indicatorWidthDp = md3LiquidCapsuleWidth.value
         ).dp
-        val md3LiquidCapsuleTranslationXPx by remember(
+        // Selected-tab pill position: item slot center minus half the pill width, so the
+        // capsule follows the pager offset and the row scroll while staying inside the dock.
+        val md3IndicatorTranslationXPx by remember(
             topTabIndicatorPosition,
             itemWidth,
             md3LiquidCapsuleWidth,
@@ -1713,7 +1694,7 @@ private fun LightweightHomeTopTabs(
                         BottomBarMatchedLiquidIndicator(
                             visible = true,
                             dockContentAlpha = 1f,
-                            indicatorTranslationXPx = md3LiquidCapsuleTranslationXPx,
+                            indicatorTranslationXPx = md3IndicatorTranslationXPx,
                             indicatorPanelOffsetPx = 0f,
                             indicatorWidth = md3LiquidCapsuleWidth,
                             indicatorHeight = dockIndicatorHeight,
@@ -1741,7 +1722,7 @@ private fun LightweightHomeTopTabs(
                         BottomBarMatchedLiquidIndicator(
                             visible = true,
                             dockContentAlpha = 1f,
-                            indicatorTranslationXPx = md3LiquidCapsuleTranslationXPx,
+                            indicatorTranslationXPx = md3IndicatorTranslationXPx,
                             indicatorPanelOffsetPx = 0f,
                             indicatorWidth = md3LiquidCapsuleWidth,
                             indicatorHeight = dockIndicatorHeight,
@@ -1774,18 +1755,19 @@ private fun LightweightHomeTopTabs(
                         MaterialTheme.colorScheme.primary
                     }
                     if (!shouldUseMd3DockBackedCapsule && !shouldUseMd3LiquidCapsule) {
-                        // A soft rounded rectangle makes the selected tab clear without the harsh underline.
+                        // Selected-tab capsule: fully rounded (max corner radius) and sized to
+                        // the dock track minus breathing gap, so it never bleeds above or below
+                        // the tab row. No drag scale is applied here — only the liquid-glass
+                        // capsule paths may overflow the dock chrome.
                         Box(
                             modifier = Modifier
                                 .align(Alignment.CenterStart)
                                 .graphicsLayer {
-                                    translationX = md3LiquidCapsuleTranslationXPx
-                                    scaleX = topTabIndicatorLayerTransform.scaleX
-                                    scaleY = topTabIndicatorLayerTransform.scaleY
+                                    translationX = md3IndicatorTranslationXPx
                                 }
                                 .width(md3LiquidCapsuleWidth)
                                 .height(dockIndicatorHeight)
-                                .clip(RoundedCornerShape(CompactTopTabIndicatorCornerDp.dp))
+                                .clip(RoundedCornerShape(percent = 50))
                                 .background(indicatorColor.copy(alpha = 0.12f))
                         )
                     }
@@ -1940,7 +1922,8 @@ private fun LightweightTopTabItem(
         skinPlainStyle -> androidx.compose.ui.graphics.RectangleShape
         presentation == AppTopTabPresentation.MOVING_CAPSULE -> resolveSharedBottomBarCapsuleShape()
         presentation == AppTopTabPresentation.MATERIAL_UNDERLINE -> androidx.compose.ui.graphics.RectangleShape
-        else -> RoundedCornerShape(CompactTopTabIndicatorCornerDp.dp)
+        // Tonal capsule uses the same fully rounded pill as the plain selected-tab indicator.
+        else -> RoundedCornerShape(percent = 50)
     }
     val itemContentHorizontalPadding = if (showIcon && showText) {
         AppSpacingTokens.ExtraSmall

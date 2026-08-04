@@ -6,6 +6,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppTopChromePolicy
 import com.android.purebilibili.core.ui.AppTopTabPresentation
 
@@ -192,6 +193,9 @@ internal fun resolveHomeTopPresetStyle(
                 )
             )
         }
+        // MD3 与 MIUIX 两种 Android 主题统一遵循 MIUI 风格顶栏规范：紧凑胶囊 tab 行、
+        // 与头像/设置圆钮对齐的 36dp 搜索栏、无分隔线的统一面板与 14dp docked 内边距。
+        AppTopTabPresentation.MATERIAL_UNDERLINE,
         AppTopTabPresentation.TONAL_CAPSULE -> {
             HomeTopPresetStyle(
                 // The home renderer routes this preset through its moving MD3 capsule,
@@ -199,10 +203,12 @@ internal fun resolveHomeTopPresetStyle(
                 presentation = AppTopTabPresentation.MATERIAL_UNDERLINE,
                 indicatorStyle = TopTabIndicatorStyle.MATERIAL,
                 search = HomeTopSearchStyle(
-                    barHeight = 48.dp,
+                    // Search row height matches the avatar/settings circles (32+4) so the whole
+                    // top row reads as one aligned capsule group.
+                    barHeight = AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall,
                     revealDeadZone = 0.dp,
                     rowHorizontalPadding = 14.dp,
-                    pillHeight = compactChrome.primaryHeightDp.dp,
+                    pillHeight = AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall,
                     content = HomeTopSearchContentStyle(
                         horizontalPadding = compactChrome.inputHorizontalPaddingDp.dp,
                         iconTextGap = compactChrome.standardGapDp.dp
@@ -220,13 +226,14 @@ internal fun resolveHomeTopPresetStyle(
                     edgeControlGap = 7.dp,
                     // Align the category strip with the avatar/search/settings row.
                     embeddedTabHorizontalPadding = 14.dp,
-                    searchToTabs = 6.dp,
+                    searchToTabs = 4.dp,
                     tabsToContent = 6.dp,
                     searchCollapseExtra = 5.dp,
                     continuousSlabOverlap = 20.dp
                 ),
                 tabs = HomeTopTabsStyle(
-                    horizontalPadding = HomeTopDpPair(docked = 0.dp, floating = 2.dp),
+                    horizontalPadding = HomeTopDpPair(docked = 14.dp, floating = 2.dp),
+                    // Align with resolveMd3TopTabVisualSpec used by the tab row.
                     rowHeight = HomeTopDpPair(
                         docked = 36.dp,
                         floating = 40.dp
@@ -249,63 +256,6 @@ internal fun resolveHomeTopPresetStyle(
                     iconSize = HomeTopDpPair(
                         docked = resolveMd3TopTabActionIconSize(false, AppTopTabPresentation.TONAL_CAPSULE),
                         floating = resolveMd3TopTabActionIconSize(true, AppTopTabPresentation.TONAL_CAPSULE)
-                    )
-                )
-            )
-        }
-        AppTopTabPresentation.MATERIAL_UNDERLINE -> {
-            HomeTopPresetStyle(
-                presentation = chromePolicy.tabPresentation,
-                indicatorStyle = TopTabIndicatorStyle.MATERIAL,
-                search = HomeTopSearchStyle(
-                    barHeight = 48.dp,
-                    revealDeadZone = 0.dp,
-                    rowHorizontalPadding = 16.dp,
-                    pillHeight = compactChrome.primaryHeightDp.dp,
-                    content = HomeTopSearchContentStyle(
-                        horizontalPadding = compactChrome.inputHorizontalPaddingDp.dp,
-                        iconTextGap = compactChrome.standardGapDp.dp
-                    )
-                ),
-                panel = HomeTopPanelStyle(
-                    useUnified = true,
-                    showDivider = true,
-                    horizontalPadding = 0.dp,
-                    innerPadding = 10.dp,
-                    cornerRadius = 16.dp,
-                    reservedContentBottomGap = 5.dp
-                ),
-                spacing = HomeTopSpacingStyle(
-                    edgeControlGap = 8.dp,
-                    // Align the category strip with the avatar/search/settings row.
-                    embeddedTabHorizontalPadding = 16.dp,
-                    searchToTabs = 6.dp,
-                    tabsToContent = 6.dp,
-                    searchCollapseExtra = 5.dp,
-                    continuousSlabOverlap = 24.dp
-                ),
-                tabs = HomeTopTabsStyle(
-                    horizontalPadding = HomeTopDpPair(docked = 0.dp, floating = 2.dp),
-                    // Align with resolveMd3TopTabVisualSpec used by the tab row.
-                    rowHeight = HomeTopDpPair(docked = 36.dp, floating = 40.dp),
-                    md3VisualSpec = resolveMd3TopTabVisualSpec(
-                        false,
-                        AppTopTabPresentation.MATERIAL_UNDERLINE,
-                        normalizedLabelMode
-                    )
-                ),
-                actions = HomeTopActionStyle(
-                    buttonSize = HomeTopDpPair(
-                        docked = resolveMd3TopTabActionButtonSize(false, AppTopTabPresentation.MATERIAL_UNDERLINE),
-                        floating = resolveMd3TopTabActionButtonSize(true, AppTopTabPresentation.MATERIAL_UNDERLINE)
-                    ),
-                    buttonCorner = HomeTopDpPair(
-                        docked = resolveMd3TopTabActionButtonCorner(false, AppTopTabPresentation.MATERIAL_UNDERLINE),
-                        floating = resolveMd3TopTabActionButtonCorner(true, AppTopTabPresentation.MATERIAL_UNDERLINE)
-                    ),
-                    iconSize = HomeTopDpPair(
-                        docked = resolveMd3TopTabActionIconSize(false, AppTopTabPresentation.MATERIAL_UNDERLINE),
-                        floating = resolveMd3TopTabActionIconSize(true, AppTopTabPresentation.MATERIAL_UNDERLINE)
                     )
                 )
             )

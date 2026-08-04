@@ -175,7 +175,7 @@ internal fun HomeTopTabChrome(
             Box(
                 modifier = dockModifier
                     .then(
-                        if (drawChromeSurface && isTabFloating) {
+                        if (drawChromeSurface && effectiveTabShadowElevation > AppSpacingTokens.None) {
                             Modifier.shadow(
                                 elevation = effectiveTabShadowElevation,
                                 shape = tabShape,

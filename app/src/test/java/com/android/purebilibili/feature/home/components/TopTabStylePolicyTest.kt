@@ -156,14 +156,15 @@ class TopTabStylePolicyTest {
     }
 
     @Test
-    fun `home top preset style separates ios material3 and miuix text tabs`() {
+    fun `home top preset style keeps ios separate while material3 and miuix share the miui top bar geometry`() {
         val ios = topStyle(UiPreset.IOS, AndroidNativeVariant.MATERIAL3)
         val material3 = topStyle(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
         val miuix = topStyle(UiPreset.MD3, AndroidNativeVariant.MIUIX)
 
-        assertEquals(ios.searchBarHeight, material3.searchBarHeight)
-        assertEquals(material3.searchBarHeight, miuix.searchBarHeight)
-        assertNotEquals(material3.unifiedPanelCornerRadius, miuix.unifiedPanelCornerRadius)
+        assertEquals(48.dp, ios.searchBarHeight)
+        assertEquals(miuix.searchBarHeight, material3.searchBarHeight)
+        assertEquals(36.dp, miuix.searchBarHeight)
+        assertEquals(miuix.unifiedPanelCornerRadius, material3.unifiedPanelCornerRadius)
         assertEquals(AppTopTabPresentation.MOVING_CAPSULE, ios.presentation)
         assertEquals(AppTopTabPresentation.MATERIAL_UNDERLINE, material3.presentation)
         assertEquals(AppTopTabPresentation.MATERIAL_UNDERLINE, miuix.presentation)
@@ -190,7 +191,7 @@ class TopTabStylePolicyTest {
         val miuix = topStyle(UiPreset.MD3, AndroidNativeVariant.MIUIX)
 
         assertEquals(5.dp, ios.reservedContentBottomGap)
-        assertEquals(5.dp, material3.reservedContentBottomGap)
+        assertEquals(12.dp, material3.reservedContentBottomGap)
         assertEquals(12.dp, miuix.reservedContentBottomGap)
         assertEquals(
             12.dp,
@@ -222,7 +223,7 @@ class TopTabStylePolicyTest {
             )
         )
         assertEquals(
-            40.dp,
+            36.dp,
             resolveHomeTopSettingsButtonSize(
                 uiPreset = UiPreset.MD3,
                 androidNativeVariant = AndroidNativeVariant.MIUIX
@@ -761,9 +762,9 @@ class TopTabStylePolicyTest {
         assertTrue(itemSource.contains("alpha(selectionFraction)"))
         assertTrue(itemSource.indexOf("AsyncImage(") < itemSource.indexOf("TopTabBlendedIcon("))
         assertTrue(itemSource.contains("else {"))
-        assertTrue(itemSource.contains("resolveTopTabMaterialIcon(categoryKey)"))
+        assertTrue(itemSource.contains("resolveTopTabCategoryIcon("))
         assertFalse(itemSource.contains("resolveMiuixPreferredTopTabCategoryIcon("))
-        assertFalse(rowCallSource.contains("iconFamily = topTabIconFamily"))
+        assertTrue(rowCallSource.contains("iconFamily = topTabIconFamily"))
     }
 
     @Test

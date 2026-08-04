@@ -543,7 +543,7 @@ internal fun resolveHomeTopSettingsButtonSize(
     return if (chromePolicy.tabPresentation == AppTopTabPresentation.TONAL_CAPSULE) {
         resolveHomeTopPresetStyle(chromePolicy, labelMode = 2)
             .actionButtonSizeDocked
-            .coerceAtMost(40.dp)
+            .coerceAtMost(36.dp)
     } else {
         AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall
     }
@@ -1839,7 +1839,17 @@ fun HomeHeader(
         label = "tabVerticalOffset"
     )
     val tabShadowElevation by animateDpAsState(
-        targetValue = if (usesNativeContainerTreatment) AppSpacingTokens.None else if (isTabFloating) AppSpacingTokens.Small else AppSpacingTokens.None,
+        targetValue = if (useDetachedTopTabDock && usesNativeContainerTreatment) {
+            // Native (MIUIX) detached capsule dock always lifts a hair so the long pill
+            // reads as a floating segment over the feed below.
+            AppSpacingTokens.Small
+        } else if (usesNativeContainerTreatment) {
+            AppSpacingTokens.None
+        } else if (isTabFloating) {
+            AppSpacingTokens.Small
+        } else {
+            AppSpacingTokens.None
+        },
         animationSpec = AppMotionTokens.standardSpec(),
         label = "tabShadowElevation"
     )

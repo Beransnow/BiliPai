@@ -135,11 +135,9 @@ class HomeChromeLiquidSurfaceStructureTest {
         )
         assertTrue(
             "top tab indicator host should not clip drag-scale overflow past the dock",
-            topBarSource.contains(
-                """.fillMaxSize()
-                        .zIndex(1f)
-                        .graphicsLayer { clip = false }"""
-            )
+            Regex(
+                """\.fillMaxSize\(\)\s*\n\s*\.zIndex\(1f\)\s*\n\s*\.graphicsLayer\s*\{\s*clip = false\s*\}"""
+            ).containsMatchIn(topBarSource)
         )
         assertTrue(
             "top tab chrome should center the fixed-height tab row inside the taller shell",

@@ -190,7 +190,7 @@ class HomeHeaderVisualPolicyTest {
     @Test
     fun `home header trims top chrome heights for better content density`() {
         assertEquals(48.dp, resolveHomeTopSearchBarHeight())
-        assertEquals(48.dp, resolveHomeTopSearchBarHeight(UiPreset.MD3))
+        assertEquals(36.dp, resolveHomeTopSearchBarHeight(UiPreset.MD3))
         assertEquals(40.dp, resolveHomeTopTabRowHeight(isTabFloating = true))
         assertEquals(40.dp, resolveHomeTopTabRowHeight(isTabFloating = true, uiPreset = UiPreset.MD3))
         assertEquals(36.dp, resolveHomeTopTabRowHeight(isTabFloating = false))
@@ -496,7 +496,7 @@ class HomeHeaderVisualPolicyTest {
             )
         )
         assertEquals(
-            63.dp, // 52 search + 6 searchToTabs + 5 collapseExtra
+            61.dp, // 52 search + 4 searchToTabs + 5 collapseExtra
             resolveHomeTopSearchCollapseDistance(
                 searchBarHeight = 52.dp,
                 uiPreset = UiPreset.MD3
@@ -507,13 +507,13 @@ class HomeHeaderVisualPolicyTest {
     @Test
     fun `home header trims horizontal spacing without cramping controls`() {
         assertEquals(14.dp, resolveHomeTopSearchRowHorizontalPadding())
-        assertEquals(16.dp, resolveHomeTopSearchRowHorizontalPadding(UiPreset.MD3))
+        assertEquals(14.dp, resolveHomeTopSearchRowHorizontalPadding(UiPreset.MD3))
         assertEquals(44.dp, resolveHomeTopSearchPillHeight())
-        assertEquals(52.dp, resolveHomeTopSearchPillHeight(UiPreset.MD3))
+        assertEquals(36.dp, resolveHomeTopSearchPillHeight(UiPreset.MD3))
         assertEquals(2.dp, resolveHomeTopTabHorizontalPadding(isTabFloating = true))
         assertEquals(2.dp, resolveHomeTopTabHorizontalPadding(isTabFloating = true, uiPreset = UiPreset.MD3))
         assertEquals(6.dp, resolveHomeTopSearchToTabsSpacing())
-        assertEquals(6.dp, resolveHomeTopSearchToTabsSpacing(UiPreset.MD3))
+        assertEquals(4.dp, resolveHomeTopSearchToTabsSpacing(UiPreset.MD3))
         assertEquals(6.dp, resolveHomeTopTabsToContentSpacing())
         assertEquals(6.dp, resolveHomeTopTabsToContentSpacing(UiPreset.MD3))
     }
@@ -536,7 +536,7 @@ class HomeHeaderVisualPolicyTest {
             )
         )
         assertFalse(shouldShowUnifiedHomeTopPanelDivider(UiPreset.IOS))
-        assertTrue(
+        assertFalse(
             shouldShowUnifiedHomeTopPanelDivider(
                 UiPreset.MD3,
                 AndroidNativeVariant.MATERIAL3
@@ -551,9 +551,9 @@ class HomeHeaderVisualPolicyTest {
         assertEquals(0.dp, resolveHomeTopUnifiedPanelHorizontalPadding())
         assertEquals(0.dp, resolveHomeTopUnifiedPanelHorizontalPadding(UiPreset.MD3))
         assertEquals(6.dp, resolveHomeTopUnifiedPanelInnerPadding())
-        assertEquals(10.dp, resolveHomeTopUnifiedPanelInnerPadding(UiPreset.MD3))
+        assertEquals(9.dp, resolveHomeTopUnifiedPanelInnerPadding(UiPreset.MD3))
         assertEquals(32.dp, resolveHomeTopUnifiedPanelCornerRadius())
-        assertEquals(16.dp, resolveHomeTopUnifiedPanelCornerRadius(UiPreset.MD3))
+        assertEquals(18.dp, resolveHomeTopUnifiedPanelCornerRadius(UiPreset.MD3))
         assertEquals(
             18.dp,
             resolveHomeTopUnifiedPanelCornerRadius(
@@ -562,7 +562,7 @@ class HomeHeaderVisualPolicyTest {
             )
         )
         assertEquals(14.dp, resolveHomeTopEmbeddedTabHorizontalPadding())
-        assertEquals(16.dp, resolveHomeTopEmbeddedTabHorizontalPadding(UiPreset.MD3))
+        assertEquals(14.dp, resolveHomeTopEmbeddedTabHorizontalPadding(UiPreset.MD3))
     }
 
     @Test
@@ -572,19 +572,19 @@ class HomeHeaderVisualPolicyTest {
         val miuix = resolveHomeTopPresetStyle(UiPreset.MD3, AndroidNativeVariant.MIUIX, labelMode = 2)
 
         assertEquals(48.dp, ios.searchBarHeight)
-        assertEquals(48.dp, material3.searchBarHeight)
-        assertEquals(48.dp, miuix.searchBarHeight)
+        assertEquals(36.dp, material3.searchBarHeight)
+        assertEquals(36.dp, miuix.searchBarHeight)
         assertEquals(32.dp, ios.unifiedPanelCornerRadius)
-        assertEquals(16.dp, material3.unifiedPanelCornerRadius)
+        assertEquals(18.dp, material3.unifiedPanelCornerRadius)
         assertEquals(18.dp, miuix.unifiedPanelCornerRadius)
         assertEquals(6.dp, ios.searchToTabsSpacing)
-        assertEquals(6.dp, material3.searchToTabsSpacing)
-        assertEquals(6.dp, miuix.searchToTabsSpacing)
+        assertEquals(4.dp, material3.searchToTabsSpacing)
+        assertEquals(4.dp, miuix.searchToTabsSpacing)
         assertEquals(6.dp, ios.tabsToContentSpacing)
         assertEquals(6.dp, material3.tabsToContentSpacing)
         assertEquals(6.dp, miuix.tabsToContentSpacing)
         assertFalse(ios.showUnifiedPanelDivider)
-        assertTrue(material3.showUnifiedPanelDivider)
+        assertFalse(material3.showUnifiedPanelDivider)
         assertFalse(miuix.showUnifiedPanelDivider)
     }
 
@@ -635,9 +635,9 @@ class HomeHeaderVisualPolicyTest {
                 uiPreset = UiPreset.IOS
             )
         )
-        // MD3 docked: 44+52+44+20+6+6 = 172
+        // MD3 docked: 44+52+44+18+4+6 = 168
         assertEquals(
-            172.dp,
+            168.dp,
             resolveHomeTopReservedListPadding(
                 statusBarHeight = 44.dp,
                 searchBarHeight = 52.dp,
@@ -645,9 +645,9 @@ class HomeHeaderVisualPolicyTest {
                 uiPreset = UiPreset.MD3
             )
         )
-        // MIUIX docked: 44+50+48+18+6+6 = 172
+        // MIUIX docked: 44+50+48+18+4+6 = 170
         assertEquals(
-            172.dp,
+            170.dp,
             resolveHomeTopReservedListPadding(
                 statusBarHeight = 44.dp,
                 searchBarHeight = 50.dp,
@@ -679,7 +679,7 @@ class HomeHeaderVisualPolicyTest {
         )
         assertEquals(18.dp, resolveHomeTopSettingsIconSize())
         assertEquals(6.dp, resolveHomeTopEdgeControlGap())
-        assertEquals(8.dp, resolveHomeTopEdgeControlGap(UiPreset.MD3))
+        assertEquals(7.dp, resolveHomeTopEdgeControlGap(UiPreset.MD3))
     }
 
     @Test
@@ -698,7 +698,7 @@ class HomeHeaderVisualPolicyTest {
         assertTrue(searchShape is RoundedCornerShape)
         assertTrue(edgeShape is RoundedCornerShape)
         assertNotEquals(CircleShape, edgeShape)
-        assertEquals(52.dp, resolveHomeTopSearchPillHeight(UiPreset.MD3))
+        assertEquals(36.dp, resolveHomeTopSearchPillHeight(UiPreset.MD3))
         assertEquals(16.dp, resolveHomeTopSearchContentHorizontalPadding(UiPreset.MD3))
         assertEquals(12.dp, resolveHomeTopSearchIconTextGap(UiPreset.MD3))
     }
@@ -717,14 +717,14 @@ class HomeHeaderVisualPolicyTest {
         assertTrue(searchShape is RoundedCornerShape)
         assertTrue(edgeShape is RoundedCornerShape)
         assertEquals(
-            48.dp,
+            36.dp,
             resolveHomeTopSearchBarHeight(
                 uiPreset = UiPreset.MD3,
                 androidNativeVariant = AndroidNativeVariant.MIUIX
             )
         )
         assertEquals(
-            48.dp,
+            36.dp,
             resolveHomeTopSearchPillHeight(
                 uiPreset = UiPreset.MD3,
                 androidNativeVariant = AndroidNativeVariant.MIUIX
@@ -770,14 +770,14 @@ class HomeHeaderVisualPolicyTest {
             )
         )
         assertEquals(
-            6.dp,
+            4.dp,
             resolveHomeTopSearchToTabsSpacing(
                 uiPreset = UiPreset.MD3,
                 androidNativeVariant = AndroidNativeVariant.MIUIX
             )
         )
         assertEquals(
-            61.dp, // 50 search + 6 searchToTabs + 5 collapseExtra
+            59.dp, // 50 search + 4 searchToTabs + 5 collapseExtra
             resolveHomeTopSearchCollapseDistance(
                 searchBarHeight = 50.dp,
                 uiPreset = UiPreset.MD3,
@@ -1279,7 +1279,7 @@ class HomeHeaderVisualPolicyTest {
     @Test
     fun `md3 unified home header uses subtle outer panel rounding`() {
         assertEquals(
-            16.dp,
+            18.dp,
             resolveHomeTopUnifiedPanelCornerRadius(
                 uiPreset = UiPreset.MD3,
                 collapsedIntoStatusBar = false

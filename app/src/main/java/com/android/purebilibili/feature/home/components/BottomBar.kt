@@ -2785,7 +2785,8 @@ private fun MiuixBottomBar(
             tuning = tuning,
             glassEnabled = glassEnabled,
             liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
-            iconStyle = SharedFloatingBottomBarIconStyle.CUPERTINO,
+            // MIUIX 主题统一使用 Miuix 图标（与 MD3 主题及 HomeNavigationIconPolicy 规范一致）。
+            iconStyle = SharedFloatingBottomBarIconStyle.MATERIAL,
             haptic = haptic,
             hazeState = hazeState,
             motionTier = motionTier,
