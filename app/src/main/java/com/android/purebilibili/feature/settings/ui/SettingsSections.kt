@@ -205,6 +205,7 @@ internal data class SettingsRootCategoryActions(
     val onClearCacheClick: () -> Unit,
     val onGithubClick: () -> Unit,
     val onTelegramClick: () -> Unit,
+    val onTelegramGroupClick: () -> Unit = {},
     val onTwitterClick: () -> Unit,
     val onDonateClick: () -> Unit,
     val onDisclaimerClick: () -> Unit,
@@ -454,6 +455,7 @@ private fun SettingsRootCategoryRow(
 internal fun SettingsAboutHomeSection(
     onGithubClick: () -> Unit,
     onTelegramClick: () -> Unit,
+    onTelegramGroupClick: () -> Unit = {},
     onCheckUpdateClick: () -> Unit,
     onDonateClick: () -> Unit
 ) {
@@ -468,8 +470,17 @@ internal fun SettingsAboutHomeSection(
                 icon = telegramVisual.icon,
                 iconPainter = telegramVisual.iconResId?.let { painterResource(id = it) },
                 title = "Telegram 频道",
-                value = "官方发布与反馈",
+                value = "@bilipai666",
                 onClick = onTelegramClick,
+                iconTint = telegramVisual.iconTint
+            )
+            SettingsAdaptiveDivider()
+            SettingClickableItem(
+                icon = telegramVisual.icon,
+                iconPainter = telegramVisual.iconResId?.let { painterResource(id = it) },
+                title = "Telegram 交流群",
+                value = "@bilipai888",
+                onClick = onTelegramGroupClick,
                 iconTint = telegramVisual.iconTint
             )
             SettingsAdaptiveDivider()
@@ -1048,6 +1059,7 @@ internal fun SettingsRootCategoryContent(
                     ReleaseChannelPinnedCard(
                         onGithubClick = actions.onGithubClick,
                         onTelegramClick = actions.onTelegramClick,
+                        onTelegramGroupClick = actions.onTelegramGroupClick,
                         onDisclaimerClick = actions.onDisclaimerClick
                     )
                 }
@@ -1089,6 +1101,7 @@ fun SupportToolsSection(
 fun ReleaseChannelPinnedCard(
     onGithubClick: () -> Unit,
     onTelegramClick: () -> Unit,
+    onTelegramGroupClick: () -> Unit = {},
     onDisclaimerClick: () -> Unit
 ) {
     val disclaimerTint = rememberAdaptiveSemanticIconTint(iOSBlue)
@@ -1113,12 +1126,12 @@ fun ReleaseChannelPinnedCard(
                 Spacer(modifier = Modifier.width(10.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     AppText(
-                        text = "官方发布渠道仅限 GitHub / Telegram",
+                        text = "官方渠道：GitHub · 频道 · 群组",
                         style = MaterialTheme.typography.titleSmall,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     AppText(
-                        text = "不存在其他官方发布渠道，请注意安装来源安全。",
+                        text = "请从官方渠道获取安装包，注意来源安全。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -1132,7 +1145,7 @@ fun ReleaseChannelPinnedCard(
                 AppOutlinedButton(
                     onClick = onGithubClick,
                     modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(horizontal = 10.dp)
+                    contentPadding = PaddingValues(horizontal = 8.dp)
                 ) {
                     AppText(
                         text = "GitHub",
@@ -1144,10 +1157,22 @@ fun ReleaseChannelPinnedCard(
                 AppOutlinedButton(
                     onClick = onTelegramClick,
                     modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(horizontal = 10.dp)
+                    contentPadding = PaddingValues(horizontal = 8.dp)
                 ) {
                     AppText(
-                        text = "Telegram",
+                        text = "频道",
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Clip
+                    )
+                }
+                AppOutlinedButton(
+                    onClick = onTelegramGroupClick,
+                    modifier = Modifier.weight(1f),
+                    contentPadding = PaddingValues(horizontal = 8.dp)
+                ) {
+                    AppText(
+                        text = "群组",
                         maxLines = 1,
                         softWrap = false,
                         overflow = TextOverflow.Clip
@@ -1156,7 +1181,7 @@ fun ReleaseChannelPinnedCard(
                 AppTextButton(
                     onClick = onDisclaimerClick,
                     modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(horizontal = 10.dp)
+                    contentPadding = PaddingValues(horizontal = 8.dp)
                 ) {
                     AppText(
                         text = "完整声明",
