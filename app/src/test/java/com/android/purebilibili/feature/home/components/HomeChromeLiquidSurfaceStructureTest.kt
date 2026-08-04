@@ -79,6 +79,7 @@ class HomeChromeLiquidSurfaceStructureTest {
                 topHeaderSource.contains("val drawTopTabDockChrome = drawTopTabOuterChromeSurface || useTopTabBottomBarMatchedDock") &&
                 topHeaderSource.contains("drawChromeSurface = drawTopTabDockChrome") &&
                 topHeaderSource.contains("useBottomBarMatchedSurface = useTopTabBottomBarMatchedDock") &&
+                topHeaderSource.contains("drawMatchedShellLens = false") &&
                 topHeaderSource.contains("tabChromeRenderMode = if (useTopTabBottomBarMatchedDock)") &&
                 topHeaderSource.contains("val bottomBarLiquidGlassPreset = homeSettings?.bottomBarLiquidGlassPreset") &&
                 topHeaderSource.contains("liquidGlassPreset = bottomBarLiquidGlassPreset") &&
@@ -86,6 +87,7 @@ class HomeChromeLiquidSurfaceStructureTest {
                 topHeaderSource.contains("tabShape = if (useUnifiedTopPanel)") &&
                 topHeaderSource.contains("resolveSharedBottomBarCapsuleShape()") &&
                 topTabChrome.readText().contains("useBottomBarMatchedSurface: Boolean = false") &&
+                topTabChrome.readText().contains("drawMatchedShellLens: Boolean = false") &&
                 topTabChrome.readText().contains("liquidGlassPreset: BottomBarLiquidGlassPreset") &&
                 topTabChrome.readText().contains(".homeTopBottomBarMatchedSurface(")
         )
@@ -160,7 +162,11 @@ class HomeChromeLiquidSurfaceStructureTest {
         assertTrue(
             "MD3 top tab indicator should be a single moving layer tied to pager offset",
             topBarSource.contains("resolveMd3TopTabIndicatorTranslationPx(") &&
-                topBarSource.contains("translationX = md3IndicatorTranslationXPx")
+                (
+                    topBarSource.contains("translationX = md3IndicatorTranslationXPx") ||
+                        topBarSource.contains("translationX = md3LiquidCapsuleTranslationXPx") ||
+                        topBarSource.contains("md3LiquidCapsuleTranslationXPx")
+                    )
         )
         val lightweightTopTabItemSource = topBarSource
             .substringAfter("private fun LightweightTopTabItem(")

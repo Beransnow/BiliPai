@@ -78,7 +78,8 @@ internal fun HomeTopTabChrome(
     onTabsCollapsedChange: ((Boolean) -> Unit)? = null,
     drawChromeSurface: Boolean = true,
     useBottomBarMatchedSurface: Boolean = false,
-    drawMatchedShellLens: Boolean = true,
+    /** 顶栏分类 dock 默认 false，避免液态玻璃边沿采样虾线。 */
+    drawMatchedShellLens: Boolean = false,
     /**
      * When true, the floating dock shell shrinks to tab content width (icon/text density ×
      * count) and centers in the padded track — no full-bleed empty glass on the right.
