@@ -129,11 +129,13 @@ class SpaceScreenStructureTest {
     }
 
     @Test
-    fun `space follow actions account for transparent top chrome`() {
+    fun `space follow actions sit inline with header metrics`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt")
 
-        assertTrue(source.contains("topChromeInset = scaffoldPadding.calculateTopPadding()"))
-        assertTrue(source.contains("resolveSpaceHeaderActionTopPaddingDp("))
+        assertTrue(source.contains("SpaceHeaderRelationActions("))
+        assertTrue(source.contains("contentDescription = \"私信\""))
+        assertFalse(source.contains("resolveSpaceHeaderActionTopPaddingDp("))
+        assertFalse(source.contains("topChromeInset = scaffoldPadding.calculateTopPadding()"))
     }
 
     @Test
