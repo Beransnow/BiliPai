@@ -574,6 +574,66 @@ class AppTopLevelNavigationPolicyTest {
     }
 
     @Test
+    fun bottomPagerDuringNavigation_skipsIntermediatePagesEvenWhenContentReady() {
+        // Rightmost → home is the worst case (max page distance); intermediate tabs must stay empty.
+        assertTrue(
+            shouldComposeBottomPagerPage(
+                item = BottomNavItem.HOME,
+                page = 0,
+                currentPage = 4,
+                selectedPage = 0,
+                isNavigating = true,
+                navigationStartPage = 4,
+                contentReady = true
+            )
+        )
+        assertTrue(
+            shouldComposeBottomPagerPage(
+                item = BottomNavItem.LIVE,
+                page = 4,
+                currentPage = 4,
+                selectedPage = 0,
+                isNavigating = true,
+                navigationStartPage = 4,
+                contentReady = true
+            )
+        )
+        assertTrue(
+            shouldComposeBottomPagerPage(
+                item = BottomNavItem.HISTORY,
+                page = 2,
+                currentPage = 2,
+                selectedPage = 0,
+                isNavigating = true,
+                navigationStartPage = 4,
+                contentReady = true
+            )
+        )
+        assertFalse(
+            shouldComposeBottomPagerPage(
+                item = BottomNavItem.DYNAMIC,
+                page = 1,
+                currentPage = 4,
+                selectedPage = 0,
+                isNavigating = true,
+                navigationStartPage = 4,
+                contentReady = true
+            )
+        )
+        assertFalse(
+            shouldComposeBottomPagerPage(
+                item = BottomNavItem.HISTORY,
+                page = 2,
+                currentPage = 4,
+                selectedPage = 0,
+                isNavigating = true,
+                navigationStartPage = 4,
+                contentReady = true
+            )
+        )
+    }
+
+    @Test
     fun bottomPagerDuringNavigation_composesOnlyStartAndTargetBeforeReady() {
         assertTrue(
             shouldComposeBottomPagerPage(
@@ -601,7 +661,7 @@ class AppTopLevelNavigationPolicyTest {
             shouldComposeBottomPagerPage(
                 item = BottomNavItem.DYNAMIC,
                 page = 1,
-                currentPage = 1,
+                currentPage = 0,
                 selectedPage = 3,
                 isNavigating = true,
                 navigationStartPage = 0,
@@ -612,7 +672,7 @@ class AppTopLevelNavigationPolicyTest {
             shouldComposeBottomPagerPage(
                 item = BottomNavItem.HISTORY,
                 page = 2,
-                currentPage = 1,
+                currentPage = 0,
                 selectedPage = 3,
                 isNavigating = true,
                 navigationStartPage = 0,
@@ -622,7 +682,8 @@ class AppTopLevelNavigationPolicyTest {
     }
 
     @Test
-    fun bottomPagerAfterReady_allowsNonStoryPagesToStayComposed() {
+    fun bottomPagerDuringNavigation_keepsCurrentPageComposedButNotOtherIntermediates() {
+        // Mid-scroll: currentPage may be between start and target and must stay composed.
         assertTrue(
             shouldComposeBottomPagerPage(
                 item = BottomNavItem.DYNAMIC,
@@ -634,7 +695,8 @@ class AppTopLevelNavigationPolicyTest {
                 contentReady = true
             )
         )
-        assertTrue(
+        // Other intermediate pages stay empty so far jumps (rightmost → home) stay smooth.
+        assertFalse(
             shouldComposeBottomPagerPage(
                 item = BottomNavItem.HISTORY,
                 page = 2,
