@@ -83,9 +83,10 @@ internal class MainBottomPagerState(
     }
 
     /**
-     * Applies the system predictive-back progress directly to the bottom pager. The pager remains
-     * at the currently selected tab until the gesture commits, so tab chrome and page ownership
-     * do not change beneath the user's finger.
+     * Applies system predictive-back progress to the bottom pager.
+     *
+     * For far jumps (rightmost tab → home), intermediate pages stay as empty slots while only the
+     * start and target tabs are composed — otherwise every mid page mounts and freezes the gesture.
      */
     suspend fun seekPredictiveReturnToPage(
         targetIndex: Int,
@@ -101,7 +102,9 @@ internal class MainBottomPagerState(
             val previousJob = navJob
             navJob = null
             previousJob?.cancel()
+            // Keep start tab for cancel; select target so home is composed before the drag crosses it.
             navigationStartPage = pagerState.currentPage
+            selectedPage = safeTargetIndex
             isNavigating = true
             PredictivePagerReturnSession(
                 startPage = pagerState.currentPage,
@@ -121,8 +124,13 @@ internal class MainBottomPagerState(
             progress = normalizedProgress,
         )
         if (deltaPx != 0f) {
-            pagerState.scroll(scrollPriority = MutatePriority.UserInput) {
-                scrollBy(deltaPx)
+            try {
+                pagerState.scroll(scrollPriority = MutatePriority.UserInput) {
+                    scrollBy(deltaPx)
+                }
+            } catch (_: IllegalStateException) {
+                // Measurement races can reject scroll; keep lastProgress so the next frame retries.
+                return
             }
         }
         session.lastProgress = normalizedProgress
