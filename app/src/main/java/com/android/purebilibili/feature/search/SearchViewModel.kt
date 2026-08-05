@@ -307,6 +307,27 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         suggestJob?.cancel()
         _uiState.update { it.copy(suggestions = emptyList()) }
     }
+
+    /**
+     * Leave the result list and return to the landing surface while keeping the query.
+     * Does not clear history or filters; focus/keyboard is owned by the screen.
+     */
+    fun exitResultsToLanding() {
+        suggestJob?.cancel()
+        activeSearchJob?.cancel()
+        activeLoadMoreJob?.cancel()
+        _uiState.update {
+            it.copy(
+                showResults = false,
+                isSearching = false,
+                suggestions = emptyList(),
+                error = null,
+                loadMoreError = null,
+                isLoadingMore = false,
+                emptyStateReason = SearchEmptyStateReason.NONE
+            )
+        }
+    }
     
     //  防抖加载搜索建议
     private fun loadSuggestions(keyword: String) {
