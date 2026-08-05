@@ -1042,6 +1042,16 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
             return@drawWithContent
         }
 
+        // 返回末段 / 预览中段：先画 live content 让 hazeSource 重新登记，
+        // 否则顶栏/底栏 unifiedBlur 在预测返回后会一直空白，直到再次进详情 remount。
+        val shouldPrimeHazeSources = shouldPrimeLiveContentForHazeDuringDepthDraw(
+            exposure = activeExposure,
+            depthProgress = activeProgress,
+        )
+        if (shouldPrimeHazeSources) {
+            drawContent()
+        }
+
         applyVideoCardTransitionSnapshotFrame(
             contentLayer = contentLayer,
             snapshotState = snapshotState,
@@ -1056,6 +1066,7 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
                 )
             )
         }
+        // 景深层仍叠在 live 之上；末段 depth≈0 时层接近清晰，与 live 一致。
         drawLayer(contentLayer)
         VideoCardTransitionDiagnostics.onSourceLayerDrawn()
 
@@ -1067,6 +1078,26 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
             }
             drawRect(scrimColor.copy(alpha = frame.scrimAlpha))
         }
+    }
+}
+
+/**
+ * When depth is nearly clear during back preview / return / restore, also paint live
+ * content so [hazeSource] areas re-register. Frozen-only draws leave chrome blur empty.
+ *
+ * Progress is depth (1 = full blur held, 0 = clear). Prime when depth ≤ threshold.
+ */
+internal fun shouldPrimeLiveContentForHazeDuringDepthDraw(
+    exposure: VideoCardTransitionExposure,
+    depthProgress: Float,
+    clearThreshold: Float = 0.35f,
+): Boolean {
+    return when (exposure) {
+        VideoCardTransitionExposure.BackPreview,
+        VideoCardTransitionExposure.Returning,
+        VideoCardTransitionExposure.Restoring ->
+            depthProgress.coerceIn(0f, 1f) <= clearThreshold
+        else -> false
     }
 }
 
