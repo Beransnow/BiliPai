@@ -439,6 +439,18 @@ interface BilibiliApi {
         @Query("page") page: Int = 1,
         @Query("sort_type") sortType: String = "online"
     ): LiveSecondAreaResponse
+
+    // PiliPlus-aligned app live home feed
+    @GET("https://api.live.bilibili.com/xlive/app-interface/v2/index/feed")
+    suspend fun getLiveFeedIndex(
+        @QueryMap params: Map<String, String>
+    ): com.android.purebilibili.data.model.response.LiveFeedIndexResponse
+
+    // PiliPlus-aligned app second-area list (supports new_tags sort chips)
+    @GET("https://api.live.bilibili.com/xlive/app-interface/v2/second/getList")
+    suspend fun getLiveAppSecondList(
+        @QueryMap params: Map<String, String>
+    ): com.android.purebilibili.data.model.response.LiveAppSecondListResponse
     
     //  [新增] 获取直播间初始化信息 (真实房间号)
     @GET("https://api.live.bilibili.com/room/v1/Room/room_init")
