@@ -319,11 +319,14 @@ interface BilibiliApi {
 
     @GET("x/v3/fav/resource/list")
     suspend fun getFavoriteList(
-        @Query("media_id") mediaId: Long, 
+        @Query("media_id") mediaId: Long,
         @Query("pn") pn: Int = 1,
         @Query("ps") ps: Int = 20,
         @Query("keyword") keyword: String? = null,
         @Query("order") order: String? = null,
+        // 文档：type 0=当前收藏夹，1=全部；tid 0=全部分区；ps 定义域 1-20
+        @Query("type") type: Int = 0,
+        @Query("tid") tid: Int = 0,
         @Query("platform") platform: String = "web"
     ): FavoriteResourceResponse
 
@@ -2402,12 +2405,16 @@ object NetworkModule {
                 val isFavoriteEndpoint = url.encodedPath.contains("/x/v3/fav/") ||
                     url.encodedPath.contains("/x/space/fav/")
                 if (isFavoriteEndpoint) {
+                    val mediaId = url.queryParameter("media_id")
                     val favoriteMid = url.queryParameter("up_mid")
                         ?: TokenManager.midCache?.takeIf { it > 0L }?.toString()
-                    referer = if (favoriteMid.isNullOrEmpty()) {
-                        "https://space.bilibili.com/"
-                    } else {
-                        "https://space.bilibili.com/$favoriteMid/favlist"
+                    referer = when {
+                        // resource/list 走收藏夹详情页 Referer，贴近网页请求，降低 412 风控
+                        !mediaId.isNullOrEmpty() ->
+                            "https://www.bilibili.com/medialist/detail/ml$mediaId"
+                        !favoriteMid.isNullOrEmpty() ->
+                            "https://space.bilibili.com/$favoriteMid/favlist"
+                        else -> "https://space.bilibili.com/"
                     }
                 }
 

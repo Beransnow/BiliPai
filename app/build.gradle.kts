@@ -120,10 +120,10 @@ android {
         applicationId = "com.android.purebilibili"
         minSdk = 26
         targetSdk = 35  // 保持35以避免Android 16的新运行时行为
-        // 版本：YY.MMDD.N（两位年.月日.当日第 N 次构建）+ versionCode 单调 +1
+        // 版本：语义化 X.Y.Z（MAJOR.MINOR.PATCH）+ versionCode 单调 +1
         // 规范：docs/wiki/VERSIONING.md · 更新日志：CHANGELOG.md
-        versionCode = 283
-        versionName = "26.0805.1"
+        versionCode = 284
+        versionName = "0.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

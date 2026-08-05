@@ -1,6 +1,6 @@
 # 发布流程（维护版）
 
-最后更新：2026-08-05（日历构建号 YY.MMDD.N）
+最后更新：2026-08-05（语义化 MAJOR.MINOR.PATCH）
 
 ## 目标
 
@@ -19,9 +19,9 @@
 
 1. 更新版本号  
    - 文件：`app/build.gradle.kts`
-   - 规则：`versionCode + 1`；`versionName` 为 `YY.MMDD.N`（见 [版本规范](VERSIONING.md)）
-   - 同日再发：`N + 1`；换日：改 `MMDD` 且 `N` 从 1 起
-   - 标签：稳定版标签必须为 `v<versionName>`，例如 `v26.0805.1`
+   - 规则：`versionCode + 1`；`versionName` 为 `MAJOR.MINOR.PATCH`（见 [版本规范](VERSIONING.md)）
+   - 规则：大升级升 MAJOR，加功能升 MINOR，修 bug 升 PATCH；`versionCode` 每次 +1
+   - 标签：稳定版标签必须为 `v<versionName>`，例如 `v0.2.0`
    - 注意：若 `versionName` 已领先公开文档，发布前必须补齐 `CHANGELOG.md` 与 README/Wiki
 
 2. 更新发布日志  

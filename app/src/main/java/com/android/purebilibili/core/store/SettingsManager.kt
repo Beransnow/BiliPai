@@ -470,7 +470,7 @@ data class HomeSettings(
     val homeTopLayoutOrder: HomeTopLayoutOrder = HomeTopLayoutOrder.SEARCH_THEN_TABS,
     val isHeaderBlurEnabled: Boolean = true,
     val headerBlurMode: HomeHeaderBlurMode = HomeHeaderBlurMode.FOLLOW_PRESET,
-    val isBottomBarBlurEnabled: Boolean = true,
+    val isBottomBarBlurEnabled: Boolean = false,
     val isTopBarLiquidGlassEnabled: Boolean = false,
     val isHomeSearchLiquidGlassEnabled: Boolean = false,
     val isBottomBarLiquidGlassEnabled: Boolean = false,
@@ -1382,7 +1382,7 @@ object SettingsManager {
             ),
             isHeaderBlurEnabled = headerBlurMode != HomeHeaderBlurMode.ALWAYS_OFF,
             headerBlurMode = headerBlurMode,
-            isBottomBarBlurEnabled = preferences[KEY_BOTTOM_BAR_BLUR_ENABLED] ?: true,
+            isBottomBarBlurEnabled = preferences[KEY_BOTTOM_BAR_BLUR_ENABLED] ?: false,
             isTopBarLiquidGlassEnabled = preferences[KEY_TOP_BAR_LIQUID_GLASS_ENABLED] ?: false,
             isHomeSearchLiquidGlassEnabled =
                 preferences[KEY_HOME_SEARCH_LIQUID_GLASS_ENABLED]
@@ -2560,7 +2560,7 @@ object SettingsManager {
 
     fun getVideoTransitionRealtimeBlurEnabled(context: Context): Flow<Boolean> =
         context.settingsDataStore.data
-            .map { preferences -> preferences[KEY_VIDEO_TRANSITION_REALTIME_BLUR_ENABLED] ?: true }
+            .map { preferences -> preferences[KEY_VIDEO_TRANSITION_REALTIME_BLUR_ENABLED] ?: false }
 
     suspend fun setVideoTransitionRealtimeBlurEnabled(context: Context, value: Boolean) {
         context.settingsDataStore.edit { preferences ->
@@ -3216,7 +3216,7 @@ object SettingsManager {
     
     //  [新增] --- 底栏模糊效果 ---
     fun getBottomBarBlurEnabled(context: Context): Flow<Boolean> = context.settingsDataStore.data
-        .map { preferences -> preferences[KEY_BOTTOM_BAR_BLUR_ENABLED] ?: true }
+        .map { preferences -> preferences[KEY_BOTTOM_BAR_BLUR_ENABLED] ?: false }
 
     suspend fun setBottomBarBlurEnabled(context: Context, value: Boolean) {
         context.settingsDataStore.edit { preferences -> preferences[KEY_BOTTOM_BAR_BLUR_ENABLED] = value }
