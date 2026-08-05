@@ -85,7 +85,10 @@ class BiliPaiPredictiveBackAnimationPolicyTest {
     @Test
     fun sharedElementPredictivePop_pinsUnderlyingSourcePageAgainstHorizontalDrift() {
         val source = sharedElementPredictiveBackSource()
-        assertTrue(source.contains("skipToLookaheadPosition()"))
+        // Only while SharedTransition is active — unconditional pin freezes wrong bounds
+        // after cancel/remount and breaks haze source registration.
+        assertTrue(source.contains("skipToLookaheadPosition("))
+        assertTrue(source.contains("enabled = { isTransitionActive }"))
         assertTrue(source.contains("isUnderlyingSourcePage"))
         assertTrue(source.contains("translationX = 0f"))
     }

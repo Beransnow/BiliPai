@@ -201,6 +201,40 @@ class VideoCardTransitionBackgroundPolicyTest {
     }
 
     @Test
+    fun hazePrime_drawsLiveContentNearClearDepthDuringReturnPreview() {
+        assertTrue(
+            shouldPrimeLiveContentForHazeDuringDepthDraw(
+                exposure = VideoCardTransitionExposure.Returning,
+                depthProgress = 0.2f,
+            )
+        )
+        assertTrue(
+            shouldPrimeLiveContentForHazeDuringDepthDraw(
+                exposure = VideoCardTransitionExposure.BackPreview,
+                depthProgress = 0.0f,
+            )
+        )
+        assertFalse(
+            shouldPrimeLiveContentForHazeDuringDepthDraw(
+                exposure = VideoCardTransitionExposure.Returning,
+                depthProgress = 0.9f,
+            )
+        )
+        assertFalse(
+            shouldPrimeLiveContentForHazeDuringDepthDraw(
+                exposure = VideoCardTransitionExposure.Opening,
+                depthProgress = 0.1f,
+            )
+        )
+        assertFalse(
+            shouldPrimeLiveContentForHazeDuringDepthDraw(
+                exposure = VideoCardTransitionExposure.SettledHidden,
+                depthProgress = 0.0f,
+            )
+        )
+    }
+
+    @Test
     fun reducedMotionTierSkipsRealtimeBlurAndDepthScaleButKeepsScrim() {
         val opening = resolveVideoCardTransitionBackgroundFrame(
             progress = 1f,
