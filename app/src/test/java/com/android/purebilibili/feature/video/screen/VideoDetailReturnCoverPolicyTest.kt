@@ -626,8 +626,9 @@ class VideoDetailReturnCoverPolicyTest {
 
     @Test
     fun `cover-first committed return still hands visual ownership to resident cover`() {
+        // 关实时画面：黑壳 morph —— 封面与 player 都 0，只留容器黑底，降渲染压力。
         assertEquals(
-            1f,
+            0f,
             resolveVideoDetailReturnCoverAlpha(0.8f, true, true, liveReturnMorph = false),
             0.0001f,
         )
@@ -963,9 +964,10 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun `missing return cover keeps player visible instead of revealing black`() {
+    fun `missing return cover with live-surface off uses black shell not forced player`() {
+        // 关实时画面：即使无封面也走黑壳 morph（cover/player 均为 0），省渲染。
         assertEquals(0f, resolveVideoDetailReturnCoverAlpha(0.2f, true, false), 0.0001f)
-        assertEquals(1f, resolveVideoDetailReturnPlayerAlpha(0.2f, true, false), 0.0001f)
+        assertEquals(0f, resolveVideoDetailReturnPlayerAlpha(0.2f, true, false), 0.0001f)
         assertEquals(0f, resolveVideoDetailReturnContentAlpha(0.2f, true), 0.0001f)
     }
 
@@ -1151,9 +1153,9 @@ class VideoDetailReturnCoverPolicyTest {
             ),
             0.0001f,
         )
-        // 非 live / CoverFirst：提交后封面立即接管，避免无帧黑壳
+        // 非 live：黑壳 morph，封面/player 均为 0
         assertEquals(
-            1f,
+            0f,
             resolveVideoDetailReturnCoverAlpha(
                 transitionProgress = 1f,
                 isCommittedCardReturn = true,

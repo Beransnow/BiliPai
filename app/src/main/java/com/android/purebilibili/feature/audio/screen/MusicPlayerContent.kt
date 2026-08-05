@@ -128,26 +128,31 @@ import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
 
 private val MusicFallbackColor = Color(0xFF342B42)
-private val MusicContentOnDark = Color.White
-private val MusicContentOnLight = Color(0xFF1A1A1A)
 
-private val LocalMusicContentColor = staticCompositionLocalOf { MusicContentOnDark }
+private val LocalMusicContentColor = staticCompositionLocalOf { Color.White }
 
-/** 当前听视频页前景色（随封面色板明暗切换）。 */
+/** 当前听视频页前景色（随封面色板明暗 + 主题 token 切换）。 */
 private val MusicContentColor: Color
     @Composable
     @ReadOnlyComposable
     get() = LocalMusicContentColor.current
 
 /**
- * 听视频/音乐页正文色：封面色板偏亮时用深色字，偏暗时用白色。
- * 避免浅色模式下白字贴在浅色玻璃/底上不可见。
+ * 听视频/音乐页正文色：按背景亮度在主题 token 间切换，**不硬编码**黑白。
+ *
+ * - 亮底 → [onLightBackground]（通常 `MaterialTheme.colorScheme.onSurface`）
+ * - 暗底 → [onDarkBackground]（通常 `MaterialTheme.colorScheme.inverseOnSurface`）
  */
-internal fun resolveMusicPlayerContentColor(backgroundColor: Color): Color {
-    return if (backgroundColor.luminance() >= 0.45f) {
-        MusicContentOnLight
+internal fun resolveMusicPlayerContentColor(
+    backgroundColor: Color,
+    onLightBackground: Color,
+    onDarkBackground: Color,
+    lightLuminanceThreshold: Float = 0.45f,
+): Color {
+    return if (backgroundColor.luminance() >= lightLuminanceThreshold) {
+        onLightBackground
     } else {
-        MusicContentOnDark
+        onDarkBackground
     }
 }
 
@@ -222,7 +227,11 @@ internal fun MusicPlayerContent(
         isAppInBackground = BackgroundManager.isInBackground,
         reduceMotion = effectiveReduceMotion
     )
-    val resolvedContentColor = resolveMusicPlayerContentColor(backgroundColor)
+    val resolvedContentColor = resolveMusicPlayerContentColor(
+        backgroundColor = backgroundColor,
+        onLightBackground = MaterialTheme.colorScheme.onSurface,
+        onDarkBackground = MaterialTheme.colorScheme.inverseOnSurface,
+    )
 
     CompositionLocalProvider(LocalMusicContentColor provides resolvedContentColor) {
     BoxWithConstraints(

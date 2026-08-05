@@ -92,4 +92,19 @@ class DynamicCommentStructureTest {
             .substringBefore("// 评论内容")
         assertTrue(!nameRow.contains("FanGroupDecorationBadge("))
     }
+
+    @Test
+    fun `dynamic comment avatar and name open user space`() {
+        val sheetSource = File(
+            "src/main/java/com/android/purebilibili/feature/dynamic/components/DynamicCommentSheet.kt"
+        ).readText()
+        val commentItem = sheetSource
+            .substringAfter("private fun CommentItem(")
+            .substringBefore("private fun formatTime(")
+
+        assertTrue(commentItem.contains("ReplyMemberAvatar("))
+        assertTrue(commentItem.contains("onClick = memberMid?.let"))
+        assertTrue(commentItem.contains("onUserClick(memberMid)"))
+        assertTrue(commentItem.contains("onUserClick(mid)"))
+    }
 }
