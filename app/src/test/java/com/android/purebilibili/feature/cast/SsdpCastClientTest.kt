@@ -38,6 +38,46 @@ class SsdpCastClientTest {
     }
 
     @Test
+    fun `parseDeviceProfile prefers embedded MediaRenderer over root device`() {
+        val descriptionXml = """
+            <?xml version="1.0"?>
+            <root xmlns="urn:schemas-upnp-org:device-1-0">
+              <device>
+                <deviceType>urn:schemas-upnp-org:device:Basic:1</deviceType>
+                <friendlyName>Root Hub</friendlyName>
+                <modelName>Hub</modelName>
+                <deviceList>
+                  <device>
+                    <deviceType>urn:schemas-upnp-org:device:MediaRenderer:1</deviceType>
+                    <friendlyName>CastFlow TV</friendlyName>
+                    <modelName>ATV</modelName>
+                    <serviceList>
+                      <service>
+                        <serviceType>urn:schemas-upnp-org:service:AVTransport:1</serviceType>
+                        <controlURL>/avt/control</controlURL>
+                      </service>
+                    </serviceList>
+                  </device>
+                </deviceList>
+              </device>
+            </root>
+        """.trimIndent()
+
+        val profile = SsdpCastClient.parseDeviceProfile(
+            descriptionXml = descriptionXml,
+            descriptionLocation = "http://192.168.1.20:8008/desc.xml"
+        )
+
+        assertNotNull(profile)
+        assertEquals("CastFlow TV", profile?.friendlyName)
+        assertEquals("ATV", profile?.modelName)
+        assertEquals(
+            "http://192.168.1.20:8008/avt/control",
+            profile?.avTransportEndpoint?.controlUrl
+        )
+    }
+
+    @Test
     fun `parseAvTransportEndpoint returns null when AVTransport not found`() {
         val descriptionXml = """
             <?xml version="1.0"?>
