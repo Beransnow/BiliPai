@@ -92,12 +92,16 @@ internal fun AdaptiveAlertDialog(
             return
         }
         AppAlertDialogRenderer.LOCAL_DIALOG -> {
+            val contentLayout = resolveAppCompactContentDialogLayoutPolicy()
             Dialog(
                 onDismissRequest = onDismissRequest,
-                properties = properties
+                properties = resolveAppContentDialogProperties(
+                    base = properties,
+                    usePlatformDefaultWidth = contentLayout.usePlatformDefaultWidth,
+                ),
             ) {
                 Surface(
-                    modifier = modifier.widthIn(min = 280.dp, max = 360.dp),
+                    modifier = modifier.appContentDialogWidth(policy = contentLayout),
                     shape = shape ?: MaterialTheme.shapes.extraLarge,
                     color = containerColor ?: AppSurfaceTokens.cardContainer(),
                     tonalElevation = tonalElevation ?: 6.dp,
@@ -140,7 +144,10 @@ internal fun AdaptiveAlertDialog(
     )
     Dialog(
         onDismissRequest = onDismissRequest,
-        properties = properties
+        properties = resolveAppContentDialogProperties(
+            base = properties,
+            usePlatformDefaultWidth = false,
+        ),
     ) {
         Surface(
             modifier = modifier.width(270.dp), // Standard iOS Alert width

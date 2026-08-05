@@ -20,11 +20,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.android.purebilibili.core.ui.appContentDialogWidth
 import com.android.purebilibili.core.ui.components.AppCard
 import com.android.purebilibili.core.ui.components.AppCheckbox
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppOutlinedButton
 import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.resolveAppContentDialogLayoutPolicy
+import com.android.purebilibili.core.ui.resolveAppContentDialogProperties
 
 /**
  *  下载画质选择对话框
@@ -38,11 +41,15 @@ fun DownloadQualityDialog(
     onDismiss: () -> Unit
 ) {
     var includeDanmaku by remember { mutableStateOf(true) }
-    Dialog(onDismissRequest = onDismiss) {
+    val dialogLayout = remember { resolveAppContentDialogLayoutPolicy(maxWidthDp = 420) }
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = resolveAppContentDialogProperties(
+            usePlatformDefaultWidth = dialogLayout.usePlatformDefaultWidth,
+        ),
+    ) {
         AppCard(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.appContentDialogWidth(policy = dialogLayout),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surface

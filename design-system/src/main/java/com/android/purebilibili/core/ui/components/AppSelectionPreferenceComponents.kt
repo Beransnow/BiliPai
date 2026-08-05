@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
@@ -42,6 +41,9 @@ import androidx.compose.ui.window.DialogProperties
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.appContentDialogWidth
+import com.android.purebilibili.core.ui.resolveAppContentDialogLayoutPolicy
+import com.android.purebilibili.core.ui.resolveAppContentDialogProperties
 import kotlin.math.round
 
 @Immutable
@@ -106,16 +108,17 @@ fun <T> AppSingleChoiceDialog(
 ) {
     val configuration = LocalConfiguration.current
     val maxDialogHeight = (configuration.screenHeightDp * 0.8f).dp
+    val layoutPolicy = remember { resolveAppContentDialogLayoutPolicy(maxWidthDp = 420) }
 
     Dialog(
         onDismissRequest = onDismissRequest,
-        properties = DialogProperties(usePlatformDefaultWidth = false),
+        properties = resolveAppContentDialogProperties(
+            usePlatformDefaultWidth = layoutPolicy.usePlatformDefaultWidth,
+        ),
     ) {
         Surface(
             modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = 24.dp)
-                .widthIn(min = 280.dp, max = 420.dp)
+                .appContentDialogWidth(policy = layoutPolicy, wrapHeight = false)
                 .heightIn(max = maxDialogHeight),
             shape = AppShapes.container(ContainerLevel.Dialog),
             color = AppSurfaceTokens.cardContainer(),
@@ -225,10 +228,10 @@ fun AppSliderDialogPreference(
 }
 
 /**
- * 滑块确认弹窗尺寸策略。
+ * 滑块确认弹窗尺寸策略（委托统一内容 Dialog 策略）。
  *
- * 关闭平台默认宽度后自行限宽居中，避免平板/大屏上 Dialog 窗口被拉成竖条全高；
- * 按钮区必须用内容尺寸按钮，不可复用 iOS Alert 的 [AppDialogAction]（会 fillMaxSize 撑满父级）。
+ * 按钮区必须用内容尺寸按钮，不可复用 iOS Alert 的 [com.android.purebilibili.core.ui.AppDialogAction]
+ * （会 fillMaxSize 撑满父级）。
  */
 @Immutable
 data class AppSliderDialogLayoutPolicy(
@@ -239,11 +242,12 @@ data class AppSliderDialogLayoutPolicy(
 )
 
 fun resolveAppSliderDialogLayoutPolicy(): AppSliderDialogLayoutPolicy {
+    val base = resolveAppContentDialogLayoutPolicy(maxWidthDp = 420)
     return AppSliderDialogLayoutPolicy(
-        usePlatformDefaultWidth = false,
-        horizontalPaddingDp = 24,
-        minWidthDp = 280,
-        maxWidthDp = 420,
+        usePlatformDefaultWidth = base.usePlatformDefaultWidth,
+        horizontalPaddingDp = base.horizontalPaddingDp,
+        minWidthDp = base.minWidthDp,
+        maxWidthDp = base.maxWidthDp,
     )
 }
 
@@ -265,17 +269,18 @@ fun AppSliderDialog(
 
     Dialog(
         onDismissRequest = onDismissRequest,
-        properties = DialogProperties(usePlatformDefaultWidth = layoutPolicy.usePlatformDefaultWidth),
+        properties = resolveAppContentDialogProperties(
+            usePlatformDefaultWidth = layoutPolicy.usePlatformDefaultWidth,
+        ),
     ) {
         Surface(
-            modifier = modifier
-                .fillMaxWidth()
-                .padding(horizontal = layoutPolicy.horizontalPaddingDp.dp)
-                .widthIn(
-                    min = layoutPolicy.minWidthDp.dp,
-                    max = layoutPolicy.maxWidthDp.dp,
-                )
-                .wrapContentHeight(),
+            modifier = modifier.appContentDialogWidth(
+                policy = resolveAppContentDialogLayoutPolicy(
+                    maxWidthDp = layoutPolicy.maxWidthDp,
+                    minWidthDp = layoutPolicy.minWidthDp,
+                    horizontalPaddingDp = layoutPolicy.horizontalPaddingDp,
+                ),
+            ),
             shape = AppShapes.container(ContainerLevel.Dialog),
             color = AppSurfaceTokens.cardContainer(),
             tonalElevation = 6.dp,
