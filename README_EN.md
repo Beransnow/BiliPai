@@ -446,12 +446,14 @@ See the [current roadmap](docs/wiki/ROADMAP.md) for priorities, completion crite
 
 See full changelog: [CHANGELOG.md](CHANGELOG.md)
 
-### Latest (v0.2.0 · 2026-08-05)
+### Latest (v0.2.0 · 2026-08-06)
 
-- Calendar build IDs: `MAJOR.MINOR.PATCH` (two-digit year), current `0.2.0` / `versionCode 284`.
-- Settings search rows no longer overlap title and section path; top category dock soft liquid glass restored.
-- AI summary timestamps align in a fixed full-width column.
-- SMS login supports international regions via passport country list and Material bottom-sheet picker.
+- Semantic versioning `MAJOR.MINOR.PATCH` restored: `0.2.0` / `versionCode 284` (no date-based names).
+- Defaults off: live-surface morph, transition blur, bottom-bar blur, player insight.
+- Home App+Web merged recommendation feed; search UI rebuild (trending/history/discover, filters, contrast/IME).
+- Card/predictive-back: live-surface switch without HDR wash; favorite-collection return matches home morph.
+- Listen-mode readable sheets/theme tokens; favorite API risk-control alignment; live LiveList/SC/quality chips.
+- Tablet default sidebar + dialog width caps; DLNA SSDP discovery hardened on dual-network devices.
 - Official Telegram: channel [@bilipai666](https://t.me/bilipai666), group [@bilipai888](https://t.me/bilipai888/1).
 
 ---
