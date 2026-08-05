@@ -1,6 +1,6 @@
 # 发布流程（维护版）
 
-最后更新：2026-08-05（语义化 MAJOR.MINOR.PATCH）
+最后更新：2026-08-06（语义化 MAJOR.MINOR.PATCH；Changelog 标签行格式）
 
 ## 目标
 
@@ -26,8 +26,9 @@
 
 2. 更新发布日志  
    - 文件：`CHANGELOG.md`
-   - 格式：遵循 [更新日志撰写规范](CHANGELOG_GUIDE.md)
-   - 要求：以 GitHub 上一个实际发布标签为比较基准，根据完整提交范围归纳用户可感知能力、修复、兼容性和发布变化
+   - 格式：自 v0.2.0 起使用 **标签行**（`[添加]` / `[修复]` / `[更改]` / `[适配]` / `[移除]`），段末 `vX.Y.Z(<short_sha>)`；详见 [更新日志撰写规范](CHANGELOG_GUIDE.md)
+   - 要求：以 GitHub 上一个实际发布标签为比较基准，`git log <prev>..HEAD` 归纳用户可感知结果；**正文不写竞品名**
+   - 频道发布：直接复制 `更新日志(ChangeLog)` 至版本行（含），再附 versionCode / SHA-256
 
 3. 同步 README  
    - 文件：`README.md`、`README_EN.md`
