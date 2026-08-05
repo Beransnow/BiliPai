@@ -471,8 +471,10 @@ object LiveRepository {
             )
             if (resp.code == 0 && resp.data != null) {
                 val rooms = resp.data.list
+                    ?.filter { isUsableLiveFeedRoom(it) }
                     ?.map { it.toLiveRoom() }
-                    ?.filter { it.roomid > 0 }
+                    ?.filter(::shouldKeepLiveSecondListRoom)
+                    ?.distinctBy { it.roomid }
                     .orEmpty()
                 val hasMore = when {
                     resp.data.hasMore != 0 -> resp.data.hasMore == 1
@@ -482,7 +484,7 @@ object LiveRepository {
                 return@withContext Result.success(
                     LiveFeedHomeSnapshot(
                         rooms = rooms,
-                        sortTags = resp.data.newTags.orEmpty(),
+                        sortTags = resp.data.newTags.orEmpty().filter { it.name.isNotBlank() || it.sortType.isNotBlank() },
                         hasMore = hasMore,
                         totalCount = resp.data.count,
                     )
@@ -576,47 +578,6 @@ object LiveRepository {
             params["sort_type"] = sortType
         }
         return AppSignUtils.signForAndroidApi(params)
-    }
-
-    private fun parseLiveFeedHomeSnapshot(data: LiveFeedIndexData): LiveFeedHomeSnapshot {
-        val rooms = mutableListOf<LiveRoom>()
-        val followRooms = mutableListOf<LiveRoom>()
-        val areaEntries = mutableListOf<LiveFeedAreaEntry>()
-
-        data.cardList.orEmpty().forEach { card ->
-            when (card.cardType) {
-                "small_card_v1" -> {
-                    card.cardData?.smallCardV1
-                        ?.toLiveRoom()
-                        ?.takeIf { it.roomid > 0 }
-                        ?.let(rooms::add)
-                }
-                "my_idol_v1" -> {
-                    card.cardData?.myIdolV1?.list.orEmpty()
-                        .map { it.toLiveRoom() }
-                        .filter { it.roomid > 0 }
-                        .let(followRooms::addAll)
-                }
-                "area_entrance_v3" -> {
-                    card.cardData?.areaEntranceV3?.list.orEmpty().forEach { item ->
-                        val title = item.title.ifBlank { item.areaName }
-                        if (title.isBlank()) return@forEach
-                        areaEntries += LiveFeedAreaEntry(
-                            title = title,
-                            areaId = item.areaV2Id,
-                            parentAreaId = item.areaV2ParentId,
-                        )
-                    }
-                }
-            }
-        }
-
-        return LiveFeedHomeSnapshot(
-            rooms = rooms,
-            followRooms = followRooms,
-            areaEntries = areaEntries,
-            hasMore = data.hasMore == 1,
-        )
     }
 
     private suspend fun fallbackLiveFeedHome(): Result<LiveFeedHomeSnapshot> {

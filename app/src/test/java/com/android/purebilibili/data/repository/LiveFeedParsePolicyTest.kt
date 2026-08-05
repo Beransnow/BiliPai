@@ -7,6 +7,7 @@ import com.android.purebilibili.data.model.response.LiveFeedModuleBlock
 import com.android.purebilibili.data.model.response.LiveFeedRoomCard
 import com.android.purebilibili.data.model.response.LiveRoom
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -45,57 +46,83 @@ class LiveFeedParsePolicyTest {
     }
 
     @Test
-    fun feedIndexDataContainsRoomFollowAndAreaCards() {
-        val data = LiveFeedIndexData(
-            cardList = listOf(
-                LiveFeedCard(
-                    cardType = "my_idol_v1",
-                    cardData = LiveFeedCardData(
-                        myIdolV1 = LiveFeedModuleBlock(
-                            list = listOf(LiveFeedRoomCard(roomid = 7, title = "followed"))
+    fun parseFeedDropsBannerAndAdsAndKeepsUsableRooms() {
+        val snapshot = parseLiveFeedHomeSnapshot(
+            LiveFeedIndexData(
+                cardList = listOf(
+                    LiveFeedCard(cardType = "banner_v2"),
+                    LiveFeedCard(
+                        cardType = "small_card_v1",
+                        cardData = LiveFeedCardData(
+                            smallCardV1 = LiveFeedRoomCard(
+                                roomid = 1,
+                                title = "ad room",
+                                cover = "c",
+                                isAd = true,
+                            )
                         )
-                    )
-                ),
-                LiveFeedCard(
-                    cardType = "area_entrance_v3",
-                    cardData = LiveFeedCardData(
-                        areaEntranceV3 = LiveFeedModuleBlock(
-                            list = listOf(
-                                LiveFeedRoomCard(
-                                    title = "游戏",
-                                    areaV2Id = 1,
-                                    areaV2ParentId = 2,
+                    ),
+                    LiveFeedCard(
+                        cardType = "small_card_v1",
+                        cardData = LiveFeedCardData(
+                            smallCardV1 = LiveFeedRoomCard(
+                                roomid = 2,
+                                title = "good",
+                                cover = "cover",
+                            )
+                        )
+                    ),
+                    LiveFeedCard(
+                        cardType = "my_idol_v1",
+                        cardData = LiveFeedCardData(
+                            myIdolV1 = LiveFeedModuleBlock(
+                                list = listOf(
+                                    LiveFeedRoomCard(roomid = 7, title = "followed", cover = "f"),
+                                    LiveFeedRoomCard(roomid = 0, title = "bad"),
                                 )
                             )
                         )
-                    )
+                    ),
+                    LiveFeedCard(
+                        cardType = "area_entrance_v3",
+                        cardData = LiveFeedCardData(
+                            areaEntranceV3 = LiveFeedModuleBlock(
+                                list = listOf(
+                                    LiveFeedRoomCard(
+                                        title = "游戏",
+                                        areaV2Id = 1,
+                                        areaV2ParentId = 2,
+                                    ),
+                                    LiveFeedRoomCard(title = ""),
+                                )
+                            )
+                        )
+                    ),
                 ),
-                LiveFeedCard(
-                    cardType = "small_card_v1",
-                    cardData = LiveFeedCardData(
-                        smallCardV1 = LiveFeedRoomCard(roomid = 9, title = "room")
-                    )
-                ),
-            ),
-            hasMore = 1,
+                hasMore = 1,
+            )
         )
 
-        val rooms = data.cardList.orEmpty().mapNotNull { card ->
-            card.cardData?.smallCardV1?.takeIf { card.cardType == "small_card_v1" }
-        }
-        val follows = data.cardList.orEmpty().flatMap { card ->
-            if (card.cardType == "my_idol_v1") card.cardData?.myIdolV1?.list.orEmpty() else emptyList()
-        }
-        val areas = data.cardList.orEmpty().flatMap { card ->
-            if (card.cardType == "area_entrance_v3") card.cardData?.areaEntranceV3?.list.orEmpty() else emptyList()
-        }
+        assertEquals(1, snapshot.rooms.size)
+        assertEquals(2L, snapshot.rooms.first().roomid)
+        assertEquals(1, snapshot.followRooms.size)
+        assertEquals(7L, snapshot.followRooms.first().roomid)
+        assertEquals(1, snapshot.areaEntries.size)
+        assertEquals("游戏", snapshot.areaEntries.first().title)
+        assertTrue(snapshot.hasMore)
+    }
 
-        assertEquals(1, rooms.size)
-        assertEquals(9L, rooms.first().roomid)
-        assertEquals(1, follows.size)
-        assertEquals(7L, follows.first().roomid)
-        assertEquals(1, areas.size)
-        assertEquals("游戏", areas.first().title)
-        assertTrue(data.hasMore == 1)
+    @Test
+    fun usableRoomFilterRejectsEmptyShellCards() {
+        assertFalse(
+            isUsableLiveFeedRoom(
+                LiveFeedRoomCard(roomid = 3, title = "", cover = "", systemCover = "")
+            )
+        )
+        assertTrue(
+            isUsableLiveFeedRoom(
+                LiveFeedRoomCard(roomid = 3, title = "ok", cover = "c")
+            )
+        )
     }
 }
