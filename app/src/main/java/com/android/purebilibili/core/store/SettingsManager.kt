@@ -4527,7 +4527,8 @@ object SettingsManager {
      */
     enum class FeedApiType(val value: Int, val label: String, val description: String) {
         WEB(0, "网页端 (Web)", "使用 Web 推荐算法"),
-        MOBILE(1, "移动端 (App)", "使用手机端推荐算法，需登录");
+        MOBILE(1, "移动端 (App)", "使用手机端推荐算法，需登录"),
+        MERGED(2, "合并 (App+Web)", "同时使用 Web 与移动端推荐算法，移动端需登录，失败自动回退");
         
         companion object {
             fun fromValue(value: Int): FeedApiType = entries.find { it.value == value } ?: WEB
