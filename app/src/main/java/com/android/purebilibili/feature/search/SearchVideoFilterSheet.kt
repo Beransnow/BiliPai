@@ -2,7 +2,9 @@ package com.android.purebilibili.feature.search
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FilterList
@@ -23,7 +26,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -31,6 +33,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,16 +41,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalUiPreset
+import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.data.repository.SearchDuration
 import com.android.purebilibili.data.repository.SearchOrder
-import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
 import top.yukonga.miuix.kmp.overlay.OverlayBottomSheet
 import java.text.SimpleDateFormat
@@ -75,7 +81,6 @@ fun SearchVideoFilterBar(
     onCustomPubTimeRange: (Long, Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val chrome = rememberSearchNativeChrome()
     var showFilterSheet by remember { mutableStateOf(false) }
     val filterActive = hasActiveSearchVideoFilters(
         durations = currentDurations,
@@ -118,35 +123,35 @@ fun SearchVideoFilterBar(
                 .padding(horizontal = 2.dp),
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
         )
-        when (chrome) {
-            SearchNativeChrome.MIUIX -> MiuixIconButton(
-                onClick = { showFilterSheet = true },
-                modifier = Modifier.size(36.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.FilterList,
-                    contentDescription = "筛选",
-                    tint = if (filterActive) primary else primary,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-            SearchNativeChrome.MATERIAL3 -> IconButton(
-                onClick = { showFilterSheet = true },
-                modifier = Modifier.size(36.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.FilterList,
-                    contentDescription = "筛选",
-                    tint = primary,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
+        // Always circular Material ripple. Miuix IconButton indication is square;
+        // clip + unbounded radius keeps the wave circular under every preset.
+        val filterInteraction = remember { MutableInteractionSource() }
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .clickable(
+                    interactionSource = filterInteraction,
+                    indication = ripple(
+                        bounded = false,
+                        radius = 20.dp
+                    ),
+                    role = Role.Button,
+                    onClick = { showFilterSheet = true }
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.FilterList,
+                contentDescription = "筛选",
+                tint = if (filterActive) primary else outline,
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 
     if (showFilterSheet) {
         SearchVideoFilterSheetHost(
-            chrome = chrome,
             currentDurations = currentDurations,
             currentVideoTid = currentVideoTid,
             currentPubTimeType = currentPubTimeType,
@@ -182,10 +187,21 @@ private fun rememberSearchNativeChrome(): SearchNativeChrome {
     }
 }
 
+/**
+ * iOS has no Miuix popup host → OverlayBottomSheet is a no-op click.
+ * Only pure Miuix variant uses OverlayBottomSheet; Material3 + iOS use ModalBottomSheet.
+ */
+internal fun shouldUseMiuixSearchFilterSheet(
+    uiPreset: UiPreset,
+    androidNativeVariant: AndroidNativeVariant
+): Boolean {
+    return uiPreset == UiPreset.MD3 &&
+        androidNativeVariant == AndroidNativeVariant.MIUIX
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SearchVideoFilterSheetHost(
-    chrome: SearchNativeChrome,
     currentDurations: Set<SearchDuration>,
     currentVideoTid: Int,
     currentPubTimeType: SearchVideoPubTimeType,
@@ -197,45 +213,40 @@ private fun SearchVideoFilterSheetHost(
     onPubTimeTypeChange: (SearchVideoPubTimeType) -> Unit,
     onCustomPubTimeRange: (Long, Long) -> Unit
 ) {
-    when (chrome) {
-        SearchNativeChrome.MIUIX -> {
-            OverlayBottomSheet(
-                show = true,
-                title = "筛选",
-                onDismissRequest = onDismiss,
-                content = {
-                    SearchVideoFilterSheetContent(
-                        currentDurations = currentDurations,
-                        currentVideoTid = currentVideoTid,
-                        currentPubTimeType = currentPubTimeType,
-                        currentPubBegin = currentPubBegin,
-                        currentPubEnd = currentPubEnd,
-                        onDurationSelect = onDurationSelect,
-                        onVideoTidChange = onVideoTidChange,
-                        onPubTimeTypeChange = onPubTimeTypeChange,
-                        onCustomPubTimeRange = onCustomPubTimeRange
-                    )
-                }
-            )
-        }
-        SearchNativeChrome.MATERIAL3 -> {
-            val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-            ModalBottomSheet(
-                onDismissRequest = onDismiss,
-                sheetState = sheetState
-            ) {
-                SearchVideoFilterSheetContent(
-                    currentDurations = currentDurations,
-                    currentVideoTid = currentVideoTid,
-                    currentPubTimeType = currentPubTimeType,
-                    currentPubBegin = currentPubBegin,
-                    currentPubEnd = currentPubEnd,
-                    onDurationSelect = onDurationSelect,
-                    onVideoTidChange = onVideoTidChange,
-                    onPubTimeTypeChange = onPubTimeTypeChange,
-                    onCustomPubTimeRange = onCustomPubTimeRange
-                )
-            }
+    val uiPreset = LocalUiPreset.current
+    val androidNativeVariant = LocalAndroidNativeVariant.current
+    // iOS chrome resolves to MIUIX_BRIDGED for chips, but OverlayBottomSheet needs a
+    // Miuix popup host that iOS never installs — click would appear to do nothing.
+    val useMiuixSheet = remember(uiPreset, androidNativeVariant) {
+        shouldUseMiuixSearchFilterSheet(uiPreset, androidNativeVariant)
+    }
+    val sheetContent: @Composable () -> Unit = {
+        SearchVideoFilterSheetContent(
+            currentDurations = currentDurations,
+            currentVideoTid = currentVideoTid,
+            currentPubTimeType = currentPubTimeType,
+            currentPubBegin = currentPubBegin,
+            currentPubEnd = currentPubEnd,
+            onDurationSelect = onDurationSelect,
+            onVideoTidChange = onVideoTidChange,
+            onPubTimeTypeChange = onPubTimeTypeChange,
+            onCustomPubTimeRange = onCustomPubTimeRange
+        )
+    }
+    if (useMiuixSheet) {
+        OverlayBottomSheet(
+            show = true,
+            title = "筛选",
+            onDismissRequest = onDismiss,
+            content = sheetContent
+        )
+    } else {
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ModalBottomSheet(
+            onDismissRequest = onDismiss,
+            sheetState = sheetState
+        ) {
+            sheetContent()
         }
     }
 }
