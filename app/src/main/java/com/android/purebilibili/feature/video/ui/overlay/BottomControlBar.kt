@@ -254,6 +254,12 @@ internal fun shouldShowDanmakuInputInControlBar(
     widthDp = widthDp
 )
 
+/** Fullscreen always; tablet inline cinema (≥600dp) also needs a visible close toggle. */
+internal fun shouldShowDanmakuToggleInControlBar(
+    isFullscreen: Boolean,
+    widthDp: Int
+): Boolean = isFullscreen || widthDp >= 600
+
 internal fun shouldShowPlaybackOrderLabelInControlBar(
     isFullscreen: Boolean,
     playbackOrderLabel: String
@@ -705,8 +711,13 @@ fun BottomControlBar(
 
             Spacer(modifier = Modifier.width(layoutPolicy.afterTimeSpacingDp.dp))
 
-            // Center area: Danmaku Controls (Switch + Input) - Only visible in Fullscreen/Landscape
-            if (isFullscreen) {
+            // Danmaku toggle: fullscreen always; tablet inline player (wide) also needs it —
+            // phone detail has a separate toggle under the player, tablet cinema does not.
+            val showDanmakuToggle = shouldShowDanmakuToggleInControlBar(
+                isFullscreen = isFullscreen,
+                widthDp = configuration.screenWidthDp
+            )
+            if (showDanmakuToggle) {
                 val danmakuActiveColor = MaterialTheme.colorScheme.primary
                 val danmakuInactiveColor = Color.White.copy(alpha = 0.74f)
                 // Danmaku Switch

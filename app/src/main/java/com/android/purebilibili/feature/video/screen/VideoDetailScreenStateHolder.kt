@@ -1558,6 +1558,7 @@ internal fun VideoDetailScreenStateHolder(
         detailContentReady = detailContentReadyForLiveReturnMorph,
         hasResidentCover = hasResidentReturnCover,
         hasRenderableLiveFrame = hasRenderableLiveFrameForReturn,
+        liveSurfaceCardTransitionEnabled = liveSurfaceCardTransitionEnabled,
     )
     // 返回会话 ownership：可升 LIVE（保实时画面），禁止 LIVE 降级（防闪）。
     var lockedReturnCoverOwnership by remember(bvid) {

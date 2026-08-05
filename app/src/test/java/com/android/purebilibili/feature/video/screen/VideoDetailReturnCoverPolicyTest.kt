@@ -339,9 +339,9 @@ class VideoDetailReturnCoverPolicyTest {
 
     @Test
     fun `uncommitted predictive seek keeps live player and zero cover even when exit is in progress`() {
-        // 与 StateHolder 接线一致：isCommitted=false 时 live 路径封面永不盖住播放器
+        // live：封面垫底 alpha=1（在 player 下），player=1 保证实时帧在上
         assertEquals(
-            0f,
+            1f,
             resolveVideoDetailReturnCoverAlpha(
                 transitionProgress = 0.7f,
                 isCommittedCardReturn = false,
@@ -360,9 +360,9 @@ class VideoDetailReturnCoverPolicyTest {
             ),
             0.0001f,
         )
-        // 已提交但未到 handoff 窗口：仍保持实时画面
+        // 已提交但未到 handoff 窗口：player 仍满不透明
         assertEquals(
-            0f,
+            1f,
             resolveVideoDetailReturnCoverAlpha(
                 transitionProgress = 0.5f,
                 isCommittedCardReturn = true,
@@ -417,8 +417,9 @@ class VideoDetailReturnCoverPolicyTest {
 
     @Test
     fun `live return morph keeps player visible before the landing handoff`() {
+        // 封面垫在播放器下全程 alpha=1；是否「看见」封面只看 player alpha。
         assertEquals(
-            0f,
+            1f,
             resolveVideoDetailReturnCoverAlpha(0.8f, true, true, liveReturnMorph = true),
             0.0001f,
         )
@@ -440,8 +441,9 @@ class VideoDetailReturnCoverPolicyTest {
 
     @Test
     fun `committed live return crossfades only during the final landing window`() {
+        // 垫底封面全程 1；player alpha 在末段 handoff 窗口下降露出封面。
         assertEquals(
-            0f,
+            1f,
             resolveVideoDetailReturnCoverAlpha(0.2f, true, true, liveReturnMorph = true),
             0.0001f,
         )
@@ -450,9 +452,9 @@ class VideoDetailReturnCoverPolicyTest {
             resolveVideoDetailReturnPlayerAlpha(0.2f, true, true, liveReturnMorph = true),
             0.0001f,
         )
-        // settle=0.94：最后 12% 窗口已走一半，视频与驻留封面等权交接。
+        // settle=0.94：最后 12% 窗口已走一半，player 半透 → 垫底封面可见一半。
         assertEquals(
-            0.5f,
+            1f,
             resolveVideoDetailReturnCoverAlpha(0.06f, true, true, liveReturnMorph = true),
             0.0001f,
         )
@@ -484,7 +486,7 @@ class VideoDetailReturnCoverPolicyTest {
         )
         assertEquals(0.72f, progress, 0.0001f)
         assertEquals(
-            0f,
+            1f,
             resolveVideoDetailReturnCoverAlpha(
                 transitionProgress = progress,
                 isCommittedCardReturn = true,
@@ -643,8 +645,9 @@ class VideoDetailReturnCoverPolicyTest {
 
     @Test
     fun `uncommitted predictive live morph keeps player visible while content follows timeline`() {
+        // 垫底封面 1 + player 1：实时帧在上，无帧时透出封面而非黑底。
         assertEquals(
-            0f,
+            1f,
             resolveVideoDetailReturnCoverAlpha(0.8f, false, true, liveReturnMorph = true),
             0.0001f,
         )
@@ -880,7 +883,7 @@ class VideoDetailReturnCoverPolicyTest {
         )
         assertTrue(isLiveReturnMorphFromOwnership(ownership))
         assertEquals(
-            0f,
+            1f,
             resolveVideoDetailReturnCoverAlpha(
                 transitionProgress = 0.5f,
                 isCommittedCardReturn = false,
@@ -1127,9 +1130,9 @@ class VideoDetailReturnCoverPolicyTest {
 
     @Test
     fun committedReturn_doesNotCoverPlayerUntilHandoff() {
-        // transitionProgress 1 = 详情全屏 settle 0；cover 必须为 0
+        // live：垫底封面始终 1，player 在 handoff 前仍为 1（视频盖住封面）
         assertEquals(
-            0f,
+            1f,
             resolveVideoDetailReturnCoverAlpha(
                 transitionProgress = 1f,
                 isCommittedCardReturn = true,
@@ -1169,13 +1172,13 @@ class VideoDetailReturnCoverPolicyTest {
             ),
             0.0001f,
         )
-        // settle 过 handoff 后才抬封面（progress 约 0.05 → settle 0.95）
-        val coverNearEnd = resolveVideoDetailReturnCoverAlpha(
+        // settle 过 handoff 后 player 降到一半（progress 约 0.05 → settle 0.95）
+        val playerNearEnd = resolveVideoDetailReturnPlayerAlpha(
             transitionProgress = 0.05f,
             isCommittedCardReturn = true,
             hasResidentCover = true,
             liveReturnMorph = true,
         )
-        assertTrue(coverNearEnd > 0.5f)
+        assertTrue(playerNearEnd < 0.5f)
     }
 }

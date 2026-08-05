@@ -472,6 +472,7 @@ class VideoCardReturnTimelineTest {
                 playbackIntent = VideoSharedTransitionPlaybackIntent.ImmediatePlayback,
                 detailContentReady = true,
                 hasRenderableLiveFrame = true,
+                liveSurfaceCardTransitionEnabled = true,
             )
         )
         assertEquals(
@@ -484,6 +485,32 @@ class VideoCardReturnTimelineTest {
                 detailContentReady = true,
                 hasResidentCover = true,
                 hasRenderableLiveFrame = true,
+                liveSurfaceCardTransitionEnabled = true,
+            ),
+        )
+        // 用户关闭「实时画面转场」：不得走 LIVE 视频帧 morph，改封面路径。
+        assertFalse(
+            shouldUseVideoCardLiveReturnMorph(
+                transitionEnabled = true,
+                sharedBoundsActive = true,
+                keepLoadedContentForBackPreview = false,
+                playbackIntent = VideoSharedTransitionPlaybackIntent.ImmediatePlayback,
+                detailContentReady = true,
+                hasRenderableLiveFrame = true,
+                liveSurfaceCardTransitionEnabled = false,
+            )
+        )
+        assertEquals(
+            VideoCardReturnCoverOwnership.RESIDENT_COVER,
+            resolveVideoCardReturnCoverOwnership(
+                transitionEnabled = true,
+                sharedBoundsActive = true,
+                keepLoadedContentForBackPreview = false,
+                playbackIntent = VideoSharedTransitionPlaybackIntent.ImmediatePlayback,
+                detailContentReady = true,
+                hasResidentCover = true,
+                hasRenderableLiveFrame = true,
+                liveSurfaceCardTransitionEnabled = false,
             ),
         )
     }
