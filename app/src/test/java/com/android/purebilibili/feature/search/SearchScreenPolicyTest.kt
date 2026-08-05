@@ -361,7 +361,10 @@ class SearchScreenPolicyTest {
         // PiliPlus-style pill tabs use ScrollableTabRow + secondaryContainer indicator.
         assertTrue(searchSource.contains("androidx.compose.material3.ScrollableTabRow("))
         assertTrue(searchSource.contains("secondaryContainer"))
-        assertTrue(searchSource.contains("AppSearchField("))
+        // Top bar uses native BasicTextField + TextFieldValue (not AppSearchField wrapper).
+        assertTrue(searchSource.contains("SearchTopBarInputField("))
+        assertTrue(searchSource.contains("TextFieldValue("))
+        assertFalse(searchSource.contains("AppSearchField("))
         // Video filters use Material FilterChip in the dedicated sheet file.
         assertTrue(filterSheetSource.contains("FilterChip("))
         assertTrue(filterSheetSource.contains("ModalBottomSheet("))
@@ -370,6 +373,9 @@ class SearchScreenPolicyTest {
         assertTrue(searchSource.contains("androidx.compose.material3.InputChip("))
         assertFalse(searchSource.contains("SearchPagerTabIndicator("))
         assertFalse(searchSource.contains("val showStableFilterBar = !searchPagerState.isScrollInProgress"))
+        // Exiting results must not reopen IME.
+        assertTrue(searchSource.contains("exitResultsToLanding("))
+        assertTrue(searchSource.contains("dismissSearchKeyboardAndFocus("))
     }
 
     @Test
@@ -377,11 +383,12 @@ class SearchScreenPolicyTest {
         val searchSource = loadSource("app/src/main/java/com/android/purebilibili/feature/search/SearchScreen.kt")
         val topBar = searchSource
             .substringAfter("fun SearchTopBar(")
-            .substringBefore("fun SearchSuggestionDropdown")
+            .substringBefore("private fun SearchTopBarIconButton(")
         // 回归：fillMaxSize 会让输入框在 Column 剩余高度里变成竖向长胶囊
         assertFalse(topBar.contains("Modifier = Modifier.fillMaxSize()"))
         assertTrue(topBar.contains(".height(chromeSpec.inputHeightDp.dp)"))
         assertTrue(topBar.contains(".fillMaxWidth()"))
+        assertTrue(topBar.contains("TextFieldValue("))
     }
 
     @Test
