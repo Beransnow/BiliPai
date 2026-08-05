@@ -661,7 +661,7 @@ fun SearchScreen(
         androidNativeEnabled = androidNativeLiquidGlassEnabled,
     )
     val headerBlurEnabled by SettingsManager.getHeaderBlurEnabled(context).collectAsStateWithLifecycle(initialValue = true)
-    val bottomBarBlurEnabled by SettingsManager.getBottomBarBlurEnabled(context).collectAsStateWithLifecycle(initialValue = true)
+    val bottomBarBlurEnabled by SettingsManager.getBottomBarBlurEnabled(context).collectAsStateWithLifecycle(initialValue = false)
     val cardMotionTier = resolveEffectiveMotionTier(
         baseTier = deviceUiProfile.motionTier,
         animationEnabled = cardAnimationEnabled

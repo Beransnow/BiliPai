@@ -451,7 +451,7 @@ internal fun shouldUseVideoCardLiveReturnMorph(
      * 「实时画面转场」用户开关：关则强制封面 morph；开才允许播放器视频帧跟壳缩回。
      * 默认 true 与设置项默认一致。
      */
-    liveSurfaceCardTransitionEnabled: Boolean = true,
+    liveSurfaceCardTransitionEnabled: Boolean = false,
 ): Boolean {
     return transitionEnabled &&
         liveSurfaceCardTransitionEnabled &&
@@ -481,7 +481,7 @@ internal fun resolveVideoCardReturnCoverOwnership(
     detailContentReady: Boolean,
     hasResidentCover: Boolean,
     hasRenderableLiveFrame: Boolean = true,
-    liveSurfaceCardTransitionEnabled: Boolean = true,
+    liveSurfaceCardTransitionEnabled: Boolean = false,
 ): VideoCardReturnCoverOwnership {
     if (!transitionEnabled || !sharedBoundsActive) {
         return VideoCardReturnCoverOwnership.FALLBACK_NO_SHARED

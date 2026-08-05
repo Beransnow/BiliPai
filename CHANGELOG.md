@@ -1,5 +1,45 @@
 # Changelog
 
+## v0.2.0 (2026-08-05)
+
+### 版本信息
+
+- 恢复语义化版本 `MAJOR.MINOR.PATCH`：`0.2.0`，`versionCode` 为 `284`。
+- 大升级升第一位，加功能升第二位，修 bug 升第三位；**不用日期**当 `versionName`。
+- 新旧比较仍以 `versionCode` 为准；构建/发布日期可写在关于页与 Changelog，不进入主版本号。
+- 正式产物：`app/build/outputs/bilipai/release/BiliPai-0.2.0.apk`。
+- Dev 验证包：`BiliPai-0.2.0-dev.apk`。
+- 规范见 [docs/wiki/VERSIONING.md](docs/wiki/VERSIONING.md)。
+- 官方社群：频道 [t.me/bilipai666](https://t.me/bilipai666)，交流群 [t.me/bilipai888](https://t.me/bilipai888/1)。
+
+### 更新范围
+
+- 基准版本：`v26.0805.1`（日历号过渡包）/ 语义化 `v0.1.0`。
+- 本版覆盖默认性能设置、版本规范、收藏夹风控请求对齐。
+
+### 完整更新
+
+#### 默认设置（P0+P1）
+
+- **实时画面转场**默认关闭：默认走封面过渡，更稳且不影响 HDR。
+- **转场时模糊背景**默认关闭：降低转场 GPU/耗电开销。
+- **底栏模糊**默认关闭：减少首页/导航毛玻璃成本。
+- **沉浸状态栏**保持默认关闭（未改）。
+
+#### 收藏夹
+
+- 按 bilibili-API-collect 对齐 `x/v3/fav/resource/list`：`type=0`、`tid=0`、`platform=web`，`ps` 强制 1–20。
+- 收藏夹详情请求 Referer 改为 `medialist/detail/ml{media_id}`，列表类请求继续用空间 favlist。
+- 个人页收藏夹封面预览限制并发并只取 `ps=1`，降低 412/429「请求被风控」概率。
+- 订阅收藏夹分页与空间侧 `collected/list` 的 `ps` 收敛到 20。
+
+#### 版本与交付
+
+- 结束日历号 `YY.MMDD.N` 展示纪元，回到 `0.x` 语义化版本。
+- `versionCode` 继续单调递增（283 → 284）。
+
+---
+
 ## v26.0805.1 (2026-08-05)
 
 ### 版本信息

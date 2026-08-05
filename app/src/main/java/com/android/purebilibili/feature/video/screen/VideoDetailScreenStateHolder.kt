@@ -302,7 +302,7 @@ internal fun VideoDetailScreenStateHolder(
         )
     val liveSurfaceCardTransitionEnabled by com.android.purebilibili.core.store.SettingsManager
         .getLiveSurfaceCardTransitionEnabled(context)
-        .collectAsStateWithLifecycle(initialValue = true)
+        .collectAsStateWithLifecycle(initialValue = false)
     // SDR live morph TextureView only when both master transition + live-surface switch are on.
     // HDR still forces SurfaceView inside shouldUseTextureSurfaceForFlip (no quality sacrifice).
     val useTextureSurfaceForNavigation = remember(

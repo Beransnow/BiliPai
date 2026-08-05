@@ -133,7 +133,7 @@ internal fun TabletVideoLayout(
     val settingsContext = LocalContext.current
     val liveSurfaceCardTransitionEnabled by SettingsManager
         .getLiveSurfaceCardTransitionEnabled(settingsContext)
-        .collectAsStateWithLifecycle(initialValue = true)
+        .collectAsStateWithLifecycle(initialValue = false)
     val layoutPolicy = remember(configuration.screenWidthDp) {
         resolveTabletVideoLayoutPolicy(
             widthDp = configuration.screenWidthDp

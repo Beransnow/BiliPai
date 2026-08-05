@@ -580,7 +580,7 @@ internal fun shouldSourceYieldDepthLayerToHost(
 internal fun shouldUseVideoCardTransitionSnapshotBlur(
     exposure: VideoCardTransitionExposure,
     motionTier: MotionTier,
-    realtimeBlurEnabled: Boolean = true,
+    realtimeBlurEnabled: Boolean = false,
     sdkInt: Int = Build.VERSION.SDK_INT,
 ): Boolean {
     if (!resolveVideoCardTransitionRenderDecision(exposure).updateBlurEffect) return false
@@ -808,7 +808,7 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
     isGestureRestoreInProgressProvider: () -> Boolean = { false },
     motionTierProvider: () -> MotionTier = { MotionTier.Normal },
     isLightBackgroundProvider: () -> Boolean = { false },
-    realtimeBlurEnabledProvider: () -> Boolean = { true },
+    realtimeBlurEnabledProvider: () -> Boolean = { false },
     scaleReductionProvider: () -> Float = { VIDEO_CARD_TRANSITION_BACKGROUND_SCALE_REDUCTION },
     snapshotHandle: VideoCardTransitionSnapshotHandle? = null,
 ): Modifier {

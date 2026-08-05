@@ -130,7 +130,7 @@ internal fun resolveVideoDetailReturnCoverOwnership(
     detailContentReady: Boolean,
     hasResidentCover: Boolean,
     hasRenderableLiveFrame: Boolean = true,
-    liveSurfaceCardTransitionEnabled: Boolean = true,
+    liveSurfaceCardTransitionEnabled: Boolean = false,
 ) = resolveVideoCardReturnCoverOwnership(
     transitionEnabled = transitionEnabled,
     sharedBoundsActive = sharedBoundsActive,

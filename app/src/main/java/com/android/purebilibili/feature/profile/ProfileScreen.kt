@@ -3166,7 +3166,7 @@ private fun ProfileWallpaperActionCard(
         )
     val bottomBarBlurEnabled by com.android.purebilibili.core.store.SettingsManager
         .getBottomBarBlurEnabled(context)
-        .collectAsStateWithLifecycle(initialValue = true
+        .collectAsStateWithLifecycle(initialValue = false
         )
     val blurEnabled = remember(headerBlurEnabled, bottomBarBlurEnabled) {
         resolveProfileWallpaperActionBlurEnabled(

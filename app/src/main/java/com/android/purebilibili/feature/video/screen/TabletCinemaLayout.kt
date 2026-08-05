@@ -428,7 +428,7 @@ private fun CinemaStagePlayer(
     val context = LocalContext.current
     val liveSurfaceCardTransitionEnabled by SettingsManager
         .getLiveSurfaceCardTransitionEnabled(context)
-        .collectAsStateWithLifecycle(initialValue = true)
+        .collectAsStateWithLifecycle(initialValue = false)
     val success = uiState as? VideoPlaybackUiState.Success
     val sharedTransitionScope = LocalSharedTransitionScope.current
     val animatedVisibilityScope = LocalAnimatedVisibilityScope.current
