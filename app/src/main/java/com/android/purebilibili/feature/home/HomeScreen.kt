@@ -465,7 +465,28 @@ fun HomeScreen(
                 ) {
                     HomePagerSettledAction.NONE -> return@collect
                     HomePagerSettledAction.SWITCH_CATEGORY -> {
-                        viewModel.switchCategory(settledCategory ?: return@collect)
+                        val target = settledCategory ?: return@collect
+                        // 侧滑到顶栏「直播」时同样打开底栏直播首页，并回弹到原分类页。
+                        if (shouldOpenLiveListFromHomeTopTab(target)) {
+                            onLiveListClick()
+                            val backIndex = topTabEntries
+                                .indexOf(HomeTopTabEntry.Category(currentCategory))
+                                .takeIf { it >= 0 }
+                                ?: topTabEntries.indexOfFirst {
+                                    it is HomeTopTabEntry.Category &&
+                                        !shouldOpenLiveListFromHomeTopTab(it.category)
+                                }.coerceAtLeast(0)
+                            if (page != backIndex) {
+                                programmaticPageSwitchInProgress = true
+                                try {
+                                    pagerState.scrollToPage(backIndex)
+                                } finally {
+                                    programmaticPageSwitchInProgress = false
+                                }
+                            }
+                            return@collect
+                        }
+                        viewModel.switchCategory(target)
                     }
                 }
             }
@@ -2034,8 +2055,15 @@ fun HomeScreen(
             topCategoryKeys = topTabKeys,
             categoryIndex = displayedTabIndex,
             onCategorySelected = onCategorySelected@ { index ->
-                viewModel.updateDisplayedTabIndex(index)
                 val selectedEntry = topTabEntries.getOrNull(index) ?: return@onCategorySelected
+                // 顶栏「直播」与底栏「直播」统一：直接进入 LiveList，不切首页内嵌直播页。
+                if (selectedEntry is HomeTopTabEntry.Category &&
+                    shouldOpenLiveListFromHomeTopTab(selectedEntry.category)
+                ) {
+                    onLiveListClick()
+                    return@onCategorySelected
+                }
+                viewModel.updateDisplayedTabIndex(index)
                 retainedTopTabEntry = selectedEntry
                 if (pagerState.currentPage != index) {
                     programmaticPageSwitchInProgress = true

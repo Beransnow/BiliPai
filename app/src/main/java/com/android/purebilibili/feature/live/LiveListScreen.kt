@@ -3,23 +3,20 @@ package com.android.purebilibili.feature.live
 import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
-import androidx.compose.material.icons.outlined.EmojiEvents
 import androidx.compose.material.icons.outlined.NotificationsNone
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.SportsEsports
+import androidx.compose.material.icons.outlined.Widgets
 import android.widget.Toast
 import com.android.purebilibili.core.ui.components.AppBadge
 import com.android.purebilibili.core.ui.components.AppIcon
@@ -29,43 +26,38 @@ import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.network.NetworkModule
+import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
-import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
+import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.responsiveContentWidth
 import com.android.purebilibili.data.model.response.LiveAreaParent
 import com.android.purebilibili.data.repository.LiveRepository
-import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import dev.chrisbanes.haze.HazeState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -320,17 +312,19 @@ fun LiveListScreen(
                 onInboxClick = onFollowingClick,
                 onAvatarClick = onAreaListClick
             )
-            Box(
+            AdaptivePullToRefreshBox(
+                isRefreshing = state.isLoading,
+                onRefresh = viewModel::refresh,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .padding(top = AppSpacingTokens.ExtraSmall)
+                    .padding(top = AppSpacingTokens.ExtraSmall),
             ) {
                 when {
-                    state.isLoading -> {
+                    state.isLoading && state.recommendItems.isEmpty() && state.followItems.isEmpty() -> {
                         LiveListLoadingState()
                     }
-                    state.error != null -> {
+                    state.error != null && state.recommendItems.isEmpty() -> {
                         LiveListErrorState(
                             message = state.error ?: "未知错误",
                             onRetry = viewModel::refresh
@@ -414,9 +408,6 @@ private fun LiveHomeContent(
         horizontalArrangement = Arrangement.spacedBy(metrics.cardSpaceDp.dp),
         verticalArrangement = Arrangement.spacedBy(metrics.cardSpaceDp.dp)
     ) {
-        item(span = { GridItemSpan(maxLineSpan) }) {
-            LiveMatchEntry(onClick = onMatchClick)
-        }
         if (followItems.isNotEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 LiveFollowHeader(
@@ -437,7 +428,9 @@ private fun LiveHomeContent(
                 LiveAreaHomeChipRow(
                     areaList = areaList,
                     selectedAreaId = selectedAreaId,
-                    onAreaSelected = onAreaSelected
+                    onAreaSelected = onAreaSelected,
+                    onAreaListClick = onAreaListClick,
+                    onMatchClick = onMatchClick,
                 )
             }
             if (!selectedArea?.list.isNullOrEmpty()) {
@@ -695,72 +688,51 @@ private fun LiveFollowAvatarRow(
 private fun LiveAreaHomeChipRow(
     areaList: List<LiveAreaParent>,
     selectedAreaId: Int,
-    onAreaSelected: (Int) -> Unit
+    onAreaSelected: (Int) -> Unit,
+    onAreaListClick: () -> Unit,
+    onMatchClick: () -> Unit,
 ) {
+    // PiliPlus: 横向分区 chip + 右侧工具按钮（赛事 / 全部分区）
     val categoryItems = remember(areaList) {
         listOf(0 to "推荐") + areaList.map { it.id to it.name }
     }
-    val selectedIndex = remember(selectedAreaId, areaList) {
-        resolveLiveHomeCategorySelectedIndex(
-            selectedAreaId = selectedAreaId,
-            areaIds = areaList.map { it.id }
-        )
-    }
-    val compactChrome = rememberAppTopChromePolicy().compactChromeSpec
-    val segmentedSpec = remember(compactChrome) {
-        resolveLiveHomeCategorySegmentedControlSpec(compactChrome)
-    }
-    val scrollState = rememberScrollState()
-    val density = LocalDensity.current
-    val itemWidthPx = with(density) { (segmentedSpec.itemWidthDp ?: 0).dp.toPx() }
-    val scrollEdgeBufferPx = with(density) { segmentedSpec.edgeBufferDp.dp.toPx() }
-    var indicatorPosition by remember { mutableFloatStateOf(selectedIndex.toFloat()) }
-
-    LaunchedEffect(selectedIndex) {
-        indicatorPosition = selectedIndex.toFloat()
-    }
-
-    LaunchedEffect(indicatorPosition, categoryItems.size, scrollState.maxValue, itemWidthPx) {
-        if (itemWidthPx <= 0f || scrollState.maxValue <= 0) return@LaunchedEffect
-        val contentWidthPx = itemWidthPx * categoryItems.size +
-            with(density) { (segmentedSpec.containerHorizontalPaddingDp * 2).dp.toPx() }
-        val viewportWidthPx = (contentWidthPx - scrollState.maxValue).coerceAtLeast(1f)
-        val targetScroll = resolveLiveHomeCategoryFollowScrollTarget(
-            indicatorPosition = indicatorPosition,
-            itemWidthPx = itemWidthPx,
-            itemCount = categoryItems.size,
-            viewportWidthPx = viewportWidthPx,
-            currentScrollPx = scrollState.value.toFloat(),
-            maxScrollPx = scrollState.maxValue.toFloat(),
-            edgeBufferPx = scrollEdgeBufferPx
-        )
-
-        if (kotlin.math.abs(targetScroll - scrollState.value) > 1) {
-            scrollState.scrollTo(targetScroll)
-        }
-    }
-
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(segmentedSpec.heightDp.dp)
-            .horizontalScroll(scrollState, enabled = false),
-        verticalAlignment = Alignment.CenterVertically
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        BottomBarLiquidSegmentedControl(
-            items = categoryItems.map { it.second },
-            selectedIndex = selectedIndex,
-            onSelected = { index ->
-                categoryItems.getOrNull(index)?.let { onAreaSelected(it.first) }
-            },
-            itemWidth = segmentedSpec.itemWidthDp?.dp,
-            height = segmentedSpec.heightDp.dp,
-            indicatorHeight = segmentedSpec.indicatorHeightDp.dp,
-            labelFontSize = segmentedSpec.labelFontSizeSp.sp,
-            containerHorizontalPadding = segmentedSpec.containerHorizontalPaddingDp.dp,
-            containerVerticalPadding = segmentedSpec.containerVerticalPaddingDp.dp,
-            onIndicatorPositionChanged = { indicatorPosition = it }
-        )
+        LazyRow(
+            modifier = Modifier.weight(1f),
+            horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            items(categoryItems, key = { it.first }) { (id, name) ->
+                LiveHomeSelectableChip(
+                    label = name,
+                    selected = selectedAreaId == id,
+                    onClick = { onAreaSelected(id) },
+                )
+            }
+        }
+        AppIconButton(
+            onClick = onMatchClick,
+            modifier = Modifier.size(40.dp),
+        ) {
+            AppIcon(
+                imageVector = Icons.Outlined.SportsEsports,
+                contentDescription = "游戏赛事",
+                modifier = Modifier.size(18.dp),
+            )
+        }
+        AppIconButton(
+            onClick = onAreaListClick,
+            modifier = Modifier.size(40.dp),
+        ) {
+            AppIcon(
+                imageVector = Icons.Outlined.Widgets,
+                contentDescription = "全部标签",
+                modifier = Modifier.size(18.dp),
+            )
+        }
     }
 }
 
@@ -770,15 +742,12 @@ private fun LiveAreaChildChipRow(
     parentAreaId: Int,
     onAreaDetailClick: (Int, Int, String) -> Unit
 ) {
-    val colorScheme = MaterialTheme.colorScheme
-    val chipColors = resolveLivePiliPlusChipColors(
-        selectedContainer = colorScheme.secondaryContainer,
-        selectedContent = colorScheme.onSecondaryContainer,
-        unselectedContent = colorScheme.onSurfaceVariant
-    )
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Medium)) {
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small)) {
         items(items, key = { it.id }) { child ->
-            AppSurface(
+            LiveHomeSelectableChip(
+                label = child.name,
+                selected = false,
+                compact = true,
                 onClick = {
                     onAreaDetailClick(
                         parentAreaId,
@@ -786,20 +755,7 @@ private fun LiveAreaChildChipRow(
                         child.name
                     )
                 },
-                color = chipColors.unselectedContainerColor,
-                shape = AppShapes.container(ContainerLevel.Pill),
-                border = null
-            ) {
-                AppText(
-                    text = child.name,
-                    color = chipColors.unselectedContentColor,
-                    style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier.padding(
-                        horizontal = AppSpacingTokens.Small,
-                        vertical = AppSpacingTokens.ExtraSmall,
-                    )
-                )
-            }
+            )
         }
     }
 }
@@ -889,54 +845,3 @@ private fun LiveRoomItem.toLiveRoomCardUiModel() = LiveRoomCardUiModel(
     areaName = areaName,
 )
 
-/**
- * 赛事入口（打开官方比赛中心 Web 页）
- */
-@Composable
-private fun LiveMatchEntry(
-    onClick: () -> Unit
-) {
-    val palette = rememberLiveChromePalette()
-    AppSurface(
-        onClick = onClick,
-        shape = AppShapes.borderedContainer(ContainerLevel.Card),
-        color = AppSurfaceTokens.cardContainer(),
-        border = BorderStroke(AppSurfaceTokens.OutlineWidth, palette.border),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier.padding(
-                horizontal = AppSpacingTokens.Large,
-                vertical = AppSpacingTokens.Medium
-            ),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            AppIcon(
-                imageVector = Icons.Outlined.EmojiEvents,
-                contentDescription = null,
-                tint = palette.accentStrong,
-                modifier = Modifier.size(AppSpacingTokens.ExtraLarge)
-            )
-            Spacer(Modifier.width(AppSpacingTokens.Medium))
-            Column(modifier = Modifier.weight(1f)) {
-                AppText(
-                    text = "电竞赛事",
-                    color = MaterialTheme.colorScheme.onSurface,
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.SemiBold
-                )
-                AppText(
-                    text = "热门赛事直播聚合",
-                    color = palette.secondaryText,
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-            AppIcon(
-                imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                contentDescription = null,
-                tint = palette.secondaryText,
-                modifier = Modifier.size(20.dp)
-            )
-        }
-    }
-}

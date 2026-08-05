@@ -638,6 +638,8 @@ fun VideoPlayerSection(
                     .getLongPressSpeedLockEnabledSync(context),
                 longPressSpeedLockHintShown = com.android.purebilibili.core.store.SettingsManager
                     .getLongPressSpeedLockHintShownSync(context),
+                longPressSpeedHintCloseEnabled = com.android.purebilibili.core.store.SettingsManager
+                    .getLongPressSpeedHintCloseEnabledSync(context),
                 hiResLongPressCompatHintShown = com.android.purebilibili.core.store.SettingsManager
                     .getHiResLongPressCompatHintShownSync(context)
             ),
@@ -720,6 +722,7 @@ fun VideoPlayerSection(
     //  [新增] 长按倍速设置和状态
     val longPressSpeed = playerInteractionSettings.longPressSpeed
     val longPressSpeedLockEnabled = playerInteractionSettings.longPressSpeedLockEnabled
+    val longPressSpeedHintCloseEnabled = playerInteractionSettings.longPressSpeedHintCloseEnabled
     val twoFingerVerticalSpeedEnabled = playerInteractionSettings.twoFingerVerticalSpeedEnabled
     val twoFingerHorizontalSpeedEnabled = playerInteractionSettings.twoFingerHorizontalSpeedEnabled
     val twoFingerSpeedMode = remember(
@@ -4372,21 +4375,33 @@ fun VideoPlayerSection(
                         } else {
                             "倍速播放中 ${effectiveLongPressSpeed}x"
                         },
-                        modifier = Modifier.padding(start = 14.dp, end = 2.dp, top = 8.dp, bottom = 8.dp),
+                        modifier = Modifier.padding(
+                            start = 14.dp,
+                            end = if (shouldShowLongPressSpeedHintCloseButton(longPressSpeedHintCloseEnabled)) {
+                                2.dp
+                            } else {
+                                14.dp
+                            },
+                            top = 8.dp,
+                            bottom = 8.dp,
+                        ),
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold
                         )
                     )
-                    AppIconButton(
-                        onClick = { longPressSpeedHintDismissed = true },
-                        modifier = Modifier.size(48.dp),
-                    ) {
-                        AppIcon(
-                            imageVector = Icons.Outlined.Close,
-                            contentDescription = "关闭倍速提示",
-                            tint = Color.White,
-                            modifier = Modifier.size(18.dp),
-                        )
+                    if (shouldShowLongPressSpeedHintCloseButton(longPressSpeedHintCloseEnabled)) {
+                        AppIconButton(
+                            onClick = { longPressSpeedHintDismissed = true },
+                            modifier = Modifier.size(48.dp),
+                        ) {
+                            AppIcon(
+                                imageVector = Icons.Outlined.Close,
+                                contentDescription = "关闭倍速提示",
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp),
+                            )
+                        }
+                    }
                     }
                 }
             }
