@@ -307,6 +307,8 @@ fun LiveListScreen(
     onFollowingClick: () -> Unit,
     onAreaDetailClick: (Int, Int, String) -> Unit,
     onMatchClick: () -> Unit = {},
+    /** 底栏主入口时隐藏返回，更接近 PiliPlus 主 tab 形态。 */
+    showNavigationBack: Boolean = true,
     viewModel: LiveListViewModel = viewModel(),
     globalHazeState: HazeState? = null
 ) {
@@ -359,6 +361,7 @@ fun LiveListScreen(
                 metrics = metrics,
                 livingCount = state.livingCount,
                 primaryFace = state.followItems.firstOrNull()?.face.orEmpty(),
+                showNavigationBack = showNavigationBack,
                 onBack = onBack,
                 onSearchClick = onSearchClick,
                 onInboxClick = onFollowingClick,
@@ -394,6 +397,7 @@ fun LiveListScreen(
                             selectedSortType = state.selectedSortType,
                             livingCount = state.livingCount,
                             isLoadingMore = state.isLoadingMore,
+                            hasMore = state.hasMore,
                             showFirstFrame = state.showFirstFrame,
                             gridColumns = gridColumns,
                             bottomPadding = gridBottomPadding,
@@ -443,6 +447,7 @@ private fun LiveHomeContent(
     selectedSortType: String?,
     livingCount: Int,
     isLoadingMore: Boolean,
+    hasMore: Boolean,
     showFirstFrame: Boolean,
     gridColumns: Int,
     bottomPadding: androidx.compose.ui.unit.Dp,
@@ -544,12 +549,15 @@ private fun LiveHomeContent(
                         onLongPress = { onLongPressCard(model) }
                     )
                 }
-                item(span = { GridItemSpan(maxLineSpan) }) {
-                    LiveHomeLoadMoreFooter(
-                        isLoadingMore = isLoadingMore,
-                        contentCount = contentItems.size,
-                        onLoadMore = onLoadMore,
-                    )
+                if (hasMore) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        LiveHomeLoadMoreFooter(
+                            isLoadingMore = isLoadingMore,
+                            contentCount = contentItems.size,
+                            hasMore = hasMore,
+                            onLoadMore = onLoadMore,
+                        )
+                    }
                 }
             }
         }
@@ -561,6 +569,7 @@ private fun LiveListHeader(
     metrics: LivePiliPlusHomeMetrics,
     livingCount: Int,
     primaryFace: String,
+    showNavigationBack: Boolean,
     onBack: () -> Unit,
     onSearchClick: () -> Unit,
     onInboxClick: () -> Unit,
@@ -580,19 +589,29 @@ private fun LiveListHeader(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small)
         ) {
-            AppSurface(
-                onClick = onBack,
-                color = Color.Transparent,
-                shape = CircleShape,
-                modifier = Modifier.size(AppSpacingTokens.TripleExtraLarge)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    AppIcon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = "返回",
-                        tint = palette.primaryText
-                    )
+            if (showNavigationBack) {
+                AppSurface(
+                    onClick = onBack,
+                    color = Color.Transparent,
+                    shape = CircleShape,
+                    modifier = Modifier.size(AppSpacingTokens.TripleExtraLarge)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        AppIcon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = "返回",
+                            tint = palette.primaryText
+                        )
+                    }
                 }
+            } else {
+                AppText(
+                    text = "直播",
+                    color = palette.primaryText,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(end = AppSpacingTokens.ExtraSmall),
+                )
             }
             AppSurface(
                 onClick = onSearchClick,
@@ -877,11 +896,12 @@ private fun LiveSortTagChipRow(
 private fun LiveHomeLoadMoreFooter(
     isLoadingMore: Boolean,
     contentCount: Int,
+    hasMore: Boolean,
     onLoadMore: () -> Unit,
 ) {
     // 滚到底部时自动请求下一页（对齐 PiliPlus onLoadMore）
-    LaunchedEffect(contentCount, isLoadingMore) {
-        if (!isLoadingMore && contentCount > 0) {
+    LaunchedEffect(contentCount, isLoadingMore, hasMore) {
+        if (hasMore && !isLoadingMore && contentCount > 0) {
             onLoadMore()
         }
     }

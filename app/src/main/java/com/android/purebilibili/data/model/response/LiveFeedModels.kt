@@ -62,6 +62,7 @@ data class LiveFeedRoomCard(
     @SerialName("area_v2_parent_id") val areaV2ParentId: Int = 0,
     @SerialName("watched_show") val watchedShow: WatchedShow? = null,
     val online: Int = 0,
+    @SerialName("is_ad") val isAd: Boolean = false,
 ) {
     fun resolvedRoomId(): Long = roomid
 
