@@ -32,6 +32,23 @@ class SearchVideoFilterPolicyTest {
     }
 
     @Test
+    fun filterSheet_usesMiuixOverlayOnlyOnMiuixVariant() {
+        assertTrue(
+            shouldUseMiuixSearchFilterSheet(UiPreset.MD3, AndroidNativeVariant.MIUIX)
+        )
+        assertFalse(
+            shouldUseMiuixSearchFilterSheet(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
+        )
+        // iOS has no Miuix popup host — must use Material ModalBottomSheet.
+        assertFalse(
+            shouldUseMiuixSearchFilterSheet(UiPreset.IOS, AndroidNativeVariant.MATERIAL3)
+        )
+        assertFalse(
+            shouldUseMiuixSearchFilterSheet(UiPreset.IOS, AndroidNativeVariant.MIUIX)
+        )
+    }
+
+    @Test
     fun orderChipLabels_matchPiliPlus() {
         assertEquals("默认排序", resolveSearchOrderChipLabel(SearchOrder.TOTALRANK))
         assertEquals("播放多", resolveSearchOrderChipLabel(SearchOrder.CLICK))

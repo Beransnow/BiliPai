@@ -58,9 +58,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import com.android.purebilibili.core.ui.components.AppScrollableTabRow
-import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -2568,51 +2565,40 @@ private fun SearchResultTypeTabRow(
     onTabClick: (Int, SearchType) -> Unit
 ) {
     val selectedPage = pagerState.currentPage.coerceIn(tabs.indices)
-    // Miuix Material bridge often maps secondaryContainer/onSecondaryContainer with
-    // near-zero contrast, so selected pill text vanishes. Use surface tokens instead.
+    // Do not use ScrollableTabRow/Tab indicator: the indicator layer paints *over*
+    // the selected label in all themes (empty capsule). Avoid Material Surface too —
+    // under Miuix/iOS bridges Surface can still lose label contrast. Draw pill +
+    // label ourselves with an explicit color pair.
     val pillColor = AppSurfaceTokens.surfaceContainerHigh()
-    val selectedLabelColor = AppSurfaceTokens.onSurface()
+    val selectedLabelColor = AppSurfaceTokens.onSurfaceContainerHigh()
     val unselectedLabelColor = AppSurfaceTokens.onSurfaceVariantSummary()
-    androidx.compose.material3.ScrollableTabRow(
-        selectedTabIndex = selectedPage,
-        modifier = Modifier.fillMaxWidth(),
-        edgePadding = 8.dp,
-        containerColor = Color.Transparent,
-        contentColor = selectedLabelColor,
-        divider = {},
-        indicator = { tabPositions ->
-            if (tabPositions.isNotEmpty()) {
-                val position = tabPositions[selectedPage.coerceIn(tabPositions.indices)]
-                Box(
-                    Modifier
-                        .tabIndicatorOffset(position)
-                        .padding(horizontal = 3.dp)
-                        .height(32.dp)
-                        .background(
-                            color = pillColor,
-                            shape = RoundedCornerShape(20.dp)
-                        )
-                )
-            }
-        }
+    val pillShape = RoundedCornerShape(20.dp)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         tabs.forEachIndexed { index, type ->
             val selected = selectedPage == index
-            androidx.compose.material3.Tab(
-                selected = selected,
-                onClick = { onTabClick(index, type) },
-                interactionSource = remember { MutableInteractionSource() },
-                selectedContentColor = selectedLabelColor,
-                unselectedContentColor = unselectedLabelColor,
-                modifier = Modifier.heightIn(min = 40.dp)
+            val labelColor = if (selected) selectedLabelColor else unselectedLabelColor
+            Box(
+                modifier = Modifier
+                    .heightIn(min = 36.dp)
+                    .clip(pillShape)
+                    .background(if (selected) pillColor else Color.Transparent)
+                    .clickable { onTabClick(index, type) }
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = type.displayName,
                     fontSize = 13.sp,
                     fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                    color = if (selected) selectedLabelColor else unselectedLabelColor,
-                    maxLines = 1,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+                    color = labelColor,
+                    maxLines = 1
                 )
             }
         }
