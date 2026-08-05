@@ -44,7 +44,7 @@
 [修复] 平板设置滑块弹窗过高
 [适配] 大屏自定义对话框最大宽度
 [修复] DLNA 双网卡机型 SSDP 发现
-v0.2.0(19e3dac)
+v0.2.0(7631b93)
 
 格式规范见 [docs/wiki/CHANGELOG_GUIDE.md](docs/wiki/CHANGELOG_GUIDE.md)。社群：频道 [t.me/bilipai666](https://t.me/bilipai666)，群 [t.me/bilipai888](https://t.me/bilipai888/1)。比较：[`v26.0805.1...main`](https://github.com/jay3-yy/BiliPai/compare/v26.0805.1...main)。
 
