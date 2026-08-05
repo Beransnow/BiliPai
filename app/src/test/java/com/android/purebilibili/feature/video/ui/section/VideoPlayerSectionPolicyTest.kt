@@ -558,6 +558,19 @@ class VideoPlayerSectionPolicyTest {
     }
 
     @Test
+    fun livePlayerSharedElement_disabledUnderHdrSurfaceOutput() {
+        assertFalse(
+            shouldEnableLivePlayerSharedElement(
+                transitionEnabled = true,
+                allowLivePlayerSharedElement = true,
+                hasSharedTransitionScope = true,
+                hasAnimatedVisibilityScope = true,
+                requiresHdrSurfaceOutput = true
+            )
+        )
+    }
+
+    @Test
     fun playerSurfaceRebind_onlyWhenForegroundVideoSurfaceNeedsRecovery() {
         assertTrue(
             shouldRebindPlayerSurfaceOnForeground(
@@ -1050,8 +1063,9 @@ class VideoPlayerSectionPolicyTest {
     }
 
     @Test
-    fun playbackStateAutoFullscreen_triggersWhenAttachedAfterPlaybackAlreadyStarted() {
-        assertTrue(
+    fun playbackStateAutoFullscreen_neverRetriggersFromCompositionSnapshot() {
+        // Snapshot re-composition after leaving fullscreen must not re-enter fullscreen.
+        assertFalse(
             shouldToggleAutoFullscreenForCurrentPlaybackSnapshot(
                 autoEnterFullscreenEnabled = true,
                 autoExitFullscreenEnabled = true,

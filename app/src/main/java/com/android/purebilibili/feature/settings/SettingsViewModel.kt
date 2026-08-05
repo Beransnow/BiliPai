@@ -921,6 +921,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    fun toggleLiveSurfaceCardTransition(value: Boolean) {
+        viewModelScope.launch {
+            SettingsManager.setLiveSurfaceCardTransitionEnabled(context, value)
+        }
+    }
+
     fun setVideoSharedTransitionSpeed(speed: VideoSharedTransitionSpeed) {
         viewModelScope.launch {
             SettingsManager.setVideoSharedTransitionSpeed(context, speed)

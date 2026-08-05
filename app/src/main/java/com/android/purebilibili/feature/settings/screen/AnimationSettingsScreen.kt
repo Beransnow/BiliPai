@@ -133,6 +133,9 @@ fun AnimationSettingsContent(
     val videoTransitionRealtimeBlurEnabled by SettingsManager
         .getVideoTransitionRealtimeBlurEnabled(context)
         .collectAsStateWithLifecycle(initialValue = true)
+    val liveSurfaceCardTransitionEnabled by SettingsManager
+        .getLiveSurfaceCardTransitionEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = true)
     val effectiveEntranceSpec = rememberEffectiveEntranceMotionSpec()
     // 开关开着、但有效参数被降级为不动画 → 系统减弱动效在生效。
     val entranceDowngradedBySystem = uiEntranceAnimationEnabled && !effectiveEntranceSpec.animate
@@ -240,6 +243,16 @@ fun AnimationSettingsContent(
                             subtitle = "点击视频卡片时，让封面和标题自然移动到详情页",
                             checked = state.cardTransitionEnabled,
                             onCheckedChange = { viewModel.toggleCardTransition(it) },
+                            iconTint = iOSTeal
+                        )
+                        AppPreferenceDivider()
+                        AppSwitchPreference(
+                            icon = rememberSettingsSemanticIcon(SettingsIconRole.CARD_TRANSITION_ANIMATION),
+                            title = "实时画面转场",
+                            subtitle = "进出详情用播放器当前画面做双向变形；HDR/杜比仍走高质量输出，不降画质",
+                            checked = liveSurfaceCardTransitionEnabled,
+                            onCheckedChange = { viewModel.toggleLiveSurfaceCardTransition(it) },
+                            enabled = state.cardTransitionEnabled,
                             iconTint = iOSTeal
                         )
                         AppPreferenceDivider()

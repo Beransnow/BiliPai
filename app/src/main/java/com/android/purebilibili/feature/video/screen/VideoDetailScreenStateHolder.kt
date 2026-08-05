@@ -139,6 +139,8 @@ import com.android.purebilibili.feature.video.state.VideoPlayerState
 import com.android.purebilibili.feature.video.state.rememberVideoPlayerState
 import com.android.purebilibili.feature.video.state.shouldReuseMiniPlayerAtEntry
 import com.android.purebilibili.feature.video.ui.section.VideoPlayerSection
+import com.android.purebilibili.feature.video.ui.section.resolveAllowLivePlayerSharedElementForMorph
+import com.android.purebilibili.feature.video.ui.section.resolveNavigationLiveSurfaceTextureEnabled
 import com.android.purebilibili.feature.video.ui.section.shouldKeepVideoPlaybackAwake
 import com.android.purebilibili.feature.video.ui.components.ReplyHeader
 import com.android.purebilibili.feature.video.ui.components.ReplyItemView
@@ -298,6 +300,29 @@ internal fun VideoDetailScreenStateHolder(
         .getHomeUpBadgesVisible(context)
         .collectAsStateWithLifecycle(initialValue = true
         )
+    val liveSurfaceCardTransitionEnabled by com.android.purebilibili.core.store.SettingsManager
+        .getLiveSurfaceCardTransitionEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = true)
+    // SDR live morph TextureView only when both master transition + live-surface switch are on.
+    // HDR still forces SurfaceView inside shouldUseTextureSurfaceForFlip (no quality sacrifice).
+    val useTextureSurfaceForNavigation = remember(
+        transitionEnabled,
+        liveSurfaceCardTransitionEnabled,
+    ) {
+        resolveNavigationLiveSurfaceTextureEnabled(
+            cardTransitionEnabled = transitionEnabled,
+            liveSurfaceCardTransitionEnabled = liveSurfaceCardTransitionEnabled,
+        )
+    }
+    val allowLivePlayerSharedElement = remember(
+        transitionEnabled,
+        liveSurfaceCardTransitionEnabled,
+    ) {
+        resolveAllowLivePlayerSharedElementForMorph(
+            cardTransitionEnabled = transitionEnabled,
+            liveSurfaceCardTransitionEnabled = liveSurfaceCardTransitionEnabled,
+        )
+    }
     val motionSpec = remember(transitionEnterDurationMillis) {
         resolveVideoDetailMotionSpec(transitionEnterDurationMillis)
     }
@@ -2634,9 +2659,9 @@ internal fun VideoDetailScreenStateHolder(
                 ),
             preserveCurrentFrameOnFullscreenChange = preserveCurrentFrameOnFullscreenChange,
             liveBackPreview = bindLivePlayerForBackPreview,
-            useTextureSurfaceForNavigation = transitionEnabled,
+            useTextureSurfaceForNavigation = useTextureSurfaceForNavigation,
             predictiveBackCancelRecoveryGeneration = predictiveBackCancelRecoveryGeneration,
-            allowLivePlayerSharedElement = true,
+            allowLivePlayerSharedElement = allowLivePlayerSharedElement,
             sourceRouteForSharedElement = sourceRouteForSharedElement,
             preserveSourceCardCornerDuringSharedReturn =
                 detailShellSharedBoundsEnabled && useReturningVideoDetailVisualState,
@@ -2934,9 +2959,9 @@ internal fun VideoDetailScreenStateHolder(
                     },
                     forceCoverOnly = forceCoverOnlyForLiveSafeReturn,
                     preserveCurrentFrameOnFullscreenChange = preserveCurrentFrameOnFullscreenChange,
-                    useTextureSurfaceForNavigation = transitionEnabled,
+                    useTextureSurfaceForNavigation = useTextureSurfaceForNavigation,
                     predictiveBackCancelRecoveryGeneration = predictiveBackCancelRecoveryGeneration,
-                    allowLivePlayerSharedElement = true,
+                    allowLivePlayerSharedElement = allowLivePlayerSharedElement,
                     sourceRouteForSharedElement = sourceRouteForSharedElement,
                     suppressSubtitleOverlay = shouldSuppressSubtitleOverlay,
                     subtitleDisplayModePreferenceOverride = subtitleDisplayModeOverride,
@@ -3644,9 +3669,9 @@ internal fun VideoDetailScreenStateHolder(
                                     ),
                                 preserveCurrentFrameOnFullscreenChange = preserveCurrentFrameOnFullscreenChange,
                                 liveBackPreview = bindLivePlayerForBackPreview,
-                                useTextureSurfaceForNavigation = transitionEnabled,
+                                useTextureSurfaceForNavigation = useTextureSurfaceForNavigation,
                                 predictiveBackCancelRecoveryGeneration = predictiveBackCancelRecoveryGeneration,
-                                allowLivePlayerSharedElement = true,
+                                allowLivePlayerSharedElement = allowLivePlayerSharedElement,
                                 sourceRouteForSharedElement = sourceRouteForSharedElement,
                                 preserveSourceCardCornerDuringSharedReturn =
                                     detailShellSharedBoundsEnabled &&
@@ -3971,7 +3996,7 @@ internal fun VideoDetailScreenStateHolder(
             playbackViewModel = viewModel,
             engagementViewModel = engagementViewModel,
             sharedPlayer = if (useSharedPortraitPlayer) playerState.player else null,
-            useTextureSurfaceForNavigation = transitionEnabled,
+            useTextureSurfaceForNavigation = useTextureSurfaceForNavigation,
             onBack = { presentationState.setPortraitFullscreen(false) },
             onHomeClick = {
                 presentationState.setPortraitFullscreen(false)
