@@ -70,6 +70,9 @@ data class SearchUiState(
     val searchOrder: SearchOrder = SearchOrder.TOTALRANK,
     val searchDurations: Set<SearchDuration> = emptySet(),
     val videoTid: Int = 0,
+    val pubTimeType: SearchVideoPubTimeType = SearchVideoPubTimeType.ALL,
+    val pubBegin: Long? = null,
+    val pubEnd: Long? = null,
     val upOrder: SearchUpOrder = SearchUpOrder.DEFAULT,
     val upOrderSort: SearchOrderSort = SearchOrderSort.DESC,
     val upUserType: SearchUserType = SearchUserType.ALL,
@@ -391,8 +394,47 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
+    /** PiliPlus-style single duration selection for the filter sheet. */
+    fun setSearchDuration(duration: SearchDuration) {
+        _uiState.update {
+            it.copy(searchDurations = resolveSearchDurationSelection(duration))
+        }
+        if (_uiState.value.query.isNotBlank() && _uiState.value.showResults) {
+            search(_uiState.value.query)
+        }
+    }
+
     fun setVideoTid(tid: Int) {
         _uiState.update { it.copy(videoTid = tid) }
+        if (_uiState.value.query.isNotBlank() && _uiState.value.showResults) {
+            search(_uiState.value.query)
+        }
+    }
+
+    fun setPubTimeType(type: SearchVideoPubTimeType) {
+        val range = resolveSearchPubTimeRange(type = type)
+        _uiState.update {
+            it.copy(
+                pubTimeType = type,
+                pubBegin = range.beginEpochSeconds,
+                pubEnd = range.endEpochSeconds
+            )
+        }
+        if (_uiState.value.query.isNotBlank() && _uiState.value.showResults) {
+            search(_uiState.value.query)
+        }
+    }
+
+    fun setCustomPubTimeRange(beginEpochSeconds: Long, endEpochSeconds: Long) {
+        val begin = minOf(beginEpochSeconds, endEpochSeconds)
+        val end = maxOf(beginEpochSeconds, endEpochSeconds)
+        _uiState.update {
+            it.copy(
+                pubTimeType = SearchVideoPubTimeType.CUSTOM,
+                pubBegin = begin,
+                pubEnd = end
+            )
+        }
         if (_uiState.value.query.isNotBlank() && _uiState.value.showResults) {
             search(_uiState.value.query)
         }
@@ -478,12 +520,16 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                     val order = _uiState.value.searchOrder
                     val durations = _uiState.value.searchDurations
                     val videoTid = _uiState.value.videoTid
+                    val pubBegin = _uiState.value.pubBegin
+                    val pubEnd = _uiState.value.pubEnd
                     val result = SearchRepository.searchWithDurations(
                         keyword = normalizedKeyword,
                         order = order,
                         durations = durations,
                         tids = videoTid,
-                        page = 1
+                        page = 1,
+                        pubBegin = pubBegin,
+                        pubEnd = pubEnd
                     )
                     result.onSuccess { (videos, pageInfo) ->
                         if (!shouldApplySearchResult(searchSessionId, activeSearchSessionId, normalizedKeyword, _uiState.value.query, searchType, _uiState.value.searchType)) return@onSuccess
@@ -861,7 +907,9 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
                         order = state.searchOrder,
                         durations = state.searchDurations,
                         tids = state.videoTid,
-                        page = nextPage
+                        page = nextPage,
+                        pubBegin = state.pubBegin,
+                        pubEnd = state.pubEnd
                     )
                     result.onSuccess { (videos, pageInfo) ->
                         if (!shouldApplySearchResult(searchSessionId, activeSearchSessionId, state.query, _uiState.value.query, state.searchType, _uiState.value.searchType)) return@onSuccess

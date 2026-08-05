@@ -19,7 +19,19 @@ class SearchLandingUiPolicyTest {
     fun `search discovery section keeps two columns to match original layout`() {
         assertEquals(2, resolveSearchKeywordSectionColumns(requestedColumns = 1, showTrendingAction = false))
         assertEquals(2, resolveSearchKeywordSectionColumns(requestedColumns = 4, showTrendingAction = false))
-        assertEquals(3, resolveSearchKeywordSectionColumns(requestedColumns = 3, showTrendingAction = true))
+        assertEquals(2, resolveSearchKeywordSectionColumns(requestedColumns = 3, showTrendingAction = true))
+    }
+
+    @Test
+    fun `search landing section order matches piliplus portrait layout`() {
+        assertEquals(
+            listOf(
+                SearchLandingSection.TRENDING,
+                SearchLandingSection.HISTORY,
+                SearchLandingSection.DISCOVER
+            ),
+            resolveSearchLandingSectionOrder()
+        )
     }
 
     @Test

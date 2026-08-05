@@ -60,7 +60,11 @@ import com.android.purebilibili.core.ui.components.AppContentStateAction
 import com.android.purebilibili.core.ui.components.AppContentStatePresentation
 import com.android.purebilibili.core.ui.components.AppEmptyState
 import com.android.purebilibili.core.ui.components.AppErrorState
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import com.android.purebilibili.core.ui.components.AppScrollableTabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
@@ -917,23 +921,41 @@ fun SearchScreen(
                                 enter = fadeIn(animationSpec = tween(90)),
                                 exit = fadeOut(animationSpec = tween(70))
                             ) {
-                                SearchFilterBar(
-                                    currentType = state.searchType,
-                                    currentOrder = state.searchOrder,
-                                    currentDurations = state.searchDurations,
-                                    currentVideoTid = state.videoTid,
-                                    currentUpOrder = state.upOrder,
-                                    currentUpOrderSort = state.upOrderSort,
-                                    currentUpUserType = state.upUserType,
-                                    currentLiveOrder = state.liveOrder,
-                                    onOrderChange = { viewModel.setSearchOrder(it) },
-                                    onDurationToggle = { viewModel.toggleSearchDuration(it) },
-                                    onVideoTidChange = { viewModel.setVideoTid(it) },
-                                    onUpOrderChange = { viewModel.setUpOrder(it) },
-                                    onUpOrderSortChange = { viewModel.setUpOrderSort(it) },
-                                    onUpUserTypeChange = { viewModel.setUpUserType(it) },
-                                    onLiveOrderChange = { viewModel.setLiveOrder(it) }
-                                )
+                                if (state.searchType == SearchType.VIDEO) {
+                                    SearchVideoFilterBar(
+                                        currentOrder = state.searchOrder,
+                                        currentDurations = state.searchDurations,
+                                        currentVideoTid = state.videoTid,
+                                        currentPubTimeType = state.pubTimeType,
+                                        currentPubBegin = state.pubBegin,
+                                        currentPubEnd = state.pubEnd,
+                                        onOrderChange = { viewModel.setSearchOrder(it) },
+                                        onDurationSelect = { viewModel.setSearchDuration(it) },
+                                        onVideoTidChange = { viewModel.setVideoTid(it) },
+                                        onPubTimeTypeChange = { viewModel.setPubTimeType(it) },
+                                        onCustomPubTimeRange = { begin, end ->
+                                            viewModel.setCustomPubTimeRange(begin, end)
+                                        }
+                                    )
+                                } else {
+                                    SearchFilterBar(
+                                        currentType = state.searchType,
+                                        currentOrder = state.searchOrder,
+                                        currentDurations = state.searchDurations,
+                                        currentVideoTid = state.videoTid,
+                                        currentUpOrder = state.upOrder,
+                                        currentUpOrderSort = state.upOrderSort,
+                                        currentUpUserType = state.upUserType,
+                                        currentLiveOrder = state.liveOrder,
+                                        onOrderChange = { viewModel.setSearchOrder(it) },
+                                        onDurationToggle = { viewModel.toggleSearchDuration(it) },
+                                        onVideoTidChange = { viewModel.setVideoTid(it) },
+                                        onUpOrderChange = { viewModel.setUpOrder(it) },
+                                        onUpOrderSortChange = { viewModel.setUpOrderSort(it) },
+                                        onUpUserTypeChange = { viewModel.setUpUserType(it) },
+                                        onLiveOrderChange = { viewModel.setLiveOrder(it) }
+                                    )
+                                }
                             }
                         HorizontalPager(
                             state = searchPagerState,
@@ -2000,50 +2022,82 @@ fun SearchTopBar(
     }
 }
 
-//  气泡化历史记录组件
+// 气泡化历史记录：Material3 InputChip / Miuix Surface chip
 @Composable
 fun HistoryChip(
     keyword: String,
     onClick: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val historyIcon = rememberAppHistoryIcon()
     val clearIcon = rememberAppClearIcon()
     val deleteLabel = stringResource(R.string.common_delete)
-    AppInputChip(
-        selected = false,
-        onClick = onClick,
-        label = {
-            AppText(
-                text = keyword,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 13.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        },
-        leadingIcon = {
-            AppIcon(
-                historyIcon,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f),
-                modifier = Modifier.size(16.dp)
-            )
-        },
-        trailingIcon = {
-            AppIconButton(
-                onClick = onDelete,
-                modifier = Modifier.size(48.dp)
+    val chrome = resolveSearchNativeChrome(
+        uiPreset = com.android.purebilibili.core.theme.LocalUiPreset.current,
+        androidNativeVariant = com.android.purebilibili.core.theme.LocalAndroidNativeVariant.current
+    )
+    when (chrome) {
+        SearchNativeChrome.MIUIX -> {
+            androidx.compose.material3.Surface(
+                onClick = onClick,
+                shape = RoundedCornerShape(8.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f),
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant
             ) {
-                AppIcon(
-                    clearIcon,
-                    contentDescription = deleteLabel,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.5f),
-                    modifier = Modifier.size(14.dp)
-                )
+                Row(
+                    modifier = Modifier.padding(horizontal = 11.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    androidx.compose.material3.Text(
+                        text = keyword,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 13.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    androidx.compose.material3.IconButton(
+                        onClick = onDelete,
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        androidx.compose.material3.Icon(
+                            clearIcon,
+                            contentDescription = deleteLabel,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.5f),
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+                }
             }
         }
-    )
+        SearchNativeChrome.MATERIAL3 -> {
+            androidx.compose.material3.InputChip(
+                selected = false,
+                onClick = onClick,
+                label = {
+                    androidx.compose.material3.Text(
+                        text = keyword,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 13.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
+                trailingIcon = {
+                    androidx.compose.material3.IconButton(
+                        onClick = onDelete,
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        androidx.compose.material3.Icon(
+                            clearIcon,
+                            contentDescription = deleteLabel,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.5f),
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+                }
+            )
+        }
+    }
 }
 
 // 保留旧版 HistoryItem 用于兼容 (可选保留)
@@ -2336,39 +2390,51 @@ private fun SearchResultTypeTabRow(
     onTabClick: (Int, SearchType) -> Unit
 ) {
     val selectedPage = pagerState.currentPage.coerceIn(tabs.indices)
-    AppScrollableTabRow(
+    // PiliPlus-style pill tabs: secondaryContainer indicator, no underline.
+    androidx.compose.material3.ScrollableTabRow(
         selectedTabIndex = selectedPage,
-        modifier = Modifier
-            .fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth(),
         edgePadding = 8.dp,
         containerColor = Color.Transparent,
         contentColor = MaterialTheme.colorScheme.onSurface,
         divider = {},
         indicator = { tabPositions ->
             if (tabPositions.isNotEmpty()) {
-                TabRowDefaults.SecondaryIndicator(
-                    modifier = Modifier.tabIndicatorOffset(tabPositions[selectedPage.coerceIn(tabPositions.indices)]),
-                    color = MaterialTheme.colorScheme.primary
+                val position = tabPositions[selectedPage.coerceIn(tabPositions.indices)]
+                Box(
+                    Modifier
+                        .tabIndicatorOffset(position)
+                        .padding(horizontal = 3.dp)
+                        .height(32.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            shape = RoundedCornerShape(20.dp)
+                        )
                 )
             }
         }
     ) {
         tabs.forEachIndexed { index, type ->
             val selected = selectedPage == index
-            AppTab(
+            androidx.compose.material3.Tab(
                 selected = selected,
                 onClick = { onTabClick(index, type) },
                 interactionSource = remember { MutableInteractionSource() },
-                selectedContentColor = MaterialTheme.colorScheme.onSurface,
-                unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.heightIn(min = 48.dp)
+                selectedContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                unselectedContentColor = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.heightIn(min = 40.dp)
             ) {
-                AppText(
+                Text(
                     text = type.displayName,
                     fontSize = 13.sp,
                     fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                    color = if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1
+                    color = if (selected) {
+                        MaterialTheme.colorScheme.onSecondaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.outline
+                    },
+                    maxLines = 1,
+                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
                 )
             }
         }
