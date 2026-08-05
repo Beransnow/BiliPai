@@ -182,18 +182,15 @@ internal fun resolveVideoDetailReturnCoverAlpha(
     if (!hasResidentCover) return 0f
     // Live morph：封面永远垫在播放器下面（alpha=1）。
     // 预测返回时 TextureView 若短暂未合成，垫底封面挡住黑壳；有视频帧时帧在上层盖住封面。
-    // 注意：封面层在 Player 之下，不会「盖住」实时画面。
     if (liveReturnMorph) {
-        if (keepLivePlayerForPredictiveBack) return 1f
-        // 已提交：末段 handoff 仍读同一 progress（与 player alpha 交叉）。
-        // 垫底层始终 1；真正「看见封面」靠 player alpha 降到 0。
         return 1f
     }
-    // Predictive seek cancel：非 live 路径也不能把封面按 seek 拉满盖住播放器。
+    // 关闭实时画面：封面/截图主导 morph。预测返回一开始就切到封面，避免 SurfaceView 黑块。
     if (keepLivePlayerForPredictiveBack) return 0f
     val progress = transitionProgress.coerceIn(0f, 1f)
-    // CoverFirst / 无 live 帧：提交后封面立即接管，避免黑壳。
-    return if (isCommittedCardReturn) 1f else 1f - progress
+    if (isCommittedCardReturn) return 1f
+    // progress: 1=详情满屏，0=已落位列表。略一离开详情就切封面（截图路径）。
+    return if (progress < 0.999f) 1f else 0f
 }
 
 /**
@@ -221,6 +218,7 @@ internal fun resolveVideoDetailReturnPlayerAlpha(
     liveReturnMorph: Boolean = false,
     keepLivePlayerForPredictiveBack: Boolean = false,
 ): Float {
+    // 实时画面开 + 预测返回：player 保持满不透明（视频帧在上）。
     if (keepLivePlayerForPredictiveBack) return 1f
     if (liveReturnMorph) {
         if (!hasResidentCover) return 1f
@@ -229,8 +227,11 @@ internal fun resolveVideoDetailReturnPlayerAlpha(
             isCommittedCardReturn = isCommittedCardReturn,
         )
     }
-    if (isCommittedCardReturn) return if (hasResidentCover) 0f else 1f
-    return transitionProgress.coerceIn(0f, 1f)
+    // 关闭实时画面：有封面则立刻让位，morph 只展示封面/截图，不露黑 SurfaceView。
+    if (!hasResidentCover) return 1f
+    if (isCommittedCardReturn) return 0f
+    val progress = transitionProgress.coerceIn(0f, 1f)
+    return if (progress < 0.999f) 0f else 1f
 }
 
 /**

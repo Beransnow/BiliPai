@@ -60,13 +60,16 @@ import androidx.compose.material3.SliderDefaults
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -78,6 +81,7 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -124,7 +128,28 @@ import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
 
 private val MusicFallbackColor = Color(0xFF342B42)
-private val MusicContentColor = Color.White
+private val MusicContentOnDark = Color.White
+private val MusicContentOnLight = Color(0xFF1A1A1A)
+
+private val LocalMusicContentColor = staticCompositionLocalOf { MusicContentOnDark }
+
+/** 当前听视频页前景色（随封面色板明暗切换）。 */
+private val MusicContentColor: Color
+    @Composable
+    @ReadOnlyComposable
+    get() = LocalMusicContentColor.current
+
+/**
+ * 听视频/音乐页正文色：封面色板偏亮时用深色字，偏暗时用白色。
+ * 避免浅色模式下白字贴在浅色玻璃/底上不可见。
+ */
+internal fun resolveMusicPlayerContentColor(backgroundColor: Color): Color {
+    return if (backgroundColor.luminance() >= 0.45f) {
+        MusicContentOnLight
+    } else {
+        MusicContentOnDark
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -197,7 +222,9 @@ internal fun MusicPlayerContent(
         isAppInBackground = BackgroundManager.isInBackground,
         reduceMotion = effectiveReduceMotion
     )
+    val resolvedContentColor = resolveMusicPlayerContentColor(backgroundColor)
 
+    CompositionLocalProvider(LocalMusicContentColor provides resolvedContentColor) {
     BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
@@ -589,6 +616,7 @@ internal fun MusicPlayerContent(
             }
         }
     }
+    } // CompositionLocalProvider
 }
 
 @Composable
@@ -1203,7 +1231,7 @@ private fun LyricLineContent(
             .clickable(onClick = onClick)
     ) {
         AppText(
-            text = buildLyricText(line, isCurrent, positionMs),
+            text = buildLyricText(line, isCurrent, positionMs, MusicContentColor),
             color = MusicContentColor,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
@@ -1228,12 +1256,17 @@ private fun LyricLineContent(
     }
 }
 
-private fun buildLyricText(line: LyricLine, isCurrent: Boolean, positionMs: Long): AnnotatedString {
+private fun buildLyricText(
+    line: LyricLine,
+    isCurrent: Boolean,
+    positionMs: Long,
+    contentColor: Color,
+): AnnotatedString {
     if (!isCurrent || line.spans.isEmpty()) return AnnotatedString(line.text)
     return buildAnnotatedString {
         line.spans.forEach { span ->
             val active = positionMs >= span.startTimeMs
-            pushStyle(SpanStyle(color = MusicContentColor.copy(alpha = if (active) 1f else 0.38f)))
+            pushStyle(SpanStyle(color = contentColor.copy(alpha = if (active) 1f else 0.38f)))
             append(span.text)
             pop()
         }
@@ -1279,20 +1312,22 @@ private fun GlassIconButton(
         modifier = Modifier.size(48.dp),
         backdrop = miuixBackdrop,
         liquidGlassEffectsEnabled = glassEnabled
-    ) {
+    ) { glassActive ->
+        // 无玻璃时底是 cardContainer（浅色主题近白），必须用 onSurface，不能死白。
+        val iconTint = if (glassActive) MusicContentColor else MaterialTheme.colorScheme.onSurface
         AppIconButton(
             onClick = onClick,
             modifier = Modifier
                 .matchParentSize()
                 .then(
-                    if (it) {
+                    if (glassActive) {
                         Modifier
                     } else {
                         Modifier.background(AppSurfaceTokens.cardContainer(), CircleShape)
                     }
                 )
         ) {
-            AppIcon(icon, contentDescription = description, tint = MusicContentColor)
+            AppIcon(icon, contentDescription = description, tint = iconTint)
         }
     }
 }
@@ -1312,12 +1347,13 @@ private fun GlassTextButton(
             .height(48.dp),
         backdrop = miuixBackdrop,
         liquidGlassEffectsEnabled = glassEnabled
-    ) {
+    ) { glassActive ->
+        val labelColor = if (glassActive) MusicContentColor else MaterialTheme.colorScheme.onSurface
         Box(
             modifier = Modifier
                 .matchParentSize()
                 .then(
-                    if (it) {
+                    if (glassActive) {
                         Modifier
                     } else {
                         Modifier.background(AppSurfaceTokens.cardContainer(), shape)
@@ -1327,7 +1363,7 @@ private fun GlassTextButton(
                 .padding(horizontal = 15.dp),
             contentAlignment = Alignment.Center
         ) {
-            AppText(label, color = MusicContentColor, style = MaterialTheme.typography.labelMedium)
+            AppText(label, color = labelColor, style = MaterialTheme.typography.labelMedium)
         }
     }
 }
