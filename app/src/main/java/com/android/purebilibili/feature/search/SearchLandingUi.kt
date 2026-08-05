@@ -93,22 +93,26 @@ internal data class SearchDiscoverOriginalCellColors(
     val borderColor: Color
 )
 
+/**
+ * Discover chips stay neutral (surfaceVariant), not brand/theme primary —
+ * matches official search / PiliPlus “搜索发现” look under all presets.
+ */
 internal fun resolveSearchDiscoverOriginalCellColors(
     colorScheme: androidx.compose.material3.ColorScheme
 ): SearchDiscoverOriginalCellColors {
     return if (colorScheme.background.luminance() > 0.5f) {
         SearchDiscoverOriginalCellColors(
-            containerColor = colorScheme.primary.copy(alpha = 0.08f),
+            containerColor = colorScheme.surfaceVariant.copy(alpha = 0.72f),
             titleColor = colorScheme.onSurface,
-            subtitleColor = colorScheme.primary.copy(alpha = 0.58f),
-            borderColor = colorScheme.primary.copy(alpha = 0.12f)
+            subtitleColor = colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
+            borderColor = colorScheme.outlineVariant.copy(alpha = 0.55f)
         )
     } else {
         SearchDiscoverOriginalCellColors(
-            containerColor = colorScheme.primary.copy(alpha = 0.18f),
+            containerColor = colorScheme.surfaceVariant.copy(alpha = 0.55f),
             titleColor = colorScheme.onSurface,
-            subtitleColor = colorScheme.primary.copy(alpha = 0.72f),
-            borderColor = colorScheme.primary.copy(alpha = 0.22f)
+            subtitleColor = colorScheme.onSurfaceVariant.copy(alpha = 0.88f),
+            borderColor = colorScheme.outline.copy(alpha = 0.28f)
         )
     }
 }

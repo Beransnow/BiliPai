@@ -35,13 +35,18 @@ class SearchLandingUiPolicyTest {
     }
 
     @Test
-    fun `search discovery original cell colors use themed primary tint`() {
-        val light = resolveSearchDiscoverOriginalCellColors(lightColorScheme())
-        val dark = resolveSearchDiscoverOriginalCellColors(darkColorScheme())
+    fun `search discovery original cell colors stay neutral without theme primary`() {
+        val lightScheme = lightColorScheme()
+        val darkScheme = darkColorScheme()
+        val light = resolveSearchDiscoverOriginalCellColors(lightScheme)
+        val dark = resolveSearchDiscoverOriginalCellColors(darkScheme)
 
         assertTrue(light.containerColor.alpha > 0f)
         assertTrue(light.borderColor.alpha > 0f)
-        assertTrue(dark.containerColor.alpha > light.containerColor.alpha)
+        // Must not tint with brand primary (搜索发现 stays neutral).
+        assertTrue(light.containerColor.red != lightScheme.primary.red || light.containerColor.alpha < 0.3f)
+        assertEquals(lightScheme.onSurface, light.titleColor)
+        assertEquals(darkScheme.onSurface, dark.titleColor)
     }
 
     @Test
