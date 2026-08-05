@@ -581,6 +581,32 @@ object VideoRepository {
                         return fetchWebFeed(idx = idx, refreshCount = refreshCount)
                     }
                 }
+                com.android.purebilibili.core.store.SettingsManager.FeedApiType.MERGED -> {
+                    // 合并模式：并行请求 Web 与移动端推荐流，交错合并、按视频去重
+                    return coroutineScope {
+                        val webDeferred = async { fetchWebFeed(idx = idx, refreshCount = refreshCount) }
+                        val mobileDeferred = async { fetchMobileFeed(idx = idx, refreshCount = refreshCount) }
+                        val webResult = webDeferred.await()
+                        val mobileResult = mobileDeferred.await()
+
+                        val webList = webResult.getOrNull().orEmpty()
+                        val mobileList = mobileResult.getOrNull().orEmpty()
+
+                        if (webList.isEmpty() && mobileList.isEmpty()) {
+                            // 两者都失败：优先返回 web 的失败原因，其次移动端
+                            val error = webResult.exceptionOrNull() ?: mobileResult.exceptionOrNull()
+                                ?: Exception("获取合并推荐流失败")
+                            com.android.purebilibili.core.util.Logger.d("VideoRepo", " Merged feed both failed: ${error.message}")
+                            Result.failure(error)
+                        } else {
+                            com.android.purebilibili.core.util.Logger.d(
+                                "VideoRepo",
+                                " Merged feed: web=${webList.size}, mobile=${mobileList.size}"
+                            )
+                            Result.success(com.android.purebilibili.feature.home.HomeFeedMergePolicy.mergeFeeds(web = webList, app = mobileList))
+                        }
+                    }
+                }
                 else -> return fetchWebFeed(idx = idx, refreshCount = refreshCount)
             }
         } catch (e: CancellationException) {
