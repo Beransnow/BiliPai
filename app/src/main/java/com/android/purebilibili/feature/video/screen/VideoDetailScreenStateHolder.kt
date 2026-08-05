@@ -3554,6 +3554,12 @@ internal fun VideoDetailScreenStateHolder(
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .graphicsLayer {
+                                            val gestureKeepLivePlayer = liveReturnMorph && (
+                                                videoCardDepthBackgroundState
+                                                    .isReturnGestureInProgressProvider() ||
+                                                    videoCardDepthBackgroundState
+                                                        .isGestureRestoreInProgressProvider()
+                                            )
                                             alpha = resolveVideoDetailReturnCoverAlpha(
                                                 transitionProgress =
                                                     resolveVideoDetailReturnVisualProgress(
@@ -3567,11 +3573,9 @@ internal fun VideoDetailScreenStateHolder(
                                                 isCommittedCardReturn = isCommittedCardReturn,
                                                 hasResidentCover = hasResidentReturnCover,
                                                 liveReturnMorph = liveReturnMorph,
-                                                keepLivePlayerForPredictiveBack =
-                                                    videoCardDepthBackgroundState
-                                                        .isReturnGestureInProgressProvider() ||
-                                                        videoCardDepthBackgroundState
-                                                            .isGestureRestoreInProgressProvider(),
+                                                // 仅实时视频 morph 在预测返回时保 player；
+                                                // 关闭实时画面时走封面/截图垫层，避免 SurfaceView 黑块。
+                                                keepLivePlayerForPredictiveBack = gestureKeepLivePlayer,
                                             )
                                         },
                                     contentScale = ContentScale.Crop
@@ -3581,6 +3585,12 @@ internal fun VideoDetailScreenStateHolder(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .graphicsLayer {
+                                        val gestureKeepLivePlayer = liveReturnMorph && (
+                                            videoCardDepthBackgroundState
+                                                .isReturnGestureInProgressProvider() ||
+                                                videoCardDepthBackgroundState
+                                                    .isGestureRestoreInProgressProvider()
+                                        )
                                         alpha = resolveVideoDetailReturnPlayerAlpha(
                                             transitionProgress =
                                                 resolveVideoDetailReturnVisualProgress(
@@ -3594,11 +3604,7 @@ internal fun VideoDetailScreenStateHolder(
                                             isCommittedCardReturn = isCommittedCardReturn,
                                             hasResidentCover = hasResidentReturnCover,
                                             liveReturnMorph = liveReturnMorph,
-                                            keepLivePlayerForPredictiveBack =
-                                                videoCardDepthBackgroundState
-                                                    .isReturnGestureInProgressProvider() ||
-                                                    videoCardDepthBackgroundState
-                                                        .isGestureRestoreInProgressProvider(),
+                                            keepLivePlayerForPredictiveBack = gestureKeepLivePlayer,
                                         )
                                     }
                             ) {
