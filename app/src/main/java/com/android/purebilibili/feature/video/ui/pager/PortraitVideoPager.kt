@@ -106,6 +106,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.PlaybackParameters
 import com.android.purebilibili.feature.video.ui.section.shouldKeepVideoPlaybackAwake
 import com.android.purebilibili.feature.video.ui.section.shouldShowLongPressSpeedFeedback
+import com.android.purebilibili.feature.video.ui.section.shouldShowLongPressSpeedHintCloseButton
 import com.android.purebilibili.feature.video.usecase.seekPlayerFromUserAction
 import com.android.purebilibili.feature.video.usecase.togglePlayerPlaybackFromUserAction
 import androidx.media3.common.VideoSize
@@ -1636,6 +1637,11 @@ private fun VideoPageItem(
         .getLongPressSpeed(context)
         .collectAsStateWithLifecycle(initialValue = 2.0f
         )
+    val longPressSpeedHintCloseEnabled by SettingsManager
+        .getLongPressSpeedHintCloseEnabled(context)
+        .collectAsStateWithLifecycle(
+            initialValue = SettingsManager.getLongPressSpeedHintCloseEnabledSync(context)
+        )
     val doubleTapSeekEnabled by SettingsManager
         .getDoubleTapSeekEnabled(context)
         .collectAsStateWithLifecycle(initialValue = false)
@@ -2638,16 +2644,18 @@ private fun VideoPageItem(
                         )
                     )
                 )
-                AppIconButton(
-                    onClick = { longPressSpeedHintDismissed = true },
-                    modifier = Modifier.size(48.dp),
-                ) {
-                    AppIcon(
-                        imageVector = CupertinoIcons.Default.Xmark,
-                        contentDescription = "关闭倍速提示",
-                        tint = Color.White,
-                        modifier = Modifier.size(18.dp),
-                    )
+                if (shouldShowLongPressSpeedHintCloseButton(longPressSpeedHintCloseEnabled)) {
+                    AppIconButton(
+                        onClick = { longPressSpeedHintDismissed = true },
+                        modifier = Modifier.size(48.dp),
+                    ) {
+                        AppIcon(
+                            imageVector = CupertinoIcons.Default.Xmark,
+                            contentDescription = "关闭倍速提示",
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    }
                 }
             }
         }

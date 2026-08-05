@@ -295,6 +295,16 @@ internal fun shouldShowLongPressSpeedFeedback(
     hintDismissed: Boolean,
 ): Boolean = isLongPressing && isPlaybackSurfaceActive && !hintDismissed
 
+/**
+ * 长按倍速浮层上的关闭（×）按钮。
+ *
+ * 默认关闭：第二指点 × 会打断长按手势（多点触控/抬手），容易把加速弄没。
+ * 该开关不进设置页 UI，仅作隐藏偏好（adb / 备份 / 调试）。
+ */
+internal fun shouldShowLongPressSpeedHintCloseButton(
+    closeButtonEnabled: Boolean,
+): Boolean = closeButtonEnabled
+
 internal fun shouldEnableLongPressSpeedGesture(
     isScreenLocked: Boolean,
     scale: Float,
