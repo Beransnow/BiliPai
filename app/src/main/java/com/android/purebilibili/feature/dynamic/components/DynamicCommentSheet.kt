@@ -577,11 +577,16 @@ private fun CommentItem(
 
     Box(modifier = modifier.fillMaxWidth()) {
     Row(modifier = Modifier.fillMaxWidth()) {
+        val memberMid = remember(member.mid, reply.mid) {
+            member.mid.toLongOrNull()?.takeIf { it > 0L }
+                ?: reply.mid.takeIf { it > 0L }
+        }
         ReplyMemberAvatar(
             member = member,
             placeholderColor = MaterialTheme.colorScheme.surfaceVariant,
             lightweightMode = false,
-            modifier = Modifier.size(AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall)
+            modifier = Modifier.size(AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall),
+            onClick = memberMid?.let { mid -> { onUserClick(mid) } }
         )
         
         Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
@@ -600,7 +605,15 @@ private fun CommentItem(
                     color = MaterialTheme.colorScheme.primary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false)
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .then(
+                            if (memberMid != null) {
+                                Modifier.clickable { onUserClick(memberMid) }
+                            } else {
+                                Modifier
+                            }
+                        )
                 )
                 Spacer(modifier = Modifier.width(AppSpacingTokens.Small))
                 AppText(

@@ -1,28 +1,47 @@
 package com.android.purebilibili.feature.audio.screen
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class MusicPlayerContentColorPolicyTest {
 
+    private val onLight = Color(0xFF1C1B1F) // typical MD3 onSurface
+    private val onDark = Color(0xFFE6E1E5) // typical MD3 inverseOnSurface
+
     @Test
-    fun lightPaletteUsesDarkContentForReadableButtons() {
-        val content = resolveMusicPlayerContentColor(Color(0xFFF5F5F5))
-        assertTrue(content.luminance() < 0.3f, "light bg needs dark text, was $content")
+    fun lightPaletteUsesThemeOnSurfaceToken() {
+        assertEquals(
+            onLight,
+            resolveMusicPlayerContentColor(
+                backgroundColor = Color(0xFFF5F5F5),
+                onLightBackground = onLight,
+                onDarkBackground = onDark,
+            )
+        )
     }
 
     @Test
-    fun darkPaletteKeepsWhiteContent() {
-        val content = resolveMusicPlayerContentColor(Color(0xFF342B42))
-        assertEquals(Color.White, content)
+    fun darkPaletteUsesThemeInverseOnSurfaceToken() {
+        assertEquals(
+            onDark,
+            resolveMusicPlayerContentColor(
+                backgroundColor = Color(0xFF342B42),
+                onLightBackground = onLight,
+                onDarkBackground = onDark,
+            )
+        )
     }
 
     @Test
-    fun borderlineLightBackgroundStillPrefersDarkText() {
-        val content = resolveMusicPlayerContentColor(Color(0xFFBDBDBD))
-        assertTrue(content.luminance() < 0.3f)
+    fun borderlineLightBackgroundStillPrefersOnSurface() {
+        assertEquals(
+            onLight,
+            resolveMusicPlayerContentColor(
+                backgroundColor = Color(0xFFBDBDBD),
+                onLightBackground = onLight,
+                onDarkBackground = onDark,
+            )
+        )
     }
 }

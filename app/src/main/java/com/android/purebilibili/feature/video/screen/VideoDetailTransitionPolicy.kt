@@ -179,18 +179,21 @@ internal fun resolveVideoDetailReturnCoverAlpha(
     liveReturnMorph: Boolean = false,
     keepLivePlayerForPredictiveBack: Boolean = false,
 ): Float {
-    if (!hasResidentCover) return 0f
-    // Live morph：封面永远垫在播放器下面（alpha=1）。
-    // 预测返回时 TextureView 若短暂未合成，垫底封面挡住黑壳；有视频帧时帧在上层盖住封面。
+    // Live morph：封面垫在播放器下（alpha=1），无帧时防黑；有视频帧时被上层盖住。
     if (liveReturnMorph) {
-        return 1f
+        return if (hasResidentCover) 1f else 0f
     }
-    // 关闭实时画面：封面/截图主导 morph。预测返回一开始就切到封面，避免 SurfaceView 黑块。
-    if (keepLivePlayerForPredictiveBack) return 0f
-    val progress = transitionProgress.coerceIn(0f, 1f)
-    if (isCommittedCardReturn) return 1f
-    // progress: 1=详情满屏，0=已落位列表。略一离开详情就切封面（截图路径）。
-    return if (progress < 0.999f) 1f else 0f
+    // 关闭实时画面：刻意 **不画封面、不画 player**，只保留壳上黑底块 morph，
+    // 降低 sharedBounds overlay 的解码/合成压力（用户期望的「整块黑色卡」）。
+    @Suppress("UNUSED_PARAMETER")
+    val ignoredProgress = transitionProgress
+    @Suppress("UNUSED_PARAMETER")
+    val ignoredCommitted = isCommittedCardReturn
+    @Suppress("UNUSED_PARAMETER")
+    val ignoredKeepLive = keepLivePlayerForPredictiveBack
+    @Suppress("UNUSED_PARAMETER")
+    val ignoredCover = hasResidentCover
+    return 0f
 }
 
 /**
@@ -227,10 +230,10 @@ internal fun resolveVideoDetailReturnPlayerAlpha(
             isCommittedCardReturn = isCommittedCardReturn,
         )
     }
-    // 关闭实时画面：有封面则立刻让位，morph 只展示封面/截图，不露黑 SurfaceView。
-    if (!hasResidentCover) return 1f
-    if (isCommittedCardReturn) return 0f
+    // 关闭实时画面：离开详情后隐藏 player，只留黑底壳 morph（低渲染压力）。
     val progress = transitionProgress.coerceIn(0f, 1f)
+    if (isCommittedCardReturn) return 0f
+    // progress≈1 仍在详情：正常播；一离开（progress 下降）即关 player。
     return if (progress < 0.999f) 0f else 1f
 }
 
