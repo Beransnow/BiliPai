@@ -2914,7 +2914,21 @@ fun VideoPlayerSection(
         // 1. PlayerView (底层) - key 触发 graphicsLayer 强制更新
         //  [修复] 添加 isPortraitFullscreen 到 key，确保从全屏返回时重建 PlayerView 并重新绑定 Surface (解决黑屏问题)
         // Anime4K 只切换输出 Surface，不能作为 key 重建 PlayerView，否则会触发播放器恢复路径并丢失进度。
-        key(isFlippedHorizontal, isFlippedVertical, isPortraitFullscreen) {
+        // HDR/Dolby 必须 SurfaceView：升级到 125/126 后重建 PlayerView 才能把色彩元数据送到屏幕。
+        val currentQualityId =
+            (uiState as? VideoPlaybackUiState.Success)?.currentQuality ?: 0
+        val requiresHdrSurface = requiresHdrSurfaceOutput(
+            currentQualityId = currentQualityId,
+            colorTransfer = videoInputFormat?.colorInfo?.colorTransfer ?: 0
+        )
+        val useTextureSurface = shouldUseTextureSurfaceForFlip(
+            isFlippedHorizontal = isFlippedHorizontal,
+            isFlippedVertical = isFlippedVertical,
+            liveBackPreview = liveBackPreview,
+            navigationTransformEnabled = useTextureSurfaceForNavigation,
+            requiresHdrSurfaceOutput = requiresHdrSurface
+        )
+        key(isFlippedHorizontal, isFlippedVertical, isPortraitFullscreen, useTextureSurface) {
             val viewportAspectRatio = if (isFullscreen) currentAspectRatio else VideoAspectRatio.FIT
             val playerVideoSize = playerState.player.videoSize
             BoxWithConstraints(
@@ -2958,12 +2972,6 @@ fun VideoPlayerSection(
 
                 AndroidView(
                     factory = { ctx ->
-                        val useTextureSurface = shouldUseTextureSurfaceForFlip(
-                            isFlippedHorizontal = isFlippedHorizontal,
-                            isFlippedVertical = isFlippedVertical,
-                            liveBackPreview = liveBackPreview,
-                            navigationTransformEnabled = useTextureSurfaceForNavigation
-                        )
                         val basePlayerView = if (useTextureSurface) {
                             LayoutInflater.from(ctx)
                                 .inflate(com.android.purebilibili.R.layout.view_player_texture, null, false) as PlayerView
@@ -4401,7 +4409,6 @@ fun VideoPlayerSection(
                                 modifier = Modifier.size(18.dp),
                             )
                         }
-                    }
                     }
                 }
             }

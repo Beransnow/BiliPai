@@ -60,6 +60,37 @@ class VideoPlayerSurfacePolicyTest {
     }
 
     @Test
+    fun `hdr output forces surface view even when navigation transform is enabled`() {
+        assertFalse(
+            shouldUseTextureSurfaceForFlip(
+                isFlippedHorizontal = false,
+                isFlippedVertical = false,
+                navigationTransformEnabled = true,
+                requiresHdrSurfaceOutput = true
+            )
+        )
+        // Flip still needs TextureView for matrix transforms under HDR.
+        assertTrue(
+            shouldUseTextureSurfaceForFlip(
+                isFlippedHorizontal = true,
+                isFlippedVertical = false,
+                navigationTransformEnabled = true,
+                requiresHdrSurfaceOutput = true
+            )
+        )
+    }
+
+    @Test
+    fun `hdr surface required for quality 125 126 and pq hlg transfer`() {
+        assertTrue(requiresHdrSurfaceOutput(currentQualityId = 125))
+        assertTrue(requiresHdrSurfaceOutput(currentQualityId = 126))
+        assertTrue(requiresHdrSurfaceOutput(currentQualityId = 80, colorTransfer = 6))
+        assertTrue(requiresHdrSurfaceOutput(currentQualityId = 80, colorTransfer = 7))
+        assertFalse(requiresHdrSurfaceOutput(currentQualityId = 80, colorTransfer = 0))
+        assertFalse(requiresHdrSurfaceOutput(currentQualityId = 120, colorTransfer = 0))
+    }
+
+    @Test
     fun `player surface stays hidden until smooth reveal starts`() {
         val spec = resolveVideoPlayerSurfaceRevealSpec(
             forceCoverDuringReturnAnimation = false,

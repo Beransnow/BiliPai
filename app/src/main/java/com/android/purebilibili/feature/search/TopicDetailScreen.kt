@@ -23,11 +23,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
-import com.android.purebilibili.core.ui.components.AppIcon
-import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
-import com.android.purebilibili.core.ui.components.AppSurface
-import com.android.purebilibili.core.ui.components.AppText
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -97,7 +98,7 @@ fun TopicDetailScreen(
                     )
                 }
                 state.error != null && state.details == null && state.items.isEmpty() -> {
-                    AppText(
+                    Text(
                         text = state.error ?: "话题加载失败",
                         modifier = Modifier.align(Alignment.Center),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -171,13 +172,13 @@ private fun TopicDetailTopBar(
             .background(MaterialTheme.colorScheme.surface),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AppIconButton(onClick = onBack) {
-            AppIcon(
+        IconButton(onClick = onBack) {
+            Icon(
                 imageVector = rememberAppBackIcon(),
                 contentDescription = "返回"
             )
         }
-        AppText(
+        Text(
             text = title,
             fontSize = 18.sp,
             fontWeight = FontWeight.SemiBold,
@@ -196,7 +197,7 @@ private fun TopicHeaderCard(details: TopicTopDetails?) {
     val topicDescription = topic?.description
     val creatorName = creator?.name
     val creatorFace = creator?.face
-    AppSurface(
+    Surface(
         shape = RoundedCornerShape(8.dp),
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 1.dp,
@@ -222,7 +223,7 @@ private fun TopicHeaderCard(details: TopicTopDetails?) {
             )
             Spacer(modifier = Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
-                AppText(
+                Text(
                     text = topic?.name.orEmpty().ifBlank { "话题" },
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
@@ -232,7 +233,7 @@ private fun TopicHeaderCard(details: TopicTopDetails?) {
                 )
                 if (!topicDescription.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(4.dp))
-                    AppText(
+                    Text(
                         text = topicDescription,
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -241,7 +242,7 @@ private fun TopicHeaderCard(details: TopicTopDetails?) {
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                AppText(
+                Text(
                     text = buildString {
                         append("浏览 ${FormatUtils.formatStat(topic?.view ?: 0)}")
                         append(" · 动态 ${FormatUtils.formatStat(topic?.dynamics ?: 0)}")
