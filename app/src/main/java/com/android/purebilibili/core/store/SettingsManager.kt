@@ -1018,9 +1018,21 @@ internal fun mapDanmakuSettingsFromPreferences(
     return SettingsManager.mapDanmakuSettingsFromPreferences(preferences, scope)
 }
 
-internal fun mapAppNavigationSettingsFromPreferences(preferences: Preferences): AppNavigationSettings {
-    return SettingsManager.mapAppNavigationSettingsFromPreferences(preferences)
+internal fun mapAppNavigationSettingsFromPreferences(
+    preferences: Preferences,
+    defaultTabletUseSidebar: Boolean = false
+): AppNavigationSettings {
+    return SettingsManager.mapAppNavigationSettingsFromPreferences(
+        preferences = preferences,
+        defaultTabletUseSidebar = defaultTabletUseSidebar
+    )
 }
+
+/**
+ * 平板导航首启默认值：按设备类型预设（平板默认侧栏，手机默认底栏）。
+ * 与 [SettingsManager.getHorizontalAdaptationEnabled] 的 isTablet 预设机制一致。
+ */
+internal fun defaultTabletUseSidebar(isTabletDevice: Boolean): Boolean = isTabletDevice
 
 internal fun mapHomeTopTabSettingsFromPreferences(preferences: Preferences): HomeTopTabSettings {
     return SettingsManager.mapHomeTopTabSettingsFromPreferences(preferences)
@@ -6075,16 +6087,25 @@ object SettingsManager {
     
     /**
      *  平板导航模式
-     * - false: 使用底栏（默认，与手机一致）
+     * - false: 使用底栏
      * - true: 使用侧边栏
+     *
+     * 未写入偏好时：平板/大屏设备默认开启侧边栏（与横屏适配的设备预设一致）；
+     * 手机仍默认底栏。手机上即使为 true 也不会生效，因侧栏仍受 WindowSizeClass 门禁约束。
      */
     fun getTabletUseSidebar(context: Context): Flow<Boolean> = context.settingsDataStore.data
-        .map { preferences -> preferences[KEY_TABLET_NAVIGATION_MODE] ?: false }  // 默认使用底栏
+        .map { preferences ->
+            preferences[KEY_TABLET_NAVIGATION_MODE]
+                ?: defaultTabletUseSidebar(isTabletConfiguration(context))
+        }
 
     fun getSidebarAccountSwitcherEnabled(context: Context): Flow<Boolean> = context.settingsDataStore.data
         .map { preferences -> preferences[KEY_SIDEBAR_ACCOUNT_SWITCHER_ENABLED] ?: true }
 
-    internal fun mapAppNavigationSettingsFromPreferences(preferences: Preferences): AppNavigationSettings {
+    internal fun mapAppNavigationSettingsFromPreferences(
+        preferences: Preferences,
+        defaultTabletUseSidebar: Boolean = false
+    ): AppNavigationSettings {
         val orderString = preferences[KEY_BOTTOM_BAR_ORDER] ?: DEFAULT_BOTTOM_BAR_ORDER
         val tabsString = preferences[KEY_BOTTOM_BAR_VISIBLE_TABS] ?: DEFAULT_BOTTOM_BAR_VISIBLE_TABS
         val order = orderString.split(",").filter { it.isNotBlank() }
@@ -6095,7 +6116,7 @@ object SettingsManager {
             ),
             orderedVisibleTabIds = resolveOrderedVisibleBottomTabs(order, visible),
             bottomBarItemColors = parseBottomBarItemColors(preferences[KEY_BOTTOM_BAR_ITEM_COLORS] ?: ""),
-            tabletUseSidebar = preferences[KEY_TABLET_NAVIGATION_MODE] ?: false,
+            tabletUseSidebar = preferences[KEY_TABLET_NAVIGATION_MODE] ?: defaultTabletUseSidebar,
             sidebarAccountSwitcherEnabled =
                 preferences[KEY_SIDEBAR_ACCOUNT_SWITCHER_ENABLED] ?: true,
             predictiveBackEnabled = preferences[KEY_PREDICTIVE_BACK_ENABLED] ?: true,

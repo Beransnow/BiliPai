@@ -206,7 +206,9 @@ fun BottomBarSettingsContent(
         .collectAsStateWithLifecycle(initialValue = BottomBarSearchAutoExpandMode.DISABLED)
     val bottomBarSearchLayoutMode by SettingsManager.getBottomBarSearchLayoutMode(context)
         .collectAsStateWithLifecycle(initialValue = BottomBarSearchLayoutMode.FULL_DOCK)
-    val tabletUseSidebar by SettingsManager.getTabletUseSidebar(context).collectAsStateWithLifecycle(initialValue = false)
+    val isTabletDevice = context.resources.configuration.smallestScreenWidthDp >= 600
+    val tabletUseSidebar by SettingsManager.getTabletUseSidebar(context)
+        .collectAsStateWithLifecycle(initialValue = isTabletDevice)
     val sidebarAccountSwitcherEnabled by SettingsManager.getSidebarAccountSwitcherEnabled(context)
         .collectAsStateWithLifecycle(initialValue = true)
     
@@ -652,7 +654,11 @@ fun BottomBarSettingsContent(
                         AppSwitchPreference(
                             icon = CupertinoIcons.Outlined.SidebarLeft,
                             title = "侧边导航栏",
-                            subtitle = "在平板横屏或大屏布局中使用侧边栏代替底部导航",
+                            subtitle = if (isTabletDevice) {
+                                "平板/大屏建议开启：用侧边栏代替底部导航，充分利用横向空间（可随时关闭）"
+                            } else {
+                                "在平板横屏或大屏布局中使用侧边栏代替底部导航"
+                            },
                             checked = tabletUseSidebar,
                             onCheckedChange = { checked ->
                                 scope.launch {
@@ -773,7 +779,8 @@ fun BottomBarSettingsContent(
                                 saveTopTabConfig()
                                 scope.launch {
                                     SettingsManager.setHomeHeaderBlurMode(context, HomeHeaderBlurMode.FOLLOW_PRESET)
-                                    SettingsManager.setTabletUseSidebar(context, false)
+                                    // 重置为设备类型默认：平板开侧栏，手机开底栏
+                                    SettingsManager.setTabletUseSidebar(context, isTabletDevice)
                                 }
                             },
                             modifier = Modifier.fillMaxWidth(),
