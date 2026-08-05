@@ -2136,119 +2136,82 @@ private fun SearchTopBarIconButton(
 
 @Composable
 private fun SearchTopBarInputField(
-    chrome: SearchNativeChrome,
+    @Suppress("UNUSED_PARAMETER") chrome: SearchNativeChrome,
     value: androidx.compose.ui.text.input.TextFieldValue,
     onValueChange: (androidx.compose.ui.text.input.TextFieldValue) -> Unit,
     onSearch: () -> Unit,
     placeholder: String,
     containerColor: Color,
     cornerRadiusDp: Int,
-    heightDp: Int,
+    @Suppress("UNUSED_PARAMETER") heightDp: Int,
     focusRequester: androidx.compose.ui.focus.FocusRequester,
     interactionSource: MutableInteractionSource,
     modifier: Modifier = Modifier
 ) {
     val fieldShape = RoundedCornerShape(cornerRadiusDp.dp)
     val isFocused by interactionSource.collectIsFocusedAsState()
-    val textStyle = MaterialTheme.typography.bodyLarge
-    val cursorBrush = androidx.compose.ui.graphics.SolidColor(MaterialTheme.colorScheme.primary)
+    // Prefer Miuix semantic tokens so capsule text stays visible under Miuix bridge.
+    val contentColor = AppSurfaceTokens.onSurface()
+    val placeholderColor = AppSurfaceTokens.onSurfaceVariantSummary()
+    val focusBorderColor = AppSurfaceTokens.primary()
+    val textStyle = MaterialTheme.typography.bodyLarge.copy(
+        color = contentColor,
+        // Explicit line height avoids Miuix type scale clipping single-line fields.
+        lineHeight = 20.sp
+    )
+    val cursorBrush = androidx.compose.ui.graphics.SolidColor(focusBorderColor)
 
-    when (chrome) {
-        SearchNativeChrome.MIUIX -> {
-            // Miuix InputField is String-based; keep local TextFieldValue for caret when focused
-            // via the shared Material BasicTextField path styled with Miuix surface tokens.
-            androidx.compose.foundation.text.BasicTextField(
-                value = value,
-                onValueChange = onValueChange,
-                modifier = modifier
-                    .focusRequester(focusRequester)
-                    .clip(fieldShape)
-                    .background(containerColor, fieldShape)
-                    .then(
-                        if (isFocused) {
-                            Modifier.border(
-                                width = 1.5.dp,
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = fieldShape
-                            )
-                        } else {
-                            Modifier
-                        }
-                    ),
-                textStyle = textStyle.copy(color = MaterialTheme.colorScheme.onSurface),
-                singleLine = true,
-                cursorBrush = cursorBrush,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(onSearch = { onSearch() }),
-                interactionSource = interactionSource,
-                decorationBox = { innerTextField ->
-                    Box(
-                        contentAlignment = Alignment.CenterStart,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 12.dp)
-                    ) {
-                        if (value.text.isEmpty()) {
-                            Text(
-                                text = placeholder,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                style = textStyle,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        innerTextField()
-                    }
+    // Shared implementation for Material3 / Miuix: both use BasicTextField + TextFieldValue.
+    androidx.compose.foundation.text.BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier
+            .focusRequester(focusRequester)
+            .clip(fieldShape)
+            .background(containerColor, fieldShape)
+            .then(
+                if (isFocused) {
+                    Modifier.border(
+                        width = 1.5.dp,
+                        color = focusBorderColor,
+                        shape = fieldShape
+                    )
+                } else {
+                    Modifier
                 }
-            )
-        }
-        SearchNativeChrome.MATERIAL3 -> {
-            androidx.compose.foundation.text.BasicTextField(
-                value = value,
-                onValueChange = onValueChange,
-                modifier = modifier
-                    .focusRequester(focusRequester)
-                    .clip(fieldShape)
-                    .background(containerColor, fieldShape)
-                    .then(
-                        if (isFocused) {
-                            Modifier.border(
-                                width = 1.5.dp,
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = fieldShape
-                            )
-                        } else {
-                            Modifier
-                        }
-                    ),
-                textStyle = textStyle.copy(color = MaterialTheme.colorScheme.onSurface),
-                singleLine = true,
-                cursorBrush = cursorBrush,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(onSearch = { onSearch() }),
-                interactionSource = interactionSource,
-                decorationBox = { innerTextField ->
-                    Box(
-                        contentAlignment = Alignment.CenterStart,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 12.dp)
-                    ) {
-                        if (value.text.isEmpty()) {
-                            Text(
-                                text = placeholder,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                style = textStyle,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        innerTextField()
-                    }
+            ),
+        textStyle = textStyle,
+        singleLine = true,
+        cursorBrush = cursorBrush,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions = KeyboardActions(onSearch = { onSearch() }),
+        interactionSource = interactionSource,
+        decorationBox = { innerTextField ->
+            Box(
+                contentAlignment = Alignment.CenterStart,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp)
+            ) {
+                if (value.text.isEmpty()) {
+                    Text(
+                        text = placeholder,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = textStyle,
+                        color = placeholderColor
+                    )
                 }
-            )
+                // Provide LocalContentColor so platform text paint never falls back to
+                // a low-contrast Miuix default inside the transparent liquid capsule.
+                androidx.compose.runtime.CompositionLocalProvider(
+                    androidx.compose.material3.LocalContentColor provides contentColor
+                ) {
+                    innerTextField()
+                }
+            }
         }
-    }
+    )
 }
 
 // 气泡化历史记录：Material3 InputChip / Miuix Surface chip
@@ -2619,13 +2582,17 @@ private fun SearchResultTypeTabRow(
     onTabClick: (Int, SearchType) -> Unit
 ) {
     val selectedPage = pagerState.currentPage.coerceIn(tabs.indices)
-    // PiliPlus-style pill tabs: secondaryContainer indicator, no underline.
+    // Miuix Material bridge often maps secondaryContainer/onSecondaryContainer with
+    // near-zero contrast, so selected pill text vanishes. Use surface tokens instead.
+    val pillColor = AppSurfaceTokens.surfaceContainerHigh()
+    val selectedLabelColor = AppSurfaceTokens.onSurface()
+    val unselectedLabelColor = AppSurfaceTokens.onSurfaceVariantSummary()
     androidx.compose.material3.ScrollableTabRow(
         selectedTabIndex = selectedPage,
         modifier = Modifier.fillMaxWidth(),
         edgePadding = 8.dp,
         containerColor = Color.Transparent,
-        contentColor = MaterialTheme.colorScheme.onSurface,
+        contentColor = selectedLabelColor,
         divider = {},
         indicator = { tabPositions ->
             if (tabPositions.isNotEmpty()) {
@@ -2636,7 +2603,7 @@ private fun SearchResultTypeTabRow(
                         .padding(horizontal = 3.dp)
                         .height(32.dp)
                         .background(
-                            color = MaterialTheme.colorScheme.secondaryContainer,
+                            color = pillColor,
                             shape = RoundedCornerShape(20.dp)
                         )
                 )
@@ -2649,21 +2616,17 @@ private fun SearchResultTypeTabRow(
                 selected = selected,
                 onClick = { onTabClick(index, type) },
                 interactionSource = remember { MutableInteractionSource() },
-                selectedContentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                unselectedContentColor = MaterialTheme.colorScheme.outline,
+                selectedContentColor = selectedLabelColor,
+                unselectedContentColor = unselectedLabelColor,
                 modifier = Modifier.heightIn(min = 40.dp)
             ) {
                 Text(
                     text = type.displayName,
                     fontSize = 13.sp,
                     fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                    color = if (selected) {
-                        MaterialTheme.colorScheme.onSecondaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.outline
-                    },
+                    color = if (selected) selectedLabelColor else unselectedLabelColor,
                     maxLines = 1,
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp)
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
                 )
             }
         }
