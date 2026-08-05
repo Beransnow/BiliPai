@@ -61,7 +61,7 @@ class AppSelectionPreferencePolicyTest {
         val sliderDialogSection = source.substring(start, end)
 
         assertTrue(sliderDialogSection.contains("usePlatformDefaultWidth = layoutPolicy.usePlatformDefaultWidth"))
-        assertTrue(sliderDialogSection.contains("wrapContentHeight()"))
+        assertTrue(sliderDialogSection.contains("appContentDialogWidth("))
         assertTrue(sliderDialogSection.contains("AppTextButton("))
         assertFalse(sliderDialogSection.contains("AppDialogAction("))
     }

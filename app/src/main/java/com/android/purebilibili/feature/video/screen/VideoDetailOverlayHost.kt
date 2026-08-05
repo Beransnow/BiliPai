@@ -103,6 +103,7 @@ import com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.appContentDialogWidth
 import com.android.purebilibili.core.store.PortraitPlayerCollapseMode
 //  已改用 MaterialTheme.colorScheme.primary
 
@@ -356,10 +357,17 @@ internal fun VideoDetailPlaybackEndedDialog(
     )
     if (!showPlaybackEndedDialog) return
 
+    val dialogLayout = remember {
+        com.android.purebilibili.core.ui.resolveAppContentDialogLayoutPolicy(maxWidthDp = 420)
+    }
     androidx.compose.ui.window.Dialog(
-        onDismissRequest = { viewModel.dismissPlaybackEndedDialog() }
+        onDismissRequest = { viewModel.dismissPlaybackEndedDialog() },
+        properties = com.android.purebilibili.core.ui.resolveAppContentDialogProperties(
+            usePlatformDefaultWidth = dialogLayout.usePlatformDefaultWidth,
+        ),
     ) {
         AppSurface(
+            modifier = Modifier.appContentDialogWidth(policy = dialogLayout),
             shape = AppShapes.container(ContainerLevel.Dialog),
             color = AppSurfaceTokens.surface(),
             tonalElevation = 8.dp
