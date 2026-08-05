@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
@@ -38,7 +39,6 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.android.purebilibili.core.ui.AppDialogAction
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
@@ -224,6 +224,29 @@ fun AppSliderDialogPreference(
     }
 }
 
+/**
+ * 滑块确认弹窗尺寸策略。
+ *
+ * 关闭平台默认宽度后自行限宽居中，避免平板/大屏上 Dialog 窗口被拉成竖条全高；
+ * 按钮区必须用内容尺寸按钮，不可复用 iOS Alert 的 [AppDialogAction]（会 fillMaxSize 撑满父级）。
+ */
+@Immutable
+data class AppSliderDialogLayoutPolicy(
+    val usePlatformDefaultWidth: Boolean,
+    val horizontalPaddingDp: Int,
+    val minWidthDp: Int,
+    val maxWidthDp: Int,
+)
+
+fun resolveAppSliderDialogLayoutPolicy(): AppSliderDialogLayoutPolicy {
+    return AppSliderDialogLayoutPolicy(
+        usePlatformDefaultWidth = false,
+        horizontalPaddingDp = 24,
+        minWidthDp = 280,
+        maxWidthDp = 420,
+    )
+}
+
 @Composable
 fun AppSliderDialog(
     title: String,
@@ -238,10 +261,21 @@ fun AppSliderDialog(
     var draftValue by remember(value, valueRange, steps) {
         mutableFloatStateOf(resolveAppSliderDialogValue(value, valueRange, steps))
     }
+    val layoutPolicy = remember { resolveAppSliderDialogLayoutPolicy() }
 
-    Dialog(onDismissRequest = onDismissRequest) {
+    Dialog(
+        onDismissRequest = onDismissRequest,
+        properties = DialogProperties(usePlatformDefaultWidth = layoutPolicy.usePlatformDefaultWidth),
+    ) {
         Surface(
-            modifier = modifier.widthIn(min = 280.dp, max = 420.dp),
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(horizontal = layoutPolicy.horizontalPaddingDp.dp)
+                .widthIn(
+                    min = layoutPolicy.minWidthDp.dp,
+                    max = layoutPolicy.maxWidthDp.dp,
+                )
+                .wrapContentHeight(),
             shape = AppShapes.container(ContainerLevel.Dialog),
             color = AppSurfaceTokens.cardContainer(),
             tonalElevation = 6.dp,
@@ -273,11 +307,12 @@ fun AppSliderDialog(
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    AppDialogAction(onClick = onDismissRequest) {
+                    // 内容尺寸按钮：避免 AppDialogAction 在 iOS 预设下 fillMaxSize 把弹窗撑满屏高
+                    AppTextButton(onClick = onDismissRequest) {
                         Text("取消")
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    AppDialogAction(
+                    AppTextButton(
                         onClick = {
                             onConfirm(resolveAppSliderDialogValue(draftValue, valueRange, steps))
                         },
