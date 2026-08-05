@@ -2,97 +2,51 @@
 
 ## v0.2.0 (2026-08-06)
 
-### 版本信息
+更新日志(ChangeLog)
 
-- 恢复语义化版本 `MAJOR.MINOR.PATCH`：`0.2.0`，`versionCode` 为 `284`。
-- 大升级升第一位，加功能升第二位，修 bug 升第三位；**不用日期**当 `versionName`。
-- 新旧比较仍以 `versionCode` 为准；构建/发布日期可写在关于页与 Changelog，不进入主版本号。
-- 正式产物：`app/build/outputs/bilipai/release/BiliPai-0.2.0.apk`。
-- Dev 验证包：`BiliPai-0.2.0-dev.apk`。
-- 规范见 [docs/wiki/VERSIONING.md](docs/wiki/VERSIONING.md)。
-- 官方社群：频道 [t.me/bilipai666](https://t.me/bilipai666)，交流群 [t.me/bilipai888](https://t.me/bilipai888/1)。
+[更改] 版本号 0.2.0，versionCode 284
+[更改] 恢复语义化 MAJOR.MINOR.PATCH，不再使用日期型 versionName
+[更改] 正式包 BiliPai-0.2.0.apk，Dev 包 BiliPai-0.2.0-dev.apk
+[更改] 基准 v26.0805.1，比较区间见 GitHub Compare
+[更改] 实时画面转场默认关闭
+[更改] 转场背景模糊默认关闭
+[更改] 底栏模糊默认关闭
+[更改] 播放器洞察默认关闭
+[添加] 首页推荐 App+Web 合并模式
+[添加] 搜索落地热搜/历史/发现布局
+[添加] 搜索排序芯片与时间时长分区筛选表
+[修复] 搜索 Tab 与胶囊选中文字对比度
+[修复] 搜索筛选圆形 ripple 与 iOS 底部表弹出
+[修复] 搜索进出结果时键盘与光标状态
+[修复] 发现区芯片误用主题主色
+[添加] 实时画面转场开关（SDR 可 morph，HDR 不降画质）
+[修复] 关闭实时画面时返回走封面/黑壳低成本路径
+[修复] 预测返回落位错位与顶底栏模糊恢复
+[修复] 整卡 sharedBounds 落位与叠层盖住实时画面
+[修复] 收藏合集返回与首页整卡 morph 一致
+[修复] HDR/杜比优先 SurfaceView 避免洗成 SDR
+[更改] 清晰度与倍速菜单触控高度至少 48dp
+[修复] 听视频浅色模式按钮与文案可读性
+[修复] 听视频更多/队列/歌词弹层深浅色对比度
+[更改] 长按倍速默认隐藏关闭按钮降低误触
+[修复] 动态评论头像与昵称可进空间
+[适配] 评论粉丝装扮与头像框尺寸
+[更改] 顶栏直播与底栏统一进入直播列表
+[修复] 直播列表过滤广告横幅与空卡
+[添加] 直播 App 推荐流与分页排序
+[添加] 直播清晰度底部芯片选择
+[添加] 直播 SC 倒计时到期自动移除
+[适配] 直播分区与搜索可选芯片样式
+[修复] 收藏夹请求参数与 Referer 对齐接口文档
+[修复] 收藏夹 ps 限制 1–20 降低风控
+[修复] 个人页收藏封面预览限并发
+[适配] 平板默认侧栏与评论输入区尺寸
+[修复] 平板设置滑块弹窗过高
+[适配] 大屏自定义对话框最大宽度
+[修复] DLNA 双网卡机型 SSDP 发现
+v0.2.0(19e3dac)
 
-### 更新范围
-
-- 基准版本：`v26.0805.1`。
-- 提交范围：[`v26.0805.1...v0.2.0`](https://github.com/jay3-yy/BiliPai/compare/v26.0805.1...main)（自日历号过渡包之后至本版全部主线提交）。
-
-### 完整更新
-
-#### 版本与交付
-
-- 结束日历号 `YY.MMDD.N` 展示纪元，回到 `0.x` 语义化版本（`0.2.0` / code `284`）。
-- `versionCode` 继续单调递增（283 → 284）。
-
-#### 默认设置
-
-- **实时画面转场**默认关闭：默认封面过渡，更稳且不牺牲 HDR。
-- **转场时模糊背景**默认关闭。
-- **底栏模糊**默认关闭。
-- **播放器洞察**默认关闭：首播不再默认叠加编码/码率/掉帧浮层。
-- **沉浸状态栏**保持默认关闭。
-
-#### 首页推荐
-
-- 新增推荐流 **App+Web 合并模式**：并行拉取 Web 与 App 推荐接口，交错合并并按 bvid/aid/动态 id 去重；App 失败或未登录时回退 Web。
-- 设置中增加 `FeedApiType.MERGED`，保留原有仅 Web / 仅 App 模式。
-
-#### 搜索
-
-- 重构搜索落地页：热搜 → 历史 → 发现；视频筛选改为排序芯片 + 发布时间/时长/分区底部表。
-- 按 UI 预设分发 Material 3 / Miuix 原生顶栏与控件；减少搜索区 AppText/AppIcon 桥接。
-- 进入结果或退出搜索时收起键盘；顶栏用 `TextFieldValue` 保持光标稳定。
-- 发现区芯片改为中性色，不再误用主题 primary。
-- 修复分类 Tab 选中文字对比度（Material / Miuix / iOS）；筛选按钮圆形裁剪 ripple。
-- iOS/Material 下筛选表使用 `ModalBottomSheet`，避免无 Overlay 宿主时打不开。
-- 修复 Miuix 顶栏胶囊与结果类型 pill 选中文字被桥接色盖住的问题。
-
-#### 动画与预测返回
-
-- 新增「实时画面转场」开关：SDR 可双向实时帧 morph；HDR/杜比始终 SurfaceView，不强制 TextureView 降画质。
-- 开关关闭时：返回 morph 立即交给常驻封面（黑壳 / 低成本路径），不再长时间依赖 SurfaceView 黑底。
-- 修复预测返回落位错位：仅在 SharedTransition 激活时 `skipToLookahead`；深度清空时重绘 live 内容以恢复 hazeSource 顶底栏模糊。
-- 整卡 sharedBounds 包住首页卡片表面，改善落位；卡片底色不进入 sharedBounds 叠层，避免盖住详情实时画面。
-- 恢复 live-surface 门闩与 LIVE ownership：仅开启时预测返回保留播放器帧；封面垫层 + 非不透明 TextureView 作黑洞防护。
-- 订阅/收藏合集详情预测返回与 pop 改为 `NO_OP_SHARED_ELEMENT`，与首页整卡 morph 一致（跟手飞回列表源卡）。
-
-#### 播放器与听视频
-
-- HDR/杜比优先 SurfaceView，即使卡片过渡希望 TextureView 也不洗成 SDR。
-- 清晰度/倍速菜单触控目标扩大到至少 48dp。
-- 听视频：正文色按封面亮度在主题 `onSurface` / `inverseOnSurface` 间切换，浅色玻璃/芯片可读。
-- 听视频「更多」、待播清单、匹配歌词、歌词设置 sheet 与封面色板解耦，统一主题 `surface` / `onSurface`，深浅色可读。
-- 长按倍速：默认隐藏关闭按钮（非 UI 偏好），降低多指误触取消加速。
-
-#### 动态与评论
-
-- 动态评论头像/昵称点击进入空间页。
-- 评论区顶部粉丝装扮装饰与头像框尺寸整理；平板弹幕开关入口对齐。
-
-#### 直播
-
-- 顶栏「直播」与底栏统一进入 LiveList；过滤 banner/广告/空卡噪声。
-- 接入 xlive App 推荐/二级列表签名接口、分页与排序标签；封面/首帧可切换。
-- 直播间：清晰度改为底部芯片选择表；SC 倒计时到期自动从列表移除。
-- 分区父级 Tab、搜索 Tab 统一可选芯片样式；支持下拉刷新。
-- LiveList 作为主 Tab 入口时隐藏返回栏。
-
-#### 收藏夹
-
-- 对齐 bilibili-API-collect：`x/v3/fav/resource/list` 补 `type=0`、`tid=0`、`platform=web`，`ps` 强制 1–20。
-- 内容请求 Referer 使用 `medialist/detail/ml{media_id}`。
-- 个人页收藏夹封面预览限制并发并只取 `ps=1`，降低 412/429「请求被风控」。
-- 订阅夹 / 空间 `collected/list` 分页 `ps` 收敛到 20。
-
-#### 平板
-
-- 平板默认开启侧边栏导航；评论输入与布局指标加大，首装大屏更舒适。
-- 设置滑块弹窗在平板上不再被拉成全高空白板；按钮改为正常文本按钮。
-- 统一内容对话框最大宽度策略：同意、下载、播完、本地提示、选择等自定义对话框在大屏限宽。
-
-#### 投屏
-
-- 强化 DLNA SSDP：优先 Wi‑Fi/以太网、加入组播、重发 M-SEARCH、解析 NOTIFY、改进 MediaRenderer 画像，提升双网卡机型发现成功率。
+格式规范见 [docs/wiki/CHANGELOG_GUIDE.md](docs/wiki/CHANGELOG_GUIDE.md)。社群：频道 [t.me/bilipai666](https://t.me/bilipai666)，群 [t.me/bilipai888](https://t.me/bilipai888/1)。比较：[`v26.0805.1...main`](https://github.com/jay3-yy/BiliPai/compare/v26.0805.1...main)。
 
 ---
 
