@@ -8,6 +8,7 @@ import com.android.purebilibili.core.plugin.CastPluginMediaRequest
 import com.android.purebilibili.core.plugin.CastPluginRoute
 import com.android.purebilibili.core.plugin.PluginCapability
 import com.android.purebilibili.core.plugin.PluginCapabilityManifest
+import com.android.purebilibili.core.util.Logger
 import com.android.purebilibili.feature.cast.associateNotNullBy
 import com.android.purebilibili.feature.cast.SsdpCastClient
 import com.android.purebilibili.feature.cast.SsdpDiscovery
@@ -92,10 +93,15 @@ class DlnaCastPlugin : CastPluginApi {
         ssdpJob = scope.launch {
             _isDiscovering.value = true
             try {
-                val discovered = SsdpDiscovery.discover(context, 5000)
+                val discovered = SsdpDiscovery.discover(context, timeoutMs = 8_000)
                 val profiles = discovered.associateNotNullBy(
                     keySelector = { it.location },
                     valueSelector = { SsdpCastClient.fetchDeviceProfile(it) }
+                )
+                val visible = resolveVisibleSsdpDevices(discovered, profiles)
+                Logger.i(
+                    "DlnaCastPlugin",
+                    "📺 [DLNA] Discovery summary: ssdp=${discovered.size}, profiles=${profiles.size}, castable=${visible.size}"
                 )
                 _ssdpDevices.value = discovered
                 _ssdpProfiles.value = profiles

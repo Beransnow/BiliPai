@@ -22,6 +22,10 @@ object SsdpCastClient {
     private val client = OkHttpClient.Builder()
         .followRedirects(true)
         .followSslRedirects(true)
+        // Local device description endpoints are often slow or half-awake.
+        .connectTimeout(4, java.util.concurrent.TimeUnit.SECONDS)
+        .readTimeout(6, java.util.concurrent.TimeUnit.SECONDS)
+        .callTimeout(8, java.util.concurrent.TimeUnit.SECONDS)
         .build()
 
     data class AvTransportEndpoint(
@@ -70,6 +74,9 @@ object SsdpCastClient {
         return runCatching {
             val request = Request.Builder()
                 .url(descriptionLocation)
+                // Some TV firmwares reject empty / generic clients.
+                .header("User-Agent", "BiliPai/1.0 UPnP/1.0 DLNADOC/1.50")
+                .header("Accept", "text/xml, application/xml, */*")
                 .get()
                 .build()
             client.newCall(request).execute().use { response ->
@@ -78,7 +85,16 @@ object SsdpCastClient {
                     return null
                 }
                 val descriptionXml = response.body.string()
-                return parseDeviceProfile(descriptionXml, descriptionLocation)
+                val profile = parseDeviceProfile(descriptionXml, descriptionLocation)
+                if (profile == null) {
+                    Logger.w(TAG, "📺 [SSDP] Device description parse returned null")
+                } else if (profile.avTransportEndpoint == null) {
+                    Logger.w(
+                        TAG,
+                        "📺 [SSDP] Device has no AVTransport: name=${profile.friendlyName.take(40)}"
+                    )
+                }
+                return profile
             }
         }.getOrElse { error ->
             Logger.w(TAG, "📺 [SSDP] Fetch device profile exception: ${error.message}")
@@ -111,35 +127,80 @@ object SsdpCastClient {
             }
             val builder = factory.newDocumentBuilder()
             val document = builder.parse(descriptionXml.byteInputStream())
-            val device = document.getElementsByTagNameNS("*", "device")
-                .item(0) as? Element ?: return null
+            val deviceNodes = document.getElementsByTagNameNS("*", "device")
+            if (deviceNodes.length == 0) return null
 
-            val services = device.getElementsByTagNameNS("*", "service")
+            // Root devices often embed MediaRenderer; prefer the node that actually owns AVTransport.
+            var selectedDevice: Element? = null
             var endpoint: AvTransportEndpoint? = null
-            for (i in 0 until services.length) {
-                val service = services.item(i) as? Element ?: continue
-                val serviceType = service.getFirstChildContent("serviceType")
-                if (!serviceType.contains("AVTransport", ignoreCase = true)) continue
-
-                val controlUrlRaw = service.getFirstChildContent("controlURL")
-                if (controlUrlRaw.isBlank()) continue
-
-                endpoint = AvTransportEndpoint(
-                    controlUrl = URI(descriptionLocation).resolve(controlUrlRaw.trim()).toString(),
-                    serviceType = serviceType
-                )
-                break
+            for (i in 0 until deviceNodes.length) {
+                val device = deviceNodes.item(i) as? Element ?: continue
+                val candidate = findDirectAvTransportEndpoint(device, descriptionLocation) ?: continue
+                val deviceType = device.getFirstChildContent("deviceType")
+                val isRenderer = deviceType.contains("MediaRenderer", ignoreCase = true)
+                if (endpoint == null || isRenderer) {
+                    selectedDevice = device
+                    endpoint = candidate
+                    if (isRenderer) break
+                }
             }
 
+            val fallbackDevice = deviceNodes.item(0) as? Element
+            val nameSource = selectedDevice ?: fallbackDevice ?: return null
             SsdpDeviceProfile(
-                friendlyName = device.getFirstChildContent("friendlyName"),
-                modelName = device.getFirstChildContent("modelName").ifBlank { null },
+                friendlyName = nameSource.getFirstChildContent("friendlyName"),
+                modelName = nameSource.getFirstChildContent("modelName").ifBlank { null },
                 avTransportEndpoint = endpoint
             )
         }.getOrElse { error ->
             Logger.w(TAG, "📺 [SSDP] Parse description failed: ${error.message}")
             null
         }
+    }
+
+    /**
+     * Inspect this device node's own serviceList only (ignore nested embedded devices).
+     */
+    private fun findDirectAvTransportEndpoint(
+        device: Element,
+        descriptionLocation: String,
+    ): AvTransportEndpoint? {
+        val serviceList = device.directChildElement("serviceList") ?: return null
+        var child = serviceList.firstChild
+        while (child != null) {
+            val service = child as? Element
+            child = child.nextSibling
+            if (service == null || !service.localOrTagName().equals("service", ignoreCase = true)) {
+                continue
+            }
+            val serviceType = service.getFirstChildContent("serviceType")
+            if (!serviceType.contains("AVTransport", ignoreCase = true)) continue
+            val controlUrlRaw = service.getFirstChildContent("controlURL")
+            if (controlUrlRaw.isBlank()) continue
+            return AvTransportEndpoint(
+                controlUrl = URI(descriptionLocation).resolve(controlUrlRaw.trim()).toString(),
+                serviceType = serviceType
+            )
+        }
+        return null
+    }
+
+    private fun Element.directChildElement(tagName: String): Element? {
+        var child = firstChild
+        while (child != null) {
+            val element = child as? Element
+            if (element != null && element.localOrTagName().equals(tagName, ignoreCase = true)) {
+                return element
+            }
+            child = child.nextSibling
+        }
+        return null
+    }
+
+    private fun Element.localOrTagName(): String {
+        val local = localName
+        if (!local.isNullOrBlank()) return local
+        return tagName.substringAfter(':')
     }
 
     internal fun buildSetUriActionBody(
