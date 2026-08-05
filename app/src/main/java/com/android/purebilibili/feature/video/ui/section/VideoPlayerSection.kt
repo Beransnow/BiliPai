@@ -3001,6 +3001,9 @@ fun VideoPlayerSection(
                             setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
                             useController = false
                             keepScreenOn = keepVideoPlaybackAwake
+                            // 非 opaque TextureView：sharedBounds overlay 里短暂无帧时不涂死黑，
+                            // 底下的封面垫层/壳背景仍可透出，避免预测返回大黑块。
+                            (videoSurfaceView as? TextureView)?.isOpaque = false
                             applyPlayerViewResizeMode(
                                 playerView = this,
                                 resizeMode = targetResizeMode,
@@ -3027,6 +3030,7 @@ fun VideoPlayerSection(
                                 forceCoverDuringReturnAnimation = forceCoverDuringReturnAnimation
                             )
                         )
+                        (playerView.videoSurfaceView as? TextureView)?.isOpaque = false
                         applyPlayerViewResizeMode(
                             playerView = playerView,
                             resizeMode = targetResizeMode,

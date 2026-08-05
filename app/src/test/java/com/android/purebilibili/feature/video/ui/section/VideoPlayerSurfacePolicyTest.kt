@@ -103,6 +103,15 @@ class VideoPlayerSurfacePolicyTest {
     }
 
     @Test
+    fun `player texture path keeps non-opaque surface for overlay morph`() {
+        val source = java.io.File(
+            "src/main/java/com/android/purebilibili/feature/video/ui/section/VideoPlayerSection.kt"
+        ).readText()
+        assertTrue(source.contains("isOpaque = false"))
+        assertTrue(source.contains("videoSurfaceView as? TextureView"))
+    }
+
+    @Test
     fun `live player shared element never attaches under hdr`() {
         assertTrue(
             resolveAllowLivePlayerSharedElementForMorph(

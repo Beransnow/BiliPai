@@ -847,25 +847,30 @@ internal fun ElegantVideoCard(
         val cardShellShape = remember(cardCornerRadius) {
             RoundedCornerShape(cardCornerRadius)
         }
-        // sharedBounds 必须包住整卡（含 surface），否则返回目标几何只有内层 Column，
-        // 与详情壳 bounds 对不齐 → 落位错位/黑底悬浮卡。
-        // clip + 透明 surface 在 overlay 里避免灰色色块盖住播放器（背景 alpha 在源布局层）。
-        val cardContainerModifier = Modifier
-            .fillMaxWidth()
-            .videoCardShellSharedBoundsOrEmpty(
-                enabled = useCardShellSharedBounds,
-                sharedTransitionScope = sharedTransitionScope,
-                animatedVisibilityScope = animatedVisibilityScope,
-                bvid = video.bvid,
-                sourceRoute = effectiveSharedElementSourceRoute,
-                motionSpec = homeSharedTransitionMotionSpec,
-                clipShape = cardShellShape
+        // sharedBounds 与卡片底色拆开：
+        // - 外层 Box 量尺寸 + 画 surface（只在源布局层，不进 overlay）
+        // - 内层 Column 挂 sharedBounds（封面/标题等，无 solid fill）
+        // 若把 cardContainer 画进 sharedBounds，预测返回时会盖住详情壳实时视频 → 大黑块。
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .clip(cardShellShape)
+                    .background(AppSurfaceTokens.cardContainer())
             )
-            .clip(cardShellShape)
-            .background(AppSurfaceTokens.cardContainer())
-        Box(modifier = cardContainerModifier) {
             Column(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .videoCardShellSharedBoundsOrEmpty(
+                        enabled = useCardShellSharedBounds,
+                        sharedTransitionScope = sharedTransitionScope,
+                        animatedVisibilityScope = animatedVisibilityScope,
+                        bvid = video.bvid,
+                        sourceRoute = effectiveSharedElementSourceRoute,
+                        motionSpec = homeSharedTransitionMotionSpec,
+                        clipShape = cardShellShape
+                    )
+                    .clip(cardShellShape)
             ) {
         //  [性能优化] 封面圆角形状缓存（避免重组时重复创建）
         val coverShape = remember(cardCornerRadius) {
