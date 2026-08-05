@@ -104,9 +104,11 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.PlaybackParameters
+import com.android.purebilibili.feature.video.ui.section.requiresHdrSurfaceOutput
 import com.android.purebilibili.feature.video.ui.section.shouldKeepVideoPlaybackAwake
 import com.android.purebilibili.feature.video.ui.section.shouldShowLongPressSpeedFeedback
 import com.android.purebilibili.feature.video.ui.section.shouldShowLongPressSpeedHintCloseButton
+import com.android.purebilibili.feature.video.ui.section.shouldUseTextureSurfaceForFlip
 import com.android.purebilibili.feature.video.usecase.seekPlayerFromUserAction
 import com.android.purebilibili.feature.video.usecase.togglePlayerPlaybackFromUserAction
 import androidx.media3.common.VideoSize
@@ -2335,7 +2337,16 @@ private fun VideoPageItem(
                     ) {
                         AndroidView(
                             factory = { ctx ->
-                                val basePlayerView = if (useTextureSurfaceForNavigation) {
+                                // HDR/Dolby need SurfaceView; navigation morph TextureView kills HDR.
+                                val preferTexture = shouldUseTextureSurfaceForFlip(
+                                    isFlippedHorizontal = false,
+                                    isFlippedVertical = false,
+                                    navigationTransformEnabled = useTextureSurfaceForNavigation,
+                                    requiresHdrSurfaceOutput = requiresHdrSurfaceOutput(
+                                        currentQualityId = selectedQualityId
+                                    )
+                                )
+                                val basePlayerView = if (preferTexture) {
                                     android.view.LayoutInflater.from(ctx)
                                         .inflate(
                                             com.android.purebilibili.R.layout.view_player_texture,

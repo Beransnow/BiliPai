@@ -26,12 +26,13 @@ import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Search
 import com.android.purebilibili.core.ui.skeleton.ContentMediaListSkeleton
 import androidx.compose.material3.ExperimentalMaterial3Api
-import com.android.purebilibili.core.ui.components.AppIcon
-import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import com.android.purebilibili.core.ui.AppScaffold
-import com.android.purebilibili.core.ui.components.AppSurface
-import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.AppTopBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -68,16 +69,16 @@ fun SearchTrendingScreen(
             AppTopBar(
                 title = "bilibili 热搜",
                 navigationIcon = {
-                    AppIconButton(onClick = onBack) {
-                        AppIcon(
+                    IconButton(onClick = onBack) {
+                        Icon(
                             imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                             contentDescription = "返回"
                         )
                     }
                 },
                 actions = {
-                    AppIconButton(onClick = viewModel::refresh) {
-                        AppIcon(
+                    IconButton(onClick = viewModel::refresh) {
+                        Icon(
                             imageVector = Icons.Rounded.Refresh,
                             contentDescription = "刷新"
                         )
@@ -106,7 +107,7 @@ fun SearchTrendingScreen(
                     .clickable(onClick = viewModel::refresh),
                 contentAlignment = Alignment.Center
             ) {
-                AppText(
+                Text(
                     text = state.error ?: "加载失败，点击重试",
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -191,7 +192,7 @@ private fun SearchTrendingHero() {
                 )
             }
         }
-        AppIcon(
+        Icon(
             imageVector = Icons.Rounded.Search,
             contentDescription = null,
             tint = Color.White.copy(alpha = 0.18f),
@@ -200,7 +201,7 @@ private fun SearchTrendingHero() {
                 .padding(start = 28.dp)
                 .size(164.dp)
         )
-        AppText(
+        Text(
             text = "bilibili 热搜",
             modifier = Modifier
                 .align(Alignment.Center)
@@ -221,7 +222,7 @@ private fun SearchTrendingRow(
     pinnedCount: Int,
     onClick: () -> Unit
 ) {
-    AppSurface(
+    Surface(
         onClick = onClick,
         color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(0.dp)
@@ -238,7 +239,7 @@ private fun SearchTrendingRow(
                     pinnedCount = pinnedCount
                 )
                 Spacer(modifier = Modifier.width(18.dp))
-                AppText(
+                Text(
                     text = item.title,
                     modifier = Modifier.weight(1f),
                     maxLines = 1,
@@ -266,7 +267,7 @@ private fun SearchTrendingRow(
                         contentColor = Color.White
                     )
 
-                    !item.subtitle.isNullOrBlank() -> AppText(
+                    !item.subtitle.isNullOrBlank() -> Text(
                         text = item.subtitle,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodyMedium
@@ -287,7 +288,7 @@ private fun SearchTrendingRank(
     pinnedCount: Int
 ) {
     if (index < pinnedCount) {
-        AppIcon(
+        Icon(
             imageVector = Icons.Rounded.North,
             contentDescription = null,
             tint = Color(0xFFD94343),
@@ -297,7 +298,7 @@ private fun SearchTrendingRank(
     }
 
     val rank = index + 1 - pinnedCount
-    AppText(
+    Text(
         text = rank.toString(),
         color = when (rank) {
             1 -> Color(0xFFFFA000)

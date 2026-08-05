@@ -959,16 +959,49 @@ internal fun resolveGesturePercentDigitChangeMask(
     }
 }
 
+/**
+ * Whether the PlayerView must use TextureView (instead of SurfaceView).
+ *
+ * TextureView is required for flip transforms and shared-element morph capture.
+ * SurfaceView is required for HDR/Dolby Vision so color metadata reaches the display
+ * (TextureView GPU composition always tone-maps to SDR). When [requiresHdrSurfaceOutput]
+ * is true, navigation morph may fall back to cover-only transitions rather than
+ * forcing TextureView and silently killing HDR.
+ */
 internal fun shouldUseTextureSurfaceForFlip(
     isFlippedHorizontal: Boolean,
     isFlippedVertical: Boolean,
     liveBackPreview: Boolean = false,
-    navigationTransformEnabled: Boolean = false
+    navigationTransformEnabled: Boolean = false,
+    requiresHdrSurfaceOutput: Boolean = false
 ): Boolean {
+    // Flip is the only hard TextureView requirement under HDR; matrix transform
+    // cannot run on SurfaceView. Navigation morph yields to HDR fidelity.
+    if (requiresHdrSurfaceOutput) {
+        return isFlippedHorizontal || isFlippedVertical
+    }
     return isFlippedHorizontal ||
         isFlippedVertical ||
         liveBackPreview ||
         navigationTransformEnabled
+}
+
+/**
+ * HDR10 (125) / Dolby Vision (126) streams, or Media3 formats with PQ/HLG transfer,
+ * must output via SurfaceView so the display can enter HDR mode.
+ *
+ * @param colorTransfer Media3 [androidx.media3.common.C] color transfer constant, or 0 if unknown.
+ */
+internal fun requiresHdrSurfaceOutput(
+    currentQualityId: Int,
+    colorTransfer: Int = 0
+): Boolean {
+    if (currentQualityId == 125 || currentQualityId == 126) {
+        return true
+    }
+    // Keep numeric constants local so this policy stays free of Media3 imports.
+    // C.COLOR_TRANSFER_ST2084 = 6 (PQ/HDR10), C.COLOR_TRANSFER_HLG = 7.
+    return colorTransfer == 6 || colorTransfer == 7
 }
 
 internal fun shouldEnableLivePlayerSharedElement(
