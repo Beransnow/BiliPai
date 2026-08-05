@@ -344,19 +344,30 @@ class SearchScreenPolicyTest {
     @Test
     fun searchResultTransition_usesPagerAndKeepsFilterBarOutsidePager() {
         val searchSource = loadSource("app/src/main/java/com/android/purebilibili/feature/search/SearchScreen.kt")
+        val filterSheetSource = loadSource(
+            "app/src/main/java/com/android/purebilibili/feature/search/SearchVideoFilterSheet.kt"
+        )
         val resultPagerStart = searchSource.indexOf("HorizontalPager(")
-        val filterBarBeforePager = searchSource.lastIndexOf("SearchFilterBar(", resultPagerStart)
+        val videoFilterBeforePager = searchSource.lastIndexOf("SearchVideoFilterBar(", resultPagerStart)
+        val legacyFilterBeforePager = searchSource.lastIndexOf("SearchFilterBar(", resultPagerStart)
         val filterBarDeclaration = searchSource.indexOf("fun SearchFilterBar(")
         val resultPagerBody = searchSource.substring(resultPagerStart, filterBarDeclaration)
 
         assertTrue(resultPagerStart > 0)
-        assertTrue(filterBarBeforePager > 0)
+        assertTrue(videoFilterBeforePager > 0 || legacyFilterBeforePager > 0)
         assertFalse(resultPagerBody.contains("SearchFilterBar("))
+        assertFalse(resultPagerBody.contains("SearchVideoFilterBar("))
         assertFalse(searchSource.contains("detectHorizontalDragGestures"))
-        assertTrue(searchSource.contains("TabRowDefaults.SecondaryIndicator"))
+        // PiliPlus-style pill tabs use ScrollableTabRow + secondaryContainer indicator.
+        assertTrue(searchSource.contains("androidx.compose.material3.ScrollableTabRow("))
+        assertTrue(searchSource.contains("secondaryContainer"))
         assertTrue(searchSource.contains("AppSearchField("))
-        assertTrue(searchSource.contains("AppFilterChip("))
-        assertTrue(searchSource.contains("AppInputChip("))
+        // Video filters use Material FilterChip in the dedicated sheet file.
+        assertTrue(filterSheetSource.contains("FilterChip("))
+        assertTrue(filterSheetSource.contains("ModalBottomSheet("))
+        assertTrue(filterSheetSource.contains("OverlayBottomSheet("))
+        // History chips use Material InputChip / Surface, not design-system App* wrappers.
+        assertTrue(searchSource.contains("androidx.compose.material3.InputChip("))
         assertFalse(searchSource.contains("SearchPagerTabIndicator("))
         assertFalse(searchSource.contains("val showStableFilterBar = !searchPagerState.isScrollInProgress"))
     }
