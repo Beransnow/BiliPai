@@ -2,7 +2,6 @@ package com.android.purebilibili.feature.live
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -88,7 +87,7 @@ fun LiveHomeSelectableChip(
                 modifier = modifier,
                 color = container,
                 contentColor = content,
-                shape = RoundedCornerShape(999.dp),
+                shape = AppShapes.container(ContainerLevel.Pill),
                 tonalElevation = 0.dp,
                 shadowElevation = 0.dp,
             ) {
