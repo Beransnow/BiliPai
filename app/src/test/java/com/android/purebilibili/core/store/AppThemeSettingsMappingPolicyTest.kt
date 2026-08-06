@@ -25,7 +25,7 @@ class AppThemeSettingsMappingPolicyTest {
         val result = mapAppThemeSettingsFromPreferences(mutablePreferencesOf())
 
         assertEquals(UiPreset.MD3, result.uiPreset)
-        assertEquals(AndroidNativeVariant.MATERIAL3, result.androidNativeVariant)
+        assertEquals(AndroidNativeVariant.MIUIX, result.androidNativeVariant)
         assertEquals(AppThemeMode.FOLLOW_SYSTEM, result.themeMode)
         assertEquals(DarkThemeStyle.DEFAULT, result.darkThemeStyle)
         assertEquals(AppLanguage.FOLLOW_SYSTEM, result.appLanguage)
@@ -75,7 +75,8 @@ class AppThemeSettingsMappingPolicyTest {
             )
         )
 
-        assertEquals(UiPreset.IOS, result.uiPreset)
+        // 历史 iOS 值单向迁移为默认主题 MIUIX（运行时不再产生 iOS）。
+        assertEquals(UiPreset.MD3, result.uiPreset)
         assertEquals(AndroidNativeVariant.MIUIX, result.androidNativeVariant)
         assertEquals(AppThemeMode.DARK, result.themeMode)
         assertEquals(DarkThemeStyle.AMOLED, result.darkThemeStyle)

@@ -58,6 +58,8 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.serialization.json.Json
@@ -527,7 +529,7 @@ data class HomeSettings(
 
 data class AppThemeSettings(
     val uiPreset: UiPreset = UiPreset.MD3,
-    val androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3,
+    val androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MIUIX,
     val themeMode: AppThemeMode = AppThemeMode.FOLLOW_SYSTEM,
     val darkThemeStyle: DarkThemeStyle = DarkThemeStyle.DEFAULT,
     val appLanguage: AppLanguage = AppLanguage.FOLLOW_SYSTEM,
@@ -702,7 +704,7 @@ internal fun resolveUiPresetPreferenceValue(rawValue: Int?): UiPreset {
 }
 
 internal fun resolveAndroidNativeVariantPreferenceValue(rawValue: Int?): AndroidNativeVariant {
-    return AndroidNativeVariant.fromValue(rawValue ?: AndroidNativeVariant.MATERIAL3.value)
+    return AndroidNativeVariant.fromValue(rawValue ?: AndroidNativeVariant.MIUIX.value)
 }
 
 enum class DanmakuPanelWidthMode(val value: Int, val label: String, val widthFraction: Float) {
@@ -1774,11 +1776,21 @@ object SettingsManager {
     internal fun mapAppThemeSettingsFromPreferences(preferences: Preferences): AppThemeSettings {
         val rawDpiOverride = preferences[KEY_APP_DPI_OVERRIDE_PERCENT] ?: 0
         val defaultRoleOverrides = ThemeRoleOverrides()
+        // 两值运行时模型：优先新键；缺失时回退旧键解析并归一化为 (MD3, MIUIX/MATERIAL3)。
+        // 历史 iOS、缺失、非法值均按迁移表单向迁移为默认主题 MIUIX。
+        val runtimeThemePlan = resolveThemeSelectionFromPreferences(
+            preferences,
+            KEY_UI_PRESET,
+            KEY_ANDROID_NATIVE_VARIANT
+        ).legacyWritePlan()
         return AppThemeSettings(
-            uiPreset = resolveUiPresetPreferenceValue(preferences[KEY_UI_PRESET]),
-            androidNativeVariant = resolveAndroidNativeVariantPreferenceValue(
-                preferences[KEY_ANDROID_NATIVE_VARIANT]
-            ),
+            uiPreset = if (runtimeThemePlan.uiPreset == UiPreset.IOS) {
+                UiPreset.MD3
+            } else {
+                runtimeThemePlan.uiPreset
+            },
+            androidNativeVariant = runtimeThemePlan.androidNativeVariant
+                ?: AndroidNativeVariant.MIUIX,
             themeMode = resolveThemeModePreference(
                 preferences[KEY_THEME_MODE] ?: AppThemeMode.FOLLOW_SYSTEM.value
             ),
@@ -1858,9 +1870,14 @@ object SettingsManager {
         )
     }
 
-    fun getAppThemeSettings(context: Context): Flow<AppThemeSettings> = context.settingsDataStore.data
-        .map(::mapAppThemeSettingsFromPreferences)
-        .distinctUntilChanged()
+    fun getAppThemeSettings(context: Context): Flow<AppThemeSettings> = flow {
+        ensureThemeSelectionMigrated(context, KEY_UI_PRESET, KEY_ANDROID_NATIVE_VARIANT)
+        emitAll(
+            context.settingsDataStore.data
+                .map(::mapAppThemeSettingsFromPreferences)
+                .distinctUntilChanged()
+        )
+    }
 
     fun getInitialAppThemeSettings(context: Context): AppThemeSettings {
         return AppThemeSettings(
@@ -1944,35 +1961,28 @@ object SettingsManager {
         )
     }
 
-    fun getUiPreset(context: Context): Flow<UiPreset> = context.settingsDataStore.data
-        .map { preferences ->
-            resolveUiPresetPreferenceValue(preferences[KEY_UI_PRESET])
-        }
-
-    suspend fun setUiPreset(context: Context, preset: UiPreset) {
-        context.settingsDataStore.edit { preferences ->
-            preferences[KEY_UI_PRESET] = preset.value
-        }
-    }
-    fun getAndroidNativeVariant(context: Context): Flow<AndroidNativeVariant> =
-        context.settingsDataStore.data.map { preferences ->
-            resolveAndroidNativeVariantPreferenceValue(preferences[KEY_ANDROID_NATIVE_VARIANT])
-        }
-
-    suspend fun setAndroidNativeVariant(context: Context, variant: AndroidNativeVariant) {
-        context.settingsDataStore.edit { preferences ->
-            preferences[KEY_ANDROID_NATIVE_VARIANT] = variant.value
-        }
-    }
-    fun getUiStyle(context: Context): Flow<UiStyle> = context.settingsDataStore.data.map {
-        UiStyle.fromLegacyValues(it[KEY_UI_PRESET], it[KEY_ANDROID_NATIVE_VARIANT])
+    fun getUiStyle(context: Context): Flow<UiStyle> = flow {
+        ensureThemeSelectionMigrated(context, KEY_UI_PRESET, KEY_ANDROID_NATIVE_VARIANT)
+        emitAll(
+            context.settingsDataStore.data
+                .map { preferences ->
+                    resolveThemeSelectionFromPreferences(
+                        preferences,
+                        KEY_UI_PRESET,
+                        KEY_ANDROID_NATIVE_VARIANT
+                    )
+                }
+                .distinctUntilChanged()
+        )
     }
 
     suspend fun setUiStyle(context: Context, uiStyle: UiStyle) {
-        val writePlan = uiStyle.legacyWritePlan()
+        // 只写新稳定键，不再双写旧键；历史 iOS 值归一化为 MIUIX，避免写入非法键值。
+        val normalizedStyle = if (uiStyle == UiStyle.IOS) UiStyle.MIUIX else uiStyle
         context.settingsDataStore.edit { preferences ->
-            preferences[KEY_UI_PRESET] = writePlan.uiPreset.value
-            writePlan.androidNativeVariant?.let { preferences[KEY_ANDROID_NATIVE_VARIANT] = it.value }
+            preferences[KEY_THEME_SELECTION] = normalizedStyle.name
+            preferences.remove(KEY_UI_PRESET)
+            preferences.remove(KEY_ANDROID_NATIVE_VARIANT)
         }
     }
 
@@ -6305,8 +6315,7 @@ object SettingsManager {
 
     private val shareableSettingDefinitions: List<ShareablePreferenceDefinition> by lazy {
         listOf(
-            IntShareablePreferenceDefinition(KEY_UI_PRESET, SettingsShareSection.APPEARANCE),
-            IntShareablePreferenceDefinition(KEY_ANDROID_NATIVE_VARIANT, SettingsShareSection.APPEARANCE),
+            StringShareablePreferenceDefinition(KEY_THEME_SELECTION, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_THEME_MODE, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_DARK_THEME_STYLE, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_APP_LANGUAGE, SettingsShareSection.APPEARANCE),

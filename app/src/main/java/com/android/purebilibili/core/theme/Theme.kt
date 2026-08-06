@@ -816,8 +816,8 @@ private fun rememberKernelSuStyleColorScheme(
 
 @Composable
 fun PureBiliBiliTheme(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3,
+    uiPreset: UiPreset = UiPreset.MD3,
+    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MIUIX,
     themeMode: AppThemeMode = AppThemeMode.FOLLOW_SYSTEM,
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = false,
