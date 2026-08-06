@@ -558,6 +558,19 @@ class VideoPlayerSectionPolicyTest {
     }
 
     @Test
+    fun livePlayerSharedElement_disabledUnderHdrSurfaceOutput() {
+        assertFalse(
+            shouldEnableLivePlayerSharedElement(
+                transitionEnabled = true,
+                allowLivePlayerSharedElement = true,
+                hasSharedTransitionScope = true,
+                hasAnimatedVisibilityScope = true,
+                requiresHdrSurfaceOutput = true
+            )
+        )
+    }
+
+    @Test
     fun playerSurfaceRebind_onlyWhenForegroundVideoSurfaceNeedsRecovery() {
         assertTrue(
             shouldRebindPlayerSurfaceOnForeground(

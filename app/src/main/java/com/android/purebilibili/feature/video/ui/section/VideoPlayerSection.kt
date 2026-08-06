@@ -1530,13 +1530,19 @@ fun VideoPlayerSection(
                 if (landscapeCommentPanelOnLeft) 0.dp else animatedLandscapeCommentReservedWidth,
         )
 
+    // HDR 下 SurfaceView 不能参与 Compose sharedElement；实时 morph 仅 SDR TextureView 路径。
+    val navigationHdrSurfaceRequired = requiresHdrSurfaceOutput(
+        currentQualityId = (uiState as? VideoPlaybackUiState.Success)?.currentQuality ?: 0,
+        colorTransfer = videoInputFormat?.colorInfo?.colorTransfer ?: 0
+    )
     // 应用共享元素
     val livePlayerSharedElementEnabled = shouldEnableLivePlayerSharedElement(
             transitionEnabled = transitionEnabled,
             allowLivePlayerSharedElement = allowLivePlayerSharedElement,
             hasSharedTransitionScope = sharedTransitionScope != null,
             hasAnimatedVisibilityScope = animatedVisibilityScope != null,
-            forceCoverDuringReturnAnimation = forceCoverDuringReturnAnimation
+            forceCoverDuringReturnAnimation = forceCoverDuringReturnAnimation,
+            requiresHdrSurfaceOutput = navigationHdrSurfaceRequired
         )
     val resolvedSharedElementBvid = sharedElementBvid.trim().ifBlank { bvid }
     if (resolvedSharedElementBvid.isNotEmpty() && livePlayerSharedElementEnabled) {

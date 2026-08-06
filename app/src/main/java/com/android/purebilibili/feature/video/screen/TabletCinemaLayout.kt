@@ -98,6 +98,9 @@ import com.android.purebilibili.core.store.TabletCommentPanelWidthPreset
 import com.android.purebilibili.core.ui.transition.VIDEO_SHARED_COVER_ASPECT_RATIO
 import com.android.purebilibili.core.ui.transition.resolveVideoSharedTransitionSourceCornerDp
 import com.android.purebilibili.core.ui.transition.shouldEnableVideoCoverSharedTransition
+import com.android.purebilibili.feature.video.ui.section.resolveAllowLivePlayerSharedElementForMorph
+import com.android.purebilibili.feature.video.ui.section.resolveNavigationLiveSurfaceTextureEnabled
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.core.util.ShareUtils
 import com.android.purebilibili.data.model.response.BgmInfo
 import com.android.purebilibili.data.model.response.ViewPoint
@@ -420,8 +423,12 @@ private fun CinemaStagePlayer(
     playerMaxWidth: Dp,
     forceCoverOnlyOnReturn: Boolean,
     predictiveBackCancelRecoveryGeneration: Int,
-    sponsorContributionState: SponsorContributionUiState,
+    sponsorContributionUiState: SponsorContributionUiState,
 ) {
+    val context = LocalContext.current
+    val liveSurfaceCardTransitionEnabled by SettingsManager
+        .getLiveSurfaceCardTransitionEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = true)
     val success = uiState as? VideoPlaybackUiState.Success
     val sharedTransitionScope = LocalSharedTransitionScope.current
     val animatedVisibilityScope = LocalAnimatedVisibilityScope.current
@@ -473,7 +480,14 @@ private fun CinemaStagePlayer(
                 uiState = uiState,
                 isFullscreen = false,
                 isInPipMode = isInPipMode,
-                useTextureSurfaceForNavigation = transitionEnabled,
+                useTextureSurfaceForNavigation = resolveNavigationLiveSurfaceTextureEnabled(
+                    cardTransitionEnabled = transitionEnabled,
+                    liveSurfaceCardTransitionEnabled = liveSurfaceCardTransitionEnabled,
+                ),
+                allowLivePlayerSharedElement = resolveAllowLivePlayerSharedElementForMorph(
+                    cardTransitionEnabled = transitionEnabled,
+                    liveSurfaceCardTransitionEnabled = liveSurfaceCardTransitionEnabled,
+                ),
                 predictiveBackCancelRecoveryGeneration = predictiveBackCancelRecoveryGeneration,
                 onToggleFullscreen = onToggleFullscreen,
                 onQualityChange = playbackActions.changeQuality,

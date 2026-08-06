@@ -134,6 +134,52 @@ class VideoPlayerSurfacePolicyTest {
     }
 
     @Test
+    fun `live surface switch gates navigation texture request`() {
+        assertTrue(
+            resolveNavigationLiveSurfaceTextureEnabled(
+                cardTransitionEnabled = true,
+                liveSurfaceCardTransitionEnabled = true,
+            )
+        )
+        assertFalse(
+            resolveNavigationLiveSurfaceTextureEnabled(
+                cardTransitionEnabled = true,
+                liveSurfaceCardTransitionEnabled = false,
+            )
+        )
+        assertFalse(
+            resolveNavigationLiveSurfaceTextureEnabled(
+                cardTransitionEnabled = false,
+                liveSurfaceCardTransitionEnabled = true,
+            )
+        )
+    }
+
+    @Test
+    fun `live player shared element never attaches under hdr`() {
+        assertTrue(
+            resolveAllowLivePlayerSharedElementForMorph(
+                cardTransitionEnabled = true,
+                liveSurfaceCardTransitionEnabled = true,
+                requiresHdrSurfaceOutput = false,
+            )
+        )
+        assertFalse(
+            resolveAllowLivePlayerSharedElementForMorph(
+                cardTransitionEnabled = true,
+                liveSurfaceCardTransitionEnabled = true,
+                requiresHdrSurfaceOutput = true,
+            )
+        )
+        assertFalse(
+            resolveAllowLivePlayerSharedElementForMorph(
+                cardTransitionEnabled = true,
+                liveSurfaceCardTransitionEnabled = false,
+            )
+        )
+    }
+
+    @Test
     fun `inline player view stays visible under manual start cover`() {
         // CoverFirst 只叠封面，不得 INVISIBLE PlayerView，否则首帧事件永不触发。
         assertTrue(

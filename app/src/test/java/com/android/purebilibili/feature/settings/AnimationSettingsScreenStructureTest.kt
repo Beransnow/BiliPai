@@ -33,6 +33,17 @@ class AnimationSettingsScreenStructureTest {
     }
 
     @Test
+    fun animationSettingsScreen_exposesLiveSurfaceCardTransitionToggle() {
+        val source = animationSettingsSource()
+
+        assertTrue(source.contains("title = \"实时画面转场\""))
+        assertTrue(source.contains("checked = liveSurfaceCardTransitionEnabled"))
+        assertTrue(source.contains("toggleLiveSurfaceCardTransition"))
+        assertTrue(source.contains("enabled = state.cardTransitionEnabled"))
+        assertTrue(source.contains("getLiveSurfaceCardTransitionEnabled"))
+    }
+
+    @Test
     fun animationSettingsScreen_doesNotExposeLiveReturnPreviewToggle() {
         val source = animationSettingsSource()
 

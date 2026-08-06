@@ -177,7 +177,7 @@ class VideoDetailReturnCoverPolicyTest {
             .readText()
         val inlinePlayerCall = source
             .substringAfter("PortraitInlineVideoPlayerHost(", "")
-            .substringBefore("allowLivePlayerSharedElement = true")
+            .substringBefore("allowLivePlayerSharedElement = allowLivePlayerSharedElement")
 
         assertTrue(inlinePlayerCall.contains("liveBackPreview = bindLivePlayerForBackPreview"))
     }
@@ -1078,7 +1078,9 @@ class VideoDetailReturnCoverPolicyTest {
             .substringBefore("val handleBack =")
 
         assertFalse(actionBlock.contains("forceCoverOnlyOnReturn = true"))
-        assertTrue(source.contains("useTextureSurfaceForNavigation = transitionEnabled"))
+        assertTrue(source.contains("useTextureSurfaceForNavigation = useTextureSurfaceForNavigation"))
+        assertTrue(source.contains("resolveNavigationLiveSurfaceTextureEnabled("))
+        assertTrue(source.contains("getLiveSurfaceCardTransitionEnabled("))
     }
 
     @Test

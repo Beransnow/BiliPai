@@ -915,6 +915,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     //  [新增] 卡片过渡动画开关
     fun toggleCardTransition(value: Boolean) { viewModelScope.launch { SettingsManager.setCardTransitionEnabled(context, value) } }
 
+    fun toggleLiveSurfaceCardTransition(value: Boolean) {
+        viewModelScope.launch {
+            SettingsManager.setLiveSurfaceCardTransitionEnabled(context, value)
+        }
+    }
+
     fun toggleVideoTransitionRealtimeBlur(value: Boolean) {
         viewModelScope.launch {
             SettingsManager.setVideoTransitionRealtimeBlurEnabled(context, value)
