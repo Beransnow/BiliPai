@@ -68,7 +68,7 @@ import com.android.purebilibili.core.ui.components.AppText
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-//  Cupertino Icons - iOS SF Symbols 风格图标
+//  Material Icons
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment

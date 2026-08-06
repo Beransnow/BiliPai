@@ -107,14 +107,14 @@ import com.android.purebilibili.feature.video.player.PlayMode
 import com.android.purebilibili.feature.video.ui.components.AudioQualitySelectionMenu
 import com.android.purebilibili.feature.video.ui.components.DolbyBadge
 import com.android.purebilibili.feature.video.ui.components.HiResBadge
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.filled.BackwardEnd
-import io.github.alexzhirkevich.cupertino.icons.filled.ForwardEnd
-import io.github.alexzhirkevich.cupertino.icons.filled.Pause
-import io.github.alexzhirkevich.cupertino.icons.filled.Play
-import io.github.alexzhirkevich.cupertino.icons.outlined.ChevronDown
-import io.github.alexzhirkevich.cupertino.icons.outlined.Ellipsis
-import io.github.alexzhirkevich.cupertino.icons.outlined.MusicNote
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
+import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.MoreHoriz
+import androidx.compose.material.icons.outlined.MusicNote
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -512,7 +512,7 @@ internal fun MusicPlayerContent(
                             )
                         }
                         if (index == state.currentQueueIndex) {
-                            AppIcon(CupertinoIcons.Outlined.MusicNote, contentDescription = null)
+                            AppIcon(Icons.Outlined.MusicNote, contentDescription = null)
                         }
                     }
                 }
@@ -795,7 +795,7 @@ private fun MusicArtwork(
                 contentScale = ContentScale.Crop
             )
             else -> AppIcon(
-                CupertinoIcons.Outlined.MusicNote,
+                Icons.Outlined.MusicNote,
                 contentDescription = null,
                 tint = MusicContentColor.copy(alpha = 0.78f),
                 modifier = Modifier.size(96.dp)
@@ -842,7 +842,7 @@ private fun PlaybackControls(
         verticalAlignment = Alignment.CenterVertically
     ) {
         PlaybackIconButton(
-            icon = CupertinoIcons.Filled.BackwardEnd,
+            icon = Icons.Filled.SkipPrevious,
             description = "上一首",
             enabled = state.queueControls.hasPrevious && onPrevious != null,
             onClick = onPrevious ?: {}
@@ -852,7 +852,7 @@ private fun PlaybackControls(
                 AppCircularProgressIndicator(color = MusicContentColor, modifier = Modifier.size(36.dp))
             } else {
                 AppIcon(
-                    imageVector = if (state.isPlaying) CupertinoIcons.Filled.Pause else CupertinoIcons.Filled.Play,
+                    imageVector = if (state.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                     contentDescription = if (state.isPlaying) "暂停" else "播放",
                     tint = MusicContentColor,
                     modifier = Modifier.size(46.dp)
@@ -860,7 +860,7 @@ private fun PlaybackControls(
             }
         }
         PlaybackIconButton(
-            icon = CupertinoIcons.Filled.ForwardEnd,
+            icon = Icons.Filled.SkipNext,
             description = "下一首",
             enabled = state.queueControls.hasNext && onNext != null,
             onClick = onNext ?: {}
@@ -1250,14 +1250,14 @@ private fun MusicTopBar(
 ) {
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         GlassIconButton(
-            CupertinoIcons.Outlined.ChevronDown,
+            Icons.Outlined.KeyboardArrowDown,
             "返回",
             glassEnabled,
             miuixBackdrop,
             onBack
         )
         GlassIconButton(
-            CupertinoIcons.Outlined.Ellipsis,
+            Icons.Outlined.MoreHoriz,
             "更多操作",
             glassEnabled,
             miuixBackdrop,
