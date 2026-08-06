@@ -504,6 +504,9 @@ dependencies {
     // --- 12. Testing (测试框架) ---
     // JUnit 4 (兼容旧测试)
     testImplementation("junit:junit:4.13.2")
+    // 真实 org.json 实现：android.jar 的 org.json 在单测里是桩（returnDefaultValues 下
+    // 静默返回空值），CommandDanmakuPolicy 等生产解析路径需要真实实现才能单测。
+    testImplementation("org.json:json:20240303")
     // JUnit 5
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
