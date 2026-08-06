@@ -11,10 +11,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-//  Cupertino Icons - iOS SF Symbols 风格图标
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -153,7 +152,7 @@ fun QualitySelectionMenu(
                             Spacer(modifier = Modifier.weight(1f))
                             
                             if (isSelected) {
-                                AppIcon(CupertinoIcons.Default.Checkmark, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                                AppIcon(Icons.Outlined.Check, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
                             }
                         }
                     }
@@ -264,7 +263,7 @@ fun SpeedSelectionMenu(
                             )
                             Spacer(modifier = Modifier.weight(1f))
                             if (isSelected) {
-                                AppIcon(CupertinoIcons.Default.Checkmark, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                                AppIcon(Icons.Outlined.Check, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
                             }
                         }
                     }

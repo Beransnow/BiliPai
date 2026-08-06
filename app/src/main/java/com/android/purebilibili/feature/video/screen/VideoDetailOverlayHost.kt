@@ -164,8 +164,6 @@ import com.android.purebilibili.feature.video.policy.reduceVideoDetailPreScroll
 import com.android.purebilibili.feature.video.policy.resolveVideoDetailCollapseProgress
 import com.android.purebilibili.feature.video.subtitle.resolveSubtitlePreferenceSession
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch

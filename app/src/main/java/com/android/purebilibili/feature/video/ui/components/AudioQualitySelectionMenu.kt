@@ -35,9 +35,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.android.purebilibili.feature.video.playback.audio.AudioQualityOption
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.filled.*
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 
 private val HiResGold = Color(0xFFFFD36A)
 private val DolbyBlue = Color(0xFF8DCDFF)
@@ -176,7 +176,7 @@ fun AudioQualitySelectionMenu(
                         Spacer(modifier = Modifier.weight(1f))
                         if (isSelected) {
                             Icon(
-                                imageVector = CupertinoIcons.Default.Checkmark,
+                                imageVector = Icons.Outlined.Check,
                                 contentDescription = "当前音质",
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(18.dp)

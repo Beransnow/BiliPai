@@ -78,9 +78,9 @@ import com.android.purebilibili.feature.home.resolveHomeFeedCardLayout
 import com.android.purebilibili.feature.video.ui.FollowBadgeTone
 import com.android.purebilibili.feature.video.ui.resolveVideoFollowVisualPolicy
 import com.android.purebilibili.navigation.VideoRoute
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.filled.BubbleLeft
-import io.github.alexzhirkevich.cupertino.icons.filled.Play
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChatBubble
+import androidx.compose.material.icons.filled.PlayArrow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -365,12 +365,12 @@ fun RelatedVideoItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 StatItem(
-                    icon = CupertinoIcons.Filled.Play,
+                    icon = Icons.Filled.PlayArrow,
                     text = FormatUtils.formatStat(video.stat.view.toLong())
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 StatItem(
-                    icon = CupertinoIcons.Filled.BubbleLeft,
+                    icon = Icons.Filled.ChatBubble,
                     text = FormatUtils.formatStat(video.stat.danmaku.toLong())
                 )
                 if (onMoreClick != null) {

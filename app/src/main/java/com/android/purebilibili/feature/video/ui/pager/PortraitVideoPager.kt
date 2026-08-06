@@ -30,8 +30,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
+import androidx.compose.material.icons.outlined.*
 import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ButtonDefaults
 import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
@@ -2643,7 +2642,7 @@ private fun VideoPageItem(
                     modifier = Modifier.size(48.dp),
                 ) {
                     AppIcon(
-                        imageVector = CupertinoIcons.Default.Xmark,
+                        imageVector = Icons.Outlined.Close,
                         contentDescription = "关闭倍速提示",
                         tint = Color.White,
                         modifier = Modifier.size(18.dp),

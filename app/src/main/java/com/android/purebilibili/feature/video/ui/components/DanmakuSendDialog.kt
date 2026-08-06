@@ -47,8 +47,8 @@ import com.android.purebilibili.core.ui.components.AppFilterChip
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTextButton
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.Xmark
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Close
 import kotlinx.coroutines.delay
 
 internal data class DanmakuSendDialogLayoutPolicy(
@@ -255,7 +255,7 @@ fun DanmakuSendDialog(
                                 modifier = Modifier.size(32.dp)
                             ) {
                                 AppIcon(
-                                    imageVector = CupertinoIcons.Outlined.Xmark,
+                                    imageVector = Icons.Outlined.Close,
                                     contentDescription = "关闭",
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(20.dp)

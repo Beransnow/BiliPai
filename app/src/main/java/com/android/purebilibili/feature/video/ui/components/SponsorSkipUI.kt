@@ -10,10 +10,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-//  Cupertino Icons - iOS SF Symbols 风格图标
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -87,7 +87,7 @@ fun SponsorSkipButton(
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             AppIcon(
-                                imageVector = CupertinoIcons.Default.ChevronForward,
+                                imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                                 contentDescription = "跳过",
                                 tint = Color.White,
                                 modifier = Modifier.size(16.dp)
@@ -148,7 +148,7 @@ fun SponsorContributionOverlay(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 AppIcon(
-                    imageVector = CupertinoIcons.Default.Paperplane,
+                    imageVector = Icons.Outlined.Send,
                     contentDescription = null,
                     tint = Color(0xFF7C9EFF),
                     modifier = Modifier.size(18.dp),
@@ -315,7 +315,7 @@ fun SponsorSkipToast(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     AppIcon(
-                        imageVector = CupertinoIcons.Default.ChevronForward,
+                        imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                         contentDescription = null,
                         tint = Color.White,
                         modifier = Modifier.size(16.dp)

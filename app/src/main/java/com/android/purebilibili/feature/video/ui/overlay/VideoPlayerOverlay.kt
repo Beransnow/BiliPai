@@ -22,10 +22,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.outlined.Close
-//  Cupertino Icons - iOS SF Symbols 风格图标
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -1593,8 +1592,8 @@ fun VideoPlayerOverlay(
                     Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                         AppIcon(
                             when (fullscreenLockButtonState.icon) {
-                                FullscreenLockButtonIcon.LOCKED -> CupertinoIcons.Default.Lock
-                                FullscreenLockButtonIcon.UNLOCKED -> CupertinoIcons.Default.LockOpen
+                                FullscreenLockButtonIcon.LOCKED -> Icons.Outlined.Lock
+                                FullscreenLockButtonIcon.UNLOCKED -> Icons.Outlined.LockOpen
                             },
                             contentDescription = fullscreenLockButtonState.contentDescription,
                             tint = if (fullscreenLockButtonState.highlighted) {
@@ -1626,7 +1625,7 @@ fun VideoPlayerOverlay(
                 ) {
                     Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                         AppIcon(
-                            imageVector = CupertinoIcons.Default.Camera,
+                            imageVector = Icons.Outlined.Camera,
                             contentDescription = "截图",
                             tint = Color.White,
                             modifier = Modifier.size(overlayVisualPolicy.lockIconSizeDp.dp)
@@ -2428,7 +2427,7 @@ private fun PortraitTopBar(
                 modifier = Modifier.size(layoutPolicy.buttonSizeDp.dp)
             ) {
                 AppIcon(
-                    imageVector = CupertinoIcons.Default.ChevronBackward,
+                    imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
                     contentDescription = "返回",
                     tint = Color.White,
                     modifier = Modifier.size(layoutPolicy.iconSizeDp.dp)
@@ -2440,7 +2439,7 @@ private fun PortraitTopBar(
                 modifier = Modifier.size(layoutPolicy.buttonSizeDp.dp)
             ) {
                 AppIcon(
-                    imageVector = CupertinoIcons.Default.House,
+                    imageVector = Icons.Outlined.Home,
                     contentDescription = "主界面",
                     tint = Color.White,
                     modifier = Modifier.size(layoutPolicy.iconSizeDp.dp)
@@ -2473,7 +2472,7 @@ private fun PortraitTopBar(
                     )
             ) {
                 AppIcon(
-                    imageVector = CupertinoIcons.Default.Headphones,
+                    imageVector = Icons.Outlined.Headphones,
                     contentDescription = "听视频",
                     tint = Color.White,
                     modifier = Modifier.size(layoutPolicy.iconSizeDp.dp)
@@ -2486,7 +2485,7 @@ private fun PortraitTopBar(
                     modifier = Modifier.size(layoutPolicy.buttonSizeDp.dp)
                 ) {
                     AppIcon(
-                        imageVector = io.github.alexzhirkevich.cupertino.icons.CupertinoIcons.Default.Tv,
+                        imageVector = Icons.Outlined.Tv,
                         contentDescription = "投屏",
                         tint = Color.White,
                         modifier = Modifier.size(layoutPolicy.iconSizeDp.dp)
@@ -3288,7 +3287,7 @@ private fun LandscapeEpisodeItem(
             // 无封面时的占位 (或纯文本模式)
              if (isCurrent) {
                 AppIcon(
-                    imageVector = CupertinoIcons.Default.Play,
+                    imageVector = Icons.Outlined.PlayArrow,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(layoutPolicy.metaIconSizeDp.dp)
@@ -3330,7 +3329,7 @@ private fun LandscapeEpisodeItem(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     // 播放量
                     AppIcon(
-                        imageVector = CupertinoIcons.Default.PlayCircle,
+                        imageVector = Icons.Outlined.PlayCircle,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(layoutPolicy.metaIconSizeDp.dp)

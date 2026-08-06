@@ -26,8 +26,8 @@ import com.kyant.backdrop.Backdrop
 import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.filled.Person
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 
 internal data class CommentSortSegmentedControlSpec(
     val itemWidthDp: Int,
@@ -105,7 +105,7 @@ fun CommentSortFilterBar(
             CommentToggleButton(
                 isChecked = upOnly,
                 onToggle = onUpOnlyToggle,
-                icon = CupertinoIcons.Filled.Person
+                icon = Icons.Filled.Person
             )
 
             // Segmented Control

@@ -56,8 +56,8 @@ import com.android.purebilibili.feature.video.viewmodel.VideoPlaybackUiState
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.*
 import kotlinx.coroutines.launch
 
 //  共享元素过渡
@@ -714,7 +714,7 @@ private fun TabletSecondaryContent(
                                 modifier = Modifier.padding(8.dp)
                             ) {
                                 AppIcon(
-                                    imageVector = if (commentState.upOnlyFilter) io.github.alexzhirkevich.cupertino.icons.CupertinoIcons.Default.CheckmarkCircle else io.github.alexzhirkevich.cupertino.icons.CupertinoIcons.Default.Person,
+                                    imageVector = if (commentState.upOnlyFilter) Icons.Outlined.CheckCircle else Icons.Outlined.Person,
                                     contentDescription = null,
                                     modifier = Modifier.size(20.dp)
                                 )

@@ -99,10 +99,8 @@ import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.foundation.BorderStroke
 import androidx.activity.compose.BackHandler
-//  Cupertino Icons - iOS SF Symbols 风格图标
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 // 🌈 Material Icons Extended - 亮度图标
 import androidx.compose.material.icons.Icons
@@ -4380,7 +4378,7 @@ fun VideoPlayerSection(
                         modifier = Modifier.size(48.dp),
                     ) {
                         AppIcon(
-                            imageVector = CupertinoIcons.Default.Xmark,
+                            imageVector = Icons.Outlined.Close,
                             contentDescription = "关闭倍速提示",
                             tint = Color.White,
                             modifier = Modifier.size(18.dp),
