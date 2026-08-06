@@ -3,14 +3,12 @@ package com.android.purebilibili.core.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
-import io.github.alexzhirkevich.cupertino.CupertinoActivityIndicator
 
 internal enum class AppPullRefreshIndicatorRenderer {
     CUPERTINO,
@@ -35,17 +33,15 @@ data class AppPullRefreshProfile(
 fun resolveAppPullRefreshProfile(
     renderer: PresetPrimitiveRenderer,
 ): AppPullRefreshProfile = when (renderer) {
-    PresetPrimitiveRenderer.IOS -> AppPullRefreshProfile(
-        AppPullRefreshMotionStyle.CUPERTINO,
-        AppPullRefreshIndicatorStyle.CUPERTINO,
+    // 单向迁移：历史 iOS 在运行时解析为默认主题 MIUIX 视觉。
+    PresetPrimitiveRenderer.IOS,
+    PresetPrimitiveRenderer.MIUIX_BRIDGED -> AppPullRefreshProfile(
+        AppPullRefreshMotionStyle.PLATFORM,
+        AppPullRefreshIndicatorStyle.MIUIX_NATIVE,
     )
     PresetPrimitiveRenderer.MATERIAL3 -> AppPullRefreshProfile(
         AppPullRefreshMotionStyle.PLATFORM,
         AppPullRefreshIndicatorStyle.MATERIAL_DEFAULT,
-    )
-    PresetPrimitiveRenderer.MIUIX_BRIDGED -> AppPullRefreshProfile(
-        AppPullRefreshMotionStyle.PLATFORM,
-        AppPullRefreshIndicatorStyle.MIUIX_NATIVE,
     )
 }
 
@@ -59,9 +55,10 @@ internal fun resolveAppPullRefreshIndicatorRenderer(
 ): AppPullRefreshIndicatorRenderer = when (
     resolvePresetPrimitiveRenderer(uiPreset, androidNativeVariant)
 ) {
-    PresetPrimitiveRenderer.IOS -> AppPullRefreshIndicatorRenderer.CUPERTINO
-    PresetPrimitiveRenderer.MATERIAL3 -> AppPullRefreshIndicatorRenderer.MATERIAL3
+    // 单向迁移：历史 iOS 在运行时解析为默认主题 MIUIX 渲染器。
+    PresetPrimitiveRenderer.IOS,
     PresetPrimitiveRenderer.MIUIX_BRIDGED -> AppPullRefreshIndicatorRenderer.MIUIX
+    PresetPrimitiveRenderer.MATERIAL3 -> AppPullRefreshIndicatorRenderer.MATERIAL3
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -91,21 +88,19 @@ fun AppPullRefreshLoadingIndicator(
     color: Color = AppSurfaceTokens.primary(),
 ) {
     when (rememberPresetPrimitiveRenderer()) {
-        PresetPrimitiveRenderer.IOS -> CupertinoActivityIndicator(
-            modifier = modifier.size(AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall),
+        // 单向迁移：历史 iOS 在运行时解析为默认主题 MIUIX 加载指示器。
+        PresetPrimitiveRenderer.IOS,
+        PresetPrimitiveRenderer.MIUIX_BRIDGED -> AdaptiveLoadingIndicator(
+            modifier = modifier,
+            size = AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro,
             color = color,
+            strokeWidth = AppSpacingTokens.Micro,
         )
         PresetPrimitiveRenderer.MATERIAL3 -> AdaptiveLoadingIndicator(
             modifier = modifier,
             size = AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall,
             color = color,
             density = AdaptiveLoadingDensity.PAGE,
-        )
-        PresetPrimitiveRenderer.MIUIX_BRIDGED -> AdaptiveLoadingIndicator(
-            modifier = modifier,
-            size = AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro,
-            color = color,
-            strokeWidth = AppSpacingTokens.Micro,
         )
     }
 }

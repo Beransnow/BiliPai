@@ -8,8 +8,9 @@ class UiStyleCompatibilityPolicyTest {
 
     @Test
     fun allLegacyCombinations_deriveExpectedUiStyle() {
-        assertEquals(UiStyle.IOS, resolveUiStyle(UiPreset.IOS, AndroidNativeVariant.MATERIAL3))
-        assertEquals(UiStyle.IOS, resolveUiStyle(UiPreset.IOS, AndroidNativeVariant.MIUIX))
+        // 单向迁移：历史 iOS 值在运行时解析为默认主题 MIUIX，不再产生 iOS 选择。
+        assertEquals(UiStyle.MIUIX, resolveUiStyle(UiPreset.IOS, AndroidNativeVariant.MATERIAL3))
+        assertEquals(UiStyle.MIUIX, resolveUiStyle(UiPreset.IOS, AndroidNativeVariant.MIUIX))
         assertEquals(UiStyle.MATERIAL3, resolveUiStyle(UiPreset.MD3, AndroidNativeVariant.MATERIAL3))
         assertEquals(UiStyle.MIUIX, resolveUiStyle(UiPreset.MD3, AndroidNativeVariant.MIUIX))
     }

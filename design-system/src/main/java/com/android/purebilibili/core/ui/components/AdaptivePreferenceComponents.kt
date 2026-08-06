@@ -14,6 +14,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -66,11 +67,8 @@ import com.android.purebilibili.core.theme.iOSCornerRadius
 import com.android.purebilibili.core.ui.LocalAppThemeConfig
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.core.ui.adaptiveSquircleBackground
-import io.github.alexzhirkevich.cupertino.CupertinoSwitch
-import io.github.alexzhirkevich.cupertino.CupertinoSwitchDefaults
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.filled.*
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import top.yukonga.miuix.kmp.basic.BasicComponent
 import top.yukonga.miuix.kmp.basic.BasicComponentDefaults
@@ -480,7 +478,8 @@ fun AppAdaptiveSwitch(
             settingsLiquidGlassEnabled = settingsLiquidGlassEnabled
         )
     ) {
-        AppAdaptiveSwitchTreatment.MATERIAL -> {
+        AppAdaptiveSwitchTreatment.MATERIAL,
+        AppAdaptiveSwitchTreatment.CUPERTINO -> {
             if (switchSpec.usePlatformDefaults) {
                 Switch(
                     checked = checked,
@@ -511,19 +510,6 @@ fun AppAdaptiveSwitch(
                 onCheckedChange = onCheckedChange,
                 enabled = enabled,
                 modifier = modifier
-            )
-        }
-        AppAdaptiveSwitchTreatment.CUPERTINO -> {
-            CupertinoSwitch(
-                checked = checked,
-                onCheckedChange = onCheckedChange,
-                enabled = enabled,
-                modifier = modifier,
-                colors = CupertinoSwitchDefaults.colors(
-                    thumbColor = switchSpec.checkedThumbColor,
-                    checkedTrackColor = switchSpec.checkedTrackColor,
-                    uncheckedTrackColor = switchSpec.uncheckedTrackColor
-                )
             )
         }
         AppAdaptiveSwitchTreatment.LIQUID_GLASS -> {
@@ -1530,7 +1516,7 @@ internal fun AdaptivePreferenceContent(
                             modifier = Modifier.size(16.dp)
                         )
                     } else {
-                        Icon(CupertinoIcons.Default.ChevronForward, null, tint = chevronTint, modifier = Modifier.size(20.dp))
+                        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null, tint = chevronTint, modifier = Modifier.size(20.dp))
                     }
                 }
             }
@@ -1739,7 +1725,7 @@ fun AdaptiveSearchFieldRenderer(
                     ) {
                         if (showLeadingIcon) {
                             Icon(
-                                imageVector = CupertinoIcons.Default.MagnifyingGlass,
+                                imageVector = Icons.Outlined.Search,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(18.dp),
@@ -1860,7 +1846,7 @@ fun AdaptiveSearchFieldRenderer(
                     modifier = Modifier.padding(horizontal = 12.dp),
                 ) {
                     Icon(
-                        imageVector = CupertinoIcons.Default.MagnifyingGlass,
+                        imageVector = Icons.Outlined.Search,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(18.dp),
@@ -1882,7 +1868,7 @@ fun AdaptiveSearchFieldRenderer(
                             modifier = Modifier.size(20.dp),
                         ) {
                             Icon(
-                                imageVector = CupertinoIcons.Default.XmarkCircle,
+                                imageVector = Icons.Outlined.Cancel,
                                 contentDescription = "Clear",
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(16.dp),
@@ -1938,7 +1924,7 @@ fun AdaptiveSearchFieldRenderer(
                     )
                 } else {
                     Icon(
-                        imageVector = CupertinoIcons.Default.MagnifyingGlass,
+                        imageVector = Icons.Outlined.Search,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(18.dp)
@@ -1963,7 +1949,7 @@ fun AdaptiveSearchFieldRenderer(
                         val clearIcon = if (uiPreset == UiPreset.MD3) {
                             Icons.Default.Clear
                         } else {
-                            CupertinoIcons.Default.XmarkCircle
+                            Icons.Outlined.Cancel
                         }
                         Icon(
                             imageVector = clearIcon,
@@ -2004,7 +1990,7 @@ fun AppSearchEntry(
     val searchIcon = if (uiPreset == UiPreset.MD3) {
         Icons.Default.Search
     } else {
-        CupertinoIcons.Default.MagnifyingGlass
+        Icons.Outlined.Search
     }
 
     Row(

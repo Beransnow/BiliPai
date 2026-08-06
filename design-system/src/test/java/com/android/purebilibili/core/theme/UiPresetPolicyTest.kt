@@ -8,8 +8,8 @@ import kotlin.test.assertTrue
 class UiPresetPolicyTest {
 
     @Test
-    fun unknownPresetValue_fallsBackToIos() {
-        assertEquals(UiPreset.IOS, UiPreset.fromValue(99))
+    fun unknownPresetValue_fallsBackToMd3() {
+        assertEquals(UiPreset.MD3, UiPreset.fromValue(99))
     }
 
     @Test

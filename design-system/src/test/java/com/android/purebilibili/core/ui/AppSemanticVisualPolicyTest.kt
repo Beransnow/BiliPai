@@ -8,7 +8,7 @@ import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class AppSemanticVisualPolicyTest {
 
@@ -20,20 +20,17 @@ class AppSemanticVisualPolicyTest {
     )
 
     @Test
-    fun iosUsesCupertinoIconsAndFallbackAccent() {
+    fun legacyIosResolvesToMiuixMaterialPolicy() {
         val policy = resolveAppSemanticVisualPolicy(
             uiPreset = UiPreset.IOS,
             androidNativeVariant = AndroidNativeVariant.MIUIX,
             materialPalette = palette,
         )
 
-        assertEquals(AppSemanticIconFamily.CUPERTINO, policy.iconFamily)
-        assertFalse(policy.prefersGroupedListCards)
-        assertNull(policy.accentPalette)
-        assertEquals(
-            Color(0xFFABCDEF),
-            policy.resolveAccent(AppSemanticAccentRole.TERTIARY, Color(0xFFABCDEF)),
-        )
+        // 单向迁移：历史 iOS 在运行时解析为默认主题 MIUIX。
+        assertEquals(AppSemanticIconFamily.MATERIAL, policy.iconFamily)
+        assertTrue(policy.prefersGroupedListCards)
+        assertEquals(palette, policy.accentPalette)
     }
 
     @Test

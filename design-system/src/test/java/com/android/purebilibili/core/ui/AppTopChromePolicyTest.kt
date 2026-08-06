@@ -13,7 +13,7 @@ class AppTopChromePolicyTest {
         val tonal = resolveAppTopChromePolicy(UiPreset.MD3, AndroidNativeVariant.MIUIX)
 
         assertEquals(AppTopTabPresentation.MOVING_CAPSULE, ios.tabPresentation)
-        assertEquals(AppSemanticIconFamily.CUPERTINO, ios.iconFamily)
+        assertEquals(AppSemanticIconFamily.MATERIAL, ios.iconFamily)
         assertEquals(AppTopTabPresentation.MATERIAL_UNDERLINE, material.tabPresentation)
         assertEquals(AppSemanticIconFamily.MATERIAL, material.iconFamily)
         assertEquals(AppTopTabPresentation.TONAL_CAPSULE, tonal.tabPresentation)

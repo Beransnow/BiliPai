@@ -8,9 +8,10 @@ import kotlin.test.assertEquals
 class AdaptiveLoadingIndicatorPolicyTest {
 
     @Test
-    fun `ios preset keeps cute person for page and compact`() {
+    fun `legacy ios preset migrates to miuix visuals`() {
+        // 单向迁移：历史 iOS 在运行时解析为默认主题 MIUIX。
         assertEquals(
-            AdaptiveLoadingVisual.IOS_CUTE_PERSON,
+            AdaptiveLoadingVisual.MIUIX_INFINITE,
             resolveAdaptiveLoadingVisual(
                 uiPreset = UiPreset.IOS,
                 androidNativeVariant = AndroidNativeVariant.MATERIAL3,
@@ -18,7 +19,7 @@ class AdaptiveLoadingIndicatorPolicyTest {
             ),
         )
         assertEquals(
-            AdaptiveLoadingVisual.IOS_CUTE_PERSON,
+            AdaptiveLoadingVisual.MIUIX_CIRCULAR,
             resolveAdaptiveLoadingVisual(
                 uiPreset = UiPreset.IOS,
                 androidNativeVariant = AndroidNativeVariant.MIUIX,

@@ -16,13 +16,14 @@ class AdaptiveTooltipPolicyTest {
     }
 
     @Test
-    fun materialAndIosPassThroughTooltip() {
+    fun materialPassesThroughTooltip_andLegacyIosMigratesToMiuix() {
         assertEquals(
             AdaptiveTooltipRenderer.PASSTHROUGH,
             resolveAdaptiveTooltipRenderer(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
         )
+        // 单向迁移：历史 iOS 在运行时解析为默认主题 MIUIX。
         assertEquals(
-            AdaptiveTooltipRenderer.PASSTHROUGH,
+            AdaptiveTooltipRenderer.MIUIX_TOOLTIP_BOX,
             resolveAdaptiveTooltipRenderer(UiPreset.IOS, AndroidNativeVariant.MATERIAL3)
         )
     }

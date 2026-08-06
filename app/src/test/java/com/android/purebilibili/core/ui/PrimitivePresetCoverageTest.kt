@@ -16,8 +16,9 @@ class PrimitivePresetCoverageTest {
 
     @Test
     fun unifiedRenderer_matches_uiPresetMatrix() {
+        // 两值模型：历史 iOS 输入在运行时解析为 MIUIX 渲染器。
         assertEquals(
-            PresetPrimitiveRenderer.IOS,
+            PresetPrimitiveRenderer.MIUIX_BRIDGED,
             resolvePresetPrimitiveRenderer(UiPreset.IOS, AndroidNativeVariant.MATERIAL3)
         )
         assertEquals(

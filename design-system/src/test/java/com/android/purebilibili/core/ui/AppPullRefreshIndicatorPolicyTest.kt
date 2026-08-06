@@ -8,9 +8,10 @@ import kotlin.test.assertEquals
 class AppPullRefreshIndicatorPolicyTest {
 
     @Test
-    fun refreshIndicatorRendererSwapsToMaterialWhenNotIos() {
+    fun refreshIndicatorRenderer_legacyIosMigratesToMiuix() {
+        // 单向迁移：历史 iOS 在运行时解析为默认主题 MIUIX。
         assertEquals(
-            AppPullRefreshIndicatorRenderer.CUPERTINO,
+            AppPullRefreshIndicatorRenderer.MIUIX,
             resolveAppPullRefreshIndicatorRenderer(UiPreset.IOS, AndroidNativeVariant.MATERIAL3),
         )
         assertEquals(

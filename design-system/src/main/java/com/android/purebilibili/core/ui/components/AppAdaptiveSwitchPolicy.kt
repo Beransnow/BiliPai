@@ -23,7 +23,8 @@ internal fun resolveAppAdaptiveSwitchTreatment(
         uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX -> AppAdaptiveSwitchTreatment.MIUIX
         uiPreset == UiPreset.MD3 -> AppAdaptiveSwitchTreatment.MATERIAL
         settingsLiquidGlassEnabled -> AppAdaptiveSwitchTreatment.LIQUID_GLASS
-        else -> AppAdaptiveSwitchTreatment.CUPERTINO
+        // 单向迁移：历史 iOS 在运行时解析为默认主题（MATERIAL 渲染路径）。
+        else -> AppAdaptiveSwitchTreatment.MATERIAL
     }
 }
 

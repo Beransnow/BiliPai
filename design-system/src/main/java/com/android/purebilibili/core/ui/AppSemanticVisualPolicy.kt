@@ -14,7 +14,6 @@ import com.android.purebilibili.core.theme.UiStyle
 import com.android.purebilibili.core.theme.resolveUiStyle
 
 enum class AppSemanticIconFamily {
-    CUPERTINO,
     MATERIAL,
 }
 
@@ -50,13 +49,6 @@ data class AppSemanticVisualPolicy(
     }
 
     companion object {
-        val Cupertino = AppSemanticVisualPolicy(
-            iconFamily = AppSemanticIconFamily.CUPERTINO,
-            accentPalette = null,
-            prefersNativeChrome = false,
-            supportsIndependentLiquidGlass = true,
-        )
-
         fun material(palette: AppSemanticAccentPalette) = AppSemanticVisualPolicy(
             iconFamily = AppSemanticIconFamily.MATERIAL,
             accentPalette = palette,
@@ -81,7 +73,8 @@ fun resolveAppSemanticVisualPolicy(
     androidNativeVariant: AndroidNativeVariant,
     materialPalette: AppSemanticAccentPalette,
 ): AppSemanticVisualPolicy = when (resolveUiStyle(uiPreset, androidNativeVariant)) {
-    UiStyle.IOS -> AppSemanticVisualPolicy.Cupertino
+    // 两值模型：历史 iOS 值在运行时解析为 MIUIX，不再产生 Cupertino 视觉策略。
+    UiStyle.IOS -> AppSemanticVisualPolicy.material(materialPalette)
     UiStyle.MATERIAL3 -> AppSemanticVisualPolicy.material(materialPalette)
     UiStyle.MIUIX -> AppSemanticVisualPolicy.material(materialPalette).copy(
         prefersGroupedListCards = true,

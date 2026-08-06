@@ -26,8 +26,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.filled.Person
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import kotlin.math.PI
 import kotlin.math.sin
 
@@ -90,7 +90,7 @@ internal fun IosCutePersonLoadingIndicator(
         }
 
         Icon(
-            imageVector = CupertinoIcons.Filled.Person,
+            imageVector = Icons.Filled.Person,
             contentDescription = "加载中",
             tint = color,
             modifier = Modifier

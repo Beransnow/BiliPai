@@ -27,7 +27,8 @@ fun resolvePresetPrimitiveRenderer(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant
 ): PresetPrimitiveRenderer = when {
-    uiPreset == UiPreset.IOS -> PresetPrimitiveRenderer.IOS
+    // 单向迁移：历史 iOS 值在运行时解析为默认主题 MIUIX 渲染器。
+    uiPreset == UiPreset.IOS -> PresetPrimitiveRenderer.MIUIX_BRIDGED
     uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX ->
         PresetPrimitiveRenderer.MIUIX_BRIDGED
     else -> PresetPrimitiveRenderer.MATERIAL3

@@ -23,9 +23,10 @@ class AppAdaptiveSwitchPolicyTest {
     }
 
     @Test
-    fun `ios without liquid glass keeps cupertino switch treatment`() {
+    fun `ios without liquid glass migrates to material switch treatment`() {
+        // 单向迁移：历史 iOS 在运行时解析为默认主题（MATERIAL 渲染路径）。
         assertEquals(
-            AppAdaptiveSwitchTreatment.CUPERTINO,
+            AppAdaptiveSwitchTreatment.MATERIAL,
             resolveAppAdaptiveSwitchTreatment(
                 uiPreset = UiPreset.IOS,
                 settingsLiquidGlassEnabled = false

@@ -21,12 +21,13 @@ class AdaptiveScaffoldPolicyTest {
     }
 
     @Test
-    fun iosPreset_routesToMaterial3Scaffold() {
+    fun legacyIosPreset_routesToMiuixScaffold() {
+        // 单向迁移：历史 iOS 在运行时解析为默认主题 MIUIX。
         assertEquals(
-            AdaptiveScaffoldRenderer.MATERIAL3_SCAFFOLD,
+            AdaptiveScaffoldRenderer.MIUIX_SCAFFOLD_WITH_POPUP_HOST,
             resolveAdaptiveScaffoldRenderer(UiPreset.IOS, AndroidNativeVariant.MATERIAL3)
         )
-        assertFalse(
+        assertTrue(
             shouldMountMiuixPopupHostOnAdaptiveScaffold(UiPreset.IOS, AndroidNativeVariant.MATERIAL3)
         )
     }

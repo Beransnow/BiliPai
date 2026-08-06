@@ -30,9 +30,9 @@ class AdaptivePullToRefreshPolicyTest {
     }
 
     @Test
-    fun `ios preset keeps ios renderer`() {
+    fun `legacy ios preset migrates to miuix renderer`() {
         assertEquals(
-            PresetPrimitiveRenderer.IOS,
+            PresetPrimitiveRenderer.MIUIX_BRIDGED,
             resolveAdaptivePullToRefreshRenderer(
                 uiPreset = UiPreset.IOS,
                 androidNativeVariant = AndroidNativeVariant.MIUIX

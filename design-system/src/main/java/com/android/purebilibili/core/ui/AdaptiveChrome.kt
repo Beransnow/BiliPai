@@ -358,7 +358,7 @@ fun resolveAppTopChromePolicy(
 ): AppTopChromePolicy = when {
     uiPreset == UiPreset.IOS -> AppTopChromePolicy(
         tabPresentation = AppTopTabPresentation.MOVING_CAPSULE,
-        iconFamily = AppSemanticIconFamily.CUPERTINO,
+        iconFamily = AppSemanticIconFamily.MATERIAL,
         compactChromeSpec = resolveCompactCapsuleChromeSpec(uiPreset, androidNativeVariant),
     )
     androidNativeVariant == AndroidNativeVariant.MIUIX -> AppTopChromePolicy(
