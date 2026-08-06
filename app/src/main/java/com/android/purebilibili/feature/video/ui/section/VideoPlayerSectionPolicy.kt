@@ -949,6 +949,41 @@ internal fun resolveGesturePercentDigitChangeMask(
     }
 }
 
+/**
+ * User switch + master card transition → may request TextureView for live morph.
+ * HDR still wins inside [shouldUseTextureSurfaceForFlip] so playback never SDR-washes.
+ */
+internal fun resolveNavigationLiveSurfaceTextureEnabled(
+    cardTransitionEnabled: Boolean,
+    liveSurfaceCardTransitionEnabled: Boolean,
+): Boolean {
+    return cardTransitionEnabled && liveSurfaceCardTransitionEnabled
+}
+
+/**
+ * Live player sharedElement is only useful when TextureView can own the frame.
+ * Under HDR we keep SurfaceView and fall back to cover (or freeze-frame) morph —
+ * never attach live sharedElement on a SurfaceView that Compose cannot transform.
+ */
+internal fun resolveAllowLivePlayerSharedElementForMorph(
+    cardTransitionEnabled: Boolean,
+    liveSurfaceCardTransitionEnabled: Boolean,
+    requiresHdrSurfaceOutput: Boolean = false,
+): Boolean {
+    return cardTransitionEnabled &&
+        liveSurfaceCardTransitionEnabled &&
+        !requiresHdrSurfaceOutput
+}
+
+/**
+ * Whether the PlayerView must use TextureView (instead of SurfaceView).
+ *
+ * TextureView is required for flip transforms and shared-element morph capture.
+ * SurfaceView is required for HDR/Dolby Vision so color metadata reaches the display
+ * (TextureView GPU composition always tone-maps to SDR). When [requiresHdrSurfaceOutput]
+ * is true, navigation morph may fall back to cover-only transitions rather than
+ * forcing TextureView and silently killing HDR.
+ */
 internal fun shouldUseTextureSurfaceForFlip(
     isFlippedHorizontal: Boolean,
     isFlippedVertical: Boolean,
@@ -966,9 +1001,12 @@ internal fun shouldEnableLivePlayerSharedElement(
     allowLivePlayerSharedElement: Boolean,
     hasSharedTransitionScope: Boolean,
     hasAnimatedVisibilityScope: Boolean,
-    forceCoverDuringReturnAnimation: Boolean = false
+    forceCoverDuringReturnAnimation: Boolean = false,
+    requiresHdrSurfaceOutput: Boolean = false,
 ): Boolean {
     if (forceCoverDuringReturnAnimation) return false
+    // HDR: SurfaceView cannot participate in Compose sharedElement morph.
+    if (requiresHdrSurfaceOutput) return false
     return transitionEnabled &&
         allowLivePlayerSharedElement &&
         hasSharedTransitionScope &&
