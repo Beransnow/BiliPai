@@ -277,7 +277,8 @@ private fun resolveMd3SettingsSemanticIcon(role: SettingsIconRole): ImageVector 
     SettingsIconRole.HORIZONTAL_ADAPTATION -> Icons.Outlined.AspectRatio
     SettingsIconRole.FULLSCREEN_GESTURE_REVERSE -> Icons.Outlined.SwipeVertical
     SettingsIconRole.IMMERSIVE_STATUS_BAR -> Icons.Outlined.Fullscreen
-    SettingsIconRole.AUTO_ENTER_FULLSCREEN -> Icons.Outlined.Fullscreen
+    // 自动进入全屏沿用历史竖屏+向外箭头语义，与 Fullscreen/FullscreenExit 保持可区分。
+    SettingsIconRole.AUTO_ENTER_FULLSCREEN -> Icons.Outlined.SmartScreen
     SettingsIconRole.AUTO_EXIT_FULLSCREEN -> Icons.Outlined.FullscreenExit
     SettingsIconRole.FULLSCREEN_LOCK -> Icons.Outlined.ScreenLockRotation
     SettingsIconRole.FULLSCREEN_SCREENSHOT -> Icons.Outlined.Screenshot

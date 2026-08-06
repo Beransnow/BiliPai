@@ -27,10 +27,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.MailOutline
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.input.pointer.pointerInput
@@ -88,6 +84,10 @@ import com.android.purebilibili.feature.home.resolveHomeGlassPillStyle
 import com.android.purebilibili.core.store.resolveHomeHeaderBlurEnabled
 import com.android.purebilibili.navigation.resolveAppNavigationAppearance
 import java.io.File
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Messages
+import top.yukonga.miuix.kmp.icon.extended.Search
+import top.yukonga.miuix.kmp.icon.extended.Settings
 
 private const val HOME_HEADER_LIQUID_GLASS_ALPHA = 0.10f
 
@@ -1434,10 +1434,10 @@ fun HomeHeader(
     }
     val edgeButtonShape = resolveHomeTopEdgeButtonShape(topChromePolicy)
     val searchContainerShape = resolveHomeTopSearchContainerShape(topChromePolicy)
-    val searchIcon = Icons.Outlined.Search
+    val searchIcon = MiuixIcons.Search
     val topRightAction = homeSettings?.homeTopRightAction ?: HomeTopRightAction.SETTINGS
-    val settingsIcon = Icons.Outlined.Settings
-    val inboxIcon = Icons.Outlined.MailOutline
+    val settingsIcon = MiuixIcons.Settings
+    val inboxIcon = MiuixIcons.Messages
     val topRightActionIcon = if (topRightAction == HomeTopRightAction.INBOX) inboxIcon else settingsIcon
     val topRightActionContentDescription = resolveHomeTopRightActionContentDescription(
         action = topRightAction,

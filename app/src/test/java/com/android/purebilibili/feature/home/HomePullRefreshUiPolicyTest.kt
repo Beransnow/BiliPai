@@ -19,8 +19,9 @@ class HomePullRefreshUiPolicyTest {
             AppPullRefreshMotionStyle.PLATFORM,
             resolveAppPullRefreshProfile(PresetPrimitiveRenderer.MATERIAL3).motionStyle
         )
+        // 单向迁移：历史 iOS 在运行时解析为默认主题 MIUIX。
         assertEquals(
-            AppPullRefreshMotionStyle.CUPERTINO,
+            AppPullRefreshMotionStyle.PLATFORM,
             resolveAppPullRefreshProfile(PresetPrimitiveRenderer.IOS).motionStyle
         )
     }
@@ -43,8 +44,9 @@ class HomePullRefreshUiPolicyTest {
             AppPullRefreshIndicatorStyle.MIUIX_NATIVE,
             resolveAppPullRefreshProfile(PresetPrimitiveRenderer.MIUIX_BRIDGED).indicatorStyle
         )
+        // 单向迁移：历史 iOS 在运行时解析为默认主题 MIUIX。
         assertEquals(
-            AppPullRefreshIndicatorStyle.CUPERTINO,
+            AppPullRefreshIndicatorStyle.MIUIX_NATIVE,
             resolveAppPullRefreshProfile(PresetPrimitiveRenderer.IOS).indicatorStyle
         )
     }
