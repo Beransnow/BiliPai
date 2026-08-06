@@ -1649,7 +1649,8 @@ class VideoPlayerSectionPolicyTest {
             File("app/src/main/java/com/android/purebilibili/feature/video/ui/section/VideoPlayerSection.kt"),
             File("src/main/java/com/android/purebilibili/feature/video/ui/section/VideoPlayerSection.kt")
         ).first { it.exists() }
-        return sourceFile.readText()
+        // git autocrlf=true 在 Windows 检出时转为 CRLF，多行断言统一按 LF 归一化以匹配 CI。
+        return sourceFile.readText().replace("\r\n", "\n")
     }
 
     @Test
