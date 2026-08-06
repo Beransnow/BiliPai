@@ -22,8 +22,8 @@ import com.android.purebilibili.core.store.player.defaultAudioQualityPreferenceK
 import com.android.purebilibili.core.theme.AppFontSizePreset
 import com.android.purebilibili.core.theme.AppUiScalePreset
 import com.android.purebilibili.core.theme.AndroidNativeVariant
+import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.theme.UiPreset
-import com.android.purebilibili.core.theme.UiStyle
 import com.android.purebilibili.core.theme.normalizeThemeColorIndex
 import com.android.purebilibili.core.theme.resolveColorSpecPreference
 import com.android.purebilibili.core.theme.resolvePaletteStylePreference
@@ -1810,11 +1810,8 @@ object SettingsManager {
             KEY_ANDROID_NATIVE_VARIANT
         ).legacyWritePlan()
         return AppThemeSettings(
-            uiPreset = if (runtimeThemePlan.uiPreset == UiPreset.IOS) {
-                UiPreset.MD3
-            } else {
-                runtimeThemePlan.uiPreset
-            },
+            // 两值模型的写入计划恒为 MD3 组合，历史 iOS 已在此前迁移为 MIUIX。
+            uiPreset = runtimeThemePlan.uiPreset,
             androidNativeVariant = runtimeThemePlan.androidNativeVariant
                 ?: AndroidNativeVariant.MIUIX,
             themeMode = resolveThemeModePreference(
@@ -1987,7 +1984,7 @@ object SettingsManager {
         )
     }
 
-    fun getUiStyle(context: Context): Flow<UiStyle> = flow {
+    fun getUiStyle(context: Context): Flow<AppUiStyle> = flow {
         ensureThemeSelectionMigrated(context, KEY_UI_PRESET, KEY_ANDROID_NATIVE_VARIANT)
         emitAll(
             context.settingsDataStore.data
@@ -2002,11 +1999,10 @@ object SettingsManager {
         )
     }
 
-    suspend fun setUiStyle(context: Context, uiStyle: UiStyle) {
-        // 只写新稳定键，不再双写旧键；历史 iOS 值归一化为 MIUIX，避免写入非法键值。
-        val normalizedStyle = if (uiStyle == UiStyle.IOS) UiStyle.MIUIX else uiStyle
+    suspend fun setUiStyle(context: Context, uiStyle: AppUiStyle) {
+        // 只写新稳定键，不再双写旧键；两值模型不存在非法运行时值。
         context.settingsDataStore.edit { preferences ->
-            preferences[KEY_THEME_SELECTION] = normalizedStyle.name
+            preferences[KEY_THEME_SELECTION] = uiStyle.name
             preferences.remove(KEY_UI_PRESET)
             preferences.remove(KEY_ANDROID_NATIVE_VARIANT)
         }

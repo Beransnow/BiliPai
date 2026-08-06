@@ -9,9 +9,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.theme.UiStyle
 import com.android.purebilibili.core.theme.resolveUiStyle
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
@@ -22,10 +22,9 @@ import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppText
 
 /**
- * PiliPlus 风格的直播首页分区/标签 chip，按当前 UI 预设分发原生组件：
+ * PiliPlus 风格的直播首页分区/标签 chip，按当前 UI 样式分发原生组件：
  * - Material 3：FilterChip
  * - Miuix：圆角 Surface + Miuix 色板（KMP 无独立 Chip API 时的原生桥接）
- * - iOS：胶囊 Surface（Cupertino 风格轻量 chip）
  */
 @Composable
 fun LiveHomeSelectableChip(
@@ -40,7 +39,7 @@ fun LiveHomeSelectableChip(
         androidNativeVariant = LocalAndroidNativeVariant.current,
     )
     when (uiStyle) {
-        UiStyle.MATERIAL3 -> {
+        AppUiStyle.MATERIAL3 -> {
             AppFilterChip(
                 selected = selected,
                 onClick = onClick,
@@ -70,7 +69,7 @@ fun LiveHomeSelectableChip(
                 ),
             )
         }
-        UiStyle.MIUIX -> {
+        AppUiStyle.MIUIX -> {
             val container = if (selected) {
                 AppSurfaceTokens.secondaryContainer()
             } else {
@@ -102,44 +101,6 @@ fun LiveHomeSelectableChip(
                     modifier = Modifier.padding(
                         horizontal = AppSpacingTokens.Small,
                         vertical = if (compact) 5.dp else AppSpacingTokens.ExtraSmall,
-                    ),
-                )
-            }
-        }
-        UiStyle.IOS -> {
-            val container = if (selected) {
-                AppSurfaceTokens.secondaryContainer()
-            } else {
-                Color.Transparent
-            }
-            val content = if (selected) {
-                AppSurfaceTokens.onSecondaryContainer()
-            } else {
-                AppSurfaceTokens.onSurfaceVariantSummary()
-            }
-            AppSurface(
-                onClick = onClick,
-                modifier = modifier,
-                color = container,
-                contentColor = content,
-                shape = AppShapes.container(ContainerLevel.Pill),
-                tonalElevation = 0.dp,
-                shadowElevation = 0.dp,
-            ) {
-                AppText(
-                    text = label,
-                    color = content,
-                    style = if (compact) {
-                        MaterialTheme.typography.labelMedium
-                    } else {
-                        MaterialTheme.typography.labelLarge
-                    },
-                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                    modifier = Modifier.padding(
-                        PaddingValues(
-                            horizontal = AppSpacingTokens.Small,
-                            vertical = if (compact) 5.dp else AppSpacingTokens.ExtraSmall,
-                        )
                     ),
                 )
             }

@@ -5,7 +5,7 @@ import androidx.datastore.preferences.core.mutablePreferencesOf
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
-import com.android.purebilibili.core.theme.UiStyle
+import com.android.purebilibili.core.theme.AppUiStyle
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -32,12 +32,12 @@ class ThemeSelectionMigrationPolicyTest {
     fun newKeyWins_overLegacyIosValues() {
         val result = migrate(
             mutablePreferencesOf(
-                keySelection to UiStyle.MIUIX.name,
+                keySelection to AppUiStyle.MIUIX.name,
                 keyPreset to UiPreset.IOS.value,
                 keyVariant to AndroidNativeVariant.MATERIAL3.value
             )
         )
-        assertEquals(UiStyle.MIUIX, result.selection)
+        assertEquals(AppUiStyle.MIUIX, result.selection)
         assertTrue(result.needsWrite)
     }
 
@@ -45,12 +45,12 @@ class ThemeSelectionMigrationPolicyTest {
     fun newKeyMaterial3_isNotOverwrittenByLegacyValues() {
         val result = migrate(
             mutablePreferencesOf(
-                keySelection to UiStyle.MATERIAL3.name,
+                keySelection to AppUiStyle.MATERIAL3.name,
                 keyPreset to UiPreset.MD3.value,
                 keyVariant to AndroidNativeVariant.MIUIX.value
             )
         )
-        assertEquals(UiStyle.MATERIAL3, result.selection)
+        assertEquals(AppUiStyle.MATERIAL3, result.selection)
     }
 
     // --- 迁移表 ---
@@ -63,7 +63,7 @@ class ThemeSelectionMigrationPolicyTest {
                 keyVariant to AndroidNativeVariant.MIUIX.value
             )
         )
-        assertEquals(UiStyle.MIUIX, result.selection)
+        assertEquals(AppUiStyle.MIUIX, result.selection)
     }
 
     @Test
@@ -74,7 +74,7 @@ class ThemeSelectionMigrationPolicyTest {
                 keyVariant to AndroidNativeVariant.MATERIAL3.value
             )
         )
-        assertEquals(UiStyle.MIUIX, result.selection)
+        assertEquals(AppUiStyle.MIUIX, result.selection)
     }
 
     @Test
@@ -85,7 +85,7 @@ class ThemeSelectionMigrationPolicyTest {
                 keyVariant to AndroidNativeVariant.MIUIX.value
             )
         )
-        assertEquals(UiStyle.MIUIX, result.selection)
+        assertEquals(AppUiStyle.MIUIX, result.selection)
     }
 
     @Test
@@ -96,13 +96,13 @@ class ThemeSelectionMigrationPolicyTest {
                 keyVariant to AndroidNativeVariant.MATERIAL3.value
             )
         )
-        assertEquals(UiStyle.MATERIAL3, result.selection)
+        assertEquals(AppUiStyle.MATERIAL3, result.selection)
     }
 
     @Test
     fun missingKeys_migrateToMiuix() {
         val result = migrate(mutablePreferencesOf())
-        assertEquals(UiStyle.MIUIX, result.selection)
+        assertEquals(AppUiStyle.MIUIX, result.selection)
         assertTrue(result.needsWrite)
     }
 
@@ -114,17 +114,17 @@ class ThemeSelectionMigrationPolicyTest {
                 keyVariant to 99
             )
         )
-        assertEquals(UiStyle.MIUIX, result.selection)
+        assertEquals(AppUiStyle.MIUIX, result.selection)
     }
 
     @Test
     fun invalidNewKey_isTreatedAsMissing_andMigratesToMiuix() {
         val result = migrate(
             mutablePreferencesOf(
-                keySelection to UiStyle.IOS.name
+                keySelection to "IOS"
             )
         )
-        assertEquals(UiStyle.MIUIX, result.selection)
+        assertEquals(AppUiStyle.MIUIX, result.selection)
         assertTrue(result.needsWrite)
     }
 
@@ -139,7 +139,7 @@ class ThemeSelectionMigrationPolicyTest {
         val result = migrate(prefs)
         result.migrationEdits(prefs)
 
-        assertEquals(UiStyle.MIUIX.name, prefs[keySelection])
+        assertEquals(AppUiStyle.MIUIX.name, prefs[keySelection])
         assertNull(prefs[keyPreset])
         assertNull(prefs[keyVariant])
     }
@@ -147,14 +147,14 @@ class ThemeSelectionMigrationPolicyTest {
     @Test
     fun migrationWithExistingNewKey_onlyRemovesStaleLegacyKeys() {
         val prefs = mutablePreferencesOf(
-            keySelection to UiStyle.MATERIAL3.name,
+            keySelection to AppUiStyle.MATERIAL3.name,
             keyPreset to UiPreset.MD3.value,
             keyVariant to AndroidNativeVariant.MIUIX.value
         )
         val result = migrate(prefs)
         result.migrationEdits(prefs)
 
-        assertEquals(UiStyle.MATERIAL3.name, prefs[keySelection])
+        assertEquals(AppUiStyle.MATERIAL3.name, prefs[keySelection])
         assertNull(prefs[keyPreset])
         assertNull(prefs[keyVariant])
     }
@@ -170,7 +170,7 @@ class ThemeSelectionMigrationPolicyTest {
         migrate(prefs).migrationEdits(prefs)
 
         val second = migrate(prefs)
-        assertEquals(UiStyle.MIUIX, second.selection)
+        assertEquals(AppUiStyle.MIUIX, second.selection)
         assertFalse(second.needsWrite)
     }
 
@@ -180,7 +180,7 @@ class ThemeSelectionMigrationPolicyTest {
         migrate(prefs).migrationEdits(prefs)
 
         val second = migrate(prefs)
-        assertEquals(UiStyle.MIUIX, second.selection)
+        assertEquals(AppUiStyle.MIUIX, second.selection)
         assertFalse(second.needsWrite)
     }
 }

@@ -30,8 +30,12 @@ enum class AndroidNativeVariant(val value: Int, val label: String) {
     }
 }
 
-enum class UiStyle {
-    IOS,
+/**
+ * 运行时主题选择（两值模型）：仅保留 MIUIX / MATERIAL3。
+ * 历史 iOS 值在迁移边界（fromLegacyValues / resolveUiStyle）解析为默认主题 MIUIX，
+ * 不再进入运行时。
+ */
+enum class AppUiStyle {
     MATERIAL3,
     MIUIX;
 
@@ -43,21 +47,24 @@ enum class UiStyle {
         fun fromLegacyValues(
             rawUiPreset: Int?,
             rawAndroidNativeVariant: Int?
-        ): UiStyle {
+        ): AppUiStyle {
             val uiPreset = rawUiPreset?.let(UiPreset::fromValueOrNull)
             val androidNativeVariant = rawAndroidNativeVariant?.let(
                 AndroidNativeVariant::fromValueOrNull
             )
             return when {
                 // 缺失或非法（preset 或 variant 任一）→ 默认主题 MIUIX
-                uiPreset == null || androidNativeVariant == null -> UiStyle.MIUIX
+                uiPreset == null || androidNativeVariant == null -> AppUiStyle.MIUIX
                 else -> resolveUiStyle(uiPreset, androidNativeVariant)
             }
         }
     }
 
+    /**
+     * 迁移边界写入计划：把两值选择映射回遗留旧键格式。
+     * 1B 完成 AppThemeSettings 改造后随遗留字段一并删除。
+     */
     fun legacyWritePlan(): LegacyUiStyleWritePlan = when (this) {
-        IOS -> LegacyUiStyleWritePlan(UiPreset.IOS, null)
         MATERIAL3 -> LegacyUiStyleWritePlan(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
         MIUIX -> LegacyUiStyleWritePlan(UiPreset.MD3, AndroidNativeVariant.MIUIX)
     }
@@ -66,12 +73,12 @@ enum class UiStyle {
 fun resolveUiStyle(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant
-): UiStyle = when (uiPreset) {
+): AppUiStyle = when (uiPreset) {
     // 单向迁移：历史 iOS 值不再产生 iOS 运行时选择，统一迁移为默认主题 MIUIX。
-    UiPreset.IOS -> UiStyle.MIUIX
+    UiPreset.IOS -> AppUiStyle.MIUIX
     UiPreset.MD3 -> when (androidNativeVariant) {
-        AndroidNativeVariant.MATERIAL3 -> UiStyle.MATERIAL3
-        AndroidNativeVariant.MIUIX -> UiStyle.MIUIX
+        AndroidNativeVariant.MATERIAL3 -> AppUiStyle.MATERIAL3
+        AndroidNativeVariant.MIUIX -> AppUiStyle.MIUIX
     }
 }
 

@@ -6,11 +6,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import com.android.purebilibili.core.theme.AndroidNativeVariant
+import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalDynamicColorActive
 import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.theme.UiPreset
-import com.android.purebilibili.core.theme.UiStyle
 import com.android.purebilibili.core.theme.resolveUiStyle
 
 enum class AppSemanticIconFamily {
@@ -74,9 +74,8 @@ fun resolveAppSemanticVisualPolicy(
     materialPalette: AppSemanticAccentPalette,
 ): AppSemanticVisualPolicy = when (resolveUiStyle(uiPreset, androidNativeVariant)) {
     // 两值模型：历史 iOS 值在运行时解析为 MIUIX，不再产生 Cupertino 视觉策略。
-    UiStyle.IOS -> AppSemanticVisualPolicy.material(materialPalette)
-    UiStyle.MATERIAL3 -> AppSemanticVisualPolicy.material(materialPalette)
-    UiStyle.MIUIX -> AppSemanticVisualPolicy.material(materialPalette).copy(
+    AppUiStyle.MATERIAL3 -> AppSemanticVisualPolicy.material(materialPalette)
+    AppUiStyle.MIUIX -> AppSemanticVisualPolicy.material(materialPalette).copy(
         prefersGroupedListCards = true,
     )
 }

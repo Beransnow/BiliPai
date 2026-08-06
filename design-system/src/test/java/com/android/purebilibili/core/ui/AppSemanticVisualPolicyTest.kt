@@ -104,7 +104,7 @@ class AppSemanticVisualPolicyTest {
             "app/src/main/java/com/android/purebilibili/feature/settings/SettingsSemanticIconPolicy.kt",
         )
         val styleDependency = Regex(
-            """\b(UiPreset|UiStyle|AndroidNativeVariant|LocalUiPreset|LocalUiStyle|LocalAndroidNativeVariant)\b"""
+            """\b(UiPreset|UiStyle|AppUiStyle|AndroidNativeVariant|LocalUiPreset|LocalUiStyle|LocalAppUiStyle|LocalAndroidNativeVariant)\b"""
         )
 
         paths.forEach { path ->

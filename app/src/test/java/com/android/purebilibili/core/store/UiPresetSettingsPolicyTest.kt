@@ -1,7 +1,7 @@
 package com.android.purebilibili.core.store
 
 import com.android.purebilibili.core.theme.UiPreset
-import com.android.purebilibili.core.theme.UiStyle
+import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.feature.settings.share.SettingsShareSection
 import kotlin.test.Test
@@ -34,8 +34,8 @@ class UiPresetSettingsPolicyTest {
     @Test
     fun missingLegacyKeys_defaultToMiuixStyle() {
         assertEquals(
-            UiStyle.MIUIX,
-            UiStyle.fromLegacyValues(
+            AppUiStyle.MIUIX,
+            AppUiStyle.fromLegacyValues(
                 rawUiPreset = null,
                 rawAndroidNativeVariant = null
             )
@@ -46,16 +46,16 @@ class UiPresetSettingsPolicyTest {
     fun persistedLegacyKeyCombinations_restoreUiStyle() {
         val cases = listOf(
             // 单向迁移：历史 iOS 值解析为 MIUIX。
-            Triple(UiPreset.IOS, AndroidNativeVariant.MATERIAL3, UiStyle.MIUIX),
-            Triple(UiPreset.IOS, AndroidNativeVariant.MIUIX, UiStyle.MIUIX),
-            Triple(UiPreset.MD3, AndroidNativeVariant.MATERIAL3, UiStyle.MATERIAL3),
-            Triple(UiPreset.MD3, AndroidNativeVariant.MIUIX, UiStyle.MIUIX)
+            Triple(UiPreset.IOS, AndroidNativeVariant.MATERIAL3, AppUiStyle.MIUIX),
+            Triple(UiPreset.IOS, AndroidNativeVariant.MIUIX, AppUiStyle.MIUIX),
+            Triple(UiPreset.MD3, AndroidNativeVariant.MATERIAL3, AppUiStyle.MATERIAL3),
+            Triple(UiPreset.MD3, AndroidNativeVariant.MIUIX, AppUiStyle.MIUIX)
         )
 
         cases.forEach { (preset, variant, expectedStyle) ->
             assertEquals(
                 expectedStyle,
-                UiStyle.fromLegacyValues(preset.value, variant.value)
+                AppUiStyle.fromLegacyValues(preset.value, variant.value)
             )
         }
     }
@@ -63,15 +63,15 @@ class UiPresetSettingsPolicyTest {
     @Test
     fun invalidLegacyValues_fallbackToMiuix() {
         assertEquals(
-            UiStyle.MIUIX,
-            UiStyle.fromLegacyValues(
+            AppUiStyle.MIUIX,
+            AppUiStyle.fromLegacyValues(
                 rawUiPreset = 99,
                 rawAndroidNativeVariant = 99
             )
         )
         assertEquals(
-            UiStyle.MIUIX,
-            UiStyle.fromLegacyValues(
+            AppUiStyle.MIUIX,
+            AppUiStyle.fromLegacyValues(
                 rawUiPreset = UiPreset.MD3.value,
                 rawAndroidNativeVariant = 99
             )

@@ -5,7 +5,7 @@ import androidx.datastore.preferences.core.MutablePreferences
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.android.purebilibili.core.theme.UiStyle
+import com.android.purebilibili.core.theme.AppUiStyle
 import kotlinx.coroutines.flow.first
 
 /**
@@ -20,9 +20,9 @@ import kotlinx.coroutines.flow.first
 internal val KEY_THEME_SELECTION = stringPreferencesKey("theme_selection_v1")
 
 /** 解析新键的稳定字符串值。非法值（含历史 iOS 字符串）视为缺失。 */
-internal fun parseThemeSelectionString(rawValue: String): UiStyle? = when (rawValue) {
-    UiStyle.MATERIAL3.name -> UiStyle.MATERIAL3
-    UiStyle.MIUIX.name -> UiStyle.MIUIX
+internal fun parseThemeSelectionString(rawValue: String): AppUiStyle? = when (rawValue) {
+    AppUiStyle.MATERIAL3.name -> AppUiStyle.MATERIAL3
+    AppUiStyle.MIUIX.name -> AppUiStyle.MIUIX
     else -> null
 }
 
@@ -31,13 +31,13 @@ internal fun resolveThemeSelectionFromPreferences(
     preferences: Preferences,
     legacyPresetKey: Preferences.Key<Int>,
     legacyVariantKey: Preferences.Key<Int>
-): UiStyle {
+): AppUiStyle {
     return preferences[KEY_THEME_SELECTION]?.let(::parseThemeSelectionString)
-        ?: UiStyle.fromLegacyValues(preferences[legacyPresetKey], preferences[legacyVariantKey])
+        ?: AppUiStyle.fromLegacyValues(preferences[legacyPresetKey], preferences[legacyVariantKey])
 }
 
 internal data class ThemeSelectionMigrationResult(
-    val selection: UiStyle,
+    val selection: AppUiStyle,
     val needsWrite: Boolean,
     val migrationEdits: MutablePreferences.() -> Unit
 )
@@ -65,7 +65,7 @@ internal fun resolveThemeSelectionMigration(
             }
         )
     } else {
-        val legacyStyle = UiStyle.fromLegacyValues(
+        val legacyStyle = AppUiStyle.fromLegacyValues(
             preferences[legacyPresetKey],
             preferences[legacyVariantKey]
         )

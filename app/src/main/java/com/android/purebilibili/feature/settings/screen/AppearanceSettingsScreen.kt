@@ -20,11 +20,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.animation.*
+import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.ui.AdaptivePlainTooltipBox
 import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
-import com.android.purebilibili.core.ui.AppThemeSelection
 import com.android.purebilibili.core.ui.ContainerLevel
 import androidx.compose.animation.core.*
 import androidx.compose.material.icons.Icons
@@ -260,16 +260,12 @@ fun AppearanceSettingsContent(
             miuixLabel = uiStyleMiuixLabel,
         )
     }
-    val uiPresetIosTitle = stringResource(R.string.appearance_ui_preset_ios_title)
-    val uiPresetIosSummary = stringResource(R.string.appearance_ui_preset_ios_summary)
     val uiPresetAndroidMaterialTitle = stringResource(R.string.appearance_ui_preset_android_material_title)
     val uiPresetAndroidMaterialSummary = stringResource(R.string.appearance_ui_preset_android_material_summary)
     val uiPresetAndroidMiuixTitle = stringResource(R.string.appearance_ui_preset_android_miuix_title)
     val uiPresetAndroidMiuixSummary = stringResource(R.string.appearance_ui_preset_android_miuix_summary)
     val uiPresetDescription = remember(
         state.themeSelection,
-        uiPresetIosTitle,
-        uiPresetIosSummary,
         uiPresetAndroidMaterialTitle,
         uiPresetAndroidMaterialSummary,
         uiPresetAndroidMiuixTitle,
@@ -277,8 +273,6 @@ fun AppearanceSettingsContent(
     ) {
         resolveAppearanceUiPresetDescription(
             selection = state.themeSelection,
-            iosTitle = uiPresetIosTitle,
-            iosSummary = uiPresetIosSummary,
             materialTitle = uiPresetAndroidMaterialTitle,
             materialSummary = uiPresetAndroidMaterialSummary,
             miuixTitle = uiPresetAndroidMiuixTitle,
