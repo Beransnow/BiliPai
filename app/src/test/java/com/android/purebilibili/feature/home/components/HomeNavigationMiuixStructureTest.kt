@@ -10,7 +10,6 @@ class HomeNavigationMiuixStructureTest {
     @Test
     fun `home navigation runtime does not select Cupertino or Material icons`() {
         val homeSources = listOf(
-            "BottomBar.kt",
             "TopBar.kt",
             "HomeHeader.kt",
             "HomeNavigationIconPolicy.kt",
@@ -21,6 +20,19 @@ class HomeNavigationMiuixStructureTest {
             assertFalse(source.contains("androidx.compose.material.icons"))
             assertFalse(source.contains("fallbackIconFamily"))
         }
+    }
+
+    @Test
+    fun `bottom bar keeps upstream Cupertino and Material icon pairs`() {
+        // 底部导航栏是刻意例外：与上游 miuix 主题保持一致，使用 Cupertino（浮动坞/枚举）
+        // 与 Material filled/outlined（停靠栏）成对图标，选中填充、未选中描边。
+        val source = sourceText("BottomBar.kt")
+
+        assertTrue(source.contains("enum class BottomNavItem"))
+        assertTrue(source.contains("{ AppIcon(CupertinoIcons.Filled.House, contentDescription = null) }"))
+        assertTrue(source.contains("{ AppIcon(CupertinoIcons.Outlined.House, contentDescription = null) }"))
+        assertTrue(source.contains("internal fun resolveMaterialBottomBarIcon("))
+        assertTrue(source.contains("if (selected) Icons.Filled.Home else Icons.Outlined.Home"))
     }
 
     @Test

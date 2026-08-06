@@ -73,8 +73,8 @@ import com.android.purebilibili.core.ui.transition.videoCardShellSharedBoundsOrE
 import com.android.purebilibili.feature.home.HomeCoverRequestSpec
 import com.android.purebilibili.feature.home.resolveHomeCardEnterAnimationEnabledAtMount
 import com.android.purebilibili.feature.video.ui.section.resolveCompactPublishTimeRowText
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.*
 import kotlin.math.roundToInt
 
 /**
@@ -474,7 +474,7 @@ internal fun StoryVideoCard(
                                 horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Micro)
                             ) {
                                 AppIcon(
-                                    imageVector = CupertinoIcons.Outlined.PlayCircle,
+                                    imageVector = Icons.Outlined.PlayCircle,
                                     contentDescription = null,
                                     modifier = Modifier.size(AppSpacingTokens.Medium),
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -499,7 +499,7 @@ internal fun StoryVideoCard(
                                  horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Micro)
                              ) {
                                  AppIcon(
-                                     imageVector = CupertinoIcons.Outlined.BubbleLeft,
+                                     imageVector = Icons.Outlined.ChatBubbleOutline,
                                      contentDescription = null,
                                      modifier = Modifier.size(AppSpacingTokens.Medium),
                                      tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -522,7 +522,7 @@ internal fun StoryVideoCard(
                             horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Micro)
                         ) {
                             AppIcon(
-                                imageVector = CupertinoIcons.Outlined.Eye,
+                                imageVector = Icons.Outlined.Visibility,
                                 contentDescription = null,
                                 modifier = Modifier.size(AppSpacingTokens.Medium),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant

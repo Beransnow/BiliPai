@@ -30,10 +30,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.luminance
 import com.android.purebilibili.core.store.HomeWallpaperEffectMode
-//  Cupertino Icons
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -1085,7 +1084,7 @@ internal fun ElegantVideoCard(
                             borderColor = coverPillColors.borderColor
                         ) {
                             AppIcon(
-                                imageVector = CupertinoIcons.Outlined.PlayCircle,
+                                imageVector = Icons.Outlined.PlayCircle,
                                 contentDescription = null,
                                 modifier = Modifier.size(AppSpacingTokens.Small + AppSpacingTokens.Micro),
                                 tint = MediaContrastPalette.Foreground.copy(alpha = 0.94f)
@@ -1113,7 +1112,7 @@ internal fun ElegantVideoCard(
                                 borderColor = coverPillColors.borderColor
                             ) {
                                 AppIcon(
-                                    imageVector = CupertinoIcons.Outlined.BubbleLeft,
+                                    imageVector = Icons.Outlined.ChatBubbleOutline,
                                     contentDescription = null,
                                     modifier = Modifier.size(AppSpacingTokens.Small + AppSpacingTokens.Micro),
                                     tint = MediaContrastPalette.Foreground.copy(alpha = 0.90f)
@@ -1141,7 +1140,7 @@ internal fun ElegantVideoCard(
                                 borderColor = coverPillColors.borderColor
                             ) {
                                 AppIcon(
-                                    imageVector = CupertinoIcons.Outlined.Eye,
+                                    imageVector = Icons.Outlined.Visibility,
                                     contentDescription = null,
                                     modifier = Modifier.size(AppSpacingTokens.Small + AppSpacingTokens.Micro),
                                     tint = MediaContrastPalette.Foreground.copy(alpha = 0.90f)
@@ -1384,7 +1383,7 @@ internal fun ElegantVideoCard(
                         borderColor = inlinePillColors.borderColor
                     ) {
                         AppIcon(
-                            imageVector = CupertinoIcons.Outlined.PlayCircle,
+                            imageVector = Icons.Outlined.PlayCircle,
                             contentDescription = null,
                             modifier = Modifier.size(AppSpacingTokens.Medium),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1408,7 +1407,7 @@ internal fun ElegantVideoCard(
                         borderColor = inlinePillColors.borderColor
                     ) {
                         AppIcon(
-                            imageVector = CupertinoIcons.Outlined.BubbleLeft,
+                            imageVector = Icons.Outlined.ChatBubbleOutline,
                             contentDescription = null,
                             modifier = Modifier.size(AppSpacingTokens.Medium),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1430,7 +1429,7 @@ internal fun ElegantVideoCard(
                         borderColor = inlinePillColors.borderColor
                     ) {
                         AppIcon(
-                            imageVector = CupertinoIcons.Outlined.Eye,
+                            imageVector = Icons.Outlined.Visibility,
                             contentDescription = null,
                             modifier = Modifier.size(AppSpacingTokens.Medium),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -1466,7 +1465,7 @@ internal fun ElegantVideoCard(
                         contentAlignment = Alignment.Center
                     ) {
                         AppIcon(
-                            imageVector = CupertinoIcons.Filled.HandThumbsup,
+                            imageVector = Icons.Filled.ThumbUp,
                             contentDescription = "取消收藏",
                             modifier = Modifier.size(AppSpacingTokens.Large),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)

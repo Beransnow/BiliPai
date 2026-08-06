@@ -26,6 +26,8 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.LiveTv
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.SmartToy
 import androidx.compose.material.icons.outlined.SportsEsports
 import androidx.compose.material.icons.outlined.Tv
@@ -53,9 +55,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.isSystemInDarkTheme
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.filled.*
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
@@ -120,9 +119,6 @@ import top.yukonga.miuix.kmp.blur.blur as miuixBlur
 import top.yukonga.miuix.kmp.blur.drawBackdrop as miuixDrawBackdrop
 import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Search
-import top.yukonga.miuix.kmp.icon.extended.Settings
 import dev.chrisbanes.haze.HazeState
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -437,7 +433,7 @@ internal fun resolveTopTabIconFamily(
     useBottomBarMatchedChrome: Boolean
 ): AppSemanticIconFamily {
     return if (useBottomBarMatchedChrome) {
-        AppSemanticIconFamily.CUPERTINO
+        AppSemanticIconFamily.MATERIAL
     } else {
         chromeIconFamily
     }
@@ -457,7 +453,7 @@ private fun resolveTopTabCategoryForIcon(categoryKey: String): HomeCategory? {
 
 internal fun resolveTopTabCategoryIcon(
     categoryKey: String,
-    iconFamily: AppSemanticIconFamily = AppSemanticIconFamily.CUPERTINO,
+    iconFamily: AppSemanticIconFamily = AppSemanticIconFamily.MATERIAL,
     selected: Boolean = false
 ): ImageVector {
     val category = resolveTopTabCategoryForIcon(categoryKey)
@@ -477,25 +473,6 @@ internal fun resolveTopTabCategoryIcon(
             HomeCategory.TECH -> if (selected) Icons.Filled.SmartToy else Icons.Outlined.SmartToy
             else -> Icons.AutoMirrored.Outlined.MenuOpen
         }
-        AppSemanticIconFamily.CUPERTINO -> when (category) {
-            HomeCategory.RECOMMEND -> if (selected) CupertinoIcons.Filled.House else CupertinoIcons.Outlined.House
-            HomeCategory.FOLLOW -> if (selected) {
-                CupertinoIcons.Filled.PersonCropCircleBadgePlus
-            } else {
-                CupertinoIcons.Outlined.PersonCropCircleBadgePlus
-            }
-            HomeCategory.POPULAR -> if (selected) CupertinoIcons.Filled.ChartBar else CupertinoIcons.Outlined.ChartBar
-            HomeCategory.LIVE -> if (selected) CupertinoIcons.Filled.Video else CupertinoIcons.Outlined.Video
-            HomeCategory.ANIME -> if (selected) CupertinoIcons.Filled.Tv else CupertinoIcons.Outlined.Tv
-            HomeCategory.GAME -> if (selected) {
-                CupertinoIcons.Filled.Gamecontroller
-            } else {
-                CupertinoIcons.Outlined.Gamecontroller
-            }
-            HomeCategory.KNOWLEDGE -> if (selected) CupertinoIcons.Filled.Lightbulb else CupertinoIcons.Outlined.Lightbulb
-            HomeCategory.TECH -> if (selected) CupertinoIcons.Filled.Cpu else CupertinoIcons.Outlined.Cpu
-            else -> CupertinoIcons.Outlined.ListBullet
-        }
     }
 }
 
@@ -503,7 +480,7 @@ internal fun resolveTopTabPartitionIcon(iconFamily: AppSemanticIconFamily): Imag
     return if (iconFamily == AppSemanticIconFamily.MATERIAL) {
         Icons.AutoMirrored.Outlined.MenuOpen
     } else {
-        CupertinoIcons.Default.ListBullet
+        Icons.AutoMirrored.Outlined.MenuOpen
     }
 }
 
@@ -724,7 +701,7 @@ fun FluidHomeTopBar(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         AppIcon(
-                            MiuixIcons.Search,
+                            Icons.Outlined.Search,
                             null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.5f),
                             modifier = Modifier.size(AppSpacingTokens.Large + AppSpacingTokens.Micro)
@@ -748,7 +725,7 @@ fun FluidHomeTopBar(
                     modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
                 ) {
                     AppIcon(
-                        MiuixIcons.Settings,
+                        Icons.Outlined.Settings,
                         contentDescription = "设置",
                         tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                         modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro)
