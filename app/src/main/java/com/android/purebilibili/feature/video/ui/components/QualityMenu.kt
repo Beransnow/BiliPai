@@ -37,6 +37,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
+import com.android.purebilibili.core.ui.components.AppIcon
 
 /** Minimum touch target for quality/speed rows (Material accessibility). */
 private val QualityMenuRowMinHeight = 48.dp

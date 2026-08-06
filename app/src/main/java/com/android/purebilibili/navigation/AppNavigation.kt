@@ -2623,8 +2623,6 @@ fun AppNavigation(
                         BiliPaiNavEntryContentRole.LIVE_LIST ->
                             com.android.purebilibili.feature.live.LiveListScreen(
                                 onBack = { performSystemBackAction() },
-                                // 底栏/顶栏进入的主直播首页：无返回箭头，与 PiliPlus 主 tab 一致。
-                                showNavigationBack = false,
                                 onLiveClick = { roomId, title, uname ->
                                     pushNavigation3Key(BiliPaiNavKey.Live(roomId = roomId.toString(), title = title, uname = uname))
                                 },

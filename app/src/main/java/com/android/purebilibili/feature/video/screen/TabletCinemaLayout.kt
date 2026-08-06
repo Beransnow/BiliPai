@@ -423,7 +423,7 @@ private fun CinemaStagePlayer(
     playerMaxWidth: Dp,
     forceCoverOnlyOnReturn: Boolean,
     predictiveBackCancelRecoveryGeneration: Int,
-    sponsorContributionUiState: SponsorContributionUiState,
+    sponsorContributionState: SponsorContributionUiState,
 ) {
     val context = LocalContext.current
     val liveSurfaceCardTransitionEnabled by SettingsManager

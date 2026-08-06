@@ -2667,7 +2667,6 @@ private fun VideoPageItem(
                         )
                     }
                 }
-                }
             }
         }
 
