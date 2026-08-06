@@ -24,10 +24,6 @@ Use this file as the project-specific overlay on top of the global Codex/OMX gui
 - After each meaningful completed slice, commit and push the changes so progress is easy to roll back and resume.
 - Do not add `Co-Authored-By: Cursor`, `Co-Authored-By: Claude`, `Co-Authored-By: Codex`, `Made-with: Cursor`, or similar AI tool attribution to commit messages or PR descriptions.
 
-## Shell command token optimization (RTK)
-
-- Terminal commands are auto-prefixed with `rtk` (output compression) by a Trae PreToolUse hook — no manual prefixing needed. If output looks unexpectedly truncated, bypass with `rtk proxy <cmd>`.
-
 ## Android and Compose conventions
 
 - Prefer state hoisting: screen composables consume immutable UI state and lambda events; do not pass ViewModels deep into leaf composables.
