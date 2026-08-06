@@ -335,7 +335,7 @@ AppIcons.Status.Warning
 - `ARCHITECTURE.md`：三主题边界改为双主题和统一图标入口。
 - `ROADMAP.md`：三套视觉预设改为 MIUIX/MD3 双主题回归。
 - `ui-design/03_THEMES.md`：标题、主题树、映射矩阵、示例和验收全部改为双主题。
-- `ui-design/README.md`、页面档案和组件文档：移除 iOS 规范和三风格事实基线。
+- `ui-design/README.md`、页面档案和组件文档：移除 iOS 规范与旧三风格事实基线（现行基线为 MIUIX / Material 3 两主题）。
 - `QA.md`：加入主题迁移、统一图标和底栏成对状态检查。
 - 发布说明：明确历史 iOS 用户自动迁移到 MIUIX，iOS 主题入口已删除。
 
