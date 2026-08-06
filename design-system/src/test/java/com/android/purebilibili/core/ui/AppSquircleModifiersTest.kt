@@ -31,8 +31,9 @@ class AppSquircleModifiersTest {
     }
 
     @Test
-    fun iosPreset_usesContinuousRoundingPolicy() {
-        assertTrue(shouldUseIosContinuousRounding(UiPreset.IOS))
+    fun continuousRoundingPolicy_isNeuteredDuringMigration() {
+        // 2B 迁移中：iOS 连续圆角已随单向迁移废除，批 5 删除本函数及调用方。
+        assertFalse(shouldUseIosContinuousRounding(UiPreset.IOS))
         assertFalse(shouldUseIosContinuousRounding(UiPreset.MD3))
     }
 }

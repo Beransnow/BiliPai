@@ -62,6 +62,7 @@ import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
+import com.android.purebilibili.core.theme.resolveUiStyle
 import com.android.purebilibili.core.ui.resolveCompactCapsuleChromeSpec
 import com.android.purebilibili.core.theme.iOSCornerRadius
 import com.android.purebilibili.core.ui.LocalAppThemeConfig
@@ -157,7 +158,8 @@ internal fun resolveAdaptiveListComponentVisualSpec(
     androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
 ): AdaptiveListComponentVisualSpec {
     val chromeTokens = resolveAndroidNativeChromeTokens(uiPreset, androidNativeVariant)
-    val compactChrome = resolveCompactCapsuleChromeSpec(uiPreset, androidNativeVariant)
+    // 2B 兼容桥接：两值胶囊尺寸，批 3 随本函数迁移后删除。
+    val compactChrome = resolveCompactCapsuleChromeSpec(resolveUiStyle(uiPreset, androidNativeVariant))
     return if (uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX) {
         AdaptiveListComponentVisualSpec(
             sectionStartPaddingDp = chromeTokens.denseHorizontalSpacingDp,

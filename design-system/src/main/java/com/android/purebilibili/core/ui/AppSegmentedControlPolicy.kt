@@ -7,6 +7,7 @@ import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.resolveUiStyle
 
 data class AppSegmentedControlPolicy(
     val usesEmphasizedTitle: Boolean,
@@ -25,10 +26,10 @@ internal fun resolveAppSegmentedControlPolicy(
     usesNativeTabRow = uiPreset == UiPreset.MD3 &&
         androidNativeVariant == AndroidNativeVariant.MIUIX,
     usesMaterialColorTokens = androidNativeVariant == AndroidNativeVariant.MATERIAL3,
+    // 2B 兼容桥接：两值胶囊尺寸，批 4 随本函数迁移后删除。
     pillCornerRadius = AppShapes.resolveContainerCornerDp(
         level = ContainerLevel.Pill,
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant,
+        uiStyle = resolveUiStyle(uiPreset, androidNativeVariant),
     ),
 )
 

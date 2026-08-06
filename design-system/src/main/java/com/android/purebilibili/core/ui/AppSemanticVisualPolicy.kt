@@ -5,13 +5,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
-import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.AppUiStyle
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
+import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.theme.LocalDynamicColorActive
-import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.theme.UiPreset
-import com.android.purebilibili.core.theme.resolveUiStyle
 
 enum class AppSemanticIconFamily {
     MATERIAL,
@@ -69,11 +65,9 @@ fun resolveAppSemanticAccentPalette(
 )
 
 fun resolveAppSemanticVisualPolicy(
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant,
+    uiStyle: AppUiStyle,
     materialPalette: AppSemanticAccentPalette,
-): AppSemanticVisualPolicy = when (resolveUiStyle(uiPreset, androidNativeVariant)) {
-    // 两值模型：历史 iOS 值在运行时解析为 MIUIX，不再产生 Cupertino 视觉策略。
+): AppSemanticVisualPolicy = when (uiStyle) {
     AppUiStyle.MATERIAL3 -> AppSemanticVisualPolicy.material(materialPalette)
     AppUiStyle.MIUIX -> AppSemanticVisualPolicy.material(materialPalette).copy(
         prefersGroupedListCards = true,
@@ -82,14 +76,12 @@ fun resolveAppSemanticVisualPolicy(
 
 @Composable
 fun rememberAppSemanticVisualPolicy(): AppSemanticVisualPolicy {
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
+    val uiStyle = LocalAppUiStyle.current
     val dynamicColorActive = LocalDynamicColorActive.current
     val colorScheme = MaterialTheme.colorScheme
-    return remember(uiPreset, androidNativeVariant, dynamicColorActive, colorScheme) {
+    return remember(uiStyle, dynamicColorActive, colorScheme) {
         resolveAppSemanticVisualPolicy(
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant,
+            uiStyle = uiStyle,
             materialPalette = resolveAppSemanticAccentPalette(
                 colorScheme = colorScheme,
                 useSemanticAccentRoles = dynamicColorActive,

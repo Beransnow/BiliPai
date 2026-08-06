@@ -31,10 +31,11 @@ class AdaptiveBottomSheetPolicyTest {
     }
 
     @Test
-    fun `ios preset should preserve compact sheet chrome`() {
+    fun `legacy ios preset maps to miuix sheet chrome`() {
         val spec = resolveAdaptiveBottomSheetVisualSpec(UiPreset.IOS)
 
-        assertEquals(14, spec.cornerRadiusDp)
+        // 单向迁移：历史 iOS 解析为 MIUIX，Dialog 圆角 14 * 1.15 = 16。
+        assertEquals(16, spec.cornerRadiusDp)
         assertFalse(spec.useMaterialDragHandle)
     }
 

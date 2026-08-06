@@ -38,6 +38,7 @@ import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.core.theme.iOSSystemGray4
 import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
+import com.android.purebilibili.core.theme.resolveUiStyle
 import com.android.purebilibili.core.ui.motion.AppMotionTokens
 
 data class AdaptiveBottomSheetVisualSpec(
@@ -61,10 +62,10 @@ fun resolveAdaptiveBottomSheetVisualSpec(
     } else {
         ContainerLevel.Dialog
     }
+    // 2B 兼容桥接：两值圆角，批 4 随本函数迁移后删除。
     val cornerRadiusDp = AppShapes.resolveContainerCornerDp(
         level = cornerLevel,
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant
+        uiStyle = resolveUiStyle(uiPreset, androidNativeVariant)
     ).value.toInt()
     return AdaptiveBottomSheetVisualSpec(
         cornerRadiusDp = cornerRadiusDp,
@@ -89,14 +90,15 @@ internal fun bottomSheetScrimEnterTransition(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
 ): EnterTransition = fadeIn(
-    AppMotionTokens.resolveBottomSheetFadeEnterSpec(uiPreset, androidNativeVariant)
+    // 2B 兼容桥接：两值运动规格，批 4 随本函数迁移后删除。
+    AppMotionTokens.resolveBottomSheetFadeEnterSpec(resolveUiStyle(uiPreset, androidNativeVariant))
 )
 
 internal fun bottomSheetScrimExitTransition(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
 ): ExitTransition = fadeOut(
-    AppMotionTokens.resolveBottomSheetFadeExitSpec(uiPreset, androidNativeVariant)
+    AppMotionTokens.resolveBottomSheetFadeExitSpec(resolveUiStyle(uiPreset, androidNativeVariant))
 )
 
 internal fun bottomSheetContentEnterTransition(
@@ -105,9 +107,9 @@ internal fun bottomSheetContentEnterTransition(
 ): EnterTransition {
     return slideInVertically(
         initialOffsetY = { it },
-        animationSpec = AppMotionTokens.resolveBottomSheetSlideSpec(uiPreset, androidNativeVariant)
+        animationSpec = AppMotionTokens.resolveBottomSheetSlideSpec(resolveUiStyle(uiPreset, androidNativeVariant))
     ) + fadeIn(
-        AppMotionTokens.resolveBottomSheetFadeEnterSpec(uiPreset, androidNativeVariant)
+        AppMotionTokens.resolveBottomSheetFadeEnterSpec(resolveUiStyle(uiPreset, androidNativeVariant))
     )
 }
 
@@ -118,13 +120,11 @@ internal fun bottomSheetContentExitTransition(
     return slideOutVertically(
         targetOffsetY = { it },
         animationSpec = AppMotionTokens.resolveBottomSheetSlideExitSpec(
-            uiPreset,
-            androidNativeVariant
+            resolveUiStyle(uiPreset, androidNativeVariant)
         )
     ) + fadeOut(
         AppMotionTokens.resolveBottomSheetFadeExitSpec<Float>(
-            uiPreset,
-            androidNativeVariant
+            resolveUiStyle(uiPreset, androidNativeVariant)
         )
     )
 }

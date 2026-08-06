@@ -1,8 +1,10 @@
 package com.android.purebilibili.core.ui
 
+import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
+import com.android.purebilibili.core.theme.toLegacyThemePair
 import androidx.compose.ui.unit.dp
 
 object AppChromeSizeTokens {
@@ -38,9 +40,10 @@ data class CompactCapsuleChromeSpec(
 )
 
 fun resolveCompactCapsuleChromeSpec(
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant
+    uiStyle: AppUiStyle
 ): CompactCapsuleChromeSpec {
+    // 兼容桥接：批 5 迁移 AndroidNativeVariantThemePolicy 后删除。
+    val (uiPreset, androidNativeVariant) = uiStyle.toLegacyThemePair()
     val chromeTokens = resolveAndroidNativeChromeTokens(uiPreset, androidNativeVariant)
     return when {
         uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX -> CompactCapsuleChromeSpec(
@@ -59,7 +62,7 @@ fun resolveCompactCapsuleChromeSpec(
             compactChipHorizontalPaddingDp = 10,
             standardGapDp = 8
         )
-        uiPreset == UiPreset.MD3 -> CompactCapsuleChromeSpec(
+        else -> CompactCapsuleChromeSpec(
             primaryHeightDp = 56,
             secondaryButtonSizeDp = chromeTokens.rowMinTouchTargetDp,
             chipHeightDp = 32,
@@ -74,22 +77,6 @@ fun resolveCompactCapsuleChromeSpec(
             chipHorizontalPaddingDp = 16,
             compactChipHorizontalPaddingDp = 12,
             standardGapDp = 12
-        )
-        else -> CompactCapsuleChromeSpec(
-            primaryHeightDp = 44,
-            secondaryButtonSizeDp = 40,
-            chipHeightDp = 36,
-            compactChipHeightDp = 32,
-            primaryCornerRadiusDp = 22,
-            secondaryButtonCornerRadiusDp = 20,
-            chipCornerRadiusDp = 18,
-            compactChipCornerRadiusDp = 16,
-            iconSizeDp = 20,
-            smallIconSizeDp = 16,
-            inputHorizontalPaddingDp = 12,
-            chipHorizontalPaddingDp = 12,
-            compactChipHorizontalPaddingDp = 10,
-            standardGapDp = 8
         )
     }
 }

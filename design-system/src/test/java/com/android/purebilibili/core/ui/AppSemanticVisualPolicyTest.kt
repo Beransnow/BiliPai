@@ -2,8 +2,7 @@ package com.android.purebilibili.core.ui
 
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
-import com.android.purebilibili.core.theme.AndroidNativeVariant
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.AppUiStyle
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -20,31 +19,16 @@ class AppSemanticVisualPolicyTest {
     )
 
     @Test
-    fun legacyIosResolvesToMiuixMaterialPolicy() {
-        val policy = resolveAppSemanticVisualPolicy(
-            uiPreset = UiPreset.IOS,
-            androidNativeVariant = AndroidNativeVariant.MIUIX,
-            materialPalette = palette,
-        )
-
-        // 单向迁移：历史 iOS 在运行时解析为默认主题 MIUIX。
-        assertEquals(AppSemanticIconFamily.MATERIAL, policy.iconFamily)
-        assertTrue(policy.prefersGroupedListCards)
-        assertEquals(palette, policy.accentPalette)
-    }
-
-    @Test
-    fun material3AndMiuixUseMaterialSemanticVisuals() {
-        listOf(AndroidNativeVariant.MATERIAL3, AndroidNativeVariant.MIUIX).forEach { variant ->
+    fun twoValueStylesUseMaterialSemanticVisuals() {
+        listOf(AppUiStyle.MATERIAL3, AppUiStyle.MIUIX).forEach { style ->
             val policy = resolveAppSemanticVisualPolicy(
-                uiPreset = UiPreset.MD3,
-                androidNativeVariant = variant,
+                uiStyle = style,
                 materialPalette = palette,
             )
 
             assertEquals(AppSemanticIconFamily.MATERIAL, policy.iconFamily)
             assertEquals(
-                variant == AndroidNativeVariant.MIUIX,
+                style == AppUiStyle.MIUIX,
                 policy.prefersGroupedListCards,
             )
             assertEquals(palette, policy.accentPalette)

@@ -8,6 +8,7 @@ import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.resolveUiStyle
 
 /** Shared content-card decisions for feed / search / dynamic list shells. */
 data class ContentCardSurfaceSpec(
@@ -59,6 +60,6 @@ fun resolveContentCardCornerDp(
     androidNativeVariant: AndroidNativeVariant
 ): Dp = AppShapes.resolveContainerCornerDp(
     level = ContainerLevel.Card,
-    uiPreset = uiPreset,
-    androidNativeVariant = androidNativeVariant
+    // 2B 兼容桥接：两值圆角，批 5 随本函数迁移后删除。
+    uiStyle = resolveUiStyle(uiPreset, androidNativeVariant)
 )

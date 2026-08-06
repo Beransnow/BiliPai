@@ -32,6 +32,7 @@ import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
+import com.android.purebilibili.core.theme.resolveUiStyle
 import top.yukonga.miuix.kmp.basic.Scaffold as MiuixScaffold
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar as MiuixSmallTopAppBar
 import top.yukonga.miuix.kmp.basic.TopAppBar as MiuixTopAppBar
@@ -359,17 +360,18 @@ fun resolveAppTopChromePolicy(
     uiPreset == UiPreset.IOS -> AppTopChromePolicy(
         tabPresentation = AppTopTabPresentation.MOVING_CAPSULE,
         iconFamily = AppSemanticIconFamily.MATERIAL,
-        compactChromeSpec = resolveCompactCapsuleChromeSpec(uiPreset, androidNativeVariant),
+        // 2B 兼容桥接：两值胶囊尺寸，批 2 随本函数迁移后删除。
+        compactChromeSpec = resolveCompactCapsuleChromeSpec(resolveUiStyle(uiPreset, androidNativeVariant)),
     )
     androidNativeVariant == AndroidNativeVariant.MIUIX -> AppTopChromePolicy(
         tabPresentation = AppTopTabPresentation.TONAL_CAPSULE,
         iconFamily = AppSemanticIconFamily.MATERIAL,
-        compactChromeSpec = resolveCompactCapsuleChromeSpec(uiPreset, androidNativeVariant),
+        compactChromeSpec = resolveCompactCapsuleChromeSpec(resolveUiStyle(uiPreset, androidNativeVariant)),
     )
     else -> AppTopChromePolicy(
         tabPresentation = AppTopTabPresentation.MATERIAL_UNDERLINE,
         iconFamily = AppSemanticIconFamily.MATERIAL,
-        compactChromeSpec = resolveCompactCapsuleChromeSpec(uiPreset, androidNativeVariant),
+        compactChromeSpec = resolveCompactCapsuleChromeSpec(resolveUiStyle(uiPreset, androidNativeVariant)),
     )
 }
 
