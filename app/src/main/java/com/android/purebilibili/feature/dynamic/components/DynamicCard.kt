@@ -6,6 +6,7 @@ import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppSpacingTokens
+import com.android.purebilibili.core.ui.AppSurfaceTokens
 
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
@@ -342,7 +343,7 @@ fun DynamicCardV2(
                         modifier = Modifier
                             .padding(start = AppSpacingTokens.ExtraSmall)
                             .border(
-                                width = 1.dp,
+                                width = AppSurfaceTokens.OutlineWidth,
                                 color = MaterialTheme.colorScheme.primary,
                                 shape = RoundedCornerShape(4.dp)
                             )
@@ -1038,7 +1039,7 @@ fun DynamicCardV2(
                                         .offset(x = (index * 14).dp)
                                         .size(22.dp)
                                         .clip(CircleShape)
-                                        .border(1.dp, MaterialTheme.colorScheme.surface, CircleShape),
+                                        .border(AppSurfaceTokens.OutlineWidth, AppSurfaceTokens.surface(), CircleShape),
                                     contentScale = ContentScale.Crop
                                 )
                             }

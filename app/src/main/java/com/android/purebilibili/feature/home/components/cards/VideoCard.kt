@@ -326,7 +326,7 @@ private fun VideoCardOwnerMetadata(
         // 未关注时不再渲染空的尾部槽位，避免继续占用作者名的可用宽度；
         // 已关注时由真实的尾部内容自行占位。
         reserveTrailingSlot = false,
-        trailingSlotMinWidth = 0.dp,
+        trailingSlotMinWidth = AppSpacingTokens.None,
         trailingSlotMinHeight = AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall,
         showUpBadge = showUpBadge,
         modifier = ownerModifier

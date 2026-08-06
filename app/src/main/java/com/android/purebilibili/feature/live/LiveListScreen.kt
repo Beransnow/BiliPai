@@ -915,7 +915,7 @@ private fun LiveMatchEntry(
                 imageVector = Icons.Outlined.EmojiEvents,
                 contentDescription = null,
                 tint = palette.accentStrong,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(AppSpacingTokens.ExtraLarge)
             )
             Spacer(Modifier.width(AppSpacingTokens.Medium))
             Column(modifier = Modifier.weight(1f)) {
