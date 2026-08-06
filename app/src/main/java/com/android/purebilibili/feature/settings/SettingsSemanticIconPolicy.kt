@@ -56,6 +56,7 @@ internal enum class SettingsIconRole {
     BUILD_VERIFICATION,
     ANDROID_LIQUID_GLASS,
     DYNAMIC_COLOR,
+    THEME_COLOR_PICKER,
     COLOR_STYLE,
     COLOR_SPEC,
     APP_LANGUAGE,
@@ -232,6 +233,7 @@ private fun resolveMd3SettingsSemanticIcon(role: SettingsIconRole): ImageVector 
     SettingsIconRole.BUILD_VERIFICATION -> Icons.Outlined.VerifiedUser
     SettingsIconRole.ANDROID_LIQUID_GLASS -> Icons.Outlined.WaterDrop
     SettingsIconRole.DYNAMIC_COLOR -> Icons.Outlined.FormatColorText
+    SettingsIconRole.THEME_COLOR_PICKER -> Icons.Outlined.Colorize
     SettingsIconRole.COLOR_STYLE -> Icons.Outlined.Brush
     SettingsIconRole.COLOR_SPEC -> Icons.Outlined.AutoFixHigh
     SettingsIconRole.APP_LANGUAGE -> Icons.Outlined.Language

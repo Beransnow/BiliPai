@@ -9,17 +9,24 @@ class HomeNavigationMiuixStructureTest {
 
     @Test
     fun `home navigation runtime does not select Cupertino or Material icons`() {
-        val homeSources = listOf(
-            "TopBar.kt",
+        // 顶栏类别图标是刻意例外：Miuix 图标集（156 个）缺少推荐/关注/直播/番剧/游戏/
+        // 知识/科技等类别图标，TopBar 类别解析器沿用 Material（与 BottomBar 同样的文档化
+        // 例外）；因此严格检查只覆盖 HomeHeader 与导航图标策略，TopBar 仅禁止 Cupertino
+        // 与 fallbackIconFamily 回退机制。
+        val strictSources = listOf(
             "HomeHeader.kt",
             "HomeNavigationIconPolicy.kt",
         ).map(::sourceText)
 
-        homeSources.forEach { source ->
+        strictSources.forEach { source ->
             assertFalse(source.contains("CupertinoIcons"))
             assertFalse(source.contains("androidx.compose.material.icons"))
             assertFalse(source.contains("fallbackIconFamily"))
         }
+
+        val topBar = sourceText("TopBar.kt")
+        assertFalse(topBar.contains("CupertinoIcons"))
+        assertFalse(topBar.contains("fallbackIconFamily"))
     }
 
     @Test

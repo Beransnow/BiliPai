@@ -695,9 +695,9 @@ fun AppearanceSettingsContent(
 	                        ) {
 	                            Column(modifier = Modifier.padding(top = 16.dp)) {
 	                                AppPreferenceDivider()
-	                                AppPreference(
-	                                    icon = rememberSettingsSemanticIcon(SettingsIconRole.DYNAMIC_COLOR),
-	                                    title = "主题色：$selectedThemeColorName",
+		                                AppPreference(
+		                                    icon = rememberSettingsSemanticIcon(SettingsIconRole.THEME_COLOR_PICKER),
+		                                    title = "主题色：$selectedThemeColorName",
 	                                    subtitle = if (themeColorPaletteExpanded) {
 	                                        "当前 ${state.md3CustomColorHex}；点按收起色板"
 	                                    } else {

@@ -1051,7 +1051,9 @@ class VideoPlayerSectionPolicyTest {
 
     @Test
     fun playbackStateAutoFullscreen_triggersWhenAttachedAfterPlaybackAlreadyStarted() {
-        assertTrue(
+        // 快照路径刻意恒 false：退出全屏后的重组会把「重新组合」误认成「开始播放」，
+        // 自动全屏只能由 Player 的实际状态事件补发（见 shouldToggleAutoFullscreenForPlaybackEvent）。
+        assertFalse(
             shouldToggleAutoFullscreenForCurrentPlaybackSnapshot(
                 autoEnterFullscreenEnabled = true,
                 autoExitFullscreenEnabled = true,
@@ -1060,6 +1062,20 @@ class VideoPlayerSectionPolicyTest {
                 playWhenReady = true,
                 hasAutoEnteredFullscreen = false,
                 isFullscreen = false
+            )
+        )
+
+        // 事件路径在挂载后采样时补发自动全屏（播放已开始、无 playWhenReady 跳变）
+        assertTrue(
+            shouldToggleAutoFullscreenForPlaybackEvent(
+                autoEnterFullscreenEnabled = true,
+                autoExitFullscreenEnabled = true,
+                allowPlaybackStateAutoFullscreen = true,
+                playbackState = Player.STATE_READY,
+                playWhenReady = true,
+                hasAutoEnteredFullscreen = false,
+                isFullscreen = false,
+                previousPlayWhenReady = true,
             )
         )
     }
