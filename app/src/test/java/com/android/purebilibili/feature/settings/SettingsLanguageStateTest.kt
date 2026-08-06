@@ -7,8 +7,8 @@ import kotlin.test.assertEquals
 class SettingsLanguageStateTest {
 
     @Test
-    fun settingsUiState_defaultsToIosStyle() {
-        assertEquals(AppThemeSelection.IOS, SettingsUiState().themeSelection)
+    fun settingsUiState_defaultsToMiuixStyle() {
+        assertEquals(AppThemeSelection.MIUIX, SettingsUiState().themeSelection)
     }
 
     @Test

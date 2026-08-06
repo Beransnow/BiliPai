@@ -27,10 +27,10 @@ import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.AppThemeSelection
 import com.android.purebilibili.core.ui.ContainerLevel
 import androidx.compose.animation.core.*
-//  Cupertino Icons - iOS SF Symbols 风格图标
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -252,12 +252,10 @@ fun AppearanceSettingsContent(
     val themeSectionTitle = stringResource(R.string.appearance_theme_color_section)
     val uiPresetTitle = stringResource(R.string.appearance_ui_preset_title)
     val uiPresetSubtitle = stringResource(R.string.appearance_ui_preset_subtitle)
-    val uiPresetIosLabel = stringResource(R.string.ui_preset_ios)
     val uiStyleMaterialLabel = stringResource(R.string.appearance_android_native_variant_material3)
     val uiStyleMiuixLabel = stringResource(R.string.appearance_android_native_variant_miuix)
-    val uiStyleOptions = remember(uiPresetIosLabel, uiStyleMaterialLabel, uiStyleMiuixLabel) {
+    val uiStyleOptions = remember(uiStyleMaterialLabel, uiStyleMiuixLabel) {
         resolveThemeSelectionOptions(
-            iosLabel = uiPresetIosLabel,
             material3Label = uiStyleMaterialLabel,
             miuixLabel = uiStyleMiuixLabel,
         )
@@ -524,28 +522,22 @@ fun AppearanceSettingsContent(
                             onSelectionChange = viewModel::setThemeSelection,
                         )
 
-                        AnimatedVisibility(
-                            visible = state.themeSelection != AppThemeSelection.IOS,
-                            enter = expandVertically() + fadeIn(),
-                            exit = shrinkVertically() + fadeOut()
-                        ) {
-                            Column(modifier = Modifier.padding(top = 16.dp)) {
-                                AppPreferenceDivider()
-                                Spacer(modifier = Modifier.height(8.dp))
-                                AppSwitchPreference(
-                                    icon = rememberSettingsSemanticIcon(SettingsIconRole.ANDROID_LIQUID_GLASS),
-                                    title = "安卓原生液态玻璃",
-                                    subtitle = if (isLiquidGlassAvailable) {
-                                        "全局开启后，顶部 Dock、搜索框、底栏、分段控件与评论区统一复用底栏液态玻璃材质"
-                                    } else {
-                                        "当前 Android 版本暂不支持液态玻璃效果"
-                                    },
-                                    checked = state.androidNativeLiquidGlassEnabled,
-                                    onCheckedChange = { viewModel.toggleAndroidNativeLiquidGlass(it) },
-                                    enabled = isLiquidGlassAvailable,
-                                    iconTint = iOSBlue
-                                )
-                            }
+                        Column(modifier = Modifier.padding(top = 16.dp)) {
+                            AppPreferenceDivider()
+                            Spacer(modifier = Modifier.height(8.dp))
+                            AppSwitchPreference(
+                                icon = rememberSettingsSemanticIcon(SettingsIconRole.ANDROID_LIQUID_GLASS),
+                                title = "安卓原生液态玻璃",
+                                subtitle = if (isLiquidGlassAvailable) {
+                                    "全局开启后，顶部 Dock、搜索框、底栏、分段控件与评论区统一复用底栏液态玻璃材质"
+                                } else {
+                                    "当前 Android 版本暂不支持液态玻璃效果"
+                                },
+                                checked = state.androidNativeLiquidGlassEnabled,
+                                onCheckedChange = { viewModel.toggleAndroidNativeLiquidGlass(it) },
+                                enabled = isLiquidGlassAvailable,
+                                iconTint = iOSBlue
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -763,7 +755,7 @@ fun AppearanceSettingsContent(
                                             contentAlignment = Alignment.Center
                                         ) {
                                             AppIcon(
-                                                CupertinoIcons.Filled.Play,
+                                                Icons.Filled.PlayArrow,
                                                 contentDescription = null,
                                                 tint = Color.White,
                                                 modifier = Modifier.size(32.dp)
@@ -859,7 +851,7 @@ fun AppearanceSettingsContent(
                                                             exit = androidx.compose.animation.fadeOut() + androidx.compose.animation.scaleOut()
                                                         ) {
                                                             AppIcon(
-                                                                CupertinoIcons.Default.Checkmark,
+                                                                Icons.Outlined.Check,
                                                                 contentDescription = null,
                                                                 tint = Color.White,
                                                                 modifier = Modifier.size(18.dp)
@@ -1174,7 +1166,7 @@ fun AppearanceSettingsContent(
                                             contentAlignment = Alignment.Center
                                         ) {
                                             AppIcon(
-                                                CupertinoIcons.Default.Photo,
+                                                Icons.Outlined.Photo,
                                                 contentDescription = null,
                                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 modifier = Modifier.size(24.dp)
@@ -1199,7 +1191,7 @@ fun AppearanceSettingsContent(
                                 }
                                 
                                 AppIcon(
-                                    CupertinoIcons.Default.ChevronForward,
+                                    Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                                     modifier = Modifier.size(16.dp)
@@ -1442,7 +1434,7 @@ fun AppearanceSettingsContent(
                             }
 
                             AppIcon(
-                                CupertinoIcons.Default.ChevronForward,
+                                Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                                 modifier = Modifier.size(16.dp)
@@ -1561,7 +1553,7 @@ fun AppearanceSettingsContent(
                             Column {
                                 AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
                                 SettingsSingleChoicePreference(
-                                    icon = CupertinoIcons.Default.ListBullet,
+                                    icon = Icons.Outlined.ViewList,
                                     iconTint = com.android.purebilibili.core.theme.iOSBlue,
                                     title = "网格列数",
                                     subtitle = if (state.gridColumnCount == 0) {
