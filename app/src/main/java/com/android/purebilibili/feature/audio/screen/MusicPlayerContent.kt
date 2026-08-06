@@ -428,54 +428,57 @@ internal fun MusicPlayerContent(
     }
 
     if (showActions) {
+        // 操作 sheet 与封面色板解耦：MD3 会强制主题 surface，必须用 onSurface 才能保证深浅色可读
+        val sheetContentColor = MaterialTheme.colorScheme.onSurface
         AppModalBottomSheet(
             onDismissRequest = { showActions = false },
-            containerColor = backgroundColor.copy(alpha = 0.92f),
-            contentColor = MusicContentColor
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = sheetContentColor
         ) {
             AppText(
                 text = "播放器操作",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
+                color = sheetContentColor,
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
             )
             if (state.queueControls.showQueue) {
-                MusicActionSheetItem("播放队列") {
+                MusicActionSheetItem("播放队列", contentColor = sheetContentColor) {
                     showActions = false
                     showQueue = true
                 }
             }
             onVideoModeClick?.let { action ->
-                MusicActionSheetItem("返回视频") {
+                MusicActionSheetItem("返回视频", contentColor = sheetContentColor) {
                     showActions = false
                     action()
                 }
             }
             onCollectionClick?.let { action ->
-                MusicActionSheetItem("选集 / 合集") {
+                MusicActionSheetItem("选集 / 合集", contentColor = sheetContentColor) {
                     showActions = false
                     action()
                 }
             }
             onSleepTimerClick?.let { action ->
-                MusicActionSheetItem(sleepTimerLabel) {
+                MusicActionSheetItem(sleepTimerLabel, contentColor = sheetContentColor) {
                     showActions = false
                     action()
                 }
             }
             onPipClick?.let { action ->
-                MusicActionSheetItem("画中画") {
+                MusicActionSheetItem("画中画", contentColor = sheetContentColor) {
                     showActions = false
                     action()
                 }
             }
             onToggleOrientation?.let { action ->
-                MusicActionSheetItem(orientationActionLabel) {
+                MusicActionSheetItem(orientationActionLabel, contentColor = sheetContentColor) {
                     showActions = false
                     action()
                 }
             }
-            MusicActionSheetItem("搜索歌词") {
+            MusicActionSheetItem("搜索歌词", contentColor = sheetContentColor) {
                 showActions = false
                 showLyricsSearch = true
             }
@@ -498,13 +501,14 @@ internal fun MusicPlayerContent(
     if (showQueue) {
         AppModalBottomSheet(
             onDismissRequest = { showQueue = false },
-            containerColor = backgroundColor.copy(alpha = 0.96f),
-            contentColor = MusicContentColor
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
         ) {
             AppText(
                 text = "待播清单",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)
             )
             LazyColumn(
@@ -536,19 +540,24 @@ internal fun MusicPlayerContent(
                         Column(Modifier.weight(1f)) {
                             AppText(
                                 text = item.title,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 fontWeight = if (index == state.currentQueueIndex) FontWeight.Bold else FontWeight.Normal
                             )
                             AppText(
                                 text = item.artist,
-                                color = MusicContentColor.copy(alpha = 0.65f),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
                         if (index == state.currentQueueIndex) {
-                            AppIcon(Icons.Outlined.MusicNote, contentDescription = null)
+                            AppIcon(
+                                Icons.Outlined.MusicNote,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
                         }
                     }
                 }
@@ -559,13 +568,14 @@ internal fun MusicPlayerContent(
     if (showLyricsSearch) {
         AppModalBottomSheet(
             onDismissRequest = { showLyricsSearch = false },
-            containerColor = backgroundColor.copy(alpha = 0.97f),
-            contentColor = MusicContentColor
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
         ) {
             AppText(
                 text = "手动匹配歌词",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 8.dp)
             )
             Row(
@@ -587,7 +597,7 @@ internal fun MusicPlayerContent(
             }
             if (state.isLyricsSearching) {
                 AppCircularProgressIndicator(
-                    color = MusicContentColor,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(24.dp)
@@ -595,7 +605,7 @@ internal fun MusicPlayerContent(
             } else if (state.lyricCandidates.isEmpty()) {
                 AppText(
                     text = "输入歌名后搜索网易云、QQ 音乐与酷狗",
-                    color = MusicContentColor.copy(alpha = 0.62f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp)
                 )
             } else {
@@ -614,10 +624,14 @@ internal fun MusicPlayerContent(
                                 }
                                 .padding(horizontal = 24.dp, vertical = 12.dp)
                         ) {
-                            AppText(candidate.title, fontWeight = FontWeight.SemiBold)
+                            AppText(
+                                candidate.title,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontWeight = FontWeight.SemiBold
+                            )
                             AppText(
                                 text = "${candidate.artist} · ${candidate.sourceLabel}",
-                                color = MusicContentColor.copy(alpha = 0.62f)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -1085,14 +1099,18 @@ private fun LyricsPage(
     }
 
     if (showLyricsSettings) {
+        val sheetContentColor = MaterialTheme.colorScheme.onSurface
+        val sheetSecondaryColor = MaterialTheme.colorScheme.onSurfaceVariant
         AppModalBottomSheet(
             onDismissRequest = { showLyricsSettings = false },
-            containerColor = glassTintColor.copy(alpha = 0.97f),
-            contentColor = MusicContentColor
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = sheetContentColor
         ) {
             LyricsSettingsContent(
                 showTranslations = showTranslations,
                 lyricsOffsetMs = document?.offsetMs ?: 0L,
+                contentColor = sheetContentColor,
+                secondaryColor = sheetSecondaryColor,
                 onToggleTranslations = { showTranslations = !showTranslations },
                 onLyricsOffsetChange = onLyricsOffsetChange,
                 onLyricsRetry = onLyricsRetry,
@@ -1183,6 +1201,8 @@ private fun LyricsImmersiveProgress(
 private fun LyricsSettingsContent(
     showTranslations: Boolean,
     lyricsOffsetMs: Long,
+    contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    secondaryColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     onToggleTranslations: () -> Unit,
     onLyricsOffsetChange: (Long) -> Unit,
     onLyricsRetry: () -> Unit,
@@ -1195,16 +1215,34 @@ private fun LyricsSettingsContent(
             .padding(horizontal = 24.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        AppText("歌词设置", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-        MusicActionSheetItem(if (showTranslations) "隐藏翻译与罗马音" else "显示翻译与罗马音", onToggleTranslations)
-        AppText("歌词时间校正 · ${formatLyricsOffset(lyricsOffsetMs)}", color = MusicContentColor.copy(alpha = 0.72f))
+        AppText(
+            "歌词设置",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = contentColor
+        )
+        MusicActionSheetItem(
+            if (showTranslations) "隐藏翻译与罗马音" else "显示翻译与罗马音",
+            contentColor = contentColor,
+            onClick = onToggleTranslations
+        )
+        AppText(
+            "歌词时间校正 · ${formatLyricsOffset(lyricsOffsetMs)}",
+            color = secondaryColor
+        )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            AppTextButton(onClick = { onLyricsOffsetChange(-250L) }, modifier = Modifier.height(48.dp)) { AppText("歌词提前 0.25 秒") }
-            AppTextButton(onClick = { onLyricsOffsetChange(250L) }, modifier = Modifier.height(48.dp)) { AppText("歌词延后 0.25 秒") }
+            AppTextButton(onClick = { onLyricsOffsetChange(-250L) }, modifier = Modifier.height(48.dp)) {
+                AppText("歌词提前 0.25 秒", color = contentColor)
+            }
+            AppTextButton(onClick = { onLyricsOffsetChange(250L) }, modifier = Modifier.height(48.dp)) {
+                AppText("歌词延后 0.25 秒", color = contentColor)
+            }
         }
-        AppTextButton(onClick = { onLyricsOffsetChange(-lyricsOffsetMs) }, modifier = Modifier.height(48.dp)) { AppText("重置歌词时间") }
-        MusicActionSheetItem("重新匹配歌词", onLyricsRetry)
-        MusicActionSheetItem("手动搜索歌词", onOpenLyricsSearch)
+        AppTextButton(onClick = { onLyricsOffsetChange(-lyricsOffsetMs) }, modifier = Modifier.height(48.dp)) {
+            AppText("重置歌词时间", color = contentColor)
+        }
+        MusicActionSheetItem("重新匹配歌词", contentColor = contentColor, onClick = onLyricsRetry)
+        MusicActionSheetItem("手动搜索歌词", contentColor = contentColor, onClick = onOpenLyricsSearch)
     }
 }
 
@@ -1378,7 +1416,11 @@ private fun GlassTextButton(
 }
 
 @Composable
-private fun MusicActionSheetItem(label: String, onClick: () -> Unit) {
+private fun MusicActionSheetItem(
+    label: String,
+    contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    onClick: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -1387,7 +1429,7 @@ private fun MusicActionSheetItem(label: String, onClick: () -> Unit) {
             .padding(horizontal = 24.dp),
         contentAlignment = Alignment.CenterStart
     ) {
-        AppText(label, color = MusicContentColor, style = MaterialTheme.typography.bodyLarge)
+        AppText(label, color = contentColor, style = MaterialTheme.typography.bodyLarge)
     }
 }
 
