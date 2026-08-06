@@ -59,15 +59,12 @@ enum class AppUiStyle {
             }
         }
     }
+}
 
-    /**
-     * 迁移边界写入计划：把两值选择映射回遗留旧键格式。
-     * 1B 完成 AppThemeSettings 改造后随遗留字段一并删除。
-     */
-    fun legacyWritePlan(): LegacyUiStyleWritePlan = when (this) {
-        MATERIAL3 -> LegacyUiStyleWritePlan(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
-        MIUIX -> LegacyUiStyleWritePlan(UiPreset.MD3, AndroidNativeVariant.MIUIX)
-    }
+/** 迁移边界：两值运行时选择 → 遗留 (UiPreset, AndroidNativeVariant) 键值对。2A 主题根直连后删除。 */
+fun AppUiStyle.toLegacyThemePair(): Pair<UiPreset, AndroidNativeVariant> = when (this) {
+    AppUiStyle.MATERIAL3 -> UiPreset.MD3 to AndroidNativeVariant.MATERIAL3
+    AppUiStyle.MIUIX -> UiPreset.MD3 to AndroidNativeVariant.MIUIX
 }
 
 fun resolveUiStyle(
@@ -81,12 +78,6 @@ fun resolveUiStyle(
         AndroidNativeVariant.MIUIX -> AppUiStyle.MIUIX
     }
 }
-
-data class LegacyUiStyleWritePlan(
-    val uiPreset: UiPreset,
-    // null 表示保留旧键原值，包括旧键原本不存在的情况。
-    val androidNativeVariant: AndroidNativeVariant?
-)
 
 data class UiRenderingProfile(
     val useMaterialChrome: Boolean,

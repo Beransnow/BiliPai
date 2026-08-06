@@ -528,8 +528,7 @@ data class HomeSettings(
 }
 
 data class AppThemeSettings(
-    val uiPreset: UiPreset = UiPreset.MD3,
-    val androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MIUIX,
+    val uiStyle: AppUiStyle = AppUiStyle.MIUIX,
     val themeMode: AppThemeMode = AppThemeMode.FOLLOW_SYSTEM,
     val darkThemeStyle: DarkThemeStyle = DarkThemeStyle.DEFAULT,
     val appLanguage: AppLanguage = AppLanguage.FOLLOW_SYSTEM,
@@ -1802,18 +1801,15 @@ object SettingsManager {
     internal fun mapAppThemeSettingsFromPreferences(preferences: Preferences): AppThemeSettings {
         val rawDpiOverride = preferences[KEY_APP_DPI_OVERRIDE_PERCENT] ?: 0
         val defaultRoleOverrides = ThemeRoleOverrides()
-        // 两值运行时模型：优先新键；缺失时回退旧键解析并归一化为 (MD3, MIUIX/MATERIAL3)。
+        // 两值运行时模型：优先新键；缺失时回退旧键解析并归一化。
         // 历史 iOS、缺失、非法值均按迁移表单向迁移为默认主题 MIUIX。
-        val runtimeThemePlan = resolveThemeSelectionFromPreferences(
+        val uiStyle = resolveThemeSelectionFromPreferences(
             preferences,
             KEY_UI_PRESET,
             KEY_ANDROID_NATIVE_VARIANT
-        ).legacyWritePlan()
+        )
         return AppThemeSettings(
-            // 两值模型的写入计划恒为 MD3 组合，历史 iOS 已在此前迁移为 MIUIX。
-            uiPreset = runtimeThemePlan.uiPreset,
-            androidNativeVariant = runtimeThemePlan.androidNativeVariant
-                ?: AndroidNativeVariant.MIUIX,
+            uiStyle = uiStyle,
             themeMode = resolveThemeModePreference(
                 preferences[KEY_THEME_MODE] ?: AppThemeMode.FOLLOW_SYSTEM.value
             ),

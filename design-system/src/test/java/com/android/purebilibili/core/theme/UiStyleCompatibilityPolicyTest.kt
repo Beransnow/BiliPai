@@ -24,14 +24,15 @@ class UiStyleCompatibilityPolicyTest {
     }
 
     @Test
-    fun selectingAndroidStyle_writesMd3PresetAndMatchingVariant() {
+    fun selectingAndroidStyle_mapsToMd3PresetAndMatchingVariant() {
+        // 迁移边界：两值选择写回旧键时恒为 MD3 预设 + 匹配的 Android Native 变体。
         assertEquals(
-            LegacyUiStyleWritePlan(UiPreset.MD3, AndroidNativeVariant.MATERIAL3),
-            AppUiStyle.MATERIAL3.legacyWritePlan()
+            UiPreset.MD3 to AndroidNativeVariant.MATERIAL3,
+            AppUiStyle.MATERIAL3.toLegacyThemePair()
         )
         assertEquals(
-            LegacyUiStyleWritePlan(UiPreset.MD3, AndroidNativeVariant.MIUIX),
-            AppUiStyle.MIUIX.legacyWritePlan()
+            UiPreset.MD3 to AndroidNativeVariant.MIUIX,
+            AppUiStyle.MIUIX.toLegacyThemePair()
         )
     }
 }

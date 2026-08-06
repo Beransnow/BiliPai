@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.AppFontSizePreset
 import com.android.purebilibili.core.theme.AppUiScalePreset
+import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.feature.screenshot.AppScreenshotCaptureMode
 import com.android.purebilibili.feature.screenshot.AppScreenshotGestureMode
@@ -24,8 +25,7 @@ class AppThemeSettingsMappingPolicyTest {
     fun emptyPreferences_useStartupThemeDefaults() {
         val result = mapAppThemeSettingsFromPreferences(mutablePreferencesOf())
 
-        assertEquals(UiPreset.MD3, result.uiPreset)
-        assertEquals(AndroidNativeVariant.MIUIX, result.androidNativeVariant)
+        assertEquals(AppUiStyle.MIUIX, result.uiStyle)
         assertEquals(AppThemeMode.FOLLOW_SYSTEM, result.themeMode)
         assertEquals(DarkThemeStyle.DEFAULT, result.darkThemeStyle)
         assertEquals(AppLanguage.FOLLOW_SYSTEM, result.appLanguage)
@@ -76,8 +76,7 @@ class AppThemeSettingsMappingPolicyTest {
         )
 
         // 历史 iOS 值单向迁移为默认主题 MIUIX（运行时不再产生 iOS）。
-        assertEquals(UiPreset.MD3, result.uiPreset)
-        assertEquals(AndroidNativeVariant.MIUIX, result.androidNativeVariant)
+        assertEquals(AppUiStyle.MIUIX, result.uiStyle)
         assertEquals(AppThemeMode.DARK, result.themeMode)
         assertEquals(DarkThemeStyle.AMOLED, result.darkThemeStyle)
         assertEquals(AppLanguage.ENGLISH, result.appLanguage)
