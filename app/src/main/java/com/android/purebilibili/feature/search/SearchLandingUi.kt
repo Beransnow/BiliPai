@@ -51,6 +51,7 @@ import coil.compose.AsyncImage
 import com.android.purebilibili.core.database.entity.SearchHistory
 import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalUiPreset
+import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.util.responsiveContentWidth
 import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
 import top.yukonga.miuix.kmp.basic.Text as MiuixText
@@ -388,7 +389,7 @@ fun SearchSuggestionDropdown(
         shape = RoundedCornerShape(16.dp),
         tonalElevation = 8.dp,
         shadowElevation = 10.dp,
-        color = MaterialTheme.colorScheme.surface
+        color = AppSurfaceTokens.surface()
     ) {
         Column(modifier = Modifier.padding(vertical = 8.dp)) {
             suggestions.forEachIndexed { index, suggestion ->

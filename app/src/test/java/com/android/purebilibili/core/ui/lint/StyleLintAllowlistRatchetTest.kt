@@ -157,14 +157,18 @@ class StyleLintAllowlistRatchetTest {
         // DynamicCard、ProfileLoadingSkeleton、AudioQualitySelectionMenu）。
         // 它们带 preset 缩放（MD3 0.9x / MIUIX 1.15x），换 AppShapes 会改变实际渲染，
         // 且 8dp 无对应 ContainerLevel；迁移到命名 Spec 后调小。
-        const val MAX_SHAPE_HITS = 85
+        // 85 → 86：上游 SearchLandingUi（悬浮建议卡片）带入的存量字面圆角，
+        // 同样受 preset 缩放约束（16/10/4dp 无对应 ContainerLevel）；迁移后调小。
+        const val MAX_SHAPE_HITS = 86
         const val MAX_MOTION_HITS = 15
         const val MAX_SURFACE_HITS = 48
 
         // 新增的 color/spacing/typography 豁免棘轮：接入时即收纳全部存量违规，
         // 均为非 4dp 刻度尺寸或深色 SuperChat 品牌色等有像素级理由的豁免。
         const val MAX_COLOR_HITS = 2
-        const val MAX_SPACING_HITS = 6
+        // 6 → 7：上游 LiveHomeSelectableChip 的 compact 纵向 5dp（不在 4dp 刻度上），
+        // 取整会改变紧凑态像素布局；迁移到命名 Spec 后调小。
+        const val MAX_SPACING_HITS = 7
         const val MAX_TYPOGRAPHY_HITS = 1
 
         // 只能调大。直播与第一轮信息流模块已完成 token 迁移。
@@ -173,7 +177,7 @@ class StyleLintAllowlistRatchetTest {
         const val MIGRATED_PREFIXES_SHA256 =
             "9eb8920bc5953589f037ba610fc3a1ec74c98a8a6ce69bb3286f8a31e0501a16"
         const val SHAPE_HITS_SHA256 =
-            "9e05538bd74bb11439190371c82124edfa9e06b3380d2425884cecdcc09837b8"
+            "aaa828f33ef8722244a70faa3602e25546f0e680db06a94503a7a0ec4b174f82"
         const val MOTION_HITS_SHA256 =
             "eb883a77a6e9e2f94733b73408f83d02a551b475b0cfbe119f5ee432a4df4925"
         const val SURFACE_HITS_SHA256 =
@@ -181,7 +185,7 @@ class StyleLintAllowlistRatchetTest {
         const val COLOR_HITS_SHA256 =
             "472bbaea88ea315505d7e5d1cfcc834664bbc0da24b91211bf4c1d3d8f1240d9"
         const val SPACING_HITS_SHA256 =
-            "49731a94376307e7f639dd67976bb5e498fe8e5e97a7f3ba18152de0b904a32b"
+            "a05ad9d223632622f6841a35d15dc12ec11cd945d297f533606537a344872c55"
         const val TYPOGRAPHY_HITS_SHA256 =
             "9da424c82f8cdb1d3429277b6b8bcb9d8a7a6156f8a2cbfb252eb41a7ab3098d"
     }

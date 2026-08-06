@@ -159,8 +159,10 @@ class MiuixV2MigrationStructureTest {
     @Test
     fun searchTopBar_usesNeutralSearchField() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/search/SearchScreen.kt")
-        assertTrue(source.contains("AppSearchField("))
-        assertTrue(source.contains("AppSearchFieldPresentation.TOP_BAR"))
+        // 上游重建后的搜索页：共享 BasicTextField 实现 + 原生 chrome 分发，
+        // 不再使用 AppSearchField（该组件仍服务于其余列表页）。
+        assertTrue(source.contains("SearchTopBarInputField("))
+        assertTrue(source.contains("resolveSearchNativeChrome("))
     }
 
     @Test

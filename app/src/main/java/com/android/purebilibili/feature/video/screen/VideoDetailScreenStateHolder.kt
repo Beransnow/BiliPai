@@ -3118,6 +3118,7 @@ internal fun VideoDetailScreenStateHolder(
                             forceCoverOnlyOnReturn = forceCoverOnlyForLiveSafeReturn,
                             predictiveBackCancelRecoveryGeneration = predictiveBackCancelRecoveryGeneration,
                             sponsorContributionState = sponsorContributionState,
+                            liveSurfaceCardTransitionEnabled = liveSurfaceCardTransitionEnabled,
                         )
                     } else {
                         // 📱 手机竖屏：原有单列布局

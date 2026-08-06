@@ -730,6 +730,7 @@ class VideoDetailReturnCoverPolicyTest {
                 keepLoadedContentForBackPreview = false,
                 playbackIntent = VideoSharedTransitionPlaybackIntent.ImmediatePlayback,
                 detailContentReady = true,
+                liveSurfaceCardTransitionEnabled = true,
             )
         )
         assertFalse(
@@ -739,6 +740,7 @@ class VideoDetailReturnCoverPolicyTest {
                 keepLoadedContentForBackPreview = false,
                 playbackIntent = VideoSharedTransitionPlaybackIntent.CoverFirst,
                 detailContentReady = true,
+                liveSurfaceCardTransitionEnabled = true,
             )
         )
         assertFalse(
@@ -748,6 +750,7 @@ class VideoDetailReturnCoverPolicyTest {
                 keepLoadedContentForBackPreview = true,
                 playbackIntent = VideoSharedTransitionPlaybackIntent.ImmediatePlayback,
                 detailContentReady = true,
+                liveSurfaceCardTransitionEnabled = true,
             )
         )
         assertFalse(
@@ -757,6 +760,7 @@ class VideoDetailReturnCoverPolicyTest {
                 keepLoadedContentForBackPreview = false,
                 playbackIntent = VideoSharedTransitionPlaybackIntent.ImmediatePlayback,
                 detailContentReady = true,
+                liveSurfaceCardTransitionEnabled = true,
             )
         )
     }
@@ -819,6 +823,7 @@ class VideoDetailReturnCoverPolicyTest {
             detailContentReady = true,
             hasResidentCover = true,
             hasRenderableLiveFrame = true,
+            liveSurfaceCardTransitionEnabled = true,
         )
         assertTrue(isLiveReturnMorphFromOwnership(live))
         assertFalse(
@@ -836,6 +841,7 @@ class VideoDetailReturnCoverPolicyTest {
             playbackIntent = VideoSharedTransitionPlaybackIntent.CoverFirst,
             detailContentReady = true,
             hasResidentCover = true,
+            liveSurfaceCardTransitionEnabled = true,
         )
         assertFalse(isLiveReturnMorphFromOwnership(coverFirst))
         assertTrue(
@@ -854,6 +860,7 @@ class VideoDetailReturnCoverPolicyTest {
             detailContentReady = true,
             hasResidentCover = true,
             hasRenderableLiveFrame = false,
+            liveSurfaceCardTransitionEnabled = true,
         )
         assertFalse(isLiveReturnMorphFromOwnership(noFrame))
         assertTrue(
@@ -881,6 +888,7 @@ class VideoDetailReturnCoverPolicyTest {
             detailContentReady = true,
             hasResidentCover = true,
             hasRenderableLiveFrame = true,
+            liveSurfaceCardTransitionEnabled = true,
         )
         assertTrue(isLiveReturnMorphFromOwnership(ownership))
         assertEquals(
@@ -949,6 +957,7 @@ class VideoDetailReturnCoverPolicyTest {
                 detailContentReady = true,
                 hasResidentCover = true,
                 hasRenderableLiveFrame = true,
+                liveSurfaceCardTransitionEnabled = true,
             ),
         )
         assertTrue(
@@ -959,6 +968,7 @@ class VideoDetailReturnCoverPolicyTest {
                 playbackIntent = VideoSharedTransitionPlaybackIntent.ImmediatePlayback,
                 detailContentReady = true,
                 hasRenderableLiveFrame = true,
+                liveSurfaceCardTransitionEnabled = true,
             ),
         )
     }

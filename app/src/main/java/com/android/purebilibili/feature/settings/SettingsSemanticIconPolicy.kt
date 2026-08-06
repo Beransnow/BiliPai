@@ -76,6 +76,7 @@ internal enum class SettingsIconRole {
     HOME_CARD_WIDTH,
     CARD_ENTRANCE_ANIMATION,
     CARD_TRANSITION_ANIMATION,
+    LIVE_SURFACE_TRANSITION,
     PREDICTIVE_BACK,
     TOP_DOCK_GLASS,
     HOME_SEARCH_GLASS,
@@ -253,6 +254,7 @@ private fun resolveMd3SettingsSemanticIcon(role: SettingsIconRole): ImageVector 
     SettingsIconRole.HOME_CARD_WIDTH -> Icons.Outlined.WidthNormal
     SettingsIconRole.CARD_ENTRANCE_ANIMATION -> Icons.Outlined.AutoAwesomeMotion
     SettingsIconRole.CARD_TRANSITION_ANIMATION -> Icons.Outlined.SyncAlt
+    SettingsIconRole.LIVE_SURFACE_TRANSITION -> Icons.Outlined.Movie
     SettingsIconRole.PREDICTIVE_BACK -> Icons.AutoMirrored.Outlined.ArrowBack
     SettingsIconRole.TOP_DOCK_GLASS -> Icons.Outlined.Layers
     SettingsIconRole.HOME_SEARCH_GLASS -> Icons.AutoMirrored.Outlined.ManageSearch

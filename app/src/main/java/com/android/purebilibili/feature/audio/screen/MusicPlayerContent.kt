@@ -432,7 +432,7 @@ internal fun MusicPlayerContent(
         val sheetContentColor = MaterialTheme.colorScheme.onSurface
         AppModalBottomSheet(
             onDismissRequest = { showActions = false },
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = AppSurfaceTokens.surface(),
             contentColor = sheetContentColor
         ) {
             AppText(
@@ -501,7 +501,7 @@ internal fun MusicPlayerContent(
     if (showQueue) {
         AppModalBottomSheet(
             onDismissRequest = { showQueue = false },
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = AppSurfaceTokens.surface(),
             contentColor = MaterialTheme.colorScheme.onSurface
         ) {
             AppText(
@@ -568,7 +568,7 @@ internal fun MusicPlayerContent(
     if (showLyricsSearch) {
         AppModalBottomSheet(
             onDismissRequest = { showLyricsSearch = false },
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = AppSurfaceTokens.surface(),
             contentColor = MaterialTheme.colorScheme.onSurface
         ) {
             AppText(
@@ -1103,7 +1103,7 @@ private fun LyricsPage(
         val sheetSecondaryColor = MaterialTheme.colorScheme.onSurfaceVariant
         AppModalBottomSheet(
             onDismissRequest = { showLyricsSettings = false },
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = AppSurfaceTokens.surface(),
             contentColor = sheetContentColor
         ) {
             LyricsSettingsContent(

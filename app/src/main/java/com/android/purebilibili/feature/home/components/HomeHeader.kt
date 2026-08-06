@@ -543,7 +543,7 @@ internal fun resolveHomeTopSettingsButtonSize(
     return if (chromePolicy.tabPresentation == AppTopTabPresentation.TONAL_CAPSULE) {
         resolveHomeTopPresetStyle(chromePolicy, labelMode = 2)
             .actionButtonSizeDocked
-            .coerceAtMost(36.dp)
+            .coerceAtMost(40.dp)
     } else {
         AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall
     }

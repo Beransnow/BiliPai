@@ -208,7 +208,9 @@ class FrameBudgetLintTest {
         // DynamicFeedSkeletonCard / VideoCardSkeleton / SkeletonComponents）共 5 处
         // 增量在接入棘轮后被逐个添加但未同步调上限，均为可见 skeleton shimmer，
         // 实测 16 处。后续把 skeleton 收敛为单一共享组件时调小。
-        const val MAX_INFINITE_TRANSITION = 16
+        // 16 → 17：上游 ContentLoadingSkeletons 的可见 skeleton pulse（搜索/直播等
+        // 页面共用），与既有 skeleton 增量同类；收敛 skeleton 时一并调小。
+        const val MAX_INFINITE_TRANSITION = 17
 
         const val MAX_SETTINGS_SYNC_CALL_SITES = 89
 

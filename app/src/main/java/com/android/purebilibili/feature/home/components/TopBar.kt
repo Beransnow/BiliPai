@@ -598,7 +598,11 @@ internal fun resolveIosTopTabRowHeight(
 ): Dp {
     @Suppress("UNUSED_PARAMETER")
     val ignoredLabelMode = labelMode
-    return if (isFloatingStyle) 40.dp else 36.dp
+    return if (isFloatingStyle) {
+        AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Small
+    } else {
+        AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall
+    }
 }
 
 internal fun resolveIosTopTabActionButtonSize(isFloatingStyle: Boolean): Dp =

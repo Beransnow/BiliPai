@@ -9,7 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
 import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.theme.UiStyle
@@ -94,7 +93,11 @@ fun LiveHomeSelectableChip(
                 AppText(
                     text = label,
                     color = content,
-                    fontSize = if (compact) 13.sp else 14.sp,
+                    style = if (compact) {
+                        MaterialTheme.typography.labelMedium
+                    } else {
+                        MaterialTheme.typography.labelLarge
+                    },
                     fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
                     modifier = Modifier.padding(
                         horizontal = AppSpacingTokens.Small,

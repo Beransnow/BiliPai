@@ -178,6 +178,7 @@ class VideoCardReturnTimelineTest {
                 VideoSharedTransitionPlaybackIntent.ImmediatePlayback,
             val detailContentReady: Boolean = true,
             val hasResidentCover: Boolean = true,
+            val liveSurfaceCardTransitionEnabled: Boolean = true,
             val expected: VideoCardReturnCoverOwnership,
             val handWhenLeaving: Boolean,
         )
@@ -242,6 +243,7 @@ class VideoCardReturnTimelineTest {
                 detailContentReady = case.detailContentReady,
                 hasResidentCover = case.hasResidentCover,
                 hasRenderableLiveFrame = true,
+                liveSurfaceCardTransitionEnabled = case.liveSurfaceCardTransitionEnabled,
             )
             assertEquals(case.expected, ownership, case.name)
 
@@ -251,6 +253,7 @@ class VideoCardReturnTimelineTest {
                 keepLoadedContentForBackPreview = case.keepLoadedContentForBackPreview,
                 playbackIntent = case.playbackIntent,
                 detailContentReady = case.detailContentReady,
+                liveSurfaceCardTransitionEnabled = case.liveSurfaceCardTransitionEnabled,
             )
             assertEquals(
                 liveGate,

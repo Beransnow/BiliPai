@@ -51,6 +51,7 @@ internal object StyleLintAllowlist {
         "src/main/java/com/android/purebilibili/feature/profile/WallpaperAdjustmentSheet.kt",
         "src/main/java/com/android/purebilibili/feature/screenshot/AppScreenshotRegionOverlay.kt",
 
+        "src/main/java/com/android/purebilibili/feature/search/SearchLandingUi.kt",
         "src/main/java/com/android/purebilibili/feature/search/SearchScreen.kt",
         "src/main/java/com/android/purebilibili/feature/search/SearchTrendingScreen.kt",
         "src/main/java/com/android/purebilibili/feature/search/TopicDetailScreen.kt",
@@ -137,6 +138,7 @@ internal object StyleLintAllowlist {
         "src/main/java/com/android/purebilibili/feature/dynamic/components/DynamicCard.kt",
         "src/main/java/com/android/purebilibili/feature/dynamic/components/DynamicFeedSkeletonCard.kt",
         "src/main/java/com/android/purebilibili/feature/home/components/HomeHeader.kt",
+        "src/main/java/com/android/purebilibili/feature/live/LiveHomeSelectableChip.kt",
         "src/main/java/com/android/purebilibili/feature/live/LiveListScreen.kt",
         "src/main/java/com/android/purebilibili/feature/live/components/LiveStreamSourceSheet.kt",
         "src/main/java/com/android/purebilibili/feature/live/components/LiveSuperChatFlashOverlay.kt",
