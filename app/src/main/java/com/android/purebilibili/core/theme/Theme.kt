@@ -93,7 +93,7 @@ private fun createAmoledDarkColorScheme(primaryColor: Color) = darkColorScheme(
 internal fun resolveEffectiveDynamicColorEnabled(
     dynamicColorEnabled: Boolean,
     amoledDarkTheme: Boolean,
-    uiPreset: UiPreset
+    uiStyle: AppUiStyle
 ): Boolean = dynamicColorEnabled
 
 internal fun createIosColorScheme(
@@ -740,32 +740,6 @@ private fun rememberSystemWallpaperRefreshToken(
 private const val SYSTEM_WALLPAPER_PALETTE_SETTLE_DELAY_MS = 200L
 
 @Composable
-private fun rememberIosColorScheme(
-    seedColor: Color,
-    darkTheme: Boolean,
-    amoledDarkTheme: Boolean,
-    dynamicAccentScheme: ColorScheme? = null
-): ColorScheme {
-    val baseScheme = remember(seedColor, darkTheme, amoledDarkTheme) {
-        createIosColorScheme(
-            primaryColor = seedColor,
-            darkTheme = darkTheme,
-            amoledDarkTheme = amoledDarkTheme
-        )
-    }
-    return remember(baseScheme, dynamicAccentScheme) {
-        if (dynamicAccentScheme != null) {
-            alignIosColorSchemeWithDynamicAccent(
-                baseScheme = baseScheme,
-                dynamicAccentScheme = dynamicAccentScheme
-            )
-        } else {
-            baseScheme
-        }
-    }
-}
-
-@Composable
 private fun rememberKernelSuStyleColorScheme(
     seedColor: Color,
     darkTheme: Boolean,
@@ -816,8 +790,7 @@ private fun rememberKernelSuStyleColorScheme(
 
 @Composable
 fun PureBiliBiliTheme(
-    uiPreset: UiPreset = UiPreset.MD3,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MIUIX,
+    uiStyle: AppUiStyle = AppUiStyle.MIUIX,
     themeMode: AppThemeMode = AppThemeMode.FOLLOW_SYSTEM,
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = false,
@@ -851,8 +824,11 @@ fun PureBiliBiliTheme(
             sdkInt = Build.VERSION.SDK_INT
         ),
         amoledDarkTheme = amoledDarkTheme,
-        uiPreset = uiPreset
+        uiStyle = uiStyle
     )
+    // 兼容桥接：2B 完成前 design-system 与旧 Local 仍读 UiPreset/AndroidNativeVariant，
+    // 由两值 AppUiStyle 派生；全部迁移后（阶段 6）删除本映射与旧 Local。
+    val (uiPreset, androidNativeVariant) = uiStyle.toLegacyThemePair()
     val shapes = resolveMaterialShapes(uiPreset, androidNativeVariant)
     val appFontFamily = remember(context, appFontFileName) {
         loadStoredAppFontFamily(context, appFontFileName)
@@ -889,40 +865,22 @@ fun PureBiliBiliTheme(
     } else {
         null
     }
-    val lightMaterialScheme = if (uiPreset == UiPreset.IOS) {
-        rememberIosColorScheme(
-            seedColor = customPrimaryColor,
-            darkTheme = false,
-            amoledDarkTheme = false,
-            dynamicAccentScheme = dynamicLightBaseScheme
-        )
-    } else {
-        rememberKernelSuStyleColorScheme(
-            seedColor = customPrimaryColor,
-            darkTheme = false,
-            amoledDarkTheme = false,
-            paletteStyle = colorStyle,
-            colorSpec = colorSpec,
-            dynamicBaseScheme = dynamicLightBaseScheme
-        )
-    }
-    val darkMaterialScheme = if (uiPreset == UiPreset.IOS) {
-        rememberIosColorScheme(
-            seedColor = customPrimaryColor,
-            darkTheme = true,
-            amoledDarkTheme = amoledDarkTheme,
-            dynamicAccentScheme = dynamicDarkBaseScheme
-        )
-    } else {
-        rememberKernelSuStyleColorScheme(
-            seedColor = customPrimaryColor,
-            darkTheme = true,
-            amoledDarkTheme = amoledDarkTheme,
-            paletteStyle = colorStyle,
-            colorSpec = colorSpec,
-            dynamicBaseScheme = dynamicDarkBaseScheme
-        )
-    }
+    val lightMaterialScheme = rememberKernelSuStyleColorScheme(
+        seedColor = customPrimaryColor,
+        darkTheme = false,
+        amoledDarkTheme = false,
+        paletteStyle = colorStyle,
+        colorSpec = colorSpec,
+        dynamicBaseScheme = dynamicLightBaseScheme
+    )
+    val darkMaterialScheme = rememberKernelSuStyleColorScheme(
+        seedColor = customPrimaryColor,
+        darkTheme = true,
+        amoledDarkTheme = amoledDarkTheme,
+        paletteStyle = colorStyle,
+        colorSpec = colorSpec,
+        dynamicBaseScheme = dynamicDarkBaseScheme
+    )
 
     val resolvedLightMaterialScheme = remember(lightMaterialScheme, themeRoleOverrides) {
         applyThemeRoleOverrides(lightMaterialScheme, themeRoleOverrides, darkTheme = false)
@@ -987,6 +945,7 @@ fun PureBiliBiliTheme(
     }
 
     CompositionLocalProvider(
+        LocalAppUiStyle provides uiStyle,
         LocalUiPreset provides uiPreset,
         LocalAndroidNativeVariant provides androidNativeVariant,
         LocalDynamicColorActive provides isDynamicColorActive,

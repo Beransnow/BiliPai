@@ -125,7 +125,6 @@ import com.android.purebilibili.feature.settings.selectPreferredAppUpdateAsset
 import com.android.purebilibili.feature.settings.shouldRunAppEntryAutoCheck
 import com.android.purebilibili.feature.settings.resolveThemePreferenceState
 import com.android.purebilibili.core.theme.resolveMd3DynamicColorEnabled
-import com.android.purebilibili.core.theme.toLegacyThemePair
 import com.android.purebilibili.feature.screenshot.AppScreenshotCaptureMode
 import com.android.purebilibili.feature.screenshot.AppScreenshotGestureBlockState
 import com.android.purebilibili.feature.screenshot.AppScreenshotResult
@@ -1159,9 +1158,6 @@ open class MainActivity : AppCompatActivity() {
                 .collectAsStateWithLifecycle(
                     initialValue = SettingsManager.getInitialAppThemeSettings(context)
                 )
-            // 两值运行时模型：AppThemeSettings 直接携带 AppUiStyle；
-            // 经迁移边界映射为遗留键对，供主题根与动态色策略使用（2A 改为直连）。
-            val (uiPreset, androidNativeVariant) = appThemeSettings.uiStyle.toLegacyThemePair()
             val themeMode = appThemeSettings.themeMode
             val darkThemeStyle = appThemeSettings.darkThemeStyle
             val appLanguage = appThemeSettings.appLanguage
@@ -1224,7 +1220,7 @@ open class MainActivity : AppCompatActivity() {
                     sdkInt = Build.VERSION.SDK_INT
                 ),
                 amoledDarkTheme = useAmoledDarkTheme,
-                uiPreset = uiPreset
+                uiStyle = appThemeSettings.uiStyle
             )
 
             //  [新增] 根据主题动态更新状态栏样式
@@ -1276,8 +1272,7 @@ open class MainActivity : AppCompatActivity() {
 
             // 6. 传入参数
             PureBiliBiliTheme(
-                uiPreset = uiPreset,
-                androidNativeVariant = androidNativeVariant,
+                uiStyle = appThemeSettings.uiStyle,
                 themeMode = themeMode,
                 darkTheme = useDarkTheme,
                 dynamicColor = effectiveDynamicColor,

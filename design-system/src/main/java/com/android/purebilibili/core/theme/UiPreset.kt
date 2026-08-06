@@ -103,5 +103,8 @@ fun resolveUiRenderingProfile(preset: UiPreset): UiRenderingProfile {
 
 val LocalUiPreset = staticCompositionLocalOf { UiPreset.MD3 }
 val LocalAndroidNativeVariant = staticCompositionLocalOf { AndroidNativeVariant.MIUIX }
+
+/** 两值运行时主题 Local。旧 Local 由主题根从 AppUiStyle 派生（2B 迁移完成后随阶段 6 删除）。 */
+val LocalAppUiStyle = staticCompositionLocalOf { AppUiStyle.MIUIX }
 val LocalDynamicColorActive = staticCompositionLocalOf { false }
 val LocalSettingsLiquidGlassEnabled = staticCompositionLocalOf { false }
