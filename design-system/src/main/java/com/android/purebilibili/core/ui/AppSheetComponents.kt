@@ -175,7 +175,8 @@ fun AppModalBottomSheet(
         maxScrimAlpha = scrimColor.alpha
     )
     val resolvedContainerColor = if (uiPreset == UiPreset.MD3) {
-        if (isNativeMiuixEnabled(uiPreset, androidNativeVariant)) {
+        // 2B 兼容桥接：两值风格，批 4 随本文件迁移后删除。
+        if (isNativeMiuixEnabled(resolveUiStyle(uiPreset, androidNativeVariant))) {
             MaterialTheme.colorScheme.surfaceContainer
         } else {
             MaterialTheme.colorScheme.surfaceContainerLow
@@ -195,7 +196,8 @@ fun AppModalBottomSheet(
         tonalElevation = tonalElevation,
         scrimColor = scrimColor.copy(alpha = progressVisual.scrimAlpha),
         dragHandle = if (visualSpec.useMaterialDragHandle) {
-            if (isNativeMiuixEnabled(uiPreset, androidNativeVariant)) {
+            // 2B 兼容桥接：两值风格，批 4 随本文件迁移后删除。
+            if (isNativeMiuixEnabled(resolveUiStyle(uiPreset, androidNativeVariant))) {
                 { AppBottomSheetDragHandle() }
             } else {
                 { BottomSheetDefaults.DragHandle() }

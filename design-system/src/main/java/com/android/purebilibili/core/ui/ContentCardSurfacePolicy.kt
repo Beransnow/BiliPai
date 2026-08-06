@@ -24,7 +24,10 @@ fun resolveContentCardSurfaceSpec(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant
 ): ContentCardSurfaceSpec {
-    val useMiuix = isNativeMiuixEnabled(uiPreset, androidNativeVariant)
+    val useMiuix = isNativeMiuixEnabled(
+        // 2B 兼容桥接：两值风格，批 5 随本函数迁移后删除。
+        uiStyle = resolveUiStyle(uiPreset, androidNativeVariant)
+    )
     return if (useMiuix) {
         ContentCardSurfaceSpec(
             usesTonalContainerTreatment = true,

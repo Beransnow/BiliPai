@@ -30,10 +30,12 @@ class MiuixV2MigrationStructureTest {
     }
 
     @Test
-    fun appAlertDialog_routesMiuixVariantToOverlayDialog() {
+    fun appAlertDialog_routesMiuixStyleToWindowDialog() {
+        // 2B 迁移：MIUIX 经两值模型路由到窗口级 LOCAL_DIALOG，不再按旧 variant 分支。
         val source = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/AdaptiveDialogComponents.kt")
-        assertTrue(source.contains("OverlayDialog("))
-        assertTrue(source.contains("androidNativeVariant == AndroidNativeVariant.MIUIX"))
+        assertTrue(source.contains("AppUiStyle.MIUIX ->"))
+        assertTrue(source.contains("AppAlertDialogRenderer.LOCAL_DIALOG"))
+        assertTrue(source.contains("Dialog("))
     }
 
     @Test

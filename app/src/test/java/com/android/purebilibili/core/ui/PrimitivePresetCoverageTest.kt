@@ -41,21 +41,18 @@ class PrimitivePresetCoverageTest {
     }
 
     @Test
-    fun dialogActionLayoutPolicy_stillBranches() {
-        // AppDialogComponents exposes a preset-aware action layout policy.
-        // Verify it continues to differentiate iOS vs MD3.
-        val iosLayout = resolveDialogActionLayoutPolicy(UiPreset.IOS)
-        val md3Layout = resolveDialogActionLayoutPolicy(UiPreset.MD3)
-        assertEquals(true, iosLayout.expandToContainer)
-        assertEquals(false, md3Layout.expandToContainer)
+    fun dialogActionLayoutPolicy_isConstantAfterIosMigration() {
+        // 2B 迁移：iOS 全宽铺满操作区行为已随单向迁移删除，布局政策收敛为常量。
+        assertEquals(false, resolveDialogActionLayoutPolicy().expandToContainer)
     }
 
     @Test
-    fun adaptiveBottomSheetVisual_stillBranches() {
-        // AppSheetComponents exposes resolveAdaptiveBottomSheetVisualSpec.
+    fun adaptiveBottomSheetVisual_branchesByLegacyCornerLevel() {
+        // AppSheetComponents 仍按旧输入分支圆角等级，圆角本身走两值风格。
         val ios = resolveAdaptiveBottomSheetVisualSpec(UiPreset.IOS)
         val md3 = resolveAdaptiveBottomSheetVisualSpec(UiPreset.MD3)
-        assertEquals(14, ios.cornerRadiusDp)
+        // 2B 迁移：iOS 输入并入 MIUIX（Dialog 14 * 1.15 = 16.1 → 16）。
+        assertEquals(16, ios.cornerRadiusDp)
         assertEquals(28, md3.cornerRadiusDp)
         assertEquals(false, ios.useMaterialDragHandle)
         assertEquals(true, md3.useMaterialDragHandle)

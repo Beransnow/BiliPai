@@ -4,6 +4,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.resolveUiStyle
 import com.android.purebilibili.core.ui.AppTopTabPresentation
 import com.android.purebilibili.core.ui.resolveAppTopChromePolicy
 import java.io.File
@@ -137,8 +138,9 @@ class TopTabStylePolicyTest {
 
     @Test
     fun `home top tab presentation routes by preset and native variant`() {
+        // 2B 迁移：iOS 输入经迁移表并入 MIUIX，落到 TONAL_CAPSULE→MATERIAL_UNDERLINE 首页呈现。
         assertEquals(
-            AppTopTabPresentation.MOVING_CAPSULE,
+            AppTopTabPresentation.MATERIAL_UNDERLINE,
             topStyle(UiPreset.IOS, AndroidNativeVariant.MATERIAL3).presentation
         )
         assertEquals(
@@ -156,7 +158,7 @@ class TopTabStylePolicyTest {
     }
 
     @Test
-    fun `home top preset style separates ios material3 and miuix text tabs`() {
+    fun `home top preset style keeps migrated ios aligned with miuix text tabs`() {
         val ios = topStyle(UiPreset.IOS, AndroidNativeVariant.MATERIAL3)
         val material3 = topStyle(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
         val miuix = topStyle(UiPreset.MD3, AndroidNativeVariant.MIUIX)
@@ -164,10 +166,11 @@ class TopTabStylePolicyTest {
         assertEquals(ios.searchBarHeight, material3.searchBarHeight)
         assertEquals(material3.searchBarHeight, miuix.searchBarHeight)
         assertNotEquals(material3.unifiedPanelCornerRadius, miuix.unifiedPanelCornerRadius)
-        assertEquals(AppTopTabPresentation.MOVING_CAPSULE, ios.presentation)
+        // 2B 迁移：iOS 输入并入 MIUIX，与 miuix 呈现一致。
+        assertEquals(AppTopTabPresentation.MATERIAL_UNDERLINE, ios.presentation)
         assertEquals(AppTopTabPresentation.MATERIAL_UNDERLINE, material3.presentation)
         assertEquals(AppTopTabPresentation.MATERIAL_UNDERLINE, miuix.presentation)
-        assertEquals(TopTabIndicatorStyle.CAPSULE, ios.indicatorStyle)
+        assertEquals(TopTabIndicatorStyle.MATERIAL, ios.indicatorStyle)
         assertEquals(TopTabIndicatorStyle.MATERIAL, material3.indicatorStyle)
         assertEquals(TopTabIndicatorStyle.MATERIAL, miuix.indicatorStyle)
     }
@@ -189,7 +192,8 @@ class TopTabStylePolicyTest {
         val material3 = topStyle(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
         val miuix = topStyle(UiPreset.MD3, AndroidNativeVariant.MIUIX)
 
-        assertEquals(5.dp, ios.reservedContentBottomGap)
+        // 2B 迁移：iOS 输入并入 MIUIX 预留 12dp 内容底部间隙。
+        assertEquals(12.dp, ios.reservedContentBottomGap)
         assertEquals(5.dp, material3.reservedContentBottomGap)
         assertEquals(12.dp, miuix.reservedContentBottomGap)
         assertEquals(
@@ -208,7 +212,7 @@ class TopTabStylePolicyTest {
     @Test
     fun `miuix top settings button follows action button metrics while other presets keep existing size`() {
         assertEquals(
-            36.dp,
+            40.dp, // 2B 迁移：iOS 输入并入 MIUIX
             resolveHomeTopSettingsButtonSize(
                 uiPreset = UiPreset.IOS,
                 androidNativeVariant = AndroidNativeVariant.MATERIAL3
@@ -853,7 +857,8 @@ class TopTabStylePolicyTest {
         androidNativeVariant: AndroidNativeVariant,
         labelMode: Int = 2,
     ): HomeTopPresetStyle = resolveHomeTopPresetStyle(
-        chromePolicy = resolveAppTopChromePolicy(uiPreset, androidNativeVariant),
+        // 兼容桥接：旧 pair 输入经迁移表落到两值风格。
+        chromePolicy = resolveAppTopChromePolicy(resolveUiStyle(uiPreset, androidNativeVariant)),
         labelMode = labelMode,
     )
 
