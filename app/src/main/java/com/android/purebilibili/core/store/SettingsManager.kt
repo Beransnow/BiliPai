@@ -2592,10 +2592,10 @@ object SettingsManager {
         context.settingsDataStore.edit { preferences -> preferences[KEY_CARD_TRANSITION_ENABLED] = value }
     }
 
-    /** 默认开启：SDR 实时画面双向 morph；HDR 永不强制 TextureView。 */
+    /** 默认关闭：稳妥封面过渡；开启后 SDR 可用实时画面双向 morph，HDR 仍不强制 TextureView。 */
     fun getLiveSurfaceCardTransitionEnabled(context: Context): Flow<Boolean> =
         context.settingsDataStore.data
-            .map { preferences -> preferences[KEY_LIVE_SURFACE_CARD_TRANSITION_ENABLED] ?: true }
+            .map { preferences -> preferences[KEY_LIVE_SURFACE_CARD_TRANSITION_ENABLED] ?: false }
 
     suspend fun setLiveSurfaceCardTransitionEnabled(context: Context, value: Boolean) {
         context.settingsDataStore.edit { preferences ->

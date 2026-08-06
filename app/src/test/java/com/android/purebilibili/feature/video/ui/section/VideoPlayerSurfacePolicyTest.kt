@@ -81,6 +81,61 @@ class VideoPlayerSurfacePolicyTest {
     }
 
     @Test
+    fun `live surface switch gates navigation texture request`() {
+        assertTrue(
+            resolveNavigationLiveSurfaceTextureEnabled(
+                cardTransitionEnabled = true,
+                liveSurfaceCardTransitionEnabled = true,
+            )
+        )
+        assertFalse(
+            resolveNavigationLiveSurfaceTextureEnabled(
+                cardTransitionEnabled = true,
+                liveSurfaceCardTransitionEnabled = false,
+            )
+        )
+        assertFalse(
+            resolveNavigationLiveSurfaceTextureEnabled(
+                cardTransitionEnabled = false,
+                liveSurfaceCardTransitionEnabled = true,
+            )
+        )
+    }
+
+    @Test
+    fun `player texture path keeps non-opaque surface for overlay morph`() {
+        val source = java.io.File(
+            "src/main/java/com/android/purebilibili/feature/video/ui/section/VideoPlayerSection.kt"
+        ).readText()
+        assertTrue(source.contains("isOpaque = false"))
+        assertTrue(source.contains("videoSurfaceView as? TextureView"))
+    }
+
+    @Test
+    fun `live player shared element never attaches under hdr`() {
+        assertTrue(
+            resolveAllowLivePlayerSharedElementForMorph(
+                cardTransitionEnabled = true,
+                liveSurfaceCardTransitionEnabled = true,
+                requiresHdrSurfaceOutput = false,
+            )
+        )
+        assertFalse(
+            resolveAllowLivePlayerSharedElementForMorph(
+                cardTransitionEnabled = true,
+                liveSurfaceCardTransitionEnabled = true,
+                requiresHdrSurfaceOutput = true,
+            )
+        )
+        assertFalse(
+            resolveAllowLivePlayerSharedElementForMorph(
+                cardTransitionEnabled = true,
+                liveSurfaceCardTransitionEnabled = false,
+            )
+        )
+    }
+
+    @Test
     fun `hdr surface required for quality 125 126 and pq hlg transfer`() {
         assertTrue(requiresHdrSurfaceOutput(currentQualityId = 125))
         assertTrue(requiresHdrSurfaceOutput(currentQualityId = 126))
@@ -131,52 +186,6 @@ class VideoPlayerSurfacePolicyTest {
         assertEquals(1f, forcedReturnSpec.scale)
         assertEquals(0f, manualStartSpec.alpha)
         assertEquals(1f, manualStartSpec.scale)
-    }
-
-    @Test
-    fun `live surface switch gates navigation texture request`() {
-        assertTrue(
-            resolveNavigationLiveSurfaceTextureEnabled(
-                cardTransitionEnabled = true,
-                liveSurfaceCardTransitionEnabled = true,
-            )
-        )
-        assertFalse(
-            resolveNavigationLiveSurfaceTextureEnabled(
-                cardTransitionEnabled = true,
-                liveSurfaceCardTransitionEnabled = false,
-            )
-        )
-        assertFalse(
-            resolveNavigationLiveSurfaceTextureEnabled(
-                cardTransitionEnabled = false,
-                liveSurfaceCardTransitionEnabled = true,
-            )
-        )
-    }
-
-    @Test
-    fun `live player shared element never attaches under hdr`() {
-        assertTrue(
-            resolveAllowLivePlayerSharedElementForMorph(
-                cardTransitionEnabled = true,
-                liveSurfaceCardTransitionEnabled = true,
-                requiresHdrSurfaceOutput = false,
-            )
-        )
-        assertFalse(
-            resolveAllowLivePlayerSharedElementForMorph(
-                cardTransitionEnabled = true,
-                liveSurfaceCardTransitionEnabled = true,
-                requiresHdrSurfaceOutput = true,
-            )
-        )
-        assertFalse(
-            resolveAllowLivePlayerSharedElementForMorph(
-                cardTransitionEnabled = true,
-                liveSurfaceCardTransitionEnabled = false,
-            )
-        )
     }
 
     @Test

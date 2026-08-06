@@ -46,87 +46,7 @@
 [修复] DLNA 双网卡机型 SSDP 发现
 v0.2.0(7631b93)
 
-### 更新范围
-
-- 基准版本：`v26.0805.1`。
-- 提交范围：[`v26.0805.1...v0.2.0`](https://github.com/jay3-yy/BiliPai/compare/v26.0805.1...main)（自日历号过渡包之后至本版全部主线提交）。
-
-### 完整更新
-
-#### 版本与交付
-
-- 结束日历号 `YY.MMDD.N` 展示纪元，回到 `0.x` 语义化版本（`0.2.0` / code `284`）。
-- `versionCode` 继续单调递增（283 → 284）。
-
-#### 默认设置
-
-- **实时画面转场**默认关闭：默认封面过渡，更稳且不牺牲 HDR。
-- **转场时模糊背景**默认关闭。
-- **底栏模糊**默认关闭。
-- **播放器洞察**默认关闭：首播不再默认叠加编码/码率/掉帧浮层。
-- **沉浸状态栏**保持默认关闭。
-
-#### 首页推荐
-
-- 新增推荐流 **App+Web 合并模式**：并行拉取 Web 与 App 推荐接口，交错合并并按 bvid/aid/动态 id 去重；App 失败或未登录时回退 Web。
-- 设置中增加 `FeedApiType.MERGED`，保留原有仅 Web / 仅 App 模式。
-
-#### 搜索
-
-- 重构搜索落地页：热搜 → 历史 → 发现；视频筛选改为排序芯片 + 发布时间/时长/分区底部表。
-- 按 UI 预设分发 Material 3 / Miuix 原生顶栏与控件；减少搜索区 AppText/AppIcon 桥接。
-- 进入结果或退出搜索时收起键盘；顶栏用 `TextFieldValue` 保持光标稳定。
-- 发现区芯片改为中性色，不再误用主题 primary。
-- 修复分类 Tab 选中文字对比度（Material / Miuix / iOS）；筛选按钮圆形裁剪 ripple。
-- iOS/Material 下筛选表使用 `ModalBottomSheet`，避免无 Overlay 宿主时打不开。
-- 修复 Miuix 顶栏胶囊与结果类型 pill 选中文字被桥接色盖住的问题。
-
-#### 动画与预测返回
-
-- 新增「实时画面转场」开关：SDR 可双向实时帧 morph；HDR/杜比始终 SurfaceView，不强制 TextureView 降画质。
-- 开关关闭时：返回 morph 立即交给常驻封面（黑壳 / 低成本路径），不再长时间依赖 SurfaceView 黑底。
-- 修复预测返回落位错位：仅在 SharedTransition 激活时 `skipToLookahead`；深度清空时重绘 live 内容以恢复 hazeSource 顶底栏模糊。
-- 整卡 sharedBounds 包住首页卡片表面，改善落位；卡片底色不进入 sharedBounds 叠层，避免盖住详情实时画面。
-- 恢复 live-surface 门闩与 LIVE ownership：仅开启时预测返回保留播放器帧；封面垫层 + 非不透明 TextureView 作黑洞防护。
-- 订阅/收藏合集详情预测返回与 pop 改为 `NO_OP_SHARED_ELEMENT`，与首页整卡 morph 一致（跟手飞回列表源卡）。
-
-#### 播放器与听视频
-
-- HDR/杜比优先 SurfaceView，即使卡片过渡希望 TextureView 也不洗成 SDR。
-- 清晰度/倍速菜单触控目标扩大到至少 48dp。
-- 听视频：正文色按封面亮度在主题 `onSurface` / `inverseOnSurface` 间切换，浅色玻璃/芯片可读。
-- 听视频「更多」、待播清单、匹配歌词、歌词设置 sheet 与封面色板解耦，统一主题 `surface` / `onSurface`，深浅色可读。
-- 长按倍速：默认隐藏关闭按钮（非 UI 偏好），降低多指误触取消加速。
-
-#### 动态与评论
-
-- 动态评论头像/昵称点击进入空间页。
-- 评论区顶部粉丝装扮装饰与头像框尺寸整理；平板弹幕开关入口对齐。
-
-#### 直播
-
-- 顶栏「直播」与底栏统一进入 LiveList；过滤 banner/广告/空卡噪声。
-- 接入 xlive App 推荐/二级列表签名接口、分页与排序标签；封面/首帧可切换。
-- 直播间：清晰度改为底部芯片选择表；SC 倒计时到期自动从列表移除。
-- 分区父级 Tab、搜索 Tab 统一可选芯片样式；支持下拉刷新。
-- LiveList 作为主 Tab 入口时隐藏返回栏。
-
-#### 收藏夹
-
-- 对齐 bilibili-API-collect：`x/v3/fav/resource/list` 补 `type=0`、`tid=0`、`platform=web`，`ps` 强制 1–20。
-- 内容请求 Referer 使用 `medialist/detail/ml{media_id}`。
-- 个人页收藏夹封面预览限制并发并只取 `ps=1`，降低 412/429「请求被风控」。
-- 订阅夹 / 空间 `collected/list` 分页 `ps` 收敛到 20。
-
-#### 平板
-
-- 平板默认开启侧边栏导航；评论输入与布局指标加大，首装大屏更舒适。
-- 设置滑块弹窗在平板上不再被拉成全高空白板；按钮改为正常文本按钮。
-- 统一内容对话框最大宽度策略：同意、下载、播完、本地提示、选择等自定义对话框在大屏限宽。
-
-#### 投屏
-
-- 强化 DLNA SSDP：优先 Wi‑Fi/以太网、加入组播、重发 M-SEARCH、解析 NOTIFY、改进 MediaRenderer 画像，提升双网卡机型发现成功率。
+格式规范见 [docs/wiki/CHANGELOG_GUIDE.md](docs/wiki/CHANGELOG_GUIDE.md)。社群：频道 [t.me/bilipai666](https://t.me/bilipai666)，群 [t.me/bilipai888](https://t.me/bilipai888/1)。比较：[`v26.0805.1...main`](https://github.com/jay3-yy/BiliPai/compare/v26.0805.1...main)。
 
 ---
 
@@ -526,6 +446,38 @@ README 致谢表已加入该仓库链接。
 
 ---
 
+### 作者与提交线索
+
+#### @piracola（约 106 个提交；UI 系统重构主力）
+
+代表提交（节选，完整列表见 `git log v9.9.8.9..HEAD --author=piracola`）：
+
+- `0bfe0c0cc` introduce neutral primitive controls  
+- `41587fa12` route feature surfaces through design system  
+- `ee51b6f2a` / `c6b87fd23` scaffolds & top bars through app chrome  
+- `48aaf1640`…`bd581e06d` 将 preference / motion / interaction / navigation / chrome 等 policy 迁入 design-system  
+- `d1c8f6ccf`…`e69411095` 各 feature facade 迁移与收尾抛光  
+- 以及对话框、Sheet、Chip、Tab、按钮族、播放器 surface 等数十次 `refactor(ui): centralize / migrate …`
+
+#### @Jay3-yy（约 79 个提交；主线整合、动画、导航、发布）
+
+代表方向：
+
+- 视频卡片 / 景深 / 预测返回 / 一镜到底多轮修复与性能预算  
+- 液态玻璃底栏 / 顶栏 dock 与复用 parity  
+- Navigation3 alpha07、AGP/Gradle 升级与工程修复  
+- 空间已播定位、动态表情、搜索栏、收藏/稍后再看细节  
+- 与 Piracola fork 的 merge 整合、文档与发布（含 9.9.9.1 / 9.9.9.6）
+
+#### 合并记录（节选）
+
+- `3e4cc3170` merge: integrate Piracola UI enhancements  
+- `8a7f80bb3` merge: integrate Piracola component facade migration  
+- `c3b767395` merge: integrate Piracola facade completion  
+- `9e7d66107` merge: integrate UI enhancements  
+- `fc43907fa` merge: sync upstream v9.9.9.1  
+- `5805d68b4` merge: harden continuous player morph  
+
 ### 说明
 
 - 中间版本号 `9.9.9.1` 曾在主线 bump，但 CHANGELOG 以 **`v9.9.8.9` 标签** 为上一正式发版基线做完整汇总。  
@@ -571,6 +523,92 @@ README 致谢表已加入该仓库链接。
 - [#655](https://github.com/jay3-yy/BiliPai/pull/655) **@maxzrb** — `feat(player): Anime4K超分辨率插件支持`。
 - [#657](https://github.com/jay3-yy/BiliPai/pull/657) **@maxzrb** — `fix(player): 修复偶发的CDN fallback导致视频编码意外降级`。
 - [#658](https://github.com/jay3-yy/BiliPai/pull/658) **@maxzrb** — `fix(player): 完善 Anime4K 播放场景接入并修复画面比例`。
+
+### 作者与提交清单
+
+#### @Jay3-yy（48 个提交）
+
+- `1c0942c30` feat(ui): theme-aware loading indicators for MD3, Miuix, and iOS
+- `c06b04653` feat(ui): extend theme-aware loading to refresh and content spinners
+- `9a4da3c4c` feat: add blue snow maid app icon
+- `6211b6d1d` fix: preserve white shell around maid icons
+- `5161f8cdb` fix: enlarge maid adaptive icon artwork
+- `25f7cead8` feat: add dark mode maid app icons
+- `16bd1845b` fix: refresh dark launcher icon and splash corners
+- `f1a329558` fix: round maid system splash icons
+- `dc62c8c38` feat: add selectable maid icon appearance
+- `9d69c51f1` fix: keep maid splash corners stable
+- `30d1fe42f` fix: stabilize video card return depth effect
+- `759501622` fix(player): apply exact HDR quality upgrades
+- `ee7803b04` feat(player): model reliable playback insights
+- `1f3b1d027` feat(player): add playback insight experience
+- `29935dd24` refactor(player): compact playback insight glass
+- `e46abf311` fix(dynamic): auto-open comments when entering dynamic detail
+- `8c0014cb8` fix(home): preserve feed position after space return
+- `f50a197c2` fix(detail): inline dynamic comments and smooth related scroll
+- `9f32a081d` fix(video): restore related card transitions after scroll
+- `cf8b553a7` fix(video): return unit from related card click
+- `969544e67` fix(player): move md3 level feedback to edges
+- `751c83460` fix(video): keep current frame during fullscreen switch
+- `efc4d6b7f` fix(favorite): isolate collection playback queue
+- `ebe112179` feat(space): remember watched videos
+- `6736685d5` fix(video): move UP preview to portrait player
+- `861fc230c` fix(player): defer long-press lock hint
+- `b083d2173` fix(dynamic): load complete plain text detail
+- `e81691d21` fix(video): block pager while UP preview is open
+- `42cb9c0bd` chore(release): bump version to 9.9.8.8
+- `56175c894` fix(comment): route rich space links in app
+- `0cd2340df` fix(player): repair chapter seeking and danmaku toggle
+- `7a6c881ac` perf(ui): streamline video card transitions
+- `a2373304b` fix(video): keep live frame during predictive return
+- `da263e44f` feat(ui): use single-column video lists
+- `8cecf052c` fix(ui): align single-column video card transitions
+- `6f4b1b53e` fix(ui): sync horizontal card chrome motion
+- `239c91b41` feat(ui): add card transition depth separation
+- `0d117aaa6` fix(ui): shrink source page behind shared card
+- `cd9955865e` fix(ui): shrink video elements behind shared card
+- `9fa7909f1` perf(home): isolate feed and tab motion state
+- `e5d49d57d` perf(home): size covers and cancel stale feed loads
+- `cf2145514` fix: smooth long press speed and preserve fullscreen queue
+- `85d065aa4` fix: keep home header visible with list setting
+- `c68aecfb4` fix(icon): keep adaptive maid icons on Pixel
+- `0cc25c20d` fix(dynamic): load forwarded comments by documented target
+- `9edf3c5e6` fix(dynamic): stop repeated comment pagination
+- `fb941651b` Fix home tab restore after video return
+- `fc5c41b26` Add copy actions to UP spaces
+
+#### @maxzrb（16 个提交；含 PR #639、#645、#655、#657、#658）
+
+- `edf23e150` fix(player): 修复 TextureView 导致 HDR 视频只能以 SDR 渲染到屏幕
+- `c785edc1d` fix(player): recognize hvc1 as HEVC
+- `ca6bad51f` fix(player): 修复实验性 DASH 忽略编码偏好
+- `6d25d212c` feat(player): add Anime4K video enhancement plugin
+- `e4b28e70c` feat(player): adapt Anime4K preset to frame budget
+- `5d55e8cc2` fix(player): improve Anime4K switching and controls
+- `353cb760b` fix(player): rebind surface after Anime4K toggle
+- `cec1c8e76` feat(player): port Kazumi Anime4K CNN chains
+- `f2ce0d0ac` fix(player): align Anime4K presets with Kazumi
+- `753aba3e1` chore(plugin): bump Anime4K version to 0.2.1
+- `7ea3d7043` fix(player): preserve codec across CDN fallback
+- `98eff784c` fix(player): enable Anime4K for bangumi playback
+- `75a3219f4` fix(player): preserve bangumi Anime4K aspect ratio
+- `d85f5da4c` fix(player): preserve Anime4K display aspect ratio
+- `1067d247a` chore(plugin): bump Anime4K version to 0.2.2
+- `c22015361` fix(player): keep CDN fallback timeout at 2.5 seconds
+
+#### @Kurarion（2 个提交；PR #648）
+
+- `6e37d12b6` fix(cdn): preserve custom rules during IP refresh
+- `20978deca` feat(cdn): add strict custom CDN mode
+
+#### 合并记录（@Jay3-yy）
+
+- `f7e66449f` Merge pull request #639 from maxzrb/fix/hdr-two-stage-upgrade
+- `39d34e59f` Merge pull request #645 from maxzrb/fix/hvc1-hevc-selection
+- `fc3b4d3c6` Merge pull request #648 from Kurarion/feature/cdn-strict-custom-mode
+- `25bfd5e4e` Merge pull request #655 from maxzrb/feat/anime4k-cnn-plugin
+- `a2611791e` Merge pull request #657 from maxzrb/fix/cdn-fallback-preserve-codec
+- `3e1a607ce` Merge pull request #658 from maxzrb/fix/anime4k-0.2.2-playback
 
 ## v9.9.8.8 (2026-07-23)
 
@@ -4487,6 +4525,10 @@ test: bump AppVersionPolicyTest to 9.9.8.6
 ### 工程化与测试
 - 持续抽离可测试策略模块，覆盖动态、首页、历史、播放、设置等高频逻辑。
 - 新增并更新多组单元测试，重点覆盖跳转、删除、过滤、选择与参数解析回归点。
+
+### 验证结果
+- 已执行：`./gradlew :app:testDebugUnitTest`
+- 结果：`BUILD SUCCESSFUL`
 
 ### 当晚版本轨迹
 - `v6.1.3`：版本升级并合入动态/详情链路修复。

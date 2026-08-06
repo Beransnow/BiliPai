@@ -167,6 +167,8 @@ import com.android.purebilibili.feature.video.policy.shouldTrackVideoDetailColla
 import com.android.purebilibili.feature.video.subtitle.resolveSubtitlePreferenceSession
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.components.AppButton
+import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
+import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.isActive
@@ -300,7 +302,7 @@ internal fun VideoDetailScreenStateHolder(
         )
     val liveSurfaceCardTransitionEnabled by com.android.purebilibili.core.store.SettingsManager
         .getLiveSurfaceCardTransitionEnabled(context)
-        .collectAsStateWithLifecycle(initialValue = true)
+        .collectAsStateWithLifecycle(initialValue = false)
     // SDR live morph TextureView only when both master transition + live-surface switch are on.
     // HDR still forces SurfaceView inside shouldUseTextureSurfaceForFlip (no quality sacrifice).
     val useTextureSurfaceForNavigation = remember(
@@ -3118,7 +3120,6 @@ internal fun VideoDetailScreenStateHolder(
                             forceCoverOnlyOnReturn = forceCoverOnlyForLiveSafeReturn,
                             predictiveBackCancelRecoveryGeneration = predictiveBackCancelRecoveryGeneration,
                             sponsorContributionState = sponsorContributionState,
-                            liveSurfaceCardTransitionEnabled = liveSurfaceCardTransitionEnabled,
                         )
                     } else {
                         // 📱 手机竖屏：原有单列布局

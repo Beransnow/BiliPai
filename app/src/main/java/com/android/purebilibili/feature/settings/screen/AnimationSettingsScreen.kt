@@ -131,10 +131,10 @@ fun AnimationSettingsContent(
         .collectAsStateWithLifecycle(initialValue = AppNavigationSettings())
     val videoTransitionRealtimeBlurEnabled by SettingsManager
         .getVideoTransitionRealtimeBlurEnabled(context)
-        .collectAsStateWithLifecycle(initialValue = true)
+        .collectAsStateWithLifecycle(initialValue = false)
     val liveSurfaceCardTransitionEnabled by SettingsManager
         .getLiveSurfaceCardTransitionEnabled(context)
-        .collectAsStateWithLifecycle(initialValue = true)
+        .collectAsStateWithLifecycle(initialValue = false)
     val effectiveEntranceSpec = rememberEffectiveEntranceMotionSpec()
     // 开关开着、但有效参数被降级为不动画 → 系统减弱动效在生效。
     val entranceDowngradedBySystem = uiEntranceAnimationEnabled && !effectiveEntranceSpec.animate
