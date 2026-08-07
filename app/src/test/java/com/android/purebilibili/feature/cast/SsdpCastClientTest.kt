@@ -114,6 +114,24 @@ class SsdpCastClientTest {
     }
 
     @Test
+    fun `buildSeekActionBody formats a DLNA relative time target`() {
+        val body = SsdpCastClient.buildSeekActionBody(
+            serviceType = "urn:schemas-upnp-org:service:AVTransport:1",
+            positionMs = 3_726_500L
+        )
+
+        assertTrue(body.contains("<Unit>REL_TIME</Unit>"))
+        assertTrue(body.contains("<Target>01:02:06</Target>"))
+    }
+
+    @Test
+    fun `parseDlnaTimeMs parses valid duration and rejects malformed values`() {
+        assertEquals(3_726_500L, SsdpCastClient.parseDlnaTimeMs("01:02:06.500"))
+        assertEquals(0L, SsdpCastClient.parseDlnaTimeMs("NOT_IMPLEMENTED"))
+        assertEquals(0L, SsdpCastClient.parseDlnaTimeMs("01:60:00"))
+    }
+
+    @Test
     fun `parseDeviceProfile returns null for blank XML`() {
         val profile = SsdpCastClient.parseDeviceProfile(
             descriptionXml = "   ",
