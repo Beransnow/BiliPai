@@ -144,11 +144,13 @@ fun resolveAppSemanticVisualPolicy(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant,
     materialPalette: AppSemanticAccentPalette,
+    iconStyle: AppIconStyle = AppIconStyle.AUTO,
 ): AppSemanticVisualPolicy = when (resolveUiStyle(uiPreset, androidNativeVariant)) {
-    UiStyle.IOS -> AppSemanticVisualPolicy.Cupertino
-    UiStyle.MATERIAL3 -> AppSemanticVisualPolicy.material(materialPalette)
+    UiStyle.IOS -> AppSemanticVisualPolicy.Cupertino.copy(iconStyle = iconStyle)
+    UiStyle.MATERIAL3 -> AppSemanticVisualPolicy.material(materialPalette).copy(iconStyle = iconStyle)
     UiStyle.MIUIX -> AppSemanticVisualPolicy.material(materialPalette).copy(
         prefersGroupedListCards = true,
+        iconStyle = iconStyle,
     )
 }
 
@@ -158,7 +160,8 @@ fun rememberAppSemanticVisualPolicy(): AppSemanticVisualPolicy {
     val androidNativeVariant = LocalAndroidNativeVariant.current
     val dynamicColorActive = LocalDynamicColorActive.current
     val colorScheme = MaterialTheme.colorScheme
-    return remember(uiPreset, androidNativeVariant, dynamicColorActive, colorScheme) {
+    val iconStyle = rememberResolvedAppIconStyle()
+    return remember(uiPreset, androidNativeVariant, dynamicColorActive, colorScheme, iconStyle) {
         resolveAppSemanticVisualPolicy(
             uiPreset = uiPreset,
             androidNativeVariant = androidNativeVariant,
@@ -166,6 +169,7 @@ fun rememberAppSemanticVisualPolicy(): AppSemanticVisualPolicy {
                 colorScheme = colorScheme,
                 useSemanticAccentRoles = dynamicColorActive,
             ),
+            iconStyle = iconStyle,
         )
     }
 }
