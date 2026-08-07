@@ -239,6 +239,8 @@ fun RelatedVideoItem(
     val coverShape = RoundedCornerShape(10.dp)
     val coverWidth = 144.dp
     val coverHeight = coverWidth / coverAspectRatio.coerceAtLeast(1f)
+    // 排版对齐首页单列卡片:标题用 feed 紧凑级,统计用 labelSmall。
+    val contentTypography = com.android.purebilibili.core.ui.feedContentTypography()
     val useCardShellSharedBounds = shouldUseVideoCardShellSharedBounds(
         sourceRoute = sourceRoute,
         transitionEnabled = sharedReady
@@ -314,7 +316,7 @@ fun RelatedVideoItem(
         ) {
             AppText(
                 text = video.title,
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                style = contentTypography.title,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 color = MaterialTheme.colorScheme.onSurface
@@ -622,7 +624,7 @@ private fun StatItem(
         Spacer(modifier = Modifier.width(2.dp))
         AppText(
             text = text,
-            style = MaterialTheme.typography.labelMedium,
+            style = com.android.purebilibili.core.ui.feedContentTypography().statistic,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1
         )
