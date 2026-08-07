@@ -8,6 +8,9 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.w3c.dom.Element
+import org.xml.sax.InputSource
+import org.xml.sax.SAXException
+import java.io.StringReader
 import java.net.URI
 import javax.xml.parsers.DocumentBuilderFactory
 
@@ -116,17 +119,9 @@ object SsdpCastClient {
     ): SsdpDeviceProfile? {
         if (descriptionXml.isBlank()) return null
         return runCatching {
-            val factory = DocumentBuilderFactory.newInstance().apply {
-                isNamespaceAware = true
-                setFeature("http://xml.org/sax/features/external-general-entities", false)
-                setFeature("http://xml.org/sax/features/external-parameter-entities", false)
-                setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
-                runCatching { setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true) }
-                isXIncludeAware = false
-                isExpandEntityReferences = false
-            }
-            val builder = factory.newDocumentBuilder()
-            val document = builder.parse(descriptionXml.byteInputStream())
+            val document = newDeviceDescriptionBuilder().parse(
+                InputSource(StringReader(descriptionXml))
+            )
             val deviceNodes = document.getElementsByTagNameNS("*", "device")
             if (deviceNodes.length == 0) return null
 
@@ -156,6 +151,29 @@ object SsdpCastClient {
             Logger.w(TAG, "📺 [SSDP] Parse description failed: ${error.message}")
             null
         }
+    }
+
+    /**
+     * Android XML parser implementations do not expose the same optional JAXP/SAX
+     * feature set.  A missing hardening flag must not make a valid UPnP device
+     * description undiscoverable; the EntityResolver is the portable security boundary.
+     */
+    private fun newDeviceDescriptionBuilder() = DocumentBuilderFactory.newInstance().apply {
+        isNamespaceAware = true
+        disableFeatureIfSupported("http://xml.org/sax/features/external-general-entities")
+        disableFeatureIfSupported("http://xml.org/sax/features/external-parameter-entities")
+        disableFeatureIfSupported("http://apache.org/xml/features/nonvalidating/load-external-dtd")
+        runCatching { isXIncludeAware = false }
+        runCatching { isExpandEntityReferences = false }
+    }.newDocumentBuilder().apply {
+        setEntityResolver { _, systemId ->
+            throw SAXException("External XML entity resolution is disabled: $systemId")
+        }
+    }
+
+    private fun DocumentBuilderFactory.disableFeatureIfSupported(feature: String) {
+        runCatching { setFeature(feature, false) }
+            .onFailure { Logger.d(TAG, "📺 [SSDP] XML feature unavailable: $feature") }
     }
 
     /**
