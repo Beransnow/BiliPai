@@ -5,6 +5,7 @@ import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
 import com.android.purebilibili.core.refresh.HistoryRefreshSuppression
 import com.android.purebilibili.core.ui.components.AppText
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.Context
