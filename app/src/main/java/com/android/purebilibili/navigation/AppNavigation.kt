@@ -58,6 +58,7 @@ import com.android.purebilibili.feature.search.resolveArticleNavigationTarget
 import com.android.purebilibili.feature.search.SearchEntryMotionSource
 import com.android.purebilibili.feature.search.SearchScreen
 import com.android.purebilibili.feature.settings.SettingsScreen
+import com.android.purebilibili.feature.settings.resolveSettingsCategoryDirectTargetKey
 import com.android.purebilibili.feature.settings.resolveSettingsSearchNavigation
 import com.android.purebilibili.feature.settings.screen.SettingsCategoryScreen
 import com.android.purebilibili.feature.settings.screen.SettingsSearchScreen
@@ -2404,7 +2405,10 @@ fun AppNavigation(
                                     onTipsClick = { pushNavigation3Key(BiliPaiNavKey.TipsSettings) },
                                     onReplayOnboardingClick = { pushNavigation3Route(ScreenRoutes.Onboarding.route) },
                                     onCategoryClick = { category ->
-                                        pushNavigation3Key(BiliPaiNavKey.SettingsCategory(category))
+                                        pushNavigation3Key(
+                                            resolveSettingsCategoryDirectTargetKey(category)
+                                                ?: BiliPaiNavKey.SettingsCategory(category)
+                                        )
                                     },
                                     onSearchOpen = { pushNavigation3Key(BiliPaiNavKey.SettingsSearch) },
                                     mainHazeState = mainHazeState,
@@ -2432,7 +2436,10 @@ fun AppNavigation(
                                     onTipsClick = { pushNavigation3Key(BiliPaiNavKey.TipsSettings) },
                                     onReplayOnboardingClick = { pushNavigation3Route(ScreenRoutes.Onboarding.route) },
                                     onCategoryClick = { category ->
-                                        pushNavigation3Key(BiliPaiNavKey.SettingsCategory(category))
+                                        pushNavigation3Key(
+                                            resolveSettingsCategoryDirectTargetKey(category)
+                                                ?: BiliPaiNavKey.SettingsCategory(category)
+                                        )
                                     },
                                     onSearchOpen = { pushNavigation3Key(BiliPaiNavKey.SettingsSearch) },
                                     mainHazeState = mainHazeState,
@@ -2446,7 +2453,10 @@ fun AppNavigation(
                                     viewModel = settingsViewModel,
                                     onBack = { performSystemBackAction() },
                                     onCategoryClick = { category ->
-                                        pushNavigation3Key(BiliPaiNavKey.SettingsCategory(category))
+                                        pushNavigation3Key(
+                                            resolveSettingsCategoryDirectTargetKey(category)
+                                                ?: BiliPaiNavKey.SettingsCategory(category)
+                                        )
                                     },
                                     onSearchResultClick = { result ->
                                         resolveSettingsSearchNavigation(result)?.let { navKey ->

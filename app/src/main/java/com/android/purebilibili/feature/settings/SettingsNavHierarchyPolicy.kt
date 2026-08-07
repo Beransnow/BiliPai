@@ -60,6 +60,17 @@ private val SETTINGS_DIRECT_REACH_PARENTS: Set<String> = setOf(
     SETTINGS_CATEGORY_ROUTE_BASE,
 )
 
+/**
+ * 分类级直跳:分类内容页只有一个跳转入口且无内联设置项时,点击分类直接
+ * 进入目标设置页,省去中间层的一次点击。
+ */
+internal fun resolveSettingsCategoryDirectTargetKey(
+    category: SettingsRootCategory,
+): BiliPaiNavKey? = when (canonicalSettingsRootCategory(category)) {
+    SettingsRootCategory.APPEARANCE_THEME -> BiliPaiNavKey.AppearanceSettings
+    else -> null
+}
+
 private val ROUTE_TO_CATEGORY: Map<String, SettingsRootCategory> = mapOf(
     "appearance_settings" to SettingsRootCategory.APPEARANCE_THEME,
     "home_settings" to SettingsRootCategory.HOME_RECOMMENDATION,

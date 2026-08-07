@@ -183,4 +183,25 @@ class SettingsNavHierarchyPolicyTest {
         )
         assertEquals(SettingsRootCategory.PLAYBACK_QUALITY, category)
     }
+
+    @Test
+    fun singleEntryCategory_directlyTargetsNextLevel() {
+        // 「外观与主题」分类页只有一个「外观设置」入口 → 点击分类直接进外观设置页
+        assertEquals(
+            BiliPaiNavKey.AppearanceSettings,
+            resolveSettingsCategoryDirectTargetKey(SettingsRootCategory.APPEARANCE_THEME),
+        )
+    }
+
+    @Test
+    fun multiEntryOrInlineCategories_keepCategoryScreen() {
+        // 播放/首页/隐私等分类含内联设置或多个入口,保留中间层
+        assertNull(resolveSettingsCategoryDirectTargetKey(SettingsRootCategory.PLAYBACK_QUALITY))
+        assertNull(resolveSettingsCategoryDirectTargetKey(SettingsRootCategory.HOME_RECOMMENDATION))
+        assertNull(resolveSettingsCategoryDirectTargetKey(SettingsRootCategory.NAVIGATION_INTERACTION))
+        assertNull(resolveSettingsCategoryDirectTargetKey(SettingsRootCategory.PRIVACY_PERMISSION))
+        assertNull(resolveSettingsCategoryDirectTargetKey(SettingsRootCategory.STORAGE_BACKUP))
+        assertNull(resolveSettingsCategoryDirectTargetKey(SettingsRootCategory.PLUGINS_EXTENSIONS))
+        assertNull(resolveSettingsCategoryDirectTargetKey(SettingsRootCategory.SYSTEM_ABOUT))
+    }
 }
