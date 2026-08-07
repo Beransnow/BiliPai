@@ -255,7 +255,7 @@ internal fun HomeStyleSingleColumnVideoCard(
 
             UpBadgeName(
                 name = video.owner.name,
-                badgeTrailingContent = if (isFollowing) {
+                inlineTrailingContent = if (isFollowing) {
                     {
                         AppText(
                             text = "已关注",

@@ -267,7 +267,7 @@ private fun VideoCardOwnerMetadata(
             followerCount = upFollowerCount,
             videoCount = upVideoCount
         ),
-        badgeTrailingContent = if (isFollowing) {
+        inlineTrailingContent = if (isFollowing) {
             {
                 if (infoBadgeStyle == HomeVideoBadgeStyle.GLASS) {
                     AppSurface(
