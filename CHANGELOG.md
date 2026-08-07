@@ -35,7 +35,7 @@
 [修复] WebDAV 恢复/备份卡在创建远端目录 —— 改为探测优先 @Jay3-yy
 [修复] DLNA 发现兼容 Android XML 解析器与 SSDP 1900 端口 @MuonChaser
 [添加] DLNA 远程播放控制与路由缓存 @MuonChaser
-v0.2.1(e2358a8e)
+v0.2.1(164fc3e8)
 
 格式规范见 [docs/wiki/CHANGELOG_GUIDE.md](docs/wiki/CHANGELOG_GUIDE.md)。社群：频道 [t.me/bilipai666](https://t.me/bilipai666)，群 [t.me/bilipai888](https://t.me/bilipai888/1)。比较：[`v0.2.0...main`](https://github.com/jay3-yy/BiliPai/compare/v0.2.0...main)。
 
