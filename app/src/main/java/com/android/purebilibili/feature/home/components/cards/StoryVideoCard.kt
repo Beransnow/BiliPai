@@ -103,8 +103,8 @@ internal fun StoryVideoCard(
     coverRequestSpec: HomeCoverRequestSpec? = null,
     showCoverGlassBadges: Boolean = false,
     showInfoGlassBadges: Boolean = false,
-    showUpBadge: Boolean = true,
-    showUpAvatar: Boolean = true,
+    showUpBadge: Boolean? = null,
+    showUpAvatar: Boolean? = null,
     homeDurationStyle: HomeDurationStyle = HomeDurationStyle.OUTSIDE_COVER,
     coverAspectRatio: Float = 4f / 3f,
     cardHorizontalPadding: Dp = AppSpacingTokens.None,
@@ -434,7 +434,7 @@ internal fun StoryVideoCard(
                     followerCount = upFollowerCount,
                     videoCount = upVideoCount
                 ),
-                leadingContent = if (showUpAvatar && video.owner.face.isNotEmpty()) {
+                leadingContent = if ((showUpAvatar ?: com.android.purebilibili.core.ui.LocalUpBadgeVisibility.current.showAvatars) && video.owner.face.isNotEmpty()) {
                     {
                         AsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)

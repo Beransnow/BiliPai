@@ -519,8 +519,8 @@ data class HomeSettings(
     val homeCardInfoGlassMode: HomeCardInfoGlassMode = HomeCardInfoGlassMode.OFF,
     val homeWallpaperEffectMode: HomeWallpaperEffectMode = HomeWallpaperEffectMode.SOFT_BLUR,
     val homeWallpaperEffectScope: HomeWallpaperEffectScope = HomeWallpaperEffectScope.HOME_ONLY,
-    val showHomeUpBadges: Boolean = true, // 首页和相关推荐 UP 主标识显示
-    val showHomeUpAvatars: Boolean = true, // 首页视频卡片 UP 主头像显示
+    val showHomeUpBadges: Boolean = false, // 首页和相关推荐 UP 主标识显示(默认关闭,设置后全局生效)
+    val showHomeUpAvatars: Boolean = false, // 首页视频卡片 UP 主头像显示(默认关闭,设置后全局生效)
     val homeDurationStyle: HomeDurationStyle = HomeDurationStyle.OUTSIDE_COVER,
     val easterEggEnabled: Boolean = false, // 下拉刷新趣味提示开关
     //  [修复] 默认值改为 true，避免在 Flow 加载实际值之前错误触发弹窗
@@ -1468,8 +1468,8 @@ object SettingsManager {
             homeWallpaperEffectScope = HomeWallpaperEffectScope.fromValue(
                 preferences[KEY_HOME_WALLPAPER_EFFECT_SCOPE] ?: HomeWallpaperEffectScope.HOME_ONLY.value
             ),
-            showHomeUpBadges = preferences[KEY_HOME_UP_BADGES_VISIBLE] ?: true,
-            showHomeUpAvatars = preferences[KEY_HOME_UP_AVATARS_VISIBLE] ?: true,
+            showHomeUpBadges = preferences[KEY_HOME_UP_BADGES_VISIBLE] ?: false,
+            showHomeUpAvatars = preferences[KEY_HOME_UP_AVATARS_VISIBLE] ?: false,
             homeDurationStyle = preferences[KEY_HOME_DURATION_STYLE]
                 ?.let(HomeDurationStyle::fromValue)
                 ?: if (preferences[KEY_HOME_VIDEO_DURATION_BADGES_VISIBLE] ?: true) {
@@ -2842,7 +2842,7 @@ object SettingsManager {
     }
 
     fun getHomeUpBadgesVisible(context: Context): Flow<Boolean> = context.settingsDataStore.data
-        .map { preferences -> preferences[KEY_HOME_UP_BADGES_VISIBLE] ?: true }
+        .map { preferences -> preferences[KEY_HOME_UP_BADGES_VISIBLE] ?: false }
 
     suspend fun setHomeUpBadgesVisible(context: Context, value: Boolean) {
         context.settingsDataStore.edit { preferences ->
@@ -2851,7 +2851,7 @@ object SettingsManager {
     }
 
     fun getHomeUpAvatarsVisible(context: Context): Flow<Boolean> = context.settingsDataStore.data
-        .map { preferences -> preferences[KEY_HOME_UP_AVATARS_VISIBLE] ?: true }
+        .map { preferences -> preferences[KEY_HOME_UP_AVATARS_VISIBLE] ?: false }
 
     suspend fun setHomeUpAvatarsVisible(context: Context, value: Boolean) {
         context.settingsDataStore.edit { preferences ->

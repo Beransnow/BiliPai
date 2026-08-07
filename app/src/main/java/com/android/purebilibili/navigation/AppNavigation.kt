@@ -386,6 +386,12 @@ fun AppNavigation(
     val isBottomBarBlurEnabled = appearance.bottomBarBlurEnabled
     val bottomBarLabelMode = appearance.bottomBarLabelMode
     val isBottomBarFloating = appearance.bottomBarFloating
+    val showUpBadges by SettingsManager
+        .getHomeUpBadgesVisible(context)
+        .collectAsStateWithLifecycle(initialValue = false)
+    val showUpAvatars by SettingsManager
+        .getHomeUpAvatarsVisible(context)
+        .collectAsStateWithLifecycle(initialValue = false)
 
     // 🔒 [防抖] 全局导航防抖机制 - 防止快速点击导致页面重复加载
     val lastNavigationTime = androidx.compose.runtime.remember { androidx.compose.runtime.mutableLongStateOf(0L) }
@@ -1463,6 +1469,11 @@ fun AppNavigation(
             LocalBottomBarContentPadding provides bottomBarContentPadding,
             LocalGlobalWallpaperBackdropVisible provides exposeGlobalHomeWallpaperChrome,
             LocalPredictiveBackGestureEnabled provides predictiveBackEnabled,
+            com.android.purebilibili.core.ui.LocalUpBadgeVisibility provides
+                com.android.purebilibili.core.ui.UpBadgeVisibility(
+                    showBadges = showUpBadges,
+                    showAvatars = showUpAvatars
+                ),
             com.android.purebilibili.core.ui.LocalMainHazeState provides mainHazeState,
             // 卡片标签 / 信息区实时玻璃效果已下线，不再为首页建立额外 Haze 录制树。
             com.android.purebilibili.core.ui.LocalWallpaperHazeState provides null,

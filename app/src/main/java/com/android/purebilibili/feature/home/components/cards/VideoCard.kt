@@ -493,8 +493,8 @@ internal fun ElegantVideoCard(
     infoGlassMode: HomeCardInfoGlassMode = HomeCardInfoGlassMode.OFF,
     wallpaperTintEnabled: Boolean = false,
     wallpaperEffectMode: HomeWallpaperEffectMode = HomeWallpaperEffectMode.SOFT_BLUR,
-    showUpBadge: Boolean = true,
-    showUpAvatar: Boolean = true,
+    showUpBadge: Boolean? = null,
+    showUpAvatar: Boolean? = null,
     homeDurationStyle: HomeDurationStyle = HomeDurationStyle.OUTSIDE_COVER,
     // 默认跟官方双列 4:3；首页会传入 resolveHomeFeedCardLayout 的比例覆盖
     coverAspectRatio: Float = 4f / 3f,
@@ -1388,11 +1388,12 @@ internal fun ElegantVideoCard(
             onSurfaceVariantColor = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
+        val resolvedUpBadgeVisibility = com.android.purebilibili.core.ui.LocalUpBadgeVisibility.current
         VideoCardOwnerMetadata(
             video = video,
             isFollowing = isFollowing,
-            showUpBadge = showUpBadge,
-            showUpAvatar = showUpAvatar,
+            showUpBadge = showUpBadge ?: resolvedUpBadgeVisibility.showBadges,
+            showUpAvatar = showUpAvatar ?: resolvedUpBadgeVisibility.showAvatars,
             upFollowerCount = upFollowerCount,
             upVideoCount = upVideoCount,
             infoBadgeStyle = badgeStylePolicy.infoStyle,
