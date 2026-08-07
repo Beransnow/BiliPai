@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.IntOffset
 import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
-import com.android.purebilibili.core.theme.toLegacyThemePair
 
 object AppMotionEasing {
     val EmphasizedEnter: Easing = CubicBezierEasing(0.22f, 1f, 0.36f, 1f)
@@ -151,9 +150,7 @@ object AppMotionTokens {
     fun <T> resolveBottomSheetSlideSpec(
         uiStyle: AppUiStyle
     ): FiniteAnimationSpec<T> {
-        // 兼容桥接：批 5 迁移 AndroidNativeVariantThemePolicy 后删除。
-        val (uiPreset, androidNativeVariant) = uiStyle.toLegacyThemePair()
-        val tokens = resolveAndroidNativeChromeTokens(uiPreset, androidNativeVariant)
+        val tokens = resolveAndroidNativeChromeTokens(uiStyle)
         return continuityTween(tokens.motionStandardMillis)
     }
 
@@ -168,9 +165,7 @@ object AppMotionTokens {
     fun resolveBottomSheetSlideExitSpec(
         uiStyle: AppUiStyle
     ): FiniteAnimationSpec<IntOffset> {
-        // 兼容桥接：批 5 迁移 AndroidNativeVariantThemePolicy 后删除。
-        val (uiPreset, androidNativeVariant) = uiStyle.toLegacyThemePair()
-        val tokens = resolveAndroidNativeChromeTokens(uiPreset, androidNativeVariant)
+        val tokens = resolveAndroidNativeChromeTokens(uiStyle)
         return emphasizedExitTween(tokens.expressiveMotionDurationMillis)
     }
 }

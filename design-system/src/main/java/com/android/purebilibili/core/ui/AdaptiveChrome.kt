@@ -30,7 +30,6 @@ import androidx.compose.ui.graphics.luminance
 import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
-import com.android.purebilibili.core.theme.toLegacyThemePair
 import top.yukonga.miuix.kmp.basic.Scaffold as MiuixScaffold
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar as MiuixSmallTopAppBar
 import top.yukonga.miuix.kmp.basic.TopAppBar as MiuixTopAppBar
@@ -74,9 +73,7 @@ fun resolveGlobalWallpaperProtectiveColor(
 fun resolveAdaptiveTopAppBarChromeSpec(
     uiStyle: AppUiStyle
 ): AdaptiveTopAppBarChromeSpec {
-    // 兼容桥接：批 5 迁移 AndroidNativeVariantThemePolicy 后删除。
-    val (uiPreset, androidNativeVariant) = uiStyle.toLegacyThemePair()
-    val chromeTokens = resolveAndroidNativeChromeTokens(uiPreset, androidNativeVariant)
+    val chromeTokens = resolveAndroidNativeChromeTokens(uiStyle)
     return AdaptiveTopAppBarChromeSpec(
         containerCornerRadiusDp = chromeTokens.containerCornerRadiusDp,
         scrolledContainerAlpha = 1f,

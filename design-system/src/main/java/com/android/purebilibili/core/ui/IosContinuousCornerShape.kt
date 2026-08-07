@@ -8,17 +8,9 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.android.purebilibili.core.theme.UiPreset
 
 /** Smoothing factor that approximates Apple's continuous corner curvature. */
 const val IOS_CONTINUOUS_CORNER_SMOOTHING = 0.55f
-
-/**
- * 2B 迁移中：iOS 连续圆角不再产生运行时分支（主题根派生的 pair 恒为 MD3）。
- * 保持签名供批 5 的 AppSquircleModifiers/ContentCardSurfacePolicy 编译，批 5 随调用方一起删除。
- */
-@Suppress("UNUSED_PARAMETER")
-fun shouldUseIosContinuousRounding(uiPreset: UiPreset): Boolean = false
 
 fun IosContinuousRoundedCornerShape(
     cornerRadius: Dp,

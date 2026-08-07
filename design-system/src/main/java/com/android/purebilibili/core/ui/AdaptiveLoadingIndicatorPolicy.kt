@@ -1,7 +1,6 @@
 package com.android.purebilibili.core.ui
 
 import com.android.purebilibili.core.theme.AppUiStyle
-import com.android.purebilibili.core.theme.toLegacyThemePair
 
 /**
  * Visual recipe for indeterminate loading chrome across UI presets.
@@ -39,12 +38,7 @@ fun resolveAdaptiveLoadingVisual(
     uiStyle: AppUiStyle,
     density: AdaptiveLoadingDensity = AdaptiveLoadingDensity.PAGE,
 ): AdaptiveLoadingVisual {
-    // 兼容桥接：批 5 迁移 PresetPrimitiveRenderer 后删除。
-    val (uiPreset, androidNativeVariant) = uiStyle.toLegacyThemePair()
-    val renderer = resolvePresetPrimitiveRenderer(
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant
-    )
+    val renderer = resolvePresetPrimitiveRenderer(uiStyle)
     return resolveAdaptiveLoadingVisual(renderer = renderer, density = density)
 }
 

@@ -1,10 +1,7 @@
 package com.android.purebilibili.core.ui
 
 import com.android.purebilibili.core.theme.AppUiStyle
-import com.android.purebilibili.core.theme.AndroidNativeVariant
-import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
-import com.android.purebilibili.core.theme.toLegacyThemePair
 import androidx.compose.ui.unit.dp
 
 object AppChromeSizeTokens {
@@ -42,11 +39,9 @@ data class CompactCapsuleChromeSpec(
 fun resolveCompactCapsuleChromeSpec(
     uiStyle: AppUiStyle
 ): CompactCapsuleChromeSpec {
-    // 兼容桥接：批 5 迁移 AndroidNativeVariantThemePolicy 后删除。
-    val (uiPreset, androidNativeVariant) = uiStyle.toLegacyThemePair()
-    val chromeTokens = resolveAndroidNativeChromeTokens(uiPreset, androidNativeVariant)
-    return when {
-        uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX -> CompactCapsuleChromeSpec(
+    val chromeTokens = resolveAndroidNativeChromeTokens(uiStyle)
+    return when (uiStyle) {
+        AppUiStyle.MIUIX -> CompactCapsuleChromeSpec(
             primaryHeightDp = 48,
             secondaryButtonSizeDp = chromeTokens.rowMinTouchTargetDp,
             chipHeightDp = 32,
@@ -62,7 +57,7 @@ fun resolveCompactCapsuleChromeSpec(
             compactChipHorizontalPaddingDp = 10,
             standardGapDp = 8
         )
-        else -> CompactCapsuleChromeSpec(
+        AppUiStyle.MATERIAL3 -> CompactCapsuleChromeSpec(
             primaryHeightDp = 56,
             secondaryButtonSizeDp = chromeTokens.rowMinTouchTargetDp,
             chipHeightDp = 32,

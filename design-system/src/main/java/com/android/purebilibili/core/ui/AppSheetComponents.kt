@@ -36,7 +36,6 @@ import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.theme.iOSSystemGray4
 import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
-import com.android.purebilibili.core.theme.toLegacyThemePair
 import com.android.purebilibili.core.ui.motion.AppMotionTokens
 
 data class AdaptiveBottomSheetVisualSpec(
@@ -67,9 +66,7 @@ fun resolveAdaptiveBottomSheetVisualSpec(
 internal fun resolveAdaptiveBottomSheetMotionSpec(
     uiStyle: AppUiStyle,
 ): AdaptiveBottomSheetMotionSpec {
-    // 兼容桥接：批 5 迁移 AndroidNativeVariantThemePolicy 后删除。
-    val (uiPreset, androidNativeVariant) = uiStyle.toLegacyThemePair()
-    val tokens = resolveAndroidNativeChromeTokens(uiPreset, androidNativeVariant)
+    val tokens = resolveAndroidNativeChromeTokens(uiStyle)
     return AdaptiveBottomSheetMotionSpec(
         scrimEnterDurationMillis = tokens.motionEmphasizedMillis,
         scrimExitDurationMillis = tokens.expressiveMotionDurationMillis,

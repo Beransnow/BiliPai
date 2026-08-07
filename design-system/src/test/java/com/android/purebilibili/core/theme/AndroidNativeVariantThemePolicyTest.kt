@@ -111,4 +111,31 @@ class AndroidNativeVariantThemePolicyTest {
         assertEquals(1f, material.motionScale)
         assertEquals(1f, miuix.motionScale)
     }
+
+    @Test
+    fun dualValueStyles_resolveChromeTokensDirectly() {
+        val miuix = resolveAndroidNativeChromeTokens(AppUiStyle.MIUIX)
+        val material = resolveAndroidNativeChromeTokens(AppUiStyle.MATERIAL3)
+
+        assertEquals(20, miuix.containerCornerRadiusDp)
+        assertEquals(24, material.containerCornerRadiusDp)
+        assertEquals(22, miuix.pillCornerRadiusDp)
+        assertEquals(28, material.pillCornerRadiusDp)
+        assertEquals(0.18f, miuix.selectedContainerAlpha)
+        assertEquals(0.14f, material.selectedContainerAlpha)
+        assertEquals(3, material.tonalSurfaceElevationDp)
+        assertEquals(0, miuix.tonalSurfaceElevationDp)
+        assertEquals(240, miuix.motionEmphasizedMillis)
+        assertEquals(300, material.motionEmphasizedMillis)
+        assertEquals(180, miuix.motionStandardMillis)
+        assertEquals(200, material.motionStandardMillis)
+    }
+
+    @Test
+    fun dualValueStyles_resolveRoundingAndSmoothRounding() {
+        assertTrue(shouldUseMiuixSmoothRounding(AppUiStyle.MIUIX))
+        assertFalse(shouldUseMiuixSmoothRounding(AppUiStyle.MATERIAL3))
+        assertEquals(MIUIX_CORNER_RADIUS_SCALE, resolveCornerRadiusScale(AppUiStyle.MIUIX))
+        assertEquals(MD3_CORNER_RADIUS_SCALE, resolveCornerRadiusScale(AppUiStyle.MATERIAL3))
+    }
 }

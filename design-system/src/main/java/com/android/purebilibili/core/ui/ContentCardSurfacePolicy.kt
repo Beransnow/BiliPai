@@ -4,11 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.android.purebilibili.core.theme.AndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.theme.UiPreset
-import com.android.purebilibili.core.theme.resolveUiStyle
+import com.android.purebilibili.core.theme.AppUiStyle
+import com.android.purebilibili.core.theme.LocalAppUiStyle
 
 /** Shared content-card decisions for feed / search / dynamic list shells. */
 data class ContentCardSurfaceSpec(
@@ -21,48 +18,37 @@ data class ContentCardSurfaceSpec(
 )
 
 fun resolveContentCardSurfaceSpec(
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant
-): ContentCardSurfaceSpec {
-    val useMiuix = isNativeMiuixEnabled(
-        // 2B 兼容桥接：两值风格，批 5 随本函数迁移后删除。
-        uiStyle = resolveUiStyle(uiPreset, androidNativeVariant)
+    uiStyle: AppUiStyle
+): ContentCardSurfaceSpec = when (uiStyle) {
+    AppUiStyle.MIUIX -> ContentCardSurfaceSpec(
+        usesTonalContainerTreatment = true,
+        cornerLevel = ContainerLevel.Card,
+        borderWidthDp = 0.8f,
+        borderAlpha = 0.22f,
+        tonalElevationDp = 0f,
+        shadowElevationDp = 0f
     )
-    return if (useMiuix) {
-        ContentCardSurfaceSpec(
-            usesTonalContainerTreatment = true,
-            cornerLevel = ContainerLevel.Card,
-            borderWidthDp = 0.8f,
-            borderAlpha = 0.22f,
-            tonalElevationDp = 0f,
-            shadowElevationDp = 0f
-        )
-    } else {
-        ContentCardSurfaceSpec(
-            usesTonalContainerTreatment = false,
-            cornerLevel = ContainerLevel.Card,
-            borderWidthDp = 0f,
-            borderAlpha = 0f,
-            tonalElevationDp = 0f,
-            shadowElevationDp = 0f
-        )
-    }
+    AppUiStyle.MATERIAL3 -> ContentCardSurfaceSpec(
+        usesTonalContainerTreatment = false,
+        cornerLevel = ContainerLevel.Card,
+        borderWidthDp = 0f,
+        borderAlpha = 0f,
+        tonalElevationDp = 0f,
+        shadowElevationDp = 0f
+    )
 }
 
 @Composable
 fun rememberContentCardSurfaceSpec(): ContentCardSurfaceSpec {
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    return remember(uiPreset, androidNativeVariant) {
-        resolveContentCardSurfaceSpec(uiPreset, androidNativeVariant)
+    val uiStyle = LocalAppUiStyle.current
+    return remember(uiStyle) {
+        resolveContentCardSurfaceSpec(uiStyle)
     }
 }
 
 fun resolveContentCardCornerDp(
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant
+    uiStyle: AppUiStyle
 ): Dp = AppShapes.resolveContainerCornerDp(
     level = ContainerLevel.Card,
-    // 2B 兼容桥接：两值圆角，批 5 随本函数迁移后删除。
-    uiStyle = resolveUiStyle(uiPreset, androidNativeVariant)
+    uiStyle = uiStyle
 )

@@ -1,17 +1,11 @@
 package com.android.purebilibili.core.ui
 
 import com.android.purebilibili.core.theme.AppUiStyle
-import com.android.purebilibili.core.theme.toLegacyThemePair
 
 fun resolveAdaptivePullToRefreshRenderer(
     uiStyle: AppUiStyle
 ): PresetPrimitiveRenderer {
-    // 兼容桥接：批 5 迁移 PresetPrimitiveRenderer 后删除。
-    val (uiPreset, androidNativeVariant) = uiStyle.toLegacyThemePair()
-    return resolvePresetPrimitiveRenderer(
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant
-    )
+    return resolvePresetPrimitiveRenderer(uiStyle)
 }
 
 fun resolveMiuixPullToRefreshTexts(): List<String> = listOf(

@@ -7,7 +7,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.theme.LocalAppUiStyle
-import com.android.purebilibili.core.theme.toLegacyThemePair
 import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
 import com.android.purebilibili.core.theme.resolveCornerRadiusScale
 
@@ -53,13 +52,10 @@ object AppShapes {
         level: ContainerLevel,
         uiStyle: AppUiStyle
     ): Dp {
-        // 兼容桥接：批 5 迁移 AndroidNativeVariantThemePolicy 后删除。
-        val (uiPreset, androidNativeVariant) = uiStyle.toLegacyThemePair()
         if (level == ContainerLevel.Pill) {
-            return resolveAndroidNativeChromeTokens(uiPreset, androidNativeVariant)
-                .pillCornerRadiusDp.dp
+            return resolveAndroidNativeChromeTokens(uiStyle).pillCornerRadiusDp.dp
         }
-        val scale = resolveCornerRadiusScale(uiPreset, androidNativeVariant)
+        val scale = resolveCornerRadiusScale(uiStyle)
         return (baseDp(level) * scale).dp
     }
 

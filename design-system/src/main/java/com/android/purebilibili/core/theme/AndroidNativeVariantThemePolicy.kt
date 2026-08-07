@@ -21,6 +21,46 @@ data class AndroidNativeChromeTokens(
 )
 
 fun resolveAndroidNativeChromeTokens(
+    uiStyle: AppUiStyle
+): AndroidNativeChromeTokens = when (uiStyle) {
+    AppUiStyle.MIUIX -> AndroidNativeChromeTokens(
+        containerCornerRadiusDp = 20,
+        pillCornerRadiusDp = 22,
+        selectedContainerAlpha = 0.18f,
+        tonalSurfaceElevationDp = 0,
+        denseHorizontalSpacingDp = 16,
+        rowMinTouchTargetDp = 48,
+        expressiveMotionDurationMillis = 180,
+        motionScale = 1f,
+        motionStandardMillis = 180,
+        motionEmphasizedMillis = 240
+    )
+    AppUiStyle.MATERIAL3 -> AndroidNativeChromeTokens(
+        containerCornerRadiusDp = 24,
+        pillCornerRadiusDp = 28,
+        selectedContainerAlpha = 0.14f,
+        tonalSurfaceElevationDp = 3,
+        denseHorizontalSpacingDp = 18,
+        rowMinTouchTargetDp = 48,
+        expressiveMotionDurationMillis = 200,
+        motionScale = 1f,
+        motionStandardMillis = 200,
+        motionEmphasizedMillis = 300
+    )
+}
+
+fun resolveCornerRadiusScale(
+    uiStyle: AppUiStyle
+): Float = when (uiStyle) {
+    AppUiStyle.MIUIX -> MIUIX_CORNER_RADIUS_SCALE
+    AppUiStyle.MATERIAL3 -> MD3_CORNER_RADIUS_SCALE
+}
+
+fun shouldUseMiuixSmoothRounding(
+    uiStyle: AppUiStyle
+): Boolean = uiStyle == AppUiStyle.MIUIX
+
+fun resolveAndroidNativeChromeTokens(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
 ): AndroidNativeChromeTokens {

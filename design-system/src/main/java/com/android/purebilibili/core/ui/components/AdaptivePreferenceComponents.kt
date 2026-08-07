@@ -48,7 +48,6 @@ import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.theme.LocalCornerRadiusScale
 import com.android.purebilibili.core.theme.LocalDynamicColorActive
 import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
-import com.android.purebilibili.core.theme.toLegacyThemePair
 import com.android.purebilibili.core.ui.resolveCompactCapsuleChromeSpec
 import com.android.purebilibili.core.theme.iOSCornerRadius
 import com.android.purebilibili.core.ui.LocalAppThemeConfig
@@ -128,9 +127,7 @@ data class AdaptiveListVisualCapabilities(
 internal fun resolveAdaptiveListComponentVisualSpec(
     uiStyle: AppUiStyle
 ): AdaptiveListComponentVisualSpec {
-    // 兼容桥接：批 5 迁移 AndroidNativeVariantThemePolicy 后删除。
-    val (uiPreset, androidNativeVariant) = uiStyle.toLegacyThemePair()
-    val chromeTokens = resolveAndroidNativeChromeTokens(uiPreset, androidNativeVariant)
+    val chromeTokens = resolveAndroidNativeChromeTokens(uiStyle)
     val compactChrome = resolveCompactCapsuleChromeSpec(uiStyle)
     return if (uiStyle == AppUiStyle.MIUIX) {
         AdaptiveListComponentVisualSpec(
@@ -168,9 +165,7 @@ internal fun resolveAdaptiveListComponentVisualSpec(
 internal fun resolveAdaptiveListRowVisualSpec(
     uiStyle: AppUiStyle
 ): AdaptiveListRowVisualSpec {
-    // 兼容桥接：批 5 迁移 AndroidNativeVariantThemePolicy 后删除。
-    val (uiPreset, androidNativeVariant) = uiStyle.toLegacyThemePair()
-    val chromeTokens = resolveAndroidNativeChromeTokens(uiPreset, androidNativeVariant)
+    val chromeTokens = resolveAndroidNativeChromeTokens(uiStyle)
     return if (uiStyle == AppUiStyle.MIUIX) {
         AdaptiveListRowVisualSpec(
             insideHorizontalPaddingDp = 16,
