@@ -4207,6 +4207,10 @@ internal fun VideoDetailScreenStateHolder(
             onTimestampClick = { positionMs ->
                 seekPlayerFromUserAction(playerState.player, positionMs)
                 commentViewModel.closeSubReply()
+            },
+            onBackToTop = {
+                // 评论区下滑缩小播放器后,一键回顶同时恢复播放器全尺寸。
+                inlinePlayerCollapseState.restore()
             }
         )
 

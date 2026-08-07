@@ -878,7 +878,8 @@ internal fun DetachedVideoCommentThreadHost(
     onOpenBilibiliLink: ((String) -> Unit)?,
     screenHeightPx: Int,
     topReservedPx: Int,
-    onTimestampClick: (Long) -> Unit
+    onTimestampClick: (Long) -> Unit,
+    onBackToTop: () -> Unit = {},
 ) {
     if (!visible) return
 
@@ -910,6 +911,7 @@ internal fun DetachedVideoCommentThreadHost(
         topReservedPx = topReservedPx,
         onTimestampClick = onTimestampClick,
         maxTimestampMs = successState?.videoDurationMs?.takeIf { it > 0L },
+        onBackToTop = onBackToTop,
         forceInitialize = forceInitialize,
         handleFraudEvents = false
     )

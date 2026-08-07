@@ -906,25 +906,27 @@ private fun Md3NativeListItemContent(
             null
         },
         trailingContent = {
-            trailingContent?.invoke()
-            if (!value.isNullOrBlank()) {
-                Text(
-                    text = value,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = valueColor,
-                    maxLines = 1,
-                    softWrap = false,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(start = 12.dp),
-                )
-            }
-            if (showChevron && onClick != null) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                    contentDescription = null,
-                    tint = valueColor,
-                    modifier = Modifier.size(20.dp),
-                )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                trailingContent?.invoke()
+                if (!value.isNullOrBlank()) {
+                    Text(
+                        text = value,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = valueColor,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(start = 12.dp),
+                    )
+                }
+                if (showChevron && onClick != null) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = valueColor,
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
             }
         },
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),

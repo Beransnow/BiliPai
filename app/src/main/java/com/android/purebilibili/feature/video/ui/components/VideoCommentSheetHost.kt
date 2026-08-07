@@ -298,6 +298,7 @@ fun VideoCommentSheetHost(
     onVideoClick: ((String) -> Unit)? = null,
     onSearchKeywordClick: ((String) -> Unit)? = null,
     onOpenBilibiliLink: ((String) -> Unit)? = null,
+    onBackToTop: () -> Unit = {},
     screenHeightPx: Int = 0,
     topReservedPx: Int = 0,
     onTimestampClick: ((Long) -> Unit)? = null,
@@ -869,6 +870,8 @@ internal fun VideoCommentMainList(
                         .align(Alignment.BottomEnd)
                         .padding(end = 20.dp, bottom = 20.dp),
                     onClick = {
+                        // 回顶时通知父级(竖屏详情)恢复被评论区压缩的播放器。
+                        onBackToTop()
                         scope.launch {
                             listState.animateScrollToItem(0)
                         }
