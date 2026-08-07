@@ -1,10 +1,12 @@
 package com.android.purebilibili.core.ui
 
 import com.android.purebilibili.core.theme.AndroidNativeVariant
+import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.theme.UiPreset
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 /**
  * Asserts every shared iOS* primitive exposes a preset-aware renderer decision
@@ -47,14 +49,14 @@ class PrimitivePresetCoverageTest {
     }
 
     @Test
-    fun adaptiveBottomSheetVisual_branchesByLegacyCornerLevel() {
-        // AppSheetComponents 仍按旧输入分支圆角等级，圆角本身走两值风格。
-        val ios = resolveAdaptiveBottomSheetVisualSpec(UiPreset.IOS)
-        val md3 = resolveAdaptiveBottomSheetVisualSpec(UiPreset.MD3)
-        // 2B 迁移：iOS 输入并入 MIUIX（Dialog 14 * 1.15 = 16.1 → 16）。
-        assertEquals(16, ios.cornerRadiusDp)
-        assertEquals(28, md3.cornerRadiusDp)
-        assertEquals(false, ios.useMaterialDragHandle)
-        assertEquals(true, md3.useMaterialDragHandle)
+    fun adaptiveBottomSheetVisual_branchesByUiStyle() {
+        // AppSheetComponents 按两值风格分支圆角等级（胶囊级）。
+        val miuix = resolveAdaptiveBottomSheetVisualSpec(AppUiStyle.MIUIX)
+        val material3 = resolveAdaptiveBottomSheetVisualSpec(AppUiStyle.MATERIAL3)
+        // 2B 迁移：两值风格统一使用胶囊圆角与 Material 拖拽把手。
+        assertEquals(22, miuix.cornerRadiusDp)
+        assertEquals(28, material3.cornerRadiusDp)
+        assertTrue(miuix.useMaterialDragHandle)
+        assertTrue(material3.useMaterialDragHandle)
     }
 }

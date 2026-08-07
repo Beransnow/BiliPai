@@ -1,6 +1,6 @@
 package com.android.purebilibili.core.ui
 
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.AppUiStyle
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -23,35 +23,35 @@ class AdaptiveBottomSheetPolicyTest {
     }
 
     @Test
-    fun `md3 preset should use material drag handle and larger corner radius`() {
-        val spec = resolveAdaptiveBottomSheetVisualSpec(UiPreset.MD3)
+    fun `material3 style uses material drag handle and material corner radius`() {
+        val spec = resolveAdaptiveBottomSheetVisualSpec(AppUiStyle.MATERIAL3)
 
         assertEquals(28, spec.cornerRadiusDp)
         assertTrue(spec.useMaterialDragHandle)
     }
 
     @Test
-    fun `legacy ios preset maps to miuix sheet chrome`() {
-        val spec = resolveAdaptiveBottomSheetVisualSpec(UiPreset.IOS)
+    fun `miuix style uses native drag handle and miuix corner radius`() {
+        val spec = resolveAdaptiveBottomSheetVisualSpec(AppUiStyle.MIUIX)
 
-        // 单向迁移：历史 iOS 解析为 MIUIX，Dialog 圆角 14 * 1.15 = 16。
-        assertEquals(16, spec.cornerRadiusDp)
-        assertFalse(spec.useMaterialDragHandle)
+        // 两值风格统一使用胶囊圆角（MIUIX 22 / MATERIAL3 28）。
+        assertEquals(22, spec.cornerRadiusDp)
+        assertTrue(spec.useMaterialDragHandle)
     }
 
     @Test
-    fun `ios preset should use softer sheet motion`() {
-        val spec = resolveAdaptiveBottomSheetMotionSpec(UiPreset.IOS)
+    fun `miuix style uses softer sheet motion`() {
+        val spec = resolveAdaptiveBottomSheetMotionSpec(AppUiStyle.MIUIX)
 
-        assertEquals(360, spec.scrimEnterDurationMillis)
+        assertEquals(240, spec.scrimEnterDurationMillis)
         assertEquals(180, spec.scrimExitDurationMillis)
-        assertEquals(360, spec.contentEnterFadeDurationMillis)
+        assertEquals(240, spec.contentEnterFadeDurationMillis)
         assertEquals(180, spec.contentExitFadeDurationMillis)
     }
 
     @Test
-    fun `md3 preset should keep sheet dismiss faster than enter`() {
-        val spec = resolveAdaptiveBottomSheetMotionSpec(UiPreset.MD3)
+    fun `material3 style keeps sheet dismiss faster than enter`() {
+        val spec = resolveAdaptiveBottomSheetMotionSpec(AppUiStyle.MATERIAL3)
 
         assertTrue(spec.scrimExitDurationMillis < spec.scrimEnterDurationMillis)
         assertTrue(spec.contentExitFadeDurationMillis < spec.contentEnterFadeDurationMillis)

@@ -7,11 +7,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshState
-import com.android.purebilibili.core.theme.AndroidNativeVariant
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.AppUiStyle
 
 internal enum class AppPullRefreshIndicatorRenderer {
-    CUPERTINO,
     MATERIAL3,
     MIUIX,
 }
@@ -50,15 +48,10 @@ fun rememberAppPullRefreshProfile(): AppPullRefreshProfile =
     resolveAppPullRefreshProfile(rememberPresetPrimitiveRenderer())
 
 internal fun resolveAppPullRefreshIndicatorRenderer(
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant,
-): AppPullRefreshIndicatorRenderer = when (
-    resolvePresetPrimitiveRenderer(uiPreset, androidNativeVariant)
-) {
-    // 单向迁移：历史 iOS 在运行时解析为默认主题 MIUIX 渲染器。
-    PresetPrimitiveRenderer.IOS,
-    PresetPrimitiveRenderer.MIUIX_BRIDGED -> AppPullRefreshIndicatorRenderer.MIUIX
-    PresetPrimitiveRenderer.MATERIAL3 -> AppPullRefreshIndicatorRenderer.MATERIAL3
+    uiStyle: AppUiStyle,
+): AppPullRefreshIndicatorRenderer = when (uiStyle) {
+    AppUiStyle.MIUIX -> AppPullRefreshIndicatorRenderer.MIUIX
+    AppUiStyle.MATERIAL3 -> AppPullRefreshIndicatorRenderer.MATERIAL3
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
