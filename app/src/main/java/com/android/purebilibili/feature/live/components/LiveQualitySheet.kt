@@ -19,7 +19,7 @@ import com.android.purebilibili.feature.live.LiveHomeSelectableChip
 
 /**
  * 直播画质选择（PiliPlus bottom-control 画质菜单的 Compose 形态）。
- * 选项使用 [LiveHomeSelectableChip] 按 MD3/Miuix/iOS 原生分发。
+ * 选项使用 [LiveHomeSelectableChip]（中性 App* 组件）。
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
