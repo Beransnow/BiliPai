@@ -39,6 +39,8 @@ fun UpBadgeName(
     trailingSlotMinWidth: Dp = 40.dp,
     trailingSlotMinHeight: Dp = 0.dp,
     showUpBadge: Boolean? = null,
+    /** 内联尾随内容:紧跟名称文本之后渲染(用于「已关注」等紧凑状态标签)。 */
+    inlineTrailingContent: (@Composable () -> Unit)? = null,
     maxLines: Int = 1,
     overflow: TextOverflow = TextOverflow.Ellipsis,
     // 名称右侧留白：名称占满可用宽度后，省略号与后续元素之间保留的空隙。
@@ -77,16 +79,36 @@ fun UpBadgeName(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-                Text(
-                    text = name.ifBlank { "未知UP主" },
-                    style = nameStyle,
-                    color = nameColor,
-                    maxLines = maxLines,
-                    overflow = overflow,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(end = nameEndPadding)
-                )
+                if (inlineTrailingContent != null) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = name.ifBlank { "未知UP主" },
+                            style = nameStyle,
+                            color = nameColor,
+                            maxLines = maxLines,
+                            overflow = overflow,
+                            modifier = Modifier
+                                .weight(1f, fill = false)
+                                .padding(end = nameEndPadding)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        inlineTrailingContent()
+                    }
+                } else {
+                    Text(
+                        text = name.ifBlank { "未知UP主" },
+                        style = nameStyle,
+                        color = nameColor,
+                        maxLines = maxLines,
+                        overflow = overflow,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(end = nameEndPadding)
+                    )
+                }
                 if (shouldShowMeta) {
                     Text(
                         text = metaText.orEmpty(),

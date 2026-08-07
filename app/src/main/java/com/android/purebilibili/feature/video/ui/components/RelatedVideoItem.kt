@@ -272,8 +272,8 @@ fun RelatedVideoItem(
             .clip(cardShape)
             .background(MaterialTheme.colorScheme.surface)
             .clickable(onClick = triggerRelatedVideoClick)
-            .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+            .padding(6.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
@@ -323,11 +323,11 @@ fun RelatedVideoItem(
             )
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 UpBadgeName(
                     name = video.owner.name,
-                    badgeTrailingContent = if (isFollowed) {
+                    inlineTrailingContent = if (isFollowed) {
                         {
                             val followVisualPolicy = resolveVideoFollowVisualPolicy(isFollowing = true, darkTheme = true)
                             AppText(
@@ -378,7 +378,7 @@ fun RelatedVideoItem(
                         icon = Icons.Filled.PlayArrow,
                         text = FormatUtils.formatStat(video.stat.view.toLong())
                     )
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                     StatItem(
                         icon = Icons.Filled.ChatBubble,
                         text = FormatUtils.formatStat(video.stat.danmaku.toLong())
@@ -445,7 +445,7 @@ fun RelatedVideoGridRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = cardLayout.outerPaddingDp.dp, vertical = 4.dp)
+            .padding(horizontal = cardLayout.outerPaddingDp.dp, vertical = 2.dp)
     ) {
         videos.firstOrNull()?.let { video ->
             RelatedVideoItem(
