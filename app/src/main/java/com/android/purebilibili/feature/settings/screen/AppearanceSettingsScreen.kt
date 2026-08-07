@@ -2,6 +2,7 @@
 
 package com.android.purebilibili.feature.settings
 import com.android.purebilibili.core.ui.AppIconStyle
+import com.android.purebilibili.core.ui.AppListItemStyle
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
 
@@ -566,6 +567,20 @@ fun AppearanceSettingsContent(
                             selectedValue = state.appIconStyle,
                             onSelectionChange = { style ->
                                 viewModel.setAppIconStyle(style)
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                        AppPreferenceDivider()
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        SettingsSingleChoicePreference(
+                            title = "列表条目样式",
+                            subtitle = "自定义条目：圆角图标容器；原生组件：各预设原生条目（MIUIX/MD3 均可选用）",
+                            options = resolveAppListItemStyleOptions(),
+                            selectedValue = state.appListItemStyle,
+                            onSelectionChange = { style ->
+                                viewModel.setAppListItemStyle(style)
                             }
                         )
 

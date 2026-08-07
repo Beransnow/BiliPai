@@ -48,6 +48,14 @@ internal fun resolveAppIconStyleOptions(): List<AppSegmentOption<AppIconStyle>> 
     )
 }
 
+internal fun resolveAppListItemStyleOptions(): List<AppSegmentOption<AppListItemStyle>> {
+    return listOf(
+        AppSegmentOption(AppListItemStyle.AUTO, "跟随预设"),
+        AppSegmentOption(AppListItemStyle.CUSTOM, "自定义条目"),
+        AppSegmentOption(AppListItemStyle.NATIVE, "原生组件")
+    )
+}
+
 internal fun resolveDarkThemeStyleSegmentOptions(
     defaultLabel: String = DarkThemeStyle.DEFAULT.label,
     amoledLabel: String = DarkThemeStyle.AMOLED.label

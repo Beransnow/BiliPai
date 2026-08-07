@@ -12,7 +12,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.*
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -51,11 +54,14 @@ import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
 import com.android.purebilibili.core.ui.resolveCompactCapsuleChromeSpec
 import com.android.purebilibili.core.theme.iOSCornerRadius
 import com.android.purebilibili.core.ui.LocalAppIconStyle
+import com.android.purebilibili.core.ui.LocalAppListItemStyle
 import com.android.purebilibili.core.ui.LocalAppThemeConfig
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.core.ui.adaptiveSquircleBackground
 import com.android.purebilibili.core.ui.AppIconStyle
+import com.android.purebilibili.core.ui.AppListItemStyle
 import com.android.purebilibili.core.ui.rememberResolvedAppIconStyle
+import com.android.purebilibili.core.ui.rememberResolvedAppListItemStyle
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -555,7 +561,63 @@ internal fun AdaptiveSwitchPreferenceContent(
         visualSpec.iconBackgroundAlpha,
         iconStyle,
     )
-    if (shouldRouteSwitchItemToMiuixSwitchPreference(uiStyle)) {
+    val listItemStyle = rememberResolvedAppListItemStyle()
+    if (listItemStyle == AppListItemStyle.NATIVE && uiStyle == AppUiStyle.MATERIAL3) {
+        // MD3 原生:ListItem + M3 Switch
+        val haptic = LocalHapticFeedback.current
+        val hapticsEnabled = LocalAppThemeConfig.current.hapticFeedbackEnabled
+        ListItem(
+            headlineContent = {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = textColor,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                )
+            },
+            supportingContent = subtitle?.let { subtitleText ->
+                {
+                    Text(
+                        text = subtitleText,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = subtitleColor,
+                    )
+                }
+            },
+            leadingContent = if (icon != null) {
+                {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp),
+                    )
+                }
+            } else {
+                null
+            },
+            trailingContent = {
+                AppAdaptiveSwitch(
+                    checked = checked,
+                    onCheckedChange = onCheckedChange,
+                    enabled = enabled,
+                )
+            },
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = rowSpec.minTouchTargetHeightDp.dp)
+                .clickable(enabled = enabled) {
+                    if (hapticsEnabled) {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    }
+                    onCheckedChange(!checked)
+                },
+        )
+        return
+    }
+    if (listItemStyle == AppListItemStyle.NATIVE && uiStyle == AppUiStyle.MIUIX) {
         val platformHaptic = LocalHapticFeedback.current
         val effectiveHaptic = if (LocalAppThemeConfig.current.hapticFeedbackEnabled) {
             platformHaptic
@@ -783,6 +845,93 @@ fun AdaptiveSliderPreferenceRenderer(
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun Md3NativeListItemContent(
+    icon: ImageVector? = null,
+    iconPainter: androidx.compose.ui.graphics.painter.Painter? = null,
+    title: String,
+    subtitle: String? = null,
+    value: String? = null,
+    onClick: (() -> Unit)?,
+    enabled: Boolean,
+    textColor: Color,
+    subtitleColor: Color,
+    valueColor: Color,
+    showChevron: Boolean,
+    trailingContent: (@Composable (() -> Unit))? = null,
+    minTouchHeight: Int,
+) {
+    val haptic = LocalHapticFeedback.current
+    val hapticsEnabled = LocalAppThemeConfig.current.hapticFeedbackEnabled
+    val colorScheme = MaterialTheme.colorScheme
+    ListItem(
+        headlineContent = {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = textColor,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+            )
+        },
+        supportingContent = subtitle?.let { subtitleText ->
+            {
+                Text(
+                    text = subtitleText,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = subtitleColor,
+                )
+            }
+        },
+        leadingContent = if (icon != null || iconPainter != null) {
+            {
+                Icon(
+                    imageVector = icon,
+                    painter = iconPainter,
+                    contentDescription = null,
+                    tint = colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(24.dp),
+                )
+            }
+        } else {
+            null
+        },
+        trailingContent = {
+            trailingContent?.invoke()
+            if (!value.isNullOrBlank()) {
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = valueColor,
+                    maxLines = 1,
+                    softWrap = false,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(start = 12.dp),
+                )
+            }
+            if (showChevron && onClick != null) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = valueColor,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+        },
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = minTouchHeight.dp)
+            .clickable(enabled = onClick != null) {
+                if (hapticsEnabled) {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                }
+                onClick?.invoke()
+            },
+    )
+}
+
 internal fun AdaptivePreferenceContent(
     icon: ImageVector? = null,
     iconPainter: androidx.compose.ui.graphics.painter.Painter? = null,
@@ -830,7 +979,27 @@ internal fun AdaptivePreferenceContent(
         showChevron = showChevron,
         centered = centered
     )
-    if (clickableRenderer == AppClickableItemRenderer.MIUIX_ARROW) {
+    val listItemStyle = rememberResolvedAppListItemStyle()
+    val nativeListItem = listItemStyle == AppListItemStyle.NATIVE
+    if (nativeListItem && uiStyle == AppUiStyle.MATERIAL3) {
+        Md3NativeListItemContent(
+            icon = icon,
+            iconPainter = iconPainter,
+            title = title,
+            subtitle = subtitle,
+            value = value,
+            onClick = onClick,
+            enabled = enabled,
+            textColor = textColor,
+            subtitleColor = subtitleColor,
+            valueColor = valueColor,
+            showChevron = showChevron,
+            trailingContent = trailingContent,
+            minTouchHeight = rowSpec.minTouchTargetHeightDp,
+        )
+        return
+    }
+    if (nativeListItem && clickableRenderer == AppClickableItemRenderer.MIUIX_ARROW) {
         MiuixArrowPreference(
             title = title,
             titleColor = BasicComponentDefaults.titleColor(color = textColor),
@@ -1014,7 +1183,7 @@ internal fun AdaptivePreferenceContent(
         }
         return
     }
-    if (clickableRenderer == AppClickableItemRenderer.MIUIX_BASIC) {
+    if (clickableRenderer != AppClickableItemRenderer.MD3_BASIC) {
         BasicComponent(
             modifier = Modifier
                 .fillMaxWidth()

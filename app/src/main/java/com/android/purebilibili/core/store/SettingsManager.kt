@@ -12,7 +12,9 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.android.purebilibili.core.ui.AppIconStyle
+import com.android.purebilibili.core.ui.AppListItemStyle
 import com.android.purebilibili.core.ui.resolveAppIconStylePreference
+import com.android.purebilibili.core.ui.resolveAppListItemStylePreference
 import com.android.purebilibili.core.ui.blur.BlurIntensity
 import com.android.purebilibili.core.ui.transition.VIDEO_SHARED_TRANSITION_CUSTOM_DEFAULT_MILLIS
 import com.android.purebilibili.core.ui.transition.VideoSharedTransitionSpeed
@@ -549,7 +551,8 @@ data class AppThemeSettings(
         AppScreenshotGestureMode.TOP_RIGHT_TWO_FINGER_LONG_PRESS,
     val appScreenshotCaptureMode: AppScreenshotCaptureMode =
         AppScreenshotCaptureMode.FULL_WINDOW,
-    val appIconStyle: AppIconStyle = AppIconStyle.AUTO
+    val appIconStyle: AppIconStyle = AppIconStyle.AUTO,
+    val appListItemStyle: AppListItemStyle = AppListItemStyle.AUTO
 )
 
 data class ThemeModeRoleOverrides(
@@ -1192,6 +1195,7 @@ object SettingsManager {
     private val KEY_APP_ICON = androidx.datastore.preferences.core.stringPreferencesKey("app_icon_key")
     private val KEY_APP_ICON_APPEARANCE = intPreferencesKey("app_icon_appearance")
     private val KEY_APP_ICON_STYLE = stringPreferencesKey("app_icon_style")
+    private val KEY_APP_LIST_ITEM_STYLE = stringPreferencesKey("app_list_item_style")
     //  [新增] 底部栏样式 (true=悬浮, false=贴底)
     private val KEY_BOTTOM_BAR_FLOATING = booleanPreferencesKey("bottom_bar_floating")
     //  [新增] 底栏显示模式 (0=图标+文字, 1=仅图标, 2=仅文字)
@@ -1899,7 +1903,8 @@ object SettingsManager {
                 preferences[KEY_APP_SCREENSHOT_CAPTURE_MODE]
                     ?: AppScreenshotCaptureMode.FULL_WINDOW.value
             ),
-            appIconStyle = resolveAppIconStylePreference(preferences[KEY_APP_ICON_STYLE])
+            appIconStyle = resolveAppIconStylePreference(preferences[KEY_APP_ICON_STYLE]),
+            appListItemStyle = resolveAppListItemStylePreference(preferences[KEY_APP_LIST_ITEM_STYLE])
         )
     }
 
@@ -1984,6 +1989,14 @@ object SettingsManager {
         )
     }
 
+    suspend fun setAppListItemStyle(context: Context, style: AppListItemStyle) {
+        editSettingsAndCommitPrefs(
+            context, "theme_cache",
+            editSettings = { this[KEY_APP_LIST_ITEM_STYLE] = style.name },
+            editPrefs = { putString("app_list_item_style", style.name) },
+        )
+    }
+
     fun getAppLanguageSync(context: Context): AppLanguage {
         val rawValue = context.getSharedPreferences("theme_cache", Context.MODE_PRIVATE)
             .getInt("app_language", AppLanguage.FOLLOW_SYSTEM.value)
@@ -1993,6 +2006,11 @@ object SettingsManager {
     fun getAppIconStyle(context: Context): Flow<AppIconStyle> =
         context.settingsDataStore.data.map { preferences ->
             resolveAppIconStylePreference(preferences[KEY_APP_ICON_STYLE])
+        }
+
+    fun getAppListItemStyle(context: Context): Flow<AppListItemStyle> =
+        context.settingsDataStore.data.map { preferences ->
+            resolveAppListItemStylePreference(preferences[KEY_APP_LIST_ITEM_STYLE])
         }
 
     suspend fun setDarkThemeStyle(context: Context, style: DarkThemeStyle) {
@@ -6423,6 +6441,7 @@ object SettingsManager {
             StringShareablePreferenceDefinition(KEY_APP_ICON, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_APP_ICON_APPEARANCE, SettingsShareSection.APPEARANCE),
             StringShareablePreferenceDefinition(KEY_APP_ICON_STYLE, SettingsShareSection.APPEARANCE),
+            StringShareablePreferenceDefinition(KEY_APP_LIST_ITEM_STYLE, SettingsShareSection.APPEARANCE),
             BooleanShareablePreferenceDefinition(KEY_BOTTOM_BAR_FLOATING, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_BOTTOM_BAR_LABEL_MODE, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_TOP_TAB_LABEL_MODE, SettingsShareSection.APPEARANCE),
