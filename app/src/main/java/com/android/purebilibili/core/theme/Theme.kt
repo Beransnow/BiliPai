@@ -63,35 +63,14 @@ private fun createDarkColorScheme(primaryColor: Color) = darkColorScheme(
     primaryContainer = primaryColor.copy(alpha = 0.3f), //  Container derived from primary
     onPrimaryContainer = primaryColor.copy(alpha = 1f), // Stronger primary for content
     secondary = primaryColor.copy(alpha = 0.85f),
-    onSecondary = TextPrimaryDark,
     secondaryContainer = primaryColor.copy(alpha = 0.2f), //  Container derived from primary
     onSecondaryContainer = primaryColor.copy(alpha = 0.9f),
-    tertiary = blendColors(background = DarkSurface, foreground = primaryColor, foregroundRatio = 0.55f),
-    onTertiary = TextPrimaryDark,
-    tertiaryContainer = blendColors(background = DarkSurface, foreground = primaryColor, foregroundRatio = 0.25f),
-    onTertiaryContainer = primaryColor,
-    error = Md3DarkError,
-    onError = Md3DarkOnError,
-    errorContainer = Md3DarkErrorContainer,
-    onErrorContainer = Md3DarkOnErrorContainer,
     background = DarkBackground, // iOS User Interface Black
-    onBackground = TextPrimaryDark,
     surface = DarkSurface, // iOS System Gray 6 (Dark)
     onSurface = TextPrimaryDark,
     surfaceVariant = DarkSurfaceVariant,
     onSurfaceVariant = TextSecondaryDark,
-    surfaceTint = primaryColor,
-    inversePrimary = blendColors(background = Black, foreground = primaryColor, foregroundRatio = 0.75f),
-    inverseSurface = iOSSystemGray6,
-    inverseOnSurface = TextPrimary,
-    surfaceContainerLowest = Color(0xFF080808),
-    surfaceContainerLow = Color(0xFF141414),
     surfaceContainer = DarkSurfaceElevated, // iOS System Gray 5 (Dark)
-    surfaceContainerHigh = iOSSystemGray4Dark,
-    surfaceContainerHighest = iOSSystemGray3Dark,
-    surfaceBright = iOSSystemGray3Dark,
-    surfaceDim = DarkBackground,
-    scrim = Black,
     outline = iOSSystemGray3Dark,
     outlineVariant = iOSSystemGray4Dark
 )
@@ -102,35 +81,14 @@ private fun createAmoledDarkColorScheme(primaryColor: Color) = darkColorScheme(
     primaryContainer = primaryColor.copy(alpha = 0.32f),
     onPrimaryContainer = primaryColor,
     secondary = primaryColor.copy(alpha = 0.9f),
-    onSecondary = TextPrimaryDark,
     secondaryContainer = primaryColor.copy(alpha = 0.22f),
     onSecondaryContainer = primaryColor,
-    tertiary = blendColors(background = Black, foreground = primaryColor, foregroundRatio = 0.55f),
-    onTertiary = TextPrimaryDark,
-    tertiaryContainer = blendColors(background = Black, foreground = primaryColor, foregroundRatio = 0.25f),
-    onTertiaryContainer = primaryColor,
-    error = Md3DarkError,
-    onError = Md3DarkOnError,
-    errorContainer = Md3DarkErrorContainer,
-    onErrorContainer = Md3DarkOnErrorContainer,
     background = Black,
-    onBackground = TextPrimaryDark,
     surface = Black,
     onSurface = TextPrimaryDark,
     surfaceVariant = Color(0xFF050505),
     onSurfaceVariant = TextSecondaryDark,
-    surfaceTint = primaryColor,
-    inversePrimary = blendColors(background = White, foreground = primaryColor, foregroundRatio = 0.7f),
-    inverseSurface = iOSSystemGray6,
-    inverseOnSurface = TextPrimary,
-    surfaceContainerLowest = Black,
-    surfaceContainerLow = Color(0xFF060606),
     surfaceContainer = Color(0xFF090909),
-    surfaceContainerHigh = Color(0xFF0C0C0C),
-    surfaceContainerHighest = Color(0xFF101010),
-    surfaceBright = Color(0xFF141414),
-    surfaceDim = Black,
-    scrim = Black,
     outline = Color(0xFF262626),
     outlineVariant = Color(0xFF1A1A1A)
 )
@@ -408,13 +366,7 @@ internal fun applyAmoledSurfaceOverrides(
     background = Black,
     surface = Black,
     surfaceVariant = Color(0xFF050505),
-    surfaceContainerLowest = Black,
-    surfaceContainerLow = Color(0xFF060606),
     surfaceContainer = Color(0xFF090909),
-    surfaceContainerHigh = Color(0xFF0C0C0C),
-    surfaceContainerHighest = Color(0xFF101010),
-    surfaceBright = Color(0xFF141414),
-    surfaceDim = Black,
     outline = Color(0xFF262626),
     outlineVariant = Color(0xFF1A1A1A)
 )
@@ -435,35 +387,14 @@ private fun createLightColorScheme(primaryColor: Color) = lightColorScheme(
     primaryContainer = primaryColor.copy(alpha = 0.15f), //  Container derived from primary (ligther for light mode)
     onPrimaryContainer = primaryColor,
     secondary = primaryColor.copy(alpha = 0.8f),
-    onSecondary = TextPrimary,
     secondaryContainer = primaryColor.copy(alpha = 0.1f), //  Container derived from primary
     onSecondaryContainer = primaryColor,
-    tertiary = blendColors(background = White, foreground = primaryColor, foregroundRatio = 0.6f),
-    onTertiary = TextPrimary,
-    tertiaryContainer = blendColors(background = White, foreground = primaryColor, foregroundRatio = 0.12f),
-    onTertiaryContainer = primaryColor,
-    error = Md3LightError,
-    onError = Md3LightOnError,
-    errorContainer = Md3LightErrorContainer,
-    onErrorContainer = Md3LightOnErrorContainer,
     background = iOSSystemGray6, // Use iOS System Gray 6 for main background (grouped table view style)
-    onBackground = TextPrimary,
     surface = White, // iOS cards are usually white
     onSurface = TextPrimary,
     surfaceVariant = iOSSystemGray5, // Separators / Higher groupings
     onSurfaceVariant = TextSecondary,
-    surfaceTint = primaryColor,
-    inversePrimary = blendColors(background = White, foreground = primaryColor, foregroundRatio = 0.75f),
-    inverseSurface = iOSSystemGray5Dark,
-    inverseOnSurface = iOSSystemGray6,
-    surfaceContainerLowest = White,
-    surfaceContainerLow = Color(0xFFF0F0F4),
     surfaceContainer = iOSSystemGray5, // iOS System Gray 5 (Light)
-    surfaceContainerHigh = Color(0xFFDCDCE1),
-    surfaceContainerHighest = iOSSystemGray4,
-    surfaceBright = White,
-    surfaceDim = iOSSystemGray3,
-    scrim = Black,
     outline = iOSSystemGray3,
     outlineVariant = iOSSystemGray4
 )

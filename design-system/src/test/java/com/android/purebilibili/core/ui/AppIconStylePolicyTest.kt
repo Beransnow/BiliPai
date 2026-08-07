@@ -8,19 +8,20 @@ import kotlin.test.assertEquals
 class AppIconStylePolicyTest {
 
     @Test
-    fun `auto style follows ui preset`() {
-        // iOS 预设 → 主题色容器;MD3/MIUIX → MD3 官方推荐
+    fun `auto style keeps ios and miuix presets unchanged and uses md3 standard for material3`() {
+        // iOS/MIUIX 预设保持现状(设置图标多彩色等),不引入容器化/单色化
         assertEquals(
-            AppIconStyle.THEME_CONTAINER,
+            AppIconStyle.AUTO,
             resolveAppIconStyle(AppIconStyle.AUTO, UiPreset.IOS, AndroidNativeVariant.MATERIAL3),
         )
         assertEquals(
-            AppIconStyle.MD3_STANDARD,
-            resolveAppIconStyle(AppIconStyle.AUTO, UiPreset.MD3, AndroidNativeVariant.MATERIAL3),
+            AppIconStyle.AUTO,
+            resolveAppIconStyle(AppIconStyle.AUTO, UiPreset.MD3, AndroidNativeVariant.MIUIX),
         )
+        // MD3 预设是本次优化对象:默认解析为官方推荐样式
         assertEquals(
             AppIconStyle.MD3_STANDARD,
-            resolveAppIconStyle(AppIconStyle.AUTO, UiPreset.MD3, AndroidNativeVariant.MIUIX),
+            resolveAppIconStyle(AppIconStyle.AUTO, UiPreset.MD3, AndroidNativeVariant.MATERIAL3),
         )
     }
 

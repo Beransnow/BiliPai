@@ -32,14 +32,18 @@ enum class AppIconStyle {
     MD3_STANDARD,
 }
 
+/**
+ * AUTO 表示"保持预设现状":iOS/MIUIX 预设不引入容器化与单色化(设置图标保持
+ * 多彩色等既有外观),仅 MD3 预设解析为官方推荐样式。
+ */
 fun resolveAppIconStyle(
     iconStyle: AppIconStyle,
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant,
 ): AppIconStyle = when (iconStyle) {
     AppIconStyle.AUTO -> when (resolveUiStyle(uiPreset, androidNativeVariant)) {
-        UiStyle.IOS -> AppIconStyle.THEME_CONTAINER
-        UiStyle.MATERIAL3, UiStyle.MIUIX -> AppIconStyle.MD3_STANDARD
+        UiStyle.IOS, UiStyle.MIUIX -> AppIconStyle.AUTO
+        UiStyle.MATERIAL3 -> AppIconStyle.MD3_STANDARD
     }
     else -> iconStyle
 }
