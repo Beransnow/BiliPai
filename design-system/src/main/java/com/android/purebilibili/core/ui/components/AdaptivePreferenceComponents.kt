@@ -887,13 +887,21 @@ private fun Md3NativeListItemContent(
         },
         leadingContent = if (icon != null || iconPainter != null) {
             {
-                Icon(
-                    imageVector = icon,
-                    painter = iconPainter,
-                    contentDescription = null,
-                    tint = colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(24.dp),
-                )
+                when {
+                    icon != null -> Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp),
+                    )
+
+                    else -> Icon(
+                        painter = iconPainter!!,
+                        contentDescription = null,
+                        tint = colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(24.dp),
+                    )
+                }
             }
         } else {
             null
