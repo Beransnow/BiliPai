@@ -36,6 +36,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
+import com.android.purebilibili.core.ui.AppIconStyle
+import com.android.purebilibili.core.ui.LocalAppIconStyle
+import com.android.purebilibili.core.ui.resolveAppIconStyle
 import com.android.purebilibili.core.store.ThemeRoleOverrides
 import com.android.purebilibili.feature.settings.AppThemeMode
 import com.android.purebilibili.feature.settings.Md3ColorSource
@@ -60,14 +63,35 @@ private fun createDarkColorScheme(primaryColor: Color) = darkColorScheme(
     primaryContainer = primaryColor.copy(alpha = 0.3f), //  Container derived from primary
     onPrimaryContainer = primaryColor.copy(alpha = 1f), // Stronger primary for content
     secondary = primaryColor.copy(alpha = 0.85f),
+    onSecondary = TextPrimaryDark,
     secondaryContainer = primaryColor.copy(alpha = 0.2f), //  Container derived from primary
     onSecondaryContainer = primaryColor.copy(alpha = 0.9f),
+    tertiary = blendColors(background = DarkSurface, foreground = primaryColor, foregroundRatio = 0.55f),
+    onTertiary = TextPrimaryDark,
+    tertiaryContainer = blendColors(background = DarkSurface, foreground = primaryColor, foregroundRatio = 0.25f),
+    onTertiaryContainer = primaryColor,
+    error = Md3DarkError,
+    onError = Md3DarkOnError,
+    errorContainer = Md3DarkErrorContainer,
+    onErrorContainer = Md3DarkOnErrorContainer,
     background = DarkBackground, // iOS User Interface Black
+    onBackground = TextPrimaryDark,
     surface = DarkSurface, // iOS System Gray 6 (Dark)
     onSurface = TextPrimaryDark,
     surfaceVariant = DarkSurfaceVariant,
     onSurfaceVariant = TextSecondaryDark,
+    surfaceTint = primaryColor,
+    inversePrimary = blendColors(background = Black, foreground = primaryColor, foregroundRatio = 0.75f),
+    inverseSurface = iOSSystemGray6,
+    inverseOnSurface = TextPrimary,
+    surfaceContainerLowest = Color(0xFF080808),
+    surfaceContainerLow = Color(0xFF141414),
     surfaceContainer = DarkSurfaceElevated, // iOS System Gray 5 (Dark)
+    surfaceContainerHigh = iOSSystemGray4Dark,
+    surfaceContainerHighest = iOSSystemGray3Dark,
+    surfaceBright = DarkSurfaceElevated,
+    surfaceDim = DarkBackground,
+    scrim = Black,
     outline = iOSSystemGray3Dark,
     outlineVariant = iOSSystemGray4Dark
 )
@@ -78,14 +102,35 @@ private fun createAmoledDarkColorScheme(primaryColor: Color) = darkColorScheme(
     primaryContainer = primaryColor.copy(alpha = 0.32f),
     onPrimaryContainer = primaryColor,
     secondary = primaryColor.copy(alpha = 0.9f),
+    onSecondary = TextPrimaryDark,
     secondaryContainer = primaryColor.copy(alpha = 0.22f),
     onSecondaryContainer = primaryColor,
+    tertiary = blendColors(background = Black, foreground = primaryColor, foregroundRatio = 0.55f),
+    onTertiary = TextPrimaryDark,
+    tertiaryContainer = blendColors(background = Black, foreground = primaryColor, foregroundRatio = 0.25f),
+    onTertiaryContainer = primaryColor,
+    error = Md3DarkError,
+    onError = Md3DarkOnError,
+    errorContainer = Md3DarkErrorContainer,
+    onErrorContainer = Md3DarkOnErrorContainer,
     background = Black,
+    onBackground = TextPrimaryDark,
     surface = Black,
     onSurface = TextPrimaryDark,
     surfaceVariant = Color(0xFF050505),
     onSurfaceVariant = TextSecondaryDark,
+    surfaceTint = primaryColor,
+    inversePrimary = blendColors(background = White, foreground = primaryColor, foregroundRatio = 0.7f),
+    inverseSurface = iOSSystemGray6,
+    inverseOnSurface = TextPrimary,
+    surfaceContainerLowest = Black,
+    surfaceContainerLow = Color(0xFF060606),
     surfaceContainer = Color(0xFF090909),
+    surfaceContainerHigh = Color(0xFF0C0C0C),
+    surfaceContainerHighest = Color(0xFF101010),
+    surfaceBright = Color(0xFF0C0C0C),
+    surfaceDim = Black,
+    scrim = Black,
     outline = Color(0xFF262626),
     outlineVariant = Color(0xFF1A1A1A)
 )
@@ -363,10 +408,26 @@ internal fun applyAmoledSurfaceOverrides(
     background = Black,
     surface = Black,
     surfaceVariant = Color(0xFF050505),
+    surfaceContainerLowest = Black,
+    surfaceContainerLow = Color(0xFF060606),
     surfaceContainer = Color(0xFF090909),
+    surfaceContainerHigh = Color(0xFF0C0C0C),
+    surfaceContainerHighest = Color(0xFF101010),
+    surfaceBright = Color(0xFF0C0C0C),
+    surfaceDim = Black,
     outline = Color(0xFF262626),
     outlineVariant = Color(0xFF1A1A1A)
 )
+
+// 官方 MD3 baseline error 角色(不随种子色变化)
+private val Md3LightError = Color(0xFFB3261E)
+private val Md3LightOnError = Color(0xFFFFFFFF)
+private val Md3LightErrorContainer = Color(0xFFF9DEDC)
+private val Md3LightOnErrorContainer = Color(0xFF410E0B)
+private val Md3DarkError = Color(0xFFF2B8B5)
+private val Md3DarkOnError = Color(0xFF601410)
+private val Md3DarkErrorContainer = Color(0xFF8C1D18)
+private val Md3DarkOnErrorContainer = Color(0xFFF9DEDC)
 
 private fun createLightColorScheme(primaryColor: Color) = lightColorScheme(
     primary = primaryColor,
@@ -374,14 +435,35 @@ private fun createLightColorScheme(primaryColor: Color) = lightColorScheme(
     primaryContainer = primaryColor.copy(alpha = 0.15f), //  Container derived from primary (ligther for light mode)
     onPrimaryContainer = primaryColor,
     secondary = primaryColor.copy(alpha = 0.8f),
+    onSecondary = TextPrimary,
     secondaryContainer = primaryColor.copy(alpha = 0.1f), //  Container derived from primary
     onSecondaryContainer = primaryColor,
+    tertiary = blendColors(background = White, foreground = primaryColor, foregroundRatio = 0.6f),
+    onTertiary = TextPrimary,
+    tertiaryContainer = blendColors(background = White, foreground = primaryColor, foregroundRatio = 0.12f),
+    onTertiaryContainer = primaryColor,
+    error = Md3LightError,
+    onError = Md3LightOnError,
+    errorContainer = Md3LightErrorContainer,
+    onErrorContainer = Md3LightOnErrorContainer,
     background = iOSSystemGray6, // Use iOS System Gray 6 for main background (grouped table view style)
+    onBackground = TextPrimary,
     surface = White, // iOS cards are usually white
     onSurface = TextPrimary,
     surfaceVariant = iOSSystemGray5, // Separators / Higher groupings
     onSurfaceVariant = TextSecondary,
+    surfaceTint = primaryColor,
+    inversePrimary = blendColors(background = White, foreground = primaryColor, foregroundRatio = 0.75f),
+    inverseSurface = iOSSystemGray5Dark,
+    inverseOnSurface = iOSSystemGray6,
+    surfaceContainerLowest = White,
+    surfaceContainerLow = Color(0xFFF0F0F4),
     surfaceContainer = iOSSystemGray5, // iOS System Gray 5 (Light)
+    surfaceContainerHigh = Color(0xFFDCDCE1),
+    surfaceContainerHighest = iOSSystemGray4,
+    surfaceBright = White,
+    surfaceDim = Color(0xFFDCDCE1),
+    scrim = Black,
     outline = iOSSystemGray3,
     outlineVariant = iOSSystemGray4
 )
@@ -544,11 +626,18 @@ internal fun createStaticMd3ColorScheme(
         val surfaceVariant = deriveNeutralSurfaceColor(source, lightness = 0.18f, maxSaturation = 0.09f)
         val surfaceContainer = deriveNeutralSurfaceColor(source, lightness = 0.14f, maxSaturation = 0.07f)
         val surfaceContainerHigh = deriveNeutralSurfaceColor(source, lightness = 0.17f, maxSaturation = 0.08f)
+        val surfaceContainerHighest = deriveNeutralSurfaceColor(source, lightness = 0.20f, maxSaturation = 0.09f)
         val outline = deriveNeutralSurfaceColor(source, lightness = 0.54f, maxSaturation = 0.08f)
         val outlineVariant = deriveNeutralSurfaceColor(source, lightness = 0.33f, maxSaturation = 0.07f)
         val primaryContainer = blendColors(background = background, foreground = primary, foregroundRatio = 0.34f)
         val secondaryContainer = blendColors(background = background, foreground = secondary, foregroundRatio = 0.28f)
         val tertiaryContainer = blendColors(background = background, foreground = tertiary, foregroundRatio = 0.28f)
+        val onSurfaceVariant = resolveReadableTextColor(
+            candidate = deriveNeutralSurfaceColor(source, lightness = 0.78f, maxSaturation = 0.08f),
+            background = surfaceVariant,
+            fallback = chooseReadableOnColor(surfaceVariant),
+            minimumContrast = 3.0f
+        )
 
         darkColorScheme(
             primary = primary,
@@ -563,19 +652,28 @@ internal fun createStaticMd3ColorScheme(
             onTertiary = chooseReadableOnColor(tertiary),
             tertiaryContainer = tertiaryContainer,
             onTertiaryContainer = chooseReadableOnColor(tertiaryContainer),
+            error = Md3DarkError,
+            onError = Md3DarkOnError,
+            errorContainer = Md3DarkErrorContainer,
+            onErrorContainer = Md3DarkOnErrorContainer,
             background = background,
             onBackground = chooseReadableOnColor(background),
             surface = surface,
             onSurface = chooseReadableOnColor(surface),
             surfaceVariant = surfaceVariant,
-            onSurfaceVariant = resolveReadableTextColor(
-                candidate = deriveNeutralSurfaceColor(source, lightness = 0.78f, maxSaturation = 0.08f),
-                background = surfaceVariant,
-                fallback = chooseReadableOnColor(surfaceVariant),
-                minimumContrast = 3.0f
-            ),
+            onSurfaceVariant = onSurfaceVariant,
+            surfaceTint = primary,
+            inversePrimary = deriveAccentColor(source = source, hueShift = 0f, saturationScale = 1f, lightness = 0.80f),
+            inverseSurface = deriveNeutralSurfaceColor(source, lightness = 0.92f, maxSaturation = 0.05f),
+            inverseOnSurface = deriveNeutralSurfaceColor(source, lightness = 0.10f, maxSaturation = 0.06f),
+            surfaceContainerLowest = deriveNeutralSurfaceColor(source, lightness = 0.06f, maxSaturation = 0.05f),
+            surfaceContainerLow = deriveNeutralSurfaceColor(source, lightness = 0.12f, maxSaturation = 0.06f),
             surfaceContainer = surfaceContainer,
             surfaceContainerHigh = surfaceContainerHigh,
+            surfaceContainerHighest = surfaceContainerHighest,
+            surfaceBright = surfaceContainerHigh,
+            surfaceDim = background,
+            scrim = Black,
             outline = outline,
             outlineVariant = outlineVariant
         )
@@ -600,11 +698,18 @@ internal fun createStaticMd3ColorScheme(
         val surfaceVariant = deriveNeutralSurfaceColor(source, lightness = 0.90f, maxSaturation = 0.08f)
         val surfaceContainer = deriveNeutralSurfaceColor(source, lightness = 0.95f, maxSaturation = 0.06f)
         val surfaceContainerHigh = deriveNeutralSurfaceColor(source, lightness = 0.92f, maxSaturation = 0.07f)
+        val surfaceContainerHighest = deriveNeutralSurfaceColor(source, lightness = 0.88f, maxSaturation = 0.08f)
         val outline = deriveNeutralSurfaceColor(source, lightness = 0.55f, maxSaturation = 0.08f)
         val outlineVariant = deriveNeutralSurfaceColor(source, lightness = 0.82f, maxSaturation = 0.06f)
         val primaryContainer = blendColors(background = background, foreground = primary, foregroundRatio = 0.18f)
         val secondaryContainer = blendColors(background = background, foreground = secondary, foregroundRatio = 0.16f)
         val tertiaryContainer = blendColors(background = background, foreground = tertiary, foregroundRatio = 0.16f)
+        val onSurfaceVariant = resolveReadableTextColor(
+            candidate = deriveNeutralSurfaceColor(source, lightness = 0.36f, maxSaturation = 0.08f),
+            background = surfaceVariant,
+            fallback = chooseReadableOnColor(surfaceVariant),
+            minimumContrast = 3.0f
+        )
 
         lightColorScheme(
             primary = primary,
@@ -619,19 +724,28 @@ internal fun createStaticMd3ColorScheme(
             onTertiary = chooseReadableOnColor(tertiary),
             tertiaryContainer = tertiaryContainer,
             onTertiaryContainer = chooseReadableOnColor(tertiaryContainer),
+            error = Md3LightError,
+            onError = Md3LightOnError,
+            errorContainer = Md3LightErrorContainer,
+            onErrorContainer = Md3LightOnErrorContainer,
             background = background,
             onBackground = chooseReadableOnColor(background),
             surface = surface,
             onSurface = chooseReadableOnColor(surface),
             surfaceVariant = surfaceVariant,
-            onSurfaceVariant = resolveReadableTextColor(
-                candidate = deriveNeutralSurfaceColor(source, lightness = 0.36f, maxSaturation = 0.08f),
-                background = surfaceVariant,
-                fallback = chooseReadableOnColor(surfaceVariant),
-                minimumContrast = 3.0f
-            ),
+            onSurfaceVariant = onSurfaceVariant,
+            surfaceTint = primary,
+            inversePrimary = deriveAccentColor(source = source, hueShift = 0f, saturationScale = 1f, lightness = 0.40f),
+            inverseSurface = deriveNeutralSurfaceColor(source, lightness = 0.10f, maxSaturation = 0.06f),
+            inverseOnSurface = deriveNeutralSurfaceColor(source, lightness = 0.92f, maxSaturation = 0.05f),
+            surfaceContainerLowest = deriveNeutralSurfaceColor(source, lightness = 1.0f, maxSaturation = 0.04f),
+            surfaceContainerLow = deriveNeutralSurfaceColor(source, lightness = 0.97f, maxSaturation = 0.05f),
             surfaceContainer = surfaceContainer,
             surfaceContainerHigh = surfaceContainerHigh,
+            surfaceContainerHighest = surfaceContainerHighest,
+            surfaceBright = surface,
+            surfaceDim = surfaceContainerHighest,
+            scrim = Black,
             outline = outline,
             outlineVariant = outlineVariant
         )
@@ -659,7 +773,8 @@ internal fun alignStaticColorSchemeWithThemePrimary(
         primary = primary,
         onPrimary = chooseReadableOnColor(primary),
         primaryContainer = primaryContainer,
-        onPrimaryContainer = chooseReadableOnColor(primaryContainer)
+        onPrimaryContainer = chooseReadableOnColor(primaryContainer),
+        surfaceTint = primary
     )
 }
 
@@ -834,6 +949,7 @@ fun PureBiliBiliTheme(
     colorSpec: ColorSpec.SpecVersion = ColorSpec.SpecVersion.SPEC_2021,
     fontSizePreset: AppFontSizePreset = AppFontSizePreset.DEFAULT,
     appFontFileName: String = "",
+    appIconStyle: AppIconStyle = AppIconStyle.AUTO,
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
@@ -991,6 +1107,11 @@ fun PureBiliBiliTheme(
         LocalAndroidNativeVariant provides androidNativeVariant,
         LocalDynamicColorActive provides isDynamicColorActive,
         LocalBaseThemeRoleOverrides provides baseThemeRoleOverrides,
+        LocalAppIconStyle provides resolveAppIconStyle(
+            iconStyle = appIconStyle,
+            uiPreset = uiPreset,
+            androidNativeVariant = androidNativeVariant
+        ),
         LocalCornerRadiusScale provides resolveCornerRadiusScale(
             uiPreset = uiPreset,
             androidNativeVariant = androidNativeVariant
