@@ -26,7 +26,7 @@ class MiuixV2MigrationStructureTest {
     fun iosSectionTitle_usesMiuixSmallTitleOnMiuixBranch() {
         val source = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/components/AdaptivePreferenceComponents.kt")
         assertTrue(source.contains("SmallTitle("))
-        assertTrue(source.contains("androidNativeVariant == AndroidNativeVariant.MIUIX"))
+        assertTrue(source.contains("if (uiStyle == AppUiStyle.MIUIX) {"))
     }
 
     @Test
@@ -136,8 +136,8 @@ class MiuixV2MigrationStructureTest {
         assertTrue(source.contains("resolveAppClickableItemRenderer("))
         assertTrue(source.contains("AppClickableItemRenderer.MIUIX_ARROW"))
         assertTrue(source.contains("AppClickableItemRenderer.MIUIX_BASIC"))
-        assertTrue(source.contains("shouldRouteIosSwitchItemToMiuixSwitchPreference("))
-        assertTrue(source.contains("shouldRouteIosSliderPreferenceToMiuixSliderPreference("))
+        assertTrue(source.contains("shouldRouteSwitchItemToMiuixSwitchPreference("))
+        assertTrue(source.contains("shouldRouteSliderPreferenceToMiuixSliderPreference("))
         assertTrue(source.contains("MiuixSliderPreference("))
     }
 

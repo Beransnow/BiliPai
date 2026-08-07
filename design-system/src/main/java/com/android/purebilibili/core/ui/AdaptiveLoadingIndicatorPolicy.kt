@@ -1,7 +1,7 @@
 package com.android.purebilibili.core.ui
 
-import com.android.purebilibili.core.theme.AndroidNativeVariant
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.AppUiStyle
+import com.android.purebilibili.core.theme.toLegacyThemePair
 
 /**
  * Visual recipe for indeterminate loading chrome across UI presets.
@@ -36,11 +36,15 @@ enum class AdaptiveLoadingDensity {
 }
 
 fun resolveAdaptiveLoadingVisual(
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant,
+    uiStyle: AppUiStyle,
     density: AdaptiveLoadingDensity = AdaptiveLoadingDensity.PAGE,
 ): AdaptiveLoadingVisual {
-    val renderer = resolvePresetPrimitiveRenderer(uiPreset, androidNativeVariant)
+    // 兼容桥接：批 5 迁移 PresetPrimitiveRenderer 后删除。
+    val (uiPreset, androidNativeVariant) = uiStyle.toLegacyThemePair()
+    val renderer = resolvePresetPrimitiveRenderer(
+        uiPreset = uiPreset,
+        androidNativeVariant = androidNativeVariant
+    )
     return resolveAdaptiveLoadingVisual(renderer = renderer, density = density)
 }
 
