@@ -75,6 +75,31 @@ internal fun resolveAdaptiveBottomSheetMotionSpec(
     )
 }
 
+/**
+ * 弹层宿主契约：App 风格对应的 BottomSheet 宿主实现。
+ *
+ * [MIUIX_OVERLAY] 对应 Miuix OverlayBottomSheet，[MATERIAL3] 对应 Material3
+ * ModalBottomSheet。两者不仅外观不同，弹层宿主也不同：OverlayBottomSheet 依赖
+ * Miuix overlay popup host（仅 AdaptiveScaffold 的 MIUIX 模式挂载，
+ * 见 [resolveAdaptiveScaffoldRenderer]），直接替换会导致无 popup host 的页面
+ * 点击无效或弹层不显示 —— 不允许机械替换。业务页不允许自行判断宿主，宿主感知
+ * 场景（如筛选弹层）必须消费 [resolveBottomSheetHost]，而不是复制判断逻辑。
+ */
+enum class BottomSheetHost {
+    /** Miuix OverlayBottomSheet：依赖 Miuix overlay popup host。 */
+    MIUIX_OVERLAY,
+
+    /** Material3 ModalBottomSheet：任意宿主下可用。 */
+    MATERIAL3,
+}
+
+fun resolveBottomSheetHost(
+    uiStyle: AppUiStyle
+): BottomSheetHost = when (uiStyle) {
+    AppUiStyle.MIUIX -> BottomSheetHost.MIUIX_OVERLAY
+    AppUiStyle.MATERIAL3 -> BottomSheetHost.MATERIAL3
+}
+
 internal fun bottomSheetScrimEnterTransition(
     uiStyle: AppUiStyle,
 ): EnterTransition = fadeIn(
@@ -110,8 +135,14 @@ internal fun bottomSheetContentExitTransition(
 }
 
 /**
- * iOS-style Modal Bottom Sheet wrapper.
- * Uses Material3 ModalBottomSheet but styled to match iOS.
+ * App 通用 Modal Bottom Sheet facade。
+ *
+ * 使用 Material3 ModalBottomSheet 作为中性宿主：即使宿主契约
+ * （[resolveBottomSheetHost]）在 MIUIX 下解析为 [BottomSheetHost.MIUIX_OVERLAY]，
+ * 本 facade 也不做机械替换 —— OverlayBottomSheet 依赖 Miuix overlay popup host
+ * （仅 AdaptiveScaffold 的 MIUIX 模式挂载），而本 facade 的调用点无法保证处于该
+ * 宿主之下。需要 Miuix overlay 宿主的场景由宿主感知 facade 消费
+ * [resolveBottomSheetHost]。两值风格在此仅做视觉区分（容器色、圆角、拖拽条、动效）。
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

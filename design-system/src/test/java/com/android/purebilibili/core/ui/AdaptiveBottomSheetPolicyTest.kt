@@ -58,6 +58,30 @@ class AdaptiveBottomSheetPolicyTest {
     }
 
     @Test
+    fun `host contract resolves miuix to overlay host and material3 to material host`() {
+        assertEquals(BottomSheetHost.MIUIX_OVERLAY, resolveBottomSheetHost(AppUiStyle.MIUIX))
+        assertEquals(BottomSheetHost.MATERIAL3, resolveBottomSheetHost(AppUiStyle.MATERIAL3))
+    }
+
+    @Test
+    fun `app sheet facade stays on neutral material host instead of mechanical overlay swap`() {
+        val path = "src/main/java/com/android/purebilibili/core/ui/AppSheetComponents.kt"
+        val source = listOf(File(path), File("design-system/$path"))
+            .firstOrNull(File::exists)
+            ?.readText()
+            ?: error("Cannot locate AppSheetComponents.kt from ${File(".").absolutePath}")
+
+        // OverlayBottomSheet 依赖 Miuix popup host（仅 AdaptiveScaffold 的 MIUIX
+        // 模式挂载），AppModalBottomSheet 调用点无法保证处于该宿主之下 —— 宿主契约
+        // 由 resolveBottomSheetHost 独立承担，facade 本身禁止机械替换。
+        assertTrue(source.contains("ModalBottomSheet("))
+        assertFalse(source.contains("OverlayBottomSheet("))
+        assertFalse(source.contains("import top.yukonga.miuix.kmp.overlay"))
+        assertTrue(source.contains("fun resolveBottomSheetHost("))
+        assertTrue(source.contains("enum class BottomSheetHost"))
+    }
+
+    @Test
     fun `overlay visual progress should scale scrim and disable blur when hidden`() {
         val hidden = resolveInteractiveOverlayProgressVisual(
             presentationProgress = 0f,
