@@ -34,10 +34,9 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-//  Cupertino Icons - iOS SF Symbols 风格图标
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowLeft
 import androidx.compose.material3.*
 // 🌈 Material Icons Extended - 亮度图标
 import androidx.compose.material.icons.Icons
@@ -956,7 +955,7 @@ fun FullscreenPlayerOverlay(
                         modifier = Modifier.padding(16.dp)
                     ) {
                         AppIconButton(onClick = onNavigateToDetail) {
-                            AppIcon(CupertinoIcons.Default.ChevronBackward, "返回详情页", tint = Color.White)
+                            AppIcon(Icons.AutoMirrored.Outlined.KeyboardArrowLeft, "返回详情页", tint = Color.White)
                         }
                         Spacer(Modifier.width(8.dp))
                         AppText(
@@ -1007,7 +1006,7 @@ fun FullscreenPlayerOverlay(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             AppIcon(
-                                imageVector = if (danmakuEnabled) CupertinoIcons.Filled.TextBubble else CupertinoIcons.Outlined.TextBubble,
+                                imageVector = if (danmakuEnabled) Icons.Filled.ChatBubble else Icons.Outlined.ChatBubbleOutline,
                                 contentDescription = if (danmakuEnabled) "关闭弹幕" else "开启弹幕",
                                 tint = if (danmakuEnabled) danmakuActiveColor else danmakuInactiveColor,
                                 modifier = Modifier.size(16.dp)
@@ -1023,7 +1022,7 @@ fun FullscreenPlayerOverlay(
                         
                         //  [新增] 弹幕设置按钮
                         AppIconButton(onClick = { showDanmakuSettings = true }) {
-                            AppIcon(CupertinoIcons.Default.Gear, "弹幕设置", tint = Color.White)
+                            AppIcon(Icons.Outlined.Settings, "弹幕设置", tint = Color.White)
                         }
                     }
                 }

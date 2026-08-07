@@ -51,7 +51,6 @@ import com.android.purebilibili.feature.video.ui.section.VideoTitleWithDesc
 import com.android.purebilibili.feature.video.ui.section.resolveAllowLivePlayerSharedElementForMorph
 import com.android.purebilibili.feature.video.ui.section.resolveNavigationLiveSurfaceTextureEnabled
 import com.android.purebilibili.core.store.SettingsManager
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.feature.video.usecase.seekPlayerFromUserAction
 import com.android.purebilibili.feature.video.viewmodel.CommentUiState
 import com.android.purebilibili.feature.video.viewmodel.SubReplyUiState
@@ -60,8 +59,8 @@ import com.android.purebilibili.feature.video.viewmodel.VideoPlaybackUiState
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.*
 import kotlinx.coroutines.launch
 
 //  共享元素过渡
@@ -128,12 +127,9 @@ internal fun TabletVideoLayout(
     currentPlayMode: com.android.purebilibili.feature.video.player.PlayMode = com.android.purebilibili.feature.video.player.PlayMode.SEQUENTIAL,
     onPlayModeClick: () -> Unit = {},
     forceCoverOnlyOnReturn: Boolean = false,
-    predictiveBackCancelRecoveryGeneration: Int = 0
+    predictiveBackCancelRecoveryGeneration: Int = 0,
+    liveSurfaceCardTransitionEnabled: Boolean = true
 ) {
-    val settingsContext = LocalContext.current
-    val liveSurfaceCardTransitionEnabled by SettingsManager
-        .getLiveSurfaceCardTransitionEnabled(settingsContext)
-        .collectAsStateWithLifecycle(initialValue = false)
     val layoutPolicy = remember(configuration.screenWidthDp) {
         resolveTabletVideoLayoutPolicy(
             widthDp = configuration.screenWidthDp
@@ -729,7 +725,7 @@ private fun TabletSecondaryContent(
                                 modifier = Modifier.padding(8.dp)
                             ) {
                                 AppIcon(
-                                    imageVector = if (commentState.upOnlyFilter) io.github.alexzhirkevich.cupertino.icons.CupertinoIcons.Default.CheckmarkCircle else io.github.alexzhirkevich.cupertino.icons.CupertinoIcons.Default.Person,
+                                    imageVector = if (commentState.upOnlyFilter) Icons.Outlined.CheckCircle else Icons.Outlined.Person,
                                     contentDescription = null,
                                     modifier = Modifier.size(20.dp)
                                 )

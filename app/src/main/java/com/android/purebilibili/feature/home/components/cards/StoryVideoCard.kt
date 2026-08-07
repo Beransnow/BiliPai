@@ -73,8 +73,8 @@ import com.android.purebilibili.core.ui.transition.videoCardShellSharedBoundsOrE
 import com.android.purebilibili.feature.home.HomeCoverRequestSpec
 import com.android.purebilibili.feature.home.resolveHomeCardEnterAnimationEnabledAtMount
 import com.android.purebilibili.feature.video.ui.section.resolveCompactPublishTimeRowText
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.*
 import kotlin.math.roundToInt
 
 /**
@@ -406,8 +406,9 @@ internal fun StoryVideoCard(
             modifier = Modifier.fillMaxWidth()
         )
 
+        // 时长已移入统计行（闹钟图标），日期行独占整行。
         VideoCardDurationPublishRow(
-            durationText = durationText.takeIf { showDurationOutside }.orEmpty(),
+            durationText = "",
             publishTimeText = publishTimeRowText,
             emphasizePublishTime = emphasizePublishTime,
             publishTimeColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f),
@@ -474,7 +475,7 @@ internal fun StoryVideoCard(
                                 horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Micro)
                             ) {
                                 AppIcon(
-                                    imageVector = CupertinoIcons.Outlined.PlayCircle,
+                                    imageVector = Icons.Outlined.PlayCircle,
                                     contentDescription = null,
                                     modifier = Modifier.size(AppSpacingTokens.Medium),
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -499,7 +500,7 @@ internal fun StoryVideoCard(
                                  horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Micro)
                              ) {
                                  AppIcon(
-                                     imageVector = CupertinoIcons.Outlined.BubbleLeft,
+                                     imageVector = Icons.Outlined.ChatBubbleOutline,
                                      contentDescription = null,
                                      modifier = Modifier.size(AppSpacingTokens.Medium),
                                      tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -522,13 +523,36 @@ internal fun StoryVideoCard(
                             horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Micro)
                         ) {
                             AppIcon(
-                                imageVector = CupertinoIcons.Outlined.Eye,
+                                imageVector = Icons.Outlined.Visibility,
                                 contentDescription = null,
                                 modifier = Modifier.size(AppSpacingTokens.Medium),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             AppText(
                                 text = onlineCount,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                style = contentTypography.statistic.copy(fontWeight = FontWeight.Medium),
+                                maxLines = 1,
+                                softWrap = false,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+
+                    // 时长随统计行显示（OUTSIDE_COVER）：闹钟图标 + 时长。
+                    if (showDurationOutside && durationText.isNotBlank()) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Micro)
+                        ) {
+                            AppIcon(
+                                imageVector = Icons.Outlined.Alarm,
+                                contentDescription = null,
+                                modifier = Modifier.size(AppSpacingTokens.Medium),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            AppText(
+                                text = durationText,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 style = contentTypography.statistic.copy(fontWeight = FontWeight.Medium),
                                 maxLines = 1,

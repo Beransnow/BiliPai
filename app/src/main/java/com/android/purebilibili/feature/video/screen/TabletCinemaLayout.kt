@@ -100,7 +100,6 @@ import com.android.purebilibili.core.ui.transition.resolveVideoSharedTransitionS
 import com.android.purebilibili.core.ui.transition.shouldEnableVideoCoverSharedTransition
 import com.android.purebilibili.feature.video.ui.section.resolveAllowLivePlayerSharedElementForMorph
 import com.android.purebilibili.feature.video.ui.section.resolveNavigationLiveSurfaceTextureEnabled
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.core.util.ShareUtils
 import com.android.purebilibili.data.model.response.BgmInfo
 import com.android.purebilibili.data.model.response.ViewPoint
@@ -195,6 +194,7 @@ internal fun TabletCinemaLayout(
     forceCoverOnlyOnReturn: Boolean = false,
     predictiveBackCancelRecoveryGeneration: Int = 0,
     sponsorContributionState: SponsorContributionUiState = SponsorContributionUiState(),
+    liveSurfaceCardTransitionEnabled: Boolean = true,
 ) {
     val appContext = LocalContext.current
     val policy = remember(configuration.screenWidthDp, tabletCommentPanelWidthPreset) {
@@ -298,6 +298,7 @@ internal fun TabletCinemaLayout(
                     forceCoverOnlyOnReturn = forceCoverOnlyOnReturn,
                     predictiveBackCancelRecoveryGeneration = predictiveBackCancelRecoveryGeneration,
                     sponsorContributionState = sponsorContributionState,
+                    liveSurfaceCardTransitionEnabled = liveSurfaceCardTransitionEnabled,
                 )
 
                 if (success != null) {
@@ -424,11 +425,8 @@ private fun CinemaStagePlayer(
     forceCoverOnlyOnReturn: Boolean,
     predictiveBackCancelRecoveryGeneration: Int,
     sponsorContributionState: SponsorContributionUiState,
+    liveSurfaceCardTransitionEnabled: Boolean = true,
 ) {
-    val context = LocalContext.current
-    val liveSurfaceCardTransitionEnabled by SettingsManager
-        .getLiveSurfaceCardTransitionEnabled(context)
-        .collectAsStateWithLifecycle(initialValue = false)
     val success = uiState as? VideoPlaybackUiState.Success
     val sharedTransitionScope = LocalSharedTransitionScope.current
     val animatedVisibilityScope = LocalAnimatedVisibilityScope.current

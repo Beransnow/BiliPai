@@ -1063,8 +1063,9 @@ class VideoPlayerSectionPolicyTest {
     }
 
     @Test
-    fun playbackStateAutoFullscreen_neverRetriggersFromCompositionSnapshot() {
-        // Snapshot re-composition after leaving fullscreen must not re-enter fullscreen.
+    fun playbackStateAutoFullscreen_triggersWhenAttachedAfterPlaybackAlreadyStarted() {
+        // 快照路径刻意恒 false：退出全屏后的重组会把「重新组合」误认成「开始播放」，
+        // 自动全屏只能由 Player 的实际状态事件补发（见 shouldToggleAutoFullscreenForPlaybackEvent）。
         assertFalse(
             shouldToggleAutoFullscreenForCurrentPlaybackSnapshot(
                 autoEnterFullscreenEnabled = true,
@@ -1074,6 +1075,20 @@ class VideoPlayerSectionPolicyTest {
                 playWhenReady = true,
                 hasAutoEnteredFullscreen = false,
                 isFullscreen = false
+            )
+        )
+
+        // 事件路径在挂载后采样时补发自动全屏（播放已开始、无 playWhenReady 跳变）
+        assertTrue(
+            shouldToggleAutoFullscreenForPlaybackEvent(
+                autoEnterFullscreenEnabled = true,
+                autoExitFullscreenEnabled = true,
+                allowPlaybackStateAutoFullscreen = true,
+                playbackState = Player.STATE_READY,
+                playWhenReady = true,
+                hasAutoEnteredFullscreen = false,
+                isFullscreen = false,
+                previousPlayWhenReady = true,
             )
         )
     }
@@ -1634,7 +1649,8 @@ class VideoPlayerSectionPolicyTest {
             File("app/src/main/java/com/android/purebilibili/feature/video/ui/section/VideoPlayerSection.kt"),
             File("src/main/java/com/android/purebilibili/feature/video/ui/section/VideoPlayerSection.kt")
         ).first { it.exists() }
-        return sourceFile.readText()
+        // git autocrlf=true 在 Windows 检出时转为 CRLF，多行断言统一按 LF 归一化以匹配 CI。
+        return sourceFile.readText().replace("\r\n", "\n")
     }
 
     @Test

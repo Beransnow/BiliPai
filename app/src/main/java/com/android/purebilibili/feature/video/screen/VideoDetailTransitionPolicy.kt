@@ -72,6 +72,7 @@ internal fun shouldUseLiveReturnMorph(
     playbackIntent: VideoSharedTransitionPlaybackIntent,
     detailContentReady: Boolean = true,
     hasRenderableLiveFrame: Boolean = true,
+    liveSurfaceCardTransitionEnabled: Boolean = false,
 ): Boolean = shouldUseVideoCardLiveReturnMorph(
     transitionEnabled = transitionEnabled,
     sharedBoundsActive = sharedBoundsActive,
@@ -79,6 +80,7 @@ internal fun shouldUseLiveReturnMorph(
     playbackIntent = playbackIntent,
     detailContentReady = detailContentReady,
     hasRenderableLiveFrame = hasRenderableLiveFrame,
+    liveSurfaceCardTransitionEnabled = liveSurfaceCardTransitionEnabled,
 )
 
 /**

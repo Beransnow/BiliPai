@@ -68,9 +68,9 @@ import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.plugin.PluginManager
 
 import com.android.purebilibili.core.ui.blur.hazeSourceCompat
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.filled.*
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import kotlinx.coroutines.launch
 
 import com.android.purebilibili.core.ui.components.AppPreferenceSectionTitle
@@ -1382,7 +1382,7 @@ fun DonateDialog(onDismiss: () -> Unit) {
                             .size(32.dp)
                     ) {
                         AppIcon(
-                            imageVector = CupertinoIcons.Default.Xmark, // Fixed: Filled.Xmark -> Default.Xmark or correct path
+                            imageVector = Icons.Outlined.Close, // Fixed: Filled.Xmark -> Default.Xmark or correct path
                             contentDescription = "关闭",
                             tint = Color.White,
                             modifier = Modifier.size(20.dp)

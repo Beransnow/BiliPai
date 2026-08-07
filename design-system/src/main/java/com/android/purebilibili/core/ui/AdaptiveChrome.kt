@@ -27,10 +27,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
-import com.android.purebilibili.core.theme.AndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.theme.AppUiStyle
+import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
 import top.yukonga.miuix.kmp.basic.Scaffold as MiuixScaffold
 import top.yukonga.miuix.kmp.basic.SmallTopAppBar as MiuixSmallTopAppBar
@@ -38,15 +36,13 @@ import top.yukonga.miuix.kmp.basic.TopAppBar as MiuixTopAppBar
 import top.yukonga.miuix.kmp.utils.MiuixPopupUtils
 
 fun isNativeMiuixEnabled(
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant
-): Boolean = uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX
+    uiStyle: AppUiStyle
+): Boolean = uiStyle == AppUiStyle.MIUIX
 
 @Composable
 fun rememberIsNativeMiuixEnabled(): Boolean {
     return isNativeMiuixEnabled(
-        uiPreset = LocalUiPreset.current,
-        androidNativeVariant = LocalAndroidNativeVariant.current
+        uiStyle = LocalAppUiStyle.current
     )
 }
 
@@ -75,30 +71,15 @@ fun resolveGlobalWallpaperProtectiveColor(
 }
 
 fun resolveAdaptiveTopAppBarChromeSpec(
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3
+    uiStyle: AppUiStyle
 ): AdaptiveTopAppBarChromeSpec {
-    val chromeTokens = resolveAndroidNativeChromeTokens(uiPreset, androidNativeVariant)
-    return when {
-        uiPreset == UiPreset.MD3 && androidNativeVariant == AndroidNativeVariant.MIUIX -> AdaptiveTopAppBarChromeSpec(
-            containerCornerRadiusDp = chromeTokens.containerCornerRadiusDp,
-            scrolledContainerAlpha = 1f,
-            scrolledTonalElevationDp = 0,
-            motionScale = chromeTokens.motionScale
-        )
-        uiPreset == UiPreset.MD3 -> AdaptiveTopAppBarChromeSpec(
-            containerCornerRadiusDp = chromeTokens.containerCornerRadiusDp,
-            scrolledContainerAlpha = 1f,
-            scrolledTonalElevationDp = 0,
-            motionScale = chromeTokens.motionScale
-        )
-        else -> AdaptiveTopAppBarChromeSpec(
-            containerCornerRadiusDp = chromeTokens.containerCornerRadiusDp,
-            scrolledContainerAlpha = 1f,
-            scrolledTonalElevationDp = 0,
-            motionScale = chromeTokens.motionScale
-        )
-    }
+    val chromeTokens = resolveAndroidNativeChromeTokens(uiStyle)
+    return AdaptiveTopAppBarChromeSpec(
+        containerCornerRadiusDp = chromeTokens.containerCornerRadiusDp,
+        scrolledContainerAlpha = 1f,
+        scrolledTonalElevationDp = 0,
+        motionScale = chromeTokens.motionScale
+    )
 }
 
 fun resolveAdaptiveScaffoldContainerColor(
@@ -183,8 +164,7 @@ fun AdaptiveScaffold(
         globalWallpaperVisible = LocalGlobalWallpaperBackdropVisible.current
     )
     val scaffoldRenderer = resolveAdaptiveScaffoldRenderer(
-        uiPreset = LocalUiPreset.current,
-        androidNativeVariant = LocalAndroidNativeVariant.current
+        uiStyle = LocalAppUiStyle.current
     )
     when (scaffoldRenderer) {
         AdaptiveScaffoldRenderer.MIUIX_SCAFFOLD_WITH_POPUP_HOST -> {
@@ -228,10 +208,9 @@ fun AdaptiveTopAppBar(
     style: AdaptiveTopAppBarStyle = AdaptiveTopAppBarStyle.SMALL,
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
+    val uiStyle = LocalAppUiStyle.current
     val globalWallpaperVisible = LocalGlobalWallpaperBackdropVisible.current
-    val chromeSpec = resolveAdaptiveTopAppBarChromeSpec(uiPreset, androidNativeVariant)
+    val chromeSpec = resolveAdaptiveTopAppBarChromeSpec(uiStyle)
     val effectiveColors = if (globalWallpaperVisible) {
         colors.copy(
             containerColor = resolveGlobalWallpaperChromeColor(
@@ -362,37 +341,29 @@ data class AppTopChromePolicy(
 }
 
 fun resolveAppTopChromePolicy(
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant,
+    uiStyle: AppUiStyle,
     iconStyle: AppIconStyle = AppIconStyle.AUTO,
-): AppTopChromePolicy = when {
-    uiPreset == UiPreset.IOS -> AppTopChromePolicy(
-        tabPresentation = AppTopTabPresentation.MOVING_CAPSULE,
-        iconFamily = AppSemanticIconFamily.CUPERTINO,
-        iconStyle = iconStyle,
-        compactChromeSpec = resolveCompactCapsuleChromeSpec(uiPreset, androidNativeVariant),
-    )
-    androidNativeVariant == AndroidNativeVariant.MIUIX -> AppTopChromePolicy(
+): AppTopChromePolicy = when (uiStyle) {
+    AppUiStyle.MIUIX -> AppTopChromePolicy(
         tabPresentation = AppTopTabPresentation.TONAL_CAPSULE,
         iconFamily = AppSemanticIconFamily.MATERIAL,
         iconStyle = iconStyle,
-        compactChromeSpec = resolveCompactCapsuleChromeSpec(uiPreset, androidNativeVariant),
+        compactChromeSpec = resolveCompactCapsuleChromeSpec(uiStyle),
     )
-    else -> AppTopChromePolicy(
+    AppUiStyle.MATERIAL3 -> AppTopChromePolicy(
         tabPresentation = AppTopTabPresentation.MATERIAL_UNDERLINE,
         iconFamily = AppSemanticIconFamily.MATERIAL,
         iconStyle = iconStyle,
-        compactChromeSpec = resolveCompactCapsuleChromeSpec(uiPreset, androidNativeVariant),
+        compactChromeSpec = resolveCompactCapsuleChromeSpec(uiStyle),
     )
 }
 
 @Composable
 fun rememberAppTopChromePolicy(): AppTopChromePolicy {
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
+    val uiStyle = LocalAppUiStyle.current
     val iconStyle = rememberResolvedAppIconStyle()
-    return remember(uiPreset, androidNativeVariant, iconStyle) {
-        resolveAppTopChromePolicy(uiPreset, androidNativeVariant, iconStyle)
+    return remember(uiStyle, iconStyle) {
+        resolveAppTopChromePolicy(uiStyle, iconStyle)
     }
 }
 

@@ -96,7 +96,7 @@ private fun createAmoledDarkColorScheme(primaryColor: Color) = darkColorScheme(
 internal fun resolveEffectiveDynamicColorEnabled(
     dynamicColorEnabled: Boolean,
     amoledDarkTheme: Boolean,
-    uiPreset: UiPreset
+    uiStyle: AppUiStyle
 ): Boolean = dynamicColorEnabled
 
 internal fun createIosColorScheme(
@@ -786,32 +786,6 @@ private fun rememberSystemWallpaperRefreshToken(
 private const val SYSTEM_WALLPAPER_PALETTE_SETTLE_DELAY_MS = 200L
 
 @Composable
-private fun rememberIosColorScheme(
-    seedColor: Color,
-    darkTheme: Boolean,
-    amoledDarkTheme: Boolean,
-    dynamicAccentScheme: ColorScheme? = null
-): ColorScheme {
-    val baseScheme = remember(seedColor, darkTheme, amoledDarkTheme) {
-        createIosColorScheme(
-            primaryColor = seedColor,
-            darkTheme = darkTheme,
-            amoledDarkTheme = amoledDarkTheme
-        )
-    }
-    return remember(baseScheme, dynamicAccentScheme) {
-        if (dynamicAccentScheme != null) {
-            alignIosColorSchemeWithDynamicAccent(
-                baseScheme = baseScheme,
-                dynamicAccentScheme = dynamicAccentScheme
-            )
-        } else {
-            baseScheme
-        }
-    }
-}
-
-@Composable
 private fun rememberKernelSuStyleColorScheme(
     seedColor: Color,
     darkTheme: Boolean,
@@ -862,8 +836,7 @@ private fun rememberKernelSuStyleColorScheme(
 
 @Composable
 fun PureBiliBiliTheme(
-    uiPreset: UiPreset = UiPreset.IOS,
-    androidNativeVariant: AndroidNativeVariant = AndroidNativeVariant.MATERIAL3,
+    uiStyle: AppUiStyle = AppUiStyle.MIUIX,
     themeMode: AppThemeMode = AppThemeMode.FOLLOW_SYSTEM,
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = false,
@@ -898,19 +871,17 @@ fun PureBiliBiliTheme(
             sdkInt = Build.VERSION.SDK_INT
         ),
         amoledDarkTheme = amoledDarkTheme,
-        uiPreset = uiPreset
+        uiStyle = uiStyle
     )
-    val shapes = resolveMaterialShapes(uiPreset, androidNativeVariant)
+    val shapes = resolveMaterialShapes(uiStyle)
     val appFontFamily = remember(context, appFontFileName) {
         loadStoredAppFontFamily(context, appFontFileName)
     }
-    val materialTypography = resolveMaterialTypography(
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant
-    ).scaled(fontSizePreset.multiplier)
+    val materialTypography = resolveMaterialTypography(uiStyle)
+        .scaled(fontSizePreset.multiplier)
         .withFontFamily(appFontFamily)
-    val materialMotionScheme = remember(uiPreset, androidNativeVariant) {
-        resolveMaterialMotionScheme(uiPreset, androidNativeVariant)
+    val materialMotionScheme = remember(uiStyle) {
+        resolveMaterialMotionScheme(uiStyle)
     }
     val miuixTextStyles = remember(fontSizePreset, appFontFamily) {
         defaultTextStyles()
@@ -936,40 +907,22 @@ fun PureBiliBiliTheme(
     } else {
         null
     }
-    val lightMaterialScheme = if (uiPreset == UiPreset.IOS) {
-        rememberIosColorScheme(
-            seedColor = customPrimaryColor,
-            darkTheme = false,
-            amoledDarkTheme = false,
-            dynamicAccentScheme = dynamicLightBaseScheme
-        )
-    } else {
-        rememberKernelSuStyleColorScheme(
-            seedColor = customPrimaryColor,
-            darkTheme = false,
-            amoledDarkTheme = false,
-            paletteStyle = colorStyle,
-            colorSpec = colorSpec,
-            dynamicBaseScheme = dynamicLightBaseScheme
-        )
-    }
-    val darkMaterialScheme = if (uiPreset == UiPreset.IOS) {
-        rememberIosColorScheme(
-            seedColor = customPrimaryColor,
-            darkTheme = true,
-            amoledDarkTheme = amoledDarkTheme,
-            dynamicAccentScheme = dynamicDarkBaseScheme
-        )
-    } else {
-        rememberKernelSuStyleColorScheme(
-            seedColor = customPrimaryColor,
-            darkTheme = true,
-            amoledDarkTheme = amoledDarkTheme,
-            paletteStyle = colorStyle,
-            colorSpec = colorSpec,
-            dynamicBaseScheme = dynamicDarkBaseScheme
-        )
-    }
+    val lightMaterialScheme = rememberKernelSuStyleColorScheme(
+        seedColor = customPrimaryColor,
+        darkTheme = false,
+        amoledDarkTheme = false,
+        paletteStyle = colorStyle,
+        colorSpec = colorSpec,
+        dynamicBaseScheme = dynamicLightBaseScheme
+    )
+    val darkMaterialScheme = rememberKernelSuStyleColorScheme(
+        seedColor = customPrimaryColor,
+        darkTheme = true,
+        amoledDarkTheme = amoledDarkTheme,
+        paletteStyle = colorStyle,
+        colorSpec = colorSpec,
+        dynamicBaseScheme = dynamicDarkBaseScheme
+    )
 
     val resolvedLightMaterialScheme = remember(lightMaterialScheme, themeRoleOverrides) {
         applyThemeRoleOverrides(lightMaterialScheme, themeRoleOverrides, darkTheme = false)
@@ -1034,19 +987,14 @@ fun PureBiliBiliTheme(
     }
 
     CompositionLocalProvider(
-        LocalUiPreset provides uiPreset,
-        LocalAndroidNativeVariant provides androidNativeVariant,
+        LocalAppUiStyle provides uiStyle,
         LocalDynamicColorActive provides isDynamicColorActive,
         LocalBaseThemeRoleOverrides provides baseThemeRoleOverrides,
         LocalAppIconStyle provides resolveAppIconStyle(
             iconStyle = appIconStyle,
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant
+            uiStyle = uiStyle
         ),
-        LocalCornerRadiusScale provides resolveCornerRadiusScale(
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant
-        )
+        LocalCornerRadiusScale provides resolveCornerRadiusScale(uiStyle)
     ) {
         MiuixTheme(
             controller = controller,

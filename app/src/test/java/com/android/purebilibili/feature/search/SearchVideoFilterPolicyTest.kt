@@ -1,7 +1,5 @@
 package com.android.purebilibili.feature.search
 
-import com.android.purebilibili.core.theme.AndroidNativeVariant
-import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.data.repository.SearchDuration
 import com.android.purebilibili.data.repository.SearchOrder
 import java.util.Calendar
@@ -14,39 +12,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class SearchVideoFilterPolicyTest {
-
-    @Test
-    fun nativeChrome_routesMaterialAndMiuixPresets() {
-        assertEquals(
-            SearchNativeChrome.MATERIAL3,
-            resolveSearchNativeChrome(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
-        )
-        assertEquals(
-            SearchNativeChrome.MIUIX,
-            resolveSearchNativeChrome(UiPreset.MD3, AndroidNativeVariant.MIUIX)
-        )
-        assertEquals(
-            SearchNativeChrome.MIUIX,
-            resolveSearchNativeChrome(UiPreset.IOS, AndroidNativeVariant.MATERIAL3)
-        )
-    }
-
-    @Test
-    fun filterSheet_usesMiuixOverlayOnlyOnMiuixVariant() {
-        assertTrue(
-            shouldUseMiuixSearchFilterSheet(UiPreset.MD3, AndroidNativeVariant.MIUIX)
-        )
-        assertFalse(
-            shouldUseMiuixSearchFilterSheet(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
-        )
-        // iOS has no Miuix popup host — must use Material ModalBottomSheet.
-        assertFalse(
-            shouldUseMiuixSearchFilterSheet(UiPreset.IOS, AndroidNativeVariant.MATERIAL3)
-        )
-        assertFalse(
-            shouldUseMiuixSearchFilterSheet(UiPreset.IOS, AndroidNativeVariant.MIUIX)
-        )
-    }
 
     @Test
     fun orderChipLabels_matchPiliPlus() {

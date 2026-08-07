@@ -16,10 +16,9 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-//  Cupertino Icons - iOS SF Symbols 风格图标
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
+//  Material Icons
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -227,7 +226,7 @@ private fun TabletBangumiDetailContent(
                                 if (rating.score > 0) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         AppIcon(
-                                            CupertinoIcons.Default.Star,
+                                            Icons.Outlined.Star,
                                             contentDescription = null,
                                             tint = iOSYellow, // Assuming this is available
                                             modifier = Modifier.size(16.dp)
@@ -279,7 +278,7 @@ private fun TabletBangumiDetailContent(
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             AppIcon(
-                                if (isFollowing) CupertinoIcons.Default.Checkmark else CupertinoIcons.Default.Plus,
+                                if (isFollowing) Icons.Outlined.Check else Icons.Outlined.Add,
                                 contentDescription = null,
                                 modifier = Modifier.size(18.dp)
                             )
@@ -574,7 +573,7 @@ private fun MobileBangumiDetailContent(
                                 if (rating.score > 0) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         AppIcon(
-                                            CupertinoIcons.Default.Star,
+                                            Icons.Outlined.Star,
                                             contentDescription = null,
                                             tint = iOSYellow,
                                             modifier = Modifier.size(16.dp)
@@ -645,7 +644,7 @@ private fun MobileBangumiDetailContent(
                             modifier = Modifier.weight(1f)
                         ) {
                             AppIcon(
-                                CupertinoIcons.Default.Checkmark,
+                                Icons.Outlined.Check,
                                 contentDescription = null,
                                 modifier = Modifier.size(18.dp)
                             )
@@ -664,7 +663,7 @@ private fun MobileBangumiDetailContent(
                             modifier = Modifier.weight(1f)
                         ) {
                             AppIcon(
-                                CupertinoIcons.Default.Plus,
+                                Icons.Outlined.Add,
                                 contentDescription = null,
                                 modifier = Modifier.size(18.dp)
                             )
@@ -816,7 +815,7 @@ private fun MobileBangumiDetailContent(
                                             horizontalAlignment = Alignment.CenterHorizontally
                                         ) {
                                             AppIcon(
-                                                CupertinoIcons.Default.Ellipsis,
+                                                Icons.Outlined.MoreHoriz,
                                                 contentDescription = "更多",
                                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
@@ -1105,7 +1104,7 @@ private fun BangumiFollowStatusDialog(
                             )
                             if (currentStatus == option.status) {
                                 AppIcon(
-                                    CupertinoIcons.Default.Checkmark,
+                                    Icons.Outlined.Check,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                     modifier = Modifier.size(18.dp)
@@ -1249,7 +1248,7 @@ private fun EpisodeSelectionSheet(
                 
                 AppIconButton(onClick = onDismiss) {
                     AppIcon(
-                        CupertinoIcons.Default.Xmark,
+                        Icons.Outlined.Close,
                         contentDescription = "关闭",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )

@@ -39,7 +39,10 @@ fun UpBadgeName(
     trailingSlotMinHeight: Dp = 0.dp,
     showUpBadge: Boolean = true,
     maxLines: Int = 1,
-    overflow: TextOverflow = TextOverflow.Ellipsis
+    overflow: TextOverflow = TextOverflow.Ellipsis,
+    // 名称右侧留白：名称占满可用宽度后，省略号与后续元素之间保留的空隙。
+    // 默认 0 不影响未显式传入的调用方。
+    nameEndPadding: Dp = 0.dp
 ) {
     val shouldShowMeta = !metaText.isNullOrBlank()
     val shouldRenderTrailingSlot = shouldRenderUpBadgeTrailingSlot(
@@ -75,7 +78,10 @@ fun UpBadgeName(
                     style = nameStyle,
                     color = nameColor,
                     maxLines = maxLines,
-                    overflow = overflow
+                    overflow = overflow,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = nameEndPadding)
                 )
                 if (shouldShowMeta) {
                     Text(

@@ -16,10 +16,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-//  Cupertino Icons - iOS SF Symbols 风格图标
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
-import io.github.alexzhirkevich.cupertino.icons.filled.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -466,7 +466,7 @@ fun PlaybackSettingsContent(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 AppIcon(
-                                    CupertinoIcons.Default.ExclamationmarkTriangle,
+                                    Icons.Outlined.Warning,
                                     contentDescription = null,
                                     tint = warningTint,
                                     modifier = Modifier.size(22.dp)
@@ -485,7 +485,7 @@ fun PlaybackSettingsContent(
                                     )
                                 }
                                 AppIcon(
-                                    CupertinoIcons.Default.ChevronForward,
+                                    Icons.AutoMirrored.Outlined.KeyboardArrowRight,
                                     contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                                     modifier = Modifier.size(20.dp)
@@ -560,7 +560,7 @@ fun PlaybackSettingsContent(
                             onValueChange = viewModel::setGestureSensitivity,
                             valueRange = 0.5f..2.0f,
                             steps = 5,
-                            icon = CupertinoIcons.Default.HandTap,
+                            icon = Icons.Outlined.TouchApp,
                             iconTint = warningTint,
                             valueFormatter = { value -> "${(value * 100).toInt()}%" },
                         )
@@ -911,7 +911,7 @@ fun PlaybackSettingsContent(
                             verticalAlignment = Alignment.Top
                         ) {
                             AppIcon(
-                                CupertinoIcons.Default.InfoCircle,
+                                Icons.Outlined.Info,
                                 contentDescription = null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                                 modifier = Modifier.size(18.dp)

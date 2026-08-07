@@ -23,16 +23,10 @@ import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -48,13 +42,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
-import com.android.purebilibili.core.theme.UiPreset
-import com.android.purebilibili.core.theme.AndroidNativeVariant
+import com.android.purebilibili.core.theme.LocalAppUiStyle
+import com.android.purebilibili.core.ui.AppModalBottomSheet
+import com.android.purebilibili.core.ui.BottomSheetHost
+import com.android.purebilibili.core.ui.components.AppFilterChip
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppText
+import com.android.purebilibili.core.ui.components.AppTextButton
+import com.android.purebilibili.core.ui.resolveBottomSheetHost
 import com.android.purebilibili.data.repository.SearchDuration
 import com.android.purebilibili.data.repository.SearchOrder
-import top.yukonga.miuix.kmp.basic.Text as MiuixText
 import top.yukonga.miuix.kmp.overlay.OverlayBottomSheet
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -106,7 +103,7 @@ fun SearchVideoFilterBar(
         ) {
             orderOptions.forEach { order ->
                 val selected = order == currentOrder
-                Text(
+                AppText(
                     text = resolveSearchOrderChipLabel(order),
                     modifier = Modifier
                         .clickable { onOrderChange(order) }
@@ -141,7 +138,7 @@ fun SearchVideoFilterBar(
                 ),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
+            AppIcon(
                 imageVector = Icons.Outlined.FilterList,
                 contentDescription = "筛选",
                 tint = if (filterActive) primary else outline,
@@ -178,27 +175,6 @@ fun SearchVideoFilterBar(
     }
 }
 
-@Composable
-private fun rememberSearchNativeChrome(): SearchNativeChrome {
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    return remember(uiPreset, androidNativeVariant) {
-        resolveSearchNativeChrome(uiPreset, androidNativeVariant)
-    }
-}
-
-/**
- * iOS has no Miuix popup host → OverlayBottomSheet is a no-op click.
- * Only pure Miuix variant uses OverlayBottomSheet; Material3 + iOS use ModalBottomSheet.
- */
-internal fun shouldUseMiuixSearchFilterSheet(
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant
-): Boolean {
-    return uiPreset == UiPreset.MD3 &&
-        androidNativeVariant == AndroidNativeVariant.MIUIX
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SearchVideoFilterSheetHost(
@@ -213,13 +189,11 @@ private fun SearchVideoFilterSheetHost(
     onPubTimeTypeChange: (SearchVideoPubTimeType) -> Unit,
     onCustomPubTimeRange: (Long, Long) -> Unit
 ) {
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    // iOS chrome resolves to MIUIX_BRIDGED for chips, but OverlayBottomSheet needs a
-    // Miuix popup host that iOS never installs — click would appear to do nothing.
-    val useMiuixSheet = remember(uiPreset, androidNativeVariant) {
-        shouldUseMiuixSearchFilterSheet(uiPreset, androidNativeVariant)
-    }
+    // Host contract from stage 3: MIUIX → OverlayBottomSheet (needs the Miuix popup
+    // host mounted by AdaptiveScaffold), MATERIAL3 → Material3 ModalBottomSheet via
+    // the neutral AppModalBottomSheet facade. Never copy the host decision here.
+    val useMiuixSheet = resolveBottomSheetHost(LocalAppUiStyle.current) ==
+        BottomSheetHost.MIUIX_OVERLAY
     val sheetContent: @Composable () -> Unit = {
         SearchVideoFilterSheetContent(
             currentDurations = currentDurations,
@@ -241,10 +215,8 @@ private fun SearchVideoFilterSheetHost(
             content = sheetContent
         )
     } else {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-        ModalBottomSheet(
-            onDismissRequest = onDismiss,
-            sheetState = sheetState
+        AppModalBottomSheet(
+            onDismissRequest = onDismiss
         ) {
             sheetContent()
         }
@@ -264,7 +236,6 @@ private fun SearchVideoFilterSheetContent(
     onPubTimeTypeChange: (SearchVideoPubTimeType) -> Unit,
     onCustomPubTimeRange: (Long, Long) -> Unit
 ) {
-    val chrome = rememberSearchNativeChrome()
     val selectedDuration = resolveSelectedSearchDuration(currentDurations)
     val zoneOptions = remember { resolveSearchVideoZoneOptions() }
     val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd", Locale.CHINA) }
@@ -283,7 +254,7 @@ private fun SearchVideoFilterSheetContent(
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .padding(bottom = 32.dp)
     ) {
-        SearchFilterSectionTitle(text = "发布时间", chrome = chrome)
+        SearchFilterSectionTitle(text = "发布时间")
         Spacer(modifier = Modifier.height(10.dp))
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -315,7 +286,7 @@ private fun SearchVideoFilterSheetContent(
                 modifier = Modifier.weight(1f),
                 center = true
             )
-            Text(
+            AppText(
                 text = "至",
                 fontSize = 13.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -330,7 +301,7 @@ private fun SearchVideoFilterSheetContent(
         }
 
         Spacer(modifier = Modifier.height(20.dp))
-        SearchFilterSectionTitle(text = "内容时长", chrome = chrome)
+        SearchFilterSectionTitle(text = "内容时长")
         Spacer(modifier = Modifier.height(10.dp))
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -346,7 +317,7 @@ private fun SearchVideoFilterSheetContent(
         }
 
         Spacer(modifier = Modifier.height(20.dp))
-        SearchFilterSectionTitle(text = "内容分区", chrome = chrome)
+        SearchFilterSectionTitle(text = "内容分区")
         Spacer(modifier = Modifier.height(10.dp))
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -390,19 +361,12 @@ private fun SearchVideoFilterSheetContent(
 
 @Composable
 private fun SearchFilterSectionTitle(
-    text: String,
-    chrome: SearchNativeChrome
+    text: String
 ) {
-    when (chrome) {
-        SearchNativeChrome.MIUIX -> MiuixText(
-            text = text,
-            style = MaterialTheme.typography.titleMedium.copy(fontSize = 16.sp)
-        )
-        SearchNativeChrome.MATERIAL3 -> Text(
-            text = text,
-            style = MaterialTheme.typography.titleMedium.copy(fontSize = 16.sp)
-        )
-    }
+    AppText(
+        text = text,
+        style = MaterialTheme.typography.titleMedium.copy(fontSize = 16.sp)
+    )
 }
 
 @Composable
@@ -413,12 +377,12 @@ private fun SearchFilterSelectableChip(
     modifier: Modifier = Modifier,
     center: Boolean = false
 ) {
-    FilterChip(
+    AppFilterChip(
         selected = selected,
         onClick = onClick,
         modifier = modifier,
         label = {
-            Text(
+            AppText(
                 text = label,
                 fontSize = 13.sp,
                 maxLines = 1,
@@ -452,18 +416,18 @@ private fun SearchDatePickerDialog(
     DatePickerDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(
+            AppTextButton(
                 onClick = {
-                    val selected = state.selectedDateMillis ?: return@TextButton
+                    val selected = state.selectedDateMillis ?: return@AppTextButton
                     onConfirm(selected)
                 }
             ) {
-                Text("确定")
+                AppText("确定")
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消")
+            AppTextButton(onClick = onDismiss) {
+                AppText("取消")
             }
         }
     ) {

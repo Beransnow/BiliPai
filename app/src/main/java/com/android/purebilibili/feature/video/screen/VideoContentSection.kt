@@ -111,9 +111,6 @@ import com.android.purebilibili.feature.video.viewmodel.CommentSortMode
 import com.android.purebilibili.feature.dynamic.components.ImagePreviewDialog
 import com.android.purebilibili.feature.dynamic.components.ImagePreviewTextContent
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.filled.*
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import com.android.purebilibili.data.model.response.AiSummaryData
 import com.android.purebilibili.feature.video.ui.section.AiSummaryCard
 import com.android.purebilibili.feature.video.ui.section.AiSummaryPromptCard

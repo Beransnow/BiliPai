@@ -67,6 +67,7 @@ class VideoCardTransitionBackgroundPolicyTest {
             shouldUseVideoCardTransitionSnapshotBlur(
                 exposure = VideoCardTransitionExposure.Opening,
                 motionTier = MotionTier.Normal,
+                realtimeBlurEnabled = true,
                 sdkInt = 35,
             )
         )
@@ -74,6 +75,7 @@ class VideoCardTransitionBackgroundPolicyTest {
             shouldUseVideoCardTransitionSnapshotBlur(
                 exposure = VideoCardTransitionExposure.BackPreview,
                 motionTier = MotionTier.Normal,
+                realtimeBlurEnabled = true,
                 sdkInt = 31,
             )
         )
@@ -81,6 +83,7 @@ class VideoCardTransitionBackgroundPolicyTest {
             shouldUseVideoCardTransitionSnapshotBlur(
                 exposure = VideoCardTransitionExposure.Returning,
                 motionTier = MotionTier.Normal,
+                realtimeBlurEnabled = true,
                 sdkInt = 35,
             )
         )

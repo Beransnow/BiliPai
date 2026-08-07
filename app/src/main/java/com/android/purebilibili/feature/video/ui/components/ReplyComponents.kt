@@ -22,9 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
-//  Cupertino Icons - iOS SF Symbols 风格图标
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Reply
 import androidx.compose.material.icons.filled.MoreVert
@@ -1548,7 +1546,7 @@ fun ReplyItemView(
                     if (onDeleteClick != null) {
                         Spacer(modifier = Modifier.width(16.dp))
                         AppIcon(
-                            imageVector = CupertinoIcons.Default.Trash,
+                            imageVector = Icons.Outlined.Delete,
                             contentDescription = "Delete",
                             tint = appearance.actionTint,
                             modifier = Modifier

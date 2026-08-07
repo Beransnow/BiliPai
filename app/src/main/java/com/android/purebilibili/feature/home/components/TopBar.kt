@@ -26,6 +26,8 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.LiveTv
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.SmartToy
 import androidx.compose.material.icons.outlined.SportsEsports
 import androidx.compose.material.icons.outlined.Tv
@@ -53,9 +55,6 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.isSystemInDarkTheme
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.filled.*
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.*
@@ -121,9 +120,6 @@ import top.yukonga.miuix.kmp.blur.blur as miuixBlur
 import top.yukonga.miuix.kmp.blur.drawBackdrop as miuixDrawBackdrop
 import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
-import top.yukonga.miuix.kmp.icon.MiuixIcons
-import top.yukonga.miuix.kmp.icon.extended.Search
-import top.yukonga.miuix.kmp.icon.extended.Settings
 import dev.chrisbanes.haze.HazeState
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -472,7 +468,7 @@ internal fun resolveTopTabIconFamily(
     return when {
         // MD3 官方推荐样式统一使用 Material 官方字形
         iconStyle == AppIconStyle.MD3_STANDARD -> AppSemanticIconFamily.MATERIAL
-        useBottomBarMatchedChrome -> AppSemanticIconFamily.CUPERTINO
+        useBottomBarMatchedChrome -> AppSemanticIconFamily.MATERIAL
         else -> chromeIconFamily
     }
 }
@@ -491,7 +487,7 @@ private fun resolveTopTabCategoryForIcon(categoryKey: String): HomeCategory? {
 
 internal fun resolveTopTabCategoryIcon(
     categoryKey: String,
-    iconFamily: AppSemanticIconFamily = AppSemanticIconFamily.CUPERTINO,
+    iconFamily: AppSemanticIconFamily = AppSemanticIconFamily.MATERIAL,
     selected: Boolean = false
 ): ImageVector {
     val category = resolveTopTabCategoryForIcon(categoryKey)
@@ -511,25 +507,6 @@ internal fun resolveTopTabCategoryIcon(
             HomeCategory.TECH -> if (selected) Icons.Filled.SmartToy else Icons.Outlined.SmartToy
             else -> Icons.AutoMirrored.Outlined.MenuOpen
         }
-        AppSemanticIconFamily.CUPERTINO -> when (category) {
-            HomeCategory.RECOMMEND -> if (selected) CupertinoIcons.Filled.House else CupertinoIcons.Outlined.House
-            HomeCategory.FOLLOW -> if (selected) {
-                CupertinoIcons.Filled.PersonCropCircleBadgePlus
-            } else {
-                CupertinoIcons.Outlined.PersonCropCircleBadgePlus
-            }
-            HomeCategory.POPULAR -> if (selected) CupertinoIcons.Filled.ChartBar else CupertinoIcons.Outlined.ChartBar
-            HomeCategory.LIVE -> if (selected) CupertinoIcons.Filled.Video else CupertinoIcons.Outlined.Video
-            HomeCategory.ANIME -> if (selected) CupertinoIcons.Filled.Tv else CupertinoIcons.Outlined.Tv
-            HomeCategory.GAME -> if (selected) {
-                CupertinoIcons.Filled.Gamecontroller
-            } else {
-                CupertinoIcons.Outlined.Gamecontroller
-            }
-            HomeCategory.KNOWLEDGE -> if (selected) CupertinoIcons.Filled.Lightbulb else CupertinoIcons.Outlined.Lightbulb
-            HomeCategory.TECH -> if (selected) CupertinoIcons.Filled.Cpu else CupertinoIcons.Outlined.Cpu
-            else -> CupertinoIcons.Outlined.ListBullet
-        }
     }
 }
 
@@ -537,7 +514,7 @@ internal fun resolveTopTabPartitionIcon(iconFamily: AppSemanticIconFamily): Imag
     return if (iconFamily == AppSemanticIconFamily.MATERIAL) {
         Icons.AutoMirrored.Outlined.MenuOpen
     } else {
-        CupertinoIcons.Default.ListBullet
+        Icons.AutoMirrored.Outlined.MenuOpen
     }
 }
 
@@ -628,7 +605,11 @@ internal fun resolveIosTopTabRowHeight(
 ): Dp {
     @Suppress("UNUSED_PARAMETER")
     val ignoredLabelMode = labelMode
-    return if (isFloatingStyle) 40.dp else 36.dp
+    return if (isFloatingStyle) {
+        AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Small
+    } else {
+        AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall
+    }
 }
 
 internal fun resolveIosTopTabActionButtonSize(isFloatingStyle: Boolean): Dp =
@@ -757,7 +738,7 @@ fun FluidHomeTopBar(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         AppIcon(
-                            MiuixIcons.Search,
+                            Icons.Outlined.Search,
                             null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.5f),
                             modifier = Modifier.size(AppSpacingTokens.Large + AppSpacingTokens.Micro)
@@ -781,7 +762,7 @@ fun FluidHomeTopBar(
                     modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
                 ) {
                     AppIcon(
-                        MiuixIcons.Settings,
+                        Icons.Outlined.Settings,
                         contentDescription = "设置",
                         tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
                         modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro)
@@ -905,6 +886,12 @@ private fun LightweightHomeTopTabs(
     hasOuterChromeSurface: Boolean = false,
     /** When non-null, overrides [shouldWrapTopTabDockWidth] so shell and tabs share one decision. */
     wrapDockWidth: Boolean? = null,
+    /**
+     * Cap on the dock width (top controls' combined width) so the tab strip never
+     * extends beyond the avatar / settings alignment. [Float.POSITIVE_INFINITY] keeps
+     * legacy full-bleed docks.
+     */
+    maxDockWidthDp: Float = Float.POSITIVE_INFINITY,
     isTransitionRunning: Boolean = false,
     showPartitionAction: Boolean = true,
     isViewportSyncEnabled: Boolean = true,
@@ -1079,15 +1066,17 @@ private fun LightweightHomeTopTabs(
             hasOuterChromeSurface = hasOuterChromeSurface,
             edgeToEdge = edgeToEdge
         )
+        // 分栏 dock 最大宽度 = 顶部三控件合计宽度（左右对齐约束），与外壳共享同一上限。
+        val effectiveMaxDockWidth = minOf(maxWidth.value, maxDockWidthDp)
         val fillItemWidthDp = when (effectivePresentation) {
             AppTopTabPresentation.MOVING_CAPSULE -> resolveIosTopTabItemWidthDp(
-                containerWidthDp = maxWidth.value,
+                containerWidthDp = effectiveMaxDockWidth,
                 categoryCount = categories.size,
                 labelMode = normalizedLabelMode
             )
             AppTopTabPresentation.MATERIAL_UNDERLINE,
             AppTopTabPresentation.TONAL_CAPSULE -> resolveMd3TopTabItemWidthDp(
-                containerWidthDp = maxWidth.value,
+                containerWidthDp = effectiveMaxDockWidth,
                 visibleSlots = resolveMd3TopTabLayoutVisibleSlots(
                     categoryCount = categories.size,
                     labelMode = normalizedLabelMode,
@@ -1098,7 +1087,7 @@ private fun LightweightHomeTopTabs(
             )
         }
         val itemWidthDp = resolveTopTabDockItemWidthDp(
-            maxWidthDp = maxWidth.value,
+            maxWidthDp = effectiveMaxDockWidth,
             categoryCount = categories.size,
             labelMode = normalizedLabelMode,
             isFloatingStyle = isFloatingStyle,
@@ -1111,10 +1100,10 @@ private fun LightweightHomeTopTabs(
             resolveTopTabDockWrapWidthDp(
                 itemWidthDp = itemWidthDp,
                 categoryCount = categories.size,
-                maxWidthDp = maxWidth.value
+                maxWidthDp = effectiveMaxDockWidth
             )
         } else {
-            maxWidth.value
+            effectiveMaxDockWidth
         }
         // Match the bottom bar's actual app-surface luminance. The system theme can differ
         // from the active app theme and previously produced a dark gray capture on light pages.
@@ -1239,15 +1228,6 @@ private fun LightweightHomeTopTabs(
             dragScaleProgress = topTabIndicatorDragScaleProgress,
             pressProgress = topTabPressProgress
         )
-        // Match home bottom bar: velocity stretch from items/sec only (no dragState.scale compound).
-        val topTabIndicatorLayerTransform = resolveBottomBarIndicatorLayerTransform(
-            motionProgress = topTabPressProgress,
-            velocityItemsPerSecond = topTabIndicatorLayerVelocityItemsPerSecond,
-            isDragging = topTabShouldStretchIndicator,
-            dragScaleProgress = topTabIndicatorLayerScaleProgress,
-            dragScaleTransform = null,
-            motionSpec = topTabDragMotionSpec
-        )
         val topTabRefractionMotionProfile = resolveBottomBarRefractionMotionProfile(
             position = topTabIndicatorPosition,
             velocity = topTabMotionVelocityPxPerSecond,
@@ -1285,19 +1265,6 @@ private fun LightweightHomeTopTabs(
         val topTabIndicatorLensSpec = resolveBottomBarBackdropPresetIndicatorLens(
             progress = topTabLensProgress
         )
-        val md3IndicatorTranslationXPx by remember(topTabIndicatorPosition, itemWidth, md3IndicatorWidth, density, listState) {
-            derivedStateOf {
-                with(density) {
-                    resolveMd3TopTabIndicatorTranslationPx(
-                        absolutePagerPosition = topTabIndicatorPosition,
-                        itemWidthPx = itemWidth.toPx(),
-                        rowScrollOffsetPx = rowScrollOffsetPx,
-                        indicatorWidthPx = md3IndicatorWidth.toPx(),
-                        contentPaddingPx = md3ContentPadding.toPx()
-                    )
-                }
-            }
-        }
         val md3LiquidCapsuleWidth = resolveTopTabDockIndicatorWidthDp(
             itemWidthDp = itemWidth.value,
             horizontalGapDp = dockIndicatorHorizontalGap.value,
@@ -1306,11 +1273,14 @@ private fun LightweightHomeTopTabs(
         val dockIndicatorHeight = resolveTopTabDockIndicatorHeightDp(
             rowHeightDp = rowHeight.value,
             verticalGapDp = dockIndicatorVerticalGap.value,
-            // Prefer near-full dock fill at rest (bottom-bar like); drag scale overflows.
+            // Prefer near-full dock fill at rest; the selected-tab pill keeps the same
+            // breathing gap above and below so it never bleeds past the tab row.
             minHeightDp = resolveTopTabVisualTuning().floatingIndicatorHeightDp,
             indicatorWidthDp = md3LiquidCapsuleWidth.value
         ).dp
-        val md3LiquidCapsuleTranslationXPx by remember(
+        // Selected-tab pill position: item slot center minus half the pill width, so the
+        // capsule follows the pager offset and the row scroll while staying inside the dock.
+        val md3IndicatorTranslationXPx by remember(
             topTabIndicatorPosition,
             itemWidth,
             md3LiquidCapsuleWidth,
@@ -1335,12 +1305,15 @@ private fun LightweightHomeTopTabs(
         val shouldUseLiquidGlassIndicator = isLiquidGlassEnabled &&
             !skinPlainStyle &&
             !hasSkinStickerIcons
-        val shouldRenderTopTabLiquidGlassIndicator = shouldUseLiquidGlassIndicator &&
-            !hasOuterChromeSurface
+        // 移动胶囊本体与玻璃状态解耦：MATERIAL_UNDERLINE 始终渲染底栏同款胶囊，
+        // 液态玻璃只切换胶囊材质（glassEnabled），玻璃关闭时回退纯色胶囊，两主题渲染恒定。
         val shouldUseMd3LiquidCapsule = effectivePresentation == AppTopTabPresentation.MATERIAL_UNDERLINE &&
-            shouldRenderTopTabLiquidGlassIndicator
+            !skinPlainStyle &&
+            !hasSkinStickerIcons &&
+            !hasOuterChromeSurface
         val shouldUseMd3DockBackedCapsule = effectivePresentation == AppTopTabPresentation.MATERIAL_UNDERLINE &&
-            shouldUseLiquidGlassIndicator &&
+            !skinPlainStyle &&
+            !hasSkinStickerIcons &&
             hasOuterChromeSurface
         val shouldPrimeTopTabLiquidGlassCapture =
             isLiquidGlassEnabled &&
@@ -1463,10 +1436,11 @@ private fun LightweightHomeTopTabs(
             modifier = Modifier
                 .then(
                     if (wrapDock) {
+                        // 与搜索行左对齐（头像左缘），宽度封顶于设置按钮右缘。
                         Modifier
                             .width(dockContentWidthDp.dp)
                             .fillMaxHeight()
-                            .align(Alignment.Center)
+                            .align(Alignment.CenterStart)
                     } else {
                         Modifier.fillMaxSize()
                     }
@@ -1782,7 +1756,7 @@ private fun LightweightHomeTopTabs(
                         BottomBarMatchedLiquidIndicator(
                             visible = true,
                             dockContentAlpha = 1f,
-                            indicatorTranslationXPx = md3LiquidCapsuleTranslationXPx,
+                            indicatorTranslationXPx = md3IndicatorTranslationXPx,
                             indicatorPanelOffsetPx = 0f,
                             indicatorWidth = md3LiquidCapsuleWidth,
                             indicatorHeight = dockIndicatorHeight,
@@ -1796,7 +1770,7 @@ private fun LightweightHomeTopTabs(
                             indicatorLensSpec = topTabIndicatorLensSpec,
                             effectivePressProgress = topTabLensProgress,
                             indicatorIdleSurfaceColor = topTabIndicatorIdleSurfaceColor,
-                            glassEnabled = true,
+                            glassEnabled = shouldUseLiquidGlassIndicator,
                             motionProgress = topTabMotionProgress,
                             velocityItemsPerSecond = topTabIndicatorLayerVelocityItemsPerSecond,
                             isDragging = topTabShouldStretchIndicator,
@@ -1810,7 +1784,7 @@ private fun LightweightHomeTopTabs(
                         BottomBarMatchedLiquidIndicator(
                             visible = true,
                             dockContentAlpha = 1f,
-                            indicatorTranslationXPx = md3LiquidCapsuleTranslationXPx,
+                            indicatorTranslationXPx = md3IndicatorTranslationXPx,
                             indicatorPanelOffsetPx = 0f,
                             indicatorWidth = md3LiquidCapsuleWidth,
                             indicatorHeight = dockIndicatorHeight,
@@ -1824,7 +1798,7 @@ private fun LightweightHomeTopTabs(
                             indicatorLensSpec = topTabIndicatorLensSpec,
                             effectivePressProgress = topTabLensProgress,
                             indicatorIdleSurfaceColor = topTabIndicatorIdleSurfaceColor,
-                            glassEnabled = true,
+                            glassEnabled = shouldUseLiquidGlassIndicator,
                             motionProgress = topTabMotionProgress,
                             velocityItemsPerSecond = topTabIndicatorLayerVelocityItemsPerSecond,
                             isDragging = topTabShouldStretchIndicator,
@@ -1836,25 +1810,28 @@ private fun LightweightHomeTopTabs(
                 }
                 } // shared panel-offset group (export + visible + capsule)
 
-                if (effectivePresentation == AppTopTabPresentation.MATERIAL_UNDERLINE && !hasSkinStickerIcons) {
-                    val indicatorColor = if (skinPlainStyle && skinPlainContentColor != null) {
+                // 纯色 wash 胶囊仅在 skin 主题下兜底（skin 不走移动胶囊路径）；
+                // 常规主题始终由移动胶囊负责，玻璃只切换胶囊材质。
+                if (effectivePresentation == AppTopTabPresentation.MATERIAL_UNDERLINE && !hasSkinStickerIcons && skinPlainStyle) {
+                    val indicatorColor = if (skinPlainContentColor != null) {
                         resolveHomeSkinTopTabIndicatorColor(skinPlainContentColor)
                     } else {
                         MaterialTheme.colorScheme.primary
                     }
                     if (!shouldUseMd3DockBackedCapsule && !shouldUseMd3LiquidCapsule) {
-                        // A soft rounded rectangle makes the selected tab clear without the harsh underline.
+                        // Selected-tab capsule: fully rounded (max corner radius) and sized to
+                        // the dock track minus breathing gap, so it never bleeds above or below
+                        // the tab row. No drag scale is applied here — only the liquid-glass
+                        // capsule paths may overflow the dock chrome.
                         Box(
                             modifier = Modifier
                                 .align(Alignment.CenterStart)
                                 .graphicsLayer {
-                                    translationX = md3LiquidCapsuleTranslationXPx
-                                    scaleX = topTabIndicatorLayerTransform.scaleX
-                                    scaleY = topTabIndicatorLayerTransform.scaleY
+                                    translationX = md3IndicatorTranslationXPx
                                 }
                                 .width(md3LiquidCapsuleWidth)
                                 .height(dockIndicatorHeight)
-                                .clip(RoundedCornerShape(CompactTopTabIndicatorCornerDp.dp))
+                                .clip(RoundedCornerShape(percent = 50))
                                 .background(indicatorColor.copy(alpha = 0.12f))
                         )
                     }
@@ -2009,7 +1986,8 @@ private fun LightweightTopTabItem(
         skinPlainStyle -> androidx.compose.ui.graphics.RectangleShape
         presentation == AppTopTabPresentation.MOVING_CAPSULE -> resolveSharedBottomBarCapsuleShape()
         presentation == AppTopTabPresentation.MATERIAL_UNDERLINE -> androidx.compose.ui.graphics.RectangleShape
-        else -> RoundedCornerShape(CompactTopTabIndicatorCornerDp.dp)
+        // Tonal capsule uses the same fully rounded pill as the plain selected-tab indicator.
+        else -> RoundedCornerShape(percent = 50)
     }
     // Compact dock: keep side padding small so 5–6 tabs do not collapse to "...".
     val itemContentHorizontalPadding = AppSpacingTokens.ExtraSmall
@@ -2162,6 +2140,8 @@ fun CategoryTabRow(
     hasOuterChromeSurface: Boolean = false,
     /** Shared with [HomeTopTabChrome.wrapDockWidth] so glass shell and tabs stay the same length. */
     wrapDockWidth: Boolean? = null,
+    /** Cap on the dock width (top controls' combined width) so tabs stay left-right aligned. */
+    maxDockWidthDp: Float = Float.POSITIVE_INFINITY,
     interactionBudget: HomeInteractionMotionBudget = HomeInteractionMotionBudget.FULL,
     motionTier: MotionTier = MotionTier.Normal,
     isTransitionRunning: Boolean = false,
@@ -2203,6 +2183,7 @@ fun CategoryTabRow(
         partitionSkinIconPath = partitionSkinIconPath,
         hasOuterChromeSurface = hasOuterChromeSurface,
         wrapDockWidth = wrapDockWidth,
+        maxDockWidthDp = maxDockWidthDp,
         isTransitionRunning = isTransitionRunning,
         showPartitionAction = showPartitionAction,
         isViewportSyncEnabled = isViewportSyncEnabled,

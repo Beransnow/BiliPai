@@ -44,8 +44,7 @@ import com.android.purebilibili.core.ui.transition.normalizeVideoSharedTransitio
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.feature.home.components.LiquidGlassTuning
 import com.android.purebilibili.feature.home.components.resolveLiquidGlassTuning
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
+import androidx.compose.material.icons.outlined.*
 import com.android.purebilibili.core.ui.components.*
 import com.android.purebilibili.core.ui.animation.EntranceGroup
 import com.android.purebilibili.core.ui.animation.entrance
@@ -247,7 +246,7 @@ fun AnimationSettingsContent(
                         )
                         AppPreferenceDivider()
                         AppSwitchPreference(
-                            icon = rememberSettingsSemanticIcon(SettingsIconRole.CARD_TRANSITION_ANIMATION),
+                            icon = rememberSettingsSemanticIcon(SettingsIconRole.LIVE_SURFACE_TRANSITION),
                             title = "实时画面转场",
                             subtitle = "进出详情用播放器当前画面做双向变形；HDR/杜比仍走高质量输出，不降画质",
                             checked = liveSurfaceCardTransitionEnabled,
@@ -445,7 +444,7 @@ fun AnimationSettingsContent(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             AppIcon(
-                                CupertinoIcons.Default.Lightbulb,
+                                Icons.Outlined.Lightbulb,
                                 contentDescription = null,
                                 tint = warningTint,
                                 modifier = Modifier.size(20.dp)

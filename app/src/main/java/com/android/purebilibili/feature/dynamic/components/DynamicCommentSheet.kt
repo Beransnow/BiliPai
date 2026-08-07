@@ -572,7 +572,7 @@ private fun CommentItem(
     val decorationEndReserve = if (fanGroupVisual != null) {
         resolveReplyItemLayoutPolicy().decorationMinWidthDp.dp
     } else {
-        0.dp
+        AppSpacingTokens.None
     }
 
     Box(modifier = modifier.fillMaxWidth()) {
@@ -760,7 +760,7 @@ private fun CommentItem(
                 visual = fanGroupVisual,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(top = 0.dp)
+                    .padding(top = AppSpacingTokens.None)
             )
         }
     }

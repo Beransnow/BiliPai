@@ -65,9 +65,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.outlined.Paintpalette
-import io.github.alexzhirkevich.cupertino.icons.outlined.Xmark
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.Close
 import kotlinx.coroutines.delay
 
 @Composable
@@ -284,7 +284,7 @@ fun LandscapeDanmakuComposer(
                         modifier = Modifier.size(40.dp)
                     ) {
                         AppIcon(
-                            imageVector = CupertinoIcons.Outlined.Xmark,
+                            imageVector = Icons.Outlined.Close,
                             contentDescription = "关闭",
                             tint = Color.White.copy(alpha = 0.82f),
                             modifier = Modifier.size(18.dp)
@@ -350,7 +350,7 @@ fun LandscapeDanmakuComposer(
                         modifier = Modifier.size(48.dp)
                     ) {
                         AppIcon(
-                            imageVector = CupertinoIcons.Outlined.Paintpalette,
+                            imageVector = Icons.Outlined.Palette,
                             contentDescription = "弹幕样式",
                             tint = if (showStylePanel) {
                                 MaterialTheme.colorScheme.primary

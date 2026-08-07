@@ -37,7 +37,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-//  Cupertino Icons - iOS SF Symbols 风格图标
+//  Material Icons
 import androidx.compose.material3.*
 import com.android.purebilibili.core.ui.components.AppFilledIconButton
 import com.android.purebilibili.core.ui.components.AppIconButton

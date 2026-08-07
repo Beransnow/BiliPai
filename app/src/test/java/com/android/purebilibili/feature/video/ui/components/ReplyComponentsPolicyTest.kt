@@ -924,6 +924,7 @@ class ReplyComponentsPolicyTest {
         val source = File(
             "src/main/java/com/android/purebilibili/feature/video/ui/components/ReplyComponents.kt"
         ).readText()
+            .replace("\r\n", "\n")
         val avatarSource = source
             .substringAfter("@Composable\ninternal fun ReplyMemberAvatar(")
             .substringBefore("@Composable\ninternal fun FanGroupDecorationBadge(")
@@ -972,6 +973,7 @@ class ReplyComponentsPolicyTest {
     fun `fan group decoration image fits complete official transparent asset`() {
         val source = File("src/main/java/com/android/purebilibili/feature/video/ui/components/ReplyComponents.kt")
             .readText()
+            .replace("\r\n", "\n")
         val decorationSource = source
             .substringAfter("@Composable\ninternal fun FanGroupDecorationBadge(")
             .substringBefore("@Composable\nprivate fun PiliPlusGarbCardDecoration(")

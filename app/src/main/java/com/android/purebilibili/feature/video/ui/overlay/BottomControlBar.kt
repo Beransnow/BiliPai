@@ -29,13 +29,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-//  Cupertino Icons
-import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
-import io.github.alexzhirkevich.cupertino.icons.filled.*
-import io.github.alexzhirkevich.cupertino.icons.outlined.*
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
-import androidx.compose.material3.*
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,6 +51,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppSlider
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppSwitch
 import com.android.purebilibili.core.util.FormatUtils
@@ -742,7 +742,7 @@ fun BottomControlBar(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     AppIcon(
-                        imageVector = if (danmakuEnabled) CupertinoIcons.Filled.TextBubble else CupertinoIcons.Outlined.TextBubble,
+                        imageVector = if (danmakuEnabled) Icons.Filled.ChatBubble else Icons.Outlined.ChatBubbleOutline,
                         contentDescription = if (danmakuEnabled) "关闭弹幕" else "开启弹幕",
                         tint = if (danmakuEnabled) danmakuActiveColor else danmakuInactiveColor,
                         modifier = Modifier.size(layoutPolicy.danmakuIconSizeDp.dp)
@@ -798,7 +798,7 @@ fun BottomControlBar(
                                 .size(layoutPolicy.danmakuSettingButtonSizeDp.dp)
                         ) {
                             AppIcon(
-                                imageVector = CupertinoIcons.Default.Gearshape,
+                                imageVector = Icons.Outlined.Settings,
                                 contentDescription = "弹幕显示设置",
                                 tint = Color.White.copy(alpha = 0.8f),
                                 modifier = Modifier.size(layoutPolicy.danmakuSettingIconSizeDp.dp)
@@ -841,7 +841,7 @@ fun BottomControlBar(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Text(
+                    AppText(
                         text = currentAudioQualityLabel.ifBlank { "音质" },
                         color = Color.White,
                         fontSize = layoutPolicy.actionTextFontSp.sp,
@@ -960,7 +960,7 @@ fun BottomControlBar(
                     contentAlignment = Alignment.Center
                 ) {
                     AppIcon(
-                        imageVector = if (isFullscreen) CupertinoIcons.Default.ArrowDownRightAndArrowUpLeft else CupertinoIcons.Default.ArrowUpLeftAndArrowDownRight,
+                        imageVector = if (isFullscreen) Icons.Outlined.Fullscreen else Icons.Outlined.FullscreenExit,
                         contentDescription = if (isFullscreen) "退出横屏" else "横屏",
                         tint = Color.White,
                         modifier = Modifier.size(layoutPolicy.fullscreenIconSizeDp.dp)
@@ -1418,7 +1418,7 @@ private fun VideoEnhancementSettingsPanel(
                         fontWeight = FontWeight.SemiBold
                     )
                 }
-                Slider(
+                AppSlider(
                     value = fsrSharpness.coerceIn(0f, 1f),
                     onValueChange = onFsrSharpnessChange,
                     valueRange = 0f..1f,
@@ -1686,7 +1686,7 @@ fun VideoProgressBar(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             AppIcon(
-                                CupertinoIcons.Default.ListBullet,
+                                Icons.Outlined.ViewList,
                                 contentDescription = "Chapter",
                                 tint = Color.White.copy(alpha = 0.8f),
                                 modifier = Modifier.size(layoutPolicy.chapterIconSizeDp.dp)
