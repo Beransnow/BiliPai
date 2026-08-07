@@ -1418,7 +1418,6 @@ object SettingsManager {
             ),
             androidNativeLiquidGlassEnabled =
                 preferences[KEY_ANDROID_NATIVE_LIQUID_GLASS_ENABLED]
-                    ?: preferences[KEY_LEGACY_ANDROID_NATIVE_TOP_TAB_LIQUID_GLASS_ENABLED]
                     ?: false,
             liquidGlassStyle = FIXED_LIQUID_GLASS_STYLE,
             liquidGlassMode = FIXED_LIQUID_GLASS_MODE,
@@ -3416,7 +3415,6 @@ object SettingsManager {
         context.settingsDataStore.data
             .map { preferences ->
                 preferences[KEY_ANDROID_NATIVE_LIQUID_GLASS_ENABLED]
-                    ?: preferences[KEY_LEGACY_ANDROID_NATIVE_TOP_TAB_LIQUID_GLASS_ENABLED]
                     ?: false
             }
 

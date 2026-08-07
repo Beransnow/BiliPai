@@ -1516,6 +1516,18 @@ fun AppearanceSettingsContent(
 
                         AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
                         AppSwitchPreference(
+                            icon = rememberSettingsSemanticIcon(SettingsIconRole.HEADER_COLLAPSE),
+                            title = "下滑自动隐藏顶部栏",
+                            subtitle = "首页下滑时自动隐藏顶部栏,回顶时重新显示",
+                            checked = state.isHeaderCollapseEnabled,
+                            onCheckedChange = { value ->
+                                viewModel.toggleHeaderCollapse(value)
+                            },
+                            iconTint = com.android.purebilibili.core.theme.iOSTeal
+                        )
+
+                        AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
+                        AppSwitchPreference(
                             icon = rememberSettingsSemanticIcon(SettingsIconRole.HOME_UP_BADGES),
                             title = "UP主标识",
                             subtitle = if (homeUpBadgesVisible) {

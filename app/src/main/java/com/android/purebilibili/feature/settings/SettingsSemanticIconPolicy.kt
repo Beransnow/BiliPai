@@ -82,6 +82,7 @@ internal enum class SettingsIconRole {
     HOME_SEARCH_GLASS,
     BOTTOM_BAR_GLASS,
     TOP_BAR_BLUR,
+    HEADER_COLLAPSE,
     BOTTOM_BAR_BLUR,
     FLOATING_BOTTOM_BAR,
     HARDWARE_DECODER,
@@ -260,6 +261,7 @@ private fun resolveMd3SettingsSemanticIcon(role: SettingsIconRole): ImageVector 
     SettingsIconRole.HOME_SEARCH_GLASS -> Icons.AutoMirrored.Outlined.ManageSearch
     SettingsIconRole.BOTTOM_BAR_GLASS -> Icons.Outlined.BlurCircular
     SettingsIconRole.TOP_BAR_BLUR -> Icons.Outlined.ViewHeadline
+    SettingsIconRole.HEADER_COLLAPSE -> Icons.Outlined.KeyboardArrowUp
     SettingsIconRole.BOTTOM_BAR_BLUR -> Icons.Outlined.BlurLinear
     SettingsIconRole.FLOATING_BOTTOM_BAR -> Icons.Outlined.ViewAgenda
     SettingsIconRole.HARDWARE_DECODER -> Icons.Outlined.Memory
