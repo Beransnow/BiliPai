@@ -5,7 +5,6 @@ import com.android.purebilibili.core.theme.AppUiStyle
 /**
  * Visual recipe for indeterminate loading chrome across UI presets.
  *
- * - [IOS_CUTE_PERSON]: existing Cupertino mascot bounce (iOS preset, unchanged).
  * - [MATERIAL3_LOADING_INDICATOR]: official M3 morphing [androidx.compose.material3.LoadingIndicator]
  *   with [ColorScheme.primary] (dynamic color when enabled).
  * - [MATERIAL3_CIRCULAR]: official M3 [androidx.compose.material3.CircularProgressIndicator]
@@ -16,7 +15,6 @@ import com.android.purebilibili.core.theme.AppUiStyle
  *   for compact / inline slots.
  */
 enum class AdaptiveLoadingVisual {
-    IOS_CUTE_PERSON,
     MATERIAL3_LOADING_INDICATOR,
     MATERIAL3_CIRCULAR,
     MIUIX_INFINITE,
@@ -46,7 +44,6 @@ fun resolveAdaptiveLoadingVisual(
     renderer: PresetPrimitiveRenderer,
     density: AdaptiveLoadingDensity = AdaptiveLoadingDensity.PAGE,
 ): AdaptiveLoadingVisual = when (renderer) {
-    PresetPrimitiveRenderer.IOS -> AdaptiveLoadingVisual.IOS_CUTE_PERSON
     PresetPrimitiveRenderer.MATERIAL3 -> when (density) {
         AdaptiveLoadingDensity.PAGE -> AdaptiveLoadingVisual.MATERIAL3_LOADING_INDICATOR
         AdaptiveLoadingDensity.COMPACT -> AdaptiveLoadingVisual.MATERIAL3_CIRCULAR

@@ -31,8 +31,6 @@ data class AppPullRefreshProfile(
 fun resolveAppPullRefreshProfile(
     renderer: PresetPrimitiveRenderer,
 ): AppPullRefreshProfile = when (renderer) {
-    // 单向迁移：历史 iOS 在运行时解析为默认主题 MIUIX 视觉。
-    PresetPrimitiveRenderer.IOS,
     PresetPrimitiveRenderer.MIUIX_BRIDGED -> AppPullRefreshProfile(
         AppPullRefreshMotionStyle.PLATFORM,
         AppPullRefreshIndicatorStyle.MIUIX_NATIVE,
@@ -68,7 +66,6 @@ fun AppPullRefreshLoadingIndicator(
             modifier = modifier,
         )
 
-        PresetPrimitiveRenderer.IOS,
         PresetPrimitiveRenderer.MIUIX_BRIDGED -> AppPullRefreshLoadingIndicator(
             modifier = modifier,
         )
@@ -81,8 +78,6 @@ fun AppPullRefreshLoadingIndicator(
     color: Color = AppSurfaceTokens.primary(),
 ) {
     when (rememberPresetPrimitiveRenderer()) {
-        // 单向迁移：历史 iOS 在运行时解析为默认主题 MIUIX 加载指示器。
-        PresetPrimitiveRenderer.IOS,
         PresetPrimitiveRenderer.MIUIX_BRIDGED -> AdaptiveLoadingIndicator(
             modifier = modifier,
             size = AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro,

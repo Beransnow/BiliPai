@@ -587,16 +587,16 @@ class BottomBarMiuixStructureTest {
     }
 
     @Test
-    fun `ios floating bottom bar also routes to sukisu renderer`() {
+    fun `miuix floating bottom bar also routes to sukisu renderer`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/BottomBar.kt")
-        val iosRendererSource = source
-            .substringAfter("fun FrostedBottomBar(")
-            .substringBefore("@Composable\nprivate fun MaterialBottomBar(")
+        val miuixRendererSource = source
+            .substringAfter("fun MiuixBottomBar(")
+            .substringBefore("@Composable\nprivate fun KernelSuAlignedBottomBar(")
 
-        assertTrue(iosRendererSource.contains("KernelSuAlignedBottomBar("))
-        assertTrue(iosRendererSource.contains("iconStyle = SharedFloatingBottomBarIconStyle.CUPERTINO"))
-        assertTrue(iosRendererSource.contains("if (isFloating) {"))
-        assertFalse(iosRendererSource.contains("if (isFloating && homeSettings.isBottomBarLiquidGlassEnabled)"))
+        assertTrue(miuixRendererSource.contains("KernelSuAlignedBottomBar("))
+        assertTrue(miuixRendererSource.contains("iconStyle = SharedFloatingBottomBarIconStyle.CUPERTINO"))
+        assertTrue(miuixRendererSource.contains("if (isFloating) {"))
+        assertFalse(miuixRendererSource.contains("if (isFloating && homeSettings.isBottomBarLiquidGlassEnabled)"))
     }
 
     @Test

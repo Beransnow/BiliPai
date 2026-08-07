@@ -1,35 +1,29 @@
 package com.android.purebilibili.core.ui
 
-import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.AppUiStyle
-import com.android.purebilibili.core.theme.UiPreset
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * Asserts every shared iOS* primitive exposes a preset-aware renderer decision
- * so feature screens get the right look on iOS / MD3 / Miuix without primitive
+ * Asserts every shared adaptive primitive exposes a preset-aware renderer decision
+ * so feature screens get the right look on MIUIX / MD3 without primitive
  * call sites changing. Compose UI tests would assert actual rendered nodes;
  * here we assert the policy layer that drives the dispatch.
  */
 class PrimitivePresetCoverageTest {
 
     @Test
-    fun unifiedRenderer_matches_uiPresetMatrix() {
-        // 两值模型：历史 iOS 输入在运行时解析为 MIUIX 渲染器。
+    fun unifiedRenderer_matches_uiStyleMatrix() {
+        // 两值模型：MIUIX → MIUIX_BRIDGED、MATERIAL3 → MATERIAL3。
         assertEquals(
             PresetPrimitiveRenderer.MIUIX_BRIDGED,
-            resolvePresetPrimitiveRenderer(UiPreset.IOS, AndroidNativeVariant.MATERIAL3)
+            resolvePresetPrimitiveRenderer(AppUiStyle.MIUIX)
         )
         assertEquals(
             PresetPrimitiveRenderer.MATERIAL3,
-            resolvePresetPrimitiveRenderer(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
-        )
-        assertEquals(
-            PresetPrimitiveRenderer.MIUIX_BRIDGED,
-            resolvePresetPrimitiveRenderer(UiPreset.MD3, AndroidNativeVariant.MIUIX)
+            resolvePresetPrimitiveRenderer(AppUiStyle.MATERIAL3)
         )
     }
 
