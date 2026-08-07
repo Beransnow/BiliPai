@@ -179,21 +179,13 @@ object SsdpDiscovery {
                 }
         }
 
-        // Prefer binding to the concrete LAN IPv4 so dual-network OEMs (Vivo/Xiaomi) send
-        // multicast on Wi-Fi instead of the cellular default route.
-        val boundToLanIp = binding.ipv4Address?.let { ipv4 ->
-            runCatching {
-                socket.bind(InetSocketAddress(ipv4, 0))
-                true
-            }.getOrElse { error ->
-                Logger.w(TAG, "📺 [DLNA] Bind to LAN IPv4 failed: ${error.message}")
-                false
-            }
-        } ?: false
-
-        if (!boundToLanIp && !socket.isBound) {
-            socket.bind(InetSocketAddress(0))
-        }
+        // SSDP NOTIFY packets are addressed to 239.255.255.250:1900. A socket bound to
+        // the concrete LAN unicast address can send M-SEARCH but may not receive multicast
+        // packets on Android/OEM kernels, even after successfully joining the group.
+        // Bind INADDR_ANY:1900 so both multicast adverts and unicast M-SEARCH replies are
+        // delivered; Network.bindSocket and networkInterface still pin traffic to Wi-Fi.
+        socket.bind(InetSocketAddress(SSDP_PORT))
+        Logger.i(TAG, "📺 [DLNA] Socket bound to wildcard local address on SSDP port $SSDP_PORT")
 
         binding.networkInterface?.let { nif ->
             runCatching {
