@@ -1,6 +1,7 @@
 package com.android.purebilibili.feature.settings
 
 import com.android.purebilibili.core.ui.AppIconStyle
+import com.android.purebilibili.core.ui.AppListItemStyle
 import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
