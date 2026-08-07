@@ -188,7 +188,7 @@ internal fun resolveSettingsSemanticIcon(
 }
 
 private fun resolveMd3SettingsSemanticIcon(role: SettingsIconRole): ImageVector = when (role) {
-    SettingsIconRole.INTERFACE_THEME -> Icons.Outlined.DisplaySettings
+    SettingsIconRole.INTERFACE_THEME -> Icons.Outlined.ColorLens
     SettingsIconRole.HOME_FEED -> Icons.Outlined.Home
     SettingsIconRole.NAVIGATION -> Icons.Outlined.Dashboard
     SettingsIconRole.PLAYBACK_QUALITY -> Icons.Outlined.HighQuality

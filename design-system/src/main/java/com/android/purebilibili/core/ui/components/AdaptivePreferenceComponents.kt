@@ -416,7 +416,9 @@ fun AppAdaptiveSwitch(
                     enabled = enabled,
                     modifier = modifier,
                     colors = SwitchDefaults.colors(
-                        checkedThumbColor = colorScheme.onPrimary,
+                        checkedThumbColor = resolveSwitchCheckedThumbColor(
+                            onPrimary = colorScheme.onPrimary,
+                        ),
                         checkedTrackColor = colorScheme.primary,
                         uncheckedThumbColor = colorScheme.surface,
                         uncheckedTrackColor = colorScheme.surfaceContainerHighest,
@@ -846,7 +848,6 @@ fun AdaptiveSliderPreferenceRenderer(
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable
 private fun Md3NativeListItemContent(
     icon: ImageVector? = null,
     iconPainter: androidx.compose.ui.graphics.painter.Painter? = null,

@@ -93,6 +93,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorProducer
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
@@ -784,6 +785,13 @@ fun AppCheckbox(
     interactionSource = interactionSource,
 )
 
+/**
+ * 开关选中态 thumb 颜色:亮主题色下 [androidx.compose.material3.ColorScheme.onPrimary]
+ * 可能被判为深色(黑字),导致浅色模式选中后 thumb 变黑;此时回退白色。
+ */
+internal fun resolveSwitchCheckedThumbColor(onPrimary: Color): Color =
+    if (onPrimary.luminance() > 0.5f) onPrimary else Color.White
+
 @Composable
 fun AppSwitch(
     checked: Boolean,
@@ -792,7 +800,9 @@ fun AppSwitch(
     thumbContent: (@Composable () -> Unit)? = null,
     enabled: Boolean = true,
     colors: SwitchColors = SwitchDefaults.colors(
-        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+        checkedThumbColor = resolveSwitchCheckedThumbColor(
+            onPrimary = MaterialTheme.colorScheme.onPrimary,
+        ),
         checkedTrackColor = MaterialTheme.colorScheme.primary,
         uncheckedThumbColor = MaterialTheme.colorScheme.surface,
         uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
