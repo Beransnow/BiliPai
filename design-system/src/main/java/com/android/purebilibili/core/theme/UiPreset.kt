@@ -61,12 +61,6 @@ enum class AppUiStyle {
     }
 }
 
-/** 迁移边界：两值运行时选择 → 遗留 (UiPreset, AndroidNativeVariant) 键值对。2A 主题根直连后删除。 */
-fun AppUiStyle.toLegacyThemePair(): Pair<UiPreset, AndroidNativeVariant> = when (this) {
-    AppUiStyle.MATERIAL3 -> UiPreset.MD3 to AndroidNativeVariant.MATERIAL3
-    AppUiStyle.MIUIX -> UiPreset.MD3 to AndroidNativeVariant.MIUIX
-}
-
 fun resolveUiStyle(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant
@@ -79,32 +73,7 @@ fun resolveUiStyle(
     }
 }
 
-data class UiRenderingProfile(
-    val useMaterialChrome: Boolean,
-    val useMaterialMotion: Boolean,
-    val useMaterialIcons: Boolean
-)
-
-fun resolveUiRenderingProfile(preset: UiPreset): UiRenderingProfile {
-    return when (preset) {
-        UiPreset.IOS -> UiRenderingProfile(
-            useMaterialChrome = false,
-            useMaterialMotion = false,
-            useMaterialIcons = false
-        )
-
-        UiPreset.MD3 -> UiRenderingProfile(
-            useMaterialChrome = true,
-            useMaterialMotion = true,
-            useMaterialIcons = true
-        )
-    }
-}
-
-val LocalUiPreset = staticCompositionLocalOf { UiPreset.MD3 }
-val LocalAndroidNativeVariant = staticCompositionLocalOf { AndroidNativeVariant.MIUIX }
-
-/** 两值运行时主题 Local。旧 Local 由主题根从 AppUiStyle 派生（2B 迁移完成后随阶段 6 删除）。 */
+/** 两值运行时主题 Local。 */
 val LocalAppUiStyle = staticCompositionLocalOf { AppUiStyle.MIUIX }
 val LocalDynamicColorActive = staticCompositionLocalOf { false }
 val LocalSettingsLiquidGlassEnabled = staticCompositionLocalOf { false }

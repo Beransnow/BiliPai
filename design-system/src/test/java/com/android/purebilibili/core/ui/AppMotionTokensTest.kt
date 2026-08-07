@@ -4,9 +4,7 @@ import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.ui.unit.IntOffset
 
-import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.AppUiStyle
-import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
 import com.android.purebilibili.core.ui.motion.AppMotionTokens
 import com.android.purebilibili.core.ui.motion.navigationSlideSpring
@@ -69,8 +67,8 @@ class AppMotionTokensTest {
 
     @Test
     fun chromeTokens_exposeMotionMillis() {
-        val md3 = resolveAndroidNativeChromeTokens(UiPreset.MD3, AndroidNativeVariant.MATERIAL3)
-        val miuix = resolveAndroidNativeChromeTokens(UiPreset.MD3, AndroidNativeVariant.MIUIX)
+        val md3 = resolveAndroidNativeChromeTokens(AppUiStyle.MATERIAL3)
+        val miuix = resolveAndroidNativeChromeTokens(AppUiStyle.MIUIX)
 
         assertEquals(200, md3.motionStandardMillis)
         assertEquals(300, md3.motionEmphasizedMillis)

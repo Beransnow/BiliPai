@@ -22,17 +22,4 @@ class UiStyleCompatibilityPolicyTest {
             AppUiStyle.entries.toSet()
         )
     }
-
-    @Test
-    fun selectingAndroidStyle_mapsToMd3PresetAndMatchingVariant() {
-        // 迁移边界：两值选择写回旧键时恒为 MD3 预设 + 匹配的 Android Native 变体。
-        assertEquals(
-            UiPreset.MD3 to AndroidNativeVariant.MATERIAL3,
-            AppUiStyle.MATERIAL3.toLegacyThemePair()
-        )
-        assertEquals(
-            UiPreset.MD3 to AndroidNativeVariant.MIUIX,
-            AppUiStyle.MIUIX.toLegacyThemePair()
-        )
-    }
 }

@@ -826,20 +826,15 @@ fun PureBiliBiliTheme(
         amoledDarkTheme = amoledDarkTheme,
         uiStyle = uiStyle
     )
-    // 兼容桥接：2B 完成前 design-system 与旧 Local 仍读 UiPreset/AndroidNativeVariant，
-    // 由两值 AppUiStyle 派生；全部迁移后（阶段 6）删除本映射与旧 Local。
-    val (uiPreset, androidNativeVariant) = uiStyle.toLegacyThemePair()
-    val shapes = resolveMaterialShapes(uiPreset, androidNativeVariant)
+    val shapes = resolveMaterialShapes(uiStyle)
     val appFontFamily = remember(context, appFontFileName) {
         loadStoredAppFontFamily(context, appFontFileName)
     }
-    val materialTypography = resolveMaterialTypography(
-        uiPreset = uiPreset,
-        androidNativeVariant = androidNativeVariant
-    ).scaled(fontSizePreset.multiplier)
+    val materialTypography = resolveMaterialTypography(uiStyle)
+        .scaled(fontSizePreset.multiplier)
         .withFontFamily(appFontFamily)
-    val materialMotionScheme = remember(uiPreset, androidNativeVariant) {
-        resolveMaterialMotionScheme(uiPreset, androidNativeVariant)
+    val materialMotionScheme = remember(uiStyle) {
+        resolveMaterialMotionScheme(uiStyle)
     }
     val miuixTextStyles = remember(fontSizePreset, appFontFamily) {
         defaultTextStyles()
@@ -946,14 +941,9 @@ fun PureBiliBiliTheme(
 
     CompositionLocalProvider(
         LocalAppUiStyle provides uiStyle,
-        LocalUiPreset provides uiPreset,
-        LocalAndroidNativeVariant provides androidNativeVariant,
         LocalDynamicColorActive provides isDynamicColorActive,
         LocalBaseThemeRoleOverrides provides baseThemeRoleOverrides,
-        LocalCornerRadiusScale provides resolveCornerRadiusScale(
-            uiPreset = uiPreset,
-            androidNativeVariant = androidNativeVariant
-        )
+        LocalCornerRadiusScale provides resolveCornerRadiusScale(uiStyle)
     ) {
         MiuixTheme(
             controller = controller,
