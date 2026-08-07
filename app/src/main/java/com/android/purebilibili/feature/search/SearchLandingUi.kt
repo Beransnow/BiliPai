@@ -26,13 +26,7 @@ import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -49,12 +43,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.database.entity.SearchHistory
-import com.android.purebilibili.core.theme.LocalAndroidNativeVariant
-import com.android.purebilibili.core.theme.LocalUiPreset
 import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.components.AppHorizontalDivider
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppText
+import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.util.responsiveContentWidth
-import top.yukonga.miuix.kmp.basic.IconButton as MiuixIconButton
-import top.yukonga.miuix.kmp.basic.Text as MiuixText
 
 private const val SEARCH_HIGHLIGHT_START_TOKEN = "§hl§"
 private const val SEARCH_HIGHLIGHT_END_TOKEN = "§/hl§"
@@ -114,132 +110,6 @@ internal fun resolveSearchDiscoverOriginalCellColors(
             titleColor = colorScheme.onSurface,
             subtitleColor = colorScheme.onSurfaceVariant.copy(alpha = 0.88f),
             borderColor = colorScheme.outline.copy(alpha = 0.28f)
-        )
-    }
-}
-
-@Composable
-private fun rememberSearchNativeChrome(): SearchNativeChrome {
-    val uiPreset = LocalUiPreset.current
-    val androidNativeVariant = LocalAndroidNativeVariant.current
-    return remember(uiPreset, androidNativeVariant) {
-        resolveSearchNativeChrome(uiPreset, androidNativeVariant)
-    }
-}
-
-@Composable
-private fun SearchNativeText(
-    text: String,
-    modifier: Modifier = Modifier,
-    color: Color = Color.Unspecified,
-    fontSize: androidx.compose.ui.unit.TextUnit = androidx.compose.ui.unit.TextUnit.Unspecified,
-    fontWeight: FontWeight? = null,
-    style: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.bodyLarge,
-    maxLines: Int = Int.MAX_VALUE,
-    overflow: TextOverflow = TextOverflow.Clip
-) {
-    when (rememberSearchNativeChrome()) {
-        SearchNativeChrome.MIUIX -> MiuixText(
-            text = text,
-            modifier = modifier,
-            color = color,
-            fontSize = fontSize,
-            fontWeight = fontWeight,
-            style = style,
-            maxLines = maxLines,
-            overflow = overflow
-        )
-        SearchNativeChrome.MATERIAL3 -> Text(
-            text = text,
-            modifier = modifier,
-            color = color,
-            fontSize = fontSize,
-            fontWeight = fontWeight,
-            style = style,
-            maxLines = maxLines,
-            overflow = overflow
-        )
-    }
-}
-
-@Composable
-private fun SearchNativeText(
-    text: AnnotatedString,
-    modifier: Modifier = Modifier,
-    color: Color = Color.Unspecified,
-    fontSize: androidx.compose.ui.unit.TextUnit = androidx.compose.ui.unit.TextUnit.Unspecified,
-    style: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.bodyLarge,
-    maxLines: Int = Int.MAX_VALUE,
-    overflow: TextOverflow = TextOverflow.Clip
-) {
-    // AnnotatedString path: Material Text works under Miuix bridge; Miuix Text also accepts AnnotatedString.
-    when (rememberSearchNativeChrome()) {
-        SearchNativeChrome.MIUIX -> MiuixText(
-            text = text,
-            modifier = modifier,
-            color = color,
-            fontSize = fontSize,
-            style = style,
-            maxLines = maxLines,
-            overflow = overflow
-        )
-        SearchNativeChrome.MATERIAL3 -> Text(
-            text = text,
-            modifier = modifier,
-            color = color,
-            fontSize = fontSize,
-            style = style,
-            maxLines = maxLines,
-            overflow = overflow
-        )
-    }
-}
-
-@Composable
-private fun SearchNativeIconButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    content: @Composable () -> Unit
-) {
-    when (rememberSearchNativeChrome()) {
-        SearchNativeChrome.MIUIX -> MiuixIconButton(
-            onClick = onClick,
-            modifier = modifier,
-            enabled = enabled,
-            content = content
-        )
-        SearchNativeChrome.MATERIAL3 -> IconButton(
-            onClick = onClick,
-            modifier = modifier,
-            enabled = enabled,
-            content = content
-        )
-    }
-}
-
-@Composable
-private fun SearchNativeTextButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
-    when (rememberSearchNativeChrome()) {
-        SearchNativeChrome.MIUIX -> {
-            // Miuix TextButton expects a string label; use clickable Row for rich content.
-            Row(
-                modifier = modifier
-                    .clickable(onClick = onClick)
-                    .padding(horizontal = 6.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(2.dp),
-                content = { content() }
-            )
-        }
-        SearchNativeChrome.MATERIAL3 -> TextButton(
-            onClick = onClick,
-            modifier = modifier,
-            content = { content() }
         )
     }
 }
@@ -384,7 +254,7 @@ fun SearchSuggestionDropdown(
     if (suggestions.isEmpty()) return
     val outline = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)
 
-    Surface(
+    AppSurface(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
         tonalElevation = 8.dp,
@@ -400,14 +270,14 @@ fun SearchSuggestionDropdown(
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
+                    AppIcon(
                         imageVector = Icons.Rounded.Search,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    SearchNativeText(
+                    AppText(
                         text = rememberSuggestionAnnotatedText(
                             richText = suggestion.richText,
                             fallback = suggestion.keyword
@@ -420,7 +290,7 @@ fun SearchSuggestionDropdown(
                     )
                 }
                 if (index != suggestions.lastIndex) {
-                    HorizontalDivider(
+                    AppHorizontalDivider(
                         modifier = Modifier.padding(start = 46.dp),
                         color = outline
                     )
@@ -524,7 +394,7 @@ private fun SearchKeywordSection(
             }
             SearchLandingSectionMode.HIDDEN -> {
                 Spacer(modifier = Modifier.height(12.dp))
-                SearchNativeText(
+                AppText(
                     text = resolveSearchKeywordSectionHiddenText(title),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -547,21 +417,21 @@ private fun SearchInlineMessage(
             .padding(vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        SearchNativeText(
+        AppText(
             text = title,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         if (!message.isNullOrBlank()) {
-            SearchNativeText(
+            AppText(
                 text = message,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
             )
         }
         if (actionLabel != null && onAction != null) {
-            SearchNativeTextButton(onClick = onAction) {
-                SearchNativeText(
+            AppTextButton(onClick = onAction) {
+                AppText(
                     text = actionLabel,
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.labelLarge
@@ -593,7 +463,7 @@ private fun SearchKeywordSectionHeader(
             modifier = Modifier.weight(1f),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SearchNativeText(
+            AppText(
                 text = title,
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
@@ -604,14 +474,14 @@ private fun SearchKeywordSectionHeader(
             )
             if (showTrendingAction && enabled && onOpenTrending != null) {
                 Spacer(modifier = Modifier.width(8.dp))
-                SearchNativeTextButton(onClick = onOpenTrending) {
-                    SearchNativeText(
+                AppTextButton(onClick = onOpenTrending) {
+                    AppText(
                         text = "完整榜单",
                         color = outline,
                         fontSize = 13.sp,
                         style = MaterialTheme.typography.labelLarge
                     )
-                    Icon(
+                    AppIcon(
                         imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
                         contentDescription = null,
                         tint = outline,
@@ -626,15 +496,15 @@ private fun SearchKeywordSectionHeader(
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (enabled) {
-                SearchNativeTextButton(onClick = onRefresh) {
-                    Icon(
+                AppTextButton(onClick = onRefresh) {
+                    AppIcon(
                         imageVector = Icons.Rounded.Refresh,
                         contentDescription = "刷新",
                         tint = secondary,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(2.dp))
-                    SearchNativeText(
+                    AppText(
                         text = "刷新",
                         color = secondary,
                         fontSize = 13.sp,
@@ -643,8 +513,8 @@ private fun SearchKeywordSectionHeader(
                 }
             }
             if (onToggleEnabled != null && useOriginalDiscoverStyle) {
-                SearchNativeIconButton(onClick = onToggleEnabled, modifier = Modifier.size(40.dp)) {
-                    Icon(
+                AppIconButton(onClick = onToggleEnabled, modifier = Modifier.size(40.dp)) {
+                    AppIcon(
                         imageVector = if (enabled) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
                         contentDescription = if (enabled) "隐藏搜索发现" else "显示搜索发现",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -666,7 +536,7 @@ private fun SearchDiscoverOriginalCell(
         resolveSearchDiscoverOriginalSubtitle(item.subtitle)
     }
     val colors = resolveSearchDiscoverOriginalCellColors(MaterialTheme.colorScheme)
-    Surface(
+    AppSurface(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
@@ -677,7 +547,7 @@ private fun SearchDiscoverOriginalCell(
         Column(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)
         ) {
-            SearchNativeText(
+            AppText(
                 text = item.title,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -688,7 +558,7 @@ private fun SearchDiscoverOriginalCell(
                 )
             )
             if (!displaySubtitle.isNullOrBlank()) {
-                SearchNativeText(
+                AppText(
                     text = displaySubtitle,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -713,7 +583,7 @@ private fun SearchKeywordCell(
             .padding(vertical = 5.dp, horizontal = 2.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        SearchNativeText(
+        AppText(
             text = item.title,
             modifier = Modifier.weight(1f, fill = false),
             maxLines = 1,
@@ -732,7 +602,7 @@ private fun SearchKeywordCell(
                 containerColor = Color(0xFFFF6B97),
                 contentColor = Color.White
             )
-            !item.subtitle.isNullOrBlank() -> SearchNativeText(
+            !item.subtitle.isNullOrBlank() -> AppText(
                 text = item.subtitle,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -758,7 +628,7 @@ internal fun SearchKeywordBadge(
             .padding(horizontal = 5.dp, vertical = 1.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(
+        AppText(
             text = text,
             color = contentColor,
             fontSize = 10.sp,
@@ -784,22 +654,22 @@ private fun SearchHistorySectionModern(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            SearchNativeText(
+            AppText(
                 text = "搜索历史",
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
             )
-            SearchNativeTextButton(onClick = onClear) {
-                Icon(
+            AppTextButton(onClick = onClear) {
+                AppIcon(
                     imageVector = Icons.Outlined.ClearAll,
                     contentDescription = "清空",
                     tint = secondary,
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(2.dp))
-                SearchNativeText(
+                AppText(
                     text = "清空",
                     color = secondary,
                     fontSize = 13.sp,

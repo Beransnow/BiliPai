@@ -370,12 +370,14 @@ class SearchScreenPolicyTest {
         assertTrue(searchSource.contains("SearchTopBarInputField("))
         assertTrue(searchSource.contains("TextFieldValue("))
         assertFalse(searchSource.contains("AppSearchField("))
-        // Video filters use Material FilterChip in the dedicated sheet file.
-        assertTrue(filterSheetSource.contains("FilterChip("))
-        assertTrue(filterSheetSource.contains("ModalBottomSheet("))
+        // Video filters use neutral AppFilterChip; host follows the stage-3 contract
+        // (MIUIX → OverlayBottomSheet, MATERIAL3 → AppModalBottomSheet).
+        assertTrue(filterSheetSource.contains("AppFilterChip("))
+        assertTrue(filterSheetSource.contains("AppModalBottomSheet("))
         assertTrue(filterSheetSource.contains("OverlayBottomSheet("))
-        // History chips use Material InputChip / Surface, not design-system App* wrappers.
-        assertTrue(searchSource.contains("androidx.compose.material3.InputChip("))
+        // History chips use the neutral AppInputChip (visuals follow the theme layer).
+        assertTrue(searchSource.contains("AppInputChip("))
+        assertFalse(searchSource.contains("androidx.compose.material3.InputChip("))
         assertFalse(searchSource.contains("SearchPagerTabIndicator("))
         assertFalse(searchSource.contains("val showStableFilterBar = !searchPagerState.isScrollInProgress"))
         // Exiting results must not reopen IME.

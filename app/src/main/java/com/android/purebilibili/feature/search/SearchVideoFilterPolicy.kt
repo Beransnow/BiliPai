@@ -1,9 +1,5 @@
 package com.android.purebilibili.feature.search
 
-import com.android.purebilibili.core.theme.AndroidNativeVariant
-import com.android.purebilibili.core.theme.UiPreset
-import com.android.purebilibili.core.ui.PresetPrimitiveRenderer
-import com.android.purebilibili.core.ui.resolvePresetPrimitiveRenderer
 import com.android.purebilibili.data.repository.SearchDuration
 import com.android.purebilibili.data.repository.SearchOrder
 import java.util.Calendar
@@ -29,27 +25,6 @@ data class SearchPubTimeRange(
     val beginEpochSeconds: Long?,
     val endEpochSeconds: Long?
 )
-
-/**
- * Search feature chrome stack:
- * - Material 3: Android Material3 native components
- * - Miuix / iOS: Miuix native components (allowed for both presets)
- */
-enum class SearchNativeChrome {
-    MATERIAL3,
-    MIUIX
-}
-
-fun resolveSearchNativeChrome(
-    uiPreset: UiPreset,
-    androidNativeVariant: AndroidNativeVariant
-): SearchNativeChrome {
-    return when (resolvePresetPrimitiveRenderer(uiPreset, androidNativeVariant)) {
-        PresetPrimitiveRenderer.MATERIAL3 -> SearchNativeChrome.MATERIAL3
-        PresetPrimitiveRenderer.IOS,
-        PresetPrimitiveRenderer.MIUIX_BRIDGED -> SearchNativeChrome.MIUIX
-    }
-}
 
 fun resolveSearchLandingSectionOrder(): List<SearchLandingSection> {
     // Portrait order in PiliPlus / official search: trending → history → discover.

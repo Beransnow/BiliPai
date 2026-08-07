@@ -100,7 +100,10 @@ class MiuixV2MigrationStructureTest {
         val source = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/renderer/miuix/AppMiuixSegmentedControl.kt")
         val componentSource = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/components/AppSegmentedControl.kt")
         val policySource = loadSource("design-system/src/main/java/com/android/purebilibili/core/ui/AppSegmentedControlPolicy.kt")
-        assertTrue(policySource.contains("usesNativeTabRow = uiPreset == UiPreset.MD3"))
+        // 双值 AppUiStyle 政策：MIUIX 用原生 TabRow，MATERIAL3 用 Material fallback。
+        assertTrue(policySource.contains("AppUiStyle.MIUIX"))
+        assertTrue(policySource.contains("usesNativeTabRow = true"))
+        assertTrue(policySource.contains("usesNativeTabRow = false"))
         assertTrue(componentSource.contains("resolveAppSegmentedRenderer(policy.usesNativeTabRow)"))
         assertTrue(componentSource.contains("AppMiuixSegmentedControl("))
         assertTrue(source.contains("TabRow("))
@@ -161,10 +164,12 @@ class MiuixV2MigrationStructureTest {
     @Test
     fun searchTopBar_usesNeutralSearchField() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/search/SearchScreen.kt")
-        // 上游重建后的搜索页：共享 BasicTextField 实现 + 原生 chrome 分发，
-        // 不再使用 AppSearchField（该组件仍服务于其余列表页）。
+        // 迁移后的搜索页：共享 BasicTextField 实现 + 中性 App* 组件，
+        // 不再使用 AppSearchField，也不再有原生 chrome 分发（该组件仍服务于其余列表页）。
         assertTrue(source.contains("SearchTopBarInputField("))
-        assertTrue(source.contains("resolveSearchNativeChrome("))
+        assertTrue(source.contains("AppIconButton("))
+        assertFalse(source.contains("resolveSearchNativeChrome("))
+        assertFalse(source.contains("SearchNativeChrome"))
     }
 
     @Test
