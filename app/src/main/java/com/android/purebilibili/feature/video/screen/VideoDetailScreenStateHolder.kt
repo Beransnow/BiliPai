@@ -3206,6 +3206,12 @@ internal fun VideoDetailScreenStateHolder(
                             )
                         }
                         val inlinePlayerCollapseState = rememberInlinePortraitPlayerCollapseState(currentBvid)
+                        // 评论区「一键回顶」时恢复被压缩的播放器(请求来自外层计数)。
+                        LaunchedEffect(commentBackToTopRestoreRequest.intValue) {
+                            if (commentBackToTopRestoreRequest.intValue > 0) {
+                                inlinePlayerCollapseState.restore()
+                            }
+                        }
                         val compactInlinePlayerForCommentTab =
                             shouldUseCompactInlinePortraitPlayerForCommentTab(
                                 useOfficialInlinePortraitDetailExperience = useOfficialInlinePortraitDetailExperience,
@@ -4184,6 +4190,10 @@ internal fun VideoDetailScreenStateHolder(
         )
 
         val successState = uiState as? VideoPlaybackUiState.Success
+        // 评论区「一键回顶」恢复播放器请求(外层计数,内层播放器观察到后 restore)。
+        val commentBackToTopRestoreRequest = remember {
+            androidx.compose.runtime.mutableIntStateOf(0)
+        }
         DetachedVideoCommentThreadHost(
             visible = shouldShowDetachedVideoCommentThreadHost(useTabletLayout = useTabletLayout) &&
                 !(isFullscreenMode && landscapeCommentPanelVisible),
@@ -4210,7 +4220,7 @@ internal fun VideoDetailScreenStateHolder(
             },
             onBackToTop = {
                 // 评论区下滑缩小播放器后,一键回顶同时恢复播放器全尺寸。
-                inlinePlayerCollapseState.restore()
+                commentBackToTopRestoreRequest.intValue++
             }
         )
 
