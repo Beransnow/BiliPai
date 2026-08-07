@@ -5,13 +5,6 @@ import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
 import com.android.purebilibili.core.refresh.HistoryRefreshSuppression
 import com.android.purebilibili.core.ui.components.AppText
 
-/**
- * 评论区「一键回顶」恢复播放器事件:评论区 host 与竖屏播放器处于不同
- * 代码块/作用域,通过共享事件桥接,播放器侧观察到后恢复全尺寸。
- */
-private val commentBackToTopRestoreFlow =
-    kotlinx.coroutines.flow.MutableSharedFlow<Unit>(extraBufferCapacity = 1)
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.Context
@@ -248,6 +241,13 @@ import com.android.purebilibili.feature.video.share.VideoShareSheet
 import com.android.purebilibili.feature.video.viewmodel.PlayerToastPresentation
 import kotlin.math.abs
 import kotlin.math.roundToInt
+
+/**
+ * 评论区「一键回顶」恢复播放器事件:评论区 host 与竖屏播放器处于不同
+ * 代码块/作用域,通过共享事件桥接,播放器侧观察到后恢复全尺寸。
+ */
+private val commentBackToTopRestoreFlow =
+    kotlinx.coroutines.flow.MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
 private const val CONTINUOUS_PLAYER_MORPH_DURATION_MILLIS = 280
 
