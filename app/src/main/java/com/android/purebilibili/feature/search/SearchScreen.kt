@@ -2034,23 +2034,6 @@ fun SearchTopBar(
                 Spacer(modifier = Modifier.width(chromeSpec.horizontalGapDp.dp))
 
                 SearchTopBarIconButton(
-                    onClick = onClearQuery,
-                    enabled = query.isNotEmpty(),
-                    modifier = Modifier.size(chromeSpec.clearActionSizeDp.dp)
-                ) {
-                    AppIcon(
-                        clearIcon,
-                        contentDescription = stringResource(R.string.common_clear),
-                        tint = if (query.isNotEmpty()) {
-                            MaterialTheme.colorScheme.onSurfaceVariant
-                        } else {
-                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f)
-                        },
-                        modifier = Modifier.size(chromeSpec.actionIconSizeDp.dp)
-                    )
-                }
-
-                SearchTopBarIconButton(
                     onClick = { onSearch(resolvedSubmitKeyword) },
                     enabled = canSubmit,
                     modifier = Modifier
@@ -2069,6 +2052,23 @@ fun SearchTopBar(
                         contentDescription = searchLabel,
                         tint = if (canSubmit) {
                             searchIconColor
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f)
+                        },
+                        modifier = Modifier.size(chromeSpec.actionIconSizeDp.dp)
+                    )
+                }
+
+                SearchTopBarIconButton(
+                    onClick = onClearQuery,
+                    enabled = query.isNotEmpty(),
+                    modifier = Modifier.size(chromeSpec.clearActionSizeDp.dp)
+                ) {
+                    AppIcon(
+                        clearIcon,
+                        contentDescription = stringResource(R.string.common_clear),
+                        tint = if (query.isNotEmpty()) {
+                            MaterialTheme.colorScheme.onSurfaceVariant
                         } else {
                             MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f)
                         },
