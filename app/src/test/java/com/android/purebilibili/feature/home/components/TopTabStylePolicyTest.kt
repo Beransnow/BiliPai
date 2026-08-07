@@ -210,9 +210,9 @@ class TopTabStylePolicyTest {
     }
 
     @Test
-    fun `miuix top settings button follows action button metrics while other presets keep existing size`() {
+    fun `home top settings button converges to unified edge control height`() {
         assertEquals(
-            40.dp, // 2B 迁移：iOS 输入并入 MIUIX
+            36.dp, // 两主题统一：与头像、搜索胶囊同高
             resolveHomeTopSettingsButtonSize(
                 uiPreset = UiPreset.IOS,
                 androidNativeVariant = AndroidNativeVariant.MATERIAL3
@@ -226,7 +226,7 @@ class TopTabStylePolicyTest {
             )
         )
         assertEquals(
-            40.dp,
+            36.dp,
             resolveHomeTopSettingsButtonSize(
                 uiPreset = UiPreset.MD3,
                 androidNativeVariant = AndroidNativeVariant.MIUIX
@@ -625,28 +625,6 @@ class TopTabStylePolicyTest {
     }
 
     @Test
-    fun `md3 and miuix use screenshot underline when liquid glass is off`() {
-        assertTrue(
-            shouldUsePlainMd3TopTabUnderline(
-                presentation = AppTopTabPresentation.MATERIAL_UNDERLINE,
-                liquidGlassEnabled = false
-            )
-        )
-        assertFalse(
-            shouldUsePlainMd3TopTabUnderline(
-                presentation = AppTopTabPresentation.MATERIAL_UNDERLINE,
-                liquidGlassEnabled = true
-            )
-        )
-        assertFalse(
-            shouldUsePlainMd3TopTabUnderline(
-                presentation = AppTopTabPresentation.MOVING_CAPSULE,
-                liquidGlassEnabled = false
-            )
-        )
-    }
-
-    @Test
     fun `md3 top tabs remove outer dock when liquid glass is off`() {
         assertFalse(
             shouldDrawHomeTopTabOuterChromeSurface(
@@ -796,7 +774,8 @@ class TopTabStylePolicyTest {
         assertTrue(itemSource.contains("resolveTopTabSkinStickerIconSize(showText = showText)"))
         assertTrue(rowCallSource.contains("resolveTopTabSkinPartitionIconSize()"))
         assertTrue(rowCallSource.contains("resolveTopTabSkinStickerRowHeight("))
-        assertTrue(rowCallSource.contains("if (effectivePresentation == AppTopTabPresentation.MATERIAL_UNDERLINE && !hasSkinStickerIcons)"))
+        // 纯色 wash 胶囊仅限 skin 主题兜底；常规主题始终由移动胶囊负责。
+        assertTrue(rowCallSource.contains("if (effectivePresentation == AppTopTabPresentation.MATERIAL_UNDERLINE && !hasSkinStickerIcons && skinPlainStyle)"))
         assertTrue(itemSource.contains("resolveTopTabSkinStickerItemVerticalPadding(showText = showText)"))
         assertTrue(itemSource.contains("resolveTopTabSkinStickerIndicatorWidth()"))
         assertTrue(itemSource.contains("alpha(selectionFraction)"))

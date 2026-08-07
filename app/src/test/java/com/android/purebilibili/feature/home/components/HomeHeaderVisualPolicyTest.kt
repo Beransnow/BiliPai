@@ -14,7 +14,9 @@ import com.android.purebilibili.core.ui.blur.BlurSurfaceType
 import com.android.purebilibili.feature.home.HomeGlassResolvedColors
 import com.android.purebilibili.core.ui.blur.BlurIntensity
 import com.android.purebilibili.core.theme.AndroidNativeVariant
+import com.android.purebilibili.core.theme.AppUiStyle
 import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.ui.resolveAppTopChromePolicy
 import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -508,14 +510,27 @@ class HomeHeaderVisualPolicyTest {
     fun `home header trims horizontal spacing without cramping controls`() {
         assertEquals(14.dp, resolveHomeTopSearchRowHorizontalPadding())
         assertEquals(16.dp, resolveHomeTopSearchRowHorizontalPadding(UiPreset.MD3))
-        assertEquals(48.dp, resolveHomeTopSearchPillHeight()) // 2B 迁移：iOS 输入并入 MIUIX 48dp 胶囊
-        assertEquals(52.dp, resolveHomeTopSearchPillHeight(UiPreset.MD3))
-        assertEquals(2.dp, resolveHomeTopTabHorizontalPadding(isTabFloating = true))
-        assertEquals(2.dp, resolveHomeTopTabHorizontalPadding(isTabFloating = true, uiPreset = UiPreset.MD3))
+        // 两主题统一：搜索胶囊与头像、设置按钮同高（36dp）。
+        assertEquals(36.dp, resolveHomeTopSearchPillHeight())
+        assertEquals(36.dp, resolveHomeTopSearchPillHeight(UiPreset.MD3))
+        // 分栏轨道与搜索行共用同一水平内边距，保证左右对齐。
+        assertEquals(14.dp, resolveHomeTopTabHorizontalPadding(isTabFloating = true))
+        assertEquals(16.dp, resolveHomeTopTabHorizontalPadding(isTabFloating = true, uiPreset = UiPreset.MD3))
         assertEquals(6.dp, resolveHomeTopSearchToTabsSpacing())
         assertEquals(6.dp, resolveHomeTopSearchToTabsSpacing(UiPreset.MD3))
         assertEquals(6.dp, resolveHomeTopTabsToContentSpacing())
         assertEquals(6.dp, resolveHomeTopTabsToContentSpacing(UiPreset.MD3))
+    }
+
+    @Test
+    fun `tab dock max width reuses top controls combined width`() {
+        val material3Policy = resolveAppTopChromePolicy(AppUiStyle.MATERIAL3)
+        val miuixPolicy = resolveAppTopChromePolicy(AppUiStyle.MIUIX)
+        // 三控件合计宽度 = 容器宽度 − 2×搜索行水平内边距（M3 16 / Miuix 14）。
+        assertEquals(328.dp, resolveHomeTopControlsContentWidthDp(360.dp, material3Policy))
+        assertEquals(332.dp, resolveHomeTopControlsContentWidthDp(360.dp, miuixPolicy))
+        // 容器宽度小于行内边距时封底为 0。
+        assertEquals(0.dp, resolveHomeTopControlsContentWidthDp(20.dp, material3Policy))
     }
 
     @Test
@@ -672,10 +687,11 @@ class HomeHeaderVisualPolicyTest {
 
     @Test
     fun `home header keeps edge controls aligned around the search bar`() {
+        assertEquals(36.dp, resolveHomeTopEdgeControlHeight())
         assertEquals(36.dp, resolveHomeTopAvatarOuterSize())
         assertEquals(36.dp, resolveHomeTopAvatarInnerSize())
-        // 2B 迁移：iOS 输入并入 MIUIX，设置按钮放大到 40dp、控件间隙 7dp。
-        assertEquals(40.dp, resolveHomeTopSettingsButtonSize())
+        // 两主题统一：设置按钮、搜索胶囊与头像同高（36dp）。
+        assertEquals(36.dp, resolveHomeTopSettingsButtonSize())
         assertEquals(18.dp, resolveHomeTopSettingsIconSize())
         assertEquals(7.dp, resolveHomeTopEdgeControlGap())
         assertEquals(8.dp, resolveHomeTopEdgeControlGap(UiPreset.MD3))
@@ -703,7 +719,7 @@ class HomeHeaderVisualPolicyTest {
         assertTrue(searchShape is RoundedCornerShape)
         assertTrue(edgeShape is RoundedCornerShape)
         assertNotEquals(CircleShape, edgeShape)
-        assertEquals(52.dp, resolveHomeTopSearchPillHeight(UiPreset.MD3))
+        assertEquals(36.dp, resolveHomeTopSearchPillHeight(UiPreset.MD3))
         assertEquals(16.dp, resolveHomeTopSearchContentHorizontalPadding(UiPreset.MD3))
         assertEquals(12.dp, resolveHomeTopSearchIconTextGap(UiPreset.MD3))
     }
@@ -729,7 +745,7 @@ class HomeHeaderVisualPolicyTest {
             )
         )
         assertEquals(
-            48.dp,
+            36.dp,
             resolveHomeTopSearchPillHeight(
                 uiPreset = UiPreset.MD3,
                 androidNativeVariant = AndroidNativeVariant.MIUIX

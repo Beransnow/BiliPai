@@ -566,13 +566,6 @@ internal fun shouldUseMd3TopTabMaterialIndicator(
     return resolveTopTabIndicatorStyle(presentation) == TopTabIndicatorStyle.MATERIAL
 }
 
-internal fun shouldUsePlainMd3TopTabUnderline(
-    presentation: AppTopTabPresentation,
-    liquidGlassEnabled: Boolean
-): Boolean {
-    return presentation != AppTopTabPresentation.MOVING_CAPSULE && !liquidGlassEnabled
-}
-
 fun resolveTopTabLabelTextSizeSp(labelMode: Int): Float {
     val tuning = resolveTopTabVisualTuning()
     return when (normalizeTopTabLabelMode(labelMode)) {

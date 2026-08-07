@@ -879,6 +879,12 @@ private fun LightweightHomeTopTabs(
     hasOuterChromeSurface: Boolean = false,
     /** When non-null, overrides [shouldWrapTopTabDockWidth] so shell and tabs share one decision. */
     wrapDockWidth: Boolean? = null,
+    /**
+     * Cap on the dock width (top controls' combined width) so the tab strip never
+     * extends beyond the avatar / settings alignment. [Float.POSITIVE_INFINITY] keeps
+     * legacy full-bleed docks.
+     */
+    maxDockWidthDp: Float = Float.POSITIVE_INFINITY,
     isTransitionRunning: Boolean = false,
     showPartitionAction: Boolean = true,
     isViewportSyncEnabled: Boolean = true,
@@ -1025,15 +1031,17 @@ private fun LightweightHomeTopTabs(
             hasOuterChromeSurface = hasOuterChromeSurface,
             edgeToEdge = edgeToEdge
         )
+        // 分栏 dock 最大宽度 = 顶部三控件合计宽度（左右对齐约束），与外壳共享同一上限。
+        val effectiveMaxDockWidth = minOf(maxWidth.value, maxDockWidthDp)
         val fillItemWidthDp = when (effectivePresentation) {
             AppTopTabPresentation.MOVING_CAPSULE -> resolveIosTopTabItemWidthDp(
-                containerWidthDp = maxWidth.value,
+                containerWidthDp = effectiveMaxDockWidth,
                 categoryCount = categories.size,
                 labelMode = normalizedLabelMode
             )
             AppTopTabPresentation.MATERIAL_UNDERLINE,
             AppTopTabPresentation.TONAL_CAPSULE -> resolveMd3TopTabItemWidthDp(
-                containerWidthDp = maxWidth.value,
+                containerWidthDp = effectiveMaxDockWidth,
                 visibleSlots = resolveMd3TopTabLayoutVisibleSlots(
                     categoryCount = categories.size,
                     labelMode = normalizedLabelMode,
@@ -1044,7 +1052,7 @@ private fun LightweightHomeTopTabs(
             )
         }
         val itemWidthDp = resolveTopTabDockItemWidthDp(
-            maxWidthDp = maxWidth.value,
+            maxWidthDp = effectiveMaxDockWidth,
             categoryCount = categories.size,
             labelMode = normalizedLabelMode,
             isFloatingStyle = isFloatingStyle,
@@ -1057,10 +1065,10 @@ private fun LightweightHomeTopTabs(
             resolveTopTabDockWrapWidthDp(
                 itemWidthDp = itemWidthDp,
                 categoryCount = categories.size,
-                maxWidthDp = maxWidth.value
+                maxWidthDp = effectiveMaxDockWidth
             )
         } else {
-            maxWidth.value
+            effectiveMaxDockWidth
         }
         // Match the bottom bar's actual app-surface luminance. The system theme can differ
         // from the active app theme and previously produced a dark gray capture on light pages.
@@ -1262,12 +1270,15 @@ private fun LightweightHomeTopTabs(
         val shouldUseLiquidGlassIndicator = isLiquidGlassEnabled &&
             !skinPlainStyle &&
             !hasSkinStickerIcons
-        val shouldRenderTopTabLiquidGlassIndicator = shouldUseLiquidGlassIndicator &&
-            !hasOuterChromeSurface
+        // 移动胶囊本体与玻璃状态解耦：MATERIAL_UNDERLINE 始终渲染底栏同款胶囊，
+        // 液态玻璃只切换胶囊材质（glassEnabled），玻璃关闭时回退纯色胶囊，两主题渲染恒定。
         val shouldUseMd3LiquidCapsule = effectivePresentation == AppTopTabPresentation.MATERIAL_UNDERLINE &&
-            shouldRenderTopTabLiquidGlassIndicator
+            !skinPlainStyle &&
+            !hasSkinStickerIcons &&
+            !hasOuterChromeSurface
         val shouldUseMd3DockBackedCapsule = effectivePresentation == AppTopTabPresentation.MATERIAL_UNDERLINE &&
-            shouldUseLiquidGlassIndicator &&
+            !skinPlainStyle &&
+            !hasSkinStickerIcons &&
             hasOuterChromeSurface
         val shouldPrimeTopTabLiquidGlassCapture =
             isLiquidGlassEnabled &&
@@ -1390,10 +1401,11 @@ private fun LightweightHomeTopTabs(
             modifier = Modifier
                 .then(
                     if (wrapDock) {
+                        // 与搜索行左对齐（头像左缘），宽度封顶于设置按钮右缘。
                         Modifier
                             .width(dockContentWidthDp.dp)
                             .fillMaxHeight()
-                            .align(Alignment.Center)
+                            .align(Alignment.CenterStart)
                     } else {
                         Modifier.fillMaxSize()
                     }
@@ -1723,7 +1735,7 @@ private fun LightweightHomeTopTabs(
                             indicatorLensSpec = topTabIndicatorLensSpec,
                             effectivePressProgress = topTabLensProgress,
                             indicatorIdleSurfaceColor = topTabIndicatorIdleSurfaceColor,
-                            glassEnabled = true,
+                            glassEnabled = shouldUseLiquidGlassIndicator,
                             motionProgress = topTabMotionProgress,
                             velocityItemsPerSecond = topTabIndicatorLayerVelocityItemsPerSecond,
                             isDragging = topTabShouldStretchIndicator,
@@ -1751,7 +1763,7 @@ private fun LightweightHomeTopTabs(
                             indicatorLensSpec = topTabIndicatorLensSpec,
                             effectivePressProgress = topTabLensProgress,
                             indicatorIdleSurfaceColor = topTabIndicatorIdleSurfaceColor,
-                            glassEnabled = true,
+                            glassEnabled = shouldUseLiquidGlassIndicator,
                             motionProgress = topTabMotionProgress,
                             velocityItemsPerSecond = topTabIndicatorLayerVelocityItemsPerSecond,
                             isDragging = topTabShouldStretchIndicator,
@@ -1763,8 +1775,10 @@ private fun LightweightHomeTopTabs(
                 }
                 } // shared panel-offset group (export + visible + capsule)
 
-                if (effectivePresentation == AppTopTabPresentation.MATERIAL_UNDERLINE && !hasSkinStickerIcons) {
-                    val indicatorColor = if (skinPlainStyle && skinPlainContentColor != null) {
+                // 纯色 wash 胶囊仅在 skin 主题下兜底（skin 不走移动胶囊路径）；
+                // 常规主题始终由移动胶囊负责，玻璃只切换胶囊材质。
+                if (effectivePresentation == AppTopTabPresentation.MATERIAL_UNDERLINE && !hasSkinStickerIcons && skinPlainStyle) {
+                    val indicatorColor = if (skinPlainContentColor != null) {
                         resolveHomeSkinTopTabIndicatorColor(skinPlainContentColor)
                     } else {
                         MaterialTheme.colorScheme.primary
@@ -2091,6 +2105,8 @@ fun CategoryTabRow(
     hasOuterChromeSurface: Boolean = false,
     /** Shared with [HomeTopTabChrome.wrapDockWidth] so glass shell and tabs stay the same length. */
     wrapDockWidth: Boolean? = null,
+    /** Cap on the dock width (top controls' combined width) so tabs stay left-right aligned. */
+    maxDockWidthDp: Float = Float.POSITIVE_INFINITY,
     interactionBudget: HomeInteractionMotionBudget = HomeInteractionMotionBudget.FULL,
     motionTier: MotionTier = MotionTier.Normal,
     isTransitionRunning: Boolean = false,
@@ -2132,6 +2148,7 @@ fun CategoryTabRow(
         partitionSkinIconPath = partitionSkinIconPath,
         hasOuterChromeSurface = hasOuterChromeSurface,
         wrapDockWidth = wrapDockWidth,
+        maxDockWidthDp = maxDockWidthDp,
         isTransitionRunning = isTransitionRunning,
         showPartitionAction = showPartitionAction,
         isViewportSyncEnabled = isViewportSyncEnabled,
