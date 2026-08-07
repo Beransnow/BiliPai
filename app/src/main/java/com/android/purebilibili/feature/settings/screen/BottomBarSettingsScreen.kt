@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -205,7 +206,7 @@ fun BottomBarSettingsContent(
         .collectAsStateWithLifecycle(initialValue = BottomBarSearchAutoExpandMode.DISABLED)
     val bottomBarSearchLayoutMode by SettingsManager.getBottomBarSearchLayoutMode(context)
         .collectAsStateWithLifecycle(initialValue = BottomBarSearchLayoutMode.FULL_DOCK)
-    val isTabletDevice = context.resources.configuration.smallestScreenWidthDp >= 600
+    val isTabletDevice = LocalConfiguration.current.smallestScreenWidthDp >= 600
     val tabletUseSidebar by SettingsManager.getTabletUseSidebar(context)
         .collectAsStateWithLifecycle(initialValue = isTabletDevice)
     val sidebarAccountSwitcherEnabled by SettingsManager.getSidebarAccountSwitcherEnabled(context)

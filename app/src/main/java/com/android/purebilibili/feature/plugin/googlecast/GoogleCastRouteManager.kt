@@ -117,7 +117,7 @@ internal object GoogleCastRouteManager {
                 name = route.name,
                 description = route.description,
                 deviceType = route.deviceType,
-                isDefaultOrBluetooth = route.isDefaultOrBluetooth,
+                isDefaultOrBluetooth = route.isDefault || route.deviceType == MediaRouter.RouteInfo.DEVICE_TYPE_BLUETOOTH_A2DP,
                 supportsCastCategory = route.supportsControlCategory(castControlCategory)
             )
         }.distinctBy { it.routeId }
