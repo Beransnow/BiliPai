@@ -2064,6 +2064,13 @@ fun HomeScreen(
                     onLiveListClick()
                     return@onCategorySelected
                 }
+                // 顶栏「追番」直接进入番剧独立页(与直播 tab 一致,避免切到空分类)。
+                if (selectedEntry is HomeTopTabEntry.Category &&
+                    selectedEntry.category == HomeCategory.ANIME
+                ) {
+                    onBangumiClick(1)
+                    return@onCategorySelected
+                }
                 viewModel.updateDisplayedTabIndex(index)
                 retainedTopTabEntry = selectedEntry
                 if (pagerState.currentPage != index) {
