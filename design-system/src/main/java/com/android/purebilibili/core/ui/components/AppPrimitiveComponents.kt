@@ -791,7 +791,13 @@ fun AppSwitch(
     modifier: Modifier = Modifier,
     thumbContent: (@Composable () -> Unit)? = null,
     enabled: Boolean = true,
-    colors: SwitchColors = SwitchDefaults.colors(),
+    colors: SwitchColors = SwitchDefaults.colors(
+        checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+        checkedTrackColor = MaterialTheme.colorScheme.primary,
+        uncheckedThumbColor = MaterialTheme.colorScheme.surface,
+        uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+        uncheckedBorderColor = MaterialTheme.colorScheme.outline,
+    ),
     interactionSource: MutableInteractionSource? = null,
 ) = Switch(
     checked = checked,

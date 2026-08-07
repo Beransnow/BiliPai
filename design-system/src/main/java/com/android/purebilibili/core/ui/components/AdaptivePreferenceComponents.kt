@@ -396,12 +396,28 @@ fun AppAdaptiveSwitch(
     val uiStyle = LocalAppUiStyle.current
     when (resolveAppAdaptiveSwitchTreatment(uiStyle)) {
         AppAdaptiveSwitchTreatment.MATERIAL -> {
-            Switch(
-                checked = checked,
-                onCheckedChange = onCheckedChange,
-                enabled = enabled,
-                modifier = modifier
-            )
+            val colorScheme = MaterialTheme.colorScheme
+            val platformHaptic = LocalHapticFeedback.current
+            val effectiveHaptic = if (LocalAppThemeConfig.current.hapticFeedbackEnabled) {
+                platformHaptic
+            } else {
+                NoOpHapticFeedback
+            }
+            CompositionLocalProvider(LocalHapticFeedback provides effectiveHaptic) {
+                Switch(
+                    checked = checked,
+                    onCheckedChange = onCheckedChange,
+                    enabled = enabled,
+                    modifier = modifier,
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = colorScheme.onPrimary,
+                        checkedTrackColor = colorScheme.primary,
+                        uncheckedThumbColor = colorScheme.surface,
+                        uncheckedTrackColor = colorScheme.surfaceContainerHighest,
+                        uncheckedBorderColor = colorScheme.outline,
+                    )
+                )
+            }
         }
         AppAdaptiveSwitchTreatment.MIUIX -> {
             MiuixSwitch(
@@ -894,11 +910,18 @@ internal fun AdaptivePreferenceContent(
         return
     }
     if (clickableRenderer == AppClickableItemRenderer.MD3_BASIC) {
+        val haptic = LocalHapticFeedback.current
+        val hapticsEnabled = LocalAppThemeConfig.current.hapticFeedbackEnabled
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(min = rowSpec.minTouchTargetHeightDp.dp)
-                .clickable(enabled = onClick != null) { onClick?.invoke() }
+                .clickable(enabled = onClick != null) {
+                    if (hapticsEnabled) {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    }
+                    onClick?.invoke()
+                }
                 .padding(
                     horizontal = rowSpec.insideHorizontalPaddingDp.dp,
                     vertical = rowSpec.insideVerticalPaddingDp.dp

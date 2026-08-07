@@ -188,7 +188,7 @@ internal fun resolveSettingsSemanticIcon(
 }
 
 private fun resolveMd3SettingsSemanticIcon(role: SettingsIconRole): ImageVector = when (role) {
-    SettingsIconRole.INTERFACE_THEME -> Icons.Outlined.ColorLens
+    SettingsIconRole.INTERFACE_THEME -> Icons.Outlined.DisplaySettings
     SettingsIconRole.HOME_FEED -> Icons.Outlined.Home
     SettingsIconRole.NAVIGATION -> Icons.Outlined.Dashboard
     SettingsIconRole.PLAYBACK_QUALITY -> Icons.Outlined.HighQuality
@@ -220,7 +220,7 @@ private fun resolveMd3SettingsSemanticIcon(role: SettingsIconRole): ImageVector 
     SettingsIconRole.OPEN_LINKS -> Icons.Outlined.Link
     SettingsIconRole.DONATE -> Icons.Outlined.CardGiftcard
     SettingsIconRole.DISCLAIMER -> Icons.Outlined.WarningAmber
-    SettingsIconRole.RELEASE_CHANNEL -> Icons.Outlined.NotificationsActive
+    SettingsIconRole.RELEASE_CHANNEL -> Icons.Outlined.Rocket
     SettingsIconRole.CRASH_TRACKING -> Icons.Outlined.BugReport
     SettingsIconRole.ANALYTICS -> Icons.Outlined.Analytics
     SettingsIconRole.FEED_API -> Icons.Outlined.RssFeed
@@ -247,7 +247,7 @@ private fun resolveMd3SettingsSemanticIcon(role: SettingsIconRole): ImageVector 
     SettingsIconRole.HOME_INFO_GLASS -> Icons.Outlined.Badge
     SettingsIconRole.HOME_WALLPAPER -> Icons.Outlined.Image
     SettingsIconRole.WALLPAPER_EFFECT -> Icons.Outlined.BlurOn
-    SettingsIconRole.HOME_UP_BADGES -> Icons.Outlined.PersonAdd
+    SettingsIconRole.HOME_UP_BADGES -> Icons.Outlined.WorkspacePremium
     SettingsIconRole.HOME_UP_AVATAR -> Icons.Outlined.AccountCircle
     SettingsIconRole.ONLINE_COUNT -> Icons.Outlined.OnlinePrediction
     SettingsIconRole.GRID_COLUMNS -> Icons.Outlined.GridView
@@ -281,15 +281,15 @@ private fun resolveMd3SettingsSemanticIcon(role: SettingsIconRole): ImageVector 
     SettingsIconRole.HORIZONTAL_ADAPTATION -> Icons.Outlined.AspectRatio
     SettingsIconRole.FULLSCREEN_GESTURE_REVERSE -> Icons.Outlined.SwipeVertical
     SettingsIconRole.IMMERSIVE_STATUS_BAR -> Icons.Outlined.Fullscreen
-    // 自动进入全屏沿用历史竖屏+向外箭头语义，与 Fullscreen/FullscreenExit 保持可区分。
-    SettingsIconRole.AUTO_ENTER_FULLSCREEN -> Icons.Outlined.SmartScreen
+    // 自动进入全屏用 OpenInFull(向外展开),与 FullscreenExit 保持可区分。
+    SettingsIconRole.AUTO_ENTER_FULLSCREEN -> Icons.Outlined.OpenInFull
     SettingsIconRole.AUTO_EXIT_FULLSCREEN -> Icons.Outlined.FullscreenExit
     SettingsIconRole.FULLSCREEN_LOCK -> Icons.Outlined.ScreenLockRotation
     SettingsIconRole.FULLSCREEN_SCREENSHOT -> Icons.Outlined.Screenshot
-    SettingsIconRole.CLEAN_SCREENSHOT -> Icons.Outlined.CameraAlt
+    SettingsIconRole.CLEAN_SCREENSHOT -> Icons.Outlined.ScreenshotMonitor
     SettingsIconRole.BATTERY_STATUS -> Icons.Outlined.BatteryFull
     SettingsIconRole.TIME_STATUS -> Icons.Outlined.AccessTime
-    SettingsIconRole.PLAYER_ACTIONS -> Icons.Outlined.IosShare
+    SettingsIconRole.PLAYER_ACTIONS -> Icons.Outlined.MoreHoriz
     SettingsIconRole.PRIVACY_CONTENT_AUTHENTICATION -> Icons.Outlined.Verified
     SettingsIconRole.PLAYER_STATS -> Icons.Outlined.InsertChartOutlined
     SettingsIconRole.PLAYER_DIAGNOSTIC_LOGS -> Icons.Outlined.ReportGmailerrorred
@@ -303,7 +303,7 @@ private fun resolveMd3SettingsSemanticIcon(role: SettingsIconRole): ImageVector 
     SettingsIconRole.PORTRAIT_SWIPE_FULLSCREEN -> Icons.Outlined.SwipeUp
     SettingsIconRole.CENTER_SWIPE_FULLSCREEN -> Icons.Outlined.Swipe
     SettingsIconRole.SYSTEM_BRIGHTNESS -> Icons.Outlined.BrightnessMedium
-    SettingsIconRole.APP_ICON -> Icons.Outlined.AppSettingsAlt
+    SettingsIconRole.APP_ICON -> Icons.Outlined.Apps
     SettingsIconRole.HOME_CARD_STATS_COMPACT -> Icons.Outlined.StackedBarChart
     SettingsIconRole.BOTTOM_BAR_GLASS_PREVIEW -> Icons.Outlined.LensBlur
     SettingsIconRole.ADVANCED_COLOR -> Icons.Outlined.InvertColors
