@@ -88,6 +88,7 @@ import androidx.compose.ui.util.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.android.purebilibili.core.ui.AppIconStyle
 import com.android.purebilibili.core.ui.AppSemanticIconFamily
 import com.android.purebilibili.core.ui.AppTopTabPresentation
 import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
@@ -136,6 +137,10 @@ import androidx.compose.foundation.combinedClickable // [Added]
 import java.io.File
 
 private const val IOS_TOP_TAB_CONTENT_PADDING_DP = 2f
+
+// 指示器拖动释放后允许 spring 飞掷动画 settle 的兜底时长；
+// 超过此时长仍未收到 onSettled 回调则强制解除 engaged，避免位置竞争。
+private const val TOP_TAB_DRAG_RELEASE_SETTLE_MS = 600L
 
 internal fun resolveFloatingIndicatorStartPaddingPx(
     baseInsetPx: Float,
@@ -461,12 +466,14 @@ internal fun shouldShowTopTabText(mode: Int): Boolean {
 
 internal fun resolveTopTabIconFamily(
     chromeIconFamily: AppSemanticIconFamily,
-    useBottomBarMatchedChrome: Boolean
+    useBottomBarMatchedChrome: Boolean,
+    iconStyle: AppIconStyle = AppIconStyle.AUTO
 ): AppSemanticIconFamily {
-    return if (useBottomBarMatchedChrome) {
-        AppSemanticIconFamily.CUPERTINO
-    } else {
-        chromeIconFamily
+    return when {
+        // MD3 官方推荐样式统一使用 Material 官方字形
+        iconStyle == AppIconStyle.MD3_STANDARD -> AppSemanticIconFamily.MATERIAL
+        useBottomBarMatchedChrome -> AppSemanticIconFamily.CUPERTINO
+        else -> chromeIconFamily
     }
 }
 
@@ -908,8 +915,9 @@ private fun LightweightHomeTopTabs(
     val scrollChannel = com.android.purebilibili.feature.home.LocalHomeScrollChannel.current
     val normalizedLabelMode = normalizeTopTabLabelMode(labelMode)
     val topTabIconFamily = resolveTopTabIconFamily(
-        chromeIconFamily = chromePolicy.iconFamily,
-        useBottomBarMatchedChrome = isFloatingStyle || hasOuterChromeSurface
+        chromeIconFamily = chromePolicy.effectiveIconFamily,
+        useBottomBarMatchedChrome = isFloatingStyle || hasOuterChromeSurface,
+        iconStyle = chromePolicy.iconStyle
     )
     val showIcon = shouldShowTopTabIcon(normalizedLabelMode)
     val showText = shouldShowTopTabText(normalizedLabelMode)
@@ -933,6 +941,17 @@ private fun LightweightHomeTopTabs(
     val topTabDragState = matchedChromeState.dragState
     LaunchedEffect(topTabDragState.settledReleaseCount) {
         if (topTabDragState.settledReleaseCount > 0) {
+            topTabIndicatorDragEngaged = false
+        }
+    }
+    // 兜底：拖动释放（isDragging 下降沿）后延时无条件解除 engaged。
+    // onDragEnd 的 onSettled 若被并发 updateIndex 的 valueJob.cancel 抢占，
+    // settledReleaseCount 不会递增，原 LaunchedEffect 失效会永久卡 engaged，
+    // 导致后续每次 pager 滑动都触发 dragState 动画与跟手位置的竞争抖动。
+    LaunchedEffect(topTabDragState.isDragging) {
+        if (topTabDragState.isDragging) return@LaunchedEffect
+        delay(TOP_TAB_DRAG_RELEASE_SETTLE_MS)
+        if (!topTabDragState.isDragging) {
             topTabIndicatorDragEngaged = false
         }
     }
@@ -1022,8 +1041,24 @@ private fun LightweightHomeTopTabs(
         selectedItemLeftInWindowPx = Float.NaN
         if (categories.isNotEmpty()) {
             val targetIndex = selectedIndex.coerceIn(0, categories.lastIndex)
+            if (pagerState?.isScrollInProgress == true) {
+                // pager 滚动中指示器由 pager 跟手位置（currentPosition）驱动；
+                // 跳过带 press/spring 动画的 updateIndex，避免 dragState 的
+                // isRunning/pressProgress 与 pager 位置双源竞争造成指示器抖动。
+                listState.animateScrollToItem(targetIndex)
+                return@LaunchedEffect
+            }
             topTabDragState.updateIndex(targetIndex)
             listState.animateScrollToItem(targetIndex)
+        }
+    }
+
+    // pager 滚动结束后将 dragState 静默同步到当前选中页，保证之后拖动指示器
+    // 的起点正确（滚动中跳过的 updateIndex 在此补齐，此时无位置竞争）。
+    LaunchedEffect(pagerState?.isScrollInProgress, categories.size) {
+        if (pagerState?.isScrollInProgress == false && categories.isNotEmpty()) {
+            val targetIndex = selectedIndex.coerceIn(0, categories.lastIndex)
+            topTabDragState.updateIndex(targetIndex)
         }
     }
 
@@ -2585,12 +2620,12 @@ fun CategoryTabItem(
      val showText = shouldShowTopTabText(normalizedLabelMode)
      val unselectedIcon = resolveTopTabCategoryIcon(
          categoryKey = categoryKey,
-         iconFamily = chromePolicy.iconFamily,
+         iconFamily = chromePolicy.effectiveIconFamily,
          selected = false
      )
      val selectedIcon = resolveTopTabCategoryIcon(
          categoryKey = categoryKey,
-         iconFamily = chromePolicy.iconFamily,
+         iconFamily = chromePolicy.effectiveIconFamily,
          selected = true
      )
      val iconSize = resolveTopTabIconSizeDp(normalizedLabelMode).dp

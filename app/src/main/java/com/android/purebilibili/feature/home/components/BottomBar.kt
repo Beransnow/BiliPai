@@ -1,6 +1,8 @@
 // 文件路径: feature/home/components/BottomBar.kt
 package com.android.purebilibili.feature.home.components
 
+import com.android.purebilibili.core.ui.AppIconStyle
+import com.android.purebilibili.core.ui.rememberResolvedAppIconStyle
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppBottomNavigationHost
 import com.android.purebilibili.core.ui.AppSpacingTokens
@@ -2384,6 +2386,12 @@ private fun CupertinoBottomBar(
     val normalizedLabelMode = normalizeBottomBarLabelMode(labelMode)
     val showIcon = shouldShowBottomBarIcon(normalizedLabelMode)
     val showText = shouldShowBottomBarText(normalizedLabelMode)
+    val resolvedIconStyle = rememberResolvedAppIconStyle()
+    val sharedBarIconStyle = if (resolvedIconStyle == AppIconStyle.MD3_STANDARD) {
+        SharedFloatingBottomBarIconStyle.MATERIAL
+    } else {
+        SharedFloatingBottomBarIconStyle.CUPERTINO
+    }
     val bottomBarVisibleItems = remember(
         visibleItems,
         homeSettings.isBottomBarSearchEnabled,
@@ -2432,7 +2440,7 @@ private fun CupertinoBottomBar(
             tuning = tuning,
             glassEnabled = glassEnabled,
             liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
-            iconStyle = SharedFloatingBottomBarIconStyle.CUPERTINO,
+            iconStyle = sharedBarIconStyle,
             haptic = haptic,
             hazeState = hazeState,
             motionTier = motionTier,
@@ -2755,6 +2763,12 @@ private fun MiuixBottomBar(
     val normalizedLabelMode = normalizeBottomBarLabelMode(labelMode)
     val showIcon = shouldShowBottomBarIcon(normalizedLabelMode)
     val showText = shouldShowBottomBarText(normalizedLabelMode)
+    val resolvedIconStyle = rememberResolvedAppIconStyle()
+    val sharedBarIconStyle = if (resolvedIconStyle == AppIconStyle.MD3_STANDARD) {
+        SharedFloatingBottomBarIconStyle.MATERIAL
+    } else {
+        SharedFloatingBottomBarIconStyle.CUPERTINO
+    }
     val bottomBarVisibleItems = remember(
         visibleItems,
         homeSettings.isBottomBarSearchEnabled,
@@ -2817,7 +2831,7 @@ private fun MiuixBottomBar(
             tuning = tuning,
             glassEnabled = glassEnabled,
             liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
-            iconStyle = SharedFloatingBottomBarIconStyle.CUPERTINO,
+            iconStyle = sharedBarIconStyle,
             haptic = haptic,
             hazeState = hazeState,
             motionTier = motionTier,
@@ -2926,6 +2940,7 @@ private fun MiuixBottomBar(
                         unselectedColor = skinItemColors.unselectedColor,
                         labelScrimColor = skinItemColors.labelScrimColor,
                         labelScrimAlpha = skinItemColors.labelScrimAlpha,
+                        indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
                         skinIconPath = skinIconPath,
                         reminderBadgeText = reminderBadgeText
                     )
@@ -2983,6 +2998,7 @@ private fun RowScope.MiuixDockedBottomBarItem(
     unselectedColor: Color,
     labelScrimColor: Color = Color.Transparent,
     labelScrimAlpha: Float = 0f,
+    indicatorColor: Color = Color.Transparent,
     skinIconPath: String? = null,
     reminderBadgeText: String? = null
 ) {
@@ -2993,6 +3009,13 @@ private fun RowScope.MiuixDockedBottomBarItem(
         selectedColor = selectedColor,
         unselectedColor = unselectedColor
     )
+    // MD3 官方选中态:secondaryContainer 指示器 + onSecondaryContainer 图标
+    val showIndicator = selected && indicatorColor != Color.Transparent && skinIconPath == null
+    val iconTint = if (showIndicator) {
+        MaterialTheme.colorScheme.onSecondaryContainer
+    } else {
+        baseContentColor
+    }
     val contentColor by animateColorAsState(
         targetValue = if (isPressed) {
             baseContentColor.copy(alpha = if (selected) 0.62f else 0.54f)
@@ -3036,12 +3059,30 @@ private fun RowScope.MiuixDockedBottomBarItem(
                         size = resolveBottomBarMiuixSkinDockIconSize()
                     )
                 } else {
-                    AppIcon(
-                        imageVector = icon,
-                        contentDescription = label,
-                        tint = contentColor,
-                        modifier = Modifier.size(AppSpacingTokens.ExtraLarge + AppSpacingTokens.Micro)
-                    )
+                    val iconGlyph: @Composable () -> Unit = {
+                        AppIcon(
+                            imageVector = icon,
+                            contentDescription = label,
+                            tint = iconTint,
+                            modifier = Modifier.size(AppSpacingTokens.ExtraLarge + AppSpacingTokens.Micro)
+                        )
+                    }
+                    if (showIndicator) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(50))
+                                .background(indicatorColor)
+                                .padding(
+                                    horizontal = 16.dp,
+                                    vertical = 4.dp
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            iconGlyph()
+                        }
+                    } else {
+                        iconGlyph()
+                    }
                 }
             }
         }
@@ -3141,7 +3182,11 @@ private fun KernelSuAlignedBottomBar(
     val selectedIndex = visibleItems.indexOf(currentItem).coerceAtLeast(0)
     val isValidSelection = currentItem in visibleItems
     val baseSelectedColor = MaterialTheme.colorScheme.primary
-    val baseUnselectedColor = MaterialTheme.colorScheme.onSurface
+    val baseUnselectedColor = if (iconStyle == SharedFloatingBottomBarIconStyle.MATERIAL) {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
     val skinContentColors = resolveBottomBarSkinContentColors(
         selectedColor = baseSelectedColor,
         unselectedColor = baseUnselectedColor,

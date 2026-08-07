@@ -1,6 +1,7 @@
 @file:OptIn(androidx.compose.animation.ExperimentalAnimationApi::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 
 package com.android.purebilibili.feature.settings
+import com.android.purebilibili.core.ui.AppIconStyle
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
 
@@ -565,6 +566,20 @@ fun AppearanceSettingsContent(
                             selectedValue = state.themeMode,
                             onSelectionChange = { mode ->
                                 viewModel.setThemeMode(mode)
+                            }
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                        AppPreferenceDivider()
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        SettingsSingleChoicePreference(
+                            title = "图标样式",
+                            subtitle = "主题色容器：图标置于主题色圆角容器内；MD3 官方推荐：onSurfaceVariant 单色图标（全局生效）",
+                            options = resolveAppIconStyleOptions(),
+                            selectedValue = state.appIconStyle,
+                            onSelectionChange = { style ->
+                                viewModel.setAppIconStyle(style)
                             }
                         )
 

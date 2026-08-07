@@ -100,7 +100,7 @@ internal fun resolveSettingsEntryVisual(
         else -> SettingsEntryVisual(
             icon = resolveSettingsSemanticIcon(
                 role = resolveSettingsSearchTargetIconRole(target),
-                iconFamily = policy.iconFamily,
+                iconFamily = policy.effectiveIconFamily,
             ),
             iconTint = iconTint
         )

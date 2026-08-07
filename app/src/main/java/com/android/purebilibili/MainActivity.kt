@@ -1288,7 +1288,7 @@ open class MainActivity : AppCompatActivity() {
                 colorSpec = colorSpec,
                 fontSizePreset = appFontSizePreset,
                 appFontFileName = appFontFileName,
-
+                appIconStyle = appThemeSettings.appIconStyle,
             ) {
                 ProvideAppThemeConfig(config = appThemeConfig) {
                 ProvideRuntimeVisualGuard(

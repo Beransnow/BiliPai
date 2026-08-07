@@ -11,6 +11,8 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.android.purebilibili.core.ui.AppIconStyle
+import com.android.purebilibili.core.ui.resolveAppIconStylePreference
 import com.android.purebilibili.core.ui.blur.BlurIntensity
 import com.android.purebilibili.core.ui.transition.VIDEO_SHARED_TRANSITION_CUSTOM_DEFAULT_MILLIS
 import com.android.purebilibili.core.ui.transition.VideoSharedTransitionSpeed
@@ -545,7 +547,8 @@ data class AppThemeSettings(
     val appScreenshotGestureMode: AppScreenshotGestureMode =
         AppScreenshotGestureMode.TOP_RIGHT_TWO_FINGER_LONG_PRESS,
     val appScreenshotCaptureMode: AppScreenshotCaptureMode =
-        AppScreenshotCaptureMode.FULL_WINDOW
+        AppScreenshotCaptureMode.FULL_WINDOW,
+    val appIconStyle: AppIconStyle = AppIconStyle.AUTO
 )
 
 data class ThemeModeRoleOverrides(
@@ -838,8 +841,8 @@ internal fun resolveListenVideoBottomTabMigration(
 }
 
 data class HomeTopTabSettings(
-    val orderIds: List<String> = listOf("RECOMMEND", "FOLLOW", "POPULAR", "LIVE", "GAME", "PARTITION"),
-    val visibleIds: Set<String> = setOf("RECOMMEND", "FOLLOW", "POPULAR", "LIVE", "GAME", "PARTITION")
+    val orderIds: List<String> = listOf("RECOMMEND", "FOLLOW", "POPULAR", "LIVE", "GAME"),
+    val visibleIds: Set<String> = setOf("RECOMMEND", "FOLLOW", "POPULAR", "LIVE", "GAME")
 )
 
 /**
@@ -1187,6 +1190,7 @@ object SettingsManager {
     //  [新增] 应用图标 Key (Blue, Red, Green...)
     private val KEY_APP_ICON = androidx.datastore.preferences.core.stringPreferencesKey("app_icon_key")
     private val KEY_APP_ICON_APPEARANCE = intPreferencesKey("app_icon_appearance")
+    private val KEY_APP_ICON_STYLE = stringPreferencesKey("app_icon_style")
     //  [新增] 底部栏样式 (true=悬浮, false=贴底)
     private val KEY_BOTTOM_BAR_FLOATING = booleanPreferencesKey("bottom_bar_floating")
     //  [新增] 底栏显示模式 (0=图标+文字, 1=仅图标, 2=仅文字)
@@ -1241,8 +1245,10 @@ object SettingsManager {
         const val TEXT_ONLY = 2
     }
 
-    private const val DEFAULT_TOP_TAB_ORDER = "RECOMMEND,FOLLOW,POPULAR,LIVE,GAME,PARTITION"
-    private const val DEFAULT_TOP_TAB_VISIBLE = "RECOMMEND,FOLLOW,POPULAR,LIVE,GAME,PARTITION"
+    private const val DEFAULT_TOP_TAB_ORDER = "RECOMMEND,FOLLOW,POPULAR,LIVE,GAME"
+    private const val DEFAULT_TOP_TAB_VISIBLE = "RECOMMEND,FOLLOW,POPULAR,LIVE,GAME"
+    /** 首页顶部 dock 标签数量上限。 */
+    const val MAX_TOP_TABS = 6
     private const val DEFAULT_DYNAMIC_TAB_VISIBLE = "all,video,pgc,article,up"
     //  [新增] 模糊效果开关
     private val KEY_HEADER_BLUR_ENABLED = booleanPreferencesKey("header_blur_enabled")
@@ -1484,9 +1490,16 @@ object SettingsManager {
             .split(",")
             .filter { it.isNotBlank() }
             .toSet()
+        // 旧版本可能保存超过上限的可见标签：按用户顺序裁剪到 MAX_TOP_TABS，
+        // 保证运行时展示与设置界面上限一致。
+        val cappedVisibleIds = if (visibleIds.size <= MAX_TOP_TABS) {
+            visibleIds
+        } else {
+            orderIds.filter { it in visibleIds }.take(MAX_TOP_TABS).toSet()
+        }
         return HomeTopTabSettings(
             orderIds = orderIds,
-            visibleIds = visibleIds
+            visibleIds = cappedVisibleIds
         )
     }
 
@@ -1880,7 +1893,8 @@ object SettingsManager {
             appScreenshotCaptureMode = AppScreenshotCaptureMode.fromValue(
                 preferences[KEY_APP_SCREENSHOT_CAPTURE_MODE]
                     ?: AppScreenshotCaptureMode.FULL_WINDOW.value
-            )
+            ),
+            appIconStyle = resolveAppIconStylePreference(preferences[KEY_APP_ICON_STYLE])
         )
     }
 
@@ -1952,11 +1966,24 @@ object SettingsManager {
         )
     }
 
+    suspend fun setAppIconStyle(context: Context, style: AppIconStyle) {
+        editSettingsAndCommitPrefs(
+            context, "theme_cache",
+            editSettings = { this[KEY_APP_ICON_STYLE] = style.name },
+            editPrefs = { putString("app_icon_style", style.name) },
+        )
+    }
+
     fun getAppLanguageSync(context: Context): AppLanguage {
         val rawValue = context.getSharedPreferences("theme_cache", Context.MODE_PRIVATE)
             .getInt("app_language", AppLanguage.FOLLOW_SYSTEM.value)
         return resolveAppLanguagePreference(rawValue)
     }
+
+    fun getAppIconStyle(context: Context): Flow<AppIconStyle> =
+        context.settingsDataStore.data.map { preferences ->
+            resolveAppIconStylePreference(preferences[KEY_APP_ICON_STYLE])
+        }
 
     suspend fun setDarkThemeStyle(context: Context, style: DarkThemeStyle) {
         val success = editSettingsAndCommitPrefs(
@@ -6394,6 +6421,7 @@ object SettingsManager {
             IntShareablePreferenceDefinition(KEY_THEME_COLOR_INDEX, SettingsShareSection.APPEARANCE),
             StringShareablePreferenceDefinition(KEY_APP_ICON, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_APP_ICON_APPEARANCE, SettingsShareSection.APPEARANCE),
+            StringShareablePreferenceDefinition(KEY_APP_ICON_STYLE, SettingsShareSection.APPEARANCE),
             BooleanShareablePreferenceDefinition(KEY_BOTTOM_BAR_FLOATING, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_BOTTOM_BAR_LABEL_MODE, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_TOP_TAB_LABEL_MODE, SettingsShareSection.APPEARANCE),

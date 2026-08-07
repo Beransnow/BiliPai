@@ -63,9 +63,12 @@ import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.core.theme.resolveAndroidNativeChromeTokens
 import com.android.purebilibili.core.ui.resolveCompactCapsuleChromeSpec
 import com.android.purebilibili.core.theme.iOSCornerRadius
+import com.android.purebilibili.core.ui.LocalAppIconStyle
 import com.android.purebilibili.core.ui.LocalAppThemeConfig
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.core.ui.adaptiveSquircleBackground
+import com.android.purebilibili.core.ui.AppIconStyle
+import com.android.purebilibili.core.ui.rememberResolvedAppIconStyle
 import io.github.alexzhirkevich.cupertino.CupertinoSwitch
 import io.github.alexzhirkevich.cupertino.CupertinoSwitchDefaults
 import io.github.alexzhirkevich.cupertino.icons.CupertinoIcons
@@ -365,31 +368,49 @@ internal fun resolveAdaptivePreferenceIconContainerColor(
     iconTint: Color,
     semanticTint: Color,
     treatment: AppPreferenceIconTreatment,
-): Color = semanticTint
+    iconStyle: AppIconStyle = AppIconStyle.AUTO,
+    colorScheme: ColorScheme? = null,
+): Color = when (iconStyle) {
+    AppIconStyle.THEME_CONTAINER -> colorScheme?.secondaryContainer ?: semanticTint
+    AppIconStyle.MD3_STANDARD -> Color.Transparent
+    AppIconStyle.AUTO -> semanticTint
+}
 
 internal fun resolveAdaptivePreferenceIconContentColor(
     containerColor: Color,
     colorScheme: ColorScheme,
+    iconStyle: AppIconStyle = AppIconStyle.AUTO,
 ): Color {
     if (containerColor == Color.Unspecified) return Color.Unspecified
-    val opaqueContainer = containerColor.copy(alpha = 1f)
-    return when (opaqueContainer) {
-        colorScheme.primary.copy(alpha = 1f) -> colorScheme.onPrimary
-        colorScheme.secondary.copy(alpha = 1f) -> colorScheme.onSecondary
-        colorScheme.tertiary.copy(alpha = 1f) -> colorScheme.onTertiary
-        colorScheme.error.copy(alpha = 1f) -> colorScheme.onError
-        colorScheme.primaryContainer.copy(alpha = 1f) -> colorScheme.onPrimaryContainer
-        colorScheme.secondaryContainer.copy(alpha = 1f) -> colorScheme.onSecondaryContainer
-        colorScheme.tertiaryContainer.copy(alpha = 1f) -> colorScheme.onTertiaryContainer
-        colorScheme.errorContainer.copy(alpha = 1f) -> colorScheme.onErrorContainer
-        else -> if (opaqueContainer.luminance() >= 0.72f) Color.Black else Color.White
+    return when (iconStyle) {
+        AppIconStyle.THEME_CONTAINER -> colorScheme.onSecondaryContainer
+        AppIconStyle.MD3_STANDARD -> colorScheme.onSurfaceVariant
+        AppIconStyle.AUTO -> {
+            val opaqueContainer = containerColor.copy(alpha = 1f)
+            when (opaqueContainer) {
+                colorScheme.primary.copy(alpha = 1f) -> colorScheme.onPrimary
+                colorScheme.secondary.copy(alpha = 1f) -> colorScheme.onSecondary
+                colorScheme.tertiary.copy(alpha = 1f) -> colorScheme.onTertiary
+                colorScheme.error.copy(alpha = 1f) -> colorScheme.onError
+                colorScheme.primaryContainer.copy(alpha = 1f) -> colorScheme.onPrimaryContainer
+                colorScheme.secondaryContainer.copy(alpha = 1f) -> colorScheme.onSecondaryContainer
+                colorScheme.tertiaryContainer.copy(alpha = 1f) -> colorScheme.onTertiaryContainer
+                colorScheme.errorContainer.copy(alpha = 1f) -> colorScheme.onErrorContainer
+                else -> if (opaqueContainer.luminance() >= 0.72f) Color.Black else Color.White
+            }
+        }
     }
 }
 
 internal fun resolveAdaptivePreferenceIconBackgroundAlpha(
     treatment: AppPreferenceIconTreatment,
     tonalAlpha: Float,
-): Float = if (treatment == AppPreferenceIconTreatment.FILLED) 1f else tonalAlpha
+    iconStyle: AppIconStyle = AppIconStyle.AUTO,
+): Float = when (iconStyle) {
+    AppIconStyle.THEME_CONTAINER -> 1f
+    AppIconStyle.MD3_STANDARD -> 0f
+    AppIconStyle.AUTO -> if (treatment == AppPreferenceIconTreatment.FILLED) 1f else tonalAlpha
+}
 
 internal fun resolveAdaptiveSwitchVisualSpec(
     uiPreset: UiPreset,
@@ -440,8 +461,9 @@ fun rememberAdaptivePreferenceIconContentColor(
     containerColor: Color,
 ): Color {
     val colorScheme = MaterialTheme.colorScheme
-    return remember(containerColor, colorScheme) {
-        resolveAdaptivePreferenceIconContentColor(containerColor, colorScheme)
+    val iconStyle = rememberResolvedAppIconStyle()
+    return remember(containerColor, colorScheme, iconStyle) {
+        resolveAdaptivePreferenceIconContentColor(containerColor, colorScheme, iconStyle)
     }
 }
 
@@ -451,8 +473,16 @@ fun rememberAdaptivePreferenceIconContainerColor(
 ): Color {
     val treatment = LocalAppPreferenceIconTreatment.current
     val semanticTint = rememberAdaptiveSemanticIconTint(iconTint)
-    return remember(iconTint, semanticTint, treatment) {
-        resolveAdaptivePreferenceIconContainerColor(iconTint, semanticTint, treatment)
+    val iconStyle = rememberResolvedAppIconStyle()
+    val colorScheme = MaterialTheme.colorScheme
+    return remember(iconTint, semanticTint, treatment, iconStyle, colorScheme) {
+        resolveAdaptivePreferenceIconContainerColor(
+            iconTint = iconTint,
+            semanticTint = semanticTint,
+            treatment = treatment,
+            iconStyle = iconStyle,
+            colorScheme = colorScheme,
+        )
     }
 }
 
@@ -824,6 +854,7 @@ internal fun AdaptiveSwitchPreferenceContent(
         resolveAdaptiveListRowVisualSpec(uiPreset, androidNativeVariant)
     }
     val iconTreatment = LocalAppPreferenceIconTreatment.current
+    val iconStyle = rememberResolvedAppIconStyle()
     val effectiveIconTint = rememberAdaptivePreferenceIconContainerColor(iconTint)
     val filledIconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
     val iconContentColor = if (iconTreatment == AppPreferenceIconTreatment.FILLED) {
@@ -834,6 +865,7 @@ internal fun AdaptiveSwitchPreferenceContent(
     val iconBackgroundAlpha = resolveAdaptivePreferenceIconBackgroundAlpha(
         iconTreatment,
         visualSpec.iconBackgroundAlpha,
+        iconStyle,
     )
     val cornerRadiusScale = LocalCornerRadiusScale.current
     val iconCornerRadius = if (uiPreset == UiPreset.MD3) visualSpec.iconCornerRadiusDp.dp else iOSCornerRadius.Small * cornerRadiusScale
@@ -997,6 +1029,7 @@ fun AdaptiveSliderPreferenceRenderer(
         resolveAdaptiveListRowVisualSpec(uiPreset, androidNativeVariant)
     }
     val iconTreatment = LocalAppPreferenceIconTreatment.current
+    val iconStyle = rememberResolvedAppIconStyle()
     val effectiveIconTint = rememberAdaptivePreferenceIconContainerColor(iconTint)
     val filledIconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
     val iconContentColor = if (iconTreatment == AppPreferenceIconTreatment.FILLED) {
@@ -1007,6 +1040,7 @@ fun AdaptiveSliderPreferenceRenderer(
     val iconBackgroundAlpha = resolveAdaptivePreferenceIconBackgroundAlpha(
         iconTreatment,
         visualSpec.iconBackgroundAlpha,
+        iconStyle,
     )
     val cornerRadiusScale = LocalCornerRadiusScale.current
     val iconCornerRadius = if (uiPreset == UiPreset.MD3) {
@@ -1142,6 +1176,7 @@ internal fun AdaptivePreferenceContent(
         resolveAdaptiveListRowVisualSpec(uiPreset, androidNativeVariant)
     }
     val iconTreatment = LocalAppPreferenceIconTreatment.current
+    val iconStyle = rememberResolvedAppIconStyle()
     val effectiveIconTint = rememberAdaptivePreferenceIconContainerColor(iconTint)
     val filledIconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
     val iconContentColor = if (iconTreatment == AppPreferenceIconTreatment.FILLED) {
@@ -1152,6 +1187,7 @@ internal fun AdaptivePreferenceContent(
     val iconBackgroundAlpha = resolveAdaptivePreferenceIconBackgroundAlpha(
         iconTreatment,
         visualSpec.iconBackgroundAlpha,
+        iconStyle,
     )
     val cornerRadiusScale = LocalCornerRadiusScale.current
     val iconCornerRadius = if (uiPreset == UiPreset.MD3) visualSpec.iconCornerRadiusDp.dp else iOSCornerRadius.Small * cornerRadiusScale
@@ -1601,6 +1637,7 @@ fun AdaptivePreferenceGridItemRenderer(
         resolveAdaptiveListComponentVisualSpec(uiPreset, androidNativeVariant)
     }
     val iconTreatment = LocalAppPreferenceIconTreatment.current
+    val iconStyle = rememberResolvedAppIconStyle()
     val effectiveIconTint = rememberAdaptivePreferenceIconContainerColor(iconTint)
     val filledIconContentColor = rememberAdaptivePreferenceIconContentColor(effectiveIconTint)
     val iconContentColor = if (iconTreatment == AppPreferenceIconTreatment.FILLED) {
@@ -1611,6 +1648,7 @@ fun AdaptivePreferenceGridItemRenderer(
     val iconBackgroundAlpha = resolveAdaptivePreferenceIconBackgroundAlpha(
         iconTreatment,
         visualSpec.iconBackgroundAlpha,
+        iconStyle,
     )
     val cornerRadiusScale = LocalCornerRadiusScale.current
     val itemCornerRadius = if (uiPreset == UiPreset.MD3) visualSpec.gridCornerRadiusDp.dp else iOSCornerRadius.Medium * cornerRadiusScale

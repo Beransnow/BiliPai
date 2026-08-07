@@ -1,5 +1,6 @@
 package com.android.purebilibili.feature.settings
 
+import com.android.purebilibili.core.ui.AppIconStyle
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import org.junit.Assert.assertEquals
@@ -37,6 +38,19 @@ class AppearanceThemeSegmentPolicyTest {
         assertEquals("Standard Black", options[0].label)
         assertEquals(DarkThemeStyle.AMOLED, options[1].value)
         assertEquals("AMOLED Black", options[1].label)
+    }
+
+    @Test
+    fun `resolveAppIconStyleOptions exposes auto plus the two icon styles`() {
+        val options = resolveAppIconStyleOptions()
+
+        assertEquals(3, options.size)
+        assertEquals(AppIconStyle.AUTO, options[0].value)
+        assertEquals("跟随预设", options[0].label)
+        assertEquals(AppIconStyle.THEME_CONTAINER, options[1].value)
+        assertEquals("主题色容器", options[1].label)
+        assertEquals(AppIconStyle.MD3_STANDARD, options[2].value)
+        assertEquals("MD3 官方推荐", options[2].label)
     }
 
     @Test

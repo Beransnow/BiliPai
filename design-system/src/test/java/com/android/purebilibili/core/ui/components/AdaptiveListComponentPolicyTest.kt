@@ -10,6 +10,7 @@ import com.android.purebilibili.core.theme.iOSPurple
 import com.android.purebilibili.core.theme.iOSRed
 import com.android.purebilibili.core.theme.iOSSystemGray
 import com.android.purebilibili.core.theme.UiPreset
+import com.android.purebilibili.core.ui.AppIconStyle
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -138,6 +139,70 @@ class AdaptiveListComponentPolicyTest {
                 iconTint = iOSBlue,
                 semanticTint = colorScheme.secondary,
                 treatment = AppPreferenceIconTreatment.FILLED,
+            ),
+        )
+    }
+
+    @Test
+    fun `theme container icon style uses opaque secondary container with on color glyphs`() {
+        val colorScheme = lightColorScheme()
+
+        assertEquals(
+            colorScheme.secondaryContainer,
+            resolveAdaptivePreferenceIconContainerColor(
+                iconTint = iOSBlue,
+                semanticTint = colorScheme.primary,
+                treatment = AppPreferenceIconTreatment.FILLED,
+                iconStyle = AppIconStyle.THEME_CONTAINER,
+                colorScheme = colorScheme,
+            ),
+        )
+        assertEquals(
+            1f,
+            resolveAdaptivePreferenceIconBackgroundAlpha(
+                treatment = AppPreferenceIconTreatment.FILLED,
+                tonalAlpha = 0.14f,
+                iconStyle = AppIconStyle.THEME_CONTAINER,
+            ),
+        )
+        assertEquals(
+            colorScheme.onSecondaryContainer,
+            resolveAdaptivePreferenceIconContentColor(
+                containerColor = colorScheme.secondaryContainer,
+                colorScheme = colorScheme,
+                iconStyle = AppIconStyle.THEME_CONTAINER,
+            ),
+        )
+    }
+
+    @Test
+    fun `md3 standard icon style is monochrome without container`() {
+        val colorScheme = lightColorScheme()
+
+        assertEquals(
+            Color.Transparent,
+            resolveAdaptivePreferenceIconContainerColor(
+                iconTint = iOSBlue,
+                semanticTint = colorScheme.primary,
+                treatment = AppPreferenceIconTreatment.FILLED,
+                iconStyle = AppIconStyle.MD3_STANDARD,
+                colorScheme = colorScheme,
+            ),
+        )
+        assertEquals(
+            0f,
+            resolveAdaptivePreferenceIconBackgroundAlpha(
+                treatment = AppPreferenceIconTreatment.FILLED,
+                tonalAlpha = 0.14f,
+                iconStyle = AppIconStyle.MD3_STANDARD,
+            ),
+        )
+        assertEquals(
+            colorScheme.onSurfaceVariant,
+            resolveAdaptivePreferenceIconContentColor(
+                containerColor = Color.Transparent,
+                colorScheme = colorScheme,
+                iconStyle = AppIconStyle.MD3_STANDARD,
             ),
         )
     }

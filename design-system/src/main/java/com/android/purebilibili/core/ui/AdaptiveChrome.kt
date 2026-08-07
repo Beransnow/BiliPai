@@ -349,26 +349,39 @@ enum class AppTopTabPresentation {
 data class AppTopChromePolicy(
     val tabPresentation: AppTopTabPresentation,
     val iconFamily: AppSemanticIconFamily,
+    val iconStyle: AppIconStyle = AppIconStyle.AUTO,
     val compactChromeSpec: CompactCapsuleChromeSpec,
-)
+) {
+    /** MD3 官方推荐样式强制 Material 官方字形。 */
+    val effectiveIconFamily: AppSemanticIconFamily
+        get() = if (iconStyle == AppIconStyle.MD3_STANDARD) {
+            AppSemanticIconFamily.MATERIAL
+        } else {
+            iconFamily
+        }
+}
 
 fun resolveAppTopChromePolicy(
     uiPreset: UiPreset,
     androidNativeVariant: AndroidNativeVariant,
+    iconStyle: AppIconStyle = AppIconStyle.AUTO,
 ): AppTopChromePolicy = when {
     uiPreset == UiPreset.IOS -> AppTopChromePolicy(
         tabPresentation = AppTopTabPresentation.MOVING_CAPSULE,
         iconFamily = AppSemanticIconFamily.CUPERTINO,
+        iconStyle = iconStyle,
         compactChromeSpec = resolveCompactCapsuleChromeSpec(uiPreset, androidNativeVariant),
     )
     androidNativeVariant == AndroidNativeVariant.MIUIX -> AppTopChromePolicy(
         tabPresentation = AppTopTabPresentation.TONAL_CAPSULE,
         iconFamily = AppSemanticIconFamily.MATERIAL,
+        iconStyle = iconStyle,
         compactChromeSpec = resolveCompactCapsuleChromeSpec(uiPreset, androidNativeVariant),
     )
     else -> AppTopChromePolicy(
         tabPresentation = AppTopTabPresentation.MATERIAL_UNDERLINE,
         iconFamily = AppSemanticIconFamily.MATERIAL,
+        iconStyle = iconStyle,
         compactChromeSpec = resolveCompactCapsuleChromeSpec(uiPreset, androidNativeVariant),
     )
 }
@@ -377,8 +390,9 @@ fun resolveAppTopChromePolicy(
 fun rememberAppTopChromePolicy(): AppTopChromePolicy {
     val uiPreset = LocalUiPreset.current
     val androidNativeVariant = LocalAndroidNativeVariant.current
-    return remember(uiPreset, androidNativeVariant) {
-        resolveAppTopChromePolicy(uiPreset, androidNativeVariant)
+    val iconStyle = rememberResolvedAppIconStyle()
+    return remember(uiPreset, androidNativeVariant, iconStyle) {
+        resolveAppTopChromePolicy(uiPreset, androidNativeVariant, iconStyle)
     }
 }
 

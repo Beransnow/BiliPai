@@ -135,7 +135,7 @@ internal enum class SettingsIconRole {
 internal fun rememberSettingsSemanticIcon(
     role: SettingsIconRole,
 ): ImageVector {
-    val iconFamily = rememberAppSemanticVisualPolicy().iconFamily
+    val iconFamily = rememberAppSemanticVisualPolicy().effectiveIconFamily
     return remember(role, iconFamily) {
         resolveSettingsSemanticIcon(role, iconFamily)
     }

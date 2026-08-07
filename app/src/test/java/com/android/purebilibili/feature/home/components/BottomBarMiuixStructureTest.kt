@@ -594,7 +594,7 @@ class BottomBarMiuixStructureTest {
             .substringBefore("@Composable\nprivate fun MaterialBottomBar(")
 
         assertTrue(iosRendererSource.contains("KernelSuAlignedBottomBar("))
-        assertTrue(iosRendererSource.contains("iconStyle = SharedFloatingBottomBarIconStyle.CUPERTINO"))
+        assertTrue(iosRendererSource.contains("iconStyle = sharedBarIconStyle"))
         assertTrue(iosRendererSource.contains("if (isFloating) {"))
         assertFalse(iosRendererSource.contains("if (isFloating && homeSettings.isBottomBarLiquidGlassEnabled)"))
     }
@@ -611,7 +611,7 @@ class BottomBarMiuixStructureTest {
         assertTrue(source.contains("MiuixBottomBar("))
         assertTrue(source.contains("if (isFloating) {"))
         assertTrue(source.contains("KernelSuAlignedBottomBar("))
-        assertTrue(source.contains("iconStyle = SharedFloatingBottomBarIconStyle.CUPERTINO"))
+        assertTrue(source.contains("iconStyle = sharedBarIconStyle"))
         assertTrue(source.contains("private enum class SharedFloatingBottomBarIconStyle"))
         assertTrue(source.contains("AppNavigationBar("))
         assertTrue(source.contains("AppPlatformNavigationBar("))

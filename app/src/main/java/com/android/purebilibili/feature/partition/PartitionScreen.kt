@@ -489,7 +489,7 @@ fun PartitionContent(
 ) {
     val context = LocalContext.current
     val homeSettings by SettingsManager.getHomeSettings(context).collectAsStateWithLifecycle(initialValue = HomeSettings())
-    val topChromeIconFamily = rememberAppTopChromePolicy().iconFamily
+    val topChromeIconFamily = rememberAppTopChromePolicy().effectiveIconFamily
     val liquidGlassIndicatorEnabled = rememberAppChromeLiquidGlassEnabled(
         individualEnabled = homeSettings.isBottomBarLiquidGlassEnabled,
         androidNativeEnabled = homeSettings.androidNativeLiquidGlassEnabled,

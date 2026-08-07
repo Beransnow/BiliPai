@@ -23,6 +23,7 @@ import com.android.purebilibili.core.store.supportsAppIconAppearance
 import com.android.purebilibili.core.theme.AppFontSizePreset
 import com.android.purebilibili.core.theme.AppUiScalePreset
 import com.android.purebilibili.core.theme.syncThemeRoleControlAccent
+import com.android.purebilibili.core.ui.AppIconStyle
 import com.android.purebilibili.core.ui.AppThemeSelection
 import com.android.purebilibili.core.ui.toAppThemeSelection
 import com.android.purebilibili.core.ui.toUiStyle
@@ -79,6 +80,7 @@ data class SettingsUiState(
     val gestureSensitivity: Float = 1.0f,
     val themeColorIndex: Int = 0,
     val appIcon: String = DEFAULT_APP_ICON_KEY,
+    val appIconStyle: AppIconStyle = AppIconStyle.AUTO,
     val isBottomBarFloating: Boolean = true,
     val bottomBarLabelMode: Int = 1,  // 0=图标+文字, 1=仅图标, 2=仅文字
     val headerBlurEnabled: Boolean = true,
@@ -150,6 +152,7 @@ data class ExtraSettings(
     val gestureSensitivity: Float,
     val themeColorIndex: Int,
     val appIcon: String,
+    val appIconStyle: AppIconStyle,
     val appFontSizePreset: AppFontSizePreset,
     val appFontFileName: String,
     val appFontDisplayName: String,
@@ -218,6 +221,7 @@ private data class BaseSettings(
     val gestureSensitivity: Float,
     val themeColorIndex: Int,
     val appIcon: String,
+    val appIconStyle: AppIconStyle,
     val isBottomBarFloating: Boolean,
     val bottomBarLabelMode: Int,
     val headerBlurEnabled: Boolean,
@@ -263,6 +267,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         val gestureSensitivity: Float,
         val themeColorIndex: Int,
         val appIcon: String,
+        val appIconStyle: AppIconStyle,
         val appFontSizePreset: AppFontSizePreset,
         val appFontFileName: String,
         val appFontDisplayName: String,
@@ -313,6 +318,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         SettingsManager.getGestureSensitivity(context).asAnyFlow(),
         SettingsManager.getThemeColorIndex(context).asAnyFlow(),
         SettingsManager.getAppIcon(context).asAnyFlow(),
+        SettingsManager.getAppIconStyle(context).asAnyFlow(),
         SettingsManager.getAppFontSizePreset(context).asAnyFlow(),
         SettingsManager.getAppFontFileName(context).asAnyFlow(),
         SettingsManager.getAppFontDisplayName(context).asAnyFlow(),
@@ -323,11 +329,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             gestureSensitivity = values[0] as Float,
             themeColorIndex = values[1] as Int,
             appIcon = values[2] as String,
-            appFontSizePreset = values[3] as AppFontSizePreset,
-            appFontFileName = values[4] as String,
-            appFontDisplayName = values[5] as String,
-            appUiScalePreset = values[6] as AppUiScalePreset,
-            appDpiOverridePercent = values[7] as Int
+            appIconStyle = values[3] as AppIconStyle,
+            appFontSizePreset = values[4] as AppFontSizePreset,
+            appFontFileName = values[5] as String,
+            appFontDisplayName = values[6] as String,
+            appUiScalePreset = values[7] as AppUiScalePreset,
+            appDpiOverridePercent = values[8] as Int
         )
     }
     
@@ -443,6 +450,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             gestureSensitivity = ui1.gestureSensitivity,
             themeColorIndex = ui1.themeColorIndex,
             appIcon = ui1.appIcon,
+            appIconStyle = ui1.appIconStyle,
             appFontSizePreset = ui1.appFontSizePreset,
             appFontFileName = ui1.appFontFileName,
             appFontDisplayName = ui1.appFontDisplayName,
@@ -537,6 +545,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             gestureSensitivity = extra.gestureSensitivity,
             themeColorIndex = extra.themeColorIndex,
             appIcon = extra.appIcon,
+            appIconStyle = extra.appIconStyle,
             isBottomBarFloating = extra.isBottomBarFloating,
             bottomBarLabelMode = extra.bottomBarLabelMode,
             headerBlurEnabled = extra.headerBlurEnabled,
@@ -600,6 +609,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             gestureSensitivity = settings.gestureSensitivity,
             themeColorIndex = settings.themeColorIndex,
             appIcon = settings.appIcon,
+            appIconStyle = settings.appIconStyle,
             isBottomBarFloating = settings.isBottomBarFloating,
             bottomBarLabelMode = settings.bottomBarLabelMode,
             headerBlurEnabled = settings.headerBlurEnabled,
@@ -738,6 +748,11 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun setAppLanguage(appLanguage: AppLanguage) {
         viewModelScope.launch {
             SettingsManager.setAppLanguage(context, appLanguage)
+        }
+    }
+    fun setAppIconStyle(iconStyle: AppIconStyle) {
+        viewModelScope.launch {
+            SettingsManager.setAppIconStyle(context, iconStyle)
         }
     }
     fun toggleDynamicColor(value: Boolean) { viewModelScope.launch { SettingsManager.setDynamicColor(context, value) } }

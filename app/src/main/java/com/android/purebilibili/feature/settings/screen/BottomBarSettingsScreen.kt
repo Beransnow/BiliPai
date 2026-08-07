@@ -113,7 +113,7 @@ internal fun resolveAllBottomBarTabs(
     BottomBarTabConfig("PLUGINS", "插件中心", resolveBottomBarTabIcon("PLUGINS", iconFamily), isDefault = false)
 )
 
-private val defaultTopTabIds = listOf("RECOMMEND", "FOLLOW", "POPULAR", "LIVE", "GAME", "PARTITION")
+private val defaultTopTabIds = listOf("RECOMMEND", "FOLLOW", "POPULAR", "LIVE", "GAME")
 
 internal fun resolveAllTopTabs(
     iconFamily: AppSemanticIconFamily = AppSemanticIconFamily.CUPERTINO,
@@ -162,7 +162,7 @@ fun BottomBarSettingsContent(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val iconFamily = rememberAppSemanticVisualPolicy().iconFamily
+    val iconFamily = rememberAppSemanticVisualPolicy().effectiveIconFamily
     val windowSizeClass = LocalWindowSizeClass.current
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
@@ -222,9 +222,14 @@ fun BottomBarSettingsContent(
                 .filter { id -> allTopTabs.any { it.id == id } }
         )
     }
-    var localTopTabVisible by remember(topTabVisible) {
+    var localTopTabVisible by remember(topTabVisible, topTabOrder) {
         mutableStateOf(
-            topTabVisible.filter { id -> allTopTabs.any { it.id == id } }.toSet()
+            // 老配置可能超过上限：按用户顺序（含默认补全）裁剪到 SettingsManager.MAX_TOP_TABS
+            (topTabOrder + allTopTabs.map { it.id })
+                .distinct()
+                .filter { id -> topTabVisible.any { it == id } && allTopTabs.any { it.id == id } }
+                .take(SettingsManager.MAX_TOP_TABS)
+                .toSet()
         )
     }
     
@@ -527,7 +532,7 @@ fun BottomBarSettingsContent(
                                 verticalArrangement = Arrangement.spacedBy(10.dp),
                             ) {
                             AppText(
-                                text = "可调整顶部标签的显示/隐藏和顺序，第一位会直接显示在首页顶部。",
+                                text = "可调整顶部标签的显示/隐藏和顺序，第一位会直接显示在首页顶部。最多显示 ${SettingsManager.MAX_TOP_TABS} 个标签。",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -604,7 +609,7 @@ fun BottomBarSettingsContent(
                                 } else if (isVisibleTab) {
                                     localTopTabVisible.size > 2
                                 } else {
-                                    true
+                                    localTopTabVisible.size < SettingsManager.MAX_TOP_TABS
                                 }
                                 Row(
                                     modifier = Modifier
