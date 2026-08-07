@@ -18,11 +18,7 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -37,7 +33,10 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
+import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.components.AppText
 
 /** Minimum touch target for quality/speed rows (Material accessibility). */
 private val QualityMenuRowMinHeight = 48.dp
@@ -93,7 +92,7 @@ fun QualitySelectionMenu(
                 ) { onDismiss() },
             contentAlignment = Alignment.Center
         ) {
-            Surface(
+            AppSurface(
                 modifier = Modifier
                     .widthIn(min = 220.dp, max = 300.dp)
                     .heightIn(max = 440.dp)
@@ -111,14 +110,14 @@ fun QualitySelectionMenu(
                         .padding(vertical = 8.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    Text(
+                    AppText(
                         text = "画质选择",
                         color = Color.White,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
                     )
-                    HorizontalDivider(color = Color.White.copy(0.1f))
+                    AppHorizontalDivider(color = Color.White.copy(0.1f))
                     qualities.forEachIndexed { index, quality ->
                         val isSelected = quality == currentQuality
                         val qualityId = qualityIds.getOrNull(index) ?: 0
@@ -146,7 +145,7 @@ fun QualitySelectionMenu(
                                 .padding(horizontal = 16.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
+                            AppText(
                                 text = quality,
                                 color = when {
                                     isSelected -> MaterialTheme.colorScheme.primary
@@ -159,7 +158,7 @@ fun QualitySelectionMenu(
 
                             if (tag != null) {
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Surface(
+                                AppSurface(
                                     color = if (tag == "大会员") {
                                         MaterialTheme.colorScheme.primary
                                     } else {
@@ -167,7 +166,7 @@ fun QualitySelectionMenu(
                                     },
                                     shape = RoundedCornerShape(4.dp)
                                 ) {
-                                    Text(
+                                    AppText(
                                         text = tag,
                                         color = Color.White,
                                         fontSize = 10.sp,
@@ -239,7 +238,7 @@ fun SpeedSelectionMenu(
                 ) { onDismiss() },
             contentAlignment = contentAlignment
         ) {
-            Surface(
+            AppSurface(
                 modifier = Modifier
                     .then(
                         if (placement == SpeedSelectionMenuPlacement.RIGHT_SIDE) {
@@ -264,14 +263,14 @@ fun SpeedSelectionMenu(
                         .padding(vertical = 8.dp)
                         .verticalScroll(rememberScrollState())
                 ) {
-                    Text(
+                    AppText(
                         text = "播放速度",
                         color = Color.White,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
                     )
-                    HorizontalDivider(color = Color.White.copy(0.1f))
+                    AppHorizontalDivider(color = Color.White.copy(0.1f))
                     speedOptions.forEach { speed ->
                         val isSelected = speed == currentSpeed
                         Row(
@@ -292,7 +291,7 @@ fun SpeedSelectionMenu(
                                 .padding(horizontal = 16.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
+                            AppText(
                                 text = if (speed == 1.0f) "正常" else "${speed}x",
                                 color = if (isSelected) {
                                     MaterialTheme.colorScheme.primary

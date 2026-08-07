@@ -1,5 +1,6 @@
 // 文件路径: feature/video/SponsorSkipUI.kt
 package com.android.purebilibili.feature.video.ui.components
+import com.android.purebilibili.core.ui.components.AppFilterChip
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppTextButton
@@ -14,7 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -205,7 +206,7 @@ fun SponsorContributionOverlay(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             SponsorCategory.ALL_CATEGORIES.forEach { category ->
-                                FilterChip(
+                                AppFilterChip(
                                     selected = state.category == category,
                                     onClick = { onCategoryChange(category) },
                                     enabled = state.phase == SponsorContributionPhase.REVIEW,
@@ -223,7 +224,7 @@ fun SponsorContributionOverlay(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             sponsorBlockAllowedActionTypes(state.category).forEach { actionType ->
-                                FilterChip(
+                                AppFilterChip(
                                     selected = state.actionType == actionType,
                                     onClick = { onActionTypeChange(actionType) },
                                     enabled = state.phase == SponsorContributionPhase.REVIEW,

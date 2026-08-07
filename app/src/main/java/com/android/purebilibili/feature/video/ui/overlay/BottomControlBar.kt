@@ -33,7 +33,8 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
-import androidx.compose.material3.*
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,6 +51,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppSlider
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppSwitch
 import com.android.purebilibili.core.util.FormatUtils
@@ -839,7 +841,7 @@ fun BottomControlBar(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Text(
+                    AppText(
                         text = currentAudioQualityLabel.ifBlank { "音质" },
                         color = Color.White,
                         fontSize = layoutPolicy.actionTextFontSp.sp,
@@ -1416,7 +1418,7 @@ private fun VideoEnhancementSettingsPanel(
                         fontWeight = FontWeight.SemiBold
                     )
                 }
-                Slider(
+                AppSlider(
                     value = fsrSharpness.coerceIn(0f, 1f),
                     onValueChange = onFsrSharpnessChange,
                     valueRange = 0f..1f,
