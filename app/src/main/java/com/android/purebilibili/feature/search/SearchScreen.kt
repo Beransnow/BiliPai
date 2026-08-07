@@ -3029,7 +3029,10 @@ fun SearchResultCard(
         ) {
             UpBadgeName(
                 name = video.owner.name,
-                leadingContent = if (video.owner.face.isNotBlank()) {
+                leadingContent = if (
+                    com.android.purebilibili.core.ui.LocalUpBadgeVisibility.current.showAvatars &&
+                    video.owner.face.isNotBlank()
+                ) {
                     {
                         AsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)

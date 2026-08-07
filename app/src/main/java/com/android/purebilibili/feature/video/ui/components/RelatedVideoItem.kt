@@ -342,7 +342,10 @@ fun RelatedVideoItem(
                     } else {
                         null
                     },
-                    leadingContent = if (video.owner.face.isNotEmpty()) {
+                    leadingContent = if (
+                        com.android.purebilibili.core.ui.LocalUpBadgeVisibility.current.showAvatars &&
+                        video.owner.face.isNotEmpty()
+                    ) {
                         {
                             AsyncImage(
                                 model = ImageRequest.Builder(context)
