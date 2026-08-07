@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import com.android.purebilibili.core.ui.AppShapes
+import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.components.AppIcon
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppSurface
@@ -235,12 +237,16 @@ fun RelatedVideoItem(
         }
         Unit
     }
-    val cardShape = RoundedCornerShape(12.dp)
-    val coverShape = RoundedCornerShape(10.dp)
+    val cardShape = AppShapes.container(ContainerLevel.Card)
+    val coverShape = AppShapes.container(ContainerLevel.Field)
     val coverWidth = 144.dp
     val coverHeight = coverWidth / coverAspectRatio.coerceAtLeast(1f)
     // 排版对齐首页单列卡片:标题用 feed 紧凑级,统计用 labelSmall。
     val contentTypography = com.android.purebilibili.core.ui.feedContentTypography()
+    // 标题固定两行占位:一行标题时不把下方元数据撑出大片空隙,列表内所有卡片对齐一致。
+    val titleTwoLinesHeight = contentTypography.title.lineHeight.let { line ->
+        if (line.isSp) line else contentTypography.title.fontSize * 1.2f
+    }.let { with(density) { (it * 2).toDp() } }
     val useCardShellSharedBounds = shouldUseVideoCardShellSharedBounds(
         sourceRoute = sourceRoute,
         transitionEnabled = sharedReady
@@ -270,7 +276,7 @@ fun RelatedVideoItem(
                 crossfadeSourceContent = true
             )
             .clip(cardShape)
-            .background(MaterialTheme.colorScheme.surface)
+            .background(AppSurfaceTokens.cardContainer())
             .clickable(onClick = triggerRelatedVideoClick)
             .padding(6.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -311,16 +317,18 @@ fun RelatedVideoItem(
             modifier = Modifier
                 .weight(1f)
                 .height(coverHeight),
-            // 标题置顶；UP + 播放量/弹幕贴底成组，避免 SpaceBetween 把三者撑得过开。
-            verticalArrangement = Arrangement.SpaceBetween,
+            // 标题固定两行占位,作者/播放量/弹幕紧随其后紧凑成组,不再 SpaceBetween 拉开间距。
+            verticalArrangement = Arrangement.Top,
         ) {
             AppText(
                 text = video.title,
                 style = contentTypography.title,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.height(titleTwoLinesHeight)
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(2.dp),
@@ -378,7 +386,7 @@ fun RelatedVideoItem(
                         icon = Icons.Filled.PlayArrow,
                         text = FormatUtils.formatStat(video.stat.view.toLong())
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     StatItem(
                         icon = Icons.Filled.ChatBubble,
                         text = FormatUtils.formatStat(video.stat.danmaku.toLong())
