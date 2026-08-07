@@ -686,7 +686,8 @@ fun VideoCommentSheetHost(
                                     onCommentUrlClick = openCommentUrl,
                                     onTimestampClick = onTimestampClick,
                                     maxTimestampMs = maxTimestampMs,
-                                    onImagePreview = previewCallback
+                                    onImagePreview = previewCallback,
+                                    onBackToTop = onBackToTop,
                                 )
                             }
 
@@ -749,7 +750,8 @@ internal fun VideoCommentMainList(
     onCommentUrlClick: (String) -> Unit,
     onTimestampClick: ((Long) -> Unit)?,
     maxTimestampMs: Long?,
-    onImagePreview: (List<String>, Int, Rect?, ImagePreviewTextContent?) -> Unit
+    onImagePreview: (List<String>, Int, Rect?, ImagePreviewTextContent?) -> Unit,
+    onBackToTop: () -> Unit = {},
 ) {
     val state by viewModel.commentState.collectAsStateWithLifecycle()
     val context = LocalContext.current

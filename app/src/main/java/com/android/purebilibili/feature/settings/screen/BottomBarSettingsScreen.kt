@@ -55,6 +55,8 @@ import com.android.purebilibili.core.theme.BottomBarColors  //  统一底栏颜�
 import com.android.purebilibili.core.theme.BottomBarColorPalette  //  调色板
 import com.android.purebilibili.core.theme.BottomBarColorNames  //  颜色名称
 import com.android.purebilibili.core.theme.LocalSettingsLiquidGlassEnabled
+import com.android.purebilibili.core.theme.AppUiStyle
+import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.ui.AppSemanticIconFamily
 import com.android.purebilibili.core.ui.rememberAppSemanticVisualPolicy
 import com.android.purebilibili.core.ui.adaptive.resolveDeviceUiProfile
@@ -938,9 +940,21 @@ private fun BottomBarTabItem(
     onToggle: (Boolean) -> Unit,
     onColorChange: (Int) -> Unit
 ) {
-    //  获取项目当前颜色
-    val itemColor = BottomBarColors.getColorByIndex(colorIndex)
-    val iconContentColor = rememberAdaptivePreferenceIconContentColor(itemColor)
+    //  MD3(MATERIAL3)主题下可用项目图标跟随主题色,不再使用多彩色板;
+    //  颜色选择弹窗仅对保留多彩色的预设开放。
+    val uiStyle = LocalAppUiStyle.current
+    val isMaterial3 = uiStyle == AppUiStyle.MATERIAL3
+    val itemColor = if (isMaterial3) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        BottomBarColors.getColorByIndex(colorIndex)
+    }
+    val itemContainerColor = if (isMaterial3) {
+        MaterialTheme.colorScheme.primaryContainer
+    } else {
+        itemColor
+    }
+    val iconContentColor = rememberAdaptivePreferenceIconContentColor(itemContainerColor)
     
     //  颜色选择弹窗状态
     var showColorPicker by remember { mutableStateOf(false) }
@@ -951,13 +965,13 @@ private fun BottomBarTabItem(
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 图标 -  点击可更换颜色
+        // 图标 -  点击可更换颜色(仅多彩色预设开放)
         Box(
             modifier = Modifier
                 .size(36.dp)
                 .clip(AppShapes.container(ContainerLevel.Field))
-                .background(itemColor)
-                .clickable { showColorPicker = true },
+                .background(itemContainerColor)
+                .clickable(enabled = !isMaterial3) { showColorPicker = true },
             contentAlignment = Alignment.Center
         ) {
             AppIcon(
