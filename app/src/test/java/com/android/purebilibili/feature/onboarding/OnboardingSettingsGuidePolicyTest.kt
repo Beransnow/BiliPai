@@ -17,7 +17,7 @@ class OnboardingSettingsGuidePolicyTest {
         assertFalse(preset.bottomBarLiquidGlassEnabled)
         assertEquals(SettingsManager.TopTabLabelMode.TEXT_ONLY, preset.topTabLabelMode)
         assertEquals(
-            listOf("RECOMMEND", "FOLLOW", "POPULAR", "LIVE", "GAME", "PARTITION"),
+            listOf("RECOMMEND", "FOLLOW", "POPULAR", "LIVE", "GAME"),
             preset.topTabOrderIds
         )
         assertEquals(preset.topTabOrderIds.toSet(), preset.topTabVisibleIds)

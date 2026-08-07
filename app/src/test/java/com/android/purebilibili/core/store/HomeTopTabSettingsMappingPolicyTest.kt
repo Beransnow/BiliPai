@@ -14,11 +14,11 @@ class HomeTopTabSettingsMappingPolicyTest {
         val result = mapHomeTopTabSettingsFromPreferences(prefs)
 
         assertEquals(
-            listOf("RECOMMEND", "FOLLOW", "POPULAR", "LIVE", "GAME", "PARTITION"),
+            listOf("RECOMMEND", "FOLLOW", "POPULAR", "LIVE", "GAME"),
             result.orderIds
         )
         assertEquals(
-            setOf("RECOMMEND", "FOLLOW", "POPULAR", "LIVE", "GAME", "PARTITION"),
+            setOf("RECOMMEND", "FOLLOW", "POPULAR", "LIVE", "GAME"),
             result.visibleIds
         )
     }
@@ -34,5 +34,23 @@ class HomeTopTabSettingsMappingPolicyTest {
 
         assertEquals(listOf("POPULAR", "LIVE", "RECOMMEND", "FOLLOW"), result.orderIds)
         assertEquals(setOf("POPULAR", "RECOMMEND"), result.visibleIds)
+    }
+
+    @Test
+    fun overLimitVisibleTabs_areCappedToMaxKeepingUserOrder() {
+        val prefs = mutablePreferencesOf(
+            stringPreferencesKey("top_tab_order") to
+                "RECOMMEND,FOLLOW,POPULAR,LIVE,ANIME,GAME,KNOWLEDGE,TECH,PARTITION",
+            stringPreferencesKey("top_tab_visible_tabs") to
+                "RECOMMEND,FOLLOW,POPULAR,LIVE,ANIME,GAME,KNOWLEDGE,TECH,PARTITION"
+        )
+
+        val result = mapHomeTopTabSettingsFromPreferences(prefs)
+
+        // 保留用户顺序的前 MAX_TOP_TABS 个可见项
+        assertEquals(
+            setOf("RECOMMEND", "FOLLOW", "POPULAR", "LIVE", "ANIME", "GAME"),
+            result.visibleIds
+        )
     }
 }

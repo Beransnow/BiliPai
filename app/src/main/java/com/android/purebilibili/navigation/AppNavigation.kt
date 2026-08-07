@@ -2835,7 +2835,7 @@ fun AppNavigation(
                                     seedTitle = storyKey.seedTitle,
                                     sourceRoute = storyKey.sourceRoute,
                                     transitionEnabled = cardTransitionEnabled,
-                                    isActive = true,
+                                    isActive = isBottomPagerPageActive,
                                     onBack = { performSystemBackAction() },
                                     onVideoClick = { bvid, cid, _ -> navigateToVideoInNavigation3(bvid, cid, "") },
                                     onUserClick = { mid -> pushNavigation3Route(ScreenRoutes.Space.createRoute(mid)) },
