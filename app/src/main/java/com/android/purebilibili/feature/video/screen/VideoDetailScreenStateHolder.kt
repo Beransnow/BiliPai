@@ -5,6 +5,12 @@ import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
 import com.android.purebilibili.core.refresh.HistoryRefreshSuppression
 import com.android.purebilibili.core.ui.components.AppText
 
+/**
+ * 评论区「一键回顶」恢复播放器事件:评论区 host 与竖屏播放器处于不同
+ * 代码块/作用域,通过共享事件桥接,播放器侧观察到后恢复全尺寸。
+ */
+private val commentBackToTopRestoreFlow =
+    kotlinx.coroutines.flow.MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
@@ -3206,9 +3212,9 @@ internal fun VideoDetailScreenStateHolder(
                             )
                         }
                         val inlinePlayerCollapseState = rememberInlinePortraitPlayerCollapseState(currentBvid)
-                        // 评论区「一键回顶」时恢复被压缩的播放器(请求来自外层计数)。
-                        LaunchedEffect(commentBackToTopRestoreRequest.intValue) {
-                            if (commentBackToTopRestoreRequest.intValue > 0) {
+                        // 评论区「一键回顶」时恢复被压缩的播放器(共享事件)。
+                        LaunchedEffect(Unit) {
+                            commentBackToTopRestoreFlow.collect {
                                 inlinePlayerCollapseState.restore()
                             }
                         }
@@ -4190,10 +4196,6 @@ internal fun VideoDetailScreenStateHolder(
         )
 
         val successState = uiState as? VideoPlaybackUiState.Success
-        // 评论区「一键回顶」恢复播放器请求(外层计数,内层播放器观察到后 restore)。
-        val commentBackToTopRestoreRequest = remember {
-            androidx.compose.runtime.mutableIntStateOf(0)
-        }
         DetachedVideoCommentThreadHost(
             visible = shouldShowDetachedVideoCommentThreadHost(useTabletLayout = useTabletLayout) &&
                 !(isFullscreenMode && landscapeCommentPanelVisible),
@@ -4220,7 +4222,7 @@ internal fun VideoDetailScreenStateHolder(
             },
             onBackToTop = {
                 // 评论区下滑缩小播放器后,一键回顶同时恢复播放器全尺寸。
-                commentBackToTopRestoreRequest.intValue++
+                commentBackToTopRestoreFlow.tryEmit(Unit)
             }
         )
 
