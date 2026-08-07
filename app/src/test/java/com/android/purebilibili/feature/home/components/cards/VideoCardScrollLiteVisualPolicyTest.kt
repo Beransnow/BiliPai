@@ -157,7 +157,9 @@ class VideoCardScrollLiteVisualPolicyTest {
         assertFalse(titleBlock.contains(".weight(1f)"))
         assertTrue(source.contains("modifier = Modifier.align(Alignment.BottomEnd)"))
         assertTrue(source.contains("contentAlignment = Alignment.BottomEnd"))
-        assertTrue(source.contains("Modifier.padding(end = AppChromeSizeTokens.MinimumTouchTarget)"))
+        // 溢出按钮视觉图标只占约 20dp：预留缩为 24dp（ExtraLarge），把更多宽度让给
+        // UP 名称/日期行，名称不会被提前折叠省略。
+        assertTrue(source.contains("Modifier.padding(end = AppSpacingTokens.ExtraLarge)"))
     }
 
     @Test

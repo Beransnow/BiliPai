@@ -1356,7 +1356,7 @@ fun AppearanceSettingsContent(
                         AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
                         SettingsSingleChoicePreference(
                             title = "首页视频时长：${homeDurationStyle.label}",
-                            subtitle = "可移到封面外、仅显示无底色文字或完全隐藏",
+                            subtitle = "可显示在统计行、仅显示无底色文字或完全隐藏",
                             options = HomeDurationStyle.entries.map {
                                 AppSegmentOption(it, it.label)
                             },
