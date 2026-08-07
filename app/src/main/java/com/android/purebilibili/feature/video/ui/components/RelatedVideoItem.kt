@@ -327,7 +327,7 @@ fun RelatedVideoItem(
                     name = video.owner.name,
                     badgeTrailingContent = if (isFollowed) {
                         {
-                            val followVisualPolicy = resolveVideoFollowVisualPolicy(isFollowing = true)
+                            val followVisualPolicy = resolveVideoFollowVisualPolicy(isFollowing = true, darkTheme = true)
                             AppText(
                                 text = "已关注",
                                 style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),

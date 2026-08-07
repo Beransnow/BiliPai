@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -921,8 +922,12 @@ fun UpInfoSection(
                     }
                 }
 
-                val followVisualPolicy = remember(isFollowing) {
-                    resolveVideoFollowVisualPolicy(isFollowing = isFollowing)
+                val followDarkTheme = MaterialTheme.colorScheme.surface.luminance() < 0.5f
+                val followVisualPolicy = remember(isFollowing, followDarkTheme) {
+                    resolveVideoFollowVisualPolicy(
+                        isFollowing = isFollowing,
+                        darkTheme = followDarkTheme,
+                    )
                 }
                 AppSurface(
                     onClick = onFollowClick,
