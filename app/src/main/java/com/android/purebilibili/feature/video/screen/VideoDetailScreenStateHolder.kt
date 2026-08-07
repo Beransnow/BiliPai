@@ -1902,13 +1902,27 @@ internal fun VideoDetailScreenStateHolder(
         continuousPlayerPhase,
         isLandscape,
     ) {
-        if (!continuousFullscreenTransitionEnabled) return@LaunchedEffect
+        // 关闭 continuous morph 时也要清掉可能残留的全屏进度，否则再次启用/回竖屏会铺满。
+        if (!continuousFullscreenTransitionEnabled) {
+            if (!isLandscape && continuousPlayerProgress.value > 0.001f) {
+                continuousPlayerProgress.snapTo(0f)
+                continuousPlayerPhase = ContinuousPlayerTransitionPhase.Inline
+            }
+            return@LaunchedEffect
+        }
         when {
-            isLandscape && continuousPlayerPhase == ContinuousPlayerTransitionPhase.Inline -> {
+            // 系统旋进横屏：从 inline/半途相位直接落到全屏高度。
+            isLandscape &&
+                continuousPlayerPhase != ContinuousPlayerTransitionPhase.Fullscreen &&
+                continuousPlayerPhase != ContinuousPlayerTransitionPhase.AwaitingPortrait -> {
                 continuousPlayerProgress.snapTo(1f)
                 continuousPlayerPhase = ContinuousPlayerTransitionPhase.Fullscreen
             }
-            !isLandscape && continuousPlayerPhase == ContinuousPlayerTransitionPhase.Fullscreen -> {
+            // 系统旋回竖屏：立刻收起，避免等 Collapsing 动画期间整屏铺满一帧或卡住。
+            !isLandscape &&
+                continuousPlayerPhase != ContinuousPlayerTransitionPhase.Inline &&
+                continuousPlayerPhase != ContinuousPlayerTransitionPhase.Collapsing &&
+                continuousPlayerPhase != ContinuousPlayerTransitionPhase.AwaitingPortrait -> {
                 continuousPlayerProgress.snapTo(0f)
                 continuousPlayerPhase = ContinuousPlayerTransitionPhase.Inline
             }

@@ -71,4 +71,38 @@ class ContinuousPlayerTransitionPolicyTest {
         assertEquals(ContinuousPlayerTransitionPhase.Collapsing, result.phase)
         assertEquals(ContinuousPlayerOrientationRequest.None, result.orientationRequest)
     }
+
+    @Test
+    fun systemLandscapeFromMidExpansionSettlesFullscreen() {
+        val result = reduceContinuousPlayerTransition(
+            phase = ContinuousPlayerTransitionPhase.Expanding,
+            event = ContinuousPlayerTransitionEvent.OrientationChanged(isLandscape = true),
+        )
+        assertEquals(ContinuousPlayerTransitionPhase.Fullscreen, result.phase)
+    }
+
+    @Test
+    fun systemPortraitFromFullscreenOrStuckPhasesStartsCollapse() {
+        assertEquals(
+            ContinuousPlayerTransitionPhase.Collapsing,
+            reduceContinuousPlayerTransition(
+                phase = ContinuousPlayerTransitionPhase.Fullscreen,
+                event = ContinuousPlayerTransitionEvent.OrientationChanged(isLandscape = false),
+            ).phase,
+        )
+        assertEquals(
+            ContinuousPlayerTransitionPhase.Collapsing,
+            reduceContinuousPlayerTransition(
+                phase = ContinuousPlayerTransitionPhase.AwaitingLandscape,
+                event = ContinuousPlayerTransitionEvent.OrientationChanged(isLandscape = false),
+            ).phase,
+        )
+        assertEquals(
+            ContinuousPlayerTransitionPhase.Collapsing,
+            reduceContinuousPlayerTransition(
+                phase = ContinuousPlayerTransitionPhase.Expanding,
+                event = ContinuousPlayerTransitionEvent.OrientationChanged(isLandscape = false),
+            ).phase,
+        )
+    }
 }
