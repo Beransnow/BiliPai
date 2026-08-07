@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Tv
 import com.android.purebilibili.core.plugin.CastPluginApi
 import com.android.purebilibili.core.plugin.CastPluginMediaRequest
+import com.android.purebilibili.core.plugin.CastPluginPlaybackState
 import com.android.purebilibili.core.plugin.CastPluginRoute
 import com.android.purebilibili.core.plugin.PluginCapability
 import com.android.purebilibili.core.plugin.PluginCapabilityManifest
@@ -54,6 +55,7 @@ class DlnaCastPlugin : CastPluginApi {
 
     private val _isDiscovering = MutableStateFlow(false)
     override val isDiscovering: StateFlow<Boolean> = _isDiscovering.asStateFlow()
+    override val playbackState: StateFlow<CastPluginPlaybackState> = SsdpCastClient.playbackState
 
     private val _ssdpDevices = MutableStateFlow<List<SsdpDiscovery.SsdpDevice>>(emptyList())
     private val _ssdpProfiles = MutableStateFlow<Map<String, SsdpCastClient.SsdpDeviceProfile>>(emptyMap())
@@ -63,10 +65,13 @@ class DlnaCastPlugin : CastPluginApi {
     private var ssdpCache = emptyMap<String, SsdpDiscovery.SsdpDevice>()
 
     override fun startRouteDiscovery(context: Context) {
-        if (discoveryJob?.isActive == true) return
         val appContext = context.applicationContext
 
         startRouteCollector()
+        // DeviceListDialog is recreated whenever the user opens another video.
+        // Keep the last valid routes available and only scan on an explicit refresh
+        // or when there is no cached route yet.
+        if (_routes.value.isNotEmpty() || ssdpJob?.isActive == true) return
         refreshSsdpDevices(appContext)
     }
 
@@ -118,11 +123,9 @@ class DlnaCastPlugin : CastPluginApi {
         discoveryJob = null
         ssdpJob?.cancel()
         ssdpJob = null
-
-        _routes.value = emptyList()
-        _ssdpDevices.value = emptyList()
-        _ssdpProfiles.value = emptyMap()
-        ssdpCache = emptyMap()
+        // Keep the last successful discovery result. The next cast dialog can
+        // render it immediately; the refresh button remains the explicit way
+        // to invalidate it.
         _isDiscovering.value = false
     }
 
@@ -134,11 +137,24 @@ class DlnaCastPlugin : CastPluginApi {
         val selection = resolveDlnaRouteSelection(route.routeId, ssdpCache)
         return when (selection) {
             is DlnaRouteSelection.Ssdp -> {
-                SsdpCastClient.cast(selection.device, media.url, media.title, media.creator)
+                SsdpCastClient.cast(
+                    device = selection.device,
+                    mediaUrl = media.url,
+                    title = media.title,
+                    creator = media.creator,
+                    startPositionMs = media.startPositionMs,
+                    autoplay = media.autoplay
+                )
             }
             null -> Result.failure(IllegalArgumentException("未知的 DLNA 设备: ${route.routeId}"))
         }
     }
+
+    override suspend fun play(): Result<Unit> = SsdpCastClient.play()
+
+    override suspend fun pause(): Result<Unit> = SsdpCastClient.pause()
+
+    override suspend fun seek(positionMs: Long): Result<Unit> = SsdpCastClient.seek(positionMs)
 
     override suspend fun onEnable() {
         // No-op; discovery starts on demand from dialog
@@ -146,5 +162,10 @@ class DlnaCastPlugin : CastPluginApi {
 
     override suspend fun onDisable() {
         stopRouteDiscovery()
+        _routes.value = emptyList()
+        _ssdpDevices.value = emptyList()
+        _ssdpProfiles.value = emptyMap()
+        ssdpCache = emptyMap()
+        SsdpCastClient.clearPlaybackSession()
     }
 }
