@@ -179,11 +179,12 @@ object SsdpDiscovery {
                 }
         }
 
-        // Prefer binding to the concrete LAN IPv4 so dual-network OEMs (Vivo/Xiaomi) send
-        // multicast on Wi-Fi instead of the cellular default route.
+        // SSDP NOTIFY advertisements are sent to 239.255.255.250:1900.  Listening on
+        // an ephemeral port only receives direct M-SEARCH replies, so retain port 1900
+        // while the network/interface selection below controls the LAN route.
         val boundToLanIp = binding.ipv4Address?.let { ipv4 ->
             runCatching {
-                socket.bind(InetSocketAddress(ipv4, 0))
+                socket.bind(InetSocketAddress(ipv4, SSDP_PORT))
                 true
             }.getOrElse { error ->
                 Logger.w(TAG, "📺 [DLNA] Bind to LAN IPv4 failed: ${error.message}")
@@ -192,7 +193,7 @@ object SsdpDiscovery {
         } ?: false
 
         if (!boundToLanIp && !socket.isBound) {
-            socket.bind(InetSocketAddress(0))
+            socket.bind(InetSocketAddress(SSDP_PORT))
         }
 
         binding.networkInterface?.let { nif ->
