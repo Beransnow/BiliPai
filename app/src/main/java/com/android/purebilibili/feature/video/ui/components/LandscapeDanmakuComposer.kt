@@ -1,5 +1,7 @@
 package com.android.purebilibili.feature.video.ui.components
 
+import com.android.purebilibili.core.ui.resolveFilledButtonContainerColor
+import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -379,7 +381,9 @@ fun LandscapeDanmakuComposer(
                         shape = AppShapes.container(ContainerLevel.Pill),
                         contentPadding = PaddingValues(horizontal = 12.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
+                            containerColor = resolveFilledButtonContainerColor(MaterialTheme.colorScheme),
+
+                            contentColor = resolveFilledButtonContentColor(MaterialTheme.colorScheme),
                             disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)
                         )
                     ) {

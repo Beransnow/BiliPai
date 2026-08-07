@@ -1,4 +1,6 @@
 package com.android.purebilibili.feature.profile
+import com.android.purebilibili.core.ui.resolveFilledButtonContainerColor
+import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppHorizontalDivider
@@ -504,7 +506,9 @@ fun ProfileScreen(
                     AppButton(
                         onClick = { viewModel.loadProfile(force = true) },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.primary
+                            containerColor = resolveFilledButtonContainerColor(MaterialTheme.colorScheme),
+
+                            contentColor = resolveFilledButtonContentColor(MaterialTheme.colorScheme)
                         )
                     ) {
                         AppIcon(rememberAppRefreshIcon(), contentDescription = null, modifier = Modifier.size(18.dp))

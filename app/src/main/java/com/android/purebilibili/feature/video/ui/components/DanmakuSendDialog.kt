@@ -1,5 +1,7 @@
 // 文件路径: feature/video/ui/components/DanmakuSendDialog.kt
 package com.android.purebilibili.feature.video.ui.components
+import com.android.purebilibili.core.ui.resolveFilledButtonContainerColor
+import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
 
@@ -517,7 +519,9 @@ fun DanmakuSendDialog(
                             enabled = text.isNotBlank() && !isSending,
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary
+                                containerColor = resolveFilledButtonContainerColor(MaterialTheme.colorScheme),
+
+                                contentColor = resolveFilledButtonContentColor(MaterialTheme.colorScheme)
                             )
                         ) {
                             if (isSending) {

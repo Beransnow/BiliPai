@@ -1,5 +1,7 @@
 // 文件路径: feature/video/ui/components/CommentInputDialog.kt
 package com.android.purebilibili.feature.video.ui.components
+import com.android.purebilibili.core.ui.resolveFilledButtonContainerColor
+import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
 import com.android.purebilibili.core.ui.components.AppScrollableTabRow
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
@@ -620,7 +622,9 @@ fun CommentInputDialog(
                                 enabled = text.isNotBlank() && !isSending && canInputComment,
                                 shape = RoundedCornerShape(20.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary, // 应该是粉色
+                                    containerColor = resolveFilledButtonContainerColor(MaterialTheme.colorScheme),
+
+                                    contentColor = resolveFilledButtonContentColor(MaterialTheme.colorScheme), // 应该是粉色
                                     disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
                                 ),
                                 contentPadding = PaddingValues(horizontal = layoutPolicy.sendButtonHorizontalPaddingDp.dp, vertical = 0.dp),

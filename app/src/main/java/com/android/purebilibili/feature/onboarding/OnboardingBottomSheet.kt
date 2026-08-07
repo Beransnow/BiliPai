@@ -1,5 +1,7 @@
 // 文件路径: feature/onboarding/OnboardingBottomSheet.kt
 package com.android.purebilibili.feature.onboarding
+import com.android.purebilibili.core.ui.resolveFilledButtonContainerColor
+import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
 import com.android.purebilibili.core.ui.components.AppText
 
 import androidx.compose.animation.core.Animatable
@@ -240,7 +242,9 @@ fun OnboardingBottomSheet(
                                 modifier = Modifier.weight(1f),
                                 shape = RoundedCornerShape(16.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary
+                                    containerColor = resolveFilledButtonContainerColor(MaterialTheme.colorScheme),
+
+                                    contentColor = resolveFilledButtonContentColor(MaterialTheme.colorScheme)
                                 )
                             ) {
                                 AppText("下一步", fontWeight = FontWeight.SemiBold)
@@ -254,7 +258,9 @@ fun OnboardingBottomSheet(
                                     .height(52.dp),
                                 shape = RoundedCornerShape(16.dp),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary
+                                    containerColor = resolveFilledButtonContainerColor(MaterialTheme.colorScheme),
+
+                                    contentColor = resolveFilledButtonContentColor(MaterialTheme.colorScheme)
                                 )
                             ) {
                                 AppText(

@@ -1,5 +1,7 @@
 // 文件路径: feature/bangumi/ui/detail/BangumiDetailComponents.kt
 package com.android.purebilibili.feature.bangumi.ui.detail
+import com.android.purebilibili.core.ui.resolveFilledButtonContainerColor
+import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
 
@@ -208,7 +210,9 @@ fun FollowButton(
         AppButton(
             onClick = onToggle,
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary
+                containerColor = resolveFilledButtonContainerColor(MaterialTheme.colorScheme),
+
+                contentColor = resolveFilledButtonContentColor(MaterialTheme.colorScheme)
             ),
             modifier = modifier
         ) {

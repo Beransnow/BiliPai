@@ -1,5 +1,7 @@
 // 文件路径: feature/bangumi/BangumiDetailScreen.kt
 package com.android.purebilibili.feature.bangumi
+import com.android.purebilibili.core.ui.resolveFilledButtonContainerColor
+import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppHorizontalDivider
@@ -658,7 +660,9 @@ private fun MobileBangumiDetailContent(
                                 onFollowStatusSelect(BANGUMI_FOLLOW_STATUS_WATCHING)
                             },
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary
+                                containerColor = resolveFilledButtonContainerColor(MaterialTheme.colorScheme),
+
+                                contentColor = resolveFilledButtonContentColor(MaterialTheme.colorScheme)
                             ),
                             modifier = Modifier.weight(1f)
                         ) {

@@ -1,5 +1,7 @@
 package com.android.purebilibili.core.ui.components
 
+import com.android.purebilibili.core.ui.resolveFilledButtonContainerColor
+import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -501,7 +503,7 @@ fun AppButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     shape: Shape = ButtonDefaults.shape,
-    colors: ButtonColors = ButtonDefaults.buttonColors(),
+    colors: ButtonColors? = null,
     elevation: androidx.compose.material3.ButtonElevation? = ButtonDefaults.buttonElevation(),
     border: BorderStroke? = null,
     contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
@@ -512,7 +514,10 @@ fun AppButton(
     modifier = modifier,
     enabled = enabled,
     shape = shape,
-    colors = colors,
+    colors = colors ?: ButtonDefaults.buttonColors(
+        containerColor = resolveFilledButtonContainerColor(MaterialTheme.colorScheme),
+        contentColor = resolveFilledButtonContentColor(MaterialTheme.colorScheme),
+    ),
     elevation = elevation,
     border = border,
     contentPadding = contentPadding,

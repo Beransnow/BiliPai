@@ -1,4 +1,6 @@
 package com.android.purebilibili.feature.video.screen
+import com.android.purebilibili.core.ui.resolveFilledButtonContainerColor
+import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
 import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 
 import android.annotation.SuppressLint
@@ -406,7 +408,9 @@ internal fun VideoDetailPlaybackEndedDialog(
                     },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
+                        containerColor = resolveFilledButtonContainerColor(MaterialTheme.colorScheme),
+
+                        contentColor = resolveFilledButtonContentColor(MaterialTheme.colorScheme)
                     )
                 ) {
                     AppText("▶️ 播放下一个视频")

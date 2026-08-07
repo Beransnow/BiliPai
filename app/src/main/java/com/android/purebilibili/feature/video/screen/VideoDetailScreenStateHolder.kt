@@ -1,5 +1,7 @@
 // 文件路径: feature/video/screen/VideoDetailScreen.kt
 package com.android.purebilibili.feature.video.screen
+import com.android.purebilibili.core.ui.resolveFilledButtonContainerColor
+import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
 import com.android.purebilibili.core.refresh.HistoryRefreshSuppression
 import com.android.purebilibili.core.ui.components.AppText
 
@@ -3952,7 +3954,9 @@ internal fun VideoDetailScreenStateHolder(
                                                 AppButton(
                                                     onClick = { viewModel.retry() },
                                                     colors = ButtonDefaults.buttonColors(
-                                                        containerColor = MaterialTheme.colorScheme.primary
+                                                        containerColor = resolveFilledButtonContainerColor(MaterialTheme.colorScheme),
+
+                                                        contentColor = resolveFilledButtonContentColor(MaterialTheme.colorScheme)
                                                     )
                                                 ) {
                                                     AppText(

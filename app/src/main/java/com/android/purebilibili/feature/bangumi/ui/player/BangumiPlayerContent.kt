@@ -1,5 +1,7 @@
 // 文件路径: feature/bangumi/ui/player/BangumiPlayerContent.kt
 package com.android.purebilibili.feature.bangumi.ui.player
+import com.android.purebilibili.core.ui.resolveFilledButtonContainerColor
+import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppHorizontalDivider
@@ -154,7 +156,8 @@ fun BangumiPlayerContent(
                     colors = if (isFollowing) {
                         ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                     } else {
-                        ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                        ButtonDefaults.buttonColors(containerColor = resolveFilledButtonContainerColor(MaterialTheme.colorScheme),
+contentColor = resolveFilledButtonContentColor(MaterialTheme.colorScheme))
                     }
                 ) {
                     AppIcon(
@@ -551,7 +554,9 @@ fun BangumiErrorContent(
                 AppButton(
                     onClick = onLogin,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
+                        containerColor = resolveFilledButtonContainerColor(MaterialTheme.colorScheme),
+
+                        contentColor = resolveFilledButtonContentColor(MaterialTheme.colorScheme)
                     )
                 ) {
                     AppText("去登录")
