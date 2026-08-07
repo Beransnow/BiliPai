@@ -941,6 +941,7 @@ private fun Md3NativeListItemContent(
     )
 }
 
+@Composable
 internal fun AdaptivePreferenceContent(
     icon: ImageVector? = null,
     iconPainter: androidx.compose.ui.graphics.painter.Painter? = null,
