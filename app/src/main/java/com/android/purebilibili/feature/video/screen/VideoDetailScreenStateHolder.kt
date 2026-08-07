@@ -1,5 +1,6 @@
 // 文件路径: feature/video/screen/VideoDetailScreen.kt
 package com.android.purebilibili.feature.video.screen
+import com.android.purebilibili.core.refresh.HistoryRefreshSuppression
 import com.android.purebilibili.core.ui.components.AppText
 
 import android.annotation.SuppressLint
@@ -293,6 +294,17 @@ internal fun VideoDetailScreenStateHolder(
     commentViewModel: VideoCommentViewModel = viewModel(),
     onBgmClick: (BgmInfo) -> Unit = {}
 ) {
+    // 详情页打开期间抑制历史/收藏列表刷新:播放心跳会持续触发
+    // HistoryRefreshBus,若父级列表在预测性返回手势动画中重新加载,
+    // 元素位置中途平移会导致返回表现异常。退出详情页(含返回完成)
+    // 后恢复,抑制期间遗漏的刷新在恢复时补发一次。
+    DisposableEffect(Unit) {
+        HistoryRefreshSuppression.suppress()
+        onDispose {
+            HistoryRefreshSuppression.resume()
+        }
+    }
+
     val context = LocalContext.current
     val view = LocalView.current
     val lifecycleOwner = LocalLifecycleOwner.current
