@@ -79,6 +79,46 @@ class DanmakuPlaybackSyncPolicyTest {
     }
 
     @Test
+    fun `attach reapply is required when controller changed or pending after related navigation`() {
+        // 新 view 接管：即使此前有 controller，也必须重放已就绪缓存
+        assertTrue(
+            shouldReapplyDanmakuTimelineOnAttach(
+                hasCachedList = true,
+                pendingTimelineResync = false,
+                previousControllerSameAsCurrent = false,
+                timelineAlreadySyncedToCurrent = false,
+            )
+        )
+        // load 完成时 controller=null，等 attach 再补
+        assertTrue(
+            shouldReapplyDanmakuTimelineOnAttach(
+                hasCachedList = true,
+                pendingTimelineResync = true,
+                previousControllerSameAsCurrent = true,
+                timelineAlreadySyncedToCurrent = false,
+            )
+        )
+        // 同 controller 且已同步：不必重复
+        assertFalse(
+            shouldReapplyDanmakuTimelineOnAttach(
+                hasCachedList = true,
+                pendingTimelineResync = false,
+                previousControllerSameAsCurrent = true,
+                timelineAlreadySyncedToCurrent = true,
+            )
+        )
+        // 无缓存：不重放
+        assertFalse(
+            shouldReapplyDanmakuTimelineOnAttach(
+                hasCachedList = false,
+                pendingTimelineResync = true,
+                previousControllerSameAsCurrent = false,
+                timelineAlreadySyncedToCurrent = false,
+            )
+        )
+    }
+
+    @Test
     fun `danmaku should start on data ready when player is playing or will play`() {
         // 正在播放：必须启动
         assertTrue(

@@ -121,6 +121,10 @@ class DanmakuManager private constructor(
     // 视图和控制器
     private var danmakuView: DanmakuView? = null
     private var controller: DanmakuController? = null
+    /** 最近一次成功 setData 的 controller；用于判断新 view 是否需要补时间线。 */
+    private var timelineSyncedController: DanmakuController? = null
+    /** load 完成时 controller 尚为 null，等 attachView 再补。 */
+    private var pendingTimelineResync: Boolean = false
     private var player: ExoPlayer? = null
     private var playerListener: Player.Listener? = null
     private var loadJob: Job? = null
@@ -451,6 +455,41 @@ class DanmakuManager private constructor(
         Log.w(TAG, " applyCachedDanmakuToController($reason): size=${list.size}, pos=${currentPos}ms")
     }
 
+    /**
+     * 当前绑定的 controller 若尚未装上 [cachedDanmakuList]，立即补一次时间线。
+     * 用于 attachView / 布局完成等「view 后于 load」路径。
+     */
+    private fun reapplyCachedDanmakuToCurrentControllerIfNeeded(
+        previousController: DanmakuController?,
+        reason: String,
+    ) {
+        val list = cachedDanmakuList?.takeIf { it.isNotEmpty() } ?: return
+        val current = controller ?: return
+        if (
+            !shouldReapplyDanmakuTimelineOnAttach(
+                hasCachedList = true,
+                pendingTimelineResync = pendingTimelineResync,
+                previousControllerSameAsCurrent = previousController === current,
+                timelineAlreadySyncedToCurrent = timelineSyncedController === current,
+            )
+        ) {
+            return
+        }
+        if (config.isEnabled) {
+            danmakuView?.visibility = android.view.View.VISIBLE
+        }
+        resyncDanmakuTimeline(
+            list = list,
+            positionMs = player?.currentPosition ?: 0L,
+            shouldPlay = shouldStartDanmakuOnDataReady(
+                isPlaying = player?.isPlaying == true,
+                playWhenReady = player?.playWhenReady == true
+            ),
+            invalidateView = true,
+            reason = reason,
+        )
+    }
+
     private fun resyncDanmakuTimeline(
         list: List<DanmakuData>,
         positionMs: Long,
@@ -458,7 +497,12 @@ class DanmakuManager private constructor(
         invalidateView: Boolean = false,
         reason: String
     ) {
-        val ctrl = controller ?: return
+        val ctrl = controller ?: run {
+            // load 完成早于 view 绑定时标记 pending，等 attachView 再补。
+            pendingTimelineResync = list.isNotEmpty()
+            Log.w(TAG, " Resync skipped ($reason): controller=null, pending=$pendingTimelineResync")
+            return
+        }
         applyPlaybackSpeedToController(ctrl)
         executeExplicitDanmakuResync(
             pause = { ctrl.pause() },
@@ -470,10 +514,14 @@ class DanmakuManager private constructor(
         }
         if (shouldPlay && config.isEnabled) {
             isPlaying = true
+            // hide() 可能把 view 设为 GONE；数据就绪后若开关仍开则恢复可见。
+            danmakuView?.visibility = android.view.View.VISIBLE
         } else {
             ctrl.pause()
             isPlaying = false
         }
+        timelineSyncedController = ctrl
+        pendingTimelineResync = false
         Log.w(TAG, " Resynced danmaku timeline ($reason) at ${positionMs}ms, play=$shouldPlay")
     }
 
@@ -958,7 +1006,10 @@ class DanmakuManager private constructor(
                     resyncDanmakuTimeline(
                         list = list,
                         positionMs = currentPos,
-                        shouldPlay = player?.isPlaying == true,
+                        shouldPlay = shouldStartDanmakuOnDataReady(
+                            isPlaying = player?.isPlaying == true,
+                            playWhenReady = player?.playWhenReady == true
+                        ),
                         reason = "config:$reason"
                     )
                 }
@@ -1048,13 +1099,7 @@ class DanmakuManager private constructor(
         
         Log.w(TAG, "📎 attachView: new view, old=${danmakuView != null}, hashCode=${view.hashCode()}")
 
-        // [修复] 仅当此前尚未绑定过 view（controller 为空）时才重放已就绪缓存：
-        // 相关推荐等导航 push 新页面时，单例的 cachedDanmakuList 仍是旧视频的数据，
-        // 若此处无条件重放，旧弹幕会装进新视频的 view 显示数秒（随后才被新加载覆盖）。
-        // 重放仅用于「loadDanmaku 完成早于本 view 绑定」的场景（当时 resync 因 controller
-        // 为空而静默落空），此时旧 controller 一定为 null。
-        val hadControllerBeforeAttach = controller != null
-
+        val previousController = controller
         danmakuView = view
         controller = view.controller
         applyDanmakuClickListener()
@@ -1067,21 +1112,14 @@ class DanmakuManager private constructor(
         // 应用配置并同步倍速基准
         applyConfigToController("attachView")
 
-        // [关键修复] 绑定新 view 时，把已就绪缓存补上屏（仅当此前无绑定导致 resync 落空）。
-        if (!hadControllerBeforeAttach) {
-            cachedDanmakuList?.takeIf { it.isNotEmpty() }?.let { list ->
-                resyncDanmakuTimeline(
-                    list = list,
-                    positionMs = player?.currentPosition ?: 0L,
-                    shouldPlay = shouldStartDanmakuOnDataReady(
-                        isPlaying = player?.isPlaying == true,
-                        playWhenReady = player?.playWhenReady == true
-                    ),
-                    invalidateView = true,
-                    reason = "attach_view_replay"
-                )
-            }
-        }
+        // 相关推荐 push 新详情页时，loadDanmaku 常在旧 controller 仍绑定（或 controller=null）
+        // 时完成；若只在「此前无 controller」时重放，新 view 会永远吃不到已就绪缓存，
+        // 表现为开关显示「开」却无弹幕，只能手动重开开关（show）才恢复。
+        // 切换视频时应先 clearForVideoChange 清掉旧缓存，避免把旧片弹幕闪到新 view。
+        reapplyCachedDanmakuToCurrentControllerIfNeeded(
+            previousController = previousController,
+            reason = "attach_view_replay",
+        )
         
         //  [关键修复] 等待 View 布局完成后再设置弹幕数据
         // DanmakuRenderEngine 需要有效的 View 尺寸来计算弹幕轨道位置
@@ -1159,6 +1197,9 @@ class DanmakuManager private constructor(
     fun detachView() {
         Log.d(TAG, "📎 detachView: Pausing and clearing controller")
         controller?.pause()
+        if (timelineSyncedController === controller) {
+            timelineSyncedController = null
+        }
         controller = null
         danmakuView = null
     }
@@ -1177,6 +1218,11 @@ class DanmakuManager private constructor(
         hide()
         clear()
         controller?.pause()
+        if (timelineSyncedController === controller) {
+            timelineSyncedController = null
+        }
+        // 缓存仍在时标记 pending，待新页面 attachView 再补时间线。
+        pendingTimelineResync = cachedDanmakuList?.isNotEmpty() == true
         controller = null
         danmakuView = null
     }
@@ -1544,6 +1590,9 @@ class DanmakuManager private constructor(
         sourceCommandDanmakuList = emptyList()
         _advancedDanmakuFlow.value = emptyList()
         _commandDanmakuFlow.value = emptyList()
+        // 旧时间线对当前 controller 已失效；新数据就绪后必须重新 setData。
+        timelineSyncedController = null
+        pendingTimelineResync = false
         
         // 清除现有弹幕
         controller?.stop()
@@ -1841,6 +1890,8 @@ class DanmakuManager private constructor(
         sourceCommandDanmakuList = emptyList()
         _advancedDanmakuFlow.value = emptyList()
         _commandDanmakuFlow.value = emptyList()
+        timelineSyncedController = null
+        pendingTimelineResync = false
         clearExplicitSeekResyncMarker()
         controller?.clear()
     }

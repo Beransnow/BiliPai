@@ -90,6 +90,24 @@ internal fun shouldStartDanmakuOnDataReady(
     playWhenReady: Boolean
 ): Boolean = isPlaying || playWhenReady
 
+/**
+ * 新 DanmakuView attach 时是否要把已缓存弹幕时间线补到当前 controller。
+ *
+ * 相关推荐 push 新页时，load 常在旧 controller 完成；新 view 若跳过重放，
+ * 开关显示「开」却无弹幕，只能手动重开开关才恢复。
+ */
+internal fun shouldReapplyDanmakuTimelineOnAttach(
+    hasCachedList: Boolean,
+    pendingTimelineResync: Boolean,
+    previousControllerSameAsCurrent: Boolean,
+    timelineAlreadySyncedToCurrent: Boolean,
+): Boolean {
+    if (!hasCachedList) return false
+    if (pendingTimelineResync) return true
+    if (previousControllerSameAsCurrent && timelineAlreadySyncedToCurrent) return false
+    return true
+}
+
 internal fun resolveExplicitSeekStartedPlaybackAfterSyncAction(
     explicitSeekStartedPlayback: Boolean?,
     action: DanmakuSyncAction

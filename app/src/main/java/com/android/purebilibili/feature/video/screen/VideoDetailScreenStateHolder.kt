@@ -135,6 +135,7 @@ import com.android.purebilibili.feature.video.viewmodel.toSupplementSeed
 import com.android.purebilibili.feature.video.viewmodel.QualitySwitchFailureDialogState
 import com.android.purebilibili.feature.video.viewmodel.CommentUiState
 import com.android.purebilibili.feature.video.viewmodel.VideoCommentViewModel
+import com.android.purebilibili.feature.video.danmaku.rememberDanmakuManager
 import com.android.purebilibili.feature.video.state.VideoPlayerState
 import com.android.purebilibili.feature.video.state.rememberVideoPlayerState
 import com.android.purebilibili.feature.video.state.shouldReuseMiniPlayerAtEntry
@@ -590,6 +591,10 @@ internal fun VideoDetailScreenStateHolder(
         onSearchKeywordClick(keyword)
     }
 
+    // 与 VideoPlayerSection 共用单例；同页切集/相关推荐 push 前清掉旧弹幕会话，
+    // 避免新页 DanmakuView 绑定时把旧片缓存闪上去或卡在未重放状态。
+    val sharedDanmakuManager = rememberDanmakuManager()
+
     fun switchVideoInCurrentDetailPage(
         targetBvid: String,
         targetCid: Long,
@@ -611,6 +616,7 @@ internal fun VideoDetailScreenStateHolder(
         if (switchedCover.isNotBlank()) {
             pendingInPageSwitchCoverUrl = switchedCover
         }
+        sharedDanmakuManager.clearForVideoChange()
         presentationState.switchVideo(normalizedBvid, safeCid)
         viewModel.loadVideo(
             bvid = normalizedBvid,
@@ -626,6 +632,7 @@ internal fun VideoDetailScreenStateHolder(
         uiState,
         currentBvid,
         relatedNavigationScope,
+        sharedDanmakuManager,
     ) {
         { targetBvid: String, options: android.os.Bundle? ->
             val success = uiState as? VideoPlaybackUiState.Success
@@ -655,6 +662,8 @@ internal fun VideoDetailScreenStateHolder(
                 )
             } else {
                 // 先摘掉父详情壳 sharedBounds，再 push，避免相关卡嵌套在父壳内吃不到 morph。
+                // 同时清掉单例弹幕缓存，防止新页 attach 时重放旧片或 load 结果落到旧 controller。
+                sharedDanmakuManager.clearForVideoChange()
                 presentationState.markNavigatingToVideo()
                 miniPlayerManager?.isNavigatingToVideo = true
                 markSecondaryNavigationLeave(expectedBvid = success?.info?.bvid ?: currentBvid)

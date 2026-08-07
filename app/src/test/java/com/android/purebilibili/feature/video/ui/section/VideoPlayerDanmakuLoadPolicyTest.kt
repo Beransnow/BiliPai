@@ -90,12 +90,16 @@ class VideoPlayerDanmakuLoadPolicyTest {
         ).readText()
 
         assertTrue(
-            playerSource.contains("resolveVideoPlayerDanmakuEngineSyncAction(") &&
-                playerSource.contains("onRelease") &&
-                playerSource.contains("danmakuManager.hide()") &&
+            playerSource.contains("resolveVideoPlayerDanmakuEngineSyncAction("),
+            "VideoPlayerSection must sync engine enable/clear via policy."
+        )
+        assertTrue(
+            playerSource.contains("onRelease") &&
                 playerSource.contains("danmakuManager.clear()") &&
-                playerSource.contains("danmakuManager.detachView()"),
-            "VideoPlayerSection must sync/clear the engine on toggle and release DanmakuView on dispose."
+                // 相关推荐 push 后旧页 dispose 不得清掉新页已接管的 view；用 releaseViewIfCurrent。
+                // hide() 经 isEnabled=false 间接触发，不要求源码直写 danmakuManager.hide()。
+                playerSource.contains("danmakuManager.releaseViewIfCurrent(view)"),
+            "VideoPlayerSection must safely release DanmakuView on dispose."
         )
         assertTrue(
             detailSource.contains("danmakuManager.isEnabled = newValue") ||
