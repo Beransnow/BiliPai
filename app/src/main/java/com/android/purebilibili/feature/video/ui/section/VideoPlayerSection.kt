@@ -377,6 +377,11 @@ private fun GesturePercentValue(
     }
 }
 
+// 相关推荐/同页切集后新播放器 duration 就绪等待参数：
+// 最长等待 4s（20 × 200ms），超时按当前可用值加载（仓库层会回退）。
+private const val DANMAKU_DURATION_WAIT_ATTEMPTS = 20
+private const val DANMAKU_DURATION_WAIT_INTERVAL_MS = 200L
+
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @Composable
 fun VideoPlayerSection(
@@ -742,8 +747,11 @@ fun VideoPlayerSection(
     var effectiveLongPressSpeed by remember { mutableFloatStateOf(longPressSpeed) }
     var longPressSpeedFeedbackVisible by remember { mutableStateOf(false) }
     var longPressSpeedHintDismissed by remember(bvid) { mutableStateOf(false) }
-    var longPressSpeedLocked by remember(bvid) { mutableStateOf(false) }
-    var lockedLongPressSpeed by remember(bvid) { mutableFloatStateOf(1.0f) }
+    // 锁定状态不随 bvid 重置：切换合集（bvid 变化 → 播放器重建 → 速度回到
+    // 设置播放速度）后仍保持锁定，由下方 LaunchedEffect(observedPlaybackSpeed, …)
+    // 在新播放器就绪后自动把锁定倍速写回。
+    var longPressSpeedLocked by remember { mutableStateOf(false) }
+    var lockedLongPressSpeed by remember { mutableFloatStateOf(1.0f) }
     var longPressSpeedEndedAtMs by remember { mutableLongStateOf(0L) }
     var longPressSpeedStartedAtMs by remember { mutableLongStateOf(0L) }
     var longPressSpeedStartX by remember { mutableFloatStateOf(-1f) }
@@ -2443,11 +2451,28 @@ fun VideoPlayerSection(
                 return@LaunchedEffect
             }
 
+            // 相关推荐/同页切集时新播放器可能尚未就绪（duration=0），
+            // 若立刻按 0 加载会降级到 fallback 导致弹幕为空。
+            // 等待 duration 就绪后按完整分段加载；超时则按当前可用值加载。
+            var durationHintMs = danmakuLoadPolicy.durationHintMs
+            if (durationHintMs <= 0L && cid > 0L && danmakuEnabled) {
+                var attempts = 0
+                while (attempts < DANMAKU_DURATION_WAIT_ATTEMPTS) {
+                    val currentDuration = playerState.player.duration
+                    if (currentDuration > 0L) {
+                        durationHintMs = currentDuration
+                        break
+                    }
+                    attempts += 1
+                    delay(DANMAKU_DURATION_WAIT_INTERVAL_MS)
+                }
+            }
+
             android.util.Log.d(
                 "VideoPlayerSection",
-                "🎯 Loading danmaku for cid=$cid, aid=$aid, durationHint=${danmakuLoadPolicy.durationHintMs}ms"
+                "🎯 Loading danmaku for cid=$cid, aid=$aid, durationHint=${durationHintMs}ms"
             )
-            danmakuManager.loadDanmaku(cid, aid, danmakuLoadPolicy.durationHintMs)
+            danmakuManager.loadDanmaku(cid, aid, durationHintMs)
         }
 
         //  横竖屏/小窗切换后，重绑 surface 并在需要时主动恢复播放。
@@ -3692,10 +3717,10 @@ fun VideoPlayerSection(
                             }
                         }
                     },
-                    onRelease = {
-                        danmakuManager.hide()
-                        danmakuManager.clear()
-                        danmakuManager.detachView()
+                    onRelease = { view ->
+                        // 仅当本 view 仍是当前绑定的弹幕视图时才解绑；
+                        // 相关推荐跳转后旧页面销毁不能清掉新页面已接管的 view/controller。
+                        danmakuManager.releaseViewIfCurrent(view)
                     },
                     modifier = danmakuSurfaceModifier
                 )

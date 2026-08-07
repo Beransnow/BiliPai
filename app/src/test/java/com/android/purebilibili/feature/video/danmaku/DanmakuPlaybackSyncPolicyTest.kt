@@ -79,6 +79,39 @@ class DanmakuPlaybackSyncPolicyTest {
     }
 
     @Test
+    fun `danmaku should start on data ready when player is playing or will play`() {
+        // 正在播放：必须启动
+        assertTrue(
+            shouldStartDanmakuOnDataReady(
+                isPlaying = true,
+                playWhenReady = true
+            )
+        )
+        // ExoPlayer 不变量下 isPlaying=true 时 playWhenReady 必为 true；显式覆盖以防策略误判
+        assertTrue(
+            shouldStartDanmakuOnDataReady(
+                isPlaying = true,
+                playWhenReady = false
+            )
+        )
+        // 缓冲中但即将播放（相关推荐/切集后数据先就绪、播放器后开始）：必须启动，
+        // 否则 onIsPlayingChanged(true) 事件已在数据加载完成前被 None 分支吃掉时引擎停在 paused。
+        assertTrue(
+            shouldStartDanmakuOnDataReady(
+                isPlaying = false,
+                playWhenReady = true
+            )
+        )
+        // 用户主动暂停：不启动
+        assertFalse(
+            shouldStartDanmakuOnDataReady(
+                isPlaying = false,
+                playWhenReady = false
+            )
+        )
+    }
+
+    @Test
     fun `player attach resyncs cached data only for an enabled bound session`() {
         assertTrue(
             shouldResyncDanmakuAfterPlayerAttach(

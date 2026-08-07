@@ -1047,7 +1047,14 @@ class DanmakuManager private constructor(
         }
         
         Log.w(TAG, "📎 attachView: new view, old=${danmakuView != null}, hashCode=${view.hashCode()}")
-        
+
+        // [修复] 仅当此前尚未绑定过 view（controller 为空）时才重放已就绪缓存：
+        // 相关推荐等导航 push 新页面时，单例的 cachedDanmakuList 仍是旧视频的数据，
+        // 若此处无条件重放，旧弹幕会装进新视频的 view 显示数秒（随后才被新加载覆盖）。
+        // 重放仅用于「loadDanmaku 完成早于本 view 绑定」的场景（当时 resync 因 controller
+        // 为空而静默落空），此时旧 controller 一定为 null。
+        val hadControllerBeforeAttach = controller != null
+
         danmakuView = view
         controller = view.controller
         applyDanmakuClickListener()
@@ -1059,6 +1066,22 @@ class DanmakuManager private constructor(
         
         // 应用配置并同步倍速基准
         applyConfigToController("attachView")
+
+        // [关键修复] 绑定新 view 时，把已就绪缓存补上屏（仅当此前无绑定导致 resync 落空）。
+        if (!hadControllerBeforeAttach) {
+            cachedDanmakuList?.takeIf { it.isNotEmpty() }?.let { list ->
+                resyncDanmakuTimeline(
+                    list = list,
+                    positionMs = player?.currentPosition ?: 0L,
+                    shouldPlay = shouldStartDanmakuOnDataReady(
+                        isPlaying = player?.isPlaying == true,
+                        playWhenReady = player?.playWhenReady == true
+                    ),
+                    invalidateView = true,
+                    reason = "attach_view_replay"
+                )
+            }
+        }
         
         //  [关键修复] 等待 View 布局完成后再设置弹幕数据
         // DanmakuRenderEngine 需要有效的 View 尺寸来计算弹幕轨道位置
@@ -1135,6 +1158,24 @@ class DanmakuManager private constructor(
      */
     fun detachView() {
         Log.d(TAG, "📎 detachView: Pausing and clearing controller")
+        controller?.pause()
+        controller = null
+        danmakuView = null
+    }
+
+    /**
+     * 页面销毁时解绑视图。仅当该 view 仍是当前绑定的弹幕视图时才生效：
+     * 相关推荐等导航会 push 新页面，单例 DanmakuManager 的 danmakuView 可能
+     * 已被新页面的 view 接管，旧页面 onRelease 不得清空新页面的绑定，
+     * 否则新页面加载完成的弹幕会因 controller 为 null 无法上屏（需重开开关）。
+     */
+    fun releaseViewIfCurrent(view: DanmakuView) {
+        if (danmakuView !== view) {
+            Log.d(TAG, "📎 releaseViewIfCurrent: view=${view.hashCode()} is not current (${danmakuView?.hashCode()}), skipping")
+            return
+        }
+        hide()
+        clear()
         controller?.pause()
         controller = null
         danmakuView = null
@@ -1538,23 +1579,24 @@ class DanmakuManager private constructor(
                     var segmentList: List<ByteArray>? = null
                     var xmlData: ByteArray? = null
                     
-                    //  [新增] 优先使用 Protobuf API (seg.so)
-                    if (durationMs > 0 || viewReply != null) {
-                        Log.w(TAG, " Trying Protobuf API (seg.so)...")
-                        try {
-                            val fetched = com.android.purebilibili.data.repository.DanmakuRepository.getDanmakuSegments(
-                                cid = cid,
-                                durationMs = durationMs,
-                                metadataSegmentCount = viewReply?.dmSge?.total?.toInt()
-                            )
-                            if (fetched.isNotEmpty()) {
-                                val special = com.android.purebilibili.data.repository.DanmakuRepository
-                                    .getSpecialDanmakuSegments(viewReply?.specialDms.orEmpty())
-                                segmentList = fetched + special
-                            }
-                        } catch (e: Exception) {
-                            Log.w(TAG, " Protobuf API failed: ${e.message}, falling back to XML")
+                    //  [新增] 优先使用 Protobuf API (seg.so)。
+                    //  duration<=0 时（如相关推荐/同页切集瞬间新播放器未就绪）
+                    // 也尝试 Protobuf：仓库层会按 metadata 或默认段数 fallback，
+                    // 避免无谓降级到易失败的 XML API 导致弹幕为空。
+                    Log.w(TAG, " Trying Protobuf API (seg.so)...")
+                    try {
+                        val fetched = com.android.purebilibili.data.repository.DanmakuRepository.getDanmakuSegments(
+                            cid = cid,
+                            durationMs = durationMs,
+                            metadataSegmentCount = viewReply?.dmSge?.total?.toInt()
+                        )
+                        if (fetched.isNotEmpty()) {
+                            val special = com.android.purebilibili.data.repository.DanmakuRepository
+                                .getSpecialDanmakuSegments(viewReply?.specialDms.orEmpty())
+                            segmentList = fetched + special
                         }
+                    } catch (e: Exception) {
+                        Log.w(TAG, " Protobuf API failed: ${e.message}, falling back to XML")
                     }
                     
                     //  [后备] 如果 Protobuf 失败或未提供 duration，使用 XML API
@@ -1638,7 +1680,10 @@ class DanmakuManager private constructor(
                     resyncDanmakuTimeline(
                         list = finalList,
                         positionMs = currentPlayTime,
-                        shouldPlay = player?.isPlaying == true,
+                        shouldPlay = shouldStartDanmakuOnDataReady(
+                            isPlaying = player?.isPlaying == true,
+                            playWhenReady = player?.playWhenReady == true
+                        ),
                         invalidateView = true,
                         reason = "load_new"
                     )
@@ -1719,7 +1764,10 @@ class DanmakuManager private constructor(
                     resyncDanmakuTimeline(
                         list = cachedDanmakuList ?: emptyList(),
                         positionMs = currentPlayTime,
-                        shouldPlay = player?.isPlaying == true,
+                        shouldPlay = shouldStartDanmakuOnDataReady(
+                            isPlaying = player?.isPlaying == true,
+                            playWhenReady = player?.playWhenReady == true
+                        ),
                         invalidateView = true,
                         reason = "offline_load"
                     )
@@ -1740,17 +1788,24 @@ class DanmakuManager private constructor(
     fun show() {
         Log.d(TAG, "👁️ show()")
         danmakuView?.visibility = android.view.View.VISIBLE
-        
-        if (player?.isPlaying == true) {
-            cachedDanmakuList?.let { list ->
-                resyncDanmakuTimeline(
-                    list = list,
-                    positionMs = player?.currentPosition ?: 0L,
-                    shouldPlay = true,
-                    invalidateView = true,
-                    reason = "show"
-                )
-            }
+
+        // [修复] 相关推荐/同页切集后弹幕开关开启却无弹幕：Enable→show() 常在弹幕数据
+        // 就绪前执行，若此时还要求 player.isPlaying 瞬时成立才装填时间线，数据就绪后
+        // 引擎可能停在 paused 且没有新的 isPlaying 事件恢复（该事件已在数据加载完成前
+        // 被 None 分支吃掉），只能靠手动重开弹幕开关触发 show() 才恢复。
+        // 改为「数据就绪即装填时间线」，shouldPlay 仍按实际播放状态决定 start/pause；
+        // 之后 onIsPlayingChanged(true) 会走 HardResync 完成最终启动。
+        cachedDanmakuList?.takeIf { it.isNotEmpty() }?.let { list ->
+            resyncDanmakuTimeline(
+                list = list,
+                positionMs = player?.currentPosition ?: 0L,
+                shouldPlay = shouldStartDanmakuOnDataReady(
+                    isPlaying = player?.isPlaying == true,
+                    playWhenReady = player?.playWhenReady == true
+                ),
+                invalidateView = true,
+                reason = "show"
+            )
         }
     }
     
