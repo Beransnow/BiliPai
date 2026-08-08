@@ -15,7 +15,7 @@
 [更改] 设置页、播放页的转场减少视差并修复黑屏，设置补充播放与应用图标偏好
 [更改] 空间投稿视频排版对齐首页信息流，长按倍速提示更紧凑
 [修复] 首页 App + Web 合并 Feed 取流和翻页重复问题 @qyo123oyq
-v0.2.2(PENDING_RELEASE_SHA)
+v0.2.2(82627cc3e)
 
 格式规范见 [docs/wiki/CHANGELOG_GUIDE.md](docs/wiki/CHANGELOG_GUIDE.md)。社群：频道 [t.me/bilipai666](https://t.me/bilipai666) / 群 [t.me/bilipai888](https://t.me/bilipai888/1)。比较：[`v0.2.1...main`](https://github.com/jay3-yy/BiliPai/compare/v0.2.1...main)。
 
