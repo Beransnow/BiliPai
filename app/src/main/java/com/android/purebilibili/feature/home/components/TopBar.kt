@@ -102,6 +102,7 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.animation.DampedDragAnimationState
+import com.android.purebilibili.core.ui.animation.shouldEngageHorizontalDrag
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity
 import com.kyant.backdrop.backdrops.LayerBackdrop
@@ -2250,12 +2251,19 @@ private fun Modifier.topTabSelectedItemDrag(
             val down = awaitFirstDown(requireUnconsumed = false)
             velocityTracker.resetTracking()
             velocityTracker.addPosition(down.uptimeMillis, down.position)
+            var horizontalDragEngaged = false
             val dragStart = awaitHorizontalTouchSlopOrCancellation(down.id) { change, over ->
+                val totalDelta = change.position - down.position
+                if (!shouldEngageHorizontalDrag(totalDelta.x, totalDelta.y)) {
+                    return@awaitHorizontalTouchSlopOrCancellation
+                }
+                horizontalDragEngaged = true
                 change.consume()
                 onDragEngaged()
                 velocityTracker.addPosition(change.uptimeMillis, change.position)
                 dragState.onDrag(over, itemWidthPx)
-            } ?: continue
+            }
+            if (dragStart == null || !horizontalDragEngaged) continue
 
             var isCancelled = false
             try {
