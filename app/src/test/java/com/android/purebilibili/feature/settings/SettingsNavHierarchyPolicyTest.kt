@@ -88,10 +88,22 @@ class SettingsNavHierarchyPolicyTest {
                 childRoute = "settings",
             )
         )
-        assertFalse(
+        assertTrue(
             isSettingsNavHierarchyTransition(
                 parentRoute = "home",
                 childRoute = "settings",
+            )
+        )
+        assertTrue(
+            isSettingsNavHierarchyTransition(
+                parentRoute = "dynamic",
+                childRoute = "settings",
+            )
+        )
+        assertFalse(
+            isSettingsNavHierarchyTransition(
+                parentRoute = "home",
+                childRoute = "appearance_settings",
             )
         )
     }
@@ -131,6 +143,22 @@ class SettingsNavHierarchyPolicyTest {
             )
         )
         assertEquals(
+            BiliPaiNavRouteTransition.SETTINGS_IOS_PUSH_FORWARD,
+            resolveSettingsNavRouteTransition(
+                fromRoute = "home",
+                toRoute = "settings",
+                forward = true,
+            )
+        )
+        assertEquals(
+            BiliPaiNavRouteTransition.SETTINGS_IOS_PUSH_POP,
+            resolveSettingsNavRouteTransition(
+                fromRoute = "settings",
+                toRoute = "home",
+                forward = false,
+            )
+        )
+        assertEquals(
             BiliPaiNavRouteTransition.SETTINGS_IOS_PUSH_POP,
             resolveSettingsNavRouteTransition(
                 fromRoute = "animation_settings",
@@ -164,6 +192,22 @@ class SettingsNavHierarchyPolicyTest {
                 fromKey = BiliPaiNavKey.Settings,
                 toKey = BiliPaiNavKey.MainHost,
                 activeMainHostRoute = "profile",
+            )
+        )
+        assertEquals(
+            BiliPaiNavRouteTransition.SETTINGS_IOS_PUSH_POP,
+            resolveSettingsNavPopTransition(
+                fromKey = BiliPaiNavKey.Settings,
+                toKey = BiliPaiNavKey.MainHost,
+                activeMainHostRoute = "home",
+            )
+        )
+        assertEquals(
+            BiliPaiNavRouteTransition.SETTINGS_IOS_PUSH_POP,
+            resolveSettingsNavPopTransition(
+                fromKey = BiliPaiNavKey.Settings,
+                toKey = BiliPaiNavKey.MainHost,
+                activeMainHostRoute = "dynamic",
             )
         )
         assertNull(
