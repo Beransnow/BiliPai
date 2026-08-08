@@ -152,19 +152,6 @@ internal fun isSettingsNavHierarchyTransition(
     return false
 }
 
-internal fun resolveSettingsNavRouteTransition(
-    fromRoute: String?,
-    toRoute: String?,
-    forward: Boolean,
-): BiliPaiNavRouteTransition? {
-    if (forward) {
-        if (!isSettingsNavHierarchyTransition(fromRoute, toRoute)) return null
-        return BiliPaiNavRouteTransition.SETTINGS_IOS_PUSH_FORWARD
-    }
-    if (!isSettingsNavHierarchyTransition(toRoute, fromRoute)) return null
-    return BiliPaiNavRouteTransition.SETTINGS_IOS_PUSH_POP
-}
-
 /**
  * 设置树 pop 的单一决策入口。Display / Entry / 预测返回 handler 都应读这里，
  * 避免 MainHost ↔ 底栏 Settings remap 不一致导致预览与提交动画分裂。

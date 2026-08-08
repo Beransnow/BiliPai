@@ -108,65 +108,8 @@ class SettingsNavHierarchyPolicyTest {
         )
     }
 
-    @Test
-    fun resolveSettingsNavRouteTransition_returnsIosPushForHierarchy() {
-        assertEquals(
-            BiliPaiNavRouteTransition.SETTINGS_IOS_PUSH_FORWARD,
-            resolveSettingsNavRouteTransition(
-                fromRoute = "settings",
-                toRoute = "settings_category",
-                forward = true,
-            )
-        )
-        assertEquals(
-            BiliPaiNavRouteTransition.SETTINGS_IOS_PUSH_POP,
-            resolveSettingsNavRouteTransition(
-                fromRoute = "appearance_settings",
-                toRoute = "settings",
-                forward = false,
-            )
-        )
-        assertEquals(
-            BiliPaiNavRouteTransition.SETTINGS_IOS_PUSH_FORWARD,
-            resolveSettingsNavRouteTransition(
-                fromRoute = "settings",
-                toRoute = "appearance_settings",
-                forward = true,
-            )
-        )
-        assertEquals(
-            BiliPaiNavRouteTransition.SETTINGS_IOS_PUSH_FORWARD,
-            resolveSettingsNavRouteTransition(
-                fromRoute = "profile",
-                toRoute = "settings",
-                forward = true,
-            )
-        )
-        assertEquals(
-            BiliPaiNavRouteTransition.SETTINGS_IOS_PUSH_FORWARD,
-            resolveSettingsNavRouteTransition(
-                fromRoute = "home",
-                toRoute = "settings",
-                forward = true,
-            )
-        )
-        assertEquals(
-            BiliPaiNavRouteTransition.SETTINGS_IOS_PUSH_POP,
-            resolveSettingsNavRouteTransition(
-                fromRoute = "settings",
-                toRoute = "home",
-                forward = false,
-            )
-        )
-        assertEquals(
-            BiliPaiNavRouteTransition.SETTINGS_IOS_PUSH_POP,
-            resolveSettingsNavRouteTransition(
-                fromRoute = "animation_settings",
-                toRoute = "settings_category",
-                forward = false,
-            )
-        )
-    }
+    // forward 决策已迁至 BiliPaiNavEntryProvider（resolveBiliPaiNavEntryForwardRouteTransition，
+    // 见 BiliPaiNavEntryProviderPolicyTest 的 SETTINGS_IOS_PUSH_FORWARD 断言）；pop 决策见下。
 
     @Test
     fun resolveSettingsNavPopTransition_remapsMainHostWhenSettingsTabActive() {
