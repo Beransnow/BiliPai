@@ -11,6 +11,7 @@ import com.android.purebilibili.feature.video.ui.section.resolveHorizontalSeekDe
 import com.android.purebilibili.feature.video.ui.section.rebindPlayerSurfaceIfNeeded
 import com.android.purebilibili.feature.video.ui.section.shouldCommitGestureSeek
 import com.android.purebilibili.feature.video.ui.section.shouldKeepVideoPlaybackAwake
+import com.android.purebilibili.feature.video.ui.section.shouldEngageHorizontalPlayerSeek
 import com.android.purebilibili.feature.video.ui.section.shouldTriggerSeekStepHaptic
 import com.android.purebilibili.feature.video.usecase.applyPlaybackButtonUserAction
 import com.android.purebilibili.feature.video.usecase.seekPlayerFromUserAction
@@ -275,6 +276,7 @@ fun FullscreenPlayerOverlay(
     var gestureMode by remember { mutableStateOf(FullscreenGestureMode.None) }
     var gestureValue by remember { mutableFloatStateOf(0f) }
     var dragDelta by remember { mutableFloatStateOf(0f) }
+    var dragVerticalDelta by remember { mutableFloatStateOf(0f) }
     var seekPreviewPosition by remember { mutableLongStateOf(0L) }
     var gestureSeekStartPosition by remember { mutableLongStateOf(0L) }
     var lastSeekHapticTargetMs by remember { mutableLongStateOf(0L) }
@@ -636,6 +638,7 @@ fun FullscreenPlayerOverlay(
                         showControls = true
                         lastInteractionTime = System.currentTimeMillis()
                         dragDelta = 0f
+                        dragVerticalDelta = 0f
                         
                         // 根据起始位置决定手势类型
                         gestureMode = when {
@@ -651,10 +654,7 @@ fun FullscreenPlayerOverlay(
                                 seekPreviewPosition = currentPosition
                                 gestureSeekStartPosition = currentPosition
                                 lastSeekHapticTargetMs = currentPosition
-                                haptic.performHapticFeedback(
-                                    androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove
-                                )
-                                FullscreenGestureMode.Seek
+                                FullscreenGestureMode.None
                             }
                         }
                     },
@@ -683,6 +683,19 @@ fun FullscreenPlayerOverlay(
                     onDrag = { change, dragAmount ->
                         if (!dragGestureActive) return@detectDragGestures
                         change.consume()
+                        if (gestureMode == FullscreenGestureMode.None) {
+                            dragDelta += dragAmount.x
+                            dragVerticalDelta += dragAmount.y
+                            if (!shouldEngageHorizontalPlayerSeek(dragDelta, dragVerticalDelta)) {
+                                return@detectDragGestures
+                            }
+                            gestureMode = FullscreenGestureMode.Seek
+                            haptic.performHapticFeedback(
+                                androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove
+                            )
+                        } else if (gestureMode == FullscreenGestureMode.Seek) {
+                            dragDelta += dragAmount.x
+                        }
                         when (gestureMode) {
                             FullscreenGestureMode.Brightness -> {
                                 gestureValue = (gestureValue - dragAmount.y / screenHeight).coerceIn(0f, 1f)
@@ -702,7 +715,6 @@ fun FullscreenPlayerOverlay(
                                 )
                             }
                             FullscreenGestureMode.Seek -> {
-                                dragDelta += dragAmount.x
                                 val seekDelta = resolveHorizontalSeekDeltaMs(
                                     isFullscreen = true,
                                     fullscreenSwipeSeekEnabled = true,

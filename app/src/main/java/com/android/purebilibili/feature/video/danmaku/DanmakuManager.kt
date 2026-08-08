@@ -1538,6 +1538,32 @@ class DanmakuManager private constructor(
             applyCachedDanmakuToController("player_attach")
         }
     }
+
+    /**
+     * 仅解绑仍由指定播放器持有的监听器，不触碰当前 DanmakuView/controller 或缓存。
+     *
+     * 相关推荐 push 时旧详情页会晚于新详情页收到 ON_DESTROY；此时不能调用
+     * [clearViewReference]，否则会把单例中已经属于新页面的 view/controller 一并清掉。
+     */
+    fun detachPlayerIfCurrent(exoPlayer: ExoPlayer) {
+        if (player !== exoPlayer) {
+            Log.d(
+                TAG,
+                "detachPlayerIfCurrent: player=${exoPlayer.hashCode()} is not current " +
+                    "(${player?.hashCode()}), skipping"
+            )
+            return
+        }
+
+        playerListener?.let(exoPlayer::removeListener)
+        playerListener = null
+        player = null
+        stopDriftSync()
+        isPlaying = false
+        wasBufferingWhilePlaying = false
+        clearExplicitSeekResyncMarker()
+        Log.d(TAG, "detachPlayerIfCurrent: detached player=${exoPlayer.hashCode()}")
+    }
     
     /**
      * 加载弹幕数据

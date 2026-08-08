@@ -1,18 +1,12 @@
 package com.android.purebilibili.feature.video.ui.components
-import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,8 +20,6 @@ import com.kyant.backdrop.Backdrop
 import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
 
 internal data class CommentSortSegmentedControlSpec(
     val itemWidthDp: Int,
@@ -61,13 +53,11 @@ fun CommentSortFilterBar(
     count: Int,
     sortMode: CommentSortMode,
     onSortModeChange: (CommentSortMode) -> Unit,
-    upOnly: Boolean = false,
-    onUpOnlyToggle: () -> Unit = {},
     modifier: Modifier = Modifier,
     backdrop: Backdrop? = null,
     miuixBackdrop: MiuixBackdrop? = null
 ) {
-    val sortModes = remember { CommentSortMode.entries.toList() }
+    val sortModes = remember { listOf(CommentSortMode.HOT, CommentSortMode.NEWEST) }
     val appearance = rememberVideoCommentAppearance()
 
     FlowRow(
@@ -96,18 +86,11 @@ fun CommentSortFilterBar(
             )
         }
 
-        // Right: Sort Control + Only UP Toggle
+        // Right: Sort Control
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Only UP Toggle
-            CommentToggleButton(
-                isChecked = upOnly,
-                onToggle = onUpOnlyToggle,
-                icon = Icons.Filled.Person
-            )
-
             // Segmented Control
             CommentSegmentedControl(
                 items = sortModes.map { it.label },
@@ -154,42 +137,4 @@ fun CommentSegmentedControl(
         liquidGlassEffectsEnabled = backdrop != null,
         tapPressRefractionEnabled = false
     )
-}
-
-/**
- * 评论筛选切换按钮
- */
-@Composable
-fun CommentToggleButton(
-    isChecked: Boolean,
-    onToggle: () -> Unit,
-    icon: androidx.compose.ui.graphics.vector.ImageVector
-) {
-    val appearance = rememberVideoCommentAppearance()
-    val backgroundColor = if (isChecked) {
-        appearance.toggleCheckedBackgroundColor
-    } else {
-        appearance.toggleUncheckedBackgroundColor
-    }
-    val contentColor = if (isChecked) {
-        appearance.toggleCheckedContentColor
-    } else {
-        appearance.toggleUncheckedContentColor
-    }
-    
-    Box(
-        modifier = Modifier
-            .size(32.dp)
-            .clip(CircleShape)
-            .background(backgroundColor)
-            .clickable { onToggle() },
-        contentAlignment = Alignment.Center
-    ) {
-        AppIcon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = contentColor,
-            modifier = Modifier.size(18.dp)
-        )
-    }
 }

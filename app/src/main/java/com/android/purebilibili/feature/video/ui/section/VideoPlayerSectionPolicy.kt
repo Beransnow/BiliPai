@@ -293,7 +293,8 @@ internal fun shouldShowLongPressSpeedFeedback(
     isLongPressing: Boolean,
     isPlaybackSurfaceActive: Boolean,
     hintDismissed: Boolean,
-): Boolean = isLongPressing && isPlaybackSurfaceActive && !hintDismissed
+    hintHidden: Boolean,
+): Boolean = isLongPressing && isPlaybackSurfaceActive && !hintDismissed && !hintHidden
 
 /**
  * 长按倍速浮层上的关闭（×）按钮。
@@ -571,6 +572,18 @@ internal fun resolveHorizontalSeekDeltaMs(
         )
     }
     return (totalDragDistanceX * 200f * gestureSensitivity).toLong()
+}
+
+internal const val VIDEO_PLAYER_HORIZONTAL_SEEK_DOMINANCE_RATIO = 1.2f
+
+internal fun shouldEngageHorizontalPlayerSeek(
+    totalDragDistanceX: Float,
+    totalDragDistanceY: Float,
+): Boolean {
+    val horizontalDistance = abs(totalDragDistanceX)
+    val verticalDistance = abs(totalDragDistanceY)
+    return horizontalDistance >= 1f &&
+        horizontalDistance >= verticalDistance * VIDEO_PLAYER_HORIZONTAL_SEEK_DOMINANCE_RATIO
 }
 
 private fun resolveConfiguredSeekDeltaMs(

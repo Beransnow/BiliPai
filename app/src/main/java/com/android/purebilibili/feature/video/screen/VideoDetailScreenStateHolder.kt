@@ -454,7 +454,6 @@ internal fun VideoDetailScreenStateHolder(
         VideoDetailCommentActions(
             loadComments = commentViewModel::loadComments,
             setSortMode = commentViewModel::setSortMode,
-            toggleUpOnly = commentViewModel::toggleUpOnly,
             deleteComment = commentViewModel::deleteComment,
             startDissolve = commentViewModel::startDissolve,
             loadMoreSubReplies = commentViewModel::loadMoreSubReplies,
@@ -493,6 +492,9 @@ internal fun VideoDetailScreenStateHolder(
         initialPipMode = isInPipMode,
     )
     var isNavigatingToVideo by presentationState.navigatingToVideoState
+    // `isNavigatingToVideo` 仅覆盖共享元素动画，动画结束会提前复位；NavHost 旧 entry
+    // 仍可能再存活几帧。弹幕主机离开态必须保持到旧 entry 真正销毁。
+    var hasCommittedRelatedVideoNavigation by remember(bvid) { mutableStateOf(false) }
     var isNavigatingToAudioMode by presentationState.navigatingToAudioModeState
     var isNavigatingToMiniMode by presentationState.navigatingToMiniModeState
     var hasAutoEnteredAudioMode by rememberSaveable { mutableStateOf(false) }
@@ -685,6 +687,7 @@ internal fun VideoDetailScreenStateHolder(
                 // 先摘掉父详情壳 sharedBounds，再 push，避免相关卡嵌套在父壳内吃不到 morph。
                 // 同时清掉单例弹幕缓存，防止新页 attach 时重放旧片或 load 结果落到旧 controller。
                 sharedDanmakuManager.clearForVideoChange()
+                hasCommittedRelatedVideoNavigation = true
                 presentationState.markNavigatingToVideo()
                 miniPlayerManager?.isNavigatingToVideo = true
                 markSecondaryNavigationLeave(expectedBvid = success?.info?.bvid ?: currentBvid)
@@ -2675,7 +2678,7 @@ internal fun VideoDetailScreenStateHolder(
             isPipMode = isPipMode,
             transitionEnabled = detailChildTransitionEnabled,
             transitionChromeAlphaProvider = videoCardDetailChromeAlphaProvider,
-            danmakuHostActive = !isNavigatingToVideo,
+            danmakuHostActive = !hasCommittedRelatedVideoNavigation,
             onToggleFullscreen = { toggleFullscreen() },
             playbackActions = playbackActions,
             onDoubleTapLike = engagementViewModel::toggleLike,
@@ -2808,11 +2811,11 @@ internal fun VideoDetailScreenStateHolder(
                             replies = commentState.replies, replyCount = commentState.replyCount,
                             emoteMap = success.emoteMap, isRepliesLoading = commentState.isRepliesLoading,
                             isRepliesEnd = commentState.isRepliesEnd, videoTags = success.videoTags,
-                            sortMode = commentState.sortMode, upOnlyFilter = commentState.upOnlyFilter,
+                            sortMode = commentState.sortMode,
                             currentMid = commentState.currentMid, showUpFlag = commentState.showUpFlag,
                             showIdentityDecorations = commentMemberDecorationsEnabled,
                             dissolvingIds = commentState.dissolvingIds, likedComments = commentState.likedComments,
-                            onSortModeChange = commentActions.setSortMode, onUpOnlyToggle = commentActions.toggleUpOnly,
+                            onSortModeChange = commentActions.setSortMode,
                             onUpClick = navigateToUserSpaceFromVideo,
                             onSubReplyClick = commentActions.openSubReply,
                             onCommentReplyClick = playbackActions.replyTo, onLoadMoreReplies = commentActions.loadComments,
@@ -2873,7 +2876,7 @@ internal fun VideoDetailScreenStateHolder(
                     uiState = uiState,
                     isFullscreen = true,
                     isInPipMode = isPipMode,
-                    danmakuHostActive = !isNavigatingToVideo,
+                    danmakuHostActive = !hasCommittedRelatedVideoNavigation,
                     transitionEnabled = detailChildTransitionEnabled,
                     onToggleFullscreen = { toggleFullscreen() },
                     onQualityChange = { qid -> viewModel.changeQuality(qid) },
@@ -3033,14 +3036,12 @@ internal fun VideoDetailScreenStateHolder(
                             isRepliesEnd = commentState.isRepliesEnd,
                             videoTags = success.videoTags,
                             sortMode = commentState.sortMode,
-                            upOnlyFilter = commentState.upOnlyFilter,
                             currentMid = commentState.currentMid,
                             showUpFlag = commentState.showUpFlag,
                             showIdentityDecorations = commentMemberDecorationsEnabled,
                             dissolvingIds = commentState.dissolvingIds,
                             likedComments = commentState.likedComments,
                             onSortModeChange = commentActions.setSortMode,
-                            onUpOnlyToggle = commentActions.toggleUpOnly,
                             onUpClick = navigateToUserSpaceFromVideo,
                             onSubReplyClick = commentActions.openSubReply,
                             onCommentReplyClick = playbackActions.replyTo,
@@ -3155,7 +3156,7 @@ internal fun VideoDetailScreenStateHolder(
                             },
 
                             transitionEnabled = detailChildTransitionEnabled,  //  传递过渡动画开关
-                            danmakuHostActive = !isNavigatingToVideo,
+                            danmakuHostActive = !hasCommittedRelatedVideoNavigation,
                             // [New] Codec & Audio
                             currentCodec = codecPreference,
                             onCodecChange = { viewModel.setVideoCodec(it) },
@@ -3691,7 +3692,7 @@ internal fun VideoDetailScreenStateHolder(
                                 transitionEnabled = detailChildTransitionEnabled,
                                 transitionChromeAlphaProvider =
                                     videoCardDetailChromeAlphaProvider,
-                                danmakuHostActive = !isNavigatingToVideo,
+                                danmakuHostActive = !hasCommittedRelatedVideoNavigation,
                                 onToggleFullscreen = { toggleFullscreen() },
                                 playbackActions = playbackActions,
                                 onDoubleTapLike = engagementViewModel::toggleLike,

@@ -137,8 +137,15 @@ class VideoPlayerDanmakuLoadPolicyTest {
         )
         assertTrue(
             playerSource.contains("if (!runDanmakuHostEffects) return@LaunchedEffect") &&
-                detailStateHolderSource.contains("danmakuHostActive = !isNavigatingToVideo"),
+                detailStateHolderSource.contains(
+                    "danmakuHostActive = !hasCommittedRelatedVideoNavigation"
+                ),
             "Outgoing related-video detail hosts must not bind or load the shared danmaku engine."
+        )
+        assertTrue(
+            playerSource.contains("danmakuManager.detachPlayerIfCurrent(lifecyclePlayer)") &&
+                !playerSource.contains("danmakuManager.clearViewReference()"),
+            "An outgoing detail ON_DESTROY must not clear the next page's shared DanmakuView."
         )
     }
 }

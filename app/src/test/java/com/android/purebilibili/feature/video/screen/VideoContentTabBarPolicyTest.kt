@@ -1,6 +1,7 @@
 package com.android.purebilibili.feature.video.screen
 
 import com.android.purebilibili.core.ui.AppTopTabPresentation
+import androidx.compose.ui.geometry.Offset
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -9,6 +10,34 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class VideoContentTabBarPolicyTest {
+
+    @Test
+    fun `comment vertical pre-scroll consumes only horizontal drift`() {
+        assertEquals(
+            Offset(8f, 0f),
+            resolveVideoContentCommentHorizontalPreScroll(
+                availableX = 8f,
+                availableY = 20f,
+                enabled = true,
+            )
+        )
+        assertEquals(
+            Offset.Zero,
+            resolveVideoContentCommentHorizontalPreScroll(
+                availableX = 20f,
+                availableY = 8f,
+                enabled = true,
+            )
+        )
+        assertEquals(
+            Offset.Zero,
+            resolveVideoContentCommentHorizontalPreScroll(
+                availableX = 8f,
+                availableY = 20f,
+                enabled = false,
+            )
+        )
+    }
 
     @Test
     fun `comment list at top only when first item and zero offset`() {
@@ -243,6 +272,12 @@ class VideoContentTabBarPolicyTest {
             .substringBefore("// [新增] 恢复画面按钮")
 
         assertTrue(tabBarBlock.contains("tapPressRefractionEnabled = false"))
+        assertTrue(
+            tabBarBlock.contains(
+                "externalPagerMotionEffectsEnabled = liquidChromeSpec.reusesLiquidGlassDock"
+            )
+        )
+        assertTrue(source.contains("clip = tabBarCollapseProgress > 0.001f"))
     }
 
     @Test

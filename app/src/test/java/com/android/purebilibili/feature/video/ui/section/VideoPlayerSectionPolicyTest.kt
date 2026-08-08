@@ -1503,6 +1503,7 @@ class VideoPlayerSectionPolicyTest {
                 isLongPressing = true,
                 isPlaybackSurfaceActive = true,
                 hintDismissed = false,
+                hintHidden = false,
             )
         )
         assertFalse(
@@ -1510,6 +1511,7 @@ class VideoPlayerSectionPolicyTest {
                 isLongPressing = true,
                 isPlaybackSurfaceActive = true,
                 hintDismissed = true,
+                hintHidden = false,
             )
         )
         assertFalse(
@@ -1517,6 +1519,15 @@ class VideoPlayerSectionPolicyTest {
                 isLongPressing = true,
                 isPlaybackSurfaceActive = false,
                 hintDismissed = false,
+                hintHidden = false,
+            )
+        )
+        assertFalse(
+            shouldShowLongPressSpeedFeedback(
+                isLongPressing = true,
+                isPlaybackSurfaceActive = true,
+                hintDismissed = false,
+                hintHidden = true,
             )
         )
     }

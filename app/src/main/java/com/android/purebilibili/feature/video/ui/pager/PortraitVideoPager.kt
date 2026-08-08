@@ -1643,6 +1643,11 @@ private fun VideoPageItem(
         .collectAsStateWithLifecycle(
             initialValue = SettingsManager.getLongPressSpeedHintCloseEnabledSync(context)
         )
+    val longPressSpeedHintHidden by SettingsManager
+        .getLongPressSpeedHintHidden(context)
+        .collectAsStateWithLifecycle(
+            initialValue = SettingsManager.getLongPressSpeedHintHiddenSync(context)
+        )
     val doubleTapSeekEnabled by SettingsManager
         .getDoubleTapSeekEnabled(context)
         .collectAsStateWithLifecycle(initialValue = false)
@@ -2565,6 +2570,7 @@ private fun VideoPageItem(
                 isLongPressing = isLongPressing,
                 isPlaybackSurfaceActive = isCurrentPage,
                 hintDismissed = longPressSpeedHintDismissed,
+                hintHidden = longPressSpeedHintHidden,
             ),
             modifier = Modifier
                 .align(Alignment.TopCenter)

@@ -960,7 +960,7 @@ fun BottomControlBar(
                     contentAlignment = Alignment.Center
                 ) {
                     AppIcon(
-                        imageVector = if (isFullscreen) Icons.Outlined.Fullscreen else Icons.Outlined.FullscreenExit,
+                        imageVector = if (isFullscreen) Icons.Outlined.FullscreenExit else Icons.Outlined.Fullscreen,
                         contentDescription = if (isFullscreen) "退出横屏" else "横屏",
                         tint = Color.White,
                         modifier = Modifier.size(layoutPolicy.fullscreenIconSizeDp.dp)

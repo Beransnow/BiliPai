@@ -778,8 +778,6 @@ internal fun VideoCommentMainList(
                     SettingsManager.setCommentDefaultSortMode(context, mode.apiMode)
                 }
             },
-            upOnly = state.upOnlyFilter,
-            onUpOnlyToggle = { viewModel.toggleUpOnly() },
             backdrop = commentChromeBackdrop
         )
 

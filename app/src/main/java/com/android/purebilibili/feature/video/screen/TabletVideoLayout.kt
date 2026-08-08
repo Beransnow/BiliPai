@@ -1,6 +1,5 @@
 // 文件路径: feature/video/screen/TabletVideoLayout.kt
 package com.android.purebilibili.feature.video.screen
-import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
 
 import android.content.res.Configuration
@@ -30,7 +29,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import com.android.purebilibili.core.ui.AppSplitLayout
-import com.android.purebilibili.core.ui.components.AppFloatingActionButton
 import com.android.purebilibili.core.ui.components.AppPrimaryTabRow
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTab
@@ -59,14 +57,12 @@ import com.android.purebilibili.feature.video.viewmodel.VideoPlaybackUiState
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
 import kotlinx.coroutines.launch
 
 //  共享元素过渡
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.shape.CircleShape
 import com.android.purebilibili.core.ui.LocalSharedTransitionScope
 import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
@@ -710,36 +706,7 @@ private fun TabletSecondaryContent(
                             }
                         }
 
-                        AppFloatingActionButton(
-                            onClick = commentActions.toggleUpOnly,
-                            modifier = Modifier
-                                .align(Alignment.BottomEnd)
-                                .padding(16.dp),
-                            containerColor = if (commentState.upOnlyFilter) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
-                            contentColor = if (commentState.upOnlyFilter) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
-                            shape = androidx.compose.foundation.shape.CircleShape,
-                            elevation = FloatingActionButtonDefaults.elevation(8.dp)
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.padding(8.dp)
-                            ) {
-                                AppIcon(
-                                    imageVector = if (commentState.upOnlyFilter) Icons.Outlined.CheckCircle else Icons.Outlined.Person,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                AppText(
-                                    text = "只看\nUP",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontSize = 10.sp,
-                                    lineHeight = 12.sp,
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                )
-                            }
-                        }
-                            }
+                           }
                         }
                     }
                 }

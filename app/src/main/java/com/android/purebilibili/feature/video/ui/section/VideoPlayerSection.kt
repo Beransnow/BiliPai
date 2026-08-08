@@ -646,6 +646,8 @@ fun VideoPlayerSection(
                     .getLongPressSpeedLockHintShownSync(context),
                 longPressSpeedHintCloseEnabled = com.android.purebilibili.core.store.SettingsManager
                     .getLongPressSpeedHintCloseEnabledSync(context),
+                longPressSpeedHintHidden = com.android.purebilibili.core.store.SettingsManager
+                    .getLongPressSpeedHintHiddenSync(context),
                 hiResLongPressCompatHintShown = com.android.purebilibili.core.store.SettingsManager
                     .getHiResLongPressCompatHintShownSync(context)
             ),
@@ -729,6 +731,7 @@ fun VideoPlayerSection(
     val longPressSpeed = playerInteractionSettings.longPressSpeed
     val longPressSpeedLockEnabled = playerInteractionSettings.longPressSpeedLockEnabled
     val longPressSpeedHintCloseEnabled = playerInteractionSettings.longPressSpeedHintCloseEnabled
+    val longPressSpeedHintHidden = playerInteractionSettings.longPressSpeedHintHidden
     val twoFingerVerticalSpeedEnabled = playerInteractionSettings.twoFingerVerticalSpeedEnabled
     val twoFingerHorizontalSpeedEnabled = playerInteractionSettings.twoFingerHorizontalSpeedEnabled
     val twoFingerSpeedMode = remember(
@@ -1920,7 +1923,7 @@ fun VideoPlayerSection(
 
                             if (gestureMode == VideoGestureMode.None && totalDrag >= minDragThreshold) {
                                 // [修复] 使用累积距离判断方向，而非单帧增量
-                                if (abs(totalDragDistanceX) > abs(totalDragDistanceY)) {
+                                if (shouldEngageHorizontalPlayerSeek(totalDragDistanceX, totalDragDistanceY)) {
                                     gestureMode = VideoGestureMode.Seek
                                     // Lock-in haptic so landscape seek always feels responsive.
                                     haptic.performHapticFeedback(
@@ -2772,6 +2775,9 @@ fun VideoPlayerSection(
             if (runDanmakuHostEffects) {
                 android.util.Log.d("VideoPlayerSection", " attachPlayer, isFullscreen=$isFullscreen")
                 danmakuManager.attachPlayer(playerState.player)
+            } else if (!danmakuHostActive) {
+                // 相关推荐转场的旧页面仍可能保持 STARTED；立即让出播放器监听器。
+                danmakuManager.detachPlayerIfCurrent(playerState.player)
             }
             onDispose {
                 // 单例模式不需要释放
@@ -2870,8 +2876,10 @@ fun VideoPlayerSection(
                         hasObservedHostPause = true
                     }
                     androidx.lifecycle.Lifecycle.Event.ON_DESTROY -> {
-                        android.util.Log.d("VideoPlayerSection", " ON_DESTROY: Clearing danmaku references")
-                        danmakuManager.clearViewReference()
+                        // NavHost 会在新详情页已经 attach 后才销毁旧 entry。这里只能按播放器
+                        // 身份解绑监听器；DanmakuView 由 AndroidView.onRelease 做 identity-safe 释放。
+                        android.util.Log.d("VideoPlayerSection", " ON_DESTROY: Releasing owned danmaku player")
+                        danmakuManager.detachPlayerIfCurrent(lifecyclePlayer)
                     }
                     else -> {}
                 }
@@ -4411,6 +4419,7 @@ fun VideoPlayerSection(
                 isLongPressing = isLongPressing,
                 isPlaybackSurfaceActive = !isInPipMode,
                 hintDismissed = longPressSpeedHintDismissed,
+                hintHidden = longPressSpeedHintHidden,
             ),
             modifier = Modifier
                 .align(Alignment.TopCenter)
