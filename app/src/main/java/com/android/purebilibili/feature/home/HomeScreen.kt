@@ -1400,7 +1400,8 @@ fun HomeScreen(
         isBottomBarAutoHideEnabled,
         useSideNavigation,
         isLiquidGlassEnabled,
-        canRevealHeader
+        canRevealHeader,
+        homeSettings.commonListHeaderCollapseMode,
     ) {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
@@ -1414,6 +1415,7 @@ fun HomeScreen(
                     deltaY = available.y,
                     minHeaderOffsetPx = -headerAutoCollapseDistancePx,
                     canRevealHeader = canRevealHeader,
+                    collapseMode = homeSettings.commonListHeaderCollapseMode,
                     isHeaderCollapseEnabled = isAnyHeaderCollapseEnabled,
                     isBottomBarAutoHideEnabled = isBottomBarAutoHideEnabled,
                     useSideNavigation = useSideNavigation,
@@ -1439,7 +1441,8 @@ fun HomeScreen(
 
                 val targetOffset = resolveHomeHeaderReleaseTarget(
                     maxHeaderCollapsePx = headerAutoCollapseDistancePx,
-                    canRevealHeader = canRevealHeader
+                    canRevealHeader = canRevealHeader,
+                    collapseMode = homeSettings.commonListHeaderCollapseMode,
                 )
                 animateHeaderOffsetTo(targetOffset)
                 return Velocity.Zero
