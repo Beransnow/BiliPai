@@ -2675,6 +2675,7 @@ internal fun VideoDetailScreenStateHolder(
             isPipMode = isPipMode,
             transitionEnabled = detailChildTransitionEnabled,
             transitionChromeAlphaProvider = videoCardDetailChromeAlphaProvider,
+            danmakuHostActive = !isNavigatingToVideo,
             onToggleFullscreen = { toggleFullscreen() },
             playbackActions = playbackActions,
             onDoubleTapLike = engagementViewModel::toggleLike,
@@ -2872,6 +2873,7 @@ internal fun VideoDetailScreenStateHolder(
                     uiState = uiState,
                     isFullscreen = true,
                     isInPipMode = isPipMode,
+                    danmakuHostActive = !isNavigatingToVideo,
                     transitionEnabled = detailChildTransitionEnabled,
                     onToggleFullscreen = { toggleFullscreen() },
                     onQualityChange = { qid -> viewModel.changeQuality(qid) },
@@ -3153,6 +3155,7 @@ internal fun VideoDetailScreenStateHolder(
                             },
 
                             transitionEnabled = detailChildTransitionEnabled,  //  传递过渡动画开关
+                            danmakuHostActive = !isNavigatingToVideo,
                             // [New] Codec & Audio
                             currentCodec = codecPreference,
                             onCodecChange = { viewModel.setVideoCodec(it) },
@@ -3688,6 +3691,7 @@ internal fun VideoDetailScreenStateHolder(
                                 transitionEnabled = detailChildTransitionEnabled,
                                 transitionChromeAlphaProvider =
                                     videoCardDetailChromeAlphaProvider,
+                                danmakuHostActive = !isNavigatingToVideo,
                                 onToggleFullscreen = { toggleFullscreen() },
                                 playbackActions = playbackActions,
                                 onDoubleTapLike = engagementViewModel::toggleLike,

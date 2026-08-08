@@ -390,6 +390,7 @@ fun VideoPlayerSection(
     contentTopInset: Dp = 0.dp,
     transitionEnabled: Boolean = true,
     transitionChromeAlphaProvider: () -> Float = { 1f },
+    danmakuHostActive: Boolean = true,
     onToggleFullscreen: () -> Unit,
     onQualityChange: (Int) -> Unit,
     onBack: () -> Unit,
@@ -2426,7 +2427,14 @@ fun VideoPlayerSection(
             )
         }
         //  直接加载弹幕，不再等待 duration；仓库层会回退到 metadata/fallback 段数。
-        LaunchedEffect(cid, aid, danmakuEnabled, hostLifecycleStarted) {
+        val runDanmakuHostEffects = shouldRunVideoPlayerDanmakuHostEffects(
+            danmakuHostActive = danmakuHostActive,
+            hostLifecycleStarted = hostLifecycleStarted,
+        )
+        LaunchedEffect(cid, aid, danmakuEnabled, runDanmakuHostEffects) {
+            // 相关推荐 push 会让新旧详情页在转场期间同时处于 STARTED。旧页不得再次
+            // Enable/load 单例引擎，否则会取消新 cid 请求或把新数据同步到旧播放器。
+            if (!runDanmakuHostEffects) return@LaunchedEffect
             when (
                 resolveVideoPlayerDanmakuEngineSyncAction(
                     danmakuEnabled = danmakuEnabled,
@@ -2760,9 +2768,11 @@ fun VideoPlayerSection(
         }
         
         //  绑定 Player（不在 onDispose 中释放，单例保持状态）
-        DisposableEffect(playerState.player) {
-            android.util.Log.d("VideoPlayerSection", " attachPlayer, isFullscreen=$isFullscreen")
-            danmakuManager.attachPlayer(playerState.player)
+        DisposableEffect(playerState.player, runDanmakuHostEffects) {
+            if (runDanmakuHostEffects) {
+                android.util.Log.d("VideoPlayerSection", " attachPlayer, isFullscreen=$isFullscreen")
+                danmakuManager.attachPlayer(playerState.player)
+            }
             onDispose {
                 // 单例模式不需要释放
             }
@@ -2775,11 +2785,19 @@ fun VideoPlayerSection(
         val lifecycleIsInPipMode by rememberUpdatedState(isInPipMode)
         val lifecyclePlayerView by rememberUpdatedState(playerViewRef)
         val lifecycleVideoOutputRouter by rememberUpdatedState(videoOutputRouter)
+        val lifecycleDanmakuHostActive by rememberUpdatedState(danmakuHostActive)
         DisposableEffect(lifecycleOwner) {
             var hasObservedHostPause = false
             val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
                 when (event) {
                     androidx.lifecycle.Lifecycle.Event.ON_RESUME -> {
+                        if (!lifecycleDanmakuHostActive) {
+                            android.util.Log.d(
+                                "VideoPlayerSection",
+                                " ON_RESUME: Skip danmaku binding for outgoing detail host"
+                            )
+                            return@LifecycleEventObserver
+                        }
                         android.util.Log.d("VideoPlayerSection", " ON_RESUME: Re-attaching danmaku player")
                         val player = lifecyclePlayer
                         danmakuManager.attachPlayer(player)
@@ -3616,7 +3634,8 @@ fun VideoPlayerSection(
     }
 
     // 2. DanmakuView (使用 ByteDance DanmakuRenderEngine - 覆盖在 PlayerView 上方)
-    val shouldShowDanmakuLayer = !forceCoverDuringReturnAnimation && shouldShowDanmakuLayers(
+    val shouldShowDanmakuLayer = danmakuHostActive &&
+        !forceCoverDuringReturnAnimation && shouldShowDanmakuLayers(
         isInPipMode = isInPipMode,
         danmakuEnabled = danmakuEnabled,
         isPortraitFullscreen = isPortraitFullscreen,

@@ -81,12 +81,37 @@ class VideoPlayerDanmakuLoadPolicyTest {
     }
 
     @Test
+    fun relatedNavigation_outgoingHostCannotBindOrLoadSharedDanmakuEngine() {
+        assertFalse(
+            shouldRunVideoPlayerDanmakuHostEffects(
+                danmakuHostActive = false,
+                hostLifecycleStarted = true,
+            )
+        )
+        assertFalse(
+            shouldRunVideoPlayerDanmakuHostEffects(
+                danmakuHostActive = true,
+                hostLifecycleStarted = false,
+            )
+        )
+        assertTrue(
+            shouldRunVideoPlayerDanmakuHostEffects(
+                danmakuHostActive = true,
+                hostLifecycleStarted = true,
+            )
+        )
+    }
+
+    @Test
     fun detailAndPlayerToggle_syncEngineImmediatelyAndReleaseDanmakuView() {
         val playerSource = java.io.File(
             "src/main/java/com/android/purebilibili/feature/video/ui/section/VideoPlayerSection.kt"
         ).readText()
         val detailSource = java.io.File(
             "src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailPhoneContent.kt"
+        ).readText()
+        val detailStateHolderSource = java.io.File(
+            "src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreenStateHolder.kt"
         ).readText()
 
         assertTrue(
@@ -109,6 +134,11 @@ class VideoPlayerDanmakuLoadPolicyTest {
         assertTrue(
             playerSource.contains("danmakuManager.isEnabled = newState"),
             "Fullscreen bottom-bar danmaku toggle must update DanmakuManager immediately."
+        )
+        assertTrue(
+            playerSource.contains("if (!runDanmakuHostEffects) return@LaunchedEffect") &&
+                detailStateHolderSource.contains("danmakuHostActive = !isNavigatingToVideo"),
+            "Outgoing related-video detail hosts must not bind or load the shared danmaku engine."
         )
     }
 }
