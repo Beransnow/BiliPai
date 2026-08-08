@@ -4430,7 +4430,7 @@ fun VideoPlayerSection(
                 slideOutVertically(targetOffsetY = { -it })
         ) {
             AppSurface(
-                shape = RoundedCornerShape(18.dp),
+                shape = RoundedCornerShape(12.dp),
                 color = Color.Black.copy(alpha = 0.56f),
                 contentColor = Color.White,
                 tonalElevation = 0.dp
@@ -4443,29 +4443,29 @@ fun VideoPlayerSection(
                             "倍速播放中 ${effectiveLongPressSpeed}x"
                         },
                         modifier = Modifier.padding(
-                            start = 14.dp,
+                            start = 10.dp,
                             end = if (shouldShowLongPressSpeedHintCloseButton(longPressSpeedHintCloseEnabled)) {
                                 2.dp
                             } else {
-                                14.dp
+                                10.dp
                             },
-                            top = 8.dp,
-                            bottom = 8.dp,
+                            top = 6.dp,
+                            bottom = 6.dp,
                         ),
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            fontWeight = FontWeight.Medium
                         )
                     )
                     if (shouldShowLongPressSpeedHintCloseButton(longPressSpeedHintCloseEnabled)) {
                         AppIconButton(
                             onClick = { longPressSpeedHintDismissed = true },
-                            modifier = Modifier.size(48.dp),
+                            modifier = Modifier.size(40.dp),
                         ) {
                             AppIcon(
                                 imageVector = Icons.Outlined.Close,
                                 contentDescription = "关闭倍速提示",
                                 tint = Color.White,
-                                modifier = Modifier.size(18.dp),
+                                modifier = Modifier.size(16.dp),
                             )
                         }
                     }

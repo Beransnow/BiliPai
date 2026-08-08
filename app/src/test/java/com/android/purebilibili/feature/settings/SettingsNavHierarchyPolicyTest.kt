@@ -88,57 +88,28 @@ class SettingsNavHierarchyPolicyTest {
                 childRoute = "settings",
             )
         )
-        assertFalse(
+        assertTrue(
             isSettingsNavHierarchyTransition(
                 parentRoute = "home",
                 childRoute = "settings",
             )
         )
+        assertTrue(
+            isSettingsNavHierarchyTransition(
+                parentRoute = "dynamic",
+                childRoute = "settings",
+            )
+        )
+        assertFalse(
+            isSettingsNavHierarchyTransition(
+                parentRoute = "home",
+                childRoute = "appearance_settings",
+            )
+        )
     }
 
-    @Test
-    fun resolveSettingsNavRouteTransition_returnsIosPushForHierarchy() {
-        assertEquals(
-            BiliPaiNavRouteTransition.SETTINGS_IOS_PUSH_FORWARD,
-            resolveSettingsNavRouteTransition(
-                fromRoute = "settings",
-                toRoute = "settings_category",
-                forward = true,
-            )
-        )
-        assertEquals(
-            BiliPaiNavRouteTransition.SETTINGS_IOS_PUSH_POP,
-            resolveSettingsNavRouteTransition(
-                fromRoute = "appearance_settings",
-                toRoute = "settings",
-                forward = false,
-            )
-        )
-        assertEquals(
-            BiliPaiNavRouteTransition.SETTINGS_IOS_PUSH_FORWARD,
-            resolveSettingsNavRouteTransition(
-                fromRoute = "settings",
-                toRoute = "appearance_settings",
-                forward = true,
-            )
-        )
-        assertEquals(
-            BiliPaiNavRouteTransition.SETTINGS_IOS_PUSH_FORWARD,
-            resolveSettingsNavRouteTransition(
-                fromRoute = "profile",
-                toRoute = "settings",
-                forward = true,
-            )
-        )
-        assertEquals(
-            BiliPaiNavRouteTransition.SETTINGS_IOS_PUSH_POP,
-            resolveSettingsNavRouteTransition(
-                fromRoute = "animation_settings",
-                toRoute = "settings_category",
-                forward = false,
-            )
-        )
-    }
+    // forward 决策已迁至 BiliPaiNavEntryProvider（resolveBiliPaiNavEntryForwardRouteTransition，
+    // 见 BiliPaiNavEntryProviderPolicyTest 的 SETTINGS_IOS_PUSH_FORWARD 断言）；pop 决策见下。
 
     @Test
     fun resolveSettingsNavPopTransition_remapsMainHostWhenSettingsTabActive() {
@@ -164,6 +135,22 @@ class SettingsNavHierarchyPolicyTest {
                 fromKey = BiliPaiNavKey.Settings,
                 toKey = BiliPaiNavKey.MainHost,
                 activeMainHostRoute = "profile",
+            )
+        )
+        assertEquals(
+            BiliPaiNavRouteTransition.SETTINGS_IOS_PUSH_POP,
+            resolveSettingsNavPopTransition(
+                fromKey = BiliPaiNavKey.Settings,
+                toKey = BiliPaiNavKey.MainHost,
+                activeMainHostRoute = "home",
+            )
+        )
+        assertEquals(
+            BiliPaiNavRouteTransition.SETTINGS_IOS_PUSH_POP,
+            resolveSettingsNavPopTransition(
+                fromKey = BiliPaiNavKey.Settings,
+                toKey = BiliPaiNavKey.MainHost,
+                activeMainHostRoute = "dynamic",
             )
         )
         assertNull(

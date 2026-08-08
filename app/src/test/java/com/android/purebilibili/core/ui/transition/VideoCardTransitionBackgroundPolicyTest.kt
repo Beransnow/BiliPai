@@ -300,8 +300,15 @@ class VideoCardTransitionBackgroundPolicyTest {
         assertEquals(12f, resolveVideoCardTransitionMaxBlurRadiusPx(MotionTier.Normal))
         assertEquals(12f, resolveVideoCardTransitionMaxBlurRadiusPx(MotionTier.Enhanced))
         assertEquals(0f, resolveVideoCardTransitionMaxBlurRadiusPx(MotionTier.Reduced))
-        assertEquals(1f, resolveVideoCardTransitionBlurQuantumPx(MotionTier.Normal))
-        assertEquals(1f, resolveVideoCardTransitionBlurQuantumPx(MotionTier.Enhanced))
+        assertEquals(2f, resolveVideoCardTransitionBlurQuantumPx(MotionTier.Normal))
+        assertEquals(2f, resolveVideoCardTransitionBlurQuantumPx(MotionTier.Enhanced))
+        assertEquals(
+            4f,
+            resolveVideoCardTransitionBlurQuantumPx(
+                MotionTier.Normal,
+                phase = VideoCardTransitionBackgroundPhase.RETURNING,
+            )
+        )
     }
 
     @Test

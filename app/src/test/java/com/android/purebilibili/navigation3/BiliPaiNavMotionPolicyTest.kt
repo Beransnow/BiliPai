@@ -4,8 +4,6 @@ import com.android.purebilibili.navigation.AppSystemBackAction
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class BiliPaiNavMotionPolicyTest {
@@ -385,25 +383,8 @@ class BiliPaiNavMotionPolicyTest {
         assertEquals(BiliPaiNavRouteTransition.FALLBACK, transition)
     }
 
-    @Test
-    fun plainPopOverridesOnlySharedOrDirectionalVideoReturnTransitions() {
-        assertNotNull(
-            resolveBiliPaiNavPopContentTransform(BiliPaiNavRouteTransition.NO_OP_SHARED_ELEMENT)
-        )
-        assertNotNull(
-            resolveBiliPaiNavPopContentTransform(
-                BiliPaiNavRouteTransition.CARD_DISABLED_VIDEO_RETURN_TO_LEFT
-            )
-        )
-        assertNotNull(
-            resolveBiliPaiNavPopContentTransform(
-                BiliPaiNavRouteTransition.CARD_DISABLED_VIDEO_RETURN_TO_RIGHT
-            )
-        )
-        assertNull(
-            resolveBiliPaiNavPopContentTransform(BiliPaiNavRouteTransition.FALLBACK)
-        )
-    }
+    // TODO(rewrite): plainPopOverridesOnlySharedOrDirectionalVideoReturnTransitions 随
+    // resolveBiliPaiNavPopContentTransform 删除；重写代理如重新引入 pop 决策再补回断言。
 
     @Test
     fun entryPop_videoReturnToRecordedSource_keepsRouteLayerNoOp() {
