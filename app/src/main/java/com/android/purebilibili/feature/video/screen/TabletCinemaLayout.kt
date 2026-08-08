@@ -108,7 +108,7 @@ import com.android.purebilibili.feature.video.note.VideoNoteEditorDocument
 import com.android.purebilibili.feature.video.note.buildVideoNoteShareText
 import com.android.purebilibili.feature.video.note.shouldShowVideoNoteCard
 import com.android.purebilibili.feature.video.progress.PbpProgressData
-import com.android.purebilibili.feature.video.ui.components.CommentSortFilterBar
+import com.android.purebilibili.feature.video.ui.components.CommentSortHeader
 import com.android.purebilibili.feature.video.ui.components.CollectionRow
 import com.android.purebilibili.feature.video.ui.components.CollectionSheet
 import com.android.purebilibili.feature.video.ui.components.PagesSelector
@@ -1236,7 +1236,7 @@ private fun CinemaCommentsPane(
     } else {
         val commentChromeBackdrop = rememberLayerBackdrop()
         Column(modifier = Modifier.fillMaxSize()) {
-            CommentSortFilterBar(
+            CommentSortHeader(
                 count = commentState.replyCount,
                 sortMode = commentState.sortMode,
                 onSortModeChange = { mode ->

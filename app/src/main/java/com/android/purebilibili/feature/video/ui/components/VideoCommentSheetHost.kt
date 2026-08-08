@@ -769,7 +769,7 @@ internal fun VideoCommentMainList(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        CommentSortFilterBar(
+        CommentSortHeader(
             count = state.replyCount,
             sortMode = state.sortMode,
             onSortModeChange = { mode ->

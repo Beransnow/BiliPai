@@ -575,7 +575,7 @@ private fun TabletSecondaryContent(
                     } else {
                         val commentChromeBackdrop = rememberLayerBackdrop()
                         Column(modifier = Modifier.fillMaxSize()) {
-                            CommentSortFilterBar(
+                            CommentSortHeader(
                                 count = commentState.replyCount,
                                 sortMode = commentState.sortMode,
                                 onSortModeChange = { mode ->

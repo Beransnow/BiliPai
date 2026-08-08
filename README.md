@@ -196,7 +196,7 @@ cd BiliPai
 
 ## 最近更新
 
-当前构建为 `0.2.2 / versionCode 286`（语义化 `MAJOR.MINOR.PATCH`）；最新完整发布记录为 `v0.2.1`。源码与变更以 GitHub 和 [CHANGELOG.md](CHANGELOG.md) 为准；安装包与公告见 [Telegram 频道](https://t.me/bilipai666) / [交流群](https://t.me/bilipai888/1)：
+当前构建为 `0.2.2 / versionCode 287`（语义化 `MAJOR.MINOR.PATCH`）；最新完整发布记录为 `v0.2.1`。源码与变更以 GitHub 和 [CHANGELOG.md](CHANGELOG.md) 为准；安装包与公告见 [Telegram 频道](https://t.me/bilipai666) / [交流群](https://t.me/bilipai888/1)：
 
 - 版本号恢复 `X.Y.Z`；实时画面转场 / 转场模糊 / 底栏模糊 / 播放器洞察默认关闭。
 - 首页推荐新增 App+Web 合并模式；搜索页重构（热搜/历史/发现、筛选表、对比度与 IME）。

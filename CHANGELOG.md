@@ -4,7 +4,8 @@
 
 更新日志(ChangeLog)
 
-[更改] 版本号 0.2.2，versionCode 286
+[更改] 版本号 0.2.2，versionCode 287
+[更改] 视频详情页的评论排序控件移至“评论”标签右侧
 [更改] 正式包 BiliPai-0.2.2.apk，Dev 包 BiliPai-0.2.2-dev.apk
 [更改] 基准 v0.2.1，比较区间见 GitHub Compare
 [修复] 直播首页网游、手游等一级分区标签可正确切换，兼容分区接口字段

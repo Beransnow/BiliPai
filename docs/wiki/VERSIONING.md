@@ -16,7 +16,7 @@ MAJOR.MINOR.PATCH
 | `MINOR` | 新功能 | 第二位 +1，`PATCH` 归零 |
 | `PATCH` | 修 bug / 小改进 | 第三位 +1 |
 
-当前构建：`0.2.2` / `versionCode 286`。
+当前构建：`0.2.2` / `versionCode 287`。
 
 - **不要**用日期充当 `versionName`（例如 `26.0805.1`）。
 - 应用 ID、签名和用户配置格式不变。
@@ -29,7 +29,7 @@ MAJOR.MINOR.PATCH
 | 位置 | 内容 |
 | --- | --- |
 | `versionName` / APK 名 | `0.2.2` |
-| 关于页建议 | `v0.2.2 · 286`，并可附短 commit / 构建日期 |
+| 关于页建议 | `v0.2.2 · 287`，并可附短 commit / 构建日期 |
 | Git 短 SHA / 完整 sha256 | 关于页、Telegram 说明、日志；**不**写入主 `versionName` |
 
 历史 `9.x` / 日历号 `YY.MMDD.N` / 先前 `0.1.0` 安装升级仍以 `versionCode` 为准。
