@@ -300,15 +300,8 @@ class VideoCardTransitionBackgroundPolicyTest {
         assertEquals(12f, resolveVideoCardTransitionMaxBlurRadiusPx(MotionTier.Normal))
         assertEquals(12f, resolveVideoCardTransitionMaxBlurRadiusPx(MotionTier.Enhanced))
         assertEquals(0f, resolveVideoCardTransitionMaxBlurRadiusPx(MotionTier.Reduced))
-        assertEquals(2f, resolveVideoCardTransitionBlurQuantumPx(MotionTier.Normal))
-        assertEquals(2f, resolveVideoCardTransitionBlurQuantumPx(MotionTier.Enhanced))
-        assertEquals(
-            4f,
-            resolveVideoCardTransitionBlurQuantumPx(
-                MotionTier.Normal,
-                phase = VideoCardTransitionBackgroundPhase.RETURNING,
-            )
-        )
+        assertEquals(1f, resolveVideoCardTransitionBlurQuantumPx(MotionTier.Normal))
+        assertEquals(1f, resolveVideoCardTransitionBlurQuantumPx(MotionTier.Enhanced))
     }
 
     @Test
@@ -1141,9 +1134,10 @@ class VideoCardTransitionBackgroundPolicyTest {
         }
         state.markSourceDetachedForRefresh()
         assertTrue(state.needsSourceRefresh)
+        assertFalse(state.freezeRecording)
         assertTrue(state.hasRecordedContent)
         assertFalse(state.displayListStale)
-        // Host 仍可认为 OPENING 帧 drawable，SettledHidden 能预热满糊
+        // Host 可在预测 BackPreview 首帧暂用冻结内容撑住满模糊。
         assertTrue(
             isVideoCardTransitionSnapshotDrawable(
                 hasRecordedContent = state.hasRecordedContent,

@@ -128,58 +128,6 @@ class VideoCardTransitionHostDepthLayerTest {
     }
 
     @Test
-    fun hostLayerKeepsPredictivePreviewBlurWhileOrdinaryPopWaitsForRefresh() {
-        // needsSourceRefresh = 源页 dispose 后重新进入 composition：上一场冻结层
-        // 普通 pop 不能直接铺它，否则首帧可能黑；预测返回则需要它撑住满模糊的首帧，
-        // 再由来源页重录的快照无缝接手并随手势消退。
-        assertFalse(
-            shouldPaintHostOwnedDepthLayer(
-                exposure = VideoCardTransitionExposure.Returning,
-                hasRecordedContent = true,
-                displayListStale = false,
-                needsSourceRefresh = true,
-                motionTier = MotionTier.Normal,
-                realtimeBlurEnabled = true,
-                sdkInt = 35,
-            ),
-        )
-        assertTrue(
-            shouldPaintHostOwnedDepthLayer(
-                exposure = VideoCardTransitionExposure.BackPreview,
-                hasRecordedContent = true,
-                displayListStale = false,
-                needsSourceRefresh = true,
-                motionTier = MotionTier.Normal,
-                realtimeBlurEnabled = true,
-                sdkInt = 35,
-            ),
-        )
-        assertFalse(
-            shouldPaintHostOwnedDepthLayer(
-                exposure = VideoCardTransitionExposure.SettledHidden,
-                hasRecordedContent = true,
-                displayListStale = false,
-                needsSourceRefresh = true,
-                motionTier = MotionTier.Normal,
-                realtimeBlurEnabled = true,
-                sdkInt = 35,
-            ),
-        )
-        // 源页重录完成后（needsSourceRefresh=false）恢复可画。
-        assertTrue(
-            shouldPaintHostOwnedDepthLayer(
-                exposure = VideoCardTransitionExposure.Returning,
-                hasRecordedContent = true,
-                displayListStale = false,
-                needsSourceRefresh = false,
-                motionTier = MotionTier.Normal,
-                realtimeBlurEnabled = true,
-                sdkInt = 35,
-            ),
-        )
-    }
-
-    @Test
     fun snapshotDrawableRequiresFreshDisplayList() {
         assertTrue(isVideoCardTransitionSnapshotDrawable(hasRecordedContent = true, displayListStale = false))
         assertFalse(isVideoCardTransitionSnapshotDrawable(hasRecordedContent = true, displayListStale = true))
@@ -213,8 +161,22 @@ class VideoCardTransitionHostDepthLayerTest {
         assertFalse(shouldReleaseHostOwnedDepthLayer(VideoCardTransitionExposure.BackPreview))
     }
 
-    // TODO(rewrite): sourceNeverYieldsEmptyDrawToHost 随遗留 API shouldSourceYieldDepthLayerToHost
-    // （恒 false、主代码零调用）一并删除；如重写代理重新引入该决策再补回断言。
+    @Test
+    fun sourceNeverYieldsEmptyDrawToHost() {
+        // 空 yield 会黑洞；源页始终自己画 live/冻结层。
+        assertFalse(
+            shouldSourceYieldDepthLayerToHost(
+                isHostOwnedSnapshot = true,
+                exposure = VideoCardTransitionExposure.SettledHidden,
+            ),
+        )
+        assertFalse(
+            shouldSourceYieldDepthLayerToHost(
+                isHostOwnedSnapshot = true,
+                exposure = VideoCardTransitionExposure.BackPreview,
+            ),
+        )
+    }
 
     @Test
     fun hostOwnedDisposeDoesNotMarkStaleSoHeldBlurSurvives() {

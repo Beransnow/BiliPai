@@ -35,9 +35,7 @@ import kotlin.math.roundToInt
 // - 压暗全程保留（含 HELD），避免打开完成后景深断裂
 // - 返回：景深 progress 与 shared morph 同墙钟、同 Linear
 private const val VIDEO_CARD_TRANSITION_MAX_BLUR_RADIUS_DP = 12f
-// 开场/持有段模糊量化：2px 步长（比返回段的 4px 细、比旧的 1px 粗），
-// 在「避免开场虚化阶梯感」与「减少 BlurEffect 每帧更新、降低进场掉帧」之间折中。
-private const val VIDEO_CARD_TRANSITION_BLUR_QUANTUM_PX = 2f
+private const val VIDEO_CARD_TRANSITION_BLUR_QUANTUM_PX = 1f
 /** 返回消糊段更粗量化，降低 BlurEffect 每帧更新次数。 */
 internal const val VIDEO_CARD_TRANSITION_RETURN_BLUR_QUANTUM_PX = 4f
 // 页面整体只后退 1.5%；被点击卡片由 shared overlay 自己放大，避免双重缩放。
@@ -562,6 +560,23 @@ internal fun resolveVideoCardTransitionScaleGapFillColor(
  * 是否用「冻结 display list + 动态 blur/scale」路径。
  * Reduced / API<31 走轻量 scrim-only，避免无收益的 layer 开销。
  */
+/**
+ * Host 在 NavDisplay **下方**。预测/返回时源页会重新 compose 并盖住 Host，
+ * 因此 [BackPreview]/[Returning]/[Restoring] **必须由源页自己画冻结层+模糊**。
+ *
+ * 仅 [SettledHidden] 时详情盖住源页：源可跳过同 layer 绘制，交给 Host 预热满糊。
+ */
+/**
+ * 历史 API：曾让 SettledHidden 源页空画交给 Host。
+ * 空画在源仍 compose 时会黑洞；Host 也常因 stale 不 paint → 整屏黑。
+ * 现恒 false：源页始终走完整 draw 路径（live 或冻结层）。
+ */
+@Suppress("UNUSED_PARAMETER")
+internal fun shouldSourceYieldDepthLayerToHost(
+    isHostOwnedSnapshot: Boolean,
+    exposure: VideoCardTransitionExposure,
+): Boolean = false
+
 internal fun shouldUseVideoCardTransitionSnapshotBlur(
     exposure: VideoCardTransitionExposure,
     motionTier: MotionTier,
@@ -650,8 +665,8 @@ internal class VideoCardTransitionSnapshotLayerState {
     var displayListStale: Boolean = false
     /**
      * 源页 dispose 后置 true：下一次源页挂上 BackPreview/Returning 时强制重录真实首页。
-     * 与 [displayListStale] 不同：不阻止 Host 在 SettledHidden 用 OPENING 冻结帧预热满糊
-     * （中断开场仍有糊；完整进入后 Host 仍可持满糊，直到源页重录刷新）。
+     * 与 [displayListStale] 不同：预测返回可暂用 Host 的冻结层作为首帧景深，随后由来源页
+     * 重录真实内容；普通 pop 仍等待来源页刷新以避免黑帧。
      */
     var needsSourceRefresh: Boolean = false
     var lastBlurRadiusPx: Float = Float.NaN
@@ -682,8 +697,9 @@ internal class VideoCardTransitionSnapshotLayerState {
     }
 
     fun markSourceDetachedForRefresh() {
-        // 不标 displayListStale：Host SettledHidden 仍可尝试画 OPENING 满糊预热。
+        // 下一次 BackPreview 先让 Host 维持冻结景深一个绘制帧，再由来源页重录并接手。
         needsSourceRefresh = true
+        freezeRecording = false
         lastBlurRadiusPx = Float.NaN
     }
 
@@ -918,11 +934,7 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
                 drawContent()
             } else if (shouldPaintRetainedSourceWithoutTransitionBackground(activeDecision)) {
                 // SettledHidden：有可用快照则按满糊画；否则 live 防黑。
-                // 防黑关键守卫：needsSourceRefresh 表示该冻结层录自上一场（源页 dispose 后
-                // display list 已失效，画出来即整屏黑）——源页重新进入 composition 时
-                // 必须画 live 内容，等 Returning 路径在本帧内重录后再用冻结层。
                 if (
-                    !snapshotState.needsSourceRefresh &&
                     isVideoCardTransitionSnapshotDrawable(
                         hasRecordedContent = snapshotState.hasRecordedContent,
                         displayListStale = snapshotState.displayListStale,
@@ -991,6 +1003,20 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
                 hasRecordedContent = snapshotState.hasRecordedContent,
                 displayListStale = snapshotState.displayListStale,
             )
+        if (
+            needsRecord &&
+            activeExposure == VideoCardTransitionExposure.BackPreview &&
+            !snapshotState.freezeRecording &&
+            isVideoCardTransitionSnapshotDrawable(
+                hasRecordedContent = snapshotState.hasRecordedContent,
+                displayListStale = snapshotState.displayListStale,
+            )
+        ) {
+            // 来源页重挂的第一个预测帧不盖住 Host：Host 先画上一场的满模糊冻结层，
+            // 下一帧再录制真实来源页并按 live back progress 消糊。
+            snapshotState.freezeRecording = true
+            return@drawWithContent
+        }
         if (needsRecord) {
             if (size.width <= 0f || size.height <= 0f) {
                 drawContent()
@@ -1141,9 +1167,8 @@ internal fun resolveVideoCardTransitionMaxBlurRadiusPx(
 
 /**
  * Blur 半径量化步长。
- * RETURNING 用更粗步长（4px）减少 BlurEffect 更新次数，保一镜到底同时降 GPU 抖动；
- * OPENING/HELD 用 2px 中间值——比 1px 少一半 BlurEffect 更新（降进场掉帧），
- * 又不至于像 4px 那样出现开场虚化阶梯感。
+ * RETURNING 用更粗步长（默认 4px）减少 BlurEffect 更新次数，保一镜到底同时降 GPU 抖动；
+ * OPENING/HELD 仍用细步长，避免开场虚化阶梯感。
  */
 internal fun resolveVideoCardTransitionBlurQuantumPx(
     motionTier: MotionTier,

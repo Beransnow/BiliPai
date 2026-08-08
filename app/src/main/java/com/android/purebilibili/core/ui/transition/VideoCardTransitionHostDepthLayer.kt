@@ -61,7 +61,6 @@ internal fun VideoCardTransitionHostDepthLayer(
                         exposure = exposure,
                         hasRecordedContent = snapshotState.hasRecordedContent,
                         displayListStale = snapshotState.displayListStale,
-                        needsSourceRefresh = snapshotState.needsSourceRefresh,
                         motionTier = motionTier,
                         realtimeBlurEnabled = realtimeBlur,
                     )
@@ -116,9 +115,6 @@ internal fun VideoCardTransitionHostDepthLayer(
  * Host 层何时绘制：有**可用**冻结内容时。
  *
  * - stale / 无内容：永不 paint（防黑屏）。
- * - [needsSourceRefresh]：普通 pop 仍等待来源页重录，避免上一场 display list 的黑/空帧；
- *   预测返回的 [VideoCardTransitionExposure.BackPreview] 则保留冻结层作为首帧景深兜底，
- *   让模糊随手势消退，而不是先露出清晰来源页再补模糊。
  * - [SettledHidden]：详情下预热满糊。
  * - [BackPreview]/[Returning]/[Restoring]：drawable 时垫跟手/消糊景深；
  *   源 dispose 后 DL 失效时 stale=true，Host 不画，等源重录。
@@ -127,12 +123,10 @@ internal fun shouldPaintHostOwnedDepthLayer(
     exposure: VideoCardTransitionExposure,
     hasRecordedContent: Boolean,
     displayListStale: Boolean = false,
-    needsSourceRefresh: Boolean = false,
     motionTier: MotionTier,
     realtimeBlurEnabled: Boolean,
     sdkInt: Int = Build.VERSION.SDK_INT,
 ): Boolean {
-    if (needsSourceRefresh && exposure != VideoCardTransitionExposure.BackPreview) return false
     if (
         !isVideoCardTransitionSnapshotDrawable(
             hasRecordedContent = hasRecordedContent,
