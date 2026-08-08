@@ -58,8 +58,8 @@ data class LiveFeedRoomCard(
     val title: String = "",
     @JsonNames("area_name", "area_v2_name")
     val areaName: String = "",
-    @SerialName("area_v2_id") val areaV2Id: Int = 0,
-    @SerialName("area_v2_parent_id") val areaV2ParentId: Int = 0,
+    @JsonNames("area_v2_id", "area_id") val areaV2Id: Int = 0,
+    @JsonNames("area_v2_parent_id", "parent_area_id") val areaV2ParentId: Int = 0,
     @SerialName("watched_show") val watchedShow: WatchedShow? = null,
     val online: Int = 0,
     @SerialName("is_ad") val isAd: Boolean = false,

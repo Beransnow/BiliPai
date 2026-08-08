@@ -10,6 +10,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import kotlinx.serialization.json.Json
 
 class LiveFeedParsePolicyTest {
 
@@ -43,6 +44,17 @@ class LiveFeedParsePolicyTest {
         )
         assertEquals("frame", room.displayCover(preferFirstFrame = true))
         assertEquals("cover", room.displayCover(preferFirstFrame = false))
+    }
+
+    @Test
+    fun areaEntranceAcceptsLegacyAreaIdFieldNames() {
+        val entry = Json.decodeFromString<LiveFeedRoomCard>(
+            """{"title":"网游","area_id":2,"parent_area_id":0}"""
+        )
+
+        assertTrue(isUsableLiveFeedAreaEntry(entry))
+        assertEquals(2, entry.areaV2Id)
+        assertEquals(0, entry.areaV2ParentId)
     }
 
     @Test

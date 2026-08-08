@@ -27,7 +27,7 @@ internal fun isUsableLiveFeedAreaEntry(card: LiveFeedRoomCard): Boolean {
     val title = card.title.ifBlank { card.areaName }
     if (title.isBlank()) return false
     // 至少要有一级或二级分区 id
-    return card.areaV2ParentId > 0 || card.areaV2Id > 0 || card.areaName.isNotBlank()
+    return card.areaV2ParentId > 0 || card.areaV2Id > 0
 }
 
 /**
