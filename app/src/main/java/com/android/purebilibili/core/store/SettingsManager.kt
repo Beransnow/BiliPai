@@ -913,6 +913,7 @@ data class PlayerInteractionSettings(
      * 不在设置页暴露，避免第二指点 × 打断长按加速。
      */
     val longPressSpeedHintCloseEnabled: Boolean = false,
+    val longPressSpeedHintHidden: Boolean = false,
     val subtitleVerticalOffsetFraction: Float = 0.0f,
     /** Vertical offset for portrait immersive / story subtitles (independent of landscape). */
     val subtitlePortraitVerticalOffsetFraction: Float = 0.0f,
@@ -1167,6 +1168,8 @@ object SettingsManager {
     private val KEY_LONG_PRESS_SPEED = floatPreferencesKey("long_press_speed")
     private val KEY_LONG_PRESS_SPEED_HINT_CLOSE_ENABLED =
         booleanPreferencesKey("long_press_speed_hint_close_enabled")
+    private val KEY_LONG_PRESS_SPEED_HINT_HIDDEN =
+        booleanPreferencesKey("long_press_speed_hint_hidden")
     private val KEY_LONG_PRESS_SPEED_LOCK_ENABLED =
         booleanPreferencesKey("long_press_speed_lock_enabled")
     private val KEY_LONG_PRESS_SPEED_LOCK_HINT_SHOWN =
@@ -1349,7 +1352,7 @@ object SettingsManager {
     private val KEY_BOTTOM_BAR_ITEM_COLORS = stringPreferencesKey("bottom_bar_item_colors")  //  格式: HOME:0,DYNAMIC:1,...
     private const val DEFAULT_BOTTOM_BAR_ORDER = "HOME,DYNAMIC,HISTORY,LISTEN_VIDEO,PROFILE"
     private const val DEFAULT_BOTTOM_BAR_VISIBLE_TABS = "HOME,DYNAMIC,HISTORY,LISTEN_VIDEO,PROFILE"
-    //  [新增] 评论默认排序（1=回复,2=最新,3=最热,4=点赞）
+    // 评论默认排序（2=最新,3=最热）
     private val KEY_COMMENT_DEFAULT_SORT_MODE = intPreferencesKey("comment_default_sort_mode")
     private val KEY_COMMENT_FRAUD_DETECTION_ENABLED =
         booleanPreferencesKey("comment_fraud_detection_enabled")
@@ -1557,6 +1560,7 @@ object SettingsManager {
             longPressSpeedLockHintShown = preferences[KEY_LONG_PRESS_SPEED_LOCK_HINT_SHOWN] ?: false,
             longPressSpeedHintCloseEnabled =
                 preferences[KEY_LONG_PRESS_SPEED_HINT_CLOSE_ENABLED] ?: false,
+            longPressSpeedHintHidden = preferences[KEY_LONG_PRESS_SPEED_HINT_HIDDEN] ?: false,
             subtitleVerticalOffsetFraction = normalizeSubtitleVerticalOffsetFraction(
                 preferences[KEY_SUBTITLE_VERTICAL_OFFSET_FRACTION] ?: 0.0f
             ),
@@ -1625,6 +1629,7 @@ object SettingsManager {
     private const val CACHE_KEY_LONG_PRESS_SPEED_LOCK_HINT_SHOWN = "long_press_speed_lock_hint_shown"
     private const val CACHE_KEY_LONG_PRESS_SPEED_HINT_CLOSE_ENABLED =
         "long_press_speed_hint_close_enabled"
+    private const val CACHE_KEY_LONG_PRESS_SPEED_HINT_HIDDEN = "long_press_speed_hint_hidden"
     private const val VIDEO_PAGE_STATUS_BAR_CACHE_PREFS = "video_page_status_bar_cache"
     private const val CACHE_KEY_HIDE_VIDEO_PAGE_STATUS_BAR = "hide_video_page_status_bar"
 
@@ -2383,6 +2388,24 @@ object SettingsManager {
         return context.getSharedPreferences(LONG_PRESS_SPEED_LOCK_CACHE_PREFS, Context.MODE_PRIVATE)
             .getBoolean(CACHE_KEY_LONG_PRESS_SPEED_HINT_CLOSE_ENABLED, false)
     }
+
+    fun getLongPressSpeedHintHidden(context: Context): Flow<Boolean> =
+        context.settingsDataStore.data
+            .map { preferences -> preferences[KEY_LONG_PRESS_SPEED_HINT_HIDDEN] ?: false }
+
+    suspend fun setLongPressSpeedHintHidden(context: Context, hidden: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_LONG_PRESS_SPEED_HINT_HIDDEN] = hidden
+        }
+        context.getSharedPreferences(LONG_PRESS_SPEED_LOCK_CACHE_PREFS, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(CACHE_KEY_LONG_PRESS_SPEED_HINT_HIDDEN, hidden)
+            .apply()
+    }
+
+    fun getLongPressSpeedHintHiddenSync(context: Context): Boolean =
+        context.getSharedPreferences(LONG_PRESS_SPEED_LOCK_CACHE_PREFS, Context.MODE_PRIVATE)
+            .getBoolean(CACHE_KEY_LONG_PRESS_SPEED_HINT_HIDDEN, false)
 
     fun getSubtitleVerticalOffsetFraction(context: Context): Flow<Float> = context.settingsDataStore.data
         .map { preferences ->
@@ -5009,15 +5032,15 @@ object SettingsManager {
         com.android.purebilibili.core.util.Logger.d("SettingsManager", "📻 setAudioQuality SharedPrefs committed: $value, success=$result")
     }
 
-    // --- 评论默认排序 (1=回复,2=最新,3=最热,4=点赞) ---
+    // --- 评论默认排序 (2=最新,3=最热) ---
     fun getCommentDefaultSortMode(context: Context): Flow<Int> = context.settingsDataStore.data
         .map { preferences ->
             val value = preferences[KEY_COMMENT_DEFAULT_SORT_MODE] ?: 3
-            if (value in 1..4) value else 3
+            if (value == 2 || value == 3) value else 3
         }
 
     suspend fun setCommentDefaultSortMode(context: Context, value: Int) {
-        val normalized = if (value in 1..4) value else 3
+        val normalized = if (value == 2 || value == 3) value else 3
         context.settingsDataStore.edit { preferences ->
             preferences[KEY_COMMENT_DEFAULT_SORT_MODE] = normalized
         }
@@ -5030,7 +5053,7 @@ object SettingsManager {
     fun getCommentDefaultSortModeSync(context: Context): Int {
         val value = context.getSharedPreferences("comment_settings", Context.MODE_PRIVATE)
             .getInt("default_sort_mode", 3)
-        return if (value in 1..4) value else 3
+        return if (value == 2 || value == 3) value else 3
     }
 
     fun getCommentFraudDetectionEnabled(context: Context): Flow<Boolean> =
@@ -6547,6 +6570,7 @@ object SettingsManager {
             IntShareablePreferenceDefinition(KEY_SEEK_BACKWARD_SECONDS, SettingsShareSection.GESTURE),
             FloatShareablePreferenceDefinition(KEY_LONG_PRESS_SPEED, SettingsShareSection.GESTURE),
             BooleanShareablePreferenceDefinition(KEY_LONG_PRESS_SPEED_LOCK_ENABLED, SettingsShareSection.GESTURE),
+            BooleanShareablePreferenceDefinition(KEY_LONG_PRESS_SPEED_HINT_HIDDEN, SettingsShareSection.GESTURE),
             FloatShareablePreferenceDefinition(
                 KEY_SUBTITLE_VERTICAL_OFFSET_FRACTION,
                 SettingsShareSection.GESTURE

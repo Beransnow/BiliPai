@@ -166,6 +166,11 @@ fun PlaybackSettingsContent(
         .getDefaultPlaybackSpeed(context).collectAsStateWithLifecycle(initialValue = 1.0f)
     val rememberLastPlaybackSpeed by com.android.purebilibili.core.store.SettingsManager
         .getRememberLastPlaybackSpeed(context).collectAsStateWithLifecycle(initialValue = false)
+    val longPressSpeedHintHidden by SettingsManager
+        .getLongPressSpeedHintHidden(context)
+        .collectAsStateWithLifecycle(
+            initialValue = SettingsManager.getLongPressSpeedHintHiddenSync(context)
+        )
     val videoCodecPreference by com.android.purebilibili.core.store.SettingsManager
         .getVideoCodec(context).collectAsStateWithLifecycle(initialValue = "hev1")
     val videoSecondCodecPreference by com.android.purebilibili.core.store.SettingsManager
@@ -322,6 +327,23 @@ fun PlaybackSettingsContent(
                                 }
                             },
                             iconTint = com.android.purebilibili.core.theme.iOSBlue
+                        )
+                        AppPreferenceDivider()
+                        AppSwitchPreference(
+                            icon = rememberSettingsSemanticIcon(SettingsIconRole.PLAYBACK_SPEED),
+                            title = "隐藏长按倍速提示",
+                            subtitle = if (longPressSpeedHintHidden) {
+                                "长按临时加速仍会生效，但不再显示倍速浮层"
+                            } else {
+                                "长按临时加速时显示当前倍速"
+                            },
+                            checked = longPressSpeedHintHidden,
+                            onCheckedChange = { hidden ->
+                                scope.launch {
+                                    SettingsManager.setLongPressSpeedHintHidden(context, hidden)
+                                }
+                            },
+                            iconTint = com.android.purebilibili.core.theme.iOSBlue,
                         )
                         AppPreferenceDivider()
                         Column(

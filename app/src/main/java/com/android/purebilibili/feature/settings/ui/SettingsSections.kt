@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -75,6 +76,8 @@ import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppDialogAction
 import com.android.purebilibili.core.store.MAX_HOME_REFRESH_COUNT
 import com.android.purebilibili.core.store.MIN_HOME_REFRESH_COUNT
+import com.android.purebilibili.core.store.SettingsManager
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.feature.dynamic.allDynamicTabSpecs
 import com.android.purebilibili.feature.dynamic.shouldAllowDynamicTabVisibilityToggleOff
 import kotlin.math.roundToInt
@@ -245,6 +248,7 @@ internal data class SettingsRootCategoryState(
     val customImageSavePath: String?,
     val cacheSize: String,
     val versionName: String,
+    val appIcon: String,
     val easterEggEnabled: Boolean,
     val updateStatusText: String,
     val isCheckingUpdate: Boolean,
@@ -1027,6 +1031,7 @@ internal fun SettingsRootCategoryContent(
                     SettingsDetailGroup(title = "关于与发布") {
                         AboutSection(
                             versionName = state.versionName,
+                            appIconKey = state.appIcon,
                             easterEggEnabled = state.easterEggEnabled,
                             onLicenseClick = actions.onLicenseClick,
                             onGithubClick = actions.onGithubClick,
@@ -1688,6 +1693,7 @@ fun DeveloperSection(
 @Composable
 fun AboutSection(
     versionName: String,
+    appIconKey: String,
     easterEggEnabled: Boolean,
     onLicenseClick: () -> Unit,
     onGithubClick: () -> Unit,
@@ -1713,6 +1719,14 @@ fun AboutSection(
     versionClickCount: Int = 0,
     versionClickThreshold: Int = EasterEggs.VERSION_EASTER_EGG_THRESHOLD
 ) {
+    val context = LocalContext.current
+    val appIconAppearance by SettingsManager.getAppIconAppearance(context)
+        .collectAsStateWithLifecycle(
+            initialValue = SettingsManager.getAppIconAppearanceSync(context)
+        )
+    val appIconRes = remember(appIconKey, appIconAppearance) {
+        resolveIconOptionPreviewRes(appIconKey, appIconAppearance)
+    }
     var detailDialogContent by remember { mutableStateOf<AppBuildInfoDialogContent?>(null) }
     val autoCheckTint = rememberSettingsEntryTint(AppSemanticAccentRole.PRIMARY, iOSBlue)
     val easterEggTint = rememberSettingsEntryTint(AppSemanticAccentRole.TERTIARY, iOSYellow)
@@ -1801,7 +1815,10 @@ fun AboutSection(
         )
     }
 
-    AboutProjectOverviewCard(versionName = versionName)
+    AboutProjectOverviewCard(
+        versionName = versionName,
+        appIconRes = appIconRes,
+    )
     Spacer(modifier = Modifier.height(12.dp))
 
     SettingsSectionTitle(title = "源码与验证")
@@ -2013,6 +2030,7 @@ private val AboutSlogans = listOf(
 @OptIn(ExperimentalLayoutApi::class)
 private fun AboutProjectOverviewCard(
     versionName: String,
+    appIconRes: Int,
     contributors: List<AboutContributor> = AboutContributors
 ) {
     val slogan = remember { AboutSlogans.random() }
@@ -2027,8 +2045,8 @@ private fun AboutProjectOverviewCard(
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Image(
-                    painter = painterResource(id = R.mipmap.ic_launcher_bilipai_foreground),
+                AsyncImage(
+                    model = appIconRes,
                     contentDescription = "BiliPai 图标",
                     modifier = Modifier
                         .size(72.dp)
