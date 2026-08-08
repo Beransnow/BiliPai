@@ -331,6 +331,17 @@ class TopTabStylePolicyTest {
     }
 
     @Test
+    fun `top tab chrome centers wrapped dock`() {
+        val source = sourceText(
+            "app/src/main/java/com/android/purebilibili/feature/home/components/HomeTopTabChrome.kt"
+        )
+
+        assertTrue(source.contains("val dockAlignment = Alignment.Center"))
+        assertTrue(source.contains(".align(dockAlignment)"))
+        assertFalse(source.contains("val dockAlignment = Alignment.CenterStart"))
+    }
+
+    @Test
     fun `top tab indicator reuses bottom bar immediate drag and liquid rendering`() {
         val source = sourceText("app/src/main/java/com/android/purebilibili/feature/home/components/TopBar.kt")
         val gestureBlock = source

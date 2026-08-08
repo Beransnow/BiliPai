@@ -162,7 +162,7 @@ internal fun HomeTopTabChrome(
             val shouldWrap = wrapDockWidth &&
                 dockCategoryCount > 0 &&
                 maxWidth > AppSpacingTokens.None
-            // 分栏 dock 宽度封顶于顶部三控件合计宽度（左右对齐约束）。
+            // 分栏 dock 宽度封顶于顶部三控件合计宽度。
             val cappedMaxWidth = minOf(maxWidth.value, maxDockWidth.value)
             val dockWidth = if (shouldWrap) {
                 val preferredItem = resolveTopTabWrapItemWidthDp(
@@ -177,8 +177,8 @@ internal fun HomeTopTabChrome(
             } else {
                 maxWidth
             }
-            // 包裹 dock 与搜索行左对齐（头像左缘）；宽度封顶后右缘不超过设置按钮。
-            val dockAlignment = Alignment.CenterStart
+            // 包裹 dock 始终在可用顶部区域内居中，不受标签样式和数量影响。
+            val dockAlignment = Alignment.Center
             val dockModifier = Modifier
                 .align(dockAlignment)
                 .width(dockWidth)

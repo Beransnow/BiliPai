@@ -12,7 +12,7 @@ enum class OnboardingSettingsProfile(
 ) {
     RECOMMENDED(
         title = "推荐默认",
-        subtitle = "MD3、悬浮底栏、六个纯文字顶部标签"
+        subtitle = "MD3、悬浮底栏、五个纯文字顶部标签"
     ),
     PERFORMANCE(
         title = "流畅优先",

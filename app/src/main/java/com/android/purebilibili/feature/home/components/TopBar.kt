@@ -98,6 +98,7 @@ import com.android.purebilibili.feature.home.HomeCategory
 import com.android.purebilibili.feature.home.resolveHomeTopCategories
 import com.android.purebilibili.core.store.BottomBarLiquidGlassPreset
 import com.android.purebilibili.core.store.LiquidGlassStyle
+import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
@@ -280,9 +281,9 @@ internal fun resolveTopTabVisibleSlots(
     categoryCount: Int,
     longestLabelLength: Int = 0
 ): Int {
-    if (categoryCount in 1..3) return categoryCount
-    if (categoryCount <= 4) return 4
-    if (categoryCount == 6 && longestLabelLength <= 3) return 6
+    val cappedCategoryCount = categoryCount.coerceAtMost(SettingsManager.MAX_TOP_TABS)
+    if (cappedCategoryCount in 1..3) return cappedCategoryCount
+    if (cappedCategoryCount <= 4) return 4
     return if (longestLabelLength >= 8) 4 else 5
 }
 
@@ -295,11 +296,12 @@ internal fun resolveMd3TopTabLayoutVisibleSlots(
     fontScale: Float = 1f
 ): Int {
     val hasSupportedLabelMode = normalizeTopTabLabelMode(labelMode) in 0..2
-    return if (!showPartitionAction && hasSupportedLabelMode && categoryCount >= 4) {
+    val cappedCategoryCount = categoryCount.coerceAtMost(SettingsManager.MAX_TOP_TABS)
+    return if (!showPartitionAction && hasSupportedLabelMode && cappedCategoryCount >= 4) {
         if (fontScale > 1.15f) {
-            categoryCount.coerceAtMost(4)
+            cappedCategoryCount.coerceAtMost(4)
         } else {
-            categoryCount.coerceAtMost(6)
+            cappedCategoryCount
         }
     } else {
         resolveMd3TopTabVisibleSlots()
@@ -373,7 +375,7 @@ internal fun resolveMd3TopTabContentPaddingDp(
     val contentWidth = itemWidthDp * categoryCount
     val leftover = (containerWidthDp - contentWidth).coerceAtLeast(0f)
     // Multi-tab rows (MD3 / MIUIX / all label modes): lead-align so the first indicator
-    // sits at the leading edge. The 72dp item-width cap on 4–6 tabs creates leftover;
+    // sits at the leading edge. The 72dp item-width cap on 4–5 tabs creates leftover;
     // centering it pushes "推荐" away from the left of the dock.
     // Sparse rows (1–2 tabs): keep residual centered so a single tab is not glued left.
     @Suppress("UNUSED_PARAMETER")
@@ -602,7 +604,7 @@ internal fun resolveTopTabSkinStickerItemVerticalPadding(showText: Boolean): Dp 
  */
 internal fun resolveIosTopTabRowHeight(
     isFloatingStyle: Boolean,
-    labelMode: Int = com.android.purebilibili.core.store.SettingsManager.TopTabLabelMode.TEXT_ONLY
+    labelMode: Int = SettingsManager.TopTabLabelMode.TEXT_ONLY
 ): Dp {
     @Suppress("UNUSED_PARAMETER")
     val ignoredLabelMode = labelMode
@@ -1067,7 +1069,7 @@ private fun LightweightHomeTopTabs(
             hasOuterChromeSurface = hasOuterChromeSurface,
             edgeToEdge = edgeToEdge
         )
-        // 分栏 dock 最大宽度 = 顶部三控件合计宽度（左右对齐约束），与外壳共享同一上限。
+        // 分栏 dock 最大宽度 = 顶部三控件合计宽度，与外壳共享同一上限。
         val effectiveMaxDockWidth = minOf(maxWidth.value, maxDockWidthDp)
         val fillItemWidthDp = when (effectivePresentation) {
             AppTopTabPresentation.MOVING_CAPSULE -> resolveIosTopTabItemWidthDp(
@@ -1990,7 +1992,7 @@ private fun LightweightTopTabItem(
         // Tonal capsule uses the same fully rounded pill as the plain selected-tab indicator.
         else -> RoundedCornerShape(percent = 50)
     }
-    // Compact dock: keep side padding small so 5–6 tabs do not collapse to "...".
+    // Compact dock: keep side padding small so five tabs do not collapse to "...".
     val itemContentHorizontalPadding = AppSpacingTokens.ExtraSmall
 
     Box(

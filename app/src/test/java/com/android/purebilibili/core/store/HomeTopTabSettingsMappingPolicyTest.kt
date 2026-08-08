@@ -13,6 +13,7 @@ class HomeTopTabSettingsMappingPolicyTest {
 
         val result = mapHomeTopTabSettingsFromPreferences(prefs)
 
+        assertEquals(5, SettingsManager.MAX_TOP_TABS)
         assertEquals(
             listOf("RECOMMEND", "FOLLOW", "POPULAR", "LIVE", "GAME"),
             result.orderIds
@@ -49,7 +50,7 @@ class HomeTopTabSettingsMappingPolicyTest {
 
         // 保留用户顺序的前 MAX_TOP_TABS 个可见项
         assertEquals(
-            setOf("RECOMMEND", "FOLLOW", "POPULAR", "LIVE", "ANIME", "GAME"),
+            setOf("RECOMMEND", "FOLLOW", "POPULAR", "LIVE", "ANIME"),
             result.visibleIds
         )
     }
