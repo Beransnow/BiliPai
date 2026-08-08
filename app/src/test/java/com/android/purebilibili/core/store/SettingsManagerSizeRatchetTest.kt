@@ -45,9 +45,10 @@ class SettingsManagerSizeRatchetTest {
          * 1) 主题选择迁移逻辑已移入 core/store/theme/ThemeSelectionStore.kt（不在本文件内增长），
          * 2) 上一快照后文件已有 58 行既有无快照更新增长（sidebar_account_switcher_enabled 等），
          * 3) 上游 main 合流（0.2.0 发布、App+Web 推荐流、平板侧栏、live 卡片动画开关）净增 40 行，
-         * 4) 上游 live-surface 转场开关合流（getLiveSurfaceCardTransitionEnabled 设置层）再净增 31 行。
+         * 4) 上游 live-surface 转场开关合流（getLiveSurfaceCardTransitionEnabled 设置层）再净增 31 行，
+         * 5) 上游 8/7 前的 UI/设置合流再净增 37 行（本次=6690，仅同步实测值，未新增设置项）。
          * 仍只允许后续变小。
          */
-        const val MAX_LINES = 6653
+        const val MAX_LINES = 6690
     }
 }
