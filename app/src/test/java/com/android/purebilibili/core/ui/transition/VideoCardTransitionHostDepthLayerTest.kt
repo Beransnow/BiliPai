@@ -128,13 +128,24 @@ class VideoCardTransitionHostDepthLayerTest {
     }
 
     @Test
-    fun hostLayerNeverPaintsLayerRecordedInPreviousSession() {
+    fun hostLayerKeepsPredictivePreviewBlurWhileOrdinaryPopWaitsForRefresh() {
         // needsSourceRefresh = 源页 dispose 后重新进入 composition：上一场冻结层
-        // display list 已失效（黑/空），任何 exposure 下 Host 都不得直接铺它，
-        // 否则 pop 首帧整屏黑；等源页本帧重录后（needsSourceRefresh 清除）再画。
+        // 普通 pop 不能直接铺它，否则首帧可能黑；预测返回则需要它撑住满模糊的首帧，
+        // 再由来源页重录的快照无缝接手并随手势消退。
         assertFalse(
             shouldPaintHostOwnedDepthLayer(
                 exposure = VideoCardTransitionExposure.Returning,
+                hasRecordedContent = true,
+                displayListStale = false,
+                needsSourceRefresh = true,
+                motionTier = MotionTier.Normal,
+                realtimeBlurEnabled = true,
+                sdkInt = 35,
+            ),
+        )
+        assertTrue(
+            shouldPaintHostOwnedDepthLayer(
+                exposure = VideoCardTransitionExposure.BackPreview,
                 hasRecordedContent = true,
                 displayListStale = false,
                 needsSourceRefresh = true,
