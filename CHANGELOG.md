@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.2.2 (2026-08-09)
+
+更新日志(ChangeLog)
+
+[更改] 版本号 0.2.2，versionCode 286
+[更改] 正式包 BiliPai-0.2.2.apk，Dev 包 BiliPai-0.2.2-dev.apk
+[更改] 基准 v0.2.1，比较区间见 GitHub Compare
+[修复] 直播首页网游、手游等一级分区标签可正确切换，兼容分区接口字段
+[修复] 插件开关与注册并发时的闪退
+[更改] 首页顶部标签最多显示 5 项，Dock 在图标、图文、文字模式下均保持居中
+[修复] 首页顶栏和底栏手势、反向滚动与选中态同步
+[修复] 视频详情中评论、关联推荐与播放器切换后的弹幕和画面交接
+[更改] 设置页、播放页的转场减少视差并修复黑屏，设置补充播放与应用图标偏好
+[更改] 空间投稿视频排版对齐首页信息流，长按倍速提示更紧凑
+[修复] 首页 App + Web 合并 Feed 取流和翻页重复问题 @qyo123oyq
+v0.2.2(PENDING_RELEASE_SHA)
+
+格式规范见 [docs/wiki/CHANGELOG_GUIDE.md](docs/wiki/CHANGELOG_GUIDE.md)。社群：频道 [t.me/bilipai666](https://t.me/bilipai666) / 群 [t.me/bilipai888](https://t.me/bilipai888/1)。比较：[`v0.2.1...main`](https://github.com/jay3-yy/BiliPai/compare/v0.2.1...main)。
+
+---
+
 ## v0.2.1 (2026-08-07)
 
 更新日志(ChangeLog)

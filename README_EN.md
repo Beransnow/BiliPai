@@ -446,9 +446,9 @@ See the [current roadmap](docs/wiki/ROADMAP.md) for priorities, completion crite
 
 See full changelog: [CHANGELOG.md](CHANGELOG.md)
 
-### Latest (v0.2.0 · 2026-08-06)
+### Current source build (v0.2.2 · 2026-08-09)
 
-- Semantic versioning `MAJOR.MINOR.PATCH` restored: `0.2.0` / `versionCode 284` (no date-based names).
+- Current source build: `0.2.2` / `versionCode 286` (semantic `MAJOR.MINOR.PATCH`; no date-based names).
 - Defaults off: live-surface morph, transition blur, bottom-bar blur, player insight.
 - Home App+Web merged recommendation feed; search UI rebuild (trending/history/discover, filters, contrast/IME).
 - Card/predictive-back: live-surface switch without HDR wash; favorite-collection return matches home morph.
