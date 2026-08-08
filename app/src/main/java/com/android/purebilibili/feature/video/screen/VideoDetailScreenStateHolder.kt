@@ -1948,14 +1948,20 @@ internal fun VideoDetailScreenStateHolder(
                 continuousPlayerProgress.snapTo(1f)
                 continuousPlayerPhase = ContinuousPlayerTransitionPhase.Fullscreen
             }
-            // 系统旋回竖屏：立刻收起，避免等 Collapsing 动画期间整屏铺满一帧或卡住。
+            // 仅清理「已处于 Fullscreen 但窗口已回竖屏」的陈旧进度。
+            // Expanding/AwaitingLandscape 仍是点击进入全屏的有效链路；在方向切换前
+            // 提前把它们改回 Inline 会跳过 ExpansionFinished，导致横屏请求永远不发出。
             !isLandscape &&
-                continuousPlayerPhase != ContinuousPlayerTransitionPhase.Inline &&
-                continuousPlayerPhase != ContinuousPlayerTransitionPhase.Collapsing &&
-                continuousPlayerPhase != ContinuousPlayerTransitionPhase.AwaitingPortrait -> {
+                continuousPlayerPhase == ContinuousPlayerTransitionPhase.Fullscreen -> {
                 continuousPlayerProgress.snapTo(0f)
                 continuousPlayerPhase = ContinuousPlayerTransitionPhase.Inline
             }
+            // 进入全屏时方向仍暂时是竖屏；这两个阶段是等待横屏请求完成，
+            // 不能把初始竖屏状态误派发成「回竖屏」事件，否则会被策略收起为 Collapsing。
+            shouldKeepContinuousPlayerEnterPhaseWhilePortrait(
+                phase = continuousPlayerPhase,
+                isLandscape = isLandscape,
+            ) -> Unit
             else -> applyContinuousPlayerDecision(
                 reduceContinuousPlayerTransition(
                     phase = continuousPlayerPhase,

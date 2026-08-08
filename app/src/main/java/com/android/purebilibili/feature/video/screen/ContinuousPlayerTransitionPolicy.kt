@@ -27,6 +27,17 @@ internal data class ContinuousPlayerTransitionDecision(
         ContinuousPlayerOrientationRequest.None,
 )
 
+internal fun shouldKeepContinuousPlayerEnterPhaseWhilePortrait(
+    phase: ContinuousPlayerTransitionPhase,
+    isLandscape: Boolean,
+): Boolean {
+    return !isLandscape &&
+        (
+            phase == ContinuousPlayerTransitionPhase.Expanding ||
+                phase == ContinuousPlayerTransitionPhase.AwaitingLandscape
+            )
+}
+
 internal fun reduceContinuousPlayerTransition(
     phase: ContinuousPlayerTransitionPhase,
     event: ContinuousPlayerTransitionEvent,
