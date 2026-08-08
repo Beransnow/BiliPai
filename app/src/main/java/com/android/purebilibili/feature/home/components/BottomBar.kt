@@ -2941,8 +2941,8 @@ private fun RowScope.MiuixDockedBottomBarItem(
                                 .clip(RoundedCornerShape(50))
                                 .background(indicatorColor)
                                 .padding(
-                                    horizontal = 16.dp,
-                                    vertical = 4.dp
+                                    horizontal = AppSpacingTokens.Large,
+                                    vertical = AppSpacingTokens.ExtraSmall
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
