@@ -167,7 +167,10 @@ class LiveListViewModel(application: Application) : AndroidViewModel(application
             viewModelScope.launch { loadRecommendPage(page = 1, append = false) }
             return
         }
-        val entry = state.areaEntries.getOrNull(index - 1) ?: return
+        val entry = resolveLiveHomeAreaEntries(
+            feedEntries = state.areaEntries,
+            areaParents = state.areaList
+        ).getOrNull(index - 1) ?: return
         _uiState.value = state.copy(
             selectedAreaIndex = index,
             selectedParentAreaId = entry.parentAreaId,
@@ -248,12 +251,20 @@ class LiveListViewModel(application: Application) : AndroidViewModel(application
 
     private suspend fun loadAreaPage(page: Int, append: Boolean) {
         val state = _uiState.value
-        val parentId = state.selectedParentAreaId.takeIf { it > 0 }
-            ?: state.selectedAreaId
-        val areaId = if (state.selectedParentAreaId > 0) state.selectedAreaId else 0
+        val query = resolveLiveAreaRoomQuery(
+            parentAreaId = state.selectedParentAreaId,
+            areaId = state.selectedAreaId
+        ) ?: run {
+            _uiState.value = state.copy(
+                isLoading = false,
+                isLoadingMore = false,
+                error = "无效的直播分区"
+            )
+            return
+        }
         LiveRepository.getLiveSecondHome(
-            parentAreaId = parentId,
-            areaId = areaId,
+            parentAreaId = query.parentAreaId,
+            areaId = query.areaId,
             page = page,
             sortType = state.selectedSortType,
         ).fold(
@@ -499,15 +510,10 @@ private fun LiveHomeContent(
         if (areaEntries.isNotEmpty() || areaList.isNotEmpty()) {
             item(span = { GridItemSpan(maxLineSpan) }) {
                 LiveAreaHomeChipRow(
-                    areaEntries = areaEntries.ifEmpty {
-                        areaList.map {
-                            com.android.purebilibili.data.model.response.LiveFeedAreaEntry(
-                                title = it.name,
-                                areaId = 0,
-                                parentAreaId = it.id,
-                            )
-                        }
-                    },
+                    areaEntries = resolveLiveHomeAreaEntries(
+                        feedEntries = areaEntries,
+                        areaParents = areaList
+                    ),
                     selectedAreaIndex = selectedAreaIndex,
                     showFirstFrame = showFirstFrame,
                     onAreaSelected = onAreaSelected,
@@ -1027,4 +1033,3 @@ private fun LiveRoomItem.toLiveRoomCardUiModel(preferFirstFrame: Boolean) = Live
     viewerCount = online,
     areaName = areaName,
 )
-
