@@ -14,6 +14,7 @@ import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTab
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppTextButton
+import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
 
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -976,7 +977,13 @@ fun SearchScreen(
                             }
                         HorizontalPager(
                             state = searchPagerState,
-                            modifier = Modifier.weight(1f),
+                            userScrollEnabled = false,
+                            modifier = Modifier
+                                .weight(1f)
+                                .verticalPriorityHorizontalPagerSwipe(
+                                    state = searchPagerState,
+                                    enabled = true,
+                                ),
                             beyondViewportPageCount = 1
                         ) { page ->
                         val targetSearchType = resolveSearchTypeForPagerPage(page, searchTabs)

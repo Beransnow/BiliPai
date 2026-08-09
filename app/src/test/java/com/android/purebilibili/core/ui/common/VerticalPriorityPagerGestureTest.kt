@@ -77,4 +77,31 @@ class VerticalPriorityPagerGestureTest {
         assertTrue(commentPager.contains("userScrollEnabled = false"))
         assertTrue(commentPager.contains(".verticalPriorityHorizontalPagerSwipe("))
     }
+
+    @Test
+    fun `other paged vertical lists use the shared direction gate`() {
+        val expectedGateCounts = mapOf(
+            "feature/search/SearchScreen.kt" to 1,
+            "feature/dynamic/DynamicScreen.kt" to 2,
+            "feature/list/CommonListScreen.kt" to 1,
+            "feature/live/LiveAreaScreen.kt" to 1,
+            "feature/bangumi/ui/player/BangumiPlayerContent.kt" to 1,
+            "feature/video/screen/TabletVideoLayout.kt" to 1,
+            "feature/video/screen/TabletCinemaLayout.kt" to 1,
+        )
+
+        expectedGateCounts.forEach { (relativePath, expectedCount) ->
+            val source = File("src/main/java/com/android/purebilibili/$relativePath").readText()
+            assertTrue(
+                source.countOccurrences(".verticalPriorityHorizontalPagerSwipe(") >= expectedCount,
+                "$relativePath should use the shared pager direction gate",
+            )
+            assertTrue(
+                source.countOccurrences("userScrollEnabled = false") >= expectedCount,
+                "$relativePath should disable the pager's competing built-in drag detector",
+            )
+        }
+    }
+
+    private fun String.countOccurrences(value: String): Int = split(value).size - 1
 }

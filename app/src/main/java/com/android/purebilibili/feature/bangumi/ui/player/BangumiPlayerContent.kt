@@ -5,6 +5,7 @@ import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppHorizontalDivider
+import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -95,9 +96,14 @@ fun BangumiPlayerContent(
 
         HorizontalPager(
             state = pagerState,
+            userScrollEnabled = false,
             modifier = Modifier
                 .weight(1f)
                 .layerBackdrop(selectionBackdrop)
+                .verticalPriorityHorizontalPagerSwipe(
+                    state = pagerState,
+                    enabled = true,
+                )
         ) { page ->
             when (page) {
                 0 -> LazyColumn(

@@ -60,6 +60,7 @@ import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTab
 import com.android.purebilibili.core.ui.components.AppPrimaryTabRow
 import com.android.purebilibili.core.ui.components.AppText
+import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -1074,12 +1075,17 @@ private fun CinemaSideCurtain(
 
                             HorizontalPager(
                                 state = pagerState,
-                                userScrollEnabled = shouldEnableVideoContentHorizontalPagerSwipe(
-                                    currentPage = pagerState.currentPage,
-                                    commentPageIndex = 0,
-                                    isPagerScrollInProgress = pagerState.isScrollInProgress,
-                                ),
-                                modifier = Modifier.fillMaxSize()
+                                userScrollEnabled = false,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .verticalPriorityHorizontalPagerSwipe(
+                                        state = pagerState,
+                                        enabled = shouldEnableVideoContentHorizontalPagerSwipe(
+                                            currentPage = pagerState.currentPage,
+                                            commentPageIndex = 0,
+                                            isPagerScrollInProgress = pagerState.isScrollInProgress,
+                                        ),
+                                    )
                             ) { page ->
                                 when {
                                     success == null -> {
