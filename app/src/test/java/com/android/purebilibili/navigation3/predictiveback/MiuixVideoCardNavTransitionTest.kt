@@ -6,6 +6,19 @@ import kotlin.test.assertEquals
 
 class MiuixVideoCardNavTransitionTest {
     @Test
+    fun cardClipKeepsPhysicalCornerRadiusAcrossNonUniformScale() {
+        val radii = resolveMiuixVideoCardClipRadii(
+            sourceCornerPx = 12f,
+            morphProgress = 0f,
+            outerScaleX = 0.5f,
+            outerScaleY = 0.25f,
+        )
+
+        assertEquals(12f, radii.radiusX * 0.5f, absoluteTolerance = 0.0001f)
+        assertEquals(12f, radii.radiusY * 0.25f, absoluteTolerance = 0.0001f)
+    }
+
+    @Test
     fun fillWidthTopPreservesAspectRatioAndTopAlignment() {
         val compensation = resolveMiuixVideoCardContentCompensation(
             outerScaleX = 0.5f,

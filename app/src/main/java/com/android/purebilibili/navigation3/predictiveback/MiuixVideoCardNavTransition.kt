@@ -1,10 +1,16 @@
 package com.android.purebilibili.navigation3.predictiveback
 
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import top.yukonga.miuix.kmp.nav.transition.NavMotion
@@ -23,6 +29,51 @@ internal data class MiuixVideoCardContentCompensation(
     val scaleY: Float,
     val transformOrigin: TransformOrigin,
 )
+
+internal data class MiuixVideoCardClipRadii(
+    val radiusX: Float,
+    val radiusY: Float,
+)
+
+/**
+ * Keeps the corner circular in screen space while the outer card layer scales non-uniformly.
+ * A regular RoundedCornerShape is scaled together with the layer and becomes too small on the
+ * compressed axis, which exposes the retained source card at the end of a 16:9 return.
+ */
+internal fun resolveMiuixVideoCardClipRadii(
+    sourceCornerPx: Float,
+    morphProgress: Float,
+    outerScaleX: Float,
+    outerScaleY: Float,
+): MiuixVideoCardClipRadii {
+    val physicalRadius = sourceCornerPx.coerceAtLeast(0f) *
+        (1f - morphProgress.coerceIn(0f, 1f))
+    return MiuixVideoCardClipRadii(
+        radiusX = physicalRadius / outerScaleX.coerceAtLeast(0.01f),
+        radiusY = physicalRadius / outerScaleY.coerceAtLeast(0.01f),
+    )
+}
+
+private data class MiuixVideoCardClipShape(
+    val radiusX: Float,
+    val radiusY: Float,
+) : Shape {
+    override fun createOutline(
+        size: Size,
+        layoutDirection: LayoutDirection,
+        density: Density,
+    ): Outline {
+        return Outline.Rounded(
+            RoundRect(
+                rect = Rect(0f, 0f, size.width, size.height),
+                cornerRadius = CornerRadius(
+                    x = radiusX.coerceIn(0f, size.width / 2f),
+                    y = radiusY.coerceIn(0f, size.height / 2f),
+                ),
+            ),
+        )
+    }
+}
 
 internal fun resolveMiuixVideoCardContentCompensation(
     outerScaleX: Float,
@@ -116,8 +167,10 @@ internal fun miuixVideoCardNavTransition(
                     val morph = topProgress(depth)
                     val sourceScaleX = (bounds.width / width).coerceIn(0.05f, 1f)
                     val sourceScaleY = (bounds.height / height).coerceIn(0.05f, 1f)
-                    scaleX = sourceScaleX + (1f - sourceScaleX) * morph
-                    scaleY = sourceScaleY + (1f - sourceScaleY) * morph
+                    val outerScaleX = sourceScaleX + (1f - sourceScaleX) * morph
+                    val outerScaleY = sourceScaleY + (1f - sourceScaleY) * morph
+                    scaleX = outerScaleX
+                    scaleY = outerScaleY
                     transformOrigin = TransformOrigin(0f, 0f)
                     translationX = bounds.left.coerceIn(-width, width) * (1f - morph)
                     translationY = bounds.top.coerceIn(-height, height) * (1f - morph)
@@ -126,7 +179,16 @@ internal fun miuixVideoCardNavTransition(
                     // transition into a generic zoom and exposed the source beneath it.
                     alpha = 1f
                     clip = morph < 0.999f
-                    shape = RoundedCornerShape((corner * (1f - morph)).dp)
+                    val clipRadii = resolveMiuixVideoCardClipRadii(
+                        sourceCornerPx = corner.dp.toPx(),
+                        morphProgress = morph,
+                        outerScaleX = outerScaleX,
+                        outerScaleY = outerScaleY,
+                    )
+                    shape = MiuixVideoCardClipShape(
+                        radiusX = clipRadii.radiusX,
+                        radiusY = clipRadii.radiusY,
+                    )
                 }
             }.graphicsLayer {
                 val depth = scope.relativeDepth
