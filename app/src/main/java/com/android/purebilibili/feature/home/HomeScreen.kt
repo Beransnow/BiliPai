@@ -421,6 +421,8 @@ fun HomeScreen(
     }
     var programmaticPageSwitchInProgress by remember { mutableStateOf(false) }
     val currentDisplayedTabIndex by rememberUpdatedState(displayedTabIndexFromState)
+    val latestOnLiveListClick by rememberUpdatedState(onLiveListClick)
+    val latestOnBangumiClick by rememberUpdatedState(onBangumiClick)
     TrackJankStateFlag(
         stateName = "home:pager_swipe",
         isActive = pagerState.isScrollInProgress
@@ -443,51 +445,58 @@ fun HomeScreen(
         snapshotFlow { pagerState.currentPage to pagerState.isScrollInProgress }
             .distinctUntilChanged()
             .collect { (page, scrolling) ->
-                if (!scrolling && currentDisplayedTabIndex != page) {
-                    viewModel.updateDisplayedTabIndex(page)
-                }
                 val currentCategoryIndex = topTabEntries
                     .indexOf(HomeTopTabEntry.Category(currentCategory))
                     .takeIf { it >= 0 } ?: 0
                 val settledEntry = resolveHomeTopTabEntryOrNull(topTabEntries, page)
                 val settledCategory = (settledEntry as? HomeTopTabEntry.Category)?.category
-                if (!scrolling && settledEntry != null) {
+                val settledAction = resolveHomePagerSettledAction(
+                    isTopLevelActive = isTopLevelActive,
+                    hasSyncedPagerWithState = hasSyncedPagerWithState,
+                    pagerCurrentPage = page,
+                    pagerScrolling = scrolling,
+                    currentCategoryIndex = currentCategoryIndex,
+                    settledCategory = settledCategory,
+                    programmaticPageSwitchInProgress = programmaticPageSwitchInProgress
+                )
+                val routesAwayFromHome = settledAction == HomePagerSettledAction.OPEN_LIVE_LIST ||
+                    settledAction == HomePagerSettledAction.OPEN_BANGUMI
+                if (!scrolling && !routesAwayFromHome && currentDisplayedTabIndex != page) {
+                    viewModel.updateDisplayedTabIndex(page)
+                }
+                if (!scrolling && !routesAwayFromHome && settledEntry != null) {
                     retainedTopTabEntry = settledEntry
                 }
-                when (resolveHomePagerSettledAction(
-                        isTopLevelActive = isTopLevelActive,
-                        hasSyncedPagerWithState = hasSyncedPagerWithState,
-                        pagerCurrentPage = page,
-                        pagerScrolling = scrolling,
-                        currentCategoryIndex = currentCategoryIndex,
-                        settledCategory = settledCategory,
-                        programmaticPageSwitchInProgress = programmaticPageSwitchInProgress
-                    )
-                ) {
+                when (settledAction) {
                     HomePagerSettledAction.NONE -> return@collect
                     HomePagerSettledAction.SWITCH_CATEGORY -> {
                         val target = settledCategory ?: return@collect
-                        // 侧滑到顶栏「直播」时同样打开底栏直播首页，并回弹到原分类页。
-                        if (shouldOpenLiveListFromHomeTopTab(target)) {
-                            onLiveListClick()
-                            val backIndex = topTabEntries
-                                .indexOf(HomeTopTabEntry.Category(currentCategory))
-                                .takeIf { it >= 0 }
-                                ?: topTabEntries.indexOfFirst {
-                                    it is HomeTopTabEntry.Category &&
-                                        !shouldOpenLiveListFromHomeTopTab(it.category)
-                                }.coerceAtLeast(0)
-                            if (page != backIndex) {
-                                programmaticPageSwitchInProgress = true
-                                try {
-                                    pagerState.scrollToPage(backIndex)
-                                } finally {
-                                    programmaticPageSwitchInProgress = false
-                                }
-                            }
-                            return@collect
-                        }
                         viewModel.switchCategory(target)
+                    }
+                    HomePagerSettledAction.OPEN_LIVE_LIST,
+                    HomePagerSettledAction.OPEN_BANGUMI -> {
+                        // 先同步回原分类页，再离开首页。否则页面离开后协程可能被取消，
+                        // 返回首页时 Pager 会残留在直播/追番页，出现无法侧滑退出或卡住。
+                        if (page != currentCategoryIndex) {
+                            programmaticPageSwitchInProgress = true
+                            try {
+                                pagerState.scrollToPage(currentCategoryIndex)
+                            } finally {
+                                programmaticPageSwitchInProgress = false
+                            }
+                        }
+                        if (currentDisplayedTabIndex != currentCategoryIndex) {
+                            viewModel.updateDisplayedTabIndex(currentCategoryIndex)
+                        }
+                        retainedTopTabEntry = resolveHomeTopTabEntryOrNull(
+                            topTabEntries,
+                            currentCategoryIndex
+                        )
+                        when (settledAction) {
+                            HomePagerSettledAction.OPEN_LIVE_LIST -> latestOnLiveListClick()
+                            HomePagerSettledAction.OPEN_BANGUMI -> latestOnBangumiClick(1)
+                            else -> Unit
+                        }
                     }
                 }
             }
@@ -2076,7 +2085,7 @@ fun HomeScreen(
                 }
                 // 顶栏「追番」直接进入番剧独立页(与直播 tab 一致,避免切到空分类)。
                 if (selectedEntry is HomeTopTabEntry.Category &&
-                    selectedEntry.category == HomeCategory.ANIME
+                    shouldOpenBangumiFromHomeTopTab(selectedEntry.category)
                 ) {
                     onBangumiClick(1)
                     return@onCategorySelected
