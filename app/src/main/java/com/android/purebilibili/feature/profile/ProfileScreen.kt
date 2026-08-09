@@ -974,19 +974,6 @@ private fun ProfileSpaceContent(
                         onFavoriteFolderClick = onFavoriteFolderClick,
                         contentColor = contentChrome.onSurfaceColor,
                     )
-                    ProfileSpaceServices(
-                        favoriteFolderShortcuts = favoriteFolderShortcuts,
-                        onHistoryClick = onHistoryClick,
-                        showHistoryService = showHistoryService,
-                        onFavoriteClick = onFavoriteClick,
-                        onFavoriteFolderClick = onFavoriteFolderClick,
-                        onDownloadClick = onDownloadClick,
-                        onWatchLaterClick = onWatchLaterClick,
-                        onInboxClick = onInboxClick,
-                        onAccountManageClick = onAccountManageClick,
-                        onLogout = onLogout,
-                        contentChrome = contentChrome
-                    )
                 }
                 ProfileSpaceFeedColumn(
                     user = user,
@@ -1836,7 +1823,8 @@ private fun ProfileSpaceHome(
             bangumiItems = space.bangumiItems,
             coinVideos = space.coinVideos,
             likeVideos = space.likeVideos,
-            contributionVideos = space.contributionVideos
+            contributionVideos = space.contributionVideos,
+            includeDashboardOwnedSections = false,
         ).forEach { section ->
             when (section) {
                 ProfileSpaceHomeSection.FAVORITES -> ProfileFavoriteFolderStrip(

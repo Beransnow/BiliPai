@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.MaterialTheme
@@ -343,7 +344,12 @@ private fun FavoriteCategoryContent(
 
         if (state.selectedIds.isNotEmpty()) {
             LazyRow(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = AppSpacingTokens.Medium),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .systemGestureExclusion(),
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                    horizontal = AppSpacingTokens.Medium,
+                ),
                 horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -409,7 +415,12 @@ private fun FavoriteCategoryFilterRow(
     onSelected: (Int) -> Unit,
 ) {
     LazyRow(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = AppSpacingTokens.Medium),
+        modifier = Modifier
+            .fillMaxWidth()
+            .systemGestureExclusion(),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(
+            horizontal = AppSpacingTokens.Medium,
+        ),
         horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
     ) {
         items(labels) { label ->

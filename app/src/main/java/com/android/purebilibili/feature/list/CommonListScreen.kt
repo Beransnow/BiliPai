@@ -63,6 +63,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -1553,7 +1554,8 @@ fun CommonListScreen(
                         LazyRow(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = AppSpacingTokens.Medium),
+                                .systemGestureExclusion(),
+                            contentPadding = PaddingValues(horizontal = AppSpacingTokens.Medium),
                             horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
                         ) {
                             items(FavoriteSection.entries, key = { it.name }) { section ->
@@ -1581,7 +1583,10 @@ fun CommonListScreen(
                         favoriteSection == FavoriteSection.VIDEO
                     ) {
                         LazyRow(
-                            modifier = Modifier.fillMaxWidth().padding(horizontal = AppSpacingTokens.Medium),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .systemGestureExclusion(),
+                            contentPadding = PaddingValues(horizontal = AppSpacingTokens.Medium),
                             horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
                         ) {
                             items(FavoriteSearchScope.entries, key = { it.name }) { scopeOption ->
@@ -2148,6 +2153,7 @@ private fun FavoriteFolderChipRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .systemGestureExclusion()
             .horizontalScroll(rememberScrollState())
             .padding(
                 start = layout.folderChipRowHorizontalPaddingDp.dp,
