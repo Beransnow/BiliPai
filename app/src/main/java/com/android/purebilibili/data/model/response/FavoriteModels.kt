@@ -2,6 +2,7 @@
 package com.android.purebilibili.data.model.response
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
 
 /**
  * 收藏夹和稍后再看相关数据模型

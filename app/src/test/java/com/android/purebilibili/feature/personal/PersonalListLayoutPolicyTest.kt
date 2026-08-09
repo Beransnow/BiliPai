@@ -23,7 +23,7 @@ class PersonalListLayoutPolicyTest {
     fun cardHeight_scalesOnlyWhenFontScaleGrows() {
         assertEquals(90f, resolvePersonalMediaCardMinHeightDp(0.85f))
         assertEquals(90f, resolvePersonalMediaCardMinHeightDp(1f))
-        assertEquals(117f, resolvePersonalMediaCardMinHeightDp(1.3f))
+        assertEquals(117f, resolvePersonalMediaCardMinHeightDp(1.3f), absoluteTolerance = 0.001f)
     }
 
     @Test

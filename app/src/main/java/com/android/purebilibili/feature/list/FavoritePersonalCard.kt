@@ -49,7 +49,7 @@ internal fun resolveFavoriteDateLabel(
     nowMs: Long = System.currentTimeMillis(),
 ): String =
     FormatUtils.formatPublishTime(timestampSeconds, nowMs).takeIf { it.isNotBlank() }
-        ?.let { "$it收藏" }
+        ?.let { "${it}收藏" }
         .orEmpty()
 
 @OptIn(ExperimentalSharedTransitionApi::class)

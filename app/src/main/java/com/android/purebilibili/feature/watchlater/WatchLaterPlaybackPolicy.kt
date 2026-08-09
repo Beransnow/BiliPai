@@ -9,13 +9,13 @@ internal enum class WatchLaterManagementAction {
     CLEAR_ALL
 }
 
-internal enum class WatchLaterFilter(val viewed: Int, val label: String) {
+enum class WatchLaterFilter(val viewed: Int, val label: String) {
     ALL(0, "全部"),
     UNFINISHED(2, "未看完"),
 }
 
 /** The server-provided order is the default order for the Watch Later list. */
-internal enum class WatchLaterSortOrder {
+enum class WatchLaterSortOrder {
     FORWARD,
     REVERSE;
 

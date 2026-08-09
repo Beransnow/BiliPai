@@ -612,7 +612,7 @@ private fun FavoriteGenericCategoryCard(
                 }
             }
         },
-        onClick = if (batchMode) ({ onLongClick?.invoke() }) else onClick,
+        onClick = if (batchMode) ({ onLongClick?.invoke(); Unit }) else onClick,
         onLongClick = onLongClick,
     )
 }

@@ -39,7 +39,7 @@ object PersonalFavoriteRepository {
                         subtitle = listOfNotNull(
                             article.author?.name?.takeIf(String::isNotBlank),
                             article.publishTime?.takeIf(String::isNotBlank),
-                            article.stat?.like?.takeIf(String::isNotBlank)?.let { "$it赞" },
+                            article.stat?.like?.takeIf(String::isNotBlank)?.let { "${it}赞" },
                         ).joinToString(" · "),
                         cover = article.cover?.url.orEmpty(),
                         section = FavoriteSection.ARTICLE,
