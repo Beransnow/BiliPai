@@ -758,8 +758,8 @@ class BottomBarIndicatorPolicyTest {
         assertTrue(source.contains("private const val KERNEL_SU_PRESSED_SCALE = 78f / 56f"))
         assertTrue(source.contains("private val scaleXAnimationSpec = spring(0.6f, 250f, 0.001f)"))
         assertTrue(source.contains("private val scaleYAnimationSpec = spring(0.7f, 250f, 0.001f)"))
-        assertTrue(source.contains("scaleXAnimation.animateTo(KERNEL_SU_PRESSED_SCALE, scaleXAnimationSpec)"))
-        assertTrue(source.contains("scaleYAnimation.animateTo(KERNEL_SU_PRESSED_SCALE, scaleYAnimationSpec)"))
+        assertTrue(source.contains("scaleXAnimation.animateTo(pressedScale, scaleXAnimationSpec)"))
+        assertTrue(source.contains("scaleYAnimation.animateTo(pressedScale, scaleYAnimationSpec)"))
     }
 
     @Test

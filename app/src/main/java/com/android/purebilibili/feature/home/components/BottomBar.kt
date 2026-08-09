@@ -3071,6 +3071,7 @@ private fun KernelSuAlignedBottomBar(
         initialIndex = selectedIndex,
         itemCount = totalItems,
         notifyIndexChangedOnReleaseStart = false,
+        pressedScale = BOTTOM_BAR_INDICATOR_DRAG_SCALE_TARGET,
         isScrollInProgressProvider = { isFeedScrollInProgress },
         onIndexChanged = { index ->
             when {
@@ -3125,6 +3126,17 @@ private fun KernelSuAlignedBottomBar(
         isDragging = dampedDragState.isDragging
     )
     val indicatorLayerScaleProgress = maxOf(indicatorDragScaleProgress, effectivePressProgress)
+    // InstallerX parity: keep the X/Y spring enlargement attached to the moving capsule,
+    // then let DampedDragAnimation release it only after the target is nearly settled.
+    // The target ratio remains BiliPai's wider 88/56 tuning.
+    val indicatorLayerScaleTransform by remember(dampedDragState) {
+        derivedStateOf {
+            BottomBarIndicatorLayerTransform(
+                scaleX = dampedDragState.scaleX,
+                scaleY = dampedDragState.scaleY,
+            )
+        }
+    }
     val materialScrollProgress by animateFloatAsState(
         targetValue = if (isFeedScrollInProgress) 1f else 0f,
         animationSpec = tween(
@@ -3683,6 +3695,7 @@ private fun KernelSuAlignedBottomBar(
                     velocityItemsPerSecond = dampedDragState.deformationVelocityItemsPerSecond,
                     isDragging = dampedDragState.isDragging,
                     indicatorLayerScaleProgress = indicatorLayerScaleProgress,
+                    indicatorLayerScaleTransform = indicatorLayerScaleTransform,
                     bottomBarMotionSpec = bottomBarMotionSpec,
                     isDarkTheme = isDarkTheme
                 )

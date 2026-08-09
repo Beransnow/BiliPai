@@ -102,6 +102,7 @@ class DampedDragAnimationState internal constructor(
     private val scope: CoroutineScope,
     private val onIndexChanged: (Int) -> Unit,
     private val motionSpec: BottomBarMotionSpec,
+    private val pressedScale: Float,
     private val notifyIndexChangedOnReleaseStart: Boolean = false,
     @Suppress("UNUSED_PARAMETER") private val holdPressUntilReleaseTargetSettles: Boolean = false
 ) {
@@ -166,8 +167,8 @@ class DampedDragAnimationState internal constructor(
         releaseJob?.cancel()
         releaseJob = scope.launch {
             launch { pressProgressAnimation.animateTo(1f, pressProgressAnimationSpec) }
-            launch { scaleXAnimation.animateTo(KERNEL_SU_PRESSED_SCALE, scaleXAnimationSpec) }
-            launch { scaleYAnimation.animateTo(KERNEL_SU_PRESSED_SCALE, scaleYAnimationSpec) }
+            launch { scaleXAnimation.animateTo(pressedScale, scaleXAnimationSpec) }
+            launch { scaleYAnimation.animateTo(pressedScale, scaleYAnimationSpec) }
         }
     }
 
@@ -364,6 +365,7 @@ fun rememberDampedDragAnimationState(
     itemCount: Int,
     onIndexChanged: (Int) -> Unit,
     motionSpec: BottomBarMotionSpec = resolveBottomBarMotionSpec(),
+    pressedScale: Float = KERNEL_SU_PRESSED_SCALE,
     notifyIndexChangedOnReleaseStart: Boolean = false,
     holdPressUntilReleaseTargetSettles: Boolean = false
 ): DampedDragAnimationState {
@@ -373,6 +375,7 @@ fun rememberDampedDragAnimationState(
     return remember(
         itemCount,
         motionSpec,
+        pressedScale,
         notifyIndexChangedOnReleaseStart,
         holdPressUntilReleaseTargetSettles
     ) {
@@ -382,6 +385,7 @@ fun rememberDampedDragAnimationState(
             scope = scope,
             onIndexChanged = { currentOnIndexChanged(it) },
             motionSpec = motionSpec,
+            pressedScale = pressedScale.coerceAtLeast(1f),
             notifyIndexChangedOnReleaseStart = notifyIndexChangedOnReleaseStart,
             holdPressUntilReleaseTargetSettles = holdPressUntilReleaseTargetSettles
         )

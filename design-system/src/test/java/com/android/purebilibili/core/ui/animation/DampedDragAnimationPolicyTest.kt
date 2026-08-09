@@ -56,6 +56,10 @@ class DampedDragAnimationPolicyTest {
 
         // KSU 拖动手感保留
         assertTrue(source.contains("private const val KERNEL_SU_PRESSED_SCALE = 78f / 56f"))
+        assertTrue(source.contains("pressedScale: Float = KERNEL_SU_PRESSED_SCALE"))
+        assertTrue(source.contains("pressedScale = pressedScale.coerceAtLeast(1f)"))
+        assertTrue(source.contains("scaleXAnimation.animateTo(pressedScale, scaleXAnimationSpec)"))
+        assertTrue(source.contains("scaleYAnimation.animateTo(pressedScale, scaleYAnimationSpec)"))
         assertTrue(source.contains("private val valueAnimationSpec = spring(1f, 1000f, 0.001f)"))
         assertTrue(source.contains("private val velocityAnimationSpec = spring(0.5f, 300f, 0.01f)"))
         // 9.0.0 标准手势检测 API
@@ -138,6 +142,8 @@ class DampedDragAnimationPolicyTest {
         assertTrue(source.contains("fun animateToValue(value: Float, onSettled: (() -> Unit)? = null)"))
         assertTrue(source.contains("press()"))
         assertTrue(source.contains("release(onSettled = onSettled)"))
+        assertTrue(source.contains("if (value != targetValue)"))
+        assertTrue(source.contains("abs(it - valueAnimation.targetValue) < threshold"))
     }
 
 }

@@ -119,13 +119,15 @@ internal fun rememberBottomBarMatchedLiquidChromeState(
     onIndexChanged: (Int) -> Unit,
     orientation: BottomBarLiquidOrientation = BottomBarLiquidOrientation.HORIZONTAL,
     isScrollInProgressProvider: () -> Boolean = { false },
-    notifyIndexChangedOnReleaseStart: Boolean = false
+    notifyIndexChangedOnReleaseStart: Boolean = false,
+    pressedScale: Float = 78f / 56f,
 ): BottomBarMatchedLiquidChromeState {
     val motionSpec = remember { resolveSegmentedControlMotionSpec() }
     val dragState = rememberDampedDragAnimationState(
         initialIndex = initialIndex,
         itemCount = itemCount,
         motionSpec = motionSpec,
+        pressedScale = pressedScale,
         notifyIndexChangedOnReleaseStart = notifyIndexChangedOnReleaseStart,
         holdPressUntilReleaseTargetSettles = true,
         onIndexChanged = onIndexChanged
@@ -403,6 +405,7 @@ internal fun BoxScope.BottomBarMatchedLiquidIndicator(
     velocityItemsPerSecond: Float,
     isDragging: Boolean,
     indicatorLayerScaleProgress: Float,
+    indicatorLayerScaleTransform: BottomBarIndicatorLayerTransform? = null,
     bottomBarMotionSpec: BottomBarMotionSpec,
     isDarkTheme: Boolean,
     indicatorSettleReboundTransform: BottomBarClickPulseTransform =
@@ -433,7 +436,7 @@ internal fun BoxScope.BottomBarMatchedLiquidIndicator(
             velocityItemsPerSecond = velocityItemsPerSecond,
             isDragging = isDragging,
             indicatorLayerScaleProgress = indicatorLayerScaleProgress,
-            indicatorLayerScaleTransform = null,
+            indicatorLayerScaleTransform = indicatorLayerScaleTransform,
             bottomBarMotionSpec = bottomBarMotionSpec,
             isDarkTheme = isDarkTheme,
             swapMotionAxes = orientation == BottomBarLiquidOrientation.VERTICAL,
@@ -464,7 +467,7 @@ internal fun BoxScope.BottomBarMatchedLiquidIndicator(
         velocityItemsPerSecond = velocityItemsPerSecond,
         isDragging = isDragging,
         indicatorLayerScaleProgress = indicatorLayerScaleProgress,
-        indicatorLayerScaleTransform = null,
+        indicatorLayerScaleTransform = indicatorLayerScaleTransform,
         bottomBarMotionSpec = bottomBarMotionSpec,
         isDarkTheme = isDarkTheme,
         swapMotionAxes = orientation == BottomBarLiquidOrientation.VERTICAL,
