@@ -718,6 +718,7 @@ private fun TabletSecondaryContent(
                     val visibleRelatedVideos = remember(success.related, hiddenRelatedBvids) {
                         filterRelatedVideosByHiddenBvids(success.related, hiddenRelatedBvids)
                     }
+                    val relatedVideoCardLayout = rememberRelatedVideoCardLayout()
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(8.dp)
@@ -741,6 +742,7 @@ private fun TabletSecondaryContent(
                             ) {
                                 RelatedVideoGridRow(
                                     videos = row,
+                                    cardLayout = relatedVideoCardLayout,
                                     followingMids = success.followingMids,
                                     transitionEnabled = LocalSharedTransitionEnabled.current,
                                     showUpBadge = showUpBadge,

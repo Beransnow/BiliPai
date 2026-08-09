@@ -116,6 +116,7 @@ import com.android.purebilibili.feature.video.ui.components.RelatedVideoItem
 import com.android.purebilibili.feature.video.ui.components.RelatedVideoGridRow
 import com.android.purebilibili.feature.video.ui.components.chunkRelatedVideosForHomeStyleGrid
 import com.android.purebilibili.feature.video.ui.components.filterRelatedVideosByHiddenBvids
+import com.android.purebilibili.feature.video.ui.components.rememberRelatedVideoCardLayout
 import com.android.purebilibili.feature.video.ui.components.ReplyItemView
 import com.android.purebilibili.feature.video.ui.components.VideoInlineSubReplyDetailContent
 import com.android.purebilibili.feature.video.ui.components.rememberVideoCommentAppearance
@@ -1368,6 +1369,7 @@ private fun CinemaRelatedPane(
     val visibleRelatedVideos = remember(success.related, hiddenRelatedBvids) {
         filterRelatedVideosByHiddenBvids(success.related, hiddenRelatedBvids)
     }
+    val relatedVideoCardLayout = rememberRelatedVideoCardLayout()
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(vertical = 8.dp)
@@ -1391,6 +1393,7 @@ private fun CinemaRelatedPane(
             ) {
                 RelatedVideoGridRow(
                     videos = row,
+                    cardLayout = relatedVideoCardLayout,
                     followingMids = success.followingMids,
                     transitionEnabled = LocalSharedTransitionEnabled.current,
                     showUpBadge = showUpBadge,

@@ -2,6 +2,7 @@ package com.android.purebilibili.navigation
 
 import java.io.File
 import kotlin.test.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class HomeMotionAndFeedPerformanceStructureTest {
@@ -46,6 +47,14 @@ class HomeMotionAndFeedPerformanceStructureTest {
                 "val cardTransitionEnabled = homePerformanceConfig.cardTransitionEnabled && !systemReduceMotion",
             ),
         )
+    }
+
+    @Test
+    fun homeFeed_doesNotMountDissolveLayoutTrackingUntilRequested() {
+        val source = sourceFile("feature/home/HomeCategoryPage.kt")
+
+        assertTrue(source.contains("MaybeDissolvableVideoCard("))
+        assertFalse(Regex("(?m)^\\s*DissolvableVideoCard\\(").containsMatchIn(source))
     }
 
     @Test

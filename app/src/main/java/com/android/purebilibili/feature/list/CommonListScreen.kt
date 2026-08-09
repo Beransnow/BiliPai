@@ -119,7 +119,7 @@ import com.android.purebilibili.core.ui.rememberAppChromeLiquidGlassEnabled
 import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
 import com.android.purebilibili.core.ui.components.AppSearchField
 import com.android.purebilibili.core.ui.animation.DissolveAnimationPreset
-import com.android.purebilibili.core.ui.animation.DissolvableVideoCard
+import com.android.purebilibili.core.ui.animation.MaybeDissolvableVideoCard
 import com.android.purebilibili.core.ui.animation.jiggleOnDissolve
 import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.LocalSharedTransitionScope
@@ -1916,7 +1916,7 @@ private fun CommonListContent(
                     }
 
                     if (supportsHistoryDissolve) {
-                        DissolvableVideoCard(
+                        MaybeDissolvableVideoCard(
                             isDissolving = isDissolving,
                             onDissolveComplete = { onHistoryDissolveComplete(historyKey) },
                             cardId = historyKey,

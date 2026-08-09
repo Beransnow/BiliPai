@@ -95,6 +95,7 @@ import com.android.purebilibili.feature.video.ui.components.DanmakuSettingsPanel
 import com.android.purebilibili.feature.video.ui.components.RelatedVideoGridRow
 import com.android.purebilibili.feature.video.ui.components.chunkRelatedVideosForHomeStyleGrid
 import com.android.purebilibili.feature.video.ui.components.filterRelatedVideosByHiddenBvids
+import com.android.purebilibili.feature.video.ui.components.rememberRelatedVideoCardLayout
 import com.android.purebilibili.feature.video.ui.components.CollectionRow
 import com.android.purebilibili.feature.video.ui.components.CollectionSheet
 import com.android.purebilibili.feature.video.ui.components.PagesSelector
@@ -1059,9 +1060,7 @@ private fun VideoIntroTab(
     val visibleRelatedVideos = remember(relatedVideos, hiddenRelatedBvids) {
         filterRelatedVideosByHiddenBvids(relatedVideos, hiddenRelatedBvids)
     }
-    val isRelatedListScrolling by remember(listState) {
-        derivedStateOf { listState.isScrollInProgress }
-    }
+    val relatedVideoCardLayout = rememberRelatedVideoCardLayout()
     LazyColumn(
         state = listState,
         modifier = modifier
@@ -1163,9 +1162,9 @@ private fun VideoIntroTab(
             ) {
                 RelatedVideoGridRow(
                     videos = row,
+                    cardLayout = relatedVideoCardLayout,
                     followingMids = followingMids,
                     transitionEnabled = relatedVideoTransitionEnabled,
-                    isListScrolling = isRelatedListScrolling,
                     showUpBadge = showUpBadge,
                     onVideoClick = { video ->
                         val navOptions = buildVideoNavigationOptions(
