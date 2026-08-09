@@ -226,7 +226,7 @@ private fun BangumiHomeContent(
             item(span = { GridItemSpan(maxLineSpan) }, key = "follows") {
                 when {
                     !isLoggedIn -> InlineNotice("登录后可同步追番/追剧")
-                    state.follows.isLoading && state.follows.items.isEmpty() -> InlineLoading()
+                    state.follows.isLoading && state.follows.items.isEmpty() -> BangumiPosterSkeletonRow()
                     state.follows.error != null && state.follows.items.isEmpty() -> InlineError(
                         message = state.follows.error,
                         onRetry = onRefresh,
@@ -274,8 +274,8 @@ private fun BangumiHomeContent(
             when {
                 state.recommendations.isLoading && state.recommendations.items.isEmpty() -> item(
                     span = { GridItemSpan(maxLineSpan) },
-                    key = "recommend_loading",
-                ) { InlineLoading() }
+                    key = "recommend_skeleton",
+                ) { BangumiPosterGridSkeleton() }
                 state.recommendations.error != null && state.recommendations.items.isEmpty() -> item(
                     span = { GridItemSpan(maxLineSpan) },
                     key = "recommend_error",
@@ -317,7 +317,7 @@ private fun TimelineSection(
     onRetry: () -> Unit,
 ) {
     when {
-        state.isLoading && state.days.isEmpty() -> InlineLoading()
+        state.isLoading && state.days.isEmpty() -> BangumiTimelineSkeleton()
         state.error != null && state.days.isEmpty() -> InlineError(state.error, onRetry)
         state.days.isEmpty() -> InlineNotice("暂无更新时间表")
         else -> {
@@ -426,7 +426,7 @@ private fun BangumiIndexContent(
 
             item(span = { GridItemSpan(maxLineSpan) }, key = "filters") {
                 when {
-                    state.isConditionLoading -> InlineLoading()
+                    state.isConditionLoading -> BangumiFilterSkeleton()
                     state.conditionError != null -> InlineError(state.conditionError, onRetryConditions)
                     else -> IndexFilterPanel(
                         state = state,
@@ -438,8 +438,9 @@ private fun BangumiIndexContent(
 
             when {
                 state.results.isLoading && state.results.items.isEmpty() -> item(
-                    span = { GridItemSpan(maxLineSpan) }, key = "index_loading",
-                ) { InlineLoading() }
+                    span = { GridItemSpan(maxLineSpan) },
+                    key = "index_skeleton",
+                ) { BangumiPosterGridSkeleton() }
                 state.results.error != null && state.results.items.isEmpty() -> item(
                     span = { GridItemSpan(maxLineSpan) }, key = "index_error",
                 ) { InlineError(state.results.error, onRetryResults) }
@@ -581,7 +582,7 @@ private fun BangumiFollowContent(
                 modifier = Modifier.fillMaxSize(),
             ) {
                 if (state.content.isLoading && state.content.items.isEmpty()) {
-                    InlineLoading(modifier = Modifier.fillMaxSize())
+                    BangumiFollowManagerSkeleton()
                 } else if (state.content.error != null && state.content.items.isEmpty()) {
                     AppErrorState(
                         title = "加载失败",
@@ -752,7 +753,13 @@ private fun BangumiSearchContent(
     val results = state.results
     when {
         state.query.isBlank() -> AppEmptyState(title = "搜索番剧或影视", message = "结果会按当前频道筛选")
-        results.isLoading && results.items.isEmpty() -> InlineLoading(modifier = Modifier.fillMaxSize())
+        results.isLoading && results.items.isEmpty() ->
+            com.android.purebilibili.core.ui.skeleton.ContentVideoGridSkeleton(
+                minItemWidth = 112.dp,
+                coverAspectRatio = BANGUMI_POSTER_ASPECT_RATIO,
+                horizontalSpacing = 10.dp,
+                verticalSpacing = 14.dp,
+            )
         results.error != null && results.items.isEmpty() -> AppErrorState(title = "搜索失败", message = results.error)
         results.items.isEmpty() -> AppEmptyState(title = "没有搜索结果", message = "换个关键词试试")
         else -> LazyVerticalGrid(
