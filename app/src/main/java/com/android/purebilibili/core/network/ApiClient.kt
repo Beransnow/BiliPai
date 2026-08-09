@@ -1308,6 +1308,11 @@ interface BilibiliApi {
     // ==================== 稍后再看模块 ====================
     @GET("x/v2/history/toview")
     suspend fun getWatchLaterList(): WatchLaterResponse
+
+    @GET("x/v2/history/toview/web")
+    suspend fun getWatchLaterPage(
+        @QueryMap params: Map<String, String>,
+    ): WatchLaterResponse
     
     //  [新增] 添加到稍后再看
     @retrofit2.http.FormUrlEncoded
@@ -1327,9 +1332,36 @@ interface BilibiliApi {
     ): SimpleApiResponse
 
     @retrofit2.http.FormUrlEncoded
+    @retrofit2.http.POST("x/v2/history/toview/del")
+    suspend fun deleteMultipleFromWatchLater(
+        @retrofit2.http.Field("aid") aids: String,
+        @retrofit2.http.Field("csrf") csrf: String,
+    ): SimpleApiResponse
+
+    @retrofit2.http.FormUrlEncoded
     @retrofit2.http.POST("x/v2/history/toview/clear")
     suspend fun clearWatchLater(
+        @retrofit2.http.Field("clean_type") cleanType: Int? = null,
         @retrofit2.http.Field("csrf") csrf: String
+    ): SimpleApiResponse
+
+    @retrofit2.http.FormUrlEncoded
+    @retrofit2.http.POST("x/v2/history/toview/copy")
+    suspend fun copyWatchLaterToFavorite(
+        @retrofit2.http.Field("tar_media_id") targetMediaId: Long,
+        @retrofit2.http.Field("mid") mid: Long,
+        @retrofit2.http.Field("resources") resources: String,
+        @retrofit2.http.Field("platform") platform: String = "web",
+        @retrofit2.http.Field("csrf") csrf: String,
+    ): SimpleApiResponse
+
+    @retrofit2.http.FormUrlEncoded
+    @retrofit2.http.POST("x/v2/history/toview/move")
+    suspend fun moveWatchLaterToFavorite(
+        @retrofit2.http.Field("tar_media_id") targetMediaId: Long,
+        @retrofit2.http.Field("resources") resources: String,
+        @retrofit2.http.Field("platform") platform: String = "web",
+        @retrofit2.http.Field("csrf") csrf: String,
     ): SimpleApiResponse
 }
 

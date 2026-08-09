@@ -183,7 +183,21 @@ data class WatchLaterItem(
     val progress: Int? = null,
     val pubdate: Long? = null,
     val owner: WatchLaterOwner? = null,
-    val stat: WatchLaterStat? = null
+    val stat: WatchLaterStat? = null,
+    @SerialName("redirect_url") val redirectUrl: String? = null,
+    @SerialName("is_pgc") val isPgc: Boolean? = null,
+    @SerialName("pgc_label") val pgcLabel: String? = null,
+    @SerialName("is_pugv") val isPugv: Boolean? = null,
+    @SerialName("charging_pay") val chargingPay: WatchLaterChargingPay? = null,
+    val rights: WatchLaterRights? = null,
+)
+
+@Serializable
+data class WatchLaterChargingPay(val level: Int? = null)
+
+@Serializable
+data class WatchLaterRights(
+    @SerialName("is_cooperation") val isCooperation: Int? = null,
 )
 
 @Serializable
