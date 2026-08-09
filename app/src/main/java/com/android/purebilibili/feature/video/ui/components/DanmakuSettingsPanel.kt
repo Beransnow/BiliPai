@@ -1739,12 +1739,12 @@ private fun DanmakuSliderItem(
                     fontWeight = FontWeight.Medium
                 )
                 AppSurface(
-                    color = MaterialTheme.colorScheme.primary.copy(0.15f),
-                    shape = RoundedCornerShape(6.dp)
+                    color = colors.itemColor,
+                    shape = RoundedCornerShape(999.dp)
                 ) {
                     AppText(
                         text = displayValue(localValue),
-                        color = MaterialTheme.colorScheme.primary,
+                        color = colors.sliderActiveTrackColor,
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
@@ -1780,22 +1780,11 @@ private fun DanmakuSliderItem(
                 onValueChangeFinished = { onValueChange(localValue) },
                 valueRange = valueRange,
                 steps = steps,
+                // 横竖屏统一使用面板调色板（主题色 thumb + 轨道），不再用白色 thumb。
                 colors = SliderDefaults.colors(
-                    thumbColor = if (fullscreenStyle) {
-                        colors.sliderThumbColor
-                    } else {
-                        Color.White
-                    },
-                    activeTrackColor = if (fullscreenStyle) {
-                        colors.sliderActiveTrackColor
-                    } else {
-                        MaterialTheme.colorScheme.primary
-                    },
-                    inactiveTrackColor = if (fullscreenStyle) {
-                        colors.sliderInactiveTrackColor
-                    } else {
-                        Color.White.copy(0.15f)
-                    }
+                    thumbColor = colors.sliderThumbColor,
+                    activeTrackColor = colors.sliderActiveTrackColor,
+                    inactiveTrackColor = colors.sliderInactiveTrackColor
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
