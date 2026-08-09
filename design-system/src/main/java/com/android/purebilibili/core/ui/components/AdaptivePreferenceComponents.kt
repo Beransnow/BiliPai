@@ -375,6 +375,26 @@ fun rememberAdaptiveSemanticIconTint(
     }
 }
 
+/**
+ * 与 [AdaptivePreferenceContent] 图标最终呈现一致的颜色：MD3 官方推荐预设
+ * 下为 onSurfaceVariant 单色，其余预设保留传入的多彩/语义色。
+ * 用于无容器图标（如 WindowSpinnerPreference 的 startAction、发布渠道卡片），
+ * 避免仅经 [rememberAdaptiveSemanticIconTint] 落到主题主色、与其他条目不一致。
+ */
+@Composable
+fun rememberAdaptivePreferenceIconTint(
+    iconTint: Color,
+): Color {
+    val iconStyle = rememberResolvedAppIconStyle()
+    val colorScheme = MaterialTheme.colorScheme
+    return remember(iconTint, iconStyle, colorScheme) {
+        when (iconStyle) {
+            AppIconStyle.MD3_STANDARD -> colorScheme.onSurfaceVariant
+            else -> iconTint
+        }
+    }
+}
+
 @Composable
 fun rememberAdaptivePreferenceIconContentColor(
     containerColor: Color,

@@ -69,7 +69,7 @@ import com.android.purebilibili.core.ui.components.AppOutlinedButton
 import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.components.rememberAdaptivePreferenceIconContentColor
 import com.android.purebilibili.core.ui.components.rememberAdaptivePreferenceIconContainerColor
-import com.android.purebilibili.core.ui.components.rememberAdaptiveSemanticIconTint
+import com.android.purebilibili.core.ui.components.rememberAdaptivePreferenceIconTint
 import com.android.purebilibili.core.ui.components.rememberAdaptiveListVisualCapabilities
 import androidx.compose.ui.res.stringResource
 import com.android.purebilibili.core.ui.AppAlertDialog
@@ -1113,7 +1113,7 @@ fun ReleaseChannelPinnedCard(
     onTelegramGroupClick: () -> Unit = {},
     onDisclaimerClick: () -> Unit
 ) {
-    val disclaimerTint = rememberAdaptiveSemanticIconTint(iOSBlue)
+    val disclaimerTint = rememberAdaptivePreferenceIconTint(iOSBlue)
     val releaseChannelIcon = rememberAppShareIcon()
     AppCard(
         modifier = Modifier
