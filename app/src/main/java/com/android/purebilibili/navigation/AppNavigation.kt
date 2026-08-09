@@ -2809,6 +2809,22 @@ fun AppNavigation(
                                     onUpClick = { mid ->
                                         pushNavigation3Route(ScreenRoutes.Space.createRoute(mid))
                                     },
+                                    onFavoriteBangumiClick = { seasonId ->
+                                        pushNavigation3Key(BiliPaiNavKey.BangumiDetail(seasonId = seasonId))
+                                    },
+                                    onFavoriteArticleClick = { articleId, title ->
+                                        pushNavigation3Route(
+                                            ScreenRoutes.ArticleDetail.createRoute(articleId, title)
+                                        )
+                                    },
+                                    onFavoriteTopicClick = { topicId ->
+                                        pushNavigation3Key(BiliPaiNavKey.TopicDetail(topicId))
+                                    },
+                                    onFavoriteWebClick = { url, title ->
+                                        if (url.isNotBlank()) {
+                                            pushNavigation3Route(ScreenRoutes.Web.createRoute(url, title))
+                                        }
+                                    },
                                     onFavoriteFolderClick = { mediaId, ownerMid, title, ownerName ->
                                         pushNavigation3Key(
                                             BiliPaiNavKey.SeasonSeriesDetail(

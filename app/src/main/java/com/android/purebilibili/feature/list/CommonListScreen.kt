@@ -142,6 +142,7 @@ import com.android.purebilibili.core.util.rememberAdaptiveGridColumns
 import com.android.purebilibili.core.util.rememberResponsiveSpacing
 import com.android.purebilibili.data.model.response.HistoryBusiness
 import com.android.purebilibili.data.model.response.HistoryItem
+import com.android.purebilibili.data.model.response.FavoriteSection
 import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.feature.article.ArticleSharedElementSlot
 import com.android.purebilibili.feature.article.resolveHistoryArticleCoverAspectRatio
@@ -205,6 +206,10 @@ fun CommonListScreen(
     onUpClick: ((Long) -> Unit)? = null,
     onCollectionClick: ((FavoriteCollectionRoute) -> Unit)? = null,
     onFavoriteFolderClick: ((Long, Long, String, String) -> Unit)? = null,
+    onFavoriteBangumiClick: (Long) -> Unit = {},
+    onFavoriteArticleClick: (Long, String) -> Unit = { _, _ -> },
+    onFavoriteTopicClick: (Long) -> Unit = {},
+    onFavoriteWebClick: (String, String) -> Unit = { _, _ -> },
     onPlayAllAudioClick: ((String, Long) -> Unit)? = null,
     globalHazeState: HazeState? = null, // [新增] 接收全局 HazeState
     scrollToTopChannel: Channel<Unit>? = null,
@@ -373,6 +378,7 @@ fun CommonListScreen(
     var showFavoriteManagementMenu by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     var showFavoriteCleanInvalidConfirm by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     var showFavoriteDynamicShareConfirm by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+    var favoriteSection by rememberSaveable { androidx.compose.runtime.mutableStateOf(FavoriteSection.VIDEO) }
     var isFavoriteBatchMode by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     var selectedFavoriteResourceIds by rememberSaveable { androidx.compose.runtime.mutableStateOf(setOf<Long>()) }
     var showFavoriteBatchDeleteConfirm by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
@@ -391,7 +397,9 @@ fun CommonListScreen(
             else -> FavoriteBrowseSection.OWNED
         }
     }
-    val isSubscribedBrowse = favoriteViewModel != null && favoriteBrowseSection == FavoriteBrowseSection.SUBSCRIBED
+    val isSubscribedBrowse = favoriteViewModel != null &&
+        favoriteSection == FavoriteSection.VIDEO &&
+        favoriteBrowseSection == FavoriteBrowseSection.SUBSCRIBED
     val loadMoreOwner = resolveCommonListLoadMoreOwner(
         isSubscribedBrowse = isSubscribedBrowse,
         hasFavoriteViewModel = favoriteViewModel != null,
@@ -403,7 +411,9 @@ fun CommonListScreen(
         isFavoriteDetail = seasonSeriesDetailViewModel?.isFavoriteDetail == true
     )
     val favoriteContentMode = resolveFavoriteContentMode(
-        isFavoritePage = favoriteViewModel != null && !isSubscribedBrowse,
+        isFavoritePage = favoriteViewModel != null &&
+            favoriteSection == FavoriteSection.VIDEO &&
+            !isSubscribedBrowse,
         folderCount = foldersState.size
     )
     val selectedFolderUiState by favoriteViewModel
@@ -421,7 +431,7 @@ fun CommonListScreen(
         singleFolderItems = singleFolderUiState.items
     ).takeUnless { isSubscribedBrowse }.orEmpty()
     val selectedFavoriteFolder = foldersState.getOrNull(selectedFolderIndex)
-    LaunchedEffect(selectedFolderIndex, favoriteBrowseSection) {
+    LaunchedEffect(selectedFolderIndex, favoriteBrowseSection, favoriteSection) {
         isFavoriteBatchMode = false
         selectedFavoriteResourceIds = emptySet()
         pendingFavoriteTransferCopy = null
@@ -839,7 +849,20 @@ fun CommonListScreen(
                 .hazeSourceCompat(state = localHazeState)
 
             Box(modifier = contentModifier) {
-                if (isSubscribedBrowse) {
+                if (favoriteViewModel != null && favoriteSection != FavoriteSection.VIDEO) {
+                    FavoriteCategoryRoute(
+                        section = favoriteSection,
+                        query = searchQuery,
+                        contentPadding = PaddingValues(
+                            top = headerHeightDp,
+                            bottom = commonListBottomPadding,
+                        ),
+                        onBangumiClick = onFavoriteBangumiClick,
+                        onArticleClick = onFavoriteArticleClick,
+                        onTopicClick = onFavoriteTopicClick,
+                        onWebClick = onFavoriteWebClick,
+                    )
+                } else if (isSubscribedBrowse) {
                     val favoriteVm = requireNotNull(favoriteViewModel)
                     FavoriteSubscribedFolderList(
                         folders = filterFavoriteFoldersByQuery(subscribedFoldersState, searchQuery),
@@ -1139,7 +1162,7 @@ fun CommonListScreen(
                             }
                         },
                         actions = {
-                            if (favoriteViewModel != null) {
+                            if (favoriteViewModel != null && favoriteSection == FavoriteSection.VIDEO) {
                                 if (isFavoriteBatchMode) {
                                     val selectableIds = activeFavoriteItems
                                         .filterNot { it.isCollectionResource }
@@ -1455,6 +1478,8 @@ fun CommonListScreen(
                             placeholder = when {
                                 isSubscribedBrowse -> "搜索追更"
                                 historyViewModel != null -> "搜索历史"
+                                favoriteViewModel != null && favoriteSection != FavoriteSection.VIDEO ->
+                                    "搜索${favoriteSection.label}收藏"
                                 else -> "搜索视频"
                             },
                             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.22f),
@@ -1462,7 +1487,38 @@ fun CommonListScreen(
                         )
                     }
 
-                    if (favoriteViewModel != null && !isSubscribedBrowse && selectedFavoriteFolder != null) {
+                    if (favoriteViewModel != null) {
+                        LazyRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = AppSpacingTokens.Medium),
+                            horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+                        ) {
+                            items(FavoriteSection.entries, key = { it.name }) { section ->
+                                AppFilterChip(
+                                    selected = favoriteSection == section,
+                                    onClick = {
+                                        if (favoriteSection != section) {
+                                            favoriteSection = section
+                                            favoriteBrowseSection = FavoriteBrowseSection.OWNED
+                                            searchQuery = ""
+                                            isFavoriteBatchMode = false
+                                            selectedFavoriteResourceIds = emptySet()
+                                        }
+                                    },
+                                    label = { AppText(section.label) },
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(AppSpacingTokens.Small))
+                    }
+
+                    if (
+                        favoriteViewModel != null &&
+                        favoriteSection == FavoriteSection.VIDEO &&
+                        !isSubscribedBrowse &&
+                        selectedFavoriteFolder != null
+                    ) {
                         FavoriteFolderSummary(folder = selectedFavoriteFolder)
                     }
 
@@ -1563,7 +1619,11 @@ fun CommonListScreen(
                         Spacer(modifier = Modifier.height(AppSpacingTokens.Small))
                     }
 
-                    if (favoriteViewModel != null && subscribedFoldersState.isNotEmpty()) {
+                    if (
+                        favoriteViewModel != null &&
+                        favoriteSection == FavoriteSection.VIDEO &&
+                        subscribedFoldersState.isNotEmpty()
+                    ) {
                         AppSegmentedControl(
                             options = favoriteBrowseOptions,
                             selectedValue = favoriteBrowseSection,
@@ -1586,7 +1646,11 @@ fun CommonListScreen(
                     }
 
                     // 📁 [新增] 收藏夹 Tab 栏（仅显示多个收藏夹时）
-                    if (!isSubscribedBrowse && foldersState.size > 1) {
+                    if (
+                        favoriteSection == FavoriteSection.VIDEO &&
+                        !isSubscribedBrowse &&
+                        foldersState.size > 1
+                    ) {
                         val favoriteVm = requireNotNull(favoriteViewModel)
                         FavoriteFolderChipRow(
                             folders = foldersState,

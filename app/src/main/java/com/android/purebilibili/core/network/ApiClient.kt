@@ -399,6 +399,76 @@ interface BilibiliApi {
         @retrofit2.http.Field("csrf") csrf: String
     ): SimpleApiResponse
 
+    @GET("x/polymer/web-dynamic/v1/opus/feed/fav")
+    suspend fun getFavoriteArticles(
+        @Query("page_size") pageSize: Int = 20,
+        @Query("page") page: Int = 1,
+    ): com.android.purebilibili.data.model.response.FavoriteArticleResponse
+
+    @GET("x/note/list")
+    suspend fun getFavoriteNotes(
+        @Query("pn") page: Int = 1,
+        @Query("ps") pageSize: Int = 10,
+        @Query("csrf") csrf: String,
+    ): com.android.purebilibili.data.model.response.FavoriteNoteResponse
+
+    @GET("x/note/publish/list/user")
+    suspend fun getPublishedFavoriteNotes(
+        @Query("pn") page: Int = 1,
+        @Query("ps") pageSize: Int = 10,
+        @Query("csrf") csrf: String,
+    ): com.android.purebilibili.data.model.response.FavoriteNoteResponse
+
+    @GET("x/topic/web/fav/list")
+    suspend fun getFavoriteTopics(
+        @Query("page_size") pageSize: Int = 24,
+        @Query("page_num") page: Int = 1,
+        @Query("web_location") webLocation: String = "333.1387",
+    ): com.android.purebilibili.data.model.response.FavoriteTopicResponse
+
+    @GET("pugv/app/web/favorite/page")
+    suspend fun getFavoriteCourses(
+        @Query("mid") mid: Long,
+        @Query("ps") pageSize: Int = 20,
+        @Query("pn") page: Int = 1,
+        @Query("web_location") webLocation: String = "333.1387",
+    ): com.android.purebilibili.data.model.response.FavoriteCourseResponse
+
+    @retrofit2.http.FormUrlEncoded
+    @retrofit2.http.POST("x/article/favorites/del")
+    suspend fun deleteFavoriteArticle(
+        @retrofit2.http.Field("id") id: Long,
+        @retrofit2.http.Field("csrf") csrf: String,
+    ): SimpleApiResponse
+
+    @retrofit2.http.FormUrlEncoded
+    @retrofit2.http.POST("x/note/del")
+    suspend fun deleteFavoriteNote(
+        @retrofit2.http.Field("note_ids") noteIds: String,
+        @retrofit2.http.Field("csrf") csrf: String,
+    ): SimpleApiResponse
+
+    @retrofit2.http.FormUrlEncoded
+    @retrofit2.http.POST("x/note/publish/del")
+    suspend fun deletePublishedFavoriteNote(
+        @retrofit2.http.Field("note_ids") noteIds: String,
+        @retrofit2.http.Field("csrf") csrf: String,
+    ): SimpleApiResponse
+
+    @retrofit2.http.FormUrlEncoded
+    @retrofit2.http.POST("x/topic/fav/sub/cancel")
+    suspend fun deleteFavoriteTopic(
+        @retrofit2.http.Field("topic_id") topicId: Long,
+        @retrofit2.http.Field("csrf") csrf: String,
+    ): SimpleApiResponse
+
+    @retrofit2.http.FormUrlEncoded
+    @retrofit2.http.POST("pugv/app/web/favorite/del")
+    suspend fun deleteFavoriteCourse(
+        @retrofit2.http.Field("season_id") seasonId: Long,
+        @retrofit2.http.Field("csrf") csrf: String,
+    ): SimpleApiResponse
+
     // ==================== 推荐/热门模块 ====================
     @GET("x/web-interface/wbi/index/top/feed/rcmd")
     suspend fun getRecommendParams(@QueryMap params: Map<String, String>): RecommendResponse
