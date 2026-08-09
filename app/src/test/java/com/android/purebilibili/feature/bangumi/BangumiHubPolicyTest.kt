@@ -98,6 +98,22 @@ class BangumiHubPolicyTest {
     }
 
     @Test
+    fun `timeline labels include visible dates and today marker`() {
+        assertEquals(
+            "周五 8/8",
+            resolveBangumiTimelineDayLabel(
+                TimelineDay(date = "2026-08-08", dayOfWeek = 5),
+            ),
+        )
+        assertEquals(
+            "今天 8/10",
+            resolveBangumiTimelineDayLabel(
+                TimelineDay(date = "2026-08-10", dayOfWeek = 7, isToday = 1),
+            ),
+        )
+    }
+
+    @Test
     fun `selection toggles valid ids only`() {
         assertEquals(setOf(9L), updateBangumiSelection(emptySet(), 9L))
         assertTrue(updateBangumiSelection(setOf(9L), 9L).isEmpty())

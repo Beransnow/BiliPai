@@ -1,5 +1,12 @@
 package com.android.purebilibili.feature.bangumi
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -64,7 +71,7 @@ import com.android.purebilibili.core.ui.components.AppEmptyState
 import com.android.purebilibili.core.ui.components.AppErrorState
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
-import com.android.purebilibili.core.ui.components.AppNativeSegmentedControl
+import com.android.purebilibili.core.ui.components.AppNativeTabRow
 import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppText
@@ -316,40 +323,57 @@ private fun TimelineSection(
         else -> {
             val today = state.days.indexOfFirst { it.isToday == 1 }.coerceAtLeast(0)
             var selectedDay by remember(state.days) { mutableIntStateOf(today) }
-            val day = state.days.getOrNull(selectedDay) ?: state.days.first()
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                AppNativeSegmentedControl(
+                AppNativeTabRow(
                     options = state.days.mapIndexed { index, item ->
-                        AppSegmentOption(index, timelineDayLabel(item))
+                        AppSegmentOption(index, resolveBangumiTimelineDayLabel(item))
                     },
                     selectedValue = selectedDay,
                     onSelectionChange = { selectedDay = it },
+                    scrollable = true,
+                    minTabWidth = 76.dp,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                if (day.episodes.isNullOrEmpty()) {
-                    InlineNotice("当天暂无更新")
-                } else {
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        itemsIndexed(
-                            day.episodes.orEmpty(),
-                            key = { index, episode -> resolveTimelineEpisodeLazyKey(index, episode) },
-                        ) { _, episode ->
-                            TimelineEpisodeCard(
-                                episode = episode,
-                                onClick = { onEpisodeClick(episode.seasonId, episode.episodeId) },
-                            )
+                AnimatedContent(
+                    targetState = selectedDay,
+                    transitionSpec = {
+                        val direction = if (targetState >= initialState) 1 else -1
+                        (
+                            slideInHorizontally(animationSpec = tween(220)) { width ->
+                                direction * width / 4
+                            } + fadeIn(animationSpec = tween(180))
+                        ).togetherWith(
+                            slideOutHorizontally(animationSpec = tween(180)) { width ->
+                                -direction * width / 4
+                            } + fadeOut(animationSpec = tween(140))
+                        )
+                    },
+                    contentAlignment = Alignment.CenterStart,
+                    label = "timelineDayContent",
+                ) { targetDay ->
+                    val day = state.days.getOrNull(targetDay) ?: state.days.first()
+                    if (day.episodes.isNullOrEmpty()) {
+                        InlineNotice("当天暂无更新")
+                    } else {
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        ) {
+                            itemsIndexed(
+                                day.episodes.orEmpty(),
+                                key = { index, episode -> resolveTimelineEpisodeLazyKey(index, episode) },
+                            ) { _, episode ->
+                                TimelineEpisodeCard(
+                                    episode = episode,
+                                    onClick = { onEpisodeClick(episode.seasonId, episode.episodeId) },
+                                )
+                            }
                         }
                     }
                 }
             }
         }
     }
-}
-
-private fun timelineDayLabel(day: TimelineDay): String = when {
-    day.isToday == 1 -> "今天"
-    day.dayOfWeek in 1..7 -> listOf("一", "二", "三", "四", "五", "六", "日")[day.dayOfWeek - 1]
-    else -> day.date.takeLast(5)
 }
 
 @Composable
@@ -384,9 +408,11 @@ private fun BangumiIndexContent(
                 span = { GridItemSpan(maxLineSpan) },
                 key = "cinema_categories",
             ) {
-                AppNativeSegmentedControl(
+                AppNativeTabRow(
                     options = CINEMA_INDEX_CATEGORIES.map { AppSegmentOption(it, it.label) },
                     selectedValue = category,
+                    scrollable = true,
+                    minTabWidth = 76.dp,
                     onSelectionChange = {
                         if (it == category) {
                             scope.launch { gridState.animateScrollToItem(0) }
@@ -540,7 +566,7 @@ private fun BangumiFollowContent(
     var menuItem by remember { mutableStateOf<FollowBangumiItem?>(null) }
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
-            AppNativeSegmentedControl(
+            AppNativeTabRow(
                 options = BangumiFollowStatus.entries.map { AppSegmentOption(it, it.label) },
                 selectedValue = status,
                 enabled = !state.isMutating,
