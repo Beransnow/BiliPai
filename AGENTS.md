@@ -58,14 +58,13 @@ Pick the smallest command set that proves the change:
 - For installable test handoffs, use `:app:assembleDev` by default.
 - Do not assemble, package, install, or hand off `debug` or `smooth` variant APKs. Compile/test tasks on the debug variant (`:app:compileDebugKotlin`, `:app:testDebugUnitTest`) remain fine for local verification.
 
-- Targeted unit tests for the touched feature:
+- Default to **one smallest task** that covers the edited code. Do not run broad compilation or a full test suite merely for confidence.
+- Targeted unit test for the touched behavior (preferred when one exists):
   `./gradlew :app:testDebugUnitTest --tests '<ExactTestName>'`
-- Lightweight compile validation for touched Kotlin/Compose code:
+- Kotlin/Compose source with no focused test: compile only its owning module (for app code):
   `./gradlew :app:compileDebugKotlin`
-- Broad local regression for app logic and UI policies:
-  `./gradlew :app:testDebugUnitTest`
-- Static checks for Android resources and code:
-  `./gradlew :app:lintDebug`
+- For `design-system`, `settings-core`, `network-core`, `plugin-sdk`, or another library, use that module's `compileDebugKotlin` or a single exact test — never compile `:app` unless the change reaches `:app`.
+- Do not run unfiltered `:app:testDebugUnitTest`, `lint`, `check`, or any `assemble*` task unless the user explicitly asks for broader verification.
 - Do not run package/build/install tasks (`assemble*`, `bundle*`, `install*`) or APK packaging unless the user explicitly asks for it. Per the packaging policy above, never assemble or install the `debug` or `smooth` variants. Prefer targeted unit tests, strategy/policy tests, `:app:compileDebugKotlin`, lint, or narrow device checks that match the changed surface.
 
 Use extra verification when the task touches these areas:
@@ -85,7 +84,9 @@ Use extra verification when the task touches these areas:
 - If a Gradle/Kotlin task hits daemon or incremental-compilation file-state errors, stop passive polling immediately and switch to a deterministic fallback such as `--no-daemon` or another clean one-shot verification path.
 - Do not keep spinning on long terminal polls once the failure mode is clearly infrastructure-related; report that distinction explicitly and choose the next verification step with the lowest ambiguity.
 
-## Fast local compile (reuse cached Gradle)
+## Fast local verification (reuse Gradle caches)
+
+For ordinary local verification, use the warm Gradle and Kotlin daemons with the repository's enabled configuration/build caches. Do **not** pass `--no-daemon` or `--no-configuration-cache` by default: both discard the fastest repeat-build path. Reserve them for a confirmed daemon, incremental-compilation, or configuration-cache infrastructure failure.
 
 When `./gradlew` fails on Gradle wrapper download (common symptom: SSL / zip download errors), reuse the already-downloaded Gradle distribution instead of waiting on a broken wrapper fetch.
 
@@ -99,10 +100,10 @@ GRADLE_BIN="$HOME/.gradle/wrapper/dists/gradle-9.5.0-bin/bvnork1r7n8i6kp5cnkibsc
 
 ```bash
 GRADLE_OPTS="-Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowall=true" \
-"$GRADLE_BIN" :app:compileDebugKotlin --no-daemon --no-configuration-cache --console=plain
+"$GRADLE_BIN" :app:compileDebugKotlin --console=plain
 ```
 
-3. Recommended flags for agent/CI-style checks in this repo:
+3. Fallback flags — use only after an infrastructure failure, never as routine verification:
 
 - `--no-daemon`: avoids stale Kotlin/Gradle daemon state after crashes.
 - `--no-configuration-cache`: avoids long silent `Calculating task graph` stalls on some machines.
@@ -111,8 +112,8 @@ GRADLE_OPTS="-Dmaven.wagon.http.ssl.insecure=true -Dmaven.wagon.http.ssl.allowal
 4. Targeted verification examples:
 
 ```bash
-"$GRADLE_BIN" :design-system:testDebugUnitTest --tests 'com.android.purebilibili.core.ui.blur.BlurIntensityVisualPolicyTest' --no-daemon --no-configuration-cache
-"$GRADLE_BIN" :app:compileDebugKotlin --no-daemon --no-configuration-cache
+"$GRADLE_BIN" :design-system:testDebugUnitTest --tests 'com.android.purebilibili.core.ui.blur.BlurIntensityVisualPolicyTest'
+"$GRADLE_BIN" :app:compileDebugKotlin
 ```
 
 5. If the cached distribution path differs, list available installs with:
