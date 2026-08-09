@@ -6368,6 +6368,13 @@ object SettingsManager {
     suspend fun setPredictiveBackExitDirection(context: Context, direction: String) {
         NavigationSettingsStore.setPredictiveBackExitDirection(context, direction)
     }
+
+    fun getFullScreenSwipeBackEnabled(context: Context): Flow<Boolean> =
+        NavigationSettingsStore.getFullScreenSwipeBackEnabled(context)
+
+    suspend fun setFullScreenSwipeBackEnabled(context: Context, enabled: Boolean) {
+        NavigationSettingsStore.setFullScreenSwipeBackEnabled(context, enabled)
+    }
     
     // ========== [问题12] 视频操作按钮可见性 ==========
     

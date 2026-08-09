@@ -16,6 +16,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
@@ -24,6 +25,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.MutableCreationExtras
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
@@ -54,6 +56,7 @@ import top.yukonga.miuix.kmp.nav.core.NavBackStack
 import top.yukonga.miuix.kmp.nav.core.NavCornerClipMode
 import top.yukonga.miuix.kmp.nav.core.NavDisplay
 import top.yukonga.miuix.kmp.nav.core.NavDisplayEffects
+import top.yukonga.miuix.kmp.nav.transition.NavSwipeDirection
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 internal class BiliPaiProgrammaticBackDispatcher {
@@ -325,6 +328,21 @@ internal fun BiliPaiNavDisplayHost(
             blockInputDuringTransition = false,
         )
     }
+    // 全屏滑动返回默认关闭（仅系统边缘预测返回），可在设置中开启。
+    // 开启后仅对列表/设置等纵向页面生效，播放器、详情、WebView 等
+    // 横滑冲突页面始终禁用（见 BiliPaiNavEntryProvider）。
+    val fullScreenSwipeBackEnabled by
+        com.android.purebilibili.core.store.SettingsManager
+            .getFullScreenSwipeBackEnabled(LocalContext.current)
+            .collectAsStateWithLifecycle(initialValue = false)
+    val swipeBackDirection = if (fullScreenSwipeBackEnabled) {
+        when (LocalLayoutDirection.current) {
+            LayoutDirection.Rtl -> NavSwipeDirection.RightToLeft
+            LayoutDirection.Ltr -> NavSwipeDirection.LeftToRight
+        }
+    } else {
+        NavSwipeDirection.None
+    }
     val interceptPredictiveBack =
         style == BiliPaiPredictiveBackAnimationStyle.NONE && backStack.size > 1
 
@@ -358,6 +376,7 @@ internal fun BiliPaiNavDisplayHost(
             effects = effects,
         ) {
             biliPaiNavEntries(
+                swipeBackDirection = swipeBackDirection,
                 videoCardTransition = videoCardTransition,
                 fullscreenVideoCardTransition = fullscreenVideoCardTransition,
             ) { key ->
