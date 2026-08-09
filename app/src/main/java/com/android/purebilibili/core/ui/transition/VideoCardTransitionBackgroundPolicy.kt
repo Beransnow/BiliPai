@@ -1112,8 +1112,8 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
 }
 
 /**
- * Fades the frozen depth snapshot out over the same final window used by the wide-card source
- * crossfade. Depth is 1 at full blur and 0 when the previous page is fully restored.
+ * Fades the frozen depth snapshot out over the source chrome's 68%–94% settle window.
+ * Depth is 1 at full blur and 0 when the previous page is fully restored.
  *
  * Drawing live content underneath this layer is essential for player surfaces: recording an
  * Android view into a Compose [androidx.compose.ui.graphics.layer.GraphicsLayer] can yield a black
@@ -1122,7 +1122,6 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
 internal fun resolveVideoCardTransitionFrozenLayerAlpha(
     exposure: VideoCardTransitionExposure,
     depthProgress: Float,
-    liveHandoffThreshold: Float = VIDEO_CARD_SHELL_SOURCE_EXIT_FADE_RATIO,
 ): Float {
     val supportsLiveHandoff = when (exposure) {
         VideoCardTransitionExposure.BackPreview,
@@ -1132,8 +1131,9 @@ internal fun resolveVideoCardTransitionFrozenLayerAlpha(
         else -> false
     }
     if (!supportsLiveHandoff) return 1f
-    return (depthProgress.coerceIn(0f, 1f) /
-        liveHandoffThreshold.coerceIn(0.01f, 1f)).coerceIn(0f, 1f)
+    // 与来源卡正文共用 68%–94% settle 窗口。旧实现只在 depth=0 才将冻结层
+    // 完全移除，导致下方已淡入的标题仍被开场时录下的“无正文快照”盖住。
+    return 1f - resolveVideoCardSourceChromeReturnAlpha(depthProgress)
 }
 
 /**

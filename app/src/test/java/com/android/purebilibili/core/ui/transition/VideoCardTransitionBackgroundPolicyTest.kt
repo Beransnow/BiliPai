@@ -243,21 +243,21 @@ class VideoCardTransitionBackgroundPolicyTest {
             1f,
             resolveVideoCardTransitionFrozenLayerAlpha(
                 exposure = VideoCardTransitionExposure.BackPreview,
-                depthProgress = VIDEO_CARD_SHELL_SOURCE_EXIT_FADE_RATIO,
+                depthProgress = 0.32f,
             ),
         )
         assertEquals(
             0.5f,
             resolveVideoCardTransitionFrozenLayerAlpha(
                 exposure = VideoCardTransitionExposure.Returning,
-                depthProgress = VIDEO_CARD_SHELL_SOURCE_EXIT_FADE_RATIO / 2f,
+                depthProgress = 0.19f,
             ),
         )
         assertEquals(
             0f,
             resolveVideoCardTransitionFrozenLayerAlpha(
                 exposure = VideoCardTransitionExposure.BackPreview,
-                depthProgress = 0f,
+                depthProgress = 0.06f,
             ),
         )
     }

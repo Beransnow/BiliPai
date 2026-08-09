@@ -79,6 +79,10 @@ class DampedDragAnimationPolicyTest {
         assertTrue(releaseSource.contains("resolveDampedDragReleaseTargetIndex("))
         assertTrue(releaseSource.contains("velocityPxPerSecond = velocityX"))
         assertTrue(releaseSource.contains("offsetAnimation.animateTo(0f"))
+        // 首页 InstallerX 分支：拖拽逐帧跟手，释放时就近吸附，不做速度投影。
+        assertTrue(source.contains("DampedDragTrackingMode.INSTALLER_X_SPRING"))
+        assertTrue(dragSource.contains("valueAnimation.snapTo(desiredValue)"))
+        assertTrue(releaseSource.contains("desiredValue.roundToInt()"))
     }
 
     @Test

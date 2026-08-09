@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.android.purebilibili.core.ui.transition.VIDEO_CARD_SHELL_SOURCE_EXIT_FADE_RATIO
+import com.android.purebilibili.core.ui.transition.resolveVideoCardSourceChromeReturnAlpha
 import top.yukonga.miuix.kmp.nav.transition.NavMotion
 import top.yukonga.miuix.kmp.nav.transition.NavRole
 import top.yukonga.miuix.kmp.nav.transition.NavSettleSpec
@@ -62,7 +62,7 @@ internal fun resolveMiuixVideoCardClipRadii(
 /**
  * Wide/16:9 shells cannot geometrically reproduce their source content by scaling the whole
  * detail page. During the final return segment, reveal the real retained source card using the
- * same 28% handoff window as the removed sharedBounds implementation.
+ * same 68%–94% settle window as source-card chrome.
  */
 internal fun resolveMiuixVideoCardReturnContentAlpha(
     sourceBounds: Rect,
@@ -72,9 +72,7 @@ internal fun resolveMiuixVideoCardReturnContentAlpha(
     if (!isReturning) return 1f
     val aspectRatio = sourceBounds.width / sourceBounds.height.coerceAtLeast(1f)
     if (aspectRatio < MIUIX_WIDE_VIDEO_CARD_MIN_ASPECT_RATIO) return 1f
-    return (morphProgress.coerceIn(0f, 1f) /
-        VIDEO_CARD_SHELL_SOURCE_EXIT_FADE_RATIO.coerceAtLeast(0.01f))
-        .coerceIn(0f, 1f)
+    return 1f - resolveVideoCardSourceChromeReturnAlpha(morphProgress)
 }
 
 private data class MiuixVideoCardClipShape(
@@ -197,9 +195,8 @@ internal fun miuixVideoCardNavTransition(
                     transformOrigin = TransformOrigin(0f, 0f)
                     translationX = bounds.left.coerceIn(-width, width) * (1f - morph)
                     translationY = bounds.top.coerceIn(-height, height) * (1f - morph)
-                    // Keep ordinary/vertical cards fully opaque. Wide shells hand off only during
-                    // the final 28% of return, matching their old source-content crossfade without
-                    // turning the entire navigation into a generic fade/zoom.
+                    // Keep ordinary/vertical cards fully opaque. Wide shells hand off during the
+                    // shared 68%–94% source-chrome window, before the card reaches its final slot.
                     alpha = resolveMiuixVideoCardReturnContentAlpha(
                         sourceBounds = bounds,
                         morphProgress = morph,

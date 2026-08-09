@@ -38,7 +38,7 @@ class MiuixVideoCardNavTransitionTest {
     }
 
     @Test
-    fun wideCardHandsContentBackOnlyDuringFinalReturnSegment() {
+    fun wideCardHandsContentBackWithSourceChromeBeforeLanding() {
         val wideBounds = Rect(0f, 0f, 320f, 180f)
 
         assertEquals(
@@ -54,7 +54,7 @@ class MiuixVideoCardNavTransitionTest {
             0.5f,
             resolveMiuixVideoCardReturnContentAlpha(
                 sourceBounds = wideBounds,
-                morphProgress = 0.14f,
+                morphProgress = 0.19f,
                 isReturning = true,
             ),
             absoluteTolerance = 0.0001f,
@@ -63,7 +63,16 @@ class MiuixVideoCardNavTransitionTest {
             1f,
             resolveMiuixVideoCardReturnContentAlpha(
                 sourceBounds = wideBounds,
-                morphProgress = 0.28f,
+                morphProgress = 0.32f,
+                isReturning = true,
+            ),
+            absoluteTolerance = 0.0001f,
+        )
+        assertEquals(
+            0f,
+            resolveMiuixVideoCardReturnContentAlpha(
+                sourceBounds = wideBounds,
+                morphProgress = 0.06f,
                 isReturning = true,
             ),
             absoluteTolerance = 0.0001f,

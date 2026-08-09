@@ -37,6 +37,7 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.animation.DampedDragAnimationState
+import com.android.purebilibili.core.ui.animation.DampedDragTrackingMode
 import com.android.purebilibili.core.ui.animation.rememberDampedDragAnimationState
 import com.android.purebilibili.core.ui.motion.AppMotionEasing
 import com.android.purebilibili.core.ui.motion.BottomBarMotionSpec
@@ -121,6 +122,7 @@ internal fun rememberBottomBarMatchedLiquidChromeState(
     isScrollInProgressProvider: () -> Boolean = { false },
     notifyIndexChangedOnReleaseStart: Boolean = false,
     pressedScale: Float = 78f / 56f,
+    trackingMode: DampedDragTrackingMode = DampedDragTrackingMode.PROJECTED_SNAP,
 ): BottomBarMatchedLiquidChromeState {
     val motionSpec = remember { resolveSegmentedControlMotionSpec() }
     val dragState = rememberDampedDragAnimationState(
@@ -128,6 +130,7 @@ internal fun rememberBottomBarMatchedLiquidChromeState(
         itemCount = itemCount,
         motionSpec = motionSpec,
         pressedScale = pressedScale,
+        trackingMode = trackingMode,
         notifyIndexChangedOnReleaseStart = notifyIndexChangedOnReleaseStart,
         holdPressUntilReleaseTargetSettles = true,
         onIndexChanged = onIndexChanged

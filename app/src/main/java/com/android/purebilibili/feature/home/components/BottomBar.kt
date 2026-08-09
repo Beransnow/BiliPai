@@ -134,6 +134,7 @@ import com.android.purebilibili.core.theme.LocalCornerRadiusScale
 import com.android.purebilibili.core.theme.iOSCornerRadius
 import kotlinx.coroutines.launch  //  延迟导航
 import com.android.purebilibili.core.ui.animation.DampedDragAnimationState
+import com.android.purebilibili.core.ui.animation.DampedDragTrackingMode
 import com.android.purebilibili.core.ui.animation.horizontalDragGesture
 import com.android.purebilibili.feature.home.LocalHomeScrollOffset
 import com.android.purebilibili.feature.home.HomeVisualPalette
@@ -1555,7 +1556,7 @@ internal data class BottomBarIndicatorVisualPolicy(
 )
 
 internal const val BOTTOM_BAR_REFRACTION_IDLE_HOLD_MS = 96L
-private const val BOTTOM_BAR_INDICATOR_DRAG_SCALE_TARGET = 88f / 56f
+private const val BOTTOM_BAR_INDICATOR_DRAG_SCALE_TARGET = 78f / 56f
 
 internal fun resolveBottomBarCaptureSafeInsetDp(
     indicatorWidthDp: Float,
@@ -3070,8 +3071,9 @@ private fun KernelSuAlignedBottomBar(
     val matchedChromeState = rememberBottomBarMatchedLiquidChromeState(
         initialIndex = selectedIndex,
         itemCount = totalItems,
-        notifyIndexChangedOnReleaseStart = false,
+        notifyIndexChangedOnReleaseStart = true,
         pressedScale = BOTTOM_BAR_INDICATOR_DRAG_SCALE_TARGET,
+        trackingMode = DampedDragTrackingMode.INSTALLER_X_SPRING,
         isScrollInProgressProvider = { isFeedScrollInProgress },
         onIndexChanged = { index ->
             when {
@@ -3126,9 +3128,8 @@ private fun KernelSuAlignedBottomBar(
         isDragging = dampedDragState.isDragging
     )
     val indicatorLayerScaleProgress = maxOf(indicatorDragScaleProgress, effectivePressProgress)
-    // InstallerX parity: keep the X/Y spring enlargement attached to the moving capsule,
+    // InstallerX parity: keep its 78/56 X/Y spring enlargement attached to the moving capsule,
     // then let DampedDragAnimation release it only after the target is nearly settled.
-    // The target ratio remains BiliPai's wider 88/56 tuning.
     val indicatorLayerScaleTransform by remember(dampedDragState) {
         derivedStateOf {
             BottomBarIndicatorLayerTransform(
@@ -3380,6 +3381,7 @@ private fun KernelSuAlignedBottomBar(
                 item: BottomNavItem?,
                 coverage: Float
             ): Color {
+                if (effectiveGlassEnabled) return unselectedColor
                 val itemSelectedColor = selectedContentColor(item)
                 return resolveBottomBarGlassVisibleContentColor(
                     unselectedColor = unselectedColor,
@@ -3410,18 +3412,6 @@ private fun KernelSuAlignedBottomBar(
                 resolveBottomBarItemMotionScale(
                     coverage = 1f,
                     motionProgress = effectivePressProgress
-                )
-            } else {
-                1f
-            }
-
-            // InstallerX parity: its selected item is visibly scaled to 1.2x while the
-            // liquid indicator is pressed. Applying the same scale only to the hidden
-            // capture layer is masked by our foreground row, so mirror it here as well.
-            fun visibleItemScale(coverage: Float): Float = if (effectiveGlassEnabled) {
-                resolveBottomBarItemMotionScale(
-                    coverage = coverage,
-                    motionProgress = effectivePressProgress,
                 )
             } else {
                 1f
@@ -3519,7 +3509,7 @@ private fun KernelSuAlignedBottomBar(
                                 interactive = false,
                                 onPressChanged = dampedDragState::setPressed,
                                 selectedIconAlpha = coverage,
-                                scale = visibleItemScale(coverage)
+                                scale = 1f
                             )
                         }
 
@@ -3544,7 +3534,7 @@ private fun KernelSuAlignedBottomBar(
                                 interactive = false,
                                 onPressChanged = dampedDragState::setPressed,
                                 selectedIconAlpha = coverage,
-                                scale = visibleItemScale(coverage)
+                                scale = 1f
                             )
                         }
                     }
@@ -4210,7 +4200,11 @@ private fun BoxScope.KernelSuBottomBarInputLayer(
             BottomBarInputTarget(
                 itemWidth = itemWidth,
                 onClick = { onItemClick(index, item) },
-                onPressChanged = dampedDragState::setPressed
+                onPressChanged = { pressed ->
+                    if (index == dampedDragState.targetIndex) {
+                        dampedDragState.setPressed(pressed)
+                    }
+                }
             )
         }
 
@@ -4218,7 +4212,11 @@ private fun BoxScope.KernelSuBottomBarInputLayer(
             BottomBarInputTarget(
                 itemWidth = itemWidth,
                 onClick = onSidebarClick,
-                onPressChanged = dampedDragState::setPressed
+                onPressChanged = { pressed ->
+                    if (visibleItems.size == dampedDragState.targetIndex) {
+                        dampedDragState.setPressed(pressed)
+                    }
+                }
             )
         }
     }
