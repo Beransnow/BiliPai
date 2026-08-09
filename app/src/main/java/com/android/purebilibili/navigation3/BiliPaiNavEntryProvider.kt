@@ -8,6 +8,7 @@ import top.yukonga.miuix.kmp.nav.transition.NavTransition
 internal fun NavEntryBuilder.biliPaiNavEntries(
     swipeBackDirection: NavSwipeDirection,
     videoCardTransition: NavTransition,
+    fullscreenVideoCardTransition: NavTransition,
     content: @Composable (BiliPaiNavKey) -> Unit,
 ) {
     entry<BiliPaiNavKey.MainHost>(swipeDismiss = NavSwipeDirection.None, content = content)
@@ -57,7 +58,7 @@ internal fun NavEntryBuilder.biliPaiNavEntries(
     entry<BiliPaiNavKey.Chat>(swipeDismiss = swipeBackDirection, content = content)
     entry<BiliPaiNavKey.Partition>(swipeDismiss = swipeBackDirection, content = content)
     entry<BiliPaiNavKey.Story>(
-        transition = videoCardTransition,
+        transition = fullscreenVideoCardTransition,
         swipeDismiss = swipeBackDirection,
         content = content,
     )

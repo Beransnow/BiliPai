@@ -30,13 +30,26 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
+import com.android.purebilibili.core.ui.transition.LocalMiuixVideoCardTransitionState
+import com.android.purebilibili.core.ui.transition.LocalVideoCardTransitionBackgroundState
+import com.android.purebilibili.core.ui.transition.MiuixVideoCardTransitionState
+import com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundState
 import com.android.purebilibili.core.ui.transition.LocalVideoCardTransitionClock
 import com.android.purebilibili.core.ui.transition.VideoCardTransitionClock
+import com.android.purebilibili.core.ui.transition.VideoCardTransitionHostDepthLayer
+import com.android.purebilibili.core.ui.transition.VideoCardTransitionNavBackdrop
+import com.android.purebilibili.core.ui.transition.rememberVideoCardTransitionSnapshotHandle
+import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionExposure
 import com.android.purebilibili.core.ui.transition.resolveVideoCardTimelineSpec
+import com.android.purebilibili.core.ui.transition.shouldReleaseHostOwnedDepthLayer
+import com.android.purebilibili.core.ui.transition.shouldShowVideoCardTransitionNavBackdrop
+import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.navigation3.predictiveback.BiliPaiPredictiveBackAnimationStyle
 import com.android.purebilibili.navigation3.predictiveback.BiliPaiPredictiveBackExitDirection
 import com.android.purebilibili.navigation3.predictiveback.biliPaiMiuixNavTransition
 import com.android.purebilibili.navigation3.predictiveback.miuixVideoCardNavTransition
+import com.android.purebilibili.navigation3.predictiveback.MiuixVideoCardContentScale
+import com.android.purebilibili.navigation3.predictiveback.MiuixVideoCardTransitionProgress
 import top.yukonga.miuix.kmp.nav.core.NavBackStack
 import top.yukonga.miuix.kmp.nav.core.NavCornerClipMode
 import top.yukonga.miuix.kmp.nav.core.NavDisplay
@@ -66,6 +79,8 @@ internal class BiliPaiProgrammaticBackDispatcher {
 internal fun BiliPaiNavDisplayHost(
     backStack: SnapshotStateList<BiliPaiNavKey>,
     cardTransitionEnabled: Boolean = true,
+    videoTransitionRealtimeBlurEnabled: Boolean = false,
+    isLightBackground: Boolean = false,
     reduceMotion: Boolean = false,
     videoSharedTransitionDurationMillis: Int,
     videoCardClock: VideoCardTransitionClock,
@@ -118,6 +133,7 @@ internal fun BiliPaiNavDisplayHost(
             exitDirection = predictiveBackExitDirection,
         )
     }
+    val videoCardTransitionProgress = remember { MiuixVideoCardTransitionProgress() }
     val videoCardTransition = remember(
         cardTransitionEnabled,
         reduceMotion,
@@ -132,6 +148,29 @@ internal fun BiliPaiNavDisplayHost(
                 sourceCornerDp = sourceMetadata.sourceCornerDp,
                 durationMillis = videoSharedTransitionDurationMillis,
                 fallback = globalTransition,
+                progress = videoCardTransitionProgress,
+                contentScale = MiuixVideoCardContentScale.FillWidthTop,
+            )
+        } else {
+            globalTransition
+        }
+    }
+    val fullscreenVideoCardTransition = remember(
+        cardTransitionEnabled,
+        reduceMotion,
+        sourceMetadata.sourceBounds,
+        sourceMetadata.sourceCornerDp,
+        videoSharedTransitionDurationMillis,
+        globalTransition,
+    ) {
+        if (cardTransitionEnabled && !reduceMotion) {
+            miuixVideoCardNavTransition(
+                sourceBounds = sourceMetadata.sourceBounds,
+                sourceCornerDp = sourceMetadata.sourceCornerDp,
+                durationMillis = videoSharedTransitionDurationMillis,
+                fallback = globalTransition,
+                progress = videoCardTransitionProgress,
+                contentScale = MiuixVideoCardContentScale.CropCenter,
             )
         } else {
             globalTransition
@@ -178,6 +217,75 @@ internal fun BiliPaiNavDisplayHost(
         }
     }
 
+    val videoCardSnapshotHandle = rememberVideoCardTransitionSnapshotHandle()
+    val transitionMotionTier = if (reduceMotion) MotionTier.Reduced else MotionTier.Normal
+    val videoCardProgressProvider = remember(videoCardClock, videoCardTransitionProgress) {
+        {
+            videoCardTransitionProgress.depthOr(videoCardClock.depthProgress())
+        }
+    }
+    val videoCardGestureProvider = remember(videoCardTransitionProgress) {
+        { videoCardTransitionProgress.isGestureInProgress() }
+    }
+    val videoCardExposureProvider = remember(videoCardClock, videoCardGestureProvider) {
+        {
+            resolveVideoCardTransitionExposure(
+                phase = videoCardClock.phase,
+                predictiveBackInProgress = videoCardGestureProvider(),
+                gestureRestoreInProgress = videoCardClock.gestureRestoreInProgress,
+            )
+        }
+    }
+    val effectiveVideoCardExposure = videoCardExposureProvider()
+    LaunchedEffect(effectiveVideoCardExposure) {
+        if (shouldReleaseHostOwnedDepthLayer(effectiveVideoCardExposure)) {
+            videoCardSnapshotHandle.releaseSession()
+        }
+    }
+    val currentBackTarget = stackSnapshot.getOrNull(stackSnapshot.lastIndex - 1)
+    val showVideoCardNavBackdrop = shouldShowVideoCardTransitionNavBackdrop(
+        cardTransitionEnabled = cardTransitionEnabled,
+        exposure = effectiveVideoCardExposure,
+        isVideoDetailOnStack = isCardMorphDestinationNavKey(currentKey),
+        isReturningToVideoDetail = isCardMorphDestinationNavKey(currentBackTarget),
+    )
+    val cardMorphAvailable = cardTransitionEnabled &&
+        !reduceMotion &&
+        sourceMetadata.sourceBounds?.let { it.width > 1f && it.height > 1f } == true
+    val transitionBackgroundState = remember(
+        sourceMetadata.sourceRoute,
+        sourceMetadata.sourceCornerDp,
+        videoCardProgressProvider,
+        videoCardExposureProvider,
+        videoCardSnapshotHandle,
+        transitionMotionTier,
+        isLightBackground,
+    ) {
+        VideoCardTransitionBackgroundState(
+            progressProvider = videoCardProgressProvider,
+            sourceRouteProvider = { sourceMetadata.sourceRoute },
+            phaseProvider = { videoCardClock.phase },
+            exposureProvider = videoCardExposureProvider,
+            sourceCornerDpProvider = { sourceMetadata.sourceCornerDp },
+            snapshotHandle = videoCardSnapshotHandle,
+            isReturnGestureInProgressProvider = videoCardGestureProvider,
+            isGestureRestoreInProgressProvider = { videoCardClock.gestureRestoreInProgress },
+            motionTierProvider = { transitionMotionTier },
+            isLightBackgroundProvider = { isLightBackground },
+        )
+    }
+    val miuixCardTransitionState = remember(
+        cardMorphAvailable,
+        videoCardProgressProvider,
+        videoCardGestureProvider,
+    ) {
+        MiuixVideoCardTransitionState(
+            enabled = cardMorphAvailable,
+            progressProvider = videoCardProgressProvider,
+            isGestureInProgressProvider = videoCardGestureProvider,
+        )
+    }
+
     val navCornerRadius = rememberDeviceCornerRadius(defaultRadius = 0.dp)
     val roundAllCorners = style == BiliPaiPredictiveBackAnimationStyle.AOSP ||
         style == BiliPaiPredictiveBackAnimationStyle.SCALE ||
@@ -209,6 +317,23 @@ internal fun BiliPaiNavDisplayHost(
             .fillMaxSize()
             .background(AppSurfaceTokens.groupedListContainer()),
     ) {
+        VideoCardTransitionHostDepthLayer(
+            enabled = cardMorphAvailable,
+            snapshotHandle = videoCardSnapshotHandle,
+            progressProvider = videoCardProgressProvider,
+            phaseProvider = { videoCardClock.phase },
+            exposureProvider = videoCardExposureProvider,
+            isGestureRestoreInProgressProvider = { videoCardClock.gestureRestoreInProgress },
+            motionTierProvider = { transitionMotionTier },
+            isLightBackgroundProvider = { isLightBackground },
+            realtimeBlurEnabledProvider = { videoTransitionRealtimeBlurEnabled },
+        )
+        VideoCardTransitionNavBackdrop(
+            visible = showVideoCardNavBackdrop,
+            progressProvider = videoCardProgressProvider,
+            phase = videoCardClock.phase,
+            isLightBackground = isLightBackground,
+        )
         @Suppress("UNCHECKED_CAST")
         NavDisplay(
             backStack = backStack as NavBackStack,
@@ -219,6 +344,7 @@ internal fun BiliPaiNavDisplayHost(
             biliPaiNavEntries(
                 swipeBackDirection = swipeBackDirection,
                 videoCardTransition = videoCardTransition,
+                fullscreenVideoCardTransition = fullscreenVideoCardTransition,
             ) { key ->
                 BiliPaiMiuixNavEntry(
                     interceptPredictiveBack = interceptPredictiveBack,
@@ -227,6 +353,8 @@ internal fun BiliPaiNavDisplayHost(
                     CompositionLocalProvider(
                         LocalVideoCardSharedElementSourceRoute provides key.toLegacyRoute(),
                         LocalVideoCardTransitionClock provides videoCardClock,
+                        LocalVideoCardTransitionBackgroundState provides transitionBackgroundState,
+                        LocalMiuixVideoCardTransitionState provides miuixCardTransitionState,
                     ) {
                         ProvideMiuixNavViewModelApplicationExtras(application) {
                             content(key)

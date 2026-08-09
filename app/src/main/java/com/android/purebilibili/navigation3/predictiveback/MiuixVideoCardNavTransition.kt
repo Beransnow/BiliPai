@@ -8,9 +8,65 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import top.yukonga.miuix.kmp.nav.transition.NavMotion
+import top.yukonga.miuix.kmp.nav.transition.NavRole
 import top.yukonga.miuix.kmp.nav.transition.NavSettleSpec
 import top.yukonga.miuix.kmp.nav.transition.NavTransition
 import top.yukonga.miuix.kmp.nav.transition.NavTransitionScope
+
+internal enum class MiuixVideoCardContentScale {
+    FillWidthTop,
+    CropCenter,
+}
+
+internal data class MiuixVideoCardContentCompensation(
+    val scaleX: Float,
+    val scaleY: Float,
+    val transformOrigin: TransformOrigin,
+)
+
+internal fun resolveMiuixVideoCardContentCompensation(
+    outerScaleX: Float,
+    outerScaleY: Float,
+    contentScale: MiuixVideoCardContentScale,
+): MiuixVideoCardContentCompensation {
+    val safeOuterScaleX = outerScaleX.coerceAtLeast(0.01f)
+    val safeOuterScaleY = outerScaleY.coerceAtLeast(0.01f)
+    val uniformScale = when (contentScale) {
+        MiuixVideoCardContentScale.FillWidthTop -> safeOuterScaleX
+        MiuixVideoCardContentScale.CropCenter -> maxOf(safeOuterScaleX, safeOuterScaleY)
+    }
+    return MiuixVideoCardContentCompensation(
+        scaleX = uniformScale / safeOuterScaleX,
+        scaleY = uniformScale / safeOuterScaleY,
+        transformOrigin = when (contentScale) {
+            MiuixVideoCardContentScale.FillWidthTop -> TransformOrigin(0.5f, 0f)
+            MiuixVideoCardContentScale.CropCenter -> TransformOrigin.Center
+        },
+    )
+}
+
+/** Deferred bridge to the top video entry's live Miuix driver. */
+internal class MiuixVideoCardTransitionProgress {
+    private var topScope: NavTransitionScope? = null
+
+    fun bind(scope: NavTransitionScope) {
+        when (scope.role) {
+            NavRole.Incoming,
+            NavRole.Outgoing,
+            -> topScope = scope
+            NavRole.Top -> if (topScope == null || topScope?.role == NavRole.Covered) {
+                topScope = scope
+            }
+            NavRole.Covered -> Unit
+        }
+    }
+
+    fun depthOr(fallback: Float): Float = topScope
+        ?.let { topProgress(it.relativeDepth) }
+        ?: fallback.coerceIn(0f, 1f)
+
+    fun isGestureInProgress(): Boolean = topScope?.gesture != null
+}
 
 /**
  * Video-card morph authored directly against Miuix's shared navigation driver.
@@ -24,6 +80,8 @@ internal fun miuixVideoCardNavTransition(
     sourceCornerDp: Int?,
     durationMillis: Int,
     fallback: NavTransition,
+    progress: MiuixVideoCardTransitionProgress,
+    contentScale: MiuixVideoCardContentScale = MiuixVideoCardContentScale.FillWidthTop,
 ): NavTransition {
     val bounds = sourceBounds?.takeIf { it.width > 1f && it.height > 1f }
         ?: return fallback
@@ -44,31 +102,51 @@ internal fun miuixVideoCardNavTransition(
         override val opaqueDepth: Float = fallback.opaqueDepth
         override val motion: NavMotion = motion
 
-        override fun scrimFraction(scope: NavTransitionScope): Float =
-            if (scope.relativeDepth > 0f) {
-                fallback.scrimFraction(scope)
-            } else {
-                1f - topProgress(scope.relativeDepth)
-            }
+        // Source-page scrim and blur are rendered by the existing depth layer from this same
+        // transition's deferred progress. Do not add Miuix's generic dim on top of it.
+        override fun scrimFraction(scope: NavTransitionScope): Float = 0f
 
         override fun Modifier.transformEntry(scope: NavTransitionScope): Modifier {
-            if (scope.relativeDepth > 0f) {
-                return with(fallback) { transformEntry(scope) }
-            }
+            progress.bind(scope)
             return graphicsLayer {
                 val width = scope.layoutSize.width.toFloat().coerceAtLeast(1f)
                 val height = scope.layoutSize.height.toFloat().coerceAtLeast(1f)
-                val progress = topProgress(scope.relativeDepth)
-                val sourceScaleX = (bounds.width / width).coerceIn(0.05f, 1f)
-                val sourceScaleY = (bounds.height / height).coerceIn(0.05f, 1f)
-                scaleX = sourceScaleX + (1f - sourceScaleX) * progress
-                scaleY = sourceScaleY + (1f - sourceScaleY) * progress
-                transformOrigin = TransformOrigin(0f, 0f)
-                translationX = bounds.left.coerceIn(-width, width) * (1f - progress)
-                translationY = bounds.top.coerceIn(-height, height) * (1f - progress)
-                alpha = (0.2f + 0.8f * progress).coerceIn(0f, 1f)
-                clip = progress < 0.999f
-                shape = RoundedCornerShape((corner * (1f - progress)).dp)
+                val depth = scope.relativeDepth
+                if (depth <= 0f) {
+                    val morph = topProgress(depth)
+                    val sourceScaleX = (bounds.width / width).coerceIn(0.05f, 1f)
+                    val sourceScaleY = (bounds.height / height).coerceIn(0.05f, 1f)
+                    scaleX = sourceScaleX + (1f - sourceScaleX) * morph
+                    scaleY = sourceScaleY + (1f - sourceScaleY) * morph
+                    transformOrigin = TransformOrigin(0f, 0f)
+                    translationX = bounds.left.coerceIn(-width, width) * (1f - morph)
+                    translationY = bounds.top.coerceIn(-height, height) * (1f - morph)
+                    // The old sharedBounds path used Enter/Exit.None: the live card/player stays
+                    // fully opaque while its bounds move. Fading the whole detail page changed the
+                    // transition into a generic zoom and exposed the source beneath it.
+                    alpha = 1f
+                    clip = morph < 0.999f
+                    shape = RoundedCornerShape((corner * (1f - morph)).dp)
+                }
+            }.graphicsLayer {
+                val depth = scope.relativeDepth
+                if (depth <= 0f) {
+                    val width = scope.layoutSize.width.toFloat().coerceAtLeast(1f)
+                    val height = scope.layoutSize.height.toFloat().coerceAtLeast(1f)
+                    val morph = topProgress(depth)
+                    val outerScaleX = (bounds.width / width).coerceIn(0.05f, 1f) +
+                        (1f - (bounds.width / width).coerceIn(0.05f, 1f)) * morph
+                    val outerScaleY = (bounds.height / height).coerceIn(0.05f, 1f) +
+                        (1f - (bounds.height / height).coerceIn(0.05f, 1f)) * morph
+                    val compensation = resolveMiuixVideoCardContentCompensation(
+                        outerScaleX = outerScaleX,
+                        outerScaleY = outerScaleY,
+                        contentScale = contentScale,
+                    )
+                    scaleX = compensation.scaleX
+                    scaleY = compensation.scaleY
+                    transformOrigin = compensation.transformOrigin
+                }
             }.zIndex(1f)
         }
     }
