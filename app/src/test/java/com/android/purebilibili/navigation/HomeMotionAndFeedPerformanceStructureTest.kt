@@ -54,6 +54,7 @@ class HomeMotionAndFeedPerformanceStructureTest {
         val source = sourceFile("feature/home/HomeCategoryPage.kt")
 
         assertTrue(source.contains("MaybeDissolvableVideoCard("))
+        assertTrue(source.contains("preserveContentLayerWhenIdle = cardTransitionEnabled"))
         assertFalse(Regex("(?m)^\\s*DissolvableVideoCard\\(").containsMatchIn(source))
     }
 

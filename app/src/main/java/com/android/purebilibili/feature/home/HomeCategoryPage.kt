@@ -400,6 +400,7 @@ internal fun HomeCategoryPageContent(
                             onDissolveComplete = { onDissolveComplete(video.bvid) },
                             cardId = video.bvid,
                             preset = DissolveAnimationPreset.TELEGRAM_FAST,
+                            preserveContentLayerWhenIdle = cardTransitionEnabled,
                             modifier = Modifier
                                 .jiggleOnDissolve(
                                     cardId = video.bvid,
