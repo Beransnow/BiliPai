@@ -100,10 +100,6 @@ import com.android.purebilibili.core.util.BilibiliNavigationTarget
 import com.android.purebilibili.core.util.BilibiliNavigationTargetParser
 import com.android.purebilibili.resolveShortcutRoute
 import com.android.purebilibili.shouldNavigateToVideoFromNotification
-import com.android.purebilibili.core.ui.ProvideAnimatedVisibilityScope
-import com.android.purebilibili.core.ui.SharedTransitionProvider
-import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
-import com.android.purebilibili.core.ui.LocalSharedTransitionScope
 import com.android.purebilibili.core.ui.transition.LocalPredictiveBackBackgroundState
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
 import com.android.purebilibili.core.ui.transition.LocalVideoCardTransitionBackgroundState
@@ -121,6 +117,7 @@ import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionBac
 import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionBackgroundSource
 import com.android.purebilibili.core.ui.transition.videoCardTransitionBackgroundEffect
 import androidx.compose.runtime.mutableFloatStateOf
+import top.yukonga.miuix.kmp.nav.core.rememberNavBackStack
 import com.android.purebilibili.data.model.response.BgmInfo
 
 import androidx.compose.ui.zIndex
@@ -192,6 +189,7 @@ import com.android.purebilibili.navigation3.shouldActivateVideoDetailPlaybackSes
 import com.android.purebilibili.navigation3.shouldRecoverVideoPlayerAfterBackCancellation
 import com.android.purebilibili.navigation3.resolveBiliPaiVideoSource
 import com.android.purebilibili.navigation3.predictiveback.BiliPaiPredictiveBackAnimationStyle
+import com.android.purebilibili.navigation3.predictiveback.BiliPaiPredictiveBackExitDirection
 import com.android.purebilibili.navigation3.resolveInitialBiliPaiBackStack
 import com.android.purebilibili.navigation3.toLegacyRoute
 import androidx.compose.ui.Alignment
@@ -471,19 +469,27 @@ fun AppNavigation(
     } else {
         videoSharedTransitionDurationMillis
     }
-    SharedTransitionProvider(enabled = sharedVideoCardTransitionEnabled) {
-        CompositionLocalProvider(
+    CompositionLocalProvider(
             LocalVideoSharedTransitionSpeedSettings provides videoSharedTransitionSpeedSettings
         ) {
         // [新增] 全局底栏状态管理
-        var navigation3BackStack by remember(startDestination, launchToPortraitFeedOnStartupAtInit) {
-            mutableStateOf(
-                resolveInitialBiliPaiBackStack(
+        val initialNavigationBackStack = remember(
+            startDestination,
+            launchToPortraitFeedOnStartupAtInit,
+        ) {
+            resolveInitialBiliPaiBackStack(
                     firstRoute = startDestination,
                     onboardingRequired = !firstLaunchShown,
                     openPortraitFeedOnStartup = firstLaunchShown && launchToPortraitFeedOnStartupAtInit
                 )
-            )
+        }
+        @Suppress("UNCHECKED_CAST")
+        val navigation3BackStack = rememberNavBackStack<BiliPaiNavKey>(
+            *initialNavigationBackStack.toTypedArray()
+        ) as androidx.compose.runtime.snapshots.SnapshotStateList<BiliPaiNavKey>
+        fun replaceNavigation3BackStack(keys: List<BiliPaiNavKey>) {
+            navigation3BackStack.clear()
+            navigation3BackStack.addAll(keys.ifEmpty { listOf(BiliPaiNavKey.MainHost) })
         }
         val navigation3ProgrammaticBackDispatcher = remember {
             BiliPaiProgrammaticBackDispatcher()
@@ -669,6 +675,7 @@ fun AppNavigation(
                 ?: navigation3ReturnSession.lastCardSourceDirection,
             sourceCornerDp = navigation3ReturnSession.transitionSession?.sourceCornerDp,
             coverIdentity = navigation3ReturnSession.transitionSession?.coverIdentity,
+            sourceBounds = navigation3ReturnSession.transitionSession?.cardBounds,
         )
         fun captureCardSourceDirectionForSession(): BiliPaiNavCardSourceDirection {
             return resolveBiliPaiNavCardSourceDirection(
@@ -709,7 +716,7 @@ fun AppNavigation(
                 }
                 else -> key
             }
-            navigation3BackStack = when (sessionScopedKey) {
+            replaceNavigation3BackStack(when (sessionScopedKey) {
                 is BiliPaiNavKey.SettingsCategory -> pushOrReplaceSettingsCategoryNavKey(
                     currentStack = navigation3BackStack,
                     key = sessionScopedKey,
@@ -718,7 +725,7 @@ fun AppNavigation(
                     currentStack = navigation3BackStack,
                     key = sessionScopedKey,
                 )
-            }
+            })
         }
         fun pushNavigation3Key(key: BiliPaiNavKey, beforeNavigation: (() -> Unit)? = null) {
             val target = key.toPrivacyNavigationTarget()
@@ -749,10 +756,10 @@ fun AppNavigation(
             }
         }
         fun replaceNavigation3TopWithKey(key: BiliPaiNavKey) {
-            navigation3BackStack = pushBiliPaiNavKey(
+            replaceNavigation3BackStack(pushBiliPaiNavKey(
                 currentStack = popBiliPaiNavKey(navigation3BackStack),
                 key = key
-            )
+            ))
         }
         fun requestBottomPagerPageForRoute(route: String, beforeNavigation: (() -> Unit)? = null): Boolean {
             val page = resolveBottomPagerPageForRoute(
@@ -762,7 +769,7 @@ fun AppNavigation(
             val target = legacyRouteToBiliPaiNavKey(route).toPrivacyNavigationTarget()
             val performPagerNavigation = {
                 beforeNavigation?.invoke()
-                navigation3BackStack = listOf(BiliPaiNavKey.MainHost)
+                replaceNavigation3BackStack(listOf(BiliPaiNavKey.MainHost))
                 mainBottomPagerState.switchToPage(page)
             }
             if (
@@ -1145,10 +1152,16 @@ fun AppNavigation(
         // 经 fromStorageValue 归一化后由策略层按 routeTransition 分发,不再改变 handler 选择;
         // exitDirection 默认 "auto" 时走 autoDerived(卡片来源方向),显式值(follow_gesture /
         // always_left / always_right)直接覆盖。
-        val predictiveBackAnimationStyle = BiliPaiPredictiveBackAnimationStyle.fromStorageValue(
-            appNavigationSettings.predictiveBackAnimationStyle,
+        val predictiveBackAnimationStyle = if (appNavigationSettings.predictiveBackEnabled) {
+            BiliPaiPredictiveBackAnimationStyle.fromStorageValue(
+                appNavigationSettings.predictiveBackAnimationStyle,
+            )
+        } else {
+            BiliPaiPredictiveBackAnimationStyle.NONE
+        }
+        val predictiveBackExitDirection = BiliPaiPredictiveBackExitDirection.fromStorageValue(
+            appNavigationSettings.predictiveBackExitDirection
         )
-        val predictiveBackExitDirection = appNavigationSettings.predictiveBackExitDirection
         val shouldInterceptTabBack = backGestureDecision.interceptSystemBack
         val isVideoDetailDestination = isVideoDetailRoute(currentRoute)
         val bottomBarMountRoute = if (isVideoDetailDestination) {
@@ -1535,10 +1548,10 @@ fun AppNavigation(
                                 videoKey = currentVideoKey,
                                 targetKey = previousKey
                             ) {
-                                navigation3BackStack = popBiliPaiNavKey(navigation3BackStack)
+                                replaceNavigation3BackStack(popBiliPaiNavKey(navigation3BackStack))
                             }
                         } else {
-                            navigation3BackStack = popBiliPaiNavKey(navigation3BackStack)
+                            replaceNavigation3BackStack(popBiliPaiNavKey(navigation3BackStack))
                         }
                     }
                     AppSystemBackAction.FINISH_ACTIVITY -> context.findActivity()?.finish()
@@ -2322,7 +2335,9 @@ fun AppNavigation(
                                         if (homeIndex >= 0) {
                                             mainBottomPagerState.switchToPage(homeIndex)
                                         }
-                                        navigation3BackStack = popBiliPaiNavKeyToRoot(navigation3BackStack)
+                                        replaceNavigation3BackStack(
+                                            popBiliPaiNavKeyToRoot(navigation3BackStack)
+                                        )
                                     }
                                 },
                                 onNavigateToAudioMode = {
@@ -2380,11 +2395,11 @@ fun AppNavigation(
                                 },
                                 onFinish = {
                                     welcomePrefs.edit().putBoolean("first_launch_shown", true).apply()
-                                    navigation3BackStack = resolveInitialBiliPaiBackStack(
+                                    replaceNavigation3BackStack(resolveInitialBiliPaiBackStack(
                                         firstRoute = ScreenRoutes.Home.route,
                                         onboardingRequired = false,
                                         openPortraitFeedOnStartup = launchToPortraitFeedOnStartupAtInit
-                                    )
+                                    ))
                                 }
                             )
                         BiliPaiNavEntryContentRole.SETTINGS ->
@@ -2881,7 +2896,9 @@ fun AppNavigation(
                                     viewModel = viewModel,
                                     onBack = { performSystemBackAction() },
                                     onVideoModeClick = { currentBvid, currentCid ->
-                                        navigation3BackStack = popBiliPaiNavKey(navigation3BackStack)
+                                        replaceNavigation3BackStack(
+                                            popBiliPaiNavKey(navigation3BackStack)
+                                        )
                                         navigateToVideoInNavigation3(currentBvid, currentCid, "")
                                     },
                                     isInPipMode = isInPipMode,
@@ -3030,7 +3047,9 @@ fun AppNavigation(
                                     cid = nativeMusicKey.cid,
                                     onBack = { performSystemBackAction() },
                                     onVideoModeClick = { currentBvid, currentCid ->
-                                        navigation3BackStack = popBiliPaiNavKey(navigation3BackStack)
+                                        replaceNavigation3BackStack(
+                                            popBiliPaiNavKey(navigation3BackStack)
+                                        )
                                         navigateToVideoInNavigation3(currentBvid, currentCid, "")
                                     }
                                 )
@@ -3104,8 +3123,8 @@ fun AppNavigation(
                                             )
                                         )
                                     },
-                                    sharedTransitionScope = LocalSharedTransitionScope.current,
-                                    animatedVisibilityScope = LocalAnimatedVisibilityScope.current
+                                    sharedTransitionScope = null,
+                                    animatedVisibilityScope = null
                                 )
                             }
                         BiliPaiNavEntryContentRole.WEB -> {
@@ -3115,7 +3134,9 @@ fun AppNavigation(
                                     title = webKey.title.ifEmpty { null },
                                     onBack = { performSystemBackAction() },
                                     onVideoClick = { bvid ->
-                                        navigation3BackStack = popBiliPaiNavKey(navigation3BackStack)
+                                        replaceNavigation3BackStack(
+                                            popBiliPaiNavKey(navigation3BackStack)
+                                        )
                                         navigateToVideoInNavigation3(bvid, 0L, "")
                                     },
                                     onSpaceClick = { mid ->
@@ -3139,7 +3160,9 @@ fun AppNavigation(
                                                 BiliPaiNavKey.MusicDetail(auSid)
                                             )
                                         } else {
-                                            navigation3BackStack = popBiliPaiNavKey(navigation3BackStack)
+                                            replaceNavigation3BackStack(
+                                                popBiliPaiNavKey(navigation3BackStack)
+                                            )
                                         }
                                     }
                                 )
@@ -3186,7 +3209,9 @@ fun AppNavigation(
                                         } else {
                                             navigation3ReturnSession.clearReturning()
                                         }
-                                        navigation3BackStack = popBiliPaiNavKey(navigation3BackStack)
+                                        replaceNavigation3BackStack(
+                                            popBiliPaiNavKey(navigation3BackStack)
+                                        )
                                     },
                                     onUserClick = { mid ->
                                         if (mid > 0) {
@@ -3246,32 +3271,17 @@ fun AppNavigation(
                 BiliPaiNavDisplayHost(
                     backStack = navigation3BackStack,
                     cardTransitionEnabled = sharedVideoCardTransitionEnabled,
-                    videoCardDepthEffectEnabled = sharedVideoCardTransitionEnabled,
                     videoTransitionRealtimeBlurEnabled = videoTransitionRealtimeBlurEnabled,
+                    isLightBackground = isLightBackground,
                     reduceMotion = systemReduceMotion,
                     videoSharedTransitionDurationMillis =
                         effectiveVideoCardTransitionDurationMillis,
                     videoCardClock = videoCardTransitionClock,
-                    predictiveBackEnabled = predictiveBackEnabled && !systemReduceMotion,
                     predictiveBackAnimationStyle = predictiveBackAnimationStyle,
-                    predictiveBackExitDirectionOverride = predictiveBackExitDirection,
+                    predictiveBackExitDirection = predictiveBackExitDirection,
                     sourceMetadata = navigation3SourceMetadata,
                     programmaticBackDispatcher = navigation3ProgrammaticBackDispatcher,
                     onBack = { performSystemBackAction() },
-                    onNativeVideoBackProgress = { _, _, progress ->
-                        // 手势首帧即预热首页封面，为松手落位争取网络/磁盘加载时间。
-                        if (progress > 0f) {
-                            maybePrefetchHomeCoversForVideoReturn()
-                        }
-                    },
-                    onNativeVideoBackCancelled = { currentKey, targetKey ->
-                        if (shouldRecoverVideoPlayerAfterBackCancellation(currentKey, targetKey)) {
-                            predictiveBackCancelRecoveryGeneration += 1
-                        }
-                    },
-                    isQuickReturnFromDetail = navigation3ReturnSession.isQuickReturnFromDetail,
-                    // 预测返回始终预览实时画面（一镜到底）；不再提供「封面整体落位」开关。
-                    preferWholeCardReturn = false,
                     onPrepareVideoCardSharedReturn = {
                         // 普通返回(顶部按钮/系统手势提交)兜底预热。
                         maybePrefetchHomeCoversForVideoReturn()
@@ -3288,10 +3298,6 @@ fun AppNavigation(
                         )
                     },
                     modifier = Modifier.fillMaxSize(),
-                    sharedTransitionScope = LocalSharedTransitionScope.current,
-                    visibleBottomBarRoutes = visibleBottomBarRoutes,
-                    activeMainHostRoute = activeMainHostRoute,
-                    isLightBackground = isLightBackground,
                 ) { key ->
                     navigation3SaveableStateHolder.SaveableStateProvider(
                         key = resolveNavigation3SaveableStateKey(key)
@@ -3419,5 +3425,4 @@ fun AppNavigation(
         } // End of Main Box
         } // End of CompositionLocalProvider
     }
-}
 }

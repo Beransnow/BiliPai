@@ -104,6 +104,7 @@ import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppDialogAction
 import com.android.purebilibili.core.ui.AppThemeConfig
 import com.android.purebilibili.core.ui.ProvideAppThemeConfig
+import com.android.purebilibili.core.ui.components.LocalAppSingleChoicePresentation
 import com.android.purebilibili.core.ui.blur.BlurIntensity
 import com.android.purebilibili.core.ui.blur.ProvideUnifiedBlurIntensity
 import com.android.purebilibili.core.ui.performance.ProvideRuntimeVisualGuard
@@ -1297,7 +1298,9 @@ open class MainActivity : AppCompatActivity() {
                     CompositionLocalProvider(
                         LocalDensity provides effectiveDensity,
                         LocalWindowSizeClass provides windowSizeClass,
-                        LocalDisplayMetricsSnapshot provides displayMetricsSnapshot
+                        LocalDisplayMetricsSnapshot provides displayMetricsSnapshot,
+                        LocalAppSingleChoicePresentation provides
+                            appThemeSettings.singleChoicePresentation,
                     ) {
                     val isPipRenderingActive =
                         isInPipMode || miniPlayerManager.shouldKeepPlaybackForPipTransition()
