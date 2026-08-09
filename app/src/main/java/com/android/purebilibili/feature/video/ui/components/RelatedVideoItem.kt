@@ -36,10 +36,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
@@ -76,6 +76,7 @@ import com.android.purebilibili.data.model.response.RecommendationFeedbackReason
 import com.android.purebilibili.data.model.response.RelatedVideo
 import com.android.purebilibili.data.repository.ActionRepository
 import com.android.purebilibili.data.repository.BlockedUpRepository
+import com.android.purebilibili.feature.home.HomeFeedCardLayout
 import com.android.purebilibili.feature.home.resolveHomeFeedCardLayout
 import com.android.purebilibili.feature.video.ui.FollowBadgeTone
 import com.android.purebilibili.feature.video.ui.resolveVideoFollowVisualPolicy
@@ -93,11 +94,6 @@ import kotlinx.coroutines.withContext
 internal const val RELATED_VIDEO_CARD_COVER_ASPECT_RATIO = 4f / 3f
 
 internal const val RELATED_VIDEO_GRID_COLUMNS = 1
-
-internal fun shouldEnableRelatedVideoGridSharedTransition(
-    sharedTransitionEnabled: Boolean,
-    isListScrolling: Boolean,
-): Boolean = sharedTransitionEnabled && !isListScrolling
 
 internal fun shouldDeferRelatedVideoNavigationForSharedTransition(
     sharedTransitionEnabled: Boolean,
@@ -164,6 +160,17 @@ internal fun chunkRelatedVideosForHomeStyleGrid(
     return videos.chunked(RELATED_VIDEO_GRID_COLUMNS)
 }
 
+@Composable
+internal fun rememberRelatedVideoCardLayout(): HomeFeedCardLayout {
+    val context = LocalContext.current
+    val homeFeedCardStyle by SettingsManager
+        .getHomeFeedCardStyle(context)
+        .collectAsStateWithLifecycle(initialValue = HomeFeedCardStyle.CURRENT)
+    return remember(homeFeedCardStyle) {
+        resolveHomeFeedCardLayout(homeFeedCardStyle)
+    }
+}
+
 /** 相关推荐单列横卡：整卡进入 shared overlay，封面、标题与元数据一起移动。 */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -207,19 +214,22 @@ fun RelatedVideoItem(
             speedSettings = sharedTransitionSpeedSettings
         )
     }
-    val cardBoundsRef = remember { object { var value: Rect? = null } }
+    val cardCoordinatesRef = remember { object { var value: LayoutCoordinates? = null } }
     val triggerRelatedVideoClick = {
-        cardBoundsRef.value?.let { bounds ->
-            CardPositionManager.recordVideoCardPosition(
-                bvid = video.bvid,
-                sourceRoute = sourceRoute,
-                bounds = bounds,
-                screenWidth = screenWidthPx,
-                screenHeight = screenHeightPx,
-                density = densityValue,
-                sourceCornerDp = 12
-            )
-        }
+        cardCoordinatesRef.value
+            ?.takeIf { it.isAttached }
+            ?.boundsInRoot()
+            ?.let { bounds ->
+                CardPositionManager.recordVideoCardPosition(
+                    bvid = video.bvid,
+                    sourceRoute = sourceRoute,
+                    bounds = bounds,
+                    screenWidth = screenWidthPx,
+                    screenHeight = screenHeightPx,
+                    density = densityValue,
+                    sourceCornerDp = 12
+                )
+            }
         if (shouldDeferRelatedVideoNavigationForSharedTransition(
                 sharedTransitionEnabled = sharedTransitionEnabled,
                 cardTransitionEnabled = effectiveTransitionEnabled,
@@ -252,10 +262,10 @@ fun RelatedVideoItem(
         transitionEnabled = sharedReady
     )
     val context = LocalContext.current
-    val coverRequest = remember(video.pic, transitionEnabled) {
+    val coverRequest = remember(video.pic) {
         ImageRequest.Builder(context)
             .data(FormatUtils.resolveVideoCoverUrl(video.pic, useLowQuality = false))
-            .crossfade(shouldEnableRelatedVideoCoverCrossfade(transitionEnabled))
+            .crossfade(false)
             .build()
     }
 
@@ -263,7 +273,7 @@ fun RelatedVideoItem(
         modifier = modifier
             .fillMaxWidth()
             .onGloballyPositioned { coordinates ->
-                cardBoundsRef.value = coordinates.boundsInRoot()
+                cardCoordinatesRef.value = coordinates
             }
             .videoCardShellSharedBoundsOrEmpty(
                 enabled = useCardShellSharedBounds,
@@ -423,27 +433,17 @@ fun RelatedVideoItem(
 }
 
 @Composable
-fun RelatedVideoGridRow(
+internal fun RelatedVideoGridRow(
     videos: List<RelatedVideo>,
+    cardLayout: HomeFeedCardLayout,
     followingMids: Set<Long> = emptySet(),
     transitionEnabled: Boolean = false,
-    isListScrolling: Boolean = false,
     showUpBadge: Boolean = true,
     onVideoClick: (RelatedVideo) -> Unit,
     onVideoHidden: ((RelatedVideo) -> Unit)? = null,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val homeFeedCardStyle by SettingsManager
-        .getHomeFeedCardStyle(context)
-        .collectAsStateWithLifecycle(initialValue = HomeFeedCardStyle.CURRENT)
-    val cardLayout = remember(homeFeedCardStyle) {
-        resolveHomeFeedCardLayout(homeFeedCardStyle)
-    }
-    val cardTransitionEnabled = shouldEnableRelatedVideoGridSharedTransition(
-        sharedTransitionEnabled = transitionEnabled,
-        isListScrolling = isListScrolling,
-    )
     var actionVideo by remember { mutableStateOf<RelatedVideo?>(null) }
     var blockCreatorRequest by remember {
         mutableStateOf<RelatedVideoBlockRequest?>(null)
@@ -459,7 +459,9 @@ fun RelatedVideoGridRow(
             RelatedVideoItem(
                 video = video,
                 isFollowed = video.owner.mid in followingMids,
-                transitionEnabled = cardTransitionEnabled,
+                // Keep sharedBounds out of the scrolling tree. It is mounted for two frames
+                // by RelatedVideoItem only after a click requests navigation.
+                transitionEnabled = false,
                 sharedTransitionEnabled = transitionEnabled,
                 showUpBadge = showUpBadge,
                 coverAspectRatio = cardLayout.coverAspectRatio,

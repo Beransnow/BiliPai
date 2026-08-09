@@ -33,6 +33,7 @@ import com.android.purebilibili.core.ui.components.AppPrimaryTabRow
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTab
 import com.android.purebilibili.core.ui.components.AppTextButton
+import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
 import com.android.purebilibili.core.util.ShareUtils
 import com.android.purebilibili.data.model.response.BgmInfo
 import com.android.purebilibili.data.model.response.ViewPoint
@@ -518,14 +519,18 @@ private fun TabletSecondaryContent(
         
         HorizontalPager(
             state = pagerState,
-            userScrollEnabled = shouldEnableVideoContentHorizontalPagerSwipe(
-                currentPage = pagerState.currentPage,
-                commentPageIndex = 0,
-                isPagerScrollInProgress = pagerState.isScrollInProgress,
-            ),
+            userScrollEnabled = false,
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
+                .verticalPriorityHorizontalPagerSwipe(
+                    state = pagerState,
+                    enabled = shouldEnableVideoContentHorizontalPagerSwipe(
+                        currentPage = pagerState.currentPage,
+                        commentPageIndex = 0,
+                        isPagerScrollInProgress = pagerState.isScrollInProgress,
+                    ),
+                )
         ) { page ->
             when (page) {
                 0 -> {
@@ -718,6 +723,7 @@ private fun TabletSecondaryContent(
                     val visibleRelatedVideos = remember(success.related, hiddenRelatedBvids) {
                         filterRelatedVideosByHiddenBvids(success.related, hiddenRelatedBvids)
                     }
+                    val relatedVideoCardLayout = rememberRelatedVideoCardLayout()
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(8.dp)
@@ -741,6 +747,7 @@ private fun TabletSecondaryContent(
                             ) {
                                 RelatedVideoGridRow(
                                     videos = row,
+                                    cardLayout = relatedVideoCardLayout,
                                     followingMids = success.followingMids,
                                     transitionEnabled = LocalSharedTransitionEnabled.current,
                                     showUpBadge = showUpBadge,

@@ -19,7 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 //  Material Icons
 import androidx.compose.foundation.ExperimentalFoundationApi
 import com.android.purebilibili.core.ui.animation.DissolveAnimationPreset
-import com.android.purebilibili.core.ui.animation.DissolvableVideoCard
+import com.android.purebilibili.core.ui.animation.MaybeDissolvableVideoCard
 import com.android.purebilibili.core.ui.animation.jiggleOnDissolve
 import com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState
 import dev.chrisbanes.haze.HazeState
@@ -817,7 +817,7 @@ fun WatchLaterScreen(
                             val isDissolving = item.bvid in state.dissolvingIds
                             val isSelected = item.bvid in selectedBvids
 
-                            DissolvableVideoCard(
+                            MaybeDissolvableVideoCard(
                                 isDissolving = isDissolving,
                                 onDissolveComplete = { viewModel.completeVideoDissolve(item.bvid) },
                                 cardId = item.bvid,

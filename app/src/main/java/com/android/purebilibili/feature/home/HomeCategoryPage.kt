@@ -36,7 +36,7 @@ import com.android.purebilibili.core.store.HomeDurationStyle
 import com.android.purebilibili.core.store.HomeFeedCardStyle
 import com.android.purebilibili.core.store.HomeWallpaperEffectMode
 import com.android.purebilibili.core.ui.animation.DissolveAnimationPreset
-import com.android.purebilibili.core.ui.animation.DissolvableVideoCard
+import com.android.purebilibili.core.ui.animation.MaybeDissolvableVideoCard
 import com.android.purebilibili.core.ui.animation.jiggleOnDissolve
 import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.performance.TrackScrollJank
@@ -395,11 +395,12 @@ internal fun HomeCategoryPageContent(
                         val isDynamicDetailCard = video.dynamicId.isNotBlank() && !video.bvid.startsWith("BV", ignoreCase = true)
                         val isDissolving = video.bvid in dissolvingVideos
 
-                        DissolvableVideoCard(
+                        MaybeDissolvableVideoCard(
                             isDissolving = isDissolving,
                             onDissolveComplete = { onDissolveComplete(video.bvid) },
                             cardId = video.bvid,
                             preset = DissolveAnimationPreset.TELEGRAM_FAST,
+                            preserveContentLayerWhenIdle = cardTransitionEnabled,
                             modifier = Modifier
                                 .jiggleOnDissolve(
                                     cardId = video.bvid,

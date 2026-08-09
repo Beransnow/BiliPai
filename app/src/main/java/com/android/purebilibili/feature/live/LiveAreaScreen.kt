@@ -43,6 +43,7 @@ import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.components.AppText
+import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -209,10 +210,15 @@ fun LiveAreaScreen(
                 )
                 HorizontalPager(
                     state = pagerState,
+                    userScrollEnabled = false,
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth()
                         .layerBackdrop(selectionBackdrop)
+                        .verticalPriorityHorizontalPagerSwipe(
+                            state = pagerState,
+                            enabled = true,
+                        )
                 ) { page ->
                     val selectedArea = areas.getOrNull(page)
                     if (selectedArea != null) {
