@@ -4,7 +4,7 @@
 
 更新日志(ChangeLog)
 
-[更改] 版本号 0.2.3-beta.1，versionCode 289
+[更改] 版本号 0.2.3-beta.1，versionCode 290
 [更改] 正式包 BiliPai-0.2.3-beta.1.apk，Dev 包 BiliPai-0.2.3-beta.1-dev.apk
 [更改] 基准 v0.2.2，比较区间见 GitHub Compare
 [添加] 设置新增「更新检测渠道」，可切换正式版 / 测试版（默认正式版）

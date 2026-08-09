@@ -118,7 +118,7 @@ android {
         targetSdk = 35  // 保持35以避免Android 16的新运行时行为
         // 版本：语义化 X.Y.Z（MAJOR.MINOR.PATCH）+ versionCode 单调 +1
         // 规范：docs/wiki/VERSIONING.md · 更新日志：CHANGELOG.md
-        versionCode = 289
+        versionCode = 290
         versionName = "0.2.3-beta.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
