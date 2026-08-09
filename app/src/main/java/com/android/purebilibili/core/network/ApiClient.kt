@@ -1966,6 +1966,18 @@ interface BangumiApi {
         @Query("sort") sort: Int = 0,
         @Query("type") type: Int = 1
     ): com.android.purebilibili.data.model.response.BangumiIndexResponse
+
+    @GET("pgc/season/index/condition")
+    suspend fun getBangumiIndexCondition(
+        @Query("season_type") seasonType: Int? = null,
+        @Query("type") type: Int = 0,
+        @Query("index_type") indexType: Int? = null,
+    ): com.android.purebilibili.data.model.response.BangumiIndexConditionResponse
+
+    @GET("pgc/season/index/result")
+    suspend fun getBangumiIndexResult(
+        @QueryMap params: Map<String, String>,
+    ): com.android.purebilibili.data.model.response.BangumiIndexResponse
     
     // 番剧详情 -  返回 ResponseBody 自行解析，防止 OOM
     @GET("pgc/view/web/season")
@@ -2009,12 +2021,21 @@ interface BangumiApi {
         @retrofit2.http.Field("status") status: Int,
         @retrofit2.http.Field("csrf") csrf: String
     ): com.android.purebilibili.data.model.response.SimpleApiResponse
+
+    @retrofit2.http.FormUrlEncoded
+    @retrofit2.http.POST("pgc/web/follow/status/update")
+    suspend fun updateBangumiFollowStatusBatch(
+        @retrofit2.http.Field("season_id") seasonIds: String,
+        @retrofit2.http.Field("status") status: Int,
+        @retrofit2.http.Field("csrf") csrf: String,
+    ): com.android.purebilibili.data.model.response.SimpleApiResponse
     
     //  [新增] 我的追番列表
     @GET("x/space/bangumi/follow/list")
     suspend fun getMyFollowBangumi(
         @Query("vmid") vmid: Long,          // 用户 mid (登录用户的 mid)
         @Query("type") type: Int = 1,        // 1=追番 2=追剧
+        @Query("follow_status") followStatus: Int? = null,
         @Query("pn") pn: Int = 1,
         @Query("ps") ps: Int = 30
     ): com.android.purebilibili.data.model.response.MyFollowBangumiResponse
