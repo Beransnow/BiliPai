@@ -304,6 +304,7 @@ fun HomeScreen(
     // [Header] 首页重选/双击回顶时需要强制恢复顶部，避免自动收缩后残留空白区域。
     // saveable：进 UP 空间等二级页后返回时保留折叠态，避免顶栏重张开带动列表“自动下滑”感。
     var headerOffsetHeightPx by rememberSaveable { mutableFloatStateOf(0f) }
+    var topTabsAutoCollapsedByScroll by rememberSaveable { mutableStateOf(false) }
     var headerSettleAnimationJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
     // 离开首页顶层时冻结滚动锚点；返回后校正 LazyGrid 因 contentPadding/重组造成的偏移漂移。
     var pendingFeedScrollAnchor by rememberSaveable(stateSaver = HomeFeedScrollAnchorSaver) {
@@ -1340,8 +1341,7 @@ fun HomeScreen(
     // Pixels
     val searchCollapseDistancePx = with(density) { searchCollapseDistanceDp.toPx() }
     val headerCollapseMode = resolveHomeRecommendationHeaderCollapseMode(
-        homeHeaderCollapseMode = homeSettings.homeHeaderCollapseMode,
-        commonListHeaderCollapseMode = homeSettings.commonListHeaderCollapseMode
+        homeHeaderCollapseMode = homeSettings.homeHeaderCollapseMode
     )
     val collapseSearchOnScroll = headerCollapseMode.collapseSearch
     val collapseTabsOnScroll = headerCollapseMode.collapseTabs
@@ -1376,13 +1376,11 @@ fun HomeScreen(
             }
     }
     
-    // 顶部搜索行与标签页分别由设置控制，避免一个开关隐式改变另一块区域。
-    val areTopTabsAutoCollapsed by remember(collapseTabsOnScroll) {
-        derivedStateOf {
-            resolveHomeTopTabsAutoCollapsed(
-                currentHeaderOffsetPx = headerOffsetHeightPx,
-                isTopTabAutoCollapseEnabled = collapseTabsOnScroll
-            )
+    // 标签页与搜索行共用布局偏移，但恢复时不能等待搜索行完全展开；
+    // 反向上滑立即恢复标签，避免出现“同样上滑却有时不显示”的体验。
+    LaunchedEffect(collapseTabsOnScroll) {
+        if (!collapseTabsOnScroll) {
+            topTabsAutoCollapsedByScroll = false
         }
     }
     
@@ -1411,6 +1409,7 @@ fun HomeScreen(
         useSideNavigation,
         isLiquidGlassEnabled,
         canRevealHeader,
+        collapseTabsOnScroll,
         homeSettings.commonListHeaderCollapseMode,
     ) {
         object : NestedScrollConnection {
@@ -1434,6 +1433,11 @@ fun HomeScreen(
                 )
 
                 headerOffsetHeightPx = scrollUpdate.headerOffsetPx
+                topTabsAutoCollapsedByScroll = reduceHomeTopTabsAutoCollapseState(
+                    isCollapsed = topTabsAutoCollapsedByScroll,
+                    scrollDeltaY = available.y,
+                    isTopTabAutoCollapseEnabled = collapseTabsOnScroll,
+                )
                 scrollUpdate.globalScrollOffset?.let { nextOffset ->
                     globalScrollOffset.value = nextOffset
                 }
@@ -2042,7 +2046,7 @@ fun HomeScreen(
         
         // Calculate parameters based on scroll
         val topTabsCollapsedForHeader = if (collapseTabsOnScroll) {
-            areTopTabsAutoCollapsed
+            topTabsAutoCollapsedByScroll
         } else {
             false
         }
