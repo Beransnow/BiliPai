@@ -302,11 +302,16 @@ internal fun BiliPaiNavDisplayHost(
             effectiveVideoCardExposure == VideoCardTransitionExposure.Restoring
     )
     val enableHostCornerClip = !videoCardMorphOwnsCorners
+    // The retained source page already owns blur/scrim through the video-card depth layer.
+    // Miuix's generic covered-entry dim can be resolved from the lower VideoDetail transition
+    // during nested related-video navigation, which darkens that page a second time.
+    val hostDimAmount = if (videoCardMorphOwnsCorners) 0f else 0.5f
     val backdropColor = MiuixTheme.colorScheme.surface
     val effects = remember(
         navCornerRadius,
         roundAllCorners,
         enableHostCornerClip,
+        hostDimAmount,
         backdropColor,
     ) {
         NavDisplayEffects(
@@ -317,7 +322,7 @@ internal fun BiliPaiNavDisplayHost(
             } else {
                 NavCornerClipMode.Leading
             },
-            dimAmount = 0.5f,
+            dimAmount = hostDimAmount,
             backdropColor = backdropColor,
             blockInputDuringTransition = false,
         )
