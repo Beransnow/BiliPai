@@ -8,12 +8,12 @@ import kotlin.test.assertTrue
 class VerticalPriorityPagerGestureTest {
 
     @Test
-    fun `movement below extended touch slop stays undecided`() {
+    fun `movement below system touch slop stays undecided`() {
         assertEquals(
             PagerGestureDirection.UNDECIDED,
             resolveVerticalPriorityPagerGestureDirection(
-                totalX = 9f,
-                totalY = 9f,
+                totalX = 5f,
+                totalY = 5f,
                 touchSlop = 10f,
             ),
         )
@@ -44,14 +44,42 @@ class VerticalPriorityPagerGestureTest {
     }
 
     @Test
-    fun `clearly horizontal drag locks pager`() {
+    fun `slightly horizontal diagonal gets a short intent grace distance`() {
+        assertEquals(
+            PagerGestureDirection.UNDECIDED,
+            resolveVerticalPriorityPagerGestureDirection(
+                totalX = 9f,
+                totalY = 7f,
+                touchSlop = 8f,
+            ),
+        )
+    }
+
+    @Test
+    fun `clearly horizontal drag locks pager at system touch slop`() {
         assertEquals(
             PagerGestureDirection.HORIZONTAL,
             resolveVerticalPriorityPagerGestureDirection(
-                totalX = 24f,
-                totalY = 8f,
+                totalX = 9f,
+                totalY = 2f,
                 touchSlop = 8f,
             ),
+        )
+    }
+
+    @Test
+    fun `initial pager delta consumes one touch slop without reversing direction`() {
+        assertEquals(
+            1f,
+            resolvePagerInitialHorizontalDelta(totalX = 9f, touchSlop = 8f),
+        )
+        assertEquals(
+            -1f,
+            resolvePagerInitialHorizontalDelta(totalX = -9f, touchSlop = 8f),
+        )
+        assertEquals(
+            0f,
+            resolvePagerInitialHorizontalDelta(totalX = 7f, touchSlop = 8f),
         )
     }
 

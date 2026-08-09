@@ -36,26 +36,45 @@ internal enum class PagerGestureDirection {
 }
 
 internal const val PAGER_HORIZONTAL_DOMINANCE_RATIO = 1.5f
-internal const val PAGER_DIRECTION_SLOP_MULTIPLIER = 1.5f
+internal const val PAGER_AMBIGUOUS_DIRECTION_SLOP_MULTIPLIER = 1.5f
 
 internal fun resolveVerticalPriorityPagerGestureDirection(
     totalX: Float,
     totalY: Float,
     touchSlop: Float,
     horizontalDominanceRatio: Float = PAGER_HORIZONTAL_DOMINANCE_RATIO,
-    directionSlopMultiplier: Float = PAGER_DIRECTION_SLOP_MULTIPLIER,
+    ambiguousDirectionSlopMultiplier: Float = PAGER_AMBIGUOUS_DIRECTION_SLOP_MULTIPLIER,
 ): PagerGestureDirection {
-    val requiredDistance = touchSlop.coerceAtLeast(0f) * directionSlopMultiplier.coerceAtLeast(1f)
+    val systemTouchSlop = touchSlop.coerceAtLeast(0f)
     val totalDistanceSquared = totalX * totalX + totalY * totalY
-    if (totalDistanceSquared < requiredDistance * requiredDistance) {
+    if (totalDistanceSquared == 0f || totalDistanceSquared < systemTouchSlop * systemTouchSlop) {
         return PagerGestureDirection.UNDECIDED
     }
 
-    return if (abs(totalX) >= abs(totalY) * horizontalDominanceRatio.coerceAtLeast(1f)) {
-        PagerGestureDirection.HORIZONTAL
+    val horizontalDistance = abs(totalX)
+    val verticalDistance = abs(totalY)
+    if (horizontalDistance >= verticalDistance * horizontalDominanceRatio.coerceAtLeast(1f)) {
+        return PagerGestureDirection.HORIZONTAL
+    }
+    if (verticalDistance >= horizontalDistance) return PagerGestureDirection.VERTICAL
+
+    // A slightly horizontal diagonal gets a short grace distance to clarify intent. Clear
+    // horizontal and vertical gestures do not pay this extra threshold.
+    val ambiguousDirectionSlop = systemTouchSlop *
+        ambiguousDirectionSlopMultiplier.coerceAtLeast(1f)
+    return if (totalDistanceSquared < ambiguousDirectionSlop * ambiguousDirectionSlop) {
+        PagerGestureDirection.UNDECIDED
     } else {
         PagerGestureDirection.VERTICAL
     }
+}
+
+internal fun resolvePagerInitialHorizontalDelta(
+    totalX: Float,
+    touchSlop: Float,
+): Float {
+    val consumedSlop = touchSlop.coerceAtLeast(0f).coerceAtMost(abs(totalX))
+    return totalX - sign(totalX) * consumedSlop
 }
 
 /**
@@ -129,10 +148,10 @@ internal fun Modifier.verticalPriorityHorizontalPagerSwipe(
             if (direction != PagerGestureDirection.HORIZONTAL) return@gesture
             horizontalLockChange?.consume()
 
-            val directionThreshold =
-                viewConfiguration.touchSlop * PAGER_DIRECTION_SLOP_MULTIPLIER
-            val initialHorizontalDelta =
-                totalDrag.x - sign(totalDrag.x) * directionThreshold
+            val initialHorizontalDelta = resolvePagerInitialHorizontalDelta(
+                totalX = totalDrag.x,
+                touchSlop = viewConfiguration.touchSlop,
+            )
             val scrollDirectionMultiplier = if (reverseDirection) -1f else 1f
             val dragSession = PagerDragScrollSession()
             val scrollJob = dragCoroutineScope.launch(start = CoroutineStart.UNDISPATCHED) {
