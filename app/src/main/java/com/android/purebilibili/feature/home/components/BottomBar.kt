@@ -4200,11 +4200,10 @@ private fun BoxScope.KernelSuBottomBarInputLayer(
             BottomBarInputTarget(
                 itemWidth = itemWidth,
                 onClick = { onItemClick(index, item) },
-                onPressChanged = { pressed ->
-                    if (index == dampedDragState.targetIndex) {
-                        dampedDragState.setPressed(pressed)
-                    }
-                }
+                // 点按未选项时也先让当前液态指示器进入 pressed 状态；随后 onClick
+                // 迁移到新索引，释放动作会等目标落位后回弹。只对当前索引转发会让
+                // “直接点按切换”缺少放大反馈。
+                onPressChanged = dampedDragState::setPressed
             )
         }
 
@@ -4212,11 +4211,7 @@ private fun BoxScope.KernelSuBottomBarInputLayer(
             BottomBarInputTarget(
                 itemWidth = itemWidth,
                 onClick = onSidebarClick,
-                onPressChanged = { pressed ->
-                    if (visibleItems.size == dampedDragState.targetIndex) {
-                        dampedDragState.setPressed(pressed)
-                    }
-                }
+                onPressChanged = dampedDragState::setPressed
             )
         }
     }

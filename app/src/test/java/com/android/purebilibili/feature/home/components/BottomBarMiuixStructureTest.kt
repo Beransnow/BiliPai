@@ -337,6 +337,11 @@ class BottomBarMiuixStructureTest {
         assertTrue(captureIndex > visibleContentIndex)
         assertTrue(indicatorIndex > captureIndex)
         assertTrue(kernelSuRendererSource.contains("KernelSuBottomBarInputLayer("))
+        val inputLayerSource = source
+            .substringAfter("private fun BoxScope.KernelSuBottomBarInputLayer(")
+            .substringBefore("private fun KernelSuBottomBarSearchSlot(")
+        assertTrue(inputLayerSource.contains("onPressChanged = dampedDragState::setPressed"))
+        assertFalse(inputLayerSource.contains("index == dampedDragState.targetIndex"))
         val capturedContentIndex = refractionCaptureSource.indexOf("val coverage = itemCoverage(index)")
         assertFalse(refractionCaptureSource.contains("BottomBarSkinDecorativeTrim("))
         assertTrue(capturedContentIndex >= 0)
