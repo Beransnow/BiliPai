@@ -72,7 +72,7 @@ class TopControlBarLayoutPolicyTest {
                 statusBarVisible = true,
             )
         )
-        // 全屏隐藏系统栏后：顶栏贴顶沉浸。
+        // 全屏/「播放页隐藏状态栏」后系统栏已藏：顶栏贴顶沉浸。
         assertFalse(
             shouldApplyStatusBarPaddingToTopControlBar(
                 isFullscreen = true,

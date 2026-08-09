@@ -31,6 +31,7 @@ class PlayerInteractionSettingsMappingPolicyTest {
         assertFalse(result.longPressSpeedLockHintShown)
         assertEquals(0.0f, result.subtitleVerticalOffsetFraction)
         assertEquals(0.0f, result.subtitlePortraitVerticalOffsetFraction)
+        assertFalse(result.hideVideoPageStatusBar)
         assertEquals(TabletCommentPanelWidthPreset.STANDARD, result.tabletCommentPanelWidthPreset)
         assertFalse(result.hiResLongPressCompatHintShown)
         assertFalse(result.directPortraitStoryEntry)
@@ -47,6 +48,7 @@ class PlayerInteractionSettingsMappingPolicyTest {
             intPreferencesKey("fullscreen_swipe_seek_seconds") to 14,
             intPreferencesKey("fullscreen_aspect_ratio") to FullscreenAspectRatio.RATIO_4_3.value,
             intPreferencesKey("subtitle_auto_preference") to SubtitleAutoPreference.ON.ordinal,
+            booleanPreferencesKey("hide_video_page_status_bar") to true,
             intPreferencesKey("tablet_comment_panel_width_preset") to TabletCommentPanelWidthPreset.ULTRA_WIDE.value,
             floatPreferencesKey("long_press_speed") to 4.6f,
             booleanPreferencesKey("long_press_speed_lock_enabled") to true,
@@ -65,6 +67,7 @@ class PlayerInteractionSettingsMappingPolicyTest {
         assertEquals(15, result.fullscreenSwipeSeekSeconds)
         assertEquals(FullscreenAspectRatio.RATIO_4_3, result.fixedFullscreenAspectRatio)
         assertEquals(SubtitleAutoPreference.ON, result.subtitleAutoPreference)
+        assertTrue(result.hideVideoPageStatusBar)
         assertEquals(TabletCommentPanelWidthPreset.ULTRA_WIDE, result.tabletCommentPanelWidthPreset)
         assertEquals(3.0f, result.longPressSpeed)
         assertTrue(result.longPressSpeedLockEnabled)
@@ -72,6 +75,19 @@ class PlayerInteractionSettingsMappingPolicyTest {
         assertEquals(-0.30f, result.subtitleVerticalOffsetFraction)
         assertTrue(result.twoFingerVerticalSpeedEnabled)
         assertTrue(result.hiResLongPressCompatHintShown)
+    }
+
+    @Test
+    fun hideVideoPageStatusBar_hasSyncCacheForInitialValue() {
+        val source = File("src/main/java/com/android/purebilibili/core/store/SettingsManager.kt")
+            .takeIf { it.exists() }
+            ?: File("app/src/main/java/com/android/purebilibili/core/store/SettingsManager.kt")
+        val text = source.readText()
+
+        assertTrue(text.contains("fun getHideVideoPageStatusBarSync(context: Context): Boolean"))
+        assertTrue(text.contains("CACHE_KEY_HIDE_VIDEO_PAGE_STATUS_BAR"))
+        assertTrue(text.contains("putBoolean(CACHE_KEY_HIDE_VIDEO_PAGE_STATUS_BAR, enabled)"))
+        assertTrue(text.contains("putBoolean(CACHE_KEY_HIDE_VIDEO_PAGE_STATUS_BAR, enabledFromDataStore)"))
     }
 
     @Test

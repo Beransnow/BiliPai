@@ -73,7 +73,7 @@ internal data class ContinuousPlayerFullscreenExtras(
  * @param preferLayoutWidth16x9Inline 横屏 16:9 详情播放器：展开态按**实际布局宽度**算高度，
  * 避免 `configuration.screenWidthDp` 与真机可用宽度不一致时出现左右黑边（vivo 等窄机更常见）。
  * 折叠/半折叠时必须仍尊重 [inlineHeight]（评论上滑缩小播放器），不能盖成固定 16:9。
- * @param inlineTopInset 状态栏预留额外高度；只加在 inline 高度上，不参与 16:9 比例本体。
+ * @param inlineTopInset 沉浸状态栏额外高度；只加在 inline 高度上，不参与 16:9 比例本体。
  */
 internal fun Modifier.continuousPlayerViewportHeight(
     progressProvider: () -> Float,

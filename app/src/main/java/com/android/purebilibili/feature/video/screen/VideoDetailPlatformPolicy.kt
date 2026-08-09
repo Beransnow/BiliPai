@@ -76,8 +76,10 @@ internal data class VideoDetailSystemBarsApplySpec(
     val lightNavigationBars: Boolean
 )
 
+@Suppress("UNUSED_PARAMETER")
 internal fun resolveVideoDetailSystemBarsVisibilityPolicy(
     isFullscreenMode: Boolean,
+    hideVideoPageStatusBar: Boolean,
     isInPipMode: Boolean,
     isScreenActive: Boolean,
     isPortraitFullscreen: Boolean = false,
@@ -109,6 +111,8 @@ internal fun resolveVideoDetailSystemBarsVisibilityPolicy(
             hideNavigationBars = true
         )
     }
+    // This preference used to hide the status bar. It now controls the Compose Haze backdrop
+    // above the inline player, so the system icons remain visible and readable.
     return VideoDetailSystemBarsVisibilityPolicy(
         hideStatusBars = false,
         hideNavigationBars = false
@@ -180,16 +184,23 @@ internal fun resolveVideoDetailStableStatusBarHeightDp(
 }
 
 /**
- * 竖屏详情播放器顶部为系统状态栏预留的高度。
+ * 竖屏详情播放器顶部沉浸带高度。
  *
- * 状态栏可见（非全屏）时返回状态栏高度，播放器内容从状态栏下方开始；
- * 全屏藏栏时返回 0，保持 edge-to-edge 沉浸布局。
+ * 开启「播放页沉浸状态栏」时，播放器容器额外增加状态栏高度，视频内容从
+ * 状态栏下方开始；状态栏区域由实时取色视频背景填充。关闭时仍保持原有
+ * edge-to-edge 布局。
+ *
+ * [isSharedCardTransition] 保留参数兼容；共享转场与落位后的几何保持一致，
+ * 避免动画结束时播放器高度突然跳变。
  */
+@Suppress("UNUSED_PARAMETER")
 internal fun resolveVideoDetailPortraitPlayerTopInsetDp(
     stableStatusBarHeightDp: Float,
     hideStatusBars: Boolean,
+    immersiveStatusBarBackdropEnabled: Boolean = false,
+    isSharedCardTransition: Boolean = false,
 ): Float {
-    if (hideStatusBars) return 0f
+    if (hideStatusBars || !immersiveStatusBarBackdropEnabled) return 0f
     return stableStatusBarHeightDp
         .takeIf { it.isFinite() }
         ?.coerceAtLeast(0f)
@@ -199,7 +210,7 @@ internal fun resolveVideoDetailPortraitPlayerTopInsetDp(
 /**
  * 播放器顶部控件是否应避让系统状态栏。
  *
- * - 状态栏可见（普通详情）→ 必须 padding，防重叠
+ * - 状态栏可见（普通详情和「播放页沉浸状态栏」）→ 必须 padding，防重叠
  * - 状态栏已隐藏（横屏全屏 / 竖屏全屏）→ 不 padding，保持贴顶沉浸
  */
 internal fun shouldApplyStatusBarPaddingToVideoPlayerChrome(

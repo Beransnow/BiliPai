@@ -927,6 +927,13 @@ internal fun VideoDetailScreenStateHolder(
             initialValue = windowSizeClass.isTabletDevice,
             lifecycle = lifecycleOwner.lifecycle
         )
+    val immersiveVideoPageStatusBar by com.android.purebilibili.core.store.SettingsManager
+        .getHideVideoPageStatusBar(context)
+        .collectAsStateWithLifecycle(
+            initialValue = com.android.purebilibili.core.store.SettingsManager
+                .getHideVideoPageStatusBarSync(context),
+            lifecycle = lifecycleOwner.lifecycle
+        )
     val useTabletLayout = shouldUseTabletVideoLayout(
         isExpandedScreen = windowSizeClass.isExpandedScreen,
         isTabletDevice = windowSizeClass.isTabletDevice
@@ -2556,11 +2563,13 @@ internal fun VideoDetailScreenStateHolder(
     val systemBarsVisibilityPolicy = remember(
         isFullscreenMode,
         isPortraitFullscreen,
+        immersiveVideoPageStatusBar,
         isPipMode,
         isScreenActive
     ) {
         resolveVideoDetailSystemBarsVisibilityPolicy(
             isFullscreenMode = isFullscreenMode,
+            hideVideoPageStatusBar = immersiveVideoPageStatusBar,
             isInPipMode = isPipMode,
             isScreenActive = isScreenActive,
             isPortraitFullscreen = isPortraitFullscreen
@@ -3182,6 +3191,8 @@ internal fun VideoDetailScreenStateHolder(
                         val playerTopInset = resolveVideoDetailPortraitPlayerTopInsetDp(
                             stableStatusBarHeightDp = stableStatusBarHeight.value,
                             hideStatusBars = systemBarsVisibilityPolicy.hideStatusBars,
+                            immersiveStatusBarBackdropEnabled = immersiveVideoPageStatusBar,
+                            isSharedCardTransition = detailShellSharedBoundsEnabled,
                         ).dp
                         val screenWidthDp = configuration.screenWidthDp.dp
                         val screenHeightDp = configuration.screenHeightDp.dp
@@ -4183,6 +4194,7 @@ internal fun VideoDetailScreenStateHolder(
             isPortraitFullscreen = isPortraitFullscreen,
             videoPlayerRootBottomPx = videoPlayerRootBottomPx,
             hideStatusBars = systemBarsVisibilityPolicy.hideStatusBars,
+            immersiveStatusBarBackdropEnabled = immersiveVideoPageStatusBar,
             currentVideoPositionMsProvider = {
                 playerState.player.currentPosition.coerceAtLeast(0L)
             },
