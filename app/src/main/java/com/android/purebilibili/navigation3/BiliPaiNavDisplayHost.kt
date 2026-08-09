@@ -34,6 +34,7 @@ import com.android.purebilibili.core.ui.transition.LocalMiuixVideoCardTransition
 import com.android.purebilibili.core.ui.transition.LocalVideoCardTransitionBackgroundState
 import com.android.purebilibili.core.ui.transition.MiuixVideoCardTransitionState
 import com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundState
+import com.android.purebilibili.core.ui.transition.VideoCardTransitionExposure
 import com.android.purebilibili.core.ui.transition.LocalVideoCardTransitionClock
 import com.android.purebilibili.core.ui.transition.VideoCardTransitionClock
 import com.android.purebilibili.core.ui.transition.VideoCardTransitionHostDepthLayer
@@ -290,10 +291,26 @@ internal fun BiliPaiNavDisplayHost(
     val roundAllCorners = style == BiliPaiPredictiveBackAnimationStyle.AOSP ||
         style == BiliPaiPredictiveBackAnimationStyle.SCALE ||
         style == BiliPaiPredictiveBackAnimationStyle.CLASSIC
+    // Video-card morph owns all four corners. Keeping NavDisplay's Leading clip enabled here
+    // applies a second, device-radius clip only to the left edge and makes it visibly rounder
+    // than the right edge during return.
+    val videoCardMorphOwnsCorners = cardMorphAvailable && (
+        isCardMorphDestinationNavKey(currentKey) ||
+            effectiveVideoCardExposure == VideoCardTransitionExposure.Opening ||
+            effectiveVideoCardExposure == VideoCardTransitionExposure.BackPreview ||
+            effectiveVideoCardExposure == VideoCardTransitionExposure.Returning ||
+            effectiveVideoCardExposure == VideoCardTransitionExposure.Restoring
+    )
+    val enableHostCornerClip = !videoCardMorphOwnsCorners
     val backdropColor = MiuixTheme.colorScheme.surface
-    val effects = remember(navCornerRadius, roundAllCorners, backdropColor) {
+    val effects = remember(
+        navCornerRadius,
+        roundAllCorners,
+        enableHostCornerClip,
+        backdropColor,
+    ) {
         NavDisplayEffects(
-            enableCornerClip = true,
+            enableCornerClip = enableHostCornerClip,
             cornerClipRadius = if (roundAllCorners && navCornerRadius <= 0.dp) 32.dp else navCornerRadius,
             cornerClipMode = if (roundAllCorners) {
                 NavCornerClipMode.All

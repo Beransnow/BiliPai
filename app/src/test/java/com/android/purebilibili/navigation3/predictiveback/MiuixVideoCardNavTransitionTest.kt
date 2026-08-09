@@ -7,6 +7,25 @@ import kotlin.test.assertEquals
 
 class MiuixVideoCardNavTransitionTest {
     @Test
+    fun returnDepthClearsBlurInsteadOfReversingIt() {
+        assertEquals(
+            1f,
+            resolveMiuixVideoCardDepthProgress(relativeDepth = 0f),
+            absoluteTolerance = 0.0001f,
+        )
+        assertEquals(
+            0.5f,
+            resolveMiuixVideoCardDepthProgress(relativeDepth = -0.5f),
+            absoluteTolerance = 0.0001f,
+        )
+        assertEquals(
+            0f,
+            resolveMiuixVideoCardDepthProgress(relativeDepth = -1f),
+            absoluteTolerance = 0.0001f,
+        )
+    }
+
+    @Test
     fun cardClipKeepsPhysicalCornerRadiusAcrossNonUniformScale() {
         val radii = resolveMiuixVideoCardClipRadii(
             sourceCornerPx = 12f,

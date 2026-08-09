@@ -38,6 +38,10 @@ internal data class MiuixVideoCardClipRadii(
 
 private const val MIUIX_WIDE_VIDEO_CARD_MIN_ASPECT_RATIO = 1.45f
 
+/** Top entry depth is 0 at rest and moves toward -1 while returning. */
+internal fun resolveMiuixVideoCardDepthProgress(relativeDepth: Float): Float =
+    topProgress(relativeDepth)
+
 /**
  * Keeps the corner circular in screen space while the outer card layer scales non-uniformly.
  * A regular RoundedCornerShape is scaled together with the layer and becomes too small on the
@@ -132,7 +136,7 @@ internal class MiuixVideoCardTransitionProgress {
     }
 
     fun depthOr(fallback: Float): Float = topScope
-        ?.let { topProgress(it.relativeDepth) }
+        ?.let { resolveMiuixVideoCardDepthProgress(it.relativeDepth) }
         ?: fallback.coerceIn(0f, 1f)
 
     fun isGestureInProgress(): Boolean = topScope?.gesture != null
@@ -183,7 +187,7 @@ internal fun miuixVideoCardNavTransition(
                 val height = scope.layoutSize.height.toFloat().coerceAtLeast(1f)
                 val depth = scope.relativeDepth
                 if (depth <= 0f) {
-                    val morph = topProgress(depth)
+                    val morph = resolveMiuixVideoCardDepthProgress(depth)
                     val sourceScaleX = (bounds.width / width).coerceIn(0.05f, 1f)
                     val sourceScaleY = (bounds.height / height).coerceIn(0.05f, 1f)
                     val outerScaleX = sourceScaleX + (1f - sourceScaleX) * morph
@@ -217,7 +221,7 @@ internal fun miuixVideoCardNavTransition(
                 if (depth <= 0f) {
                     val width = scope.layoutSize.width.toFloat().coerceAtLeast(1f)
                     val height = scope.layoutSize.height.toFloat().coerceAtLeast(1f)
-                    val morph = topProgress(depth)
+                    val morph = resolveMiuixVideoCardDepthProgress(depth)
                     val outerScaleX = (bounds.width / width).coerceIn(0.05f, 1f) +
                         (1f - (bounds.width / width).coerceIn(0.05f, 1f)) * morph
                     val outerScaleY = (bounds.height / height).coerceIn(0.05f, 1f) +
