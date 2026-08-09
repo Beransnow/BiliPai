@@ -64,6 +64,10 @@ class FavoriteContentModeResolverTest {
             "Favorite page should not inject tap press into liquid-glass refraction because it causes selection ghosting"
         )
         assertTrue(
+            listSource.contains("dragSelectionEnabled = false"),
+            "Favorite page segmented navigation should be tap-only so it cannot compete with system back"
+        )
+        assertTrue(
             segmentedSource.contains("forceLiquidIndicator: Boolean = false"),
             "Shared segmented control should expose an explicit liquid-indicator override"
         )
@@ -78,6 +82,10 @@ class FavoriteContentModeResolverTest {
         assertTrue(
             segmentedSource.contains("tapPressRefractionEnabled = tapPressRefractionEnabled"),
             "Shared iOS segmented control should forward tap refraction control into the bottom-bar liquid implementation"
+        )
+        assertTrue(
+            segmentedSource.contains("dragSelectionEnabled = dragSelectionEnabled"),
+            "Shared segmented control should forward drag-selection policy to its liquid implementation"
         )
         assertTrue(
             bottomBarSource.contains("forceLiquidChrome: Boolean = false"),

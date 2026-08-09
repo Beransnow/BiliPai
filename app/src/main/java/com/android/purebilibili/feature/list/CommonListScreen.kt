@@ -3,6 +3,7 @@ import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 
 import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.AppSpacingTokens
+import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.components.AppAssistChip
 import com.android.purebilibili.core.ui.components.AppButton
@@ -16,7 +17,6 @@ import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.components.AppTextField
 import com.android.purebilibili.core.ui.components.AppSwitch
-import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalSharedTransitionApi
@@ -57,13 +57,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -107,7 +103,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -118,6 +113,7 @@ import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.feature.home.LocalHomeScrollOffset
 import com.android.purebilibili.feature.home.policy.resolveBottomBarChromeScrollOffset
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
+import com.android.purebilibili.core.ui.rememberAppChevronDownIcon
 import com.android.purebilibili.core.ui.resolveGlobalWallpaperChromeColor
 import com.android.purebilibili.core.theme.BiliPink
 import com.android.purebilibili.core.ui.rememberAppChromeLiquidGlassEnabled
@@ -952,29 +948,9 @@ fun CommonListScreen(
                 } else when (favoriteContentMode) {
                     FavoriteContentMode.PAGER -> {
                         val favoriteVm = requireNotNull(favoriteViewModel)
-                        // [Feature] 联动 Pager -> ViewModel
-                        // 仅当 isUserAction 为 true 时才允许 Pager 驱动 ViewModel 变更
-                        var isUserAction by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
-
-                        LaunchedEffect(pagerState) {
-                            pagerState.interactionSource.interactions.collect { interaction ->
-                                if (interaction is androidx.compose.foundation.interaction.DragInteraction.Start) {
-                                    isUserAction = true
-                                }
-                            }
-                        }
-
-                        LaunchedEffect(pagerState) {
-                            snapshotFlow { pagerState.settledPage }
-                                .collect { page ->
-                                    if (isUserAction) {
-                                        favoriteVm.switchFolder(page)
-                                        isUserAction = false
-                                    }
-                                }
-                        }
-
-                        // 联动 ViewModel -> Pager (Tab click)
+                        // Personal-list pages use explicit controls for horizontal navigation.
+                        // Keeping this pager programmatic avoids competing with predictive back
+                        // and with filter/folder controls in the collapsing header.
                         LaunchedEffect(selectedFolderIndex) {
                             if (pagerState.currentPage != selectedFolderIndex) {
                                 pagerState.animateScrollToPage(selectedFolderIndex)
@@ -984,12 +960,7 @@ fun CommonListScreen(
                         HorizontalPager(
                             state = pagerState,
                             userScrollEnabled = false,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .verticalPriorityHorizontalPagerSwipe(
-                                    state = pagerState,
-                                    enabled = true,
-                                ),
+                            modifier = Modifier.fillMaxSize(),
                             beyondViewportPageCount = 1 // 预加载
                         ) { page ->
                             // 获取当前页面的状态
@@ -1551,14 +1522,14 @@ fun CommonListScreen(
                     }
 
                     if (favoriteViewModel != null) {
-                        LazyRow(
+                        FlowRow(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .systemGestureExclusion(),
-                            contentPadding = PaddingValues(horizontal = AppSpacingTokens.Medium),
+                                .padding(horizontal = AppSpacingTokens.Medium),
                             horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+                            verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
                         ) {
-                            items(FavoriteSection.entries, key = { it.name }) { section ->
+                            FavoriteSection.entries.forEach { section ->
                                 AppFilterChip(
                                     selected = favoriteSection == section,
                                     onClick = {
@@ -1582,14 +1553,14 @@ fun CommonListScreen(
                         isSearchDestination &&
                         favoriteSection == FavoriteSection.VIDEO
                     ) {
-                        LazyRow(
+                        FlowRow(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .systemGestureExclusion(),
-                            contentPadding = PaddingValues(horizontal = AppSpacingTokens.Medium),
+                                .padding(horizontal = AppSpacingTokens.Medium),
                             horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+                            verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
                         ) {
-                            items(FavoriteSearchScope.entries, key = { it.name }) { scopeOption ->
+                            FavoriteSearchScope.entries.forEach { scopeOption ->
                                 AppFilterChip(
                                     selected = favoriteSearchScope == scopeOption,
                                     onClick = { favoriteSearchScope = scopeOption },
@@ -1672,14 +1643,15 @@ fun CommonListScreen(
                                     }
                                 )
                             } else {
-                                LazyRow(
+                                FlowRow(
+                                    modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.spacedBy(
                                         space = AppSpacingTokens.Small,
                                         alignment = Alignment.CenterHorizontally
                                     ),
-                                    verticalAlignment = Alignment.CenterVertically
+                                    verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
                                 ) {
-                                    items(HistoryContentFilter.entries, key = { it.name }) { filter ->
+                                    HistoryContentFilter.entries.forEach { filter ->
                                         AppFilterChip(
                                             selected = historyContentFilter == filter,
                                             enabled = !isHistoryBatchMode,
@@ -1725,6 +1697,7 @@ fun CommonListScreen(
                             labelFontSize = favoriteHeaderLayout.browseToggleLabelFontSizeSp.sp,
                             backdrop = commonListChromeBackdrop,
                             tapPressRefractionEnabled = false,
+                            dragSelectionEnabled = false,
                             onSelectionChange = { section ->
                                 favoriteBrowseSection = section
                                 searchQuery = ""
@@ -1739,16 +1712,13 @@ fun CommonListScreen(
                         foldersState.size > 1
                     ) {
                         val favoriteVm = requireNotNull(favoriteViewModel)
-                        FavoriteFolderChipRow(
+                        FavoriteFolderSelector(
                             folders = foldersState,
                             selectedFolderIndex = selectedFolderIndex,
                             selectedFolderItems = selectedFolderUiState.items,
                             layout = favoriteHeaderLayout,
                             onFolderSelected = { index ->
                                 favoriteVm.switchFolder(index)
-                                scope.launch {
-                                    pagerState.animateScrollToPage(index)
-                                }
                                 searchQuery = ""
                             }
                         )
@@ -2143,74 +2113,112 @@ private fun FavoriteFolderSummary(
 }
 
 @Composable
-private fun FavoriteFolderChipRow(
+private fun FavoriteFolderSelector(
     folders: List<com.android.purebilibili.data.model.response.FavFolder>,
     selectedFolderIndex: Int,
     selectedFolderItems: List<com.android.purebilibili.data.model.response.VideoItem>,
     layout: CommonListFavoriteHeaderLayout,
-    onFolderSelected: (Int) -> Unit
+    onFolderSelected: (Int) -> Unit,
 ) {
-    Row(
+    val selectedFolder = folders.getOrNull(selectedFolderIndex) ?: return
+    var expanded by remember { androidx.compose.runtime.mutableStateOf(false) }
+    val selectedPreviewCover = remember(selectedFolder.cover, selectedFolderItems) {
+        resolveFavoriteFolderPreviewCover(
+            folder = selectedFolder,
+            loadedItems = selectedFolderItems,
+        )
+    }
+
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .systemGestureExclusion()
-            .horizontalScroll(rememberScrollState())
             .padding(
                 start = layout.folderChipRowHorizontalPaddingDp.dp,
                 end = layout.folderChipRowHorizontalPaddingDp.dp,
-                top = layout.folderChipRowTopPaddingDp.dp
+                top = layout.folderChipRowTopPaddingDp.dp,
             ),
-        horizontalArrangement = Arrangement.spacedBy(layout.folderChipSpacingDp.dp)
     ) {
-        folders.forEachIndexed { index, folder ->
-            val isSelected = index == selectedFolderIndex
-            val previewCover = remember(folder.cover, isSelected, selectedFolderItems) {
-                resolveFavoriteFolderPreviewCover(
-                    folder = folder,
-                    loadedItems = if (isSelected) selectedFolderItems else emptyList()
+        AppSurface(
+            onClick = { expanded = true },
+            modifier = Modifier.fillMaxWidth(),
+            shape = AppShapes.container(ContainerLevel.Pill),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.18f),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = AppChromeSizeTokens.MinimumTouchTarget)
+                    .padding(horizontal = layout.folderChipHorizontalPaddingDp.dp),
+                horizontalArrangement = Arrangement.spacedBy(layout.folderChipSpacingDp.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                FavoriteFolderChipPreview(
+                    coverUrl = selectedPreviewCover,
+                    selected = true,
+                )
+                AppText(
+                    text = selectedFolder.title,
+                    modifier = Modifier.weight(1f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+                AppText(
+                    text = "${selectedFolderIndex + 1}/${folders.size}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                AppIcon(
+                    imageVector = rememberAppChevronDownIcon(),
+                    contentDescription = "切换收藏夹",
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            AppSurface(
-                onClick = { onFolderSelected(index) },
-                shape = RoundedCornerShape(layout.folderChipMinHeightDp.dp),
-                color = if (isSelected) {
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
-                } else {
-                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.18f)
-                },
-                tonalElevation = if (isSelected) AppSpacingTokens.Micro / 2 else AppSpacingTokens.None
-            ) {
-                Box(
-                    modifier = Modifier
-                        .heightIn(min = layout.folderChipMinHeightDp.dp)
-                        .padding(horizontal = layout.folderChipHorizontalPaddingDp.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small)
-                    ) {
-                        FavoriteFolderChipPreview(
-                            coverUrl = previewCover,
-                            selected = isSelected
-                        )
+        }
+        AppDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.widthIn(min = 280.dp, max = 420.dp),
+        ) {
+            folders.forEachIndexed { index, folder ->
+                val isSelected = index == selectedFolderIndex
+                AppDropdownMenuItem(
+                    text = {
                         AppText(
-                            text = resolveFavoriteFolderTabLabel(folder),
+                            text = folder.title,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.labelLarge.copy(
-                                fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
-                            ),
-                            color = if (isSelected) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            }
+                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
                         )
-                    }
-                }
+                    },
+                    leadingIcon = {
+                        FavoriteFolderChipPreview(
+                            coverUrl = resolveFavoriteFolderPreviewCover(
+                                folder = folder,
+                                loadedItems = if (isSelected) selectedFolderItems else emptyList(),
+                            ),
+                            selected = isSelected,
+                        )
+                    },
+                    trailingIcon = if (isSelected) {
+                        {
+                            AppIcon(
+                                imageVector = Icons.Rounded.CheckCircle,
+                                contentDescription = "当前收藏夹",
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                    } else {
+                        null
+                    },
+                    onClick = {
+                        expanded = false
+                        onFolderSelected(index)
+                    },
+                )
             }
         }
     }

@@ -7,17 +7,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.MaterialTheme
@@ -343,33 +341,26 @@ private fun FavoriteCategoryContent(
         }
 
         if (state.selectedIds.isNotEmpty()) {
-            LazyRow(
+            FlowRow(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .systemGestureExclusion(),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                    horizontal = AppSpacingTokens.Medium,
-                ),
+                    .padding(horizontal = AppSpacingTokens.Medium),
                 horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
             ) {
                 if (state.section == FavoriteSection.BANGUMI || state.section == FavoriteSection.CINEMA) {
-                    items(FavoritePgcStatus.entries) { status ->
+                    FavoritePgcStatus.entries.forEach { status ->
                         AppTextButton(onClick = { onUpdateSelectedPgcStatus(status) }) {
                             AppText("移至${status.label}")
                         }
                     }
                 } else {
-                    item {
-                        AppTextButton(onClick = onRemoveSelected) {
-                            AppText("删除(${state.selectedIds.size})")
-                        }
+                    AppTextButton(onClick = onRemoveSelected) {
+                        AppText("删除(${state.selectedIds.size})")
                     }
                 }
-                item {
-                    AppTextButton(onClick = onClearSelection) {
-                        AppText("取消选择")
-                    }
+                AppTextButton(onClick = onClearSelection) {
+                    AppText("取消选择")
                 }
             }
         }
@@ -414,16 +405,14 @@ private fun FavoriteCategoryFilterRow(
     selectedIndex: Int,
     onSelected: (Int) -> Unit,
 ) {
-    LazyRow(
+    FlowRow(
         modifier = Modifier
             .fillMaxWidth()
-            .systemGestureExclusion(),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(
-            horizontal = AppSpacingTokens.Medium,
-        ),
+            .padding(horizontal = AppSpacingTokens.Medium),
         horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+        verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
     ) {
-        items(labels) { label ->
+        labels.forEach { label ->
             val index = labels.indexOf(label)
             AppFilterChip(
                 selected = index == selectedIndex,
@@ -564,8 +553,11 @@ private fun FavoritePgcCard(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
-                LazyRow(horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall)) {
-                    items(FavoritePgcStatus.entries) { status ->
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
+                    verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
+                ) {
+                    FavoritePgcStatus.entries.forEach { status ->
                         AppTextButton(onClick = { onStatusSelected(status) }) {
                             AppText(
                                 status.label,

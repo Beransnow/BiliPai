@@ -9,7 +9,6 @@ import android.app.Application
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -890,13 +889,14 @@ fun WatchLaterScreen(
                         .fillMaxWidth()
                         .padding(horizontal = AppSpacingTokens.Medium),
                 )
-                LazyRow(
+                FlowRow(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = AppSpacingTokens.Medium),
                     horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+                    verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
                 ) {
-                    items(WatchLaterFilter.entries, key = { it.name }) { filter ->
+                    WatchLaterFilter.entries.forEach { filter ->
                         AppFilterChip(
                             selected = state.filter == filter,
                             enabled = !isBatchMode,
