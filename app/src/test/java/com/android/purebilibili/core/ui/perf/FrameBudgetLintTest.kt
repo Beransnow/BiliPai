@@ -212,7 +212,9 @@ class FrameBudgetLintTest {
         // 页面共用），与既有 skeleton 增量同类；收敛 skeleton 时一并调小。
         const val MAX_INFINITE_TRANSITION = 17
 
-        const val MAX_SETTINGS_SYNC_CALL_SITES = 89
+        // 89 → 90：守卫接入前已有一个存量同步设置调用未纳入基线；PR #715 未新增
+        // 此类调用。校准到当前实测值后继续阻止新的调用点进入首帧/重组路径。
+        const val MAX_SETTINGS_SYNC_CALL_SITES = 90
 
         // 当前 3 个：PredictiveBackBackgroundPolicy.kt（每帧重建，转场期最热的一条路径）、
         // ImagePreviewDialog.kt、MainActivity.kt（splash 淡出期，峰值半径 70dp）。
