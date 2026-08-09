@@ -1,8 +1,8 @@
 package com.android.purebilibili.navigation3
 
-import androidx.navigation3.runtime.NavKey
 import com.android.purebilibili.feature.settings.SettingsRootCategory
 import kotlinx.serialization.Serializable
+import top.yukonga.miuix.kmp.nav.core.NavKey
 
 @Serializable
 internal sealed interface BiliPaiNavKey : NavKey {

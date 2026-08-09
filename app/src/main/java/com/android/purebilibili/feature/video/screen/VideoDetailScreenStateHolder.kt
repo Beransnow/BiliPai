@@ -2535,18 +2535,15 @@ internal fun VideoDetailScreenStateHolder(
         isPortraitFullscreen = isPortraitFullscreen,
     )
     val localBackEventState = rememberNavigationEventState(NavigationEventInfo.None)
-    val predictiveBackGestureEnabled = LocalPredictiveBackGestureEnabled.current
     NavigationBackHandler(
         state = localBackEventState,
         isBackEnabled = localBackTarget != VideoDetailLocalBackTarget.NAVIGATE_BACK,
-        reportPredictiveProgress = predictiveBackGestureEnabled,
-        onBackCompleted = { commitTransition: () -> Unit ->
+        onBackCompleted = {
             when (localBackTarget) {
                 VideoDetailLocalBackTarget.EXIT_PORTRAIT_FULLSCREEN -> presentationState.setPortraitFullscreen(false)
                 VideoDetailLocalBackTarget.EXIT_LANDSCAPE_FULLSCREEN -> toggleFullscreen()
                 VideoDetailLocalBackTarget.NAVIGATE_BACK -> Unit
             }
-            commitTransition()
         },
     )
 
