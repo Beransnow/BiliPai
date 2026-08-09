@@ -16,7 +16,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.HasDefaultViewModelProviderFactory
@@ -55,7 +54,6 @@ import top.yukonga.miuix.kmp.nav.core.NavBackStack
 import top.yukonga.miuix.kmp.nav.core.NavCornerClipMode
 import top.yukonga.miuix.kmp.nav.core.NavDisplay
 import top.yukonga.miuix.kmp.nav.core.NavDisplayEffects
-import top.yukonga.miuix.kmp.nav.transition.NavSwipeDirection
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 internal class BiliPaiProgrammaticBackDispatcher {
@@ -327,10 +325,6 @@ internal fun BiliPaiNavDisplayHost(
             blockInputDuringTransition = false,
         )
     }
-    val swipeBackDirection = when (LocalLayoutDirection.current) {
-        LayoutDirection.Rtl -> NavSwipeDirection.RightToLeft
-        LayoutDirection.Ltr -> NavSwipeDirection.LeftToRight
-    }
     val interceptPredictiveBack =
         style == BiliPaiPredictiveBackAnimationStyle.NONE && backStack.size > 1
 
@@ -364,7 +358,6 @@ internal fun BiliPaiNavDisplayHost(
             effects = effects,
         ) {
             biliPaiNavEntries(
-                swipeBackDirection = swipeBackDirection,
                 videoCardTransition = videoCardTransition,
                 fullscreenVideoCardTransition = fullscreenVideoCardTransition,
             ) { key ->
