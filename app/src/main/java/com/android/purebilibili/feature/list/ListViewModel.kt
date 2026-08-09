@@ -418,6 +418,47 @@ class HistoryViewModel(application: Application) : BaseListViewModel(application
         }
     }
 
+    fun deleteViewedHistory() {
+        val viewedKeys = _historyItemsByRenderKey
+            .filterValues { item -> item.progress == -1 }
+            .keys
+            .toSet()
+        if (viewedKeys.isEmpty()) {
+            android.widget.Toast.makeText(
+                getApplication(),
+                "无已看记录",
+                android.widget.Toast.LENGTH_SHORT,
+            ).show()
+            return
+        }
+        deleteHistoryItems(viewedKeys)
+    }
+
+    fun addToWatchLater(item: com.android.purebilibili.data.model.response.HistoryItem) {
+        if (!canAddHistoryToWatchLater(item)) {
+            android.widget.Toast.makeText(
+                getApplication(),
+                "该内容无法加入稍后再看",
+                android.widget.Toast.LENGTH_SHORT,
+            ).show()
+            return
+        }
+        viewModelScope.launch {
+            val result = com.android.purebilibili.data.repository.ActionRepository.toggleWatchLater(
+                aid = item.videoItem.id,
+                add = true,
+            )
+            android.widget.Toast.makeText(
+                getApplication(),
+                result.fold(
+                    onSuccess = { "已添加到稍后再看" },
+                    onFailure = { it.message ?: "添加失败" },
+                ),
+                android.widget.Toast.LENGTH_SHORT,
+            ).show()
+        }
+    }
+
     private fun captureHistoryClearSnapshot(): HistoryClearSnapshot {
         return HistoryClearSnapshot(
             items = _uiState.value.items,

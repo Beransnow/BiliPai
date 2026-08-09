@@ -133,6 +133,7 @@ import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.VideoGridItemSkeleton
 import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.feature.home.components.cards.ElegantVideoCard
+import com.android.purebilibili.feature.personal.resolvePersonalListColumnCount
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.rememberAdaptiveGridColumns
 import com.android.purebilibili.core.util.rememberResponsiveSpacing
@@ -245,6 +246,10 @@ fun CommonListScreen(
 
     // [新增] 优先使用用户设置的列数
     val columns = if (homeSettings.gridColumnCount > 0) homeSettings.gridColumnCount else adaptiveColumns
+    val configuration = LocalConfiguration.current
+    val personalListColumns = remember(configuration.screenWidthDp) {
+        resolvePersonalListColumnCount(configuration.screenWidthDp.toFloat())
+    }
     val spacing = rememberResponsiveSpacing()
 
     //  [修复] 分页支持：收藏 + 历史记录
@@ -955,7 +960,7 @@ fun CommonListScreen(
                         isLoading = state.isLoading,
                         error = state.error,
                         searchQuery = searchQuery,
-                        columns = columns,
+                        columns = if (historyViewModel != null) personalListColumns else columns,
                         spacing = spacing.medium,
                         padding = PaddingValues(top = headerHeightDp, bottom = commonListBottomPadding),
                         scrollUnderHeader = commonListHeaderCollapseEnabled,
@@ -1012,10 +1017,19 @@ fun CommonListScreen(
                         onHistoryLongDelete = if (historyViewModel != null) {
                             { key ->
                                 if (!isHistoryBatchMode) {
-                                    pendingHistorySingleDeleteKey = key.takeIf { it.isNotBlank() }
+                                    isHistoryBatchMode = true
+                                    selectedHistoryKeys = key.takeIf { it.isNotBlank() }
+                                        ?.let(::setOf)
+                                        .orEmpty()
                                 }
                             }
                         } else null,
+                        onHistoryDelete = if (historyViewModel != null) {
+                            { key -> pendingHistorySingleDeleteKey = key.takeIf { it.isNotBlank() } }
+                        } else null,
+                        onHistoryAddToWatchLater = historyViewModel?.let { vm ->
+                            { item -> vm.addToWatchLater(item) }
+                        },
                         onHistoryDissolveComplete = if (historyViewModel != null) {
                             { key -> historyViewModel.completeVideoDissolve(key) }
                         } else null,
@@ -1211,6 +1225,14 @@ fun CommonListScreen(
                                                 }
                                             )
                                             AppDropdownMenuItem(
+                                                text = { AppText("删除已看记录") },
+                                                enabled = state.items.isNotEmpty() && !isHistoryManagementBusy,
+                                                onClick = {
+                                                    showHistoryManagementMenu = false
+                                                    historyViewModel.deleteViewedHistory()
+                                                }
+                                            )
+                                            AppDropdownMenuItem(
                                                 text = { AppText("清空历史") },
                                                 enabled = state.items.isNotEmpty() && !isHistoryManagementBusy,
                                                 onClick = {
@@ -1253,6 +1275,24 @@ fun CommonListScreen(
                     }
 
                     if (historyViewModel != null) {
+                        if (isHistoryPaused) {
+                            AppSurface(
+                                onClick = historyViewModel::toggleHistoryPause,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = AppSpacingTokens.Medium),
+                                shape = AppShapes.container(ContainerLevel.Pill),
+                                color = MaterialTheme.colorScheme.errorContainer,
+                            ) {
+                                AppText(
+                                    text = "历史记录功能已关闭 · 点击开启",
+                                    modifier = Modifier.padding(AppSpacingTokens.Medium),
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(AppSpacingTokens.Small))
+                        }
                         val historyFilterLabels = remember {
                             HistoryContentFilter.entries.map { it.label }
                         }
@@ -1661,6 +1701,8 @@ private fun CommonListContent(
     resolveHistoryLookupKey: ((com.android.purebilibili.data.model.response.VideoItem) -> String)? = null,
     resolveHistoryItem: ((com.android.purebilibili.data.model.response.VideoItem) -> HistoryItem?)? = null,
     onHistoryLongDelete: ((String) -> Unit)? = null,
+    onHistoryDelete: ((String) -> Unit)? = null,
+    onHistoryAddToWatchLater: ((HistoryItem) -> Unit)? = null,
     onHistoryDissolveComplete: ((String) -> Unit)? = null,
     onHistoryToggleSelect: ((String) -> Unit)? = null,
     onUpClick: ((Long) -> Unit)? = null,
@@ -1670,11 +1712,24 @@ private fun CommonListContent(
     gridState: androidx.compose.foundation.lazy.grid.LazyGridState? = null
 ) {
     val context = LocalContext.current
-    val homeFeedCardStyle by SettingsManager
-        .getHomeFeedCardStyle(context)
-        .collectAsStateWithLifecycle(initialValue = HomeFeedCardStyle.CURRENT)
+    val isHistoryPersonalList = resolveHistoryItem != null
+    val homeFeedCardStyle = if (isHistoryPersonalList) {
+        HomeFeedCardStyle.CURRENT
+    } else {
+        SettingsManager
+            .getHomeFeedCardStyle(context)
+            .collectAsStateWithLifecycle(initialValue = HomeFeedCardStyle.CURRENT)
+            .value
+    }
     val cardLayout = remember(homeFeedCardStyle) {
         com.android.purebilibili.feature.home.resolveHomeFeedCardLayout(homeFeedCardStyle)
+    }
+    val gridOuterPaddingDp = if (isHistoryPersonalList) 12 else cardLayout.outerPaddingDp
+    val gridItemSpacingDp = if (isHistoryPersonalList) 12 else cardLayout.itemSpacingDp
+    val skeletonCoverAspectRatio = if (isHistoryPersonalList) {
+        com.android.purebilibili.feature.personal.PERSONAL_LIST_HORIZONTAL_COVER_ASPECT_RATIO
+    } else {
+        cardLayout.coverAspectRatio
     }
     val resolvedGridState = gridState ?: rememberLazyGridState()
     val fixedHeaderInset = resolveCommonListViewportTopPadding(padding.calculateTopPadding())
@@ -1698,7 +1753,9 @@ private fun CommonListContent(
             verticalArrangement = Arrangement.spacedBy(spacing),
             modifier = viewportModifier
         ) {
-            items(columns * 4, key = { it }) { VideoGridItemSkeleton(coverAspectRatio = cardLayout.coverAspectRatio) }
+            items(columns * 4, key = { it }) {
+                VideoGridItemSkeleton(coverAspectRatio = skeletonCoverAspectRatio)
+            }
         }
     } else if (error != null && items.isEmpty()) {
         Column(
@@ -1769,13 +1826,13 @@ private fun CommonListContent(
                 columns = GridCells.Fixed(columns),
                 state = resolvedGridState,
                 contentPadding = PaddingValues(
-                    start = cardLayout.outerPaddingDp.dp,
-                    end = cardLayout.outerPaddingDp.dp,
-                    top = scrollableHeaderInset + cardLayout.outerPaddingDp.dp,
-                    bottom = padding.calculateBottomPadding() + cardLayout.outerPaddingDp.dp
+                    start = gridOuterPaddingDp.dp,
+                    end = gridOuterPaddingDp.dp,
+                    top = scrollableHeaderInset + gridOuterPaddingDp.dp,
+                    bottom = padding.calculateBottomPadding() + gridOuterPaddingDp.dp
                 ),
-                horizontalArrangement = Arrangement.spacedBy(cardLayout.itemSpacingDp.dp),
-                verticalArrangement = Arrangement.spacedBy(cardLayout.itemSpacingDp.dp),
+                horizontalArrangement = Arrangement.spacedBy(gridItemSpacingDp.dp),
+                verticalArrangement = Arrangement.spacedBy(gridItemSpacingDp.dp),
                 modifier = viewportModifier
             ) {
                  itemsIndexed(
@@ -1816,9 +1873,11 @@ private fun CommonListContent(
                                         }
                                     }
                                 )
-                            } else if (historyItem?.business == HistoryBusiness.ARTICLE) {
-                                HistoryArticleCard(
-                                    article = video,
+                            } else if (historyItem != null) {
+                                HistoryPersonalCard(
+                                    item = historyItem,
+                                    selected = isSelected,
+                                    batchMode = historyBatchMode,
                                     transitionEnabled = cardTransitionEnabled,
                                     onClick = {
                                         if (historyBatchMode) {
@@ -1837,11 +1896,14 @@ private fun CommonListContent(
                                             }
                                         }
                                     },
-                                    onLongClick = if (!historyBatchMode && supportsHistoryDissolve) {
-                                        { onHistoryLongDelete(historyKey) }
-                                    } else {
-                                        null
-                                    }
+                                    onLongClick = { onHistoryLongDelete?.invoke(historyKey) },
+                                    onUpClick = historyItem.videoItem.owner.mid
+                                        .takeIf { it > 0L }
+                                        ?.let { mid -> { onUpClick?.invoke(mid) } },
+                                    onAddToWatchLater = historyItem
+                                        .takeIf(::canAddHistoryToWatchLater)
+                                        ?.let { eligible -> { onHistoryAddToWatchLater?.invoke(eligible) } },
+                                    onDelete = { onHistoryDelete?.invoke(historyKey) },
                                 )
                             } else {
                                 ElegantVideoCard(
@@ -1884,7 +1946,7 @@ private fun CommonListContent(
                                 )
                             }
 
-                            if (historyBatchMode) {
+                            if (historyBatchMode && historyItem == null) {
                                 Box(
                                     modifier = Modifier
                                         .matchParentSize()
