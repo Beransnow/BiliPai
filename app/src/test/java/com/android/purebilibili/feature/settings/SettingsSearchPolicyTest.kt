@@ -269,18 +269,6 @@ class SettingsSearchPolicyTest {
     }
 
     @Test
-    fun queryByHideVideoPageStatusBar_hitsPlaybackFullscreenEntry() {
-        val results = resolveSettingsSearchResults("播放页隐藏状态栏")
-
-        assertTrue(
-            results.any {
-                it.target == SettingsSearchTarget.PLAYBACK &&
-                    it.focusId == SettingsSearchFocusIds.PLAYBACK_FULLSCREEN
-            }
-        )
-    }
-
-    @Test
     fun queryByTabletCommentPanelWidth_hitsPlaybackFullscreenEntry() {
         val results = resolveSettingsSearchResults("平板评论区宽度")
 

@@ -266,7 +266,6 @@ fun PortraitVideoPager(
         val immersiveSpec = resolveVideoDetailSystemBarsApplySpec(
             visibilityPolicy = resolveVideoDetailSystemBarsVisibilityPolicy(
                 isFullscreenMode = false,
-                hideVideoPageStatusBar = false,
                 isInPipMode = false,
                 isScreenActive = true,
                 isPortraitFullscreen = true
@@ -2627,12 +2626,12 @@ private fun VideoPageItem(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
             ) {
                 val arrowAlphas = listOf(arrow1Alpha, arrow2Alpha, arrow3Alpha)
                 arrowAlphas.forEach { alpha ->
                     Canvas(
-                        modifier = Modifier.size(12.dp)
+                        modifier = Modifier.size(10.dp)
                     ) {
                         val path = Path().apply {
                             moveTo(0f, 0f)
@@ -2646,15 +2645,15 @@ private fun VideoPageItem(
                         )
                     }
                 }
-                Spacer(modifier = Modifier.width(6.dp))
+                Spacer(modifier = Modifier.width(5.dp))
                 AppText(
                     text = "${effectiveLongPressSpeed}x",
                     color = Color.White,
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
                     style = androidx.compose.ui.text.TextStyle(
                         shadow = Shadow(
-                            color = Color.Black.copy(alpha = 0.35f),
+                            color = Color.Black.copy(alpha = 0.25f),
                             offset = Offset(1f, 1f),
                             blurRadius = 2f
                         )
@@ -2663,13 +2662,13 @@ private fun VideoPageItem(
                 if (shouldShowLongPressSpeedHintCloseButton(longPressSpeedHintCloseEnabled)) {
                     AppIconButton(
                         onClick = { longPressSpeedHintDismissed = true },
-                        modifier = Modifier.size(40.dp),
+                        modifier = Modifier.size(36.dp),
                     ) {
                         AppIcon(
                             imageVector = Icons.Outlined.Close,
                             contentDescription = "关闭倍速提示",
                             tint = Color.White,
-                            modifier = Modifier.size(16.dp),
+                            modifier = Modifier.size(14.dp),
                         )
                     }
                 }

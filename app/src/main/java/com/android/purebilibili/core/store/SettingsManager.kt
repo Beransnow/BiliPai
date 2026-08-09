@@ -893,7 +893,6 @@ data class PlayerInteractionSettings(
     val fullscreenSwipeSeekSeconds: Int = 15,
     val fullscreenSwipeSeekEnabled: Boolean = true,
     val fullscreenGestureReverse: Boolean = false,
-    val hideVideoPageStatusBar: Boolean = false,
     val tabletCommentPanelWidthPreset: TabletCommentPanelWidthPreset =
         TabletCommentPanelWidthPreset.STANDARD,
     val autoEnterFullscreenEnabled: Boolean = false,
@@ -1536,7 +1535,6 @@ object SettingsManager {
             ),
             fullscreenSwipeSeekEnabled = preferences[KEY_FULLSCREEN_SWIPE_SEEK_ENABLED] ?: true,
             fullscreenGestureReverse = preferences[KEY_FULLSCREEN_GESTURE_REVERSE] ?: false,
-            hideVideoPageStatusBar = preferences[KEY_HIDE_VIDEO_PAGE_STATUS_BAR] ?: false,
             tabletCommentPanelWidthPreset = TabletCommentPanelWidthPreset.fromValue(
                 preferences[KEY_TABLET_COMMENT_PANEL_WIDTH_PRESET]
                     ?: TabletCommentPanelWidthPreset.STANDARD.value
@@ -1630,8 +1628,6 @@ object SettingsManager {
     private const val CACHE_KEY_LONG_PRESS_SPEED_HINT_CLOSE_ENABLED =
         "long_press_speed_hint_close_enabled"
     private const val CACHE_KEY_LONG_PRESS_SPEED_HINT_HIDDEN = "long_press_speed_hint_hidden"
-    private const val VIDEO_PAGE_STATUS_BAR_CACHE_PREFS = "video_page_status_bar_cache"
-    private const val CACHE_KEY_HIDE_VIDEO_PAGE_STATUS_BAR = "hide_video_page_status_bar"
 
     fun getClickToPlay(context: Context): Flow<Boolean> = context.settingsDataStore.data
         .map { preferences -> preferences[KEY_CLICK_TO_PLAY] ?: true }
@@ -5648,7 +5644,6 @@ object SettingsManager {
     private val KEY_FULLSCREEN_SWIPE_SEEK_ENABLED = booleanPreferencesKey("fullscreen_swipe_seek_enabled")
     private val KEY_FULLSCREEN_SWIPE_SEEK_SECONDS = intPreferencesKey("fullscreen_swipe_seek_seconds")
     private val KEY_FULLSCREEN_GESTURE_REVERSE = booleanPreferencesKey("fullscreen_gesture_reverse")
-    private val KEY_HIDE_VIDEO_PAGE_STATUS_BAR = booleanPreferencesKey("hide_video_page_status_bar")
     private val KEY_TABLET_COMMENT_PANEL_WIDTH_PRESET =
         intPreferencesKey("tablet_comment_panel_width_preset")
     private val KEY_AUTO_ENTER_FULLSCREEN = booleanPreferencesKey("auto_enter_fullscreen")
@@ -5814,30 +5809,6 @@ object SettingsManager {
         context.settingsDataStore.edit { preferences ->
             preferences[KEY_FULLSCREEN_GESTURE_REVERSE] = enabled
         }
-    }
-
-    fun getHideVideoPageStatusBar(context: Context): Flow<Boolean> = context.settingsDataStore.data
-        .map { preferences -> preferences[KEY_HIDE_VIDEO_PAGE_STATUS_BAR] ?: false }
-        .onEach { enabledFromDataStore ->
-            context.getSharedPreferences(VIDEO_PAGE_STATUS_BAR_CACHE_PREFS, Context.MODE_PRIVATE)
-                .edit()
-                .putBoolean(CACHE_KEY_HIDE_VIDEO_PAGE_STATUS_BAR, enabledFromDataStore)
-                .apply()
-        }
-
-    suspend fun setHideVideoPageStatusBar(context: Context, enabled: Boolean) {
-        context.settingsDataStore.edit { preferences ->
-            preferences[KEY_HIDE_VIDEO_PAGE_STATUS_BAR] = enabled
-        }
-        context.getSharedPreferences(VIDEO_PAGE_STATUS_BAR_CACHE_PREFS, Context.MODE_PRIVATE)
-            .edit()
-            .putBoolean(CACHE_KEY_HIDE_VIDEO_PAGE_STATUS_BAR, enabled)
-            .apply()
-    }
-
-    fun getHideVideoPageStatusBarSync(context: Context): Boolean {
-        return context.getSharedPreferences(VIDEO_PAGE_STATUS_BAR_CACHE_PREFS, Context.MODE_PRIVATE)
-            .getBoolean(CACHE_KEY_HIDE_VIDEO_PAGE_STATUS_BAR, false)
     }
 
     fun getTabletCommentPanelWidthPreset(context: Context): Flow<TabletCommentPanelWidthPreset> =
@@ -6556,7 +6527,6 @@ object SettingsManager {
             IntShareablePreferenceDefinition(KEY_SUBTITLE_AUTO_PREFERENCE, SettingsShareSection.PLAYBACK),
             IntShareablePreferenceDefinition(KEY_BOTTOM_PROGRESS_BEHAVIOR, SettingsShareSection.PLAYBACK),
             BooleanShareablePreferenceDefinition(KEY_HORIZONTAL_ADAPTATION, SettingsShareSection.PLAYBACK),
-            BooleanShareablePreferenceDefinition(KEY_HIDE_VIDEO_PAGE_STATUS_BAR, SettingsShareSection.PLAYBACK),
             IntShareablePreferenceDefinition(KEY_TABLET_COMMENT_PANEL_WIDTH_PRESET, SettingsShareSection.PLAYBACK),
             BooleanShareablePreferenceDefinition(KEY_SHOW_ONLINE_COUNT, SettingsShareSection.PLAYBACK),
             IntShareablePreferenceDefinition(KEY_COMMENT_COLLAPSED_REPLY_PREVIEW_LIMIT, SettingsShareSection.PLAYBACK),

@@ -32,7 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontFamily
@@ -667,8 +666,6 @@ fun VideoPlayerOverlay(
     hasFavoritePlaylist: Boolean = false,
     onFavoritePlaylistClick: () -> Unit = {},
     drawerHazeState: HazeState? = null,
-    statusBarAmbientFrame: State<ImageBitmap?>? = null,
-    statusBarBackdropHeight: androidx.compose.ui.unit.Dp = 0.dp,
 ) {
     var showQualityMenu by remember { mutableStateOf(false) }
     var showAudioQualityMenu by remember { mutableStateOf(false) }
@@ -995,15 +992,8 @@ fun VideoPlayerOverlay(
         .getPlaybackCompletionBehavior(context)
         .collectAsStateWithLifecycle(initialValue = PlaybackCompletionBehavior.CONTINUE_CURRENT_LOGIC
         )
-    // The legacy preference key now enables the inline-player Haze status-bar backdrop.
-    val immersiveVideoPageStatusBar by SettingsManager
-        .getHideVideoPageStatusBar(context)
-        .collectAsStateWithLifecycle(
-            initialValue = SettingsManager.getHideVideoPageStatusBarSync(context),
-        )
     val playerChromeStatusBarVisible = !resolveVideoDetailSystemBarsVisibilityPolicy(
         isFullscreenMode = isFullscreen,
-        hideVideoPageStatusBar = immersiveVideoPageStatusBar,
         isInPipMode = false,
         isScreenActive = true,
         isPortraitFullscreen = false,
@@ -1328,14 +1318,6 @@ fun VideoPlayerOverlay(
         modifier = Modifier
             .fillMaxSize()
     ) {
-        if (!isFullscreen && immersiveVideoPageStatusBar) {
-            ImmersiveStatusBarBackdrop(
-                ambientFrame = statusBarAmbientFrame,
-                height = statusBarBackdropHeight,
-                modifier = Modifier.align(Alignment.TopCenter),
-            )
-        }
-
         // --- 1. 顶部渐变遮罩 ---
         AnimatedVisibility(
             visible = isVisible,
@@ -1351,23 +1333,13 @@ fun VideoPlayerOverlay(
                     .fillMaxWidth()
                     .height(overlayVisualPolicy.topScrimHeightDp.dp)
                     .background(
-                        if (immersiveVideoPageStatusBar && !isFullscreen) {
-                            Brush.verticalGradient(
-                                colorStops = arrayOf(
-                                    0f to Color.Transparent,
-                                    0.2f to Color.Black.copy(alpha = 0.52f),
-                                    1f to Color.Transparent,
-                                )
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Black.copy(alpha = 0.75f),
+                                Color.Black.copy(alpha = 0.1f),
+                                Color.Transparent
                             )
-                        } else {
-                            Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.Black.copy(alpha = 0.75f),
-                                    Color.Black.copy(alpha = 0.1f),
-                                    Color.Transparent
-                                )
-                            )
-                        }
+                        )
                     )
             )
         }

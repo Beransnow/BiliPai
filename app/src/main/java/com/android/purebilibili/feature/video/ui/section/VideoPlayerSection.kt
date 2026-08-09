@@ -25,9 +25,6 @@ import com.android.purebilibili.feature.video.ui.overlay.resolveBottomControlBar
 import com.android.purebilibili.feature.video.ui.overlay.resolveVideoProgressBarLayoutPolicy
 import com.android.purebilibili.feature.video.ui.overlay.resolveLandscapeEndDrawerReservedWidthDp
 import com.android.purebilibili.feature.video.ui.overlay.resolveLandscapeEndDrawerLayoutPolicy
-import com.android.purebilibili.feature.video.ui.overlay.VIDEO_STATUS_BAR_AMBIENT_CAPTURE_INTERVAL_MS
-import com.android.purebilibili.feature.video.ui.overlay.VIDEO_STATUS_BAR_AMBIENT_SAMPLE_HEIGHT_PX
-import com.android.purebilibili.feature.video.ui.overlay.VIDEO_STATUS_BAR_AMBIENT_SAMPLE_WIDTH_PX
 import com.android.purebilibili.feature.video.ui.components.SponsorSkipButton
 import com.android.purebilibili.feature.video.ui.components.SponsorContributionOverlay
 import com.android.purebilibili.feature.video.viewmodel.SponsorContributionUiState
@@ -117,9 +114,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -194,7 +189,6 @@ import com.android.purebilibili.feature.video.usecase.playPlayerFromUserAction
 import com.android.purebilibili.feature.video.usecase.seekPlayerFromUserAction
 import com.android.purebilibili.feature.video.usecase.togglePlayerPlaybackFromUserAction
 import com.android.purebilibili.feature.video.util.captureAndSaveVideoScreenshot
-import com.android.purebilibili.feature.video.util.captureVideoAmbientFrame
 import com.android.purebilibili.feature.video.playback.session.PlaybackSeekSessionState
 import com.android.purebilibili.feature.video.playback.session.SEEK_PLAYBACK_RECOVERY_DELAY_MS
 import com.android.purebilibili.feature.video.playback.session.shouldAttemptPlaybackRecoveryAfterSeek
@@ -1012,7 +1006,6 @@ fun VideoPlayerSection(
         mutableStateOf(INITIAL_PLAYER_CHROME_AUTO_HIDE_HANDLED)
     }
     var playerViewRef by remember { mutableStateOf<PlayerView?>(null) }
-    val statusBarAmbientFrame = remember(bvid) { mutableStateOf<ImageBitmap?>(null) }
     var measuredPlayerViewportSize by remember(bvid) { mutableStateOf(IntSize.Zero) }
     var measuredBottomControlsHeightPx by remember(bvid) { mutableIntStateOf(0) }
     
@@ -1031,34 +1024,6 @@ fun VideoPlayerSection(
             if (shouldBlockAppScreenshot) {
                 AppScreenshotGestureBlockState.fullscreenPlayerLocked = false
             }
-        }
-    }
-
-    val shouldCaptureStatusBarAmbientFrame = contentTopInset.value > 0f &&
-        !isFullscreen &&
-        !isInPipMode &&
-        hostLifecycleStarted
-    LaunchedEffect(
-        playerViewRef,
-        shouldCaptureStatusBarAmbientFrame,
-        observedIsPlaying,
-        currentPlaybackIdentity,
-    ) {
-        if (!shouldCaptureStatusBarAmbientFrame) {
-            statusBarAmbientFrame.value = null
-            return@LaunchedEffect
-        }
-        val playerView = playerViewRef ?: return@LaunchedEffect
-        while (isActive) {
-            if (playerView.isAttachedToWindow && playerView.width > 0 && playerView.height > 0) {
-                statusBarAmbientFrame.value = captureVideoAmbientFrame(
-                    playerView = playerView,
-                    targetWidth = VIDEO_STATUS_BAR_AMBIENT_SAMPLE_WIDTH_PX,
-                    targetHeight = VIDEO_STATUS_BAR_AMBIENT_SAMPLE_HEIGHT_PX,
-                )?.asImageBitmap()
-            }
-            if (!observedIsPlaying) break
-            delay(VIDEO_STATUS_BAR_AMBIENT_CAPTURE_INTERVAL_MS)
         }
     }
 
@@ -4423,15 +4388,15 @@ fun VideoPlayerSection(
             ),
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = 16.dp),
+                .padding(top = contentTopInset + 16.dp),
             enter = fadeIn(animationSpec = tween(gestureMotionSpec.longPressHintDurationMillis)) +
                 slideInVertically(initialOffsetY = { -it }),
             exit = fadeOut(animationSpec = tween(gestureMotionSpec.longPressHintDurationMillis)) +
                 slideOutVertically(targetOffsetY = { -it })
         ) {
             AppSurface(
-                shape = RoundedCornerShape(12.dp),
-                color = Color.Black.copy(alpha = 0.56f),
+                shape = RoundedCornerShape(10.dp),
+                color = Color.Black.copy(alpha = 0.30f),
                 contentColor = Color.White,
                 tonalElevation = 0.dp
             ) {
@@ -4443,14 +4408,14 @@ fun VideoPlayerSection(
                             "倍速播放中 ${effectiveLongPressSpeed}x"
                         },
                         modifier = Modifier.padding(
-                            start = 10.dp,
+                            start = 8.dp,
                             end = if (shouldShowLongPressSpeedHintCloseButton(longPressSpeedHintCloseEnabled)) {
                                 2.dp
                             } else {
-                                10.dp
+                                8.dp
                             },
-                            top = 6.dp,
-                            bottom = 6.dp,
+                            top = 5.dp,
+                            bottom = 5.dp,
                         ),
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.Medium
@@ -4459,13 +4424,13 @@ fun VideoPlayerSection(
                     if (shouldShowLongPressSpeedHintCloseButton(longPressSpeedHintCloseEnabled)) {
                         AppIconButton(
                             onClick = { longPressSpeedHintDismissed = true },
-                            modifier = Modifier.size(40.dp),
+                            modifier = Modifier.size(36.dp),
                         ) {
                             AppIcon(
                                 imageVector = Icons.Outlined.Close,
                                 contentDescription = "关闭倍速提示",
                                 tint = Color.White,
-                                modifier = Modifier.size(16.dp),
+                                modifier = Modifier.size(14.dp),
                             )
                         }
                     }
@@ -5154,8 +5119,6 @@ fun VideoPlayerSection(
                 hasFavoritePlaylist = hasFavoritePlaylist,
                 onFavoritePlaylistClick = onFavoritePlaylistClick,
                 drawerHazeState = overlayDrawerHazeState,
-                statusBarAmbientFrame = statusBarAmbientFrame,
-                statusBarBackdropHeight = contentTopInset,
                 onLandscapeCommentClick = onLandscapeCommentClick,
                 landscapeCommentPanelVisible = landscapeCommentPanelVisible,
                 landscapeCommentPanelOnLeft = landscapeCommentPanelOnLeft,

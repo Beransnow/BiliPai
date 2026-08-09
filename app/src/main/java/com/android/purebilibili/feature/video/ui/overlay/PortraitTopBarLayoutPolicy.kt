@@ -15,7 +15,7 @@ data class PortraitTopBarLayoutPolicy(
 
 /**
  * 竖屏内联顶栏是否加状态栏 padding。
- * 状态栏可见时必须避让；「播放页隐藏状态栏」或全屏藏栏后为 false。
+ * 状态栏可见时必须避让；全屏藏栏后为 false。
  */
 fun shouldApplyStatusBarPaddingToPortraitTopBar(
     statusBarVisible: Boolean,

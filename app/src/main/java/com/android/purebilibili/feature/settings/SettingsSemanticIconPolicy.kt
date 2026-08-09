@@ -103,7 +103,6 @@ internal enum class SettingsIconRole {
     FULLSCREEN_ORIENTATION,
     HORIZONTAL_ADAPTATION,
     FULLSCREEN_GESTURE_REVERSE,
-    IMMERSIVE_STATUS_BAR,
     AUTO_ENTER_FULLSCREEN,
     AUTO_EXIT_FULLSCREEN,
     FULLSCREEN_LOCK,
@@ -282,7 +281,6 @@ private fun resolveMd3SettingsSemanticIcon(role: SettingsIconRole): ImageVector 
     SettingsIconRole.FULLSCREEN_ORIENTATION -> Icons.Outlined.ScreenRotation
     SettingsIconRole.HORIZONTAL_ADAPTATION -> Icons.Outlined.AspectRatio
     SettingsIconRole.FULLSCREEN_GESTURE_REVERSE -> Icons.Outlined.SwipeVertical
-    SettingsIconRole.IMMERSIVE_STATUS_BAR -> Icons.Outlined.Fullscreen
     // 自动进入全屏用 OpenInFull(向外展开),与 FullscreenExit 保持可区分。
     SettingsIconRole.AUTO_ENTER_FULLSCREEN -> Icons.Outlined.OpenInFull
     SettingsIconRole.AUTO_EXIT_FULLSCREEN -> Icons.Outlined.FullscreenExit

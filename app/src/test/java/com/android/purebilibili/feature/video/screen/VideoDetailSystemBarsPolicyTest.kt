@@ -56,20 +56,6 @@ class VideoDetailSystemBarsPolicyTest {
     fun visibilityPolicy_defaultOrdinaryPageShowsSystemBars() {
         val policy = resolveVideoDetailSystemBarsVisibilityPolicy(
             isFullscreenMode = false,
-            hideVideoPageStatusBar = false,
-            isInPipMode = false,
-            isScreenActive = true
-        )
-
-        assertEquals(false, policy.hideStatusBars)
-        assertEquals(false, policy.hideNavigationBars)
-    }
-
-    @Test
-    fun visibilityPolicy_immersiveSettingKeepsStatusBarVisibleOnOrdinaryPage() {
-        val policy = resolveVideoDetailSystemBarsVisibilityPolicy(
-            isFullscreenMode = false,
-            hideVideoPageStatusBar = true,
             isInPipMode = false,
             isScreenActive = true
         )
@@ -82,7 +68,6 @@ class VideoDetailSystemBarsPolicyTest {
     fun visibilityPolicy_fullscreenStillHidesAllSystemBars() {
         val policy = resolveVideoDetailSystemBarsVisibilityPolicy(
             isFullscreenMode = true,
-            hideVideoPageStatusBar = false,
             isInPipMode = false,
             isScreenActive = true
         )
@@ -95,7 +80,6 @@ class VideoDetailSystemBarsPolicyTest {
     fun visibilityPolicy_portraitFullscreenHidesAllSystemBarsForImmersion() {
         val policy = resolveVideoDetailSystemBarsVisibilityPolicy(
             isFullscreenMode = false,
-            hideVideoPageStatusBar = false,
             isInPipMode = false,
             isScreenActive = true,
             isPortraitFullscreen = true
@@ -109,7 +93,6 @@ class VideoDetailSystemBarsPolicyTest {
     fun visibilityPolicy_portraitFullscreenCanForceShowBars() {
         val policy = resolveVideoDetailSystemBarsVisibilityPolicy(
             isFullscreenMode = false,
-            hideVideoPageStatusBar = false,
             isInPipMode = false,
             isScreenActive = true,
             isPortraitFullscreen = true,
@@ -124,7 +107,6 @@ class VideoDetailSystemBarsPolicyTest {
     fun visibilityPolicy_pipRestoresSystemBarsEvenWhenSettingEnabled() {
         val policy = resolveVideoDetailSystemBarsVisibilityPolicy(
             isFullscreenMode = false,
-            hideVideoPageStatusBar = true,
             isInPipMode = true,
             isScreenActive = true
         )
@@ -267,21 +249,12 @@ class VideoDetailSystemBarsPolicyTest {
     }
 
     @Test
-    fun portraitPlayerTopInset_reservesSolidBackdropOnlyWhenImmersiveSettingIsEnabled() {
+    fun portraitPlayerTopInset_reservesStatusBarHeightWhenVisible() {
         assertEquals(
             0f,
             resolveVideoDetailPortraitPlayerTopInsetDp(
                 stableStatusBarHeightDp = 24f,
                 hideStatusBars = true,
-                immersiveStatusBarBackdropEnabled = true,
-            )
-        )
-        assertEquals(
-            0f,
-            resolveVideoDetailPortraitPlayerTopInsetDp(
-                stableStatusBarHeightDp = 24f,
-                hideStatusBars = false,
-                immersiveStatusBarBackdropEnabled = false,
             )
         )
         assertEquals(
@@ -289,8 +262,6 @@ class VideoDetailSystemBarsPolicyTest {
             resolveVideoDetailPortraitPlayerTopInsetDp(
                 stableStatusBarHeightDp = 24f,
                 hideStatusBars = false,
-                immersiveStatusBarBackdropEnabled = true,
-                isSharedCardTransition = true,
             )
         )
     }
