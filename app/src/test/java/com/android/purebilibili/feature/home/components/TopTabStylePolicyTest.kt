@@ -546,6 +546,20 @@ class TopTabStylePolicyTest {
                 materialMode = TopTabMaterialMode.LIQUID_GLASS
             )
         )
+        // md3 下划线 tab 也统一绘制长胶囊背景（普通/模糊模式同样绘制），
+        // 避免滚动时 tab 文字直接浮现在信息流上方。
+        assertTrue(
+            shouldDrawHomeTopTabOuterChromeSurface(
+                presentation = AppTopTabPresentation.MATERIAL_UNDERLINE,
+                materialMode = TopTabMaterialMode.PLAIN
+            )
+        )
+        assertTrue(
+            shouldDrawHomeTopTabOuterChromeSurface(
+                presentation = AppTopTabPresentation.MATERIAL_UNDERLINE,
+                materialMode = TopTabMaterialMode.BLUR
+            )
+        )
         assertTrue(
             shouldDrawHomeTopTabOuterChromeSurface(
                 presentation = AppTopTabPresentation.MOVING_CAPSULE,
