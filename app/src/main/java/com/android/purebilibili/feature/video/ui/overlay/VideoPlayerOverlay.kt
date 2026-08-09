@@ -32,7 +32,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.font.FontFamily
@@ -667,7 +666,6 @@ fun VideoPlayerOverlay(
     hasFavoritePlaylist: Boolean = false,
     onFavoritePlaylistClick: () -> Unit = {},
     drawerHazeState: HazeState? = null,
-    statusBarAmbientFrame: State<ImageBitmap?>? = null,
     statusBarBackdropHeight: androidx.compose.ui.unit.Dp = 0.dp,
 ) {
     var showQualityMenu by remember { mutableStateOf(false) }
@@ -1330,7 +1328,6 @@ fun VideoPlayerOverlay(
     ) {
         if (!isFullscreen && immersiveVideoPageStatusBar) {
             ImmersiveStatusBarBackdrop(
-                ambientFrame = statusBarAmbientFrame,
                 height = statusBarBackdropHeight,
                 modifier = Modifier.align(Alignment.TopCenter),
             )

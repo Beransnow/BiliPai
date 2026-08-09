@@ -271,13 +271,15 @@ internal fun resolveVideoCommentSheetPresentationProgress(
 
 internal fun resolveVideoCommentSheetHostOverlayVisual(
     mainSheetVisible: Boolean,
-    presentationProgress: Float
+    presentationProgress: Float,
+    maxScrimAlphaOverride: Float? = null
 ): InteractiveOverlayProgressVisual {
     return resolveInteractiveOverlayProgressVisual(
         presentationProgress = presentationProgress,
         surfaceType = InteractiveOverlaySurfaceType.BOTTOM_SHEET,
         blurActive = mainSheetVisible,
-        maxScrimAlpha = resolveVideoCommentSheetHostScrimAlpha(mainSheetVisible)
+        maxScrimAlpha = maxScrimAlphaOverride
+            ?: resolveVideoCommentSheetHostScrimAlpha(mainSheetVisible)
     )
 }
 
@@ -286,6 +288,13 @@ internal fun resolveVideoCommentSheetHostOverlayVisual(
 fun VideoCommentSheetHost(
     mainSheetVisible: Boolean,
     onDismiss: () -> Unit,
+    /**
+     * 覆盖全屏 scrim 的峰值透明度。
+     *
+     * 详情页楼中楼（嵌入呈现）场景传入 0f：打开子评论时不再盖住播放器上方的阴影，
+     * 但 backdrop 点击拦截仍由 [mainSheetVisible] 控制，点背景关闭行为不受影响。
+     */
+    maxScrimAlphaOverride: Float? = null,
     onMainSheetVisibilityProgressChange: (Float) -> Unit = {},
     commentViewModel: VideoCommentViewModel,
     aid: Long,
@@ -328,7 +337,8 @@ fun VideoCommentSheetHost(
         subReplyVisible = subReplyState.visible
     )
     val hostVisible = hostContent != VideoCommentSheetHostContent.HIDDEN
-    val scrimAlpha = resolveVideoCommentSheetHostScrimAlpha(mainSheetVisible = mainSheetVisible)
+    val scrimAlpha = maxScrimAlphaOverride
+        ?: resolveVideoCommentSheetHostScrimAlpha(mainSheetVisible = mainSheetVisible)
     val dismissOnBackdropTap = shouldDismissVideoCommentSheetHostOnBackdropTap(
         mainSheetVisible = mainSheetVisible
     )
@@ -401,10 +411,11 @@ fun VideoCommentSheetHost(
             }
         }
     }
-    val overlayVisual = remember(mainSheetVisible, mainSheetVisibilityProgress) {
+    val overlayVisual = remember(mainSheetVisible, mainSheetVisibilityProgress, maxScrimAlphaOverride) {
         resolveVideoCommentSheetHostOverlayVisual(
             mainSheetVisible = mainSheetVisible,
-            presentationProgress = mainSheetVisibilityProgress
+            presentationProgress = mainSheetVisibilityProgress,
+            maxScrimAlphaOverride = maxScrimAlphaOverride
         )
     }
 
