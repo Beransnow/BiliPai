@@ -10,8 +10,6 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
@@ -35,12 +33,9 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
-import androidx.compose.ui.input.pointer.positionChangeIgnoreConsumed
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
@@ -53,6 +48,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.android.purebilibili.core.ui.common.copyOnLongPress
+import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
 import com.android.purebilibili.core.util.ShareUtils
 import com.android.purebilibili.core.ui.rememberAppCommentIcon
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
@@ -314,31 +310,12 @@ internal fun resolveVideoContentEffectiveSelectedTabIndex(
     }
 }
 
-/**
- * 简介与评论页之间始终支持横向分页。
- *
- * 评论列表的纵向滚动会由其 [LazyColumn] 正常处理；不要在评论页禁用 Pager，
- * 否则用户无法通过左/右滑动返回简介。评论页自身的 nested scroll 会截断纵向手势
- * 的横向漂移，避免斜向滚动误启动 Pager。
- */
+/** 简介与评论页之间始终支持横向分页，方向仲裁由共享的纵向优先手势门控处理。 */
 internal fun shouldEnableVideoContentHorizontalPagerSwipe(
     currentPage: Int,
     commentPageIndex: Int,
     isPagerScrollInProgress: Boolean,
 ): Boolean = true
-
-internal fun resolveVideoContentCommentHorizontalPreScroll(
-    availableX: Float,
-    availableY: Float,
-    enabled: Boolean,
-): Offset {
-    if (!enabled || availableX == 0f || availableY == 0f) return Offset.Zero
-    return if (abs(availableY) >= abs(availableX) * 1.25f) {
-        Offset(availableX, 0f)
-    } else {
-        Offset.Zero
-    }
-}
 
 /**
  * 评论列表是否贴顶（仅贴顶时才允许上滑展开分段；浏览中上滑只滚列表）。
@@ -720,31 +697,6 @@ fun VideoContentSection(
     val tabBarVisibleHeightDp = with(density) {
         (tabBarMaxHeightPx - tabBarCollapsePx).coerceAtLeast(0f).toDp()
     }
-    val commentHorizontalGestureConnection = remember(pagerState) {
-        object : NestedScrollConnection {
-            override fun onPreScroll(
-                available: Offset,
-                source: NestedScrollSource,
-            ): Offset {
-                if (source != NestedScrollSource.UserInput) return Offset.Zero
-                return resolveVideoContentCommentHorizontalPreScroll(
-                    availableX = available.x,
-                    availableY = available.y,
-                    enabled = pagerState.currentPage == 1,
-                )
-            }
-
-            override suspend fun onPreFling(available: Velocity): Velocity {
-                val consumed = resolveVideoContentCommentHorizontalPreScroll(
-                    availableX = available.x,
-                    availableY = available.y,
-                    enabled = pagerState.currentPage == 1,
-                )
-                return Velocity(consumed.x, 0f)
-            }
-        }
-    }
-
     // 采样层只挂在 Tab 页滚动内容上；排序栏/顶栏分段控件必须在捕获区外，避免 drawBackdrop 自引用导致 RenderThread 栈溢出。
     val videoContentChromeBackdrop = rememberLayerBackdrop()
     val videoContentMiuixBackdrop = rememberMiuixLayerBackdrop()
@@ -824,15 +776,18 @@ fun VideoContentSection(
                     isVideoPlaying = isVideoPlaying,
                     selectedTabIndex = pagerState.currentPage
                 ),
-                userScrollEnabled = shouldEnableVideoContentHorizontalPagerSwipe(
-                    currentPage = pagerState.currentPage,
-                    commentPageIndex = 1,
-                    isPagerScrollInProgress = pagerState.isScrollInProgress,
-                ),
+                userScrollEnabled = false,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .nestedScroll(commentHorizontalGestureConnection)
+                    .verticalPriorityHorizontalPagerSwipe(
+                        state = pagerState,
+                        enabled = shouldEnableVideoContentHorizontalPagerSwipe(
+                            currentPage = pagerState.currentPage,
+                            commentPageIndex = 1,
+                            isPagerScrollInProgress = pagerState.isScrollInProgress,
+                        ),
+                    )
             ) { page ->
                 when (page) {
                     0 -> VideoIntroTab(

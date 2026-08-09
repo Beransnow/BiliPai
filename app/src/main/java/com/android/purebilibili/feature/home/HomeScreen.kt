@@ -47,6 +47,7 @@ import com.android.purebilibili.core.ui.components.AppModalNavigationDrawer
 import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTextButton
+import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
 import androidx.compose.material3.rememberDrawerState
 import com.android.purebilibili.feature.home.components.MineSideDrawer
 import androidx.compose.ui.graphics.Color
@@ -1566,14 +1567,20 @@ fun HomeScreen(
                         isDataSaverActive = isDataSaverActive
                     )
                     // [Fix] Re-enabled default overscroll for better feedback
+                        val homeTopPagerSwipeEnabled =
+                            shouldEnableHomeTopPagerUserScroll(isTopLevelActive)
                         HorizontalPager(
                             state = pagerState,
                             beyondViewportPageCount = 0,
-                            userScrollEnabled = shouldEnableHomeTopPagerUserScroll(isTopLevelActive),
+                            userScrollEnabled = false,
                             modifier = Modifier
                                 .responsiveContentWidth(maxWidth = contentWidth)
                                 .fillMaxSize()
-                                .homeFeedTopVideoFadeMask(listTopPadding + AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall),
+                                .homeFeedTopVideoFadeMask(listTopPadding + AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall)
+                                .verticalPriorityHorizontalPagerSwipe(
+                                    state = pagerState,
+                                    enabled = homeTopPagerSwipeEnabled,
+                                ),
                             key = { index -> resolveHomeTopTabEntryKey(topTabEntries, index) }
                         ) { page ->
                         when (val entry = resolveHomeTopTabEntryOrNull(topTabEntries, page)) {
