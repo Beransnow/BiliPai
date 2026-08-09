@@ -25,9 +25,6 @@ import com.android.purebilibili.feature.video.ui.overlay.resolveBottomControlBar
 import com.android.purebilibili.feature.video.ui.overlay.resolveVideoProgressBarLayoutPolicy
 import com.android.purebilibili.feature.video.ui.overlay.resolveLandscapeEndDrawerReservedWidthDp
 import com.android.purebilibili.feature.video.ui.overlay.resolveLandscapeEndDrawerLayoutPolicy
-import com.android.purebilibili.feature.video.ui.overlay.VIDEO_STATUS_BAR_AMBIENT_CAPTURE_INTERVAL_MS
-import com.android.purebilibili.feature.video.ui.overlay.VIDEO_STATUS_BAR_AMBIENT_SAMPLE_HEIGHT_PX
-import com.android.purebilibili.feature.video.ui.overlay.VIDEO_STATUS_BAR_AMBIENT_SAMPLE_WIDTH_PX
 import com.android.purebilibili.feature.video.ui.components.SponsorSkipButton
 import com.android.purebilibili.feature.video.ui.components.SponsorContributionOverlay
 import com.android.purebilibili.feature.video.viewmodel.SponsorContributionUiState
@@ -194,7 +191,6 @@ import com.android.purebilibili.feature.video.usecase.playPlayerFromUserAction
 import com.android.purebilibili.feature.video.usecase.seekPlayerFromUserAction
 import com.android.purebilibili.feature.video.usecase.togglePlayerPlaybackFromUserAction
 import com.android.purebilibili.feature.video.util.captureAndSaveVideoScreenshot
-import com.android.purebilibili.feature.video.util.captureVideoAmbientFrame
 import com.android.purebilibili.feature.video.playback.session.PlaybackSeekSessionState
 import com.android.purebilibili.feature.video.playback.session.SEEK_PLAYBACK_RECOVERY_DELAY_MS
 import com.android.purebilibili.feature.video.playback.session.shouldAttemptPlaybackRecoveryAfterSeek
@@ -1012,7 +1008,6 @@ fun VideoPlayerSection(
         mutableStateOf(INITIAL_PLAYER_CHROME_AUTO_HIDE_HANDLED)
     }
     var playerViewRef by remember { mutableStateOf<PlayerView?>(null) }
-    val statusBarAmbientFrame = remember(bvid) { mutableStateOf<ImageBitmap?>(null) }
     var measuredPlayerViewportSize by remember(bvid) { mutableStateOf(IntSize.Zero) }
     var measuredBottomControlsHeightPx by remember(bvid) { mutableIntStateOf(0) }
     
@@ -1031,34 +1026,6 @@ fun VideoPlayerSection(
             if (shouldBlockAppScreenshot) {
                 AppScreenshotGestureBlockState.fullscreenPlayerLocked = false
             }
-        }
-    }
-
-    val shouldCaptureStatusBarAmbientFrame = contentTopInset.value > 0f &&
-        !isFullscreen &&
-        !isInPipMode &&
-        hostLifecycleStarted
-    LaunchedEffect(
-        playerViewRef,
-        shouldCaptureStatusBarAmbientFrame,
-        observedIsPlaying,
-        currentPlaybackIdentity,
-    ) {
-        if (!shouldCaptureStatusBarAmbientFrame) {
-            statusBarAmbientFrame.value = null
-            return@LaunchedEffect
-        }
-        val playerView = playerViewRef ?: return@LaunchedEffect
-        while (isActive) {
-            if (playerView.isAttachedToWindow && playerView.width > 0 && playerView.height > 0) {
-                statusBarAmbientFrame.value = captureVideoAmbientFrame(
-                    playerView = playerView,
-                    targetWidth = VIDEO_STATUS_BAR_AMBIENT_SAMPLE_WIDTH_PX,
-                    targetHeight = VIDEO_STATUS_BAR_AMBIENT_SAMPLE_HEIGHT_PX,
-                )?.asImageBitmap()
-            }
-            if (!observedIsPlaying) break
-            delay(VIDEO_STATUS_BAR_AMBIENT_CAPTURE_INTERVAL_MS)
         }
     }
 
@@ -4423,7 +4390,13 @@ fun VideoPlayerSection(
             ),
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = contentTopInset + 16.dp),
+                // 关闭「播放页沉浸状态栏」后 contentTopInset 为 0，此时按实时状态栏 inset 避让，
+                // 避免提示落入系统状态栏区域被遮挡。
+                .padding(
+                    top = contentTopInset
+                        .coerceAtLeast(WindowInsets.statusBars.asPaddingValues().calculateTopPadding()) +
+                        16.dp
+                ),
             enter = fadeIn(animationSpec = tween(gestureMotionSpec.longPressHintDurationMillis)) +
                 slideInVertically(initialOffsetY = { -it }),
             exit = fadeOut(animationSpec = tween(gestureMotionSpec.longPressHintDurationMillis)) +
@@ -5154,7 +5127,6 @@ fun VideoPlayerSection(
                 hasFavoritePlaylist = hasFavoritePlaylist,
                 onFavoritePlaylistClick = onFavoritePlaylistClick,
                 drawerHazeState = overlayDrawerHazeState,
-                statusBarAmbientFrame = statusBarAmbientFrame,
                 statusBarBackdropHeight = contentTopInset,
                 onLandscapeCommentClick = onLandscapeCommentClick,
                 landscapeCommentPanelVisible = landscapeCommentPanelVisible,

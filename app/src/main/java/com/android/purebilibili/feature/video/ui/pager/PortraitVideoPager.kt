@@ -2574,7 +2574,8 @@ private fun VideoPageItem(
             ),
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .padding(top = 48.dp),
+                // 状态栏可见（关闭沉浸式/瞬态显示）时随系统栏 inset 下移，避免被预留位遮挡。
+                .padding(top = (pageDanmakuTopInset + 16.dp).coerceAtLeast(48.dp)),
             enter = fadeIn(animationSpec = tween(200)) + slideInVertically(initialOffsetY = { -it }),
             exit = fadeOut(animationSpec = tween(200)) + slideOutVertically(targetOffsetY = { -it })
         ) {
