@@ -34,6 +34,8 @@ class PersonalListSelectorStructureTest {
 
         assertTrue(source.contains("FavoriteFolderSelector("))
         assertTrue(source.contains("AppDropdownMenu("))
+        assertFalse(source.contains("FavoriteFolderSummary("))
+        assertFalse(source.contains("selectedValue = favoriteBrowseSection"))
         assertTrue(pagerSection.contains("userScrollEnabled = false"))
         assertFalse(pagerSection.contains("verticalPriorityHorizontalPagerSwipe"))
     }

@@ -1,7 +1,6 @@
 package com.android.purebilibili.feature.list
 import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 
-import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppAlertDialog
@@ -146,7 +145,6 @@ import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.feature.article.ArticleSharedElementSlot
 import com.android.purebilibili.feature.article.resolveHistoryArticleCoverAspectRatio
 import com.android.purebilibili.feature.article.resolveArticleSharedTransitionKey
-import com.android.purebilibili.feature.settings.AppSegmentedControl
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import com.android.purebilibili.feature.space.SeasonSeriesDetailViewModel
 import com.android.purebilibili.feature.video.player.ExternalPlaylistSource
@@ -619,13 +617,6 @@ fun CommonListScreen(
             historyViewModel.searchHistory(searchQuery)
         }
     }
-    val favoriteBrowseOptions = remember {
-        listOf(
-            AppSegmentOption(FavoriteBrowseSection.OWNED, "收藏夹"),
-            AppSegmentOption(FavoriteBrowseSection.SUBSCRIBED, "追更")
-        )
-    }
-
     // [New] 动态顶栏高度测量 (最准确的方式)
     var headerHeightPx by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
     val headerHeightDp = with(LocalDensity.current) { headerHeightPx.toDp() }
@@ -1575,9 +1566,18 @@ fun CommonListScreen(
                         favoriteViewModel != null &&
                         favoriteSection == FavoriteSection.VIDEO &&
                         !isSubscribedBrowse &&
-                        selectedFavoriteFolder != null
+                        foldersState.isNotEmpty()
                     ) {
-                        FavoriteFolderSummary(folder = selectedFavoriteFolder)
+                        FavoriteFolderSelector(
+                            folders = foldersState,
+                            selectedFolderIndex = selectedFolderIndex,
+                            selectedFolderItems = selectedFolderUiState.items,
+                            layout = favoriteHeaderLayout,
+                            onFolderSelected = { index ->
+                                favoriteViewModel.switchFolder(index)
+                                searchQuery = ""
+                            },
+                        )
                     }
 
                     if (historyViewModel != null) {
@@ -1676,52 +1676,6 @@ fun CommonListScreen(
                             }
                         }
                         Spacer(modifier = Modifier.height(AppSpacingTokens.Small))
-                    }
-
-                    if (
-                        favoriteViewModel != null &&
-                        favoriteSection == FavoriteSection.VIDEO &&
-                        subscribedFoldersState.isNotEmpty()
-                    ) {
-                        AppSegmentedControl(
-                            options = favoriteBrowseOptions,
-                            selectedValue = favoriteBrowseSection,
-                            modifier = Modifier.padding(
-                                start = favoriteHeaderLayout.browseToggleHorizontalPaddingDp.dp,
-                                end = favoriteHeaderLayout.browseToggleHorizontalPaddingDp.dp,
-                                top = favoriteHeaderLayout.browseToggleTopPaddingDp.dp
-                            ),
-                            forceLiquidIndicator = homeSettings.androidNativeLiquidGlassEnabled,
-                            height = favoriteHeaderLayout.browseToggleHeightDp.dp,
-                            indicatorHeight = favoriteHeaderLayout.browseToggleIndicatorHeightDp.dp,
-                            labelFontSize = favoriteHeaderLayout.browseToggleLabelFontSizeSp.sp,
-                            backdrop = commonListChromeBackdrop,
-                            tapPressRefractionEnabled = false,
-                            dragSelectionEnabled = false,
-                            onSelectionChange = { section ->
-                                favoriteBrowseSection = section
-                                searchQuery = ""
-                            }
-                        )
-                    }
-
-                    // 📁 [新增] 收藏夹 Tab 栏（仅显示多个收藏夹时）
-                    if (
-                        favoriteSection == FavoriteSection.VIDEO &&
-                        !isSubscribedBrowse &&
-                        foldersState.size > 1
-                    ) {
-                        val favoriteVm = requireNotNull(favoriteViewModel)
-                        FavoriteFolderSelector(
-                            folders = foldersState,
-                            selectedFolderIndex = selectedFolderIndex,
-                            selectedFolderItems = selectedFolderUiState.items,
-                            layout = favoriteHeaderLayout,
-                            onFolderSelected = { index ->
-                                favoriteVm.switchFolder(index)
-                                searchQuery = ""
-                            }
-                        )
                     }
 
                     if (favoriteViewModel != null) {
@@ -2053,62 +2007,6 @@ fun CommonListScreen(
                 }
             }
         )
-    }
-}
-
-@Composable
-private fun FavoriteFolderSummary(
-    folder: com.android.purebilibili.data.model.response.FavFolder,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = AppSpacingTokens.Medium, vertical = AppSpacingTokens.Small),
-        horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Medium),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        AsyncImage(
-            model = FormatUtils.fixImageUrl(folder.cover),
-            contentDescription = folder.title,
-            modifier = Modifier
-                .width(96.dp)
-                .aspectRatio(16f / 9f)
-                .clip(AppShapes.container(ContainerLevel.Card)),
-            contentScale = ContentScale.Crop,
-        )
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
-        ) {
-            AppText(
-                text = folder.title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            folder.upper?.name?.takeIf { it.isNotBlank() }?.let { ownerName ->
-                AppText(
-                    text = ownerName,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            AppText(
-                text = "${folder.media_count}个内容 · ${if (folder.attr == 0) "公开" else "私密"}",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            folder.intro.takeIf { it.isNotBlank() }?.let { intro ->
-                AppText(
-                    text = intro,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.76f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-        }
     }
 }
 
