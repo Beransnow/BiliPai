@@ -249,9 +249,9 @@ class BottomBarMiuixStructureTest {
         val visibleDockContentSource = kernelSuRendererSource
             .substringAfter("if (shouldComposeDockContent) {")
             .substringBefore("if (shouldRenderIndicatorContentCapture && miuixBackdrop != null)")
-        assertTrue(visibleDockContentSource.contains("scale = 1f"))
+        assertTrue(visibleDockContentSource.contains("scale = visibleItemScale(coverage)"))
         assertTrue(visibleDockContentSource.contains("dynamicUnreadCount = dynamicUnreadCount"))
-        assertFalse(visibleDockContentSource.contains("scale = sampledItemScale(coverage)"))
+        assertTrue(kernelSuRendererSource.contains("fun visibleItemScale(coverage: Float): Float"))
         val indicatorCaptureContentSource = kernelSuRendererSource
             .substringAfter("if (shouldRenderIndicatorContentCapture && miuixBackdrop != null) {")
             .substringBefore("if (searchEnabled) {")

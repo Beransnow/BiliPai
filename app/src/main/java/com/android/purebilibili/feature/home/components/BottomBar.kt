@@ -3415,6 +3415,18 @@ private fun KernelSuAlignedBottomBar(
                 1f
             }
 
+            // InstallerX parity: its selected item is visibly scaled to 1.2x while the
+            // liquid indicator is pressed. Applying the same scale only to the hidden
+            // capture layer is masked by our foreground row, so mirror it here as well.
+            fun visibleItemScale(coverage: Float): Float = if (effectiveGlassEnabled) {
+                resolveBottomBarItemMotionScale(
+                    coverage = coverage,
+                    motionProgress = effectivePressProgress,
+                )
+            } else {
+                1f
+            }
+
             fun handleBottomBarItemClick(index: Int, item: BottomNavItem) {
                 val searchOverride = resolveBottomBarSearchExpansionOverrideOnNavItemClick(
                     currentItem = currentItem,
@@ -3507,7 +3519,7 @@ private fun KernelSuAlignedBottomBar(
                                 interactive = false,
                                 onPressChanged = dampedDragState::setPressed,
                                 selectedIconAlpha = coverage,
-                                scale = 1f
+                                scale = visibleItemScale(coverage)
                             )
                         }
 
@@ -3532,7 +3544,7 @@ private fun KernelSuAlignedBottomBar(
                                 interactive = false,
                                 onPressChanged = dampedDragState::setPressed,
                                 selectedIconAlpha = coverage,
-                                scale = 1f
+                                scale = visibleItemScale(coverage)
                             )
                         }
                     }
