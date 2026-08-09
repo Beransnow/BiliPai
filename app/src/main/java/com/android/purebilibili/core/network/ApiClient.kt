@@ -317,6 +317,25 @@ interface BilibiliApi {
         @retrofit2.http.Field("csrf") csrf: String
     ): SimpleApiResponse
 
+    @retrofit2.http.FormUrlEncoded
+    @retrofit2.http.POST("x/v3/fav/folder/edit")
+    suspend fun editFavFolder(
+        @retrofit2.http.Field("media_id") mediaId: Long,
+        @retrofit2.http.Field("title") title: String,
+        @retrofit2.http.Field("intro") intro: String = "",
+        @retrofit2.http.Field("privacy") privacy: Int = 0,
+        @retrofit2.http.Field("cover") cover: String = "",
+        @retrofit2.http.Field("csrf") csrf: String,
+    ): SimpleApiResponse
+
+    @retrofit2.http.FormUrlEncoded
+    @retrofit2.http.POST("x/v3/fav/folder/del")
+    suspend fun deleteFavFolders(
+        @retrofit2.http.Field("media_ids") mediaIds: String,
+        @retrofit2.http.Field("platform") platform: String = "web",
+        @retrofit2.http.Field("csrf") csrf: String,
+    ): SimpleApiResponse
+
     @GET("x/v3/fav/resource/list")
     suspend fun getFavoriteList(
         @Query("media_id") mediaId: Long,
@@ -349,6 +368,28 @@ interface BilibiliApi {
         @retrofit2.http.Field("media_id") mediaId: Long,
         @retrofit2.http.Field("resources") resources: String, // 格式: oid:type (e.g. "123456:2")
         @retrofit2.http.Field("csrf") csrf: String
+    ): SimpleApiResponse
+
+    @retrofit2.http.FormUrlEncoded
+    @retrofit2.http.POST("x/v3/fav/resource/copy")
+    suspend fun copyFavResources(
+        @retrofit2.http.Field("src_media_id") sourceMediaId: Long,
+        @retrofit2.http.Field("tar_media_id") targetMediaId: Long,
+        @retrofit2.http.Field("mid") mid: Long,
+        @retrofit2.http.Field("resources") resources: String,
+        @retrofit2.http.Field("platform") platform: String = "web",
+        @retrofit2.http.Field("csrf") csrf: String,
+    ): SimpleApiResponse
+
+    @retrofit2.http.FormUrlEncoded
+    @retrofit2.http.POST("x/v3/fav/resource/move")
+    suspend fun moveFavResources(
+        @retrofit2.http.Field("src_media_id") sourceMediaId: Long,
+        @retrofit2.http.Field("tar_media_id") targetMediaId: Long,
+        @retrofit2.http.Field("mid") mid: Long,
+        @retrofit2.http.Field("resources") resources: String,
+        @retrofit2.http.Field("platform") platform: String = "web",
+        @retrofit2.http.Field("csrf") csrf: String,
     ): SimpleApiResponse
 
     @retrofit2.http.FormUrlEncoded
@@ -1434,7 +1475,14 @@ data class DynamicRepostContentItem(
 
 @kotlinx.serialization.Serializable
 data class DynamicWebRepostSource(
-    val dyn_id_str: String
+    val dyn_id_str: String? = null,
+    val revs_id: DynamicRepostResource? = null
+)
+
+@kotlinx.serialization.Serializable
+data class DynamicRepostResource(
+    val dyn_type: Int,
+    val rid: Long
 )
 
 @kotlinx.serialization.Serializable
@@ -1479,6 +1527,25 @@ internal fun buildDynamicRepostRequest(
             attach_card = null
         ),
         web_repost_src = DynamicWebRepostSource(dyn_id_str = dynamicId)
+    )
+}
+
+internal fun buildFavoriteFolderDynamicRequest(
+    mediaId: Long,
+    content: String,
+): DynamicRepostRequest {
+    val contents = content.trim().takeIf { it.isNotEmpty() }?.let { text ->
+        listOf(DynamicRepostContentItem(raw_text = text, type = 1, biz_id = ""))
+    }.orEmpty()
+    return DynamicRepostRequest(
+        dyn_req = DynamicRepostDynReq(
+            content = DynamicRepostContent(contents = contents),
+            scene = 5,
+            attach_card = null,
+        ),
+        web_repost_src = DynamicWebRepostSource(
+            revs_id = DynamicRepostResource(dyn_type = 4300, rid = mediaId),
+        ),
     )
 }
 

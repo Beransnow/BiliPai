@@ -45,7 +45,11 @@ data class FavoriteInfo(
     val mid: Long = 0,
     val title: String = "",
     val cover: String = "",
-    val media_count: Int = 0
+    val intro: String = "",
+    val media_count: Int = 0,
+    val attr: Int = 0,
+    val fav_state: Int = 0,
+    val upper: Upper? = null
 )
 
 @Serializable
@@ -61,7 +65,9 @@ data class FavFolder(
     val mid: Long = 0,
     val title: String = "",
     val cover: String = "",
+    val intro: String = "",
     val media_count: Int = 0,
+    val attr: Int = 0,
     val fav_state: Int = 0,
     val type: Int = 0,
     val upper: Upper? = null,

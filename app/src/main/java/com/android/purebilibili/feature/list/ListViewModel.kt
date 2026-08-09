@@ -1072,6 +1072,172 @@ class FavoriteViewModel(application: Application) : BaseListViewModel(applicatio
         }
     }
 
+    internal fun shareSelectedFolderToDynamic(content: String) {
+        if (_isFavoriteManagingState.value) return
+        val mediaId = allFolderIds.getOrNull(_selectedFolderIndex.value) ?: return
+        _isFavoriteManagingState.value = true
+        viewModelScope.launch {
+            val result = com.android.purebilibili.data.repository.FavoriteRepository
+                .shareFolderToDynamic(mediaId = mediaId, content = content)
+            android.widget.Toast.makeText(
+                getApplication(),
+                result.fold(
+                    onSuccess = { "已分享至动态" },
+                    onFailure = { it.message ?: "分享失败" },
+                ),
+                android.widget.Toast.LENGTH_SHORT,
+            ).show()
+            _isFavoriteManagingState.value = false
+        }
+    }
+
+    internal fun createFavoriteFolder(
+        title: String,
+        intro: String,
+        isPrivate: Boolean,
+    ) {
+        if (_isFavoriteManagingState.value || title.isBlank()) return
+        _isFavoriteManagingState.value = true
+        viewModelScope.launch {
+            val result = com.android.purebilibili.data.repository.ActionRepository.createFavFolder(
+                title = title.trim(),
+                intro = intro.trim(),
+                isPrivate = isPrivate,
+            )
+            finishFolderMutation(result.map { Unit }, "已创建收藏夹")
+        }
+    }
+
+    internal fun editSelectedFavoriteFolder(
+        title: String,
+        intro: String,
+        isPrivate: Boolean,
+    ) {
+        if (_isFavoriteManagingState.value || title.isBlank()) return
+        val folder = _folders.value.getOrNull(_selectedFolderIndex.value) ?: return
+        _isFavoriteManagingState.value = true
+        viewModelScope.launch {
+            val result = com.android.purebilibili.data.repository.FavoriteRepository.editFolder(
+                mediaId = resolveFavoriteFolderMediaId(folder),
+                title = title.trim(),
+                intro = intro.trim(),
+                isPrivate = isPrivate,
+                cover = folder.cover,
+            )
+            finishFolderMutation(result, "已更新收藏夹")
+        }
+    }
+
+    internal fun deleteSelectedFavoriteFolder() {
+        if (_isFavoriteManagingState.value) return
+        val folderIndex = _selectedFolderIndex.value
+        if (folderIndex <= 0) return
+        val folder = _folders.value.getOrNull(folderIndex) ?: return
+        _isFavoriteManagingState.value = true
+        viewModelScope.launch {
+            val result = com.android.purebilibili.data.repository.FavoriteRepository.deleteFolder(
+                resolveFavoriteFolderMediaId(folder),
+            )
+            finishFolderMutation(result, "已删除收藏夹")
+        }
+    }
+
+    private suspend fun finishFolderMutation(result: Result<Unit>, successMessage: String) {
+        android.widget.Toast.makeText(
+            getApplication(),
+            result.fold(
+                onSuccess = { successMessage },
+                onFailure = { it.message ?: "操作失败" },
+            ),
+            android.widget.Toast.LENGTH_SHORT,
+        ).show()
+        try {
+            if (result.isSuccess) {
+                _folders.value = emptyList()
+                allFolderIds = emptyList()
+                _folderStates.clear()
+                folderPaginationStates.clear()
+                folderLoadedOrders.clear()
+                _fetchingIndices.clear()
+                fetchFolders()
+                currentFolderIndex = currentFolderIndex.coerceIn(0, (allFolderIds.size - 1).coerceAtLeast(0))
+                _selectedFolderIndex.value = currentFolderIndex
+                if (allFolderIds.isNotEmpty()) loadFolder(currentFolderIndex)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            android.widget.Toast.makeText(
+                getApplication(),
+                e.message ?: "刷新收藏夹失败",
+                android.widget.Toast.LENGTH_SHORT,
+            ).show()
+        } finally {
+            _isFavoriteManagingState.value = false
+        }
+    }
+
+    internal fun deleteSelectedFavoriteResources(resourceIds: Set<Long>) {
+        manageSelectedFavoriteResources(resourceIds = resourceIds, targetMediaId = null, copy = false)
+    }
+
+    internal fun copyOrMoveSelectedFavoriteResources(
+        resourceIds: Set<Long>,
+        targetMediaId: Long,
+        copy: Boolean,
+    ) {
+        manageSelectedFavoriteResources(
+            resourceIds = resourceIds,
+            targetMediaId = targetMediaId,
+            copy = copy,
+        )
+    }
+
+    private fun manageSelectedFavoriteResources(
+        resourceIds: Set<Long>,
+        targetMediaId: Long?,
+        copy: Boolean,
+    ) {
+        if (_isFavoriteManagingState.value || resourceIds.isEmpty()) return
+        val folderIndex = _selectedFolderIndex.value
+        val sourceMediaId = allFolderIds.getOrNull(folderIndex) ?: return
+        _isFavoriteManagingState.value = true
+        viewModelScope.launch {
+            val result = if (targetMediaId == null) {
+                com.android.purebilibili.data.repository.FavoriteRepository.removeResources(
+                    mediaId = sourceMediaId,
+                    resourceIds = resourceIds,
+                )
+            } else {
+                com.android.purebilibili.data.repository.FavoriteRepository.copyOrMoveResources(
+                    sourceMediaId = sourceMediaId,
+                    targetMediaId = targetMediaId,
+                    mid = currentUserMid,
+                    resourceIds = resourceIds,
+                    copy = copy,
+                )
+            }
+            android.widget.Toast.makeText(
+                getApplication(),
+                result.fold(
+                    onSuccess = {
+                        when {
+                            targetMediaId == null -> "已删除 ${resourceIds.size} 个内容"
+                            copy -> "已复制 ${resourceIds.size} 个内容"
+                            else -> "已移动 ${resourceIds.size} 个内容"
+                        }
+                    },
+                    onFailure = { it.message ?: "操作失败" },
+                ),
+                android.widget.Toast.LENGTH_SHORT,
+            ).show()
+            if (result.isSuccess && (targetMediaId == null || !copy)) {
+                reloadFavoriteFolder(folderIndex)
+            }
+            _isFavoriteManagingState.value = false
+        }
+    }
+
     private fun reloadFavoriteFolder(index: Int) {
         if (index < 0) return
         folderPaginationStates[index] = PaginationState()

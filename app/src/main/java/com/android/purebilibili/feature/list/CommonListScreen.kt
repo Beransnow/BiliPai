@@ -14,6 +14,8 @@ import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppSmallFloatingActionButton
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTextButton
+import com.android.purebilibili.core.ui.components.AppTextField
+import com.android.purebilibili.core.ui.components.AppSwitch
 import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
 
 import androidx.compose.animation.AnimatedVisibility
@@ -128,6 +130,7 @@ import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.ui.rememberAppFolderIcon
 import com.android.purebilibili.core.ui.rememberAppHeadphonesIcon
+import com.android.purebilibili.core.ui.rememberAppPlayIcon
 import com.android.purebilibili.core.ui.transition.BiliPaiSharedElementKey
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.VideoGridItemSkeleton
@@ -369,6 +372,17 @@ fun CommonListScreen(
     var favoriteBrowseSection by rememberSaveable { androidx.compose.runtime.mutableStateOf(FavoriteBrowseSection.OWNED) }
     var showFavoriteManagementMenu by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     var showFavoriteCleanInvalidConfirm by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+    var showFavoriteDynamicShareConfirm by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+    var isFavoriteBatchMode by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+    var selectedFavoriteResourceIds by rememberSaveable { androidx.compose.runtime.mutableStateOf(setOf<Long>()) }
+    var showFavoriteBatchDeleteConfirm by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+    var pendingFavoriteTransferCopy by rememberSaveable { androidx.compose.runtime.mutableStateOf<Boolean?>(null) }
+    var showFavoriteBatchMenu by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+    var favoriteFolderEditorMode by rememberSaveable { androidx.compose.runtime.mutableStateOf<String?>(null) }
+    var favoriteFolderEditorTitle by rememberSaveable { androidx.compose.runtime.mutableStateOf("") }
+    var favoriteFolderEditorIntro by rememberSaveable { androidx.compose.runtime.mutableStateOf("") }
+    var favoriteFolderEditorPrivate by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+    var showFavoriteFolderDeleteConfirm by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     LaunchedEffect(foldersState.size, subscribedFoldersState.size) {
         favoriteBrowseSection = when {
             favoriteBrowseSection == FavoriteBrowseSection.SUBSCRIBED && subscribedFoldersState.isNotEmpty() -> FavoriteBrowseSection.SUBSCRIBED
@@ -407,6 +421,26 @@ fun CommonListScreen(
         singleFolderItems = singleFolderUiState.items
     ).takeUnless { isSubscribedBrowse }.orEmpty()
     val selectedFavoriteFolder = foldersState.getOrNull(selectedFolderIndex)
+    LaunchedEffect(selectedFolderIndex, favoriteBrowseSection) {
+        isFavoriteBatchMode = false
+        selectedFavoriteResourceIds = emptySet()
+        pendingFavoriteTransferCopy = null
+    }
+    val toggleFavoriteResourceSelection: (Long) -> Unit = { resourceId ->
+        if (resourceId > 0L) {
+            selectedFavoriteResourceIds = if (resourceId in selectedFavoriteResourceIds) {
+                selectedFavoriteResourceIds - resourceId
+            } else {
+                selectedFavoriteResourceIds + resourceId
+            }
+        }
+    }
+    val enterFavoriteBatchMode: (Long) -> Unit = { resourceId ->
+        if (resourceId > 0L) {
+            isFavoriteBatchMode = true
+            selectedFavoriteResourceIds = selectedFavoriteResourceIds + resourceId
+        }
+    }
     val progressBadge = remember(
         favoriteDetailProgressState,
         seasonSeriesDetailViewModel
@@ -891,7 +925,12 @@ fun CommonListScreen(
                                 isLoading = folderUiState.isLoading,
                                 error = folderUiState.error,
                                 searchQuery = searchQuery,
-                                columns = columns,
+                                columns = personalListColumns,
+                                isFavoritePersonalList = true,
+                                favoriteBatchMode = isFavoriteBatchMode && page == selectedFolderIndex,
+                                favoriteSelectedResourceIds = selectedFavoriteResourceIds,
+                                onFavoriteToggleSelect = toggleFavoriteResourceSelection,
+                                onFavoriteLongPress = enterFavoriteBatchMode,
                                 spacing = spacing.medium,
                                 padding = PaddingValues(top = headerHeightDp, bottom = commonListBottomPadding),
                                 scrollUnderHeader = commonListHeaderCollapseEnabled,
@@ -930,7 +969,12 @@ fun CommonListScreen(
                             isLoading = folderUiState.isLoading,
                             error = folderUiState.error,
                             searchQuery = searchQuery,
-                            columns = columns,
+                            columns = personalListColumns,
+                            isFavoritePersonalList = true,
+                            favoriteBatchMode = isFavoriteBatchMode,
+                            favoriteSelectedResourceIds = selectedFavoriteResourceIds,
+                            onFavoriteToggleSelect = toggleFavoriteResourceSelection,
+                            onFavoriteLongPress = enterFavoriteBatchMode,
                             spacing = spacing.medium,
                             padding = PaddingValues(top = headerHeightDp, bottom = commonListBottomPadding),
                             scrollUnderHeader = commonListHeaderCollapseEnabled,
@@ -960,7 +1004,16 @@ fun CommonListScreen(
                         isLoading = state.isLoading,
                         error = state.error,
                         searchQuery = searchQuery,
-                        columns = if (historyViewModel != null) personalListColumns else columns,
+                        columns = if (historyViewModel != null || favoriteViewModel != null) {
+                            personalListColumns
+                        } else {
+                            columns
+                        },
+                        isFavoritePersonalList = favoriteViewModel != null,
+                        favoriteBatchMode = favoriteViewModel != null && isFavoriteBatchMode,
+                        favoriteSelectedResourceIds = selectedFavoriteResourceIds,
+                        onFavoriteToggleSelect = if (favoriteViewModel != null) toggleFavoriteResourceSelection else null,
+                        onFavoriteLongPress = if (favoriteViewModel != null) enterFavoriteBatchMode else null,
                         spacing = spacing.medium,
                         padding = PaddingValues(top = headerHeightDp, bottom = commonListBottomPadding),
                         scrollUnderHeader = commonListHeaderCollapseEnabled,
@@ -1087,6 +1140,84 @@ fun CommonListScreen(
                         },
                         actions = {
                             if (favoriteViewModel != null) {
+                                if (isFavoriteBatchMode) {
+                                    val selectableIds = activeFavoriteItems
+                                        .filterNot { it.isCollectionResource }
+                                        .map { it.id }
+                                        .filter { it > 0L }
+                                        .toSet()
+                                    val allSelected = selectableIds.isNotEmpty() &&
+                                        selectedFavoriteResourceIds.containsAll(selectableIds)
+                                    AppTextButton(
+                                        onClick = {
+                                            selectedFavoriteResourceIds = if (allSelected) emptySet() else selectableIds
+                                        }
+                                    ) {
+                                        AppText(if (allSelected) "取消全选" else "全选")
+                                    }
+                                    Box {
+                                        AppIconButton(
+                                            enabled = selectedFavoriteResourceIds.isNotEmpty() && !isFavoriteManaging,
+                                            onClick = { showFavoriteBatchMenu = true },
+                                        ) {
+                                            AppIcon(Icons.Filled.MoreVert, contentDescription = "批量操作")
+                                        }
+                                        AppDropdownMenu(
+                                            expanded = showFavoriteBatchMenu,
+                                            onDismissRequest = { showFavoriteBatchMenu = false },
+                                        ) {
+                                            AppDropdownMenuItem(
+                                                text = { AppText("复制到收藏夹") },
+                                                onClick = {
+                                                    showFavoriteBatchMenu = false
+                                                    pendingFavoriteTransferCopy = true
+                                                },
+                                            )
+                                            AppDropdownMenuItem(
+                                                text = { AppText("移动到收藏夹") },
+                                                onClick = {
+                                                    showFavoriteBatchMenu = false
+                                                    pendingFavoriteTransferCopy = false
+                                                },
+                                            )
+                                            AppDropdownMenuItem(
+                                                text = { AppText("删除", color = MaterialTheme.colorScheme.error) },
+                                                onClick = {
+                                                    showFavoriteBatchMenu = false
+                                                    showFavoriteBatchDeleteConfirm = true
+                                                },
+                                            )
+                                        }
+                                    }
+                                    AppTextButton(
+                                        onClick = {
+                                            isFavoriteBatchMode = false
+                                            selectedFavoriteResourceIds = emptySet()
+                                        }
+                                    ) {
+                                        AppText("完成")
+                                    }
+                                } else {
+                                AppIconButton(
+                                    enabled = activeFavoriteItems.any { it.bvid.isNotBlank() } && !isSubscribedBrowse,
+                                    onClick = {
+                                        activeFavoriteItems.firstOrNull { it.bvid.isNotBlank() }?.let { first ->
+                                            playFavoriteVideo(
+                                                activeFavoriteItems,
+                                                first.bvid,
+                                                first.cid,
+                                                first.pic,
+                                                selectedFolderIndex,
+                                                false,
+                                            )
+                                        }
+                                    }
+                                ) {
+                                    AppIcon(
+                                        imageVector = rememberAppPlayIcon(),
+                                        contentDescription = "播放全部",
+                                    )
+                                }
                                 AppIconButton(
                                     enabled = activeFavoriteItems.isNotEmpty() && !isSubscribedBrowse,
                                     onClick = {
@@ -1125,6 +1256,39 @@ fun CommonListScreen(
                                             expanded = showFavoriteManagementMenu,
                                             onDismissRequest = { showFavoriteManagementMenu = false }
                                         ) {
+                                            AppDropdownMenuItem(
+                                                text = { AppText("新建收藏夹") },
+                                                enabled = !isFavoriteManaging,
+                                                onClick = {
+                                                    showFavoriteManagementMenu = false
+                                                    favoriteFolderEditorMode = "create"
+                                                    favoriteFolderEditorTitle = ""
+                                                    favoriteFolderEditorIntro = ""
+                                                    favoriteFolderEditorPrivate = false
+                                                }
+                                            )
+                                            AppDropdownMenuItem(
+                                                text = { AppText("编辑收藏夹") },
+                                                enabled = selectedFavoriteFolder != null && !isFavoriteManaging,
+                                                onClick = {
+                                                    showFavoriteManagementMenu = false
+                                                    selectedFavoriteFolder?.let { folder ->
+                                                        favoriteFolderEditorMode = "edit"
+                                                        favoriteFolderEditorTitle = folder.title
+                                                        favoriteFolderEditorIntro = folder.intro
+                                                        favoriteFolderEditorPrivate = folder.attr != 0
+                                                    }
+                                                }
+                                            )
+                                            AppDropdownMenuItem(
+                                                text = { AppText("删除收藏夹", color = MaterialTheme.colorScheme.error) },
+                                                enabled = selectedFolderIndex > 0 && !isFavoriteManaging,
+                                                onClick = {
+                                                    showFavoriteManagementMenu = false
+                                                    showFavoriteFolderDeleteConfirm = true
+                                                }
+                                            )
+                                            AppHorizontalDivider()
                                             FavoriteResourceOrder.entries.forEach { order ->
                                                 AppDropdownMenuItem(
                                                     text = {
@@ -1145,6 +1309,29 @@ fun CommonListScreen(
                                             }
                                             AppHorizontalDivider()
                                             AppDropdownMenuItem(
+                                                text = { AppText("分享收藏夹") },
+                                                enabled = selectedFavoriteFolder?.attr == 0 && !isFavoriteManaging,
+                                                onClick = {
+                                                    showFavoriteManagementMenu = false
+                                                    selectedFavoriteFolder?.let { folder ->
+                                                        com.android.purebilibili.core.util.ShareUtils.shareText(
+                                                            context = context,
+                                                            subject = folder.title,
+                                                            text = "https://www.bilibili.com/medialist/detail/ml${resolveFavoriteFolderMediaId(folder)}",
+                                                            chooserTitle = "分享收藏夹",
+                                                        )
+                                                    }
+                                                }
+                                            )
+                                            AppDropdownMenuItem(
+                                                text = { AppText("分享至动态") },
+                                                enabled = selectedFavoriteFolder?.attr == 0 && !isFavoriteManaging,
+                                                onClick = {
+                                                    showFavoriteManagementMenu = false
+                                                    showFavoriteDynamicShareConfirm = true
+                                                }
+                                            )
+                                            AppDropdownMenuItem(
                                                 text = { AppText("清理失效内容") },
                                                 enabled = canCleanInvalidFavoriteResources(selectedFavoriteFolder) && !isFavoriteManaging,
                                                 onClick = {
@@ -1154,6 +1341,7 @@ fun CommonListScreen(
                                             )
                                         }
                                     }
+                                }
                                 }
                             }
 
@@ -1272,6 +1460,10 @@ fun CommonListScreen(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.22f),
                             heightOverride = favoriteHeaderLayout.searchBarHeightDp.dp
                         )
+                    }
+
+                    if (favoriteViewModel != null && !isSubscribedBrowse && selectedFavoriteFolder != null) {
+                        FavoriteFolderSummary(folder = selectedFavoriteFolder)
                     }
 
                     if (historyViewModel != null) {
@@ -1508,6 +1700,192 @@ fun CommonListScreen(
         )
     }
 
+    favoriteFolderEditorMode?.let { mode ->
+        AppAlertDialog(
+            onDismissRequest = { favoriteFolderEditorMode = null },
+            title = { AppText(if (mode == "create") "新建收藏夹" else "编辑收藏夹") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Medium)) {
+                    AppTextField(
+                        value = favoriteFolderEditorTitle,
+                        onValueChange = { favoriteFolderEditorTitle = it },
+                        label = "名称",
+                        placeholder = "收藏夹名称",
+                    )
+                    AppTextField(
+                        value = favoriteFolderEditorIntro,
+                        onValueChange = { favoriteFolderEditorIntro = it },
+                        label = "简介",
+                        placeholder = "可选",
+                        singleLine = false,
+                        minLines = 2,
+                        maxLines = 4,
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        AppText("设为私密")
+                        AppSwitch(
+                            checked = favoriteFolderEditorPrivate,
+                            onCheckedChange = { favoriteFolderEditorPrivate = it },
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                AppTextButton(
+                    enabled = favoriteFolderEditorTitle.isNotBlank() && isFavoriteManaging.not(),
+                    onClick = {
+                        if (mode == "create") {
+                            favoriteViewModel?.createFavoriteFolder(
+                                title = favoriteFolderEditorTitle,
+                                intro = favoriteFolderEditorIntro,
+                                isPrivate = favoriteFolderEditorPrivate,
+                            )
+                        } else {
+                            favoriteViewModel?.editSelectedFavoriteFolder(
+                                title = favoriteFolderEditorTitle,
+                                intro = favoriteFolderEditorIntro,
+                                isPrivate = favoriteFolderEditorPrivate,
+                            )
+                        }
+                        favoriteFolderEditorMode = null
+                    },
+                ) {
+                    AppText("保存")
+                }
+            },
+            dismissButton = {
+                AppTextButton(onClick = { favoriteFolderEditorMode = null }) {
+                    AppText("取消")
+                }
+            },
+        )
+    }
+
+    if (showFavoriteFolderDeleteConfirm && favoriteViewModel != null) {
+        AppAlertDialog(
+            onDismissRequest = { showFavoriteFolderDeleteConfirm = false },
+            title = { AppText("删除收藏夹") },
+            text = { AppText("确认删除“${selectedFavoriteFolder?.title.orEmpty()}”吗？收藏内容不会从站点删除。") },
+            confirmButton = {
+                AppTextButton(
+                    enabled = selectedFolderIndex > 0 && !isFavoriteManaging,
+                    onClick = {
+                        favoriteViewModel.deleteSelectedFavoriteFolder()
+                        showFavoriteFolderDeleteConfirm = false
+                    },
+                ) {
+                    AppText("删除")
+                }
+            },
+            dismissButton = {
+                AppTextButton(onClick = { showFavoriteFolderDeleteConfirm = false }) {
+                    AppText("取消")
+                }
+            },
+        )
+    }
+
+    if (showFavoriteDynamicShareConfirm && favoriteViewModel != null) {
+        AppAlertDialog(
+            onDismissRequest = { showFavoriteDynamicShareConfirm = false },
+            title = { AppText("分享至动态") },
+            text = {
+                AppText("将“${selectedFavoriteFolder?.title.orEmpty()}”作为收藏夹卡片发布到动态？")
+            },
+            confirmButton = {
+                AppTextButton(
+                    onClick = {
+                        favoriteViewModel.shareSelectedFolderToDynamic(
+                            content = "分享收藏夹：${selectedFavoriteFolder?.title.orEmpty()}",
+                        )
+                        showFavoriteDynamicShareConfirm = false
+                    }
+                ) {
+                    AppText("发布")
+                }
+            },
+            dismissButton = {
+                AppTextButton(onClick = { showFavoriteDynamicShareConfirm = false }) {
+                    AppText("取消")
+                }
+            },
+        )
+    }
+
+    if (showFavoriteBatchDeleteConfirm && favoriteViewModel != null) {
+        AppAlertDialog(
+            onDismissRequest = { showFavoriteBatchDeleteConfirm = false },
+            title = { AppText("批量删除收藏内容") },
+            text = { AppText("确认移除已选择的 ${selectedFavoriteResourceIds.size} 个内容吗？") },
+            confirmButton = {
+                AppTextButton(
+                    enabled = selectedFavoriteResourceIds.isNotEmpty(),
+                    onClick = {
+                        favoriteViewModel.deleteSelectedFavoriteResources(selectedFavoriteResourceIds)
+                        selectedFavoriteResourceIds = emptySet()
+                        isFavoriteBatchMode = false
+                        showFavoriteBatchDeleteConfirm = false
+                    },
+                ) {
+                    AppText("删除")
+                }
+            },
+            dismissButton = {
+                AppTextButton(onClick = { showFavoriteBatchDeleteConfirm = false }) {
+                    AppText("取消")
+                }
+            },
+        )
+    }
+
+    pendingFavoriteTransferCopy?.let { copy ->
+        AppAlertDialog(
+            onDismissRequest = { pendingFavoriteTransferCopy = null },
+            title = { AppText(if (copy) "复制到收藏夹" else "移动到收藏夹") },
+            text = {
+                LazyColumn(
+                    modifier = Modifier.heightIn(max = 360.dp),
+                    verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+                ) {
+                    items(
+                        items = foldersState.filterIndexed { index, _ -> index != selectedFolderIndex },
+                        key = { folder -> resolveFavoriteFolderMediaId(folder) },
+                    ) { folder ->
+                        AppSurface(
+                            onClick = {
+                                favoriteViewModel?.copyOrMoveSelectedFavoriteResources(
+                                    resourceIds = selectedFavoriteResourceIds,
+                                    targetMediaId = resolveFavoriteFolderMediaId(folder),
+                                    copy = copy,
+                                )
+                                selectedFavoriteResourceIds = emptySet()
+                                isFavoriteBatchMode = false
+                                pendingFavoriteTransferCopy = null
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = AppShapes.container(ContainerLevel.Card),
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.36f),
+                        ) {
+                            AppText(
+                                text = folder.title,
+                                modifier = Modifier.padding(AppSpacingTokens.Medium),
+                            )
+                        }
+                    }
+                }
+            },
+            dismissButton = {
+                AppTextButton(onClick = { pendingFavoriteTransferCopy = null }) {
+                    AppText("取消")
+                }
+            },
+        )
+    }
+
     if (showHistoryClearConfirm && historyViewModel != null) {
         AppAlertDialog(
             onDismissRequest = { showHistoryClearConfirm = false },
@@ -1554,6 +1932,62 @@ fun CommonListScreen(
                 }
             }
         )
+    }
+}
+
+@Composable
+private fun FavoriteFolderSummary(
+    folder: com.android.purebilibili.data.model.response.FavFolder,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = AppSpacingTokens.Medium, vertical = AppSpacingTokens.Small),
+        horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Medium),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        AsyncImage(
+            model = FormatUtils.fixImageUrl(folder.cover),
+            contentDescription = folder.title,
+            modifier = Modifier
+                .width(96.dp)
+                .aspectRatio(16f / 9f)
+                .clip(AppShapes.container(ContainerLevel.Card)),
+            contentScale = ContentScale.Crop,
+        )
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
+        ) {
+            AppText(
+                text = folder.title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            folder.upper?.name?.takeIf { it.isNotBlank() }?.let { ownerName ->
+                AppText(
+                    text = ownerName,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            AppText(
+                text = "${folder.media_count}个内容 · ${if (folder.attr == 0) "公开" else "私密"}",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            folder.intro.takeIf { it.isNotBlank() }?.let { intro ->
+                AppText(
+                    text = intro,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.76f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
     }
 }
 
@@ -1678,6 +2112,11 @@ private fun CommonListContent(
     error: String?,
     searchQuery: String,
     columns: Int,
+    isFavoritePersonalList: Boolean = false,
+    favoriteBatchMode: Boolean = false,
+    favoriteSelectedResourceIds: Set<Long> = emptySet(),
+    onFavoriteToggleSelect: ((Long) -> Unit)? = null,
+    onFavoriteLongPress: ((Long) -> Unit)? = null,
     spacing: androidx.compose.ui.unit.Dp,
     padding: PaddingValues,
     scrollUnderHeader: Boolean = false,
@@ -1713,7 +2152,8 @@ private fun CommonListContent(
 ) {
     val context = LocalContext.current
     val isHistoryPersonalList = resolveHistoryItem != null
-    val homeFeedCardStyle = if (isHistoryPersonalList) {
+    val isPersonalList = isHistoryPersonalList || isFavoritePersonalList
+    val homeFeedCardStyle = if (isPersonalList) {
         HomeFeedCardStyle.CURRENT
     } else {
         SettingsManager
@@ -1724,9 +2164,9 @@ private fun CommonListContent(
     val cardLayout = remember(homeFeedCardStyle) {
         com.android.purebilibili.feature.home.resolveHomeFeedCardLayout(homeFeedCardStyle)
     }
-    val gridOuterPaddingDp = if (isHistoryPersonalList) 12 else cardLayout.outerPaddingDp
-    val gridItemSpacingDp = if (isHistoryPersonalList) 12 else cardLayout.itemSpacingDp
-    val skeletonCoverAspectRatio = if (isHistoryPersonalList) {
+    val gridOuterPaddingDp = if (isPersonalList) 12 else cardLayout.outerPaddingDp
+    val gridItemSpacingDp = if (isPersonalList) 12 else cardLayout.itemSpacingDp
+    val skeletonCoverAspectRatio = if (isPersonalList) {
         com.android.purebilibili.feature.personal.PERSONAL_LIST_HORIZONTAL_COVER_ASPECT_RATIO
     } else {
         cardLayout.coverAspectRatio
@@ -1904,6 +2344,35 @@ private fun CommonListContent(
                                         .takeIf(::canAddHistoryToWatchLater)
                                         ?.let { eligible -> { onHistoryAddToWatchLater?.invoke(eligible) } },
                                     onDelete = { onHistoryDelete?.invoke(historyKey) },
+                                )
+                            } else if (isFavoritePersonalList) {
+                                FavoritePersonalCard(
+                                    item = video,
+                                    transitionEnabled = cardTransitionEnabled,
+                                    batchMode = favoriteBatchMode,
+                                    selected = video.id in favoriteSelectedResourceIds,
+                                    canRemove = onUnfavorite != null,
+                                    onClick = {
+                                        if (favoriteBatchMode) {
+                                            onFavoriteToggleSelect?.invoke(video.id)
+                                        } else {
+                                            resolveCommonListVideoNavigationRequest(
+                                                video = video,
+                                                fallbackLookupKey = resolveHistoryLookupKey?.invoke(video)
+                                            )?.let { request ->
+                                                onVideoClick(
+                                                    request.lookupKey,
+                                                    request.cid,
+                                                    request.coverUrl,
+                                                    request.isVertical
+                                                )
+                                            }
+                                        }
+                                    },
+                                    onLongClick = { onFavoriteLongPress?.invoke(video.id) },
+                                    onRemove = onUnfavorite?.let { remove ->
+                                        { remove(video) }
+                                    },
                                 )
                             } else {
                                 ElegantVideoCard(
