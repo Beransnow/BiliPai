@@ -34,6 +34,7 @@ import com.android.purebilibili.core.ui.transition.LocalMiuixVideoCardTransition
 import com.android.purebilibili.core.ui.transition.LocalVideoCardTransitionBackgroundState
 import com.android.purebilibili.core.ui.transition.MiuixVideoCardTransitionState
 import com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundState
+import com.android.purebilibili.core.ui.transition.VideoCardTransitionExposure
 import com.android.purebilibili.core.ui.transition.LocalVideoCardTransitionClock
 import com.android.purebilibili.core.ui.transition.VideoCardTransitionClock
 import com.android.purebilibili.core.ui.transition.VideoCardTransitionHostDepthLayer
@@ -290,17 +291,38 @@ internal fun BiliPaiNavDisplayHost(
     val roundAllCorners = style == BiliPaiPredictiveBackAnimationStyle.AOSP ||
         style == BiliPaiPredictiveBackAnimationStyle.SCALE ||
         style == BiliPaiPredictiveBackAnimationStyle.CLASSIC
+    // Video-card morph owns all four corners. Keeping NavDisplay's Leading clip enabled here
+    // applies a second, device-radius clip only to the left edge and makes it visibly rounder
+    // than the right edge during return.
+    val videoCardMorphOwnsCorners = cardMorphAvailable && (
+        isCardMorphDestinationNavKey(currentKey) ||
+            effectiveVideoCardExposure == VideoCardTransitionExposure.Opening ||
+            effectiveVideoCardExposure == VideoCardTransitionExposure.BackPreview ||
+            effectiveVideoCardExposure == VideoCardTransitionExposure.Returning ||
+            effectiveVideoCardExposure == VideoCardTransitionExposure.Restoring
+    )
+    val enableHostCornerClip = !videoCardMorphOwnsCorners
+    // The retained source page already owns blur/scrim through the video-card depth layer.
+    // Miuix's generic covered-entry dim can be resolved from the lower VideoDetail transition
+    // during nested related-video navigation, which darkens that page a second time.
+    val hostDimAmount = if (videoCardMorphOwnsCorners) 0f else 0.5f
     val backdropColor = MiuixTheme.colorScheme.surface
-    val effects = remember(navCornerRadius, roundAllCorners, backdropColor) {
+    val effects = remember(
+        navCornerRadius,
+        roundAllCorners,
+        enableHostCornerClip,
+        hostDimAmount,
+        backdropColor,
+    ) {
         NavDisplayEffects(
-            enableCornerClip = true,
+            enableCornerClip = enableHostCornerClip,
             cornerClipRadius = if (roundAllCorners && navCornerRadius <= 0.dp) 32.dp else navCornerRadius,
             cornerClipMode = if (roundAllCorners) {
                 NavCornerClipMode.All
             } else {
                 NavCornerClipMode.Leading
             },
-            dimAmount = 0.5f,
+            dimAmount = hostDimAmount,
             backdropColor = backdropColor,
             blockInputDuringTransition = false,
         )

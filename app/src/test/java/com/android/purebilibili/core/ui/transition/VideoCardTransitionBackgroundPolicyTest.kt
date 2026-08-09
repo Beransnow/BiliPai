@@ -238,6 +238,49 @@ class VideoCardTransitionBackgroundPolicyTest {
     }
 
     @Test
+    fun frozenDepthLayerHandsOffContinuouslyToLiveContentAtEndOfReturn() {
+        assertEquals(
+            1f,
+            resolveVideoCardTransitionFrozenLayerAlpha(
+                exposure = VideoCardTransitionExposure.BackPreview,
+                depthProgress = VIDEO_CARD_SHELL_SOURCE_EXIT_FADE_RATIO,
+            ),
+        )
+        assertEquals(
+            0.5f,
+            resolveVideoCardTransitionFrozenLayerAlpha(
+                exposure = VideoCardTransitionExposure.Returning,
+                depthProgress = VIDEO_CARD_SHELL_SOURCE_EXIT_FADE_RATIO / 2f,
+            ),
+        )
+        assertEquals(
+            0f,
+            resolveVideoCardTransitionFrozenLayerAlpha(
+                exposure = VideoCardTransitionExposure.BackPreview,
+                depthProgress = 0f,
+            ),
+        )
+    }
+
+    @Test
+    fun frozenDepthLayerStaysOpaqueOutsideReturnHandoff() {
+        assertEquals(
+            1f,
+            resolveVideoCardTransitionFrozenLayerAlpha(
+                exposure = VideoCardTransitionExposure.Opening,
+                depthProgress = 0f,
+            ),
+        )
+        assertEquals(
+            1f,
+            resolveVideoCardTransitionFrozenLayerAlpha(
+                exposure = VideoCardTransitionExposure.SettledHidden,
+                depthProgress = 0f,
+            ),
+        )
+    }
+
+    @Test
     fun reducedMotionTierSkipsRealtimeBlurAndDepthScaleButKeepsScrim() {
         val opening = resolveVideoCardTransitionBackgroundFrame(
             progress = 1f,
