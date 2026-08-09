@@ -84,6 +84,62 @@ class VerticalPriorityPagerGestureTest {
     }
 
     @Test
+    fun `slow drag changes page after responsive positional threshold`() {
+        assertEquals(
+            3,
+            resolvePagerReleaseTargetPage(
+                startPage = 2,
+                pageCount = 5,
+                pageSizePx = 400f,
+                scrollDeltaPx = 81f,
+                scrollVelocityPxPerSecond = 100f,
+                minimumFlingVelocityPxPerSecond = 900f,
+            ),
+        )
+        assertEquals(
+            2,
+            resolvePagerReleaseTargetPage(
+                startPage = 2,
+                pageCount = 5,
+                pageSizePx = 400f,
+                scrollDeltaPx = 79f,
+                scrollVelocityPxPerSecond = 100f,
+                minimumFlingVelocityPxPerSecond = 900f,
+            ),
+        )
+    }
+
+    @Test
+    fun `short fast fling changes page in fling direction`() {
+        assertEquals(
+            1,
+            resolvePagerReleaseTargetPage(
+                startPage = 2,
+                pageCount = 5,
+                pageSizePx = 400f,
+                scrollDeltaPx = -20f,
+                scrollVelocityPxPerSecond = -901f,
+                minimumFlingVelocityPxPerSecond = 900f,
+            ),
+        )
+    }
+
+    @Test
+    fun `release target stays inside pager bounds`() {
+        assertEquals(
+            0,
+            resolvePagerReleaseTargetPage(
+                startPage = 0,
+                pageCount = 5,
+                pageSizePx = 400f,
+                scrollDeltaPx = -200f,
+                scrollVelocityPxPerSecond = -1_000f,
+                minimumFlingVelocityPxPerSecond = 900f,
+            ),
+        )
+    }
+
+    @Test
     fun `home and phone comments use vertical priority pager input`() {
         val homeSource = File(
             "src/main/java/com/android/purebilibili/feature/home/HomeScreen.kt"
