@@ -1648,6 +1648,16 @@ private fun VideoPageItem(
         .collectAsStateWithLifecycle(
             initialValue = SettingsManager.getLongPressSpeedHintHiddenSync(context)
         )
+    val longPressSpeedHintScale by SettingsManager
+        .getLongPressSpeedHintScale(context)
+        .collectAsStateWithLifecycle(
+            initialValue = SettingsManager.getLongPressSpeedHintScaleSync(context)
+        )
+    val longPressSpeedHintAlpha by SettingsManager
+        .getLongPressSpeedHintAlpha(context)
+        .collectAsStateWithLifecycle(
+            initialValue = SettingsManager.getLongPressSpeedHintAlphaSync(context)
+        )
     val doubleTapSeekEnabled by SettingsManager
         .getDoubleTapSeekEnabled(context)
         .collectAsStateWithLifecycle(initialValue = false)
@@ -2628,12 +2638,18 @@ private fun VideoPageItem(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
+                // 透明度设置作用于整个提示（箭头 + 文字 + 关闭按钮）。
+                modifier = Modifier
+                    .graphicsLayer { alpha = longPressSpeedHintAlpha }
+                    .padding(
+                        horizontal = 8.dp * longPressSpeedHintScale,
+                        vertical = 5.dp * longPressSpeedHintScale
+                    )
             ) {
                 val arrowAlphas = listOf(arrow1Alpha, arrow2Alpha, arrow3Alpha)
                 arrowAlphas.forEach { alpha ->
                     Canvas(
-                        modifier = Modifier.size(10.dp)
+                        modifier = Modifier.size(10.dp * longPressSpeedHintScale)
                     ) {
                         val path = Path().apply {
                             moveTo(0f, 0f)
@@ -2647,11 +2663,11 @@ private fun VideoPageItem(
                         )
                     }
                 }
-                Spacer(modifier = Modifier.width(5.dp))
+                Spacer(modifier = Modifier.width(5.dp * longPressSpeedHintScale))
                 AppText(
                     text = "${effectiveLongPressSpeed}x",
                     color = Color.White,
-                    fontSize = 13.sp,
+                    fontSize = 13.sp * longPressSpeedHintScale,
                     fontWeight = FontWeight.Medium,
                     style = androidx.compose.ui.text.TextStyle(
                         shadow = Shadow(
@@ -2664,13 +2680,13 @@ private fun VideoPageItem(
                 if (shouldShowLongPressSpeedHintCloseButton(longPressSpeedHintCloseEnabled)) {
                     AppIconButton(
                         onClick = { longPressSpeedHintDismissed = true },
-                        modifier = Modifier.size(36.dp),
+                        modifier = Modifier.size(36.dp * longPressSpeedHintScale),
                     ) {
                         AppIcon(
                             imageVector = Icons.Outlined.Close,
                             contentDescription = "关闭倍速提示",
                             tint = Color.White,
-                            modifier = Modifier.size(14.dp),
+                            modifier = Modifier.size(14.dp * longPressSpeedHintScale),
                         )
                     }
                 }
