@@ -267,6 +267,13 @@ interface BilibiliApi {
         @Query("business") business: String? = null //  null=省略该参数
     ): HistoryResponse
 
+    @GET("x/web-interface/history/search")
+    suspend fun searchHistory(
+        @Query("pn") page: Int = 1,
+        @Query("keyword") keyword: String,
+        @Query("business") business: String = "all",
+    ): HistoryResponse
+
     // [新增] 删除单条历史记录
     @retrofit2.http.FormUrlEncoded
     @POST("x/v2/history/delete")

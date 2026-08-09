@@ -73,6 +73,9 @@ class LikedVideosViewModel(application: Application) : BaseListViewModel(applica
 
 // --- 历史记录 ViewModel (支持游标分页加载) ---
 class HistoryViewModel(application: Application) : BaseListViewModel(application, "历史记录") {
+    private var historySearchQuery: String = ""
+    private var historySearchPage: Int = 1
+    private var historySearchGeneration: Long = 0L
     
     private val progressManager by lazy {
         com.android.purebilibili.feature.video.controller.PlaybackProgressManager.getInstance(
@@ -142,6 +145,59 @@ class HistoryViewModel(application: Application) : BaseListViewModel(application
         val bvid = video.bvid.trim()
         if (bvid.isNotEmpty()) return bvid
         return resolveHistoryRenderKey(video)
+    }
+
+    fun searchHistory(query: String) {
+        val normalized = query.trim()
+        if (normalized.isBlank()) {
+            if (historySearchQuery.isBlank()) return
+            historySearchQuery = ""
+            historySearchGeneration += 1
+            loadData(showLoading = true)
+            return
+        }
+        historySearchQuery = normalized
+        historySearchPage = 1
+        val generation = ++historySearchGeneration
+        _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+        viewModelScope.launch {
+            loadHistorySearchPage(page = 1, generation = generation, reset = true)
+        }
+    }
+
+    private suspend fun loadHistorySearchPage(page: Int, generation: Long, reset: Boolean) {
+        val result = com.android.purebilibili.data.repository.HistoryRepository.searchHistory(
+            page = page,
+            keyword = historySearchQuery,
+        )
+        if (generation != historySearchGeneration) return
+        result.fold(
+            onSuccess = { searchResult ->
+                val historyItems = enrichHistoryProgress(searchResult.list.map { it.toHistoryItem() })
+                if (reset) {
+                    _historyItemsMap.clear()
+                    _historyItemsByRenderKey.clear()
+                }
+                cacheHistoryItems(historyItems)
+                val videos = historyItems.map { it.videoItem }
+                _uiState.value = _uiState.value.copy(
+                    items = if (reset) videos else (_uiState.value.items + videos).distinctBy(::resolveHistoryRenderKey),
+                    isLoading = false,
+                    error = null,
+                )
+                historySearchPage = page
+                hasMore = videos.size >= 20
+                _hasMoreState.value = hasMore
+            },
+            onFailure = { error ->
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = error.message ?: "搜索历史失败",
+                )
+                hasMore = false
+                _hasMoreState.value = false
+            },
+        )
     }
 
     fun startVideoDissolve(renderKey: String) {
@@ -242,6 +298,24 @@ class HistoryViewModel(application: Application) : BaseListViewModel(application
     //  加载更多
     fun loadMore() {
         if (isLoadingMore || !hasMore) return
+
+        if (historySearchQuery.isNotBlank()) {
+            viewModelScope.launch {
+                isLoadingMore = true
+                _isLoadingMoreState.value = true
+                try {
+                    loadHistorySearchPage(
+                        page = historySearchPage + 1,
+                        generation = historySearchGeneration,
+                        reset = false,
+                    )
+                } finally {
+                    isLoadingMore = false
+                    _isLoadingMoreState.value = false
+                }
+            }
+            return
+        }
         
         viewModelScope.launch {
             isLoadingMore = true
@@ -631,6 +705,9 @@ class HistoryViewModel(application: Application) : BaseListViewModel(application
 
 // --- 收藏 ViewModel (支持分页加载所有收藏夹) ---
 class FavoriteViewModel(application: Application) : BaseListViewModel(application, "我的收藏") {
+    private val _searchUiState = MutableStateFlow(ListUiState(title = "收藏搜索"))
+    val searchUiState = _searchUiState.asStateFlow()
+    private var searchGeneration = 0L
     
     // 分页状态
     private var currentPage = 1
@@ -711,6 +788,57 @@ class FavoriteViewModel(application: Application) : BaseListViewModel(applicatio
         if (index < 0 || index >= allFolderIds.size) return
         currentFolderIndex = index
         _selectedFolderIndex.value = index
+    }
+
+    fun searchVideos(
+        keyword: String,
+        scope: com.android.purebilibili.data.model.response.FavoriteSearchScope,
+    ) {
+        val normalized = keyword.trim()
+        if (normalized.isBlank()) {
+            searchGeneration += 1
+            _searchUiState.value = ListUiState(title = "收藏搜索")
+            return
+        }
+        val generation = ++searchGeneration
+        _searchUiState.value = _searchUiState.value.copy(isLoading = true, error = null)
+        viewModelScope.launch {
+            try {
+                fetchFolders()
+                val mediaId = allFolderIds.getOrNull(_selectedFolderIndex.value)
+                    ?: allFolderIds.firstOrNull()
+                    ?: error("没有可搜索的收藏夹")
+                val result = com.android.purebilibili.data.repository.FavoriteRepository.getFavoriteList(
+                    mediaId = mediaId,
+                    pn = 1,
+                    ps = 20,
+                    keyword = normalized,
+                    order = _favoriteOrderState.value.apiValue,
+                    type = resolveFavoriteSearchApiType(scope),
+                )
+                if (generation != searchGeneration) return@launch
+                _searchUiState.value = result.fold(
+                    onSuccess = { data ->
+                        ListUiState(
+                            title = "收藏搜索",
+                            items = data.medias.orEmpty().map { it.toVideoItem() },
+                        )
+                    },
+                    onFailure = { error ->
+                        ListUiState(title = "收藏搜索", error = error.message ?: "搜索失败")
+                    },
+                )
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                if (generation == searchGeneration) {
+                    _searchUiState.value = ListUiState(
+                        title = "收藏搜索",
+                        error = e.message ?: "搜索失败",
+                    )
+                }
+            }
+        }
     }
     
     /**

@@ -13,6 +13,12 @@ enum class FavoriteSection(val label: String) {
     COURSE("课程"),
 }
 
+@Serializable
+enum class FavoriteSearchScope(val label: String) {
+    CURRENT_FOLDER("当前收藏夹"),
+    ALL_VIDEO_FOLDERS("全部视频收藏夹"),
+}
+
 enum class FavoritePgcStatus(val value: Int, val label: String) {
     WANT(1, "想看"),
     WATCHING(2, "在看"),

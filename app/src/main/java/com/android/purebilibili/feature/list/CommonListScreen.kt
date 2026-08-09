@@ -86,6 +86,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.RadioButtonUnchecked
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -143,6 +144,7 @@ import com.android.purebilibili.core.util.rememberResponsiveSpacing
 import com.android.purebilibili.data.model.response.HistoryBusiness
 import com.android.purebilibili.data.model.response.HistoryItem
 import com.android.purebilibili.data.model.response.FavoriteSection
+import com.android.purebilibili.data.model.response.FavoriteSearchScope
 import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.feature.article.ArticleSharedElementSlot
 import com.android.purebilibili.feature.article.resolveHistoryArticleCoverAspectRatio
@@ -210,6 +212,10 @@ fun CommonListScreen(
     onFavoriteArticleClick: (Long, String) -> Unit = { _, _ -> },
     onFavoriteTopicClick: (Long) -> Unit = {},
     onFavoriteWebClick: (String, String) -> Unit = { _, _ -> },
+    initialSearchQuery: String = "",
+    initialFavoriteSearchScope: FavoriteSearchScope = FavoriteSearchScope.CURRENT_FOLDER,
+    isSearchDestination: Boolean = false,
+    onOpenSearchDestination: ((String) -> Unit)? = null,
     onPlayAllAudioClick: ((String, Long) -> Unit)? = null,
     globalHazeState: HazeState? = null, // [新增] 接收全局 HazeState
     scrollToTopChannel: Channel<Unit>? = null,
@@ -370,6 +376,8 @@ fun CommonListScreen(
         ?: androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(FavoriteResourceOrder.FAVORITE_TIME) }
     val isFavoriteManaging by favoriteViewModel?.isFavoriteManagingState?.collectAsStateWithLifecycle()
         ?: androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+    val favoriteSearchUiState by favoriteViewModel?.searchUiState?.collectAsStateWithLifecycle()
+        ?: androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(ListUiState()) }
     val favoriteDetailProgressState by seasonSeriesDetailViewModel?.favoriteDetailProgressState?.collectAsStateWithLifecycle()
         ?: androidx.compose.runtime.remember {
             androidx.compose.runtime.mutableStateOf(SeasonSeriesDetailViewModel.FavoriteDetailProgressState())
@@ -595,7 +603,25 @@ fun CommonListScreen(
     val commonListChromeBackdrop = rememberLayerBackdrop()
 
     // 🔍 搜索状态
-    var searchQuery by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("") }
+    var searchQuery by rememberSaveable { androidx.compose.runtime.mutableStateOf(initialSearchQuery) }
+    var favoriteSearchScope by rememberSaveable {
+        androidx.compose.runtime.mutableStateOf(initialFavoriteSearchScope)
+    }
+    LaunchedEffect(
+        searchQuery,
+        favoriteSearchScope,
+        isSearchDestination,
+        favoriteViewModel,
+        historyViewModel,
+    ) {
+        if (isSearchDestination && favoriteViewModel != null) {
+            kotlinx.coroutines.delay(350)
+            favoriteViewModel.searchVideos(searchQuery, favoriteSearchScope)
+        } else if (isSearchDestination && historyViewModel != null) {
+            kotlinx.coroutines.delay(350)
+            historyViewModel.searchHistory(searchQuery)
+        }
+    }
     val favoriteBrowseOptions = remember {
         listOf(
             AppSegmentOption(FavoriteBrowseSection.OWNED, "收藏夹"),
@@ -849,7 +875,38 @@ fun CommonListScreen(
                 .hazeSourceCompat(state = localHazeState)
 
             Box(modifier = contentModifier) {
-                if (favoriteViewModel != null && favoriteSection != FavoriteSection.VIDEO) {
+                if (
+                    favoriteViewModel != null &&
+                    isSearchDestination &&
+                    favoriteSection == FavoriteSection.VIDEO &&
+                    searchQuery.isNotBlank()
+                ) {
+                    CommonListContent(
+                        items = favoriteSearchUiState.items,
+                        isLoading = favoriteSearchUiState.isLoading,
+                        error = favoriteSearchUiState.error,
+                        searchQuery = "",
+                        columns = personalListColumns,
+                        isFavoritePersonalList = true,
+                        spacing = spacing.medium,
+                        padding = PaddingValues(top = headerHeightDp, bottom = commonListBottomPadding),
+                        scrollUnderHeader = commonListHeaderCollapseEnabled,
+                        cardAnimationEnabled = homeSettings.cardAnimationEnabled,
+                        cardTransitionEnabled = homeSettings.cardTransitionEnabled,
+                        cardMotionTier = cardMotionTier,
+                        showOnlineCount = showOnlineCount,
+                        videoCardAppearance = videoCardAppearance,
+                        onVideoClick = { bvid, cid, coverUrl, isVertical ->
+                            onVideoClick(bvid, cid, coverUrl, isVertical)
+                        },
+                        onCollectionClick = onCollectionClick,
+                        onRetry = { favoriteViewModel.searchVideos(searchQuery, favoriteSearchScope) },
+                        onLoadMore = {},
+                        onUnfavorite = { favoriteViewModel.removeVideo(it) },
+                        onUpClick = onUpClick,
+                        gridState = primaryGridState,
+                    )
+                } else if (favoriteViewModel != null && favoriteSection != FavoriteSection.VIDEO) {
                     FavoriteCategoryRoute(
                         section = favoriteSection,
                         query = searchQuery,
@@ -1162,6 +1219,11 @@ fun CommonListScreen(
                             }
                         },
                         actions = {
+                            onOpenSearchDestination?.let { openSearch ->
+                                AppIconButton(onClick = { openSearch(searchQuery) }) {
+                                    AppIcon(Icons.Rounded.Search, contentDescription = "搜索")
+                                }
+                            }
                             if (favoriteViewModel != null && favoriteSection == FavoriteSection.VIDEO) {
                                 if (isFavoriteBatchMode) {
                                     val selectableIds = activeFavoriteItems
@@ -1507,6 +1569,26 @@ fun CommonListScreen(
                                         }
                                     },
                                     label = { AppText(section.label) },
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(AppSpacingTokens.Small))
+                    }
+
+                    if (
+                        favoriteViewModel != null &&
+                        isSearchDestination &&
+                        favoriteSection == FavoriteSection.VIDEO
+                    ) {
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = AppSpacingTokens.Medium),
+                            horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+                        ) {
+                            items(FavoriteSearchScope.entries, key = { it.name }) { scopeOption ->
+                                AppFilterChip(
+                                    selected = favoriteSearchScope == scopeOption,
+                                    onClick = { favoriteSearchScope = scopeOption },
+                                    label = { AppText(scopeOption.label) },
                                 )
                             }
                         }

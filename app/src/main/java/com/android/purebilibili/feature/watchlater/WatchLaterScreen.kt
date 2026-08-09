@@ -91,6 +91,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.RadioButtonUnchecked
+import androidx.compose.material.icons.rounded.Search
 import com.android.purebilibili.core.util.FormatUtils
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
@@ -620,6 +621,8 @@ fun WatchLaterScreen(
     onBack: () -> Unit,
     onVideoClick: (String, Long, Long) -> Unit,
     onPlayAllAudioClick: ((String, Long, Long) -> Unit)? = null,
+    initialSearchQuery: String = "",
+    onOpenSearchDestination: ((String) -> Unit)? = null,
     viewModel: WatchLaterViewModel = viewModel(),
     globalHazeState: HazeState? = null // [新增]
 ) {
@@ -638,7 +641,7 @@ fun WatchLaterScreen(
     var pendingTransferCopy by rememberSaveable { mutableStateOf<Boolean?>(null) }
     var selectedTransferFolderId by rememberSaveable { mutableStateOf<Long?>(null) }
     var pendingManagementAction by rememberSaveable { mutableStateOf<WatchLaterManagementAction?>(null) }
-    var searchQuery by rememberSaveable { mutableStateOf(state.query) }
+    var searchQuery by rememberSaveable { mutableStateOf(initialSearchQuery) }
     val displayedItems = state.items
 
     LaunchedEffect(searchQuery) {
@@ -678,6 +681,11 @@ fun WatchLaterScreen(
                         }
                     },
                     actions = {
+                        onOpenSearchDestination?.let { openSearch ->
+                            AppIconButton(onClick = { openSearch(searchQuery) }) {
+                                AppIcon(Icons.Rounded.Search, contentDescription = "搜索")
+                            }
+                        }
                         if (state.items.isNotEmpty()) {
                             if (isBatchMode) {
                                 val allSelected = selectedBvids.size == state.items.size

@@ -1,6 +1,7 @@
 package com.android.purebilibili.feature.list
 
 import com.android.purebilibili.data.model.response.FavoriteSection
+import com.android.purebilibili.data.model.response.FavoriteSearchScope
 import com.android.purebilibili.feature.personal.resolvePersonalListColumnCount
 
 internal fun resolveFavoriteCategoryColumnCount(
@@ -25,4 +26,9 @@ internal fun opensFavoriteCategoryInNativeScreen(section: FavoriteSection): Bool
     FavoriteSection.TOPIC -> true
     FavoriteSection.NOTE,
     FavoriteSection.COURSE -> false
+}
+
+internal fun resolveFavoriteSearchApiType(scope: FavoriteSearchScope): Int = when (scope) {
+    FavoriteSearchScope.CURRENT_FOLDER -> 0
+    FavoriteSearchScope.ALL_VIDEO_FOLDERS -> 1
 }

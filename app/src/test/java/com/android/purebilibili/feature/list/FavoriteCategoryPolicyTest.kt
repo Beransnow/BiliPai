@@ -1,6 +1,7 @@
 package com.android.purebilibili.feature.list
 
 import com.android.purebilibili.data.model.response.FavoriteSection
+import com.android.purebilibili.data.model.response.FavoriteSearchScope
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -22,5 +23,7 @@ class FavoriteCategoryPolicyTest {
         assertFalse(supportsFavoriteCategoryBatchSelection(FavoriteSection.ARTICLE))
         assertTrue(opensFavoriteCategoryInNativeScreen(FavoriteSection.TOPIC))
         assertFalse(opensFavoriteCategoryInNativeScreen(FavoriteSection.COURSE))
+        assertEquals(0, resolveFavoriteSearchApiType(FavoriteSearchScope.CURRENT_FOLDER))
+        assertEquals(1, resolveFavoriteSearchApiType(FavoriteSearchScope.ALL_VIDEO_FOLDERS))
     }
 }
