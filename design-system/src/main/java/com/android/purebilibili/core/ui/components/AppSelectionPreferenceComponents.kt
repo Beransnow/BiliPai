@@ -107,7 +107,9 @@ fun <T> AppSingleChoicePreference(
                     Icon(
                         imageVector = imageVector,
                         contentDescription = null,
-                        tint = iconTint,
+                        // 与其他设置条目保持一致：MATERIAL3 预设下统一为主题主色
+                        // （MIUIX 预设保留多彩语义色）。
+                        tint = rememberAdaptiveSemanticIconTint(iconTint),
                         modifier = Modifier.size(24.dp),
                     )
                 }
