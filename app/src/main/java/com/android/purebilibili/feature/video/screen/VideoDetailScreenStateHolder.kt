@@ -3188,7 +3188,7 @@ internal fun VideoDetailScreenStateHolder(
                         val playerTopInset = resolveVideoDetailPortraitPlayerTopInsetDp(
                             stableStatusBarHeightDp = stableStatusBarHeight.value,
                             hideStatusBars = systemBarsVisibilityPolicy.hideStatusBars,
-                            immersiveStatusBarBackdropEnabled = immersiveVideoPageStatusBar,
+                            immersiveStatusBarBackdropEnabled = true,
                             isSharedCardTransition = detailShellSharedBoundsEnabled,
                         ).dp
                         val screenWidthDp = configuration.screenWidthDp.dp
@@ -4191,7 +4191,7 @@ internal fun VideoDetailScreenStateHolder(
             isPortraitFullscreen = isPortraitFullscreen,
             videoPlayerRootBottomPx = videoPlayerRootBottomPx,
             hideStatusBars = systemBarsVisibilityPolicy.hideStatusBars,
-            immersiveStatusBarBackdropEnabled = immersiveVideoPageStatusBar,
+            immersiveStatusBarBackdropEnabled = true,
             currentVideoPositionMsProvider = {
                 playerState.player.currentPosition.coerceAtLeast(0L)
             },
