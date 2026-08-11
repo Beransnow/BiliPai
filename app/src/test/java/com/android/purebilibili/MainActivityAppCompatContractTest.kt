@@ -262,11 +262,20 @@ class MainActivityAppCompatContractTest {
                 .contains("#FF087CE8"),
             "Announcement icon should use the same blue field in dark mode"
         )
-        assertTrue(
-            loadResourceText("mipmap-night-anydpi-v26/ic_launcher_blue_snow_maid_announcement.xml")
-                .contains("@drawable/ic_launcher_blue_snow_maid_announcement_background_dark"),
-            "Announcement adaptive icon should select the fixed dark-blue background in dark mode"
-        )
+        mapOf(
+            "ic_launcher_blue_snow_maid" to "ic_launcher_blue_snow_maid_background_dark",
+            "ic_launcher_blue_snow_maid_announcement" to
+                "ic_launcher_blue_snow_maid_announcement_background_dark",
+            "ic_launcher_blue_snow_maid_front" to "ic_launcher_blue_snow_maid_background_dark"
+        ).forEach { (iconStem, backgroundStem) ->
+            listOf("", "_round").forEach { suffix ->
+                assertTrue(
+                    loadResourceText("mipmap-night-anydpi-v26/$iconStem$suffix.xml")
+                        .contains("@drawable/$backgroundStem"),
+                    "$iconStem$suffix should remain adaptive in dark mode instead of falling back to a legacy PNG"
+                )
+            }
+        }
         val announcementFallbackRows = readPngRgbaRows(
             loadResourceFile("mipmap-night-xxxhdpi/ic_launcher_blue_snow_maid_announcement_round.png")
         )
