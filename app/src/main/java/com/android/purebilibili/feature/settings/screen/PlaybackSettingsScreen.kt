@@ -10,6 +10,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -22,16 +24,20 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.android.purebilibili.R
 import com.android.purebilibili.core.store.DEFAULT_DASH_SEGMENT_REQUESTS_ENABLED
 import com.android.purebilibili.core.store.DEFAULT_PLAYER_DIAGNOSTIC_LOGGING_ENABLED
@@ -1461,6 +1467,62 @@ private fun PlaybackFullscreenGestureSettingsSection(
         .getSlideVolumeBrightnessEnabled(context).collectAsStateWithLifecycle(initialValue = true)
     val setSystemBrightnessEnabled by com.android.purebilibili.core.store.SettingsManager
         .getSetSystemBrightnessEnabled(context).collectAsStateWithLifecycle(initialValue = false)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var canWriteSystemSettings by remember(context) {
+        mutableStateOf(Settings.System.canWrite(context))
+    }
+    var showSystemBrightnessPermissionDialog by rememberSaveable { mutableStateOf(false) }
+    var awaitingSystemBrightnessPermission by rememberSaveable { mutableStateOf(false) }
+    fun persistSystemBrightnessSetting(enabled: Boolean) {
+        scope.launch {
+            com.android.purebilibili.core.store.SettingsManager
+                .setSetSystemBrightnessEnabled(context, enabled)
+        }
+    }
+    fun refreshSystemBrightnessPermission(resolvePendingRequest: Boolean) {
+        val granted = Settings.System.canWrite(context)
+        canWriteSystemSettings = granted
+        when {
+            resolvePendingRequest -> persistSystemBrightnessSetting(granted)
+            setSystemBrightnessEnabled && !granted -> persistSystemBrightnessSetting(false)
+        }
+    }
+    val systemBrightnessPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) {
+        refreshSystemBrightnessPermission(resolvePendingRequest = awaitingSystemBrightnessPermission)
+        awaitingSystemBrightnessPermission = false
+    }
+    LaunchedEffect(setSystemBrightnessEnabled, canWriteSystemSettings) {
+        val normalizedSetting = normalizeSystemBrightnessSetting(
+            storedEnabled = setSystemBrightnessEnabled,
+            canWriteSystemSettings = canWriteSystemSettings
+        )
+        if (normalizedSetting != setSystemBrightnessEnabled) {
+            com.android.purebilibili.core.store.SettingsManager
+                .setSetSystemBrightnessEnabled(context, normalizedSetting)
+        }
+    }
+    DisposableEffect(
+        lifecycleOwner,
+        context,
+        setSystemBrightnessEnabled,
+        awaitingSystemBrightnessPermission
+    ) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                val resolvePendingRequest = awaitingSystemBrightnessPermission
+                refreshSystemBrightnessPermission(resolvePendingRequest)
+                if (resolvePendingRequest) {
+                    awaitingSystemBrightnessPermission = false
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
     val inlineSwipeSeekSeconds by com.android.purebilibili.core.store.SettingsManager
         .getInlineSwipeSeekSeconds(context).collectAsStateWithLifecycle(initialValue = 30)
     val fullscreenSwipeSeekEnabled by com.android.purebilibili.core.store.SettingsManager
@@ -1479,6 +1541,51 @@ private fun PlaybackFullscreenGestureSettingsSection(
     val danmakuCloudSyncEnabled by com.android.purebilibili.core.store.SettingsManager
         .getDanmakuCloudSyncEnabled(context)
         .collectAsStateWithLifecycle(initialValue = true)
+    if (showSystemBrightnessPermissionDialog) {
+        com.android.purebilibili.core.ui.AppAlertDialog(
+            onDismissRequest = { showSystemBrightnessPermissionDialog = false },
+            title = {
+                AppText(
+                    "允许调节系统亮度",
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
+            text = {
+                AppText(
+                    "开启后，播放器亮度手势会先调节当前窗口亮度，并同步系统亮度。Android 需要你在系统设置中单独允许 BiliPai 修改系统设置。",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            confirmButton = {
+                com.android.purebilibili.core.ui.AppDialogAction(
+                    onClick = {
+                        showSystemBrightnessPermissionDialog = false
+                        awaitingSystemBrightnessPermission = true
+                        val intent = Intent(
+                            Settings.ACTION_MANAGE_WRITE_SETTINGS,
+                            Uri.parse("package:${context.packageName}")
+                        )
+                        runCatching {
+                            systemBrightnessPermissionLauncher.launch(intent)
+                        }.onFailure {
+                            awaitingSystemBrightnessPermission = false
+                            persistSystemBrightnessSetting(false)
+                        }
+                    }
+                ) { AppText("去授权") }
+            },
+            dismissButton = {
+                com.android.purebilibili.core.ui.AppDialogAction(
+                    onClick = { showSystemBrightnessPermissionDialog = false }
+                ) {
+                    AppText(
+                        "取消",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        )
+    }
     AppPreferenceGroup {
         Column(
             modifier = Modifier
@@ -1698,17 +1805,33 @@ private fun PlaybackFullscreenGestureSettingsSection(
 	        AppSwitchPreference(
 	            icon = rememberSettingsSemanticIcon(SettingsIconRole.SYSTEM_BRIGHTNESS),
             title = "调节系统亮度",
-            subtitle = if (slideVolumeBrightnessEnabled) {
-                "开启后亮度手势会尝试同步系统亮度（需系统允许）"
-            } else {
-                "依赖“左右侧滑动调节亮度/音量”开关"
+            subtitle = when {
+                !slideVolumeBrightnessEnabled -> "依赖“左右侧滑动调节亮度/音量”开关"
+                setSystemBrightnessEnabled && canWriteSystemSettings ->
+                    "亮度手势优先调节当前窗口，并同步系统亮度"
+                else -> "开启时需要在系统设置中允许修改系统设置"
             },
-            checked = setSystemBrightnessEnabled,
-            onCheckedChange = {
+            checked = setSystemBrightnessEnabled && canWriteSystemSettings,
+            enabled = slideVolumeBrightnessEnabled,
+            onCheckedChange = { requestedEnabled ->
                 if (!slideVolumeBrightnessEnabled) return@AppSwitchPreference
-                scope.launch {
-                    com.android.purebilibili.core.store.SettingsManager
-                        .setSetSystemBrightnessEnabled(context, it)
+                when (
+                    resolveSystemBrightnessToggleAction(
+                        requestedEnabled = requestedEnabled,
+                        canWriteSystemSettings = Settings.System.canWrite(context)
+                    )
+                ) {
+                    SystemBrightnessToggleAction.ENABLE -> {
+                        canWriteSystemSettings = true
+                        persistSystemBrightnessSetting(true)
+                    }
+                    SystemBrightnessToggleAction.DISABLE -> {
+                        persistSystemBrightnessSetting(false)
+                    }
+                    SystemBrightnessToggleAction.REQUEST_PERMISSION -> {
+                        canWriteSystemSettings = false
+                        showSystemBrightnessPermissionDialog = true
+                    }
                 }
             },
             iconTint = iOSOrange
