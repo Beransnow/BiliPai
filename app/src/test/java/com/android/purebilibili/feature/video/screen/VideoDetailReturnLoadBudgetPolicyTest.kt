@@ -100,7 +100,7 @@ class VideoDetailReturnLoadBudgetPolicyTest {
             resolveVideoDetailReturnSessionPhase(
                 isCommittedCardReturn = true,
                 isExitTransitionInProgress = true,
-                settleProgress = 0.95f,
+                settleProgress = 0.99f,
             ),
         )
         assertEquals(

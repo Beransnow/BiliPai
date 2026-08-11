@@ -313,7 +313,7 @@ class VideoCardScrollLiteVisualPolicyTest {
                 isReturningFromDetail = true,
                 transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
                 isVideoCardReturnGestureInProgress = false,
-                transitionBackgroundProgress = 0.19f,
+                transitionBackgroundProgress = 0.10f,
             ),
             0.001f,
         )
@@ -325,7 +325,7 @@ class VideoCardScrollLiteVisualPolicyTest {
                 isReturningFromDetail = true,
                 transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
                 isVideoCardReturnGestureInProgress = false,
-                transitionBackgroundProgress = 0.06f,
+                transitionBackgroundProgress = 0.02f,
             ),
             0.001f,
         )
@@ -345,7 +345,64 @@ class VideoCardScrollLiteVisualPolicyTest {
     }
 
     @Test
-    fun homeCardChromeAndCoverTransformTogetherInsideTheFlyingShell() {
+    fun flyingReturnContextIncludesMiuixSettleEvenWhenLegacyPhaseIsHeld() {
+        assertTrue(
+            isVideoCardFlyingReturnContext(
+                isReturningFromDetail = false,
+                isVideoCardReturnGestureInProgress = false,
+                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.HELD,
+                isSharedTransitionActive = true,
+                transitionBackgroundProgress = 0.4f,
+            )
+        )
+        assertTrue(
+            isVideoCardFlyingReturnContext(
+                isReturningFromDetail = false,
+                isVideoCardReturnGestureInProgress = false,
+                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.HELD,
+                isSharedTransitionActive = false,
+                transitionBackgroundProgress = 0.4f,
+            )
+        )
+        assertFalse(
+            isVideoCardFlyingReturnContext(
+                isReturningFromDetail = false,
+                isVideoCardReturnGestureInProgress = false,
+                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.OPENING,
+                isSharedTransitionActive = true,
+                transitionBackgroundProgress = 0.4f,
+            )
+        )
+        assertEquals(
+            0.5f,
+            resolveHomeCardChromeAlphaDuringShellReturnMorph(
+                useCardContainerSharedBounds = true,
+                isSharedMorphSourceCard = true,
+                isReturningFromDetail = false,
+                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.HELD,
+                isVideoCardReturnGestureInProgress = false,
+                isSharedTransitionActive = true,
+                transitionBackgroundProgress = 0.16f,
+            ),
+            0.001f,
+        )
+        assertEquals(
+            0.5f,
+            resolveHomeCardReturnSourceVisualAlpha(
+                useCardContainerSharedBounds = true,
+                isSharedMorphSourceCard = true,
+                isReturningFromDetail = false,
+                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.HELD,
+                isVideoCardReturnGestureInProgress = false,
+                isSharedTransitionActive = true,
+                transitionBackgroundProgress = 0.10f,
+            ),
+            0.001f,
+        )
+    }
+
+    @Test
+    fun homeCardChromeTransformsBeforeLateCoverHandoffInsideTheFlyingShell() {
         assertTrue(
             shouldSuppressHomeCardVisualDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
@@ -398,7 +455,7 @@ class VideoCardScrollLiteVisualPolicyTest {
                 isReturningFromDetail = true,
                 transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
                 isSharedTransitionActive = false,
-                transitionBackgroundProgress = 0.19f,
+                transitionBackgroundProgress = 0.16f,
             ),
             0.001f,
         )
@@ -420,7 +477,7 @@ class VideoCardScrollLiteVisualPolicyTest {
                 isSharedMorphSourceCard = true,
                 isReturningFromDetail = true,
                 transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
-                transitionBackgroundProgress = 0.06f,
+                transitionBackgroundProgress = 0.04f,
             ),
             0.001f,
         )

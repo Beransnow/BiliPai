@@ -75,7 +75,7 @@ class VideoCardReturnTimelineTest {
             ),
             0.0001f,
         )
-        // morphDepth=0.1 → settle 0.9 → 处于 68%–94% 内容形变窗口后段。
+        // morphDepth=0.1 → settle 0.9 → 处于 72%–96% 内容形变窗口后段。
         val late = resolveVideoCardLiveMorphSecondaryContentAlpha(
             morphDepthProgress = 0.1f,
         )
@@ -314,11 +314,11 @@ class VideoCardReturnTimelineTest {
     }
 
     @Test
-    fun liveReturnVisualHandoff_matchesTheSourceChromeSettleWindow() {
+    fun liveReturnMediaHandoff_staysLaterThanSourceChromeTransform() {
         assertEquals(0f, resolveVideoCardLiveReturnVisualHandoffAlpha(1f), 0.0001f)
-        assertEquals(0f, resolveVideoCardLiveReturnVisualHandoffAlpha(0.32f), 0.0001f)
-        assertEquals(0.5f, resolveVideoCardLiveReturnVisualHandoffAlpha(0.19f), 0.0001f)
-        assertEquals(1f, resolveVideoCardLiveReturnVisualHandoffAlpha(0.06f), 0.0001f)
+        assertEquals(0f, resolveVideoCardLiveReturnVisualHandoffAlpha(0.19f), 0.0001f)
+        assertEquals(0.5f, resolveVideoCardLiveReturnVisualHandoffAlpha(0.10f), 0.0001f)
+        assertEquals(1f, resolveVideoCardLiveReturnVisualHandoffAlpha(0.02f), 0.0001f)
         assertEquals(1f, resolveVideoCardLiveReturnVisualHandoffAlpha(0f), 0.0001f)
     }
 
@@ -394,11 +394,11 @@ class VideoCardReturnTimelineTest {
     }
 
     @Test
-    fun sourceChrome_andLiveCoverUseOneHandoffWindow() {
-        assertEquals(0f, resolveVideoCardSourceChromeReturnAlpha(0.32f), 0.001f)
-        assertEquals(0.5f, resolveVideoCardSourceChromeReturnAlpha(0.19f), 0.001f)
-        assertEquals(1f, resolveVideoCardSourceChromeReturnAlpha(0.06f), 0.001f)
-        assertEquals(0.5f, resolveVideoCardLiveReturnVisualHandoffAlpha(0.19f), 0.001f)
+    fun sourceChromeTransformsBeforeTheLateLiveCoverHandoff() {
+        assertEquals(0f, resolveVideoCardSourceChromeReturnAlpha(0.28f), 0.001f)
+        assertEquals(0.5f, resolveVideoCardSourceChromeReturnAlpha(0.16f), 0.001f)
+        assertEquals(1f, resolveVideoCardSourceChromeReturnAlpha(0.04f), 0.001f)
+        assertEquals(0f, resolveVideoCardLiveReturnVisualHandoffAlpha(0.16f), 0.001f)
     }
 
     @Test
@@ -409,13 +409,13 @@ class VideoCardReturnTimelineTest {
             resolveVideoCardLiveMorphSecondaryContentAlpha(transitionProgress = 1f),
             0.001f,
         )
-        // settle 0.94：来源封面/文字完全接管飞行卡内部。
+        // settle 0.96：来源文字完全接管飞行卡信息区。
         assertEquals(
             0f,
-            resolveVideoCardLiveMorphSecondaryContentAlpha(transitionProgress = 0.06f),
+            resolveVideoCardLiveMorphSecondaryContentAlpha(transitionProgress = 0.04f),
             0.001f,
         )
-        val mid = resolveVideoCardLiveMorphSecondaryContentAlpha(transitionProgress = 0.19f)
+        val mid = resolveVideoCardLiveMorphSecondaryContentAlpha(transitionProgress = 0.16f)
         assertTrue(mid in 0.01f..0.99f)
     }
 
@@ -448,7 +448,7 @@ class VideoCardReturnTimelineTest {
         assertEquals(0f, returnEnd.translationYDp, 0.001f)
 
         val returnTransform = resolveVideoCardSecondaryContentVisualFrame(
-            morphDepthProgress = 0.19f,
+            morphDepthProgress = 0.16f,
             phase = VideoCardTransitionBackgroundPhase.RETURNING,
             isReturnGestureInProgress = false,
             motionTier = MotionTier.Normal,
@@ -488,7 +488,7 @@ class VideoCardReturnTimelineTest {
             0.001f,
         )
         assertEquals(
-            0.53846157f,
+            0.6666667f,
             resolveVideoCardDetailChromeAlpha(
                 morphDepthProgress = 0.2f,
                 phase = VideoCardTransitionBackgroundPhase.RETURNING,

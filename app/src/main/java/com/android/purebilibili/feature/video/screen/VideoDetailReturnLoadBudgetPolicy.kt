@@ -14,7 +14,7 @@ import com.android.purebilibili.core.ui.transition.VideoCardTransitionVisualTime
 
 /** 与 live return cover handoff 对齐：末段才允许停播意图。 */
 internal const val VIDEO_DETAIL_RETURN_HANDOFF_SETTLE_START =
-    VideoCardTransitionVisualTimeline.SOURCE_CHROME_RETURN_END
+    VideoCardTransitionVisualTimeline.MEDIA_RETURN_END
 
 internal enum class VideoDetailReturnSessionPhase {
     Idle,

@@ -338,7 +338,7 @@ class VideoDetailReturnCoverPolicyTest {
 
     @Test
     fun `predictive seek uses the same live to cover handoff as committed return`() {
-        // depth=0.7 尚未进入 68%–94% 接管窗口。
+        // depth=0.7 尚未进入 82%–98% 媒体接管窗口。
         assertEquals(
             0f,
             resolveVideoDetailReturnCoverAlpha(
@@ -435,31 +435,31 @@ class VideoDetailReturnCoverPolicyTest {
             0.0001f,
         )
         // 后段详情信息开始变换为来源卡标题/统计，但飞行卡壳保持不透明。
-        val lateContent = resolveVideoDetailReturnContentAlpha(0.3f, true, liveReturnMorph = true)
-        assertEquals(0.9230769f, lateContent, 0.0001f)
+        val lateContent = resolveVideoDetailReturnContentAlpha(0.2f, true, liveReturnMorph = true)
+        assertEquals(0.6666667f, lateContent, 0.0001f)
     }
 
     @Test
     fun `committed live return transforms player into cover inside the flying card`() {
         // 两层使用互补 alpha，属于同一不透明媒体槽，不会透出列表原位内容。
         assertEquals(
-            0.46153846f,
-            resolveVideoDetailReturnCoverAlpha(0.2f, true, true, liveReturnMorph = true),
+            0.5f,
+            resolveVideoDetailReturnCoverAlpha(0.1f, true, true, liveReturnMorph = true),
             0.0001f,
         )
         assertEquals(
-            0.53846157f,
-            resolveVideoDetailReturnPlayerAlpha(0.2f, true, true, liveReturnMorph = true),
+            0.5f,
+            resolveVideoDetailReturnPlayerAlpha(0.1f, true, true, liveReturnMorph = true),
             0.0001f,
         )
         assertEquals(
             1f,
-            resolveVideoDetailReturnCoverAlpha(0.06f, true, true, liveReturnMorph = true),
+            resolveVideoDetailReturnCoverAlpha(0.02f, true, true, liveReturnMorph = true),
             0.0001f,
         )
         assertEquals(
             0f,
-            resolveVideoDetailReturnPlayerAlpha(0.06f, true, true, liveReturnMorph = true),
+            resolveVideoDetailReturnPlayerAlpha(0.02f, true, true, liveReturnMorph = true),
             0.0001f,
         )
         assertEquals(
@@ -532,7 +532,7 @@ class VideoDetailReturnCoverPolicyTest {
             0.0001f,
         )
         assertEquals(
-            0.53846157f,
+            0.6666667f,
             resolveVideoDetailReturnContentAlpha(
                 transitionProgress = 0.2f,
                 isCommittedCardReturn = true,
@@ -563,7 +563,7 @@ class VideoDetailReturnCoverPolicyTest {
             depthBlurProgress = 0.95f,
             morphDepthProgress = 0.2f,
         )
-        assertEquals(0.53846157f, content, 0.0001f)
+        assertEquals(0.6666667f, content, 0.0001f)
         assertEquals(
             resolveVideoDetailReturnContentAlpha(
                 transitionProgress = 0.2f,
@@ -659,9 +659,9 @@ class VideoDetailReturnCoverPolicyTest {
         )
         // 手势进入后段时，即使尚未提交，也应在飞行卡内把 player 变成封面。
         assertEquals(
-            0.46153846f,
+            0.5f,
             resolveVideoDetailReturnCoverAlpha(
-                transitionProgress = 0.2f,
+                transitionProgress = 0.1f,
                 isCommittedCardReturn = false,
                 hasResidentCover = true,
                 liveReturnMorph = true,
@@ -670,9 +670,9 @@ class VideoDetailReturnCoverPolicyTest {
             0.0001f,
         )
         assertEquals(
-            0.53846157f,
+            0.5f,
             resolveVideoDetailReturnPlayerAlpha(
-                transitionProgress = 0.2f,
+                transitionProgress = 0.1f,
                 isCommittedCardReturn = false,
                 hasResidentCover = true,
                 liveReturnMorph = true,
@@ -1207,7 +1207,7 @@ class VideoDetailReturnCoverPolicyTest {
         )
         // 接近落位时 player 已完成向封面的内部形变。
         val playerNearEnd = resolveVideoDetailReturnPlayerAlpha(
-            transitionProgress = 0.05f,
+            transitionProgress = 0.01f,
             isCommittedCardReturn = true,
             hasResidentCover = true,
             liveReturnMorph = true,

@@ -20,7 +20,7 @@ import com.android.purebilibili.core.ui.adaptive.MotionTier
  *
  * **当前策略：始终 0 / 不延后整壳 Enter。**
  * 来源卡资源全程待命并由 sharedBounds 提升到飞行层；内部封面/文字在返回后半段
- * 接管。整壳 delayed fadeIn 会在 overlay 卸层瞬间造成二次叠化，是落位闪烁主因。
+ * 分段接管。整壳 delayed fadeIn 会在 overlay 卸层瞬间造成二次叠化，是落位闪烁主因。
  */
 internal const val VIDEO_CARD_RETURN_SOURCE_ENTER_FADE_DELAY_RATIO = 0f
 
@@ -38,8 +38,13 @@ internal object VideoCardTransitionVisualTimeline {
     // This only refreshes the backdrop; it never reveals the source card as a stationary substitute.
     const val WHOLE_SOURCE_CARD_RETURN_START = 0.55f
     const val WHOLE_SOURCE_CARD_RETURN_END = 0.90f
-    const val SOURCE_CHROME_RETURN_START = 0.68f
-    const val SOURCE_CHROME_RETURN_END = 0.94f
+    // Detail controls/body → source title/owner/stats. Start before media so the landing card
+    // never reaches the cover state with an empty information region.
+    const val SOURCE_CHROME_RETURN_START = 0.72f
+    const val SOURCE_CHROME_RETURN_END = 0.96f
+    // Live player → cover. Keep the live frame dominant until the card is very close to landing.
+    const val MEDIA_RETURN_START = 0.82f
+    const val MEDIA_RETURN_END = 0.98f
     const val SECONDARY_CONTENT_TRANSLATION_DP = 8
     const val REDUCED_MOTION_DURATION_MILLIS = 140
 }
@@ -83,22 +88,27 @@ internal const val VIDEO_CARD_RETURN_LIVE_CONTENT_YIELD_END =
     VideoCardTransitionVisualTimeline.SOURCE_CHROME_RETURN_END
 
 /**
- * 实时画面缩回时，详情常驻封面与媒体 chrome 使用同一个 68%–94% 精修窗口。
- * 飞行卡内部的封面、标题和统计在 68%–94% 窗口接管，避免过早离开实时画面。
- * 旧的最后 12% 窗口太短，手势几乎落位后才看得到封面转换。
+ * 实时画面缩回时，播放器在 82%–98% 的最后落位段才变为封面。
+ * 来源标题/UP/统计使用稍早的 72%–96%，保证封面出现时信息区已同步形变，
+ * 不会留下截图中的空白黑块。
  */
 internal const val VIDEO_CARD_LIVE_RETURN_VISUAL_HANDOFF_START =
-    VideoCardTransitionVisualTimeline.SOURCE_CHROME_RETURN_START
+    VideoCardTransitionVisualTimeline.MEDIA_RETURN_START
 
 /**
- * live surface → 常驻封面/来源卡视觉的唯一交接 alpha。
+ * live surface → 常驻封面的唯一媒体交接 alpha。
  *
  * 资源可以全程驻留，但在实时画面主导阶段必须保持透明；否则列表封面会与 player
- * surface 叠层。详情侧 resident cover、首页封面和来源卡 chrome 都必须使用此值。
+ * surface 叠层。详情侧 resident cover 与来源卡封面必须使用此值；标题/UP/统计
+ * 使用更早的 [resolveVideoCardSourceChromeReturnAlpha]。
  */
 internal fun resolveVideoCardLiveReturnVisualHandoffAlpha(
     morphDepthProgress: Float,
-): Float = resolveVideoCardSourceChromeReturnAlpha(morphDepthProgress)
+): Float = resolveVideoCardTimelineWindowProgress(
+    progress = resolveVideoCardReturnSettleFromMorphDepth(morphDepthProgress),
+    start = VideoCardTransitionVisualTimeline.MEDIA_RETURN_START,
+    end = VideoCardTransitionVisualTimeline.MEDIA_RETURN_END,
+)
 
 internal data class VideoCardSecondaryContentVisualFrame(
     val alpha: Float,
@@ -129,7 +139,7 @@ internal fun resolveVideoCardDetailChromeAlpha(
     return when {
         // The controls remain attached to the flying shell and transform into the source-card
         // chrome during the late landing window.
-        returning -> 1f - resolveVideoCardLiveReturnVisualHandoffAlpha(depth)
+        returning -> 1f - resolveVideoCardSourceChromeReturnAlpha(depth)
         phase == VideoCardTransitionBackgroundPhase.OPENING ->
             resolveVideoCardTimelineWindowProgress(
                 progress = depth,
@@ -152,7 +162,7 @@ internal fun resolveVideoCardSecondaryContentVisualFrame(
     val alpha = when {
         // Both content trees stay in the moving shared-bounds shell. This side fades out exactly
         // as the source title/owner/stats fade in, so the card itself never becomes translucent.
-        returning -> 1f - resolveVideoCardLiveReturnVisualHandoffAlpha(depth)
+        returning -> 1f - resolveVideoCardSourceChromeReturnAlpha(depth)
         motionTier == MotionTier.Reduced -> depth
         phase == VideoCardTransitionBackgroundPhase.OPENING ->
             resolveVideoCardTimelineWindowProgress(

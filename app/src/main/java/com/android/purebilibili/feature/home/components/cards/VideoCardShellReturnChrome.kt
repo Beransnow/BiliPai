@@ -16,8 +16,9 @@ import com.android.purebilibili.core.util.CardPositionManager
 
 /**
  * 源卡信息区（标题/UP 等）在 shell morph 时的 chrome 视觉。
- * 返回末段在封面像素交接前开始淡入，并在落位前完成，避免收尾只剩封面；
- * 横卡可选择随主进度短距离移动；实时画面返回时，完整源卡在下层承接最终落位。
+ * 信息区与封面都在飞行的 sharedBounds 内形变：信息区使用 72%–96%，
+ * 封面使用更晚的 82%–98%，避免落位卡片只剩封面而标题仍为空。
+ * 横卡可选择随主进度短距离移动。
  * 所有进度都在绘制阶段读取，避免整卡重组。
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -101,6 +102,7 @@ internal fun Modifier.videoCardShellReturnCoverAlpha(
     isReturningFromDetail: Boolean = false,
 ): Modifier {
     if (!enabled || bvid.isBlank()) return this
+    val sharedTransitionScope = LocalSharedTransitionScope.current
     val bgState = LocalVideoCardTransitionBackgroundState.current
     val isSharedMorphSourceCard = remember(
         bvid,
@@ -122,8 +124,9 @@ internal fun Modifier.videoCardShellReturnCoverAlpha(
             isVideoCardReturnGestureInProgress =
                 bgState.isReturnGestureInProgressProvider() ||
                     bgState.isGestureRestoreInProgressProvider(),
+            isSharedTransitionActive = sharedTransitionScope?.isTransitionActive == true,
             transitionBackgroundProgress = bgState.progressProvider(),
-            // 来源封面位于 sharedBounds 飞行层，按同一窗口把播放器内容替换为封面。
+            // 来源封面位于 sharedBounds 飞行层，在最后 82%–98% 把播放器变为封面。
             preferWholeCardReturn = bgState.preferWholeCardReturnProvider(),
         )
     }

@@ -69,6 +69,27 @@ internal fun shouldPinVideoCardCoverForSharedReturn(
 ).pinCoverSource
 
 /**
+ * Miuix predictive return may enter its settle while the legacy clock still reports HELD.
+ * A moving shared-bounds target in any non-opening phase is therefore also a return context.
+ */
+internal fun isVideoCardFlyingReturnContext(
+    isReturningFromDetail: Boolean,
+    isVideoCardReturnGestureInProgress: Boolean,
+    transitionBackgroundPhase: VideoCardTransitionBackgroundPhase,
+    isSharedTransitionActive: Boolean,
+    transitionBackgroundProgress: Float,
+): Boolean {
+    val nonOpeningMorphActive =
+        transitionBackgroundPhase != VideoCardTransitionBackgroundPhase.OPENING &&
+            (isSharedTransitionActive ||
+                transitionBackgroundProgress.coerceIn(0f, 1f) < 0.999f)
+    return isReturningFromDetail ||
+        isVideoCardReturnGestureInProgress ||
+        transitionBackgroundPhase == VideoCardTransitionBackgroundPhase.RETURNING ||
+        nonOpeningMorphActive
+}
+
+/**
  * 来源卡封面在返回期间的可见 alpha。
  *
  * 保留图片请求、缓存和布局以避免卸层黑闪，但 LIVE surface 主导时不绘制来源卡像素；
@@ -80,13 +101,18 @@ internal fun resolveHomeCardReturnSourceVisualAlpha(
     isReturningFromDetail: Boolean,
     transitionBackgroundPhase: VideoCardTransitionBackgroundPhase,
     isVideoCardReturnGestureInProgress: Boolean,
+    isSharedTransitionActive: Boolean = false,
     transitionBackgroundProgress: Float,
     preferWholeCardReturn: Boolean = false,
 ): Float {
     if (!useCardContainerSharedBounds || !isSharedMorphSourceCard) return 1f
-    val isReturnContext = isReturningFromDetail ||
-        isVideoCardReturnGestureInProgress ||
-        transitionBackgroundPhase == VideoCardTransitionBackgroundPhase.RETURNING
+    val isReturnContext = isVideoCardFlyingReturnContext(
+        isReturningFromDetail = isReturningFromDetail,
+        isVideoCardReturnGestureInProgress = isVideoCardReturnGestureInProgress,
+        transitionBackgroundPhase = transitionBackgroundPhase,
+        isSharedTransitionActive = isSharedTransitionActive,
+        transitionBackgroundProgress = transitionBackgroundProgress,
+    )
     if (!isReturnContext || preferWholeCardReturn) return 1f
     return resolveVideoCardLiveReturnVisualHandoffAlpha(
         morphDepthProgress = transitionBackgroundProgress,
@@ -100,9 +126,9 @@ internal data class HorizontalCardChromeMotionFrame(
 )
 
 /**
- * 横卡 chrome 与 shell 共用主进度，但不进入共享 overlay。
+ * 横卡 chrome 与 shell 共用主进度。
  *
- * 打开前 28% 上移并淡出；返回时不再额外位移，alpha 与来源封面使用同一交接窗口。
+ * 打开前 28% 上移并淡出；返回时不再额外位移，使用早于封面的文字形变窗口。
  */
 internal fun resolveHorizontalCardChromeMotionFrame(
     useCardContainerSharedBounds: Boolean,
@@ -119,9 +145,13 @@ internal fun resolveHorizontalCardChromeMotionFrame(
     if (!useCardContainerSharedBounds || !isSharedMorphSourceCard) {
         return HorizontalCardChromeMotionFrame(alpha = 1f, translationProgress = 0f)
     }
-    val isReturnContext = isReturningFromDetail ||
-        isVideoCardReturnGestureInProgress ||
-        transitionBackgroundPhase == VideoCardTransitionBackgroundPhase.RETURNING
+    val isReturnContext = isVideoCardFlyingReturnContext(
+        isReturningFromDetail = isReturningFromDetail,
+        isVideoCardReturnGestureInProgress = isVideoCardReturnGestureInProgress,
+        transitionBackgroundPhase = transitionBackgroundPhase,
+        isSharedTransitionActive = isSharedTransitionActive,
+        transitionBackgroundProgress = transitionBackgroundProgress,
+    )
     if (isReturnContext) {
         return HorizontalCardChromeMotionFrame(
             alpha = if (preferWholeCardReturn) {
@@ -157,8 +187,8 @@ internal fun resolveHorizontalCardChromeMotionFrame(
  * 规则（以代码为准，不依赖「morph 结束硬切 1」）：
  * - 非源卡 / 无 shell：恒 1
  * - 进场（OPENING 或 shared 进行中且非返回）：0，避免字叠播放器
- * - 返回上下文：正文使用独立的 68%–94% 落位窗口，在封面像素交接前开始恢复
- * - 完整源卡交接模式下，正文与封面常驻下层，由详情实时画面在落点前淡出
+ * - 返回上下文：正文使用独立的 72%–96% 落位窗口，在 82%–98% 封面像素交接前开始恢复
+ * - 完整源卡交接模式下，飞行层直接保持完整源卡内容
  *
  * 正文与封面使用同一 morph 时钟，但各自拥有明确的交接窗口；不再依赖转场结束硬切。
  */
@@ -176,9 +206,13 @@ internal fun resolveHomeCardChromeAlphaDuringShellReturnMorph(
 ): Float {
     if (!useCardContainerSharedBounds || !isSharedMorphSourceCard) return 1f
 
-    val isReturnContext = isReturningFromDetail ||
-        isVideoCardReturnGestureInProgress ||
-        transitionBackgroundPhase == VideoCardTransitionBackgroundPhase.RETURNING
+    val isReturnContext = isVideoCardFlyingReturnContext(
+        isReturningFromDetail = isReturningFromDetail,
+        isVideoCardReturnGestureInProgress = isVideoCardReturnGestureInProgress,
+        transitionBackgroundPhase = transitionBackgroundPhase,
+        isSharedTransitionActive = isSharedTransitionActive,
+        transitionBackgroundProgress = transitionBackgroundProgress,
+    )
 
     if (isReturnContext) {
         return if (preferWholeCardReturn) {
