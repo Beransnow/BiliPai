@@ -153,10 +153,11 @@ internal fun BiliPaiNavDisplayHost(
     } else {
         predictiveBackAnimationStyle
     }
-    val globalTransition = remember(style, predictiveBackExitDirection) {
+    val globalTransition = remember(style, predictiveBackExitDirection, isLightBackground) {
         biliPaiMiuixNavTransition(
             animation = style,
             exitDirection = predictiveBackExitDirection,
+            isLightBackground = isLightBackground,
         )
     }
     val cardMorphAvailable = shouldUseMiuixVideoCardMorph(
