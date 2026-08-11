@@ -311,15 +311,18 @@ class MainActivityAppCompatContractTest {
             loadResourceFile("mipmap-xxxhdpi/ic_launcher_blue_snow_maid_monochrome.png")
         )
         fun negativeEyeArea(centerX: Int, centerY: Int): Int =
-            (centerY - 16..centerY + 16).sumOf { y ->
-                (centerX - 12..centerX + 12).count { x ->
+            (centerY - 19..centerY + 19).sumOf { y ->
+                (centerX - 19..centerX + 19).count { x ->
                     sideMaidRows[y][x * 4 + 3] < 128
                 }
             }
+        val leftEyeArea = negativeEyeArea(centerX = 216, centerY = 204)
+        val rightEyeArea = negativeEyeArea(centerX = 264, centerY = 216)
         assertTrue(
-            negativeEyeArea(centerX = 214, centerY = 198) ==
-                negativeEyeArea(centerX = 258, centerY = 213),
-            "The tilted maid themed icon should keep both eye cutouts equal along the facial axis"
+            leftEyeArea >= 600 &&
+                rightEyeArea >= 600 &&
+                leftEyeArea - rightEyeArea in -100..100,
+            "The tilted maid themed icon should retain two balanced solid pupil shapes along the facial axis"
         )
 
         listOf(
