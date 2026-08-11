@@ -65,9 +65,9 @@ class VideoCardReturnTimelineTest {
 
     @Test
     fun liveMorphContentAlpha_prefersMorphDepthOverDualSourceMax() {
-        // 单时钟只认 morphDepth=0.9 → settle 0.1，正文处于前 28% 的让位过程。
+        // 遗留 alpha 政策也对齐后半段整卡窗口；settle 0.1 仍完整可见。
         assertEquals(
-            1f - 0.1f / 0.28f,
+            1f,
             resolveVideoCardLiveMorphSecondaryContentAlpha(
                 transitionProgress = 0.2f,
                 depthBlurProgress = 0.2f,
@@ -75,7 +75,7 @@ class VideoCardReturnTimelineTest {
             ),
             0.0001f,
         )
-        // morphDepth=0.2 → settle 0.8 → 正文已让位
+        // morphDepth=0.2 → settle 0.8 → 处于 55%–90% 窗口后段。
         val late = resolveVideoCardLiveMorphSecondaryContentAlpha(
             morphDepthProgress = 0.2f,
         )
@@ -402,20 +402,20 @@ class VideoCardReturnTimelineTest {
     }
 
     @Test
-    fun liveMorphSecondaryContent_yieldsWithinFirstReturnSegment() {
+    fun legacyLiveMorphContentWindowMatchesTheLateWholeCardHandoff() {
         // settle 0：正文保持完整。
         assertEquals(
             1f,
             resolveVideoCardLiveMorphSecondaryContentAlpha(transitionProgress = 1f),
             0.001f,
         )
-        // settle 0.28：前 28% 内完成让位。
+        // settle 0.9：整卡遮罩窗口结束。
         assertEquals(
             0f,
-            resolveVideoCardLiveMorphSecondaryContentAlpha(transitionProgress = 0.72f),
+            resolveVideoCardLiveMorphSecondaryContentAlpha(transitionProgress = 0.10f),
             0.001f,
         )
-        val mid = resolveVideoCardLiveMorphSecondaryContentAlpha(transitionProgress = 0.86f)
+        val mid = resolveVideoCardLiveMorphSecondaryContentAlpha(transitionProgress = 0.275f)
         assertTrue(mid in 0.01f..0.99f)
     }
 
@@ -444,7 +444,8 @@ class VideoCardReturnTimelineTest {
             isReturnGestureInProgress = false,
             motionTier = MotionTier.Normal,
         )
-        assertEquals(0f, returnEnd.alpha, 0.001f)
+        assertEquals(1f, returnEnd.alpha, 0.001f)
+        assertEquals(0f, returnEnd.translationYDp, 0.001f)
 
         val reduced = resolveVideoCardSecondaryContentVisualFrame(
             morphDepthProgress = 0.5f,
@@ -473,6 +474,15 @@ class VideoCardReturnTimelineTest {
             resolveVideoCardDetailChromeAlpha(
                 morphDepthProgress = 0.72f,
                 phase = VideoCardTransitionBackgroundPhase.OPENING,
+                isReturnGestureInProgress = false,
+            ),
+            0.001f,
+        )
+        assertEquals(
+            1f,
+            resolveVideoCardDetailChromeAlpha(
+                morphDepthProgress = 0.2f,
+                phase = VideoCardTransitionBackgroundPhase.RETURNING,
                 isReturnGestureInProgress = false,
             ),
             0.001f,

@@ -1678,10 +1678,12 @@ internal fun VideoDetailScreenStateHolder(
             else -> 1f
         },
     )
-    // 已提交返回时，播放器由 shared morph 接管；非共享正文立即让位，避免与来源卡标题叠层。
+    // 有实时帧时保留完整详情卡（含播放器下方控制器/信息区），由 Miuix 不透明
+    // 遮罩逐区域交给完整来源卡；无可绘帧的封面路径才提前卸载次要内容。
     val returnSecondaryContentAlphaPreview =
         resolveVideoDetailReturnSecondaryContentAlphaPreview(
             isCommittedCardReturn = isCommittedCardReturn,
+            hasRenderableLiveFrame = hasRenderableLiveFrameForReturn,
         )
     val returnVisualBudget = resolveVideoDetailReturnVisualBudget(
         phase = returnSessionPhase,
@@ -3787,13 +3789,7 @@ internal fun VideoDetailScreenStateHolder(
                                             motionTier =
                                                 videoCardDepthBackgroundState.motionTierProvider(),
                                         )
-                                        alpha = if (
-                                            isLeaving && isQuickReturningFromDetail
-                                        ) {
-                                            0f
-                                        } else {
-                                            frame.alpha
-                                        }
+                                        alpha = frame.alpha
                                         translationY = with(videoCardTransitionDensity) {
                                             (frame.translationYDp + (1f - reveal) * 12f).dp.toPx()
                                         }
@@ -3817,7 +3813,8 @@ internal fun VideoDetailScreenStateHolder(
                             when {
                                 suppressPhoneDetailBodyForDirectPortrait &&
                                     uiState !is VideoPlaybackUiState.Error -> Unit
-                                // 返回 morph 次要内容 alpha 已近 0：跳过 composition，壳仍 fillMaxSize。
+                                // 仅无实时帧的封面回退允许卸载正文；LiveMorph 的完整详情卡
+                                // 会保持 composition，由外层不透明裁切逐区域完成交接。
                                 detachSecondaryContentForReturn &&
                                     uiState !is VideoPlaybackUiState.Error -> Unit
                                 uiState is VideoPlaybackUiState.Loading -> {

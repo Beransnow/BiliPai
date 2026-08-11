@@ -1,11 +1,24 @@
 package com.android.purebilibili.navigation3.predictiveback
 
 import androidx.compose.ui.graphics.TransformOrigin
+import java.io.File
 import top.yukonga.miuix.kmp.nav.transition.NavRole
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class MiuixVideoCardNavTransitionTest {
+    @Test
+    fun transitionUsesOpaqueRevealMaskAndNeverEntryAlphaCrossfade() {
+        val source = File(
+            "src/main/java/com/android/purebilibili/navigation3/predictiveback/MiuixVideoCardNavTransition.kt"
+        ).readText()
+        val transform = source.substringAfter("override fun Modifier.transformEntry")
+
+        assertEquals(true, transform.contains("alpha = 1f"))
+        assertEquals(true, transform.contains("visibleHeightFraction = outgoingClipFraction"))
+        assertEquals(false, transform.contains("alpha = resolveMiuixVideoCard"))
+    }
+
     @Test
     fun predictiveSeekIsAReturnEvenWhileMiuixReportsIncomingRole() {
         assertEquals(
@@ -63,10 +76,10 @@ class MiuixVideoCardNavTransitionTest {
     }
 
     @Test
-    fun videoDetailHandsTheWholeSourceCardBackDuringTheGesture() {
+    fun videoDetailUsesAnOpaqueBottomUpClipInsteadOfEntryAlphaBlending() {
         assertEquals(
             1f,
-            resolveMiuixVideoCardReturnContentAlpha(
+            resolveMiuixVideoCardOutgoingClipFraction(
                 morphProgress = 0f,
                 isReturning = false,
                 handoffWholeSourceCard = true,
@@ -75,7 +88,7 @@ class MiuixVideoCardNavTransitionTest {
         )
         assertEquals(
             0.5f,
-            resolveMiuixVideoCardReturnContentAlpha(
+            resolveMiuixVideoCardOutgoingClipFraction(
                 morphProgress = 0.275f,
                 isReturning = true,
                 handoffWholeSourceCard = true,
@@ -84,7 +97,7 @@ class MiuixVideoCardNavTransitionTest {
         )
         assertEquals(
             1f,
-            resolveMiuixVideoCardReturnContentAlpha(
+            resolveMiuixVideoCardOutgoingClipFraction(
                 morphProgress = 0.45f,
                 isReturning = true,
                 handoffWholeSourceCard = true,
@@ -93,7 +106,7 @@ class MiuixVideoCardNavTransitionTest {
         )
         assertEquals(
             0f,
-            resolveMiuixVideoCardReturnContentAlpha(
+            resolveMiuixVideoCardOutgoingClipFraction(
                 morphProgress = 0.10f,
                 isReturning = true,
                 handoffWholeSourceCard = true,
@@ -103,10 +116,10 @@ class MiuixVideoCardNavTransitionTest {
     }
 
     @Test
-    fun fullscreenStoryKeepsItsMediaOnlyContentOpaqueDuringReturn() {
+    fun fullscreenStoryKeepsItsMediaOnlyContentFullyClippedInDuringReturn() {
         assertEquals(
             1f,
-            resolveMiuixVideoCardReturnContentAlpha(
+            resolveMiuixVideoCardOutgoingClipFraction(
                 morphProgress = 0.05f,
                 isReturning = true,
                 handoffWholeSourceCard = false,

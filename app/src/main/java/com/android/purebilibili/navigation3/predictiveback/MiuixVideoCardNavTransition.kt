@@ -73,9 +73,10 @@ internal fun resolveMiuixVideoCardClipRadii(
  * yields and before the media shell lands.
  *
  * 预测返回手势 seek 与提交后的 settle 使用同一条交接曲线：前段保留实时画面，
- * 返回中段就逐渐露出下方完整源卡，使封面、标题、UP 主和统计信息一起交接。
+ * 返回后半段用不透明揭示遮罩逐步露出完整源卡，使封面、标题、UP 主和
+ * 统计信息一起交接；禁止将两张完整页面做 alpha 叠化。
  */
-internal fun resolveMiuixVideoCardReturnContentAlpha(
+internal fun resolveMiuixVideoCardOutgoingClipFraction(
     morphProgress: Float,
     isReturning: Boolean,
     handoffWholeSourceCard: Boolean,
@@ -87,18 +88,26 @@ internal fun resolveMiuixVideoCardReturnContentAlpha(
 private data class MiuixVideoCardClipShape(
     val radiusX: Float,
     val radiusY: Float,
+    val visibleHeightFraction: Float = 1f,
 ) : Shape {
     override fun createOutline(
         size: Size,
         layoutDirection: LayoutDirection,
         density: Density,
     ): Outline {
+        val visibleHeight = size.height * visibleHeightFraction.coerceIn(0f, 1f)
+        if (visibleHeight <= 0.01f) {
+            return Outline.Rectangle(Rect.Zero)
+        }
         return Outline.Rounded(
             RoundRect(
-                rect = Rect(0f, 0f, size.width, size.height),
+                // Keep the returning detail media fully opaque and remove it bottom-up. The
+                // retained source card underneath owns every revealed pixel, so no two pages are
+                // ever blended into the translucent rectangle seen with entry-level alpha.
+                rect = Rect(0f, 0f, size.width, visibleHeight),
                 cornerRadius = CornerRadius(
                     x = radiusX.coerceIn(0f, size.width / 2f),
-                    y = radiusY.coerceIn(0f, size.height / 2f),
+                    y = radiusY.coerceIn(0f, visibleHeight / 2f),
                 ),
             ),
         )
@@ -212,7 +221,7 @@ internal fun miuixVideoCardNavTransition(
                     translationY = bounds.top.coerceIn(-height, height) * (1f - morph)
                     // Normal VideoDetail entries yield to their retained full source card during
                     // the gesture; fullscreen Story entries keep their media-only visual opaque.
-                    alpha = resolveMiuixVideoCardReturnContentAlpha(
+                    val outgoingClipFraction = resolveMiuixVideoCardOutgoingClipFraction(
                         morphProgress = morph,
                         isReturning = isMiuixVideoCardReturning(
                             role = scope.role,
@@ -225,7 +234,10 @@ internal fun miuixVideoCardNavTransition(
                         handoffWholeSourceCard =
                             contentScale == MiuixVideoCardContentScale.FillWidthTop,
                     )
-                    clip = morph < 0.999f
+                    // Do not alpha-crossfade complete navigation entries. Both sides stay opaque;
+                    // the top entry yields pixels through a bottom-up reveal mask.
+                    alpha = 1f
+                    clip = morph < 0.999f || outgoingClipFraction < 0.999f
                     val clipRadii = resolveMiuixVideoCardClipRadii(
                         sourceCornerPx = corner.dp.toPx(),
                         outerScaleX = outerScaleX,
@@ -234,6 +246,7 @@ internal fun miuixVideoCardNavTransition(
                     shape = MiuixVideoCardClipShape(
                         radiusX = clipRadii.radiusX,
                         radiusY = clipRadii.radiusY,
+                        visibleHeightFraction = outgoingClipFraction,
                     )
                 }
             }.graphicsLayer {

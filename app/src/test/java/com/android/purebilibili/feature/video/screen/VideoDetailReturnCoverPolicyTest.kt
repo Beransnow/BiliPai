@@ -1,7 +1,6 @@
 package com.android.purebilibili.feature.video.screen
 
 import com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundPhase
-import com.android.purebilibili.core.ui.transition.VideoCardTransitionVisualTimeline
 import com.android.purebilibili.core.ui.transition.VideoSharedTransitionPlaybackIntent
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -429,48 +428,47 @@ class VideoDetailReturnCoverPolicyTest {
             resolveVideoDetailReturnPlayerAlpha(0.8f, true, true, liveReturnMorph = true),
             0.0001f,
         )
-        // 正文按统一的 0..0.28 settle 窗口让位，播放器本身仍保持完整可见。
+        // 正文/控制器与实时画面作为同一个不透明详情卡保持可见。
         assertEquals(
-            1f - 0.15f / VideoCardTransitionVisualTimeline.DETAIL_CONTENT_RETURN_END,
+            1f,
             resolveVideoDetailReturnContentAlpha(0.85f, true, liveReturnMorph = true),
             0.0001f,
         )
-        // 末段（settle=0.7 > 0.28）：正文已完全让位给源卡标题。
+        // 末段也不单独改 alpha；外层遮罩直接移除对应像素。
         val lateContent = resolveVideoDetailReturnContentAlpha(0.3f, true, liveReturnMorph = true)
-        assertEquals(0f, lateContent, 0.0001f)
+        assertEquals(1f, lateContent, 0.0001f)
     }
 
     @Test
-    fun `committed live return crossfades only during the final landing window`() {
-        // 68%–94% 窗口内，上层封面与下层 player 直接交叉淡化。
+    fun `committed live return never alpha blends resident cover with player`() {
+        // Live 路径始终只有不透明 player；来源整卡由外层遮罩揭示。
         assertEquals(
-            0.46153846f,
+            0f,
             resolveVideoDetailReturnCoverAlpha(0.2f, true, true, liveReturnMorph = true),
             0.0001f,
         )
         assertEquals(
-            0.53846157f,
+            1f,
             resolveVideoDetailReturnPlayerAlpha(0.2f, true, true, liveReturnMorph = true),
             0.0001f,
         )
-        // settle=0.94：封面已经完成接管。
         assertEquals(
-            1f,
+            0f,
             resolveVideoDetailReturnCoverAlpha(0.06f, true, true, liveReturnMorph = true),
             0.0001f,
         )
         assertEquals(
-            0f,
+            1f,
             resolveVideoDetailReturnPlayerAlpha(0.06f, true, true, liveReturnMorph = true),
             0.0001f,
         )
         assertEquals(
-            1f,
+            0f,
             resolveVideoDetailReturnCoverAlpha(0f, true, true, liveReturnMorph = true),
             0.0001f,
         )
         assertEquals(
-            0f,
+            1f,
             resolveVideoDetailReturnPlayerAlpha(0f, true, true, liveReturnMorph = true),
             0.0001f,
         )
@@ -522,10 +520,9 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun `quick committed live return hides detail content immediately to avoid dual title flash`() {
-        // 源卡 chrome 快速返回立刻全显；详情标题必须马上让位，否则卸层时标题闪一下。
+    fun `quick committed live return keeps complete detail content for opaque clipping`() {
         assertEquals(
-            0f,
+            1f,
             resolveVideoDetailReturnContentAlpha(
                 transitionProgress = 0.9f,
                 isCommittedCardReturn = true,
@@ -535,7 +532,7 @@ class VideoDetailReturnCoverPolicyTest {
             0.0001f,
         )
         assertEquals(
-            0f,
+            1f,
             resolveVideoDetailReturnContentAlpha(
                 transitionProgress = 0.2f,
                 isCommittedCardReturn = true,
@@ -544,9 +541,8 @@ class VideoDetailReturnCoverPolicyTest {
             ),
             0.0001f,
         )
-        // 预测返回未提交：快速返回跟 morphDepth 的统一窗口线性让位，可取消。
         assertEquals(
-            1f - 0.1f / VideoCardTransitionVisualTimeline.DETAIL_CONTENT_RETURN_END,
+            1f,
             resolveVideoDetailReturnContentAlpha(
                 transitionProgress = 0.9f,
                 isCommittedCardReturn = false,
@@ -559,8 +555,7 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun `live morph content settle follows single morphDepth clock only`() {
-        // 即使 AVS progress 与 depth 不一致，只认 morphDepth，避免与源卡 chrome 叠字。
+    fun `live morph content stays opaque regardless of legacy alpha clocks`() {
         val content = resolveVideoDetailReturnContentAlpha(
             transitionProgress = 0.95f,
             isCommittedCardReturn = true,
@@ -568,8 +563,7 @@ class VideoDetailReturnCoverPolicyTest {
             depthBlurProgress = 0.95f,
             morphDepthProgress = 0.2f,
         )
-        // settle = 1 - 0.2 = 0.8 > 0.18 → 正文已让位
-        assertTrue(content < 0.3f)
+        assertEquals(1f, content, 0.0001f)
         assertEquals(
             resolveVideoDetailReturnContentAlpha(
                 transitionProgress = 0.2f,
@@ -646,7 +640,7 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun `uncommitted predictive live morph keeps player visible while content follows timeline`() {
+    fun `uncommitted predictive live morph keeps the complete detail card opaque`() {
         // 非返回态：上层封面透明，player 正常显示。
         assertEquals(
             0f,
@@ -659,7 +653,7 @@ class VideoDetailReturnCoverPolicyTest {
             0.0001f,
         )
         assertEquals(
-            1f - 0.15f / VideoCardTransitionVisualTimeline.DETAIL_CONTENT_RETURN_END,
+            1f,
             resolveVideoDetailReturnContentAlpha(0.85f, false, liveReturnMorph = true),
             0.0001f,
         )
@@ -983,7 +977,7 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun `return cover player and content read one shared transition progress`() {
+    fun `live media owners never crossfade while fallback content retains root progress`() {
         val source = File("src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreenStateHolder.kt")
             .readText()
 
@@ -1146,8 +1140,7 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun committedReturn_doesNotCoverPlayerUntilHandoff() {
-        // live：上层封面进入窗口前透明，player 保持可见。
+    fun committedReturn_keepsLivePlayerAsTheOnlyOpaqueMediaOwner() {
         assertEquals(
             0f,
             resolveVideoDetailReturnCoverAlpha(
@@ -1189,13 +1182,13 @@ class VideoDetailReturnCoverPolicyTest {
             ),
             0.0001f,
         )
-        // settle 过 handoff 后 player 降到一半（progress 约 0.05 → settle 0.95）
+        // 即使接近落位，player 也不做 alpha 淡出；外层 clip 会把它移除。
         val playerNearEnd = resolveVideoDetailReturnPlayerAlpha(
             transitionProgress = 0.05f,
             isCommittedCardReturn = true,
             hasResidentCover = true,
             liveReturnMorph = true,
         )
-        assertTrue(playerNearEnd < 0.5f)
+        assertEquals(1f, playerNearEnd, 0.0001f)
     }
 }

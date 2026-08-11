@@ -19,9 +19,8 @@ import com.android.purebilibili.core.ui.adaptive.MotionTier
  * 源卡 sharedBounds Enter 延后淡入比例（遗留字段）。
  *
  * **当前策略：始终 0 / 不延后整壳 Enter。**
- * 封面资源在列表位全程待命；实际像素由
- * [resolveVideoCardLiveReturnVisualHandoffAlpha] 在返回末段交接。
- * 整壳 delayed fadeIn 会在 overlay 卸层瞬间与封面二次叠化，是落位闪烁主因。
+ * 封面资源在列表位全程待命；完整来源卡由导航层不透明裁切在返回后半段接管。
+ * 整壳 delayed fadeIn 会在 overlay 卸层瞬间造成二次叠化，是落位闪烁主因。
  */
 internal const val VIDEO_CARD_RETURN_SOURCE_ENTER_FADE_DELAY_RATIO = 0f
 
@@ -48,11 +47,11 @@ internal object VideoCardTransitionVisualTimeline {
 }
 
 /**
- * Full retained source-card takeover during a Miuix return.
+ * Full retained source-card takeover progress during a Miuix return.
  *
- * Unlike the media-only handoff, this alpha owns the complete list card. It starts just after the
- * detail body has yielded so title/UP/stat chrome is visible during the gesture, not one frame
- * after the transformed detail sheet lands.
+ * Unlike the media-only handoff, this progress drives the opaque reveal boundary for the complete
+ * list card. The complete detail card remains visible above it until the boundary passes each
+ * region, so title/UP/stat chrome appears during the gesture without blending two pages.
  */
 internal fun resolveVideoCardWholeSourceReturnAlpha(
     morphDepthProgress: Float,
@@ -78,12 +77,13 @@ internal fun resolveVideoCardSourceChromeReturnAlpha(
 )
 
 /**
- * live morph 详情次要内容（简介/推荐等）开始让位的 settle 进度。
- * 与 chrome 同源，保证标题出现时下方已不是叠层实时页。
+ * 遗留的次要内容让位窗口。新 Miuix 整卡返回不再对详情内容做 alpha 淡出，
+ * 而是在这个窗口用不透明遮罩把完整详情卡逐区域交给完整来源卡。
  */
-internal const val VIDEO_CARD_RETURN_LIVE_CONTENT_YIELD_START = 0f
+internal const val VIDEO_CARD_RETURN_LIVE_CONTENT_YIELD_START =
+    VideoCardTransitionVisualTimeline.WHOLE_SOURCE_CARD_RETURN_START
 internal const val VIDEO_CARD_RETURN_LIVE_CONTENT_YIELD_END =
-    VideoCardTransitionVisualTimeline.DETAIL_CONTENT_RETURN_END
+    VideoCardTransitionVisualTimeline.WHOLE_SOURCE_CARD_RETURN_END
 
 /**
  * 实时画面缩回时，详情常驻封面与媒体 chrome 使用同一个 68%–94% 精修窗口。
@@ -130,11 +130,9 @@ internal fun resolveVideoCardDetailChromeAlpha(
     val returning = phase == VideoCardTransitionBackgroundPhase.RETURNING ||
         isReturnGestureInProgress
     return when {
-        returning -> 1f - resolveVideoCardTimelineWindowProgress(
-            progress = 1f - depth,
-            start = 0f,
-            end = VideoCardTransitionVisualTimeline.DETAIL_CONTENT_RETURN_END,
-        )
+        // Returning detail chrome stays fully opaque. The navigation entry's bottom-up clip owns
+        // the handoff, so controls and text disappear region-by-region instead of fading away.
+        returning -> 1f
         phase == VideoCardTransitionBackgroundPhase.OPENING ->
             resolveVideoCardTimelineWindowProgress(
                 progress = depth,
@@ -155,12 +153,10 @@ internal fun resolveVideoCardSecondaryContentVisualFrame(
     val returning = phase == VideoCardTransitionBackgroundPhase.RETURNING ||
         isReturnGestureInProgress
     val alpha = when {
+        // Keep the complete detail card (including the controls under the video) opaque until the
+        // outer Miuix reveal mask replaces those pixels with the retained source card.
+        returning -> 1f
         motionTier == MotionTier.Reduced -> depth
-        returning -> 1f - resolveVideoCardTimelineWindowProgress(
-            progress = 1f - depth,
-            start = 0f,
-            end = VideoCardTransitionVisualTimeline.DETAIL_CONTENT_RETURN_END,
-        )
         phase == VideoCardTransitionBackgroundPhase.OPENING ->
             resolveVideoCardTimelineWindowProgress(
                 progress = depth,
