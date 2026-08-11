@@ -2,10 +2,36 @@ package com.android.purebilibili.navigation3.predictiveback
 
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.TransformOrigin
+import top.yukonga.miuix.kmp.nav.transition.NavRole
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class MiuixVideoCardNavTransitionTest {
+    @Test
+    fun predictiveSeekIsAReturnEvenWhileMiuixReportsIncomingRole() {
+        assertEquals(
+            true,
+            isMiuixVideoCardReturning(
+                role = NavRole.Incoming,
+                hasGesture = true,
+            ),
+        )
+        assertEquals(
+            false,
+            isMiuixVideoCardReturning(
+                role = NavRole.Incoming,
+                hasGesture = false,
+            ),
+        )
+        assertEquals(
+            true,
+            isMiuixVideoCardReturning(
+                role = NavRole.Outgoing,
+                hasGesture = false,
+            ),
+        )
+    }
+
     @Test
     fun returnDepthClearsBlurInsteadOfReversingIt() {
         assertEquals(

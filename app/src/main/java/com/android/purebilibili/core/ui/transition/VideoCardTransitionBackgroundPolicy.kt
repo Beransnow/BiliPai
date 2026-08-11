@@ -101,6 +101,16 @@ internal fun resolveVideoCardTransitionBackgroundScaleReduction(
         VIDEO_CARD_TRANSITION_PARTITION_SCALE_REDUCTION
 }
 
+/**
+ * A nested related-video return already reveals a retained VideoDetail containing an Android
+ * player surface. Full-page snapshot blur can neither capture that surface reliably nor preserve
+ * the parent's visual structure, so this path keeps only the lightweight depth scrim.
+ */
+internal fun shouldUseRealtimeVideoCardTransitionBackgroundBlur(
+    source: VideoCardTransitionBackgroundSource,
+    realtimeBlurEnabled: Boolean,
+): Boolean = realtimeBlurEnabled && source != VideoCardTransitionBackgroundSource.RelatedVideo
+
 internal data class VideoCardTransitionBackgroundFrame(
     val blurRadiusPx: Float,
     val scrimAlpha: Float,

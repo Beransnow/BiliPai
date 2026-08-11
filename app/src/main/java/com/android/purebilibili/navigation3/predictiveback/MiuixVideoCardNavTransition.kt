@@ -43,6 +43,16 @@ internal fun resolveMiuixVideoCardDepthProgress(relativeDepth: Float): Float =
     topProgress(relativeDepth)
 
 /**
+ * Predictive seek keeps the entry on the stack, so Miuix classifies its negative depth as
+ * [NavRole.Incoming]. The gesture context, rather than [NavRole.Outgoing] alone, distinguishes
+ * that return from a normal push.
+ */
+internal fun isMiuixVideoCardReturning(
+    role: NavRole,
+    hasGesture: Boolean,
+): Boolean = role == NavRole.Outgoing || hasGesture
+
+/**
  * Keeps the corner circular in screen space while the outer card layer scales non-uniformly.
  * A regular RoundedCornerShape is scaled together with the layer and becomes too small on the
  * compressed axis, which exposes the retained source card at the end of a 16:9 return.
@@ -209,7 +219,10 @@ internal fun miuixVideoCardNavTransition(
                     alpha = resolveMiuixVideoCardReturnContentAlpha(
                         sourceBounds = bounds,
                         morphProgress = morph,
-                        isReturning = scope.role == NavRole.Outgoing,
+                        isReturning = isMiuixVideoCardReturning(
+                            role = scope.role,
+                            hasGesture = scope.gesture != null,
+                        ),
                     )
                     clip = morph < 0.999f
                     val clipRadii = resolveMiuixVideoCardClipRadii(

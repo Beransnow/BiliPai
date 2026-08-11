@@ -115,6 +115,7 @@ import com.android.purebilibili.core.ui.transition.shouldApplyPredictiveBackBlur
 import com.android.purebilibili.core.ui.transition.shouldApplyVideoCardTransitionBackgroundToRoute
 import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionBackgroundScaleReduction
 import com.android.purebilibili.core.ui.transition.resolveVideoCardTransitionBackgroundSource
+import com.android.purebilibili.core.ui.transition.shouldUseRealtimeVideoCardTransitionBackgroundBlur
 import com.android.purebilibili.core.ui.transition.videoCardTransitionBackgroundEffect
 import androidx.compose.runtime.mutableFloatStateOf
 import top.yukonga.miuix.kmp.nav.core.rememberNavBackStack
@@ -1734,10 +1735,11 @@ fun AppNavigation(
                     val entryRoute = key.toLegacyRoute()
                     val backgroundState = LocalVideoCardTransitionBackgroundState.current
                     val predictiveBackState = LocalPredictiveBackBackgroundState.current
+                    val backgroundSource = resolveVideoCardTransitionBackgroundSource(
+                        sourceRoute = backgroundState.sourceRouteProvider(),
+                    )
                     val backgroundScaleReduction = resolveVideoCardTransitionBackgroundScaleReduction(
-                        resolveVideoCardTransitionBackgroundSource(
-                            sourceRoute = backgroundState.sourceRouteProvider(),
-                        )
+                        backgroundSource
                     )
                     val shouldApplyBackground = cardTransitionEnabled &&
                         shouldApplyVideoCardTransitionBackgroundToRoute(
@@ -1748,6 +1750,7 @@ fun AppNavigation(
                     val shouldApplyPredictiveBlur = shouldApplyPredictiveBackBlurToRoute(
                         entryKey = key,
                         targetBackKey = predictiveBackState.targetKeyProvider(),
+                        videoCardBackgroundApplied = shouldApplyBackground,
                     )
                     val routeModifier = Modifier
                         .fillMaxSize()
@@ -1765,7 +1768,10 @@ fun AppNavigation(
                                             motionTierProvider = backgroundState.motionTierProvider,
                                             isLightBackgroundProvider = backgroundState.isLightBackgroundProvider,
                                             realtimeBlurEnabledProvider = {
-                                                videoTransitionRealtimeBlurEnabled
+                                                shouldUseRealtimeVideoCardTransitionBackgroundBlur(
+                                                    source = backgroundSource,
+                                                    realtimeBlurEnabled = videoTransitionRealtimeBlurEnabled,
+                                                )
                                             },
                                             scaleReductionProvider = {
                                                 backgroundScaleReduction
