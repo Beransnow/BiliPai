@@ -3557,9 +3557,11 @@ internal fun VideoDetailScreenStateHolder(
                                 .LocalMiuixVideoCardTransitionState.current
                         val landingCoverHeightEntryPx = run {
                             if (!miuixLandingState.enabled) return@run 0f
-                            val viewportW = with(videoCardTransitionDensity) {
-                                configuration.screenWidthDp.dp.toPx()
-                            }
+                            val viewportW = miuixLandingState.layoutWidthProvider()
+                                .takeIf { it > 1f }
+                                ?: with(videoCardTransitionDensity) {
+                                    configuration.screenWidthDp.dp.toPx()
+                                }
                             val landingLayout = resolveVideoDetailReturnSourceCardLayout(
                                 viewportWidthPx = viewportW,
                                 sourceBounds = miuixLandingState.sourceBoundsProvider(),
@@ -3587,21 +3589,24 @@ internal fun VideoDetailScreenStateHolder(
                                 )
                                 .background(Color.Black)  // 黑色背景
                                 .drawWithContent {
+                                    // Continuous cover-band clip (lerp by handoff) — no step jump.
                                     val morphDepth = miuixLandingState.progressProvider()
                                     val handoff =
                                         com.android.purebilibili.core.ui.transition
                                             .resolveVideoCardSourceChromeReturnAlpha(morphDepth)
-                                    if (handoff > 0.001f && landingCoverHeightEntryPx > 1f) {
-                                        clipRect(
-                                            left = 0f,
-                                            top = 0f,
-                                            right = size.width,
-                                            bottom = minOf(size.height, landingCoverHeightEntryPx),
-                                        ) {
-                                            this@drawWithContent.drawContent()
-                                        }
+                                    val targetBottom = if (landingCoverHeightEntryPx > 1f) {
+                                        size.height +
+                                            (landingCoverHeightEntryPx - size.height) * handoff
                                     } else {
-                                        drawContent()
+                                        size.height
+                                    }
+                                    clipRect(
+                                        left = 0f,
+                                        top = 0f,
+                                        right = size.width,
+                                        bottom = targetBottom.coerceIn(0f, size.height),
+                                    ) {
+                                        this@drawWithContent.drawContent()
                                     }
                                 }
                                 .clipToBounds()

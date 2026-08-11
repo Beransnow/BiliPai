@@ -316,10 +316,18 @@ internal fun BiliPaiNavDisplayHost(
             isLightBackgroundProvider = { isLightBackground },
         )
     }
+    val videoCardLayoutWidthProvider = remember(videoCardTransitionProgress) {
+        {
+            videoCardTransitionProgress.layoutWidthOr(
+                fallback = 1f, // overwritten after first transformEntry bind
+            )
+        }
+    }
     val miuixCardTransitionState = remember(
         cardMorphAvailable,
         videoCardProgressProvider,
         videoCardGestureProvider,
+        videoCardLayoutWidthProvider,
         sourceMetadata.sourceBounds,
         sourceMetadata.sourceCoverBounds,
         sourceMetadata.sourceLayout,
@@ -329,6 +337,7 @@ internal fun BiliPaiNavDisplayHost(
             enabled = cardMorphAvailable,
             progressProvider = videoCardProgressProvider,
             isGestureInProgressProvider = videoCardGestureProvider,
+            layoutWidthProvider = videoCardLayoutWidthProvider,
             sourceBoundsProvider = { sourceMetadata.sourceBounds },
             sourceCoverBoundsProvider = { sourceMetadata.sourceCoverBounds },
             sourceLayout = sourceMetadata.sourceLayout,

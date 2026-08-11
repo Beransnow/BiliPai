@@ -144,6 +144,15 @@ internal class MiuixVideoCardTransitionProgress {
     fun isGestureInProgress(): Boolean = topScope?.gesture != null
 
     /**
+     * Host layout width used by outer morph (`bounds.width / layoutSize.width`).
+     * Landing inverse scale must use the same width or land size drifts from the list card.
+     */
+    fun layoutWidthOr(fallback: Float): Float {
+        val w = topScope?.layoutSize?.width?.toFloat() ?: return fallback.coerceAtLeast(1f)
+        return w.coerceAtLeast(1f)
+    }
+
+    /**
      * 预测返回手势进度（0=开始 → 1=完全提交），无手势时为 null。
      * 供预测返回背景模糊（predictiveBackBackgroundEffect）随手势映射，恢复 0.2.2 链路。
      */

@@ -345,6 +345,58 @@ class VideoCardScrollLiteVisualPolicyTest {
     }
 
     @Test
+    fun stationaryListStaysHiddenUntilFlyingMorphIsIdle() {
+        assertEquals(
+            0f,
+            resolveHomeCardStationaryRevealAlpha(
+                isReturnContext = true,
+                preferWholeCardReturn = false,
+                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
+                isVideoCardReturnGestureInProgress = false,
+                isSharedTransitionActive = false,
+                transitionBackgroundProgress = 0.04f,
+            ),
+            0.001f,
+        )
+        assertEquals(
+            0f,
+            resolveHomeCardStationaryRevealAlpha(
+                isReturnContext = true,
+                preferWholeCardReturn = false,
+                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.HELD,
+                isVideoCardReturnGestureInProgress = true,
+                isSharedTransitionActive = false,
+                transitionBackgroundProgress = 0.5f,
+            ),
+            0.001f,
+        )
+        assertEquals(
+            1f,
+            resolveHomeCardStationaryRevealAlpha(
+                isReturnContext = true,
+                preferWholeCardReturn = false,
+                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.IDLE,
+                isVideoCardReturnGestureInProgress = false,
+                isSharedTransitionActive = false,
+                transitionBackgroundProgress = 0f,
+            ),
+            0.001f,
+        )
+        assertEquals(
+            1f,
+            resolveHomeCardStationaryRevealAlpha(
+                isReturnContext = true,
+                preferWholeCardReturn = true,
+                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
+                isVideoCardReturnGestureInProgress = true,
+                isSharedTransitionActive = true,
+                transitionBackgroundProgress = 0.5f,
+            ),
+            0.001f,
+        )
+    }
+
+    @Test
     fun flyingReturnContextIncludesMiuixSettleEvenWhenLegacyPhaseIsHeld() {
         assertTrue(
             isVideoCardFlyingReturnContext(
@@ -373,8 +425,9 @@ class VideoCardScrollLiteVisualPolicyTest {
                 transitionBackgroundProgress = 0.4f,
             )
         )
+        // Stationary list stays fully hidden while flying entry owns the morph (no dual layer).
         assertEquals(
-            0.5f,
+            0f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -387,7 +440,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             0.001f,
         )
         assertEquals(
-            0.5f,
+            0f,
             resolveHomeCardReturnSourceVisualAlpha(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -447,8 +500,9 @@ class VideoCardScrollLiteVisualPolicyTest {
             ),
             0.001f,
         )
+        // Mid / late return: list still 0; flying entry draws the card.
         assertEquals(
-            0.5f,
+            0f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
@@ -460,11 +514,24 @@ class VideoCardScrollLiteVisualPolicyTest {
             0.001f,
         )
         assertEquals(
+            0f,
+            resolveHomeCardChromeAlphaDuringShellReturnMorph(
+                useCardContainerSharedBounds = true,
+                isSharedMorphSourceCard = true,
+                isReturningFromDetail = true,
+                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
+                transitionBackgroundProgress = 0.04f,
+            ),
+            0.001f,
+        )
+        // Morph finished (IDLE): list may show again without dual-layer jump.
+        assertEquals(
             1f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
-                isReturningFromDetail = false,
+                isReturningFromDetail = true,
+                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.IDLE,
                 isSharedTransitionActive = false,
                 transitionBackgroundProgress = 0f,
             ),
@@ -475,9 +542,9 @@ class VideoCardScrollLiteVisualPolicyTest {
             resolveHomeCardChromeAlphaDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
                 isSharedMorphSourceCard = true,
-                isReturningFromDetail = true,
-                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
-                transitionBackgroundProgress = 0.04f,
+                isReturningFromDetail = false,
+                isSharedTransitionActive = false,
+                transitionBackgroundProgress = 0f,
             ),
             0.001f,
         )

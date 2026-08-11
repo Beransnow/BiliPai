@@ -26,6 +26,7 @@ import androidx.compose.ui.zIndex
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.components.AppText
+import com.android.purebilibili.core.ui.transition.LocalMiuixVideoCardTransitionState
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 import com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundPhase
@@ -267,9 +268,10 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
         ?: return
     val density = LocalDensity.current
     val configuration = LocalConfiguration.current
-    val viewportWidthPx = with(density) {
-        configuration.screenWidthDp.dp.toPx()
-    }
+    val miuixHost = LocalMiuixVideoCardTransitionState.current
+    // Must match outer morph: bounds.width / layoutSize.width (not Configuration screen width).
+    val viewportWidthPx = miuixHost.layoutWidthProvider().takeIf { it > 1f }
+        ?: with(density) { configuration.screenWidthDp.dp.toPx() }
     val layout = resolveVideoDetailReturnSourceCardLayout(
         viewportWidthPx = viewportWidthPx,
         sourceBounds = sourceBounds,

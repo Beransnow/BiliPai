@@ -90,10 +90,40 @@ internal fun isVideoCardFlyingReturnContext(
 }
 
 /**
+ * Stationary list-card pixels while a Miuix flying entry owns the morph.
+ *
+ * Flying detail draws cover + title; the list card must stay fully transparent until the morph
+ * is parked and the entry is gone. Revealing list chrome/cover on the same 72%–98% window as
+ * the flying layer causes a double image and a visible jump on unload.
+ *
+ * @return 0 while flying owns the card, 1 when the list may show again (or whole-card fallback).
+ */
+internal fun resolveHomeCardStationaryRevealAlpha(
+    isReturnContext: Boolean,
+    preferWholeCardReturn: Boolean,
+    transitionBackgroundPhase: VideoCardTransitionBackgroundPhase,
+    isVideoCardReturnGestureInProgress: Boolean,
+    isSharedTransitionActive: Boolean,
+    transitionBackgroundProgress: Float,
+): Float {
+    if (!isReturnContext || preferWholeCardReturn) return 1f
+    if (isVideoCardReturnGestureInProgress || isSharedTransitionActive) return 0f
+    return when (transitionBackgroundPhase) {
+        VideoCardTransitionBackgroundPhase.OPENING,
+        VideoCardTransitionBackgroundPhase.RETURNING,
+        -> 0f
+        VideoCardTransitionBackgroundPhase.HELD ->
+            // Predictive seek keeps HELD while depth < 1; only full detail rest may show list.
+            if (transitionBackgroundProgress.coerceIn(0f, 1f) < 0.999f) 0f else 1f
+        VideoCardTransitionBackgroundPhase.IDLE -> 1f
+    }
+}
+
+/**
  * 来源卡封面在返回期间的可见 alpha。
  *
- * 保留图片请求、缓存和布局以避免卸层黑闪，但 LIVE surface 主导时不绘制来源卡像素；
- * 到最后交接窗口才与详情侧常驻封面使用同一 alpha 一起落位；正文另走提前回显窗口。
+ * 保留图片请求与布局；Miuix 飞行 entry 拥有像素时列表封面保持 0，卸层后再亮，
+ * 避免与飞行层同窗双显导致落位跳动。
  */
 internal fun resolveHomeCardReturnSourceVisualAlpha(
     useCardContainerSharedBounds: Boolean,
@@ -113,9 +143,13 @@ internal fun resolveHomeCardReturnSourceVisualAlpha(
         isSharedTransitionActive = isSharedTransitionActive,
         transitionBackgroundProgress = transitionBackgroundProgress,
     )
-    if (!isReturnContext || preferWholeCardReturn) return 1f
-    return resolveVideoCardLiveReturnVisualHandoffAlpha(
-        morphDepthProgress = transitionBackgroundProgress,
+    return resolveHomeCardStationaryRevealAlpha(
+        isReturnContext = isReturnContext,
+        preferWholeCardReturn = preferWholeCardReturn,
+        transitionBackgroundPhase = transitionBackgroundPhase,
+        isVideoCardReturnGestureInProgress = isVideoCardReturnGestureInProgress,
+        isSharedTransitionActive = isSharedTransitionActive,
+        transitionBackgroundProgress = transitionBackgroundProgress,
     )
 }
 
@@ -154,11 +188,14 @@ internal fun resolveHorizontalCardChromeMotionFrame(
     )
     if (isReturnContext) {
         return HorizontalCardChromeMotionFrame(
-            alpha = if (preferWholeCardReturn) {
-                1f
-            } else {
-                resolveVideoCardSourceChromeReturnAlpha(transitionBackgroundProgress)
-            },
+            alpha = resolveHomeCardStationaryRevealAlpha(
+                isReturnContext = true,
+                preferWholeCardReturn = preferWholeCardReturn,
+                transitionBackgroundPhase = transitionBackgroundPhase,
+                isVideoCardReturnGestureInProgress = isVideoCardReturnGestureInProgress,
+                isSharedTransitionActive = isSharedTransitionActive,
+                transitionBackgroundProgress = transitionBackgroundProgress,
+            ),
             translationProgress = 0f,
         )
     }
@@ -184,13 +221,11 @@ internal fun resolveHorizontalCardChromeMotionFrame(
 /**
  * 返回 shell morph 期间源卡 **chrome**（标题/UP/信息区）的 alpha。
  *
- * 规则（以代码为准，不依赖「morph 结束硬切 1」）：
+ * 规则：
  * - 非源卡 / 无 shell：恒 1
  * - 进场（OPENING 或 shared 进行中且非返回）：0，避免字叠播放器
- * - 返回上下文：正文使用独立的 72%–96% 落位窗口，在 82%–98% 封面像素交接前开始恢复
- * - 完整源卡交接模式下，飞行层直接保持完整源卡内容
- *
- * 正文与封面使用同一 morph 时钟，但各自拥有明确的交接窗口；不再依赖转场结束硬切。
+ * - 返回 + Miuix 飞行 entry：列表原位保持 0，字由飞行层绘制；卸层完成后再亮，避免双层跳动
+ * - preferWholeCardReturn：列表立即显示完整源卡
  */
 internal fun resolveHomeCardChromeAlphaDuringShellReturnMorph(
     useCardContainerSharedBounds: Boolean,
@@ -215,11 +250,14 @@ internal fun resolveHomeCardChromeAlphaDuringShellReturnMorph(
     )
 
     if (isReturnContext) {
-        return if (preferWholeCardReturn) {
-            1f
-        } else {
-            resolveVideoCardSourceChromeReturnAlpha(transitionBackgroundProgress)
-        }
+        return resolveHomeCardStationaryRevealAlpha(
+            isReturnContext = true,
+            preferWholeCardReturn = preferWholeCardReturn,
+            transitionBackgroundPhase = transitionBackgroundPhase,
+            isVideoCardReturnGestureInProgress = isVideoCardReturnGestureInProgress,
+            isSharedTransitionActive = isSharedTransitionActive,
+            transitionBackgroundProgress = transitionBackgroundProgress,
+        )
     }
 
     // 进场：shared 飞行或 OPENING 时藏字

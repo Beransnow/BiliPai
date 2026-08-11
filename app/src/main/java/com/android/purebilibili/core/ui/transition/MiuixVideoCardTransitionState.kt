@@ -16,6 +16,11 @@ internal data class MiuixVideoCardTransitionState(
     val enabled: Boolean = false,
     val progressProvider: () -> Float = { 1f },
     val isGestureInProgressProvider: () -> Boolean = { false },
+    /**
+     * Nav host width matching outer morph (`layoutSize.width`). Landing inverse scale must
+     * use this, not [androidx.compose.ui.platform.LocalConfiguration] screen width.
+     */
+    val layoutWidthProvider: () -> Float = { 1f },
     /** 点击时冻结的整卡落点，供飞行详情壳内构造来源卡内容。 */
     val sourceBoundsProvider: () -> Rect? = { null },
     /** 点击时冻结的真实封面落点；不可由卡宽或固定宽高比推算。 */
