@@ -3753,7 +3753,10 @@ internal fun VideoDetailScreenStateHolder(
                             }
                             }
                         }
-
+                        val miuixCardTransitionState =
+                            com.android.purebilibili.core.ui.transition
+                                .LocalMiuixVideoCardTransitionState.current
+                        Box(modifier = Modifier.fillMaxSize()) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -4042,10 +4045,7 @@ internal fun VideoDetailScreenStateHolder(
                                     }
                                 }
                             }
-                    }  // 📱 手机竖屏布局结束（Column）
-                    val miuixCardTransitionState =
-                        com.android.purebilibili.core.ui.transition
-                            .LocalMiuixVideoCardTransitionState.current
+                    }  // Detail body
                     val sourceCardInfo = (uiState as? VideoPlaybackUiState.Success)?.info
                     if (
                         sourceCardInfo != null &&
@@ -4062,6 +4062,8 @@ internal fun VideoDetailScreenStateHolder(
                                 .align(Alignment.TopStart),
                         )
                     }
+                    }  // Source-card chrome root
+                    }  // 📱 手机竖屏布局结束（Column）
                     }  // Box with nested scroll
                 }  // else shouldUseSplitLayout
             }  // else targetIsLandscape
