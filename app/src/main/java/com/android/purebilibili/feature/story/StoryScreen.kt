@@ -135,10 +135,11 @@ fun StoryScreen(
                     },
                     viewModel = playerViewModel,
                     engagementViewModel = engagementViewModel,
-                    onExitSnapshot = { bvid, _, cid ->
+                    onExitSnapshot = { bvid, _, cid, coverUrl ->
                         latestExitSnapshot = StoryPortraitExitSnapshot(
                             bvid = bvid,
-                            cid = cid
+                            cid = cid,
+                            coverUrl = coverUrl,
                         )
                     },
                     onSearchClick = onSearchClick,
@@ -146,7 +147,8 @@ fun StoryScreen(
                     onRotateToLandscape = {
                         val snapshot = latestExitSnapshot
                         if (snapshot != null) {
-                            onVideoClick(snapshot.bvid, snapshot.cid, "")
+                            // 带上当前页封面，避免横屏详情首帧闪成 Story 入口种子封面
+                            onVideoClick(snapshot.bvid, snapshot.cid, snapshot.coverUrl)
                         } else {
                             onRotateToLandscape()
                         }
@@ -177,5 +179,6 @@ private fun StoryErrorState(
 
 private data class StoryPortraitExitSnapshot(
     val bvid: String,
-    val cid: Long
+    val cid: Long,
+    val coverUrl: String = "",
 )

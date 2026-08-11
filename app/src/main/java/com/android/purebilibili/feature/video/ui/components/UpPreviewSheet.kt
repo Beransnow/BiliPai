@@ -2,6 +2,8 @@ package com.android.purebilibili.feature.video.ui.components
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.ScrollableDefaults
@@ -76,6 +78,8 @@ import java.util.concurrent.TimeUnit
 /**
  * 竖屏详情点 UP 头像：半屏预览（关注 / 进入空间 / 近期投稿网格）。
  * 深浅色走 [resolveUpPreviewSheetSurfaceColors]。
+ *
+ * [onVisibilityProgressChange]：1=完全展开（播放器应上缩），0=收起；下拉时跟手回位。
  */
 @Composable
 fun UpPreviewSheet(
@@ -90,6 +94,7 @@ fun UpPreviewSheet(
     onFollowClick: () -> Unit,
     onEnterSpace: (Long) -> Unit,
     onVideoClick: (bvid: String, cid: Long) -> Unit,
+    onVisibilityProgressChange: (Float) -> Unit = {},
 ) {
     if (!visible && owner.mid <= 0L) return
 
@@ -97,6 +102,7 @@ fun UpPreviewSheet(
     val screenHeight = configuration.screenHeightDp.dp
     val sheetMotion = rememberAppBottomSheetMotion()
     val colors = resolveUpPreviewSheetSurfaceColors(MaterialTheme.colorScheme)
+    val sheetShape = AppShapes.container(ContainerLevel.Sheet)
 
     var loading by remember(owner.mid) { mutableStateOf(false) }
     var videos by remember(owner.mid) {
@@ -183,12 +189,27 @@ fun UpPreviewSheet(
     // Header + grid share one LazyVerticalGrid so the top band is not a dead zone.
     val gridState = rememberLazyGridState()
     val flingBehavior = ScrollableDefaults.flingBehavior()
-    val sheetHeightDp = screenHeight * 0.72f
+    val sheetHeightDp = screenHeight * UP_PREVIEW_SHEET_HEIGHT_FRACTION
     val density = LocalDensity.current
     val dismissThresholdPx = with(density) { 96.dp.toPx() }
     val maxSheetDragPx = with(density) { sheetHeightDp.toPx() }
     var sheetDragOffsetPx by remember(owner.mid) { mutableFloatStateOf(0f) }
     val latestOnDismiss by rememberUpdatedState(onDismiss)
+    val hostVisibilityProgress by animateFloatAsState(
+        targetValue = if (visible) 1f else 0f,
+        animationSpec = tween(durationMillis = 280),
+        label = "upPreviewHostVisibility",
+    )
+    val presentationProgress = resolveUpPreviewSheetVisibilityProgress(
+        hostVisible = visible,
+        hostVisibilityProgress = hostVisibilityProgress,
+        sheetDragOffsetPx = sheetDragOffsetPx,
+        sheetHeightPx = maxSheetDragPx,
+    )
+    val latestOnVisibilityProgressChange by rememberUpdatedState(onVisibilityProgressChange)
+    LaunchedEffect(presentationProgress) {
+        latestOnVisibilityProgressChange(presentationProgress)
+    }
     val sheetNestedScrollConnection = remember(
         dismissThresholdPx,
         maxSheetDragPx,
@@ -252,11 +273,17 @@ fun UpPreviewSheet(
     LaunchedEffect(visible, owner.mid) {
         if (visible) sheetDragOffsetPx = 0f
     }
+    // Ensure progress clears after fully hidden (host animation finished).
+    LaunchedEffect(visible, hostVisibilityProgress) {
+        if (!visible && hostVisibilityProgress <= 0.001f) {
+            latestOnVisibilityProgressChange(0f)
+        }
+    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .zIndex(if (visible) 8f else 0f),
+            .zIndex(if (visible || hostVisibilityProgress > 0.001f) 8f else 0f),
         contentAlignment = Alignment.BottomCenter,
     ) {
         AnimatedVisibility(
@@ -281,13 +308,16 @@ fun UpPreviewSheet(
             enter = sheetMotion.contentEnter,
             exit = sheetMotion.contentExit,
         ) {
+            // clip before elevation/translation so left/right top corners stay circular
+            // (Surface shape alone can still let grid content paint square edges under shadow).
             AppSurface(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(sheetHeightDp)
+                    .clip(sheetShape)
                     .nestedScroll(sheetNestedScrollConnection)
                     .graphicsLayer { translationY = sheetDragOffsetPx },
-                shape = AppShapes.container(ContainerLevel.Sheet),
+                shape = sheetShape,
                 color = colors.sheetColor,
                 tonalElevation = 6.dp,
                 shadowElevation = 12.dp,

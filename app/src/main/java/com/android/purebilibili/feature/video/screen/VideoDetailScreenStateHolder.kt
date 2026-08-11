@@ -4297,36 +4297,44 @@ internal fun VideoDetailScreenStateHolder(
                     }  // Detail body
                     }  // 📱 手机竖屏布局结束（Column）
                     }  // phone portrait branch of useTabletLayout
-                    // Landing chrome over phone + tablet entry. Uses click snapshot while Loading.
-                    val miuixCardTransitionState =
-                        com.android.purebilibili.core.ui.transition
-                            .LocalMiuixVideoCardTransitionState.current
-                    val sourceCardInfo = (uiState as? VideoPlaybackUiState.Success)?.info
+                    // 返回信息区必须画在飞行壳上：sharedBounds 遮罩盖住列表，真卡露不出来。
+                    // 文案用点击快照 + ViewInfo，尽量对齐列表；卸层后再露列表真卡。
                     if (
-                        miuixCardTransitionState.enabled &&
-                        !suppressPhoneDetailBodyForDirectPortrait &&
-                        (
-                            sourceCardInfo != null ||
-                                miuixCardTransitionState.sourceChromeSnapshot != null
-                            )
+                        shouldDrawFlyingReturnSourceCardChrome() &&
+                        !suppressPhoneDetailBodyForDirectPortrait
                     ) {
-                        VideoDetailReturnSourceCardChrome(
-                            info = sourceCardInfo,
-                            sourceChromeSnapshot = miuixCardTransitionState.sourceChromeSnapshot,
-                            sourceLayout = miuixCardTransitionState.sourceLayout,
-                            sourceBounds = miuixCardTransitionState.sourceBoundsProvider(),
-                            sourceCoverBounds =
-                                miuixCardTransitionState.sourceCoverBoundsProvider(),
-                            coverUrl = coverUrl,
-                            morphDepthProgressProvider = miuixCardTransitionState.progressProvider,
-                            phaseProvider = videoCardDepthBackgroundState.phaseProvider,
-                            isReturnGestureInProgressProvider = {
-                                videoCardDepthBackgroundState.isReturnGestureInProgressProvider() ||
-                                    videoCardDepthBackgroundState.isGestureRestoreInProgressProvider()
-                            },
-                            modifier = Modifier
-                                .align(Alignment.TopStart),
-                        )
+                        val miuixCardTransitionState =
+                            com.android.purebilibili.core.ui.transition
+                                .LocalMiuixVideoCardTransitionState.current
+                        val sourceCardInfo = (uiState as? VideoPlaybackUiState.Success)?.info
+                        if (
+                            miuixCardTransitionState.enabled &&
+                            (
+                                sourceCardInfo != null ||
+                                    miuixCardTransitionState.sourceChromeSnapshot != null
+                                )
+                        ) {
+                            VideoDetailReturnSourceCardChrome(
+                                info = sourceCardInfo,
+                                sourceChromeSnapshot =
+                                    miuixCardTransitionState.sourceChromeSnapshot,
+                                sourceLayout = miuixCardTransitionState.sourceLayout,
+                                sourceBounds = miuixCardTransitionState.sourceBoundsProvider(),
+                                sourceCoverBounds =
+                                    miuixCardTransitionState.sourceCoverBoundsProvider(),
+                                coverUrl = coverUrl,
+                                morphDepthProgressProvider =
+                                    miuixCardTransitionState.progressProvider,
+                                phaseProvider = videoCardDepthBackgroundState.phaseProvider,
+                                isReturnGestureInProgressProvider = {
+                                    videoCardDepthBackgroundState
+                                        .isReturnGestureInProgressProvider() ||
+                                        videoCardDepthBackgroundState
+                                            .isGestureRestoreInProgressProvider()
+                                },
+                                modifier = Modifier.align(Alignment.TopStart),
+                            )
+                        }
                     }
                     }  // Full-viewport source-card chrome host (phone + tablet)
                 }  // else shouldUseSplitLayout / immersive parent
@@ -4356,11 +4364,15 @@ internal fun VideoDetailScreenStateHolder(
                 handleTopBarAction(resolveVideoDetailTopBarAction(isHomeButton = true))
             },
             onVideoChange = { portraitPendingSelectionBvid = it },
-            onProgressUpdate = { updatedBvid, positionMs, updatedCid ->
+            onProgressUpdate = { updatedBvid, positionMs, updatedCid, updatedCoverUrl ->
                 portraitPendingSelectionBvid = updatedBvid
                 portraitSyncSnapshotBvid = updatedBvid
                 portraitSyncSnapshotCid = updatedCid
                 portraitSyncSnapshotPositionMs = positionMs.coerceAtLeast(0L)
+                // 竖屏滑到第 N 个视频时冻结其封面，切回横屏时勿回落到路由首个视频封面。
+                if (updatedCoverUrl.isNotBlank()) {
+                    pendingInPageSwitchCoverUrl = updatedCoverUrl
+                }
                 if (shouldMirrorPortraitProgressToMainPlayer) {
                     hasPendingPortraitSync = true
                     if (tryApplyPortraitProgressSync(updatedBvid, portraitSyncSnapshotPositionMs)) {
@@ -4368,13 +4380,16 @@ internal fun VideoDetailScreenStateHolder(
                     }
                 }
             },
-            onExitSnapshot = { updatedBvid, positionMs, updatedCid ->
+            onExitSnapshot = { updatedBvid, positionMs, updatedCid, updatedCoverUrl ->
                 presentationState.switchVideo(updatedBvid, updatedCid)
                 portraitPendingSelectionBvid = updatedBvid
                 portraitSyncSnapshotBvid = updatedBvid
                 portraitSyncSnapshotCid = updatedCid
                 portraitSyncSnapshotPositionMs = positionMs.coerceAtLeast(0L)
                 pendingMainReloadBvidAfterPortrait = updatedBvid
+                if (updatedCoverUrl.isNotBlank()) {
+                    pendingInPageSwitchCoverUrl = updatedCoverUrl
+                }
                 if (shouldMirrorPortraitProgressToMainPlayer) {
                     hasPendingPortraitSync = true
                     if (tryApplyPortraitProgressSync(updatedBvid, portraitSyncSnapshotPositionMs)) {

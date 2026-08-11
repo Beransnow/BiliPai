@@ -916,6 +916,8 @@ data class PlayerInteractionSettings(
     val fullscreenSwipeSeekEnabled: Boolean = true,
     val fullscreenGestureReverse: Boolean = false,
     val hideVideoPageStatusBar: Boolean = false,
+    /** 竖屏详情横屏视频上下黑边动态模糊，默认开启。 */
+    val portraitLetterboxAmbientHaze: Boolean = true,
     val tabletCommentPanelWidthPreset: TabletCommentPanelWidthPreset =
         TabletCommentPanelWidthPreset.STANDARD,
     val autoEnterFullscreenEnabled: Boolean = false,
@@ -1567,6 +1569,8 @@ object SettingsManager {
             fullscreenSwipeSeekEnabled = preferences[KEY_FULLSCREEN_SWIPE_SEEK_ENABLED] ?: true,
             fullscreenGestureReverse = preferences[KEY_FULLSCREEN_GESTURE_REVERSE] ?: false,
             hideVideoPageStatusBar = preferences[KEY_HIDE_VIDEO_PAGE_STATUS_BAR] ?: false,
+            portraitLetterboxAmbientHaze =
+                preferences[KEY_PORTRAIT_LETTERBOX_AMBIENT_HAZE] ?: true,
             tabletCommentPanelWidthPreset = TabletCommentPanelWidthPreset.fromValue(
                 preferences[KEY_TABLET_COMMENT_PANEL_WIDTH_PRESET]
                     ?: TabletCommentPanelWidthPreset.STANDARD.value
@@ -5778,6 +5782,8 @@ object SettingsManager {
     private val KEY_FULLSCREEN_SWIPE_SEEK_SECONDS = intPreferencesKey("fullscreen_swipe_seek_seconds")
     private val KEY_FULLSCREEN_GESTURE_REVERSE = booleanPreferencesKey("fullscreen_gesture_reverse")
     private val KEY_HIDE_VIDEO_PAGE_STATUS_BAR = booleanPreferencesKey("hide_video_page_status_bar")
+    private val KEY_PORTRAIT_LETTERBOX_AMBIENT_HAZE =
+        booleanPreferencesKey("portrait_letterbox_ambient_haze")
     private val KEY_TABLET_COMMENT_PANEL_WIDTH_PRESET =
         intPreferencesKey("tablet_comment_panel_width_preset")
     private val KEY_AUTO_ENTER_FULLSCREEN = booleanPreferencesKey("auto_enter_fullscreen")
@@ -5981,6 +5987,21 @@ object SettingsManager {
     fun getHideVideoPageStatusBarSync(context: Context): Boolean {
         return context.getSharedPreferences(VIDEO_PAGE_STATUS_BAR_CACHE_PREFS, Context.MODE_PRIVATE)
             .getBoolean(CACHE_KEY_HIDE_VIDEO_PAGE_STATUS_BAR, false)
+    }
+
+    fun getPortraitLetterboxAmbientHaze(context: Context): Flow<Boolean> =
+        context.settingsDataStore.data
+            .map { preferences -> preferences[KEY_PORTRAIT_LETTERBOX_AMBIENT_HAZE] ?: true }
+
+    suspend fun setPortraitLetterboxAmbientHaze(context: Context, enabled: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_PORTRAIT_LETTERBOX_AMBIENT_HAZE] = enabled
+        }
+    }
+
+    fun getPortraitLetterboxAmbientHazeSync(context: Context): Boolean {
+        // 无独立 cache；冷启动先用默认 true，DataStore 回填后以 Flow 为准。
+        return true
     }
 
     fun getTabletCommentPanelWidthPreset(context: Context): Flow<TabletCommentPanelWidthPreset> =

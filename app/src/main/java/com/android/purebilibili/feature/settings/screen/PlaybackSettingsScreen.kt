@@ -2124,6 +2124,27 @@ private fun PlaybackFullscreenGestureSettingsSection(
             iconTint = com.android.purebilibili.core.theme.iOSTeal
         )
         AppPreferenceDivider()
+        val portraitLetterboxAmbientHaze by com.android.purebilibili.core.store.SettingsManager
+            .getPortraitLetterboxAmbientHaze(context)
+            .collectAsStateWithLifecycle(initialValue = true)
+        AppSwitchPreference(
+            icon = rememberSettingsSemanticIcon(SettingsIconRole.IMMERSIVE_STATUS_BAR),
+            title = "竖屏黑边动态模糊",
+            subtitle = if (portraitLetterboxAmbientHaze) {
+                "竖屏播放横屏视频时，上下黑边实时采样画面做毛玻璃模糊（默认开启）"
+            } else {
+                "竖屏播放横屏视频时，上下黑边保持纯黑"
+            },
+            checked = portraitLetterboxAmbientHaze,
+            onCheckedChange = {
+                scope.launch {
+                    com.android.purebilibili.core.store.SettingsManager
+                        .setPortraitLetterboxAmbientHaze(context, it)
+                }
+            },
+            iconTint = com.android.purebilibili.core.theme.iOSTeal
+        )
+        AppPreferenceDivider()
 	        AppSwitchPreference(
 	            icon = rememberSettingsSemanticIcon(SettingsIconRole.AUTO_ENTER_FULLSCREEN),
             title = "自动进入全屏",
