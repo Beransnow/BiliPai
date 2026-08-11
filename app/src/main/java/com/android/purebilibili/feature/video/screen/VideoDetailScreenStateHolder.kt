@@ -75,6 +75,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
@@ -1228,7 +1229,8 @@ internal fun VideoDetailScreenStateHolder(
         isCardReturnExitInProgress = isCardReturnExitInProgress,
         isSessionReturningToCard = isSessionReturningToCard,
     )
-    // 封面/播放器 handoff 只认已提交（按钮返回或 markReturning），预测跟手阶段保持实时画面。
+    // 已提交信号继续驱动正文等次要内容；封面/播放器交接还会直接读取
+    // Miuix 预测返回手势，因此 seek 期间就能随进度切换到封面。
     val isCommittedCardReturn = shouldTreatVideoDetailCardReturnAsCommitted(
         isActuallyLeaving = isActuallyLeaving,
         isSessionReturningToCard = isSessionReturningToCard,
@@ -1642,7 +1644,8 @@ internal fun VideoDetailScreenStateHolder(
         useReturningVisualState = isCommittedCardReturn,
         hasResidentCover = hasResidentReturnCover,
     )
-    // live morph 时绝不 forceCoverOnly；预测 seek 未提交时也不 forceCover，避免封面瞬间盖住播放器。
+    // LIVE/TextureView 由上层 resident cover 渐进接管；RESIDENT/SurfaceView 从手势
+    // 起点就让播放器内部进入 cover-only，避免平台 surface 穿透 Compose 层。
     val forceCoverOnlyForLiveSafeReturn = shouldForceCoverOnlyForReturnOwnership(
         ownership = returnCoverOwnership,
         useReturningVisualState = useReturningVideoDetailVisualState,
@@ -3601,23 +3604,24 @@ internal fun VideoDetailScreenStateHolder(
                                     videoPlayerBounds = nextBounds
                                 }
                         ) {
-                            // 常驻封面叠层：仅已提交的 CoverFirst 返回才接管；预测 seek / cancel
-                            // 始终保持 cover=0、player=1，避免回到详情页时闪出一帧封面。
+                            // 媒体只有两个显式层：上层常驻封面、下层播放器。返回 seek 时两者
+                            // 共享同一帧进度，不再依赖导航 entry alpha 遮挡平台视频 surface。
                             if (residentCoverImageRequest != null) {
                                 AsyncImage(
                                     model = residentCoverImageRequest,
                                     contentDescription = "cover",
                                     modifier = Modifier
                                         .fillMaxSize()
+                                        // Cover is the top media layer. SurfaceView does not reliably obey
+                                        // an ancestor Compose alpha, but it can be occluded by this layer.
+                                        .zIndex(1f)
                                         .graphicsLayer {
-                                            // 预测返回手势进行中（含未提交 seek 与取消恢复）：保 player、不画封面，
-                                            // 避免手势过程中画面实时消失（实时画面转场开关关闭时同样生效）。
-                                            val gestureKeepLivePlayer =
+                                            val returnGestureInProgress =
                                                 videoCardDepthBackgroundState
                                                     .isReturnGestureInProgressProvider() ||
                                                     videoCardDepthBackgroundState
                                                         .isGestureRestoreInProgressProvider()
-                                            alpha = resolveVideoDetailReturnCoverAlpha(
+                                            alpha = resolveVideoDetailReturnMediaFrame(
                                                 transitionProgress =
                                                     resolveVideoDetailReturnVisualProgress(
                                                         animatedVisibilityProgress =
@@ -3630,10 +3634,8 @@ internal fun VideoDetailScreenStateHolder(
                                                 isCommittedCardReturn = isCommittedCardReturn,
                                                 hasResidentCover = hasResidentReturnCover,
                                                 liveReturnMorph = liveReturnMorph,
-                                                // 仅实时视频 morph 在预测返回时保 player；
-                                                // 关闭实时画面时走封面/截图垫层，避免 SurfaceView 黑块。
-                                                keepLivePlayerForPredictiveBack = gestureKeepLivePlayer,
-                                            )
+                                                isReturnGestureInProgress = returnGestureInProgress,
+                                            ).coverAlpha
                                         },
                                     contentScale = ContentScale.Crop
                                 )
@@ -3641,13 +3643,14 @@ internal fun VideoDetailScreenStateHolder(
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
+                                    .zIndex(0f)
                                     .graphicsLayer {
-                                        val gestureKeepLivePlayer =
+                                        val returnGestureInProgress =
                                             videoCardDepthBackgroundState
                                                 .isReturnGestureInProgressProvider() ||
                                                 videoCardDepthBackgroundState
                                                     .isGestureRestoreInProgressProvider()
-                                        alpha = resolveVideoDetailReturnPlayerAlpha(
+                                        alpha = resolveVideoDetailReturnMediaFrame(
                                             transitionProgress =
                                                 resolveVideoDetailReturnVisualProgress(
                                                     animatedVisibilityProgress =
@@ -3660,8 +3663,8 @@ internal fun VideoDetailScreenStateHolder(
                                             isCommittedCardReturn = isCommittedCardReturn,
                                             hasResidentCover = hasResidentReturnCover,
                                             liveReturnMorph = liveReturnMorph,
-                                            keepLivePlayerForPredictiveBack = gestureKeepLivePlayer,
-                                        )
+                                            isReturnGestureInProgress = returnGestureInProgress,
+                                        ).playerAlpha
                                     }
                             ) {
                             if (continuousFullscreenTransitionEnabled) {

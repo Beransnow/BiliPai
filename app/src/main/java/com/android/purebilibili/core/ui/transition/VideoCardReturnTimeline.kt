@@ -36,11 +36,31 @@ internal object VideoCardTransitionVisualTimeline {
     const val SECONDARY_CONTENT_ENTER_START = 0.24f
     const val SECONDARY_CONTENT_ENTER_END = 0.82f
     const val DETAIL_CONTENT_RETURN_END = 0.28f
+    // The real retained list card (cover + title + owner/stats) takes over in the latter half of
+    // the gesture. This leaves the live frame readable for longer while still removing the opaque,
+    // compressed detail page early enough to show complete source chrome before landing.
+    const val WHOLE_SOURCE_CARD_RETURN_START = 0.55f
+    const val WHOLE_SOURCE_CARD_RETURN_END = 0.90f
     const val SOURCE_CHROME_RETURN_START = 0.68f
     const val SOURCE_CHROME_RETURN_END = 0.94f
     const val SECONDARY_CONTENT_TRANSLATION_DP = 8
     const val REDUCED_MOTION_DURATION_MILLIS = 140
 }
+
+/**
+ * Full retained source-card takeover during a Miuix return.
+ *
+ * Unlike the media-only handoff, this alpha owns the complete list card. It starts just after the
+ * detail body has yielded so title/UP/stat chrome is visible during the gesture, not one frame
+ * after the transformed detail sheet lands.
+ */
+internal fun resolveVideoCardWholeSourceReturnAlpha(
+    morphDepthProgress: Float,
+): Float = resolveVideoCardTimelineWindowProgress(
+    progress = resolveVideoCardReturnSettleFromMorphDepth(morphDepthProgress),
+    start = VideoCardTransitionVisualTimeline.WHOLE_SOURCE_CARD_RETURN_START,
+    end = VideoCardTransitionVisualTimeline.WHOLE_SOURCE_CARD_RETURN_END,
+)
 
 internal const val VIDEO_CARD_RETURN_CHROME_REVEAL_START =
     VideoCardTransitionVisualTimeline.SOURCE_CHROME_RETURN_START
@@ -66,10 +86,12 @@ internal const val VIDEO_CARD_RETURN_LIVE_CONTENT_YIELD_END =
     VideoCardTransitionVisualTimeline.DETAIL_CONTENT_RETURN_END
 
 /**
- * 实时画面缩回时，详情/来源卡常驻封面开始接管的落位进度。
- * 0 = 刚开始从详情缩回，1 = 已回到来源卡。
+ * 实时画面缩回时，详情常驻封面与媒体 chrome 使用同一个 68%–94% 精修窗口。
+ * 完整来源卡（含标题/UP/统计）在 55%–90% 窗口接管，避免过早离开实时画面。
+ * 旧的最后 12% 窗口太短，手势几乎落位后才看得到封面转换。
  */
-internal const val VIDEO_CARD_LIVE_RETURN_VISUAL_HANDOFF_START = 0.88f
+internal const val VIDEO_CARD_LIVE_RETURN_VISUAL_HANDOFF_START =
+    VideoCardTransitionVisualTimeline.SOURCE_CHROME_RETURN_START
 
 /**
  * live surface → 常驻封面/来源卡视觉的唯一交接 alpha。
@@ -79,11 +101,7 @@ internal const val VIDEO_CARD_LIVE_RETURN_VISUAL_HANDOFF_START = 0.88f
  */
 internal fun resolveVideoCardLiveReturnVisualHandoffAlpha(
     morphDepthProgress: Float,
-): Float {
-    val settle = resolveVideoCardReturnSettleFromMorphDepth(morphDepthProgress)
-    return ((settle - VIDEO_CARD_LIVE_RETURN_VISUAL_HANDOFF_START) /
-        (1f - VIDEO_CARD_LIVE_RETURN_VISUAL_HANDOFF_START)).coerceIn(0f, 1f)
-}
+): Float = resolveVideoCardSourceChromeReturnAlpha(morphDepthProgress)
 
 internal data class VideoCardSecondaryContentVisualFrame(
     val alpha: Float,
@@ -374,9 +392,8 @@ internal fun resolveReturnSessionLockedCoverOwnership(
 /**
  * 是否应对播放器强制封面-only（掐 live surface）。
  *
- * - live ownership 时永远 false，保证 shell morph 实时画面
- * - 仅 **已提交** 返回才 forceCover；预测 seek 离开态不能掐 surface
- *   （否则手势一瞬间封面盖住播放器）
+ * - live ownership 由上层 resident cover 做渐进交接，不折叠播放器
+ * - resident ownership 在预测 seek 起点就切为 cover-only，确保 SurfaceView 不穿透封面层
  *
  * [isCommittedCardReturn] 默认跟 [useReturningVisualState] 兼容旧调用；
  * 详情接线应传入真正的提交信号（markReturning / isActuallyLeaving）。
@@ -388,13 +405,7 @@ internal fun shouldForceCoverOnlyForReturnOwnership(
     isCommittedCardReturn: Boolean = useReturningVisualState,
 ): Boolean {
     if (isVideoCardLiveReturnMorphOwnership(ownership)) return false
-    // 仅显式 forceCover；禁止「一点返回就 forceCover」掐掉 player surface。
-    // CoverFirst 的视觉交接靠 cover/player alpha，不靠 forceCoverOnly 布局折叠。
-    @Suppress("UNUSED_PARAMETER")
-    val ignoredCommitted = isCommittedCardReturn
-    @Suppress("UNUSED_PARAMETER")
-    val ignoredReturning = useReturningVisualState
-    return forceCoverOnlyOnReturn
+    return forceCoverOnlyOnReturn || useReturningVisualState || isCommittedCardReturn
 }
 
 /**

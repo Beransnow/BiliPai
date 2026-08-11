@@ -1122,7 +1122,7 @@ internal fun Modifier.videoCardTransitionBackgroundEffect(
 }
 
 /**
- * Fades the frozen depth snapshot out over the source chrome's 68%–94% settle window.
+ * Fades the frozen depth snapshot out over the full source-card takeover window.
  * Depth is 1 at full blur and 0 when the previous page is fully restored.
  *
  * Drawing live content underneath this layer is essential for player surfaces: recording an
@@ -1141,9 +1141,9 @@ internal fun resolveVideoCardTransitionFrozenLayerAlpha(
         else -> false
     }
     if (!supportsLiveHandoff) return 1f
-    // 与来源卡正文共用 68%–94% settle 窗口。旧实现只在 depth=0 才将冻结层
-    // 完全移除，导致下方已淡入的标题仍被开场时录下的“无正文快照”盖住。
-    return 1f - resolveVideoCardSourceChromeReturnAlpha(depthProgress)
+    // 冻结层往往录到了进场时被隐藏标题的卡片。在返回中段就把它交给
+    // live source page，否则下方已就绪的标题/UP/统计仍会被无正文快照盖住。
+    return 1f - resolveVideoCardWholeSourceReturnAlpha(depthProgress)
 }
 
 /**

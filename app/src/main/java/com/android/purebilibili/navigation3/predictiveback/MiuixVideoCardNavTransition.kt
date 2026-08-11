@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.android.purebilibili.core.ui.transition.resolveVideoCardSourceChromeReturnAlpha
+import com.android.purebilibili.core.ui.transition.resolveVideoCardWholeSourceReturnAlpha
 import top.yukonga.miuix.kmp.nav.transition.NavMotion
 import top.yukonga.miuix.kmp.nav.transition.NavRole
 import top.yukonga.miuix.kmp.nav.transition.NavSettleSpec
@@ -35,8 +35,6 @@ internal data class MiuixVideoCardClipRadii(
     val radiusX: Float,
     val radiusY: Float,
 )
-
-private const val MIUIX_WIDE_VIDEO_CARD_MIN_ASPECT_RATIO = 1.45f
 
 /** Top entry depth is 0 at rest and moves toward -1 while returning. */
 internal fun resolveMiuixVideoCardDepthProgress(relativeDepth: Float): Float =
@@ -70,22 +68,20 @@ internal fun resolveMiuixVideoCardClipRadii(
 }
 
 /**
- * Wide/16:9 shells cannot geometrically reproduce their source content by scaling the whole
- * detail page. During the final return segment, reveal the real retained source card using the
- * same 68%–94% settle window as source-card chrome.
+ * A full detail page cannot geometrically reproduce a list card by scaling its complete layout.
+ * During the middle return segment, reveal the real retained source card after the detail body
+ * yields and before the media shell lands.
  *
  * 预测返回手势 seek 与提交后的 settle 使用同一条交接曲线：前段保留实时画面，
- * 接近落点时逐渐露出下方完整源卡，避免手指拖到卡片位置后仍只有视频画面。
+ * 返回中段就逐渐露出下方完整源卡，使封面、标题、UP 主和统计信息一起交接。
  */
 internal fun resolveMiuixVideoCardReturnContentAlpha(
-    sourceBounds: Rect,
     morphProgress: Float,
     isReturning: Boolean,
+    handoffWholeSourceCard: Boolean,
 ): Float {
-    if (!isReturning) return 1f
-    val aspectRatio = sourceBounds.width / sourceBounds.height.coerceAtLeast(1f)
-    if (aspectRatio < MIUIX_WIDE_VIDEO_CARD_MIN_ASPECT_RATIO) return 1f
-    return 1f - resolveVideoCardSourceChromeReturnAlpha(morphProgress)
+    if (!isReturning || !handoffWholeSourceCard) return 1f
+    return 1f - resolveVideoCardWholeSourceReturnAlpha(morphProgress)
 }
 
 private data class MiuixVideoCardClipShape(
@@ -214,15 +210,20 @@ internal fun miuixVideoCardNavTransition(
                     transformOrigin = TransformOrigin(0f, 0f)
                     translationX = bounds.left.coerceIn(-width, width) * (1f - morph)
                     translationY = bounds.top.coerceIn(-height, height) * (1f - morph)
-                    // Keep ordinary/vertical cards fully opaque. Wide shells hand off during the
-                    // shared 68%–94% source-chrome window, before the card reaches its final slot.
+                    // Normal VideoDetail entries yield to their retained full source card during
+                    // the gesture; fullscreen Story entries keep their media-only visual opaque.
                     alpha = resolveMiuixVideoCardReturnContentAlpha(
-                        sourceBounds = bounds,
                         morphProgress = morph,
                         isReturning = isMiuixVideoCardReturning(
                             role = scope.role,
                             hasGesture = scope.gesture != null,
                         ),
+                        // FillWidthTop is the normal VideoDetail route: it must yield the whole
+                        // retained source card, regardless of whether recorded bounds include the
+                        // title area and therefore no longer look 16:9. CropCenter belongs to the
+                        // fullscreen Story path, whose source visual intentionally stays media-only.
+                        handoffWholeSourceCard =
+                            contentScale == MiuixVideoCardContentScale.FillWidthTop,
                     )
                     clip = morph < 0.999f
                     val clipRadii = resolveMiuixVideoCardClipRadii(

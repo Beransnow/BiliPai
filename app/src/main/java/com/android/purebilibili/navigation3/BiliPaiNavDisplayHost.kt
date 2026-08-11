@@ -158,16 +158,22 @@ internal fun BiliPaiNavDisplayHost(
             exitDirection = predictiveBackExitDirection,
         )
     }
+    val cardMorphAvailable = shouldUseMiuixVideoCardMorph(
+        cardTransitionEnabled = cardTransitionEnabled,
+        reduceMotion = reduceMotion,
+        sourceRoute = sourceMetadata.sourceRoute,
+        hasUsableSourceBounds = sourceMetadata.sourceBounds
+            ?.let { it.width > 1f && it.height > 1f } == true,
+    )
     val videoCardTransitionProgress = remember { MiuixVideoCardTransitionProgress() }
     val videoCardTransition = remember(
-        cardTransitionEnabled,
-        reduceMotion,
+        cardMorphAvailable,
         sourceMetadata.sourceBounds,
         sourceMetadata.sourceCornerDp,
         videoSharedTransitionDurationMillis,
         globalTransition,
     ) {
-        if (cardTransitionEnabled && !reduceMotion) {
+        if (cardMorphAvailable) {
             miuixVideoCardNavTransition(
                 sourceBounds = sourceMetadata.sourceBounds,
                 sourceCornerDp = sourceMetadata.sourceCornerDp,
@@ -181,14 +187,13 @@ internal fun BiliPaiNavDisplayHost(
         }
     }
     val fullscreenVideoCardTransition = remember(
-        cardTransitionEnabled,
-        reduceMotion,
+        cardMorphAvailable,
         sourceMetadata.sourceBounds,
         sourceMetadata.sourceCornerDp,
         videoSharedTransitionDurationMillis,
         globalTransition,
     ) {
-        if (cardTransitionEnabled && !reduceMotion) {
+        if (cardMorphAvailable) {
             miuixVideoCardNavTransition(
                 sourceBounds = sourceMetadata.sourceBounds,
                 sourceCornerDp = sourceMetadata.sourceCornerDp,
@@ -206,10 +211,10 @@ internal fun BiliPaiNavDisplayHost(
         resolveVideoCardTimelineSpec(videoSharedTransitionDurationMillis)
     }
     var previousStack by remember { mutableStateOf(stackSnapshot) }
-    LaunchedEffect(stackSnapshot, cardTransitionEnabled, reduceMotion, timeline) {
+    LaunchedEffect(stackSnapshot, cardMorphAvailable, timeline) {
         val previous = previousStack
         previousStack = stackSnapshot
-        if (!cardTransitionEnabled || reduceMotion) {
+        if (!cardMorphAvailable) {
             videoCardClock.snapClearAndIdle()
             return@LaunchedEffect
         }
@@ -244,13 +249,21 @@ internal fun BiliPaiNavDisplayHost(
 
     val videoCardSnapshotHandle = rememberVideoCardTransitionSnapshotHandle()
     val transitionMotionTier = if (reduceMotion) MotionTier.Reduced else MotionTier.Normal
-    val videoCardProgressProvider = remember(videoCardClock, videoCardTransitionProgress) {
+    val videoCardProgressProvider = remember(
+        cardMorphAvailable,
+        videoCardClock,
+        videoCardTransitionProgress,
+    ) {
         {
-            videoCardTransitionProgress.depthOr(videoCardClock.depthProgress())
+            if (cardMorphAvailable) {
+                videoCardTransitionProgress.depthOr(videoCardClock.depthProgress())
+            } else {
+                videoCardClock.depthProgress()
+            }
         }
     }
-    val videoCardGestureProvider = remember(videoCardTransitionProgress) {
-        { videoCardTransitionProgress.isGestureInProgress() }
+    val videoCardGestureProvider = remember(cardMorphAvailable, videoCardTransitionProgress) {
+        { cardMorphAvailable && videoCardTransitionProgress.isGestureInProgress() }
     }
     val videoCardExposureProvider = remember(videoCardClock, videoCardGestureProvider) {
         {
@@ -269,14 +282,11 @@ internal fun BiliPaiNavDisplayHost(
     }
     val currentBackTarget = stackSnapshot.getOrNull(stackSnapshot.lastIndex - 1)
     val showVideoCardNavBackdrop = shouldShowVideoCardTransitionNavBackdrop(
-        cardTransitionEnabled = cardTransitionEnabled,
+        cardTransitionEnabled = cardMorphAvailable,
         exposure = effectiveVideoCardExposure,
         isVideoDetailOnStack = isCardMorphDestinationNavKey(currentKey),
         isReturningToVideoDetail = isCardMorphDestinationNavKey(currentBackTarget),
     )
-    val cardMorphAvailable = cardTransitionEnabled &&
-        !reduceMotion &&
-        sourceMetadata.sourceBounds?.let { it.width > 1f && it.height > 1f } == true
     val transitionBackgroundState = remember(
         sourceMetadata.sourceRoute,
         sourceMetadata.sourceCornerDp,
@@ -314,6 +324,7 @@ internal fun BiliPaiNavDisplayHost(
     // 恢复 0.2.2 的预测返回背景链路：目标返回页（栈前一 key）在预测返回手势中
     // 随手势进度模糊/消退，迁移到 Miuix 导航时该 provide 曾丢失。
     val predictiveBackBackgroundState = remember(
+        cardMorphAvailable,
         videoCardTransitionProgress,
         currentBackTarget,
         transitionMotionTier,
@@ -322,6 +333,7 @@ internal fun BiliPaiNavDisplayHost(
         PredictiveBackBackgroundState(
             progressProvider = {
                 videoCardTransitionProgress.gestureBackProgress()
+                    ?.takeIf { cardMorphAvailable }
                     ?.let { resolvePredictiveBackGestureBlurProgress(it) }
                     ?: 0f
             },

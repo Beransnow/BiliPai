@@ -122,8 +122,8 @@ class VideoCardReturnTimelineTest {
                 forceCoverOnlyOnReturn = true,
             )
         )
-        // 非 live 也不得仅因 returning 就 forceCover（会一返回掐 player）
-        assertFalse(
+        // 非 live 从手势起点即由 resident cover 接管，SurfaceView 不再穿透上层封面。
+        assertTrue(
             shouldForceCoverOnlyForReturnOwnership(
                 ownership = VideoCardReturnCoverOwnership.RESIDENT_COVER,
                 useReturningVisualState = true,
@@ -140,8 +140,8 @@ class VideoCardReturnTimelineTest {
     }
 
     @Test
-    fun forceCoverOnly_onlyWhenExplicitlyRequestedNotOnCommitAlone() {
-        assertFalse(
+    fun forceCoverOnly_tracksResidentReturnOwnershipButNeverLiveOwnership() {
+        assertTrue(
             shouldForceCoverOnlyForReturnOwnership(
                 ownership = VideoCardReturnCoverOwnership.RESIDENT_COVER,
                 useReturningVisualState = true,
@@ -149,7 +149,7 @@ class VideoCardReturnTimelineTest {
                 isCommittedCardReturn = false,
             )
         )
-        assertFalse(
+        assertTrue(
             shouldForceCoverOnlyForReturnOwnership(
                 ownership = VideoCardReturnCoverOwnership.RESIDENT_COVER,
                 useReturningVisualState = true,
@@ -314,11 +314,19 @@ class VideoCardReturnTimelineTest {
     }
 
     @Test
-    fun liveReturnVisualHandoff_onlyRevealsSourceInFinalSettleWindow() {
+    fun liveReturnVisualHandoff_matchesTheSourceChromeSettleWindow() {
         assertEquals(0f, resolveVideoCardLiveReturnVisualHandoffAlpha(1f), 0.0001f)
-        assertEquals(0f, resolveVideoCardLiveReturnVisualHandoffAlpha(0.12f), 0.0001f)
-        assertEquals(0.5f, resolveVideoCardLiveReturnVisualHandoffAlpha(0.06f), 0.0001f)
+        assertEquals(0f, resolveVideoCardLiveReturnVisualHandoffAlpha(0.32f), 0.0001f)
+        assertEquals(0.5f, resolveVideoCardLiveReturnVisualHandoffAlpha(0.19f), 0.0001f)
+        assertEquals(1f, resolveVideoCardLiveReturnVisualHandoffAlpha(0.06f), 0.0001f)
         assertEquals(1f, resolveVideoCardLiveReturnVisualHandoffAlpha(0f), 0.0001f)
+    }
+
+    @Test
+    fun wholeSourceCardReturnsAfterDetailContentYieldsAndBeforeLanding() {
+        assertEquals(0f, resolveVideoCardWholeSourceReturnAlpha(0.45f), 0.0001f)
+        assertEquals(0.5f, resolveVideoCardWholeSourceReturnAlpha(0.275f), 0.0001f)
+        assertEquals(1f, resolveVideoCardWholeSourceReturnAlpha(0.10f), 0.0001f)
     }
 
     @Test
@@ -386,11 +394,11 @@ class VideoCardReturnTimelineTest {
     }
 
     @Test
-    fun sourceChrome_isFullyVisibleBeforeTheLiveCoverHandoffFinishes() {
+    fun sourceChrome_andLiveCoverUseOneHandoffWindow() {
         assertEquals(0f, resolveVideoCardSourceChromeReturnAlpha(0.32f), 0.001f)
         assertEquals(0.5f, resolveVideoCardSourceChromeReturnAlpha(0.19f), 0.001f)
         assertEquals(1f, resolveVideoCardSourceChromeReturnAlpha(0.06f), 0.001f)
-        assertEquals(0.5f, resolveVideoCardLiveReturnVisualHandoffAlpha(0.06f), 0.001f)
+        assertEquals(0.5f, resolveVideoCardLiveReturnVisualHandoffAlpha(0.19f), 0.001f)
     }
 
     @Test

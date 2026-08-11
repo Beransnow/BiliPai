@@ -2,8 +2,41 @@ package com.android.purebilibili.navigation3
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class BiliPaiVideoSourcePolicyTest {
+
+    @Test
+    fun relatedVideoDetailUsesStandardMiuixPageMotionInsteadOfWholePageCardMorph() {
+        assertFalse(
+            shouldUseMiuixVideoCardMorph(
+                cardTransitionEnabled = true,
+                reduceMotion = false,
+                sourceRoute = "video/BV_PARENT",
+                hasUsableSourceBounds = true,
+            )
+        )
+        listOf(
+            "home",
+            "search",
+            "dynamic/123",
+            "space/456",
+            "watchlater",
+            "favorite",
+            "history",
+        ).forEach { sourceRoute ->
+            assertTrue(
+                shouldUseMiuixVideoCardMorph(
+                    cardTransitionEnabled = true,
+                    reduceMotion = false,
+                    sourceRoute = sourceRoute,
+                    hasUsableSourceBounds = true,
+                ),
+                "Expected shared card return for source=$sourceRoute",
+            )
+        }
+    }
 
     @Test
     fun searchVideoUsesSearchSourceRouteAndIndependentSourceKey() {

@@ -40,3 +40,18 @@ internal fun normalizeBiliPaiVideoSourceRoute(route: String?): String? {
         normalized.substringBefore("?")
     }
 }
+
+/**
+ * Detail-to-detail navigation is a page hierarchy change, not a list-card container transform.
+ * Compressing a complete VideoDetail into the shallow related-video row exposes a large blank
+ * sheet between its player and body, so nested video sources stay on the standard Miuix motion.
+ */
+internal fun shouldUseMiuixVideoCardMorph(
+    cardTransitionEnabled: Boolean,
+    reduceMotion: Boolean,
+    sourceRoute: String?,
+    hasUsableSourceBounds: Boolean,
+): Boolean = cardTransitionEnabled &&
+    !reduceMotion &&
+    sourceRoute?.substringBefore('?')?.startsWith("video/") != true &&
+    hasUsableSourceBounds

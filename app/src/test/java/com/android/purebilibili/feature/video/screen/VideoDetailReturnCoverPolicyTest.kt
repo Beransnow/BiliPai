@@ -338,15 +338,16 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun `uncommitted predictive seek keeps live player and zero cover even when exit is in progress`() {
-        // live：封面垫底 alpha=1（在 player 下），player=1 保证实时帧在上
+    fun `predictive seek uses the same live to cover handoff as committed return`() {
+        // depth=0.7 尚未进入 68%–94% 接管窗口。
         assertEquals(
-            1f,
+            0f,
             resolveVideoDetailReturnCoverAlpha(
                 transitionProgress = 0.7f,
                 isCommittedCardReturn = false,
                 hasResidentCover = true,
                 liveReturnMorph = true,
+                keepLivePlayerForPredictiveBack = true,
             ),
             0.0001f,
         )
@@ -357,12 +358,13 @@ class VideoDetailReturnCoverPolicyTest {
                 isCommittedCardReturn = false,
                 hasResidentCover = true,
                 liveReturnMorph = true,
+                keepLivePlayerForPredictiveBack = true,
             ),
             0.0001f,
         )
         // 已提交但未到 handoff 窗口：player 仍满不透明
         assertEquals(
-            1f,
+            0f,
             resolveVideoDetailReturnCoverAlpha(
                 transitionProgress = 0.5f,
                 isCommittedCardReturn = true,
@@ -384,8 +386,8 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun `forceCoverOnly stays off unless explicitly requested for resident path`() {
-        assertFalse(
+    fun `resident path forces cover during predictive return`() {
+        assertTrue(
             com.android.purebilibili.core.ui.transition.shouldForceCoverOnlyForReturnOwnership(
                 ownership = com.android.purebilibili.core.ui.transition.VideoCardReturnCoverOwnership.RESIDENT_COVER,
                 useReturningVisualState = true,
@@ -393,8 +395,7 @@ class VideoDetailReturnCoverPolicyTest {
                 isCommittedCardReturn = false,
             )
         )
-        // 提交返回也不得自动 forceCover，否则一点返回就掐 player
-        assertFalse(
+        assertTrue(
             com.android.purebilibili.core.ui.transition.shouldForceCoverOnlyForReturnOwnership(
                 ownership = com.android.purebilibili.core.ui.transition.VideoCardReturnCoverOwnership.RESIDENT_COVER,
                 useReturningVisualState = true,
@@ -417,9 +418,9 @@ class VideoDetailReturnCoverPolicyTest {
 
     @Test
     fun `live return morph keeps player visible before the landing handoff`() {
-        // 封面垫在播放器下全程 alpha=1；是否「看见」封面只看 player alpha。
+        // 封面现在位于播放器上层；进入窗口前保持透明。
         assertEquals(
-            1f,
+            0f,
             resolveVideoDetailReturnCoverAlpha(0.8f, true, true, liveReturnMorph = true),
             0.0001f,
         )
@@ -441,25 +442,25 @@ class VideoDetailReturnCoverPolicyTest {
 
     @Test
     fun `committed live return crossfades only during the final landing window`() {
-        // 垫底封面全程 1；player alpha 在末段 handoff 窗口下降露出封面。
+        // 68%–94% 窗口内，上层封面与下层 player 直接交叉淡化。
         assertEquals(
-            1f,
+            0.46153846f,
             resolveVideoDetailReturnCoverAlpha(0.2f, true, true, liveReturnMorph = true),
             0.0001f,
         )
         assertEquals(
-            1f,
+            0.53846157f,
             resolveVideoDetailReturnPlayerAlpha(0.2f, true, true, liveReturnMorph = true),
             0.0001f,
         )
-        // settle=0.94：最后 12% 窗口已走一半，player 半透 → 垫底封面可见一半。
+        // settle=0.94：封面已经完成接管。
         assertEquals(
             1f,
             resolveVideoDetailReturnCoverAlpha(0.06f, true, true, liveReturnMorph = true),
             0.0001f,
         )
         assertEquals(
-            0.5f,
+            0f,
             resolveVideoDetailReturnPlayerAlpha(0.06f, true, true, liveReturnMorph = true),
             0.0001f,
         )
@@ -486,7 +487,7 @@ class VideoDetailReturnCoverPolicyTest {
         )
         assertEquals(0.72f, progress, 0.0001f)
         assertEquals(
-            1f,
+            0f,
             resolveVideoDetailReturnCoverAlpha(
                 transitionProgress = progress,
                 isCommittedCardReturn = true,
@@ -626,9 +627,9 @@ class VideoDetailReturnCoverPolicyTest {
 
     @Test
     fun `cover-first committed return still hands visual ownership to resident cover`() {
-        // 关实时画面：黑壳 morph —— 封面与 player 都 0，只留容器黑底，降渲染压力。
+        // 关实时画面：resident cover 从返回起点直接接管。
         assertEquals(
-            0f,
+            1f,
             resolveVideoDetailReturnCoverAlpha(0.8f, true, true, liveReturnMorph = false),
             0.0001f,
         )
@@ -646,9 +647,9 @@ class VideoDetailReturnCoverPolicyTest {
 
     @Test
     fun `uncommitted predictive live morph keeps player visible while content follows timeline`() {
-        // 垫底封面 1 + player 1：实时帧在上，无帧时透出封面而非黑底。
+        // 非返回态：上层封面透明，player 正常显示。
         assertEquals(
-            1f,
+            0f,
             resolveVideoDetailReturnCoverAlpha(0.8f, false, true, liveReturnMorph = true),
             0.0001f,
         )
@@ -665,9 +666,9 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun `uncommitted predictive cover-first return never draws cover over live player`() {
+    fun `predictive cover-first return immediately uses resident cover`() {
         assertEquals(
-            0f,
+            1f,
             resolveVideoDetailReturnCoverAlpha(
                 transitionProgress = 0.8f,
                 isCommittedCardReturn = false,
@@ -678,7 +679,7 @@ class VideoDetailReturnCoverPolicyTest {
             0.0001f,
         )
         assertEquals(
-            1f,
+            0f,
             resolveVideoDetailReturnPlayerAlpha(
                 transitionProgress = 0.8f,
                 isCommittedCardReturn = false,
@@ -696,9 +697,9 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun `predictive cancel recovery keeps live player even if committed state is stale`() {
+    fun `cover-first restore keeps resident cover until the gesture session ends`() {
         assertEquals(
-            0f,
+            1f,
             resolveVideoDetailReturnCoverAlpha(
                 transitionProgress = 0.6f,
                 isCommittedCardReturn = true,
@@ -709,7 +710,7 @@ class VideoDetailReturnCoverPolicyTest {
             0.0001f,
         )
         assertEquals(
-            1f,
+            0f,
             resolveVideoDetailReturnPlayerAlpha(
                 transitionProgress = 0.6f,
                 isCommittedCardReturn = true,
@@ -892,7 +893,7 @@ class VideoDetailReturnCoverPolicyTest {
         )
         assertTrue(isLiveReturnMorphFromOwnership(ownership))
         assertEquals(
-            1f,
+            0f,
             resolveVideoDetailReturnCoverAlpha(
                 transitionProgress = 0.5f,
                 isCommittedCardReturn = false,
@@ -975,9 +976,9 @@ class VideoDetailReturnCoverPolicyTest {
 
     @Test
     fun `missing return cover with live-surface off uses black shell not forced player`() {
-        // 关实时画面：即使无封面也走黑壳 morph（cover/player 均为 0），省渲染。
+        // 无 resident cover 时保留 player，避免黑壳。
         assertEquals(0f, resolveVideoDetailReturnCoverAlpha(0.2f, true, false), 0.0001f)
-        assertEquals(0f, resolveVideoDetailReturnPlayerAlpha(0.2f, true, false), 0.0001f)
+        assertEquals(1f, resolveVideoDetailReturnPlayerAlpha(0.2f, true, false), 0.0001f)
         assertEquals(0f, resolveVideoDetailReturnContentAlpha(0.2f, true), 0.0001f)
     }
 
@@ -987,8 +988,10 @@ class VideoDetailReturnCoverPolicyTest {
             .readText()
 
         assertTrue(source.contains("val detailTransitionProgress ="))
-        assertTrue(source.contains("alpha = resolveVideoDetailReturnCoverAlpha("))
-        assertTrue(source.contains("alpha = resolveVideoDetailReturnPlayerAlpha("))
+        assertTrue(source.contains("alpha = resolveVideoDetailReturnMediaFrame("))
+        assertTrue(source.contains(").coverAlpha"))
+        assertTrue(source.contains(").playerAlpha"))
+        assertTrue(source.contains(".zIndex(1f)"))
         assertTrue(source.contains("alpha = resolveVideoDetailReturnContentAlpha("))
         assertFalse(source.contains("val coverCrossfadeAlpha ="))
         assertFalse(source.contains("val playerFadeAlpha ="))
@@ -1144,9 +1147,9 @@ class VideoDetailReturnCoverPolicyTest {
 
     @Test
     fun committedReturn_doesNotCoverPlayerUntilHandoff() {
-        // live：垫底封面始终 1，player 在 handoff 前仍为 1（视频盖住封面）
+        // live：上层封面进入窗口前透明，player 保持可见。
         assertEquals(
-            1f,
+            0f,
             resolveVideoDetailReturnCoverAlpha(
                 transitionProgress = 1f,
                 isCommittedCardReturn = true,
@@ -1165,9 +1168,9 @@ class VideoDetailReturnCoverPolicyTest {
             ),
             0.0001f,
         )
-        // 非 live：黑壳 morph，封面/player 均为 0
+        // 非 live：resident cover 覆盖 player。
         assertEquals(
-            0f,
+            1f,
             resolveVideoDetailReturnCoverAlpha(
                 transitionProgress = 1f,
                 isCommittedCardReturn = true,

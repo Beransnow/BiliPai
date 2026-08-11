@@ -1,6 +1,5 @@
 package com.android.purebilibili.navigation3.predictiveback
 
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.TransformOrigin
 import top.yukonga.miuix.kmp.nav.transition.NavRole
 import kotlin.test.Test
@@ -64,55 +63,53 @@ class MiuixVideoCardNavTransitionTest {
     }
 
     @Test
-    fun wideCardHandsContentBackWithSourceChromeBeforeLanding() {
-        val wideBounds = Rect(0f, 0f, 320f, 180f)
-
+    fun videoDetailHandsTheWholeSourceCardBackDuringTheGesture() {
         assertEquals(
             1f,
             resolveMiuixVideoCardReturnContentAlpha(
-                sourceBounds = wideBounds,
                 morphProgress = 0f,
                 isReturning = false,
+                handoffWholeSourceCard = true,
             ),
             absoluteTolerance = 0.0001f,
         )
         assertEquals(
             0.5f,
             resolveMiuixVideoCardReturnContentAlpha(
-                sourceBounds = wideBounds,
-                morphProgress = 0.19f,
+                morphProgress = 0.275f,
                 isReturning = true,
+                handoffWholeSourceCard = true,
             ),
             absoluteTolerance = 0.0001f,
         )
         assertEquals(
             1f,
             resolveMiuixVideoCardReturnContentAlpha(
-                sourceBounds = wideBounds,
-                morphProgress = 0.32f,
+                morphProgress = 0.45f,
                 isReturning = true,
+                handoffWholeSourceCard = true,
             ),
             absoluteTolerance = 0.0001f,
         )
         assertEquals(
             0f,
             resolveMiuixVideoCardReturnContentAlpha(
-                sourceBounds = wideBounds,
-                morphProgress = 0.06f,
+                morphProgress = 0.10f,
                 isReturning = true,
+                handoffWholeSourceCard = true,
             ),
             absoluteTolerance = 0.0001f,
         )
     }
 
     @Test
-    fun verticalCardKeepsLiveDetailOpaqueDuringReturn() {
+    fun fullscreenStoryKeepsItsMediaOnlyContentOpaqueDuringReturn() {
         assertEquals(
             1f,
             resolveMiuixVideoCardReturnContentAlpha(
-                sourceBounds = Rect(0f, 0f, 180f, 280f),
                 morphProgress = 0.05f,
                 isReturning = true,
+                handoffWholeSourceCard = false,
             ),
             absoluteTolerance = 0.0001f,
         )

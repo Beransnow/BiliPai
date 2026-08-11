@@ -174,29 +174,55 @@ internal fun resolveVideoDetailReturnSessionLockedOwnership(
     )
 }
 
+internal data class VideoDetailReturnMediaFrame(
+    val coverAlpha: Float,
+    val playerAlpha: Float,
+)
+
+/**
+ * One ownership decision for the two media layers. The resident cover is drawn above TextureView;
+ * SurfaceView ownership uses the paired player-internal cover-only fallback. The outer navigation
+ * entry alpha is no longer responsible for hiding platform video surfaces.
+ */
+internal fun resolveVideoDetailReturnMediaFrame(
+    transitionProgress: Float,
+    isCommittedCardReturn: Boolean,
+    hasResidentCover: Boolean,
+    liveReturnMorph: Boolean = false,
+    isReturnGestureInProgress: Boolean = false,
+): VideoDetailReturnMediaFrame {
+    if (!hasResidentCover) {
+        return VideoDetailReturnMediaFrame(coverAlpha = 0f, playerAlpha = 1f)
+    }
+    val returnActive = isCommittedCardReturn || isReturnGestureInProgress
+    if (!returnActive) {
+        return VideoDetailReturnMediaFrame(coverAlpha = 0f, playerAlpha = 1f)
+    }
+    if (!liveReturnMorph) {
+        return VideoDetailReturnMediaFrame(coverAlpha = 1f, playerAlpha = 0f)
+    }
+    val coverTakeover = resolveVideoCardLiveReturnVisualHandoffAlpha(
+        morphDepthProgress = transitionProgress,
+    )
+    return VideoDetailReturnMediaFrame(
+        coverAlpha = coverTakeover,
+        playerAlpha = 1f - coverTakeover,
+    )
+}
+
 internal fun resolveVideoDetailReturnCoverAlpha(
     transitionProgress: Float,
     isCommittedCardReturn: Boolean,
     hasResidentCover: Boolean,
     liveReturnMorph: Boolean = false,
     keepLivePlayerForPredictiveBack: Boolean = false,
-): Float {
-    // Live morph：封面垫在播放器下（alpha=1），无帧时防黑；有视频帧时被上层盖住。
-    if (liveReturnMorph) {
-        return if (hasResidentCover) 1f else 0f
-    }
-    // 关闭实时画面：刻意 **不画封面、不画 player**，只保留壳上黑底块 morph，
-    // 降低 sharedBounds overlay 的解码/合成压力（用户期望的「整块黑色卡」）。
-    @Suppress("UNUSED_PARAMETER")
-    val ignoredProgress = transitionProgress
-    @Suppress("UNUSED_PARAMETER")
-    val ignoredCommitted = isCommittedCardReturn
-    @Suppress("UNUSED_PARAMETER")
-    val ignoredKeepLive = keepLivePlayerForPredictiveBack
-    @Suppress("UNUSED_PARAMETER")
-    val ignoredCover = hasResidentCover
-    return 0f
-}
+): Float = resolveVideoDetailReturnMediaFrame(
+    transitionProgress = transitionProgress,
+    isCommittedCardReturn = isCommittedCardReturn,
+    hasResidentCover = hasResidentCover,
+    liveReturnMorph = liveReturnMorph,
+    isReturnGestureInProgress = keepLivePlayerForPredictiveBack,
+).coverAlpha
 
 /**
  * 返回画面交接使用的唯一进度源。
@@ -222,36 +248,13 @@ internal fun resolveVideoDetailReturnPlayerAlpha(
     hasResidentCover: Boolean,
     liveReturnMorph: Boolean = false,
     keepLivePlayerForPredictiveBack: Boolean = false,
-): Float {
-    // 实时画面开 + 预测返回：player 保持满不透明（视频帧在上）。
-    if (keepLivePlayerForPredictiveBack) return 1f
-    if (liveReturnMorph) {
-        if (!hasResidentCover) return 1f
-        return 1f - resolveVideoDetailLiveReturnLandingHandoffAlpha(
-            transitionProgress = transitionProgress,
-            isCommittedCardReturn = isCommittedCardReturn,
-        )
-    }
-    // 关闭实时画面：离开详情后隐藏 player，只留黑底壳 morph（低渲染压力）。
-    val progress = transitionProgress.coerceIn(0f, 1f)
-    if (isCommittedCardReturn) return 0f
-    // progress≈1 仍在详情：正常播；一离开（progress 下降）即关 player。
-    return if (progress < 0.999f) 0f else 1f
-}
-
-/**
- * live morph 保持实时画面缩回；仅已提交返回的最后一小段，与驻留封面交叉淡化。
- * 两层仍读同一个 shared transition progress，取消或预测返回不会产生独立补间。
- */
-private fun resolveVideoDetailLiveReturnLandingHandoffAlpha(
-    transitionProgress: Float,
-    isCommittedCardReturn: Boolean,
-): Float {
-    if (!isCommittedCardReturn) return 0f
-    return resolveVideoCardLiveReturnVisualHandoffAlpha(
-        morphDepthProgress = transitionProgress,
-    )
-}
+): Float = resolveVideoDetailReturnMediaFrame(
+    transitionProgress = transitionProgress,
+    isCommittedCardReturn = isCommittedCardReturn,
+    hasResidentCover = hasResidentCover,
+    liveReturnMorph = liveReturnMorph,
+    isReturnGestureInProgress = keepLivePlayerForPredictiveBack,
+).playerAlpha
 
 internal fun resolveVideoDetailReturnContentAlpha(
     transitionProgress: Float,
