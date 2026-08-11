@@ -27,7 +27,9 @@ class CommentOverlayNavigationBackHandlerStructureTest {
             "src/main/java/com/android/purebilibili/feature/video/ui/components/SubReplySheet.kt"
         ).readText()
 
+        assertTrue(mainSheetSource.contains("WindowNavigationEventBridge()"))
         assertTrue(mainSheetSource.contains("LocalNavigationBackHandler("))
+        assertTrue(subReplySource.contains("WindowNavigationEventBridge()"))
         assertTrue(subReplySource.contains("LocalNavigationBackHandler("))
     }
 }

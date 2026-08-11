@@ -64,6 +64,7 @@ import com.android.purebilibili.core.ui.rememberAppLikeIcon
 import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.core.ui.LocalNavigationBackHandler
 import com.android.purebilibili.core.ui.components.AppTextField
+import top.yukonga.miuix.kmp.nav.gesture.WindowNavigationEventBridge
 
 @Composable
 fun DynamicCommentOverlayHost(
@@ -186,6 +187,10 @@ fun DynamicCommentSheet(
         sheetState = sheetState,
         dragHandle = null
     ) {
+        // Material3 ModalBottomSheet owns a separate Dialog window. Forward that window's
+        // system-back stream into the MIUIX Navigation entry dispatcher before registering
+        // the local sheet handler below.
+        WindowNavigationEventBridge()
         LocalNavigationBackHandler(
             enabled = true,
             onBackCompleted = onDismiss,
