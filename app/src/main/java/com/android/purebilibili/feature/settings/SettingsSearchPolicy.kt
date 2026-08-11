@@ -267,6 +267,8 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
             "上滑隐藏播放器",
             "暂停时缩小",
             "暂停评论缩小",
+            "缩小后自动暂停",
+            "自动暂停",
             "竖屏上滑进入全屏",
             "中部滑动切换全屏",
             "亮度",
@@ -427,10 +429,10 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
     ),
     SettingsSearchEntry(
         target = SettingsSearchTarget.REPLAY_ONBOARDING,
-        title = "重播新手引导",
-        subtitle = "了解应用功能",
+        title = "重看使用须知",
+        subtitle = "开源约定与官方渠道",
         section = "关于",
-        aliases = listOf("新手引导", "教程", "引导")
+        aliases = listOf("新手引导", "教程", "引导", "使用须知", "用户协议")
     ),
     SettingsSearchEntry(
         target = SettingsSearchTarget.TIPS,
@@ -576,7 +578,7 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
         title = "自动连播 / 双击点赞 / 双击跳转 / 弹幕屏蔽 / 字幕 / 笔记",
         subtitle = "交互",
         section = "播放设置",
-        aliases = listOf("自动连播", "自动播放下一个", "进入视频自动播放", "进入视频不要自动播放", "不要自动播放", "双击点赞", "双击跳转", "取消双击跳转", "关闭双击跳转", "双击快进", "双击后退", "快进秒数", "后退秒数", "关注点赞弹幕", "关注弹幕", "点赞弹幕", "三连弹幕", "弹幕屏蔽", "弹幕同步", "弹幕云同步", "同步弹幕设置", "弹幕设置同步", "网页版弹幕", "字幕", "自动启用字幕", "ai总结", "视频简介", "默认展开视频简介", "简介默认展开", "视频笔记", "显示视频笔记", "默认折叠视频笔记", "笔记折叠", "播放器缩小策略", "竖屏视频缩小", "竖屏评论区缩小", "评论上滑缩小播放器", "横屏视频缩小", "上滑隐藏播放器", "暂停时缩小", "暂停评论缩小", "点击视频直接播放"),
+        aliases = listOf("自动连播", "自动播放下一个", "进入视频自动播放", "进入视频不要自动播放", "不要自动播放", "双击点赞", "双击跳转", "取消双击跳转", "关闭双击跳转", "双击快进", "双击后退", "快进秒数", "后退秒数", "关注点赞弹幕", "关注弹幕", "点赞弹幕", "三连弹幕", "弹幕屏蔽", "弹幕同步", "弹幕云同步", "同步弹幕设置", "弹幕设置同步", "网页版弹幕", "字幕", "自动启用字幕", "ai总结", "视频简介", "默认展开视频简介", "简介默认展开", "视频笔记", "显示视频笔记", "默认折叠视频笔记", "笔记折叠", "播放器缩小策略", "竖屏视频缩小", "竖屏评论区缩小", "评论上滑缩小播放器", "横屏视频缩小", "上滑隐藏播放器", "暂停时缩小", "暂停评论缩小", "缩小后自动暂停", "自动暂停", "相关推荐暂停", "点击视频直接播放"),
         focusId = SettingsSearchFocusIds.PLAYBACK_INTERACTION
     ),
     SettingsSearchEntry(

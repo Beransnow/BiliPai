@@ -5769,6 +5769,8 @@ object SettingsManager {
     
     private val KEY_SWIPE_HIDE_PLAYER = booleanPreferencesKey("swipe_hide_player")
     private val KEY_PORTRAIT_PLAYER_COLLAPSE_MODE = intPreferencesKey("portrait_player_collapse_mode")
+    /** Auto-pause when the detail player is swipe-collapsed; default on. */
+    private val KEY_PAUSE_ON_PLAYER_COLLAPSE = booleanPreferencesKey("pause_on_player_collapse")
     private val KEY_PORTRAIT_SWIPE_TO_FULLSCREEN = booleanPreferencesKey("portrait_swipe_to_fullscreen")
     private val KEY_CENTER_SWIPE_TO_FULLSCREEN = booleanPreferencesKey("center_swipe_to_fullscreen")
     private val KEY_INLINE_SWIPE_SEEK_SECONDS = intPreferencesKey("inline_swipe_seek_seconds")
@@ -5852,6 +5854,18 @@ object SettingsManager {
         context.settingsDataStore.edit { preferences ->
             preferences[KEY_PORTRAIT_PLAYER_COLLAPSE_MODE] = mode.value
             preferences[KEY_SWIPE_HIDE_PLAYER] = mode != PortraitPlayerCollapseMode.OFF
+        }
+    }
+
+    // --- 播放器缩小后自动暂停（默认开启） ---
+    fun getPauseOnPlayerCollapseEnabled(context: Context): Flow<Boolean> =
+        context.settingsDataStore.data.map { preferences ->
+            preferences[KEY_PAUSE_ON_PLAYER_COLLAPSE] ?: true
+        }
+
+    suspend fun setPauseOnPlayerCollapseEnabled(context: Context, value: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_PAUSE_ON_PLAYER_COLLAPSE] = value
         }
     }
 
@@ -6751,6 +6765,7 @@ object SettingsManager {
             BooleanShareablePreferenceDefinition(KEY_DOUBLE_TAP_LIKE, SettingsShareSection.GESTURE),
             BooleanShareablePreferenceDefinition(KEY_SWIPE_HIDE_PLAYER, SettingsShareSection.GESTURE),
             IntShareablePreferenceDefinition(KEY_PORTRAIT_PLAYER_COLLAPSE_MODE, SettingsShareSection.GESTURE),
+            BooleanShareablePreferenceDefinition(KEY_PAUSE_ON_PLAYER_COLLAPSE, SettingsShareSection.GESTURE),
             BooleanShareablePreferenceDefinition(KEY_PORTRAIT_SWIPE_TO_FULLSCREEN, SettingsShareSection.GESTURE),
             BooleanShareablePreferenceDefinition(KEY_CENTER_SWIPE_TO_FULLSCREEN, SettingsShareSection.GESTURE),
             IntShareablePreferenceDefinition(KEY_INLINE_SWIPE_SEEK_SECONDS, SettingsShareSection.GESTURE),

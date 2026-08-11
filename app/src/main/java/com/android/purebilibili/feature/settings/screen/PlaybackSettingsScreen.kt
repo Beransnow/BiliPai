@@ -1707,6 +1707,28 @@ private fun PlaybackFullscreenGestureSettingsSection(
             }
         )
 
+        val pauseOnPlayerCollapseEnabled by com.android.purebilibili.core.store.SettingsManager
+            .getPauseOnPlayerCollapseEnabled(context)
+            .collectAsStateWithLifecycle(initialValue = true)
+        AppPreferenceDivider()
+        AppSwitchPreference(
+            icon = rememberSettingsSemanticIcon(SettingsIconRole.HEADER_COLLAPSE),
+            title = "缩小后自动暂停",
+            subtitle = if (pauseOnPlayerCollapseEnabled) {
+                "上滑缩小播放器浏览相关推荐时自动暂停，展开后若为自动暂停则恢复播放"
+            } else {
+                "关闭后缩小播放器时仍继续播放"
+            },
+            checked = pauseOnPlayerCollapseEnabled,
+            onCheckedChange = {
+                scope.launch {
+                    com.android.purebilibili.core.store.SettingsManager
+                        .setPauseOnPlayerCollapseEnabled(context, it)
+                }
+            },
+            iconTint = iOSTeal
+        )
+
         AppPreferenceDivider()
 	        AppSwitchPreference(
 	            icon = rememberSettingsSemanticIcon(SettingsIconRole.PORTRAIT_SWIPE_FULLSCREEN),
