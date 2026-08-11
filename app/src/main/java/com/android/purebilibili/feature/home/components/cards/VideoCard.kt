@@ -769,6 +769,11 @@ internal fun ElegantVideoCard(
                     danmakuText = secondaryStatText
                         ?: FormatUtils.formatStat(video.stat.danmaku.toLong()),
                     durationText = durationText,
+                    // Exact stationary list cover request (URL + key + Coil size).
+                    coverUrl = coverUrl,
+                    coverCacheKey = coverCacheKey,
+                    coverDecodeWidthPx = coverRequestSpec?.widthPx ?: 0,
+                    coverDecodeHeightPx = coverRequestSpec?.heightPx ?: 0,
                 ),
             )
         }
