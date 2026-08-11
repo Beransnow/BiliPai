@@ -88,20 +88,46 @@ class MainActivityAppCompatContractTest {
     }
 
     @Test
-    fun bilipaiMonet_shouldReuseTheColoredForegroundOnAndroid12AndAbove() {
-        listOf("mdpi", "hdpi", "xhdpi", "xxhdpi", "xxxhdpi").forEach { density ->
-            assertTrue(
-                !resourcePathExists("mipmap-$density-v31/ic_launcher_bilipai_monet_foreground.png"),
-                "Android 12+ should not replace the BiliPai Monet artwork with a separate gray hand-drawn foreground"
-            )
-        }
+    fun bilipaiMonet_shouldUseTheOfficialThemedAdaptiveIconContract() {
         listOf("", "_round").forEach { suffix ->
+            val adaptiveIcon = loadResourceText("mipmap-anydpi-v26/ic_launcher_bilipai_monet$suffix.xml")
             assertTrue(
-                loadResourceText("mipmap-anydpi-v31/ic_launcher_bilipai_monet$suffix.xml")
-                    .contains("@mipmap/ic_launcher_bilipai_monet_foreground"),
-                "BiliPai Monet$suffix should reuse the same colored foreground shown in icon settings"
+                adaptiveIcon.contains("<foreground android:drawable=\"@mipmap/ic_launcher_bilipai_monet_foreground\" />") &&
+                    adaptiveIcon.contains("<monochrome android:drawable=\"@mipmap/ic_launcher_bilipai_monet_foreground\" />"),
+                "BiliPai Monet$suffix should let the launcher tint the same clean logo used by its color icon"
+            )
+            assertTrue(
+                !resourcePathExists("mipmap-anydpi-v31/ic_launcher_bilipai_monet$suffix.xml"),
+                "BiliPai Monet$suffix should not replace the official monochrome path with an Android 12 override"
             )
         }
+        assertTrue(
+            !resourcePathExists("drawable-v31/ic_launcher_bilipai_monet_background.xml"),
+            "BiliPai Monet should not simulate themed icons by drawing private system accent resources"
+        )
+        assertTrue(
+            !loadResourceText("drawable/ic_launcher_bilipai_monet_background.xml").contains("system_accent") &&
+                !loadResourceText("drawable-night/ic_launcher_bilipai_monet_background.xml").contains("system_accent"),
+            "BiliPai Monet color fallbacks should remain deterministic when the launcher does not theme icons"
+        )
+
+        val rows = readPngRgbaRows(
+            loadResourceFile("mipmap-xxxhdpi/ic_launcher_bilipai_monet_foreground.png")
+        )
+        val width = rows.first().size / 4
+        val opaquePoints = buildList {
+            rows.forEachIndexed { y, row ->
+                for (x in 0 until width) {
+                    if (row[x * 4 + 3] != 0) add(x to y)
+                }
+            }
+        }
+        val artworkWidth = opaquePoints.maxOf { it.first } - opaquePoints.minOf { it.first } + 1
+        val artworkHeight = opaquePoints.maxOf { it.second } - opaquePoints.minOf { it.second } + 1
+        assertTrue(
+            artworkWidth in 192..264 && artworkHeight in 192..264,
+            "BiliPai Monet logo should remain inside Android's 48dp..66dp adaptive-icon safe zone"
+        )
     }
 
     @Test
