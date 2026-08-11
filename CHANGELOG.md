@@ -1,5 +1,33 @@
 # Changelog
 
+## v0.2.3-beta.3 (2026-08-12)
+
+更新日志(ChangeLog)
+
+[更改] 版本号 0.2.3-beta.3，versionCode 292
+[更改] 正式包 BiliPai-0.2.3-beta.3.apk，Dev 包 BiliPai-0.2.3-beta.3-dev.apk
+[更改] 基准 v0.2.3-beta.2，比较区间见 GitHub Compare
+[添加] 全量用户协议门禁（新老用户均需确认），默认「我不同意」退出应用
+[添加] 播放器折叠时自动暂停（默认开启，可在设置关闭）
+[添加] 竖屏「竖屏视频流」改为首页推荐取流，内容更丰富
+[添加] 竖屏 UP 半屏预览：打开时视频上缩、下拉跟手回位；半屏高度与缩放对齐官方比例
+[添加] 竖屏横屏片上下黑边动态模糊（「竖屏黑边动态模糊」，默认开启）
+[添加] 听视频播放器标题与强调色跟随主题色，提升对比度
+[修复] 最热评论有概率显示「暂无评论」：空成功 payload 增加 guest/identity/legacy 兜底，WBI -403 可回退
+[修复] 评论总数仍大于 0 时不再误报「暂无评论」
+[修复] 共享返回形变封面不全、假信息条与列表卡不一致：冻结真实信息行并补主题色信息底
+[修复] 折叠态播放器返回时展开视口，避免封面裁切
+[修复] 设置项尾部数值截断（统一最大宽度与两行）
+[修复] 空状态不再使用信封图标
+[修复] 竖屏切横屏时封面错用入口首个视频封面
+[修复] 竖屏全屏滑动与 UP 预览下拉关闭
+[更改] 预测返回 / Miuix 返回链路与源卡 chrome 落地持续打磨
+v0.2.3-beta.3
+
+格式规范见 [docs/wiki/CHANGELOG_GUIDE.md](docs/wiki/CHANGELOG_GUIDE.md)。社群：频道 [t.me/bilipai666](https://t.me/bilipai666) / 群 [t.me/bilipai888](https://t.me/bilipai888/1)。比较：[`0.2.3-beta.2...main`](https://github.com/jay3-yy/BiliPai/compare/0.2.3-beta.2...main)。
+
+---
+
 ## v0.2.3-beta.2 (2026-08-10)
 
 更新日志(ChangeLog)
