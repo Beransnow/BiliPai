@@ -2,6 +2,7 @@ package com.android.purebilibili.core.ui.transition
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.geometry.Rect
 
 /**
  * Miuix Nav card-morph state exposed to video-detail children.
@@ -15,6 +16,8 @@ internal data class MiuixVideoCardTransitionState(
     val enabled: Boolean = false,
     val progressProvider: () -> Float = { 1f },
     val isGestureInProgressProvider: () -> Boolean = { false },
+    /** 点击时冻结的整卡落点，供飞行详情壳内构造来源卡内容。 */
+    val sourceBoundsProvider: () -> Rect? = { null },
 )
 
 internal val LocalMiuixVideoCardTransitionState = compositionLocalOf {

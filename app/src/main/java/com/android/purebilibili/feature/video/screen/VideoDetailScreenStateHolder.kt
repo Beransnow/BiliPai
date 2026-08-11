@@ -3754,9 +3754,13 @@ internal fun VideoDetailScreenStateHolder(
                             }
                         }
 
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
+                        val miuixCardTransitionState =
+                            com.android.purebilibili.core.ui.transition
+                                .LocalMiuixVideoCardTransitionState.current
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            Box(
+                                modifier = Modifier
+                                .matchParentSize()
                                 .background(
                                     if (suppressPhoneDetailBodyForDirectPortrait) {
                                         Color.Black
@@ -3817,7 +3821,7 @@ internal fun VideoDetailScreenStateHolder(
                                 suppressPhoneDetailBodyForDirectPortrait &&
                                     uiState !is VideoPlaybackUiState.Error -> Unit
                                 // 仅无实时帧的封面回退允许卸载正文；LiveMorph 内容必须保持
-                                // composition，随飞行 shared-bounds 壳变换成来源卡文字。
+                                // composition，并在 Miuix 飞行 entry 内让位给来源卡文字。
                                 detachSecondaryContentForReturn &&
                                     uiState !is VideoPlaybackUiState.Error -> Unit
                                 uiState is VideoPlaybackUiState.Loading -> {
@@ -4043,6 +4047,23 @@ internal fun VideoDetailScreenStateHolder(
                                 }
                             }
                     }
+                        val sourceCardInfo = (uiState as? VideoPlaybackUiState.Success)?.info
+                        if (
+                            sourceCardInfo != null &&
+                            miuixCardTransitionState.enabled &&
+                            !suppressPhoneDetailBodyForDirectPortrait
+                        ) {
+                            VideoDetailReturnSourceCardChrome(
+                                info = sourceCardInfo,
+                                sourceBounds = miuixCardTransitionState.sourceBoundsProvider(),
+                                morphDepthProgressProvider =
+                                    miuixCardTransitionState.progressProvider,
+                                modifier = Modifier
+                                    .align(Alignment.TopStart)
+                                    .offset(y = -playerTopInset),
+                            )
+                        }
+                        }
                     }  // 📱 手机竖屏布局结束（Column）
                     }  // Box with nested scroll
                 }  // else shouldUseSplitLayout

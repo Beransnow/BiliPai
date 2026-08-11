@@ -67,8 +67,8 @@ private data class MiuixVideoCardClipShape(
     ): Outline {
         return Outline.Rounded(
             RoundRect(
-                // The flying entry remains a complete opaque card. Player → cover and detail
-                // chrome → source-card chrome are transformed inside this moving boundary.
+                // The flying entry remains a complete opaque card. Player → cover and the
+                // detail-owned source-card chrome are transformed inside this moving boundary.
                 rect = Rect(0f, 0f, size.width, size.height),
                 cornerRadius = CornerRadius(
                     x = radiusX.coerceIn(0f, size.width / 2f),
@@ -186,7 +186,8 @@ internal fun miuixVideoCardNavTransition(
                     translationY = bounds.top.coerceIn(-height, height) * (1f - morph)
                     // Geometry belongs to this one flying entry. Never reveal the retained card
                     // at its stationary list position by fading or clipping the navigation entry.
-                    // The source shared-bounds content is composited inside the moving card.
+                    // Source-card text is composed by the outgoing detail entry itself; the
+                    // retained list card is never lifted from its stationary page.
                     alpha = 1f
                     clip = morph < 0.999f
                     val clipRadii = resolveMiuixVideoCardClipRadii(

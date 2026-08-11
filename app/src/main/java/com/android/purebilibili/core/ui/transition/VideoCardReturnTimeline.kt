@@ -19,7 +19,7 @@ import com.android.purebilibili.core.ui.adaptive.MotionTier
  * 源卡 sharedBounds Enter 延后淡入比例（遗留字段）。
  *
  * **当前策略：始终 0 / 不延后整壳 Enter。**
- * 来源卡资源全程待命并由 sharedBounds 提升到飞行层；内部封面/文字在返回后半段
+ * 来源卡资源全程待命；Miuix 路径由飞行详情 entry 内的封面/文字在返回后半段
  * 分段接管。整壳 delayed fadeIn 会在 overlay 卸层瞬间造成二次叠化，是落位闪烁主因。
  */
 internal const val VIDEO_CARD_RETURN_SOURCE_ENTER_FADE_DELAY_RATIO = 0f
@@ -53,7 +53,7 @@ internal object VideoCardTransitionVisualTimeline {
  * Frozen source-page snapshot release progress during a Miuix return.
  *
  * This releases the stale depth snapshot so the live page and haze sources can refresh behind the
- * flying card. It does not own card content; cover/title/stat are carried by sharedBounds.
+ * flying card. It does not own card content; the Miuix flying detail entry owns cover/title/stat.
  */
 internal fun resolveVideoCardWholeSourceReturnAlpha(
     morphDepthProgress: Float,

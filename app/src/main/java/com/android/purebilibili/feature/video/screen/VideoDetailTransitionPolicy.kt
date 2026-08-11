@@ -60,7 +60,7 @@ internal fun shouldTreatVideoDetailCardReturnAsCommitted(
 }
 
 /**
- * 详情 → 来源卡片 sharedBounds：实时画面跟手缩小（一镜到底）。
+ * 详情 → 来源卡片 Miuix entry morph：实时画面跟手缩小（一镜到底）。
  * 实现收口到 [shouldUseVideoCardLiveReturnMorph]（[VideoCardReturnTimeline]）。
  */
 internal fun shouldUseLiveReturnMorph(
