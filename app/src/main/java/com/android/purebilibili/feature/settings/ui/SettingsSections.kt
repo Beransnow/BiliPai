@@ -1964,8 +1964,8 @@ fun AboutSection(
         SettingClickableItem(
             icon = replayOnboardingVisual.icon,
             iconPainter = replayOnboardingVisual.iconResId?.let { painterResource(id = it) },
-            title = "重播新手引导",
-            value = "了解应用功能",
+            title = "重看使用须知",
+            value = "开源约定与官方渠道",
             onClick = onReplayOnboardingClick,
             iconTint = replayOnboardingVisual.iconTint
         )
