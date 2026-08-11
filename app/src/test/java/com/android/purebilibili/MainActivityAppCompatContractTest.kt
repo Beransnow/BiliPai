@@ -296,11 +296,48 @@ class MainActivityAppCompatContractTest {
 
         listOf(
             "ic_launcher_blue_snow_maid_monochrome.png",
+            "ic_launcher_blue_snow_maid_announcement_monochrome.png",
             "ic_launcher_blue_snow_maid_front_monochrome.png"
         ).forEach { fileName ->
             val rows = readPngRgbaRows(loadResourceFile("mipmap-xxxhdpi/$fileName"))
             val centerAlpha = rows[rows.size / 2][rows.first().size / 2 + 3]
-            assertTrue(centerAlpha == 0, "$fileName should keep facial negative space instead of becoming a solid block")
+            assertTrue(
+                centerAlpha >= 240,
+                "$fileName should keep the face in positive space so themed icons do not render a dark facial mask"
+            )
+        }
+
+        val sideMaidRows = readPngRgbaRows(
+            loadResourceFile("mipmap-xxxhdpi/ic_launcher_blue_snow_maid_monochrome.png")
+        )
+        fun negativeEyeArea(centerX: Int, centerY: Int): Int =
+            (centerY - 16..centerY + 16).sumOf { y ->
+                (centerX - 12..centerX + 12).count { x ->
+                    sideMaidRows[y][x * 4 + 3] < 128
+                }
+            }
+        assertTrue(
+            negativeEyeArea(centerX = 214, centerY = 198) ==
+                negativeEyeArea(centerX = 258, centerY = 213),
+            "The tilted maid themed icon should keep both eye cutouts equal along the facial axis"
+        )
+
+        listOf(
+            "mipmap-anydpi-v26/ic_launcher_blue_snow_maid_announcement.xml",
+            "mipmap-anydpi-v26/ic_launcher_blue_snow_maid_announcement_round.xml",
+            "mipmap-anydpi-v26/ic_launcher_blue_snow_maid_announcement_light.xml",
+            "mipmap-anydpi-v26/ic_launcher_blue_snow_maid_announcement_light_round.xml",
+            "mipmap-anydpi-v26/ic_launcher_blue_snow_maid_announcement_dark.xml",
+            "mipmap-anydpi-v26/ic_launcher_blue_snow_maid_announcement_dark_round.xml",
+            "mipmap-night-anydpi-v26/ic_launcher_blue_snow_maid_announcement.xml",
+            "mipmap-night-anydpi-v26/ic_launcher_blue_snow_maid_announcement_round.xml"
+        ).forEach { resourcePath ->
+            assertTrue(
+                loadResourceText(resourcePath).contains(
+                    "<monochrome android:drawable=\"@mipmap/ic_launcher_blue_snow_maid_announcement_monochrome\" />"
+                ),
+                "$resourcePath should expose the announcement-specific Android themed icon"
+            )
         }
     }
 
