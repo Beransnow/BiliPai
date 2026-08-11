@@ -88,7 +88,69 @@ class MainActivityAppCompatContractTest {
     }
 
     @Test
+    fun bilipaiWhiteIcon_shouldUseCenteredFlatGeneratedArtwork() {
+        val background = loadResourceText("drawable/ic_launcher_bilipai_white_background.xml")
+        assertTrue(
+            background.contains("android:fillColor=\"#FFFFFFFF\"") &&
+                !background.contains("<gradient") &&
+                !background.contains("#161C5C75"),
+            "BiliPai white adaptive background should remain flat white without the retired glossy haze"
+        )
+
+        val rows = readPngRgbaRows(
+            loadResourceFile("mipmap-xxxhdpi/ic_launcher_bilipai_white_foreground.png")
+        )
+        val imageWidth = rows.first().size / 4
+        val opaquePoints = buildList {
+            rows.forEachIndexed { y, row ->
+                for (x in 0 until imageWidth) {
+                    if (row[x * 4 + 3] >= 128) add(x to y)
+                }
+            }
+        }
+        val minX = opaquePoints.minOf { it.first }
+        val maxX = opaquePoints.maxOf { it.first }
+        val minY = opaquePoints.minOf { it.second }
+        val maxY = opaquePoints.maxOf { it.second }
+        val artworkWidthRatio = (maxX - minX + 1).toFloat() / imageWidth
+        val artworkHeightRatio = (maxY - minY + 1).toFloat() / rows.size
+        val artworkCenterX = (minX + maxX) / 2f
+        val artworkCenterY = (minY + maxY) / 2f
+        val canvasCenter = (imageWidth - 1) / 2f
+
+        assertTrue(
+            artworkWidthRatio in 0.64f..0.67f && artworkHeightRatio in 0.57f..0.60f,
+            "BiliPai white TV and wordmark should stay large enough to read at launcher size"
+        )
+        assertTrue(
+            artworkCenterX == canvasCenter && artworkCenterY == canvasCenter,
+            "BiliPai white TV and wordmark should remain exactly centered in the adaptive foreground"
+        )
+    }
+
+    @Test
     fun bilipaiMonet_shouldUseTheOfficialThemedAdaptiveIconContract() {
+        listOf(
+            "ic_launcher_bilipai",
+            "ic_launcher_bilipai_round",
+            "ic_launcher_bilipai_pink",
+            "ic_launcher_bilipai_pink_round",
+            "ic_launcher_bilipai_white",
+            "ic_launcher_bilipai_white_round"
+        ).forEach { iconName ->
+            val adaptiveIcon = loadResourceText("mipmap-anydpi-v26/$iconName.xml")
+            assertTrue(
+                adaptiveIcon.contains(
+                    "<monochrome android:drawable=\"@mipmap/ic_launcher_bilipai_monet_foreground\" />"
+                ),
+                "$iconName should derive its themed icon from the real BiliPai logo, not a hand-drawn substitute"
+            )
+        }
+        assertTrue(
+            !resourcePathExists("drawable/ic_launcher_bilipai_monochrome.xml"),
+            "The retired hand-drawn TV/play monochrome icon should not remain packaged"
+        )
+
         listOf("", "_round").forEach { suffix ->
             val adaptiveIcon = loadResourceText("mipmap-anydpi-v26/ic_launcher_bilipai_monet$suffix.xml")
             assertTrue(
