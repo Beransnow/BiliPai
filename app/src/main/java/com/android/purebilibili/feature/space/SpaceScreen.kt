@@ -3038,6 +3038,11 @@ private fun SpaceHomeVideoCard(
                             viewText = FormatUtils.formatStat(video.play.toLong()),
                             danmakuText = FormatUtils.formatStat(video.comment.toLong()),
                             durationText = video.length,
+                            infoPresentation = com.android.purebilibili.core.ui.transition
+                                .resolveVideoCardSourceInfoPresentation(
+                                    publishTimeText = "",
+                                    showStatsInInfo = true,
+                                ),
                             coverUrl = stationaryCoverUrl,
                             coverCacheKey = stationaryCoverUrl,
                         ),
@@ -3209,6 +3214,11 @@ private fun SpaceAggregateMediaCard(
                             viewText = FormatUtils.formatStat(item.play.toLong()),
                             danmakuText = FormatUtils.formatStat(item.danmaku.toLong()),
                             durationText = item.length,
+                            infoPresentation = com.android.purebilibili.core.ui.transition
+                                .resolveVideoCardSourceInfoPresentation(
+                                    publishTimeText = "",
+                                    showStatsInInfo = true,
+                                ),
                             coverUrl = stationaryCoverUrl,
                             coverCacheKey = stationaryCoverUrl,
                         ),
@@ -3380,6 +3390,11 @@ private fun SpaceTopVideoCard(
                             viewText = FormatUtils.formatStat(video.stat.view),
                             danmakuText = FormatUtils.formatStat(video.stat.danmaku),
                             durationText = FormatUtils.formatDuration(video.duration),
+                            infoPresentation = com.android.purebilibili.core.ui.transition
+                                .resolveVideoCardSourceInfoPresentation(
+                                    publishTimeText = "",
+                                    showStatsInInfo = true,
+                                ),
                             coverUrl = stationaryCoverUrl,
                             coverCacheKey = stationaryCoverUrl,
                         ),
@@ -3579,6 +3594,11 @@ private fun SpaceArchiveListItemRow(
                             viewText = FormatUtils.formatStat(play),
                             danmakuText = FormatUtils.formatStat(secondaryCount),
                             durationText = duration,
+                            infoPresentation = com.android.purebilibili.core.ui.transition
+                                .resolveVideoCardSourceInfoPresentation(
+                                    publishTimeText = "",
+                                    showStatsInInfo = true,
+                                ),
                             coverUrl = stationaryCoverUrl,
                             coverCacheKey = stationaryCoverUrl,
                         ),

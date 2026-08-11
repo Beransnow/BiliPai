@@ -412,6 +412,16 @@ internal fun shouldExpandPlayerViewportForSharedReturn(
 }
 
 /**
+ * 是否在飞行详情壳内绘制信息区。
+ *
+ * **必须为 true**：sharedBounds 飞行层盖在列表之上，列表真卡即使 alpha=1 也看不见；
+ * 信息区只能画在飞行壳上。列表真卡在 morph 结束后再露（cover/chrome stationary reveal）。
+ *
+ * 文案来自点击时冻结的 [VideoCardSourceChromeSnapshot] + 详情 ViewInfo，尽量与列表卡一致。
+ */
+internal fun shouldDrawFlyingReturnSourceCardChrome(): Boolean = true
+
+/**
  * 布局用折叠进度：返回 morph 中强制 0（展开），其余沿用手势/评论折叠进度。
  */
 internal fun resolvePlayerCollapseProgressForLayout(

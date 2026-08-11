@@ -217,6 +217,12 @@ fun RelatedVideoItem(
                         danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
                         durationText = FormatUtils.formatDuration(video.duration),
                         followed = isFollowed,
+                        // Related horizontal card keeps play/danmaku in the info column.
+                        infoPresentation = com.android.purebilibili.core.ui.transition
+                            .resolveVideoCardSourceInfoPresentation(
+                                publishTimeText = "",
+                                showStatsInInfo = true,
+                            ),
                         coverUrl = stationaryCoverUrl,
                         coverCacheKey = stationaryCoverUrl,
                     ),

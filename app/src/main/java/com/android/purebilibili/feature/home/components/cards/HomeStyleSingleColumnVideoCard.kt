@@ -158,6 +158,12 @@ internal fun HomeStyleSingleColumnVideoCard(
                     danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
                     durationText = FormatUtils.formatDuration(video.duration),
                     followed = isFollowing,
+                    // Single-column paints play/danmaku in the info column (not on cover only).
+                    infoPresentation = com.android.purebilibili.core.ui.transition
+                        .resolveVideoCardSourceInfoPresentation(
+                            publishTimeText = "",
+                            showStatsInInfo = true,
+                        ),
                     coverUrl = stationaryCoverUrl,
                     coverCacheKey = stationaryCoverUrl,
                 ),

@@ -209,6 +209,12 @@ fun GlassVideoCard(
                     viewText = FormatUtils.formatStat(video.stat.view.toLong()),
                     danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
                     durationText = FormatUtils.formatDuration(video.duration),
+                    // Glass card paints play/danmaku on cover; info is title/UP style.
+                    infoPresentation = com.android.purebilibili.core.ui.transition
+                        .resolveVideoCardSourceInfoPresentation(
+                            publishTimeText = "",
+                            showStatsInInfo = false,
+                        ),
                     coverUrl = coverUrl,
                     coverCacheKey = coverCacheKey,
                 ),

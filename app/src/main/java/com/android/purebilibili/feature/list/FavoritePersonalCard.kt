@@ -122,6 +122,11 @@ internal fun FavoritePersonalCard(
                         viewText = FormatUtils.formatStat(item.stat.view.toLong()),
                         danmakuText = FormatUtils.formatStat(item.stat.danmaku.toLong()),
                         durationText = FormatUtils.formatDuration(item.duration),
+                        infoPresentation = com.android.purebilibili.core.ui.transition
+                            .resolveVideoCardSourceInfoPresentation(
+                                publishTimeText = "",
+                                showStatsInInfo = true,
+                            ),
                         coverUrl = stationaryCoverUrl,
                         coverCacheKey = stationaryCoverUrl,
                     ),

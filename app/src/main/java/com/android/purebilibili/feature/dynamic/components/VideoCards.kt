@@ -122,6 +122,11 @@ fun VideoCardLarge(
                     viewText = archive.stat.play,
                     danmakuText = archive.stat.danmaku,
                     durationText = archive.duration_text,
+                    infoPresentation = com.android.purebilibili.core.ui.transition
+                        .resolveVideoCardSourceInfoPresentation(
+                            publishTimeText = "",
+                            showStatsInInfo = true,
+                        ),
                     coverUrl = coverUrl,
                     coverCacheKey = coverUrl,
                 ),

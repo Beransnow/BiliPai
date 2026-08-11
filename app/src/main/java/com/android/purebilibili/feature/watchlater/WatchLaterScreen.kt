@@ -1243,6 +1243,11 @@ private fun WatchLaterVideoCard(
                         viewText = formatNumber(item.stat.view),
                         danmakuText = formatNumber(item.stat.danmaku),
                         durationText = formatDuration(item.duration),
+                        infoPresentation = com.android.purebilibili.core.ui.transition
+                            .resolveVideoCardSourceInfoPresentation(
+                                publishTimeText = "",
+                                showStatsInInfo = true,
+                            ),
                         coverUrl = stationaryCoverUrl,
                         coverCacheKey = stationaryCoverUrl,
                     ),

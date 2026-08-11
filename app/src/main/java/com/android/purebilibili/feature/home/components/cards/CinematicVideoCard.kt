@@ -186,6 +186,11 @@ fun CinematicVideoCard(
                     viewText = FormatUtils.formatStat(video.stat.view.toLong()),
                     danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
                     durationText = FormatUtils.formatDuration(video.duration),
+                    infoPresentation = com.android.purebilibili.core.ui.transition
+                        .resolveVideoCardSourceInfoPresentation(
+                            publishTimeText = "",
+                            showStatsInInfo = false,
+                        ),
                     coverUrl = coverUrl,
                     coverCacheKey = coverCacheKey,
                 ),

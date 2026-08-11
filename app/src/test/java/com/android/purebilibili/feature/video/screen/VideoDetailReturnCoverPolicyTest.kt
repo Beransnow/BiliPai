@@ -11,6 +11,11 @@ import java.io.File
 class VideoDetailReturnCoverPolicyTest {
 
     @Test
+    fun flyingReturnSourceCardChromeMustDrawBecauseOverlayCoversList() {
+        assertTrue(shouldDrawFlyingReturnSourceCardChrome())
+    }
+
+    @Test
     fun expandPlayerViewportForSharedReturn_whenExitOrGesture() {
         assertTrue(
             shouldExpandPlayerViewportForSharedReturn(

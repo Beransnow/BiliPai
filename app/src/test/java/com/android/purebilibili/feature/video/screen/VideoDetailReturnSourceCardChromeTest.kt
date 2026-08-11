@@ -1,9 +1,14 @@
 package com.android.purebilibili.feature.video.screen
 
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
+import com.android.purebilibili.core.ui.transition.VideoCardSourceInfoPresentation
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSourceChromeVisualFrame
+import com.android.purebilibili.data.model.response.Owner
+import com.android.purebilibili.data.model.response.Stat
+import com.android.purebilibili.data.model.response.ViewInfo
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -205,6 +210,82 @@ class VideoDetailReturnSourceCardChromeTest {
     }
 
     @Test
+    fun infoSurfaceSpecMirrorsTintedHomePlateWhenFlagged() {
+        val plain = resolveVideoDetailReturnInfoSurfaceSpec(
+            useTintedInfoSurface = false,
+            isDarkTheme = true,
+            baseContainerColor = Color(0xFF1C1B1F),
+        )
+        assertFalse(plain.useTintedSurface)
+
+        val tinted = resolveVideoDetailReturnInfoSurfaceSpec(
+            useTintedInfoSurface = true,
+            isDarkTheme = true,
+            baseContainerColor = Color(0xFF1C1B1F),
+        )
+        assertTrue(tinted.useTintedSurface)
+        assertTrue(tinted.containerColor.alpha < 1f)
+        assertTrue(tinted.borderWidth.value > 0f)
+    }
+
+    @Test
+    fun infoSecondaryLineFollowsFrozenListPresentation() {
+        val homeLike = VideoDetailReturnSourceCardChromeModel(
+            title = "t",
+            ownerName = "up",
+            viewText = "1.2万",
+            danmakuText = "300",
+            followed = true,
+            infoPresentation = VideoCardSourceInfoPresentation(
+                publishTimeText = "发布于 昨天",
+                showStatsInInfo = false,
+            ),
+        )
+        assertEquals("发布于 昨天", resolveVideoDetailReturnInfoSecondaryLine(homeLike))
+        assertFalse(resolveVideoDetailReturnInfoSecondaryLine(homeLike).contains("弹幕"))
+
+        val withStats = homeLike.copy(
+            infoPresentation = VideoCardSourceInfoPresentation(
+                publishTimeText = "发布于 昨天",
+                showStatsInInfo = true,
+            ),
+        )
+        val statsLine = resolveVideoDetailReturnInfoSecondaryLine(withStats)
+        assertTrue(statsLine.contains("播放"))
+        assertTrue(statsLine.contains("弹幕"))
+        assertFalse(statsLine.contains("发布于"))
+    }
+
+    @Test
+    fun chromeModelPrefersClickSnapshotPresentationOverDetailStats() {
+        val snapshot = VideoCardSourceChromeSnapshot(
+            title = "list-title",
+            ownerName = "list-up",
+            viewText = "9.9万",
+            danmakuText = "888",
+            durationText = "10:00",
+            followed = true,
+            infoPresentation = VideoCardSourceInfoPresentation(
+                publishTimeText = "发布于 2026-07-30",
+                showStatsInInfo = false,
+            ),
+        )
+        val info = ViewInfo(
+            title = "detail-title",
+            owner = Owner(name = "detail-up"),
+            stat = Stat(view = 1, danmaku = 2),
+            pubdate = 1_700_000_000L,
+        )
+        val model = resolveVideoDetailReturnSourceCardChromeModel(info = info, snapshot = snapshot)
+        assertNotNull(model)
+        assertEquals("list-title", model!!.title)
+        assertEquals("list-up", model.ownerName)
+        assertTrue(model.followed)
+        assertFalse(model.infoPresentation.showStatsInInfo)
+        assertEquals("发布于 2026-07-30", resolveVideoDetailReturnInfoSecondaryLine(model))
+    }
+
+    @Test
     fun chromeModelPrefersLiveDetailThenFallsBackToClickSnapshot() {
         val snapshot = VideoCardSourceChromeSnapshot(
             title = "snap-title",
@@ -229,26 +310,16 @@ class VideoDetailReturnSourceCardChromeTest {
     }
 
     @Test
-    fun sourceChromeIsHostedOnFullViewportEntryNotUnderPlayerColumn() {
+    fun flyingReturnChromeIsDrawnOnOverlayBecauseListIsCovered() {
         val holder = File(
             "app/src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreenStateHolder.kt",
         ).takeIf { it.isFile }?.readText()
             ?: File(
                 "src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreenStateHolder.kt",
             ).readText()
-        val chromeCall = holder
-            .substringAfter("VideoDetailReturnSourceCardChrome(")
-            .substringBefore("Full-viewport source-card chrome host")
-        assertTrue(holder.contains("手机竖屏布局结束（Column）"))
-        assertTrue(holder.contains("Full-viewport source-card chrome host (phone + tablet)"))
-        val phoneBranchEnd = holder.indexOf("phone portrait branch of useTabletLayout")
-        val chromeStart = holder.indexOf("VideoDetailReturnSourceCardChrome(")
-        assertTrue(phoneBranchEnd in 1 until chromeStart)
-        assertTrue(chromeCall.contains("align(Alignment.TopStart)"))
-        assertTrue(chromeCall.contains("sourceLayout = miuixCardTransitionState.sourceLayout"))
-        assertTrue(chromeCall.contains("sourceChromeSnapshot = miuixCardTransitionState.sourceChromeSnapshot"))
-        assertTrue(holder.contains("sourceChromeSnapshot != null"))
-        // Whole-card shell behind player + real media remeasurement for a pixel-stable handoff.
+        assertTrue(holder.contains("shouldDrawFlyingReturnSourceCardChrome()"))
+        assertTrue(shouldDrawFlyingReturnSourceCardChrome())
+        assertTrue(holder.contains("VideoDetailReturnSourceCardChrome("))
         assertTrue(holder.contains("returnMediaHandoffProgressProvider"))
         assertTrue(holder.contains(".videoDetailReturnMediaLayout("))
     }

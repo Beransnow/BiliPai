@@ -1,32 +1,41 @@
 package com.android.purebilibili.feature.video.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.MediaContrastPalette
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.feedContentTypography
 import com.android.purebilibili.core.ui.transition.LocalMiuixVideoCardTransitionState
@@ -37,6 +46,7 @@ import com.android.purebilibili.core.ui.transition.resolveVideoCardSourceChromeV
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSourceLayout
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.ViewInfo
+import com.android.purebilibili.feature.home.resolveHomeCardInfoSurfaceAppearance
 import kotlin.math.roundToInt
 
 /**
@@ -90,34 +100,115 @@ internal data class VideoDetailReturnSourceCardLayout(
 internal data class VideoDetailReturnSourceCardChromeModel(
     val title: String,
     val ownerName: String,
-    val viewText: String,
-    val danmakuText: String,
+    val viewText: String = "",
+    val danmakuText: String = "",
     val durationText: String = "",
     val followed: Boolean = false,
+    /** Mirrors list-card info rows frozen at click; drives what LandingInfoTexts paints. */
+    val infoPresentation: com.android.purebilibili.core.ui.transition.VideoCardSourceInfoPresentation =
+        com.android.purebilibili.core.ui.transition.VideoCardSourceInfoPresentation(),
 )
 
+/**
+ * Prefer click-time [snapshot] for layout flags so home (title/UP/发布于) does not pick up
+ * detail ViewInfo stats that were only on the cover as badges.
+ */
 internal fun resolveVideoDetailReturnSourceCardChromeModel(
     info: ViewInfo?,
     snapshot: VideoCardSourceChromeSnapshot?,
 ): VideoDetailReturnSourceCardChromeModel? {
-    if (info != null) {
+    val frozen = snapshot
+    if (frozen != null) {
         return VideoDetailReturnSourceCardChromeModel(
-            title = info.title,
-            ownerName = info.owner.name,
-            viewText = FormatUtils.formatStat(info.stat.view.toLong()),
-            danmakuText = FormatUtils.formatStat(info.stat.danmaku.toLong()),
-            durationText = "",
-            followed = false,
+            title = frozen.title.ifBlank { info?.title.orEmpty() },
+            ownerName = frozen.ownerName.ifBlank { info?.owner?.name.orEmpty() },
+            viewText = frozen.viewText,
+            danmakuText = frozen.danmakuText,
+            durationText = frozen.durationText,
+            followed = frozen.followed,
+            infoPresentation = frozen.infoPresentation,
+        ).takeIf { it.title.isNotBlank() || it.ownerName.isNotBlank() }
+    }
+    if (info == null) return null
+    // No snapshot: conservative home-like info (title / UP / publish), no invented 弹幕 row.
+    val publish = if (info.pubdate > 0L) FormatUtils.formatPublishTime(info.pubdate) else ""
+    return VideoDetailReturnSourceCardChromeModel(
+        title = info.title,
+        ownerName = info.owner.name,
+        followed = false,
+        infoPresentation = com.android.purebilibili.core.ui.transition.VideoCardSourceInfoPresentation(
+            publishTimeText = publish,
+            showStatsInInfo = false,
+        ),
+    )
+}
+
+/** Build the tertiary info line exactly as the list card would. */
+internal fun resolveVideoDetailReturnInfoSecondaryLine(
+    model: VideoDetailReturnSourceCardChromeModel,
+): String {
+    val presentation = model.infoPresentation
+    if (presentation.showStatsInInfo) {
+        return buildString {
+            if (model.viewText.isNotBlank()) {
+                append(model.viewText)
+                if (!model.viewText.endsWith("播放")) append("播放")
+            }
+            if (model.danmakuText.isNotBlank()) {
+                if (isNotEmpty()) append("  ·  ")
+                append(model.danmakuText)
+                if (!model.danmakuText.endsWith("弹幕") && !model.danmakuText.endsWith("评论")) {
+                    append("弹幕")
+                }
+            }
+            if (model.durationText.isNotBlank()) {
+                if (isNotEmpty()) append("  ·  ")
+                append(model.durationText)
+            }
+        }
+    }
+    return presentation.publishTimeText
+}
+
+/**
+ * Landing info plate colors for the flying chrome.
+ *
+ * When the list froze [useTintedInfoSurface], reuse home info-surface alphas
+ * (without realtime haze/liquid — flying overlay has no wallpaper sample).
+ */
+internal data class VideoDetailReturnInfoSurfaceSpec(
+    val useTintedSurface: Boolean,
+    val containerColor: Color,
+    val borderColor: Color,
+    val borderWidth: Dp,
+)
+
+internal fun resolveVideoDetailReturnInfoSurfaceSpec(
+    useTintedInfoSurface: Boolean,
+    isDarkTheme: Boolean,
+    baseContainerColor: Color,
+): VideoDetailReturnInfoSurfaceSpec {
+    if (!useTintedInfoSurface) {
+        return VideoDetailReturnInfoSurfaceSpec(
+            useTintedSurface = false,
+            containerColor = baseContainerColor,
+            borderColor = Color.Transparent,
+            borderWidth = 0.dp,
         )
     }
-    val frozen = snapshot ?: return null
-    return VideoDetailReturnSourceCardChromeModel(
-        title = frozen.title,
-        ownerName = frozen.ownerName,
-        viewText = frozen.viewText,
-        danmakuText = frozen.danmakuText,
-        durationText = frozen.durationText,
-        followed = frozen.followed,
+    val appearance = resolveHomeCardInfoSurfaceAppearance(
+        wallpaperTintEnabled = true,
+        isDarkTheme = isDarkTheme,
+        isDataSaverActive = false,
+        hasWallpaperHazeState = false,
+        hasLayerBackdrop = false,
+        blurEnabled = true,
+    )
+    return VideoDetailReturnInfoSurfaceSpec(
+        useTintedSurface = true,
+        containerColor = baseContainerColor.copy(alpha = appearance.containerAlpha),
+        borderColor = MediaContrastPalette.Foreground.copy(alpha = appearance.borderAlpha),
+        borderWidth = AppSpacingTokens.Micro * 0.4f,
     )
 }
 
@@ -427,11 +518,46 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
         alpha = frame.alpha
     }
 
+    val isDarkTheme = AppSurfaceTokens.chromeBackground().luminance() < 0.5f
+    val baseContainer = AppSurfaceTokens.cardContainer()
+    val infoSurfaceSpec = remember(
+        model.infoPresentation.useTintedInfoSurface,
+        isDarkTheme,
+        baseContainer,
+    ) {
+        resolveVideoDetailReturnInfoSurfaceSpec(
+            useTintedInfoSurface = model.infoPresentation.useTintedInfoSurface,
+            isDarkTheme = isDarkTheme,
+            baseContainerColor = baseContainer,
+        )
+    }
+    // STACKED: bottom corners only (matches VideoCard info plate under cover).
+    val stackedInfoShape = RoundedCornerShape(
+        topStart = 0.dp,
+        topEnd = 0.dp,
+        bottomStart = AppSpacingTokens.Small,
+        bottomEnd = AppSpacingTokens.Small,
+    )
+    val sideInfoShape = RoundedCornerShape(AppSpacingTokens.Small)
+
+    fun Modifier.landingInfoSurface(shape: RoundedCornerShape): Modifier {
+        if (!infoSurfaceSpec.useTintedSurface) {
+            return this.background(infoSurfaceSpec.containerColor, shape)
+        }
+        return this
+            .clip(shape)
+            .background(color = infoSurfaceSpec.containerColor, shape = shape)
+            .border(
+                width = infoSurfaceSpec.borderWidth,
+                color = infoSurfaceSpec.borderColor,
+                shape = shape,
+            )
+    }
+
     when (layout.layout) {
         // Home whole-card contract; only info region placement differs:
         // STACKED = below cover, SIDE_BY_SIDE = right of cover.
-        // Live media owns the cover band; info sits on cardContainer (same as list card),
-        // never on the player’s pure-black AndroidView underlay.
+        // Live media owns the cover band; themed info plate mirrors list card.
         VideoCardSourceLayout.SIDE_BY_SIDE -> {
             Box(
                 modifier = modifier
@@ -441,12 +567,8 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
                     .width(cardWidth)
                     .height(cardHeight)
                     .landingLayer()
-                    .background(AppSurfaceTokens.cardContainer()),
+                    .background(baseContainer),
             )
-            // Right info band: same cardContainer + feed typography as
-            // HomeStyleSingleColumnVideoCard / home STACKED info, just on the right.
-            // Opaque surface is required — drawWithContent clips do not clip AndroidView,
-            // so without this fill the text sits on pure black player underlay.
             Box(
                 modifier = modifier
                     .zIndex(1f)
@@ -455,9 +577,8 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
                     .width(infoWidth)
                     .height(cardHeight)
                     .landingLayer()
-                    .background(AppSurfaceTokens.cardContainer())
+                    .landingInfoSurface(sideInfoShape)
                     .padding(
-                        // Matches HomeStyleSingleColumn Row: outer Small + cover↔text Medium.
                         start = AppSpacingTokens.Medium,
                         end = AppSpacingTokens.Small,
                         top = AppSpacingTokens.Small,
@@ -465,7 +586,6 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
                     ),
                 contentAlignment = Alignment.CenterStart,
             ) {
-                // Home single-column text column height tracks the cover, SpaceBetween.
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -477,6 +597,7 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
             }
         }
         VideoCardSourceLayout.STACKED -> {
+            // Transparent under cover; only info plate carries themed container (list card does too).
             Box(
                 modifier = modifier
                     .zIndex(-1f)
@@ -485,7 +606,7 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
                     .width(cardWidth)
                     .height(cardHeight)
                     .landingLayer()
-                    .background(AppSurfaceTokens.cardContainer()),
+                    .background(Color.Transparent),
             )
             Column(
                 modifier = modifier
@@ -495,6 +616,7 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
                     .width(infoWidth)
                     .height(infoHeight)
                     .landingLayer()
+                    .landingInfoSurface(stackedInfoShape)
                     .padding(
                         horizontal = AppSpacingTokens.Small + AppSpacingTokens.Micro,
                         vertical = AppSpacingTokens.Small,
@@ -515,9 +637,10 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
 @Composable
 private fun LandingInfoTexts(
     model: VideoDetailReturnSourceCardChromeModel,
-    info: ViewInfo?,
+    @Suppress("UNUSED_PARAMETER") info: ViewInfo?,
 ) {
     val contentTypography = feedContentTypography()
+    // Only paint rows the list card froze in [model.infoPresentation] — no invented 弹幕.
     AppText(
         text = model.title,
         modifier = Modifier.fillMaxWidth(),
@@ -527,37 +650,41 @@ private fun LandingInfoTexts(
         maxLines = 2,
         overflow = TextOverflow.Ellipsis,
     )
-    AppText(
-        text = buildString {
-            append(model.ownerName)
+    if (model.ownerName.isNotBlank() || model.followed) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
+        ) {
+            if (model.ownerName.isNotBlank()) {
+                AppText(
+                    text = model.ownerName,
+                    style = contentTypography.author,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+            }
             if (model.followed) {
-                append("  ·  已关注")
+                AppText(
+                    text = "已关注",
+                    style = contentTypography.coverBadge,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1,
+                )
             }
-        },
-        modifier = Modifier.fillMaxWidth(),
-        style = contentTypography.author,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
-    )
-    AppText(
-        text = buildString {
-            append(model.viewText)
-            append("播放  ·  ")
-            append(model.danmakuText)
-            append("弹幕")
-            if (model.durationText.isNotBlank()) {
-                append("  ·  ")
-                append(model.durationText)
-            } else if (info != null && info.pubdate > 0L) {
-                append("  ·  ")
-                append(FormatUtils.formatPublishTime(info.pubdate))
-            }
-        },
-        modifier = Modifier.fillMaxWidth(),
-        style = contentTypography.statistic,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
-    )
+        }
+    }
+    val secondaryLine = resolveVideoDetailReturnInfoSecondaryLine(model)
+    if (secondaryLine.isNotBlank()) {
+        AppText(
+            text = secondaryLine,
+            modifier = Modifier.fillMaxWidth(),
+            style = contentTypography.statistic,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
 }
