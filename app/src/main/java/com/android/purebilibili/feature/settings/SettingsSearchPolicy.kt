@@ -519,7 +519,16 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
         title = "动画与效果 / 触感反馈",
         subtitle = "页面动画、玻璃效果与触感反馈",
         section = "动画与效果",
-        aliases = listOf("动画与效果", "触感反馈", "动画设置", "页面动画", "玻璃效果"),
+        aliases = listOf(
+            "动画与效果",
+            "触感反馈",
+            "动画设置",
+            "页面动画",
+            "玻璃效果",
+            "Miuix 过渡模糊",
+            "miuix模糊",
+            "返回动画模糊",
+        ),
         focusId = SettingsSearchFocusIds.ANIMATION_VISUAL_EFFECTS
     ),
     SettingsSearchEntry(
@@ -575,7 +584,7 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
         title = "自动横竖屏 / 全屏方向 / 平板布局",
         subtitle = "交互",
         section = "播放设置",
-        aliases = listOf("自动横竖屏", "自动旋转", "全屏方向", "固定全屏比例", "全屏手势反向", "自动进入全屏", "自动退出全屏", "横屏适配", "平板评论区宽度", "评论区宽度", "评论折叠数量", "评论回复预览", "评论预览数量", "楼中楼", "评论楼中楼", "评论检测", "发评反诈", "评论发送检测", "评论装扮", "个性装扮", "评论区个性装扮", "图片长按保存", "长按保存图片", "查看图片保存", "播放页隐藏状态栏", "隐藏状态栏", "状态栏"),
+        aliases = listOf("自动横竖屏", "自动旋转", "全屏方向", "固定全屏比例", "全屏手势反向", "自动进入全屏", "自动退出全屏", "横屏适配", "平板评论区宽度", "评论区宽度", "评论折叠数量", "评论回复预览", "评论预览数量", "楼中楼", "评论楼中楼", "评论检测", "发评反诈", "评论发送检测", "评论装扮", "个性装扮", "评论区个性装扮", "图片长按保存", "长按保存图片", "查看图片保存", "播放页隐藏状态栏", "隐藏状态栏", "状态栏", "进度条峰值弹幕", "峰值弹幕", "弹幕热度曲线"),
         focusId = SettingsSearchFocusIds.PLAYBACK_FULLSCREEN
     ),
     SettingsSearchEntry(

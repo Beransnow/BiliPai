@@ -334,7 +334,7 @@ fun PlaybackSettingsContent(
                     val scope = rememberCoroutineScope()
                     AppPreferenceGroup {
 	                        AppSwitchPreference(
-	                            icon = rememberSettingsSemanticIcon(SettingsIconRole.PLAYBACK_SPEED),
+	                            icon = rememberSettingsSemanticIcon(SettingsIconRole.LONG_PRESS_SPEED_HINT),
                             title = "记忆上次播放速度",
                             subtitle = if (rememberLastPlaybackSpeed) {
                                 "新视频将优先使用你最后一次手动设置的速度"
@@ -1182,7 +1182,7 @@ private fun PlaybackInteractionSettingsSection(
         )
         AppPreferenceDivider()
 	        AppSwitchPreference(
-	            icon = rememberSettingsSemanticIcon(SettingsIconRole.PLAYBACK_SPEED),
+	            icon = rememberSettingsSemanticIcon(SettingsIconRole.RESUME_PLAYBACK_PROMPT),
             title = "续播弹窗提示",
             subtitle = if (resumePlaybackPromptEnabled) {
                 "检测到历史进度时仅提醒一次"
@@ -1233,7 +1233,7 @@ private fun PlaybackInteractionSettingsSection(
         )
         AppPreferenceDivider()
 	        AppSwitchPreference(
-	            icon = rememberSettingsSemanticIcon(SettingsIconRole.BACKGROUND_PLAYBACK),
+	            icon = rememberSettingsSemanticIcon(SettingsIconRole.PLAYLIST_AUTO_CONTINUE),
             title = "列表/收藏夹连续播放",
             subtitle = "控制收藏夹、稍后再看、合集等列表播放完后是否继续下一条",
             checked = externalPlaylistAutoContinueEnabled,
@@ -1680,7 +1680,7 @@ private fun PlaybackFullscreenGestureSettingsSection(
         )
         AppPreferenceDivider()
 	        AppSwitchPreference(
-	            icon = rememberSettingsSemanticIcon(SettingsIconRole.PIP_DANMAKU),
+	            icon = rememberSettingsSemanticIcon(SettingsIconRole.DANMAKU_CLOUD_SYNC),
             title = "同步弹幕设置到账号",
             subtitle = com.android.purebilibili.feature.video.danmaku
                 .resolveDanmakuCloudSyncToggleSubtitle(danmakuCloudSyncEnabled),
@@ -1728,7 +1728,7 @@ private fun PlaybackFullscreenGestureSettingsSection(
 
         AppPreferenceDivider()
         AppSwitchPreference(
-            icon = rememberSettingsSemanticIcon(SettingsIconRole.DISPLAY_STYLE),
+            icon = rememberSettingsSemanticIcon(SettingsIconRole.PORTRAIT_STORY_ENTRY),
             title = "竖屏视频直达刷视频模式",
             subtitle = if (directPortraitStoryEntry) {
                 "开启：任意入口点竖屏视频直接进竖滑全屏（可经卡片放大动画）；默认关闭时先进详情内联竖屏"
@@ -1747,7 +1747,7 @@ private fun PlaybackFullscreenGestureSettingsSection(
 
         AppPreferenceDivider()
         AppSwitchPreference(
-            icon = rememberSettingsSemanticIcon(SettingsIconRole.AUTO_PLAY_ON_OPEN),
+            icon = rememberSettingsSemanticIcon(SettingsIconRole.STARTUP_PORTRAIT_FEED),
             title = "启动时进入竖屏视频流",
             subtitle = if (launchToPortraitFeedOnStartup) {
                 "打开应用后直接进入竖屏刷视频流（独立于「直达」开关）"
@@ -1785,7 +1785,7 @@ private fun PlaybackFullscreenGestureSettingsSection(
 
         AppPreferenceDivider()
 	        AppSwitchPreference(
-	            icon = rememberSettingsSemanticIcon(SettingsIconRole.AUDIO_FOCUS),
+	            icon = rememberSettingsSemanticIcon(SettingsIconRole.SLIDE_VOLUME_BRIGHTNESS),
             title = "左右侧滑动调节亮度/音量",
             subtitle = if (slideVolumeBrightnessEnabled) {
                 "左侧上下滑调亮度，右侧上下滑调音量"
@@ -1926,6 +1926,9 @@ private fun PlaybackFullscreenGestureSettingsSection(
         val bottomProgressBehavior by com.android.purebilibili.core.store.SettingsManager
             .getBottomProgressBehavior(context)
             .collectAsStateWithLifecycle(initialValue = BottomProgressBehavior.ALWAYS_HIDE)
+        val progressPeakDanmakuEnabled by SettingsManager
+            .getProgressPeakDanmakuEnabled(context)
+            .collectAsStateWithLifecycle(initialValue = false)
         val playerControlVisibility by SettingsManager
             .getPlayerControlVisibilitySettings(context)
             .collectAsStateWithLifecycle(
@@ -2012,7 +2015,7 @@ private fun PlaybackFullscreenGestureSettingsSection(
         )
         AppPreferenceDivider()
         AppSwitchPreference(
-            icon = rememberSettingsSemanticIcon(SettingsIconRole.LIKE_INTERACTION),
+            icon = rememberSettingsSemanticIcon(SettingsIconRole.FOLLOW_BUTTON),
             title = "显示关注按钮",
             subtitle = "关闭后保留 UP 主头像、名称和主页入口",
             checked = playerControlVisibility.showFollowButton,
@@ -2311,6 +2314,23 @@ private fun PlaybackFullscreenGestureSettingsSection(
                         .setBottomProgressBehavior(context, behavior)
                 }
             }
+        )
+        AppPreferenceDivider()
+        AppSwitchPreference(
+            icon = rememberSettingsSemanticIcon(SettingsIconRole.PROGRESS_PEAK_DANMAKU),
+            title = "进度条峰值弹幕",
+            subtitle = if (progressPeakDanmakuEnabled) {
+                "在进度条上显示弹幕热度峰值曲线"
+            } else {
+                "关闭后不显示弹幕热度峰值曲线"
+            },
+            checked = progressPeakDanmakuEnabled,
+            onCheckedChange = { enabled ->
+                scope.launch {
+                    SettingsManager.setProgressPeakDanmakuEnabled(context, enabled)
+                }
+            },
+            iconTint = com.android.purebilibili.core.theme.iOSPurple,
         )
         AppPreferenceDivider()
         SettingsSingleChoicePreference(

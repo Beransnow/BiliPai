@@ -1006,6 +1006,10 @@ internal fun VideoDetailScreenStateHolder(
     // 📖 [新增] 监听视频章节数据
     val viewPoints by viewModel.viewPoints.collectAsStateWithLifecycle()
     val pbpProgressData by viewModel.pbpProgressData.collectAsStateWithLifecycle()
+    val progressPeakDanmakuEnabled by com.android.purebilibili.core.store.SettingsManager
+        .getProgressPeakDanmakuEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = false)
+    val visiblePbpProgressData = pbpProgressData.takeIf { progressPeakDanmakuEnabled }
     val sponsorProgressMarkers by viewModel.sponsorProgressMarkers.collectAsStateWithLifecycle()
 
     // [New] Codec & Audio Preferences
@@ -2682,7 +2686,7 @@ internal fun VideoDetailScreenStateHolder(
             sponsorContributionState = sponsorContributionState,
             sleepTimerMinutes = sleepTimerMinutes,
             viewPoints = viewPoints,
-            pbpProgressData = pbpProgressData,
+            pbpProgressData = visiblePbpProgressData,
             sponsorProgressMarkers = sponsorProgressMarkers,
             isVerticalVideo = isVerticalVideo &&
                 (allowStandalonePortraitExperience || useOfficialInlinePortraitDetailExperience),
@@ -2954,7 +2958,7 @@ internal fun VideoDetailScreenStateHolder(
 
                     // 📖 [新增] 视频章节数据
                         viewPoints = viewPoints,
-                        pbpProgressData = pbpProgressData,
+                        pbpProgressData = visiblePbpProgressData,
                         sponsorMarkers = sponsorProgressMarkers,
                         onUserSeek = { position -> viewModel.notifyPluginsOfExplicitSeek(position) },
                     // 📱 [新增] 竖屏全屏模式
@@ -3124,7 +3128,7 @@ internal fun VideoDetailScreenStateHolder(
                             sleepTimerMinutes = sleepTimerMinutes,
 
                             viewPoints = viewPoints,
-                            pbpProgressData = pbpProgressData,
+                            pbpProgressData = visiblePbpProgressData,
                             bvid = bvid,
                             coverUrl = coverUrl,
                             onBack = {
@@ -3774,7 +3778,7 @@ internal fun VideoDetailScreenStateHolder(
                                 sponsorContributionState = sponsorContributionState,
                                 sleepTimerMinutes = sleepTimerMinutes,
                                 viewPoints = viewPoints,
-                                pbpProgressData = pbpProgressData,
+                                pbpProgressData = visiblePbpProgressData,
                                 sponsorProgressMarkers = sponsorProgressMarkers,
                                 isVerticalVideo = isVerticalVideo && (allowStandalonePortraitExperience || useOfficialInlinePortraitDetailExperience),
                                 onPortraitFullscreen = {

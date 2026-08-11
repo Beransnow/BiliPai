@@ -835,6 +835,7 @@ data class AppNavigationSettings(
     val predictiveBackEnabled: Boolean = true,
     val predictiveBackAnimationStyle: String = "miuix",
     val predictiveBackExitDirection: String = "always_right",
+    val miuixTransitionBlurEnabled: Boolean = true,
 )
 
 internal data class BottomTabMigrationResult(
@@ -5806,6 +5807,8 @@ object SettingsManager {
         booleanPreferencesKey("quality_switch_failure_dialog_shown")
     private val KEY_SUBTITLE_AUTO_PREFERENCE = intPreferencesKey("subtitle_auto_preference")
     private val KEY_BOTTOM_PROGRESS_BEHAVIOR = intPreferencesKey("bottom_progress_behavior")
+    private val KEY_PROGRESS_PEAK_DANMAKU_ENABLED =
+        booleanPreferencesKey("progress_peak_danmaku_enabled")
     private val KEY_HORIZONTAL_ADAPTATION = booleanPreferencesKey("horizontal_adaptation_enabled")
     private val KEY_FULLSCREEN_MODE = intPreferencesKey("fullscreen_mode")
     private val KEY_FULLSCREEN_ASPECT_RATIO = intPreferencesKey("fullscreen_aspect_ratio")
@@ -6242,6 +6245,18 @@ object SettingsManager {
         }
     }
 
+    /** 进度条上的 PBP 弹幕峰值曲线，默认关闭。 */
+    fun getProgressPeakDanmakuEnabled(context: Context): Flow<Boolean> =
+        context.settingsDataStore.data.map { preferences ->
+            preferences[KEY_PROGRESS_PEAK_DANMAKU_ENABLED] ?: false
+        }
+
+    suspend fun setProgressPeakDanmakuEnabled(context: Context, enabled: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_PROGRESS_PEAK_DANMAKU_ENABLED] = enabled
+        }
+    }
+
     fun getHorizontalAdaptationEnabled(context: Context): Flow<Boolean> = context.settingsDataStore.data
         .map { preferences ->
             preferences[KEY_HORIZONTAL_ADAPTATION] ?: isTabletConfiguration(context)
@@ -6293,6 +6308,8 @@ object SettingsManager {
     private val KEY_PREDICTIVE_BACK_ENABLED = booleanPreferencesKey("predictive_back_enabled")
     private val KEY_PREDICTIVE_BACK_ANIMATION_STYLE = stringPreferencesKey("predictive_back_animation_style")
     private val KEY_PREDICTIVE_BACK_EXIT_DIRECTION = stringPreferencesKey("predictive_back_exit_direction")
+    private val KEY_MIUIX_TRANSITION_BLUR_ENABLED =
+        booleanPreferencesKey("miuix_transition_blur_enabled")
     
     /**
      *  平板导航模式
@@ -6332,6 +6349,7 @@ object SettingsManager {
             predictiveBackAnimationStyle = preferences[KEY_PREDICTIVE_BACK_ANIMATION_STYLE] ?: "miuix",
             predictiveBackExitDirection =
                 preferences[KEY_PREDICTIVE_BACK_EXIT_DIRECTION] ?: "always_right",
+            miuixTransitionBlurEnabled = preferences[KEY_MIUIX_TRANSITION_BLUR_ENABLED] ?: true,
         )
     }
 
@@ -6367,6 +6385,10 @@ object SettingsManager {
 
     suspend fun setPredictiveBackExitDirection(context: Context, direction: String) {
         NavigationSettingsStore.setPredictiveBackExitDirection(context, direction)
+    }
+
+    suspend fun setMiuixTransitionBlurEnabled(context: Context, enabled: Boolean) {
+        NavigationSettingsStore.setMiuixTransitionBlurEnabled(context, enabled)
     }
 
     fun getFullScreenSwipeBackEnabled(context: Context): Flow<Boolean> =
@@ -6639,6 +6661,10 @@ object SettingsManager {
                 KEY_VIDEO_TRANSITION_REALTIME_BLUR_ENABLED,
                 SettingsShareSection.APPEARANCE
             ),
+            BooleanShareablePreferenceDefinition(
+                KEY_MIUIX_TRANSITION_BLUR_ENABLED,
+                SettingsShareSection.APPEARANCE,
+            ),
             IntShareablePreferenceDefinition(KEY_VIDEO_SHARED_TRANSITION_SPEED, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(
                 KEY_VIDEO_SHARED_TRANSITION_CUSTOM_DURATION_MILLIS,
@@ -6693,6 +6719,10 @@ object SettingsManager {
             IntShareablePreferenceDefinition(KEY_FULLSCREEN_ASPECT_RATIO, SettingsShareSection.PLAYBACK),
             IntShareablePreferenceDefinition(KEY_SUBTITLE_AUTO_PREFERENCE, SettingsShareSection.PLAYBACK),
             IntShareablePreferenceDefinition(KEY_BOTTOM_PROGRESS_BEHAVIOR, SettingsShareSection.PLAYBACK),
+            BooleanShareablePreferenceDefinition(
+                KEY_PROGRESS_PEAK_DANMAKU_ENABLED,
+                SettingsShareSection.PLAYBACK,
+            ),
             BooleanShareablePreferenceDefinition(KEY_HORIZONTAL_ADAPTATION, SettingsShareSection.PLAYBACK),
             BooleanShareablePreferenceDefinition(KEY_HIDE_VIDEO_PAGE_STATUS_BAR, SettingsShareSection.PLAYBACK),
             IntShareablePreferenceDefinition(KEY_TABLET_COMMENT_PANEL_WIDTH_PRESET, SettingsShareSection.PLAYBACK),

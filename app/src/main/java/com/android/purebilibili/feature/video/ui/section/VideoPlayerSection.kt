@@ -680,6 +680,8 @@ fun VideoPlayerSection(
     val fullscreenSwipeSeekSeconds = playerInteractionSettings.fullscreenSwipeSeekSeconds
     val fullscreenSwipeSeekEnabled = playerInteractionSettings.fullscreenSwipeSeekEnabled
     val fullscreenGestureReverse = playerInteractionSettings.fullscreenGestureReverse
+    val latestOnToggleFullscreen by rememberUpdatedState(onToggleFullscreen)
+    val latestOnPortraitFullscreen by rememberUpdatedState(onPortraitFullscreen)
     val autoEnterFullscreenEnabled = playerInteractionSettings.autoEnterFullscreenEnabled
     val autoExitFullscreenEnabled = playerInteractionSettings.autoExitFullscreenEnabled
     val autoExitFullscreenMode = playerInteractionSettings.autoExitFullscreenMode
@@ -1714,6 +1716,7 @@ fun VideoPlayerSection(
                 isInPipMode,
                 isScreenLocked,
                 isFullscreen,
+                isVerticalVideo,
                 showControls,
                 portraitSwipeToFullscreenEnabled,
                 centerSwipeToFullscreenEnabled,
@@ -1722,6 +1725,7 @@ fun VideoPlayerSection(
                 gestureSensitivity,
                 inlineSwipeSeekSeconds,
                 fullscreenSwipeSeekSeconds,
+                fullscreenGestureReverse,
                 bottomGestureExclusionHeightDp,
                 gestureSeekFallbackDurationMs
             ) {
@@ -1813,7 +1817,7 @@ fun VideoPlayerSection(
                                 )
                                 return@detectDragGestures
                             }
-                            if (gestureMode == VideoGestureMode.Seek) {
+                            if (completedGestureMode == VideoGestureMode.Seek) {
                                 val currentPosition = playerState.player.currentPosition
                                 if (shouldCommitGestureSeek(
                                         currentPositionMs = currentPosition,
@@ -1836,7 +1840,7 @@ fun VideoPlayerSection(
                                 } else {
                                     sharedSeekSession = cancelPlaybackSeekInteraction(sharedSeekSession)
                                 }
-                            } else if (gestureMode == VideoGestureMode.SwipeToFullscreen) {
+                            } else if (completedGestureMode == VideoGestureMode.SwipeToFullscreen) {
                                 //  阈值判定：上滑超过一定距离触发全屏
                                 val swipeThreshold = 50.dp.toPx()
                                 if (
@@ -1847,7 +1851,16 @@ fun VideoPlayerSection(
                                         thresholdPx = swipeThreshold
                                     )
                                 ) {
-                                    onToggleFullscreen()
+                                    if (
+                                        shouldEnterPortraitFullscreenFromSwipe(
+                                            isFullscreen = isFullscreen,
+                                            isVerticalVideo = isVerticalVideo,
+                                        )
+                                    ) {
+                                        latestOnPortraitFullscreen()
+                                    } else {
+                                        latestOnToggleFullscreen()
+                                    }
                                     // 震动反馈 (可选)
                                     haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                                     com.android.purebilibili.core.util.Logger.d("VideoPlayerSection") {
