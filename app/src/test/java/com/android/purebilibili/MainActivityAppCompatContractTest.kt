@@ -380,14 +380,28 @@ class MainActivityAppCompatContractTest {
 
         val lightAdaptive = loadResourceText("mipmap-anydpi-v26/ic_launcher_blue_snow_maid_light.xml")
         val darkAdaptive = loadResourceText("mipmap-anydpi-v26/ic_launcher_blue_snow_maid_dark.xml")
-        val announcementLightAdaptive =
-            loadResourceText("mipmap-anydpi-v26/ic_launcher_blue_snow_maid_announcement_light.xml")
-        val announcementDarkAdaptive =
-            loadResourceText("mipmap-anydpi-v26/ic_launcher_blue_snow_maid_announcement_dark.xml")
         assertTrue(lightAdaptive.contains("@drawable/ic_launcher_blue_snow_maid_background_light"))
         assertTrue(darkAdaptive.contains("@drawable/ic_launcher_blue_snow_maid_background_dark"))
-        assertTrue(announcementLightAdaptive.contains("@drawable/ic_launcher_blue_snow_maid_background_light"))
-        assertTrue(announcementDarkAdaptive.contains("@drawable/ic_launcher_blue_snow_maid_background_dark"))
+        listOf(
+            "ic_launcher_blue_snow_maid_announcement_light.xml",
+            "ic_launcher_blue_snow_maid_announcement_light_round.xml"
+        ).forEach { fileName ->
+            assertTrue(
+                loadResourceText("mipmap-anydpi-v26/$fileName")
+                    .contains("@drawable/ic_launcher_blue_snow_maid_announcement_background"),
+                "$fileName should keep the announcement icon's white background"
+            )
+        }
+        listOf(
+            "ic_launcher_blue_snow_maid_announcement_dark.xml",
+            "ic_launcher_blue_snow_maid_announcement_dark_round.xml"
+        ).forEach { fileName ->
+            assertTrue(
+                loadResourceText("mipmap-anydpi-v26/$fileName")
+                    .contains("@drawable/ic_launcher_blue_snow_maid_announcement_background_dark"),
+                "$fileName should keep the announcement icon's black background"
+            )
+        }
         assertTrue(
             loadResourceText("drawable/splash_icon_blue_snow_maid_light.xml")
                 .contains("#FFFFFFFF")
