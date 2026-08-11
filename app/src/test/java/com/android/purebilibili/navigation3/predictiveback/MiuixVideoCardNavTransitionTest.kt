@@ -1,6 +1,7 @@
 package com.android.purebilibili.navigation3.predictiveback
 
 import androidx.compose.ui.graphics.TransformOrigin
+import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -74,5 +75,28 @@ class MiuixVideoCardNavTransitionTest {
         assertEquals(0.6f, 0.35f * compensation.scaleX, absoluteTolerance = 0.0001f)
         assertEquals(0.6f, 0.6f * compensation.scaleY, absoluteTolerance = 0.0001f)
         assertEquals(TransformOrigin.Center, compensation.transformOrigin)
+    }
+
+    @Test
+    fun sideBySideSourceUsesCropCenterInsteadOfFillWidthTop() {
+        assertEquals(
+            MiuixVideoCardContentScale.CropCenter,
+            resolveMiuixVideoCardContentScaleForSourceLayout(
+                sourceLayout = VideoCardSourceLayout.SIDE_BY_SIDE,
+            ),
+        )
+        assertEquals(
+            MiuixVideoCardContentScale.FillWidthTop,
+            resolveMiuixVideoCardContentScaleForSourceLayout(
+                sourceLayout = VideoCardSourceLayout.STACKED,
+            ),
+        )
+        assertEquals(
+            MiuixVideoCardContentScale.CropCenter,
+            resolveMiuixVideoCardContentScaleForSourceLayout(
+                sourceLayout = VideoCardSourceLayout.STACKED,
+                fullscreen = true,
+            ),
+        )
     }
 }

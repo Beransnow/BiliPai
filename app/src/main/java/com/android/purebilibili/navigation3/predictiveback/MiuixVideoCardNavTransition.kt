@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 import top.yukonga.miuix.kmp.nav.transition.NavMotion
 import top.yukonga.miuix.kmp.nav.transition.NavRole
 import top.yukonga.miuix.kmp.nav.transition.NavSettleSpec
@@ -20,8 +21,28 @@ import top.yukonga.miuix.kmp.nav.transition.NavTransition
 import top.yukonga.miuix.kmp.nav.transition.NavTransitionScope
 
 internal enum class MiuixVideoCardContentScale {
+    /** Home dual-column / stacked cards: media fills card width, pinned to top. */
     FillWidthTop,
+    /** Fullscreen, side-by-side, or square-ish morphs: cover scale about center. */
     CropCenter,
+}
+
+/**
+ * Pick entry content compensation from the frozen source layout.
+ * Side-by-side related/home single-column rows avoid FillWidthTop's vertical stretch
+ * (which reads as "whole page crushed into a thin strip").
+ */
+internal fun resolveMiuixVideoCardContentScaleForSourceLayout(
+    sourceLayout: VideoCardSourceLayout,
+    fullscreen: Boolean = false,
+): MiuixVideoCardContentScale {
+    if (fullscreen) return MiuixVideoCardContentScale.CropCenter
+    return when (sourceLayout) {
+        VideoCardSourceLayout.SIDE_BY_SIDE -> MiuixVideoCardContentScale.CropCenter
+        VideoCardSourceLayout.STACKED,
+        VideoCardSourceLayout.COVER_ONLY,
+        -> MiuixVideoCardContentScale.FillWidthTop
+    }
 }
 
 internal data class MiuixVideoCardContentCompensation(

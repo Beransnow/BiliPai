@@ -55,6 +55,7 @@ import com.android.purebilibili.navigation3.predictiveback.BiliPaiPredictiveBack
 import com.android.purebilibili.navigation3.predictiveback.biliPaiMiuixNavTransition
 import com.android.purebilibili.navigation3.predictiveback.miuixVideoCardNavTransition
 import com.android.purebilibili.navigation3.predictiveback.MiuixVideoCardContentScale
+import com.android.purebilibili.navigation3.predictiveback.resolveMiuixVideoCardContentScaleForSourceLayout
 import com.android.purebilibili.navigation3.predictiveback.MiuixVideoCardTransitionProgress
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -166,12 +167,17 @@ internal fun BiliPaiNavDisplayHost(
             ?.let { it.width > 1f && it.height > 1f } == true,
     )
     val videoCardTransitionProgress = remember { MiuixVideoCardTransitionProgress() }
+    val videoCardContentScale = resolveMiuixVideoCardContentScaleForSourceLayout(
+        sourceLayout = sourceMetadata.sourceLayout,
+        fullscreen = false,
+    )
     val videoCardTransition = remember(
         cardMorphAvailable,
         sourceMetadata.sourceBounds,
         sourceMetadata.sourceCornerDp,
         videoSharedTransitionDurationMillis,
         globalTransition,
+        videoCardContentScale,
     ) {
         if (cardMorphAvailable) {
             miuixVideoCardNavTransition(
@@ -180,7 +186,7 @@ internal fun BiliPaiNavDisplayHost(
                 durationMillis = videoSharedTransitionDurationMillis,
                 fallback = globalTransition,
                 progress = videoCardTransitionProgress,
-                contentScale = MiuixVideoCardContentScale.FillWidthTop,
+                contentScale = videoCardContentScale,
             )
         } else {
             globalTransition

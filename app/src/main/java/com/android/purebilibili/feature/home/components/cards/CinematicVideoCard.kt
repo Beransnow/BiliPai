@@ -175,6 +175,15 @@ fun CinematicVideoCard(
                 density = densityValue,
                 sourceCornerDp = cardCornerRadius.value.roundToInt(),
                 coverBounds = coverBoundsRef.value,
+                sourceLayout = com.android.purebilibili.core.ui.transition.VideoCardSourceLayout.STACKED,
+                sourceChromeSnapshot = com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot(
+                    title = video.title,
+                    ownerName = video.owner.name,
+                    ownerFaceUrl = video.owner.face,
+                    viewText = FormatUtils.formatStat(video.stat.view.toLong()),
+                    danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
+                    durationText = FormatUtils.formatDuration(video.duration),
+                ),
             )
         }
         onClick(video.bvid, 0)
