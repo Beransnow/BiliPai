@@ -100,7 +100,7 @@ class VideoDetailReturnLoadBudgetPolicyTest {
             resolveVideoDetailReturnSessionPhase(
                 isCommittedCardReturn = true,
                 isExitTransitionInProgress = true,
-                settleProgress = 0.9f,
+                settleProgress = 0.95f,
             ),
         )
         assertEquals(
@@ -141,7 +141,7 @@ class VideoDetailReturnLoadBudgetPolicyTest {
     }
 
     @Test
-    fun committedLiveReturnKeepsCompleteDetailCardUntilOpaqueSourceReveal() {
+    fun committedLiveReturnKeepsBothContentTreesForFlyingCardTransform() {
         val secondaryContentAlpha = resolveVideoDetailReturnSecondaryContentAlphaPreview(
             isCommittedCardReturn = true,
             hasRenderableLiveFrame = true,

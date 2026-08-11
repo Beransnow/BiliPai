@@ -428,47 +428,47 @@ class VideoDetailReturnCoverPolicyTest {
             resolveVideoDetailReturnPlayerAlpha(0.8f, true, true, liveReturnMorph = true),
             0.0001f,
         )
-        // 正文/控制器与实时画面作为同一个不透明详情卡保持可见。
+        // 正文/控制器在形变窗口前仍完整可见。
         assertEquals(
             1f,
             resolveVideoDetailReturnContentAlpha(0.85f, true, liveReturnMorph = true),
             0.0001f,
         )
-        // 末段也不单独改 alpha；外层遮罩直接移除对应像素。
+        // 后段详情信息开始变换为来源卡标题/统计，但飞行卡壳保持不透明。
         val lateContent = resolveVideoDetailReturnContentAlpha(0.3f, true, liveReturnMorph = true)
-        assertEquals(1f, lateContent, 0.0001f)
+        assertEquals(0.9230769f, lateContent, 0.0001f)
     }
 
     @Test
-    fun `committed live return never alpha blends resident cover with player`() {
-        // Live 路径始终只有不透明 player；来源整卡由外层遮罩揭示。
+    fun `committed live return transforms player into cover inside the flying card`() {
+        // 两层使用互补 alpha，属于同一不透明媒体槽，不会透出列表原位内容。
         assertEquals(
-            0f,
+            0.46153846f,
             resolveVideoDetailReturnCoverAlpha(0.2f, true, true, liveReturnMorph = true),
             0.0001f,
         )
         assertEquals(
-            1f,
+            0.53846157f,
             resolveVideoDetailReturnPlayerAlpha(0.2f, true, true, liveReturnMorph = true),
             0.0001f,
         )
         assertEquals(
-            0f,
+            1f,
             resolveVideoDetailReturnCoverAlpha(0.06f, true, true, liveReturnMorph = true),
             0.0001f,
         )
         assertEquals(
-            1f,
+            0f,
             resolveVideoDetailReturnPlayerAlpha(0.06f, true, true, liveReturnMorph = true),
             0.0001f,
         )
         assertEquals(
-            0f,
+            1f,
             resolveVideoDetailReturnCoverAlpha(0f, true, true, liveReturnMorph = true),
             0.0001f,
         )
         assertEquals(
-            1f,
+            0f,
             resolveVideoDetailReturnPlayerAlpha(0f, true, true, liveReturnMorph = true),
             0.0001f,
         )
@@ -520,7 +520,7 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun `quick committed live return keeps complete detail content for opaque clipping`() {
+    fun `quick committed live return still follows the flying card content timeline`() {
         assertEquals(
             1f,
             resolveVideoDetailReturnContentAlpha(
@@ -532,7 +532,7 @@ class VideoDetailReturnCoverPolicyTest {
             0.0001f,
         )
         assertEquals(
-            1f,
+            0.53846157f,
             resolveVideoDetailReturnContentAlpha(
                 transitionProgress = 0.2f,
                 isCommittedCardReturn = true,
@@ -555,7 +555,7 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun `live morph content stays opaque regardless of legacy alpha clocks`() {
+    fun `live morph content follows only the shared flying card clock`() {
         val content = resolveVideoDetailReturnContentAlpha(
             transitionProgress = 0.95f,
             isCommittedCardReturn = true,
@@ -563,7 +563,7 @@ class VideoDetailReturnCoverPolicyTest {
             depthBlurProgress = 0.95f,
             morphDepthProgress = 0.2f,
         )
-        assertEquals(1f, content, 0.0001f)
+        assertEquals(0.53846157f, content, 0.0001f)
         assertEquals(
             resolveVideoDetailReturnContentAlpha(
                 transitionProgress = 0.2f,
@@ -640,7 +640,7 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun `uncommitted predictive live morph keeps the complete detail card opaque`() {
+    fun `uncommitted predictive live morph keeps content before the late transform window`() {
         // 非返回态：上层封面透明，player 正常显示。
         assertEquals(
             0f,
@@ -655,6 +655,29 @@ class VideoDetailReturnCoverPolicyTest {
         assertEquals(
             1f,
             resolveVideoDetailReturnContentAlpha(0.85f, false, liveReturnMorph = true),
+            0.0001f,
+        )
+        // 手势进入后段时，即使尚未提交，也应在飞行卡内把 player 变成封面。
+        assertEquals(
+            0.46153846f,
+            resolveVideoDetailReturnCoverAlpha(
+                transitionProgress = 0.2f,
+                isCommittedCardReturn = false,
+                hasResidentCover = true,
+                liveReturnMorph = true,
+                keepLivePlayerForPredictiveBack = true,
+            ),
+            0.0001f,
+        )
+        assertEquals(
+            0.53846157f,
+            resolveVideoDetailReturnPlayerAlpha(
+                transitionProgress = 0.2f,
+                isCommittedCardReturn = false,
+                hasResidentCover = true,
+                liveReturnMorph = true,
+                keepLivePlayerForPredictiveBack = true,
+            ),
             0.0001f,
         )
     }
@@ -977,7 +1000,7 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun `live media owners never crossfade while fallback content retains root progress`() {
+    fun `live media slot crossfades internally while fallback content retains root progress`() {
         val source = File("src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreenStateHolder.kt")
             .readText()
 
@@ -1140,7 +1163,7 @@ class VideoDetailReturnCoverPolicyTest {
     }
 
     @Test
-    fun committedReturn_keepsLivePlayerAsTheOnlyOpaqueMediaOwner() {
+    fun committedReturn_transformsLivePlayerIntoResidentCoverBeforeLanding() {
         assertEquals(
             0f,
             resolveVideoDetailReturnCoverAlpha(
@@ -1182,13 +1205,13 @@ class VideoDetailReturnCoverPolicyTest {
             ),
             0.0001f,
         )
-        // 即使接近落位，player 也不做 alpha 淡出；外层 clip 会把它移除。
+        // 接近落位时 player 已完成向封面的内部形变。
         val playerNearEnd = resolveVideoDetailReturnPlayerAlpha(
             transitionProgress = 0.05f,
             isCommittedCardReturn = true,
             hasResidentCover = true,
             liveReturnMorph = true,
         )
-        assertEquals(1f, playerNearEnd, 0.0001f)
+        assertEquals(0f, playerNearEnd, 0.0001f)
     }
 }

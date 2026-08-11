@@ -19,8 +19,8 @@ import com.android.purebilibili.core.ui.adaptive.MotionTier
  * 源卡 sharedBounds Enter 延后淡入比例（遗留字段）。
  *
  * **当前策略：始终 0 / 不延后整壳 Enter。**
- * 封面资源在列表位全程待命；完整来源卡由导航层不透明裁切在返回后半段接管。
- * 整壳 delayed fadeIn 会在 overlay 卸层瞬间造成二次叠化，是落位闪烁主因。
+ * 来源卡资源全程待命并由 sharedBounds 提升到飞行层；内部封面/文字在返回后半段
+ * 接管。整壳 delayed fadeIn 会在 overlay 卸层瞬间造成二次叠化，是落位闪烁主因。
  */
 internal const val VIDEO_CARD_RETURN_SOURCE_ENTER_FADE_DELAY_RATIO = 0f
 
@@ -34,10 +34,8 @@ internal object VideoCardTransitionVisualTimeline {
     const val DETAIL_CHROME_ENTER_END = 0.72f
     const val SECONDARY_CONTENT_ENTER_START = 0.24f
     const val SECONDARY_CONTENT_ENTER_END = 0.82f
-    const val DETAIL_CONTENT_RETURN_END = 0.28f
-    // The real retained list card (cover + title + owner/stats) takes over in the latter half of
-    // the gesture. This leaves the live frame readable for longer while still removing the opaque,
-    // compressed detail page early enough to show complete source chrome before landing.
+    // The frozen background page starts yielding before the flying card's internal content morph.
+    // This only refreshes the backdrop; it never reveals the source card as a stationary substitute.
     const val WHOLE_SOURCE_CARD_RETURN_START = 0.55f
     const val WHOLE_SOURCE_CARD_RETURN_END = 0.90f
     const val SOURCE_CHROME_RETURN_START = 0.68f
@@ -47,11 +45,10 @@ internal object VideoCardTransitionVisualTimeline {
 }
 
 /**
- * Full retained source-card takeover progress during a Miuix return.
+ * Frozen source-page snapshot release progress during a Miuix return.
  *
- * Unlike the media-only handoff, this progress drives the opaque reveal boundary for the complete
- * list card. The complete detail card remains visible above it until the boundary passes each
- * region, so title/UP/stat chrome appears during the gesture without blending two pages.
+ * This releases the stale depth snapshot so the live page and haze sources can refresh behind the
+ * flying card. It does not own card content; cover/title/stat are carried by sharedBounds.
  */
 internal fun resolveVideoCardWholeSourceReturnAlpha(
     morphDepthProgress: Float,
@@ -77,17 +74,17 @@ internal fun resolveVideoCardSourceChromeReturnAlpha(
 )
 
 /**
- * 遗留的次要内容让位窗口。新 Miuix 整卡返回不再对详情内容做 alpha 淡出，
- * 而是在这个窗口用不透明遮罩把完整详情卡逐区域交给完整来源卡。
+ * 飞行卡内部内容形变窗口。详情控制器/信息在此窗口退出，来源卡标题/统计按互补
+ * alpha 进入；两者都跟随同一个 shared-bounds 壳移动，不在列表原位静态交接。
  */
 internal const val VIDEO_CARD_RETURN_LIVE_CONTENT_YIELD_START =
-    VideoCardTransitionVisualTimeline.WHOLE_SOURCE_CARD_RETURN_START
+    VideoCardTransitionVisualTimeline.SOURCE_CHROME_RETURN_START
 internal const val VIDEO_CARD_RETURN_LIVE_CONTENT_YIELD_END =
-    VideoCardTransitionVisualTimeline.WHOLE_SOURCE_CARD_RETURN_END
+    VideoCardTransitionVisualTimeline.SOURCE_CHROME_RETURN_END
 
 /**
  * 实时画面缩回时，详情常驻封面与媒体 chrome 使用同一个 68%–94% 精修窗口。
- * 完整来源卡（含标题/UP/统计）在 55%–90% 窗口接管，避免过早离开实时画面。
+ * 飞行卡内部的封面、标题和统计在 68%–94% 窗口接管，避免过早离开实时画面。
  * 旧的最后 12% 窗口太短，手势几乎落位后才看得到封面转换。
  */
 internal const val VIDEO_CARD_LIVE_RETURN_VISUAL_HANDOFF_START =
@@ -130,9 +127,9 @@ internal fun resolveVideoCardDetailChromeAlpha(
     val returning = phase == VideoCardTransitionBackgroundPhase.RETURNING ||
         isReturnGestureInProgress
     return when {
-        // Returning detail chrome stays fully opaque. The navigation entry's bottom-up clip owns
-        // the handoff, so controls and text disappear region-by-region instead of fading away.
-        returning -> 1f
+        // The controls remain attached to the flying shell and transform into the source-card
+        // chrome during the late landing window.
+        returning -> 1f - resolveVideoCardLiveReturnVisualHandoffAlpha(depth)
         phase == VideoCardTransitionBackgroundPhase.OPENING ->
             resolveVideoCardTimelineWindowProgress(
                 progress = depth,
@@ -153,9 +150,9 @@ internal fun resolveVideoCardSecondaryContentVisualFrame(
     val returning = phase == VideoCardTransitionBackgroundPhase.RETURNING ||
         isReturnGestureInProgress
     val alpha = when {
-        // Keep the complete detail card (including the controls under the video) opaque until the
-        // outer Miuix reveal mask replaces those pixels with the retained source card.
-        returning -> 1f
+        // Both content trees stay in the moving shared-bounds shell. This side fades out exactly
+        // as the source title/owner/stats fade in, so the card itself never becomes translucent.
+        returning -> 1f - resolveVideoCardLiveReturnVisualHandoffAlpha(depth)
         motionTier == MotionTier.Reduced -> depth
         phase == VideoCardTransitionBackgroundPhase.OPENING ->
             resolveVideoCardTimelineWindowProgress(
@@ -260,8 +257,9 @@ internal fun shouldDelaySourceCardEnterOnReturn(
  *
  * **可以，且应始终共存**，分工如下：
  * - **LIVE_SURFACE**（详情壳 overlay）：一镜到底缩回，跟手/seek
- * - **列表封面**：列表位 alpha=1 待命，不 crossfade、不藏封面，卸层瞬间接住
- * - **标题/UP**：仅 chrome alpha 按 settle 末段淡入，不跟整壳 fade
+ * - **来源封面**（source sharedBounds overlay）：跟同一飞行壳移动，末段替换 player
+ * - **标题/UP**（source sharedBounds overlay）：按同一 settle 窗口替换详情控制器/信息
+ * - **列表原位**：只保留布局与底色，不承担动画中的可见卡片内容
  *
  * 禁止：整壳 delayed Enter、中途 LIVE↔RESIDENT 切换、卸层瞬间改 Coil 请求。
  */

@@ -7,6 +7,8 @@ import com.android.purebilibili.core.ui.transition.VideoCardReturnCoverOwnership
 import com.android.purebilibili.core.ui.transition.VideoSharedTransitionPlaybackIntent
 import com.android.purebilibili.core.ui.transition.isVideoCardLiveReturnMorphOwnership
 import com.android.purebilibili.core.ui.transition.resolveReturnSessionLockedCoverOwnership
+import com.android.purebilibili.core.ui.transition.resolveVideoCardLiveMorphSecondaryContentAlpha
+import com.android.purebilibili.core.ui.transition.resolveVideoCardLiveReturnVisualHandoffAlpha
 import com.android.purebilibili.core.ui.transition.resolveVideoCardReturnCoverOwnership
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedTransitionEnterEasing
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedTransitionReturnEasing
@@ -180,7 +182,6 @@ internal data class VideoDetailReturnMediaFrame(
  * SurfaceView ownership uses the paired player-internal cover-only fallback. The outer navigation
  * entry alpha is no longer responsible for hiding platform video surfaces.
  */
-@Suppress("UNUSED_PARAMETER")
 internal fun resolveVideoDetailReturnMediaFrame(
     transitionProgress: Float,
     isCommittedCardReturn: Boolean,
@@ -198,9 +199,13 @@ internal fun resolveVideoDetailReturnMediaFrame(
     if (!liveReturnMorph) {
         return VideoDetailReturnMediaFrame(coverAlpha = 1f, playerAlpha = 0f)
     }
-    // LIVE keeps one fully opaque media owner. The outer Miuix entry clip reveals the retained
-    // source card underneath, so crossfading player and resident cover here would blend two frames.
-    return VideoDetailReturnMediaFrame(coverAlpha = 0f, playerAlpha = 1f)
+    // Player and resident cover are two contents of the same flying media slot. Complementary
+    // alphas make the live frame transform into the cover without exposing the page underneath.
+    val coverTakeover = resolveVideoCardLiveReturnVisualHandoffAlpha(transitionProgress)
+    return VideoDetailReturnMediaFrame(
+        coverAlpha = coverTakeover,
+        playerAlpha = 1f - coverTakeover,
+    )
 }
 
 internal fun resolveVideoDetailReturnCoverAlpha(
@@ -258,15 +263,19 @@ internal fun resolveVideoDetailReturnContentAlpha(
     depthBlurProgress: Float? = null,
     isQuickReturn: Boolean = false,
     /**
-     * 保留旧参数以兼容非 Miuix 调用；Miuix live 返回的像素让位已统一由外层
-     * 不透明遮罩接管，这里不再消费独立 alpha 时间轴。
+     * Miuix live 返回只消费 shared flying-card 的 morph depth；保留可空参数以兼容
+     * 非 Miuix 调用。
      */
     morphDepthProgress: Float? = null,
 ): Float {
-    // Live return keeps the complete detail card opaque. The Miuix entry reveal mask, driven by
-    // the same morph clock, owns removal of video, controls and body as one visual unit.
+    // The detail controls/body and source-card text share one late morph window. The moving card
+    // shell remains opaque; only corresponding contents change ownership inside it.
     if (liveReturnMorph) {
-        return 1f
+        return resolveVideoCardLiveMorphSecondaryContentAlpha(
+            transitionProgress = transitionProgress,
+            depthBlurProgress = depthBlurProgress,
+            morphDepthProgress = morphDepthProgress,
+        )
     }
     if (isCommittedCardReturn) return 0f
     if (holdFullyOpaqueAfterBackPreview) return 1f

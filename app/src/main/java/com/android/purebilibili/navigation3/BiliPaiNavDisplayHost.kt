@@ -98,7 +98,7 @@ internal fun BiliPaiNavDisplayHost(
         BiliPaiPredictiveBackExitDirection.ALWAYS_RIGHT,
     sourceMetadata: BiliPaiNavSourceMetadata,
     programmaticBackDispatcher: BiliPaiProgrammaticBackDispatcher,
-    preferWholeCardReturn: Boolean = true,
+    preferWholeCardReturn: Boolean = false,
     onBack: () -> Unit,
     onPrepareVideoCardSharedReturn: () -> Boolean = { false },
     onRelatedVideoDetailReturned: () -> Unit = {},

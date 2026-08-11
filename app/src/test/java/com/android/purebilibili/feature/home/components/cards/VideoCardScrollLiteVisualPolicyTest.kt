@@ -313,6 +313,18 @@ class VideoCardScrollLiteVisualPolicyTest {
                 isReturningFromDetail = true,
                 transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
                 isVideoCardReturnGestureInProgress = false,
+                transitionBackgroundProgress = 0.19f,
+            ),
+            0.001f,
+        )
+        assertEquals(
+            1f,
+            resolveHomeCardReturnSourceVisualAlpha(
+                useCardContainerSharedBounds = true,
+                isSharedMorphSourceCard = true,
+                isReturningFromDetail = true,
+                transitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
+                isVideoCardReturnGestureInProgress = false,
                 transitionBackgroundProgress = 0.06f,
             ),
             0.001f,
@@ -333,7 +345,7 @@ class VideoCardScrollLiteVisualPolicyTest {
     }
 
     @Test
-    fun homeCardChrome_reappearsBeforeTheFinalCoverHandoff() {
+    fun homeCardChromeAndCoverTransformTogetherInsideTheFlyingShell() {
         assertTrue(
             shouldSuppressHomeCardVisualDuringShellReturnMorph(
                 useCardContainerSharedBounds = true,
@@ -412,7 +424,7 @@ class VideoCardScrollLiteVisualPolicyTest {
             ),
             0.001f,
         )
-        // 快速返回仍可能保留 LIVE surface，正文也使用提前回显窗口。
+        // 快速返回仍可能保留 LIVE surface，正文继续使用同一内部形变窗口。
         assertEquals(
             0f,
             resolveHomeCardChromeAlphaDuringShellReturnMorph(

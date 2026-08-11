@@ -47,7 +47,8 @@ internal fun Modifier.videoCardShellReturnChromeAlpha(
     }
     return graphicsLayer {
         val phase = bgState.phaseProvider()
-        val returnGestureInProgress = bgState.isReturnGestureInProgressProvider()
+        val returnGestureInProgress = bgState.isReturnGestureInProgressProvider() ||
+            bgState.isGestureRestoreInProgressProvider()
         val transitionActive = sharedTransitionScope?.isTransitionActive == true
         val progress = bgState.progressProvider()
         val quickReturn = isQuickReturnFromDetail ||
@@ -118,9 +119,11 @@ internal fun Modifier.videoCardShellReturnCoverAlpha(
             isSharedMorphSourceCard = isSharedMorphSourceCard,
             isReturningFromDetail = isReturningFromDetail,
             transitionBackgroundPhase = bgState.phaseProvider(),
-            isVideoCardReturnGestureInProgress = bgState.isReturnGestureInProgressProvider(),
+            isVideoCardReturnGestureInProgress =
+                bgState.isReturnGestureInProgressProvider() ||
+                    bgState.isGestureRestoreInProgressProvider(),
             transitionBackgroundProgress = bgState.progressProvider(),
-            // 完整源卡可常驻下层，由上层实时画面在落点窗口内淡出完成像素交接。
+            // 来源封面位于 sharedBounds 飞行层，按同一窗口把播放器内容替换为封面。
             preferWholeCardReturn = bgState.preferWholeCardReturnProvider(),
         )
     }

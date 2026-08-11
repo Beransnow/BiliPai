@@ -1660,7 +1660,8 @@ internal fun VideoDetailScreenStateHolder(
                 morphDepthProgress = videoCardDepthBackgroundState.progressProvider(),
                 phase = videoCardDepthBackgroundState.phaseProvider(),
                 isReturnGestureInProgress =
-                    videoCardDepthBackgroundState.isReturnGestureInProgressProvider(),
+                    videoCardDepthBackgroundState.isReturnGestureInProgressProvider() ||
+                        videoCardDepthBackgroundState.isGestureRestoreInProgressProvider(),
             )
         }
     }
@@ -1678,8 +1679,8 @@ internal fun VideoDetailScreenStateHolder(
             else -> 1f
         },
     )
-    // 有实时帧时保留完整详情卡（含播放器下方控制器/信息区），由 Miuix 不透明
-    // 遮罩逐区域交给完整来源卡；无可绘帧的封面路径才提前卸载次要内容。
+    // 有实时帧时保留两套内容树：详情控制器/信息与来源卡文字在同一个飞行壳内
+    // 形变，不能提前卸载；无可绘帧的封面路径才允许卸载次要内容。
     val returnSecondaryContentAlphaPreview =
         resolveVideoDetailReturnSecondaryContentAlphaPreview(
             isCommittedCardReturn = isCommittedCardReturn,
@@ -3785,7 +3786,9 @@ internal fun VideoDetailScreenStateHolder(
                                             phase = videoCardDepthBackgroundState.phaseProvider(),
                                             isReturnGestureInProgress =
                                                 videoCardDepthBackgroundState
-                                                    .isReturnGestureInProgressProvider(),
+                                                    .isReturnGestureInProgressProvider() ||
+                                                    videoCardDepthBackgroundState
+                                                        .isGestureRestoreInProgressProvider(),
                                             motionTier =
                                                 videoCardDepthBackgroundState.motionTierProvider(),
                                         )
@@ -3813,8 +3816,8 @@ internal fun VideoDetailScreenStateHolder(
                             when {
                                 suppressPhoneDetailBodyForDirectPortrait &&
                                     uiState !is VideoPlaybackUiState.Error -> Unit
-                                // 仅无实时帧的封面回退允许卸载正文；LiveMorph 的完整详情卡
-                                // 会保持 composition，由外层不透明裁切逐区域完成交接。
+                                // 仅无实时帧的封面回退允许卸载正文；LiveMorph 内容必须保持
+                                // composition，随飞行 shared-bounds 壳变换成来源卡文字。
                                 detachSecondaryContentForReturn &&
                                     uiState !is VideoPlaybackUiState.Error -> Unit
                                 uiState is VideoPlaybackUiState.Loading -> {

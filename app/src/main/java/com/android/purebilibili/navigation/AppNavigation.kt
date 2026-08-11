@@ -3336,8 +3336,9 @@ fun AppNavigation(
                     predictiveBackExitDirection = predictiveBackExitDirection,
                     sourceMetadata = navigation3SourceMetadata,
                     programmaticBackDispatcher = navigation3ProgrammaticBackDispatcher,
-                    // 实时画面负责返回前段，完整源卡在落点附近承接封面、标题和信息。
-                    preferWholeCardReturn = true,
+                    // 来源卡内容进入飞行 shared-bounds 壳，在后段由播放器/详情信息
+                    // 形变为封面、标题和统计；不能把完整源卡留在列表原位直接揭示。
+                    preferWholeCardReturn = false,
                     onBack = { performSystemBackAction() },
                     onPrepareVideoCardSharedReturn = {
                         // 普通返回(顶部按钮/系统手势提交)兜底预热。

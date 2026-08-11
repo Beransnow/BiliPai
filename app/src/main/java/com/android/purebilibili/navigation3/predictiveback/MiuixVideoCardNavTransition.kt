@@ -13,7 +13,6 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.android.purebilibili.core.ui.transition.resolveVideoCardWholeSourceReturnAlpha
 import top.yukonga.miuix.kmp.nav.transition.NavMotion
 import top.yukonga.miuix.kmp.nav.transition.NavRole
 import top.yukonga.miuix.kmp.nav.transition.NavSettleSpec
@@ -41,16 +40,6 @@ internal fun resolveMiuixVideoCardDepthProgress(relativeDepth: Float): Float =
     topProgress(relativeDepth)
 
 /**
- * Predictive seek keeps the entry on the stack, so Miuix classifies its negative depth as
- * [NavRole.Incoming]. The gesture context, rather than [NavRole.Outgoing] alone, distinguishes
- * that return from a normal push.
- */
-internal fun isMiuixVideoCardReturning(
-    role: NavRole,
-    hasGesture: Boolean,
-): Boolean = role == NavRole.Outgoing || hasGesture
-
-/**
  * Keeps the corner circular in screen space while the outer card layer scales non-uniformly.
  * A regular RoundedCornerShape is scaled together with the layer and becomes too small on the
  * compressed axis, which exposes the retained source card at the end of a 16:9 return.
@@ -67,47 +56,23 @@ internal fun resolveMiuixVideoCardClipRadii(
     )
 }
 
-/**
- * A full detail page cannot geometrically reproduce a list card by scaling its complete layout.
- * During the middle return segment, reveal the real retained source card after the detail body
- * yields and before the media shell lands.
- *
- * 预测返回手势 seek 与提交后的 settle 使用同一条交接曲线：前段保留实时画面，
- * 返回后半段用不透明揭示遮罩逐步露出完整源卡，使封面、标题、UP 主和
- * 统计信息一起交接；禁止将两张完整页面做 alpha 叠化。
- */
-internal fun resolveMiuixVideoCardOutgoingClipFraction(
-    morphProgress: Float,
-    isReturning: Boolean,
-    handoffWholeSourceCard: Boolean,
-): Float {
-    if (!isReturning || !handoffWholeSourceCard) return 1f
-    return 1f - resolveVideoCardWholeSourceReturnAlpha(morphProgress)
-}
-
 private data class MiuixVideoCardClipShape(
     val radiusX: Float,
     val radiusY: Float,
-    val visibleHeightFraction: Float = 1f,
 ) : Shape {
     override fun createOutline(
         size: Size,
         layoutDirection: LayoutDirection,
         density: Density,
     ): Outline {
-        val visibleHeight = size.height * visibleHeightFraction.coerceIn(0f, 1f)
-        if (visibleHeight <= 0.01f) {
-            return Outline.Rectangle(Rect.Zero)
-        }
         return Outline.Rounded(
             RoundRect(
-                // Keep the returning detail media fully opaque and remove it bottom-up. The
-                // retained source card underneath owns every revealed pixel, so no two pages are
-                // ever blended into the translucent rectangle seen with entry-level alpha.
-                rect = Rect(0f, 0f, size.width, visibleHeight),
+                // The flying entry remains a complete opaque card. Player → cover and detail
+                // chrome → source-card chrome are transformed inside this moving boundary.
+                rect = Rect(0f, 0f, size.width, size.height),
                 cornerRadius = CornerRadius(
                     x = radiusX.coerceIn(0f, size.width / 2f),
-                    y = radiusY.coerceIn(0f, visibleHeight / 2f),
+                    y = radiusY.coerceIn(0f, size.height / 2f),
                 ),
             ),
         )
@@ -219,25 +184,11 @@ internal fun miuixVideoCardNavTransition(
                     transformOrigin = TransformOrigin(0f, 0f)
                     translationX = bounds.left.coerceIn(-width, width) * (1f - morph)
                     translationY = bounds.top.coerceIn(-height, height) * (1f - morph)
-                    // Normal VideoDetail entries yield to their retained full source card during
-                    // the gesture; fullscreen Story entries keep their media-only visual opaque.
-                    val outgoingClipFraction = resolveMiuixVideoCardOutgoingClipFraction(
-                        morphProgress = morph,
-                        isReturning = isMiuixVideoCardReturning(
-                            role = scope.role,
-                            hasGesture = scope.gesture != null,
-                        ),
-                        // FillWidthTop is the normal VideoDetail route: it must yield the whole
-                        // retained source card, regardless of whether recorded bounds include the
-                        // title area and therefore no longer look 16:9. CropCenter belongs to the
-                        // fullscreen Story path, whose source visual intentionally stays media-only.
-                        handoffWholeSourceCard =
-                            contentScale == MiuixVideoCardContentScale.FillWidthTop,
-                    )
-                    // Do not alpha-crossfade complete navigation entries. Both sides stay opaque;
-                    // the top entry yields pixels through a bottom-up reveal mask.
+                    // Geometry belongs to this one flying entry. Never reveal the retained card
+                    // at its stationary list position by fading or clipping the navigation entry.
+                    // The source shared-bounds content is composited inside the moving card.
                     alpha = 1f
-                    clip = morph < 0.999f || outgoingClipFraction < 0.999f
+                    clip = morph < 0.999f
                     val clipRadii = resolveMiuixVideoCardClipRadii(
                         sourceCornerPx = corner.dp.toPx(),
                         outerScaleX = outerScaleX,
@@ -246,7 +197,6 @@ internal fun miuixVideoCardNavTransition(
                     shape = MiuixVideoCardClipShape(
                         radiusX = clipRadii.radiusX,
                         radiusY = clipRadii.radiusY,
-                        visibleHeightFraction = outgoingClipFraction,
                     )
                 }
             }.graphicsLayer {

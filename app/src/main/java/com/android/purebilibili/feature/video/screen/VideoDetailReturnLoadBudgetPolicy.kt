@@ -8,13 +8,13 @@ import com.android.purebilibili.core.ui.transition.VideoCardTransitionVisualTime
  * Settled 播放态详情 → 列表返回的**运动预算**（纯 Kotlin）。
  *
  * 产品硬门槛：有可绘 live 帧时全程 [VideoDetailReturnPlayerMode.LiveMorph] 一镜到底，
- * 不做 snapshot / 静态帧 / 性能向 forceCover 降级。整卡交接期间保留弹幕、次要内容
- * 和控制层，只对景深与首页重型工作做错峰，不停止实时 surface。
+ * 不做 snapshot / 静态帧 / 性能向 forceCover 降级。飞行卡内部形变期间保留弹幕、
+ * 次要内容和控制层的 composition，只调整绘制 alpha；不停止实时 surface。
  */
 
 /** 与 live return cover handoff 对齐：末段才允许停播意图。 */
 internal const val VIDEO_DETAIL_RETURN_HANDOFF_SETTLE_START =
-    VideoCardTransitionVisualTimeline.WHOLE_SOURCE_CARD_RETURN_END
+    VideoCardTransitionVisualTimeline.SOURCE_CHROME_RETURN_END
 
 internal enum class VideoDetailReturnSessionPhase {
     Idle,
@@ -168,10 +168,10 @@ internal fun resolveVideoDetailReturnVisualBudget(
         )
     }
 
-    val preserveCompleteLiveDetailCard =
+    val preserveLiveMorphContentTrees =
         playerMode == VideoDetailReturnPlayerMode.LiveMorph &&
             phase != VideoDetailReturnSessionPhase.Settle
-    val secondaryMode = if (preserveCompleteLiveDetailCard) {
+    val secondaryMode = if (preserveLiveMorphContentTrees) {
         VideoDetailReturnSecondaryContentMode.Keep
     } else {
         resolveVideoDetailReturnSecondaryContentMode(
@@ -189,7 +189,7 @@ internal fun resolveVideoDetailReturnVisualBudget(
         phase = phase,
         playerMode = playerMode,
         secondaryContentMode = secondaryMode,
-        danmakuMode = if (preserveCompleteLiveDetailCard) {
+        danmakuMode = if (preserveLiveMorphContentTrees) {
             VideoDetailReturnDanmakuMode.Keep
         } else {
             when (phase) {
@@ -197,7 +197,7 @@ internal fun resolveVideoDetailReturnVisualBudget(
                 else -> VideoDetailReturnDanmakuMode.PauseHide
             }
         },
-        overlayControlsMode = if (preserveCompleteLiveDetailCard) {
+        overlayControlsMode = if (preserveLiveMorphContentTrees) {
             VideoDetailReturnOverlayControlsMode.Keep
         } else {
             when (phase) {
@@ -243,7 +243,8 @@ internal fun resolveVideoDetailReturnSecondaryContentMode(
 }
 
 /**
- * Live 返回保留完整详情卡；无实时帧时才可以提前卸载次要内容。
+ * Live 返回保留详情与来源两套内容树以完成飞行卡内部形变；无实时帧时才可以提前
+ * 卸载次要内容。
  */
 internal fun resolveVideoDetailReturnSecondaryContentAlphaPreview(
     isCommittedCardReturn: Boolean,

@@ -2,46 +2,21 @@ package com.android.purebilibili.navigation3.predictiveback
 
 import androidx.compose.ui.graphics.TransformOrigin
 import java.io.File
-import top.yukonga.miuix.kmp.nav.transition.NavRole
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class MiuixVideoCardNavTransitionTest {
     @Test
-    fun transitionUsesOpaqueRevealMaskAndNeverEntryAlphaCrossfade() {
+    fun transitionKeepsOneOpaqueFlyingCardWithoutStationaryRevealMask() {
         val source = File(
             "src/main/java/com/android/purebilibili/navigation3/predictiveback/MiuixVideoCardNavTransition.kt"
         ).readText()
         val transform = source.substringAfter("override fun Modifier.transformEntry")
 
         assertEquals(true, transform.contains("alpha = 1f"))
-        assertEquals(true, transform.contains("visibleHeightFraction = outgoingClipFraction"))
+        assertEquals(false, transform.contains("visibleHeightFraction"))
+        assertEquals(false, transform.contains("outgoingClipFraction"))
         assertEquals(false, transform.contains("alpha = resolveMiuixVideoCard"))
-    }
-
-    @Test
-    fun predictiveSeekIsAReturnEvenWhileMiuixReportsIncomingRole() {
-        assertEquals(
-            true,
-            isMiuixVideoCardReturning(
-                role = NavRole.Incoming,
-                hasGesture = true,
-            ),
-        )
-        assertEquals(
-            false,
-            isMiuixVideoCardReturning(
-                role = NavRole.Incoming,
-                hasGesture = false,
-            ),
-        )
-        assertEquals(
-            true,
-            isMiuixVideoCardReturning(
-                role = NavRole.Outgoing,
-                hasGesture = false,
-            ),
-        )
     }
 
     @Test
@@ -73,59 +48,6 @@ class MiuixVideoCardNavTransitionTest {
 
         assertEquals(12f, radii.radiusX * 0.5f, absoluteTolerance = 0.0001f)
         assertEquals(12f, radii.radiusY * 0.25f, absoluteTolerance = 0.0001f)
-    }
-
-    @Test
-    fun videoDetailUsesAnOpaqueBottomUpClipInsteadOfEntryAlphaBlending() {
-        assertEquals(
-            1f,
-            resolveMiuixVideoCardOutgoingClipFraction(
-                morphProgress = 0f,
-                isReturning = false,
-                handoffWholeSourceCard = true,
-            ),
-            absoluteTolerance = 0.0001f,
-        )
-        assertEquals(
-            0.5f,
-            resolveMiuixVideoCardOutgoingClipFraction(
-                morphProgress = 0.275f,
-                isReturning = true,
-                handoffWholeSourceCard = true,
-            ),
-            absoluteTolerance = 0.0001f,
-        )
-        assertEquals(
-            1f,
-            resolveMiuixVideoCardOutgoingClipFraction(
-                morphProgress = 0.45f,
-                isReturning = true,
-                handoffWholeSourceCard = true,
-            ),
-            absoluteTolerance = 0.0001f,
-        )
-        assertEquals(
-            0f,
-            resolveMiuixVideoCardOutgoingClipFraction(
-                morphProgress = 0.10f,
-                isReturning = true,
-                handoffWholeSourceCard = true,
-            ),
-            absoluteTolerance = 0.0001f,
-        )
-    }
-
-    @Test
-    fun fullscreenStoryKeepsItsMediaOnlyContentFullyClippedInDuringReturn() {
-        assertEquals(
-            1f,
-            resolveMiuixVideoCardOutgoingClipFraction(
-                morphProgress = 0.05f,
-                isReturning = true,
-                handoffWholeSourceCard = false,
-            ),
-            absoluteTolerance = 0.0001f,
-        )
     }
 
     @Test
