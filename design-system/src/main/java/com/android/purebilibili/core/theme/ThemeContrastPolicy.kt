@@ -7,6 +7,56 @@ import androidx.compose.ui.graphics.luminance
 private const val PRIMARY_TEXT_MIN_CONTRAST = 4.5f
 private const val SECONDARY_TEXT_MIN_CONTRAST = 3.0f
 
+const val ACCESSIBLE_TEXT_MIN_CONTRAST = 4.5f
+const val ACCESSIBLE_UI_MIN_CONTRAST = 3.0f
+
+data class AccessibleContainerColors(
+    val containerColor: Color,
+    val contentColor: Color,
+)
+
+/** Flattens [foreground] over [background] so contrast checks use the color users see. */
+fun opaqueCompositeOver(
+    foreground: Color,
+    background: Color,
+): Color {
+    val foregroundAlpha = foreground.alpha
+    val backgroundAlpha = background.alpha
+    val outputAlpha = foregroundAlpha + backgroundAlpha * (1f - foregroundAlpha)
+    if (outputAlpha == 0f) return Color.Transparent
+    return Color(
+        red = (foreground.red * foregroundAlpha + background.red * backgroundAlpha * (1f - foregroundAlpha)) / outputAlpha,
+        green = (foreground.green * foregroundAlpha + background.green * backgroundAlpha * (1f - foregroundAlpha)) / outputAlpha,
+        blue = (foreground.blue * foregroundAlpha + background.blue * backgroundAlpha * (1f - foregroundAlpha)) / outputAlpha,
+        alpha = 1f,
+    )
+}
+
+/**
+ * Resolves an opaque visual equivalent for a translucent semantic container and a readable
+ * foreground for it. The first fallback that reaches [minimumContrast] wins; if none do, the
+ * highest-contrast candidate is used.
+ */
+fun resolveAccessibleContainerColors(
+    containerColor: Color,
+    contentColor: Color,
+    backgroundColor: Color,
+    fallbackContentColors: List<Color>,
+    minimumContrast: Float = ACCESSIBLE_TEXT_MIN_CONTRAST,
+): AccessibleContainerColors {
+    val resolvedContainer = opaqueCompositeOver(containerColor, backgroundColor)
+    val candidates = (listOf(contentColor) + fallbackContentColors).distinct()
+    val resolvedContent = candidates.firstOrNull {
+        calculateContrastRatio(it, resolvedContainer) >= minimumContrast
+    } ?: candidates.maxByOrNull {
+        calculateContrastRatio(it, resolvedContainer)
+    } ?: contentColor
+    return AccessibleContainerColors(
+        containerColor = resolvedContainer,
+        contentColor = resolvedContent.copy(alpha = 1f),
+    )
+}
+
 fun calculateContrastRatio(
     foreground: Color,
     background: Color

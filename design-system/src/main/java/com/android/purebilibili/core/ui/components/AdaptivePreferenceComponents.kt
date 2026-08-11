@@ -438,7 +438,6 @@ fun AppAdaptiveSwitch(
     val uiStyle = LocalAppUiStyle.current
     when (resolveAppAdaptiveSwitchTreatment(uiStyle)) {
         AppAdaptiveSwitchTreatment.MATERIAL -> {
-            val colorScheme = MaterialTheme.colorScheme
             val platformHaptic = LocalHapticFeedback.current
             val effectiveHaptic = if (LocalAppThemeConfig.current.hapticFeedbackEnabled) {
                 platformHaptic
@@ -446,20 +445,11 @@ fun AppAdaptiveSwitch(
                 NoOpHapticFeedback
             }
             CompositionLocalProvider(LocalHapticFeedback provides effectiveHaptic) {
-                Switch(
+                AppSwitch(
                     checked = checked,
                     onCheckedChange = onCheckedChange,
                     enabled = enabled,
                     modifier = modifier,
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = resolveSwitchCheckedThumbColor(
-                            onPrimary = colorScheme.onPrimary,
-                        ),
-                        checkedTrackColor = colorScheme.primary,
-                        uncheckedThumbColor = colorScheme.surface,
-                        uncheckedTrackColor = colorScheme.surfaceContainerHighest,
-                        uncheckedBorderColor = colorScheme.outline,
-                    )
                 )
             }
         }
