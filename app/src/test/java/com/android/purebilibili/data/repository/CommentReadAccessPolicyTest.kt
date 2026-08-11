@@ -30,6 +30,7 @@ class CommentReadAccessPolicyTest {
         assertTrue(shouldFallbackCommentRead(-101))
         assertTrue(shouldFallbackCommentRead(-111))
         assertTrue(shouldFallbackCommentRead(-352))
+        assertTrue(shouldFallbackCommentRead(-403))
         assertTrue(shouldFallbackCommentRead(-412))
         assertFalse(shouldFallbackCommentRead(12002))
     }
