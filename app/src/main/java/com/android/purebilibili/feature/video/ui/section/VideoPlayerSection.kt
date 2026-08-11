@@ -424,6 +424,14 @@ fun VideoPlayerSection(
     bvid: String = "",
     coverUrl: String = "",
     /**
+     * Stationary list-card Coil request frozen at click. When set, player cover uses this
+     * exact URL + cache key + size — never [com.android.purebilibili.core.util.FormatUtils.fixImageUrl].
+     */
+    stationaryListCoverUrl: String = "",
+    stationaryListCoverCacheKey: String = "",
+    stationaryListCoverDecodeWidthPx: Int = 0,
+    stationaryListCoverDecodeHeightPx: Int = 0,
+    /**
      * Shared-element key identity. Prefer route-entry bvid during in-page collection switches so
      * SharedTransition does not rekey the live player surface into a black frame.
      */
@@ -3333,17 +3341,26 @@ fun VideoPlayerSection(
             }
         }
     
-    // 4. 封面图 (Cover Image) - 始终在第一帧渲染前显示
-    // 统一优先使用入口卡片封面，保证从各类列表进入详情时封面与入口一致。
+    // 4. 封面图 — prefer stationary list Coil request (same pixels as home card at rest).
     val detailCoverUrl = (uiState as? VideoPlaybackUiState.Success)?.info?.pic.orEmpty()
-    val rawCoverUrl = resolvePreferredVideoCoverUrl(
-        entryCoverUrl = coverUrl,
-        detailCoverUrl = detailCoverUrl,
-        preferDetailCoverUrl = keepCoverForManualStart && isVerticalVideo
-    )
-    
-    // [Fix] 使用 FormatUtils 统一处理 URL (支持无协议头 URL)
-    val currentCoverUrl = FormatUtils.fixImageUrl(rawCoverUrl)
+    val stationaryListCover = stationaryListCoverUrl.trim()
+    val stationaryListKey = stationaryListCoverCacheKey.trim()
+    val useStationaryListCover = stationaryListCover.isNotEmpty() && stationaryListKey.isNotEmpty()
+    val rawCoverUrl = if (useStationaryListCover) {
+        stationaryListCover
+    } else {
+        resolvePreferredVideoCoverUrl(
+            entryCoverUrl = coverUrl,
+            detailCoverUrl = detailCoverUrl,
+            preferDetailCoverUrl = keepCoverForManualStart && isVerticalVideo
+        )
+    }
+    // Never re-size via fixImageUrl when we already have the list card URL.
+    val currentCoverUrl = if (useStationaryListCover) {
+        stationaryListCover
+    } else {
+        FormatUtils.fixImageUrl(rawCoverUrl)
+    }
     
     LaunchedEffect(playerState.player, bvid, forceCoverDuringReturnAnimation) {
         if (forceCoverDuringReturnAnimation || isFirstFrameRendered) return@LaunchedEffect
@@ -3600,11 +3617,22 @@ fun VideoPlayerSection(
                     }
             ) {
                 if (currentCoverUrl.isNotEmpty()) {
-                    val sharedCoverCacheKey = resolveVideoSharedCoverCacheKey(bvid)
+                    val sharedCoverCacheKey = if (useStationaryListCover) {
+                        stationaryListKey
+                    } else {
+                        resolveVideoSharedCoverCacheKey(bvid)
+                    }
+                    val decodeW = stationaryListCoverDecodeWidthPx
+                    val decodeH = stationaryListCoverDecodeHeightPx
                     AsyncImage(
                         model = coil.request.ImageRequest.Builder(LocalContext.current)
                             .data(currentCoverUrl)
-                            // 与首页卡片同一 memory/disk key，返回卸层时直接命中缓存，避免重解码闪一下。
+                            .apply {
+                                if (useStationaryListCover && decodeW > 0 && decodeH > 0) {
+                                    size(decodeW, decodeH)
+                                }
+                            }
+                            // Same memory/disk key as list AsyncImage when stationary is set.
                             .placeholderMemoryCacheKey(sharedCoverCacheKey)
                             .memoryCacheKey(sharedCoverCacheKey)
                             .diskCacheKey(sharedCoverCacheKey)

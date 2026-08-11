@@ -1908,6 +1908,13 @@ private fun VideoPageItem(
         viewportVerticalOffsetPx = portraitViewportVerticalOffsetPx,
         fillContainer = portraitPagerFillContainer
     )
+    // UP 预览 / 简介半屏打开时必须关掉页级 pointerInput。
+    // 父层 awaitFirstDown(requireUnconsumed=false) 会在整段单指滑动中占住手势循环，
+    // LazyVerticalGrid 收不到跟手滚动（评论半屏靠 playerGesturesEnabled=false 才正常）。
+    val playerGesturesEnabled =
+        commentExpansionTransform.playerGesturesEnabled &&
+            !showUpPreview &&
+            !showDetailSheet
 
     LaunchedEffect(isCurrentPage, bvid) {
         if (!isCurrentPage) {
@@ -2097,8 +2104,8 @@ private fun VideoPageItem(
                 portraitPageWidthPx = size.width
                 portraitPageHeightPx = size.height
             }
-            .pointerInput(isCurrentPage, bvid, commentExpansionTransform.playerGesturesEnabled) {
-                if (!isCurrentPage || !commentExpansionTransform.playerGesturesEnabled) return@pointerInput
+            .pointerInput(isCurrentPage, bvid, playerGesturesEnabled) {
+                if (!isCurrentPage || !playerGesturesEnabled) return@pointerInput
 
                 awaitEachGesture {
                     awaitFirstDown(requireUnconsumed = false)
@@ -2155,7 +2162,7 @@ private fun VideoPageItem(
                 longPressSpeed,
                 currentAudioQuality,
                 isCurrentPage,
-                commentExpansionTransform.playerGesturesEnabled,
+                playerGesturesEnabled,
                 portraitOverlayVisible,
                 doubleTapSeekEnabled,
                 seekForwardSeconds,
@@ -2164,7 +2171,7 @@ private fun VideoPageItem(
                 detectTapGestures(
                     onTap = {
                         if (
-                            !commentExpansionTransform.playerGesturesEnabled ||
+                            !playerGesturesEnabled ||
                             !shouldHandlePortraitTapGesture(scale = scale)
                         ) {
                             return@detectTapGestures
@@ -2175,7 +2182,7 @@ private fun VideoPageItem(
                     },
                     onDoubleTap = { offset ->
                         if (
-                            !commentExpansionTransform.playerGesturesEnabled ||
+                            !playerGesturesEnabled ||
                             !shouldHandlePortraitTapGesture(scale = scale) ||
                             !isCurrentPage
                         ) {
@@ -2239,7 +2246,7 @@ private fun VideoPageItem(
                     },
                     onLongPress = {
                         if (
-                            !commentExpansionTransform.playerGesturesEnabled ||
+                            !playerGesturesEnabled ||
                             !shouldHandlePortraitLongPressGesture(scale = scale)
                         ) {
                             return@detectTapGestures
@@ -2271,13 +2278,13 @@ private fun VideoPageItem(
                 progressState.duration,
                 scale,
                 isCurrentPage,
-                commentExpansionTransform.playerGesturesEnabled
+                playerGesturesEnabled
             ) {
                 detectHorizontalDragGestures(
                     onDragStart = { 
                         if (
                             isCurrentPage &&
-                            commentExpansionTransform.playerGesturesEnabled &&
+                            playerGesturesEnabled &&
                             progressState.duration > 0 &&
                             shouldHandlePortraitSeekGesture(scale = scale)
                         ) {
@@ -2864,6 +2871,8 @@ private fun VideoPageItem(
             onAuthorClick = {
                 if (isCurrentPage && (portraitDetailInfo?.owner?.mid ?: 0L) > 0L) {
                     showUpPreview = true
+                    // Sync before next frame so pager/page pointerInput release immediately.
+                    onUpPreviewActiveChange(true)
                 }
             },
             onLikeClick = {
@@ -3291,15 +3300,20 @@ private fun VideoPageItem(
                 followerCount = currentSuccess?.ownerFollowerCount,
                 videoCount = currentSuccess?.ownerVideoCount,
                 seedVideos = upPreviewSeedVideos,
-                onDismiss = { showUpPreview = false },
+                onDismiss = {
+                    showUpPreview = false
+                    onUpPreviewActiveChange(false)
+                },
                 onFollowClick = { onToggleFollow(authorMid, isFollowing) },
                 onEnterSpace = { mid ->
                     showUpPreview = false
+                    onUpPreviewActiveChange(false)
                     onExitSnapshot(bvid, exoPlayer.currentPosition, snapshotCid)
                     onUserClick(mid)
                 },
                 onVideoClick = { targetBvid, _ ->
                     showUpPreview = false
+                    onUpPreviewActiveChange(false)
                     onRequestVideoChange(targetBvid)
                 },
             )
