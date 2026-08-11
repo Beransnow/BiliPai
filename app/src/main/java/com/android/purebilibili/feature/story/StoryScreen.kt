@@ -109,7 +109,7 @@ fun StoryScreen(
 
             portraitFeed == null -> {
                 StoryErrorState(
-                    message = "暂时没有可播放的竖屏视频",
+                    message = "暂时没有可播放的推荐视频",
                     onRetry = viewModel::refresh,
                     modifier = Modifier.align(Alignment.Center)
                 )
