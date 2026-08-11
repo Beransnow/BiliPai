@@ -14,6 +14,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
@@ -65,9 +66,10 @@ import com.android.purebilibili.core.theme.iOSPurple
 import com.android.purebilibili.core.theme.iOSTeal
 import com.android.purebilibili.core.theme.resolveAccessibleContainerColors
 import com.android.purebilibili.feature.settings.SettingsLocalBackHandler
+import com.android.purebilibili.feature.settings.ui.SettingsBottomBarScrollEffect
 import com.android.purebilibili.feature.settings.ui.SettingsPageScaffold
 import com.android.purebilibili.core.ui.AppAlertDialog
-import com.android.purebilibili.core.ui.resolveBottomSafeAreaPadding
+import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
 import com.android.purebilibili.core.ui.adaptiveSquircleBackground
 import com.android.purebilibili.core.ui.components.AppAdaptiveSwitch
 import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
@@ -192,7 +194,7 @@ fun PluginsScreen(
         }
     }
 
-    val bottomContentPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val bottomContentPadding = LocalBottomBarContentPadding.current
 
     SettingsPageScaffold(
         title = screenTitle,
@@ -224,10 +226,9 @@ fun PluginsContent(
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val scope = rememberCoroutineScope()
-    val contentBottomPadding = resolveBottomSafeAreaPadding(
-        navigationBarsBottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
-        extraBottomPadding = 16.dp
-    )
+    val listState = rememberLazyListState()
+    SettingsBottomBarScrollEffect(listState)
+    val contentBottomPadding = LocalBottomBarContentPadding.current + 16.dp
     
     // Statistics
     val totalPlugins = plugins.size + jsonPlugins.size
@@ -494,6 +495,7 @@ fun PluginsContent(
     }
 
     LazyColumn(
+        state = listState,
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(top = 16.dp, bottom = contentBottomPadding)
     ) {
@@ -2073,7 +2075,7 @@ private fun PluginDetailScreen(
     onBack: () -> Unit,
 ) {
     val plugin = pluginInfo.plugin
-    val bottomContentPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val bottomContentPadding = LocalBottomBarContentPadding.current
     SettingsPageScaffold(
         title = plugin.name,
         onBack = onBack,
