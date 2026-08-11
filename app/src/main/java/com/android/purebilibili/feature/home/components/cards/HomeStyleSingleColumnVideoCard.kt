@@ -118,6 +118,7 @@ internal fun HomeStyleSingleColumnVideoCard(
         )
     }
     val cardBounds = remember { object { var value: Rect? = null } }
+    val coverBounds = remember { object { var value: Rect? = null } }
     val cardShape = AppShapes.container(ContainerLevel.Card)
     val coverShape = AppShapes.container(ContainerLevel.Field)
     val useCardShellSharedBounds = shouldUseVideoCardShellSharedBounds(
@@ -140,6 +141,7 @@ internal fun HomeStyleSingleColumnVideoCard(
                 screenHeight = screenHeightPx,
                 density = density.density,
                 sourceCornerDp = 12,
+                coverBounds = coverBounds.value,
             )
         }
         if (sharedTransitionEnabled && !transitionEnabled) {
@@ -183,6 +185,9 @@ internal fun HomeStyleSingleColumnVideoCard(
             modifier = Modifier
                 .width(HOME_STYLE_SINGLE_COLUMN_COVER_WIDTH)
                 .height(coverHeight)
+                .onGloballyPositioned { coordinates ->
+                    coverBounds.value = coordinates.boundsInRoot()
+                }
                 .clip(coverShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant),
         ) {

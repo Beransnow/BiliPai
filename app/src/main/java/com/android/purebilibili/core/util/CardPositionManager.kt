@@ -28,6 +28,10 @@ object CardPositionManager {
      */
     var lastClickedCardBounds: Rect? = null
         private set
+
+    /** 最后点击卡片的真实封面边界（在 Root 坐标系中）。 */
+    var lastClickedCoverBounds: Rect? = null
+        private set
     
     /**
      * 最后点击的卡片中心点（归一化坐标 0-1）
@@ -80,6 +84,7 @@ object CardPositionManager {
     ) {
         lastClickedVideoSourceKey = null
         lastClickedVideoSourceCornerDp = null
+        lastClickedCoverBounds = null
         lastClickedCardBounds = bounds
         lastScreenDensity = density
         isSingleColumnCard = isSingleColumn
@@ -113,7 +118,8 @@ object CardPositionManager {
         isSingleColumn: Boolean = false,
         density: Float = 3f,
         bottomBarHeightDp: Float = 80f,
-        sourceCornerDp: Int? = null
+        sourceCornerDp: Int? = null,
+        coverBounds: Rect? = null,
     ) {
         recordCardPosition(
             bounds = bounds,
@@ -131,6 +137,9 @@ object CardPositionManager {
             null
         }
         lastClickedVideoSourceCornerDp = sourceCornerDp?.coerceAtLeast(0)
+        lastClickedCoverBounds = coverBounds
+            ?.takeIf { it.width > 1f && it.height > 1f }
+            ?.let { Rect(it.left, it.top, it.right, it.bottom) }
     }
     
     /**
@@ -138,6 +147,7 @@ object CardPositionManager {
      */
     fun clear() {
         lastClickedCardBounds = null
+        lastClickedCoverBounds = null
         lastClickedCardCenter = null
         lastClickedVideoSourceKey = null
         lastClickedVideoSourceCornerDp = null

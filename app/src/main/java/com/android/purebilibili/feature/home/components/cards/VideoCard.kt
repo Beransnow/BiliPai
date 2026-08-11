@@ -748,7 +748,10 @@ internal fun ElegantVideoCard(
                 screenWidth = screenMetrics.widthPx,
                 screenHeight = screenMetrics.heightPx,
                 density = screenMetrics.density,
-                sourceCornerDp = cardCornerRadius.value.roundToInt()
+                sourceCornerDp = cardCornerRadius.value.roundToInt(),
+                coverBounds = coverCoordsRef.value
+                    ?.takeIf { it.isAttached }
+                    ?.boundsInRoot(),
             )
         }
         onClick(video.bvid, video.cid)

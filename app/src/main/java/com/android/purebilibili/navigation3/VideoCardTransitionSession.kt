@@ -14,6 +14,7 @@ internal data class VideoCardTransitionSession(
     val sourceRoute: String?,
     val sourceKey: String?,
     val cardBounds: Rect?,
+    val coverBounds: Rect?,
     val sourceCornerDp: Int?,
     val cardSourceDirection: BiliPaiNavCardSourceDirection,
     val coverIdentity: String?,
@@ -28,6 +29,7 @@ internal data class VideoCardTransitionSession(
             bvid: String,
             source: BiliPaiVideoSource,
             cardBounds: Rect?,
+            coverBounds: Rect? = null,
             sourceCornerDp: Int?,
             cardSourceDirection: BiliPaiNavCardSourceDirection,
             coverIdentity: String?,
@@ -45,6 +47,9 @@ internal data class VideoCardTransitionSession(
                 sourceRoute = normalizeBiliPaiVideoSourceRoute(source.route),
                 sourceKey = source.key?.trim()?.takeIf(String::isNotEmpty),
                 cardBounds = cardBounds?.takeIf { ownsRecordedGeometry }?.let {
+                    Rect(it.left, it.top, it.right, it.bottom)
+                },
+                coverBounds = coverBounds?.takeIf { ownsRecordedGeometry }?.let {
                     Rect(it.left, it.top, it.right, it.bottom)
                 },
                 sourceCornerDp = sourceCornerDp

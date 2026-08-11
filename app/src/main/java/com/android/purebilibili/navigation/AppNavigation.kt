@@ -677,6 +677,7 @@ fun AppNavigation(
             sourceCornerDp = navigation3ReturnSession.transitionSession?.sourceCornerDp,
             coverIdentity = navigation3ReturnSession.transitionSession?.coverIdentity,
             sourceBounds = navigation3ReturnSession.transitionSession?.cardBounds,
+            sourceCoverBounds = navigation3ReturnSession.transitionSession?.coverBounds,
         )
         fun captureCardSourceDirectionForSession(): BiliPaiNavCardSourceDirection {
             return resolveBiliPaiNavCardSourceDirection(
@@ -694,6 +695,7 @@ fun AppNavigation(
             bvid = bvid,
             source = source,
             cardBounds = CardPositionManager.lastClickedCardBounds,
+            coverBounds = CardPositionManager.lastClickedCoverBounds,
             sourceCornerDp = CardPositionManager.lastClickedVideoSourceCornerDp,
             cardSourceDirection = captureCardSourceDirectionForSession(),
             coverIdentity = coverIdentity,

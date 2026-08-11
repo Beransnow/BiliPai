@@ -315,12 +315,14 @@ internal fun BiliPaiNavDisplayHost(
         videoCardProgressProvider,
         videoCardGestureProvider,
         sourceMetadata.sourceBounds,
+        sourceMetadata.sourceCoverBounds,
     ) {
         MiuixVideoCardTransitionState(
             enabled = cardMorphAvailable,
             progressProvider = videoCardProgressProvider,
             isGestureInProgressProvider = videoCardGestureProvider,
             sourceBoundsProvider = { sourceMetadata.sourceBounds },
+            sourceCoverBoundsProvider = { sourceMetadata.sourceCoverBounds },
         )
     }
     // 恢复 0.2.2 的预测返回背景链路：目标返回页（栈前一 key）在预测返回手势中

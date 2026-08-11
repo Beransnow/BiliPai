@@ -18,6 +18,8 @@ internal data class MiuixVideoCardTransitionState(
     val isGestureInProgressProvider: () -> Boolean = { false },
     /** 点击时冻结的整卡落点，供飞行详情壳内构造来源卡内容。 */
     val sourceBoundsProvider: () -> Rect? = { null },
+    /** 点击时冻结的真实封面落点；不可由卡宽或固定宽高比推算。 */
+    val sourceCoverBoundsProvider: () -> Rect? = { null },
 )
 
 internal val LocalMiuixVideoCardTransitionState = compositionLocalOf {

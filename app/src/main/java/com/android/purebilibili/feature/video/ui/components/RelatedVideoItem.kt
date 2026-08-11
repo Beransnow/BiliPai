@@ -215,6 +215,7 @@ fun RelatedVideoItem(
         )
     }
     val cardCoordinatesRef = remember { object { var value: LayoutCoordinates? = null } }
+    val coverCoordinatesRef = remember { object { var value: LayoutCoordinates? = null } }
     val triggerRelatedVideoClick = {
         cardCoordinatesRef.value
             ?.takeIf { it.isAttached }
@@ -227,7 +228,10 @@ fun RelatedVideoItem(
                     screenWidth = screenWidthPx,
                     screenHeight = screenHeightPx,
                     density = densityValue,
-                    sourceCornerDp = 12
+                    sourceCornerDp = 12,
+                    coverBounds = coverCoordinatesRef.value
+                        ?.takeIf { it.isAttached }
+                        ?.boundsInRoot(),
                 )
             }
         if (shouldDeferRelatedVideoNavigationForSharedTransition(
@@ -296,6 +300,9 @@ fun RelatedVideoItem(
             modifier = Modifier
                 .width(coverWidth)
                 .height(coverHeight)
+                .onGloballyPositioned { coordinates ->
+                    coverCoordinatesRef.value = coordinates
+                }
                 .clip(coverShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {

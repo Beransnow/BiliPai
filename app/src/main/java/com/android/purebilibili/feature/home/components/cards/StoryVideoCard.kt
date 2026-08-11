@@ -190,6 +190,7 @@ internal fun StoryVideoCard(
     
     //  记录卡片位置
     var cardBounds by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
+    var coverBounds by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
     val triggerCardClick = {
         cardBounds?.let { bounds ->
             CardPositionManager.recordVideoCardPosition(
@@ -199,7 +200,8 @@ internal fun StoryVideoCard(
                 screenWidth = screenWidthPx,
                 screenHeight = screenHeightPx,
                 isSingleColumn = !transitionEnabled,
-                sourceCornerDp = cardCornerRadius.value.roundToInt()
+                sourceCornerDp = cardCornerRadius.value.roundToInt(),
+                coverBounds = coverBounds,
             )
         }
         onClick(video.bvid, 0)
@@ -329,6 +331,9 @@ internal fun StoryVideoCard(
                 )
                 .testTag("home_story_video_cover")
                 .aspectRatio(coverAspectRatio)
+                .onGloballyPositioned { coordinates ->
+                    coverBounds = coordinates.boundsInRoot()
+                }
                 .clip(coverShape)
                 .background(MaterialTheme.colorScheme.surfaceVariant) // 封面占位色
         ) {

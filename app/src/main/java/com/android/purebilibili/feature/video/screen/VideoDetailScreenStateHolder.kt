@@ -3754,13 +3754,9 @@ internal fun VideoDetailScreenStateHolder(
                             }
                         }
 
-                        val miuixCardTransitionState =
-                            com.android.purebilibili.core.ui.transition
-                                .LocalMiuixVideoCardTransitionState.current
-                        Box(modifier = Modifier.fillMaxSize()) {
-                            Box(
-                                modifier = Modifier
-                                .matchParentSize()
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
                                 .background(
                                     if (suppressPhoneDetailBodyForDirectPortrait) {
                                         Color.Black
@@ -4046,25 +4042,26 @@ internal fun VideoDetailScreenStateHolder(
                                     }
                                 }
                             }
-                    }
-                        val sourceCardInfo = (uiState as? VideoPlaybackUiState.Success)?.info
-                        if (
-                            sourceCardInfo != null &&
-                            miuixCardTransitionState.enabled &&
-                            !suppressPhoneDetailBodyForDirectPortrait
-                        ) {
-                            VideoDetailReturnSourceCardChrome(
-                                info = sourceCardInfo,
-                                sourceBounds = miuixCardTransitionState.sourceBoundsProvider(),
-                                morphDepthProgressProvider =
-                                    miuixCardTransitionState.progressProvider,
-                                modifier = Modifier
-                                    .align(Alignment.TopStart)
-                                    .offset(y = -playerTopInset),
-                            )
-                        }
-                        }
                     }  // 📱 手机竖屏布局结束（Column）
+                    val miuixCardTransitionState =
+                        com.android.purebilibili.core.ui.transition
+                            .LocalMiuixVideoCardTransitionState.current
+                    val sourceCardInfo = (uiState as? VideoPlaybackUiState.Success)?.info
+                    if (
+                        sourceCardInfo != null &&
+                        miuixCardTransitionState.enabled &&
+                        !suppressPhoneDetailBodyForDirectPortrait
+                    ) {
+                        VideoDetailReturnSourceCardChrome(
+                            info = sourceCardInfo,
+                            sourceBounds = miuixCardTransitionState.sourceBoundsProvider(),
+                            sourceCoverBounds =
+                                miuixCardTransitionState.sourceCoverBoundsProvider(),
+                            morphDepthProgressProvider = miuixCardTransitionState.progressProvider,
+                            modifier = Modifier
+                                .align(Alignment.TopStart),
+                        )
+                    }
                     }  // Box with nested scroll
                 }  // else shouldUseSplitLayout
             }  // else targetIsLandscape

@@ -42,7 +42,7 @@ internal fun resolveMiuixVideoCardDepthProgress(relativeDepth: Float): Float =
 /**
  * Keeps the corner circular in screen space while the outer card layer scales non-uniformly.
  * A regular RoundedCornerShape is scaled together with the layer and becomes too small on the
- * compressed axis, which exposes the retained source card at the end of a 16:9 return.
+ * compressed axis, which exposes the retained source card near the end of a card return.
  */
 internal fun resolveMiuixVideoCardClipRadii(
     sourceCornerPx: Float,

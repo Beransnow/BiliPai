@@ -17,6 +17,7 @@ internal data class BiliPaiNavSourceMetadata(
     val sourceCornerDp: Int? = null,
     val coverIdentity: String? = null,
     val sourceBounds: Rect? = null,
+    val sourceCoverBounds: Rect? = null,
 ) {
     val sharedTransitionEntryReady: Boolean
         get() = clickedBoundsRecorded
@@ -95,6 +96,7 @@ internal fun resolveBiliPaiNavSourceMetadata(
     sourceCornerDp: Int? = null,
     coverIdentity: String? = null,
     sourceBounds: Rect? = null,
+    sourceCoverBounds: Rect? = null,
 ): BiliPaiNavSourceMetadata {
     return BiliPaiNavSourceMetadata(
         sourceKey = sourceKey,
@@ -105,5 +107,6 @@ internal fun resolveBiliPaiNavSourceMetadata(
         sourceCornerDp = sourceCornerDp?.coerceAtLeast(0),
         coverIdentity = coverIdentity?.trim()?.takeIf(String::isNotEmpty),
         sourceBounds = sourceBounds,
+        sourceCoverBounds = sourceCoverBounds,
     )
 }
