@@ -324,14 +324,14 @@ class MainActivityAppCompatContractTest {
     }
 
     @Test
-    fun blueSnowMaidAdaptiveForegrounds_shouldFillRoundMaskWithoutOuterShell() {
+    fun blueSnowMaidAdaptiveForegrounds_shouldKeepThemeAwareOuterShell() {
         listOf(
             "drawable/ic_launcher_blue_snow_maid_background.xml",
             "drawable/ic_launcher_blue_snow_maid_background_light.xml"
         ).forEach { resourcePath ->
             assertTrue(
-                loadResourceText(resourcePath).contains("#FF0A9FE8"),
-                "$resourcePath should extend the light blue artwork to the adaptive-icon mask"
+                loadResourceText(resourcePath).contains("#FFFFFFFF"),
+                "$resourcePath should keep a light outer field around the circular portrait"
             )
         }
         listOf(
@@ -339,8 +339,8 @@ class MainActivityAppCompatContractTest {
             "drawable-night/ic_launcher_blue_snow_maid_background.xml"
         ).forEach { resourcePath ->
             assertTrue(
-                loadResourceText(resourcePath).contains("#FF087CE8"),
-                "$resourcePath should extend the dark blue artwork without adding a black shell"
+                loadResourceText(resourcePath).contains("#FF090A0C"),
+                "$resourcePath should keep a dark outer field around the circular portrait"
             )
         }
         assertTrue(
@@ -358,10 +358,7 @@ class MainActivityAppCompatContractTest {
             )
         }
 
-        listOf(
-            "ic_launcher_blue_snow_maid_foreground.png",
-            "ic_launcher_blue_snow_maid_front_foreground.png"
-        ).forEach { fileName ->
+        listOf("ic_launcher_blue_snow_maid_foreground.png").forEach { fileName ->
             val rows = readPngRgbaRows(loadResourceFile("mipmap-xxxhdpi/$fileName"))
             val imageWidth = rows.first().size / 4
             val opaqueXs = buildList {
@@ -373,10 +370,28 @@ class MainActivityAppCompatContractTest {
             }
             val foregroundWidthRatio = (opaqueXs.max() - opaqueXs.min() + 1).toFloat() / imageWidth
             assertTrue(
-                foregroundWidthRatio in 0.66f..0.68f,
-                "$fileName should fill Android's 72dp adaptive-icon mask so round launchers do not reveal an outer ring"
+                foregroundWidthRatio in 0.57f..0.59f,
+                "$fileName should preserve the circular portrait and theme-aware outer field on rounded-square launchers"
             )
         }
+
+        val frontRows = readPngRgbaRows(
+            loadResourceFile("mipmap-xxxhdpi/ic_launcher_blue_snow_maid_front_foreground.png")
+        )
+        val frontWidth = frontRows.first().size / 4
+        val frontOpaqueXs = buildList {
+            frontRows.forEach { row ->
+                for (x in 0 until frontWidth) {
+                    if (row[x * 4 + 3] != 0) add(x)
+                }
+            }
+        }
+        val frontWidthRatio =
+            (frontOpaqueXs.max() - frontOpaqueXs.min() + 1).toFloat() / frontWidth
+        assertTrue(
+            frontWidthRatio in 0.57f..0.59f,
+            "Front maid foreground should preserve the same theme-aware outer field without being cropped"
+        )
 
         val announcementRows = readPngRgbaRows(
             loadResourceFile("mipmap-xxxhdpi/ic_launcher_blue_snow_maid_announcement_foreground.png")
@@ -447,11 +462,11 @@ class MainActivityAppCompatContractTest {
     }
 
     @Test
-    fun blueSnowMaidLauncherIcons_shouldUseCircularFallbacksWithoutSquareShells() {
+    fun blueSnowMaidLauncherIcons_shouldUseThemeAwareAdaptiveShellsAndCircularFallbacks() {
         assertTrue(
             loadResourceText("drawable-night/ic_launcher_blue_snow_maid_background.xml")
-                .contains("#FF087CE8"),
-            "Dark mode adaptive icons should continue the portrait's blue field"
+                .contains("#FF090A0C"),
+            "Dark mode adaptive icons should use the dark outer field around the circular portrait"
         )
         assertTrue(
             loadResourceText("drawable-night/ic_launcher_blue_snow_maid_announcement_background.xml")
