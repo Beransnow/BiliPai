@@ -2078,15 +2078,31 @@ private fun AppearanceUiPresetDescriptionCard(
     summary: String
 ) {
     val icon = rememberAppSparklesIcon()
-    val containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.44f)
-    val contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-    val borderColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)
+    val colorScheme = MaterialTheme.colorScheme
+    val cardColors = remember(colorScheme) {
+        resolveAccessibleContainerColors(
+            containerColor = colorScheme.primaryContainer.copy(alpha = 0.44f),
+            contentColor = colorScheme.onPrimaryContainer,
+            backgroundColor = colorScheme.surface,
+            fallbackContentColors = listOf(colorScheme.onSurface, colorScheme.onBackground),
+        )
+    }
+    val iconColors = remember(colorScheme, cardColors.containerColor) {
+        resolveAccessibleContainerColors(
+            containerColor = colorScheme.primary.copy(alpha = 0.14f),
+            contentColor = colorScheme.primary,
+            backgroundColor = cardColors.containerColor,
+            fallbackContentColors = listOf(colorScheme.onSurface),
+            minimumContrast = ACCESSIBLE_UI_MIN_CONTRAST,
+        )
+    }
+    val borderColor = colorScheme.outlineVariant.copy(alpha = 0.55f)
 
     AdaptivePlainTooltipBox(text = summary) {
         AppSurface(
             shape = AppShapes.borderedContainer(ContainerLevel.Dialog),
-            color = containerColor,
-            contentColor = contentColor,
+            color = cardColors.containerColor,
+            contentColor = cardColors.contentColor,
             tonalElevation = 0.dp,
             border = androidx.compose.foundation.BorderStroke(1.dp, borderColor)
         ) {
@@ -2100,8 +2116,8 @@ private fun AppearanceUiPresetDescriptionCard(
                 AppSurface(
                     modifier = Modifier.size(34.dp),
                     shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.14f),
-                    contentColor = MaterialTheme.colorScheme.primary
+                    color = iconColors.containerColor,
+                    contentColor = iconColors.contentColor,
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         AppIcon(
@@ -2124,7 +2140,7 @@ private fun AppearanceUiPresetDescriptionCard(
                     AppText(
                         text = summary,
                         style = MaterialTheme.typography.bodySmall,
-                        color = contentColor.copy(alpha = 0.82f)
+                        color = cardColors.contentColor
                     )
                 }
             }

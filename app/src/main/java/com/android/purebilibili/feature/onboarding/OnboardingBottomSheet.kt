@@ -54,6 +54,7 @@ import com.android.purebilibili.core.ui.rememberAppBottomSheetMotion
 import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.components.AppOutlinedButton
 import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.theme.resolveAccessibleContainerColors
 
 /**
  *  iOS 风格新手引导底部弹窗
@@ -408,9 +409,19 @@ private fun WelcomePage(hazeState: HazeState) {
         
         Spacer(modifier = Modifier.height(32.dp))
         
+        val disclaimerColors = resolveAccessibleContainerColors(
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f),
+            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+            backgroundColor = MaterialTheme.colorScheme.surface,
+            fallbackContentColors = listOf(
+                MaterialTheme.colorScheme.onSurface,
+                MaterialTheme.colorScheme.onBackground,
+            ),
+        )
+
         // 免责声明
         AppSurface(
-            color = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f),
+            color = disclaimerColors.containerColor,
             shape = RoundedCornerShape(12.dp),
             modifier = Modifier.graphicsLayer {
                 alpha = animatedItems[5].value
@@ -420,7 +431,7 @@ private fun WelcomePage(hazeState: HazeState) {
             AppText(
                 "本应用仅供学习交流，所有内容版权归 Bilibili 及原作者。",
                 fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.8f),
+                color = disclaimerColors.contentColor,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(12.dp),
                 lineHeight = 16.sp

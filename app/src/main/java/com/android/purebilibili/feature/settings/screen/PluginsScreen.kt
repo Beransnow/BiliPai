@@ -63,6 +63,7 @@ import com.android.purebilibili.core.theme.iOSGreen
 import com.android.purebilibili.core.theme.iOSOrange
 import com.android.purebilibili.core.theme.iOSPurple
 import com.android.purebilibili.core.theme.iOSTeal
+import com.android.purebilibili.core.theme.resolveAccessibleContainerColors
 import com.android.purebilibili.feature.settings.SettingsLocalBackHandler
 import com.android.purebilibili.feature.settings.ui.SettingsPageScaffold
 import com.android.purebilibili.core.ui.AppAlertDialog
@@ -2187,6 +2188,19 @@ private fun PluginCapabilityChips(
 ) {
     val models = remember(capabilities) { resolvePluginCapabilityUiModels(capabilities) }
     if (models.isEmpty()) return
+    val colorScheme = MaterialTheme.colorScheme
+    val approvalColors = resolveAccessibleContainerColors(
+        containerColor = colorScheme.tertiaryContainer.copy(alpha = 0.62f),
+        contentColor = colorScheme.onTertiaryContainer,
+        backgroundColor = colorScheme.surface,
+        fallbackContentColors = listOf(colorScheme.onSurface, colorScheme.onBackground),
+    )
+    val standardColors = resolveAccessibleContainerColors(
+        containerColor = colorScheme.surfaceVariant.copy(alpha = 0.62f),
+        contentColor = colorScheme.onSurfaceVariant,
+        backgroundColor = colorScheme.surface,
+        fallbackContentColors = listOf(colorScheme.onSurface, colorScheme.onBackground),
+    )
     FlowRow(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -2196,9 +2210,9 @@ private fun PluginCapabilityChips(
             AppSurface(
                 shape = RoundedCornerShape(6.dp),
                 color = if (showAuthorizationLabels && model.requiresExplicitApproval) {
-                    MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.62f)
+                    approvalColors.containerColor
                 } else {
-                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.62f)
+                    standardColors.containerColor
                 }
             ) {
                 AppText(
@@ -2209,9 +2223,9 @@ private fun PluginCapabilityChips(
                     },
                     style = MaterialTheme.typography.labelSmall,
                     color = if (showAuthorizationLabels && model.requiresExplicitApproval) {
-                        MaterialTheme.colorScheme.onTertiaryContainer
+                        approvalColors.contentColor
                     } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
+                        standardColors.contentColor
                     },
                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
                 )
