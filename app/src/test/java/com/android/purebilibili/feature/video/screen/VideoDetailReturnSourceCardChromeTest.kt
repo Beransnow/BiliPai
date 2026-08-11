@@ -3,6 +3,7 @@ package com.android.purebilibili.feature.video.screen
 import androidx.compose.ui.geometry.Rect
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
+import com.android.purebilibili.core.ui.transition.resolveVideoCardSourceChromeVisualFrame
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -24,11 +25,41 @@ class VideoDetailReturnSourceCardChromeTest {
         assertTrue(layout.canRender)
         assertEquals(VideoCardSourceLayout.STACKED, layout.layout)
         assertEquals(0.5f, layout.sourceScale, 0.0001f)
+        assertEquals(500f, layout.cardWidthPx, 0.0001f)
+        assertEquals(600f, layout.cardHeightPx, 0.0001f)
+        assertEquals(375f, layout.coverHeightPx, 0.0001f)
         assertEquals(500f, layout.infoWidthPx, 0.0001f)
         assertEquals(225f, layout.infoHeightPx, 0.0001f)
-        // Viewport-space cover bottom: (475 - 100) / 0.5 = 750. Parent must be the full entry.
-        assertEquals(0f, layout.anchorXInViewportPx, 0.0001f)
-        assertEquals(750f, layout.anchorYInViewportPx, 0.0001f)
+        // Info top = cover bottom in entry space: 375 / 0.5 = 750.
+        assertEquals(0f, layout.infoAnchorXInViewportPx, 0.0001f)
+        assertEquals(750f, layout.infoAnchorYInViewportPx, 0.0001f)
+        assertEquals(0f, layout.cardAnchorXInViewportPx, 0.0001f)
+        assertEquals(0f, layout.cardAnchorYInViewportPx, 0.0001f)
+    }
+
+    @Test
+    fun landedGeometryMatchesStationaryCardCoverInfoSplit() {
+        val layout = resolveVideoDetailReturnSourceCardLayout(
+            viewportWidthPx = 1000f,
+            sourceBounds = Rect(left = 20f, top = 100f, right = 520f, bottom = 700f),
+            sourceCoverBounds = Rect(left = 20f, top = 100f, right = 520f, bottom = 475f),
+        )
+        // Cover + info fill the full card (home stacked card).
+        assertEquals(
+            layout.coverHeightPx + layout.infoHeightPx,
+            layout.cardHeightPx,
+            0.0001f,
+        )
+        assertEquals(
+            layout.coverHeightPx / layout.sourceScale,
+            resolveVideoDetailReturnCoverHeightInEntryPx(layout),
+            0.0001f,
+        )
+        // Resting chrome frame: alpha 1, scale multiplier 1 (no boost at land).
+        val landed = resolveVideoCardSourceChromeVisualFrame(morphDepthProgress = 0f)
+        assertEquals(1f, landed.alpha, 0.0001f)
+        assertEquals(1f, landed.layoutScaleMultiplier, 0.0001f)
+        assertEquals(1f, landed.handoffProgress, 0.0001f)
     }
 
     @Test
@@ -57,10 +88,10 @@ class VideoDetailReturnSourceCardChromeTest {
         assertEquals(VideoCardSourceLayout.SIDE_BY_SIDE, layout.layout)
         assertEquals(0.968f, layout.sourceScale, 0.001f)
         assertEquals(984f - 166f, layout.infoWidthPx, 0.0001f)
-        assertEquals(574f - 406f, layout.infoHeightPx, 0.0001f)
-        // (cover.right - card.left) / sourceScale
-        assertEquals((166f - 16f) / layout.sourceScale, layout.anchorXInViewportPx, 0.001f)
-        assertEquals((406f - 400f) / layout.sourceScale, layout.anchorYInViewportPx, 0.001f)
+        assertEquals(580f - 400f, layout.infoHeightPx, 0.0001f)
+        assertEquals((166f - 16f) / layout.sourceScale, layout.infoAnchorXInViewportPx, 0.001f)
+        assertEquals(0f, layout.infoAnchorYInViewportPx, 0.001f)
+        assertEquals(layout.cardHeightPx, layout.coverHeightPx, 0.0001f)
     }
 
     @Test
@@ -111,7 +142,6 @@ class VideoDetailReturnSourceCardChromeTest {
         val chromeCall = holder
             .substringAfter("VideoDetailReturnSourceCardChrome(")
             .substringBefore("Full-viewport source-card chrome host")
-        // Chrome is a sibling of phone/tablet content on the shared full-entry host Box.
         assertTrue(holder.contains("手机竖屏布局结束（Column）"))
         assertTrue(holder.contains("Full-viewport source-card chrome host (phone + tablet)"))
         val phoneBranchEnd = holder.indexOf("phone portrait branch of useTabletLayout")
@@ -120,7 +150,9 @@ class VideoDetailReturnSourceCardChromeTest {
         assertTrue(chromeCall.contains("align(Alignment.TopStart)"))
         assertTrue(chromeCall.contains("sourceLayout = miuixCardTransitionState.sourceLayout"))
         assertTrue(chromeCall.contains("sourceChromeSnapshot = miuixCardTransitionState.sourceChromeSnapshot"))
-        // Snapshot keeps info region alive while detail is still Loading.
         assertTrue(holder.contains("sourceChromeSnapshot != null"))
+        // Whole-card shell behind player + cover height clip for flush land.
+        assertTrue(holder.contains("landingCoverHeightEntryPx"))
+        assertTrue(holder.contains("resolveVideoDetailReturnCoverHeightInEntryPx"))
     }
 }

@@ -126,10 +126,10 @@ internal data class VideoCardSecondaryContentVisualFrame(
 )
 
 /**
- * Source-card chrome (封面下方) visual frame; complementary to [VideoCardSecondaryContentVisualFrame].
+ * Source-card chrome visual frame; complementary to [VideoCardSecondaryContentVisualFrame].
  *
- * [layoutScaleMultiplier] multiplies the geometric inverse scale (1/sourceScale): starts slightly
- * larger (closer to detail type size) and settles to 1 so text size eases into the card.
+ * [layoutScaleMultiplier] is always **1** at every handoff step so the resting frame matches the
+ * stationary list card (no mid-flight size boost that leaves a second plate at land).
  */
 internal data class VideoCardSourceChromeVisualFrame(
     val alpha: Float,
@@ -139,9 +139,6 @@ internal data class VideoCardSourceChromeVisualFrame(
 
 /** Detail body minimum uniform scale at full handoff (still readable mid-blend, not a hard pop). */
 internal const val VIDEO_CARD_SECONDARY_YIELD_MIN_SCALE = 0.88f
-
-/** Chrome starts this much larger than its resting inverse-scale, then eases down to 1. */
-internal const val VIDEO_CARD_SOURCE_CHROME_ENTER_SCALE_BOOST = 0.14f
 
 internal fun resolveVideoCardTimelineWindowProgress(
     progress: Float,
@@ -274,8 +271,7 @@ internal fun resolveVideoCardSecondaryContentVisualFrame(
 }
 
 /**
- * Source chrome alpha + size easing. [layoutScaleMultiplier] multiplies the geometric inverse
- * scale (1/sourceScale) so mid-handoff type size meets the shrinking detail body.
+ * Source chrome alpha. Geometry scale is fixed at inverse(sourceScale) so land == list card.
  *
  * [phase] / [isReturnGestureInProgress] keep the API aligned with secondary content; alpha is
  * driven by morph depth so predictive HELD seeks still animate chrome.
@@ -287,11 +283,9 @@ internal fun resolveVideoCardSourceChromeVisualFrame(
     isReturnGestureInProgress: Boolean = true,
 ): VideoCardSourceChromeVisualFrame {
     val handoff = resolveVideoCardSourceChromeReturnAlpha(morphDepthProgress)
-    // Early handoff: slightly larger than resting card type; settles to 1 as handoff completes.
-    val layoutScaleMultiplier = 1f + VIDEO_CARD_SOURCE_CHROME_ENTER_SCALE_BOOST * (1f - handoff)
     return VideoCardSourceChromeVisualFrame(
         alpha = handoff,
-        layoutScaleMultiplier = layoutScaleMultiplier.coerceAtLeast(1f),
+        layoutScaleMultiplier = 1f,
         handoffProgress = handoff,
     )
 }

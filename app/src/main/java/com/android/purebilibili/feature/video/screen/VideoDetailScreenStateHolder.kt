@@ -3550,6 +3550,24 @@ internal fun VideoDetailScreenStateHolder(
 
                         //  播放器容器按当前顶部避让高度计算，避免隐藏状态栏后留下黑边。
                         //  [修复] 始终保持播放器在 Composition 中，避免隐藏时重新创建导致重载
+                        // Landing: clip media to measured cover band so cover bottom is sharp
+                        // against the card shell (same as home VideoCard coverShape bottom=0).
+                        val miuixLandingState =
+                            com.android.purebilibili.core.ui.transition
+                                .LocalMiuixVideoCardTransitionState.current
+                        val landingCoverHeightEntryPx = run {
+                            if (!miuixLandingState.enabled) return@run 0f
+                            val viewportW = with(videoCardTransitionDensity) {
+                                configuration.screenWidthDp.dp.toPx()
+                            }
+                            val landingLayout = resolveVideoDetailReturnSourceCardLayout(
+                                viewportWidthPx = viewportW,
+                                sourceBounds = miuixLandingState.sourceBoundsProvider(),
+                                sourceCoverBounds = miuixLandingState.sourceCoverBoundsProvider(),
+                                sourceLayout = miuixLandingState.sourceLayout,
+                            )
+                            resolveVideoDetailReturnCoverHeightInEntryPx(landingLayout)
+                        }
                         Box(
                             modifier = playerContainerModifier
                                 .fillMaxWidth()
@@ -3568,6 +3586,24 @@ internal fun VideoDetailScreenStateHolder(
                                     },
                                 )
                                 .background(Color.Black)  // 黑色背景
+                                .drawWithContent {
+                                    val morphDepth = miuixLandingState.progressProvider()
+                                    val handoff =
+                                        com.android.purebilibili.core.ui.transition
+                                            .resolveVideoCardSourceChromeReturnAlpha(morphDepth)
+                                    if (handoff > 0.001f && landingCoverHeightEntryPx > 1f) {
+                                        clipRect(
+                                            left = 0f,
+                                            top = 0f,
+                                            right = size.width,
+                                            bottom = minOf(size.height, landingCoverHeightEntryPx),
+                                        ) {
+                                            this@drawWithContent.drawContent()
+                                        }
+                                    } else {
+                                        drawContent()
+                                    }
+                                }
                                 .clipToBounds()
                                 //  [PiP修复] 捕获视频播放器在屏幕上的位置
                                 .onGloballyPositioned { layoutCoordinates ->

@@ -489,9 +489,8 @@ class VideoCardReturnTimelineTest {
         )
         assertEquals(0.5f, chrome.alpha, 0.001f)
         assertEquals(1f, mid.alpha + chrome.alpha, 0.001f)
-        // Chrome starts larger than resting card type and eases down.
-        assertTrue(chrome.layoutScaleMultiplier > 1f)
-        assertTrue(chrome.layoutScaleMultiplier <= 1f + VIDEO_CARD_SOURCE_CHROME_ENTER_SCALE_BOOST)
+        // Geometry multiplier stays 1 so land frame matches the stationary list card.
+        assertEquals(1f, chrome.layoutScaleMultiplier, 0.0001f)
     }
 
     @Test
@@ -516,11 +515,10 @@ class VideoCardReturnTimelineTest {
             secondary.scale,
             0.02f,
         )
-        assertEquals(
-            1f + VIDEO_CARD_SOURCE_CHROME_ENTER_SCALE_BOOST * (1f - t),
-            chrome.layoutScaleMultiplier,
-            0.02f,
-        )
+        assertEquals(1f, chrome.layoutScaleMultiplier, 0.0001f)
+        val landed = resolveVideoCardSourceChromeVisualFrame(morphDepthProgress = 0f)
+        assertEquals(1f, landed.alpha, 0.0001f)
+        assertEquals(1f, landed.layoutScaleMultiplier, 0.0001f)
     }
 
     @Test
