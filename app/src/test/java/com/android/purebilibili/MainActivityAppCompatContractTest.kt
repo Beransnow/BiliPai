@@ -146,6 +146,12 @@ class MainActivityAppCompatContractTest {
         val iconNames = listOf(
             "ic_launcher_blue_snow_maid.png",
             "ic_launcher_blue_snow_maid_round.png",
+            "ic_launcher_blue_snow_maid_announcement.png",
+            "ic_launcher_blue_snow_maid_announcement_round.png",
+            "ic_launcher_blue_snow_maid_announcement_light.png",
+            "ic_launcher_blue_snow_maid_announcement_light_round.png",
+            "ic_launcher_blue_snow_maid_announcement_dark.png",
+            "ic_launcher_blue_snow_maid_announcement_dark_round.png",
             "ic_launcher_blue_snow_maid_front.png",
             "ic_launcher_blue_snow_maid_front_round.png",
             "ic_launcher_3d.png",
@@ -173,12 +179,28 @@ class MainActivityAppCompatContractTest {
     }
 
     @Test
-    fun blueSnowMaidAdaptiveForegrounds_shouldLeaveRoomForTheWhiteOuterShell() {
-        assertTrue(
-            loadResourceText("drawable/ic_launcher_blue_snow_maid_background.xml")
-                .contains("#FFFFFFFF"),
-            "Blue Snow Maid adaptive icons should use a pure white outer shell"
-        )
+    fun blueSnowMaidAdaptiveForegrounds_shouldFillRoundMaskWithoutOuterShell() {
+        listOf(
+            "drawable/ic_launcher_blue_snow_maid_background.xml",
+            "drawable/ic_launcher_blue_snow_maid_background_light.xml",
+            "drawable/ic_launcher_blue_snow_maid_announcement_background.xml"
+        ).forEach { resourcePath ->
+            assertTrue(
+                loadResourceText(resourcePath).contains("#FF0A9FE8"),
+                "$resourcePath should extend the light blue artwork to the adaptive-icon mask"
+            )
+        }
+        listOf(
+            "drawable/ic_launcher_blue_snow_maid_background_dark.xml",
+            "drawable/ic_launcher_blue_snow_maid_announcement_background_dark.xml",
+            "drawable-night/ic_launcher_blue_snow_maid_background.xml",
+            "drawable-night/ic_launcher_blue_snow_maid_announcement_background.xml"
+        ).forEach { resourcePath ->
+            assertTrue(
+                loadResourceText(resourcePath).contains("#FF087CE8"),
+                "$resourcePath should extend the dark blue artwork without adding a black shell"
+            )
+        }
 
         listOf(
             "ic_launcher_blue_snow_maid_foreground.png",
@@ -195,8 +217,8 @@ class MainActivityAppCompatContractTest {
             }
             val foregroundWidthRatio = (opaqueXs.max() - opaqueXs.min() + 1).toFloat() / imageWidth
             assertTrue(
-                foregroundWidthRatio in 0.57f..0.60f,
-                "$fileName should occupy about 58% of the 108dp adaptive layer so the portrait stays prominent without losing the white shell"
+                foregroundWidthRatio in 0.66f..0.68f,
+                "$fileName should fill Android's 72dp adaptive-icon mask so round launchers do not reveal an outer ring"
             )
         }
 
@@ -229,30 +251,29 @@ class MainActivityAppCompatContractTest {
     }
 
     @Test
-    fun blueSnowMaidNightIcons_shouldUseTelegramBlueCircleAndBlackShell() {
+    fun blueSnowMaidLauncherIcons_shouldUseFullBleedBlueCirclesWithoutShells() {
         assertTrue(
             loadResourceText("drawable-night/ic_launcher_blue_snow_maid_background.xml")
-                .contains("#FF090A0C"),
-            "Dark mode adaptive icons should use the near-black outer shell"
+                .contains("#FF087CE8"),
+            "Dark mode adaptive icons should continue the portrait's blue field"
         )
         assertTrue(
             loadResourceText("drawable-night/ic_launcher_blue_snow_maid_announcement_background.xml")
-                .contains("#FF090A0C"),
-            "Announcement icon should use the same near-black outer shell in dark mode"
+                .contains("#FF087CE8"),
+            "Announcement icon should use the same blue field in dark mode"
         )
         assertTrue(
             loadResourceText("mipmap-night-anydpi-v26/ic_launcher_blue_snow_maid_announcement.xml")
                 .contains("@drawable/ic_launcher_blue_snow_maid_announcement_background_dark"),
-            "Announcement adaptive icon should select an explicit all-black background in dark mode"
+            "Announcement adaptive icon should select the fixed dark-blue background in dark mode"
         )
         val announcementFallbackRows = readPngRgbaRows(
             loadResourceFile("mipmap-night-xxxhdpi/ic_launcher_blue_snow_maid_announcement_round.png")
         )
         val announcementCorner = announcementFallbackRows.first().take(4)
         assertTrue(
-            announcementCorner[0] == 9 && announcementCorner[1] == 10 &&
-                announcementCorner[2] == 12 && announcementCorner[3] == 255,
-            "Announcement fallback icon should cover the complete launcher mask with a near-black shell"
+            announcementCorner[3] == 0,
+            "Announcement fallback icon should be a circle instead of a square shell"
         )
 
         mapOf(
@@ -265,6 +286,8 @@ class MainActivityAppCompatContractTest {
             listOf(
                 "ic_launcher_blue_snow_maid.png",
                 "ic_launcher_blue_snow_maid_round.png",
+                "ic_launcher_blue_snow_maid_announcement.png",
+                "ic_launcher_blue_snow_maid_announcement_round.png",
                 "ic_launcher_blue_snow_maid_front.png",
                 "ic_launcher_blue_snow_maid_front_round.png"
             ).forEach { fileName ->
@@ -286,10 +309,11 @@ class MainActivityAppCompatContractTest {
         val darkRows = readPngRgbaRows(
             loadResourceFile("mipmap-night-xxxhdpi/ic_launcher_blue_snow_maid_front.png")
         )
-        val shellPixel = darkRows[30].slice(30 * 4 until 30 * 4 + 4)
-        val bluePixel = darkRows[30].slice(96 * 4 until 96 * 4 + 4)
-        assertTrue(shellPixel[0] <= 16 && shellPixel[1] <= 16 && shellPixel[2] <= 16 && shellPixel[3] == 255)
-        assertTrue(bluePixel[0] <= 32 && bluePixel[1] in 100..170 && bluePixel[2] >= 220 && bluePixel[3] == 255)
+        val edgeBluePixel = darkRows[4].slice(96 * 4 until 96 * 4 + 4)
+        assertTrue(
+            edgeBluePixel[3] > 0 && edgeBluePixel[2] > edgeBluePixel[0] + 80,
+            "Dark fallback icons should reach their circular edge with blue artwork, not a black rounded rectangle"
+        )
     }
 
     @Test
