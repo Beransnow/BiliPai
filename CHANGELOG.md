@@ -49,7 +49,7 @@
 
 ### 其它
 [修复] 自动连播/自动旋转等播放偏好读写恢复
-v0.2.3-beta.3(e471396b4)
+v0.2.3-beta.3(cc49271ed)
 
 格式规范见 [docs/wiki/CHANGELOG_GUIDE.md](docs/wiki/CHANGELOG_GUIDE.md)。社群：频道 [t.me/bilipai666](https://t.me/bilipai666) / 群 [t.me/bilipai888](https://t.me/bilipai888/1)。比较：[`0.2.3-beta.2...0.2.3-beta.3`](https://github.com/jay3-yy/BiliPai/compare/0.2.3-beta.2...0.2.3-beta.3)。
 
