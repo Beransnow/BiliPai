@@ -66,12 +66,24 @@ internal fun shouldFallbackGuestHotCommentReadOnEmptySuccess(
     data: ReplyData?
 ): Boolean {
     return primaryMode == CommentReadApiMode.GUEST &&
-        page == 1 &&
-        mode == 3 &&
-        shouldFallbackCommentReadOnEmptyRenderableSuccess(
+        shouldFallbackHotCommentReadOnEmptySuccess(
+            page = page,
+            mode = mode,
             responseCode = responseCode,
-            data = data
+            data = data,
         )
+}
+
+internal fun shouldFallbackHotCommentReadOnEmptySuccess(
+    page: Int,
+    mode: Int,
+    responseCode: Int,
+    data: ReplyData?,
+): Boolean {
+    return page == 1 &&
+        mode == 3 &&
+        responseCode == 0 &&
+        !hasRenderableCommentPayload(data)
 }
 
 internal fun shouldFallbackCommentReadOnEmptyRenderableSuccess(

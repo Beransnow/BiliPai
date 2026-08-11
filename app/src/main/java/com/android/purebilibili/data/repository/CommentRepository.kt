@@ -181,9 +181,11 @@ object CommentRepository {
                 paginationOffset = paginationOffset
             )
             val compatNeedsFallback =
-                shouldFallbackCommentReadOnEmptyRenderableSuccess(
+                shouldFallbackHotCommentReadOnEmptySuccess(
+                    page = page,
+                    mode = mode,
                     responseCode = compatResponse.code,
-                    data = compatResponse.data
+                    data = compatResponse.data,
                 ) || (
                     compatResponse.code != 0 &&
                         readPlan.fallback != null &&
@@ -256,7 +258,17 @@ object CommentRepository {
                 )
                 if (grpcResult.isSuccess) {
                     val grpcData = grpcResult.getOrNull()
-                    if (shouldFallbackCommentReadOnEmptyRenderableSuccess(responseCode = 0, data = grpcData)) {
+                    if (
+                        shouldFallbackHotCommentReadOnEmptySuccess(
+                            page = page,
+                            mode = mode,
+                            responseCode = 0,
+                            data = grpcData,
+                        ) || shouldFallbackCommentReadOnEmptyRenderableSuccess(
+                            responseCode = 0,
+                            data = grpcData,
+                        )
+                    ) {
                         Logger.w(
                             "CommentRepo",
                             "getComments gRPC fallback to REST: oid=$oid, type=$type, page=$page, mode=$mode, reason=empty-renderable-success"
@@ -291,9 +303,14 @@ object CommentRepository {
                 paginationOffset = paginationOffset
             )
             val finalResponse = if (
-                shouldFallbackCommentReadOnEmptyRenderableSuccess(
+                shouldFallbackHotCommentReadOnEmptySuccess(
+                    page = page,
+                    mode = mode,
                     responseCode = primaryResponse.code,
-                    data = primaryResponse.data
+                    data = primaryResponse.data,
+                ) || shouldFallbackCommentReadOnEmptyRenderableSuccess(
+                    responseCode = primaryResponse.code,
+                    data = primaryResponse.data,
                 )
             ) {
                 Logger.w(

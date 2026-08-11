@@ -481,7 +481,7 @@ fun AppNavigation(
             resolveInitialBiliPaiBackStack(
                     firstRoute = startDestination,
                     onboardingRequired = !firstLaunchShown,
-                    openPortraitFeedOnStartup = firstLaunchShown && launchToPortraitFeedOnStartupAtInit
+                    openPortraitFeedOnStartup = launchToPortraitFeedOnStartupAtInit
                 )
         }
         @Suppress("UNCHECKED_CAST")
