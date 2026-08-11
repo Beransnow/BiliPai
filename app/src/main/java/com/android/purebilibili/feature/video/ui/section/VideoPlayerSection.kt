@@ -680,8 +680,6 @@ fun VideoPlayerSection(
     val fullscreenSwipeSeekSeconds = playerInteractionSettings.fullscreenSwipeSeekSeconds
     val fullscreenSwipeSeekEnabled = playerInteractionSettings.fullscreenSwipeSeekEnabled
     val fullscreenGestureReverse = playerInteractionSettings.fullscreenGestureReverse
-    val latestOnToggleFullscreen by rememberUpdatedState(onToggleFullscreen)
-    val latestOnPortraitFullscreen by rememberUpdatedState(onPortraitFullscreen)
     val autoEnterFullscreenEnabled = playerInteractionSettings.autoEnterFullscreenEnabled
     val autoExitFullscreenEnabled = playerInteractionSettings.autoExitFullscreenEnabled
     val autoExitFullscreenMode = playerInteractionSettings.autoExitFullscreenMode
@@ -939,6 +937,7 @@ fun VideoPlayerSection(
 
     val latestIsFullscreen by rememberUpdatedState(isFullscreen)
     val latestOnToggleFullscreen by rememberUpdatedState(onToggleFullscreen)
+    val latestOnPortraitFullscreen by rememberUpdatedState(onPortraitFullscreen)
     val latestWillContinueToNextAfterEnd by rememberUpdatedState(willContinueToNextAfterEnd)
     val latestAutoExitFullscreenMode by rememberUpdatedState(autoExitFullscreenMode)
     DisposableEffect(
