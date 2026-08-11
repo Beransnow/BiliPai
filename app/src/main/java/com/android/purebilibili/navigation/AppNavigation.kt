@@ -678,6 +678,9 @@ fun AppNavigation(
             coverIdentity = navigation3ReturnSession.transitionSession?.coverIdentity,
             sourceBounds = navigation3ReturnSession.transitionSession?.cardBounds,
             sourceCoverBounds = navigation3ReturnSession.transitionSession?.coverBounds,
+            sourceLayout = navigation3ReturnSession.transitionSession?.sourceLayout
+                ?: com.android.purebilibili.core.ui.transition.VideoCardSourceLayout.COVER_ONLY,
+            sourceChromeSnapshot = navigation3ReturnSession.transitionSession?.sourceChromeSnapshot,
         )
         fun captureCardSourceDirectionForSession(): BiliPaiNavCardSourceDirection {
             return resolveBiliPaiNavCardSourceDirection(
@@ -701,6 +704,8 @@ fun AppNavigation(
             coverIdentity = coverIdentity,
             cardFullyVisible = CardPositionManager.isCardFullyVisible,
             isSingleColumnCard = CardPositionManager.isSingleColumnCard,
+            sourceLayout = CardPositionManager.lastClickedVideoSourceLayout,
+            sourceChromeSnapshot = CardPositionManager.lastClickedVideoSourceChromeSnapshot,
         )
         var lastVideoDetailOpenId by remember { mutableLongStateOf(0L) }
         var lastLiveAreaDetailOpenId by remember { mutableLongStateOf(0L) }
@@ -3352,7 +3357,7 @@ fun AppNavigation(
                     },
                     onRelatedVideoDetailReturned = {
                         navigation3ReturnSession =
-                            navigation3ReturnSession.restoreListVideoSourceAfterRelatedReturn()
+                            navigation3ReturnSession.restorePreviousVideoSourceAfterRelatedReturn()
                         CardPositionManager.restoreVideoSourceKey(
                             navigation3ReturnSession.lastVideoSourceKey
                         )

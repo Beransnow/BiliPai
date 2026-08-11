@@ -1,6 +1,8 @@
 package com.android.purebilibili.navigation3
 
 import androidx.compose.ui.geometry.Rect
+import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
+import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 
 internal enum class BiliPaiNavCardSourceDirection {
     NONE,
@@ -18,6 +20,8 @@ internal data class BiliPaiNavSourceMetadata(
     val coverIdentity: String? = null,
     val sourceBounds: Rect? = null,
     val sourceCoverBounds: Rect? = null,
+    val sourceLayout: VideoCardSourceLayout = VideoCardSourceLayout.COVER_ONLY,
+    val sourceChromeSnapshot: VideoCardSourceChromeSnapshot? = null,
 ) {
     val sharedTransitionEntryReady: Boolean
         get() = clickedBoundsRecorded
@@ -97,6 +101,8 @@ internal fun resolveBiliPaiNavSourceMetadata(
     coverIdentity: String? = null,
     sourceBounds: Rect? = null,
     sourceCoverBounds: Rect? = null,
+    sourceLayout: VideoCardSourceLayout = VideoCardSourceLayout.COVER_ONLY,
+    sourceChromeSnapshot: VideoCardSourceChromeSnapshot? = null,
 ): BiliPaiNavSourceMetadata {
     return BiliPaiNavSourceMetadata(
         sourceKey = sourceKey,
@@ -108,5 +114,7 @@ internal fun resolveBiliPaiNavSourceMetadata(
         coverIdentity = coverIdentity?.trim()?.takeIf(String::isNotEmpty),
         sourceBounds = sourceBounds,
         sourceCoverBounds = sourceCoverBounds,
+        sourceLayout = sourceLayout,
+        sourceChromeSnapshot = sourceChromeSnapshot,
     )
 }

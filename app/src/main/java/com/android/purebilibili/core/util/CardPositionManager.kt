@@ -2,6 +2,9 @@ package com.android.purebilibili.core.util
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
+import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
+import com.android.purebilibili.core.ui.transition.resolveVideoCardSourceLayout
 
 private const val QUICK_RETURN_THRESHOLD_MS = 500L
 private const val HOME_CATEGORY_SOURCE_PREFIX = "home?category="
@@ -44,6 +47,12 @@ object CardPositionManager {
 
     var lastClickedVideoSourceCornerDp: Int? = null
         private set
+
+    var lastClickedVideoSourceLayout: VideoCardSourceLayout = VideoCardSourceLayout.COVER_ONLY
+        private set
+
+    var lastClickedVideoSourceChromeSnapshot: VideoCardSourceChromeSnapshot? = null
+        private set
     
     /**
      *  是否是单列卡片（故事卡片）
@@ -85,6 +94,8 @@ object CardPositionManager {
         lastClickedVideoSourceKey = null
         lastClickedVideoSourceCornerDp = null
         lastClickedCoverBounds = null
+        lastClickedVideoSourceLayout = VideoCardSourceLayout.COVER_ONLY
+        lastClickedVideoSourceChromeSnapshot = null
         lastClickedCardBounds = bounds
         lastScreenDensity = density
         isSingleColumnCard = isSingleColumn
@@ -120,6 +131,8 @@ object CardPositionManager {
         bottomBarHeightDp: Float = 80f,
         sourceCornerDp: Int? = null,
         coverBounds: Rect? = null,
+        sourceLayout: VideoCardSourceLayout? = null,
+        sourceChromeSnapshot: VideoCardSourceChromeSnapshot? = null,
     ) {
         recordCardPosition(
             bounds = bounds,
@@ -140,6 +153,11 @@ object CardPositionManager {
         lastClickedCoverBounds = coverBounds
             ?.takeIf { it.width > 1f && it.height > 1f }
             ?.let { Rect(it.left, it.top, it.right, it.bottom) }
+        lastClickedVideoSourceLayout = sourceLayout ?: resolveVideoCardSourceLayout(
+            cardBounds = lastClickedCardBounds,
+            coverBounds = lastClickedCoverBounds,
+        )
+        lastClickedVideoSourceChromeSnapshot = sourceChromeSnapshot
     }
     
     /**
@@ -151,6 +169,8 @@ object CardPositionManager {
         lastClickedCardCenter = null
         lastClickedVideoSourceKey = null
         lastClickedVideoSourceCornerDp = null
+        lastClickedVideoSourceLayout = VideoCardSourceLayout.COVER_ONLY
+        lastClickedVideoSourceChromeSnapshot = null
     }
 
     /**

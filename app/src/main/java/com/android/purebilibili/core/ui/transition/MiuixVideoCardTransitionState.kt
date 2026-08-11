@@ -20,6 +20,8 @@ internal data class MiuixVideoCardTransitionState(
     val sourceBoundsProvider: () -> Rect? = { null },
     /** 点击时冻结的真实封面落点；不可由卡宽或固定宽高比推算。 */
     val sourceCoverBoundsProvider: () -> Rect? = { null },
+    val sourceLayout: VideoCardSourceLayout = VideoCardSourceLayout.COVER_ONLY,
+    val sourceChromeSnapshot: VideoCardSourceChromeSnapshot? = null,
 )
 
 internal val LocalMiuixVideoCardTransitionState = compositionLocalOf {
