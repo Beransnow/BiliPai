@@ -8,13 +8,21 @@ import kotlin.test.assertTrue
 class BiliPaiVideoSourcePolicyTest {
 
     @Test
-    fun relatedVideoDetailUsesStandardMiuixPageMotionInsteadOfWholePageCardMorph() {
-        assertFalse(
+    fun relatedVideoDetailUsesTheSameMeasuredMiuixCardMorphAsHome() {
+        assertTrue(
             shouldUseMiuixVideoCardMorph(
                 cardTransitionEnabled = true,
                 reduceMotion = false,
                 sourceRoute = "video/BV_PARENT",
                 hasUsableSourceBounds = true,
+            )
+        )
+        assertFalse(
+            shouldUseMiuixVideoCardMorph(
+                cardTransitionEnabled = true,
+                reduceMotion = false,
+                sourceRoute = "video/BV_PARENT",
+                hasUsableSourceBounds = false,
             )
         )
         listOf(

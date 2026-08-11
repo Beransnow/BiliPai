@@ -649,13 +649,11 @@ internal fun VideoDetailScreenStateHolder(
         )
     }
 
-    val relatedNavigationScope = rememberCoroutineScope()
     val navigateToRelatedVideo = remember(
         onVideoClick,
         miniPlayerManager,
         uiState,
         currentBvid,
-        relatedNavigationScope,
         sharedDanmakuManager,
     ) {
         { targetBvid: String, options: android.os.Bundle? ->
@@ -696,10 +694,7 @@ internal fun VideoDetailScreenStateHolder(
                 if (resolvedCid > 0L) {
                     navOptions.putLong(VIDEO_NAV_TARGET_CID_KEY, resolvedCid)
                 }
-                relatedNavigationScope.launch {
-                    androidx.compose.runtime.withFrameNanos { }
-                    onVideoClick(targetBvid, navOptions)
-                }
+                onVideoClick(targetBvid, navOptions)
                 Unit
             }
         }
@@ -1169,12 +1164,6 @@ internal fun VideoDetailScreenStateHolder(
     val detailShellShape = remember(sharedTransitionSourceCornerDp) {
         RoundedCornerShape(sharedTransitionSourceCornerDp.dp)
     }
-    val isSharedTransitionActive = rootSharedTransitionScope?.isTransitionActive == true
-    val suppressDetailShellForRelatedChild = shouldSuppressDetailShellSharedBoundsForRelatedChildTransition(
-        detailBvid = bvid,
-        lastClickedVideoSourceKey = CardPositionManager.lastClickedVideoSourceKey,
-        isSharedTransitionActive = isSharedTransitionActive,
-    )
     LaunchedEffect(isNavigatingToVideo, homeSharedTransitionMotionSpec.durationMillis) {
         if (!isNavigatingToVideo) return@LaunchedEffect
         // 进场 morph 结束后恢复父壳，避免长期禁用导致再回列表时丢 shell。
@@ -1185,8 +1174,7 @@ internal fun VideoDetailScreenStateHolder(
     }
     val detailShellModifier = Modifier.videoCardShellSharedBoundsOrEmpty(
         enabled = detailShellSharedBoundsEnabled &&
-            !isNavigatingToVideo &&
-            !suppressDetailShellForRelatedChild,
+            !isNavigatingToVideo,
         sharedTransitionScope = rootSharedTransitionScope,
         animatedVisibilityScope = rootAnimatedVisibilityScope,
         bvid = bvid,
