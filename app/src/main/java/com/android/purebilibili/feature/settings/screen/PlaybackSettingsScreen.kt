@@ -1829,10 +1829,17 @@ private fun PlaybackFullscreenGestureSettingsSection(
         val fullscreenAspectRatio by com.android.purebilibili.core.store.SettingsManager
             .getFullscreenAspectRatio(context)
             .collectAsStateWithLifecycle(initialValue = FullscreenAspectRatio.FIT)
-        val fullscreenModeSubtitle = if (autoRotateEnabled) {
-            "${fullscreenMode.description}；已开启自动横竖屏，日常会跟随设备方向自动进退全屏"
+        val fullscreenModeSubtitle = when {
+            !autoRotateEnabled -> fullscreenMode.description
+            isLargeScreenDevice ->
+                "${fullscreenMode.description}；自动横竖屏仅旋转播放页，手动全屏时使用此方向"
+            else ->
+                "${fullscreenMode.description}；已开启自动横竖屏，将跟随设备方向自动进退全屏"
+        }
+        val autoRotateSubtitle = if (isLargeScreenDevice) {
+            "跟随设备方向旋转播放页，并保留平板/展开态折叠屏分栏布局"
         } else {
-            fullscreenMode.description
+            "跟随设备方向自动进入/退出全屏，不受系统旋转锁影响"
         }
         val horizontalAdaptationSubtitle = if (isLargeScreenDevice) {
             "启用横屏布局和横屏逻辑（平板/折叠屏建议开启）"
@@ -1841,9 +1848,9 @@ private fun PlaybackFullscreenGestureSettingsSection(
         }
 
 	        AppSwitchPreference(
-	            icon = rememberSettingsSemanticIcon(SettingsIconRole.FULLSCREEN_ORIENTATION),
+            icon = rememberSettingsSemanticIcon(SettingsIconRole.FULLSCREEN_ORIENTATION),
             title = "自动横竖屏切换",
-            subtitle = "跟随手机方向自动进入/退出全屏",
+            subtitle = autoRotateSubtitle,
             checked = autoRotateEnabled,
             onCheckedChange = {
                 scope.launch {

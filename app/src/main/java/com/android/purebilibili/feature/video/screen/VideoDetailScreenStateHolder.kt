@@ -951,8 +951,8 @@ internal fun VideoDetailScreenStateHolder(
     } ?: false
 
     // 📐 全屏模式逻辑：
-    // - 手机：横屏时自动进入全屏
-    // - 平板：仅用户主动切换全屏
+    // - 紧凑窗口：横放时自动进入全屏
+    // - 平板/展开态折叠屏：旋转时保留分栏，仅用户主动切换全屏
     val fullscreenMode by com.android.purebilibili.core.store.SettingsManager
         .getFullscreenMode(context)
         .collectAsStateWithLifecycle(
@@ -1357,13 +1357,12 @@ internal fun VideoDetailScreenStateHolder(
         }
     }
 
-    // 🔄 [新增] 自动横竖屏切换 - 跟随手机传感器方向
+    // 🔄 自动横竖屏：紧凑窗口驱动全屏，大屏只自适应旋转并保留分栏。
     val autoRotateEnabled by com.android.purebilibili.core.store.SettingsManager
         .getAutoRotateEnabled(context).collectAsStateWithLifecycle(
             initialValue = false,
             lifecycle = lifecycleOwner.lifecycle
         )
-    val systemAutoRotateEnabled by rememberSystemAutoRotateEnabled(context)
     val cardAnimationEnabled by com.android.purebilibili.core.store.SettingsManager
         .getCardAnimationEnabled(context).collectAsStateWithLifecycle(
             initialValue = true,
@@ -2039,13 +2038,13 @@ internal fun VideoDetailScreenStateHolder(
     }
     LaunchedEffect(
         autoRotateEnabled,
-        systemAutoRotateEnabled,
         fullscreenMode,
         useTabletLayout,
         isOrientationDrivenFullscreen,
         isFullscreenMode,
         windowSizeClass.isCompactDevice,
         isActivityInMultiWindowMode,
+        isPipMode,
         userRequestedFullscreen,
         manualPortraitHoldActive,
         isVerticalVideo,
@@ -2054,7 +2053,6 @@ internal fun VideoDetailScreenStateHolder(
     ) {
         val requestedOrientation = resolvePhoneVideoRequestedOrientation(
             autoRotateEnabled = autoRotateEnabled,
-            systemAutoRotateEnabled = systemAutoRotateEnabled,
             fullscreenMode = fullscreenMode,
             isCompactDevice = windowSizeClass.isCompactDevice,
             isOrientationDrivenFullscreen = isOrientationDrivenFullscreen,
@@ -2065,6 +2063,7 @@ internal fun VideoDetailScreenStateHolder(
             isPortraitFullscreen = isPortraitFullscreen,
             currentRequestedOrientation = activity?.requestedOrientation,
             isInMultiWindowMode = isActivityInMultiWindowMode,
+            isInPictureInPictureMode = isPipMode,
             // 仅折叠屏完全展开的内屏沿用原版默认竖屏。不要以窗口宽度推断：它会随旋转
             // 改变，也无法区分普通平板和大屏手机。
             preferPortraitForFlatFoldable = isFlatFoldable
@@ -2075,29 +2074,29 @@ internal fun VideoDetailScreenStateHolder(
         }
         com.android.purebilibili.core.util.Logger.d(
             "VideoDetailScreen",
-            "🔄 Auto-rotate: enabled=$autoRotateEnabled, system=$systemAutoRotateEnabled, hold=$manualPortraitHoldActive, mode=$fullscreenMode, horizontal=$horizontalAdaptationEnabled, requested=$requestedOrientation, fullscreen=$isFullscreenMode, portraitFs=$isPortraitFullscreen, verticalVideo=$isVerticalVideo, isCompactDevice=${windowSizeClass.isCompactDevice}, multiWindow=$isActivityInMultiWindowMode"
+            "🔄 Auto-rotate: enabled=$autoRotateEnabled, hold=$manualPortraitHoldActive, mode=$fullscreenMode, horizontal=$horizontalAdaptationEnabled, requested=$requestedOrientation, fullscreen=$isFullscreenMode, portraitFs=$isPortraitFullscreen, verticalVideo=$isVerticalVideo, isCompactDevice=${windowSizeClass.isCompactDevice}, multiWindow=$isActivityInMultiWindowMode, pip=$isPipMode"
         )
     }
     var lastPhoneAutoRotateLandscapeAppliedAtMs by remember { mutableStateOf<Long?>(null) }
 
     LaunchedEffect(
         autoRotateEnabled,
-        systemAutoRotateEnabled,
         windowSizeClass.isCompactDevice,
         isOrientationDrivenFullscreen,
         fullscreenMode,
         manualPortraitHoldActive,
         isActivityInMultiWindowMode,
+        isPipMode,
         isPortraitFullscreen
     ) {
         if (!shouldObservePhoneAutoRotate(
                 autoRotateEnabled = autoRotateEnabled,
-                systemAutoRotateEnabled = systemAutoRotateEnabled,
                 isCompactDevice = windowSizeClass.isCompactDevice,
                 isOrientationDrivenFullscreen = isOrientationDrivenFullscreen,
                 fullscreenMode = fullscreenMode,
                 manualPortraitHoldActive = manualPortraitHoldActive,
                 isInMultiWindowMode = isActivityInMultiWindowMode,
+                isInPictureInPictureMode = isPipMode,
                 isPortraitFullscreen = isPortraitFullscreen
             )
         ) {
@@ -2108,12 +2107,12 @@ internal fun VideoDetailScreenStateHolder(
     DisposableEffect(
         activity,
         autoRotateEnabled,
-        systemAutoRotateEnabled,
         fullscreenMode,
         useTabletLayout,
         isOrientationDrivenFullscreen,
         manualPortraitHoldActive,
         isActivityInMultiWindowMode,
+        isPipMode,
         isPortraitFullscreen
     ) {
         val hostActivity = activity
@@ -2121,12 +2120,12 @@ internal fun VideoDetailScreenStateHolder(
             hostActivity == null ||
             !shouldObservePhoneAutoRotate(
                 autoRotateEnabled = autoRotateEnabled,
-                systemAutoRotateEnabled = systemAutoRotateEnabled,
                 isCompactDevice = windowSizeClass.isCompactDevice,
                 isOrientationDrivenFullscreen = isOrientationDrivenFullscreen,
                 fullscreenMode = fullscreenMode,
                 manualPortraitHoldActive = manualPortraitHoldActive,
                 isInMultiWindowMode = isActivityInMultiWindowMode,
+                isInPictureInPictureMode = isPipMode,
                 isPortraitFullscreen = isPortraitFullscreen
             ) ||
             !isOrientationDrivenFullscreen
