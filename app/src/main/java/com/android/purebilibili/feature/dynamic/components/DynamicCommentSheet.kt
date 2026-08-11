@@ -62,6 +62,7 @@ import com.android.purebilibili.core.ui.rememberAppClearIcon
 import com.android.purebilibili.core.ui.rememberAppCommentIcon
 import com.android.purebilibili.core.ui.rememberAppLikeIcon
 import com.android.purebilibili.core.ui.AppModalBottomSheet
+import com.android.purebilibili.core.ui.LocalNavigationBackHandler
 import com.android.purebilibili.core.ui.components.AppTextField
 
 @Composable
@@ -185,6 +186,10 @@ fun DynamicCommentSheet(
         sheetState = sheetState,
         dragHandle = null
     ) {
+        LocalNavigationBackHandler(
+            enabled = true,
+            onBackCompleted = onDismiss,
+        )
         Column(
             modifier = Modifier
                 .fillMaxWidth()
