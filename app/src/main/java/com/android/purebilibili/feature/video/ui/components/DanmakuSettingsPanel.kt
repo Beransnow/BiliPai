@@ -46,7 +46,6 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.SwitchDefaults
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
@@ -928,12 +927,6 @@ fun DanmakuSettingsPanel(
                             AppSwitch(
                                 checked = mergeDuplicates,
                                 onCheckedChange = onMergeDuplicatesChange,
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = panelColors.panelColor,
-                                    checkedTrackColor = MaterialTheme.colorScheme.primary,
-                                    uncheckedThumbColor = panelColors.panelColor,
-                                    uncheckedTrackColor = panelColors.sliderInactiveTrackColor
-                                )
                             )
                         }
                     }
@@ -1014,12 +1007,6 @@ fun DanmakuSettingsPanel(
                                 AppSwitch(
                                     checked = smartOcclusion,
                                     onCheckedChange = onSmartOcclusionChange,
-                                    colors = SwitchDefaults.colors(
-                                        checkedThumbColor = panelColors.panelColor,
-                                        checkedTrackColor = MaterialTheme.colorScheme.primary,
-                                        uncheckedThumbColor = panelColors.panelColor,
-                                        uncheckedTrackColor = panelColors.sliderInactiveTrackColor
-                                    )
                                 )
                             }
                         }
@@ -1524,12 +1511,6 @@ private fun DanmakuFilterSwitchRow(
             AppSwitch(
                 checked = checked,
                 onCheckedChange = onCheckedChange,
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = colors.panelColor,
-                    checkedTrackColor = MaterialTheme.colorScheme.primary,
-                    uncheckedThumbColor = colors.panelColor,
-                    uncheckedTrackColor = colors.sliderInactiveTrackColor
-                )
             )
         }
         if (showDivider) {

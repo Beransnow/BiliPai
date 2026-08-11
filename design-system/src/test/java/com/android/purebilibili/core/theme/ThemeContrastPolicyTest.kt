@@ -72,7 +72,7 @@ class ThemeContrastPolicyTest {
 
         assertTrue(calculateContrastRatio(result.onBackground, result.background) >= 4.5f)
         assertTrue(calculateContrastRatio(result.onSurface, result.surface) >= 4.5f)
-        assertTrue(calculateContrastRatio(result.onSurfaceVariant, result.surfaceVariant) >= 3.0f)
+        assertTrue(calculateContrastRatio(result.onSurfaceVariant, result.surfaceVariant) >= 4.5f)
         assertTrue(calculateContrastRatio(result.onPrimary, result.primary) >= 4.5f)
         assertTrue(calculateContrastRatio(result.onPrimaryContainer, result.primaryContainer) >= 4.5f)
         assertTrue(calculateContrastRatio(result.onSecondaryContainer, result.secondaryContainer) >= 4.5f)

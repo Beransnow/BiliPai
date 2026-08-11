@@ -4,11 +4,11 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 
-private const val PRIMARY_TEXT_MIN_CONTRAST = 4.5f
-private const val SECONDARY_TEXT_MIN_CONTRAST = 3.0f
-
 const val ACCESSIBLE_TEXT_MIN_CONTRAST = 4.5f
 const val ACCESSIBLE_UI_MIN_CONTRAST = 3.0f
+
+private const val PRIMARY_TEXT_MIN_CONTRAST = ACCESSIBLE_TEXT_MIN_CONTRAST
+private const val SECONDARY_TEXT_MIN_CONTRAST = ACCESSIBLE_TEXT_MIN_CONTRAST
 
 data class AccessibleContainerColors(
     val containerColor: Color,
@@ -156,6 +156,30 @@ fun enforceDynamicLightTextContrast(
         onSecondaryContainer = resolveReadableThemeTextColor(
             candidate = scheme.onSecondaryContainer,
             background = scheme.secondaryContainer,
+            fallbacks = accentFallbacks,
+            minimumContrast = PRIMARY_TEXT_MIN_CONTRAST
+        ),
+        onTertiary = resolveReadableThemeTextColor(
+            candidate = scheme.onTertiary,
+            background = scheme.tertiary,
+            fallbacks = accentFallbacks,
+            minimumContrast = PRIMARY_TEXT_MIN_CONTRAST
+        ),
+        onTertiaryContainer = resolveReadableThemeTextColor(
+            candidate = scheme.onTertiaryContainer,
+            background = scheme.tertiaryContainer,
+            fallbacks = accentFallbacks,
+            minimumContrast = PRIMARY_TEXT_MIN_CONTRAST
+        ),
+        onError = resolveReadableThemeTextColor(
+            candidate = scheme.onError,
+            background = scheme.error,
+            fallbacks = accentFallbacks,
+            minimumContrast = PRIMARY_TEXT_MIN_CONTRAST
+        ),
+        onErrorContainer = resolveReadableThemeTextColor(
+            candidate = scheme.onErrorContainer,
+            background = scheme.errorContainer,
             fallbacks = accentFallbacks,
             minimumContrast = PRIMARY_TEXT_MIN_CONTRAST
         )

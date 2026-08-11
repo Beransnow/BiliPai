@@ -1998,15 +1998,24 @@ private fun PluginItem(
                     )
                     //  暂不可用标签
                     if (plugin.unavailable) {
+                        val unavailableColors = resolveAccessibleContainerColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.8f),
+                            contentColor = MaterialTheme.colorScheme.error,
+                            backgroundColor = MaterialTheme.colorScheme.surface,
+                            fallbackContentColors = listOf(
+                                MaterialTheme.colorScheme.onErrorContainer,
+                                MaterialTheme.colorScheme.onSurface,
+                            ),
+                        )
                         Spacer(modifier = Modifier.width(6.dp))
                         AppSurface(
                             shape = RoundedCornerShape(4.dp),
-                            color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.8f)
+                            color = unavailableColors.containerColor,
                         ) {
                             AppText(
                                 text = "暂不可用",
                                 style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.error,
+                                color = unavailableColors.contentColor,
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                             )
                         }
@@ -2588,6 +2597,10 @@ private fun TestResultDialog(
 ) {
     val blockedCount = originalCount - filteredCount
     val dialogIconTint = rememberAdaptiveSemanticIconTint(iOSBlue)
+    val resultContainerColor = com.android.purebilibili.core.theme.opaqueCompositeOver(
+        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f),
+        MaterialTheme.colorScheme.surface,
+    )
 
     AppAlertDialog(
         onDismissRequest = onDismiss,
@@ -2611,7 +2624,7 @@ private fun TestResultDialog(
                 // 统计卡片
                 AppSurface(
                     shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+                    color = resultContainerColor,
                 ) {
                     Row(
                         modifier = Modifier

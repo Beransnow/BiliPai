@@ -5,6 +5,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class MiuixThemeBridgePolicyTest {
 
@@ -116,7 +117,7 @@ class MiuixThemeBridgePolicyTest {
         assertEquals(scheme.primaryFixed, colors.primaryVariant)
         assertEquals(scheme.onPrimaryFixed, colors.onPrimaryVariant)
         assertEquals(scheme.outlineVariant, colors.secondary)
-        assertEquals(scheme.outline, colors.onSecondary)
+        assertTrue(calculateContrastRatio(colors.onSecondary, colors.secondary) >= 3f)
         assertEquals(scheme.surfaceContainerHighest, colors.secondaryContainerVariant)
         assertEquals(scheme.primary, colors.sliderKeyPoint)
         assertEquals(1f, colors.sliderBackground.alpha)

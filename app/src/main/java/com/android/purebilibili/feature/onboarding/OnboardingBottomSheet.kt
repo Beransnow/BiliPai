@@ -55,6 +55,7 @@ import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.components.AppOutlinedButton
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.theme.resolveAccessibleContainerColors
+import com.android.purebilibili.core.theme.opaqueCompositeOver
 
 /**
  *  iOS 风格新手引导底部弹窗
@@ -777,7 +778,10 @@ private fun FeatureBadge(
                         scaleY = badgeScale
                     }
                     .background(
-                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                        color = opaqueCompositeOver(
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.6f),
+                            MaterialTheme.colorScheme.surface,
+                        ),
                         shape = CircleShape
                     ),
                 contentAlignment = Alignment.Center

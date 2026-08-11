@@ -47,8 +47,8 @@ import com.android.purebilibili.feature.settings.AppThemeMode
 import com.android.purebilibili.feature.settings.Md3ColorSource
 import com.android.purebilibili.feature.settings.normalizeMd3CustomColorHex
 import com.materialkolor.PaletteStyle
+import com.materialkolor.dynamicColorScheme
 import com.materialkolor.dynamiccolor.ColorSpec
-import com.materialkolor.rememberDynamicColorScheme
 import top.yukonga.miuix.kmp.theme.ColorSchemeMode
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 import top.yukonga.miuix.kmp.theme.ThemeController
@@ -364,7 +364,12 @@ internal fun resolveMiuixColorsFromMaterialBridge(
         primaryContainer = bridge.primaryContainer,
         onPrimaryContainer = bridge.onPrimaryContainer,
         secondary = bridge.outlineVariant,
-        onSecondary = bridge.outline,
+        onSecondary = resolveReadableTextColor(
+            candidate = bridge.outline,
+            background = bridge.outlineVariant,
+            fallback = bridge.onSurface,
+            minimumContrast = ACCESSIBLE_UI_MIN_CONTRAST,
+        ),
         secondaryVariant = bridge.surfaceContainerHigh,
         onSecondaryVariant = bridge.onSurface,
         disabledSecondary = disabledSecondary,
@@ -743,7 +748,12 @@ internal fun alignStaticColorSchemeWithThemePrimary(
     themePrimaryColor: Color,
     darkTheme: Boolean
 ): ColorScheme {
-    val primary = themePrimaryColor
+    val primaryCandidates = listOf(themePrimaryColor, scheme.primary, scheme.onSurface).distinct()
+    val primary = primaryCandidates.firstOrNull {
+        calculateContrastRatio(it, scheme.surface) >= ACCESSIBLE_UI_MIN_CONTRAST
+    } ?: primaryCandidates.maxBy {
+        calculateContrastRatio(it, scheme.surface)
+    }
     val primaryContainer = blendColors(
         background = scheme.background,
         foreground = primary,
@@ -842,9 +852,34 @@ private fun rememberKernelSuStyleColorScheme(
     paletteStyle: PaletteStyle,
     colorSpec: ColorSpec.SpecVersion,
     dynamicBaseScheme: ColorScheme? = null
+): ColorScheme = remember(
+    seedColor,
+    darkTheme,
+    amoledDarkTheme,
+    paletteStyle,
+    colorSpec,
+    dynamicBaseScheme,
+) {
+    createKernelSuStyleColorScheme(
+        seedColor = seedColor,
+        darkTheme = darkTheme,
+        amoledDarkTheme = amoledDarkTheme,
+        paletteStyle = paletteStyle,
+        colorSpec = colorSpec,
+        dynamicBaseScheme = dynamicBaseScheme,
+    )
+}
+
+internal fun createKernelSuStyleColorScheme(
+    seedColor: Color,
+    darkTheme: Boolean,
+    amoledDarkTheme: Boolean,
+    paletteStyle: PaletteStyle,
+    colorSpec: ColorSpec.SpecVersion,
+    dynamicBaseScheme: ColorScheme? = null,
 ): ColorScheme {
     val scheme = if (dynamicBaseScheme != null) {
-        rememberDynamicColorScheme(
+        dynamicColorScheme(
             seedColor = Color.Unspecified,
             isDark = darkTheme,
             isAmoled = amoledDarkTheme,
@@ -858,7 +893,7 @@ private fun rememberKernelSuStyleColorScheme(
             error = dynamicBaseScheme.error
         )
     } else {
-        rememberDynamicColorScheme(
+        dynamicColorScheme(
             seedColor = seedColor,
             isDark = darkTheme,
             isAmoled = amoledDarkTheme,
