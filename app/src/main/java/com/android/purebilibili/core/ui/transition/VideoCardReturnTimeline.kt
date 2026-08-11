@@ -110,10 +110,38 @@ internal fun resolveVideoCardLiveReturnVisualHandoffAlpha(
     end = VideoCardTransitionVisualTimeline.MEDIA_RETURN_END,
 )
 
+/**
+ * Detail body (player 下方) visual frame during flying-card morph.
+ *
+ * [scale] shrinks toward the source-card info size so alpha crossfade is not the only cue —
+ * size mismatch between detail typography and card chrome is the main 穿帮 source.
+ */
 internal data class VideoCardSecondaryContentVisualFrame(
     val alpha: Float,
     val translationYDp: Float,
+    /** 1 = full detail layout; approaches [VIDEO_CARD_SECONDARY_YIELD_MIN_SCALE] as chrome takes over. */
+    val scale: Float = 1f,
+    /** 0 = full detail ownership; 1 = fully yielded to source chrome. */
+    val handoffProgress: Float = 0f,
 )
+
+/**
+ * Source-card chrome (封面下方) visual frame; complementary to [VideoCardSecondaryContentVisualFrame].
+ *
+ * [layoutScaleMultiplier] multiplies the geometric inverse scale (1/sourceScale): starts slightly
+ * larger (closer to detail type size) and settles to 1 so text size eases into the card.
+ */
+internal data class VideoCardSourceChromeVisualFrame(
+    val alpha: Float,
+    val layoutScaleMultiplier: Float = 1f,
+    val handoffProgress: Float = 0f,
+)
+
+/** Detail body minimum uniform scale at full handoff (still readable mid-blend, not a hard pop). */
+internal const val VIDEO_CARD_SECONDARY_YIELD_MIN_SCALE = 0.88f
+
+/** Chrome starts this much larger than its resting inverse-scale, then eases down to 1. */
+internal const val VIDEO_CARD_SOURCE_CHROME_ENTER_SCALE_BOOST = 0.14f
 
 internal fun resolveVideoCardTimelineWindowProgress(
     progress: Float,
@@ -128,18 +156,66 @@ internal fun resolveVideoCardTimelineWindowProgress(
     return ((value - safeStart) / (safeEnd - safeStart)).coerceIn(0f, 1f)
 }
 
+/**
+ * Whether detail body / controls must yield to source-card chrome on the flying entry.
+ *
+ * Miuix predictive seek often keeps [VideoCardTransitionBackgroundPhase.HELD] while
+ * [morphDepthProgress] drops with the finger. Requiring only RETURNING/gesture flags leaves
+ * detail content fully opaque under a fading-in landing chrome → visual 穿帮.
+ */
+internal fun isVideoCardReturnContentYieldActive(
+    phase: VideoCardTransitionBackgroundPhase,
+    isReturnGestureInProgress: Boolean,
+    morphDepthProgress: Float,
+): Boolean {
+    if (isReturnGestureInProgress) return true
+    if (phase == VideoCardTransitionBackgroundPhase.RETURNING) return true
+    // Depth-only return seek: HELD contract is full detail (1); any dip means yield window.
+    if (phase == VideoCardTransitionBackgroundPhase.HELD &&
+        morphDepthProgress.coerceIn(0f, 1f) < 0.999f
+    ) {
+        return true
+    }
+    return false
+}
+
+/** Shared 0→1 handoff used by detail body and source chrome (alpha + size). */
+internal fun resolveVideoCardContentHandoffProgress(
+    morphDepthProgress: Float,
+    phase: VideoCardTransitionBackgroundPhase,
+    isReturnGestureInProgress: Boolean,
+): Float {
+    val depth = morphDepthProgress.coerceIn(0f, 1f)
+    if (!isVideoCardReturnContentYieldActive(
+            phase = phase,
+            isReturnGestureInProgress = isReturnGestureInProgress,
+            morphDepthProgress = depth,
+        )
+    ) {
+        return 0f
+    }
+    return resolveVideoCardSourceChromeReturnAlpha(depth)
+}
+
 internal fun resolveVideoCardDetailChromeAlpha(
     morphDepthProgress: Float,
     phase: VideoCardTransitionBackgroundPhase,
     isReturnGestureInProgress: Boolean,
 ): Float {
     val depth = morphDepthProgress.coerceIn(0f, 1f)
-    val returning = phase == VideoCardTransitionBackgroundPhase.RETURNING ||
-        isReturnGestureInProgress
+    val handoff = resolveVideoCardContentHandoffProgress(
+        morphDepthProgress = depth,
+        phase = phase,
+        isReturnGestureInProgress = isReturnGestureInProgress,
+    )
     return when {
-        // The controls remain attached to the flying shell and transform into the source-card
-        // chrome during the late landing window.
-        returning -> 1f - resolveVideoCardSourceChromeReturnAlpha(depth)
+        // Complementary to source chrome; same window as body yield.
+        handoff > 0f ||
+            isVideoCardReturnContentYieldActive(
+                phase = phase,
+                isReturnGestureInProgress = isReturnGestureInProgress,
+                morphDepthProgress = depth,
+            ) -> 1f - handoff
         phase == VideoCardTransitionBackgroundPhase.OPENING ->
             resolveVideoCardTimelineWindowProgress(
                 progress = depth,
@@ -157,12 +233,19 @@ internal fun resolveVideoCardSecondaryContentVisualFrame(
     motionTier: MotionTier,
 ): VideoCardSecondaryContentVisualFrame {
     val depth = morphDepthProgress.coerceIn(0f, 1f)
-    val returning = phase == VideoCardTransitionBackgroundPhase.RETURNING ||
-        isReturnGestureInProgress
+    val handoff = resolveVideoCardContentHandoffProgress(
+        morphDepthProgress = depth,
+        phase = phase,
+        isReturnGestureInProgress = isReturnGestureInProgress,
+    )
+    val returning = isVideoCardReturnContentYieldActive(
+        phase = phase,
+        isReturnGestureInProgress = isReturnGestureInProgress,
+        morphDepthProgress = depth,
+    )
     val alpha = when {
-        // Both content trees stay in the moving shared-bounds shell. This side fades out exactly
-        // as the source title/owner/stats fade in, so the card itself never becomes translucent.
-        returning -> 1f - resolveVideoCardSourceChromeReturnAlpha(depth)
+        // Detail body (player 下方) fades + shrinks as source chrome (封面下方) takes over.
+        returning -> 1f - handoff
         motionTier == MotionTier.Reduced -> depth
         phase == VideoCardTransitionBackgroundPhase.OPENING ->
             resolveVideoCardTimelineWindowProgress(
@@ -172,6 +255,11 @@ internal fun resolveVideoCardSecondaryContentVisualFrame(
             )
         else -> 1f
     }
+    val scale = if (returning && motionTier != MotionTier.Reduced) {
+        1f - (1f - VIDEO_CARD_SECONDARY_YIELD_MIN_SCALE) * handoff
+    } else {
+        1f
+    }
     return VideoCardSecondaryContentVisualFrame(
         alpha = alpha,
         translationYDp = if (motionTier == MotionTier.Reduced) {
@@ -180,6 +268,31 @@ internal fun resolveVideoCardSecondaryContentVisualFrame(
             VideoCardTransitionVisualTimeline.SECONDARY_CONTENT_TRANSLATION_DP.toFloat() *
                 (1f - alpha)
         },
+        scale = scale.coerceIn(VIDEO_CARD_SECONDARY_YIELD_MIN_SCALE, 1f),
+        handoffProgress = if (returning) handoff else 0f,
+    )
+}
+
+/**
+ * Source chrome alpha + size easing. [layoutScaleMultiplier] multiplies the geometric inverse
+ * scale (1/sourceScale) so mid-handoff type size meets the shrinking detail body.
+ *
+ * [phase] / [isReturnGestureInProgress] keep the API aligned with secondary content; alpha is
+ * driven by morph depth so predictive HELD seeks still animate chrome.
+ */
+@Suppress("UNUSED_PARAMETER")
+internal fun resolveVideoCardSourceChromeVisualFrame(
+    morphDepthProgress: Float,
+    phase: VideoCardTransitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
+    isReturnGestureInProgress: Boolean = true,
+): VideoCardSourceChromeVisualFrame {
+    val handoff = resolveVideoCardSourceChromeReturnAlpha(morphDepthProgress)
+    // Early handoff: slightly larger than resting card type; settles to 1 as handoff completes.
+    val layoutScaleMultiplier = 1f + VIDEO_CARD_SOURCE_CHROME_ENTER_SCALE_BOOST * (1f - handoff)
+    return VideoCardSourceChromeVisualFrame(
+        alpha = handoff,
+        layoutScaleMultiplier = layoutScaleMultiplier.coerceAtLeast(1f),
+        handoffProgress = handoff,
     )
 }
 

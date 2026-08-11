@@ -3769,7 +3769,13 @@ internal fun VideoDetailScreenStateHolder(
                                     val reveal = detailInfoRevealProgress.value.coerceIn(0f, 1f)
                                     val holdFullyOpaque =
                                         suppressEnterFadeAfterBackPreview && !isLeaving
-                                    if (liveReturnMorph && !holdFullyOpaque) {
+                                    // Miuix flying entry: always complement source-card chrome with
+                                    // morph depth (not only LIVE surface). Cover-first related/home
+                                    // returns need the same gradual player-below ↔ cover-below handoff.
+                                    val useMorphSecondaryYield =
+                                        (liveReturnMorph || detailShellSharedBoundsEnabled) &&
+                                            !holdFullyOpaque
+                                    if (useMorphSecondaryYield) {
                                         val frame = resolveVideoCardSecondaryContentVisualFrame(
                                             morphDepthProgress =
                                                 videoCardDepthBackgroundState.progressProvider(),
@@ -3783,6 +3789,12 @@ internal fun VideoDetailScreenStateHolder(
                                                 videoCardDepthBackgroundState.motionTierProvider(),
                                         )
                                         alpha = frame.alpha
+                                        // Shrink toward card-info size so type size meets source chrome
+                                        // instead of a pure alpha crossfade (avoids size 穿帮).
+                                        scaleX = frame.scale
+                                        scaleY = frame.scale
+                                        transformOrigin = TransformOrigin(0.5f, 0f)
+                                        clip = frame.handoffProgress > 0.001f
                                         translationY = with(videoCardTransitionDensity) {
                                             (frame.translationYDp + (1f - reveal) * 12f).dp.toPx()
                                         }
@@ -3793,6 +3805,8 @@ internal fun VideoDetailScreenStateHolder(
                                             holdFullyOpaqueAfterBackPreview = holdFullyOpaque,
                                             liveReturnMorph = false,
                                             isQuickReturn = isQuickReturningFromDetail,
+                                            morphDepthProgress =
+                                                videoCardDepthBackgroundState.progressProvider(),
                                         )
                                         translationY = with(videoCardTransitionDensity) {
                                             ((1f - reveal) * 12f).dp.toPx()
@@ -4056,6 +4070,11 @@ internal fun VideoDetailScreenStateHolder(
                             sourceCoverBounds =
                                 miuixCardTransitionState.sourceCoverBoundsProvider(),
                             morphDepthProgressProvider = miuixCardTransitionState.progressProvider,
+                            phaseProvider = videoCardDepthBackgroundState.phaseProvider,
+                            isReturnGestureInProgressProvider = {
+                                videoCardDepthBackgroundState.isReturnGestureInProgressProvider() ||
+                                    videoCardDepthBackgroundState.isGestureRestoreInProgressProvider()
+                            },
                             modifier = Modifier
                                 .align(Alignment.TopStart),
                         )

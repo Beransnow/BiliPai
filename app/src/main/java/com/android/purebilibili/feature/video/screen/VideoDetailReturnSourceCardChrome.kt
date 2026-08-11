@@ -24,7 +24,8 @@ import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
-import com.android.purebilibili.core.ui.transition.resolveVideoCardSourceChromeReturnAlpha
+import com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundPhase
+import com.android.purebilibili.core.ui.transition.resolveVideoCardSourceChromeVisualFrame
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSourceLayout
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.ViewInfo
@@ -195,6 +196,10 @@ internal fun VideoDetailReturnSourceCardChrome(
     chromeModel: VideoDetailReturnSourceCardChromeModel? = null,
     info: ViewInfo? = null,
     sourceChromeSnapshot: VideoCardSourceChromeSnapshot? = null,
+    phaseProvider: () -> VideoCardTransitionBackgroundPhase = {
+        VideoCardTransitionBackgroundPhase.RETURNING
+    },
+    isReturnGestureInProgressProvider: () -> Boolean = { true },
 ) {
     val model = chromeModel
         ?: resolveVideoDetailReturnSourceCardChromeModel(info, sourceChromeSnapshot)
@@ -222,13 +227,18 @@ internal fun VideoDetailReturnSourceCardChrome(
             .width(infoWidth)
             .height(infoHeight)
             .graphicsLayer {
-                val inverseScale = 1f / layout.sourceScale
+                val frame = resolveVideoCardSourceChromeVisualFrame(
+                    morphDepthProgress = morphDepthProgressProvider(),
+                    phase = phaseProvider(),
+                    isReturnGestureInProgress = isReturnGestureInProgressProvider(),
+                )
+                // Resting inverse scale lands card-native type size after outer morph; mid-handoff
+                // boost makes size meet the shrinking detail body instead of popping small text.
+                val inverseScale = (1f / layout.sourceScale) * frame.layoutScaleMultiplier
                 scaleX = inverseScale
                 scaleY = inverseScale
                 transformOrigin = TransformOrigin(0f, 0f)
-                alpha = resolveVideoCardSourceChromeReturnAlpha(
-                    morphDepthProgress = morphDepthProgressProvider(),
-                )
+                alpha = frame.alpha
             }
             .background(AppSurfaceTokens.cardContainer())
             .padding(
