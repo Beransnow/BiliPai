@@ -111,6 +111,46 @@ class MainActivityAppCompatContractTest {
             "BiliPai Monet color fallbacks should remain deterministic when the launcher does not theme icons"
         )
 
+        val splashAdaptiveIcon = loadResourceText("mipmap-anydpi-v26/splash_icon_bilipai_monet.xml")
+        val splashForeground = loadResourceText("drawable/splash_icon_bilipai_monet_foreground.xml")
+        assertTrue(
+            splashAdaptiveIcon.contains("@color/splash_bilipai_monet_background") &&
+                splashAdaptiveIcon.contains("@drawable/splash_icon_bilipai_monet_foreground"),
+            "BiliPai Monet splash should use a dedicated adaptive icon so the system starting window is dynamically colored"
+        )
+        assertTrue(
+            splashForeground.contains("@mipmap/ic_launcher_bilipai_monet_foreground") &&
+                splashForeground.contains("@color/splash_bilipai_monet_foreground"),
+            "BiliPai Monet splash should tint the same clean monochrome artwork as the launcher"
+        )
+        assertTrue(
+            loadResourceText("values-v31/colors.xml").contains(
+                "<color name=\"splash_bilipai_monet_background\">@android:color/system_accent1_100</color>"
+            ) && loadResourceText("values-v31/colors.xml").contains(
+                "<color name=\"splash_bilipai_monet_foreground\">@android:color/system_accent1_700</color>"
+            ),
+            "Light Monet splash should follow AOSP themed-icon dynamic color roles"
+        )
+        assertTrue(
+            loadResourceText("values-night-v31/colors.xml").contains(
+                "<color name=\"splash_bilipai_monet_background\">@android:color/system_accent2_800</color>"
+            ) && loadResourceText("values-night-v31/colors.xml").contains(
+                "<color name=\"splash_bilipai_monet_foreground\">@android:color/system_accent1_200</color>"
+            ),
+            "Dark Monet splash should follow AOSP themed-icon dynamic color roles"
+        )
+        listOf("values/themes.xml", "values-night/themes.xml").forEach { themePath ->
+            val monetTheme = Regex(
+                """<style name="Theme\.PureBiliBili\.Splash\.BiliPaiMonet"[\s\S]*?</style>"""
+            ).find(loadResourceText(themePath))?.value.orEmpty()
+            assertTrue(
+                monetTheme.contains(
+                    """<item name="windowSplashScreenAnimatedIcon">@mipmap/splash_icon_bilipai_monet</item>"""
+                ),
+                "$themePath should use the dynamically colored Monet splash icon"
+            )
+        }
+
         val rows = readPngRgbaRows(
             loadResourceFile("mipmap-xxxhdpi/ic_launcher_bilipai_monet_foreground.png")
         )
@@ -625,6 +665,7 @@ class MainActivityAppCompatContractTest {
             "com.android.purebilibili.MainActivityAliasBiliPaiPink" to R.mipmap.ic_launcher_bilipai_pink,
             "com.android.purebilibili.MainActivityAliasBiliPaiWhite" to R.mipmap.ic_launcher_bilipai_white,
             "com.android.purebilibili.MainActivityAliasBiliPaiMonet" to R.mipmap.ic_launcher_bilipai_monet,
+            "com.android.purebilibili.MainActivitySplashBiliPaiMonet" to R.mipmap.splash_icon_bilipai_monet,
             "com.android.purebilibili.MainActivityAliasFlat" to R.mipmap.ic_launcher_3d,
             "com.android.purebilibili.MainActivityAliasTelegramBlue" to R.mipmap.ic_launcher_3d,
             "com.android.purebilibili.MainActivityAliasDark" to R.mipmap.ic_launcher_3d,
