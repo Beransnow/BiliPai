@@ -41,7 +41,20 @@ internal fun normalizeBiliPaiVideoSourceRoute(route: String?): String? {
     }
 }
 
-/** All measured video cards, including related rows hosted by a detail page, use Miuix morph. */
+/**
+ * Related-detail hops use source route `video/{parentBvid}` (cover left, text right).
+ * Card morph for that layout is disabled until it is adapted from the home/category
+ * (STACKED) path; until then related uses the standard Miuix page transition.
+ */
+internal fun isRelatedVideoCardMorphSourceRoute(sourceRoute: String?): Boolean {
+    val route = sourceRoute?.substringBefore('?')?.trim().orEmpty()
+    return route.startsWith("video/")
+}
+
+/**
+ * Home/category and other list cards with usable bounds use Miuix whole-card morph.
+ * Related (`video/*`) is excluded until side-by-side landing is re-enabled deliberately.
+ */
 internal fun shouldUseMiuixVideoCardMorph(
     cardTransitionEnabled: Boolean,
     reduceMotion: Boolean,
@@ -50,4 +63,5 @@ internal fun shouldUseMiuixVideoCardMorph(
 ): Boolean = cardTransitionEnabled &&
     !reduceMotion &&
     !sourceRoute?.substringBefore('?').isNullOrBlank() &&
-    hasUsableSourceBounds
+    hasUsableSourceBounds &&
+    !isRelatedVideoCardMorphSourceRoute(sourceRoute)

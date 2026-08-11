@@ -8,8 +8,12 @@ import kotlin.test.assertTrue
 class BiliPaiVideoSourcePolicyTest {
 
     @Test
-    fun relatedVideoDetailUsesTheSameMeasuredMiuixCardMorphAsHome() {
-        assertTrue(
+    fun relatedVideoDetailDoesNotUseMiuixCardMorphUntilSideBySideLandingIsReady() {
+        assertTrue(isRelatedVideoCardMorphSourceRoute("video/BV_PARENT"))
+        assertTrue(isRelatedVideoCardMorphSourceRoute("video/BV_PARENT?from=related"))
+        assertFalse(isRelatedVideoCardMorphSourceRoute("home?category=1"))
+        // Related: cover left / text right — morph off until adapted from home/category path.
+        assertFalse(
             shouldUseMiuixVideoCardMorph(
                 cardTransitionEnabled = true,
                 reduceMotion = false,
@@ -27,6 +31,7 @@ class BiliPaiVideoSourcePolicyTest {
         )
         listOf(
             "home",
+            "home?category=1",
             "search",
             "dynamic/123",
             "space/456",
@@ -41,7 +46,7 @@ class BiliPaiVideoSourcePolicyTest {
                     sourceRoute = sourceRoute,
                     hasUsableSourceBounds = true,
                 ),
-                "Expected shared card return for source=$sourceRoute",
+                "Expected card morph for category/list source=$sourceRoute",
             )
         }
     }
