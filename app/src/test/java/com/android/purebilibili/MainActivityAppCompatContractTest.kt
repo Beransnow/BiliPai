@@ -88,6 +88,23 @@ class MainActivityAppCompatContractTest {
     }
 
     @Test
+    fun bilipaiMonet_shouldReuseTheColoredForegroundOnAndroid12AndAbove() {
+        listOf("mdpi", "hdpi", "xhdpi", "xxhdpi", "xxxhdpi").forEach { density ->
+            assertTrue(
+                !resourcePathExists("mipmap-$density-v31/ic_launcher_bilipai_monet_foreground.png"),
+                "Android 12+ should not replace the BiliPai Monet artwork with a separate gray hand-drawn foreground"
+            )
+        }
+        listOf("", "_round").forEach { suffix ->
+            assertTrue(
+                loadResourceText("mipmap-anydpi-v31/ic_launcher_bilipai_monet$suffix.xml")
+                    .contains("@mipmap/ic_launcher_bilipai_monet_foreground"),
+                "BiliPai Monet$suffix should reuse the same colored foreground shown in icon settings"
+            )
+        }
+    }
+
+    @Test
     fun splashIcons_shouldNotPackageDuplicateDrawableAssets() {
         listOf(
             "splash_icon_3d.png",
@@ -182,8 +199,7 @@ class MainActivityAppCompatContractTest {
     fun blueSnowMaidAdaptiveForegrounds_shouldFillRoundMaskWithoutOuterShell() {
         listOf(
             "drawable/ic_launcher_blue_snow_maid_background.xml",
-            "drawable/ic_launcher_blue_snow_maid_background_light.xml",
-            "drawable/ic_launcher_blue_snow_maid_announcement_background.xml"
+            "drawable/ic_launcher_blue_snow_maid_background_light.xml"
         ).forEach { resourcePath ->
             assertTrue(
                 loadResourceText(resourcePath).contains("#FF0A9FE8"),
@@ -192,13 +208,25 @@ class MainActivityAppCompatContractTest {
         }
         listOf(
             "drawable/ic_launcher_blue_snow_maid_background_dark.xml",
-            "drawable/ic_launcher_blue_snow_maid_announcement_background_dark.xml",
-            "drawable-night/ic_launcher_blue_snow_maid_background.xml",
-            "drawable-night/ic_launcher_blue_snow_maid_announcement_background.xml"
+            "drawable-night/ic_launcher_blue_snow_maid_background.xml"
         ).forEach { resourcePath ->
             assertTrue(
                 loadResourceText(resourcePath).contains("#FF087CE8"),
                 "$resourcePath should extend the dark blue artwork without adding a black shell"
+            )
+        }
+        assertTrue(
+            loadResourceText("drawable/ic_launcher_blue_snow_maid_announcement_background.xml")
+                .contains("#FFFFFFFF"),
+            "The light announcement icon should keep its distinct white circular background"
+        )
+        listOf(
+            "drawable/ic_launcher_blue_snow_maid_announcement_background_dark.xml",
+            "drawable-night/ic_launcher_blue_snow_maid_announcement_background.xml"
+        ).forEach { resourcePath ->
+            assertTrue(
+                loadResourceText(resourcePath).contains("#FF090A0C"),
+                "$resourcePath should keep the announcement icon's distinct black circular background"
             )
         }
 
@@ -251,7 +279,7 @@ class MainActivityAppCompatContractTest {
     }
 
     @Test
-    fun blueSnowMaidLauncherIcons_shouldUseFullBleedBlueCirclesWithoutShells() {
+    fun blueSnowMaidLauncherIcons_shouldUseCircularFallbacksWithoutSquareShells() {
         assertTrue(
             loadResourceText("drawable-night/ic_launcher_blue_snow_maid_background.xml")
                 .contains("#FF087CE8"),
@@ -259,8 +287,8 @@ class MainActivityAppCompatContractTest {
         )
         assertTrue(
             loadResourceText("drawable-night/ic_launcher_blue_snow_maid_announcement_background.xml")
-                .contains("#FF087CE8"),
-            "Announcement icon should use the same blue field in dark mode"
+                .contains("#FF090A0C"),
+            "Announcement icon should keep its distinct black field in dark mode"
         )
         mapOf(
             "ic_launcher_blue_snow_maid" to "ic_launcher_blue_snow_maid_background_dark",
@@ -283,6 +311,13 @@ class MainActivityAppCompatContractTest {
         assertTrue(
             announcementCorner[3] == 0,
             "Announcement fallback icon should be a circle instead of a square shell"
+        )
+        val announcementCenterTop =
+            announcementFallbackRows[4].slice(96 * 4 until 96 * 4 + 4)
+        assertTrue(
+            announcementCenterTop[0] <= 16 && announcementCenterTop[1] <= 16 &&
+                announcementCenterTop[2] <= 16 && announcementCenterTop[3] > 0,
+            "The dark announcement fallback should reach its circular edge with black, not blue"
         )
 
         mapOf(
