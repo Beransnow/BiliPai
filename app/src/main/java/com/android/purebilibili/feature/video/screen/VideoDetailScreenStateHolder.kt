@@ -3098,6 +3098,9 @@ internal fun VideoDetailScreenStateHolder(
                     //  沉浸式布局：视频延伸到状态栏 + 内容区域
                     //  📐 [大屏适配] 仅 Expanded 使用分栏布局
 
+                    // Full-viewport host for Miuix landing chrome (stacked home + side-by-side
+                    // related). Anchors are entry-space; never nest under the player column.
+                    Box(modifier = Modifier.fillMaxSize()) {
                     //  📐 [大屏适配] 根据设备类型选择布局
                     if (useTabletLayout) {
                         // 🖥️ 平板：左右分栏布局（视频+信息 | 评论/推荐）
@@ -3741,10 +3744,6 @@ internal fun VideoDetailScreenStateHolder(
                             }
                             }
                         }
-                        val miuixCardTransitionState =
-                            com.android.purebilibili.core.ui.transition
-                                .LocalMiuixVideoCardTransitionState.current
-                        Box(modifier = Modifier.fillMaxSize()) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -4034,14 +4033,25 @@ internal fun VideoDetailScreenStateHolder(
                                 }
                             }
                     }  // Detail body
+                    }  // 📱 手机竖屏布局结束（Column）
+                    }  // phone portrait branch of useTabletLayout
+                    // Landing chrome over phone + tablet entry. Uses click snapshot while Loading.
+                    val miuixCardTransitionState =
+                        com.android.purebilibili.core.ui.transition
+                            .LocalMiuixVideoCardTransitionState.current
                     val sourceCardInfo = (uiState as? VideoPlaybackUiState.Success)?.info
                     if (
-                        sourceCardInfo != null &&
                         miuixCardTransitionState.enabled &&
-                        !suppressPhoneDetailBodyForDirectPortrait
+                        !suppressPhoneDetailBodyForDirectPortrait &&
+                        (
+                            sourceCardInfo != null ||
+                                miuixCardTransitionState.sourceChromeSnapshot != null
+                            )
                     ) {
                         VideoDetailReturnSourceCardChrome(
                             info = sourceCardInfo,
+                            sourceChromeSnapshot = miuixCardTransitionState.sourceChromeSnapshot,
+                            sourceLayout = miuixCardTransitionState.sourceLayout,
                             sourceBounds = miuixCardTransitionState.sourceBoundsProvider(),
                             sourceCoverBounds =
                                 miuixCardTransitionState.sourceCoverBoundsProvider(),
@@ -4050,10 +4060,8 @@ internal fun VideoDetailScreenStateHolder(
                                 .align(Alignment.TopStart),
                         )
                     }
-                    }  // Source-card chrome root
-                    }  // 📱 手机竖屏布局结束（Column）
-                    }  // Box with nested scroll
-                }  // else shouldUseSplitLayout
+                    }  // Full-viewport source-card chrome host (phone + tablet)
+                }  // else shouldUseSplitLayout / immersive parent
             }  // else targetIsLandscape
     }
 

@@ -1,10 +1,15 @@
 package com.android.purebilibili.feature.video.screen
 
 import androidx.compose.ui.geometry.Rect
+import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
+import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.io.File
 
 class VideoDetailReturnSourceCardChromeTest {
     @Test
@@ -17,9 +22,12 @@ class VideoDetailReturnSourceCardChromeTest {
         )
 
         assertTrue(layout.canRender)
+        assertEquals(VideoCardSourceLayout.STACKED, layout.layout)
         assertEquals(0.5f, layout.sourceScale, 0.0001f)
-        assertEquals(500f, layout.sourceWidthPx, 0.0001f)
-        assertEquals(225f, layout.sourceInfoHeightPx, 0.0001f)
+        assertEquals(500f, layout.infoWidthPx, 0.0001f)
+        assertEquals(225f, layout.infoHeightPx, 0.0001f)
+        // Viewport-space cover bottom: (475 - 100) / 0.5 = 750. Parent must be the full entry.
+        assertEquals(0f, layout.anchorXInViewportPx, 0.0001f)
         assertEquals(750f, layout.anchorYInViewportPx, 0.0001f)
     }
 
@@ -32,17 +40,87 @@ class VideoDetailReturnSourceCardChromeTest {
         )
 
         assertFalse(layout.canRender)
-        assertEquals(0f, layout.sourceInfoHeightPx, 0.0001f)
+        assertEquals(0f, layout.infoHeightPx, 0.0001f)
+        assertEquals(VideoCardSourceLayout.COVER_ONLY, layout.layout)
     }
 
     @Test
-    fun sideBySideCoverDoesNotPretendThatTextLivesBelowIt() {
+    fun sideBySideRelatedCardLandsInfoToTheRightOfMeasuredCover() {
         val layout = resolveVideoDetailReturnSourceCardLayout(
             viewportWidthPx = 1000f,
-            sourceBounds = Rect(left = 20f, top = 100f, right = 980f, bottom = 420f),
-            sourceCoverBounds = Rect(left = 20f, top = 100f, right = 380f, bottom = 420f),
+            sourceBounds = Rect(left = 16f, top = 400f, right = 984f, bottom = 580f),
+            sourceCoverBounds = Rect(left = 22f, top = 406f, right = 166f, bottom = 574f),
+            sourceLayout = VideoCardSourceLayout.SIDE_BY_SIDE,
         )
 
-        assertFalse(layout.canRender)
+        assertTrue(layout.canRender)
+        assertEquals(VideoCardSourceLayout.SIDE_BY_SIDE, layout.layout)
+        assertEquals(0.968f, layout.sourceScale, 0.001f)
+        assertEquals(984f - 166f, layout.infoWidthPx, 0.0001f)
+        assertEquals(574f - 406f, layout.infoHeightPx, 0.0001f)
+        // (cover.right - card.left) / sourceScale
+        assertEquals((166f - 16f) / layout.sourceScale, layout.anchorXInViewportPx, 0.001f)
+        assertEquals((406f - 400f) / layout.sourceScale, layout.anchorYInViewportPx, 0.001f)
+    }
+
+    @Test
+    fun sideBySideWithoutExplicitLayoutStillDetectsFromBounds() {
+        val layout = resolveVideoDetailReturnSourceCardLayout(
+            viewportWidthPx = 1000f,
+            sourceBounds = Rect(left = 0f, top = 100f, right = 1000f, bottom = 280f),
+            sourceCoverBounds = Rect(left = 0f, top = 100f, right = 240f, bottom = 280f),
+        )
+
+        assertTrue(layout.canRender)
+        assertEquals(VideoCardSourceLayout.SIDE_BY_SIDE, layout.layout)
+        assertEquals(760f, layout.infoWidthPx, 0.0001f)
+    }
+
+    @Test
+    fun chromeModelPrefersLiveDetailThenFallsBackToClickSnapshot() {
+        val snapshot = VideoCardSourceChromeSnapshot(
+            title = "snap-title",
+            ownerName = "snap-up",
+            viewText = "1万",
+            danmakuText = "200",
+            durationText = "03:21",
+            followed = true,
+        )
+        val fromSnapshot = resolveVideoDetailReturnSourceCardChromeModel(
+            info = null,
+            snapshot = snapshot,
+        )
+        assertNotNull(fromSnapshot)
+        assertEquals("snap-title", fromSnapshot!!.title)
+        assertEquals("03:21", fromSnapshot.durationText)
+        assertTrue(fromSnapshot.followed)
+
+        assertNull(
+            resolveVideoDetailReturnSourceCardChromeModel(info = null, snapshot = null),
+        )
+    }
+
+    @Test
+    fun sourceChromeIsHostedOnFullViewportEntryNotUnderPlayerColumn() {
+        val holder = File(
+            "app/src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreenStateHolder.kt",
+        ).takeIf { it.isFile }?.readText()
+            ?: File(
+                "src/main/java/com/android/purebilibili/feature/video/screen/VideoDetailScreenStateHolder.kt",
+            ).readText()
+        val chromeCall = holder
+            .substringAfter("VideoDetailReturnSourceCardChrome(")
+            .substringBefore("Full-viewport source-card chrome host")
+        // Chrome is a sibling of phone/tablet content on the shared full-entry host Box.
+        assertTrue(holder.contains("手机竖屏布局结束（Column）"))
+        assertTrue(holder.contains("Full-viewport source-card chrome host (phone + tablet)"))
+        val phoneBranchEnd = holder.indexOf("phone portrait branch of useTabletLayout")
+        val chromeStart = holder.indexOf("VideoDetailReturnSourceCardChrome(")
+        assertTrue(phoneBranchEnd in 1 until chromeStart)
+        assertTrue(chromeCall.contains("align(Alignment.TopStart)"))
+        assertTrue(chromeCall.contains("sourceLayout = miuixCardTransitionState.sourceLayout"))
+        assertTrue(chromeCall.contains("sourceChromeSnapshot = miuixCardTransitionState.sourceChromeSnapshot"))
+        // Snapshot keeps info region alive while detail is still Loading.
+        assertTrue(holder.contains("sourceChromeSnapshot != null"))
     }
 }
