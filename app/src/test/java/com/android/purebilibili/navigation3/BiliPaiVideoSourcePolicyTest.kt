@@ -8,28 +8,14 @@ import kotlin.test.assertTrue
 class BiliPaiVideoSourcePolicyTest {
 
     @Test
-    fun relatedVideoDetailDoesNotUseMiuixCardMorphUntilSideBySideLandingIsReady() {
+    fun partitionAndRelatedShareCardMorphGateWithListSources() {
         assertTrue(isRelatedVideoCardMorphSourceRoute("video/BV_PARENT"))
-        assertTrue(isRelatedVideoCardMorphSourceRoute("video/BV_PARENT?from=related"))
+        assertFalse(isRelatedVideoCardMorphSourceRoute("partition"))
         assertFalse(isRelatedVideoCardMorphSourceRoute("home?category=1"))
-        // Related: cover left / text right — morph off until adapted from home/category path.
-        assertFalse(
-            shouldUseMiuixVideoCardMorph(
-                cardTransitionEnabled = true,
-                reduceMotion = false,
-                sourceRoute = "video/BV_PARENT",
-                hasUsableSourceBounds = true,
-            )
-        )
-        assertFalse(
-            shouldUseMiuixVideoCardMorph(
-                cardTransitionEnabled = true,
-                reduceMotion = false,
-                sourceRoute = "video/BV_PARENT",
-                hasUsableSourceBounds = false,
-            )
-        )
+        // 分区 (partition) + 相关 (video/*) + 推荐列表 同一门闩；布局由 sourceLayout 区分。
         listOf(
+            "partition",
+            "video/BV_PARENT",
             "home",
             "home?category=1",
             "search",
@@ -46,9 +32,17 @@ class BiliPaiVideoSourcePolicyTest {
                     sourceRoute = sourceRoute,
                     hasUsableSourceBounds = true,
                 ),
-                "Expected card morph for category/list source=$sourceRoute",
+                "Expected card morph for source=$sourceRoute",
             )
         }
+        assertFalse(
+            shouldUseMiuixVideoCardMorph(
+                cardTransitionEnabled = true,
+                reduceMotion = false,
+                sourceRoute = "partition",
+                hasUsableSourceBounds = false,
+            )
+        )
     }
 
     @Test

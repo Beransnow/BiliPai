@@ -228,20 +228,23 @@ internal fun resolveVideoCardSecondaryContentVisualFrame(
     phase: VideoCardTransitionBackgroundPhase,
     isReturnGestureInProgress: Boolean,
     motionTier: MotionTier,
+    sourceLayout: VideoCardSourceLayout = VideoCardSourceLayout.STACKED,
 ): VideoCardSecondaryContentVisualFrame {
     val depth = morphDepthProgress.coerceIn(0f, 1f)
-    val handoff = resolveVideoCardContentHandoffProgress(
-        morphDepthProgress = depth,
-        phase = phase,
-        isReturnGestureInProgress = isReturnGestureInProgress,
-    )
     val returning = isVideoCardReturnContentYieldActive(
         phase = phase,
         isReturnGestureInProgress = isReturnGestureInProgress,
         morphDepthProgress = depth,
     )
+    // Match landing facade alpha so detail body and source card crossfade as a pair.
+    val handoff = resolveVideoCardSourceChromeVisualFrame(
+        morphDepthProgress = depth,
+        phase = phase,
+        isReturnGestureInProgress = isReturnGestureInProgress,
+        sourceLayout = sourceLayout,
+    ).handoffProgress
     val alpha = when {
-        // Detail body (player 下方) fades + shrinks as source chrome (封面下方) takes over.
+        // Detail body fades as landing facade takes over (STACKED late / SIDE_BY_SIDE whole settle).
         returning -> 1f - handoff
         motionTier == MotionTier.Reduced -> depth
         phase == VideoCardTransitionBackgroundPhase.OPENING ->
@@ -271,18 +274,30 @@ internal fun resolveVideoCardSecondaryContentVisualFrame(
 }
 
 /**
- * Source chrome alpha. Geometry scale is fixed at inverse(sourceScale) so land == list card.
+ * Source chrome / landing facade alpha.
  *
- * [phase] / [isReturnGestureInProgress] keep the API aligned with secondary content; alpha is
- * driven by morph depth so predictive HELD seeks still animate chrome.
+ * - [VideoCardSourceLayout.STACKED]: late 72%–96% window (live player still dominates early).
+ * - [VideoCardSourceLayout.SIDE_BY_SIDE]: full return settle 0→1 so the flying layer paints the
+ *   horizontal card (left cover + right text) instead of a black crushed player strip.
  */
-@Suppress("UNUSED_PARAMETER")
 internal fun resolveVideoCardSourceChromeVisualFrame(
     morphDepthProgress: Float,
     phase: VideoCardTransitionBackgroundPhase = VideoCardTransitionBackgroundPhase.RETURNING,
     isReturnGestureInProgress: Boolean = true,
+    sourceLayout: VideoCardSourceLayout = VideoCardSourceLayout.STACKED,
 ): VideoCardSourceChromeVisualFrame {
-    val handoff = resolveVideoCardSourceChromeReturnAlpha(morphDepthProgress)
+    val depth = morphDepthProgress.coerceIn(0f, 1f)
+    val yieldActive = isVideoCardReturnContentYieldActive(
+        phase = phase,
+        isReturnGestureInProgress = isReturnGestureInProgress,
+        morphDepthProgress = depth,
+    )
+    val handoff = when {
+        !yieldActive -> 0f
+        sourceLayout == VideoCardSourceLayout.SIDE_BY_SIDE ->
+            resolveVideoCardReturnSettleFromMorphDepth(depth)
+        else -> resolveVideoCardSourceChromeReturnAlpha(depth)
+    }
     return VideoCardSourceChromeVisualFrame(
         alpha = handoff,
         layoutScaleMultiplier = 1f,

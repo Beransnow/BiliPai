@@ -28,6 +28,7 @@ class VideoDetailReturnSourceCardChromeTest {
         assertEquals(500f, layout.cardWidthPx, 0.0001f)
         assertEquals(600f, layout.cardHeightPx, 0.0001f)
         assertEquals(375f, layout.coverHeightPx, 0.0001f)
+        assertEquals(500f, layout.coverWidthPx, 0.0001f)
         assertEquals(500f, layout.infoWidthPx, 0.0001f)
         assertEquals(225f, layout.infoHeightPx, 0.0001f)
         // Info top = cover bottom in entry space: 375 / 0.5 = 750.
@@ -89,9 +90,35 @@ class VideoDetailReturnSourceCardChromeTest {
         assertEquals(0.968f, layout.sourceScale, 0.001f)
         assertEquals(984f - 166f, layout.infoWidthPx, 0.0001f)
         assertEquals(580f - 400f, layout.infoHeightPx, 0.0001f)
+        assertEquals(166f - 16f, layout.coverWidthPx, 0.0001f)
         assertEquals((166f - 16f) / layout.sourceScale, layout.infoAnchorXInViewportPx, 0.001f)
         assertEquals(0f, layout.infoAnchorYInViewportPx, 0.001f)
-        assertEquals(layout.cardHeightPx, layout.coverHeightPx, 0.0001f)
+        assertEquals(
+            (166f - 16f) / layout.sourceScale,
+            resolveVideoDetailReturnCoverWidthInEntryPx(layout),
+            0.001f,
+        )
+    }
+
+    @Test
+    fun sideBySideLandingFacadeUsesFullReturnSettleNotLateChromeWindowOnly() {
+        // At mid-return (depth 0.5), STACKED chrome still 0; SIDE_BY_SIDE already half-visible.
+        val stacked = com.android.purebilibili.core.ui.transition
+            .resolveVideoCardSourceChromeVisualFrame(
+                morphDepthProgress = 0.5f,
+                phase = com.android.purebilibili.core.ui.transition
+                    .VideoCardTransitionBackgroundPhase.RETURNING,
+                sourceLayout = VideoCardSourceLayout.STACKED,
+            )
+        val side = com.android.purebilibili.core.ui.transition
+            .resolveVideoCardSourceChromeVisualFrame(
+                morphDepthProgress = 0.5f,
+                phase = com.android.purebilibili.core.ui.transition
+                    .VideoCardTransitionBackgroundPhase.RETURNING,
+                sourceLayout = VideoCardSourceLayout.SIDE_BY_SIDE,
+            )
+        assertEquals(0f, stacked.alpha, 0.001f)
+        assertEquals(0.5f, side.alpha, 0.001f)
     }
 
     @Test

@@ -3555,20 +3555,19 @@ internal fun VideoDetailScreenStateHolder(
                         val miuixLandingState =
                             com.android.purebilibili.core.ui.transition
                                 .LocalMiuixVideoCardTransitionState.current
-                        val landingCoverHeightEntryPx = run {
-                            if (!miuixLandingState.enabled) return@run 0f
+                        val landingLayoutForMedia = run {
+                            if (!miuixLandingState.enabled) return@run null
                             val viewportW = miuixLandingState.layoutWidthProvider()
                                 .takeIf { it > 1f }
                                 ?: with(videoCardTransitionDensity) {
                                     configuration.screenWidthDp.dp.toPx()
                                 }
-                            val landingLayout = resolveVideoDetailReturnSourceCardLayout(
+                            resolveVideoDetailReturnSourceCardLayout(
                                 viewportWidthPx = viewportW,
                                 sourceBounds = miuixLandingState.sourceBoundsProvider(),
                                 sourceCoverBounds = miuixLandingState.sourceCoverBoundsProvider(),
                                 sourceLayout = miuixLandingState.sourceLayout,
-                            )
-                            resolveVideoDetailReturnCoverHeightInEntryPx(landingLayout)
+                            ).takeIf { it.canRender }
                         }
                         Box(
                             modifier = playerContainerModifier
@@ -3589,24 +3588,59 @@ internal fun VideoDetailScreenStateHolder(
                                 )
                                 .background(Color.Black)  // 黑色背景
                                 .drawWithContent {
-                                    // Continuous cover-band clip (lerp by handoff) — no step jump.
+                                    // Clip media toward the measured cover band (top for STACKED,
+                                    // left for SIDE_BY_SIDE) so the landing card is not a black strip.
                                     val morphDepth = miuixLandingState.progressProvider()
-                                    val handoff =
+                                    val landing = landingLayoutForMedia
+                                    val frame =
                                         com.android.purebilibili.core.ui.transition
-                                            .resolveVideoCardSourceChromeReturnAlpha(morphDepth)
-                                    val targetBottom = if (landingCoverHeightEntryPx > 1f) {
-                                        size.height +
-                                            (landingCoverHeightEntryPx - size.height) * handoff
-                                    } else {
-                                        size.height
+                                            .resolveVideoCardSourceChromeVisualFrame(
+                                                morphDepthProgress = morphDepth,
+                                                phase = videoCardDepthBackgroundState.phaseProvider(),
+                                                isReturnGestureInProgress =
+                                                    videoCardDepthBackgroundState
+                                                        .isReturnGestureInProgressProvider() ||
+                                                        videoCardDepthBackgroundState
+                                                            .isGestureRestoreInProgressProvider(),
+                                                sourceLayout = landing?.layout
+                                                    ?: miuixLandingState.sourceLayout,
+                                            )
+                                    val handoff = frame.handoffProgress
+                                    if (landing == null || handoff <= 0.001f) {
+                                        drawContent()
+                                        return@drawWithContent
                                     }
-                                    clipRect(
-                                        left = 0f,
-                                        top = 0f,
-                                        right = size.width,
-                                        bottom = targetBottom.coerceIn(0f, size.height),
-                                    ) {
-                                        this@drawWithContent.drawContent()
+                                    when (landing.layout) {
+                                        com.android.purebilibili.core.ui.transition
+                                            .VideoCardSourceLayout.SIDE_BY_SIDE,
+                                        -> {
+                                            val coverW =
+                                                resolveVideoDetailReturnCoverWidthInEntryPx(landing)
+                                            val targetRight = size.width +
+                                                (coverW - size.width) * handoff
+                                            clipRect(
+                                                left = 0f,
+                                                top = 0f,
+                                                right = targetRight.coerceIn(0f, size.width),
+                                                bottom = size.height,
+                                            ) {
+                                                this@drawWithContent.drawContent()
+                                            }
+                                        }
+                                        else -> {
+                                            val coverH =
+                                                resolveVideoDetailReturnCoverHeightInEntryPx(landing)
+                                            val targetBottom = size.height +
+                                                (coverH - size.height) * handoff
+                                            clipRect(
+                                                left = 0f,
+                                                top = 0f,
+                                                right = size.width,
+                                                bottom = targetBottom.coerceIn(0f, size.height),
+                                            ) {
+                                                this@drawWithContent.drawContent()
+                                            }
+                                        }
                                     }
                                 }
                                 .clipToBounds()
@@ -3828,6 +3862,7 @@ internal fun VideoDetailScreenStateHolder(
                                                         .isGestureRestoreInProgressProvider(),
                                             motionTier =
                                                 videoCardDepthBackgroundState.motionTierProvider(),
+                                            sourceLayout = miuixLandingState.sourceLayout,
                                         )
                                         alpha = frame.alpha
                                         // Shrink toward card-info size so type size meets source chrome
@@ -4110,6 +4145,7 @@ internal fun VideoDetailScreenStateHolder(
                             sourceBounds = miuixCardTransitionState.sourceBoundsProvider(),
                             sourceCoverBounds =
                                 miuixCardTransitionState.sourceCoverBoundsProvider(),
+                            coverUrl = coverUrl,
                             morphDepthProgressProvider = miuixCardTransitionState.progressProvider,
                             phaseProvider = videoCardDepthBackgroundState.phaseProvider,
                             isReturnGestureInProgressProvider = {
