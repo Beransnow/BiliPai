@@ -78,9 +78,9 @@ class MiuixVideoCardNavTransitionTest {
     }
 
     @Test
-    fun sideBySideSourceUsesCropCenterInsteadOfFillWidthTop() {
+    fun sideBySideAndStackedUseFillWidthTopForLandingAnchors() {
         assertEquals(
-            MiuixVideoCardContentScale.CropCenter,
+            MiuixVideoCardContentScale.FillWidthTop,
             resolveMiuixVideoCardContentScaleForSourceLayout(
                 sourceLayout = VideoCardSourceLayout.SIDE_BY_SIDE,
             ),

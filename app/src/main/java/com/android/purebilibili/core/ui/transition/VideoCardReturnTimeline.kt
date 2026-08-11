@@ -277,8 +277,8 @@ internal fun resolveVideoCardSecondaryContentVisualFrame(
  * Source chrome / landing facade alpha.
  *
  * - [VideoCardSourceLayout.STACKED]: late 72%–96% window (live player still dominates early).
- * - [VideoCardSourceLayout.SIDE_BY_SIDE]: full return settle 0→1 so the flying layer paints the
- *   horizontal card (left cover + right text) instead of a black crushed player strip.
+ * - [VideoCardSourceLayout.SIDE_BY_SIDE]: solid for the **entire** return morph (partition /
+ *   related horizontal cards). Fading with settle left a black crushed-player strip on screen.
  */
 internal fun resolveVideoCardSourceChromeVisualFrame(
     morphDepthProgress: Float,
@@ -294,8 +294,8 @@ internal fun resolveVideoCardSourceChromeVisualFrame(
     )
     val handoff = when {
         !yieldActive -> 0f
-        sourceLayout == VideoCardSourceLayout.SIDE_BY_SIDE ->
-            resolveVideoCardReturnSettleFromMorphDepth(depth)
+        // Horizontal card: paint the full left-cover + right-text facade for every return frame.
+        sourceLayout == VideoCardSourceLayout.SIDE_BY_SIDE -> 1f
         else -> resolveVideoCardSourceChromeReturnAlpha(depth)
     }
     return VideoCardSourceChromeVisualFrame(

@@ -101,24 +101,32 @@ class VideoDetailReturnSourceCardChromeTest {
     }
 
     @Test
-    fun sideBySideLandingFacadeUsesFullReturnSettleNotLateChromeWindowOnly() {
-        // At mid-return (depth 0.5), STACKED chrome still 0; SIDE_BY_SIDE already half-visible.
-        val stacked = com.android.purebilibili.core.ui.transition
+    fun sideBySideLandingFacadeIsSolidForWholeReturnMorph() {
+        val sideStart = com.android.purebilibili.core.ui.transition
             .resolveVideoCardSourceChromeVisualFrame(
-                morphDepthProgress = 0.5f,
+                morphDepthProgress = 0.99f,
                 phase = com.android.purebilibili.core.ui.transition
-                    .VideoCardTransitionBackgroundPhase.RETURNING,
-                sourceLayout = VideoCardSourceLayout.STACKED,
+                    .VideoCardTransitionBackgroundPhase.HELD,
+                isReturnGestureInProgress = true,
+                sourceLayout = VideoCardSourceLayout.SIDE_BY_SIDE,
             )
-        val side = com.android.purebilibili.core.ui.transition
+        val sideMid = com.android.purebilibili.core.ui.transition
             .resolveVideoCardSourceChromeVisualFrame(
                 morphDepthProgress = 0.5f,
                 phase = com.android.purebilibili.core.ui.transition
                     .VideoCardTransitionBackgroundPhase.RETURNING,
                 sourceLayout = VideoCardSourceLayout.SIDE_BY_SIDE,
             )
-        assertEquals(0f, stacked.alpha, 0.001f)
-        assertEquals(0.5f, side.alpha, 0.001f)
+        val stackedLate = com.android.purebilibili.core.ui.transition
+            .resolveVideoCardSourceChromeVisualFrame(
+                morphDepthProgress = 0.82f,
+                phase = com.android.purebilibili.core.ui.transition
+                    .VideoCardTransitionBackgroundPhase.RETURNING,
+                sourceLayout = VideoCardSourceLayout.STACKED,
+            )
+        assertEquals(1f, sideStart.alpha, 0.001f)
+        assertEquals(1f, sideMid.alpha, 0.001f)
+        assertEquals(0f, stackedLate.alpha, 0.001f)
     }
 
     @Test

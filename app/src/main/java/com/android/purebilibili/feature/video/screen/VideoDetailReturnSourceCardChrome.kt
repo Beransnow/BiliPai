@@ -192,14 +192,22 @@ internal fun resolveVideoDetailReturnSourceCardLayout(
         VideoCardSourceLayout.SIDE_BY_SIDE -> {
             val coverOnLeft = coverBounds.center.x <= bounds.center.x
             val coverNarrower = coverBounds.width < bounds.width * 0.85f
-            if (!coverOnLeft || !coverNarrower) {
-                return emptyLayout(layout)
+            val coverWidth: Float
+            val coverHeight: Float
+            val infoWidth: Float
+            if (coverOnLeft && coverNarrower) {
+                coverWidth = (coverBounds.right - bounds.left).coerceAtLeast(0f)
+                coverHeight = (coverBounds.bottom - coverBounds.top)
+                    .coerceAtLeast(1f)
+                    .coerceAtMost(bounds.height)
+                infoWidth = (bounds.right - coverBounds.right).coerceAtLeast(0f)
+            } else {
+                // Explicit SIDE_BY_SIDE (partition/related) with imperfect cover measure:
+                // left ~38% band matches HomeStyleSingleColumn cover vs full-width row.
+                coverWidth = bounds.width * 0.38f
+                coverHeight = bounds.height * 0.85f
+                infoWidth = bounds.width - coverWidth
             }
-            val coverWidth = (coverBounds.right - bounds.left).coerceAtLeast(0f)
-            val coverHeight = (coverBounds.bottom - coverBounds.top)
-                .coerceAtLeast(bounds.height * 0.5f)
-                .coerceAtMost(bounds.height)
-            val infoWidth = (bounds.right - coverBounds.right).coerceAtLeast(0f)
             val infoHeight = bounds.height.coerceAtLeast(0f)
             if (infoWidth <= 1f || infoHeight <= 1f || coverWidth <= 1f) {
                 return emptyLayout(layout)
@@ -271,11 +279,12 @@ internal fun BoxScope.VideoDetailReturnSourceCardChrome(
     val miuixHost = LocalMiuixVideoCardTransitionState.current
     val viewportWidthPx = miuixHost.layoutWidthProvider().takeIf { it > 1f }
         ?: with(density) { configuration.screenWidthDp.dp.toPx() }
+    val effectiveLayoutHint = sourceLayout ?: miuixHost.sourceLayout
     val layout = resolveVideoDetailReturnSourceCardLayout(
         viewportWidthPx = viewportWidthPx,
         sourceBounds = sourceBounds,
         sourceCoverBounds = sourceCoverBounds,
-        sourceLayout = sourceLayout,
+        sourceLayout = effectiveLayoutHint,
     )
     if (!layout.canRender) return
 

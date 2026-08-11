@@ -37,8 +37,11 @@ internal fun resolveMiuixVideoCardContentScaleForSourceLayout(
     fullscreen: Boolean = false,
 ): MiuixVideoCardContentScale {
     if (fullscreen) return MiuixVideoCardContentScale.CropCenter
+    // FillWidthTop for both STACKED and SIDE_BY_SIDE so inverse-scale landing
+    // (1/sourceScale) + outer non-uniform scale maps to the frozen card bounds.
+    // CropCenter shifts top-left landing anchors and turns horizontal cards into black strips.
     return when (sourceLayout) {
-        VideoCardSourceLayout.SIDE_BY_SIDE -> MiuixVideoCardContentScale.CropCenter
+        VideoCardSourceLayout.SIDE_BY_SIDE,
         VideoCardSourceLayout.STACKED,
         VideoCardSourceLayout.COVER_ONLY,
         -> MiuixVideoCardContentScale.FillWidthTop
