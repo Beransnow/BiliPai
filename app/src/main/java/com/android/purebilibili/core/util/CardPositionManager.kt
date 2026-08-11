@@ -48,10 +48,12 @@ object CardPositionManager {
     var lastClickedVideoSourceCornerDp: Int? = null
         private set
 
-    var lastClickedVideoSourceLayout: VideoCardSourceLayout = VideoCardSourceLayout.COVER_ONLY
+    // internal: VideoCardSourceLayout is module-internal and must not leak from a public API.
+    internal var lastClickedVideoSourceLayout: VideoCardSourceLayout =
+        VideoCardSourceLayout.COVER_ONLY
         private set
 
-    var lastClickedVideoSourceChromeSnapshot: VideoCardSourceChromeSnapshot? = null
+    internal var lastClickedVideoSourceChromeSnapshot: VideoCardSourceChromeSnapshot? = null
         private set
     
     /**
@@ -120,7 +122,7 @@ object CardPositionManager {
         )
     }
 
-    fun recordVideoCardPosition(
+    internal fun recordVideoCardPosition(
         bvid: String,
         sourceRoute: String?,
         bounds: Rect,
