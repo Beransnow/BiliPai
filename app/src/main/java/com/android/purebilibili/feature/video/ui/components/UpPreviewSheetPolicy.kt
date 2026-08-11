@@ -107,3 +107,12 @@ internal fun resolveUpPreviewVideoClickTarget(
     if (normalized.isEmpty()) return null
     return normalized to cid.coerceAtLeast(0L)
 }
+
+internal fun shouldDismissUpPreviewSheet(
+    dragOffsetPx: Float,
+    velocityYPxPerSecond: Float,
+    dismissThresholdPx: Float,
+): Boolean {
+    if (dragOffsetPx <= 0f || dismissThresholdPx <= 0f) return false
+    return dragOffsetPx >= dismissThresholdPx || velocityYPxPerSecond >= 1_200f
+}

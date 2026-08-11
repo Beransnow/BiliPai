@@ -30,19 +30,28 @@ import com.android.purebilibili.core.ui.components.AppText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.network.NetworkModule
@@ -154,6 +163,75 @@ fun UpPreviewSheet(
 
     BackHandler(enabled = visible) { onDismiss() }
 
+    val sheetHeightDp = screenHeight * 0.72f
+    val density = LocalDensity.current
+    val dismissThresholdPx = with(density) { 96.dp.toPx() }
+    val maxSheetDragPx = with(density) { sheetHeightDp.toPx() }
+    var sheetDragOffsetPx by remember(owner.mid) { mutableFloatStateOf(0f) }
+    val latestOnDismiss by rememberUpdatedState(onDismiss)
+    val sheetNestedScrollConnection = remember(
+        dismissThresholdPx,
+        maxSheetDragPx,
+    ) {
+        object : NestedScrollConnection {
+            override fun onPreScroll(
+                available: Offset,
+                source: NestedScrollSource,
+            ): Offset {
+                if (
+                    source != NestedScrollSource.UserInput ||
+                    available.y >= 0f ||
+                    sheetDragOffsetPx <= 0f
+                ) {
+                    return Offset.Zero
+                }
+
+                val consumedY = available.y.coerceAtLeast(-sheetDragOffsetPx)
+                sheetDragOffsetPx = (sheetDragOffsetPx + consumedY).coerceAtLeast(0f)
+                return Offset(x = 0f, y = consumedY)
+            }
+
+            override fun onPostScroll(
+                consumed: Offset,
+                available: Offset,
+                source: NestedScrollSource,
+            ): Offset {
+                if (source != NestedScrollSource.UserInput || available.y == 0f) {
+                    return Offset.Zero
+                }
+                if (available.y > 0f) {
+                    sheetDragOffsetPx =
+                        (sheetDragOffsetPx + available.y).coerceAtMost(maxSheetDragPx)
+                }
+                // Keep the modal isolated from the detail page at every grid boundary.
+                return Offset(x = 0f, y = available.y)
+            }
+
+            override suspend fun onPreFling(available: Velocity): Velocity {
+                if (sheetDragOffsetPx <= 0f) return Velocity.Zero
+                val shouldDismiss = shouldDismissUpPreviewSheet(
+                    dragOffsetPx = sheetDragOffsetPx,
+                    velocityYPxPerSecond = available.y,
+                    dismissThresholdPx = dismissThresholdPx,
+                )
+                if (shouldDismiss) {
+                    latestOnDismiss()
+                } else {
+                    sheetDragOffsetPx = 0f
+                }
+                return Velocity(x = 0f, y = available.y)
+            }
+
+            override suspend fun onPostFling(
+                consumed: Velocity,
+                available: Velocity,
+            ): Velocity = Velocity(x = 0f, y = available.y)
+        }
+    }
+
+    LaunchedEffect(visible, owner.mid) {
+        if (visible) sheetDragOffsetPx = 0f
+    }
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.BottomCenter,
@@ -183,7 +261,9 @@ fun UpPreviewSheet(
             AppSurface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(screenHeight * 0.72f)
+                    .height(sheetHeightDp)
+                    .nestedScroll(sheetNestedScrollConnection)
+                    .graphicsLayer { translationY = sheetDragOffsetPx }
                     .clickable(enabled = false) {},
                 shape = AppShapes.container(ContainerLevel.Sheet),
                 color = colors.sheetColor,

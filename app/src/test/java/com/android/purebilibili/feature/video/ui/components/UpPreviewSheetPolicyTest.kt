@@ -7,6 +7,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class UpPreviewSheetPolicyTest {
@@ -50,5 +51,13 @@ class UpPreviewSheetPolicyTest {
         assertNull(resolveUpPreviewVideoClickTarget("  "))
         assertEquals("BV1xx" to 0L, resolveUpPreviewVideoClickTarget("BV1xx"))
         assertEquals("BV1yy" to 12L, resolveUpPreviewVideoClickTarget(" BV1yy ", 12L))
+    }
+
+    @Test
+    fun dismissGesture_acceptsDistanceOrDownwardVelocity() {
+        assertTrue(shouldDismissUpPreviewSheet(96f, 0f, 96f))
+        assertTrue(shouldDismissUpPreviewSheet(24f, 1_200f, 96f))
+        assertFalse(shouldDismissUpPreviewSheet(24f, 600f, 96f))
+        assertFalse(shouldDismissUpPreviewSheet(0f, 2_000f, 96f))
     }
 }
