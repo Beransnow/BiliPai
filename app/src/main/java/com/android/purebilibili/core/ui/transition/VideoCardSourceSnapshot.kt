@@ -10,9 +10,15 @@ internal enum class VideoCardSourceLayout {
 }
 
 /**
- * Click-time text shown while a Miuix flying entry is still loading its destination detail.
- * Values are already formatted by the source card so the landing frame cannot drift after data
+ * Click-time chrome + cover frozen from the **stationary list card**.
+ *
+ * Text is already formatted by the source card so the landing frame cannot drift after data
  * refreshes or while the destination is in Loading.
+ *
+ * [coverUrl] / [coverCacheKey] / decode size must be the exact Coil request the list
+ * AsyncImage uses at rest (including [com.android.purebilibili.feature.home.HomeCoverRequestSpec]
+ * sized URL + `size(w,h)`). Detail resident / player-section covers reuse these so handoff
+ * pixels match the stationary card — not `fixImageUrl` / default cache key.
  */
 @Immutable
 internal data class VideoCardSourceChromeSnapshot(
@@ -23,6 +29,13 @@ internal data class VideoCardSourceChromeSnapshot(
     val danmakuText: String,
     val durationText: String,
     val followed: Boolean = false,
+    /** Exact list-card cover request URL (sized / quality resolved). */
+    val coverUrl: String = "",
+    /** Exact list-card Coil memoryCacheKey / diskCacheKey. */
+    val coverCacheKey: String = "",
+    /** Coil `size(w,h)` from list HomeCoverRequestSpec; 0 = omit size(). */
+    val coverDecodeWidthPx: Int = 0,
+    val coverDecodeHeightPx: Int = 0,
 )
 
 internal fun resolveVideoCardSourceLayout(

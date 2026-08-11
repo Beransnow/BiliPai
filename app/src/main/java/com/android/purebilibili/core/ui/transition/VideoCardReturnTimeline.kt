@@ -236,7 +236,7 @@ internal fun resolveVideoCardSecondaryContentVisualFrame(
         isReturnGestureInProgress = isReturnGestureInProgress,
         morphDepthProgress = depth,
     )
-    // Match landing facade alpha so detail body and source card crossfade as a pair.
+    // Match landing chrome alpha so detail body and source-card text crossfade as a pair.
     val handoff = resolveVideoCardSourceChromeVisualFrame(
         morphDepthProgress = depth,
         phase = phase,
@@ -244,7 +244,7 @@ internal fun resolveVideoCardSecondaryContentVisualFrame(
         sourceLayout = sourceLayout,
     ).handoffProgress
     val alpha = when {
-        // Detail body fades as landing facade takes over (STACKED late / SIDE_BY_SIDE whole settle).
+        // Detail body yields as source chrome (title/UP) takes over in the late handoff window.
         returning -> 1f - handoff
         motionTier == MotionTier.Reduced -> depth
         phase == VideoCardTransitionBackgroundPhase.OPENING ->
@@ -274,11 +274,11 @@ internal fun resolveVideoCardSecondaryContentVisualFrame(
 }
 
 /**
- * Source chrome / landing facade alpha.
+ * Source chrome alpha (title / UP / stats + card shell under live media).
  *
- * - [VideoCardSourceLayout.STACKED]: late 72%–96% window (live player still dominates early).
- * - [VideoCardSourceLayout.SIDE_BY_SIDE]: solid for the **entire** return morph (partition /
- *   related horizontal cards). Fading with settle left a black crushed-player strip on screen.
+ * Same late 72%–96% window for [VideoCardSourceLayout.STACKED] and
+ * [VideoCardSourceLayout.SIDE_BY_SIDE]: live player owns early frames; landing text appears
+ * near settle. No opaque static-cover facade over the live surface.
  */
 internal fun resolveVideoCardSourceChromeVisualFrame(
     morphDepthProgress: Float,
@@ -294,8 +294,8 @@ internal fun resolveVideoCardSourceChromeVisualFrame(
     )
     val handoff = when {
         !yieldActive -> 0f
-        // Horizontal card: paint the full left-cover + right-text facade for every return frame.
-        sourceLayout == VideoCardSourceLayout.SIDE_BY_SIDE -> 1f
+        // COVER_ONLY has no below/side info band; STACKED + SIDE_BY_SIDE share home late window.
+        sourceLayout == VideoCardSourceLayout.COVER_ONLY -> 0f
         else -> resolveVideoCardSourceChromeReturnAlpha(depth)
     }
     return VideoCardSourceChromeVisualFrame(
