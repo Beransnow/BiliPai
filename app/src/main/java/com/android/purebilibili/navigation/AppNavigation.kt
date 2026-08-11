@@ -3330,6 +3330,8 @@ fun AppNavigation(
                     predictiveBackExitDirection = predictiveBackExitDirection,
                     sourceMetadata = navigation3SourceMetadata,
                     programmaticBackDispatcher = navigation3ProgrammaticBackDispatcher,
+                    // 实时画面负责返回前段，完整源卡在落点附近承接封面、标题和信息。
+                    preferWholeCardReturn = true,
                     onBack = { performSystemBackAction() },
                     onPrepareVideoCardSharedReturn = {
                         // 普通返回(顶部按钮/系统手势提交)兜底预热。

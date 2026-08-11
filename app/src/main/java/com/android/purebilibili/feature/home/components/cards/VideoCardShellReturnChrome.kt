@@ -17,7 +17,7 @@ import com.android.purebilibili.core.util.CardPositionManager
 /**
  * 源卡信息区（标题/UP 等）在 shell morph 时的 chrome 视觉。
  * 返回末段在封面像素交接前开始淡入，并在落位前完成，避免收尾只剩封面；
- * 横卡可选择随主进度短距离移动；快速返回若仍保留 live surface 也走同一交接。
+ * 横卡可选择随主进度短距离移动；实时画面返回时，完整源卡在下层承接最终落位。
  * 所有进度都在绘制阶段读取，避免整卡重组。
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
@@ -120,7 +120,7 @@ internal fun Modifier.videoCardShellReturnCoverAlpha(
             transitionBackgroundPhase = bgState.phaseProvider(),
             isVideoCardReturnGestureInProgress = bgState.isReturnGestureInProgressProvider(),
             transitionBackgroundProgress = bgState.progressProvider(),
-            // 快速返回仍可能是 LIVE surface；只有显式整卡回退才允许提前全显。
+            // 完整源卡可常驻下层，由上层实时画面在落点窗口内淡出完成像素交接。
             preferWholeCardReturn = bgState.preferWholeCardReturnProvider(),
         )
     }

@@ -8,6 +8,26 @@ import kotlin.test.assertTrue
 
 class BiliPaiReturnSessionStateTest {
 
+    @Test
+    fun relatedSourceRestoreWaitsForMiuixSettle() {
+        assertEquals(
+            332L,
+            resolveRelatedReturnSourceRestoreDelayMillis(
+                cardTransitionEnabled = true,
+                reduceMotion = false,
+                transitionDurationMillis = 300,
+            ),
+        )
+        assertEquals(
+            0L,
+            resolveRelatedReturnSourceRestoreDelayMillis(
+                cardTransitionEnabled = true,
+                reduceMotion = true,
+                transitionDurationMillis = 300,
+            ),
+        )
+    }
+
     private fun transitionSession(
         bvid: String,
         sourceRoute: String,

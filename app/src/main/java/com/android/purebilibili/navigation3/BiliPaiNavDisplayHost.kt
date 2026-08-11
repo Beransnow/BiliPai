@@ -11,6 +11,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -55,6 +56,8 @@ import com.android.purebilibili.navigation3.predictiveback.biliPaiMiuixNavTransi
 import com.android.purebilibili.navigation3.predictiveback.miuixVideoCardNavTransition
 import com.android.purebilibili.navigation3.predictiveback.MiuixVideoCardContentScale
 import com.android.purebilibili.navigation3.predictiveback.MiuixVideoCardTransitionProgress
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.nav.core.NavBackStack
 import top.yukonga.miuix.kmp.nav.core.NavCornerClipMode
 import top.yukonga.miuix.kmp.nav.core.NavDisplay
@@ -95,6 +98,7 @@ internal fun BiliPaiNavDisplayHost(
         BiliPaiPredictiveBackExitDirection.ALWAYS_RIGHT,
     sourceMetadata: BiliPaiNavSourceMetadata,
     programmaticBackDispatcher: BiliPaiProgrammaticBackDispatcher,
+    preferWholeCardReturn: Boolean = true,
     onBack: () -> Unit,
     onPrepareVideoCardSharedReturn: () -> Boolean = { false },
     onRelatedVideoDetailReturned: () -> Unit = {},
@@ -107,7 +111,18 @@ internal fun BiliPaiNavDisplayHost(
     val latestOnBack by rememberUpdatedState(onBack)
     val latestPrepareReturn by rememberUpdatedState(onPrepareVideoCardSharedReturn)
     val latestRelatedReturn by rememberUpdatedState(onRelatedVideoDetailReturned)
-    val performBack = remember(backStack) {
+    val latestPreferWholeCardReturn by rememberUpdatedState(preferWholeCardReturn)
+    val relatedReturnRestoreScope = rememberCoroutineScope()
+    val relatedReturnRestoreDelayMillis = resolveRelatedReturnSourceRestoreDelayMillis(
+        cardTransitionEnabled = cardTransitionEnabled,
+        reduceMotion = reduceMotion,
+        transitionDurationMillis = videoSharedTransitionDurationMillis,
+    )
+    val performBack = remember(
+        backStack,
+        relatedReturnRestoreScope,
+        relatedReturnRestoreDelayMillis,
+    ) {
         {
             val leavingKey = backStack.lastOrNull()
             if (leavingKey is BiliPaiNavKey.VideoDetail) {
@@ -118,7 +133,12 @@ internal fun BiliPaiNavDisplayHost(
                 ?.substringBefore('?')
                 ?.startsWith("video/") == true
             latestOnBack()
-            if (returningFromRelated) latestRelatedReturn()
+            if (returningFromRelated) {
+                relatedReturnRestoreScope.launch {
+                    delay(relatedReturnRestoreDelayMillis)
+                    latestRelatedReturn()
+                }
+            }
         }
     }
 
@@ -275,6 +295,7 @@ internal fun BiliPaiNavDisplayHost(
             snapshotHandle = videoCardSnapshotHandle,
             isReturnGestureInProgressProvider = videoCardGestureProvider,
             isGestureRestoreInProgressProvider = { videoCardClock.gestureRestoreInProgress },
+            preferWholeCardReturnProvider = { latestPreferWholeCardReturn },
             motionTierProvider = { transitionMotionTier },
             isLightBackgroundProvider = { isLightBackground },
         )

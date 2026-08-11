@@ -1,6 +1,22 @@
 package com.android.purebilibili.navigation3
 
 private const val QUICK_RETURN_THRESHOLD_MILLIS = 500L
+private const val RELATED_RETURN_SOURCE_RESTORE_SETTLE_BUFFER_MILLIS = 32L
+
+/**
+ * Related-video pop must keep its related-card geometry until Miuix finishes settling the entry.
+ * Restoring the earlier list source sooner retargets the same outgoing transition mid-flight.
+ */
+internal fun resolveRelatedReturnSourceRestoreDelayMillis(
+    cardTransitionEnabled: Boolean,
+    reduceMotion: Boolean,
+    transitionDurationMillis: Int,
+): Long = if (cardTransitionEnabled && !reduceMotion) {
+    transitionDurationMillis.coerceAtLeast(0).toLong() +
+        RELATED_RETURN_SOURCE_RESTORE_SETTLE_BUFFER_MILLIS
+} else {
+    0L
+}
 
 internal data class BiliPaiReturnSessionState(
     val isReturningFromDetail: Boolean = false,
