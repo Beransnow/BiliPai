@@ -485,7 +485,7 @@ internal data class AndroidNativeBottomBarTuning(
 
 private enum class SharedFloatingBottomBarIconStyle {
     MATERIAL,
-    CUPERTINO
+    MIUIX
 }
 
 internal data class AndroidNativeIndicatorSpec(
@@ -2635,7 +2635,7 @@ private fun MiuixBottomBar(
     val sharedBarIconStyle = if (resolvedIconStyle == AppIconStyle.MD3_STANDARD) {
         SharedFloatingBottomBarIconStyle.MATERIAL
     } else {
-        SharedFloatingBottomBarIconStyle.CUPERTINO
+        SharedFloatingBottomBarIconStyle.MIUIX
     }
     val bottomBarVisibleItems = remember(
         visibleItems,
@@ -4679,9 +4679,9 @@ private fun RowScope.AndroidNativeBottomBarItem(
                                     contentDescription = label
                                 )
                             }
-                            item == null && iconStyle == SharedFloatingBottomBarIconStyle.CUPERTINO -> {
+                            item == null && iconStyle == SharedFloatingBottomBarIconStyle.MIUIX -> {
                                 AppIcon(
-                                    imageVector = CupertinoIcons.Outlined.SidebarLeft,
+                                    imageVector = resolveMiuixPreferredHomeNavigationIcon(tabId = "PARTITION"),
                                     contentDescription = label
                                 )
                             }
@@ -4691,11 +4691,12 @@ private fun RowScope.AndroidNativeBottomBarItem(
                                     contentDescription = label
                                 )
                             }
-                            iconStyle == SharedFloatingBottomBarIconStyle.CUPERTINO -> {
-                                BottomBarBlendedCupertinoIcon(
+                            iconStyle == SharedFloatingBottomBarIconStyle.MIUIX -> {
+                                BottomBarBlendedMiuixIcon(
                                     item = item,
                                     unreadCount = dynamicUnreadCount,
                                     selectedAlpha = selectedIconAlpha,
+                                    contentDescription = label,
                                     contentColor = contentColor
                                 )
                             }
@@ -4769,10 +4770,11 @@ internal fun resolveHomeNavigationBarIcon(
 )
 
 @Composable
-private fun BottomBarBlendedCupertinoIcon(
+private fun BottomBarBlendedMiuixIcon(
     item: BottomNavItem,
     unreadCount: Int = 0,
     selectedAlpha: Float,
+    contentDescription: String?,
     contentColor: Color
 ) {
     val clampedSelectedAlpha = selectedAlpha.coerceIn(0f, 1f)
@@ -4781,18 +4783,16 @@ private fun BottomBarBlendedCupertinoIcon(
             item = item,
             unreadCount = unreadCount
         ) {
-            Box(
-                modifier = Modifier.alpha(1f - clampedSelectedAlpha),
-                contentAlignment = Alignment.Center
-            ) {
-                item.unselectedIcon()
-            }
-            Box(
-                modifier = Modifier.alpha(clampedSelectedAlpha),
-                contentAlignment = Alignment.Center
-            ) {
-                item.selectedIcon()
-            }
+            AppIcon(
+                imageVector = resolveHomeNavigationBarIcon(item, selected = false),
+                contentDescription = contentDescription,
+                modifier = Modifier.alpha(1f - clampedSelectedAlpha)
+            )
+            AppIcon(
+                imageVector = resolveHomeNavigationBarIcon(item, selected = true),
+                contentDescription = null,
+                modifier = Modifier.alpha(clampedSelectedAlpha)
+            )
         }
     }
 }

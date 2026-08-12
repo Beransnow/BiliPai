@@ -30,9 +30,9 @@ class HomeNavigationMiuixStructureTest {
     }
 
     @Test
-    fun `bottom bar keeps upstream Cupertino and Material icon pairs`() {
-        // 底部导航栏是刻意例外：与上游 miuix 主题保持一致，使用 Cupertino（浮动坞/枚举）
-        // 与 Material filled/outlined（停靠栏）成对图标，选中填充、未选中描边。
+    fun `bottom bar keeps legacy Cupertino definitions and Material icon pairs`() {
+        // BottomNavItem 仍保留旧版 Cupertino 定义供兼容路径使用；AUTO 浮动栏由下方测试
+        // 约束为 Miuix 原生图标，MD3_STANDARD 则继续使用 Material filled/outlined 图标对。
         val source = sourceText("BottomBar.kt")
 
         assertTrue(source.contains("enum class BottomNavItem"))
@@ -40,6 +40,19 @@ class HomeNavigationMiuixStructureTest {
         assertTrue(source.contains("{ AppIcon(CupertinoIcons.Outlined.House, contentDescription = null) }"))
         assertTrue(source.contains("internal fun resolveMaterialBottomBarIcon("))
         assertTrue(source.contains("if (selected) Icons.Filled.Home else Icons.Outlined.Home"))
+    }
+
+    @Test
+    fun `miuix auto floating bottom bar uses native Miuix icon pairs`() {
+        val source = sourceText("BottomBar.kt")
+
+        assertTrue(source.contains("SharedFloatingBottomBarIconStyle.MIUIX"))
+        assertTrue(source.contains("BottomBarBlendedMiuixIcon("))
+        assertTrue(source.contains("resolveHomeNavigationBarIcon(item, selected = false)"))
+        assertTrue(source.contains("resolveHomeNavigationBarIcon(item, selected = true)"))
+        assertTrue(source.contains("resolveMiuixPreferredHomeNavigationIcon(tabId = \"PARTITION\")"))
+        assertFalse(source.contains("SharedFloatingBottomBarIconStyle.CUPERTINO"))
+        assertFalse(source.contains("BottomBarBlendedCupertinoIcon("))
     }
 
     @Test
