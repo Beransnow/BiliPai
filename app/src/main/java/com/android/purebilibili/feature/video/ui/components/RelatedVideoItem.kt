@@ -16,9 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
-import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.components.AppIcon
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppSurface
@@ -72,6 +70,7 @@ import com.android.purebilibili.data.repository.BlockedUpRepository
 import com.android.purebilibili.feature.home.HomeFeedCardLayout
 import com.android.purebilibili.feature.home.resolveHomeFeedCardLayout
 import com.android.purebilibili.feature.video.ui.FollowBadgeTone
+import com.android.purebilibili.feature.video.ui.VideoDetailShapes
 import com.android.purebilibili.feature.video.ui.resolveVideoFollowVisualPolicy
 import com.android.purebilibili.navigation.VideoRoute
 import androidx.compose.material.icons.Icons
@@ -231,8 +230,8 @@ fun RelatedVideoItem(
         onClick()
         Unit
     }
-    val cardShape = AppShapes.container(ContainerLevel.Card)
-    val coverShape = AppShapes.container(ContainerLevel.Field)
+    val cardShape = VideoDetailShapes.contentCard()
+    val coverShape = VideoDetailShapes.media()
     val coverWidth = 144.dp
     val coverHeight = coverWidth / coverAspectRatio.coerceAtLeast(1f)
     // 排版对齐首页单列卡片:标题用 feed 紧凑级,统计用 labelSmall。
