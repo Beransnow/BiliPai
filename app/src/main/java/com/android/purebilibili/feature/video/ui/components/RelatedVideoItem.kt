@@ -68,6 +68,7 @@ import com.android.purebilibili.data.model.response.RelatedVideo
 import com.android.purebilibili.data.repository.ActionRepository
 import com.android.purebilibili.data.repository.BlockedUpRepository
 import com.android.purebilibili.feature.home.HomeFeedCardLayout
+import com.android.purebilibili.feature.home.components.cards.videoCardShellReturnChromeAlpha
 import com.android.purebilibili.feature.home.resolveHomeFeedCardLayout
 import com.android.purebilibili.feature.video.ui.FollowBadgeTone
 import com.android.purebilibili.feature.video.ui.VideoDetailShapes
@@ -247,6 +248,15 @@ fun RelatedVideoItem(
             .onGloballyPositioned { coordinates ->
                 cardCoordinatesRef.value = coordinates
             }
+            // Hide the complete stationary card while the flying detail entry owns its
+            // cover/chrome; keeping only the children transparent leaves a black container plate,
+            // while keeping the whole row visible produces a second cover in the live parent.
+            .videoCardShellReturnChromeAlpha(
+                enabled = true,
+                bvid = video.bvid,
+                sourceRoute = sourceRoute,
+                resolveSourceOwnershipAtDraw = true,
+            )
             .clip(cardShape)
             .background(AppSurfaceTokens.cardContainer())
             .clickable(onClick = triggerRelatedVideoClick)
