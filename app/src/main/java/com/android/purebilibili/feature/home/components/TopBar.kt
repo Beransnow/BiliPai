@@ -495,7 +495,8 @@ internal fun resolveTopTabCategoryIcon(
 ): ImageVector {
     val category = resolveTopTabCategoryForIcon(categoryKey)
     return when (iconFamily) {
-        AppSemanticIconFamily.MATERIAL -> when (category) {
+        AppSemanticIconFamily.MATERIAL,
+        AppSemanticIconFamily.MIUIX -> when (category) {
             HomeCategory.RECOMMEND -> if (selected) Icons.Filled.Home else Icons.Outlined.Home
             HomeCategory.FOLLOW -> if (selected) Icons.Filled.Person else Icons.Outlined.Person
             HomeCategory.POPULAR -> if (selected) {
