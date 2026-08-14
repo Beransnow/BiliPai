@@ -1001,9 +1001,11 @@ object DanmakuRepository {
         } else {
             Result.failure(Exception("未找到有效的 WebSocket 地址"))
         }
+    } catch (e: CancellationException) {
+        throw e
     } catch (e: Exception) {
-            android.util.Log.e("DanmakuRepo", "❌ Start live danmaku failed: ${e.message}", e)
-            Result.failure(e)
+        android.util.Log.e("DanmakuRepo", "❌ Start live danmaku failed: ${e.message}", e)
+        Result.failure(e)
         }
     }
 }
