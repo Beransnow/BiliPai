@@ -22,6 +22,8 @@ import com.android.purebilibili.core.ui.transition.VideoSharedTransitionSpeed
 import com.android.purebilibili.core.ui.transition.normalizeVideoSharedTransitionCustomDurationMillis
 import com.android.purebilibili.core.store.home.HomeSettingsStore
 import com.android.purebilibili.core.store.navigation.NavigationSettingsStore
+import com.android.purebilibili.core.store.navigation.bottomBarItemLabelsPreferencesKey
+import com.android.purebilibili.core.store.navigation.parseBottomBarItemLabels
 import com.android.purebilibili.core.store.player.PlayerSettingsStore
 import com.android.purebilibili.core.store.player.defaultAudioQualityPreferenceKey
 import com.android.purebilibili.core.theme.AppFontSizePreset
@@ -830,6 +832,7 @@ data class AppNavigationSettings(
     val bottomBarVisibilityMode: SettingsManager.BottomBarVisibilityMode = SettingsManager.BottomBarVisibilityMode.ALWAYS_VISIBLE,
     val orderedVisibleTabIds: List<String> = listOf("HOME", "DYNAMIC", "HISTORY", "LISTEN_VIDEO", "PROFILE"),
     val bottomBarItemColors: Map<String, Int> = emptyMap(),
+    val bottomBarItemLabels: Map<String, String> = emptyMap(),
     val tabletUseSidebar: Boolean = false,
     val sidebarAccountSwitcherEnabled: Boolean = true,
     val predictiveBackEnabled: Boolean = true,
@@ -3655,6 +3658,9 @@ object SettingsManager {
     fun getBottomBarItemColors(context: Context): Flow<Map<String, Int>> = context.settingsDataStore.data
         .map { preferences -> parseBottomBarItemColors(preferences[KEY_BOTTOM_BAR_ITEM_COLORS] ?: "") }
 
+    fun getBottomBarItemLabels(context: Context): Flow<Map<String, String>> =
+        NavigationSettingsStore.observeBottomBarItemLabels(context)
+
     suspend fun setBlurIntensity(context: Context, intensity: BlurIntensity) {
         context.settingsDataStore.edit { preferences -> 
             preferences[KEY_BLUR_INTENSITY] = intensity.name
@@ -5753,6 +5759,12 @@ object SettingsManager {
             prefs[KEY_BOTTOM_BAR_ITEM_COLORS] = colorMap.entries.joinToString(",") { "${it.key}:${it.value}" }
         }
     }
+
+    suspend fun setBottomBarItemLabel(context: Context, itemId: String, label: String) =
+        NavigationSettingsStore.setBottomBarItemLabel(context, itemId, label)
+
+    suspend fun clearBottomBarItemLabels(context: Context) =
+        NavigationSettingsStore.clearBottomBarItemLabels(context)
     
     // ==========  彩蛋设置 ==========
     
@@ -6383,6 +6395,9 @@ object SettingsManager {
             ),
             orderedVisibleTabIds = resolveOrderedVisibleBottomTabs(order, visible),
             bottomBarItemColors = parseBottomBarItemColors(preferences[KEY_BOTTOM_BAR_ITEM_COLORS] ?: ""),
+            bottomBarItemLabels = parseBottomBarItemLabels(
+                preferences[bottomBarItemLabelsPreferencesKey].orEmpty()
+            ),
             tabletUseSidebar = preferences[KEY_TABLET_NAVIGATION_MODE] ?: defaultTabletUseSidebar,
             sidebarAccountSwitcherEnabled =
                 preferences[KEY_SIDEBAR_ACCOUNT_SWITCHER_ENABLED] ?: true,

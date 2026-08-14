@@ -172,8 +172,14 @@ import com.android.purebilibili.feature.home.components.HomeNotInterestedReasonS
 import com.android.purebilibili.feature.partition.PartitionContent
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
-// [新增] 全局回顶事件通道
-val LocalHomeScrollChannel = compositionLocalOf<Channel<Unit>?> { null }
+enum class HomeScrollRequest {
+    SCROLL_TO_TOP,
+    SCROLL_TO_TOP_OR_REFRESH,
+    SCROLL_TO_TOP_AND_REFRESH,
+}
+
+// 首页只有一个可见消费者；Channel 保证底栏重选/双击事件不会在暂停采集时丢失。
+val LocalHomeScrollChannel = compositionLocalOf<Channel<HomeScrollRequest>?> { null }
 
 /** Home feed LayerBackdrop for card info liquid glass (sibling capture, not nested SO). */
 val LocalHomeLayerBackdrop = staticCompositionLocalOf<com.kyant.backdrop.backdrops.LayerBackdrop?> { null }
@@ -351,33 +357,35 @@ fun HomeScreen(
     // [新增] 监听全局回顶事件
     val scrollChannel = LocalHomeScrollChannel.current
     LaunchedEffect(scrollChannel) {
-        scrollChannel?.receiveAsFlow()?.collect {
-            launch {
-                // 双击首页回顶时强制展开顶部，避免收缩头部与回顶状态错位导致空白
-                setHeaderOffsetImmediate(0f)
-                val gridState = if (currentCategory == HomeCategory.POPULAR) {
-                    popularGridStates[popularSubCategory]
-                } else {
-                    gridStates[currentCategory]
-                }
-                val isAtTop = gridState == null || (gridState.firstVisibleItemIndex == 0 && gridState.firstVisibleItemScrollOffset < 50)
-
-                if (isAtTop) {
-                    viewModel.refresh()
-                } else {
-                    val listState = requireNotNull(gridState)
-                    val currentIndex = listState.firstVisibleItemIndex
-                    val plan = resolveScrollToTopPlan(currentIndex)
-                    plan.preJumpIndex?.let { preJump ->
-                        if (currentIndex > preJump) {
-                            listState.scrollToItem(preJump)
-                        }
-                    }
-                    listState.animateScrollToItem(plan.animateTargetIndex)
-                }
-                setHeaderOffsetImmediate(0f)
-                globalScrollOffset.floatValue = 0f
+        scrollChannel?.receiveAsFlow()?.collectLatest { request ->
+            // 双击首页回顶时强制展开顶部，避免收缩头部与回顶状态错位导致空白
+            setHeaderOffsetImmediate(0f)
+            val gridState = if (currentCategory == HomeCategory.POPULAR) {
+                popularGridStates[popularSubCategory]
+            } else {
+                gridStates[currentCategory]
             }
+            val isAtTop = gridState == null ||
+                (gridState.firstVisibleItemIndex == 0 && gridState.firstVisibleItemScrollOffset < 50)
+
+            if (!isAtTop) {
+                val listState = requireNotNull(gridState)
+                val currentIndex = listState.firstVisibleItemIndex
+                val plan = resolveScrollToTopPlan(currentIndex)
+                plan.preJumpIndex?.let { preJump ->
+                    if (currentIndex > preJump) {
+                        listState.scrollToItem(preJump)
+                    }
+                }
+                listState.animateScrollToItem(plan.animateTargetIndex)
+            }
+            val shouldRefresh = request == HomeScrollRequest.SCROLL_TO_TOP_AND_REFRESH ||
+                (request == HomeScrollRequest.SCROLL_TO_TOP_OR_REFRESH && isAtTop)
+            if (shouldRefresh) {
+                viewModel.refresh()
+            }
+            setHeaderOffsetImmediate(0f)
+            globalScrollOffset.floatValue = 0f
         }
     }
 

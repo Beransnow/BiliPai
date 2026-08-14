@@ -475,9 +475,10 @@ fun CommonListScreen(
         }
     }
 
-    // [新增] Pager State (仅当有多个文件夹时使用)
-    // 尽管 compose 会自动处理 rememberKey，但这里用 foldersState.size 作为 key 确保变化时重置
-    val pagerState = rememberPagerState(initialPage = 0) {
+    // 返回收藏页时直接从已选文件夹恢复，避免先创建第 1 页再跨多页补间加载。
+    val pagerState = rememberPagerState(
+        initialPage = selectedFolderIndex.coerceIn(0, foldersState.lastIndex.coerceAtLeast(0))
+    ) {
         if (favoriteViewModel != null && foldersState.size > 1) foldersState.size else 0
     }
 
@@ -942,9 +943,15 @@ fun CommonListScreen(
                         // Personal-list pages use explicit controls for horizontal navigation.
                         // Keeping this pager programmatic avoids competing with predictive back
                         // and with filter/folder controls in the collapsing header.
-                        LaunchedEffect(selectedFolderIndex) {
-                            if (pagerState.currentPage != selectedFolderIndex) {
-                                pagerState.animateScrollToPage(selectedFolderIndex)
+                        LaunchedEffect(selectedFolderIndex, pagerState.pageCount) {
+                            if (pagerState.pageCount > 0) {
+                                val targetPage = selectedFolderIndex.coerceIn(
+                                    minimumValue = 0,
+                                    maximumValue = pagerState.pageCount - 1,
+                                )
+                                if (pagerState.currentPage != targetPage) {
+                                    pagerState.scrollToPage(targetPage)
+                                }
                             }
                         }
 
@@ -952,7 +959,7 @@ fun CommonListScreen(
                             state = pagerState,
                             userScrollEnabled = false,
                             modifier = Modifier.fillMaxSize(),
-                            beyondViewportPageCount = 1 // 预加载
+                            beyondViewportPageCount = 0,
                         ) { page ->
                             // 获取当前页面的状态
                             val folderUiState by favoriteVm.getFolderUiState(page).collectAsStateWithLifecycle()
@@ -2281,6 +2288,9 @@ private fun CommonListContent(
         val filteredItems = androidx.compose.runtime.remember(items, searchQuery) {
             filterCommonListVideosByQuery(items, searchQuery)
         }
+        val renderKeys = androidx.compose.runtime.remember(filteredItems) {
+            resolveCommonListRenderKeys(filteredItems.map(resolveHistoryItemKey))
+        }
         LaunchedEffect(
             searchPaginationFallbackEnabled,
             searchQuery,
@@ -2335,7 +2345,7 @@ private fun CommonListContent(
             ) {
                  itemsIndexed(
                     items = filteredItems,
-                    key = { _, item -> resolveHistoryItemKey(item) },
+                    key = { index, _ -> renderKeys[index] },
                     span = { _, item ->
                         if (item.isCollectionResource) GridItemSpan(columns) else GridItemSpan(1)
                     }

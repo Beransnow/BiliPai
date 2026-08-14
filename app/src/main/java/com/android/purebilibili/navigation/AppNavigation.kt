@@ -623,6 +623,7 @@ fun AppNavigation(
             )
         }
         val bottomBarItemColors = appNavigationSettings.bottomBarItemColors
+        val bottomBarItemLabels = appNavigationSettings.bottomBarItemLabels
         // 平板侧边栏模式 (替代 WindowSizeClass)
         val windowSizeClass = LocalWindowSizeClass.current
 
@@ -1297,7 +1298,11 @@ fun AppNavigation(
         }
 
         // [新增] 首页回顶事件通道 (Channel based event bus)
-        val homeScrollChannel = remember { kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.CONFLATED) }
+        val homeScrollChannel = remember {
+            kotlinx.coroutines.channels.Channel<com.android.purebilibili.feature.home.HomeScrollRequest>(
+                kotlinx.coroutines.channels.Channel.CONFLATED
+            )
+        }
         val dynamicScrollChannel = remember { kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.CONFLATED) }
         val historyScrollChannel = remember { kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.CONFLATED) }
         val favoriteScrollChannel = remember { kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.CONFLATED) }
@@ -1323,7 +1328,9 @@ fun AppNavigation(
                     requestBottomPagerPageForRoute(item.route)
                 }
                 BottomBarSelectionAction.RESELECT -> when (item) {
-                    BottomNavItem.HOME -> homeScrollChannel.trySend(Unit)
+                    BottomNavItem.HOME -> homeScrollChannel.trySend(
+                        com.android.purebilibili.feature.home.HomeScrollRequest.SCROLL_TO_TOP
+                    )
                     BottomNavItem.DYNAMIC -> dynamicScrollChannel.trySend(Unit)
                     BottomNavItem.HISTORY -> historyScrollChannel.trySend(Unit)
                     BottomNavItem.FAVORITE -> favoriteScrollChannel.trySend(Unit)
@@ -1642,10 +1649,15 @@ fun AppNavigation(
                             currentItem = currentBottomNavItem,
                             onItemClick = handleNavItemClick,
                             firstItemModifier = Modifier,
-                            onHomeDoubleTap = { homeScrollChannel.trySend(Unit) },
+                            onHomeDoubleTap = {
+                                homeScrollChannel.trySend(
+                                    com.android.purebilibili.feature.home.HomeScrollRequest.SCROLL_TO_TOP_AND_REFRESH
+                                )
+                            },
                             hazeState = if (isBottomBarBlurEnabled) mainHazeState else null,
                             visibleItems = visibleBottomBarItems,
                             itemColorIndices = bottomBarItemColors,
+                            itemLabels = bottomBarItemLabels,
                             uiSkinDecoration = bottomBarUiSkinDecoration,
                             onToggleSidebar = {
                                 // [Tablet] Toggle sidebar mode
@@ -3438,7 +3450,11 @@ fun AppNavigation(
                                 FrostedBottomBar(
                                     currentItem = currentBottomNavItem,
                                     onItemClick = handleNavItemClick,
-                                    onHomeDoubleTap = { homeScrollChannel.trySend(Unit) },
+                                    onHomeDoubleTap = {
+                                        homeScrollChannel.trySend(
+                                            com.android.purebilibili.feature.home.HomeScrollRequest.SCROLL_TO_TOP_AND_REFRESH
+                                        )
+                                    },
                                     onDynamicDoubleTap = { dynamicScrollChannel.trySend(Unit) },
                                     onSearchClick = { requestSearchFromBottomBar() },
                                     onSearchKeywordSubmit = submitSearchKeywordInNavigation3,
@@ -3448,6 +3464,7 @@ fun AppNavigation(
                                     labelMode = bottomBarLabelMode,
                                     visibleItems = visibleBottomBarItems,
                                     itemColorIndices = bottomBarItemColors,
+                                    itemLabels = bottomBarItemLabels,
                                     dynamicUnreadCount = dynamicUnreadCount,
                                     homeSettings = effectiveHomeSettings,
                                     miuixBackdrop = bottomBarBackdrop,
@@ -3470,7 +3487,11 @@ fun AppNavigation(
                             FrostedBottomBar(
                                 currentItem = currentBottomNavItem,
                                 onItemClick = handleNavItemClick,
-                                onHomeDoubleTap = { homeScrollChannel.trySend(Unit) },
+                                onHomeDoubleTap = {
+                                    homeScrollChannel.trySend(
+                                        com.android.purebilibili.feature.home.HomeScrollRequest.SCROLL_TO_TOP_AND_REFRESH
+                                    )
+                                },
                                 onDynamicDoubleTap = { dynamicScrollChannel.trySend(Unit) },
                                 onSearchClick = { requestSearchFromBottomBar() },
                                 onSearchKeywordSubmit = submitSearchKeywordInNavigation3,
@@ -3480,6 +3501,7 @@ fun AppNavigation(
                                 labelMode = bottomBarLabelMode,
                                 visibleItems = visibleBottomBarItems,
                                 itemColorIndices = bottomBarItemColors,
+                                itemLabels = bottomBarItemLabels,
                                 dynamicUnreadCount = dynamicUnreadCount,
                                 homeSettings = effectiveHomeSettings,
                                 miuixBackdrop = bottomBarBackdrop,

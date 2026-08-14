@@ -17,6 +17,7 @@ import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.OpticalContrastPalette
 
 import android.os.Build
+import android.os.SystemClock
 import androidx.annotation.StringRes
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.ui.graphics.luminance
@@ -322,7 +323,10 @@ enum class BottomNavItem(
 }
 
 @Composable
-internal fun resolveBottomNavItemLabel(item: BottomNavItem): String = stringResource(item.labelRes)
+internal fun resolveBottomNavItemLabel(
+    item: BottomNavItem,
+    customLabels: Map<String, String> = emptyMap(),
+): String = customLabels[item.name]?.takeIf(String::isNotBlank) ?: stringResource(item.labelRes)
 
 @Composable
 internal fun resolveBottomNavItemContentDescription(item: BottomNavItem): String =
@@ -2044,6 +2048,7 @@ fun FrostedBottomBar(
         BottomNavItem.PROFILE
     ),
     itemColorIndices: Map<String, Int> = emptyMap(),
+    itemLabels: Map<String, String> = emptyMap(),
     dynamicUnreadCount: Int = 0,
     onToggleSidebar: (() -> Unit)? = null,
     miuixBackdrop: MiuixLayerBackdrop? = null,
@@ -2054,14 +2059,32 @@ fun FrostedBottomBar(
     uiSkinDecoration: BottomBarUiSkinDecoration? = null
 ) {
     val isTablet = com.android.purebilibili.core.util.LocalWindowSizeClass.current.isTablet
+    var lastHomeClickMs by remember { mutableLongStateOf(0L) }
+    val resolvedItemClick: (BottomNavItem) -> Unit = { item ->
+        val nowMs = SystemClock.elapsedRealtime()
+        when (
+            resolveHomeSideBarClickAction(
+                item = item,
+                nowMs = nowMs,
+                lastHomeClickMs = lastHomeClickMs,
+            )
+        ) {
+            HomeSideBarClickAction.HOME_DOUBLE_TAP -> onHomeDoubleTap()
+            HomeSideBarClickAction.NAVIGATE -> onItemClick(item)
+        }
+        if (item == BottomNavItem.HOME) {
+            lastHomeClickMs = nowMs
+        }
+    }
     AppBottomNavigationHost(
         androidNativeLiquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled,
         materialContent = { policy ->
             MaterialBottomBar(
                 currentItem = currentItem,
-                onItemClick = onItemClick,
+                onItemClick = resolvedItemClick,
                 modifier = modifier,
                 visibleItems = visibleItems,
+                itemLabels = itemLabels,
                 onToggleSidebar = onToggleSidebar,
                 dynamicUnreadCount = dynamicUnreadCount,
                 isFloating = isFloating,
@@ -2084,9 +2107,10 @@ fun FrostedBottomBar(
         platformContent = { policy ->
             MiuixBottomBar(
                 currentItem = currentItem,
-                onItemClick = onItemClick,
+                onItemClick = resolvedItemClick,
                 modifier = modifier,
                 visibleItems = visibleItems,
+                itemLabels = itemLabels,
                 onToggleSidebar = onToggleSidebar,
                 dynamicUnreadCount = dynamicUnreadCount,
                 isFloating = isFloating,
@@ -2117,6 +2141,7 @@ private fun MaterialBottomBar(
     onItemClick: (BottomNavItem) -> Unit,
     modifier: Modifier = Modifier,
     visibleItems: List<BottomNavItem>,
+    itemLabels: Map<String, String>,
     onToggleSidebar: (() -> Unit)?,
     dynamicUnreadCount: Int,
     isFloating: Boolean,
@@ -2201,6 +2226,7 @@ private fun MaterialBottomBar(
             onItemClick = onItemClick,
             modifier = modifier,
             visibleItems = bottomBarVisibleItems,
+            itemLabels = itemLabels,
             onToggleSidebar = onToggleSidebar,
             dynamicUnreadCount = dynamicUnreadCount,
             isTablet = isTablet,
@@ -2257,7 +2283,7 @@ private fun MaterialBottomBar(
                 modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)
             ) {
                 bottomBarVisibleItems.forEach { item ->
-                    val itemLabel = resolveBottomNavItemLabel(item)
+                    val itemLabel = resolveBottomNavItemLabel(item, itemLabels)
                     val itemContentDescription = resolveBottomNavItemContentDescription(item)
                     val skinIconPath = uiSkinDecoration?.iconPathFor(item, selected = currentItem == item)
                     AppNavigationBarItem(
@@ -2368,6 +2394,7 @@ private fun MiuixBottomBar(
     onItemClick: (BottomNavItem) -> Unit,
     modifier: Modifier = Modifier,
     visibleItems: List<BottomNavItem>,
+    itemLabels: Map<String, String>,
     onToggleSidebar: (() -> Unit)?,
     dynamicUnreadCount: Int,
     isFloating: Boolean,
@@ -2448,6 +2475,7 @@ private fun MiuixBottomBar(
             onItemClick = onItemClick,
             modifier = modifier,
             visibleItems = bottomBarVisibleItems,
+            itemLabels = itemLabels,
             onToggleSidebar = onToggleSidebar,
             dynamicUnreadCount = dynamicUnreadCount,
             isTablet = isTablet,
@@ -2524,7 +2552,7 @@ private fun MiuixBottomBar(
             )
 
             bottomBarVisibleItems.forEach { item ->
-                val itemLabel = resolveBottomNavItemLabel(item)
+                val itemLabel = resolveBottomNavItemLabel(item, itemLabels)
                 val skinIconPath = uiSkinDecoration?.iconPathFor(item, selected = currentItem == item)
                 val reminderBadgeText = formatBottomBarDynamicReminderBadge(
                     if (shouldShowBottomBarDynamicReminderBadge(item, dynamicUnreadCount)) {
@@ -2757,6 +2785,7 @@ private fun BiliPaiFloatingBottomBar(
     onItemClick: (BottomNavItem) -> Unit,
     modifier: Modifier = Modifier,
     visibleItems: List<BottomNavItem>,
+    itemLabels: Map<String, String> = emptyMap(),
     itemColorIndices: Map<String, Int> = emptyMap(),
     dynamicUnreadCount: Int = 0,
     onToggleSidebar: (() -> Unit)?,
@@ -3050,7 +3079,7 @@ private fun BiliPaiFloatingBottomBar(
                             indicatorHeight = BOTTOM_BAR_INDICATOR_DOCK_BAND_HEIGHT_DP.dp
                         ) {
                             visibleItems.forEachIndexed { index, item ->
-                                val label = resolveBottomNavItemLabel(item)
+                                val label = resolveBottomNavItemLabel(item, itemLabels)
                                 val selected = index == selectedIndexForBar ||
                                     LocalFloatingBottomBarActiveContent.current
                                 val skinIconPath = uiSkinDecoration?.iconPathFor(

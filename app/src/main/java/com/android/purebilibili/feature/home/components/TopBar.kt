@@ -1482,7 +1482,9 @@ private fun LightweightHomeTopTabs(
                                 performHomeTopBarTap(haptic = haptic, onClick = {
                                     when (resolveTopTabClickAction(index, selectedIndex)) {
                                         TopTabClickAction.SELECT_TAB -> onCategorySelected(index)
-                                        TopTabClickAction.SCROLL_TO_TOP -> scrollChannel?.trySend(Unit)
+                                        TopTabClickAction.SCROLL_TO_TOP -> scrollChannel?.trySend(
+                                            com.android.purebilibili.feature.home.HomeScrollRequest.SCROLL_TO_TOP_OR_REFRESH
+                                        )
                                     }
                                 })
                             }
@@ -1515,7 +1517,11 @@ private fun LightweightHomeTopTabs(
                     ) {
                         performHomeTopBarTap(
                             haptic = haptic,
-                            onClick = { scrollChannel?.trySend(Unit) }
+                            onClick = {
+                                scrollChannel?.trySend(
+                                    com.android.purebilibili.feature.home.HomeScrollRequest.SCROLL_TO_TOP_OR_REFRESH
+                                )
+                            }
                         )
                     }
                     .clearAndSetSemantics {}
