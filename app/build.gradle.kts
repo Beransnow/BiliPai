@@ -361,6 +361,7 @@ dependencies {
     implementation(project(":network-core"))
     implementation(project(":plugin-sdk"))
     implementation(project(":design-system"))
+    implementation(project(":danmaku-engine"))
 
     // --- 1. Compose UI ---
     // Material3 1.5.0-alpha25 is built against Compose 1.12.0-beta01. Use the
@@ -451,8 +452,8 @@ dependencies {
     implementation(project(":dolby-ffmpeg-decoder"))
 
     // --- 5. Danmaku (弹幕引擎) ---
-    // 🔥 使用 ByteDance DanmakuRenderEngine - 轻量级高性能弹幕渲染引擎
-    implementation("com.github.bytedance:DanmakuRenderEngine:v0.1.0")
+    // 内部维护的 ByteDance DanmakuRenderEngine 分支；上游已归档。
+    // 对 app 只暴露项目自有的引擎中立接口，便于后续替换渲染后端。
     
     // 注：FFmpegKit 已于 2025 年停止维护，改用 ExoPlayer 直接播放分离音视频
 
