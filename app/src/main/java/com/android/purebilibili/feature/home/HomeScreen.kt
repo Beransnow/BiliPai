@@ -356,14 +356,17 @@ fun HomeScreen(
 
     // [新增] 监听全局回顶事件
     val scrollChannel = LocalHomeScrollChannel.current
+    val latestHomeScrollCategory by rememberUpdatedState(currentCategory)
+    val latestHomeScrollPopularSubCategory by rememberUpdatedState(popularSubCategory)
     LaunchedEffect(scrollChannel) {
         scrollChannel?.receiveAsFlow()?.collectLatest { request ->
             // 双击首页回顶时强制展开顶部，避免收缩头部与回顶状态错位导致空白
             setHeaderOffsetImmediate(0f)
-            val gridState = if (currentCategory == HomeCategory.POPULAR) {
-                popularGridStates[popularSubCategory]
+            val activeCategory = latestHomeScrollCategory
+            val gridState = if (activeCategory == HomeCategory.POPULAR) {
+                popularGridStates[latestHomeScrollPopularSubCategory]
             } else {
-                gridStates[currentCategory]
+                gridStates[activeCategory]
             }
             val isAtTop = gridState == null ||
                 (gridState.firstVisibleItemIndex == 0 && gridState.firstVisibleItemScrollOffset < 50)
