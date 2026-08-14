@@ -125,6 +125,7 @@ import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.LocalSharedTransitionScope
 import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
 import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.ui.rememberBackToTopButtonEnabled
 import com.android.purebilibili.core.ui.rememberAppFolderIcon
 import com.android.purebilibili.core.ui.rememberAppHeadphonesIcon
 import com.android.purebilibili.core.ui.rememberAppPlayIcon
@@ -1692,7 +1693,7 @@ fun CommonListScreen(
             }
 
             AnimatedVisibility(
-                visible = shouldShowBackToTop,
+                visible = rememberBackToTopButtonEnabled() && shouldShowBackToTop,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall, bottom = commonListBottomPadding + AppSpacingTokens.Medium),

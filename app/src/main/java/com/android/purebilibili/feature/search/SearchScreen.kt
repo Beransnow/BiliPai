@@ -1,6 +1,7 @@
 // 文件路径: feature/search/SearchScreen.kt
 package com.android.purebilibili.feature.search
 import com.android.purebilibili.core.ui.components.AppAssistChip
+import com.android.purebilibili.core.ui.components.AppBackToTopButton
 import com.android.purebilibili.core.ui.components.AppCheckbox
 import com.android.purebilibili.core.ui.components.AppDropdownMenu
 import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
@@ -9,7 +10,6 @@ import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppInputChip
-import com.android.purebilibili.core.ui.components.AppSmallFloatingActionButton
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTab
 import com.android.purebilibili.core.ui.components.AppText
@@ -57,7 +57,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 //  Material Icons
@@ -117,6 +116,7 @@ import com.android.purebilibili.core.ui.AppTopTabPresentation
 import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
 import com.android.purebilibili.core.ui.rememberAppChromeLiquidGlassEnabled
 import com.android.purebilibili.core.ui.rememberAppSemanticVisualPolicy
+import com.android.purebilibili.core.ui.rememberBackToTopButtonEnabled
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.ui.rememberAppChevronDownIcon
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
@@ -140,6 +140,8 @@ import com.android.purebilibili.data.repository.SearchUserType
 import com.android.purebilibili.data.repository.resolveSearchDurationFilterLabel
 import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.core.util.FormatUtils
+import com.android.purebilibili.core.util.animateScrollToTop
+import com.android.purebilibili.core.util.shouldShowScrollToTop
 import com.android.purebilibili.core.ui.adaptive.resolveDeviceUiProfile
 import com.android.purebilibili.core.ui.adaptive.resolveEffectiveMotionTier
 import coil.compose.AsyncImage
@@ -368,7 +370,11 @@ internal fun shouldShowSearchBackToTop(
     firstVisibleItemScrollOffset: Int,
     offsetThresholdPx: Int = 280
 ): Boolean {
-    return firstVisibleItemIndex > 0 || firstVisibleItemScrollOffset >= offsetThresholdPx
+    return shouldShowScrollToTop(
+        firstVisibleItemIndex = firstVisibleItemIndex,
+        firstVisibleItemScrollOffset = firstVisibleItemScrollOffset,
+        offsetThresholdPx = offsetThresholdPx,
+    )
 }
 
 internal fun resolveSearchSubmitKeyword(
@@ -575,6 +581,7 @@ fun SearchScreen(
     val topChromePolicy = rememberAppTopChromePolicy()
     val semanticVisualPolicy = rememberAppSemanticVisualPolicy()
     val contentCardSurfaceSpec = rememberContentCardSurfaceSpec()
+    val backToTopButtonEnabled = rememberBackToTopButtonEnabled()
     val searchChromeSpec = remember(topChromePolicy) { resolveSearchChromeVisualSpec(topChromePolicy) }
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -1825,36 +1832,24 @@ fun SearchScreen(
                     .background(searchTopBarHeaderColor)
             )
 
-            AnimatedVisibility(
-                visible = shouldShowBackToTop,
+            AppBackToTopButton(
+                visible = backToTopButtonEnabled && shouldShowBackToTop,
+                onClick = {
+                    scope.launch {
+                        if (state.searchType == SearchType.VIDEO) {
+                            resultGridState.animateScrollToTop()
+                        } else {
+                            resultListState.animateScrollToTop()
+                        }
+                    }
+                },
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(
                         end = 20.dp,
                         bottom = resultBottomPadding + 12.dp
                     ),
-                enter = fadeIn(animationSpec = tween(180)) + scaleIn(initialScale = 0.92f),
-                exit = fadeOut(animationSpec = tween(140)) + scaleOut(targetScale = 0.92f)
-            ) {
-                AppSmallFloatingActionButton(
-                    onClick = {
-                        scope.launch {
-                            if (state.searchType == SearchType.VIDEO) {
-                                resultGridState.animateScrollToItem(0)
-                            } else {
-                                resultListState.animateScrollToItem(0)
-                            }
-                        }
-                    },
-                    containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
-                    contentColor = MaterialTheme.colorScheme.primary
-                ) {
-                    AppIcon(
-                        imageVector = rememberAppChevronUpIcon(),
-                        contentDescription = "回到顶部"
-                    )
-                }
-            }
+            )
             
             // ---  搜索建议下拉列表 ---
             if (state.suggestions.isNotEmpty() && state.query.isNotEmpty() && !state.showResults) {

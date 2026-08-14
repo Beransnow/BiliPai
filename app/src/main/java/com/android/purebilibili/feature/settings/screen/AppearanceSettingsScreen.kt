@@ -52,6 +52,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.android.purebilibili.R
 import com.android.purebilibili.core.store.CommonListHeaderCollapseMode
+import com.android.purebilibili.core.store.BackToTopSettingsStore
+import com.android.purebilibili.core.store.DEFAULT_BACK_TO_TOP_BUTTON_ENABLED
 import com.android.purebilibili.core.store.HomeDurationStyle
 import com.android.purebilibili.core.store.HomeFeedCardStyle
 import com.android.purebilibili.core.store.HomeWallpaperEffectMode
@@ -394,6 +396,9 @@ fun AppearanceSettingsContent(
     val compactVideoStatsOnCover by SettingsManager
         .getCompactVideoStatsOnCover(context)
         .collectAsStateWithLifecycle(initialValue = true)
+    val backToTopButtonEnabled by BackToTopSettingsStore
+        .isEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = DEFAULT_BACK_TO_TOP_BUTTON_ENABLED)
     val dedicatedHomeWallpaperUri by SettingsManager
         .getHomeWallpaperUri(context)
         .collectAsStateWithLifecycle(initialValue = "")
@@ -1279,6 +1284,20 @@ fun AppearanceSettingsContent(
                                     SettingsManager.setCommonListHeaderCollapseMode(context, mode)
                                 }
                             }
+                        )
+
+                        AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
+                        AppSwitchPreference(
+                            icon = rememberSettingsSemanticIcon(SettingsIconRole.HEADER_COLLAPSE),
+                            title = "显示一键回顶",
+                            subtitle = "搜索、列表、动态和评论区等长内容页统一跟随",
+                            checked = backToTopButtonEnabled,
+                            onCheckedChange = {
+                                scope.launch {
+                                    BackToTopSettingsStore.setEnabled(context, it)
+                                }
+                            },
+                            iconTint = iOSBlue,
                         )
 
                         AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))

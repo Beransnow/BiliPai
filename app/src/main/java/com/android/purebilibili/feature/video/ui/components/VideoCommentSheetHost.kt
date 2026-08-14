@@ -71,6 +71,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.layout.onSizeChanged
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
+import com.android.purebilibili.core.ui.rememberBackToTopButtonEnabled
 import com.android.purebilibili.core.ui.rememberAppBottomSheetMotion
 import com.android.purebilibili.core.ui.LocalNavigationBackHandler
 import com.android.purebilibili.core.ui.InteractiveOverlayProgressVisual
@@ -913,7 +914,7 @@ internal fun VideoCommentMainList(
                 }
 
                 VideoCommentBackToTopButton(
-                    visible = shouldShowBackToTop,
+                    visible = rememberBackToTopButtonEnabled() && shouldShowBackToTop,
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(end = 20.dp, bottom = 20.dp),

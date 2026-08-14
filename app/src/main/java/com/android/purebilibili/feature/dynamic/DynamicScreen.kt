@@ -76,6 +76,7 @@ import com.android.purebilibili.core.ui.LoadingAnimation
 import com.android.purebilibili.core.ui.TopReadabilityChrome
 import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
+import com.android.purebilibili.core.ui.rememberBackToTopButtonEnabled
 import com.android.purebilibili.core.ui.rememberAppDynamicIcon
 import com.android.purebilibili.core.ui.resolveGlobalWallpaperChromeColor
 import com.android.purebilibili.core.store.AccountSessionStore
@@ -990,7 +991,7 @@ fun DynamicScreen(
             }
 
             AnimatedVisibility(
-                visible = shouldShowBackToTop,
+                visible = rememberBackToTopButtonEnabled() && shouldShowBackToTop,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall, bottom = dynamicListBottomPadding + AppSpacingTokens.Medium),
