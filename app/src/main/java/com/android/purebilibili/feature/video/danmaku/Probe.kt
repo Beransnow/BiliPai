@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
+import android.graphics.Typeface
 import android.text.TextPaint
 import androidx.core.graphics.drawable.toBitmap
 import coil.imageLoader
@@ -29,6 +30,7 @@ fun createBitmapDanmaku(
     layerType: Int,
     showAtTime: Long,
     enableEmoticon: Boolean = true,
+    typeface: Typeface = Typeface.DEFAULT,
     onUpdate: () -> Unit
 ): DanmakuItem {
     // 1. 解析文本
@@ -38,6 +40,7 @@ fun createBitmapDanmaku(
     val paint = TextPaint().apply {
         this.textSize = textSize
         this.color = textColor
+        this.typeface = typeface
         this.isAntiAlias = true
         setShadowLayer(
             (textSize / 8f).coerceIn(2f, 5f),

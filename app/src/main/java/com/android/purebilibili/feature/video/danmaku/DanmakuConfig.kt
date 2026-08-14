@@ -3,6 +3,7 @@ package com.android.purebilibili.feature.video.danmaku
 
 import android.content.Context
 import android.graphics.Typeface
+import android.os.Build
 import com.android.purebilibili.danmaku.engine.DanmakuRenderConfig
 
 /**
@@ -22,7 +23,7 @@ class DanmakuConfig {
     // 字体缩放 (0.5 - 2.0)
     var fontScale = 1.0f
 
-    // 字重（1-9，映射到 normal/bold）
+    // 字重（1-9；Android 9+ 映射到 100-900，旧系统降级为 normal/bold）
     var fontWeight = 5
     
     // 滚动速度因子 (数值越大弹幕越慢)
@@ -76,7 +77,7 @@ class DanmakuConfig {
     
     /** Resolve app settings into the renderer-neutral configuration contract. */
     fun resolveRenderConfig(viewWidth: Int = 0, viewHeight: Int = 0): DanmakuRenderConfig {
-        val resolvedTextSize = 42f * fontScale
+        val resolvedTextSize = DEFAULT_DANMAKU_TEXT_SIZE_PX * fontScale
         val resolvedStrokeWidth = if (strokeEnabled) strokeWidth else 0f
         val layerLineHeightPx = resolveDanmakuLayerLineHeightPx(
             fontSize = resolvedTextSize,
@@ -153,8 +154,27 @@ class DanmakuConfig {
 }
 
 internal fun resolveDanmakuTypeface(fontWeight: Int): Typeface {
-    val style = if (fontWeight >= 6) Typeface.BOLD else Typeface.NORMAL
-    return Typeface.create(Typeface.DEFAULT, style)
+    val normalizedWeight = fontWeight.coerceIn(1, 9) * 100
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        Typeface.create(Typeface.DEFAULT, normalizedWeight, false)
+    } else {
+        val familyName = when {
+            normalizedWeight <= 200 -> "sans-serif-thin"
+            normalizedWeight <= 300 -> "sans-serif-light"
+            normalizedWeight <= 400 -> "sans-serif"
+            normalizedWeight <= 600 -> "sans-serif-medium"
+            normalizedWeight <= 700 -> "sans-serif"
+            else -> "sans-serif-black"
+        }
+        val style = if (normalizedWeight == 700) Typeface.BOLD else Typeface.NORMAL
+        Typeface.create(familyName, style)
+    }
+}
+
+/** Converts Bilibili's 18/25/36 size grades into a renderer-independent multiplier. */
+internal fun resolveBilibiliDanmakuFontScale(fontSize: Float): Float {
+    if (!fontSize.isFinite() || fontSize <= 0f) return 1f
+    return (fontSize / BILIBILI_STANDARD_DANMAKU_FONT_SIZE).coerceIn(0.48f, 2.56f)
 }
 
 internal fun resolveDanmakuScrollDurationMillis(
@@ -232,3 +252,6 @@ internal fun resolveDanmakuFallbackMaxLines(displayAreaRatio: Float): Int {
         else -> 16
     }
 }
+
+internal const val DEFAULT_DANMAKU_TEXT_SIZE_PX = 42f
+private const val BILIBILI_STANDARD_DANMAKU_FONT_SIZE = 25f

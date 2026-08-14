@@ -125,6 +125,7 @@ object DanmakuMerger {
         }
         mergedText.showAtTime = base.showAtTime
         mergedText.textColor = base.textColor
+        mergedText.textSizeScale = base.textSizeScale
         mergedText.textSize = base.textSize
         mergedText.layerType = base.layerType
         mergedText.typeface = base.typeface

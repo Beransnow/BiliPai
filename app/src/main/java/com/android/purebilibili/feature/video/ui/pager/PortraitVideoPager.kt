@@ -1339,6 +1339,10 @@ fun PortraitVideoPager(
 
     LaunchedEffect(currentPlayingCid, currentPlayingAid, danmakuEnabled, danmakuSettingsLoaded, exoPlayer) {
         if (shouldLoadPortraitDanmaku(danmakuSettingsLoaded, currentPlayingCid, danmakuEnabled)) {
+            danmakuManager.updateSettings(
+                settings = danmakuSettings,
+                fontScaleOverride = effectiveDanmakuFontScale
+            )
             danmakuManager.isEnabled = true
             var durationMs = exoPlayer.duration
             var retries = 0
@@ -1370,40 +1374,15 @@ fun PortraitVideoPager(
     }
 
     LaunchedEffect(
-        danmakuOpacity,
-        danmakuFontScale,
+        danmakuManager,
+        danmakuSettings,
         effectiveDanmakuFontScale,
-        danmakuSpeed,
-        danmakuDisplayArea,
-        danmakuMergeDuplicates,
-        danmakuDuplicateMergeWindowMs,
-        danmakuDuplicateMergeCountThreshold,
-        danmakuAllowScroll,
-        danmakuAllowTop,
-        danmakuAllowBottom,
-        danmakuAllowColorful,
-        danmakuAllowSpecial,
-        danmakuBlockRules,
-        danmakuSmartOcclusion,
         danmakuSettingsLoaded
     ) {
         if (!danmakuSettingsLoaded) return@LaunchedEffect
         danmakuManager.updateSettings(
-            opacity = danmakuOpacity,
-            fontScale = effectiveDanmakuFontScale,
-            speed = danmakuSpeed,
-            displayArea = danmakuDisplayArea,
-            mergeDuplicates = danmakuMergeDuplicates,
-            duplicateMergeWindowMs = danmakuDuplicateMergeWindowMs,
-            duplicateMergeCountThreshold = danmakuDuplicateMergeCountThreshold,
-            allowScroll = danmakuAllowScroll,
-            allowTop = danmakuAllowTop,
-            allowBottom = danmakuAllowBottom,
-            allowColorful = danmakuAllowColorful,
-            allowSpecial = danmakuAllowSpecial,
-            blockedRules = danmakuBlockRules,
-            // Mask-only mode: keep lane layout fixed, do not move danmaku tracks.
-            smartOcclusion = false
+            settings = danmakuSettings,
+            fontScaleOverride = effectiveDanmakuFontScale
         )
     }
 

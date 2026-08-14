@@ -10,6 +10,14 @@ import org.junit.Test
 class DanmakuConfigPolicyTest {
 
     @Test
+    fun `bilibili font grades should remain relative to user font scale`() {
+        assertEquals(0.72f, resolveBilibiliDanmakuFontScale(18f), 0.001f)
+        assertEquals(1.0f, resolveBilibiliDanmakuFontScale(25f), 0.001f)
+        assertEquals(1.44f, resolveBilibiliDanmakuFontScale(36f), 0.001f)
+        assertEquals(1.0f, resolveBilibiliDanmakuFontScale(0f), 0.001f)
+    }
+
+    @Test
     fun `minimum visible lines should not degrade to single line`() {
         assertEquals(2, resolveDanmakuMinimumVisibleLines(0.25f))
         assertEquals(3, resolveDanmakuMinimumVisibleLines(0.5f))

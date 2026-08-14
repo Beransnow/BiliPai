@@ -3685,7 +3685,7 @@ object SettingsManager {
     private const val DEFAULT_DANMAKU_DUPLICATE_MERGE_COUNT_THRESHOLD = 2
 
     private fun normalizeDanmakuFontWeight(value: Int?): Int {
-        return (value ?: DEFAULT_DANMAKU_FONT_WEIGHT).coerceIn(0, 8)
+        return (value ?: DEFAULT_DANMAKU_FONT_WEIGHT).coerceIn(1, 9)
     }
 
     private fun normalizeDanmakuStrokeWidth(value: Float?): Float {

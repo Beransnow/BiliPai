@@ -2487,6 +2487,7 @@ fun VideoPlayerSection(
             // 相关推荐 push 会让新旧详情页在转场期间同时处于 STARTED。旧页不得再次
             // Enable/load 同一播放身份的 Session，否则会取消新 cid 请求或把新数据同步到旧播放器。
             if (!runDanmakuHostEffects) return@LaunchedEffect
+            danmakuManager.updateSettings(settings = danmakuSettings)
             when (
                 resolveVideoPlayerDanmakuEngineSyncAction(
                     danmakuEnabled = danmakuEnabled,
@@ -2760,55 +2761,8 @@ fun VideoPlayerSection(
         }
         
         //  弹幕设置变化时实时应用
-        LaunchedEffect(
-            danmakuOpacity,
-            danmakuFontScale,
-            danmakuFontWeight,
-            danmakuSpeed,
-            danmakuDisplayArea,
-            danmakuStrokeWidth,
-            danmakuLineHeight,
-            danmakuScrollDurationSeconds,
-            danmakuStaticDurationSeconds,
-            danmakuScrollFixedVelocity,
-            danmakuStaticToScroll,
-            danmakuMassiveMode,
-            danmakuMergeDuplicates,
-            danmakuDuplicateMergeWindowMs,
-            danmakuDuplicateMergeCountThreshold,
-            danmakuAllowScroll,
-            danmakuAllowTop,
-            danmakuAllowBottom,
-            danmakuAllowColorful,
-            danmakuAllowSpecial,
-            danmakuBlockRules,
-            danmakuSmartOcclusion
-        ) {
-            danmakuManager.updateSettings(
-                opacity = danmakuOpacity,
-                fontScale = danmakuFontScale,
-                fontWeight = danmakuFontWeight,
-                speed = danmakuSpeed,
-                scrollDurationSeconds = danmakuScrollDurationSeconds,
-                displayArea = danmakuDisplayArea,
-                strokeWidth = danmakuStrokeWidth,
-                lineHeight = danmakuLineHeight,
-                staticDurationSeconds = danmakuStaticDurationSeconds,
-                scrollFixedVelocity = danmakuScrollFixedVelocity,
-                staticDanmakuToScroll = danmakuStaticToScroll,
-                massiveMode = danmakuMassiveMode,
-                mergeDuplicates = danmakuMergeDuplicates,
-                duplicateMergeWindowMs = danmakuDuplicateMergeWindowMs,
-                duplicateMergeCountThreshold = danmakuDuplicateMergeCountThreshold,
-                allowScroll = danmakuAllowScroll,
-                allowTop = danmakuAllowTop,
-                allowBottom = danmakuAllowBottom,
-                allowColorful = danmakuAllowColorful,
-                allowSpecial = danmakuAllowSpecial,
-                blockedRules = danmakuBlockRules,
-                // Mask-only mode: keep lane layout fixed, do not move danmaku tracks.
-                smartOcclusion = false
-            )
+        LaunchedEffect(danmakuManager, danmakuSettings) {
+            danmakuManager.updateSettings(settings = danmakuSettings)
         }
 
         LaunchedEffect(canSyncDanmakuCloud, danmakuCloudSyncEnabled) {
@@ -3857,6 +3811,9 @@ fun VideoPlayerSection(
                 com.android.purebilibili.feature.video.ui.overlay.AdvancedDanmakuOverlay(
                     danmakuList = advancedDanmakuList,
                     player = playerState.player,
+                    opacity = danmakuOpacity,
+                    fontScale = danmakuFontScale,
+                    fontWeight = danmakuFontWeight,
                     modifier = Modifier.fillMaxSize()
                 )
             }

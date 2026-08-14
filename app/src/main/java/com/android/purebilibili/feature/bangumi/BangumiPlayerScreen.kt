@@ -262,38 +262,8 @@ fun BangumiPlayerScreen(
     val danmakuBlockRules = danmakuSettings.blockRules
     
     //  弹幕设置变化时实时应用到 DanmakuManager
-    LaunchedEffect(
-        danmakuOpacity,
-        danmakuFontScale,
-        danmakuSpeed,
-        danmakuDisplayArea,
-        danmakuMergeDuplicates,
-        danmakuDuplicateMergeWindowMs,
-        danmakuDuplicateMergeCountThreshold,
-        danmakuAllowScroll,
-        danmakuAllowTop,
-        danmakuAllowBottom,
-        danmakuAllowColorful,
-        danmakuAllowSpecial,
-        danmakuBlockRules
-    ) {
-        danmakuManager.updateSettings(
-            opacity = danmakuOpacity,
-            fontScale = danmakuFontScale,
-            speed = danmakuSpeed,
-            displayArea = danmakuDisplayArea,
-            mergeDuplicates = danmakuMergeDuplicates,
-            duplicateMergeWindowMs = danmakuDuplicateMergeWindowMs,
-            duplicateMergeCountThreshold = danmakuDuplicateMergeCountThreshold,
-            allowScroll = danmakuAllowScroll,
-            allowTop = danmakuAllowTop,
-            allowBottom = danmakuAllowBottom,
-            allowColorful = danmakuAllowColorful,
-            allowSpecial = danmakuAllowSpecial,
-            blockedRules = danmakuBlockRules,
-            // Mask-only mode: keep lane layout fixed, do not move danmaku tracks.
-            smartOcclusion = false
-        )
+    LaunchedEffect(danmakuManager, danmakuSettings) {
+        danmakuManager.updateSettings(settings = danmakuSettings)
     }
     
     // 获取当前剧集 cid

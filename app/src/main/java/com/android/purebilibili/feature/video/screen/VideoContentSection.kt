@@ -1698,7 +1698,7 @@ private fun VideoDetailDanmakuSettingsPanel(
         showBlockRuleEditor = true,
         showSmartOcclusionSection = false,
         blockRulesRaw = localBlockRulesRaw,
-        smartOcclusion = false,
+        smartOcclusion = danmakuSettings.smartOcclusion,
         onOpacityChange = {
             localOpacity = it
             scope.launch { SettingsManager.setDanmakuOpacity(context, it, danmakuScope) }

@@ -23,6 +23,7 @@ internal class ByteDanceDanmakuEngine(
     private var appendBatchCount = 0L
     private var appendedItemCount = 0L
     private var trimCount = 0L
+    private var currentConfig = DanmakuRenderConfig()
 
     override var playbackState: DanmakuPlaybackState = DanmakuPlaybackState.STOPPED
         private set
@@ -42,6 +43,7 @@ internal class ByteDanceDanmakuEngine(
 
     override fun updateConfig(config: DanmakuRenderConfig) {
         if (closed) return
+        currentConfig = config
         controller.config.apply {
             common.alpha = config.alpha
             common.playSpeed = config.playSpeedPercent
@@ -201,7 +203,9 @@ internal class ByteDanceDanmakuEngine(
         } else {
             EngineTextData(item).apply {
                 text = item.text
-                textSize = item.textSize
+                textSize = item.textSize ?: item.textSizeScale
+                    .takeUnless { it == 1f }
+                    ?.let { scale -> currentConfig.textSizePx * scale }
                 textColor = item.textColor
                 typeface = item.typeface
                 textStrokeWidth = item.textStrokeWidth

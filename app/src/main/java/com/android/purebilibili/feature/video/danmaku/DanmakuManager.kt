@@ -18,6 +18,7 @@ import com.android.purebilibili.core.plugin.DanmakuPlugin
 import com.android.purebilibili.core.plugin.DanmakuStyle
 import com.android.purebilibili.core.plugin.PluginManager
 import com.android.purebilibili.core.plugin.json.JsonPluginManager
+import com.android.purebilibili.core.store.DanmakuSettings
 import com.android.purebilibili.danmaku.engine.DANMAKU_LAYER_BOTTOM
 import com.android.purebilibili.danmaku.engine.DANMAKU_LAYER_REVERSE
 import com.android.purebilibili.danmaku.engine.DANMAKU_LAYER_SCROLL
@@ -787,9 +788,12 @@ class DanmakuManager private constructor(
 
         style?.textColor?.let { color -> textColor = color.toArgb() }
         if (style != null && abs(style.scale - 1.0f) > 0.01f) {
-            val currentSize = textSize ?: 25f
-            val baseSize = if (currentSize > 0f) currentSize else 25f
-            textSize = (baseSize * style.scale).coerceIn(12f, 96f)
+            val explicitSize = textSize
+            if (explicitSize != null) {
+                textSize = (explicitSize * style.scale).coerceIn(12f, 192f)
+            } else {
+                textSizeScale = (textSizeScale * style.scale).coerceIn(0.3f, 4f)
+            }
         }
         typeface = if (style?.bold == true) Typeface.DEFAULT_BOLD else Typeface.DEFAULT
     }
@@ -889,6 +893,36 @@ class DanmakuManager private constructor(
     /**
      *  批量更新弹幕设置（实时生效）
      */
+    fun updateSettings(
+        settings: DanmakuSettings,
+        fontScaleOverride: Float = settings.fontScale
+    ) {
+        updateSettings(
+            opacity = settings.opacity,
+            fontScale = fontScaleOverride,
+            fontWeight = settings.fontWeight,
+            speed = settings.speed,
+            scrollDurationSeconds = settings.scrollDurationSeconds,
+            displayArea = settings.displayArea,
+            strokeWidth = settings.strokeWidth,
+            lineHeight = settings.lineHeight,
+            staticDurationSeconds = settings.staticDurationSeconds,
+            scrollFixedVelocity = settings.scrollFixedVelocity,
+            staticDanmakuToScroll = settings.staticDanmakuToScroll,
+            massiveMode = settings.massiveMode,
+            mergeDuplicates = settings.mergeDuplicates,
+            duplicateMergeWindowMs = settings.duplicateMergeWindowMs,
+            duplicateMergeCountThreshold = settings.duplicateMergeCountThreshold,
+            allowScroll = settings.allowScroll,
+            allowTop = settings.allowTop,
+            allowBottom = settings.allowBottom,
+            allowColorful = settings.allowColorful,
+            allowSpecial = settings.allowSpecial,
+            blockedRules = settings.blockRules,
+            smartOcclusion = settings.smartOcclusion
+        )
+    }
+
     fun updateSettings(
         opacity: Float = this.opacity,
         fontScale: Float = this.fontScale,
@@ -2225,6 +2259,7 @@ class DanmakuManager private constructor(
                 type = mode,
                 staticDanmakuToScroll = config.staticDanmakuToScroll
             )
+            textSizeScale = resolveBilibiliDanmakuFontScale(fontSize.toFloat())
         }
         
         // 添加到缓存列表并排序

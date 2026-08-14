@@ -778,6 +778,7 @@ fun FullscreenPlayerOverlay(
         val currentCid = miniPlayerManager.currentCid
         LaunchedEffect(currentCid, danmakuEnabled, player) {
             if (currentCid > 0 && danmakuEnabled) {
+                danmakuManager.updateSettings(settings = danmakuSettings)
                 danmakuManager.isEnabled = true
                 
                 // 等待播放器 duration 可用后再加载弹幕，启用 Protobuf API
@@ -801,39 +802,8 @@ fun FullscreenPlayerOverlay(
         }
 
         //  弹幕设置变化时实时应用
-        LaunchedEffect(
-            danmakuOpacity,
-            danmakuFontScale,
-            danmakuSpeed,
-            danmakuDisplayArea,
-            danmakuMergeDuplicates,
-            danmakuDuplicateMergeWindowMs,
-            danmakuDuplicateMergeCountThreshold,
-            danmakuAllowScroll,
-            danmakuAllowTop,
-            danmakuAllowBottom,
-            danmakuAllowColorful,
-            danmakuAllowSpecial,
-            danmakuBlockRules,
-            danmakuSmartOcclusion
-        ) {
-            danmakuManager.updateSettings(
-                opacity = danmakuOpacity,
-                fontScale = danmakuFontScale,
-                speed = danmakuSpeed,
-                displayArea = danmakuDisplayArea,
-                mergeDuplicates = danmakuMergeDuplicates,
-                duplicateMergeWindowMs = danmakuDuplicateMergeWindowMs,
-                duplicateMergeCountThreshold = danmakuDuplicateMergeCountThreshold,
-                allowScroll = danmakuAllowScroll,
-                allowTop = danmakuAllowTop,
-                allowBottom = danmakuAllowBottom,
-                allowColorful = danmakuAllowColorful,
-                allowSpecial = danmakuAllowSpecial,
-                blockedRules = danmakuBlockRules,
-                // Mask-only mode: keep lane layout fixed, do not move danmaku tracks.
-                smartOcclusion = false
-            )
+        LaunchedEffect(danmakuManager, danmakuSettings) {
+            danmakuManager.updateSettings(settings = danmakuSettings)
         }
 
         // 播放器 owner 成对绑定；渲染 View 由 AndroidView.onRelease 独立解绑。
@@ -1149,8 +1119,32 @@ fun FullscreenPlayerOverlay(
             //  使用本地状态确保滑动条可以更新
             var localOpacity by remember(danmakuOpacity) { mutableFloatStateOf(danmakuOpacity) }
             var localFontScale by remember(danmakuFontScale) { mutableFloatStateOf(danmakuFontScale) }
+            var localFontWeight by remember(danmakuSettings.fontWeight) {
+                mutableIntStateOf(danmakuSettings.fontWeight)
+            }
             var localSpeed by remember(danmakuSpeed) { mutableFloatStateOf(danmakuSpeed) }
             var localDisplayArea by remember(danmakuDisplayArea) { mutableFloatStateOf(danmakuDisplayArea) }
+            var localStrokeWidth by remember(danmakuSettings.strokeWidth) {
+                mutableFloatStateOf(danmakuSettings.strokeWidth)
+            }
+            var localLineHeight by remember(danmakuSettings.lineHeight) {
+                mutableFloatStateOf(danmakuSettings.lineHeight)
+            }
+            var localScrollDurationSeconds by remember(danmakuSettings.scrollDurationSeconds) {
+                mutableFloatStateOf(danmakuSettings.scrollDurationSeconds)
+            }
+            var localStaticDurationSeconds by remember(danmakuSettings.staticDurationSeconds) {
+                mutableFloatStateOf(danmakuSettings.staticDurationSeconds)
+            }
+            var localScrollFixedVelocity by remember(danmakuSettings.scrollFixedVelocity) {
+                mutableStateOf(danmakuSettings.scrollFixedVelocity)
+            }
+            var localStaticDanmakuToScroll by remember(danmakuSettings.staticDanmakuToScroll) {
+                mutableStateOf(danmakuSettings.staticDanmakuToScroll)
+            }
+            var localMassiveMode by remember(danmakuSettings.massiveMode) {
+                mutableStateOf(danmakuSettings.massiveMode)
+            }
             var localMergeDuplicates by remember(danmakuMergeDuplicates) { mutableStateOf(danmakuMergeDuplicates) }
             var localDuplicateMergeWindowMs by remember(danmakuDuplicateMergeWindowMs) {
                 mutableIntStateOf(danmakuDuplicateMergeWindowMs)
@@ -1180,8 +1174,17 @@ fun FullscreenPlayerOverlay(
                 settingsScope = danmakuScope,
                 opacity = localOpacity,
                 fontScale = localFontScale,
+                showAdvancedSection = true,
+                fontWeight = localFontWeight,
                 speed = localSpeed,
                 displayArea = localDisplayArea,
+                strokeWidth = localStrokeWidth,
+                lineHeight = localLineHeight,
+                scrollDurationSeconds = localScrollDurationSeconds,
+                staticDurationSeconds = localStaticDurationSeconds,
+                scrollFixedVelocity = localScrollFixedVelocity,
+                staticDanmakuToScroll = localStaticDanmakuToScroll,
+                massiveMode = localMassiveMode,
                 mergeDuplicates = localMergeDuplicates,
                 duplicateMergeWindowMs = localDuplicateMergeWindowMs,
                 duplicateMergeCountThreshold = localDuplicateMergeCountThreshold,
@@ -1192,6 +1195,7 @@ fun FullscreenPlayerOverlay(
                 allowSpecial = localAllowSpecial,
                 hideInteractiveCommands = localHideInteractiveCommands,
                 showBlockRuleEditor = true,
+                showSmartOcclusionSection = true,
                 blockRulesRaw = localBlockRulesRaw,
                 smartOcclusion = localSmartOcclusion,
                 fullscreenWidthMode = localFullscreenPanelWidthMode,
@@ -1206,6 +1210,11 @@ fun FullscreenPlayerOverlay(
                     danmakuManager.fontScale = it
                     scope.launch { SettingsManager.setDanmakuFontScale(context, it, danmakuScope) }
                 },
+                onFontWeightChange = {
+                    localFontWeight = it
+                    danmakuManager.fontWeight = it
+                    scope.launch { SettingsManager.setDanmakuFontWeight(context, it, danmakuScope) }
+                },
                 onSpeedChange = { 
                     localSpeed = it
                     danmakuManager.speedFactor = it
@@ -1215,6 +1224,47 @@ fun FullscreenPlayerOverlay(
                     localDisplayArea = it
                     danmakuManager.displayArea = it
                     scope.launch { SettingsManager.setDanmakuArea(context, it, danmakuScope) }
+                },
+                onStrokeWidthChange = {
+                    localStrokeWidth = it
+                    danmakuManager.strokeWidth = it
+                    scope.launch { SettingsManager.setDanmakuStrokeWidth(context, it, danmakuScope) }
+                },
+                onLineHeightChange = {
+                    localLineHeight = it
+                    danmakuManager.lineHeight = it
+                    scope.launch { SettingsManager.setDanmakuLineHeight(context, it, danmakuScope) }
+                },
+                onScrollDurationSecondsChange = {
+                    localScrollDurationSeconds = it
+                    danmakuManager.scrollDurationSeconds = it
+                    scope.launch {
+                        SettingsManager.setDanmakuScrollDurationSeconds(context, it, danmakuScope)
+                    }
+                },
+                onStaticDurationSecondsChange = {
+                    localStaticDurationSeconds = it
+                    danmakuManager.staticDurationSeconds = it
+                    scope.launch {
+                        SettingsManager.setDanmakuStaticDurationSeconds(context, it, danmakuScope)
+                    }
+                },
+                onScrollFixedVelocityChange = {
+                    localScrollFixedVelocity = it
+                    danmakuManager.scrollFixedVelocity = it
+                    scope.launch {
+                        SettingsManager.setDanmakuScrollFixedVelocity(context, it, danmakuScope)
+                    }
+                },
+                onStaticDanmakuToScrollChange = {
+                    localStaticDanmakuToScroll = it
+                    danmakuManager.staticDanmakuToScroll = it
+                    scope.launch { SettingsManager.setDanmakuStaticToScroll(context, it, danmakuScope) }
+                },
+                onMassiveModeChange = {
+                    localMassiveMode = it
+                    danmakuManager.massiveMode = it
+                    scope.launch { SettingsManager.setDanmakuMassiveMode(context, it, danmakuScope) }
                 },
                 onMergeDuplicatesChange = {
                     localMergeDuplicates = it

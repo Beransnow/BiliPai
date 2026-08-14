@@ -5,6 +5,7 @@ import com.android.purebilibili.core.ui.components.AppText
 import android.app.Activity
 import android.content.Context
 import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import android.media.AudioManager
 import android.net.Uri
 import android.provider.Settings
@@ -29,6 +30,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -50,6 +52,9 @@ import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.theme.resolveAdaptivePrimaryAccentColors
+import com.android.purebilibili.core.store.DanmakuSettings
+import com.android.purebilibili.core.store.SettingsManager
+import com.android.purebilibili.core.store.resolveDanmakuSettingsScope
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.feature.video.player.MiniPlayerManager
 import com.android.purebilibili.feature.video.danmaku.configureAsPassiveDanmakuOverlay
@@ -109,6 +114,15 @@ fun OfflineVideoPlayerScreen(
     val tasks by DownloadManager.tasks.collectAsStateWithLifecycle()
     var currentTaskId by remember(taskId) { mutableStateOf(taskId) }
     val danmakuManager = rememberDanmakuManager("offline:$currentTaskId")
+    val configuration = LocalConfiguration.current
+    val danmakuSettingsScope = remember(configuration.orientation) {
+        resolveDanmakuSettingsScope(
+            isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        )
+    }
+    val danmakuSettings by SettingsManager
+        .getDanmakuSettings(context, danmakuSettingsScope)
+        .collectAsStateWithLifecycle(initialValue = DanmakuSettings())
     val task = tasks[currentTaskId]
     
     // === 状态管理 ===
@@ -148,6 +162,13 @@ fun OfflineVideoPlayerScreen(
     var longPressSpeedVisible by remember { mutableStateOf(false) }
     val longPressSpeed = 2.0f
     var danmakuEnabled by remember(currentTaskId) { mutableStateOf(true) }
+
+    LaunchedEffect(danmakuManager, danmakuSettings) {
+        danmakuManager.updateSettings(settings = danmakuSettings)
+    }
+    LaunchedEffect(currentTaskId, danmakuSettings.enabled) {
+        danmakuEnabled = danmakuSettings.enabled
+    }
     
     // 双击跳转秒数
     val seekForwardSeconds = 10

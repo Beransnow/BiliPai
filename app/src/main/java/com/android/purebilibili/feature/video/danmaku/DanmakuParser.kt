@@ -116,7 +116,7 @@ object DanmakuParser {
             this.showAtTime = elem.progress.toLong()
             this.layerType = layerType
             this.textColor = colorWithAlpha
-            this.textSize = elem.fontsize.toFloat()
+            this.textSizeScale = resolveBilibiliDanmakuFontScale(elem.fontsize.toFloat())
             
             // 填充 Bilibili 特有属性
             this.weight = elem.weight
@@ -426,7 +426,7 @@ object DanmakuParser {
                 this.showAtTime = timeMs
                 this.layerType = layerType
                 this.textColor = (colorInt.toInt() or 0xFF000000.toInt())
-                this.textSize = fontSize
+                this.textSizeScale = resolveBilibiliDanmakuFontScale(fontSize)
             }
         } catch (e: Exception) {
             return null

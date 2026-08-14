@@ -16,6 +16,9 @@ open class DanmakuItem {
     var text: String? = null
     var showAtTime: Long = 0L
     var layerType: Int = DANMAKU_LAYER_SCROLL
+    /** Semantic size relative to the renderer's user-configured base size. */
+    var textSizeScale: Float = 1f
+    /** Explicit render size in pixels. Prefer [textSizeScale] for server-defined size grades. */
     var textSize: Float? = null
     var textColor: Int? = null
     var typeface: Typeface? = null
@@ -40,6 +43,7 @@ open class DanmakuItem {
         target.text = text
         target.showAtTime = showAtTime
         target.layerType = layerType
+        target.textSizeScale = textSizeScale
         target.textSize = textSize
         target.textColor = textColor
         target.typeface = typeface

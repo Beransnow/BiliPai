@@ -2055,6 +2055,7 @@ fun VideoPlayerOverlay(
                 allowSpecial = danmakuAllowSpecial,
                 hideInteractiveCommands = danmakuHideInteractiveCommands,
                 showBlockRuleEditor = true,
+                showSmartOcclusionSection = true,
                 blockRulesRaw = danmakuBlockRulesRaw,
                 smartOcclusion = danmakuSmartOcclusion,
                 fullscreenWidthMode = danmakuFullscreenPanelWidthMode,
