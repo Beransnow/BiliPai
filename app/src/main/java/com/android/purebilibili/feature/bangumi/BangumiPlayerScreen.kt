@@ -230,8 +230,8 @@ fun BangumiPlayerScreen(
         }
     }
     
-    //  [重构] 弹幕管理器 - 使用单例确保横竖屏切换时保持状态
-    val danmakuManager = rememberDanmakuManager()
+    // 横竖屏复用当前播放身份的 Session，换集时旧 Session 自动释放。
+    val danmakuManager = rememberDanmakuManager("bangumi:$seasonId:$currentEpisodeIdForDebug")
     val activeDanmakuScope = remember(isLandscape) {
         com.android.purebilibili.core.store.resolveDanmakuSettingsScope(isLandscape)
     }
@@ -337,7 +337,12 @@ fun BangumiPlayerScreen(
             }
             
             android.util.Log.d("BangumiPlayer", "🎯 Loading danmaku for cid=$currentCid, aid=$currentAid, duration=${durationMs}ms (after $retries retries)")
-            danmakuManager.loadDanmaku(currentCid, currentAid, durationMs)  //  传入时长启用 Protobuf API
+            danmakuManager.loadDanmaku(
+                currentCid,
+                currentAid,
+                durationMs,
+                successState?.currentEpisode?.bvid.orEmpty()
+            )
         } else {
             danmakuManager.isEnabled = false
         }
@@ -346,14 +351,7 @@ fun BangumiPlayerScreen(
     // 绑定 Player
     DisposableEffect(exoPlayer) {
         danmakuManager.attachPlayer(exoPlayer)
-        onDispose { /* Player 在另一个 DisposableEffect 中释放 */ }
-    }
-    
-    // 清理弹幕管理器（解绑视图但不释放数据，单例会保持状态）
-    DisposableEffect(Unit) {
-        onDispose {
-            danmakuManager.clearViewReference()
-        }
+        onDispose { danmakuManager.detachPlayer(exoPlayer) }
     }
     
     // 清理播放器 +  屏幕常亮管理

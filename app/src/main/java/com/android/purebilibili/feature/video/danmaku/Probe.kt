@@ -10,9 +10,8 @@ import android.text.TextPaint
 import androidx.core.graphics.drawable.toBitmap
 import coil.ImageLoader
 import coil.request.ImageRequest
+import com.android.purebilibili.danmaku.engine.DanmakuItem
 import com.android.purebilibili.feature.live.components.DanmakuEmoticonMapper
-import com.bytedance.danmaku.render.engine.data.DanmakuData
-import com.bytedance.danmaku.render.engine.render.draw.bitmap.BitmapData
 import java.util.regex.Pattern
 
 /**
@@ -31,7 +30,7 @@ fun createBitmapDanmaku(
     showAtTime: Long,
     enableEmoticon: Boolean = true,
     onUpdate: () -> Unit
-): BitmapData {
+): DanmakuItem {
     // 1. 解析文本
     val segments = parseSegments(text, enableEmoticon)
     
@@ -90,11 +89,11 @@ fun createBitmapDanmaku(
         android.util.Log.e("Probe", "❌ Draw content failed: ${e.message}")
     }
     
-    // 5. 创建 BitmapData
-    return BitmapData().apply {
+    // 5. 创建引擎无关的位图弹幕，渲染适配器负责转换底层数据类型。
+    return DanmakuItem().apply {
         this.bitmap = bitmap
-        this.width = widthInt.toFloat()
-        this.height = heightInt.toFloat()
+        this.bitmapWidth = widthInt.toFloat()
+        this.bitmapHeight = heightInt.toFloat()
         this.showAtTime = showAtTime
         this.layerType = layerType
     }

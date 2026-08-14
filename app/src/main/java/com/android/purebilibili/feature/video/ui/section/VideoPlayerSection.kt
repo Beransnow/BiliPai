@@ -63,7 +63,7 @@ import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.data.model.response.ViewPoint
 import com.android.purebilibili.feature.video.progress.PbpProgressData
 import com.android.purebilibili.feature.video.progress.buildPbpRidgeSamples
-import com.bytedance.danmaku.render.engine.DanmakuView
+import com.android.purebilibili.danmaku.engine.DanmakuRenderView
 
 import android.app.Activity
 import android.content.Context
@@ -1349,7 +1349,7 @@ fun VideoPlayerSection(
     val animatedVisibilityScope = com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope.current
     val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
     //  共享弹幕管理器（用于所有 seek 路径的一致同步）
-    val danmakuManager = rememberDanmakuManager()
+    val danmakuManager = rememberDanmakuManager(bvid)
     val overlayDrawerHazeState = com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState()
     var showEndDrawer by remember { mutableStateOf(false) }
     var endDrawerInitialTab by remember { mutableIntStateOf(0) }
@@ -2485,7 +2485,7 @@ fun VideoPlayerSection(
         )
         LaunchedEffect(cid, aid, danmakuEnabled, runDanmakuHostEffects) {
             // 相关推荐 push 会让新旧详情页在转场期间同时处于 STARTED。旧页不得再次
-            // Enable/load 单例引擎，否则会取消新 cid 请求或把新数据同步到旧播放器。
+            // Enable/load 同一播放身份的 Session，否则会取消新 cid 请求或把新数据同步到旧播放器。
             if (!runDanmakuHostEffects) return@LaunchedEffect
             when (
                 resolveVideoPlayerDanmakuEngineSyncAction(
@@ -2530,7 +2530,7 @@ fun VideoPlayerSection(
                 "VideoPlayerSection",
                 "🎯 Loading danmaku for cid=$cid, aid=$aid, durationHint=${durationHintMs}ms"
             )
-            danmakuManager.loadDanmaku(cid, aid, durationHintMs)
+            danmakuManager.loadDanmaku(cid, aid, durationHintMs, bvid)
         }
 
         //  横竖屏/小窗切换后，重绑 surface 并在需要时主动恢复播放。
@@ -2852,17 +2852,15 @@ fun VideoPlayerSection(
             }
         }
         
-        //  绑定 Player（不在 onDispose 中释放，单例保持状态）
+        // 每个 Compose owner 严格成对绑定/解绑；SessionFactory 负责跨渲染目标复用。
         DisposableEffect(playerState.player, runDanmakuHostEffects) {
-            if (runDanmakuHostEffects) {
+            val attachedPlayer = playerState.player.takeIf { runDanmakuHostEffects }
+            if (attachedPlayer != null) {
                 android.util.Log.d("VideoPlayerSection", " attachPlayer, isFullscreen=$isFullscreen")
-                danmakuManager.attachPlayer(playerState.player)
-            } else if (!danmakuHostActive) {
-                // 相关推荐转场的旧页面仍可能保持 STARTED；立即让出播放器监听器。
-                danmakuManager.detachPlayerIfCurrent(playerState.player)
+                danmakuManager.attachPlayer(attachedPlayer)
             }
             onDispose {
-                // 单例模式不需要释放
+                attachedPlayer?.let { danmakuManager.detachPlayer(it) }
             }
         }
         
@@ -2886,9 +2884,8 @@ fun VideoPlayerSection(
                             )
                             return@LifecycleEventObserver
                         }
-                        android.util.Log.d("VideoPlayerSection", " ON_RESUME: Re-attaching danmaku player")
+                        android.util.Log.d("VideoPlayerSection", " ON_RESUME: Calibrating danmaku timeline")
                         val player = lifecyclePlayer
-                        danmakuManager.attachPlayer(player)
                         if (!hasObservedHostPause) {
                             Logger.d("VideoPlayerSection") {
                                 "ON_RESUME skipped foreground recovery (initial lifecycle sync)"
@@ -2957,12 +2954,7 @@ fun VideoPlayerSection(
                     androidx.lifecycle.Lifecycle.Event.ON_PAUSE -> {
                         hasObservedHostPause = true
                     }
-                    androidx.lifecycle.Lifecycle.Event.ON_DESTROY -> {
-                        // NavHost 会在新详情页已经 attach 后才销毁旧 entry。这里只能按播放器
-                        // 身份解绑监听器；DanmakuView 由 AndroidView.onRelease 做 identity-safe 释放。
-                        android.util.Log.d("VideoPlayerSection", " ON_DESTROY: Releasing owned danmaku player")
-                        danmakuManager.detachPlayerIfCurrent(lifecyclePlayer)
-                    }
+                    androidx.lifecycle.Lifecycle.Event.ON_DESTROY -> Unit
                     else -> {}
                 }
             }
@@ -3821,7 +3813,7 @@ fun VideoPlayerSection(
                 }
                 AndroidView(
                     factory = { ctx ->
-                        DanmakuView(ctx).apply {
+                        DanmakuRenderView(ctx).apply {
                             setBackgroundColor(android.graphics.Color.TRANSPARENT)
                             configureAsPassiveDanmakuOverlay()
                             danmakuManager.attachView(this)
@@ -3847,7 +3839,7 @@ fun VideoPlayerSection(
                     onRelease = { view ->
                         // 仅当本 view 仍是当前绑定的弹幕视图时才解绑；
                         // 相关推荐跳转后旧页面销毁不能清掉新页面已接管的 view/controller。
-                        danmakuManager.releaseViewIfCurrent(view)
+                        danmakuManager.detachView(view)
                     },
                     modifier = danmakuSurfaceModifier
                 )

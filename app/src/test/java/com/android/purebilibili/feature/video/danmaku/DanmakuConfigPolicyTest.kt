@@ -1,8 +1,9 @@
 package com.android.purebilibili.feature.video.danmaku
 
-import com.bytedance.danmaku.render.engine.utils.LAYER_TYPE_BOTTOM_CENTER
-import com.bytedance.danmaku.render.engine.utils.LAYER_TYPE_SCROLL
-import com.bytedance.danmaku.render.engine.utils.LAYER_TYPE_TOP_CENTER
+import com.android.purebilibili.danmaku.engine.DANMAKU_LAYER_BOTTOM
+import com.android.purebilibili.danmaku.engine.DANMAKU_LAYER_SCROLL
+import com.android.purebilibili.danmaku.engine.DANMAKU_LAYER_TOP
+import com.android.purebilibili.danmaku.engine.DANMAKU_LAYER_REVERSE
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -97,32 +98,36 @@ class DanmakuConfigPolicyTest {
     @Test
     fun `static to scroll should remap pinned danmaku to scrolling layer`() {
         assertEquals(
-            LAYER_TYPE_SCROLL,
+            DANMAKU_LAYER_SCROLL,
             resolveDanmakuRenderLayerType(
                 type = 4,
                 staticDanmakuToScroll = true
             )
         )
         assertEquals(
-            LAYER_TYPE_SCROLL,
+            DANMAKU_LAYER_SCROLL,
             resolveDanmakuRenderLayerType(
                 type = 5,
                 staticDanmakuToScroll = true
             )
         )
         assertEquals(
-            LAYER_TYPE_BOTTOM_CENTER,
+            DANMAKU_LAYER_BOTTOM,
             resolveDanmakuRenderLayerType(
                 type = 4,
                 staticDanmakuToScroll = false
             )
         )
         assertEquals(
-            LAYER_TYPE_TOP_CENTER,
+            DANMAKU_LAYER_TOP,
             resolveDanmakuRenderLayerType(
                 type = 5,
                 staticDanmakuToScroll = false
             )
+        )
+        assertEquals(
+            DANMAKU_LAYER_REVERSE,
+            resolveDanmakuRenderLayerType(type = 6, staticDanmakuToScroll = false)
         )
     }
 }

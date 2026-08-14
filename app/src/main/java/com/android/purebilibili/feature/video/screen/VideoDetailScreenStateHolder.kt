@@ -619,9 +619,9 @@ internal fun VideoDetailScreenStateHolder(
         onSearchKeywordClick(keyword)
     }
 
-    // 与 VideoPlayerSection 共用单例；同页切集/相关推荐 push 前清掉旧弹幕会话，
+    // 与播放器/Overlay 共用当前 bvid Session；同页切集/相关推荐 push 前清掉旧弹幕会话，
     // 避免新页 DanmakuView 绑定时把旧片缓存闪上去或卡在未重放状态。
-    val sharedDanmakuManager = rememberDanmakuManager()
+    val sharedDanmakuManager = rememberDanmakuManager(currentBvid)
 
     fun switchVideoInCurrentDetailPage(
         targetBvid: String,
@@ -1553,7 +1553,7 @@ internal fun VideoDetailScreenStateHolder(
         }
     }
 
-    val playbackEventState = rememberVideoDetailPlaybackEventState()
+    val playbackEventState = rememberVideoDetailPlaybackEventState(currentBvid)
     VideoDetailPlaybackEventEffects(
         context = context,
         viewModel = viewModel,

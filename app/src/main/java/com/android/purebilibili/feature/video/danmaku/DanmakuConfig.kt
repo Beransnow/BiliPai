@@ -3,7 +3,7 @@ package com.android.purebilibili.feature.video.danmaku
 
 import android.content.Context
 import android.graphics.Typeface
-import com.bytedance.danmaku.render.engine.control.DanmakuConfig as EngineConfig
+import com.android.purebilibili.danmaku.engine.DanmakuRenderConfig
 
 /**
  * 弹幕配置管理
@@ -74,90 +74,53 @@ class DanmakuConfig {
     // 顶部边距（像素）
     var topMarginPx = 0
     
-    /**
-     * 应用配置到 DanmakuRenderEngine 的 DanmakuConfig
-     * 
-     * DanmakuRenderEngine 的配置结构:
-     * - config.text: TextConfig (size, color, strokeWidth, strokeColor)
-     * - config.scroll: ScrollLayerConfig (moveTime, lineHeight, lineMargin, margin)
-     * - config.common: CommonConfig (alpha, bufferSize, bufferDiscardRule)
-     */
-    fun applyTo(engineConfig: EngineConfig, viewWidth: Int = 0, viewHeight: Int = 0) {
-        engineConfig.apply {
-            // 通用配置 - 透明度 (0-255 Int)
-            common.alpha = (opacity * 255).toInt()
-            
-            // 文字配置 - 字体大小 (增大基准值以提高可见性)
-            text.size = 42f * fontScale
-            text.typeface = resolveDanmakuTypeface(fontWeight)
-            val layerLineHeightPx = resolveDanmakuLayerLineHeightPx(
-                fontSize = text.size,
-                lineHeightMultiplier = lineHeight
-            )
-            
-            // [问题9修复] 描边配置 - 提高弹幕可见性
-            if (strokeEnabled) {
-                text.strokeWidth = strokeWidth
-                text.strokeColor = android.graphics.Color.BLACK  // 黑色描边
-            } else {
-                text.strokeWidth = 0f
-            }
-            
-            // 滚动层配置
-            scroll.moveTime = resolveDanmakuScrollDurationMillis(
-                scrollDurationSeconds = scrollDurationSeconds,
-                speedFactor = speedFactor,
-                scrollFixedVelocity = scrollFixedVelocity,
-                viewportWidthPx = viewWidth
-            )
-            scroll.lineHeight = layerLineHeightPx
-
-            val activeBand = resolveActiveDisplayBand(displayAreaRatio)
-            val visibleHeightPx = if (viewHeight > 0) {
-                (viewHeight * activeBand.heightRatio).coerceAtLeast(0f)
-            } else {
-                0f
-            }
-
-            // [修复] 显示区域控制：通过 lineCount + marginTop 约束弹幕轨道
-            val maxLines = resolveDanmakuVisibleLineCount(
-                visibleHeightPx = visibleHeightPx,
-                areaRatioHint = activeBand.heightRatio,
-                fontSize = text.size,
-                strokeWidth = text.strokeWidth,
-                strokeEnabled = strokeEnabled,
-                lineHeight = lineHeight,
-                massiveMode = massiveMode
-            )
-            scroll.lineCount = maxLines
-
-            val topMargin = if (viewHeight > 0) (viewHeight * activeBand.topRatio) else 0f
-            val bottomInset = if (viewHeight > 0) (viewHeight * (1f - activeBand.bottomRatio)) else 0f
-            topMarginPx = topMargin.toInt()
-            scroll.marginTop = topMargin
-            top.marginTop = topMargin
-            bottom.marginBottom = bottomInset
-            top.lineHeight = layerLineHeightPx
-            bottom.lineHeight = layerLineHeightPx
-            val pinnedDuration = resolveDanmakuPinnedDurationMillis(staticDurationSeconds)
-            top.showTimeMin = pinnedDuration
-            top.showTimeMax = pinnedDuration
-            bottom.showTimeMin = pinnedDuration
-            bottom.showTimeMax = pinnedDuration
-
-            // 顶部/底部弹幕的轨道数量跟随可见区高度，避免挤占人脸区
-            val pinnedLineCount = (maxLines / 2).coerceAtLeast(1)
-            top.lineCount = pinnedLineCount
-            bottom.lineCount = pinnedLineCount
-            
-            android.util.Log.w(
-                "DanmakuConfig",
-                " Applied: opacity=$opacity, fontSize=${text.size}, moveTime=${scroll.moveTime}ms, " +
-                    "displayArea=$displayAreaRatio, band=${activeBand.topRatio}-${activeBand.bottomRatio}, " +
-                    "lineHeight=$lineHeight, lineHeightPx=$layerLineHeightPx, maxLines=$maxLines, staticMs=$pinnedDuration " +
-                    "(w=$viewWidth, h=$viewHeight, visiblePx=$visibleHeightPx, marginTop=$topMargin)"
-            )
+    /** Resolve app settings into the renderer-neutral configuration contract. */
+    fun resolveRenderConfig(viewWidth: Int = 0, viewHeight: Int = 0): DanmakuRenderConfig {
+        val resolvedTextSize = 42f * fontScale
+        val resolvedStrokeWidth = if (strokeEnabled) strokeWidth else 0f
+        val layerLineHeightPx = resolveDanmakuLayerLineHeightPx(
+            fontSize = resolvedTextSize,
+            lineHeightMultiplier = lineHeight
+        )
+        val scrollDuration = resolveDanmakuScrollDurationMillis(
+            scrollDurationSeconds = scrollDurationSeconds,
+            speedFactor = speedFactor,
+            scrollFixedVelocity = scrollFixedVelocity,
+            viewportWidthPx = viewWidth
+        )
+        val activeBand = resolveActiveDisplayBand(displayAreaRatio)
+        val visibleHeightPx = if (viewHeight > 0) {
+            (viewHeight * activeBand.heightRatio).coerceAtLeast(0f)
+        } else {
+            0f
         }
+        val maxLines = resolveDanmakuVisibleLineCount(
+            visibleHeightPx = visibleHeightPx,
+            areaRatioHint = activeBand.heightRatio,
+            fontSize = resolvedTextSize,
+            strokeWidth = resolvedStrokeWidth,
+            strokeEnabled = strokeEnabled,
+            lineHeight = lineHeight,
+            massiveMode = massiveMode
+        )
+        val topMargin = if (viewHeight > 0) viewHeight * activeBand.topRatio else 0f
+        val bottomInset = if (viewHeight > 0) viewHeight * (1f - activeBand.bottomRatio) else 0f
+        val pinnedDuration = resolveDanmakuPinnedDurationMillis(staticDurationSeconds)
+        topMarginPx = topMargin.toInt()
+
+        return DanmakuRenderConfig(
+            alpha = (opacity * 255).toInt(),
+            textSizePx = resolvedTextSize,
+            typeface = resolveDanmakuTypeface(fontWeight),
+            strokeWidthPx = resolvedStrokeWidth,
+            strokeColor = android.graphics.Color.BLACK,
+            scrollDurationMs = scrollDuration,
+            lineHeightPx = layerLineHeightPx,
+            lineCount = maxLines,
+            topMarginPx = topMargin,
+            bottomMarginPx = bottomInset,
+            pinnedDurationMs = pinnedDuration
+        )
     }
 
     private fun resolveActiveDisplayBand(defaultArea: Float): DanmakuDisplayBand {

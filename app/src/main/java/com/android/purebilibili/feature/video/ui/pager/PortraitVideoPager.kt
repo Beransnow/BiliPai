@@ -33,7 +33,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.*
 import com.android.purebilibili.core.ui.components.AppButton
 import androidx.compose.material3.ButtonDefaults
-import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppText
@@ -200,7 +200,7 @@ import com.android.purebilibili.feature.video.viewmodel.toSupplementSeed
 import com.android.purebilibili.feature.video.viewmodel.withEngagementUiState
 import com.android.purebilibili.feature.video.viewmodel.resolvePlaybackCompletionRepeatMode
 import com.android.purebilibili.feature.video.viewmodel.resolvePlaybackEndAction
-import com.bytedance.danmaku.render.engine.DanmakuView
+import com.android.purebilibili.danmaku.engine.DanmakuRenderView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
@@ -696,7 +696,7 @@ fun PortraitVideoPager(
 
     DisposableEffect(exoPlayer) {
         danmakuManager.attachPlayer(exoPlayer)
-        onDispose { }
+        onDispose { danmakuManager.detachPlayer(exoPlayer) }
     }
 
     LaunchedEffect(exoPlayer, isPortraitPlaybackAllowed) {
@@ -1347,7 +1347,12 @@ fun PortraitVideoPager(
                 durationMs = exoPlayer.duration
                 retries++
             }
-            danmakuManager.loadDanmaku(currentPlayingCid, currentPlayingAid, durationMs.coerceAtLeast(0L))
+            danmakuManager.loadDanmaku(
+                currentPlayingCid,
+                currentPlayingAid,
+                durationMs.coerceAtLeast(0L),
+                currentPlayingBvid.orEmpty()
+            )
         } else {
             danmakuManager.isEnabled = false
         }
@@ -2606,7 +2611,7 @@ private fun VideoPageItem(
                 }
 
                 if (isLoading && isCurrentPage) {
-                    AppCircularProgressIndicator(
+                    AdaptiveLoadingIndicator(
                         modifier = Modifier.align(Alignment.Center),
                         color = Color.White
                     )
@@ -3531,7 +3536,7 @@ private fun PortraitDanmakuOverlay(
 ) {
     AndroidView(
         factory = { ctx ->
-            DanmakuView(ctx).apply {
+            DanmakuRenderView(ctx).apply {
                 setBackgroundColor(android.graphics.Color.TRANSPARENT)
                 danmakuManager.attachView(this)
             }
@@ -3543,6 +3548,7 @@ private fun PortraitDanmakuOverlay(
                 danmakuManager.attachView(view)
                 }
         },
+        onRelease = { view -> danmakuManager.detachView(view) },
         modifier = modifier
     )
 }

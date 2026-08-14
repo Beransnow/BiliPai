@@ -16,7 +16,7 @@ import com.android.purebilibili.feature.video.ui.section.shouldTriggerSeekStepHa
 import com.android.purebilibili.feature.video.usecase.applyPlaybackButtonUserAction
 import com.android.purebilibili.feature.video.usecase.seekPlayerFromUserAction
 import com.android.purebilibili.feature.video.usecase.togglePlayerPlaybackFromUserAction
-import com.bytedance.danmaku.render.engine.DanmakuView
+import com.android.purebilibili.danmaku.engine.DanmakuRenderView
 
 import android.app.Activity
 import android.content.Context
@@ -238,7 +238,7 @@ fun FullscreenPlayerOverlay(
         )
     }
     //  共享弹幕管理器（横竖屏切换保持状态，同时可用于手势 seek 同步）
-    val danmakuManager = rememberDanmakuManager()
+    val danmakuManager = rememberDanmakuManager(miniPlayerManager.currentBvid ?: player ?: miniPlayerManager)
 
     DisposableEffect(player) {
         val exoPlayer = player
@@ -789,7 +789,12 @@ fun FullscreenPlayerOverlay(
                     retries++
                 }
                 
-                danmakuManager.loadDanmaku(currentCid, miniPlayerManager.currentAid, durationMs)
+                danmakuManager.loadDanmaku(
+                    currentCid,
+                    miniPlayerManager.currentAid,
+                    durationMs,
+                    miniPlayerManager.currentBvid.orEmpty()
+                )
             } else {
                 danmakuManager.isEnabled = false
             }
@@ -831,30 +836,11 @@ fun FullscreenPlayerOverlay(
             )
         }
 
-        //  绑定 Player（不在 onDispose 中释放，单例会保持状态）
-        //  [修复] 移除 detachView 调用，避免横竖屏切换时弹幕消失
-        // attachView 会自动暂停旧视图，不需要手动 detach
+        // 播放器 owner 成对绑定；渲染 View 由 AndroidView.onRelease 独立解绑。
         DisposableEffect(player) {
             player?.let { danmakuManager.attachPlayer(it) }
             onDispose {
-                //  不再调用 detachView()
-                // 单例模式下，视图引用会在下次 attachView 时自动更新
-            }
-        }
-        
-        //  [修复] 使用 LifecycleOwner 监听真正的 Activity 生命周期
-        // DisposableEffect(Unit) 会在重组时触发，导致 player 引用被清除
-        val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-        DisposableEffect(lifecycleOwner) {
-            val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
-                if (event == androidx.lifecycle.Lifecycle.Event.ON_DESTROY) {
-                    android.util.Log.d("FullscreenPlayer", " ON_DESTROY: Clearing danmaku references")
-                    danmakuManager.clearViewReference()
-                }
-            }
-            lifecycleOwner.lifecycle.addObserver(observer)
-            onDispose {
-                lifecycleOwner.lifecycle.removeObserver(observer)
+                player?.let(danmakuManager::detachPlayer)
             }
         }
         
@@ -904,7 +890,7 @@ fun FullscreenPlayerOverlay(
                 if (danmakuEnabled) {
                     AndroidView(
                         factory = { ctx ->
-                            DanmakuView(ctx).apply {
+                            DanmakuRenderView(ctx).apply {
                                 setBackgroundColor(android.graphics.Color.TRANSPARENT)
                                 configureAsPassiveDanmakuOverlay()
                                 danmakuManager.attachView(this)
@@ -921,6 +907,7 @@ fun FullscreenPlayerOverlay(
                                 }
                             }
                         },
+                        onRelease = { view -> danmakuManager.detachView(view) },
                         modifier = viewportModifier
                     )
                 }
