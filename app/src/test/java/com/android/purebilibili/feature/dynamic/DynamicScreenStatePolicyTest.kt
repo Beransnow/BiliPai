@@ -273,10 +273,11 @@ class DynamicScreenStatePolicyTest {
     }
 
     @Test
-    fun `up panel prepends all and self shortcuts`() {
+    fun `up panel prepends self shortcut without all-dynamics entry`() {
         val users = listOf(
             SidebarUser(uid = 11L, name = "A", face = "a"),
-            SidebarUser(uid = 22L, name = "me", face = "old-me")
+            SidebarUser(uid = 22L, name = "me", face = "old-me"),
+            SidebarUser(uid = DYNAMIC_UP_PANEL_ALL_UID, name = "全部动态", face = "")
         )
         val panel = resolveDynamicUpPanelUsers(
             users = users,
@@ -284,9 +285,9 @@ class DynamicScreenStatePolicyTest {
             selfFace = "new-me"
         )
 
-        assertEquals(listOf(-1L, 22L, 11L), panel.map { it.uid })
-        assertEquals(listOf("全部动态", "我", "A"), panel.map { it.name })
-        assertEquals("new-me", panel[1].face)
+        assertEquals(listOf(22L, 11L), panel.map { it.uid })
+        assertEquals(listOf("我", "A"), panel.map { it.name })
+        assertEquals("new-me", panel[0].face)
         assertTrue(isDynamicUpPanelAllShortcut(-1L))
         assertTrue(isDynamicUpPanelShortcut(-1L, selfUid = 22L))
         assertTrue(isDynamicUpPanelShortcut(22L, selfUid = 22L))

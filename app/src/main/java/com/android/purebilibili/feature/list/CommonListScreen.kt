@@ -155,8 +155,8 @@ import com.android.purebilibili.feature.video.player.PlaylistSession
 import com.android.purebilibili.core.util.resolveScrollToTopPlan
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
-import com.kyant.backdrop.backdrops.layerBackdrop
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 
 internal enum class FavoriteContentMode {
     BASE_LIST,
@@ -1641,7 +1641,7 @@ fun CommonListScreen(
                                     height = historyFilterChrome.heightDp.dp,
                                     indicatorHeight = historyFilterChrome.indicatorHeightDp.dp,
                                     labelFontSize = historyFilterChrome.labelFontSizeSp.sp,
-                                    backdrop = commonListChromeBackdrop,
+                                    miuixBackdrop = commonListChromeBackdrop,
                                     forceLiquidChrome = homeSettings.androidNativeLiquidGlassEnabled,
                                     liquidGlassEffectsEnabled = true,
                                     dragSelectionEnabled = historyFilterChrome.dragSelectionEnabled,

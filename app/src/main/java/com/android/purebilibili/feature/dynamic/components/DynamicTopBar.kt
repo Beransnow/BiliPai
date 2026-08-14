@@ -26,9 +26,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.purebilibili.core.store.HomeSettings
+import com.android.purebilibili.core.store.SettingsManager
 //  Material Icons
 import com.android.purebilibili.core.ui.rememberAppGridLayoutIcon
 import com.android.purebilibili.core.ui.rememberAppListLayoutIcon
@@ -84,11 +88,16 @@ fun DynamicTopBarWithTabs(
     onPublishClick: (() -> Unit)? = null,
     hazeState: HazeState? = null,
     indicatorPositionProvider: (() -> Float)? = null,
-    isScrollInProgressProvider: () -> Boolean = { false }
+    isScrollInProgressProvider: () -> Boolean = { false },
+    miuixBackdrop: top.yukonga.miuix.kmp.blur.Backdrop? = null,
 ) {
     val density = LocalDensity.current
+    val context = LocalContext.current
     val statusBarHeight = WindowInsets.statusBars.getTop(density).let { with(density) { it.toDp() } }
     val liquidTabSpec = resolveDynamicTopBarLiquidTabSpec()
+    val homeSettings by SettingsManager
+        .getHomeSettings(context)
+        .collectAsStateWithLifecycle(initialValue = HomeSettings())
     
     //  读取当前模糊强度以确定背景透明度
     val blurIntensity = currentUnifiedBlurIntensity()
@@ -96,7 +105,8 @@ fun DynamicTopBarWithTabs(
     val globalWallpaperVisible = LocalGlobalWallpaperBackdropVisible.current
     val shouldUseHeaderBlur = shouldUseDynamicTopBarHeaderBlur(
         hasHazeState = hazeState != null,
-        globalWallpaperVisible = globalWallpaperVisible
+        globalWallpaperVisible = globalWallpaperVisible,
+        liquidGlassReuseEnabled = homeSettings.androidNativeLiquidGlassEnabled,
     )
     
     //  使用 blurIntensity 对应的背景透明度实现毛玻璃质感
@@ -131,10 +141,11 @@ fun DynamicTopBarWithTabs(
                     onSelected = onTabSelected,
                     modifier = Modifier.weight(1f),
                     height = liquidTabSpec.heightDp.dp,
-                    indicatorHeight = (liquidTabSpec.heightDp - 4).dp,
+                    indicatorHeight = liquidTabSpec.indicatorHeightDp.dp,
                     labelFontSize = liquidTabSpec.labelFontSizeSp.sp,
                     indicatorPositionProvider = indicatorPositionProvider,
-                    isScrollInProgressProvider = isScrollInProgressProvider
+                    isScrollInProgressProvider = isScrollInProgressProvider,
+                    miuixBackdrop = miuixBackdrop,
                 )
                 
                 //  布局模式切换按钮
@@ -204,5 +215,9 @@ internal fun resolveDynamicTopBarHeaderColor(
 
 internal fun shouldUseDynamicTopBarHeaderBlur(
     hasHazeState: Boolean,
-    globalWallpaperVisible: Boolean
-): Boolean = hasHazeState && !globalWallpaperVisible
+    globalWallpaperVisible: Boolean,
+    liquidGlassReuseEnabled: Boolean = false,
+): Boolean {
+    if (liquidGlassReuseEnabled) return false
+    return hasHazeState && !globalWallpaperVisible
+}

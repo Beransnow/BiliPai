@@ -62,6 +62,15 @@ internal fun resolveSearchKeywordSectionToggleLabel(enabled: Boolean): String {
     return if (enabled) "隐藏" else "显示"
 }
 
+internal fun shouldShowSearchKeywordSectionVisibilityToggle(
+    hasToggleHandler: Boolean,
+): Boolean = hasToggleHandler
+
+internal fun resolveSearchKeywordSectionToggleContentDescription(
+    enabled: Boolean,
+    title: String,
+): String = resolveSearchKeywordSectionToggleLabel(enabled) + title
+
 internal fun resolveSearchKeywordSectionHiddenText(title: String): String {
     return "已隐藏$title"
 }
@@ -516,11 +525,17 @@ private fun SearchKeywordSectionHeader(
                     )
                 }
             }
-            if (onToggleEnabled != null && useOriginalDiscoverStyle) {
+            val showVisibilityToggle = shouldShowSearchKeywordSectionVisibilityToggle(
+                hasToggleHandler = onToggleEnabled != null,
+            )
+            if (showVisibilityToggle && onToggleEnabled != null) {
                 AppIconButton(onClick = onToggleEnabled, modifier = Modifier.size(40.dp)) {
                     AppIcon(
                         imageVector = if (enabled) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
-                        contentDescription = if (enabled) "隐藏搜索发现" else "显示搜索发现",
+                        contentDescription = resolveSearchKeywordSectionToggleContentDescription(
+                            enabled = enabled,
+                            title = title,
+                        ),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )

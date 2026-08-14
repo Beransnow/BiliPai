@@ -55,6 +55,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -72,7 +73,6 @@ import com.android.purebilibili.core.ui.components.AppEmptyState
 import com.android.purebilibili.core.ui.components.AppErrorState
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
-import com.android.purebilibili.core.ui.components.AppNativeTabRow
 import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppText
@@ -123,6 +123,7 @@ internal fun BangumiHubContent(
     onSaveCover: (String, String) -> Unit,
     onHomeScrollChanged: (firstVisibleIndex: Int, scrollOffset: Int) -> Unit = { _, _ -> },
     scrollToTopRequestId: Int = 0,
+    listBottomPadding: Dp = 24.dp,
 ) {
     val homeGridStates = remember { mutableMapOf<BangumiChannel, LazyGridState>() }
     val indexGridStates = remember { mutableMapOf<BangumiIndexCategory, LazyGridState>() }
@@ -164,6 +165,7 @@ internal fun BangumiHubContent(
             onOpenIndex = onOpenIndex,
             onOpenFollow = onOpenFollow,
             onSaveCover = onSaveCover,
+            listBottomPadding = listBottomPadding,
         )
 
         BangumiHubPage.INDEX -> BangumiIndexContent(
@@ -179,6 +181,7 @@ internal fun BangumiHubContent(
             onLoadMore = onLoadMoreIndexResults,
             onBangumiClick = onBangumiClick,
             onSaveCover = onSaveCover,
+            listBottomPadding = listBottomPadding,
         )
 
         BangumiHubPage.FOLLOW -> BangumiFollowContent(
@@ -196,6 +199,7 @@ internal fun BangumiHubContent(
             onMoveSelected = onMoveSelectedFollow,
             onMoveSingle = onMoveSingleFollow,
             onUnfollowSingle = onUnfollowSingle,
+            listBottomPadding = listBottomPadding,
         )
 
         BangumiHubPage.SEARCH -> BangumiSearchContent(
@@ -204,6 +208,7 @@ internal fun BangumiHubContent(
             onBangumiClick = onBangumiClick,
             onLoadMore = onLoadMoreSearch,
             onSaveCover = onSaveCover,
+            listBottomPadding = listBottomPadding,
         )
     }
 }
@@ -223,6 +228,7 @@ private fun BangumiHomeContent(
     onOpenIndex: () -> Unit,
     onOpenFollow: () -> Unit,
     onSaveCover: (String, String) -> Unit,
+    listBottomPadding: Dp,
 ) {
     val isRefreshing = state.recommendations.isRefreshing ||
         state.follows.isRefreshing || state.timeline.isRefreshing
@@ -234,7 +240,7 @@ private fun BangumiHomeContent(
         LazyVerticalGrid(
             columns = GridCells.Adaptive(112.dp),
             state = gridState,
-            contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 12.dp, bottom = 24.dp),
+            contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 12.dp, bottom = listBottomPadding),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
@@ -348,7 +354,7 @@ private fun TimelineSection(
             val today = state.days.indexOfFirst { it.isToday == 1 }.coerceAtLeast(0)
             var selectedDay by remember(state.days) { mutableIntStateOf(today) }
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                AppNativeTabRow(
+                BangumiLiquidAwareTabRow(
                     options = state.days.mapIndexed { index, item ->
                         AppSegmentOption(index, resolveBangumiTimelineDayLabel(item))
                     },
@@ -414,6 +420,7 @@ private fun BangumiIndexContent(
     onLoadMore: () -> Unit,
     onBangumiClick: (Long) -> Unit,
     onSaveCover: (String, String) -> Unit,
+    listBottomPadding: Dp,
 ) {
     val scope = rememberCoroutineScope()
     AdaptivePullToRefreshBox(
@@ -424,7 +431,7 @@ private fun BangumiIndexContent(
         LazyVerticalGrid(
             columns = GridCells.Adaptive(112.dp),
             state = gridState,
-            contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 12.dp, bottom = 24.dp),
+            contentPadding = PaddingValues(start = 12.dp, top = 8.dp, end = 12.dp, bottom = listBottomPadding),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
@@ -432,7 +439,7 @@ private fun BangumiIndexContent(
                 span = { GridItemSpan(maxLineSpan) },
                 key = "cinema_categories",
             ) {
-                AppNativeTabRow(
+                BangumiLiquidAwareTabRow(
                     options = CINEMA_INDEX_CATEGORIES.map { AppSegmentOption(it, it.label) },
                     selectedValue = category,
                     scrollable = true,
@@ -587,12 +594,13 @@ private fun BangumiFollowContent(
     onMoveSelected: (BangumiFollowStatus) -> Unit,
     onMoveSingle: (Long, BangumiFollowStatus) -> Unit,
     onUnfollowSingle: (Long) -> Unit,
+    listBottomPadding: Dp,
 ) {
     val selectionMode = state.selectedIds.isNotEmpty()
     var menuItem by remember { mutableStateOf<FollowBangumiItem?>(null) }
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
-            AppNativeTabRow(
+            BangumiLiquidAwareTabRow(
                 options = BangumiFollowStatus.entries.map { AppSegmentOption(it, it.label) },
                 selectedValue = status,
                 enabled = !state.isMutating,
@@ -627,7 +635,11 @@ private fun BangumiFollowContent(
                             start = 12.dp,
                             top = 4.dp,
                             end = 12.dp,
-                            bottom = if (selectionMode) 112.dp else 24.dp,
+                            bottom = if (selectionMode) {
+                                listBottomPadding + 88.dp
+                            } else {
+                                listBottomPadding
+                            },
                         ),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -774,6 +786,7 @@ private fun BangumiSearchContent(
     onBangumiClick: (Long) -> Unit,
     onLoadMore: () -> Unit,
     onSaveCover: (String, String) -> Unit,
+    listBottomPadding: Dp,
 ) {
     val results = state.results
     when {
@@ -790,7 +803,7 @@ private fun BangumiSearchContent(
         else -> LazyVerticalGrid(
             columns = GridCells.Adaptive(112.dp),
             state = gridState,
-            contentPadding = PaddingValues(12.dp),
+            contentPadding = PaddingValues(start = 12.dp, top = 12.dp, end = 12.dp, bottom = listBottomPadding),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {

@@ -2434,6 +2434,8 @@ private fun SpaceMainTabRow(
                         tabs.getOrNull(index)?.let { onSelect(it.tab) }
                     },
                     itemWidth = 84.dp,
+                    height = spec.heightDp.dp,
+                    indicatorHeight = spec.indicatorHeightDp.dp,
                     labelFontSize = 14.sp,
                     liquidGlassEffectsEnabled = spec.liquidGlassEffectsEnabled
                 )
@@ -2448,6 +2450,8 @@ private fun SpaceMainTabRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = spec.horizontalPaddingDp.dp),
+                height = spec.heightDp.dp,
+                indicatorHeight = spec.indicatorHeightDp.dp,
                 labelFontSize = 14.sp,
                 liquidGlassEffectsEnabled = spec.liquidGlassEffectsEnabled
             )

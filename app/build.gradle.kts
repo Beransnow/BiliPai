@@ -436,11 +436,6 @@ dependencies {
     // --- 3.7 Startup (应用初始化) ---
     implementation("androidx.startup:startup-runtime:1.2.0")
     
-    // --- 3.8 Backdrop (液态玻璃效果) ---
-    // 提供透镜折射、玻璃高光、连续圆角等 iOS/visionOS 风格视觉效果
-    implementation("io.github.kyant0:backdrop:2.0.0")
-
-
     // --- 4. Player (视频播放器 Media3) ---
     implementation("androidx.media3:media3-exoplayer:$media3Version")
     implementation("androidx.media3:media3-exoplayer-dash:$media3Version")

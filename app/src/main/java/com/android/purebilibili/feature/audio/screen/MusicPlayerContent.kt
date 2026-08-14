@@ -355,15 +355,9 @@ internal fun MusicPlayerContent(
                             modifier = Modifier
                                 .navigationBarsPadding()
                                 .padding(horizontal = 72.dp, vertical = 8.dp),
-                            height = 52.dp,
-                            indicatorHeight = 46.dp,
                             liquidGlassEffectsEnabled = glassEnabled,
                             preferInlineContentStyle = false,
                             miuixBackdrop = musicBackdrop,
-                            containerColorOverride = MusicContentColor.copy(alpha = 0.14f),
-                            selectedTextColorOverride = MusicAccentColor,
-                            unselectedTextColorOverride = MusicContentColor.copy(alpha = 0.78f),
-                            indicatorIdleSurfaceColorOverride = MusicAccentColor.copy(alpha = 0.22f),
                             isScrollInProgressProvider = { pagerState.isScrollInProgress },
                             indicatorPositionProvider = {
                                 resolveMusicPagerIndicatorPosition(
@@ -826,17 +820,10 @@ private fun MusicPlayModeDock(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 2.dp),
-        height = 52.dp,
-        indicatorHeight = 46.dp,
         labelFontSize = 13.sp,
         liquidGlassEffectsEnabled = glassEnabled,
         preferInlineContentStyle = false,
         miuixBackdrop = miuixBackdrop,
-        // 贴封面色板背景时，勿用 Material onSurface（会发灰/发褐）；与播放器同一套主题色。
-        containerColorOverride = MusicContentColor.copy(alpha = 0.14f),
-        selectedTextColorOverride = MusicAccentColor,
-        unselectedTextColorOverride = MusicContentColor.copy(alpha = 0.78f),
-        indicatorIdleSurfaceColorOverride = MusicAccentColor.copy(alpha = 0.22f),
     )
 }
 

@@ -31,6 +31,20 @@ class DynamicScreenStructureTest {
         assertTrue(source.contains("resolveDynamicUpPanelUsers("))
         assertTrue(source.contains("isDynamicUpPanelAllShortcut(clickedUserId)"))
         assertTrue(source.contains("onTabSelected = onDynamicTabSelected"))
+        assertTrue(source.contains("val dynamicFeedBackdrop = rememberLayerBackdrop()"))
+        assertTrue(source.contains("miuixBackdrop = dynamicFeedBackdrop"))
+        assertTrue(source.contains(".background(AppSurfaceTokens.background())"))
+        assertTrue(source.contains(".layerBackdrop(dynamicFeedBackdrop)"))
+        assertTrue(source.indexOf(".background(AppSurfaceTokens.background())") < source.indexOf(".layerBackdrop(dynamicFeedBackdrop)"))
+        assertTrue(source.contains("animateScale = false"))
+        assertTrue(source.contains("shouldUseDynamicTopBarHeaderBlur("))
+        assertTrue(source.contains("liquidGlassReuseEnabled = homeSettings.androidNativeLiquidGlassEnabled"))
+        assertTrue(!source.contains("text = \"全\""))
+        val sidebarSource = File(
+            "src/main/java/com/android/purebilibili/feature/dynamic/components/DynamicSidebar.kt"
+        ).readText()
+        assertTrue(!sidebarSource.contains("text = \"全\""))
+        assertTrue(!sidebarSource.contains("isAllShortcut"))
     }
 
     @Test

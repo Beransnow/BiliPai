@@ -95,6 +95,7 @@ import com.android.purebilibili.feature.dynamic.components.DynamicCommentOverlay
 import com.android.purebilibili.feature.dynamic.components.DynamicSidebar
 import com.android.purebilibili.feature.dynamic.components.DynamicUserLiveBadge
 import com.android.purebilibili.feature.dynamic.components.DynamicTopBarWithTabs
+import com.android.purebilibili.feature.dynamic.components.shouldUseDynamicTopBarHeaderBlur
 import com.android.purebilibili.core.ui.rememberAppVisibilityOffIcon
 import com.android.purebilibili.core.ui.rememberAppVisibilityOnIcon
 import com.android.purebilibili.feature.dynamic.components.DynamicDisplayMode
@@ -113,6 +114,8 @@ import com.android.purebilibili.core.ui.blur.hazeSourceCompat
 import com.android.purebilibili.core.ui.blur.BlurStyles
 import com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity
 import com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import com.android.purebilibili.core.util.resolveScrollToTopPlan
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -207,6 +210,9 @@ fun DynamicScreen(
     val dynamicTopBarCollapseOnScroll by SettingsManager
         .getDynamicTopBarCollapseOnScroll(context)
         .collectAsStateWithLifecycle(initialValue = false)
+    val homeSettings by SettingsManager
+        .getHomeSettings(context)
+        .collectAsStateWithLifecycle(initialValue = com.android.purebilibili.core.store.HomeSettings())
     val visibleTabs = remember(dynamicVisibleTabIds) {
         resolveDynamicVisibleTabs(dynamicVisibleTabIds)
     }
@@ -286,6 +292,7 @@ fun DynamicScreen(
 
     //  [Haze] 模糊状态
     val hazeState = rememberRecoverableHazeState()
+    val dynamicFeedBackdrop = rememberLayerBackdrop()
     val scope = rememberCoroutineScope()
     val onDynamicTabSelected: (Int) -> Unit = { visibleIndex ->
         scope.launch {
@@ -636,6 +643,12 @@ fun DynamicScreen(
 
                         // 内容区
                         Box(modifier = Modifier.fillMaxSize().weight(1f)) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(AppSurfaceTokens.background())
+                                    .layerBackdrop(dynamicFeedBackdrop)
+                            ) {
                             HorizontalPager(
                                 state = pagerState,
                                 userScrollEnabled = false,
@@ -737,17 +750,20 @@ fun DynamicScreen(
                                         },
                                         likedDynamics = likedDynamics,
                                         feedLayoutMode = dynamicFeedLayoutMode,
-                                        modifier = Modifier
-                                            .hazeSourceCompat(hazeState)
+                                        modifier = Modifier.hazeSourceCompat(hazeState)
                                     )
                                 }
+                            }
                             }
 
                             // 顶栏（下滑折叠，回顶复现）
                             BottomBarMatchedDockVisibility(
                                 visible = !shouldCollapseTopBar,
                                 edge = BottomBarMatchedDockEdge.TOP,
-                                modifier = Modifier.align(Alignment.TopCenter)
+                                modifier = Modifier.align(Alignment.TopCenter),
+                                // Miuix backdrop sampling uses window coordinates. Parent scaling
+                                // during scroll hide/show can split the sampled RenderNode.
+                                animateScale = false,
                             ) {
                                 DynamicTopBarWithTabs(
                                     selectedTab = displayedTabIndex,
@@ -761,7 +777,8 @@ fun DynamicScreen(
                                     isScrollInProgressProvider = {
                                         activeListState?.isScrollInProgress == true ||
                                             pagerState.isScrollInProgress
-                                    }
+                                    },
+                                    miuixBackdrop = dynamicFeedBackdrop,
                                 )
                             }
 
@@ -789,6 +806,12 @@ fun DynamicScreen(
                 DynamicDisplayMode.HORIZONTAL -> {
                     // 横向模式（UP 主列表在顶部）
                     Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(AppSurfaceTokens.background())
+                                .layerBackdrop(dynamicFeedBackdrop)
+                        ) {
                         HorizontalPager(
                             state = pagerState,
                             userScrollEnabled = false,
@@ -894,10 +917,10 @@ fun DynamicScreen(
                                     },
                                     likedDynamics = likedDynamics,
                                     feedLayoutMode = dynamicFeedLayoutMode,
-                                    modifier = Modifier
-                                        .hazeSourceCompat(hazeState)
+                                    modifier = Modifier.hazeSourceCompat(hazeState)
                                 )
                             }
+                        }
                         }
 
                         // 顶部区域：顶栏 + 横向用户列表
@@ -924,13 +947,18 @@ fun DynamicScreen(
                                     surfaceColor = headerColor,
                                     surfaceAlpha = backgroundAlpha,
                                     hazeState = hazeState,
-                                    hazeEnabled = !globalWallpaperVisible
+                                    hazeEnabled = shouldUseDynamicTopBarHeaderBlur(
+                                        hasHazeState = true,
+                                        globalWallpaperVisible = globalWallpaperVisible,
+                                        liquidGlassReuseEnabled = homeSettings.androidNativeLiquidGlassEnabled,
+                                    )
                                 )
                                 Column(modifier = Modifier.fillMaxWidth()) {
                                     // 顶栏（下滑折叠，回顶复现）
                                     BottomBarMatchedDockVisibility(
                                         visible = !shouldCollapseTopBar,
-                                        edge = BottomBarMatchedDockEdge.TOP
+                                        edge = BottomBarMatchedDockEdge.TOP,
+                                        animateScale = false,
                                     ) {
                                         DynamicTopBarWithTabs(
                                             selectedTab = displayedTabIndex,
@@ -944,7 +972,8 @@ fun DynamicScreen(
                                             isScrollInProgressProvider = {
                                                 activeListState?.isScrollInProgress == true ||
                                                     pagerState.isScrollInProgress
-                                            }
+                                            },
+                                            miuixBackdrop = dynamicFeedBackdrop,
                                         )
                                     }
 
@@ -1509,24 +1538,15 @@ private fun HorizontalUserList(
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
-                                if (isDynamicUpPanelAllShortcut(user.uid)) {
-                                    AppText(
-                                        text = "全",
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = MaterialTheme.colorScheme.onSurface,
-                                        fontSize = MaterialTheme.typography.labelLarge.fontSize
-                                    )
-                                } else {
-                                    AsyncImage(
-                                        model = coil.request.ImageRequest.Builder(LocalContext.current)
-                                            .data(user.face.let { if (it.startsWith("http://")) it.replace("http://", "https://") else it })
-                                            .crossfade(true)
-                                            .build(),
-                                        contentDescription = null,
-                                        modifier = Modifier.fillMaxSize().clip(CircleShape),
-                                        contentScale = ContentScale.Crop
-                                    )
-                                }
+                                AsyncImage(
+                                    model = coil.request.ImageRequest.Builder(LocalContext.current)
+                                        .data(user.face.let { if (it.startsWith("http://")) it.replace("http://", "https://") else it })
+                                        .crossfade(true)
+                                        .build(),
+                                    contentDescription = null,
+                                    modifier = Modifier.fillMaxSize().clip(CircleShape),
+                                    contentScale = ContentScale.Crop
+                                )
                             }
                             //  [新增] UP 未读红点（对齐 BiliPai up_panel 8px 红点）
                             if (user.uid in uplistUpdateMids) {

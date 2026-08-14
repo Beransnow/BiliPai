@@ -57,7 +57,6 @@ import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.core.ui.resolveGlobalWallpaperProtectiveColor
 import com.android.purebilibili.core.ui.blur.BlurStyles
 import com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity
-import com.android.purebilibili.feature.dynamic.DYNAMIC_UP_PANEL_ALL_UID
 import com.android.purebilibili.feature.dynamic.isDynamicUpPanelItemSelected
 import com.android.purebilibili.feature.dynamic.isDynamicUpPanelShortcut
 import com.android.purebilibili.feature.dynamic.resolveDynamicSidebarWidth
@@ -253,15 +252,13 @@ fun DynamicSidebar(
                     CascadeSidebarItem(
                         index = index,
                         content = {
-                            val isAllShortcut = user.uid == DYNAMIC_UP_PANEL_ALL_UID
                             val isShortcut = isDynamicUpPanelShortcut(user.uid, selfUid)
                             SidebarUserItem(
                                 user = user,
                                 isSelected = isDynamicUpPanelItemSelected(selectedUserId, user.uid),
                                 showLabel = isExpanded,
-                                showUnreadBadge = user.uid in uplistUpdateMids && !isAllShortcut,
+                                showUnreadBadge = user.uid in uplistUpdateMids,
                                 allowManageMenu = !isShortcut,
-                                isAllShortcut = isAllShortcut,
                                 onClick = { onUserClick(user.uid) },
                                 onTogglePin = { onTogglePin(user.uid) },
                                 onToggleHidden = { onToggleHidden(user.uid) }
@@ -409,7 +406,6 @@ fun SidebarUserItem(
     showLabel: Boolean,
     showUnreadBadge: Boolean = false,
     allowManageMenu: Boolean = true,
-    isAllShortcut: Boolean = false,
     onClick: () -> Unit,
     onTogglePin: () -> Unit,
     onToggleHidden: () -> Unit
@@ -466,26 +462,17 @@ fun SidebarUserItem(
                         .padding(AppSpacingTokens.Micro),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (isAllShortcut) {
-                        AppText(
-                            text = "全",
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            fontSize = MaterialTheme.typography.labelLarge.fontSize
-                        )
-                    } else {
-                        AsyncImage(
-                            model = coil.request.ImageRequest.Builder(LocalContext.current)
-                                .data(faceUrl.ifEmpty { null })
-                                .crossfade(true)
-                                .build(),
-                            contentDescription = user.name,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
+                    AsyncImage(
+                        model = coil.request.ImageRequest.Builder(LocalContext.current)
+                            .data(faceUrl.ifEmpty { null })
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = user.name,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
                 }
                 if (showUnreadBadge) {
                     Box(

@@ -125,11 +125,6 @@ internal fun resolveDynamicUpPanelUsers(
     selfUid: Long,
     selfFace: String = ""
 ): List<SidebarUser> {
-    val allItem = SidebarUser(
-        uid = DYNAMIC_UP_PANEL_ALL_UID,
-        name = "全部动态",
-        face = ""
-    )
     val selfItem = selfUid.takeIf { it > 0L }?.let { uid ->
         SidebarUser(
             uid = uid,
@@ -140,7 +135,7 @@ internal fun resolveDynamicUpPanelUsers(
     val rest = users.filterNot { user ->
         user.uid == DYNAMIC_UP_PANEL_ALL_UID || (selfUid > 0L && user.uid == selfUid)
     }
-    return listOfNotNull(allItem, selfItem) + rest
+    return listOfNotNull(selfItem) + rest
 }
 
 internal fun isDynamicUpPanelAllShortcut(uid: Long?): Boolean {

@@ -55,8 +55,8 @@ import com.android.purebilibili.feature.video.viewmodel.CommentUiState
 import com.android.purebilibili.feature.video.viewmodel.SubReplyUiState
 import com.android.purebilibili.feature.video.viewmodel.VideoEngagementUiState
 import com.android.purebilibili.feature.video.viewmodel.VideoPlaybackUiState
-import com.kyant.backdrop.backdrops.layerBackdrop
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import androidx.compose.material.icons.outlined.*
 import kotlinx.coroutines.launch
@@ -591,7 +591,7 @@ private fun TabletSecondaryContent(
                                             .setCommentDefaultSortMode(context, mode.apiMode)
                                     }
                                 },
-                                backdrop = commentChromeBackdrop
+                                miuixBackdrop = commentChromeBackdrop
                             )
                             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                             LazyColumn(

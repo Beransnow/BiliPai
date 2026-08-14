@@ -167,6 +167,7 @@ import kotlinx.coroutines.launch
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.feature.home.components.BottomBarMatchedReusableLiquidDock
+import com.android.purebilibili.feature.home.components.resolveHomeTopSearchContainerShape
 
 internal fun shouldShowSearchHotSection(
     hotItemCount: Int,
@@ -247,6 +248,10 @@ internal data class SearchChromeVisualSpec(
     val chipShapeLevel: ContainerLevel,
     val chipHorizontalPaddingDp: Int
 )
+
+internal fun resolveSearchInputShape(
+    chromePolicy: AppTopChromePolicy,
+): androidx.compose.ui.graphics.Shape = resolveHomeTopSearchContainerShape(chromePolicy)
 
 internal fun resolveSearchChromeVisualSpec(
     chromePolicy: AppTopChromePolicy,
@@ -2020,7 +2025,7 @@ fun SearchTopBar(
 
                 Spacer(modifier = Modifier.width(4.dp))
 
-                val inputShape = AppShapes.container(chromeSpec.inputShapeLevel)
+                val inputShape = resolveSearchInputShape(topChromePolicy)
                 val actionShape = AppShapes.container(chromeSpec.actionShapeLevel)
                 BottomBarMatchedReusableLiquidDock(
                     shape = inputShape,

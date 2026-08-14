@@ -94,8 +94,8 @@ import com.android.purebilibili.feature.live.components.LiveStreamSourceSheet
 import com.android.purebilibili.feature.live.components.LiveSuperChatSection
 import com.android.purebilibili.feature.live.components.LiveSuperChatFlashOverlay
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
-import com.kyant.backdrop.backdrops.layerBackdrop
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import com.android.purebilibili.feature.video.player.shouldContinuePlaybackDuringPause
 import com.android.purebilibili.feature.video.state.isPlaybackActiveForLifecycle
 import com.android.purebilibili.feature.video.state.shouldResumeAfterLifecyclePause
@@ -1846,7 +1846,7 @@ private fun LivePrimaryInteractionPanel(
                 height = segmentedSpec.heightDp.dp,
                 indicatorHeight = segmentedSpec.indicatorHeightDp.dp,
                 labelFontSize = segmentedSpec.labelFontSizeSp.sp,
-                backdrop = selectionBackdrop,
+                miuixBackdrop = selectionBackdrop,
                 isScrollInProgressProvider = { pagerState.isScrollInProgress }
             )
         }
