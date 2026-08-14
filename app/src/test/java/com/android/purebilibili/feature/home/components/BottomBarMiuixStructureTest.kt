@@ -74,6 +74,8 @@ class BottomBarMiuixStructureTest {
         assertTrue(renderer.contains("val floatingSelectedIndex = remember(selectedIndexForBarState)"))
         assertTrue(renderer.contains("selectedIndex = floatingSelectedIndex"))
         assertTrue(renderer.contains("onSelected = floatingOnSelected"))
+        assertTrue(renderer.contains("val floatingOnReselected = remember(selectedIndexForBarState, handleSelectedState)"))
+        assertTrue(renderer.contains("onReselected = floatingOnReselected"))
         assertTrue(renderer.contains("if (index != selectedIndexForBarState.value)"))
         assertFalse(renderer.contains("selectedIndex = { selectedIndexForBar }"))
     }

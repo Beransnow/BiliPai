@@ -3042,6 +3042,9 @@ private fun BiliPaiFloatingBottomBar(
                     }
                 }
             }
+            val floatingOnReselected = remember(selectedIndexForBarState, handleSelectedState) {
+                { handleSelectedState.value(selectedIndexForBarState.value) }
+            }
 
             Row(
                 modifier = Modifier
@@ -3066,6 +3069,7 @@ private fun BiliPaiFloatingBottomBar(
                         FloatingBottomBar(
                             selectedIndex = floatingSelectedIndex,
                             onSelected = floatingOnSelected,
+                            onReselected = floatingOnReselected,
                             backdrop = miuixBackdrop,
                             tabsCount = totalItems,
                             modifier = Modifier
