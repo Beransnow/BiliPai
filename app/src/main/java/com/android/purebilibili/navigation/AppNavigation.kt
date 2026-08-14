@@ -185,6 +185,7 @@ import com.android.purebilibili.navigation3.pushOrReplaceSettingsCategoryNavKey
 import com.android.purebilibili.navigation3.resolveBiliPaiBackGestureDecision
 import com.android.purebilibili.navigation3.resolveBiliPaiNavCardSourceDirection
 import com.android.purebilibili.navigation3.resolveBiliPaiNavEntryContentRole
+import com.android.purebilibili.navigation3.resolveRemovedNavigation3SaveableStateKeys
 import com.android.purebilibili.navigation3.resolveNavigation3SaveableStateKey
 import com.android.purebilibili.navigation3.resolveBiliPaiNavSourceMetadata
 import com.android.purebilibili.navigation3.shouldBindVideoDetailBackPreviewPlayer
@@ -487,9 +488,19 @@ fun AppNavigation(
         val navigation3BackStack = rememberNavBackStack<BiliPaiNavKey>(
             *initialNavigationBackStack.toTypedArray()
         ) as androidx.compose.runtime.snapshots.SnapshotStateList<BiliPaiNavKey>
+        val navigation3SaveableStateHolder = rememberSaveableStateHolder()
         fun replaceNavigation3BackStack(keys: List<BiliPaiNavKey>) {
+            val replacementStack = keys.ifEmpty { listOf(BiliPaiNavKey.MainHost) }
+            val removedStateKeys = resolveRemovedNavigation3SaveableStateKeys(
+                currentStack = navigation3BackStack,
+                replacementStack = replacementStack,
+            )
             navigation3BackStack.clear()
-            navigation3BackStack.addAll(keys.ifEmpty { listOf(BiliPaiNavKey.MainHost) })
+            navigation3BackStack.addAll(replacementStack)
+            // SaveableStateHolder intentionally retains disposed providers. Media detail keys are
+            // session-scoped, so without explicit eviction every watched video remains in the
+            // Activity saved-state Bundle and eventually causes TransactionTooLargeException.
+            removedStateKeys.forEach(navigation3SaveableStateHolder::removeState)
         }
         val navigation3ProgrammaticBackDispatcher = remember {
             BiliPaiProgrammaticBackDispatcher()
@@ -595,7 +606,6 @@ fun AppNavigation(
             pageCount = { visibleBottomBarItems.size.coerceAtLeast(1) }
         )
         val bottomPagerSaveableStateHolder = rememberSaveableStateHolder()
-        val navigation3SaveableStateHolder = rememberSaveableStateHolder()
         val mainBottomPagerState = rememberMainBottomPagerState(bottomPagerState)
         var bottomPagerContentReady by remember { mutableStateOf(false) }
         LaunchedEffect(Unit) {
