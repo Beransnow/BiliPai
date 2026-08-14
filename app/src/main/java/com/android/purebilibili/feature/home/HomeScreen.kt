@@ -1283,8 +1283,10 @@ fun HomeScreen(
     var drawerOpenRequested by remember { mutableStateOf(false) }
     
     // 抽屉打开时隐藏全局底栏，避免覆盖侧边栏底部内容
-    val isDrawerStateOpenOrOpening = drawerState.currentValue == DrawerValue.Open ||
-        drawerState.targetValue == DrawerValue.Open
+    val isDrawerStateOpenOrOpening = shouldEnableHomeDrawerGestures(
+        currentValue = drawerState.currentValue,
+        targetValue = drawerState.targetValue,
+    )
     val shouldKeepDrawerBottomBarHidden = drawerOpenRequested || isDrawerStateOpenOrOpening
     LaunchedEffect(drawerState.currentValue, drawerState.targetValue) {
         if (drawerState.currentValue == DrawerValue.Closed && drawerState.targetValue == DrawerValue.Closed) {
@@ -2400,7 +2402,8 @@ fun HomeScreen(
             }
             AppModalNavigationDrawer(
                 drawerState = drawerState,
-                gesturesEnabled = true,
+                // 关闭时只允许点击头像打开，避免首页上下滚动与抽屉拖拽竞争。
+                gesturesEnabled = isDrawerStateOpenOrOpening,
                 scrimColor = MaterialTheme.colorScheme.scrim.copy(
                     alpha = resolveHomeDrawerScrimAlpha(isHeaderBlurEnabled),
                 ),
