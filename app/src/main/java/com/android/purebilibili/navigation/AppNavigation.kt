@@ -1315,7 +1315,10 @@ fun AppNavigation(
         }
         val dynamicScrollChannel = remember { kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.CONFLATED) }
         val historyScrollChannel = remember { kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.CONFLATED) }
+        val profileScrollChannel = remember { kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.CONFLATED) }
         val favoriteScrollChannel = remember { kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.CONFLATED) }
+        val liveScrollChannel = remember { kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.CONFLATED) }
+        val watchLaterScrollChannel = remember { kotlinx.coroutines.channels.Channel<Unit>(kotlinx.coroutines.channels.Channel.CONFLATED) }
         var dynamicUnreadCount by remember { mutableIntStateOf(0) }
         val dynamicUnreadPollingEnabled = visibleBottomBarItems.contains(BottomNavItem.DYNAMIC)
         LaunchedEffect(currentBottomNavItem, dynamicUnreadPollingEnabled) {
@@ -1343,7 +1346,10 @@ fun AppNavigation(
                     )
                     BottomNavItem.DYNAMIC -> dynamicScrollChannel.trySend(Unit)
                     BottomNavItem.HISTORY -> historyScrollChannel.trySend(Unit)
+                    BottomNavItem.PROFILE -> profileScrollChannel.trySend(Unit)
                     BottomNavItem.FAVORITE -> favoriteScrollChannel.trySend(Unit)
+                    BottomNavItem.LIVE -> liveScrollChannel.trySend(Unit)
+                    BottomNavItem.WATCHLATER -> watchLaterScrollChannel.trySend(Unit)
                     else -> Unit
                 }
             }
@@ -1976,6 +1982,26 @@ fun AppNavigation(
                                 onFavoriteClick = { pushNavigation3Route(ScreenRoutes.Favorite.route) },
                                 onLikedVideosClick = { pushNavigation3Route(ScreenRoutes.LikedVideos.route) },
                                 onLiveListClick = { pushNavigation3Route(ScreenRoutes.LiveList.route) },
+                                onLiveSearchClick = { pushNavigation3Key(BiliPaiNavKey.LiveSearch) },
+                                onLiveAreaClick = { pushNavigation3Key(BiliPaiNavKey.LiveArea) },
+                                onLiveFollowingClick = { pushNavigation3Key(BiliPaiNavKey.LiveFollowing) },
+                                onLiveAreaDetailClick = { parentAreaId, areaId, title ->
+                                    pushNavigation3Key(
+                                        BiliPaiNavKey.LiveAreaDetail(
+                                            parentAreaId = parentAreaId,
+                                            areaId = areaId,
+                                            title = title
+                                        )
+                                    )
+                                },
+                                onBangumiSeasonClick = { seasonId ->
+                                    pushNavigation3Key(BiliPaiNavKey.BangumiDetail(seasonId = seasonId))
+                                },
+                                onBangumiEpisodeClick = { seasonId, epId ->
+                                    pushNavigation3Key(
+                                        BiliPaiNavKey.BangumiDetail(seasonId = seasonId, epId = epId)
+                                    )
+                                },
                                 onWatchLaterClick = { pushNavigation3Route(ScreenRoutes.WatchLater.route) },
                                 onDownloadClick = { pushNavigation3Route(ScreenRoutes.DownloadList.route) },
                                 onInboxClick = { pushNavigation3Route(ScreenRoutes.Inbox.route) },
@@ -2311,7 +2337,8 @@ fun AppNavigation(
                                     }
                                 },
                                 onBangumiMoreClick = { navigateFromProfile(ScreenRoutes.Bangumi.createRoute(1)) },
-                                deferImmersiveRenderBudget = bottomPagerRenderBudget.deferProfileImmersiveBackground
+                                deferImmersiveRenderBudget = bottomPagerRenderBudget.deferProfileImmersiveBackground,
+                                scrollToTopChannel = profileScrollChannel
                             )
                         }
                         BiliPaiNavEntryContentRole.VIDEO_DETAIL -> {
@@ -2731,7 +2758,8 @@ fun AppNavigation(
                                         )
                                     },
                                     viewModel = watchLaterViewModel,
-                                    globalHazeState = mainHazeState
+                                    globalHazeState = mainHazeState,
+                                    scrollToTopChannel = watchLaterScrollChannel
                                 )
                             }
                         BiliPaiNavEntryContentRole.FOLLOWING -> {
@@ -2762,6 +2790,7 @@ fun AppNavigation(
                                 onBack = { performSystemBackAction() },
                                 // 底栏/顶栏进入的主直播首页：无返回箭头，与 BiliPai 主 tab 一致。
                                 showNavigationBack = false,
+                                scrollToTopChannel = liveScrollChannel,
                                 onLiveClick = { roomId, title, uname ->
                                     pushNavigation3Key(BiliPaiNavKey.Live(roomId = roomId.toString(), title = title, uname = uname))
                                 },
