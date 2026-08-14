@@ -2406,7 +2406,8 @@ fun AppNavigation(
                                     navigation3ReturnSession = navigation3ReturnSession.clearReturning()
                                 },
                                 transitionEnabled = shouldEnableVideoDetailSharedTransition(
-                                    cardTransitionEnabled = sharedVideoCardTransitionEnabled
+                                    cardTransitionEnabled = sharedVideoCardTransitionEnabled,
+                                    sourceRoute = videoKey.sourceRoute,
                                 ),
                                 transitionEnterDurationMillis = navMotionSpec.slowFadeDurationMillis,
                                 onBack = {

@@ -68,7 +68,6 @@ import com.android.purebilibili.data.model.response.RelatedVideo
 import com.android.purebilibili.data.repository.ActionRepository
 import com.android.purebilibili.data.repository.BlockedUpRepository
 import com.android.purebilibili.feature.home.HomeFeedCardLayout
-import com.android.purebilibili.feature.home.components.cards.videoCardShellReturnChromeAlpha
 import com.android.purebilibili.feature.home.resolveHomeFeedCardLayout
 import com.android.purebilibili.feature.video.ui.FollowBadgeTone
 import com.android.purebilibili.feature.video.ui.VideoDetailShapes
@@ -154,7 +153,10 @@ internal fun rememberRelatedVideoCardLayout(): HomeFeedCardLayout {
     }
 }
 
-/** 相关推荐单列横卡：点击时冻结整卡与封面几何，由 Miuix NavTransition 接管飞行。 */
+/**
+ * 相关推荐单列横卡：点击时保留来源标识与几何供嵌套导航恢复；页面切换由默认 Miuix
+ * 导航负责，不参与整卡飞行或手绘 chrome 交接。
+ */
 @Composable
 fun RelatedVideoItem(
     video: RelatedVideo,
@@ -180,7 +182,7 @@ fun RelatedVideoItem(
     val cardCoordinatesRef = remember { object { var value: LayoutCoordinates? = null } }
     val coverCoordinatesRef = remember { object { var value: LayoutCoordinates? = null } }
     val context = LocalContext.current
-    // Same URL + cache key as the list AsyncImage so return handoff reuses stationary pixels.
+    // Keep the request stable and skip image crossfade during the Miuix page transition.
     val stationaryCoverUrl = remember(video.pic) {
         FormatUtils.resolveVideoCoverUrl(video.pic, useLowQuality = false)
     }
@@ -248,15 +250,6 @@ fun RelatedVideoItem(
             .onGloballyPositioned { coordinates ->
                 cardCoordinatesRef.value = coordinates
             }
-            // Hide the complete stationary card while the flying detail entry owns its
-            // cover/chrome; keeping only the children transparent leaves a black container plate,
-            // while keeping the whole row visible produces a second cover in the live parent.
-            .videoCardShellReturnChromeAlpha(
-                enabled = true,
-                bvid = video.bvid,
-                sourceRoute = sourceRoute,
-                resolveSourceOwnershipAtDraw = true,
-            )
             .clip(cardShape)
             .background(AppSurfaceTokens.cardContainer())
             .clickable(onClick = triggerRelatedVideoClick)
