@@ -203,6 +203,7 @@ class PartitionScreenStructureTest {
         assertTrue(listSource.contains("val sharedTransitionEnabled = LocalSharedTransitionEnabled.current"))
         assertTrue(listSource.contains("transitionEnabled = sharedTransitionEnabled"))
         assertTrue(listSource.contains("HomeStyleSingleColumnVideoCard("))
+        assertTrue(listSource.contains("showUpBadge = false"))
         assertFalse(listSource.contains("spring(dampingRatio = 0.8f, stiffness = 200f)"))
         assertFalse(listSource.contains("transitionEnabled = true"))
     }

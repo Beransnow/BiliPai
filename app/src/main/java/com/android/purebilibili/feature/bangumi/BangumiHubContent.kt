@@ -46,6 +46,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -120,16 +121,39 @@ internal fun BangumiHubContent(
     onUnfollowSingle: (Long) -> Unit,
     onLoadMoreSearch: () -> Unit,
     onSaveCover: (String, String) -> Unit,
+    onHomeScrollChanged: (firstVisibleIndex: Int, scrollOffset: Int) -> Unit = { _, _ -> },
+    scrollToTopRequestId: Int = 0,
 ) {
     val homeGridStates = remember { mutableMapOf<BangumiChannel, LazyGridState>() }
     val indexGridStates = remember { mutableMapOf<BangumiIndexCategory, LazyGridState>() }
     val followGridStates = remember { mutableMapOf<Pair<BangumiChannel, BangumiFollowStatus>, LazyGridState>() }
     val searchGridState = rememberLazyGridState()
+    val activeHomeGrid = homeGridStates.getOrPut(state.channel) { LazyGridState() }
+    LaunchedEffect(activeHomeGrid, state.page, state.channel) {
+        if (state.page != BangumiHubPage.HOME) return@LaunchedEffect
+        snapshotFlow {
+            activeHomeGrid.firstVisibleItemIndex to activeHomeGrid.firstVisibleItemScrollOffset
+        }.collect { (index, offset) ->
+            onHomeScrollChanged(index, offset)
+        }
+    }
+    LaunchedEffect(scrollToTopRequestId, state.page, state.channel, state.followStatus, state.indexCategory) {
+        if (scrollToTopRequestId <= 0) return@LaunchedEffect
+        val target = when (state.page) {
+            BangumiHubPage.HOME -> activeHomeGrid
+            BangumiHubPage.INDEX -> indexGridStates.getOrPut(state.indexCategory) { LazyGridState() }
+            BangumiHubPage.FOLLOW -> followGridStates.getOrPut(state.channel to state.followStatus) { LazyGridState() }
+            BangumiHubPage.SEARCH -> searchGridState
+        }
+        if (target.firstVisibleItemIndex > 0 || target.firstVisibleItemScrollOffset > 0) {
+            target.animateScrollToItem(0)
+        }
+    }
     when (state.page) {
         BangumiHubPage.HOME -> BangumiHomeContent(
             channel = state.channel,
             state = state.homeStates[state.channel] ?: BangumiHomeState(),
-            gridState = homeGridStates.getOrPut(state.channel) { LazyGridState() },
+            gridState = activeHomeGrid,
             isLoggedIn = state.isLoggedIn,
             onBangumiClick = onBangumiClick,
             onEpisodeClick = onEpisodeClick,

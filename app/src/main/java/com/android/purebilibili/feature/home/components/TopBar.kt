@@ -141,6 +141,15 @@ internal fun resolveTopTabDockIndicatorHorizontalGapDp(hasOuterChromeSurface: Bo
     if (hasOuterChromeSurface) 2f else 2f
 
 /**
+ * Extra start/end inset so the first and last selected capsules stay inside the
+ * stadium end-caps instead of clipping against the dock's rounded corners.
+ */
+internal fun resolveTopTabDockEndInsetDp(
+    wrapContent: Boolean,
+    isFloatingStyle: Boolean
+): Float = if (wrapContent || isFloatingStyle) 6f else 0f
+
+/**
  * 顶部 Tab 的视觉背景保持 30dp 高；36dp 行高留出上下各 3dp 的呼吸空间。
  */
 internal fun resolveTopTabDockIndicatorVerticalGapDp(hasOuterChromeSurface: Boolean): Float = 3f
@@ -238,13 +247,18 @@ internal fun resolveTopTabDockItemWidthDp(
 ): Float {
     if (!wrapContent || categoryCount <= 0) return fillItemWidthDp
     val preferred = resolveTopTabWrapItemWidthDp(labelMode, isFloatingStyle)
+    val endInset = resolveTopTabDockEndInsetDp(
+        wrapContent = true,
+        isFloatingStyle = isFloatingStyle
+    )
     val wrapWidth = resolveTopTabDockWrapWidthDp(
         itemWidthDp = preferred,
         categoryCount = categoryCount,
-        maxWidthDp = maxWidthDp
+        maxWidthDp = maxWidthDp,
+        contentPaddingHorizontalDp = endInset
     )
     // Preferred pack fits: use content-driven item width.
-    if (wrapWidth <= maxWidthDp + 0.01f && preferred * categoryCount <= maxWidthDp + 0.01f) {
+    if (wrapWidth <= maxWidthDp + 0.01f && preferred * categoryCount + endInset * 2f <= maxWidthDp + 0.01f) {
         return preferred
     }
     // Overflow: pack into available width.
@@ -272,11 +286,12 @@ internal fun resolveMd3TopTabLayoutVisibleSlots(
     categoryCount: Int,
     labelMode: Int,
     showPartitionAction: Boolean,
-    fontScale: Float = 1f
+    fontScale: Float = 1f,
+    containerWidthDp: Float = 0f
 ): Int {
     val hasSupportedLabelMode = normalizeTopTabLabelMode(labelMode) in 0..2
     val cappedCategoryCount = categoryCount.coerceAtMost(SettingsManager.MAX_TOP_TABS)
-    return if (!showPartitionAction && hasSupportedLabelMode && cappedCategoryCount >= 4) {
+    val baseSlots = if (!showPartitionAction && hasSupportedLabelMode && cappedCategoryCount >= 4) {
         if (fontScale > 1.15f) {
             cappedCategoryCount.coerceAtMost(4)
         } else {
@@ -285,27 +300,40 @@ internal fun resolveMd3TopTabLayoutVisibleSlots(
     } else {
         resolveMd3TopTabVisibleSlots()
     }
+    if (containerWidthDp <= 0f) return baseSlots
+    val minWidth = resolveMd3TopTabMinItemWidthDp(labelMode)
+    val maxFit = (containerWidthDp / minWidth).toInt().coerceAtLeast(1)
+    return baseSlots.coerceAtMost(maxFit)
 }
 
 internal fun resolveIosTopTabLayoutVisibleSlots(
     categoryCount: Int,
-    labelMode: Int
+    labelMode: Int,
+    containerWidthDp: Float = 0f
 ): Int = resolveMd3TopTabLayoutVisibleSlots(
     categoryCount = categoryCount,
     labelMode = labelMode,
-    showPartitionAction = false
+    showPartitionAction = false,
+    containerWidthDp = containerWidthDp
 )
 
 internal fun resolveIosTopTabItemWidthDp(
     containerWidthDp: Float,
     categoryCount: Int,
     labelMode: Int
-): Float = resolveMd3TopTabItemWidthDp(
-    containerWidthDp = (containerWidthDp - IOS_TOP_TAB_CONTENT_PADDING_DP * 2f)
-        .coerceAtLeast(0f),
-    visibleSlots = resolveIosTopTabLayoutVisibleSlots(categoryCount, labelMode),
-    labelMode = labelMode
-)
+): Float {
+    val usableWidth = (containerWidthDp - IOS_TOP_TAB_CONTENT_PADDING_DP * 2f)
+        .coerceAtLeast(0f)
+    return resolveMd3TopTabItemWidthDp(
+        containerWidthDp = usableWidth,
+        visibleSlots = resolveIosTopTabLayoutVisibleSlots(
+            categoryCount = categoryCount,
+            labelMode = labelMode,
+            containerWidthDp = usableWidth
+        ),
+        labelMode = labelMode
+    )
+}
 
 /**
  * Minimum slot width so labels/icons stay readable in the compact dock.
@@ -1031,7 +1059,8 @@ private fun LightweightHomeTopTabs(
                     categoryCount = categories.size,
                     labelMode = normalizedLabelMode,
                     showPartitionAction = showPartitionAction,
-                    fontScale = density.fontScale
+                    fontScale = density.fontScale,
+                    containerWidthDp = effectiveMaxDockWidth
                 ),
                 labelMode = normalizedLabelMode
             )
@@ -1046,11 +1075,16 @@ private fun LightweightHomeTopTabs(
         )
         val itemWidth = itemWidthDp.dp
         // Prefer content-driven dock length; parent chrome also uses this policy so shell + tabs match.
+        val dockEndInsetDp = resolveTopTabDockEndInsetDp(
+            wrapContent = wrapDock,
+            isFloatingStyle = isFloatingStyle
+        )
         val dockContentWidthDp = if (wrapDock) {
             resolveTopTabDockWrapWidthDp(
                 itemWidthDp = itemWidthDp,
                 categoryCount = categories.size,
-                maxWidthDp = effectiveMaxDockWidth
+                maxWidthDp = effectiveMaxDockWidth,
+                contentPaddingHorizontalDp = dockEndInsetDp
             )
         } else {
             effectiveMaxDockWidth
@@ -1059,10 +1093,9 @@ private fun LightweightHomeTopTabs(
         // from the active app theme and previously produced a dark gray capture on light pages.
         val isDarkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.background())
         // When dock wraps content, no leftover to center — lead padding is always 0.
-        val md3ContentPadding = if (
-            effectivePresentation != AppTopTabPresentation.MOVING_CAPSULE &&
-            !wrapDock
-        ) {
+        val md3ContentPadding = if (wrapDock || isFloatingStyle) {
+            dockEndInsetDp.dp
+        } else if (effectivePresentation != AppTopTabPresentation.MOVING_CAPSULE) {
             resolveMd3TopTabContentPaddingDp(
                 containerWidthDp = maxWidth.value,
                 itemWidthDp = itemWidth.value,
@@ -1272,7 +1305,11 @@ private fun LightweightHomeTopTabs(
                         absolutePagerPosition = iosCapsulePosition,
                         itemWidthPx = itemWidth.toPx(),
                         rowScrollOffsetPx = rowScrollOffsetPx,
-                        contentPaddingPx = IOS_TOP_TAB_CONTENT_PADDING_DP.dp.toPx(),
+                        contentPaddingPx = if (wrapDock || isFloatingStyle) {
+                            dockEndInsetDp.dp.toPx()
+                        } else {
+                            IOS_TOP_TAB_CONTENT_PADDING_DP.dp.toPx()
+                        },
                         followPagerPosition = pagerIsDragging || pagerIsScrolling
                     )
                 }
@@ -1322,7 +1359,9 @@ private fun LightweightHomeTopTabs(
                         tabViewportLeftInWindowPx = coordinates.boundsInWindow().left
                     }
             ) {
-                val topTabHorizontalPadding = if (effectivePresentation == AppTopTabPresentation.MOVING_CAPSULE) {
+                val topTabHorizontalPadding = if (wrapDock || isFloatingStyle) {
+                    dockEndInsetDp.dp
+                } else if (effectivePresentation == AppTopTabPresentation.MOVING_CAPSULE) {
                     IOS_TOP_TAB_CONTENT_PADDING_DP.dp
                 } else {
                     md3ContentPadding

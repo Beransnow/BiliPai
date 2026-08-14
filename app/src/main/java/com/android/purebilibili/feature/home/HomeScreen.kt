@@ -73,7 +73,7 @@ import com.android.purebilibili.core.ui.AppPullRefreshIndicatorStyle
 import com.android.purebilibili.core.ui.rememberAppPullRefreshProfile
 import com.android.purebilibili.core.ui.rememberAppSemanticVisualPolicy
 import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
-import com.android.purebilibili.core.theme.BiliPink
+
 import com.android.purebilibili.feature.settings.GITHUB_URL
 import com.android.purebilibili.core.store.SettingsManager //  引入 SettingsManager
 import com.android.purebilibili.core.store.AppNavigationSettings
@@ -114,6 +114,8 @@ import com.android.purebilibili.feature.home.policy.reduceHomeBottomBarListScrol
 import com.android.purebilibili.feature.home.policy.resolveHomeBottomBarBaseVisibility
 import com.android.purebilibili.feature.home.policy.resolveHomeHeaderOffsetForSettledPage
 import com.android.purebilibili.feature.home.policy.resolveHomeRecommendationHeaderCollapseMode
+import com.android.purebilibili.feature.bangumi.HomeBangumiTabPage
+import com.android.purebilibili.feature.live.LiveListScreen
 import com.android.purebilibili.feature.home.policy.resolveHomePagerSettledAction
 import com.android.purebilibili.feature.home.policy.shouldAnimateHomePagerToCategory
 import com.android.purebilibili.feature.home.policy.HomePagerSettledAction
@@ -229,7 +231,13 @@ fun HomeScreen(
     //  [新增] 底栏扩展项目导航回调
     onFavoriteClick: () -> Unit = {},  // 收藏页面
     onLikedVideosClick: () -> Unit = {},  // 点赞视频页面
-    onLiveListClick: () -> Unit = {},  // 直播列表页面
+    onLiveListClick: () -> Unit = {},  // 底栏直播全屏页
+    onLiveSearchClick: () -> Unit = {},
+    onLiveAreaClick: () -> Unit = {},
+    onLiveFollowingClick: () -> Unit = {},
+    onLiveAreaDetailClick: (Int, Int, String) -> Unit = { _, _, _ -> },
+    onBangumiSeasonClick: (Long) -> Unit = {},
+    onBangumiEpisodeClick: (Long, Long) -> Unit = { seasonId, _ -> onBangumiSeasonClick(seasonId) },
     onWatchLaterClick: () -> Unit = {},  // 稍后再看页面
     onDownloadClick: () -> Unit = {},  // 离线缓存页面
     onInboxClick: () -> Unit = {},  // 私信页面
@@ -291,6 +299,9 @@ fun HomeScreen(
         }
     }
     val staggeredGridState = rememberLazyStaggeredGridState() // 🌊 瀑布流状态
+    var liveScrollToTopRequestId by remember { mutableIntStateOf(0) }
+    var bangumiScrollToTopRequestId by remember { mutableIntStateOf(0) }
+    var partitionScrollToTopRequestId by remember { mutableIntStateOf(0) }
     val localHazeState = rememberRecoverableHazeState(initialBlurEnabled = true)
     // 首页使用独立 HazeState，避免命中外层全局 source 的祖先过滤规则导致无模糊。
     val hazeState = localHazeState
@@ -358,39 +369,6 @@ fun HomeScreen(
     val scrollChannel = LocalHomeScrollChannel.current
     val latestHomeScrollCategory by rememberUpdatedState(currentCategory)
     val latestHomeScrollPopularSubCategory by rememberUpdatedState(popularSubCategory)
-    LaunchedEffect(scrollChannel) {
-        scrollChannel?.receiveAsFlow()?.collectLatest { request ->
-            // 双击首页回顶时强制展开顶部，避免收缩头部与回顶状态错位导致空白
-            setHeaderOffsetImmediate(0f)
-            val activeCategory = latestHomeScrollCategory
-            val gridState = if (activeCategory == HomeCategory.POPULAR) {
-                popularGridStates[latestHomeScrollPopularSubCategory]
-            } else {
-                gridStates[activeCategory]
-            }
-            val isAtTop = gridState == null ||
-                (gridState.firstVisibleItemIndex == 0 && gridState.firstVisibleItemScrollOffset < 50)
-
-            if (!isAtTop) {
-                val listState = requireNotNull(gridState)
-                val currentIndex = listState.firstVisibleItemIndex
-                val plan = resolveScrollToTopPlan(currentIndex)
-                plan.preJumpIndex?.let { preJump ->
-                    if (currentIndex > preJump) {
-                        listState.scrollToItem(preJump)
-                    }
-                }
-                listState.animateScrollToItem(plan.animateTargetIndex)
-            }
-            val shouldRefresh = request == HomeScrollRequest.SCROLL_TO_TOP_AND_REFRESH ||
-                (request == HomeScrollRequest.SCROLL_TO_TOP_OR_REFRESH && isAtTop)
-            if (shouldRefresh) {
-                viewModel.refresh()
-            }
-            setHeaderOffsetImmediate(0f)
-            globalScrollOffset.floatValue = 0f
-        }
-    }
 
     val homeTopTabSettings by SettingsManager.getHomeTopTabSettings(context).collectAsStateWithLifecycle(initialValue = com.android.purebilibili.core.store.HomeTopTabSettings(),
         context = kotlin.coroutines.EmptyCoroutineContext
@@ -435,6 +413,52 @@ fun HomeScreen(
     val currentDisplayedTabIndex by rememberUpdatedState(displayedTabIndexFromState)
     val latestOnLiveListClick by rememberUpdatedState(onLiveListClick)
     val latestOnBangumiClick by rememberUpdatedState(onBangumiClick)
+    val latestHomePagerPage by rememberUpdatedState(pagerState.currentPage)
+    val latestHomeTopTabEntries by rememberUpdatedState(topTabEntries)
+    LaunchedEffect(scrollChannel) {
+        scrollChannel?.receiveAsFlow()?.collectLatest { request ->
+            // 双击首页回顶时强制展开顶部，避免收缩头部与回顶状态错位导致空白
+            setHeaderOffsetImmediate(0f)
+            val entry = resolveHomeTopTabEntryOrNull(
+                latestHomeTopTabEntries,
+                latestHomePagerPage
+            )
+            when (resolveHomeTopTabScrollTarget(entry)) {
+                HomeTopTabScrollTarget.LIVE -> liveScrollToTopRequestId++
+                HomeTopTabScrollTarget.BANGUMI -> bangumiScrollToTopRequestId++
+                HomeTopTabScrollTarget.PARTITION -> partitionScrollToTopRequestId++
+                HomeTopTabScrollTarget.FEED -> {
+                    val activeCategory = latestHomeScrollCategory
+                    val gridState = if (activeCategory == HomeCategory.POPULAR) {
+                        popularGridStates[latestHomeScrollPopularSubCategory]
+                    } else {
+                        gridStates[activeCategory]
+                    }
+                    val isAtTop = gridState == null ||
+                        (gridState.firstVisibleItemIndex == 0 && gridState.firstVisibleItemScrollOffset < 50)
+
+                    if (!isAtTop) {
+                        val listState = requireNotNull(gridState)
+                        val currentIndex = listState.firstVisibleItemIndex
+                        val plan = resolveScrollToTopPlan(currentIndex)
+                        plan.preJumpIndex?.let { preJump ->
+                            if (currentIndex > preJump) {
+                                listState.scrollToItem(preJump)
+                            }
+                        }
+                        listState.animateScrollToItem(plan.animateTargetIndex)
+                    }
+                    val shouldRefresh = request == HomeScrollRequest.SCROLL_TO_TOP_AND_REFRESH ||
+                        (request == HomeScrollRequest.SCROLL_TO_TOP_OR_REFRESH && isAtTop)
+                    if (shouldRefresh) {
+                        viewModel.refresh()
+                    }
+                }
+            }
+            setHeaderOffsetImmediate(0f)
+            globalScrollOffset.floatValue = 0f
+        }
+    }
     TrackJankStateFlag(
         stateName = "home:pager_swipe",
         isActive = pagerState.isScrollInProgress
@@ -715,7 +739,7 @@ fun HomeScreen(
         .collectAsStateWithLifecycle(initialValue = false)
     val homeFeedCardStyle by SettingsManager
         .getHomeFeedCardStyle(context)
-        .collectAsStateWithLifecycle(initialValue = com.android.purebilibili.core.store.HomeFeedCardStyle.CURRENT,
+        .collectAsStateWithLifecycle(initialValue = com.android.purebilibili.core.store.HomeFeedCardStyle.BILIPAI,
             context = kotlin.coroutines.EmptyCoroutineContext)
     val homeFeedCardLayout = remember(homeFeedCardStyle) {
         resolveHomeFeedCardLayout(homeFeedCardStyle)
@@ -1627,12 +1651,37 @@ fun HomeScreen(
                                             end = AppSpacingTokens.Large
                                         ),
                                         onVideoClick = onPartitionVideoClick,
-                                        onBangumiClick = onBangumiClick
+                                        onBangumiClick = onBangumiClick,
+                                        scrollToTopRequestId = partitionScrollToTopRequestId
                                     )
                                 }
                             }
                             is HomeTopTabEntry.Category -> {
                         val category = entry.category
+                        if (shouldEmbedLivePageInHomeTopTab(category)) {
+                            LiveListScreen(
+                                onBack = {},
+                                onLiveClick = onLiveClick,
+                                onSearchClick = onLiveSearchClick,
+                                onAreaListClick = onLiveAreaClick,
+                                onFollowingClick = onLiveFollowingClick,
+                                onAreaDetailClick = onLiveAreaDetailClick,
+                                showNavigationBack = false,
+                                embeddedInHome = true,
+                                contentTopPadding = listTopPadding,
+                                scrollToTopRequestId = liveScrollToTopRequestId,
+                            )
+                        } else if (shouldEmbedBangumiPageInHomeTopTab(category)) {
+                            HomeBangumiTabPage(
+                                contentPadding = PaddingValues(
+                                    top = listTopPadding,
+                                    bottom = homeListBottomPadding
+                                ),
+                                onBangumiClick = onBangumiSeasonClick,
+                                onBangumiEpisodeClick = onBangumiEpisodeClick,
+                                scrollToTopRequestId = bangumiScrollToTopRequestId,
+                            )
+                        } else {
                         val categoryStateFlow = remember(viewModel, category, popularSubCategory) {
                             if (category == HomeCategory.POPULAR) {
                                 viewModel.getPopularCategoryState(popularSubCategory)
@@ -2004,6 +2053,7 @@ fun HomeScreen(
                              } // Close Box wrapper
                         }
                             }
+                            }
                             null -> Unit
                         }
                 } // Close HorizontalPager lambda
@@ -2098,20 +2148,6 @@ fun HomeScreen(
             categoryIndex = displayedTabIndex,
             onCategorySelected = onCategorySelected@ { index ->
                 val selectedEntry = topTabEntries.getOrNull(index) ?: return@onCategorySelected
-                // 顶栏「直播」与底栏「直播」统一：直接进入 LiveList，不切首页内嵌直播页。
-                if (selectedEntry is HomeTopTabEntry.Category &&
-                    shouldOpenLiveListFromHomeTopTab(selectedEntry.category)
-                ) {
-                    onLiveListClick()
-                    return@onCategorySelected
-                }
-                // 顶栏「追番」直接进入番剧独立页(与直播 tab 一致,避免切到空分类)。
-                if (selectedEntry is HomeTopTabEntry.Category &&
-                    shouldOpenBangumiFromHomeTopTab(selectedEntry.category)
-                ) {
-                    onBangumiClick(1)
-                    return@onCategorySelected
-                }
                 viewModel.updateDisplayedTabIndex(index)
                 retainedTopTabEntry = selectedEntry
                 if (pagerState.currentPage != index) {

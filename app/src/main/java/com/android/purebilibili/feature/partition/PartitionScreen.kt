@@ -450,6 +450,7 @@ fun PartitionContent(
     hazeState: HazeState? = null,
     onVideoClick: (VideoItem) -> Unit = {},
     onBangumiClick: (Int) -> Unit = {},
+    scrollToTopRequestId: Int = 0,
     viewModel: PartitionFeedViewModel = viewModel()
 ) {
     val context = LocalContext.current
@@ -461,6 +462,12 @@ fun PartitionContent(
     )
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
+    LaunchedEffect(scrollToTopRequestId) {
+        if (scrollToTopRequestId <= 0) return@LaunchedEffect
+        if (listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 0) {
+            listState.animateScrollToItem(0)
+        }
+    }
     val layoutDirection = LocalLayoutDirection.current
     val startPadding = contentPadding.calculateStartPadding(layoutDirection)
     val endPadding = contentPadding.calculateEndPadding(layoutDirection)
@@ -943,7 +950,7 @@ private fun PartitionVideoList(
     val context = LocalContext.current
     val homeFeedCardStyle by SettingsManager
         .getHomeFeedCardStyle(context)
-        .collectAsStateWithLifecycle(initialValue = HomeFeedCardStyle.CURRENT)
+        .collectAsStateWithLifecycle(initialValue = HomeFeedCardStyle.BILIPAI)
     val cardLayout = remember(homeFeedCardStyle) {
         resolveHomeFeedCardLayout(homeFeedCardStyle)
     }
@@ -991,6 +998,7 @@ private fun PartitionVideoList(
                         sourceRoute = sharedElementSourceRoute,
                         coverAspectRatio = cardLayout.coverAspectRatio,
                         transitionEnabled = sharedTransitionEnabled,
+                        showUpBadge = false,
                         modifier = Modifier.fillMaxWidth(),
                         onClick = { onVideoClick(video) },
                     )
