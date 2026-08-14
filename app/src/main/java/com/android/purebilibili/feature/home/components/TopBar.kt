@@ -1166,11 +1166,6 @@ private fun LightweightHomeTopTabs(
             dragScaleProgress = topTabIndicatorScaleProgress,
             pressProgress = topTabPressProgress
         )
-        val topTabIndicatorLayerTransform = resolveTopTabIndicatorLayerTransform(
-            motionProgress = topTabIndicatorLayerScaleProgress,
-            velocityItemsPerSecond = topTabMotionVelocityItemsPerSecond,
-            motionSpec = topTabMotionSpec
-        )
         val topTabRefractionMotionProfile = resolveBottomBarRefractionMotionProfile(
             position = topTabIndicatorPosition,
             velocity = topTabMotionVelocityPxPerSecond,
@@ -1194,11 +1189,23 @@ private fun LightweightHomeTopTabs(
         val dockIndicatorHeight = resolveTopTabDockIndicatorHeightDp(
             rowHeightDp = rowHeight.value,
             verticalGapDp = dockIndicatorVerticalGap.value,
-            // Prefer near-full dock fill at rest; the selected-tab pill keeps the same
-            // breathing gap above and below so it never bleeds past the tab row.
-            minHeightDp = resolveTopTabVisualTuning().floatingIndicatorHeightDp,
+            minHeightDp = com.android.purebilibili.core.ui.resolveMatchedLiquidIndicatorHeightDp(
+                rowHeight.value
+            ),
             indicatorWidthDp = md3LiquidCapsuleWidth.value
         ).dp
+        val topTabIndicatorGeometry = remember(rowHeight, dockIndicatorHeight) {
+            com.android.purebilibili.core.ui.resolveMatchedLiquidIndicatorGeometry(
+                dockHeightDp = rowHeight.value,
+                indicatorHeightDp = dockIndicatorHeight.value,
+            )
+        }
+        val topTabIndicatorLayerTransform = resolveTopTabIndicatorLayerTransform(
+            motionProgress = topTabIndicatorLayerScaleProgress,
+            velocityItemsPerSecond = topTabMotionVelocityItemsPerSecond,
+            dragScaleTarget = topTabIndicatorGeometry.pressedScale,
+            motionSpec = topTabMotionSpec
+        )
         // Selected-tab pill position: item slot center minus half the pill width, so the
         // capsule follows the pager offset and the row scroll while staying inside the dock.
         val md3IndicatorTranslationXPx by remember(
@@ -1240,7 +1247,7 @@ private fun LightweightHomeTopTabs(
             isLiquidGlassEnabled &&
                 !skinPlainStyle &&
                 !hasSkinStickerIcons
-        // Miuix-only capture (no Kyant dual path).
+        // Miuix-only capture (no legacy dual path).
         val topTabMiuixContentBackdrop = rememberMiuixLayerBackdrop()
         val topTabIndicatorVisualPolicy = resolveTopTabIndicatorVisualPolicy(
             position = topTabIndicatorPosition,
@@ -2135,6 +2142,7 @@ internal fun resolveTopTabStaticIndicatorVisualPolicy(
 internal fun resolveTopTabIndicatorLayerTransform(
     motionProgress: Float,
     velocityItemsPerSecond: Float,
+    dragScaleTarget: Float = BOTTOM_BAR_INDICATOR_DRAG_SCALE_TARGET,
     motionSpec: com.android.purebilibili.core.ui.motion.BottomBarMotionSpec =
         resolveSegmentedControlMotionSpec()
 ): BottomBarIndicatorLayerTransform {
@@ -2143,6 +2151,7 @@ internal fun resolveTopTabIndicatorLayerTransform(
         velocityItemsPerSecond = velocityItemsPerSecond,
         isDragging = true,
         dragScaleProgress = motionProgress,
+        dragScaleTarget = dragScaleTarget,
         motionSpec = motionSpec
     )
     return bottomBarTransform

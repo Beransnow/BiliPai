@@ -37,5 +37,7 @@ class HomeEmbeddedTopTabPageStructureTest {
         assertTrue(source.contains("onHomeScrollChanged"))
         assertTrue(source.contains("categoryTabsVisible"))
         assertTrue(source.contains("scrollToTopRequestId"))
+        assertTrue(source.contains("listBottomPadding = contentPadding.calculateBottomPadding()"))
+        assertTrue(!source.contains(".padding(contentPadding)"))
     }
 }

@@ -18,8 +18,7 @@ import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.lazy.staggeredgrid.*  // 🌊 瀑布流布局
-import com.kyant.backdrop.backdrops.layerBackdrop // [Fix] Import for modifier
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
 import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
 import androidx.compose.foundation.pager.HorizontalPager
@@ -184,7 +183,7 @@ enum class HomeScrollRequest {
 val LocalHomeScrollChannel = compositionLocalOf<Channel<HomeScrollRequest>?> { null }
 
 /** Home feed LayerBackdrop for card info liquid glass (sibling capture, not nested SO). */
-val LocalHomeLayerBackdrop = staticCompositionLocalOf<com.kyant.backdrop.backdrops.LayerBackdrop?> { null }
+val LocalHomeMiuixBackdrop = staticCompositionLocalOf<MiuixBackdrop?> { null }
 
 // [New] Global Scroll Offset for Liquid Glass Effect
 // Used to pass scroll position from HomeScreen to BottomBar without causing recomposition
@@ -310,7 +309,6 @@ fun HomeScreen(
     // [Feature] Video Preview State (Global Scope)
     val targetVideoItemState = remember { mutableStateOf<VideoItem?>(null) }
     var pendingNotInterestedVideo by remember { mutableStateOf<VideoItem?>(null) }
-    val homeBackdrop = rememberLayerBackdrop()
     val homeMiuixBackdrop = rememberMiuixLayerBackdrop()
 
     val coroutineScope = rememberCoroutineScope() // 用于双击回顶动画
@@ -1608,11 +1606,10 @@ fun HomeScreen(
                    // [Refactor] Use Box to allow overlay and proper blur nesting
                    // [新增] Video Preview State (Long Press)
 
-                    CompositionLocalProvider(LocalHomeLayerBackdrop provides homeBackdrop) {
+                    CompositionLocalProvider(LocalHomeMiuixBackdrop provides homeMiuixBackdrop) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .layerBackdrop(homeBackdrop)
                             .miuixLayerBackdrop(homeMiuixBackdrop)
                             // 首页使用 Pager + Lazy 子层，source 挂在外层容器更稳定。
                             .hazeSourceCompat(state = hazeState)
@@ -2060,7 +2057,7 @@ fun HomeScreen(
                         }
                 } // Close HorizontalPager lambda
             } // Close Box wrapper
-                    } // Close LocalHomeLayerBackdrop provider
+                    } // Close LocalHomeMiuixBackdrop provider
         } // Close Scaffold lambda
         
         //  ===== Header Overlay (毛玻璃效果) =====

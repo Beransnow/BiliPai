@@ -82,12 +82,12 @@ import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.feedContentTypography
-import com.android.purebilibili.feature.home.LocalHomeLayerBackdrop
+import com.android.purebilibili.feature.home.LocalHomeMiuixBackdrop
 import com.android.purebilibili.feature.home.HomeCoverRequestSpec
-import com.kyant.backdrop.drawBackdrop
-import com.kyant.backdrop.effects.blur
-import com.kyant.backdrop.effects.lens
-import com.kyant.backdrop.effects.vibrancy
+import com.android.purebilibili.feature.home.components.liquid.lens
+import com.android.purebilibili.feature.home.components.liquid.vibrancy
+import top.yukonga.miuix.kmp.blur.blur
+import top.yukonga.miuix.kmp.blur.drawBackdrop
 import com.android.purebilibili.core.ui.ContainerLevel
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
@@ -558,7 +558,7 @@ internal fun ElegantVideoCard(
     val showDurationOutside = homeDurationStyle == HomeDurationStyle.OUTSIDE_COVER
     val inlinePillBaseColor = AppSurfaceTokens.cardContainer()
     val wallpaperHazeState = LocalWallpaperHazeState.current
-    val homeLayerBackdrop = LocalHomeLayerBackdrop.current
+    val homeMiuixBackdrop = LocalHomeMiuixBackdrop.current
     val badgeEffectVisual = remember(badgeEffectMode, wallpaperHazeState != null) {
         resolveHomeCardBadgeEffectVisual(
             mode = badgeEffectMode,
@@ -585,7 +585,7 @@ internal fun ElegantVideoCard(
         isDataSaverActive,
         infoGlassMode,
         wallpaperHazeState != null,
-        homeLayerBackdrop != null,
+        homeMiuixBackdrop != null,
         blurEnabled
     ) {
         resolveHomeCardInfoSurfaceAppearance(
@@ -595,7 +595,7 @@ internal fun ElegantVideoCard(
             isDataSaverActive = isDataSaverActive,
             infoGlassMode = infoGlassMode,
             hasWallpaperHazeState = wallpaperHazeState != null,
-            hasLayerBackdrop = homeLayerBackdrop != null,
+            hasLayerBackdrop = homeMiuixBackdrop != null,
             blurEnabled = blurEnabled
         )
     }
@@ -1302,19 +1302,21 @@ internal fun ElegantVideoCard(
             } else {
                 Modifier
             }
-            // LayerBackdrop liquid glass — independent of Haze, samples home feed layer.
+            // Miuix liquid glass — independent of Haze, samples the home feed layer.
             val liquidModifier = if (
-                infoSurfaceAppearance.useRealtimeLiquidGlass && homeLayerBackdrop != null
+                infoSurfaceAppearance.useRealtimeLiquidGlass && homeMiuixBackdrop != null
             ) {
                 Modifier.drawBackdrop(
-                    backdrop = homeLayerBackdrop,
+                    backdrop = homeMiuixBackdrop,
                     shape = { infoSurfaceShape },
                     effects = {
                         vibrancy()
-                        blur((AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro).toPx())
+                        val blurRadius = (AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro).toPx()
+                        blur(blurRadius, blurRadius)
                         lens(
                             refractionHeight = AppSpacingTokens.Small.toPx(),
-                            refractionAmount = (AppSpacingTokens.Medium + AppSpacingTokens.Micro).toPx()
+                            refractionAmount = (AppSpacingTokens.Medium + AppSpacingTokens.Micro).toPx(),
+                            depthEffect = true,
                         )
                     }
                 )

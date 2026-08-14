@@ -37,6 +37,7 @@ class BottomBarMiuixStructureTest {
         val renderer = biliPaiFloatingBody(source)
 
         assertTrue(source.contains("BiliPaiFloatingBottomBar("))
+        assertTrue(source.contains("extraDegrees = if (swapMotionAxes) 0f else 90f"))
         assertTrue(renderer.contains("FloatingBottomBar("))
         assertTrue(renderer.contains("FloatingBottomBarItem("))
         assertTrue(renderer.contains("FloatingBottomBarTabVisual("))
@@ -51,7 +52,7 @@ class BottomBarMiuixStructureTest {
         assertTrue(source.contains("resolveBiliPaiFloatingBottomBarWidth("))
         assertTrue(source.contains("resolveBiliPaiBottomBarSearchLayout("))
         assertTrue(source.contains("val shellHeight = if (dockHeight > searchHeight) dockHeight else searchHeight"))
-        assertTrue(source.contains("BOTTOM_BAR_INDICATOR_DRAG_SCALE_TARGET = 78f / 56f") ||
+        assertTrue(source.contains("BOTTOM_BAR_INDICATOR_DRAG_SCALE_TARGET =") ||
             floatingSource.contains("FloatingBottomBarPressedScale: Float = 78f / 56f"))
 
         // Old multi-layer path removed (no dual render).

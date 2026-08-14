@@ -1327,17 +1327,19 @@ internal data class BottomBarIndicatorVisualPolicy(
 )
 
 internal const val BOTTOM_BAR_REFRACTION_IDLE_HOLD_MS = 96L
-private const val BOTTOM_BAR_INDICATOR_DRAG_SCALE_TARGET = 78f / 56f
+internal const val BOTTOM_BAR_INDICATOR_DRAG_SCALE_TARGET =
+    com.android.purebilibili.core.ui.BottomBarReferencePressedScale
 
 internal fun resolveBottomBarCaptureSafeInsetDp(
     indicatorWidthDp: Float,
     refractionHeightDp: Float,
     refractionAmountDp: Float,
-    panelOffsetDp: Float
+    panelOffsetDp: Float,
+    dragScaleTarget: Float = BOTTOM_BAR_INDICATOR_DRAG_SCALE_TARGET
 ): Float {
     val scaleOverflowDp = (
         indicatorWidthDp.coerceAtLeast(0f) *
-            (BOTTOM_BAR_INDICATOR_DRAG_SCALE_TARGET - 1f) /
+            (dragScaleTarget.coerceAtLeast(1f) - 1f) /
             2f
         )
     return scaleOverflowDp +
@@ -1536,13 +1538,14 @@ internal fun resolveBottomBarIndicatorLayerTransform(
     isDragging: Boolean = true,
     dragScaleProgress: Float = if (isDragging) 1f else 0f,
     dragScaleTransform: BottomBarIndicatorLayerTransform? = null,
+    dragScaleTarget: Float = BOTTOM_BAR_INDICATOR_DRAG_SCALE_TARGET,
     motionSpec: com.android.purebilibili.core.ui.motion.BottomBarMotionSpec = resolveBottomBarMotionSpec()
 ): BottomBarIndicatorLayerTransform {
     val clampedProgress = motionProgress.coerceIn(0f, 1f)
     val clampedDragScaleProgress = dragScaleProgress.coerceIn(0f, 1f)
     val baseScale = lerp(
         start = 1f,
-        stop = BOTTOM_BAR_INDICATOR_DRAG_SCALE_TARGET,
+        stop = dragScaleTarget.coerceAtLeast(1f),
         fraction = clampedDragScaleProgress
     )
     val baseScaleX = dragScaleTransform?.scaleX ?: baseScale
@@ -3389,10 +3392,12 @@ internal fun BoxScope.BiliPaiMiuixBottomBarIndicatorLayer(
     isDragging: Boolean,
     indicatorLayerScaleProgress: Float,
     indicatorLayerScaleTransform: BottomBarIndicatorLayerTransform? = null,
+    dragScaleTarget: Float = BOTTOM_BAR_INDICATOR_DRAG_SCALE_TARGET,
     bottomBarMotionSpec: com.android.purebilibili.core.ui.motion.BottomBarMotionSpec,
     isDarkTheme: Boolean,
     swapMotionAxes: Boolean = false,
-    indicatorAlignment: Alignment = Alignment.CenterStart
+    indicatorAlignment: Alignment = Alignment.CenterStart,
+    interactionModifier: Modifier = Modifier
 ) {
     if (!visible) return
     val rawIndicatorLayerTransform = if (indicatorEffectsEnabled) {
@@ -3402,6 +3407,7 @@ internal fun BoxScope.BiliPaiMiuixBottomBarIndicatorLayer(
             isDragging = isDragging,
             dragScaleProgress = indicatorLayerScaleProgress,
             dragScaleTransform = indicatorLayerScaleTransform,
+            dragScaleTarget = dragScaleTarget,
             motionSpec = bottomBarMotionSpec
         )
     } else {
@@ -3415,7 +3421,10 @@ internal fun BoxScope.BiliPaiMiuixBottomBarIndicatorLayer(
     } else {
         rawIndicatorLayerTransform
     }
-    val pillHighlight = rememberGravityRotatedHighlight(iosIndicatorSpecular, extraDegrees = 90f)
+    val pillHighlight = rememberGravityRotatedHighlight(
+        iosIndicatorSpecular,
+        extraDegrees = if (swapMotionAxes) 0f else 90f,
+    )
     val indicatorBackdrop = if (!glassEnabled) {
         null
     } else if (shouldUseBottomBarCombinedIndicatorBackdrop(liquidGlassPreset)) {
@@ -3438,6 +3447,7 @@ internal fun BoxScope.BiliPaiMiuixBottomBarIndicatorLayer(
             .height(indicatorHeight)
             .align(indicatorAlignment)
             .zIndex(2f)
+            .then(interactionModifier)
             .run {
                 if (indicatorBackdrop != null) {
                     miuixDrawBackdrop(

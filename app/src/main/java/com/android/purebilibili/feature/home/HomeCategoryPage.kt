@@ -555,7 +555,9 @@ private fun PopularSubCategorySegmentedControl(
         },
         modifier = modifier,
         height = AppSpacingTokens.TripleExtraLarge,
-        indicatorHeight = AppSpacingTokens.TripleExtraLarge - AppSpacingTokens.Micro,
+        indicatorHeight = com.android.purebilibili.core.ui.roundMatchedLiquidIndicatorHeightDp(
+            AppSpacingTokens.TripleExtraLarge.value
+        ).dp,
         labelFontSize = MaterialTheme.typography.labelMedium.fontSize,
         containerHorizontalPadding = AppSpacingTokens.ExtraSmall - AppSpacingTokens.Micro / 2,
         containerVerticalPadding = AppSpacingTokens.ExtraSmall - AppSpacingTokens.Micro / 2,
@@ -587,7 +589,9 @@ private fun TodayWatchModeSegmentedControl(
         modifier = modifier,
         enabled = enabled,
         height = AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Small + AppSpacingTokens.Micro,
-        indicatorHeight = AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Micro,
+        indicatorHeight = com.android.purebilibili.core.ui.roundMatchedLiquidIndicatorHeightDp(
+            (AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Small + AppSpacingTokens.Micro).value
+        ).dp,
         labelFontSize = MaterialTheme.typography.labelMedium.fontSize,
         containerHorizontalPadding = AppSpacingTokens.ExtraSmall - AppSpacingTokens.Micro / 2,
         containerVerticalPadding = AppSpacingTokens.ExtraSmall - AppSpacingTokens.Micro / 2,

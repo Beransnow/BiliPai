@@ -166,7 +166,7 @@ private const val LIGHT_REF_Y = 0.7f
 private const val GRAVITY_DIR_THRESHOLD_SQ = 0.01f
 
 @Composable
-private fun rememberGravityRotatedHighlight(
+internal fun rememberGravityRotatedHighlight(
     extraDegrees: Float = 0f,
 ): Highlight {
     val base = iosIndicatorSpecular
