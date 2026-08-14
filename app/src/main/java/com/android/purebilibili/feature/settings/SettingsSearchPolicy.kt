@@ -116,9 +116,9 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
     SettingsSearchEntry(
         target = SettingsSearchTarget.DIAGNOSTICS,
         title = "诊断与开发",
-        subtitle = "崩溃追踪、使用情况统计、播放器诊断与导出日志",
+        subtitle = "崩溃追踪、增强诊断日志、播放器诊断与日志导出",
         section = "设置",
-        aliases = listOf("诊断", "开发", "崩溃追踪", "使用情况统计", "播放器诊断日志", "画质降档诊断弹窗", "降档弹窗", "仅提示一次", "仅弹窗一次", "导出日志", "日志")
+        aliases = listOf("诊断", "开发", "崩溃追踪", "使用情况统计", "增强诊断日志", "详细日志", "隐私脱敏", "播放器诊断日志", "画质降档诊断弹窗", "降档弹窗", "仅提示一次", "仅弹窗一次", "导出日志", "日志")
     ),
     SettingsSearchEntry(
         target = SettingsSearchTarget.ABOUT_SUPPORT,

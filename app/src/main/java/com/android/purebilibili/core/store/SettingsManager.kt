@@ -58,6 +58,8 @@ import com.android.purebilibili.feature.video.subtitle.normalizeSubtitleVertical
 import com.android.purebilibili.feature.video.ui.gesture.TwoFingerSpeedToggleState
 import com.android.purebilibili.feature.video.ui.gesture.applyHorizontalTwoFingerSpeedToggle
 import com.android.purebilibili.feature.video.ui.gesture.applyVerticalTwoFingerSpeedToggle
+import com.android.purebilibili.core.util.ENHANCED_DIAGNOSTIC_LOG_PREF_KEY
+import com.android.purebilibili.core.util.ENHANCED_DIAGNOSTIC_LOG_PREFS_NAME
 import com.materialkolor.PaletteStyle
 import com.materialkolor.dynamiccolor.ColorSpec
 import kotlinx.coroutines.Dispatchers
@@ -5229,6 +5231,8 @@ object SettingsManager {
     // ==========  崩溃追踪 (Crashlytics) ==========
     
     private val KEY_CRASH_TRACKING_ENABLED = booleanPreferencesKey("crash_tracking_enabled")
+    private val KEY_ENHANCED_DIAGNOSTIC_LOGGING_ENABLED =
+        booleanPreferencesKey("enhanced_diagnostic_logging_enabled")
     // KEY_CRASH_TRACKING_CONSENT_SHOWN 已在顶部定义
     
     // --- 崩溃追踪开关 ---
@@ -5240,6 +5244,23 @@ object SettingsManager {
         //  同步到 SharedPreferences，供 Application 同步读取
         context.getSharedPreferences("crash_tracking", Context.MODE_PRIVATE)
             .edit().putBoolean("enabled", value).apply()
+    }
+
+    // --- 增强诊断日志（默认关闭，用户主动开启）---
+    fun getEnhancedDiagnosticLoggingEnabled(context: Context): Flow<Boolean> =
+        context.settingsDataStore.data.map { preferences ->
+            preferences[KEY_ENHANCED_DIAGNOSTIC_LOGGING_ENABLED] ?: false
+        }
+
+    suspend fun setEnhancedDiagnosticLoggingEnabled(context: Context, value: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_ENHANCED_DIAGNOSTIC_LOGGING_ENABLED] = value
+        }
+        // Application 冷启动阶段需要同步读取，避免错过启动期诊断信息。
+        context.getSharedPreferences(ENHANCED_DIAGNOSTIC_LOG_PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean(ENHANCED_DIAGNOSTIC_LOG_PREF_KEY, value)
+            .apply()
     }
     
     // --- 崩溃追踪首次提示是否已显示 ---

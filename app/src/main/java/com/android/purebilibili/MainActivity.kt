@@ -1959,7 +1959,7 @@ open class MainActivity : AppCompatActivity() {
                             },
                             text = {
                                 Text(
-                                    text = "应用已自动保存一份崩溃快照，并同步导出到 Download/BiliPai/logs/last_crash_log.txt。现在可以直接分享给开发者排查，也可以先关闭提示。"
+                                    text = "应用已在私有目录保存一份脱敏后的崩溃快照，不会自动上传或写入公共下载目录。现在可以主动分享给开发者排查，也可以关闭提示。"
                                 )
                             },
                             confirmButton = {
