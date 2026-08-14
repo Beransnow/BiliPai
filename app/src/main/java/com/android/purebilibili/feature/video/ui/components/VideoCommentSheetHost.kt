@@ -118,6 +118,14 @@ internal fun resolveVideoCommentSheetHostContent(
     }
 }
 
+internal fun shouldResetVideoCommentMainListAfterTransition(
+    previousContent: VideoCommentSheetHostContent,
+    currentContent: VideoCommentSheetHostContent,
+): Boolean {
+    return previousContent == VideoCommentSheetHostContent.THREAD_DETAIL &&
+        currentContent == VideoCommentSheetHostContent.MAIN_LIST
+}
+
 internal fun resolveVideoCommentSheetHostHeightFraction(
     hostContent: VideoCommentSheetHostContent = VideoCommentSheetHostContent.MAIN_LIST,
     mainSheetVisible: Boolean,
@@ -338,6 +346,8 @@ fun VideoCommentSheetHost(
         mainSheetVisible = mainSheetVisible,
         subReplyVisible = subReplyState.visible
     )
+    var previousHostContent by remember { mutableStateOf(hostContent) }
+    var mainListScrollToTopRequest by remember { mutableIntStateOf(0) }
     val hostVisible = hostContent != VideoCommentSheetHostContent.HIDDEN
     val scrimAlpha = maxScrimAlphaOverride
         ?: resolveVideoCommentSheetHostScrimAlpha(mainSheetVisible = mainSheetVisible)
@@ -395,6 +405,18 @@ fun VideoCommentSheetHost(
 
     SideEffect {
         onMainSheetVisibilityProgressChange(mainSheetVisibilityProgress)
+    }
+
+    LaunchedEffect(hostContent) {
+        if (
+            shouldResetVideoCommentMainListAfterTransition(
+                previousContent = previousHostContent,
+                currentContent = hostContent,
+            )
+        ) {
+            mainListScrollToTopRequest += 1
+        }
+        previousHostContent = hostContent
     }
 
     LaunchedEffect(isDismissDragSettling, sheetDragOffsetPx, mainSheetMeasuredHeightPx, hostContent) {
@@ -704,6 +726,7 @@ fun VideoCommentSheetHost(
                                     maxTimestampMs = maxTimestampMs,
                                     onImagePreview = previewCallback,
                                     onBackToTop = onBackToTop,
+                                    scrollToTopRequest = mainListScrollToTopRequest,
                                 )
                             }
 
@@ -768,6 +791,7 @@ internal fun VideoCommentMainList(
     maxTimestampMs: Long?,
     onImagePreview: (List<String>, Int, Rect?, ImagePreviewTextContent?) -> Unit,
     onBackToTop: () -> Unit = {},
+    scrollToTopRequest: Int = 0,
 ) {
     val state by viewModel.commentState.collectAsStateWithLifecycle()
     val context = LocalContext.current
@@ -775,6 +799,7 @@ internal fun VideoCommentMainList(
     val appearance = rememberVideoCommentAppearance()
     val commentChromeBackdrop = rememberLayerBackdrop()
     val listState = rememberLazyListState()
+    val latestOnBackToTop by rememberUpdatedState(onBackToTop)
     val shouldShowBackToTop by remember(listState) {
         androidx.compose.runtime.derivedStateOf {
             shouldShowVideoCommentBackToTop(
@@ -782,6 +807,12 @@ internal fun VideoCommentMainList(
                 firstVisibleItemScrollOffset = listState.firstVisibleItemScrollOffset
             )
         }
+    }
+
+    LaunchedEffect(scrollToTopRequest) {
+        if (scrollToTopRequest <= 0) return@LaunchedEffect
+        listState.scrollToItem(0)
+        latestOnBackToTop()
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
