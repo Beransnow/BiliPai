@@ -114,8 +114,6 @@ import com.android.purebilibili.core.ui.blur.hazeSourceCompat
 import com.android.purebilibili.core.ui.blur.BlurStyles
 import com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity
 import com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState
-import top.yukonga.miuix.kmp.blur.layerBackdrop
-import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import com.android.purebilibili.core.util.resolveScrollToTopPlan
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -210,9 +208,6 @@ fun DynamicScreen(
     val dynamicTopBarCollapseOnScroll by SettingsManager
         .getDynamicTopBarCollapseOnScroll(context)
         .collectAsStateWithLifecycle(initialValue = false)
-    val homeSettings by SettingsManager
-        .getHomeSettings(context)
-        .collectAsStateWithLifecycle(initialValue = com.android.purebilibili.core.store.HomeSettings())
     val visibleTabs = remember(dynamicVisibleTabIds) {
         resolveDynamicVisibleTabs(dynamicVisibleTabIds)
     }
@@ -292,7 +287,6 @@ fun DynamicScreen(
 
     //  [Haze] 模糊状态
     val hazeState = rememberRecoverableHazeState()
-    val dynamicFeedBackdrop = rememberLayerBackdrop()
     val scope = rememberCoroutineScope()
     val onDynamicTabSelected: (Int) -> Unit = { visibleIndex ->
         scope.launch {
@@ -647,7 +641,6 @@ fun DynamicScreen(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .background(AppSurfaceTokens.background())
-                                    .layerBackdrop(dynamicFeedBackdrop)
                             ) {
                             HorizontalPager(
                                 state = pagerState,
@@ -761,8 +754,6 @@ fun DynamicScreen(
                                 visible = !shouldCollapseTopBar,
                                 edge = BottomBarMatchedDockEdge.TOP,
                                 modifier = Modifier.align(Alignment.TopCenter),
-                                // Miuix backdrop sampling uses window coordinates. Parent scaling
-                                // during scroll hide/show can split the sampled RenderNode.
                                 animateScale = false,
                             ) {
                                 DynamicTopBarWithTabs(
@@ -778,7 +769,6 @@ fun DynamicScreen(
                                         activeListState?.isScrollInProgress == true ||
                                             pagerState.isScrollInProgress
                                     },
-                                    miuixBackdrop = dynamicFeedBackdrop,
                                 )
                             }
 
@@ -810,7 +800,6 @@ fun DynamicScreen(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .background(AppSurfaceTokens.background())
-                                .layerBackdrop(dynamicFeedBackdrop)
                         ) {
                         HorizontalPager(
                             state = pagerState,
@@ -950,7 +939,6 @@ fun DynamicScreen(
                                     hazeEnabled = shouldUseDynamicTopBarHeaderBlur(
                                         hasHazeState = true,
                                         globalWallpaperVisible = globalWallpaperVisible,
-                                        liquidGlassReuseEnabled = homeSettings.androidNativeLiquidGlassEnabled,
                                     )
                                 )
                                 Column(modifier = Modifier.fillMaxWidth()) {
@@ -973,7 +961,6 @@ fun DynamicScreen(
                                                 activeListState?.isScrollInProgress == true ||
                                                     pagerState.isScrollInProgress
                                             },
-                                            miuixBackdrop = dynamicFeedBackdrop,
                                         )
                                     }
 

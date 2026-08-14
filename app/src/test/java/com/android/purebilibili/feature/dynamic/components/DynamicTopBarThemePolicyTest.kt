@@ -63,24 +63,4 @@ class DynamicTopBarThemePolicyTest {
         )
     }
 
-    @Test
-    fun `liquid glass reuse turns off header haze to avoid double sampling`() {
-        assertEquals(
-            false,
-            shouldUseDynamicTopBarHeaderBlur(
-                hasHazeState = true,
-                globalWallpaperVisible = false,
-                liquidGlassReuseEnabled = true,
-            )
-        )
-        assertEquals(
-            true,
-            shouldUseDynamicTopBarHeaderBlur(
-                hasHazeState = true,
-                globalWallpaperVisible = false,
-                liquidGlassReuseEnabled = false,
-            )
-        )
-    }
-
 }

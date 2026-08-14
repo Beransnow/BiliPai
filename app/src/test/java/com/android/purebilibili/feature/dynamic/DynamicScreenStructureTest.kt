@@ -31,20 +31,35 @@ class DynamicScreenStructureTest {
         assertTrue(source.contains("resolveDynamicUpPanelUsers("))
         assertTrue(source.contains("isDynamicUpPanelAllShortcut(clickedUserId)"))
         assertTrue(source.contains("onTabSelected = onDynamicTabSelected"))
-        assertTrue(source.contains("val dynamicFeedBackdrop = rememberLayerBackdrop()"))
-        assertTrue(source.contains("miuixBackdrop = dynamicFeedBackdrop"))
         assertTrue(source.contains(".background(AppSurfaceTokens.background())"))
-        assertTrue(source.contains(".layerBackdrop(dynamicFeedBackdrop)"))
-        assertTrue(source.indexOf(".background(AppSurfaceTokens.background())") < source.indexOf(".layerBackdrop(dynamicFeedBackdrop)"))
         assertTrue(source.contains("animateScale = false"))
         assertTrue(source.contains("shouldUseDynamicTopBarHeaderBlur("))
-        assertTrue(source.contains("liquidGlassReuseEnabled = homeSettings.androidNativeLiquidGlassEnabled"))
+        assertTrue(!source.contains("dynamicFeedBackdrop"))
+        assertTrue(!source.contains("rememberLayerBackdrop"))
+        assertTrue(!source.contains(".layerBackdrop("))
+        val topBarSource = File(
+            "src/main/java/com/android/purebilibili/feature/dynamic/components/DynamicTopBar.kt"
+        ).readText()
+        assertTrue(topBarSource.contains("liquidGlassEffectsEnabled = false"))
+        assertTrue(!topBarSource.contains("miuixBackdrop"))
+        val segmentedControlSource = File(
+            "src/main/java/com/android/purebilibili/feature/home/components/BottomBarFloatingSegmentedControl.kt"
+        ).readText()
+        assertTrue(
+            segmentedControlSource.contains("if (liquidGlassEnabled && miuixBackdrop == null)")
+        )
         assertTrue(!source.contains("text = \"全\""))
         val sidebarSource = File(
             "src/main/java/com/android/purebilibili/feature/dynamic/components/DynamicSidebar.kt"
         ).readText()
         assertTrue(!sidebarSource.contains("text = \"全\""))
         assertTrue(!sidebarSource.contains("isAllShortcut"))
+        assertTrue(sidebarSource.contains("text = \"Live(\${liveUsers.size})\""))
+        assertTrue(sidebarSource.contains("autoSize = TextAutoSize.StepBased("))
+        assertTrue(sidebarSource.contains("horizontal = AppSpacingTokens.None"))
+        assertTrue(sidebarSource.contains("textAlign = TextAlign.Center"))
+        assertTrue(sidebarSource.contains("maxLines = 1"))
+        assertTrue(sidebarSource.contains("softWrap = false"))
     }
 
     @Test

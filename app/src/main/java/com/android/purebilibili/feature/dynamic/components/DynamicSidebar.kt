@@ -14,6 +14,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -42,6 +43,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -229,14 +231,30 @@ fun DynamicSidebar(
                     item(key = "live_fold") {
                         AppTextButton(
                             onClick = { showLiveUsers = !showLiveUsers },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            contentPadding = PaddingValues(
+                                horizontal = AppSpacingTokens.None,
+                                vertical = AppSpacingTokens.ExtraSmall,
+                            ),
                         ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                            ) {
                                 AppText(
                                     text = "Live(${liveUsers.size})",
+                                    modifier = Modifier.fillMaxWidth(),
+                                    autoSize = TextAutoSize.StepBased(
+                                        minFontSize = 8.sp,
+                                        maxFontSize = MaterialTheme.typography.labelSmall.fontSize,
+                                        stepSize = 0.5.sp,
+                                    ),
                                     fontSize = MaterialTheme.typography.labelSmall.fontSize,
                                     color = MaterialTheme.colorScheme.primary,
-                                    fontWeight = FontWeight.SemiBold
+                                    fontWeight = FontWeight.SemiBold,
+                                    textAlign = TextAlign.Center,
+                                    maxLines = 1,
+                                    softWrap = false,
                                 )
                                 AppIcon(
                                     imageVector = if (showLiveUsers) rememberAppChevronUpIcon() else rememberAppChevronDownIcon(),

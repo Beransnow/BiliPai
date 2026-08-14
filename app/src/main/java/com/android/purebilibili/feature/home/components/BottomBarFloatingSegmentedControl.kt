@@ -295,7 +295,7 @@ internal fun BottomBarFloatingSegmentedControl(
             .graphicsLayer { clip = false },
         contentAlignment = Alignment.CenterStart,
     ) {
-        if (miuixBackdrop == null) {
+        if (liquidGlassEnabled && miuixBackdrop == null) {
             Box(
                 modifier = Modifier
                     .matchParentSize()

@@ -4,8 +4,6 @@ package com.android.purebilibili.feature.dynamic.components
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppSpacingTokens
 
-import com.android.purebilibili.core.ui.OpticalContrastPalette
-
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 
 import androidx.compose.foundation.background
@@ -26,13 +24,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.android.purebilibili.core.store.HomeSettings
-import com.android.purebilibili.core.store.SettingsManager
 //  Material Icons
 import com.android.purebilibili.core.ui.rememberAppGridLayoutIcon
 import com.android.purebilibili.core.ui.rememberAppListLayoutIcon
@@ -89,15 +83,10 @@ fun DynamicTopBarWithTabs(
     hazeState: HazeState? = null,
     indicatorPositionProvider: (() -> Float)? = null,
     isScrollInProgressProvider: () -> Boolean = { false },
-    miuixBackdrop: top.yukonga.miuix.kmp.blur.Backdrop? = null,
 ) {
     val density = LocalDensity.current
-    val context = LocalContext.current
     val statusBarHeight = WindowInsets.statusBars.getTop(density).let { with(density) { it.toDp() } }
     val liquidTabSpec = resolveDynamicTopBarLiquidTabSpec()
-    val homeSettings by SettingsManager
-        .getHomeSettings(context)
-        .collectAsStateWithLifecycle(initialValue = HomeSettings())
     
     //  读取当前模糊强度以确定背景透明度
     val blurIntensity = currentUnifiedBlurIntensity()
@@ -106,7 +95,6 @@ fun DynamicTopBarWithTabs(
     val shouldUseHeaderBlur = shouldUseDynamicTopBarHeaderBlur(
         hasHazeState = hazeState != null,
         globalWallpaperVisible = globalWallpaperVisible,
-        liquidGlassReuseEnabled = homeSettings.androidNativeLiquidGlassEnabled,
     )
     
     //  使用 blurIntensity 对应的背景透明度实现毛玻璃质感
@@ -145,7 +133,7 @@ fun DynamicTopBarWithTabs(
                     labelFontSize = liquidTabSpec.labelFontSizeSp.sp,
                     indicatorPositionProvider = indicatorPositionProvider,
                     isScrollInProgressProvider = isScrollInProgressProvider,
-                    miuixBackdrop = miuixBackdrop,
+                    liquidGlassEffectsEnabled = false,
                 )
                 
                 //  布局模式切换按钮
@@ -216,8 +204,6 @@ internal fun resolveDynamicTopBarHeaderColor(
 internal fun shouldUseDynamicTopBarHeaderBlur(
     hasHazeState: Boolean,
     globalWallpaperVisible: Boolean,
-    liquidGlassReuseEnabled: Boolean = false,
 ): Boolean {
-    if (liquidGlassReuseEnabled) return false
     return hasHazeState && !globalWallpaperVisible
 }
