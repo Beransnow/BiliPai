@@ -1,6 +1,8 @@
 package com.android.purebilibili.feature.home.components.cards
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
@@ -15,6 +17,7 @@ import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.feedContentTypography
 
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 internal fun HorizontalVideoStatRow(
     playText: String,
     danmakuText: String,
@@ -22,10 +25,11 @@ internal fun HorizontalVideoStatRow(
     danmakuIcon: ImageVector,
     modifier: Modifier = Modifier,
 ) {
-    Row(
+    FlowRow(
         modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
+        itemVerticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(HORIZONTAL_VIDEO_STAT_ROW_SPACING_DP.dp),
+        verticalArrangement = Arrangement.spacedBy(HORIZONTAL_VIDEO_STAT_WRAP_SPACING_DP.dp),
     ) {
         HorizontalVideoStatItem(icon = playIcon, text = playText)
         if (danmakuText.isNotBlank()) {

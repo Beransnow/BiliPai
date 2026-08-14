@@ -271,6 +271,7 @@ internal fun HomeStyleSingleColumnVideoCard(
                 danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
                 playIcon = Icons.Filled.PlayArrow,
                 danmakuIcon = Icons.Filled.ChatBubble,
+                modifier = Modifier.fillMaxWidth(),
             )
         }
 

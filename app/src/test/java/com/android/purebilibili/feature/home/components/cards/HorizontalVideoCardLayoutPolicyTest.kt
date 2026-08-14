@@ -26,6 +26,19 @@ class HorizontalVideoCardLayoutPolicyTest {
         }
         assertTrue(source.contains("HORIZONTAL_VIDEO_CARD_COVER_ASPECT_RATIO"))
         assertTrue(source.contains("HorizontalVideoStatRow("))
+        assertTrue(source.contains("modifier = Modifier.fillMaxWidth()"))
         assertTrue(!source.contains(".height(coverHeight)"))
+    }
+
+    @Test
+    fun statRowWrapsInsteadOfClippingTrailingUnits() {
+        val source = java.io.File(
+            "src/main/java/com/android/purebilibili/feature/home/components/cards/HorizontalVideoCardStats.kt",
+        ).let { file ->
+            listOf(file, java.io.File("app/${file.path}")).first { it.exists() }.readText()
+        }
+
+        assertTrue(source.contains("FlowRow("))
+        assertTrue(source.contains("HORIZONTAL_VIDEO_STAT_WRAP_SPACING_DP"))
     }
 }
