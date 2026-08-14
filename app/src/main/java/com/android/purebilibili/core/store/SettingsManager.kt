@@ -395,16 +395,16 @@ enum class HomeFeedCardWidthPreset(
  * 双列视频卡封面框三档（全局一份设置，均居中 Crop）：
  * - [CURRENT] 16:9：与 CDN 投稿源同比例，标准封面几乎不裁
  * - [OFFICIAL] 4:3：更高列表框，左右会裁
- * - [BILIPAI] 16:10：介于 16:9 与 4:3 之间
+ * - [BILIPAI] 16:10：默认信息流封面比例
  */
 enum class HomeFeedCardStyle(val value: Int, val label: String, val subtitle: String) {
     CURRENT(0, "16:9", "完整显示，接近投稿源图"),
     OFFICIAL(1, "4:3", "更高列表框，左右居中裁切"),
-    BILIPAI(2, "16:10", "介于两者之间，轻微裁切");
+    BILIPAI(2, "16:10", "默认信息流封面比例");
 
     companion object {
         fun fromValue(value: Int): HomeFeedCardStyle =
-            entries.find { it.value == value } ?: CURRENT
+            entries.find { it.value == value } ?: BILIPAI
     }
 }
 
@@ -517,7 +517,7 @@ data class HomeSettings(
     val isHeaderCollapseEnabled: Boolean = true,
     val gridColumnCount: Int = 0, // [New] 网格列数 (0=自动, 1-6=固定)
     val homeFeedCardWidthPreset: HomeFeedCardWidthPreset = HomeFeedCardWidthPreset.AUTO,
-    val homeFeedCardStyle: HomeFeedCardStyle = HomeFeedCardStyle.CURRENT,
+    val homeFeedCardStyle: HomeFeedCardStyle = HomeFeedCardStyle.BILIPAI,
     val homeHeroCarouselEnabled: Boolean = true,
     val homeHeroCarouselAutoplayEnabled: Boolean = false,
     val cardAnimationEnabled: Boolean = false,    //  卡片进场动画（默认关闭）
@@ -531,7 +531,7 @@ data class HomeSettings(
     // 运行时视觉守卫：连续掉帧时自动降级毛玻璃/液态玻璃/景深。
     // 影响面覆盖全 App 视觉，必须保留 kill switch——某机型 JankStats 读数异常时可关闭。
     val runtimeVisualGuardEnabled: Boolean = true,
-    val compactVideoStatsOnCover: Boolean = true, //  播放量/评论数显示在封面底部（默认开启）
+    val compactVideoStatsOnCover: Boolean = false, // 播放/弹幕位于信息区，不叠加在封面上
     val lowQualityHomeCoverInDataSaver: Boolean = false, // 省流量时首页封面使用低清晰度
     // 卡片标签 / 信息区玻璃效果已下线，保留字段仅为兼容旧数据结构。
     val showHomeCoverGlassBadges: Boolean = false,
@@ -1472,7 +1472,7 @@ object SettingsManager {
                 preferences[KEY_HOME_FEED_CARD_WIDTH_PRESET] ?: HomeFeedCardWidthPreset.AUTO.value
             ),
             homeFeedCardStyle = HomeFeedCardStyle.fromValue(
-                preferences[KEY_HOME_FEED_CARD_STYLE] ?: HomeFeedCardStyle.CURRENT.value
+                preferences[KEY_HOME_FEED_CARD_STYLE] ?: HomeFeedCardStyle.BILIPAI.value
             ),
             homeHeroCarouselEnabled = preferences[KEY_HOME_HERO_CAROUSEL_ENABLED] ?: true,
             homeHeroCarouselAutoplayEnabled =
@@ -1491,7 +1491,7 @@ object SettingsManager {
             smartVisualGuardEnabled = false,
             runtimeVisualGuardEnabled =
                 preferences[KEY_RUNTIME_VISUAL_GUARD_ENABLED] ?: true,
-            compactVideoStatsOnCover = preferences[KEY_COMPACT_VIDEO_STATS_ON_COVER] ?: true,
+            compactVideoStatsOnCover = preferences[KEY_COMPACT_VIDEO_STATS_ON_COVER] ?: false,
             lowQualityHomeCoverInDataSaver =
                 preferences[KEY_LOW_QUALITY_HOME_COVER_IN_DATA_SAVER] ?: false,
             // 已下线：忽略旧数据，确保历史上开启过实时模糊/液态玻璃的用户不会继续走该路径。
@@ -2694,7 +2694,7 @@ object SettingsManager {
     fun getHomeFeedCardStyle(context: Context): Flow<HomeFeedCardStyle> =
         context.settingsDataStore.data.map { preferences ->
             HomeFeedCardStyle.fromValue(
-                preferences[KEY_HOME_FEED_CARD_STYLE] ?: HomeFeedCardStyle.CURRENT.value
+                preferences[KEY_HOME_FEED_CARD_STYLE] ?: HomeFeedCardStyle.BILIPAI.value
             )
         }
 
@@ -2849,7 +2849,7 @@ object SettingsManager {
 
     //  [新增] --- 视频卡片统计信息贴封面 ---
     fun getCompactVideoStatsOnCover(context: Context): Flow<Boolean> = context.settingsDataStore.data
-        .map { preferences -> preferences[KEY_COMPACT_VIDEO_STATS_ON_COVER] ?: true }
+        .map { preferences -> preferences[KEY_COMPACT_VIDEO_STATS_ON_COVER] ?: false }
 
     suspend fun setCompactVideoStatsOnCover(context: Context, value: Boolean) {
         context.settingsDataStore.edit { preferences -> preferences[KEY_COMPACT_VIDEO_STATS_ON_COVER] = value }

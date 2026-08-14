@@ -62,8 +62,9 @@ class RelatedVideoItemPolicyTest {
 
         assertTrue(source.contains("RELATED_VIDEO_CARD_COVER_ASPECT_RATIO"))
         assertTrue(source.contains("coverAspectRatio: Float = RELATED_VIDEO_CARD_COVER_ASPECT_RATIO"))
-        assertTrue(source.contains("val coverWidth = 144.dp"))
-        assertTrue(source.contains("val coverHeight = coverWidth / coverAspectRatio.coerceAtLeast(1f)"))
+        assertTrue(source.contains("HORIZONTAL_VIDEO_CARD_COVER_WIDTH_DP"))
+        assertTrue(source.contains("HORIZONTAL_VIDEO_CARD_COVER_ASPECT_RATIO"))
+        assertTrue(source.contains("HorizontalVideoStatRow("))
         assertTrue(source.contains("resolveHomeFeedCardLayout(homeFeedCardStyle)"))
         assertTrue(source.contains("RELATED_VIDEO_GRID_COLUMNS = 1"))
         assertTrue(source.contains("coverAspectRatio = cardLayout.coverAspectRatio"))
@@ -79,10 +80,9 @@ class RelatedVideoItemPolicyTest {
         assertTrue(source.contains("RelatedVideoGridRow("))
         assertTrue(source.contains("chunkRelatedVideosForHomeStyleGrid("))
         assertFalse(source.contains("relatedCoverWidth = 130.dp"))
-        // UP 与播放量/弹幕成组贴底，避免 SpaceBetween 三等分把间距撑开。
-        assertTrue(source.contains("verticalArrangement = Arrangement.spacedBy(4.dp)"))
+        assertFalse(source.contains(".height(coverHeight)"))
         assertTrue(
-            source.indexOf("UpBadgeName(") < source.indexOf("Icons.Filled.PlayArrow")
+            source.indexOf("UpBadgeName(") < source.indexOf("HorizontalVideoStatRow(")
         )
     }
 

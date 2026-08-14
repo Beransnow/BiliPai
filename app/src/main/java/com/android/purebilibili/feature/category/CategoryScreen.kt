@@ -146,7 +146,7 @@ fun CategoryScreen(
     )
     val homeFeedCardStyle by SettingsManager
         .getHomeFeedCardStyle(context)
-        .collectAsStateWithLifecycle(initialValue = HomeFeedCardStyle.CURRENT)
+        .collectAsStateWithLifecycle(initialValue = HomeFeedCardStyle.BILIPAI)
     val cardLayout = remember(homeFeedCardStyle) {
         resolveHomeFeedCardLayout(homeFeedCardStyle)
     }

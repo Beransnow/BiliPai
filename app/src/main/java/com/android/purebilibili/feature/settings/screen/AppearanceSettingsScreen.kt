@@ -435,7 +435,7 @@ fun AppearanceSettingsContent(
         .collectAsStateWithLifecycle(initialValue = HomeDurationStyle.OUTSIDE_COVER)
     val homeFeedCardStyle by SettingsManager
         .getHomeFeedCardStyle(context)
-        .collectAsStateWithLifecycle(initialValue = HomeFeedCardStyle.CURRENT)
+        .collectAsStateWithLifecycle(initialValue = HomeFeedCardStyle.BILIPAI)
     val homeHeroCarouselEnabled by SettingsManager
         .getHomeHeroCarouselEnabled(context)
         .collectAsStateWithLifecycle(initialValue = true)
@@ -1286,9 +1286,9 @@ fun AppearanceSettingsContent(
                             icon = rememberSettingsSemanticIcon(SettingsIconRole.HOME_CARD_STATS_COMPACT),
                             title = "统计信息贴封面（紧凑）",
                             subtitle = if (compactVideoStatsOnCover) {
-                                "播放量和评论数显示在封面底部，缩小卡片间距"
+                                "播放量和弹幕显示在封面底部"
                             } else {
-                                "播放量和评论数显示在封面外部"
+                                "默认：播放量和弹幕在标题下方"
                             },
                             checked = compactVideoStatsOnCover,
                             onCheckedChange = {

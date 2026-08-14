@@ -721,7 +721,7 @@ fun SearchScreen(
     val showOnlineCount by SettingsManager.getShowOnlineCount(context).collectAsStateWithLifecycle(initialValue = false)
     val homeFeedCardStyle by SettingsManager
         .getHomeFeedCardStyle(context)
-        .collectAsStateWithLifecycle(initialValue = HomeFeedCardStyle.CURRENT)
+        .collectAsStateWithLifecycle(initialValue = HomeFeedCardStyle.BILIPAI)
     val cardLayout = remember(homeFeedCardStyle) {
         resolveHomeFeedCardLayout(homeFeedCardStyle)
     }
@@ -3365,13 +3365,13 @@ internal fun LiveSearchResultCard(
                         modifier = Modifier
                             .align(Alignment.TopStart)
                             .padding(4.dp),
-                        color = Color(0xFFFF4081),
+                        color = MaterialTheme.colorScheme.error,
                         shape = AppShapes.container(ContainerLevel.Tag)
                     ) {
                         AppText(
                             text = "直播中",
                             fontSize = 10.sp,
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onError,
                             modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
                         )
                     }
@@ -3543,7 +3543,7 @@ internal fun LiveUserSearchResultCard(
                     if (cleaned.isLive || cleaned.liveStatus == 1) {
                         Spacer(modifier = Modifier.width(8.dp))
                         AppSurface(
-                            color = Color(0xFFFF4081),
+                            color = MaterialTheme.colorScheme.error,
                             shape = AppShapes.container(ContainerLevel.Tag)
                         ) {
                             AppText(

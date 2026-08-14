@@ -147,7 +147,7 @@ internal fun HomeCategoryPageContent(
     smartVisualGuardEnabled: Boolean = false,
     isDataSaverActive: Boolean,
     preferLowQualityCover: Boolean = false,
-    compactStatsOnCover: Boolean = true,
+    compactStatsOnCover: Boolean = false,
     showCoverGlassBadges: Boolean = false,
     showInfoGlassBadges: Boolean = false,
     badgeEffectMode: com.android.purebilibili.core.store.HomeCardBadgeEffectMode =
@@ -159,7 +159,7 @@ internal fun HomeCategoryPageContent(
     showUpBadges: Boolean = true,
     showUpAvatars: Boolean = true,
     homeDurationStyle: HomeDurationStyle = HomeDurationStyle.OUTSIDE_COVER,
-    homeFeedCardStyle: HomeFeedCardStyle = HomeFeedCardStyle.CURRENT,
+    homeFeedCardStyle: HomeFeedCardStyle = HomeFeedCardStyle.BILIPAI,
     homeHeroCarouselEnabled: Boolean = true,
     homeHeroCarouselAutoplayEnabled: Boolean = false,
     onGetPreviewUrl: suspend (String, Long) -> String? = { _, _ -> null },

@@ -114,7 +114,7 @@ import com.android.purebilibili.feature.home.policy.resolveBottomBarChromeScroll
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
 import com.android.purebilibili.core.ui.rememberAppChevronDownIcon
 import com.android.purebilibili.core.ui.resolveGlobalWallpaperChromeColor
-import com.android.purebilibili.core.theme.BiliPink
+
 import com.android.purebilibili.core.ui.rememberAppChromeLiquidGlassEnabled
 import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
 import com.android.purebilibili.core.ui.components.AppSearchField
@@ -2219,11 +2219,11 @@ private fun CommonListContent(
     val isHistoryPersonalList = resolveHistoryItem != null
     val isPersonalList = isHistoryPersonalList || isFavoritePersonalList
     val homeFeedCardStyle = if (isPersonalList) {
-        HomeFeedCardStyle.CURRENT
+        HomeFeedCardStyle.BILIPAI
     } else {
         SettingsManager
             .getHomeFeedCardStyle(context)
-            .collectAsStateWithLifecycle(initialValue = HomeFeedCardStyle.CURRENT)
+            .collectAsStateWithLifecycle(initialValue = HomeFeedCardStyle.BILIPAI)
             .value
     }
     val cardLayout = remember(homeFeedCardStyle) {

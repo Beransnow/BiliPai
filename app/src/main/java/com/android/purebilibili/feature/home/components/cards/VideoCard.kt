@@ -70,7 +70,6 @@ import com.android.purebilibili.core.ui.LocalWallpaperHazeState
 import com.android.purebilibili.core.ui.blur.BlurSurfaceType
 import com.android.purebilibili.core.ui.blur.unifiedBlur
 import com.android.purebilibili.core.theme.LocalCornerRadiusScale
-import com.android.purebilibili.core.theme.iOSCornerRadius
 import com.android.purebilibili.core.util.HapticType
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
@@ -488,7 +487,7 @@ internal fun ElegantVideoCard(
     coverRequestSpec: HomeCoverRequestSpec? = null,
     glassEnabled: Boolean = true,
     blurEnabled: Boolean = true,
-    compactStatsOnCover: Boolean = true, // 播放量/评论数是否贴在封面底部
+    compactStatsOnCover: Boolean = false, // 播放/弹幕默认位于信息区
     showCoverGlassBadges: Boolean = false,
     showInfoGlassBadges: Boolean = false,
     badgeEffectMode: HomeCardBadgeEffectMode = HomeCardBadgeEffectMode.OFF,
@@ -526,7 +525,7 @@ internal fun ElegantVideoCard(
     //  [HIG] 动态圆角 - 8dp 紧凑圆角（比 12dp 更锐利，减小卡片视觉质量）
     val cornerRadiusScale = LocalCornerRadiusScale.current
     val cardCornerRadius = AppSpacingTokens.Small * cornerRadiusScale
-    val smallCornerRadius = iOSCornerRadius.Tiny * cornerRadiusScale  // AppSpacingTokens.ExtraSmall * scale
+    val smallCornerRadius = AppShapes.containerCornerDp(ContainerLevel.Tag)
     val durationBadgeStyle = remember { resolveVideoCardDurationBadgeVisualStyle() }
     val cardTexts = remember(video.duration, video.stat.view, video.stat.reply, video.stat.danmaku, video.progress) {
         val durationText = FormatUtils.formatDuration(video.duration)
@@ -1423,85 +1422,19 @@ internal fun ElegantVideoCard(
         )
 
         val resolvedUpBadgeVisibility = com.android.purebilibili.core.ui.LocalUpBadgeVisibility.current
-        VideoCardOwnerMetadata(
-            video = video,
-            isFollowing = isFollowing,
-            showUpBadge = showUpBadge ?: resolvedUpBadgeVisibility.showBadges,
-            showUpAvatar = showUpAvatar ?: resolvedUpBadgeVisibility.showAvatars,
-            upFollowerCount = upFollowerCount,
-            upVideoCount = upVideoCount,
-            infoBadgeStyle = badgeStylePolicy.infoStyle,
-            inlinePillColors = inlinePillColors,
-            metadataColors = metadataColors,
-            onUpClick = onUpClick,
-            modifier = resolveVideoCardMetadataRowModifier()
-        )
-
-        // 时长已移入统计行（闹钟图标），日期行独占整行，发布日期不再被挤压省略。
-        VideoCardDurationPublishRow(
-            durationText = "",
-            publishTimeText = publishTimeRowText,
-            emphasizePublishTime = emphasizePublishTime,
-            publishTimeColor = metadataColors.publishTimeColor,
-            topSpacing = if (compactMetadata) {
-                AppSpacingTokens.ExtraSmall
-            } else {
-                AppSpacingTokens.Small - AppSpacingTokens.Micro
-            }
-        )
-
         if (scrollLitePolicy.showSecondaryStatsRow) {
             Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro))
             Row(
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small + AppSpacingTokens.Micro)
+                horizontalArrangement = Arrangement.spacedBy(HORIZONTAL_VIDEO_STAT_ROW_SPACING_DP.dp)
             ) {
-                val viewsRowModifier = Modifier.wrapContentSize()
-                Box(modifier = viewsRowModifier) {
-                    HomeVideoBadgePill(
-                        style = badgeStylePolicy.infoStyle,
-                        useRealtimeHaze = badgeEffectVisual.useRealtimeHaze,
-                        shape = AppShapes.container(ContainerLevel.Pill),
-                        containerColor = inlinePillColors.containerColor,
-                        borderColor = inlinePillColors.borderColor
-                    ) {
-                        AppIcon(
-                            imageVector = Icons.Outlined.PlayCircle,
-                            contentDescription = null,
-                            modifier = Modifier.size(AppSpacingTokens.Medium),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        AppText(
-                            text = primaryStatText,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = contentTypography.statistic.copy(fontWeight = FontWeight.Medium)
-                        )
-                    }
-                }
-
-                if (secondaryStatText != null) {
-                    val danmakuModifier = Modifier.wrapContentSize()
-                    HomeVideoBadgePill(
-                        modifier = danmakuModifier,
-                        style = badgeStylePolicy.infoStyle,
-                        useRealtimeHaze = badgeEffectVisual.useRealtimeHaze,
-                        shape = AppShapes.container(ContainerLevel.Pill),
-                        containerColor = inlinePillColors.containerColor,
-                        borderColor = inlinePillColors.borderColor
-                    ) {
-                        AppIcon(
-                            imageVector = Icons.Outlined.ChatBubbleOutline,
-                            contentDescription = null,
-                            modifier = Modifier.size(AppSpacingTokens.Medium),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        AppText(
-                            text = secondaryStatText,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = contentTypography.statistic.copy(fontWeight = FontWeight.Medium)
-                        )
-                    }
-                }
+                HorizontalVideoStatRow(
+                    playText = primaryStatText,
+                    danmakuText = secondaryStatText.orEmpty(),
+                    playIcon = Icons.Outlined.PlayCircle,
+                    danmakuIcon = Icons.Outlined.ChatBubbleOutline,
+                )
 
                 if (onlineCount.isNotEmpty()) {
                     HomeVideoBadgePill(
@@ -1552,7 +1485,47 @@ internal fun ElegantVideoCard(
                         )
                     }
                 }
+
+                if (publishTimeRowText.isNotBlank()) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    AppText(
+                        text = publishTimeRowText,
+                        color = metadataColors.publishTimeColor,
+                        style = contentTypography.statistic,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Clip,
+                    )
+                }
             }
+        }
+
+        VideoCardOwnerMetadata(
+            video = video,
+            isFollowing = isFollowing,
+            showUpBadge = showUpBadge ?: resolvedUpBadgeVisibility.showBadges,
+            showUpAvatar = showUpAvatar ?: resolvedUpBadgeVisibility.showAvatars,
+            upFollowerCount = upFollowerCount,
+            upVideoCount = upVideoCount,
+            infoBadgeStyle = badgeStylePolicy.infoStyle,
+            inlinePillColors = inlinePillColors,
+            metadataColors = metadataColors,
+            onUpClick = onUpClick,
+            modifier = resolveVideoCardMetadataRowModifier()
+        )
+
+        if (!scrollLitePolicy.showSecondaryStatsRow) {
+            VideoCardDurationPublishRow(
+                durationText = "",
+                publishTimeText = publishTimeRowText,
+                emphasizePublishTime = emphasizePublishTime,
+                publishTimeColor = metadataColors.publishTimeColor,
+                topSpacing = if (compactMetadata) {
+                    AppSpacingTokens.ExtraSmall
+                } else {
+                    AppSpacingTokens.Small - AppSpacingTokens.Micro
+                }
+            )
         }
         }
         }
