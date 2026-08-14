@@ -604,8 +604,8 @@ private fun SearchKeywordCell(
             )
             item.showLiveBadge -> SearchKeywordBadge(
                 text = "直播中",
-                containerColor = Color(0xFFFF6B97),
-                contentColor = Color.White
+                containerColor = MaterialTheme.colorScheme.error,
+                contentColor = MaterialTheme.colorScheme.onError
             )
             !item.subtitle.isNullOrBlank() -> AppText(
                 text = item.subtitle,

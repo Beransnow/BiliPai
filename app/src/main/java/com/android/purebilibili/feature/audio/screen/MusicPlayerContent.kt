@@ -46,6 +46,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
 import com.android.purebilibili.core.ui.motion.AppMotionTokens
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -720,7 +721,7 @@ private fun PlayerPage(
         verticalArrangement = Arrangement.Center
     ) {
         if (state.isLoading && state.coverUrl.isBlank()) {
-            AppCircularProgressIndicator(color = MusicContentColor)
+            AdaptiveLoadingIndicator(color = MusicContentColor)
         } else {
             MusicArtwork(
                 coverUrl = state.coverUrl,

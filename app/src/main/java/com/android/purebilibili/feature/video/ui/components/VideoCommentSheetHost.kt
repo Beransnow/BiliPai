@@ -33,7 +33,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
+import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.skeleton.CommentListSkeleton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import com.android.purebilibili.core.ui.components.AppIcon
@@ -932,7 +932,7 @@ private fun LoadingFooter() {
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
-        AppCircularProgressIndicator(strokeWidth = 2.dp)
+        AdaptiveLoadingIndicator(strokeWidth = 2.dp)
     }
 }
 
