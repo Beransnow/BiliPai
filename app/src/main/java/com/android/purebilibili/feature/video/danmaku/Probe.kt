@@ -8,7 +8,7 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.text.TextPaint
 import androidx.core.graphics.drawable.toBitmap
-import coil.ImageLoader
+import coil.imageLoader
 import coil.request.ImageRequest
 import com.android.purebilibili.danmaku.engine.DanmakuItem
 import com.android.purebilibili.feature.live.components.DanmakuEmoticonMapper
@@ -174,7 +174,7 @@ private fun drawContent(
     var xOffset = 0f
     var emoticonCount = 0
     val maxEmoticonPerDanmaku = 2
-    val imageLoader = ImageLoader(context)
+    val imageLoader = context.imageLoader
     
     segments.forEach { seg ->
         if (seg.isEmoticon) {
@@ -206,10 +206,7 @@ private fun drawContent(
                         val top = centerY - iconSize / 2f
                         val dstRect = Rect(startX.toInt(), top.toInt(), (startX + iconSize).toInt(), (top + iconSize).toInt())
                         asyncCanvas.drawBitmap(loadedBitmap, null, dstRect, null)
-                        if (!loadedBitmap.isRecycled) {
-                            loadedBitmap.recycle()
-                        }
-                        
+
                         // 通知 UI 刷新
                         onUpdate()
                     }

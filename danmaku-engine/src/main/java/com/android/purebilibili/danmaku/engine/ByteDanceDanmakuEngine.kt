@@ -1,5 +1,6 @@
 package com.android.purebilibili.danmaku.engine
 
+import android.os.Trace
 import com.bytedance.danmaku.render.engine.DanmakuView
 import com.bytedance.danmaku.render.engine.data.DanmakuData
 import com.bytedance.danmaku.render.engine.render.draw.bitmap.BitmapData
@@ -72,7 +73,9 @@ internal class ByteDanceDanmakuEngine(
         currentItems.addAll(window.items.sortedBy(DanmakuItem::showAtTime))
         replaceWindowCount++
         this.currentPositionMs = currentPositionMs.coerceAtLeast(0L)
-        controller.setData(buildEngineTimeline(), this.currentPositionMs)
+        traceDanmakuEngineSection(TRACE_SET_DATA) {
+            controller.setData(buildEngineTimeline(), this.currentPositionMs)
+        }
     }
 
     override fun replaceMaskFrames(frames: List<DanmakuMaskFrame>, currentPositionMs: Long) {
@@ -83,7 +86,9 @@ internal class ByteDanceDanmakuEngine(
         val shouldResume = playbackState == DanmakuPlaybackState.PLAYING
         controller.pause()
         controller.clear()
-        controller.setData(buildEngineTimeline(), this.currentPositionMs)
+        traceDanmakuEngineSection(TRACE_SET_DATA) {
+            controller.setData(buildEngineTimeline(), this.currentPositionMs)
+        }
         controller.start(this.currentPositionMs)
         if (!shouldResume) controller.pause()
     }
@@ -99,7 +104,9 @@ internal class ByteDanceDanmakuEngine(
             currentItems.addAll(sorted)
             currentItems.sortBy(DanmakuItem::showAtTime)
         }
-        controller.appendData(sorted.map(::toEngineData))
+        traceDanmakuEngineSection(TRACE_APPEND_DATA) {
+            controller.appendData(sorted.map(::toEngineData))
+        }
     }
 
     override fun trimBefore(positionMs: Long) {
@@ -238,3 +245,15 @@ private class EngineTextData(
 private class EngineBitmapData(
     override val sourceItem: DanmakuItem
 ) : BitmapData(), SourceBackedDanmakuData
+
+private inline fun <T> traceDanmakuEngineSection(name: String, block: () -> T): T {
+    Trace.beginSection(name)
+    return try {
+        block()
+    } finally {
+        Trace.endSection()
+    }
+}
+
+private const val TRACE_SET_DATA = "BiliPaiDanmakuSetData"
+private const val TRACE_APPEND_DATA = "BiliPaiDanmakuAppend"
