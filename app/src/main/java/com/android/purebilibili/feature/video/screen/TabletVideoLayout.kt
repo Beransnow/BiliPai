@@ -986,7 +986,18 @@ private fun ScrollableVideoInfoSection(
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     contentPadding = PaddingValues(end = 4.dp)
                 ) {
-                    items(relatedVideos.take(10), key = { it.bvid }) { video ->
+                    itemsIndexed(
+                        items = relatedVideos.take(10),
+                        key = { index, video ->
+                            resolveIndexedVideoLazyKey(
+                                namespace = "tablet_related_video",
+                                index = index,
+                                bvid = video.bvid,
+                                aid = video.aid,
+                                cid = video.cid,
+                            )
+                        },
+                    ) { _, video ->
                         Column(
                             modifier = Modifier
                                 .width(160.dp)

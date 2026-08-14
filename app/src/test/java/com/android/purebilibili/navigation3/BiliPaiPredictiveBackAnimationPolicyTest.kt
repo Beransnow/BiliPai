@@ -99,4 +99,26 @@ class BiliPaiPredictiveBackAnimationPolicyTest {
             )
         )
     }
+
+    @Test
+    fun `non-video child keeps covered video preview silent`() {
+        val coveredVideo = BiliPaiNavKey.VideoDetail(bvid = "BV_COVERED")
+
+        assertFalse(
+            shouldActivateVideoDetailPlaybackSession(
+                currentKey = BiliPaiNavKey.Search,
+                detailKey = coveredVideo,
+                isImmediateBackPreview = true,
+                activateBackPreviewPlayback = false,
+            )
+        )
+        assertFalse(
+            shouldActivateVideoDetailPlaybackSession(
+                currentKey = BiliPaiNavKey.Search,
+                detailKey = coveredVideo,
+                isImmediateBackPreview = true,
+                activateBackPreviewPlayback = true,
+            )
+        )
+    }
 }
