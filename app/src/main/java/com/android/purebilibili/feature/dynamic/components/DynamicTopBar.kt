@@ -16,7 +16,13 @@ import com.android.purebilibili.core.ui.components.AppIcon
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppDropdownMenu
+import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,8 +44,30 @@ import dev.chrisbanes.haze.HazeState
 
 //  动态页面布局模式
 enum class DynamicDisplayMode {
-    SIDEBAR,     // 侧边栏模式（默认，UP主列表在左侧）
-    HORIZONTAL   // 横向模式（UP主列表在顶部，类似 Telegram）
+    SIDEBAR,
+    SIDEBAR_RIGHT,
+    HORIZONTAL,
+    DRAWER_LEFT,
+    DRAWER_RIGHT
+}
+
+internal fun DynamicDisplayMode.isHorizontalUserList(): Boolean = this == DynamicDisplayMode.HORIZONTAL
+
+internal fun DynamicDisplayMode.isFixedSidebar(): Boolean =
+    this == DynamicDisplayMode.SIDEBAR || this == DynamicDisplayMode.SIDEBAR_RIGHT
+
+internal fun DynamicDisplayMode.isRightAligned(): Boolean =
+    this == DynamicDisplayMode.SIDEBAR_RIGHT || this == DynamicDisplayMode.DRAWER_RIGHT
+
+internal fun DynamicDisplayMode.isDrawer(): Boolean =
+    this == DynamicDisplayMode.DRAWER_LEFT || this == DynamicDisplayMode.DRAWER_RIGHT
+
+internal fun resolveDynamicDisplayModeLabel(mode: DynamicDisplayMode): String = when (mode) {
+    DynamicDisplayMode.SIDEBAR -> "左侧竖条"
+    DynamicDisplayMode.SIDEBAR_RIGHT -> "右侧竖条"
+    DynamicDisplayMode.HORIZONTAL -> "顶部横条"
+    DynamicDisplayMode.DRAWER_LEFT -> "左侧抽屉"
+    DynamicDisplayMode.DRAWER_RIGHT -> "右侧抽屉"
 }
 
 /**
@@ -110,21 +138,34 @@ fun DynamicTopBarWithTabs(
                 )
                 
                 //  布局模式切换按钮
-                AppIconButton(
-                    onClick = {
-                        val newMode = if (displayMode == DynamicDisplayMode.SIDEBAR) 
-                            DynamicDisplayMode.HORIZONTAL else DynamicDisplayMode.SIDEBAR
-                        onDisplayModeChange(newMode)
-                    },
-                    modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
-                ) {
-                    AppIcon(
-                        imageVector = if (displayMode == DynamicDisplayMode.SIDEBAR)
-                            rememberAppListLayoutIcon() else rememberAppGridLayoutIcon(),
-                        contentDescription = "切换布局模式",
-                        tint = MaterialTheme.colorScheme.onSurface, // 自适应颜色
-                        modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro)
-                    )
+                var showLayoutMenu by remember { mutableStateOf(false) }
+                Box {
+                    AppIconButton(
+                        onClick = { showLayoutMenu = true },
+                        modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
+                    ) {
+                        AppIcon(
+                            imageVector = if (displayMode.isHorizontalUserList())
+                                rememberAppGridLayoutIcon() else rememberAppListLayoutIcon(),
+                            contentDescription = "关注列表位置",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro)
+                        )
+                    }
+                    AppDropdownMenu(
+                        expanded = showLayoutMenu,
+                        onDismissRequest = { showLayoutMenu = false }
+                    ) {
+                        DynamicDisplayMode.entries.forEach { mode ->
+                            AppDropdownMenuItem(
+                                text = { AppText(resolveDynamicDisplayModeLabel(mode)) },
+                                onClick = {
+                                    showLayoutMenu = false
+                                    onDisplayModeChange(mode)
+                                }
+                            )
+                        }
+                    }
                 }
 
                 //  发布动态入口（对齐 BiliPai AppBar actions 的发布按钮）

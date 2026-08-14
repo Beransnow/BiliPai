@@ -20,4 +20,33 @@ class DynamicScreenStructureTest {
         assertTrue(gridSource.contains("contentType = \"dynamic_loading_footer\""))
         assertTrue(gridSource.contains("contentType = \"dynamic_no_more_footer\""))
     }
+
+    @Test
+    fun `dynamic screen supports tab reselect and up panel shortcuts`() {
+        val source = File("src/main/java/com/android/purebilibili/feature/dynamic/DynamicScreen.kt")
+            .readText()
+
+        assertTrue(source.contains("resolveDynamicTabReselectAction("))
+        assertTrue(source.contains("DynamicTabReselectAction.SCROLL_TO_TOP"))
+        assertTrue(source.contains("resolveDynamicUpPanelUsers("))
+        assertTrue(source.contains("isDynamicUpPanelAllShortcut(clickedUserId)"))
+        assertTrue(source.contains("onTabSelected = onDynamicTabSelected"))
+    }
+
+    @Test
+    fun `report dialog and additional cards use shared native components`() {
+        val screenSource = File("src/main/java/com/android/purebilibili/feature/dynamic/DynamicScreen.kt")
+            .readText()
+        val cardSource = File(
+            "src/main/java/com/android/purebilibili/feature/dynamic/components/DynamicCard.kt"
+        ).readText()
+        val sidebarSource = File(
+            "src/main/java/com/android/purebilibili/feature/dynamic/components/DynamicSidebar.kt"
+        ).readText()
+
+        assertTrue(screenSource.contains("AppListItem("))
+        assertTrue(screenSource.contains("AppRadioButton("))
+        assertTrue(cardSource.contains("AppContentCard("))
+        assertTrue(sidebarSource.contains("AppTextButton("))
+    }
 }
