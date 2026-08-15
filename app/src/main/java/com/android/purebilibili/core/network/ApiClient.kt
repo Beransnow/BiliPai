@@ -1778,6 +1778,32 @@ interface DynamicApi {
         @retrofit2.http.Body body: DynamicRepostRequest
     ): SimpleApiResponse
 
+    @retrofit2.http.POST("x/dynamic/feed/create/dyn")
+    suspend fun createFeedDynamic(
+        @Query("csrf") csrf: String,
+        @Query("platform") platform: String = "web",
+        @Query("x-bili-device-req-json") deviceRequestJson: String = "{\"platform\":\"web\",\"device\":\"pc\"}",
+        @Query("x-bili-web-req-json") webRequestJson: String = "{\"spm_id\":\"333.999\"}",
+        @retrofit2.http.Body body: DynamicCreateFeedRequest
+    ): DynamicCreateFeedResponse
+
+    @retrofit2.http.POST("x/vote/create")
+    suspend fun createVote(
+        @Query("csrf") csrf: String,
+        @retrofit2.http.Body body: DynamicCreateVoteRequest
+    ): DynamicCreateVoteResponse
+
+    @retrofit2.http.FormUrlEncoded
+    @retrofit2.http.POST("x/new-reserve/up/reserve/create")
+    suspend fun createReserve(
+        @retrofit2.http.Field("type") type: Int = 2,
+        @retrofit2.http.Field("sub_type") subType: Int,
+        @retrofit2.http.Field("from") from: Int = 1,
+        @retrofit2.http.Field("title") title: String,
+        @retrofit2.http.Field("live_plan_start_time") livePlanStartTime: Long,
+        @retrofit2.http.Field("csrf") csrf: String
+    ): DynamicCreateReserveResponse
+
     //  发布纯文本动态（multipart form，type=4 表示纯文本）
     @retrofit2.http.Multipart
     @retrofit2.http.POST("https://api.vc.bilibili.com/dynamic_svr/v1/dynamic_svr/create")

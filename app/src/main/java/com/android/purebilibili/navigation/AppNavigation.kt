@@ -3434,7 +3434,10 @@ fun AppNavigation(
                                 com.android.purebilibili.feature.bangumi.BangumiReviewScreen(
                                     mediaId = reviewKey.mediaId,
                                     title = reviewKey.title,
-                                    onBack = { performSystemBackAction() }
+                                    onBack = { performSystemBackAction() },
+                                    onOpenWeb = { url, webTitle ->
+                                        pushNavigation3Key(BiliPaiNavKey.Web(url = url, title = webTitle))
+                                    }
                                 )
                             }
                         }

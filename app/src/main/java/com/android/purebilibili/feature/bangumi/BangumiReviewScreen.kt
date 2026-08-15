@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -55,9 +56,11 @@ import kotlinx.coroutines.launch
 fun BangumiReviewScreen(
     mediaId: Long,
     title: String,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onOpenWeb: (String, String) -> Unit = { _, _ -> }
 ) {
     val context = LocalContext.current
+    val darkTheme = isSystemInDarkTheme()
     val scope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     var reviewType by remember { mutableStateOf(BangumiReviewType.SHORT) }
@@ -133,6 +136,17 @@ fun BangumiReviewScreen(
                     if (reviewType == BangumiReviewType.SHORT) {
                         AppTextButton(onClick = { showComposer = true }) {
                             AppText("写短评")
+                        }
+                    } else {
+                        AppTextButton(
+                            onClick = {
+                                onOpenWeb(
+                                    "https://member.bilibili.com/article-text/mobile?theme=${if (darkTheme) 1 else 0}&media_id=$mediaId",
+                                    "写长评"
+                                )
+                            }
+                        ) {
+                            AppText("写长评")
                         }
                     }
                 }
