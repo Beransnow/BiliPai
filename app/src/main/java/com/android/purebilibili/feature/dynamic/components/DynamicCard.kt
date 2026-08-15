@@ -143,6 +143,7 @@ fun DynamicCardV2(
     val watchLaterAid = remember(item) { resolveDynamicWatchLaterAid(item) }
     val deleteAction = remember(item) { resolveDynamicDeleteAction(item) }
     var pendingDeleteAction by remember(item.id_str) { mutableStateOf<DynamicDeleteAction?>(null) }
+    var pendingVoteId by remember(item.id_str) { mutableStateOf<Long?>(null) }
     //  [新增] 评论互动设置弹窗状态
     var showReplyInteractionDialog by remember(item.id_str) { mutableStateOf<ReplyInteractionData?>(null) }
     var replyInteractionOid by remember(item.id_str) { mutableStateOf(0L) }
@@ -154,6 +155,14 @@ fun DynamicCardV2(
             hasArticleClick = onArticleClick != null,
             hasDynamicDetailClick = openDynamicDetail != null,
             hasPrimaryClickOverride = onPrimaryClickOverride != null
+        )
+    }
+
+    pendingVoteId?.let { voteId ->
+        DynamicVoteDialog(
+            voteId = voteId,
+            dynamicId = item.id_str,
+            onDismiss = { pendingVoteId = null }
         )
     }
 
@@ -1045,7 +1054,9 @@ fun DynamicCardV2(
             DynamicAdditionalCard(
                 model = additionalCard,
                 onClick = {
-                    if (additionalCard.jumpUrl.isNotBlank()) {
+                    if (additionalCard.voteId > 0L) {
+                        pendingVoteId = additionalCard.voteId
+                    } else if (additionalCard.jumpUrl.isNotBlank()) {
                         runCatching { uriHandler.openUri(additionalCard.jumpUrl) }
                     }
                 }

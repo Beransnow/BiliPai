@@ -1813,6 +1813,17 @@ interface DynamicApi {
         @retrofit2.http.Body body: DynamicTopRequest
     ): SimpleApiResponse
 
+    @GET("x/vote/vote_info")
+    suspend fun getVoteInfo(
+        @Query("vote_id") voteId: Long
+    ): DynamicVoteInfoResponse
+
+    @retrofit2.http.POST("x/vote/do_vote")
+    suspend fun doVote(
+        @Query("csrf") csrf: String,
+        @retrofit2.http.Body body: DynamicDoVoteRequest
+    ): DynamicVoteInfoResponse
+
     //  动态可见范围（公开 / 仅自己）
     @retrofit2.http.FormUrlEncoded
     @retrofit2.http.POST("x/dynamic/feed/dynamic_report/add")
@@ -2064,6 +2075,42 @@ interface BangumiApi {
         @Query("pn") pn: Int = 1,
         @Query("ps") ps: Int = 30
     ): com.android.purebilibili.data.model.response.MyFollowBangumiResponse
+
+    @GET("pgc/review/short/list")
+    suspend fun getBangumiShortReviews(
+        @Query("media_id") mediaId: Long,
+        @Query("ps") pageSize: Int = 20,
+        @Query("sort") sort: Int = 0,
+        @Query("cursor") cursor: String = "",
+        @Query("web_location") webLocation: String = "666.19"
+    ): BangumiReviewListResponse
+
+    @GET("pgc/review/long/list")
+    suspend fun getBangumiLongReviews(
+        @Query("media_id") mediaId: Long,
+        @Query("ps") pageSize: Int = 20,
+        @Query("sort") sort: Int = 0,
+        @Query("cursor") cursor: String = "",
+        @Query("web_location") webLocation: String = "666.19"
+    ): BangumiReviewListResponse
+
+    @retrofit2.http.FormUrlEncoded
+    @retrofit2.http.POST("pgc/review/action/like")
+    suspend fun likeBangumiReview(
+        @retrofit2.http.Field("media_id") mediaId: Long,
+        @retrofit2.http.Field("review_type") reviewType: Int = 2,
+        @retrofit2.http.Field("review_id") reviewId: Long,
+        @retrofit2.http.Field("csrf") csrf: String
+    ): SimpleApiResponse
+
+    @retrofit2.http.FormUrlEncoded
+    @retrofit2.http.POST("pgc/review/short/post")
+    suspend fun postBangumiShortReview(
+        @retrofit2.http.Field("media_id") mediaId: Long,
+        @retrofit2.http.Field("score") score: Int,
+        @retrofit2.http.Field("content") content: String,
+        @retrofit2.http.Field("csrf") csrf: String
+    ): SimpleApiResponse
 }
 
 interface PassportApi {

@@ -2,8 +2,6 @@
 package com.android.purebilibili.feature.home
 import com.android.purebilibili.core.ui.components.AppText
 
-import com.android.purebilibili.core.ui.MediaContrastPalette
-
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.SystemClock
@@ -35,10 +33,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.zIndex
 import androidx.compose.material3.DrawerValue
@@ -49,7 +43,6 @@ import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
 import androidx.compose.material3.rememberDrawerState
 import com.android.purebilibili.feature.home.components.MineSideDrawer
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -59,7 +52,6 @@ import androidx.compose.ui.graphics.luminance  //  状态栏亮度计算
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -1588,7 +1580,6 @@ fun HomeScreen(
                             modifier = Modifier
                                 .responsiveContentWidth(maxWidth = contentWidth)
                                 .fillMaxSize()
-                                .homeFeedTopVideoFadeMask(listTopPadding + AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall)
                                 .verticalPriorityHorizontalPagerSwipe(
                                     state = pagerState,
                                     enabled = homeTopPagerSwipeEnabled,
@@ -2625,49 +2616,4 @@ internal fun resolveHomeContentInteractionRestoreDelayMs(
     // 视觉返场保护仍由 suppression / 底栏恢复窗口负责；
     // 首页列表手势应在页面重新可见时立即恢复，避免第一下滑动被导航态吞掉。
     return 0L
-}
-
-/**
- * 首页 feed 顶部渐隐遮罩。
- *
- * `CompositingStrategy.Offscreen` 这里**必须保留**：`BlendMode.DstIn` 要求有独立的
- * 离屏缓冲才能正确工作，直接去掉会让渐变矩形与背后内容做普通混合，结果是出黑边。
- * 想真正省掉这层离屏，得在壁纸不可见时换一条不需要遮罩的画法（盖一条
- * chromeBackground→Transparent 的实色渐变），那属于分档改造，需要真机在
- * 「无壁纸 / 有壁纸 / 减弱动效」三种状态下逐像素比对，不在本次改动范围内。
- *
- * 这次修掉的是另外两件事，都与观感无关：
- *
- * 1. `drawWithContent` → `drawWithCache`：原先每一帧都新建一个 `Brush` 和一个
- *    `arrayOf(...)`。首页滚动是全 App 最热的路径，这是纯粹的逐帧垃圾。
- *    改后只在尺寸/密度变化时重建。
- *
- * 2. `drawRect` 限制到顶部渐隐带：原先不传 size，等于对**整屏**做一次 DstIn 混合，
- *    而渐隐带以下的区域 src 是 `MediaContrastPalette.Scrim`，它是完全不透明的
- *    （alpha = 1），于是 `dst × 1 = dst` —— 那部分混合的结果就是原样，纯属白做。
- *    正因为 alpha 恰好是 1，限制绘制范围是**逐像素等价**的，不是近似。
- *
- * （注：上面刻意不写出那个颜色常量的字面名。HardcodedColorLintTest 走的是源码文本
- * 扫描且不剥离注释，在注释里提到它会被判成硬编码颜色——写句解释就让 lint 变红。）
- */
-private fun Modifier.homeFeedTopVideoFadeMask(fadeHeight: Dp): Modifier {
-    return graphicsLayer {
-        compositingStrategy = CompositingStrategy.Offscreen
-    }.drawWithCache {
-        val fadeHeightPx = fadeHeight.toPx().coerceAtLeast(1f)
-        val fadeBrush = Brush.verticalGradient(
-            colorStops = arrayOf(
-                0f to Color.Transparent,
-                0.42f to MediaContrastPalette.Scrim,
-                1f to MediaContrastPalette.Scrim
-            ),
-            startY = 0f,
-            endY = fadeHeightPx
-        )
-        val fadeSize = Size(size.width, fadeHeightPx)
-        onDrawWithContent {
-            drawContent()
-            drawRect(brush = fadeBrush, size = fadeSize, blendMode = BlendMode.DstIn)
-        }
-    }
 }

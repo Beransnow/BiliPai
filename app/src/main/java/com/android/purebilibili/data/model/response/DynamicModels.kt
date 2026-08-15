@@ -751,7 +751,8 @@ data class DynamicAdditionalGoodsItem(
 @Serializable
 data class DynamicAdditionalVote(
     val desc: String = "",
-    val join_num: Int = 0
+    val join_num: Int = 0,
+    val vote_id: Long = 0
 )
 
 @Serializable

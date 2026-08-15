@@ -69,9 +69,10 @@ import com.android.purebilibili.core.ui.motion.AppMotionTokens
 import com.android.purebilibili.core.store.HomeHeaderBlurMode
 import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.HomeTopLayoutOrder
+
 import com.android.purebilibili.core.store.HomeTopRightAction
 import com.android.purebilibili.core.store.BottomBarLiquidGlassPreset
-import com.android.purebilibili.core.store.resolveGlobalLiquidGlassReuseEnabled
+
 import com.android.purebilibili.feature.home.resolveHomeTopCategories
 import com.android.purebilibili.feature.home.resolveHomeTopCollapsedHandleHeight
 import com.android.purebilibili.feature.home.resolveHomeTopTabPresentationHeight
@@ -218,16 +219,14 @@ internal fun resolveHomeTopRightActionContentDescription(
 }
 
 /**
- * Top dock / search / indicator liquid glass uses the exact bottom-bar contract:
- * the shared "安卓原生液态玻璃" switch is the single source of truth.
+ * Top dock / search liquid glass is removed pending rewrite.
  */
 internal fun resolveHomeTopChromeLiquidGlassEnabled(
     homeSettings: HomeSettings?,
 ): Boolean {
-    val resolvedHomeSettings = homeSettings ?: HomeSettings()
-    return resolveGlobalLiquidGlassReuseEnabled(
-        androidNativeLiquidGlassEnabled = resolvedHomeSettings.androidNativeLiquidGlassEnabled,
-    )
+    @Suppress("UNUSED_PARAMETER")
+    val ignored = homeSettings
+    return false
 }
 
 internal fun resolveHomeTopTabIndicatorLiquidGlassEnabled(
@@ -238,9 +237,7 @@ internal fun resolveHomeTopTabIndicatorLiquidGlassEnabled(
 
 internal fun resolveHomeTopSearchLiquidGlassEnabled(
     homeSettings: HomeSettings?,
-): Boolean {
-    return resolveHomeTopChromeLiquidGlassEnabled(homeSettings)
-}
+): Boolean = resolveHomeTopChromeLiquidGlassEnabled(homeSettings)
 
 internal fun resolveHomeTopChromeMaterialMode(
     isHeaderBlurEnabled: Boolean,
@@ -274,17 +271,13 @@ internal fun resolveHomeTopChromeRenderMode(
     }
 }
 
+@Suppress("UNUSED_PARAMETER")
 internal fun shouldDrawHomeTopSearchLegacyHighlight(
     presentation: AppTopTabPresentation,
     useUnifiedTopPanel: Boolean,
     renderMode: HomeTopChromeRenderMode,
     refractionOverlayAlpha: Float
-): Boolean {
-    if (presentation != AppTopTabPresentation.MOVING_CAPSULE || useUnifiedTopPanel) return false
-    if (refractionOverlayAlpha > 0f) return false
-    return renderMode != HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP &&
-        renderMode != HomeTopChromeRenderMode.LIQUID_GLASS_HAZE
-}
+): Boolean = false
 
 internal fun resolveHomeTopChromeSurfaceTreatment(
     renderMode: HomeTopChromeRenderMode,
@@ -1307,8 +1300,7 @@ internal fun Modifier.homeTopChromeSurface(
     preferFlatGlass: Boolean = false,
     darkThemeWhiteOverlayMultiplier: Float = 0.86f
 ): Modifier = composed {
-    val isLiquidGlassMode = renderMode == HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP ||
-        renderMode == HomeTopChromeRenderMode.LIQUID_GLASS_HAZE
+    val isLiquidGlassMode = false
     // Liquid chrome always reuses the bottom-bar BiliPai material so every reusable surface
     // (top dock / search / continuous slab / segmented dock) stays visually identical.
     if (isLiquidGlassMode) {
@@ -1684,9 +1676,7 @@ fun HomeHeader(
         usesNativeContainerTreatment = usesNativeContainerTreatment,
     )
     // 搜索栏液态玻璃必须复用顶部标签 dock 的材质链，避免单独的搜索胶囊渲染分支产生质感偏差。
-    val useBottomBarMatchedTopControls =
-        searchChromeRenderMode == HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP ||
-            searchChromeRenderMode == HomeTopChromeRenderMode.LIQUID_GLASS_HAZE
+    val useBottomBarMatchedTopControls = false
     val localTopChromeRenderMode = resolveHomeTopLocalChromeRenderMode(
         renderMode = topChromeRenderMode,
         usesNativeContainerTreatment = usesNativeContainerTreatment,
@@ -1923,13 +1913,7 @@ fun HomeHeader(
             drawUnifiedTopPanelChrome &&
             currentSearchHeight > AppSpacingTokens.None &&
             searchRevealFraction > 0f
-    val useTopTabBottomBarMatchedDock =
-        useUnifiedTopPanel &&
-            effectiveTabMaterialMode == TopTabMaterialMode.LIQUID_GLASS &&
-            (
-                topTabDockChromeRenderMode == HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP ||
-                    topTabDockChromeRenderMode == HomeTopChromeRenderMode.LIQUID_GLASS_HAZE
-            )
+    val useTopTabBottomBarMatchedDock = false
     val drawTopTabDockChrome = drawTopTabOuterChromeSurface || useTopTabBottomBarMatchedDock || useDetachedTopTabDock
     val topTabLabelMode = homeSettings?.topTabLabelMode
         ?: com.android.purebilibili.core.store.SettingsManager.TopTabLabelMode.TEXT_ONLY
@@ -2009,15 +1993,7 @@ fun HomeHeader(
             } else {
                 tabBorderAlpha
             },
-            tabHighlightColor = if (embedTopTabsInUnifiedPanel) {
-                Color.Transparent
-            } else {
-                resolveHomeTopChromeHighlightOverlayColor(
-                    baseColor = tabChromeColors.highlightColor,
-                    renderMode = tabChromeRenderMode,
-                    softenWideChrome = true
-                )
-            },
+            tabHighlightColor = Color.Transparent,
             tabContentUnderlayColor = if (embedTopTabsInUnifiedPanel) {
                 Color.Transparent
             } else {
@@ -2035,8 +2011,7 @@ fun HomeHeader(
             onTabsCollapsedChange = onTopTabsCollapsedChange,
             drawChromeSurface = drawTopTabDockChrome,
             useBottomBarMatchedSurface = useTopTabBottomBarMatchedDock,
-            // 顶部分类 dock：soft shell lens（保留上下滑动液态折射，贴近指示器；
-            // 强度低于底栏整壳，避免矮 dock 边沿虾线）。搜索小胶囊仍关 lens。
+            // 顶部分类 dock：与 FloatingBottomBar 同一套全强度 shell lens。
             drawMatchedShellLens = useTopTabBottomBarMatchedDock,
             matchedShellLensIntensity = TOP_DOCK_SHELL_LENS_INTENSITY,
             // Floating / matched dock: length follows icon+text × tab count (no full-bleed empty glass).
@@ -2056,9 +2031,7 @@ fun HomeHeader(
                 },
                 pagerState = pagerState,
                 labelMode = topTabLabelMode,
-                isLiquidGlassEnabled = resolveHomeTopTabIndicatorLiquidGlassEnabled(
-                    homeSettings = homeSettings,
-                ) && isGlassSupported,
+                isLiquidGlassEnabled = false,
                 liquidGlassStyle = liquidStyle,
                 liquidGlassTuning = liquidGlassTuning,
                 liquidGlassPreset = bottomBarLiquidGlassPreset,
@@ -2451,7 +2424,7 @@ fun HomeHeader(
                                                     motionTier = motionTier,
                                                     isTransitionRunning = topChromeMotionPolicy.isTransitionRunning,
                                                     forceLowBlurBudget = forceLowBlurBudget,
-                                                    // Same soft BiliPai shell as the top dock.
+                                                    // Same FloatingBottomBar shell as the top dock.
                                                     drawShellLens = true,
                                                     shellLensIntensity = TOP_DOCK_SHELL_LENS_INTENSITY,
                                                     isScrolling = topChromeMotionPolicy.isScrolling
