@@ -3277,6 +3277,26 @@ fun AppNavigation(
                                             )
                                         )
                                     },
+                                    onMessageClick = { talkerId, userName, _ ->
+                                        pushNavigation3Key(
+                                            BiliPaiNavKey.Chat(
+                                                talkerId = talkerId,
+                                                sessionType = 1,
+                                                userName = userName
+                                            )
+                                        )
+                                    },
+                                    onFollowingClick = { followingMid ->
+                                        pushNavigation3Key(BiliPaiNavKey.Following(followingMid))
+                                    },
+                                    onFansClick = { fansMid ->
+                                        pushNavigation3Key(
+                                            BiliPaiNavKey.Web(
+                                                url = "https://space.bilibili.com/$fansMid/fans/fans",
+                                                title = "粉丝"
+                                            )
+                                        )
+                                    },
                                     sharedTransitionScope = null,
                                     animatedVisibilityScope = null
                                 )
