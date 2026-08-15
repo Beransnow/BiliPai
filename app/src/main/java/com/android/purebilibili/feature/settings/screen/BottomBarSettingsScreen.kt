@@ -42,7 +42,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.R
-import com.android.purebilibili.core.store.HomeBarHideType
 import com.android.purebilibili.core.store.HomeHeaderBlurMode
 import com.android.purebilibili.core.store.HomeHeaderCollapseMode
 import com.android.purebilibili.core.store.HomeTopLayoutOrder
@@ -50,8 +49,7 @@ import com.android.purebilibili.core.store.HomeTopRightAction
 import com.android.purebilibili.core.store.BottomBarSearchAutoExpandMode
 import com.android.purebilibili.core.store.BottomBarSearchLayoutMode
 import com.android.purebilibili.core.store.SettingsManager
-import com.android.purebilibili.core.store.resolveHomeHeaderCollapseModeForSearch
-import com.android.purebilibili.core.store.resolveHomeHeaderCollapseModeForTopTabs
+import com.android.purebilibili.core.store.resolveHomeHeaderCollapseModeForTopBarHide
 import com.android.purebilibili.core.theme.BottomBarColors  //  统一底栏颜色配置
 import com.android.purebilibili.core.theme.BottomBarColorPalette  //  调色板
 import com.android.purebilibili.core.theme.BottomBarColorNames  //  颜色名称
@@ -199,8 +197,7 @@ fun BottomBarSettingsContent(
         .collectAsStateWithLifecycle(initialValue = HomeTopLayoutOrder.SEARCH_THEN_TABS)
     val homeHeaderCollapseMode by SettingsManager.getHomeHeaderCollapseMode(context)
         .collectAsStateWithLifecycle(initialValue = HomeHeaderCollapseMode.BOTH)
-    val homeBarHideType by SettingsManager.getHomeBarHideType(context)
-        .collectAsStateWithLifecycle(initialValue = HomeBarHideType.SYNC)
+
     val homeTopRightAction by SettingsManager.getHomeTopRightAction(context)
         .collectAsStateWithLifecycle(initialValue = HomeTopRightAction.SETTINGS)
     val isBottomBarFloating by SettingsManager.getBottomBarFloating(context)
@@ -501,48 +498,19 @@ fun BottomBarSettingsContent(
                             SettingsSingleChoicePreference(
                                 icon = Icons.Outlined.Search,
                                 iconTint = com.android.purebilibili.core.theme.iOSTeal,
-                                title = "首页搜索框",
+                                title = "首页顶栏显示",
+                                subtitle = if (homeHeaderCollapseMode.hasAnyCollapse) {
+                                    "离开顶部后收起搜索框和标签页，单击底栏首页回顶后再出现"
+                                } else {
+                                    "搜索框和标签页始终固定在顶部"
+                                },
                                 options = listOf(
-                                    AppSegmentOption(true, "下滑折叠"),
-                                    AppSegmentOption(false, "不折叠"),
+                                    AppSegmentOption(false, "始终显示"),
+                                    AppSegmentOption(true, "仅回顶显示"),
                                 ),
-                                selectedValue = homeHeaderCollapseMode.collapseSearch,
-                                onSelectionChange = { collapseSearch ->
-                                    val nextMode = resolveHomeHeaderCollapseModeForSearch(
-                                        currentMode = homeHeaderCollapseMode,
-                                        collapseSearch = collapseSearch,
-                                    )
-                                    scope.launch { SettingsManager.setHomeHeaderCollapseMode(context, nextMode) }
-                                },
-                            )
-                            AppPreferenceDivider()
-                            SettingsSingleChoicePreference(
-                                icon = Icons.Outlined.UnfoldMore,
-                                iconTint = com.android.purebilibili.core.theme.iOSPurple,
-                                title = "顶栏收起类型",
-                                options = HomeBarHideType.entries.map { type ->
-                                    AppSegmentOption(type, type.label)
-                                },
-                                selectedValue = homeBarHideType,
-                                onSelectionChange = { type ->
-                                    scope.launch { SettingsManager.setHomeBarHideType(context, type) }
-                                },
-                            )
-                            AppPreferenceDivider()
-                            SettingsSingleChoicePreference(
-                                icon = Icons.Outlined.SwapVert,
-                                iconTint = com.android.purebilibili.core.theme.iOSBlue,
-                                title = "首页标签页",
-                                options = listOf(
-                                    AppSegmentOption(true, "下滑折叠"),
-                                    AppSegmentOption(false, "不折叠"),
-                                ),
-                                selectedValue = homeHeaderCollapseMode.collapseTabs,
-                                onSelectionChange = { collapseTabs ->
-                                    val nextMode = resolveHomeHeaderCollapseModeForTopTabs(
-                                        currentMode = homeHeaderCollapseMode,
-                                        collapseTabs = collapseTabs,
-                                    )
+                                selectedValue = homeHeaderCollapseMode.hasAnyCollapse,
+                                onSelectionChange = { hideUntilTop ->
+                                    val nextMode = resolveHomeHeaderCollapseModeForTopBarHide(hideUntilTop)
                                     scope.launch { SettingsManager.setHomeHeaderCollapseMode(context, nextMode) }
                                 },
                             )

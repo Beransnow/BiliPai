@@ -7,6 +7,7 @@ import android.content.Context
 import android.os.SystemClock
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.foundation.ExperimentalFoundationApi //  Added
@@ -65,6 +66,7 @@ import com.android.purebilibili.core.ui.rememberAppSemanticVisualPolicy
 import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
 
 import com.android.purebilibili.feature.settings.GITHUB_URL
+import com.android.purebilibili.core.store.CommonListHeaderCollapseMode
 import com.android.purebilibili.core.store.SettingsManager //  引入 SettingsManager
 import com.android.purebilibili.core.store.AppNavigationSettings
 import com.android.purebilibili.core.store.resolveEffectiveHomeSettings
@@ -92,9 +94,11 @@ import com.android.purebilibili.feature.home.policy.HomeBottomBarScrollState
 import com.android.purebilibili.feature.home.policy.HomeFeedScrollAnchor
 import com.android.purebilibili.feature.home.policy.HomeFeedScrollAnchorSaver
 import com.android.purebilibili.feature.home.policy.captureHomeFeedScrollAnchor
+import com.android.purebilibili.feature.home.policy.quantizeHomeHeaderOffset
 import com.android.purebilibili.feature.home.policy.reduceHomePreScroll
 import com.android.purebilibili.feature.home.policy.resolveHomeHeaderTransitionRunning
 import com.android.purebilibili.feature.home.policy.resolveHomeHeaderSettleTransition
+import com.android.purebilibili.feature.home.policy.resolveHomeEmbeddedPageTopPaddingPx
 import com.android.purebilibili.feature.home.policy.shouldApplyHomeFeedScrollAnchor
 import com.android.purebilibili.feature.home.policy.shouldHandleHomeVerticalPreScroll
 import com.android.purebilibili.feature.home.policy.shouldReserveHomeBottomBarListPadding
@@ -310,6 +314,7 @@ fun HomeScreen(
     var headerOffsetHeightPx by rememberSaveable { mutableFloatStateOf(0f) }
     var topTabsAutoCollapsedByScroll by rememberSaveable { mutableStateOf(false) }
     var headerSettleAnimationJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
+    var homeHeaderRevealLock by remember { mutableStateOf(false) }
     // 离开首页顶层时冻结滚动锚点；返回后校正 LazyGrid 因 contentPadding/重组造成的偏移漂移。
     var pendingFeedScrollAnchor by rememberSaveable(stateSaver = HomeFeedScrollAnchorSaver) {
         mutableStateOf<HomeFeedScrollAnchor?>(null)
@@ -323,6 +328,23 @@ fun HomeScreen(
         headerSettleAnimationJob?.cancel()
         headerSettleAnimationJob = null
         headerOffsetHeightPx = value
+    }
+
+    fun revealHomeHeaderNow() {
+        topTabsAutoCollapsedByScroll = false
+        setHeaderOffsetImmediate(0f)
+        globalScrollOffset.floatValue = 0f
+    }
+
+    suspend fun withHomeHeaderRevealLock(block: suspend () -> Unit) {
+        homeHeaderRevealLock = true
+        revealHomeHeaderNow()
+        try {
+            block()
+        } finally {
+            revealHomeHeaderNow()
+            homeHeaderRevealLock = false
+        }
     }
 
     fun animateHeaderOffsetTo(targetValue: Float) {
@@ -404,46 +426,44 @@ fun HomeScreen(
     val latestHomeTopTabEntries by rememberUpdatedState(topTabEntries)
     LaunchedEffect(scrollChannel) {
         scrollChannel?.receiveAsFlow()?.collectLatest { request ->
-            // 双击首页回顶时强制展开顶部，避免收缩头部与回顶状态错位导致空白
-            setHeaderOffsetImmediate(0f)
-            val entry = resolveHomeTopTabEntryOrNull(
-                latestHomeTopTabEntries,
-                latestHomePagerPage
-            )
-            when (resolveHomeTopTabScrollTarget(entry)) {
-                HomeTopTabScrollTarget.LIVE -> liveScrollToTopRequestId++
-                HomeTopTabScrollTarget.BANGUMI -> bangumiScrollToTopRequestId++
-                HomeTopTabScrollTarget.PARTITION -> partitionScrollToTopRequestId++
-                HomeTopTabScrollTarget.FEED -> {
-                    val activeCategory = latestHomeScrollCategory
-                    val gridState = if (activeCategory == HomeCategory.POPULAR) {
-                        popularGridStates[latestHomeScrollPopularSubCategory]
-                    } else {
-                        gridStates[activeCategory]
-                    }
-                    val isAtTop = gridState == null ||
-                        (gridState.firstVisibleItemIndex == 0 && gridState.firstVisibleItemScrollOffset < 50)
-
-                    if (!isAtTop) {
-                        val listState = requireNotNull(gridState)
-                        val currentIndex = listState.firstVisibleItemIndex
-                        val plan = resolveScrollToTopPlan(currentIndex)
-                        plan.preJumpIndex?.let { preJump ->
-                            if (currentIndex > preJump) {
-                                listState.scrollToItem(preJump)
-                            }
+            withHomeHeaderRevealLock {
+                val entry = resolveHomeTopTabEntryOrNull(
+                    latestHomeTopTabEntries,
+                    latestHomePagerPage
+                )
+                when (resolveHomeTopTabScrollTarget(entry)) {
+                    HomeTopTabScrollTarget.LIVE -> liveScrollToTopRequestId++
+                    HomeTopTabScrollTarget.BANGUMI -> bangumiScrollToTopRequestId++
+                    HomeTopTabScrollTarget.PARTITION -> partitionScrollToTopRequestId++
+                    HomeTopTabScrollTarget.FEED -> {
+                        val activeCategory = latestHomeScrollCategory
+                        val gridState = if (activeCategory == HomeCategory.POPULAR) {
+                            popularGridStates[latestHomeScrollPopularSubCategory]
+                        } else {
+                            gridStates[activeCategory]
                         }
-                        listState.animateScrollToItem(plan.animateTargetIndex)
-                    }
-                    val shouldRefresh = request == HomeScrollRequest.SCROLL_TO_TOP_AND_REFRESH ||
-                        (request == HomeScrollRequest.SCROLL_TO_TOP_OR_REFRESH && isAtTop)
-                    if (shouldRefresh) {
-                        viewModel.refresh()
+                        val isAtTop = gridState == null ||
+                            (gridState.firstVisibleItemIndex == 0 && gridState.firstVisibleItemScrollOffset < 50)
+
+                        if (!isAtTop) {
+                            val listState = requireNotNull(gridState)
+                            val currentIndex = listState.firstVisibleItemIndex
+                            val plan = resolveScrollToTopPlan(currentIndex)
+                            plan.preJumpIndex?.let { preJump ->
+                                if (currentIndex > preJump) {
+                                    listState.scrollToItem(preJump)
+                                }
+                            }
+                            listState.animateScrollToItem(plan.animateTargetIndex)
+                        }
+                        val shouldRefresh = request == HomeScrollRequest.SCROLL_TO_TOP_AND_REFRESH ||
+                            (request == HomeScrollRequest.SCROLL_TO_TOP_OR_REFRESH && isAtTop)
+                        if (shouldRefresh) {
+                            viewModel.refresh()
+                        }
                     }
                 }
             }
-            setHeaderOffsetImmediate(0f)
-            globalScrollOffset.floatValue = 0f
         }
     }
     TrackJankStateFlag(
@@ -1157,27 +1177,25 @@ fun HomeScreen(
         currentNavItem = item
         when (item) {
             BottomNavItem.HOME -> {
-                coroutineScope.launch { 
-                    setHeaderOffsetImmediate(0f)
-                    val gridState = if (currentCategory == HomeCategory.POPULAR) {
-                        popularGridStates[popularSubCategory]
-                    } else {
-                        gridStates[currentCategory]
-                    }
-                    val isAtTop = gridState == null || (gridState.firstVisibleItemIndex == 0 && gridState.firstVisibleItemScrollOffset < 50)
-                    
-                    if (isAtTop) {
-                        viewModel.refresh()
-                    } else {
-                        val listState = requireNotNull(gridState)
-                        // [性能优化] 逻辑同上，如果太远先瞬移回来
-                        if (listState.firstVisibleItemIndex > 12) {
-                            listState.scrollToItem(12)
+                coroutineScope.launch {
+                    withHomeHeaderRevealLock {
+                        val gridState = if (currentCategory == HomeCategory.POPULAR) {
+                            popularGridStates[popularSubCategory]
+                        } else {
+                            gridStates[currentCategory]
                         }
-                        listState.animateScrollToItem(0)
-                    } 
-                    setHeaderOffsetImmediate(0f)
-                    globalScrollOffset.floatValue = 0f
+                        val isAtTop = gridState == null || (gridState.firstVisibleItemIndex == 0 && gridState.firstVisibleItemScrollOffset < 50)
+
+                        if (isAtTop) {
+                            viewModel.refresh()
+                        } else {
+                            val listState = requireNotNull(gridState)
+                            if (listState.firstVisibleItemIndex > 12) {
+                                listState.scrollToItem(12)
+                            }
+                            listState.animateScrollToItem(0)
+                        }
+                    }
                 }
             }
             BottomNavItem.DYNAMIC -> onDynamicClick()
@@ -1375,20 +1393,37 @@ fun HomeScreen(
         homeHeaderCollapseMode = homeSettings.homeHeaderCollapseMode
     )
     val homeBarHideType = homeSettings.homeBarHideType
-    val collapseSearchOnScroll = headerCollapseMode.collapseSearch
-    val collapseTabsOnScroll = headerCollapseMode.collapseTabs
+    val collapseSearchOnScroll = headerCollapseMode.hasAnyCollapse
+    val collapseTabsOnScroll = headerCollapseMode.hasAnyCollapse
     val isAnyHeaderCollapseEnabled = headerCollapseMode.hasAnyCollapse
-    val headerAutoCollapseDistancePx = when {
-        collapseSearchOnScroll -> searchCollapseDistancePx
-        collapseTabsOnScroll -> 1f
-        else -> 0f
+    val headerAutoCollapseDistancePx = if (isAnyHeaderCollapseEnabled) {
+        searchCollapseDistancePx
+    } else {
+        0f
     }
-    
-    // 标签页与搜索行共用布局偏移，但恢复时不能等待搜索行完全展开；
-    // 反向上滑立即恢复标签，避免出现“同样上滑却有时不显示”的体验。
-    LaunchedEffect(collapseTabsOnScroll) {
-        if (!collapseTabsOnScroll) {
-            topTabsAutoCollapsedByScroll = false
+    val collapsedEmbeddedTabInset by animateDpAsState(
+        targetValue = if (topTabsAutoCollapsedByScroll) tabRowHeightDp else AppSpacingTokens.None,
+        animationSpec = AppMotionTokens.standardSpec(),
+        label = "homeEmbeddedTabInset",
+    )
+    val embeddedPageTopPadding by remember(
+        density,
+        listTopPadding,
+        statusBarHeight,
+        collapsedEmbeddedTabInset,
+    ) {
+        derivedStateOf {
+            with(density) {
+                resolveHomeEmbeddedPageTopPaddingPx(
+                    expandedTopPaddingPx = listTopPadding.toPx(),
+                    headerOffsetPx = quantizeHomeHeaderOffset(
+                        offsetPx = headerOffsetHeightPx,
+                        stepPx = AppSpacingTokens.ExtraSmall.toPx(),
+                    ),
+                    collapsedTabInsetPx = collapsedEmbeddedTabInset.toPx(),
+                    minimumTopPaddingPx = statusBarHeight.toPx(),
+                ).toDp()
+            }
         }
     }
     
@@ -1411,23 +1446,31 @@ fun HomeScreen(
         isLiquidGlassEnabled,
         collapseTabsOnScroll,
         homeBarHideType,
+        currentCategory,
+        popularSubCategory,
+        activeGridState,
+        homeHeaderRevealLock,
     ) {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 if (!shouldHandleHomeVerticalPreScroll(deltaX = available.x, deltaY = available.y)) {
                     return Offset.Zero
                 }
+                val firstItemVisible = activeGridState == null ||
+                    activeGridState.firstVisibleItemIndex == 0
                 val scrollUpdate = reduceHomePreScroll(
                     currentHeaderOffsetPx = headerOffsetHeightPx,
                     deltaY = available.y,
                     minHeaderOffsetPx = -headerAutoCollapseDistancePx,
-                    canRevealHeader = true,
+                    canRevealHeader = firstItemVisible,
+                    collapseMode = CommonListHeaderCollapseMode.SHOW_AT_TOP_ONLY,
                     isHeaderCollapseEnabled = isAnyHeaderCollapseEnabled,
                     isBottomBarAutoHideEnabled = isBottomBarAutoHideEnabled,
                     useSideNavigation = useSideNavigation,
                     liquidGlassEnabled = isLiquidGlassEnabled,
                     currentGlobalScrollOffset = globalScrollOffset.value,
-                    hideType = homeBarHideType
+                    hideType = homeBarHideType,
+                    isHeaderRevealLocked = homeHeaderRevealLock,
                 )
 
                 if (scrollUpdate.shouldAnimateHeader) {
@@ -1437,11 +1480,12 @@ fun HomeScreen(
                     headerSettleAnimationJob = null
                     headerOffsetHeightPx = scrollUpdate.headerOffsetPx
                 }
-                topTabsAutoCollapsedByScroll = reduceHomeTopTabsAutoCollapseState(
-                    isCollapsed = topTabsAutoCollapsedByScroll,
-                    scrollDeltaY = available.y,
-                    isTopTabAutoCollapseEnabled = collapseTabsOnScroll,
-                )
+                topTabsAutoCollapsedByScroll = collapseTabsOnScroll &&
+                    !homeHeaderRevealLock &&
+                    (
+                        (activeGridState?.firstVisibleItemIndex ?: 0) > 0 ||
+                            headerOffsetHeightPx < -0.5f
+                    )
                 scrollUpdate.globalScrollOffset?.let { nextOffset ->
                     globalScrollOffset.value = nextOffset
                 }
@@ -1616,13 +1660,13 @@ fun HomeScreen(
                                 onAreaDetailClick = onLiveAreaDetailClick,
                                 showNavigationBack = false,
                                 embeddedInHome = true,
-                                contentTopPadding = listTopPadding,
+                                contentTopPadding = embeddedPageTopPadding,
                                 scrollToTopRequestId = liveScrollToTopRequestId,
                             )
                         } else if (shouldEmbedBangumiPageInHomeTopTab(category)) {
                             HomeBangumiTabPage(
                                 contentPadding = PaddingValues(
-                                    top = listTopPadding,
+                                    top = embeddedPageTopPadding,
                                     bottom = homeListBottomPadding
                                 ),
                                 onBangumiClick = onBangumiSeasonClick,
@@ -2125,7 +2169,7 @@ fun HomeScreen(
             onStatusBarDoubleTap = {
                 coroutineScope.launch {
                     activeGridState?.animateScrollToItem(0)
-                    setHeaderOffsetImmediate(0f) // [Refinement] Reset header on double tap
+                    revealHomeHeaderNow()
                     globalScrollOffset.floatValue = 0f
                 }
             },

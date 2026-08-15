@@ -81,6 +81,7 @@ import com.android.purebilibili.feature.home.rememberHomeGlassChromeColors
 import com.android.purebilibili.feature.home.rememberHomeGlassPillColors
 import com.android.purebilibili.feature.home.resolveHomeGlassChromeStyle
 import com.android.purebilibili.feature.home.resolveHomeGlassPillStyle
+import com.android.purebilibili.core.store.resolveGlobalLiquidGlassReuseEnabled
 import com.android.purebilibili.core.store.resolveHomeHeaderBlurEnabled
 import com.android.purebilibili.navigation.resolveAppNavigationAppearance
 import java.io.File
@@ -218,15 +219,13 @@ internal fun resolveHomeTopRightActionContentDescription(
     return "${action.label}，$badgeText 条未读"
 }
 
-/**
- * Top dock / search liquid glass is removed pending rewrite.
- */
 internal fun resolveHomeTopChromeLiquidGlassEnabled(
     homeSettings: HomeSettings?,
 ): Boolean {
-    @Suppress("UNUSED_PARAMETER")
-    val ignored = homeSettings
-    return false
+    val resolvedHomeSettings = homeSettings ?: HomeSettings()
+    return resolveGlobalLiquidGlassReuseEnabled(
+        androidNativeLiquidGlassEnabled = resolvedHomeSettings.androidNativeLiquidGlassEnabled,
+    )
 }
 
 internal fun resolveHomeTopTabIndicatorLiquidGlassEnabled(
@@ -237,7 +236,9 @@ internal fun resolveHomeTopTabIndicatorLiquidGlassEnabled(
 
 internal fun resolveHomeTopSearchLiquidGlassEnabled(
     homeSettings: HomeSettings?,
-): Boolean = resolveHomeTopChromeLiquidGlassEnabled(homeSettings)
+): Boolean {
+    return resolveHomeTopChromeLiquidGlassEnabled(homeSettings)
+}
 
 internal fun resolveHomeTopChromeMaterialMode(
     isHeaderBlurEnabled: Boolean,
@@ -2031,7 +2032,9 @@ fun HomeHeader(
                 },
                 pagerState = pagerState,
                 labelMode = topTabLabelMode,
-                isLiquidGlassEnabled = false,
+                isLiquidGlassEnabled = resolveHomeTopTabIndicatorLiquidGlassEnabled(
+                    homeSettings = homeSettings,
+                ),
                 liquidGlassStyle = liquidStyle,
                 liquidGlassTuning = liquidGlassTuning,
                 liquidGlassPreset = bottomBarLiquidGlassPreset,
