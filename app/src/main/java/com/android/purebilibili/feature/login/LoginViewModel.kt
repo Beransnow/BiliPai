@@ -252,9 +252,11 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private var currentPhone: String = ""
     /** passport 国家列表 id，中国大陆 = 1（不是区号 86） */
     private var currentCountryCode: Int = DEFAULT_PHONE_REGION_CID
-    private val appLoginDeviceId = UUID.randomUUID().toString().replace("-", "").uppercase()
-    private val appLoginBuvid = TokenManager.buvid3Cache
-        ?: "${appLoginDeviceId.lowercase()}infoc".also { TokenManager.buvid3Cache = it }
+    // Passport's Android-HD identity is intentionally separate from the web
+    // cookie jar's buvid3; see the equivalent PiliPlus LoginHttp identity.
+    private val appLoginIdentity = createPiliPlusLoginIdentity()
+    private val appLoginDeviceId = appLoginIdentity.deviceId
+    private val appLoginBuvid = appLoginIdentity.buvid
 
     // Password-login risk verification (safe center)
     private var riskTmpCode: String = ""
@@ -359,7 +361,9 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                     timestampSeconds = timestampMillis / 1000
                 )
                 val response = NetworkModule.passportApi.sendSmsCodeByApp(
-                    com.android.purebilibili.core.network.AppSignUtils.signForAndroidHdLogin(params)
+                    loginBuvid = appLoginBuvid,
+                    params = com.android.purebilibili.core.network.AppSignUtils
+                        .signForAndroidHdLogin(params),
                 )
                 
                 if (response.code == 0 && response.data != null) {
@@ -419,7 +423,9 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                     timestampSeconds = com.android.purebilibili.core.network.AppSignUtils.getTimestamp()
                 )
                 val response = NetworkModule.passportApi.loginBySmsApp(
-                    com.android.purebilibili.core.network.AppSignUtils.signForAndroidHdLogin(params)
+                    loginBuvid = appLoginBuvid,
+                    params = com.android.purebilibili.core.network.AppSignUtils
+                        .signForAndroidHdLogin(params),
                 )
                 
                 val body = response.body()
@@ -495,7 +501,9 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                     timestampSeconds = com.android.purebilibili.core.network.AppSignUtils.getTimestamp()
                 )
                 val response = NetworkModule.passportApi.loginByPasswordApp(
-                    com.android.purebilibili.core.network.AppSignUtils.signForAndroidHdLogin(params)
+                    loginBuvid = appLoginBuvid,
+                    params = com.android.purebilibili.core.network.AppSignUtils
+                        .signForAndroidHdLogin(params),
                 )
                 
                 val body = response.body()

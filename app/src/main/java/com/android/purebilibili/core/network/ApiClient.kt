@@ -2185,6 +2185,7 @@ interface PassportApi {
     @retrofit2.http.FormUrlEncoded
     @retrofit2.http.POST("x/passport-login/sms/send")
     suspend fun sendSmsCodeByApp(
+        @retrofit2.http.Header("X-BiliPai-Login-Buvid") loginBuvid: String,
         // Kotlin Map is Map<String, out String> without this; R8 can break FieldMap bodies in release.
         @retrofit2.http.FieldMap params: @JvmSuppressWildcards Map<String, String>
     ): SmsCodeResponse
@@ -2205,6 +2206,7 @@ interface PassportApi {
     @retrofit2.http.FormUrlEncoded
     @retrofit2.http.POST("x/passport-login/login/sms")
     suspend fun loginBySmsApp(
+        @retrofit2.http.Header("X-BiliPai-Login-Buvid") loginBuvid: String,
         @retrofit2.http.FieldMap params: @JvmSuppressWildcards Map<String, String>
     ): Response<LoginResponse>
     
@@ -2230,6 +2232,7 @@ interface PassportApi {
     @retrofit2.http.FormUrlEncoded
     @retrofit2.http.POST("x/passport-login/oauth2/login")
     suspend fun loginByPasswordApp(
+        @retrofit2.http.Header("X-BiliPai-Login-Buvid") loginBuvid: String,
         @retrofit2.http.FieldMap params: @JvmSuppressWildcards Map<String, String>
     ): Response<LoginResponse>
 
@@ -2807,6 +2810,7 @@ object NetworkModule {
                 }
 
                 val androidHdLoginAppKeyHeader = resolveAndroidHdLoginAppKeyHeader(url.encodedPath)
+                val loginBuvid = original.header("X-BiliPai-Login-Buvid")
                 //  合并模式 App 半边(匿名 android_hd 取流)同样需要 HD 身份头(UA/app-key/buvid),
                 //  仅当请求带 mobi_app=android_hd 时命中, 不影响原 TV 取流(mobi_app=android)
                 val isHdFeedRequest = url.encodedPath == "/x/v2/feed/index" &&
@@ -2827,7 +2831,8 @@ object NetworkModule {
                 if (androidHdLoginAppKeyHeader != null || isHdFeedRequest) {
                     builder
                         .header("app-key", androidHdLoginAppKeyHeader ?: "android_hd")
-                        .header("buvid", TokenManager.buvid3Cache.orEmpty())
+                        .header("buvid", loginBuvid ?: TokenManager.buvid3Cache.orEmpty())
+                        .removeHeader("X-BiliPai-Login-Buvid")
                         .header("bili-http-engine", "cronet")
                         .header("env", "prod")
                         .header("x-bili-trace-id", "11111111111111111111111111111111:1111111111111111:0:0")
