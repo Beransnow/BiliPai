@@ -1,6 +1,7 @@
 package com.android.purebilibili.feature.home.policy
 
 import com.android.purebilibili.core.store.CommonListHeaderCollapseMode
+import com.android.purebilibili.core.store.HomeBarHideType
 import com.android.purebilibili.core.store.HomeHeaderCollapseMode
 import com.android.purebilibili.feature.home.resolveNextHomeGlobalScrollOffset
 import kotlin.math.abs
@@ -14,7 +15,8 @@ internal enum class BottomBarVisibilityIntent {
 internal data class HomeScrollUpdate(
     val headerOffsetPx: Float,
     val bottomBarVisibilityIntent: BottomBarVisibilityIntent?,
-    val globalScrollOffset: Float?
+    val globalScrollOffset: Float?,
+    val shouldAnimateHeader: Boolean = false
 )
 
 internal data class HomeHeaderSettleTransition(
@@ -108,6 +110,7 @@ internal fun resolveHomeHeaderOffsetForSettledPage(
     }
 }
 
+@Suppress("UNUSED_PARAMETER")
 internal fun reduceHomePreScroll(
     currentHeaderOffsetPx: Float,
     deltaY: Float,
@@ -119,15 +122,24 @@ internal fun reduceHomePreScroll(
     useSideNavigation: Boolean,
     liquidGlassEnabled: Boolean,
     currentGlobalScrollOffset: Float,
-    bottomBarVisibilityThresholdPx: Float = 10f
+    bottomBarVisibilityThresholdPx: Float = 10f,
+    hideType: HomeBarHideType = HomeBarHideType.SYNC,
+    instantDirectionThresholdPx: Float = 0.5f
 ): HomeScrollUpdate {
+    // 首页顶栏对齐 PiliPlus：不再使用“仅回顶显示”这类自定义策略。
+    // 同步：高度跟手；即时：按滑动方向整段收起/展开。
     val nextHeaderOffset = when {
         !isHeaderCollapseEnabled -> 0f
-        // “仅回顶显示”保持折叠；“上滑时显示”可在列表任意位置随反向滚动展开。
-        collapseMode == CommonListHeaderCollapseMode.SHOW_AT_TOP_ONLY && !canRevealHeader ->
-            minHeaderOffsetPx
+        hideType == HomeBarHideType.INSTANT -> when {
+            deltaY <= -instantDirectionThresholdPx -> minHeaderOffsetPx
+            deltaY >= instantDirectionThresholdPx -> 0f
+            else -> currentHeaderOffsetPx
+        }
         else -> (currentHeaderOffsetPx + deltaY).coerceIn(minHeaderOffsetPx, 0f)
     }
+    val shouldAnimateHeader = isHeaderCollapseEnabled &&
+        hideType == HomeBarHideType.INSTANT &&
+        abs(nextHeaderOffset - currentHeaderOffsetPx) > 0.5f
 
     val nextBottomBarIntent = when {
         !isBottomBarAutoHideEnabled || useSideNavigation -> null
@@ -143,6 +155,7 @@ internal fun reduceHomePreScroll(
             currentOffset = currentGlobalScrollOffset,
             scrollDeltaY = deltaY,
             liquidGlassEnabled = liquidGlassEnabled
-        )
+        ),
+        shouldAnimateHeader = shouldAnimateHeader
     )
 }

@@ -1,6 +1,7 @@
 package com.android.purebilibili.feature.home.policy
 
 import com.android.purebilibili.core.store.CommonListHeaderCollapseMode
+import com.android.purebilibili.core.store.HomeBarHideType
 import com.android.purebilibili.core.store.HomeHeaderCollapseMode
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -184,7 +185,7 @@ class HomeScrollCoordinatorTest {
     }
 
     @Test
-    fun topOnlyMode_keepsHeaderCollapsedBeforeFeedReturnsToTop() {
+    fun syncMode_expandsHeaderOnReverseScrollEvenWhenFeedIsAwayFromTop() {
         val result = reduceHomePreScroll(
             currentHeaderOffsetPx = -120f,
             deltaY = 48f,
@@ -196,9 +197,11 @@ class HomeScrollCoordinatorTest {
             useSideNavigation = false,
             liquidGlassEnabled = false,
             currentGlobalScrollOffset = 0f,
+            hideType = HomeBarHideType.SYNC,
         )
 
-        assertEquals(-120f, result.headerOffsetPx)
+        assertEquals(-72f, result.headerOffsetPx)
+        assertEquals(false, result.shouldAnimateHeader)
     }
 
     @Test
@@ -321,7 +324,7 @@ class HomeScrollCoordinatorTest {
     }
 
     @Test
-    fun upwardScrollAwayFromTop_keepsHeaderCollapsed() {
+    fun upwardScrollAwayFromTop_tracksHeaderExpand() {
         val result = reduceHomePreScroll(
             currentHeaderOffsetPx = -120f,
             deltaY = 36f,
@@ -334,11 +337,11 @@ class HomeScrollCoordinatorTest {
             currentGlobalScrollOffset = 40f
         )
 
-        assertEquals(-120f, result.headerOffsetPx)
+        assertEquals(-84f, result.headerOffsetPx)
     }
 
     @Test
-    fun downwardScrollAwayFromTop_snapsHeaderFullyCollapsed() {
+    fun downwardScrollAwayFromTop_tracksHeaderCollapseWithoutSnapping() {
         val result = reduceHomePreScroll(
             currentHeaderOffsetPx = -40f,
             deltaY = -12f,
@@ -351,7 +354,45 @@ class HomeScrollCoordinatorTest {
             currentGlobalScrollOffset = 40f
         )
 
+        assertEquals(-52f, result.headerOffsetPx)
+    }
+
+    @Test
+    fun instantMode_hidesHeaderOnDownwardDirection() {
+        val result = reduceHomePreScroll(
+            currentHeaderOffsetPx = 0f,
+            deltaY = -8f,
+            minHeaderOffsetPx = -120f,
+            canRevealHeader = false,
+            isHeaderCollapseEnabled = true,
+            isBottomBarAutoHideEnabled = false,
+            useSideNavigation = false,
+            liquidGlassEnabled = false,
+            currentGlobalScrollOffset = 0f,
+            hideType = HomeBarHideType.INSTANT,
+        )
+
         assertEquals(-120f, result.headerOffsetPx)
+        assertEquals(true, result.shouldAnimateHeader)
+    }
+
+    @Test
+    fun instantMode_showsHeaderOnUpwardDirection() {
+        val result = reduceHomePreScroll(
+            currentHeaderOffsetPx = -120f,
+            deltaY = 8f,
+            minHeaderOffsetPx = -120f,
+            canRevealHeader = false,
+            isHeaderCollapseEnabled = true,
+            isBottomBarAutoHideEnabled = false,
+            useSideNavigation = false,
+            liquidGlassEnabled = false,
+            currentGlobalScrollOffset = 0f,
+            hideType = HomeBarHideType.INSTANT,
+        )
+
+        assertEquals(0f, result.headerOffsetPx)
+        assertEquals(true, result.shouldAnimateHeader)
     }
 
     @Test

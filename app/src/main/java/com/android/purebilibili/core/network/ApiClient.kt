@@ -1696,19 +1696,24 @@ interface DynamicApi {
         @Query("web_location") webLocation: String = "333.1365"
     ): DynamicUpdateCountResponse
 
-    //  [新增] 获取单条动态详情（桌面端详情接口）
-    @GET("x/polymer/web-dynamic/desktop/v1/detail")
+    //  与 PiliPlus 对齐：主路径使用 web 详情接口，并补齐 rid/type 与页面参数。
+    @GET("x/polymer/web-dynamic/v1/detail")
     suspend fun getDynamicDetail(
+        @Query("id") id: String? = null,
+        @Query("rid") rid: String? = null,
+        @Query("type") type: Int? = null,
+        @Query("features") features: String = DYNAMIC_DETAIL_FEATURES,
+        @Query("timezone_offset") timezoneOffset: Int = -480,
+        @Query("gaia_source") gaiaSource: String = "Athena",
+        @Query("web_location") webLocation: String = "333.1330"
+    ): DynamicDetailResponse
+
+    //  桌面端详情仅作降级：部分卡片在 web 接口字段更完整，desktop 反而会空内容。
+    @GET("x/polymer/web-dynamic/desktop/v1/detail")
+    suspend fun getDynamicDetailFallback(
         @Query("id") id: String,
         @Query("features") features: String = DYNAMIC_DETAIL_FEATURES,
         @Query("timezone_offset") timezoneOffset: Int = -480
-    ): DynamicDetailResponse
-
-    //  [降级] 旧版详情接口，某些动态类型在 desktop 接口会返回不支持
-    @GET("x/polymer/web-dynamic/v1/detail")
-    suspend fun getDynamicDetailFallback(
-        @Query("id") id: String,
-        @Query("features") features: String = DYNAMIC_DETAIL_FEATURES
     ): DynamicDetailResponse
 
     // 长图文/专栏 opus 详情接口，htmlNewStyle 用于兼容旧专栏正文结构。

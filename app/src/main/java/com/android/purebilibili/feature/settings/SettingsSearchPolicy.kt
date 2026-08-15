@@ -76,7 +76,7 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
         title = "导航与标签",
         subtitle = "底栏、顶部标签、平板侧边栏与底栏项目顺序",
         section = "设置",
-        aliases = listOf("导航", "底栏", "底部栏", "顶部标签", "顶部标签页", "首页搜索框", "搜索框折叠", "标签排序", "平板侧边栏", "侧边导航栏", "底栏顺序", "底栏项目", "底栏搜索入口", "搜索入口", "悬浮搜索")
+        aliases = listOf("导航", "底栏", "底部栏", "顶部标签", "顶部标签页", "首页搜索框", "搜索框折叠", "顶栏收起", "顶栏收起类型", "同步", "即时", "标签排序", "平板侧边栏", "侧边导航栏", "底栏顺序", "底栏项目", "底栏搜索入口", "搜索入口", "悬浮搜索")
     ),
     SettingsSearchEntry(
         target = SettingsSearchTarget.PLAYBACK_QUALITY,
@@ -495,7 +495,7 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
     SettingsSearchEntry(
         target = SettingsSearchTarget.APPEARANCE,
         title = "安卓原生液态玻璃",
-        subtitle = "全局启用顶部、底栏和评论区控件",
+        subtitle = "仅首页底栏与评论区底栏",
         section = "外观设置",
         aliases = listOf("全局液态玻璃", "评论区液态玻璃", "Android Native 液态玻璃"),
         focusId = SettingsSearchFocusIds.APPEARANCE_THEME

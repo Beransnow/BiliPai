@@ -60,7 +60,6 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -104,14 +103,12 @@ import com.android.purebilibili.feature.home.policy.captureHomeFeedScrollAnchor
 import com.android.purebilibili.feature.home.policy.reduceHomePreScroll
 import com.android.purebilibili.feature.home.policy.resolveHomeHeaderTransitionRunning
 import com.android.purebilibili.feature.home.policy.resolveHomeHeaderSettleTransition
-import com.android.purebilibili.feature.home.policy.resolveHomeHeaderReleaseTarget
 import com.android.purebilibili.feature.home.policy.shouldApplyHomeFeedScrollAnchor
 import com.android.purebilibili.feature.home.policy.shouldHandleHomeVerticalPreScroll
 import com.android.purebilibili.feature.home.policy.shouldReserveHomeBottomBarListPadding
 import com.android.purebilibili.feature.home.policy.shouldRestoreHomeFeedScrollAnchor
 import com.android.purebilibili.feature.home.policy.reduceHomeBottomBarListScroll
 import com.android.purebilibili.feature.home.policy.resolveHomeBottomBarBaseVisibility
-import com.android.purebilibili.feature.home.policy.resolveHomeHeaderOffsetForSettledPage
 import com.android.purebilibili.feature.home.policy.resolveHomeRecommendationHeaderCollapseMode
 import com.android.purebilibili.feature.bangumi.HomeBangumiTabPage
 import com.android.purebilibili.feature.live.LiveListScreen
@@ -1385,6 +1382,7 @@ fun HomeScreen(
     val headerCollapseMode = resolveHomeRecommendationHeaderCollapseMode(
         homeHeaderCollapseMode = homeSettings.homeHeaderCollapseMode
     )
+    val homeBarHideType = homeSettings.homeBarHideType
     val collapseSearchOnScroll = headerCollapseMode.collapseSearch
     val collapseTabsOnScroll = headerCollapseMode.collapseTabs
     val isAnyHeaderCollapseEnabled = headerCollapseMode.hasAnyCollapse
@@ -1392,30 +1390,6 @@ fun HomeScreen(
         collapseSearchOnScroll -> searchCollapseDistancePx
         collapseTabsOnScroll -> 1f
         else -> 0f
-    }
-
-    LaunchedEffect(pagerState, topTabEntries, headerAutoCollapseDistancePx, isAnyHeaderCollapseEnabled) {
-        snapshotFlow { pagerState.currentPage to pagerState.isScrollInProgress }
-            .distinctUntilChanged()
-            .collect { (page, scrolling) ->
-                if (scrolling) return@collect
-                val settledEntry = resolveHomeTopTabEntryOrNull(topTabEntries, page)
-                val settledCategory = (settledEntry as? HomeTopTabEntry.Category)?.category ?: return@collect
-                val settledGridState = gridStates[settledCategory] ?: return@collect
-                val settledHeaderOffsetPx = if (isAnyHeaderCollapseEnabled) {
-                    resolveHomeHeaderOffsetForSettledPage(
-                        currentHeaderOffsetPx = headerOffsetHeightPx,
-                        firstVisibleItemIndex = settledGridState.firstVisibleItemIndex,
-                        firstVisibleItemScrollOffset = settledGridState.firstVisibleItemScrollOffset,
-                        maxHeaderCollapsePx = headerAutoCollapseDistancePx
-                    )
-                } else {
-                    0f
-                }
-                if (kotlin.math.abs(headerOffsetHeightPx - settledHeaderOffsetPx) > 0.5f) {
-                    animateHeaderOffsetTo(settledHeaderOffsetPx)
-                }
-            }
     }
     
     // 标签页与搜索行共用布局偏移，但恢复时不能等待搜索行完全展开；
@@ -1436,13 +1410,6 @@ fun HomeScreen(
     } else {
         gridStates[currentCategory]
     }
-    val canRevealHeader by remember(activeGridState) {
-        derivedStateOf {
-            activeGridState != null &&
-                activeGridState.firstVisibleItemIndex == 0 &&
-                activeGridState.firstVisibleItemScrollOffset == 0
-        }
-    }
 
     val nestedScrollConnection = remember(
         isAnyHeaderCollapseEnabled,
@@ -1450,31 +1417,34 @@ fun HomeScreen(
         isBottomBarAutoHideEnabled,
         useSideNavigation,
         isLiquidGlassEnabled,
-        canRevealHeader,
         collapseTabsOnScroll,
-        homeSettings.commonListHeaderCollapseMode,
+        homeBarHideType,
     ) {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 if (!shouldHandleHomeVerticalPreScroll(deltaX = available.x, deltaY = available.y)) {
                     return Offset.Zero
                 }
-                headerSettleAnimationJob?.cancel()
-                headerSettleAnimationJob = null
                 val scrollUpdate = reduceHomePreScroll(
                     currentHeaderOffsetPx = headerOffsetHeightPx,
                     deltaY = available.y,
                     minHeaderOffsetPx = -headerAutoCollapseDistancePx,
-                    canRevealHeader = canRevealHeader,
-                    collapseMode = homeSettings.commonListHeaderCollapseMode,
+                    canRevealHeader = true,
                     isHeaderCollapseEnabled = isAnyHeaderCollapseEnabled,
                     isBottomBarAutoHideEnabled = isBottomBarAutoHideEnabled,
                     useSideNavigation = useSideNavigation,
                     liquidGlassEnabled = isLiquidGlassEnabled,
-                    currentGlobalScrollOffset = globalScrollOffset.value
+                    currentGlobalScrollOffset = globalScrollOffset.value,
+                    hideType = homeBarHideType
                 )
 
-                headerOffsetHeightPx = scrollUpdate.headerOffsetPx
+                if (scrollUpdate.shouldAnimateHeader) {
+                    animateHeaderOffsetTo(scrollUpdate.headerOffsetPx)
+                } else {
+                    headerSettleAnimationJob?.cancel()
+                    headerSettleAnimationJob = null
+                    headerOffsetHeightPx = scrollUpdate.headerOffsetPx
+                }
                 topTabsAutoCollapsedByScroll = reduceHomeTopTabsAutoCollapseState(
                     isCollapsed = topTabsAutoCollapsedByScroll,
                     scrollDeltaY = available.y,
@@ -1490,18 +1460,6 @@ fun HomeScreen(
                 }
 
                 return Offset.Zero
-            }
-
-            override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                if (!isAnyHeaderCollapseEnabled) return Velocity.Zero
-
-                val targetOffset = resolveHomeHeaderReleaseTarget(
-                    maxHeaderCollapsePx = headerAutoCollapseDistancePx,
-                    canRevealHeader = canRevealHeader,
-                    collapseMode = homeSettings.commonListHeaderCollapseMode,
-                )
-                animateHeaderOffsetTo(targetOffset)
-                return Velocity.Zero
             }
         }
     }

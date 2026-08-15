@@ -75,6 +75,7 @@ import com.android.purebilibili.feature.dynamic.resolveDynamicCardOuterPadding
 import com.android.purebilibili.data.model.response.DynamicStatModule
 import com.android.purebilibili.data.model.response.DynamicType
 import com.android.purebilibili.data.model.response.OpusContentBlock
+import com.android.purebilibili.data.repository.DynamicRepository
 import com.android.purebilibili.feature.dynamic.DynamicDeleteAction
 import com.android.purebilibili.feature.dynamic.resolveDynamicDeleteAction
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -105,6 +106,14 @@ fun DynamicCardV2(
     isLiked: Boolean = false,
     forwardCountDelta: Int = 0
 ) {
+    val openDynamicDetail = remember(item, onDynamicDetailClick) {
+        onDynamicDetailClick?.let { callback ->
+            { id: String ->
+                DynamicRepository.rememberDynamicDetailSeed(item)
+                callback(id)
+            }
+        }
+    }
     val author = item.modules.module_author
     val content = item.modules.module_dynamic
     val stat = item.modules.module_stat
@@ -139,11 +148,11 @@ fun DynamicCardV2(
     var replyInteractionOid by remember(item.id_str) { mutableStateOf(0L) }
     var replyInteractionType by remember(item.id_str) { mutableStateOf(0) }
     val isCurrentlyTop = item.modules.module_tag?.text == "置顶"
-    val isPrimaryClickEnabled = remember(cardClickAction, onArticleClick, onDynamicDetailClick, onPrimaryClickOverride) {
+    val isPrimaryClickEnabled = remember(cardClickAction, onArticleClick, openDynamicDetail, onPrimaryClickOverride) {
         shouldEnableDynamicCardPrimaryClick(
             action = cardClickAction,
             hasArticleClick = onArticleClick != null,
-            hasDynamicDetailClick = onDynamicDetailClick != null,
+            hasDynamicDetailClick = openDynamicDetail != null,
             hasPrimaryClickOverride = onPrimaryClickOverride != null
         )
     }
@@ -271,7 +280,7 @@ fun DynamicCardV2(
                     onVideoClick = onVideoClick,
                     onBangumiClick = onBangumiClick,
                     onArticleClick = onArticleClick,
-                    onDynamicDetailClick = onDynamicDetailClick,
+                    onDynamicDetailClick = openDynamicDetail,
                     onUserClick = onUserClick,
                     onLiveClick = onLiveClick
                 )
@@ -305,7 +314,7 @@ fun DynamicCardV2(
                                 onVideoClick = onVideoClick,
                                 onBangumiClick = onBangumiClick,
                                 onArticleClick = onArticleClick,
-                                onDynamicDetailClick = onDynamicDetailClick,
+                                onDynamicDetailClick = openDynamicDetail,
                                 onUserClick = onUserClick,
                                 onLiveClick = onLiveClick
                             )
@@ -689,7 +698,7 @@ fun DynamicCardV2(
                 cornerBadgeText = resolveDynamicArchiveBadgeLabel(archive),
                 onClick = {
                     playableBvid?.let(onVideoClick)
-                        ?: onDynamicDetailClick?.invoke(item.id_str)
+                        ?: openDynamicDetail?.invoke(item.id_str)
                 },
                 sharedElementKey = com.android.purebilibili.core.ui.transition.videoPlayerSharedElementKey(archive.bvid)
             )
@@ -704,7 +713,7 @@ fun DynamicCardV2(
                 cornerBadgeText = "番剧",
                 onClick = {
                     bangumiTarget?.let { onBangumiClick(it.seasonId, it.epId) }
-                        ?: onDynamicDetailClick?.invoke(item.id_str)
+                        ?: openDynamicDetail?.invoke(item.id_str)
                 },
                 sharedElementKey = com.android.purebilibili.core.ui.transition.videoPlayerSharedElementKey(
                     pgc.bvid.ifBlank { item.id_str }
@@ -840,7 +849,7 @@ fun DynamicCardV2(
                                 onClick = {
                                     when (val action = resolveDynamicOpusLinkCardAction(block.card)) {
                                         is DynamicOpusLinkCardAction.OpenVideo -> onVideoClick(action.videoId)
-                                        is DynamicOpusLinkCardAction.OpenDynamicDetail -> onDynamicDetailClick?.invoke(action.dynamicId)
+                                        is DynamicOpusLinkCardAction.OpenDynamicDetail -> openDynamicDetail?.invoke(action.dynamicId)
                                         is DynamicOpusLinkCardAction.OpenArticle -> onArticleClick?.invoke(action.articleId, action.title)
                                         is DynamicOpusLinkCardAction.OpenLive -> onLiveClick(
                                             action.roomId,
@@ -931,7 +940,7 @@ fun DynamicCardV2(
                                 sourceRect = rect
                             }
                             is DynamicCardMediaAction.OpenDynamicDetail -> {
-                                onDynamicDetailClick?.invoke(action.dynamicId)
+                                openDynamicDetail?.invoke(action.dynamicId)
                             }
                             DynamicCardMediaAction.None -> Unit
                         }
@@ -962,7 +971,7 @@ fun DynamicCardV2(
                     publishTs = author?.pub_ts ?: 0L,
                     onClick = {
                         playableBvid?.let(onVideoClick)
-                            ?: onDynamicDetailClick?.invoke(item.id_str)
+                            ?: openDynamicDetail?.invoke(item.id_str)
                     },
                     isCollection = true,
                     collectionTitle = season.title,
@@ -991,7 +1000,25 @@ fun DynamicCardV2(
                         onVideoClick = onVideoClick,
                         onBangumiClick = onBangumiClick,
                         onArticleClick = onArticleClick,
-                        onDynamicDetailClick = onDynamicDetailClick,
+                        onDynamicDetailClick = openDynamicDetail,
+                        onUserClick = onUserClick,
+                        onLiveClick = onLiveClick
+                    )
+                }
+            )
+            Spacer(modifier = Modifier.height(AppSpacingTokens.Medium))
+        }
+
+        content?.major?.live?.let { live ->
+            LiveMajorCard(
+                live = live,
+                onLiveClick = { roomId, title, uname ->
+                    dispatchDynamicCardPrimaryAction(
+                        action = DynamicCardPrimaryAction.OpenLive(roomId, title, uname),
+                        onVideoClick = onVideoClick,
+                        onBangumiClick = onBangumiClick,
+                        onArticleClick = onArticleClick,
+                        onDynamicDetailClick = openDynamicDetail,
                         onUserClick = onUserClick,
                         onLiveClick = onLiveClick
                     )
@@ -1007,7 +1034,7 @@ fun DynamicCardV2(
                 onVideoClick = onVideoClick,
                 onBangumiClick = onBangumiClick,
                 onUserClick = onUserClick,
-                onDynamicDetailClick = onDynamicDetailClick,
+                onDynamicDetailClick = openDynamicDetail,
                 gifImageLoader = gifImageLoader,
                 defaultPreviewTextVisible = dynamicPreviewTextVisible
             )
@@ -1049,7 +1076,10 @@ fun DynamicCardV2(
                 count = statModule.comment.count,
                 label = "评论",
                 enabled = !statModule.comment.forbidden,
-                onClick = { onCommentClick(item.id_str) },
+                onClick = {
+                    DynamicRepository.rememberDynamicDetailSeed(item)
+                    onCommentClick(item.id_str)
+                },
                 modifier = Modifier.weight(actionButtonWeight)
             )
             
@@ -1064,14 +1094,14 @@ fun DynamicCardV2(
         }
         
         //  相关动态折叠条（module_fold：如“展开3条相关动态”，点击进动态详情）
-        if (!isDetail && onDynamicDetailClick != null) {
+        if (!isDetail && openDynamicDetail != null) {
             val foldStatement = resolveDynamicFoldStatement(item.modules.module_fold)
             if (foldStatement != null) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(AppShapes.container(ContainerLevel.Chip))
-                        .clickable { onDynamicDetailClick(item.id_str) }
+                        .clickable { openDynamicDetail(item.id_str) }
                         .padding(vertical = AppSpacingTokens.Small),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically

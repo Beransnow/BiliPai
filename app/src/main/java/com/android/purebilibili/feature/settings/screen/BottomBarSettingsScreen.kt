@@ -42,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.R
+import com.android.purebilibili.core.store.HomeBarHideType
 import com.android.purebilibili.core.store.HomeHeaderBlurMode
 import com.android.purebilibili.core.store.HomeHeaderCollapseMode
 import com.android.purebilibili.core.store.HomeTopLayoutOrder
@@ -198,6 +199,8 @@ fun BottomBarSettingsContent(
         .collectAsStateWithLifecycle(initialValue = HomeTopLayoutOrder.SEARCH_THEN_TABS)
     val homeHeaderCollapseMode by SettingsManager.getHomeHeaderCollapseMode(context)
         .collectAsStateWithLifecycle(initialValue = HomeHeaderCollapseMode.BOTH)
+    val homeBarHideType by SettingsManager.getHomeBarHideType(context)
+        .collectAsStateWithLifecycle(initialValue = HomeBarHideType.SYNC)
     val homeTopRightAction by SettingsManager.getHomeTopRightAction(context)
         .collectAsStateWithLifecycle(initialValue = HomeTopRightAction.SETTINGS)
     val isBottomBarFloating by SettingsManager.getBottomBarFloating(context)
@@ -510,6 +513,19 @@ fun BottomBarSettingsContent(
                                         collapseSearch = collapseSearch,
                                     )
                                     scope.launch { SettingsManager.setHomeHeaderCollapseMode(context, nextMode) }
+                                },
+                            )
+                            AppPreferenceDivider()
+                            SettingsSingleChoicePreference(
+                                icon = Icons.Outlined.UnfoldMore,
+                                iconTint = com.android.purebilibili.core.theme.iOSPurple,
+                                title = "顶栏收起类型",
+                                options = HomeBarHideType.entries.map { type ->
+                                    AppSegmentOption(type, type.label)
+                                },
+                                selectedValue = homeBarHideType,
+                                onSelectionChange = { type ->
+                                    scope.launch { SettingsManager.setHomeBarHideType(context, type) }
                                 },
                             )
                             AppPreferenceDivider()

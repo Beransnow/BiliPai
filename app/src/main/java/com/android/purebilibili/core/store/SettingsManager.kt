@@ -514,6 +514,7 @@ data class HomeSettings(
     val liquidGlassStrength: Float = 0.52f,
     val liquidGlassProgress: Float = 0.5f,
     val homeHeaderCollapseMode: HomeHeaderCollapseMode = HomeHeaderCollapseMode.BOTH,
+    val homeBarHideType: HomeBarHideType = HomeBarHideType.SYNC,
     val commonListHeaderCollapseMode: CommonListHeaderCollapseMode =
         CommonListHeaderCollapseMode.SHOW_ON_REVERSE_SCROLL,
     val isHeaderCollapseEnabled: Boolean = true,
@@ -687,6 +688,20 @@ enum class HomeHeaderCollapseMode(
 
         fun fromLegacyBoolean(value: Boolean): HomeHeaderCollapseMode =
             if (value) BOTH else OFF
+    }
+}
+
+enum class HomeBarHideType(
+    val value: Int,
+    val label: String,
+    val description: String
+) {
+    SYNC(0, "同步", "顶栏高度跟随列表滑动，上滑展开、下滑收起"),
+    INSTANT(1, "即时", "识别滑动方向后，顶栏整段收起或展开");
+
+    companion object {
+        fun fromValue(value: Int): HomeBarHideType =
+            entries.find { it.value == value } ?: SYNC
     }
 }
 
@@ -1300,6 +1315,7 @@ object SettingsManager {
     private val KEY_HOME_HEADER_BLUR_MODE = intPreferencesKey("home_header_blur_mode")
     private val KEY_HEADER_COLLAPSE_ENABLED = booleanPreferencesKey("header_collapse_enabled")
     private val KEY_HOME_HEADER_COLLAPSE_MODE = intPreferencesKey("home_header_collapse_mode")
+    private val KEY_HOME_BAR_HIDE_TYPE = intPreferencesKey("home_bar_hide_type")
     private val KEY_COMMON_LIST_HEADER_COLLAPSE_MODE =
         intPreferencesKey("common_list_header_collapse_mode")
     private val KEY_HOME_TOP_LAYOUT_ORDER = intPreferencesKey("home_top_layout_order")
@@ -1464,6 +1480,9 @@ object SettingsManager {
             liquidGlassStrength = FIXED_LIQUID_GLASS_STRENGTH,
             liquidGlassProgress = FIXED_LIQUID_GLASS_PROGRESS,
             homeHeaderCollapseMode = headerCollapseMode,
+            homeBarHideType = HomeBarHideType.fromValue(
+                preferences[KEY_HOME_BAR_HIDE_TYPE] ?: HomeBarHideType.SYNC.value
+            ),
             commonListHeaderCollapseMode = CommonListHeaderCollapseMode.fromValue(
                 preferences[KEY_COMMON_LIST_HEADER_COLLAPSE_MODE]
                     ?: CommonListHeaderCollapseMode.SHOW_ON_REVERSE_SCROLL.value
@@ -3409,6 +3428,19 @@ object SettingsManager {
         context.settingsDataStore.edit { preferences ->
             preferences[KEY_HOME_HEADER_COLLAPSE_MODE] = mode.value
             preferences[KEY_HEADER_COLLAPSE_ENABLED] = mode.hasAnyCollapse
+        }
+    }
+
+    fun getHomeBarHideType(context: Context): Flow<HomeBarHideType> =
+        context.settingsDataStore.data.map { preferences ->
+            HomeBarHideType.fromValue(
+                preferences[KEY_HOME_BAR_HIDE_TYPE] ?: HomeBarHideType.SYNC.value
+            )
+        }
+
+    suspend fun setHomeBarHideType(context: Context, type: HomeBarHideType) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_HOME_BAR_HIDE_TYPE] = type.value
         }
     }
 
