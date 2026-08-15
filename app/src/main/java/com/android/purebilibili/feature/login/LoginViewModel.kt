@@ -366,6 +366,11 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                     currentCaptchaKey = response.data.captchaKey
                     Logger.d("LoginDebug", "短信验证码已发送")
                     _state.value = LoginState.SmsSent(currentCaptchaKey)
+                } else if (response.code == CAPTCHA_RETRY_CODE && restartCaptchaFrom(
+                        response.data?.recaptchaUrl.orEmpty()
+                    )
+                ) {
+                    Logger.d("LoginDebug", "短信验证码要求重新完成安全验证")
                 } else {
                     _state.value = LoginState.Error(
                         "短信发送失败(${response.code}): ${response.message} " +
@@ -504,6 +509,8 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                             accessTokenPlatform = TokenManager.ACCESS_TOKEN_PLATFORM_ANDROID
                         )
                     }
+                } else if (body?.code == CAPTCHA_RETRY_CODE && restartCaptchaFrom(body.data?.url.orEmpty())) {
+                    Logger.d("LoginDebug", "密码登录要求重新完成安全验证")
                 } else {
                     _state.value = LoginState.Error(
                         "登录失败(${body?.code}): ${body?.message ?: "未知错误"} " +
@@ -723,6 +730,21 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         riskHideTel = ""
         riskRecaptchaToken = ""
     }
+
+    /**
+     * Mirrors PiliPlus: a -105 response carries a replacement captcha URL.
+     * Preserve the original login request in the screen so it can be replayed
+     * only after this new challenge succeeds.
+     */
+    private fun restartCaptchaFrom(recaptchaUrl: String): Boolean {
+        val captchaData = parseLoginRecaptchaUrl(recaptchaUrl) ?: return false
+        currentCaptchaData = captchaData
+        currentValidate = ""
+        currentSeccode = ""
+        currentChallenge = ""
+        _state.value = LoginState.CaptchaReady(captchaData)
+        return true
+    }
     
     /**
      * 处理登录返回的 Cookie
@@ -884,6 +906,10 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         currentCountryCode = DEFAULT_PHONE_REGION_CID
         clearRiskSession()
         _state.value = LoginState.PhoneIdle
+    }
+
+    private companion object {
+        const val CAPTCHA_RETRY_CODE = -105
     }
     
     // ==========  TV 端登录方法 (获取 access_token 用于高画质视频) ==========
