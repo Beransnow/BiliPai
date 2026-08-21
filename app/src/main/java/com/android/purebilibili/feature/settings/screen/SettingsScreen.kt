@@ -511,6 +511,7 @@ fun SettingsScreen(
     // Dialogs
     if (showCacheDialog) {
         CacheClearConfirmDialog(
+            breakdown = state.cacheBreakdown,
             selectedCacheSizeSummary = selectedCacheSizeSummary,
             options = cacheClearOptions,
             selectedTargets = selectedCacheClearTargets,
