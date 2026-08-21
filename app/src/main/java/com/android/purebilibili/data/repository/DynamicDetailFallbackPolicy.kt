@@ -1,6 +1,8 @@
 package com.android.purebilibili.data.repository
 
 import com.android.purebilibili.data.model.response.DynamicItem
+import com.android.purebilibili.data.model.response.DynamicMajor
+import com.android.purebilibili.data.model.response.OpusMajor
 
 internal fun shouldFetchStandardDetailForPlainTextDynamic(item: DynamicItem): Boolean {
     val content = item.modules.module_dynamic ?: return false
@@ -51,8 +53,80 @@ internal fun shouldFetchDynamicDetailByRid(
 internal fun resolvePreferredDynamicDetailItem(
     candidates: List<DynamicItem>
 ): DynamicItem? {
-    return candidates.firstOrNull { !shouldFallbackForDynamicDetail(it) }
-        ?: candidates.firstOrNull()
+    val renderable = candidates.filter { !shouldFallbackForDynamicDetail(it) }
+    if (renderable.isEmpty()) return candidates.firstOrNull()
+    return renderable.maxByOrNull(::resolveDynamicOpusContentScore) ?: renderable.first()
+}
+
+internal fun resolveDynamicOpusContentScore(item: DynamicItem): Int {
+    val opus = item.modules.module_dynamic?.major?.opus ?: return 0
+    return opus.contentBlocks.size * 100 +
+        opus.pics.size +
+        (opus.summary?.text?.length ?: 0)
+}
+
+internal fun mergeRicherOpusDetailContent(
+    base: DynamicItem,
+    candidates: List<DynamicItem>
+): DynamicItem {
+    val richest = candidates.maxByOrNull(::resolveDynamicOpusContentScore) ?: return base
+    if (resolveDynamicOpusContentScore(richest) <= resolveDynamicOpusContentScore(base)) {
+        return base
+    }
+    val richestOpus = richest.modules.module_dynamic?.major?.opus ?: return base
+    val baseContent = base.modules.module_dynamic ?: return richest
+    val baseMajor = baseContent.major
+    val baseOpus = baseMajor?.opus
+    val mergedOpus = OpusMajor(
+        jump_url = baseOpus?.jump_url?.takeIf { it.isNotBlank() } ?: richestOpus.jump_url,
+        pics = if (richestOpus.pics.size >= (baseOpus?.pics?.size ?: 0)) {
+            richestOpus.pics
+        } else {
+            baseOpus?.pics.orEmpty()
+        },
+        summary = if ((richestOpus.summary?.text?.length ?: 0) >= (baseOpus?.summary?.text?.length ?: 0)) {
+            richestOpus.summary
+        } else {
+            baseOpus?.summary
+        },
+        title = richestOpus.title?.takeIf { it.isNotBlank() } ?: baseOpus?.title,
+        contentBlocks = if (richestOpus.contentBlocks.size >= (baseOpus?.contentBlocks?.size ?: 0)) {
+            richestOpus.contentBlocks
+        } else {
+            baseOpus?.contentBlocks.orEmpty()
+        }
+    )
+    val mergedMajor = (baseMajor ?: DynamicMajor(
+        type = "MAJOR_TYPE_OPUS"
+    )).copy(
+        type = baseMajor?.type?.takeIf { it.isNotBlank() } ?: "MAJOR_TYPE_OPUS",
+        opus = mergedOpus
+    )
+    return base.copy(
+        modules = base.modules.copy(
+            module_dynamic = baseContent.copy(major = mergedMajor)
+        )
+    )
+}
+
+/** Retains feed-defined comment metadata when detail/opus responses omit it. */
+internal fun mergeDynamicDetailInteractionMetadata(
+    detailItem: DynamicItem,
+    seedItem: DynamicItem?
+): DynamicItem {
+    if (seedItem == null) return detailItem
+    val detailBasic = detailItem.basic?.takeIf {
+        it.comment_type > 0 && it.comment_id_str.toLongOrNull()?.let { oid -> oid > 0L } == true
+    }
+    val seedBasic = seedItem.basic?.takeIf {
+        it.comment_type > 0 && it.comment_id_str.toLongOrNull()?.let { oid -> oid > 0L } == true
+    }
+    return detailItem.copy(
+        basic = detailBasic ?: seedBasic ?: detailItem.basic,
+        modules = detailItem.modules.copy(
+            module_stat = detailItem.modules.module_stat ?: seedItem.modules.module_stat
+        )
+    )
 }
 
 internal fun shouldFetchOpusDetailForDynamicDetail(item: DynamicItem): Boolean {

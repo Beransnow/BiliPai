@@ -1,12 +1,17 @@
 package com.android.purebilibili.data.repository
 
 import com.android.purebilibili.data.model.response.DynamicAuthorModule
+import com.android.purebilibili.data.model.response.DynamicBasic
 import com.android.purebilibili.data.model.response.DynamicContentModule
 import com.android.purebilibili.data.model.response.DynamicDesc
 import com.android.purebilibili.data.model.response.DynamicItem
 import com.android.purebilibili.data.model.response.DynamicMajor
 import com.android.purebilibili.data.model.response.DynamicModules
+import com.android.purebilibili.data.model.response.DynamicStatModule
+import com.android.purebilibili.data.model.response.StatItem
+import com.android.purebilibili.data.model.response.OpusContentBlock
 import com.android.purebilibili.data.model.response.OpusMajor
+import com.android.purebilibili.data.model.response.OpusPic
 import com.android.purebilibili.data.model.response.OpusSummary
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -163,5 +168,89 @@ class DynamicDetailFallbackPolicyTest {
         )
 
         assertFalse(shouldFetchOpusDetailForDynamicDetail(item))
+    }
+
+    @Test
+    fun mergeRicherOpusDetailContent_replacesNineGridPreviewWithFullParagraphs() {
+        val preview = DynamicItem(
+            id_str = "opus-preview",
+            modules = DynamicModules(
+                module_dynamic = DynamicContentModule(
+                    desc = DynamicDesc(text = "预览摘要"),
+                    major = DynamicMajor(
+                        type = "MAJOR_TYPE_OPUS",
+                        opus = OpusMajor(
+                            title = "新翼神龙卡组考卷",
+                            summary = OpusSummary(text = "预览摘要"),
+                            pics = listOf(
+                                OpusPic(url = "https://i0.hdslb.com/1.jpg"),
+                                OpusPic(url = "https://i0.hdslb.com/2.jpg")
+                            )
+                        )
+                    )
+                )
+            )
+        )
+        val full = DynamicItem(
+            id_str = "opus-full",
+            modules = DynamicModules(
+                module_dynamic = DynamicContentModule(
+                    desc = DynamicDesc(text = "完整正文第一段"),
+                    major = DynamicMajor(
+                        type = "MAJOR_TYPE_OPUS",
+                        opus = OpusMajor(
+                            title = "新翼神龙卡组考卷，已快速公式答题",
+                            summary = OpusSummary(text = "完整正文第一段"),
+                            pics = listOf(
+                                OpusPic(url = "https://i0.hdslb.com/1.jpg"),
+                                OpusPic(url = "https://i0.hdslb.com/2.jpg"),
+                                OpusPic(url = "https://i0.hdslb.com/3.jpg")
+                            ),
+                            contentBlocks = listOf(
+                                OpusContentBlock.Text("完整正文第一段"),
+                                OpusContentBlock.Image(OpusPic(url = "https://i0.hdslb.com/1.jpg")),
+                                OpusContentBlock.Text("图后还有公式和答题说明")
+                            )
+                        )
+                    )
+                )
+            )
+        )
+
+        val merged = mergeRicherOpusDetailContent(preview, listOf(preview, full))
+
+        assertEquals(3, merged.modules.module_dynamic?.major?.opus?.contentBlocks?.size)
+        assertEquals(
+            "图后还有公式和答题说明",
+            (merged.modules.module_dynamic?.major?.opus?.contentBlocks?.last()
+                as? OpusContentBlock.Text)?.text
+        )
+        assertEquals(
+            "opus-preview",
+            merged.id_str
+        )
+    }
+
+    @Test
+    fun mergeInteractionMetadata_retainsDocumentedCommentTargetFromFeedSeed() {
+        val detail = DynamicItem(
+            id_str = "dynamic-id",
+            modules = DynamicModules(
+                module_dynamic = DynamicContentModule(desc = DynamicDesc(text = "detail"))
+            )
+        )
+        val seed = DynamicItem(
+            id_str = "dynamic-id",
+            basic = DynamicBasic(comment_id_str = "326122895", comment_type = 11),
+            modules = DynamicModules(
+                module_stat = DynamicStatModule(comment = StatItem(count = 17))
+            )
+        )
+
+        val merged = mergeDynamicDetailInteractionMetadata(detail, seed)
+
+        assertEquals("326122895", merged.basic?.comment_id_str)
+        assertEquals(11, merged.basic?.comment_type)
+        assertEquals(17, merged.modules.module_stat?.comment?.count)
     }
 }

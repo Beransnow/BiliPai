@@ -304,7 +304,12 @@ object DynamicRepository {
             seed?.let(candidates::add)
             val resolved = resolvePreferredDynamicDetailItem(candidates)
             if (resolved != null) {
-                return@withContext Result.success(resolved)
+                return@withContext Result.success(
+                    mergeDynamicDetailInteractionMetadata(
+                        detailItem = mergeRicherOpusDetailContent(resolved, candidates),
+                        seedItem = seed
+                    )
+                )
             }
 
             Result.failure(Exception("动态详情为空"))
@@ -438,14 +443,13 @@ object DynamicRepository {
         }
     }
 
-    private fun buildSelectedUserDynamicFeedParams(
+    internal fun buildSelectedUserDynamicFeedParams(
         hostMid: Long,
         offset: String
     ): Map<String, String> {
         return mapOf(
             "host_mid" to hostMid.toString(),
             "offset" to offset,
-            "page" to "1",
             "features" to "itemOpusStyle,listOnlyfans",
             "timezone_offset" to "-480",
             "platform" to "web",
