@@ -89,6 +89,7 @@ import com.android.purebilibili.core.util.BilibiliNavigationTargetParser
 import com.android.purebilibili.core.util.WindowWidthSizeClass
 import com.android.purebilibili.core.util.Logger
 import com.android.purebilibili.feature.plugin.EyeProtectionOverlay
+import com.android.purebilibili.feature.plugin.PluginEffectHintHost
 import com.android.purebilibili.feature.settings.AppUpdateAutoCheckGate
 import com.android.purebilibili.feature.settings.AppUpdateCheckResult
 import com.android.purebilibili.feature.settings.AppUpdateChecker
@@ -1542,7 +1543,13 @@ open class MainActivity : AppCompatActivity() {
                     }
                     
                     //  护眼模式覆盖层（最顶层，应用于所有内容）
-                    EyeProtectionOverlay()
+                    EyeProtectionOverlay(
+                        playbackActive = isInVideoDetail ||
+                            showFullscreen ||
+                            miniPlayerManager.isPlaying ||
+                            isPipRenderingActive
+                    )
+                    PluginEffectHintHost()
                     
                     // [New] Custom Splash Wallpaper Overlay
                     val readCustomSplashPrefs = remember { shouldReadCustomSplashPreferences() }
