@@ -3,6 +3,7 @@ package com.android.purebilibili.feature.home.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.MaterialTheme
@@ -17,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.SettingsManager
@@ -125,11 +127,26 @@ internal fun BottomBarFloatingSegmentedControl(
     val onSelectedState = rememberUpdatedState(onSelected)
     val enabledState = rememberUpdatedState(enabled)
 
-    Box {
+    BoxWithConstraints {
+        val indicatorWidthDp = when {
+            itemWidth != null -> itemWidth.value
+            constraints.hasBoundedWidth ->
+                ((maxWidth.value - 8f).coerceAtLeast(0f) / itemCount)
+            else -> dockIndicatorHeight.value * FLOATING_DOCK_MIN_INDICATOR_ASPECT
+        }
+        val captureInsets = resolveFloatingDockCaptureInsets(
+            shellHeightDp = dockShellHeight.value,
+            requestedIndicatorHeightDp = dockIndicatorHeight.value,
+            indicatorWidthDp = indicatorWidthDp,
+        )
         if (effectiveBackdrop != null) {
             Box(
                 modifier = Modifier
                     .matchParentSize()
+                    .bottomBarMatchedCaptureOverflow(
+                        horizontalInset = captureInsets.horizontalDp.dp,
+                        verticalInset = captureInsets.verticalDp.dp,
+                    )
                     .alpha(0f)
                     .layerBackdrop(localBackdrop)
                     .background(AppSurfaceTokens.background())

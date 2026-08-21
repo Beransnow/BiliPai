@@ -22,6 +22,15 @@ internal const val FLOATING_DOCK_INNER_SHADOW_RADIUS_DP = 8f
 
 internal const val FLOATING_DOCK_TAB_PRESS_SCALE_EXTRA = 0.2f
 
+private const val FLOATING_DOCK_MAX_VELOCITY_SCALE_X = 1.25f
+private const val FLOATING_DOCK_MAX_VELOCITY_SCALE_Y = 1.2f
+private const val FLOATING_DOCK_PANEL_OFFSET_DP = 4f
+
+internal data class FloatingDockCaptureInsets(
+    val horizontalDp: Float,
+    val verticalDp: Float,
+)
+
 /**
  * Short chrome (search 36dp, top tabs ~40dp) cannot use the home dock's 24dp lens:
  * top and bottom refraction meet in the middle as a black shrimp line.
@@ -77,6 +86,36 @@ internal fun resolveFloatingDockIndicatorHeightDp(
     if (tabWidthDp <= 0f) return requestedHeightDp
     val maxHeightForCapsule = tabWidthDp / FLOATING_DOCK_MIN_INDICATOR_ASPECT
     return min(requestedHeightDp, maxHeightForCapsule)
+}
+
+internal fun resolveFloatingDockCaptureInsets(
+    shellHeightDp: Float,
+    requestedIndicatorHeightDp: Float,
+    indicatorWidthDp: Float,
+): FloatingDockCaptureInsets {
+    if (shellHeightDp <= 0f || indicatorWidthDp <= 0f) {
+        return FloatingDockCaptureInsets(horizontalDp = 0f, verticalDp = 0f)
+    }
+    val fittedIndicatorHeightDp = resolveFloatingDockIndicatorHeightDp(
+        requestedHeightDp = requestedIndicatorHeightDp,
+        tabWidthDp = indicatorWidthDp,
+    )
+    val geometry = com.android.purebilibili.core.ui.resolveMatchedLiquidIndicatorGeometry(
+        dockHeightDp = shellHeightDp,
+        indicatorHeightDp = fittedIndicatorHeightDp,
+    )
+    val samplingReachDp = max(
+        resolveCompactDockIndicatorLensHeightDp(shellHeightDp),
+        resolveCompactDockIndicatorLensAmountDp(shellHeightDp),
+    )
+    val horizontalScale = geometry.pressedScale * FLOATING_DOCK_MAX_VELOCITY_SCALE_X
+    val verticalPressedHeightDp = geometry.pressedHeightDp * FLOATING_DOCK_MAX_VELOCITY_SCALE_Y
+    return FloatingDockCaptureInsets(
+        horizontalDp = indicatorWidthDp * (horizontalScale - 1f).coerceAtLeast(0f) / 2f +
+            samplingReachDp + FLOATING_DOCK_PANEL_OFFSET_DP,
+        verticalDp = ((verticalPressedHeightDp - shellHeightDp) / 2f).coerceAtLeast(0f) +
+            samplingReachDp + FLOATING_DOCK_PANEL_OFFSET_DP,
+    )
 }
 
 internal fun resolveFloatingDockDragEdgeInsetPx(

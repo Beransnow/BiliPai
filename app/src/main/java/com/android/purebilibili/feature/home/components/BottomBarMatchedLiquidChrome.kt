@@ -63,18 +63,28 @@ internal enum class BottomBarMatchedDockEdge {
     BOTTOM
 }
 
-internal fun Modifier.bottomBarMatchedCaptureOverflow(inset: Dp): Modifier = layout { measurable, constraints ->
+internal fun Modifier.bottomBarMatchedCaptureOverflow(inset: Dp): Modifier =
+    bottomBarMatchedCaptureOverflow(
+        horizontalInset = inset,
+        verticalInset = inset,
+    )
+
+internal fun Modifier.bottomBarMatchedCaptureOverflow(
+    horizontalInset: Dp,
+    verticalInset: Dp,
+): Modifier = layout { measurable, constraints ->
     if (!constraints.hasBoundedWidth || !constraints.hasBoundedHeight) {
         val placeable = measurable.measure(constraints)
         layout(placeable.width, placeable.height) {
             placeable.placeRelative(0, 0)
         }
     } else {
-        val insetPx = inset.roundToPx().coerceAtLeast(0)
-        val expandedWidth = (constraints.maxWidth.toLong() + insetPx.toLong() * 2L)
+        val horizontalInsetPx = horizontalInset.roundToPx().coerceAtLeast(0)
+        val verticalInsetPx = verticalInset.roundToPx().coerceAtLeast(0)
+        val expandedWidth = (constraints.maxWidth.toLong() + horizontalInsetPx.toLong() * 2L)
             .coerceAtMost(Constraints.Infinity.toLong())
             .toInt()
-        val expandedHeight = (constraints.maxHeight.toLong() + insetPx.toLong() * 2L)
+        val expandedHeight = (constraints.maxHeight.toLong() + verticalInsetPx.toLong() * 2L)
             .coerceAtMost(Constraints.Infinity.toLong())
             .toInt()
         val placeable = measurable.measure(
@@ -84,7 +94,7 @@ internal fun Modifier.bottomBarMatchedCaptureOverflow(inset: Dp): Modifier = lay
             )
         )
         layout(constraints.maxWidth, constraints.maxHeight) {
-            placeable.placeRelative(-insetPx, -insetPx)
+            placeable.placeRelative(-horizontalInsetPx, -verticalInsetPx)
         }
     }
 }

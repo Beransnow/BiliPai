@@ -112,6 +112,25 @@ class FloatingBottomBarGeometryTest {
     }
 
     @Test
+    fun `wide edge indicator capture covers drag scale and velocity stretch`() {
+        val indicatorWidth = 470f
+        val captureInsets = resolveFloatingDockCaptureInsets(
+            shellHeightDp = 44f,
+            requestedIndicatorHeightDp = 39f,
+            indicatorWidthDp = indicatorWidth,
+        )
+        val geometry = com.android.purebilibili.core.ui.resolveMatchedLiquidIndicatorGeometry(
+            dockHeightDp = 44f,
+            indicatorHeightDp = 39f,
+        )
+        val restingScaleOverflow = indicatorWidth * (geometry.pressedScale - 1f) / 2f
+
+        assertTrue(captureInsets.horizontalDp > restingScaleOverflow)
+        assertTrue(captureInsets.verticalDp > 0f)
+        assertTrue(captureInsets.horizontalDp > captureInsets.verticalDp)
+    }
+
+    @Test
     fun `system gesture inset never shrinks below the fallback edge`() {
         assertEquals(24f, resolveFloatingDockDragEdgeInsetPx(systemInsetPx = 0f, fallbackPx = 24f))
         assertEquals(80f, resolveFloatingDockDragEdgeInsetPx(systemInsetPx = 80f, fallbackPx = 24f))
