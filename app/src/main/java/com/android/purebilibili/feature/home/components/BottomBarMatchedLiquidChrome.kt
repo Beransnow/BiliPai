@@ -12,7 +12,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -301,19 +300,26 @@ internal fun BottomBarMatchedReusableLiquidDock(
     } else {
         localBackdrop
     }
-    val isDarkTheme = isSystemInDarkTheme()
+    val isDarkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.background())
     val blurIntensity = currentUnifiedBlurIntensity()
     val tuning = resolveAndroidNativeBottomBarTuning(
         blurEnabled = true,
         darkTheme = isDarkTheme
     )
-    val containerColor = resolveAndroidNativeFloatingBottomBarContainerColor(
+    val materialContainerColor = resolveAndroidNativeFloatingBottomBarContainerColor(
         surfaceColor = AppSurfaceTokens.cardContainer(),
         tuning = tuning,
         glassEnabled = glassEnabled,
         blurEnabled = true,
         blurIntensity = blurIntensity,
         liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset
+    )
+    // Reused chrome must finish with the same neutral shell color as the home dock.
+    // The material container alone can inherit a gray/tinted card surface from the theme.
+    val containerColor = resolveBiliPaiBottomBarShellColor(
+        containerColor = materialContainerColor,
+        liquidGlassEnabled = glassEnabled,
+        darkTheme = isDarkTheme
     )
     // 小胶囊关闭 shell lens 时不必做 capture overflow，减少边沿采样产生的亮线。
     val fullCaptureLensSpec = resolveBottomBarBackdropPresetCaptureLens(progress = 1f)
