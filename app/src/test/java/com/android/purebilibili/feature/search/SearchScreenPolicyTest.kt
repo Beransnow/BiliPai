@@ -37,6 +37,18 @@ class SearchScreenPolicyTest {
     }
 
     @Test
+    fun resetSearchScroll_preservesPositionWhenReturningFromVideoDetail() {
+        assertFalse(
+            shouldResetSearchResultScroll(
+                searchSessionId = 2L,
+                showResults = true,
+                lastResetSessionId = 0L,
+                isReturningFromVideoDetail = true,
+            )
+        )
+    }
+
+    @Test
     fun backToTopButton_onlyShowsAfterResultListScrollsPastThreshold() {
         assertFalse(
             shouldShowSearchBackToTop(
@@ -173,6 +185,15 @@ class SearchScreenPolicyTest {
         assertTrue(source.contains("isQuickReturningFromVideoDetail: Boolean = false"))
         assertTrue(source.contains("isReturningFromVideoDetail = isReturningFromVideoDetail"))
         assertTrue(source.contains("isQuickReturningFromVideoDetail = isQuickReturningFromVideoDetail"))
+    }
+
+    @Test
+    fun videoResultCardsFollowCompactCoverStatsSetting() {
+        val source = File("src/main/java/com/android/purebilibili/feature/search/SearchScreen.kt")
+            .readText()
+
+        assertTrue(source.contains("getCompactVideoStatsOnCover(context)"))
+        assertTrue(source.contains("compactStatsOnCover = compactVideoStatsOnCover"))
     }
 
     @Test

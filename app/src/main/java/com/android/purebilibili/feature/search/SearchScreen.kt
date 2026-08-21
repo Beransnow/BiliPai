@@ -368,9 +368,13 @@ internal fun shouldApplyInitialSearchKeyword(
 internal fun shouldResetSearchResultScroll(
     searchSessionId: Long,
     showResults: Boolean,
-    lastResetSessionId: Long
+    lastResetSessionId: Long,
+    isReturningFromVideoDetail: Boolean = false,
 ): Boolean {
-    return showResults && searchSessionId > 0L && searchSessionId != lastResetSessionId
+    return !isReturningFromVideoDetail &&
+        showResults &&
+        searchSessionId > 0L &&
+        searchSessionId != lastResetSessionId
 }
 
 internal fun shouldShowSearchBackToTop(
@@ -621,7 +625,9 @@ fun SearchScreen(
     val resultListState = rememberSaveable(resultStateKey, saver = LazyListState.Saver) {
         LazyListState()
     }
-    var lastResetSearchSessionId by rememberSaveable { mutableLongStateOf(0L) }
+    // A fresh SearchScreen entry starts at the top. Keep this non-saveable so leaving
+    // search and opening it again does not inherit the previous result position.
+    var lastResetSearchSessionId by remember { mutableLongStateOf(0L) }
     val shouldShowBackToTop by remember(
         state.showResults,
         state.isSearching,
@@ -650,9 +656,13 @@ fun SearchScreen(
         if (!shouldResetSearchResultScroll(
                 searchSessionId = state.searchSessionId,
                 showResults = state.showResults,
-                lastResetSessionId = lastResetSearchSessionId
+                lastResetSessionId = lastResetSearchSessionId,
+                isReturningFromVideoDetail = isReturningFromVideoDetail,
             )
         ) {
+            if (isReturningFromVideoDetail && state.showResults && state.searchSessionId > 0L) {
+                lastResetSearchSessionId = state.searchSessionId
+            }
             return@LaunchedEffect
         }
         resultListState.scrollToItem(0)
@@ -688,6 +698,9 @@ fun SearchScreen(
     val homeDurationStyle by SettingsManager
         .getHomeDurationStyle(context)
         .collectAsStateWithLifecycle(initialValue = HomeDurationStyle.OUTSIDE_COVER)
+    val compactVideoStatsOnCover by SettingsManager
+        .getCompactVideoStatsOnCover(context)
+        .collectAsStateWithLifecycle(initialValue = false)
     val hotSearchEnabled by SettingsManager.getSearchHotSectionEnabled(context).collectAsStateWithLifecycle(initialValue = true)
     val discoverSectionEnabled by SettingsManager.getSearchDiscoverSectionEnabled(context).collectAsStateWithLifecycle(initialValue = true)
     val liquidGlassEnabled by SettingsManager.getLiquidGlassEnabled(context).collectAsStateWithLifecycle(initialValue = true)
@@ -1079,12 +1092,22 @@ fun SearchScreen(
                         ) {
                             LazyListState()
                         }
+                        val activePageGridState = if (targetSearchType == state.searchType) {
+                            resultGridState
+                        } else {
+                            pageGridState
+                        }
+                        val activePageListState = if (targetSearchType == state.searchType) {
+                            resultListState
+                        } else {
+                            pageListState
+                        }
                         LaunchedEffect(scrollToTopRequestId, scrollToTopSearchType, targetSearchType) {
                             if (scrollToTopSearchType == targetSearchType && scrollToTopRequestId > 0) {
                                 if (targetSearchType == SearchType.VIDEO) {
-                                    pageGridState.animateScrollToItem(0)
+                                    activePageGridState.animateScrollToItem(0)
                                 } else {
-                                    pageListState.animateScrollToItem(0)
+                                    activePageListState.animateScrollToItem(0)
                                 }
                             }
                         }
@@ -1143,7 +1166,7 @@ fun SearchScreen(
                                 // 视频搜索结果
                                 LazyVerticalGrid(
                                     columns = GridCells.Adaptive(minSize = searchLayoutPolicy.resultGridMinItemWidthDp.dp),
-                                    state = pageGridState,
+                                    state = activePageGridState,
                                     contentPadding = PaddingValues(
                                         top = 0.dp,
                                         bottom = resultBottomPadding,
@@ -1183,6 +1206,7 @@ fun SearchScreen(
                                             showInfoGlassBadges = videoCardAppearance.showInfoGlassBadges,
                                             coverAspectRatio = cardLayout.coverAspectRatio,
                                             compactMetadata = cardLayout.compactMetadata,
+                                            compactStatsOnCover = compactVideoStatsOnCover,
                                             titleMinLines = 1,
                                             homeDurationStyle = homeDurationStyle,
                                             highlightedTitle = highlightedTitle,
@@ -1290,7 +1314,7 @@ fun SearchScreen(
                                 LazyColumn(
                                     contentPadding = PaddingValues(top = 0.dp, bottom = resultBottomPadding, start = 16.dp, end = 16.dp),
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                                    state = pageListState,
+                                    state = activePageListState,
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .then(if (searchHazeEnabled) Modifier.hazeSourceCompat(state = hazeState) else Modifier)
@@ -1370,7 +1394,7 @@ fun SearchScreen(
                                 LazyColumn(
                                     contentPadding = PaddingValues(top = 0.dp, bottom = resultBottomPadding, start = 16.dp, end = 16.dp),
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                                    state = pageListState,
+                                    state = activePageListState,
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .then(if (searchHazeEnabled) Modifier.hazeSourceCompat(state = hazeState) else Modifier)
@@ -1453,7 +1477,7 @@ fun SearchScreen(
                                 LazyColumn(
                                     contentPadding = PaddingValues(top = 0.dp, bottom = resultBottomPadding, start = 16.dp, end = 16.dp),
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                                    state = pageListState,
+                                    state = activePageListState,
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .then(if (searchHazeEnabled) Modifier.hazeSourceCompat(state = hazeState) else Modifier)
@@ -1532,7 +1556,7 @@ fun SearchScreen(
                                 LazyColumn(
                                     contentPadding = PaddingValues(top = 0.dp, bottom = resultBottomPadding, start = 16.dp, end = 16.dp),
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                                    state = pageListState,
+                                    state = activePageListState,
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .then(if (searchHazeEnabled) Modifier.hazeSourceCompat(state = hazeState) else Modifier)
@@ -1586,7 +1610,7 @@ fun SearchScreen(
                                 LazyColumn(
                                     contentPadding = PaddingValues(top = 0.dp, bottom = resultBottomPadding, start = 16.dp, end = 16.dp),
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                                    state = pageListState,
+                                    state = activePageListState,
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .then(if (searchHazeEnabled) Modifier.hazeSourceCompat(state = hazeState) else Modifier)
@@ -1663,7 +1687,7 @@ fun SearchScreen(
                                 LazyColumn(
                                     contentPadding = PaddingValues(top = 0.dp, bottom = resultBottomPadding, start = 16.dp, end = 16.dp),
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                                    state = pageListState,
+                                    state = activePageListState,
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .then(if (searchHazeEnabled) Modifier.hazeSourceCompat(state = hazeState) else Modifier)
@@ -1706,7 +1730,7 @@ fun SearchScreen(
                                 LazyColumn(
                                     contentPadding = PaddingValues(top = 0.dp, bottom = resultBottomPadding, start = 16.dp, end = 16.dp),
                                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                                    state = pageListState,
+                                    state = activePageListState,
                                     modifier = Modifier
                                         .fillMaxSize()
                                         .then(if (searchHazeEnabled) Modifier.hazeSourceCompat(state = hazeState) else Modifier)
