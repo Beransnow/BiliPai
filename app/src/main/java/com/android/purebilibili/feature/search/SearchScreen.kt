@@ -97,10 +97,13 @@ import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.theme.resolveAccessibleContainerColors
 import com.android.purebilibili.core.theme.resolveFilledSelectionAccentColors
+import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.rememberContentCardSurfaceSpec
-import com.android.purebilibili.feature.home.components.SimpleLiquidIndicator
-import com.android.purebilibili.feature.home.components.resolveTopTabPagerPosition
+import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
+import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import com.android.purebilibili.core.database.entity.SearchHistory
@@ -917,6 +920,7 @@ fun SearchScreen(
                     modifier = Modifier
                         .fillMaxSize()
                     ) {
+                            val searchChromeBackdrop = rememberLayerBackdrop()
                             Spacer(modifier = Modifier.height(contentTopPadding + 8.dp))
                             //  搜索彩蛋消息横幅
                             val easterEggMsg = state.easterEggMessage
@@ -959,6 +963,7 @@ fun SearchScreen(
                             SearchResultTypeTabRow(
                                 tabs = searchTabs,
                                 pagerState = searchPagerState,
+                                miuixBackdrop = searchChromeBackdrop,
                                 onTabClick = { page, type ->
                                     if (searchPagerState.currentPage == page && state.searchType == type) {
                                         scrollToTopSearchType = type
@@ -985,6 +990,7 @@ fun SearchScreen(
                                         currentPubTimeType = state.pubTimeType,
                                         currentPubBegin = state.pubBegin,
                                         currentPubEnd = state.pubEnd,
+                                        miuixBackdrop = searchChromeBackdrop,
                                         onOrderChange = { viewModel.setSearchOrder(it) },
                                         onDurationSelect = { viewModel.setSearchDuration(it) },
                                         onVideoTidChange = { viewModel.setVideoTid(it) },
@@ -1018,6 +1024,7 @@ fun SearchScreen(
                             userScrollEnabled = false,
                             modifier = Modifier
                                 .weight(1f)
+                                .layerBackdrop(searchChromeBackdrop)
                                 .verticalPriorityHorizontalPagerSwipe(
                                     state = searchPagerState,
                                     enabled = true,
@@ -2449,105 +2456,33 @@ fun SearchHotSection(
 private fun SearchResultTypeTabRow(
     tabs: List<SearchType>,
     pagerState: PagerState,
-    onTabClick: (Int, SearchType) -> Unit
+    onTabClick: (Int, SearchType) -> Unit,
+    miuixBackdrop: MiuixBackdrop? = null,
 ) {
     if (tabs.isEmpty()) return
-    val colorScheme = MaterialTheme.colorScheme
-    val selectionColors = resolveFilledSelectionAccentColors(colorScheme)
-    val unselectedLabelColor = AppSurfaceTokens.onSurfaceVariantSummary()
-    val selectedLabelColor = selectionColors.contentColor
-    val uiStyle = LocalAppUiStyle.current
-    val pillCorner = AppShapes.resolveContainerCornerDp(ContainerLevel.Pill, uiStyle)
-    val density = LocalDensity.current
-    // Equal-width slots like home top tabs so SimpleLiquidIndicator can track by index.
-    val itemWidth = 64.dp
-    val itemWidthPx = with(density) { itemWidth.toPx() }
-    val rowHeight = 40.dp
-    val isScrolling = pagerState.isScrollInProgress
-    val selectedIndex = pagerState.currentPage.coerceIn(0, tabs.lastIndex)
-    // Same formula as home TopBar: live offset while scrolling, settle to current page at rest.
-    val indicatorPosition = resolveTopTabPagerPosition(
-        selectedIndex = selectedIndex,
-        pagerCurrentPage = pagerState.currentPage,
-        pagerTargetPage = pagerState.targetPage,
-        pagerCurrentPageOffsetFraction = pagerState.currentPageOffsetFraction,
-        pagerIsScrolling = isScrolling,
-    )
-    val nearestIndex = indicatorPosition.roundToInt().coerceIn(0, tabs.lastIndex)
-    val scrollState = rememberScrollState()
-
-    // Keep the moving capsule roughly in view while swiping across many types.
-    LaunchedEffect(nearestIndex, itemWidthPx) {
-        val targetPx = (nearestIndex * itemWidthPx - itemWidthPx).coerceAtLeast(0f).roundToInt()
-        if (abs(scrollState.value - targetPx) > itemWidthPx * 0.35f) {
-            scrollState.animateScrollTo(targetPx)
-        }
-    }
-
-    Box(
+    BottomBarLiquidSegmentedControl(
+        items = tabs.map { it.displayName },
+        selectedIndex = pagerState.currentPage.coerceIn(0, tabs.lastIndex),
+        onSelected = { index ->
+            tabs.getOrNull(index)?.let { onTabClick(index, it) }
+        },
         modifier = Modifier
             .fillMaxWidth()
-            .height(rowHeight)
-            .horizontalScroll(scrollState)
-            .padding(horizontal = 8.dp),
-    ) {
-        Box(
-            modifier = Modifier
-                .width(itemWidth * tabs.size)
-                .fillMaxHeight(),
-        ) {
-            SimpleLiquidIndicator(
-                position = indicatorPosition,
-                itemWidthPx = itemWidthPx,
-                isDragging = isScrolling,
-                indicatorColor = selectionColors.backgroundColor,
-                indicatorHeight = rowHeight - 8.dp,
-                cornerRadius = pillCorner,
-                widthRatio = 0.92f,
-                minWidth = 48.dp,
-                horizontalInset = 4.dp,
-                // Soft tonal pill: no optical highlight ring outside the capsule.
-                drawHighlightBorder = false,
-                modifier = Modifier.fillMaxSize(),
-            )
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                tabs.forEachIndexed { index, type ->
-                    val selectedStrength = (1f - abs(indicatorPosition - index)).coerceIn(0f, 1f)
-                    val labelColor = androidx.compose.ui.graphics.lerp(
-                        unselectedLabelColor,
-                        selectedLabelColor,
-                        selectedStrength,
-                    )
-                    Box(
-                        modifier = Modifier
-                            .width(itemWidth)
-                            .fillMaxHeight()
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null,
-                                onClick = { onTabClick(index, type) },
-                            ),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        AppText(
-                            text = type.displayName,
-                            maxLines = 1,
-                            fontWeight = if (selectedStrength > 0.55f) {
-                                FontWeight.SemiBold
-                            } else {
-                                FontWeight.Normal
-                            },
-                            fontSize = 13.sp,
-                            color = labelColor,
-                        )
-                    }
-                }
-            }
-        }
-    }
+            .padding(horizontal = 8.dp, vertical = 2.dp),
+        height = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
+        indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
+        labelFontSize = 13.sp,
+        miuixBackdrop = miuixBackdrop,
+        forceLiquidChrome = false,
+        liquidGlassEffectsEnabled = true,
+        tapPressRefractionEnabled = true,
+        dragSelectionEnabled = tabs.size > 1,
+        indicatorPositionProvider = {
+            pagerState.currentPage + pagerState.currentPageOffsetFraction
+        },
+        isScrollInProgressProvider = { pagerState.isScrollInProgress },
+        externalPagerMotionEffectsEnabled = true,
+    )
 }
 
 @Composable
