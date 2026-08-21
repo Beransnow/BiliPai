@@ -81,23 +81,38 @@ class DampedDragAnimation(
     var pressedScale: Float = pressedScale
 
     val modifier: Modifier = Modifier.pointerInput(Unit) {
+        var gestureAccepted = false
         inspectDragGestures(
             onDragStart = { down ->
-                isDragging = true
-                onDragStarted(down.position)
-                press()
+                // Decide ownership from the initial down and keep it for the whole gesture.
+                // A predictive-back swipe may enter the dock after starting in the system edge
+                // band; it must never be adopted halfway through by the liquid indicator.
+                gestureAccepted = canDrag(down.position)
+                if (gestureAccepted) {
+                    isDragging = true
+                    onDragStarted(down.position)
+                    press()
+                }
             },
             onDragEnd = {
-                isDragging = false
-                onDragStopped()
-                release()
+                if (gestureAccepted) {
+                    isDragging = false
+                    onDragStopped()
+                    release()
+                }
+                gestureAccepted = false
             },
             onDragCancel = {
-                isDragging = false
-                onDragStopped()
-                release()
+                if (gestureAccepted) {
+                    isDragging = false
+                    onDragStopped()
+                    release()
+                }
+                gestureAccepted = false
             }
         ) { change, dragAmount ->
+            if (!gestureAccepted) return@inspectDragGestures
+
             val position = change.position
             val previousPosition = change.previousPosition
 
