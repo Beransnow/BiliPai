@@ -139,7 +139,11 @@ fun SearchVideoFilterBar(
             AppIcon(
                 imageVector = Icons.Outlined.FilterList,
                 contentDescription = "筛选",
-                tint = if (filterActive) primary else outline,
+                tint = if (filterActive) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.outline
+                },
                 modifier = Modifier.size(20.dp)
             )
         }
