@@ -30,6 +30,7 @@ internal fun buildAndroidSmsLoginParams(
     countryCode: Int,
     code: Int,
     captchaKey: String,
+    loginSessionId: String,
     buvid: String,
     deviceId: String,
     encryptedDeviceToken: String,
@@ -41,6 +42,7 @@ internal fun buildAndroidSmsLoginParams(
     put("tel", phone)
     put("code", code.toString())
     put("captcha_key", captchaKey)
+    put("login_session_id", loginSessionId)
     put("from_pv", "main.my-information.my-login.0.click")
     // Pre-encode like BiliPai; AppSign percent-encodes again when hashing.
     put("from_url", AppSignUtils.percentEncode("bilibili://user_center/mine"))

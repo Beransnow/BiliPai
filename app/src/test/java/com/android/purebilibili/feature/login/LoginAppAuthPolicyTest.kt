@@ -34,6 +34,7 @@ class LoginAppAuthPolicyTest {
             countryCode = 1,
             code = 123456,
             captchaKey = "captcha-key",
+            loginSessionId = "session-id",
             buvid = "buvid",
             deviceId = "device-id",
             encryptedDeviceToken = "encrypted-token",
@@ -43,6 +44,7 @@ class LoginAppAuthPolicyTest {
         assertEquals(AppSignUtils.ANDROID_HD_APP_KEY, params["appkey"])
         assertEquals("android_hd", params["mobi_app"])
         assertEquals("captcha-key", params["captcha_key"])
+        assertEquals("session-id", params["login_session_id"])
         assertEquals("123456", params["code"])
         assertEquals("device-id", params["device_id"])
         assertEquals("vivo", params["device_name"])

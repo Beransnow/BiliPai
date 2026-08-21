@@ -249,6 +249,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private var currentSeccode: String = ""
     private var currentChallenge: String = ""
     private var currentCaptchaKey: String = ""  // 发送短信后返回的 key
+    private var currentLoginSessionId: String = ""
     private var currentPhone: String = ""
     /** passport 国家列表 id，中国大陆 = 1（不是区号 86） */
     private var currentCountryCode: Int = DEFAULT_PHONE_REGION_CID
@@ -346,6 +347,8 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 Logger.d("LoginDebug", "发送短信验证码请求")
                 
                 val timestampMillis = System.currentTimeMillis()
+                currentLoginSessionId = com.android.purebilibili.core.network.AppSignUtils
+                    .createLoginSessionId(appLoginBuvid, timestampMillis)
                 val params = buildAndroidSmsSendParams(
                     phone = phone,
                     countryCode = countryCode,
@@ -354,10 +357,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                     validate = currentValidate,
                     seccode = currentSeccode,
                     buvid = appLoginBuvid,
-                    loginSessionId = com.android.purebilibili.core.network.AppSignUtils.createLoginSessionId(
-                        appLoginBuvid,
-                        timestampMillis
-                    ),
+                    loginSessionId = currentLoginSessionId,
                     timestampSeconds = timestampMillis / 1000
                 )
                 val response = NetworkModule.passportApi.sendSmsCodeByApp(
@@ -366,14 +366,13 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                         .signForAndroidHdLogin(params),
                 )
                 
-                if (response.code == 0 && response.data != null) {
-                    currentCaptchaKey = response.data.captchaKey
+                val recaptchaUrl = response.data?.recaptchaUrl.orEmpty()
+                val captchaKey = response.data?.captchaKey.orEmpty()
+                if (response.code == 0 && recaptchaUrl.isBlank() && captchaKey.isNotBlank()) {
+                    currentCaptchaKey = captchaKey
                     Logger.d("LoginDebug", "短信验证码已发送")
                     _state.value = LoginState.SmsSent(currentCaptchaKey)
-                } else if (response.code == CAPTCHA_RETRY_CODE && restartCaptchaFrom(
-                        response.data?.recaptchaUrl.orEmpty()
-                    )
-                ) {
+                } else if (recaptchaUrl.isNotBlank() && restartCaptchaFrom(recaptchaUrl)) {
                     Logger.d("LoginDebug", "短信验证码要求重新完成安全验证")
                 } else {
                     _state.value = LoginState.Error(
@@ -398,6 +397,11 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 _state.value = LoginState.Loading
                 Logger.d("LoginDebug", "短信验证码登录请求")
 
+                if (currentCaptchaKey.isBlank() || currentLoginSessionId.isBlank()) {
+                    _state.value = LoginState.Error("短信登录会话已失效，请重新获取验证码")
+                    return@launch
+                }
+
                 val keyResponse = NetworkModule.passportApi.getWebKey()
                 val publicKey = keyResponse.data?.key
                 if (keyResponse.code != 0 || publicKey.isNullOrBlank()) {
@@ -417,6 +421,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                     countryCode = currentCountryCode,
                     code = code,
                     captchaKey = currentCaptchaKey,
+                    loginSessionId = currentLoginSessionId,
                     buvid = appLoginBuvid,
                     deviceId = appLoginDeviceId,
                     encryptedDeviceToken = encryptedDeviceToken,
@@ -910,6 +915,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         currentSeccode = ""
         currentChallenge = ""
         currentCaptchaKey = ""
+        currentLoginSessionId = ""
         currentPhone = ""
         currentCountryCode = DEFAULT_PHONE_REGION_CID
         clearRiskSession()

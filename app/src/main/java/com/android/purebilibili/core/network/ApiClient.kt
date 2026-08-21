@@ -2816,6 +2816,7 @@ object NetworkModule {
                 val isHdFeedRequest = url.encodedPath == "/x/v2/feed/index" &&
                     url.queryParameter("mobi_app") == "android_hd"
                 val isAndroidHdLoginEndpoint = androidHdLoginAppKeyHeader != null || isHdFeedRequest
+                val explicitReferer = original.header("Referer")
                 val builder = original.newBuilder()
                     .header(
                         "User-Agent",
@@ -2825,7 +2826,7 @@ object NetworkModule {
                             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
                         }
                     )
-                if (!isAndroidHdLoginEndpoint) {
+                if (!isAndroidHdLoginEndpoint && explicitReferer.isNullOrBlank()) {
                     builder.header("Origin", origin) //  动态 Origin 头
                 }
                 if (androidHdLoginAppKeyHeader != null || isHdFeedRequest) {
@@ -2841,16 +2842,18 @@ object NetworkModule {
                 //  [关键修复] WBI 签名接口绝对不能设置 Referer 头，否则会失败
                 // 参考：https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/misc/sign/wbi.md
                 val isWbiEndpoint = url.encodedPath.contains("/wbi/")
-                if (!isWbiEndpoint && !isAndroidHdLoginEndpoint) {
+                if (explicitReferer.isNullOrBlank() &&
+                    !isWbiEndpoint && !isAndroidHdLoginEndpoint
+                ) {
                     builder.header("Referer", referer)
                 }
 
+                val request = builder.build()
                 com.android.purebilibili.core.util.Logger.d(
                     "ApiClient",
-                    " Sending request to ${original.url}, Referer: ${if (isWbiEndpoint || isAndroidHdLoginEndpoint) "OMITTED" else referer}, hasSess=${!TokenManager.sessDataCache.isNullOrEmpty()}, hasCsrf=${!TokenManager.csrfCache.isNullOrEmpty()}"
+                    " Sending request to ${original.url}, Referer: ${request.header("Referer") ?: "OMITTED"}, hasSess=${!TokenManager.sessDataCache.isNullOrEmpty()}, hasCsrf=${!TokenManager.csrfCache.isNullOrEmpty()}"
                 )
 
-                val request = builder.build()
                 try {
                     val response = chain.proceed(request)
                     com.android.purebilibili.core.util.Logger.d(
