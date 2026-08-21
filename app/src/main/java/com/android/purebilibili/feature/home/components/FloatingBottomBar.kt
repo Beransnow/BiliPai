@@ -206,6 +206,78 @@ internal fun rememberGravityRotatedHighlight(
     }
 }
 
+internal const val EXTERNAL_PAGER_INDICATOR_CATCH_UP_EPSILON = 0.05f
+
+/**
+ * After the indicator is dragged onto a new tab, the host pager still reports the old page
+ * for at least one frame. Keep that drag target so pager-follow cannot snap the pill back.
+ */
+internal fun resolveIndicatorOwnedTargetOnDragStop(
+    targetIndex: Int,
+    selectedIndex: Int,
+    hasExternalPagerPosition: Boolean,
+): Int? {
+    if (!hasExternalPagerPosition) return null
+    if (targetIndex == selectedIndex) return null
+    return targetIndex
+}
+
+/**
+ * Swallow pager-follow (snap + press) for the whole indicator-driven page animation.
+ * Dropping ownership as soon as the pager is close re-enters follow `press()` and the
+ * pill visibly blooms a second time while it is still moving.
+ */
+internal fun shouldSuppressExternalPagerIndicatorFollow(
+    ownedTargetIndex: Int?,
+    previousExternalPosition: Float?,
+    externalPosition: Float?,
+    isPagerScrolling: Boolean,
+    catchUpEpsilon: Float = EXTERNAL_PAGER_INDICATOR_CATCH_UP_EPSILON,
+): Boolean {
+    if (ownedTargetIndex == null) return false
+    val target = ownedTargetIndex.toFloat()
+    if (
+        previousExternalPosition != null &&
+        externalPosition != null &&
+        abs(externalPosition - target) > abs(previousExternalPosition - target) + 0.0001f
+    ) {
+        return false
+    }
+    if (isPagerScrolling) return true
+    if (externalPosition == null) return true
+    return !isExternalPagerCaughtUpToOwnedTarget(
+        ownedTargetIndex = ownedTargetIndex,
+        externalPosition = externalPosition,
+        catchUpEpsilon = catchUpEpsilon,
+    )
+}
+
+internal fun isExternalPagerCaughtUpToOwnedTarget(
+    ownedTargetIndex: Int?,
+    externalPosition: Float?,
+    catchUpEpsilon: Float = EXTERNAL_PAGER_INDICATOR_CATCH_UP_EPSILON,
+): Boolean {
+    if (ownedTargetIndex == null || externalPosition == null) return false
+    return abs(externalPosition - ownedTargetIndex.toFloat()) <= catchUpEpsilon
+}
+
+internal fun shouldAnimateIndicatorToSelectedIndex(
+    isDragging: Boolean,
+    indicatorTarget: Float,
+    selectedIndex: Int,
+    ownedTargetIndex: Int?,
+): Boolean {
+    if (isDragging) return false
+    if (abs(indicatorTarget - selectedIndex.toFloat()) <= 0.001f) return false
+    if (ownedTargetIndex != null && ownedTargetIndex != selectedIndex) return false
+    return true
+}
+
+private class ExternalPagerIndicatorFollowGate {
+    var ownedTargetIndex: Int? = null
+    var previousExternalPosition: Float? = null
+}
+
 @Composable
 fun RowScope.FloatingBottomBarItem(
     onClick: () -> Unit,
@@ -356,6 +428,9 @@ fun FloatingBottomBar(
     val maxTabIndex = (safeTabsCount - 1).coerceAtLeast(0)
     val selectedIndexLatest = rememberUpdatedState(selectedIndex)
     val onSelectedLatest = rememberUpdatedState(onSelected)
+    val indicatorPositionLatest by rememberUpdatedState(indicatorPositionProvider)
+    val isScrollInProgressLatest by rememberUpdatedState(isScrollInProgressProvider)
+    val pagerFollowGate = remember { ExternalPagerIndicatorFollowGate() }
 
     class DampedDragAnimationHolder {
         var instance: DampedDragAnimation? = null
@@ -398,13 +473,22 @@ fun FloatingBottomBar(
                     rightInsetPx = dragHitTest.rightInsetPx,
                 )
             },
-            onDragStarted = {},
+            onDragStarted = {
+                pagerFollowGate.ownedTargetIndex = null
+                pagerFollowGate.previousExternalPosition = null
+            },
             onDragStopped = {
                 val targetIndex = targetValue.fastRoundToInt().fastCoerceIn(0, maxTabIndex)
                 // The pointer gesture already owns press/release. Only settle the value here so
                 // release is not launched twice and the indicator cannot visibly rebound twice.
                 animateToValue(targetIndex.toFloat(), animatePress = false)
                 val selected = selectedIndexLatest.value().coerceIn(0, maxTabIndex)
+                pagerFollowGate.ownedTargetIndex = resolveIndicatorOwnedTargetOnDragStop(
+                    targetIndex = targetIndex,
+                    selectedIndex = selected,
+                    hasExternalPagerPosition = indicatorPositionLatest != null,
+                )
+                pagerFollowGate.previousExternalPosition = null
                 if (targetIndex != selected) {
                     onSelectedLatest.value(targetIndex)
                 }
@@ -426,17 +510,18 @@ fun FloatingBottomBar(
         ).also { holder.instance = it }
     }
 
-    val indicatorPositionLatest by rememberUpdatedState(indicatorPositionProvider)
-    val isScrollInProgressLatest by rememberUpdatedState(isScrollInProgressProvider)
-
     LaunchedEffect(dampedDragAnimation, maxTabIndex) {
         snapshotFlow { selectedIndexLatest.value().coerceIn(0, maxTabIndex) }
             .collectLatest { index ->
-                val target = index.toFloat()
-                if (!dampedDragAnimation.isDragging &&
-                    abs(dampedDragAnimation.targetValue - target) > 0.001f
+                if (
+                    shouldAnimateIndicatorToSelectedIndex(
+                        isDragging = dampedDragAnimation.isDragging,
+                        indicatorTarget = dampedDragAnimation.targetValue,
+                        selectedIndex = index,
+                        ownedTargetIndex = pagerFollowGate.ownedTargetIndex,
+                    )
                 ) {
-                    dampedDragAnimation.animateToValue(target)
+                    dampedDragAnimation.animateToValue(index.toFloat())
                 }
             }
     }
@@ -451,6 +536,19 @@ fun FloatingBottomBar(
                 pagerPressed = false
                 return@collect
             }
+            if (
+                shouldSuppressExternalPagerIndicatorFollow(
+                    ownedTargetIndex = pagerFollowGate.ownedTargetIndex,
+                    previousExternalPosition = pagerFollowGate.previousExternalPosition,
+                    externalPosition = external,
+                    isPagerScrolling = scrolling,
+                )
+            ) {
+                pagerFollowGate.previousExternalPosition = external
+                return@collect
+            }
+            pagerFollowGate.ownedTargetIndex = null
+            pagerFollowGate.previousExternalPosition = external
             if (scrolling && external != null) {
                 if (!pagerPressed) {
                     dampedDragAnimation.press()
@@ -496,7 +594,10 @@ fun FloatingBottomBar(
 
     Box(
         modifier = modifier
-            .padding(vertical = scaleOverflowDp)
+            .floatingDockScaleOverflow(
+                overflow = scaleOverflowDp,
+                shellHeight = shellHeight,
+            )
             .graphicsLayer { clip = false },
         contentAlignment = Alignment.CenterStart
     ) {

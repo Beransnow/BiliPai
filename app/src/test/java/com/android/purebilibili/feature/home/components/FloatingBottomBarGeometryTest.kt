@@ -82,6 +82,52 @@ class FloatingBottomBarGeometryTest {
     }
 
     @Test
+    fun `home rest indicator keeps a 4dp vertical inset inside the 64dp shell`() {
+        assertEquals(
+            4f,
+            resolveFloatingDockRestIndicatorVerticalInsetDp(
+                shellHeightDp = 64f,
+                indicatorHeightDp = 56f,
+            ),
+            0.001f,
+        )
+        assertEquals(
+            0f,
+            resolveFloatingDockRestIndicatorVerticalInsetDp(
+                shellHeightDp = 56f,
+                indicatorHeightDp = 56f,
+            ),
+            0.001f,
+        )
+    }
+
+    @Test
+    fun `tight shell-height constraints do not steal rest inset for press overflow`() {
+        val overflowPx = 7
+        assertFalse(
+            shouldReserveFloatingDockScaleOverflow(
+                incomingMaxHeightPx = 64,
+                shellHeightPx = 64,
+                overflowPx = overflowPx,
+            )
+        )
+        assertTrue(
+            shouldReserveFloatingDockScaleOverflow(
+                incomingMaxHeightPx = 64 + overflowPx * 2,
+                shellHeightPx = 64,
+                overflowPx = overflowPx,
+            )
+        )
+        assertTrue(
+            shouldReserveFloatingDockScaleOverflow(
+                incomingMaxHeightPx = androidx.compose.ui.unit.Constraints.Infinity,
+                shellHeightPx = 64,
+                overflowPx = overflowPx,
+            )
+        )
+    }
+
+    @Test
     fun `pressed indicator overflow is reserved so compact docks are not clipped`() {
         val homeOverflow = resolveCompactDockScaleOverflowDp(
             shellHeightDp = 64f,

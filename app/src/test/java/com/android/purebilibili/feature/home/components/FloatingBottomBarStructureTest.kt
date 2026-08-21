@@ -87,23 +87,30 @@ class FloatingBottomBarStructureTest {
         assertTrue(source.contains("import com.android.purebilibili.feature.home.components.miuix.DampedDragAnimation"))
         assertTrue(body.contains("DampedDragAnimation("))
         assertTrue(body.contains("pressedScale = matchedGeometry.pressedScale"))
-        assertTrue(body.contains("modifier.padding(vertical = scaleOverflowDp)"))
+        assertTrue(body.contains("floatingDockScaleOverflow("))
+        assertTrue(body.contains("overflow = scaleOverflowDp"))
+        assertTrue(body.contains("shellHeight = shellHeight"))
         assertTrue(body.contains("dampedDragAnimation.press()"))
         assertTrue(body.contains("dampedDragAnimation.release()"))
         assertTrue(body.contains("canDrag = { offset ->"))
         assertTrue(body.contains("shouldAcceptFloatingDockDragAtWindowX("))
         assertTrue(body.contains("fittedIndicatorHeight"))
-        assertTrue(body.contains("onDragStarted = {}"))
+        assertTrue(body.contains("onDragStarted = {"))
+        assertTrue(body.contains("pagerFollowGate.ownedTargetIndex = null"))
         assertTrue(body.contains("onDragStopped = {"))
         assertTrue(body.contains("updateValue("))
         assertTrue(body.contains("snapshotFlow { selectedIndexLatest.value().coerceIn(0, maxTabIndex) }"))
-        assertTrue(body.contains("abs(dampedDragAnimation.targetValue - target) > 0.001f"))
+        assertTrue(body.contains("shouldAnimateIndicatorToSelectedIndex("))
+        assertTrue(body.contains("shouldSuppressExternalPagerIndicatorFollow("))
+        assertTrue(body.contains("resolveIndicatorOwnedTargetOnDragStop("))
+        assertTrue(body.contains("isPagerScrolling = scrolling"))
         assertFalse(body.contains("snapshotFlow { currentIndex }"))
         assertFalse(body.contains(".drop(1)"))
         val dragStopBody = body.substringAfter("onDragStopped = {").substringBefore("onDrag = {")
         assertEquals(1, Regex("animateToValue\\(").findAll(dragStopBody).count())
         assertTrue(dragStopBody.contains("animatePress = false"))
         assertTrue(dragStopBody.contains("onSelectedLatest.value(targetIndex)"))
+        assertTrue(dragStopBody.contains("pagerFollowGate.ownedTargetIndex = resolveIndicatorOwnedTargetOnDragStop("))
         assertFalse(baseRow.contains("interactiveHighlight.gestureModifier"))
         assertFalse(baseRow.contains(".then(dampedDragAnimation.modifier)"))
         assertTrue(movingIndicator.contains("interactiveHighlight?.gestureModifier"))
@@ -133,6 +140,8 @@ class FloatingBottomBarStructureTest {
         assertTrue(dragPort.contains("if (animatePress) press()"))
         assertTrue(dragPort.contains("if (animatePress) release()"))
         assertTrue(dragPort.contains("onDragStopped()"))
+        val dragEndBody = dragPort.substringAfter("onDragEnd = {").substringBefore("onDragCancel = {")
+        assertTrue(dragEndBody.indexOf("onDragStopped()") < dragEndBody.indexOf("isDragging = false"))
         assertFalse(dragPort.contains("onDragCancelled"))
     }
 
@@ -195,6 +204,39 @@ class FloatingBottomBarStructureTest {
 
         assertTrue(body.contains("modifier = modifier,"))
         assertFalse(body.contains("modifier = modifier.width(IntrinsicSize.Min)"))
+    }
+
+    @Test
+    fun `pager-backed liquid docks share FloatingBottomBar follow gating`() {
+        val video = loadSource(
+            "app/src/main/java/com/android/purebilibili/feature/video/screen/VideoContentSection.kt"
+        )
+        val search = loadSource(
+            "app/src/main/java/com/android/purebilibili/feature/search/SearchScreen.kt"
+        )
+        val listen = loadSource(
+            "app/src/main/java/com/android/purebilibili/feature/audio/screen/ListenVideoScreen.kt"
+        )
+        val music = loadSource(
+            "app/src/main/java/com/android/purebilibili/feature/audio/screen/MusicPlayerContent.kt"
+        )
+        val dynamic = loadSource(
+            "app/src/main/java/com/android/purebilibili/feature/dynamic/components/DynamicTopBar.kt"
+        )
+        val floating = loadSource(
+            "app/src/main/java/com/android/purebilibili/feature/home/components/BottomBarFloatingSegmentedControl.kt"
+        )
+
+        assertTrue(video.contains("BottomBarLiquidSegmentedControl("))
+        assertTrue(video.contains("pagerState.currentPage + pagerState.currentPageOffsetFraction"))
+        assertTrue(search.contains("BottomBarLiquidSegmentedControl("))
+        assertTrue(search.contains("pagerState.currentPage + pagerState.currentPageOffsetFraction"))
+        assertTrue(listen.contains("BottomBarLiquidSegmentedControl("))
+        assertTrue(listen.contains("pagerState.currentPage + pagerState.currentPageOffsetFraction"))
+        assertTrue(music.contains("indicatorPositionProvider = {"))
+        assertTrue(dynamic.contains("indicatorPositionProvider = indicatorPositionProvider"))
+        assertTrue(floating.contains("FloatingBottomBar("))
+        assertTrue(floating.contains("indicatorPositionProvider = indicatorPositionProvider"))
     }
 
     @Test

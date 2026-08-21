@@ -38,6 +38,7 @@ import com.android.purebilibili.core.plugin.RecommendationMode
 import com.android.purebilibili.core.plugin.RecommendationPluginApi
 import com.android.purebilibili.core.plugin.RecommendationRequest
 import com.android.purebilibili.core.plugin.RecommendationResult
+import com.android.purebilibili.core.plugin.RecommendationStrategy
 import com.android.purebilibili.core.plugin.RecommendedVideo
 import com.android.purebilibili.core.store.TodayWatchFeedbackSnapshot
 import com.android.purebilibili.core.store.TodayWatchFeedbackStore
@@ -78,8 +79,16 @@ enum class TodayWatchPluginMode {
 }
 
 @Serializable
+enum class TodayWatchCandidatePoolMode {
+    LOCAL,
+    EXPANDED
+}
+
+@Serializable
 data class TodayWatchPluginConfig(
     val currentMode: TodayWatchPluginMode = TodayWatchPluginMode.RELAX,
+    val recommendationStrategy: RecommendationStrategy = RecommendationStrategy.BALANCED,
+    val candidatePoolMode: TodayWatchCandidatePoolMode = TodayWatchCandidatePoolMode.LOCAL,
     val upRankLimit: Int = 5,
     val queueBuildLimit: Int = 20,
     val queuePreviewLimit: Int = 6,
@@ -98,7 +107,7 @@ class TodayWatchPlugin : RecommendationPluginApi {
     override val id: String = PLUGIN_ID
     override val name: String = "今日推荐单"
     override val description: String = "本地分析观看历史，生成可定制推荐队列"
-    override val version: String = "1.0.1"
+    override val version: String = "1.1.0"
     override val author: String = "BiliPai项目组"
     override val icon: ImageVector = Icons.Outlined.ViewList
     override val capabilityManifest: PluginCapabilityManifest = PluginCapabilityManifest(
@@ -149,6 +158,7 @@ class TodayWatchPlugin : RecommendationPluginApi {
             nowEpochSec = request.sceneSignals.nowEpochSec,
             upRankLimit = request.groupLimit,
             queueLimit = request.queueLimit,
+            strategy = request.strategy,
             creatorSignals = request.creatorSignals.map { it.toTodayWatchCreatorSignal() },
             penaltySignals = TodayWatchPenaltySignals(
                 consumedBvids = request.feedbackSignals.consumedBvids,
@@ -157,15 +167,14 @@ class TodayWatchPlugin : RecommendationPluginApi {
                 dislikedKeywords = request.feedbackSignals.dislikedKeywords
             )
         )
-        val queueSize = plan.videoQueue.size.coerceAtLeast(1)
         return RecommendationResult(
             sourcePluginId = id,
             mode = request.mode,
-            items = plan.videoQueue.mapIndexed { index, video ->
+            items = plan.videoQueue.map { video ->
                 RecommendedVideo(
                     video = video,
-                    score = (queueSize - index).toDouble(),
-                    confidence = 1f - (index.toFloat() / (queueSize * 2f)),
+                    score = plan.scoreByBvid[video.bvid] ?: 0.0,
+                    confidence = plan.confidenceByBvid[video.bvid] ?: 0f,
                     explanation = plan.explanationByBvid[video.bvid].orEmpty(),
                     actions = listOf(
                         RecommendationAction(
@@ -185,7 +194,8 @@ class TodayWatchPlugin : RecommendationPluginApi {
                             id = rank.mid.toString(),
                             title = rank.name,
                             subtitle = "${rank.watchCount} 次观看",
-                            score = rank.score
+                            score = rank.score,
+                            watchCount = rank.watchCount
                         )
                     }
                 )
@@ -307,6 +317,53 @@ class TodayWatchPlugin : RecommendationPluginApi {
                 onModeChange = { mode -> commit(uiConfig.copy(currentMode = mode)) },
                 modifier = Modifier.fillMaxWidth(),
                 miuixBackdrop = settingsBackdrop,
+            )
+
+            AppText("推荐策略", style = MaterialTheme.typography.labelLarge)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(
+                    RecommendationStrategy.BALANCED to "均衡推荐",
+                    RecommendationStrategy.AFFINITY to "兴趣优先",
+                    RecommendationStrategy.EXPLORE to "探索优先"
+                ).forEach { (strategy, label) ->
+                    AppFilterChip(
+                        selected = uiConfig.recommendationStrategy == strategy,
+                        onClick = { commit(uiConfig.copy(recommendationStrategy = strategy)) },
+                        label = { AppText(label) }
+                    )
+                }
+            }
+            AppText(
+                text = when (uiConfig.recommendationStrategy) {
+                    RecommendationStrategy.BALANCED -> "兼顾兴趣、新鲜度与内容多样性"
+                    RecommendationStrategy.AFFINITY -> "优先匹配常看 UP 与主题"
+                    RecommendationStrategy.EXPLORE -> "增加新 UP、新主题与近期内容"
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            AppText("候选范围", style = MaterialTheme.typography.labelLarge)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(
+                    TodayWatchCandidatePoolMode.LOCAL to "本地候选",
+                    TodayWatchCandidatePoolMode.EXPANDED to "扩大候选池"
+                ).forEach { (poolMode, label) ->
+                    AppFilterChip(
+                        selected = uiConfig.candidatePoolMode == poolMode,
+                        onClick = { commit(uiConfig.copy(candidatePoolMode = poolMode)) },
+                        label = { AppText(label) }
+                    )
+                }
+            }
+            AppText(
+                text = if (uiConfig.candidatePoolMode == TodayWatchCandidatePoolMode.EXPANDED) {
+                    "先显示本地结果，再在后台获取一批候选"
+                } else {
+                    "仅重排首页已有内容，不产生额外请求"
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             AppHorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))

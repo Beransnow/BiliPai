@@ -315,6 +315,7 @@ fun SettingsScreen(
         scope.launch {
             SettingsManager.setCrashTrackingEnabled(context, enabled)
             CrashReporter.setEnabled(enabled)
+            com.android.purebilibili.core.performance.Android17Diagnostics.updateEnabled(context, enabled)
         }
     }
     val onAnalyticsChange: (Boolean) -> Unit = { enabled ->

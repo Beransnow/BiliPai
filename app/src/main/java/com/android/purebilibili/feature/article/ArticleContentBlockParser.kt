@@ -37,11 +37,10 @@ internal fun parseArticleContentBlocks(
     ops: List<JsonObject> = emptyList()
 ): List<ArticleContentBlock> {
     val structuredBlocks = structuredParagraphs.flatMap(::parseStructuredParagraph)
-    if (structuredBlocks.isNotEmpty()) return structuredBlocks
     val contentOps = ops.ifEmpty { parseOpsFromContentJson(htmlContent) }
     val opsBlocks = parseOpsBlocks(contentOps)
-    if (opsBlocks.isNotEmpty()) return opsBlocks
-    return parseHtmlBlocks(htmlContent)
+    val htmlBlocks = parseHtmlBlocks(htmlContent)
+    return selectRicherArticleBlocks(structuredBlocks, opsBlocks, htmlBlocks)
 }
 
 private val articleContentJson = Json { ignoreUnknownKeys = true }
@@ -240,6 +239,7 @@ private fun parseImageObject(image: JsonObject?): ArticleContentBlock.Image? {
 
 private fun parseHtmlBlocks(htmlContent: String?): List<ArticleContentBlock> {
     if (htmlContent.isNullOrBlank()) return emptyList()
+    if (htmlContent.trimStart().startsWith("{")) return emptyList()
 
     val blocks = mutableListOf<ArticleContentBlock>()
     val blockRegex = Regex("""(?is)<(h[1-6]|p|pre|blockquote|li|figure)\b[^>]*>(.*?)</\1>|<img\b[^>]*>""")
@@ -251,28 +251,67 @@ private fun parseHtmlBlocks(htmlContent: String?): List<ArticleContentBlock> {
                 blocks += ArticleContentBlock.Heading(it)
             }
 
-            tag == "p" -> cleanupHtmlText(content).takeIf { it.isNotBlank() }?.let {
-                blocks += ArticleContentBlock.Paragraph(it)
-            }
+            tag == "p" -> blocks += parseHtmlInlineBlocks(content, kind = HtmlInlineKind.Paragraph)
 
-            tag == "blockquote" -> cleanupHtmlText(content).takeIf { it.isNotBlank() }?.let {
-                blocks += ArticleContentBlock.Quote(it)
-            }
+            tag == "blockquote" -> blocks += parseHtmlInlineBlocks(content, kind = HtmlInlineKind.Quote)
 
             tag == "pre" -> decodeHtmlEntities(cleanupHtmlText(content)).takeIf { it.isNotBlank() }?.let {
                 blocks += ArticleContentBlock.Code(language = "", content = it)
             }
 
-            tag == "li" -> cleanupHtmlText(content).takeIf { it.isNotBlank() }?.let {
-                blocks += ArticleContentBlock.ListBlock(ordered = false, items = listOf(it))
-            }
+            tag == "li" -> blocks += parseHtmlInlineBlocks(content, kind = HtmlInlineKind.ListItem)
 
-            tag == "figure" || match.value.startsWith("<img", ignoreCase = true) -> {
+            tag == "figure" -> blocks += parseHtmlInlineBlocks(content, kind = HtmlInlineKind.Paragraph)
+
+            match.value.startsWith("<img", ignoreCase = true) -> {
                 parseHtmlImage(match.value)?.let { blocks += it }
             }
         }
     }
     return blocks
+}
+
+private enum class HtmlInlineKind {
+    Paragraph,
+    Quote,
+    ListItem
+}
+
+private fun parseHtmlInlineBlocks(
+    content: String,
+    kind: HtmlInlineKind
+): List<ArticleContentBlock> {
+    val result = mutableListOf<ArticleContentBlock>()
+    val imgRegex = Regex("""(?is)<img\b[^>]*>""")
+    var lastIndex = 0
+    imgRegex.findAll(content).forEach { match ->
+        appendHtmlTextBlock(
+            target = result,
+            text = cleanupHtmlText(content.substring(lastIndex, match.range.first)),
+            kind = kind
+        )
+        parseHtmlImage(match.value)?.let(result::add)
+        lastIndex = match.range.last + 1
+    }
+    appendHtmlTextBlock(
+        target = result,
+        text = cleanupHtmlText(content.substring(lastIndex)),
+        kind = kind
+    )
+    return result
+}
+
+private fun appendHtmlTextBlock(
+    target: MutableList<ArticleContentBlock>,
+    text: String,
+    kind: HtmlInlineKind
+) {
+    if (text.isBlank()) return
+    target += when (kind) {
+        HtmlInlineKind.Paragraph -> ArticleContentBlock.Paragraph(text)
+        HtmlInlineKind.Quote -> ArticleContentBlock.Quote(text)
+        HtmlInlineKind.ListItem -> ArticleContentBlock.ListBlock(ordered = false, items = listOf(text))
+    }
 }
 
 private fun parseOpsBlocks(ops: List<JsonObject>): List<ArticleContentBlock> {

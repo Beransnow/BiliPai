@@ -273,7 +273,8 @@ interface BilibiliApi {
         @Query("ps") ps: Int = 30,
         @Query("max") max: Long? = null,            //  游标: 上一页最后一条的 oid
         @Query("view_at") viewAt: Long? = null,     //  游标: 上一页最后一条的 view_at
-        @Query("business") business: String? = null //  null=省略该参数
+        @Query("business") business: String? = null, //  null=省略该参数
+        @Query("type") type: String? = null         //  all/archive/live/article；null=省略
     ): HistoryResponse
 
     @GET("x/web-interface/history/search")
@@ -283,7 +284,12 @@ interface BilibiliApi {
         @Query("business") business: String = "all",
     ): HistoryResponse
 
-    // [新增] 删除单条历史记录
+    @retrofit2.http.FormUrlEncoded
+    @POST("x/v2/history/report")
+    suspend fun reportHistory(
+        @retrofit2.http.FieldMap fields: Map<String, String>
+    ): SimpleApiResponse
+
     @retrofit2.http.FormUrlEncoded
     @POST("x/v2/history/delete")
     suspend fun deleteHistoryItem(

@@ -1,12 +1,12 @@
 # Changelog
 
-## v0.2.3-beta.7 (2026-08-21)
+## v0.2.3-beta.8 (2026-08-22)
 
 更新日志(ChangeLog)
 
-[更改] 版本号 0.2.3-beta.7，versionCode 296
-[更改] 正式包 BiliPai-0.2.3-beta.7.apk，Dev 包 BiliPai-0.2.3-beta.7-dev.apk
-[更改] 基准 v0.2.3-beta.6（ec830a7ae），比较区间见 GitHub Compare
+[更改] 版本号 0.2.3-beta.8，versionCode 297
+[更改] 正式包 BiliPai-0.2.3-beta.8.apk，Dev 包 BiliPai-0.2.3-beta.8-dev.apk
+[更改] 基准 v0.2.3-beta.7（de46ffa73），比较区间见 GitHub Compare
 
 ### Android 17 初步适配
 [适配] 应用与基准性能模块的 targetSdk 提升到 37，插件 SDK 及示例工程同步使用 compileSdk 37
@@ -41,6 +41,9 @@
 [修复] 紧凑液态指示器为按压放大预留绘制空间，避免在评论、视频详情等窄容器中被裁切
 [更改] 开启液态玻璃复用时，首页顶部首个标签指示器更靠近左侧，并保留轻微安全间距
 [修复] 液态底栏指示器不再中途接管从系统返回边缘开始的手势，避免页面返回与指示器拖动同时触发
+[修复] 开启液态玻璃复用后，视频详情简介/评论等分段指示器拖拽释放时不再先弹回原项再跳到目标项
+[修复] 液态分段指示器拖拽切换时，位移过程不再二次放大
+[修复] 底栏液态指示器静止时恢复外壳与胶囊之间的上下边距，不再被按压放大预留空间挤成贴边
 
 ### 搜索与页面状态
 [修复] 搜索筛选页图标跟随当前主题颜色，亮色、暗色及自定义主题下保持可读
@@ -66,10 +69,10 @@
 [更改] 移除旧粒子消散与自绘垃圾桶动画，降低持续动画开销并统一设置页视觉和无障碍语义
 
 ### 版本与交付
-[更改] README、中英文版本说明、版本策略与项目 Wiki 同步到 0.2.3-beta.7 / versionCode 296
-[更改] APK 交付文件名同步为 BiliPai-0.2.3-beta.7.apk 与 BiliPai-0.2.3-beta.7-dev.apk
+[更改] README、中英文版本说明、版本策略与项目 Wiki 同步到 0.2.3-beta.8 / versionCode 297
+[更改] APK 交付文件名同步为 BiliPai-0.2.3-beta.8.apk 与 BiliPai-0.2.3-beta.8-dev.apk
 
-格式规范见 [docs/wiki/CHANGELOG_GUIDE.md](docs/wiki/CHANGELOG_GUIDE.md)。比较：[`ec830a7ae...main`](https://github.com/jay3-yy/BiliPai/compare/ec830a7ae...main)。
+格式规范见 [docs/wiki/CHANGELOG_GUIDE.md](docs/wiki/CHANGELOG_GUIDE.md)。比较：[`de46ffa73...main`](https://github.com/jay3-yy/BiliPai/compare/de46ffa73...main)。
 
 ---
 

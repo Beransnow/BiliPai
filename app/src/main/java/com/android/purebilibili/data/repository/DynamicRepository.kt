@@ -6,6 +6,7 @@ import com.android.purebilibili.core.network.OPUS_DETAIL_FEATURES
 import com.android.purebilibili.core.network.WbiUtils
 import com.android.purebilibili.data.model.response.DynamicFeedResponse
 import com.android.purebilibili.data.model.response.DynamicItem
+import com.android.purebilibili.feature.article.shouldFetchArticleFallbackForOpus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -310,20 +311,19 @@ object DynamicRepository {
             val resolved = resolvePreferredDynamicDetailItem(candidates)
             if (resolved != null) {
                 var merged = mergeRicherOpusDetailContent(resolved, candidates)
-                if (merged.modules.module_dynamic?.major?.opus?.contentBlocks.isNullOrEmpty()) {
-                    val cvId = resolveOpusArticleFallbackCvId(
-                        fallbackId = opusFallbackCvId,
-                        commentType = merged.basic?.comment_type ?: 0,
-                        commentIdStr = merged.basic?.comment_id_str.orEmpty()
-                    )
-                    if (cvId != null) {
-                        ArticleRepository.getArticleDetail(cvId).getOrNull()?.let { article ->
-                            merged = mergeArticleDetailIntoOpus(
-                                base = merged,
-                                title = article.title,
-                                blocks = article.blocks
-                            )
-                        }
+                val opusBlocks = merged.modules.module_dynamic?.major?.opus?.contentBlocks.orEmpty()
+                val cvId = resolveOpusArticleFallbackCvId(
+                    fallbackId = opusFallbackCvId,
+                    commentType = merged.basic?.comment_type ?: 0,
+                    commentIdStr = merged.basic?.comment_id_str.orEmpty()
+                )
+                if (cvId != null && shouldFetchArticleFallbackForOpus(opusBlocks, opusFallbackCvId)) {
+                    ArticleRepository.getArticleDetail(cvId).getOrNull()?.let { article ->
+                        merged = mergeArticleDetailIntoOpus(
+                            base = merged,
+                            title = article.title,
+                            blocks = article.blocks
+                        )
                     }
                 }
                 return@withContext Result.success(

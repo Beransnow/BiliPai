@@ -8,6 +8,7 @@ import com.android.purebilibili.data.model.response.OpusContentBlock
 import com.android.purebilibili.data.model.response.OpusMajor
 import com.android.purebilibili.data.model.response.OpusPic
 import com.android.purebilibili.feature.article.ArticleContentBlock
+import com.android.purebilibili.feature.article.scoreOpusContentBlocks
 
 internal fun shouldFetchStandardDetailForPlainTextDynamic(item: DynamicItem): Boolean {
     val content = item.modules.module_dynamic ?: return false
@@ -65,9 +66,11 @@ internal fun resolvePreferredDynamicDetailItem(
 
 internal fun resolveDynamicOpusContentScore(item: DynamicItem): Int {
     val opus = item.modules.module_dynamic?.major?.opus ?: return 0
-    return opus.contentBlocks.size * 100 +
-        opus.pics.size +
-        (opus.summary?.text?.length ?: 0)
+    val blockScore = scoreOpusContentBlocks(opus.contentBlocks)
+    if (blockScore > 0) {
+        return 100_000 + blockScore
+    }
+    return opus.pics.size + (opus.summary?.text?.length ?: 0)
 }
 
 internal fun mergeRicherOpusDetailContent(

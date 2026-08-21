@@ -221,16 +221,30 @@ object DynamicModulesFlexibleSerializer : KSerializer<DynamicModules> {
 
     private fun extractParagraphBlocks(paragraph: JsonObject): List<OpusContentBlock> {
         val blocks = mutableListOf<OpusContentBlock>()
-        extractParagraphList(paragraph)?.let { blocks += OpusContentBlock.Text(it) }
-        extractParagraphCode(paragraph)?.let { blocks += OpusContentBlock.Text(it) }
-        if (blocks.isEmpty()) {
-            extractParagraphText(paragraph)?.let { blocks += OpusContentBlock.Text(it) }
+        extractParagraphHeading(paragraph)?.let { blocks += OpusContentBlock.Text(it) }
+        val listText = extractParagraphList(paragraph)
+        val codeText = extractParagraphCode(paragraph)
+        listText?.let { blocks += OpusContentBlock.Text(it) }
+        codeText?.let { blocks += OpusContentBlock.Text(it) }
+        if (listText == null && codeText == null) {
+            extractParagraphText(paragraph)?.let { text ->
+                if (blocks.none { it is OpusContentBlock.Text && it.text == text }) {
+                    blocks += OpusContentBlock.Text(text)
+                }
+            }
         }
         extractParagraphPics(paragraph).forEach { pic ->
             blocks += OpusContentBlock.Image(pic)
         }
         extractParagraphLinkCard(paragraph)?.let { blocks += OpusContentBlock.LinkCard(it) }
         return blocks
+    }
+
+    private fun extractParagraphHeading(paragraph: JsonObject): String? {
+        val nodes = paragraph["heading"]
+            ?.let { runCatching { it.jsonObject }.getOrNull() }
+            ?.get("nodes")
+        return extractParagraphNodesText(nodes).takeIf { it.isNotBlank() }
     }
 
     private fun extractParagraphList(paragraph: JsonObject): String? {
@@ -280,37 +294,21 @@ object DynamicModulesFlexibleSerializer : KSerializer<DynamicModules> {
                         ?.get("orig_text")
                         ?.jsonPrimitive
                         ?.contentOrNull
-                    ?: return@forEach
-                append(words)
+                    ?: nodeObject["formula"]
+                        ?.jsonObject
+                        ?.get("latex_content")
+                        ?.jsonPrimitive
+                        ?.contentOrNull
+                if (!words.isNullOrBlank()) append(words)
             }
         }.trim()
     }
 
     private fun extractParagraphText(paragraph: JsonObject): String? {
-        val nodes = paragraph["text"]?.jsonObject?.get("nodes") as? JsonArray ?: return null
-        val text = buildString {
-            nodes.forEach { node ->
-                val nodeObject = node as? JsonObject ?: return@forEach
-                val words = nodeObject["word"]
-                    ?.jsonObject
-                    ?.get("words")
-                    ?.jsonPrimitive
-                    ?.contentOrNull
-                    ?: nodeObject["rich"]
-                        ?.jsonObject
-                        ?.get("text")
-                        ?.jsonPrimitive
-                        ?.contentOrNull
-                    ?: nodeObject["rich"]
-                        ?.jsonObject
-                        ?.get("orig_text")
-                        ?.jsonPrimitive
-                        ?.contentOrNull
-                    ?: return@forEach
-                append(words)
-            }
-        }.trim()
-        return text.takeIf { it.isNotBlank() }
+        val nodes = paragraph["text"]
+            ?.let { runCatching { it.jsonObject }.getOrNull() }
+            ?.get("nodes")
+        return extractParagraphNodesText(nodes).takeIf { it.isNotBlank() }
     }
 
     private fun extractParagraphPics(paragraph: JsonObject): List<OpusPic> {

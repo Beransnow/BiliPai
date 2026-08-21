@@ -260,6 +260,62 @@ class DynamicDetailFallbackPolicyTest {
     }
 
     @Test
+    fun mergeRicherOpusDetailContent_prefersParagraphsOverLongPreviewSummary() {
+        val longPreview = "开门见山简单介绍两个阴的没边的神秘combo".repeat(8)
+        val preview = DynamicItem(
+            id_str = "1236527093179744277",
+            modules = DynamicModules(
+                module_dynamic = DynamicContentModule(
+                    desc = DynamicDesc(text = longPreview),
+                    major = DynamicMajor(
+                        type = "MAJOR_TYPE_OPUS",
+                        opus = OpusMajor(
+                            title = "新翼神龙卡组考卷，已快速公式答题",
+                            summary = OpusSummary(text = longPreview),
+                            pics = listOf(
+                                OpusPic(url = "https://i0.hdslb.com/1.jpg"),
+                                OpusPic(url = "https://i0.hdslb.com/2.jpg"),
+                                OpusPic(url = "https://i0.hdslb.com/3.jpg"),
+                                OpusPic(url = "https://i0.hdslb.com/4.jpg"),
+                                OpusPic(url = "https://i0.hdslb.com/5.jpg")
+                            )
+                        )
+                    )
+                )
+            )
+        )
+        val full = DynamicItem(
+            id_str = "1236527093179744277",
+            modules = DynamicModules(
+                module_dynamic = DynamicContentModule(
+                    major = DynamicMajor(
+                        type = "MAJOR_TYPE_OPUS",
+                        opus = OpusMajor(
+                            title = "新翼神龙卡组考卷，已快速公式答题",
+                            contentBlocks = listOf(
+                                OpusContentBlock.Text(longPreview),
+                                OpusContentBlock.Text("新翼神龙卡组考卷，已快速公式答题"),
+                                OpusContentBlock.Image(OpusPic(url = "https://i0.hdslb.com/1.jpg")),
+                                OpusContentBlock.Text("图后还有公式和答题说明")
+                            )
+                        )
+                    )
+                )
+            )
+        )
+
+        val merged = mergeRicherOpusDetailContent(preview, listOf(preview, full))
+
+        assertEquals(4, merged.modules.module_dynamic?.major?.opus?.contentBlocks?.size)
+        assertEquals(
+            "图后还有公式和答题说明",
+            (merged.modules.module_dynamic?.major?.opus?.contentBlocks?.last()
+                as? OpusContentBlock.Text)?.text
+        )
+        assertTrue(resolveDynamicOpusContentScore(full) > resolveDynamicOpusContentScore(preview))
+    }
+
+    @Test
     fun resolveOpusArticleFallbackCvId_prefersFallbackThenColumnCommentId() {
         assertEquals(
             34646640L,

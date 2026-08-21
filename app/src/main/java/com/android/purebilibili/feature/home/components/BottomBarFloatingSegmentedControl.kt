@@ -5,7 +5,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,9 +23,8 @@ import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.components.AppText
-import com.android.purebilibili.core.ui.rememberAppSemanticVisualPolicy
-import com.android.purebilibili.feature.home.components.liquid.rememberCombinedBackdrop
 import com.android.purebilibili.feature.home.components.miuix.DampedDragTrackingMode
+import com.android.purebilibili.feature.home.components.liquid.rememberCombinedBackdrop
 import top.yukonga.miuix.kmp.blur.Backdrop
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
@@ -62,7 +60,6 @@ internal fun BottomBarFloatingSegmentedControl(
     if (items.isEmpty()) return
 
     val context = LocalContext.current
-    val visualPolicy = rememberAppSemanticVisualPolicy()
     val homeSettings by SettingsManager
         .getHomeSettings(context)
         .collectAsStateWithLifecycle(initialValue = HomeSettings())
@@ -70,7 +67,7 @@ internal fun BottomBarFloatingSegmentedControl(
     val liquidGlassEnabled = resolveSegmentedControlLiquidGlassEnabled(
         storedLiquidGlassEnabled = homeSettings.isBottomBarLiquidGlassEnabled,
         liquidGlassEffectsEnabled = liquidGlassEffectsEnabled,
-        supportsIndependentLiquidGlass = visualPolicy.supportsIndependentLiquidGlass,
+        supportsIndependentLiquidGlass = false,
         androidNativeLiquidGlassEnabled = nativeGlassEnabled,
     )
     val isDarkTheme = isSystemInDarkTheme()
@@ -106,19 +103,7 @@ internal fun BottomBarFloatingSegmentedControl(
     } else {
         FloatingBottomBarMode.None
     }
-    val dockShellHeight = if (liquidGlassEnabled) {
-        FloatingBottomBarDefaultShellHeight
-    } else {
-        height
-    }
-    val dockIndicatorHeight = if (liquidGlassEnabled) {
-        FloatingBottomBarIndicatorHeight
-    } else {
-        indicatorHeight
-    }
-    val dockModifier = if (liquidGlassEnabled) {
-        modifier.wrapContentWidth()
-    } else if (itemWidth != null) {
+    val dockModifier = if (itemWidth != null) {
         modifier.width(itemWidth * itemCount + containerHorizontalPadding * 2)
     } else {
         modifier
@@ -132,11 +117,11 @@ internal fun BottomBarFloatingSegmentedControl(
             itemWidth != null -> itemWidth.value
             constraints.hasBoundedWidth ->
                 ((maxWidth.value - 8f).coerceAtLeast(0f) / itemCount)
-            else -> dockIndicatorHeight.value * FLOATING_DOCK_MIN_INDICATOR_ASPECT
+            else -> indicatorHeight.value * FLOATING_DOCK_MIN_INDICATOR_ASPECT
         }
         val captureInsets = resolveFloatingDockCaptureInsets(
-            shellHeightDp = dockShellHeight.value,
-            requestedIndicatorHeightDp = dockIndicatorHeight.value,
+            shellHeightDp = height.value,
+            requestedIndicatorHeightDp = indicatorHeight.value,
             indicatorWidthDp = indicatorWidthDp,
         )
         if (effectiveBackdrop != null) {
@@ -170,8 +155,8 @@ internal fun BottomBarFloatingSegmentedControl(
                 contentColor = unselectedTextColor,
                 activeContentColor = selectedTextColor,
             ),
-            shellHeight = dockShellHeight,
-            indicatorHeight = dockIndicatorHeight,
+            shellHeight = height,
+            indicatorHeight = indicatorHeight,
             indicatorPositionProvider = indicatorPositionProvider,
             isScrollInProgressProvider = isScrollInProgressProvider,
             dragSelectionEnabled = dragSelectionEnabled && enabled && itemCount > 1,

@@ -104,16 +104,18 @@ class DampedDragAnimation(
             },
             onDragEnd = {
                 if (gestureAccepted) {
-                    isDragging = false
+                    // Settle first so pager-follow observers cannot snap to the stale page
+                    // between isDragging flipping false and the drag target being recorded.
                     onDragStopped()
+                    isDragging = false
                     release()
                 }
                 gestureAccepted = false
             },
             onDragCancel = {
                 if (gestureAccepted) {
-                    isDragging = false
                     onDragStopped()
+                    isDragging = false
                     release()
                 }
                 gestureAccepted = false
