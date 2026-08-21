@@ -711,7 +711,7 @@ private fun TodayWatchPlanCard(
                         color = MaterialTheme.colorScheme.error
                     )
                 }
-                return@Column
+                return@cardBody
             }
 
             TodayWatchModeSegmentedControl(
