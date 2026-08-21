@@ -1673,6 +1673,9 @@ private fun VideoPageItem(
     val currentAudioQuality = requestedAudioQuality
     val bvid = if (item is ViewInfo) item.bvid else (item as RelatedVideo).bvid
     val itemAid = if (item is ViewInfo) item.aid else (item as RelatedVideo).aid
+    val currentUiState = viewModel.uiState.collectAsStateWithLifecycle().value
+    val currentSuccess = (currentUiState as? VideoPlaybackUiState.Success)
+        ?.withEngagementUiState(engagementState)
     
     // [修复] 手动监听 ExoPlayer 播放状态，确保 UI 及时更新
     var isPlaying by remember { mutableStateOf(exoPlayer.isPlaying) }
@@ -2848,10 +2851,7 @@ private fun VideoPageItem(
         }
 
         // Overlay & Interaction
-    val currentUiState = viewModel.uiState.collectAsStateWithLifecycle().value
     val isCurrentModelVideo = (currentUiState as? VideoPlaybackUiState.Success)?.info?.bvid == bvid
-    val currentSuccess = (currentUiState as? VideoPlaybackUiState.Success)
-        ?.withEngagementUiState(engagementState)
     var portraitInteractionOverride by remember(bvid) {
         mutableStateOf(PortraitVideoInteractionOverride())
     }
