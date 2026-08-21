@@ -188,12 +188,12 @@ fun LoginScreen(
         onRefreshQr = viewModel::loadTvQrCode,
         onRequestSms = { phone, countryCid ->
             captchaRequest = CaptchaRequest.Sms(phone = phone, countryCid = countryCid)
-            viewModel.getCaptcha()
+            viewModel.beginSmsCodeRequest(phone = phone, countryCode = countryCid)
         },
         onSubmitSms = viewModel::loginBySms,
         onRequestPassword = { phone, password ->
             captchaRequest = CaptchaRequest.Password(phone, password)
-            viewModel.getCaptcha()
+            viewModel.beginPasswordLogin(phone, password)
         },
         onImportCookie = viewModel::loginByCookie,
         onContinueWithStandardSession = viewModel::continueWithStandardSession,

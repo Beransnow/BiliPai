@@ -3,6 +3,7 @@ package com.android.purebilibili.feature.login
 import com.android.purebilibili.core.network.AppSignUtils
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 
 class LoginAppAuthPolicyTest {
 
@@ -25,6 +26,26 @@ class LoginAppAuthPolicyTest {
         assertEquals("buvid", params["buvid"])
         assertEquals("recaptcha-token", params["recaptcha_token"])
         assertEquals("session-id", params["login_session_id"])
+    }
+
+    @Test
+    fun `initial sms send omits captcha fields until passport issues its challenge`() {
+        val params = buildAndroidSmsSendParams(
+            phone = "13800138000",
+            countryCode = 1,
+            token = null,
+            challenge = null,
+            validate = null,
+            seccode = null,
+            buvid = "buvid",
+            loginSessionId = "session-id",
+            timestampSeconds = 123L,
+        )
+
+        assertFalse(params.containsKey("recaptcha_token"))
+        assertFalse(params.containsKey("gee_challenge"))
+        assertFalse(params.containsKey("gee_validate"))
+        assertFalse(params.containsKey("gee_seccode"))
     }
 
     @Test
@@ -76,5 +97,26 @@ class LoginAppAuthPolicyTest {
         assertEquals("validate", params["gee_validate"])
         assertEquals("ALL", params["permission"])
         assertEquals("main.homepage.avatar-nologin.all.click", params["from_pv"])
+    }
+
+    @Test
+    fun `initial password login omits captcha fields until passport issues its challenge`() {
+        val params = buildAndroidPasswordLoginParams(
+            username = "user@example.com",
+            encryptedPassword = "encrypted-password",
+            token = null,
+            challenge = null,
+            validate = null,
+            seccode = null,
+            buvid = "buvid",
+            deviceId = "device-id",
+            encryptedDeviceToken = "encrypted-token",
+            timestampSeconds = 123L,
+        )
+
+        assertFalse(params.containsKey("recaptcha_token"))
+        assertFalse(params.containsKey("gee_challenge"))
+        assertFalse(params.containsKey("gee_validate"))
+        assertFalse(params.containsKey("gee_seccode"))
     }
 }

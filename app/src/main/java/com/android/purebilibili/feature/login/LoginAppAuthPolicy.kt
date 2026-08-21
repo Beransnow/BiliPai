@@ -5,10 +5,10 @@ import com.android.purebilibili.core.network.AppSignUtils
 internal fun buildAndroidSmsSendParams(
     phone: String,
     countryCode: Int,
-    token: String,
-    challenge: String,
-    validate: String,
-    seccode: String,
+    token: String?,
+    challenge: String?,
+    validate: String?,
+    seccode: String?,
     buvid: String,
     loginSessionId: String,
     timestampSeconds: Long
@@ -19,10 +19,10 @@ internal fun buildAndroidSmsSendParams(
     put("login_session_id", loginSessionId)
     put("cid", countryCode.toString())
     put("tel", phone)
-    put("recaptcha_token", token)
-    put("gee_challenge", challenge)
-    put("gee_validate", validate)
-    put("gee_seccode", seccode)
+    putIfNotBlank("recaptcha_token", token)
+    putIfNotBlank("gee_challenge", challenge)
+    putIfNotBlank("gee_validate", validate)
+    putIfNotBlank("gee_seccode", seccode)
 }
 
 internal fun buildAndroidSmsLoginParams(
@@ -51,10 +51,10 @@ internal fun buildAndroidSmsLoginParams(
 internal fun buildAndroidPasswordLoginParams(
     username: String,
     encryptedPassword: String,
-    token: String,
-    challenge: String,
-    validate: String,
-    seccode: String,
+    token: String?,
+    challenge: String?,
+    validate: String?,
+    seccode: String?,
     buvid: String,
     deviceId: String,
     encryptedDeviceToken: String,
@@ -65,10 +65,10 @@ internal fun buildAndroidPasswordLoginParams(
     put("username", username)
     put("password", encryptedPassword)
     put("permission", "ALL")
-    put("recaptcha_token", token)
-    put("gee_challenge", challenge)
-    put("gee_validate", validate)
-    put("gee_seccode", seccode)
+    putIfNotBlank("recaptcha_token", token)
+    putIfNotBlank("gee_challenge", challenge)
+    putIfNotBlank("gee_validate", validate)
+    putIfNotBlank("gee_seccode", seccode)
     put("from_pv", "main.homepage.avatar-nologin.all.click")
     put("from_url", AppSignUtils.percentEncode("bilibili://pegasus/promo"))
 }
@@ -90,6 +90,10 @@ private fun androidLoginDeviceParams(
     "dt" to AppSignUtils.percentEncode(encryptedDeviceToken),
     "local_id" to buvid
 )
+
+private fun MutableMap<String, String>.putIfNotBlank(key: String, value: String?) {
+    value?.takeIf(String::isNotBlank)?.let { put(key, it) }
+}
 
 private fun androidLoginBaseParams(timestampSeconds: Long): Map<String, String> = mapOf(
     "appkey" to AppSignUtils.ANDROID_HD_APP_KEY,
