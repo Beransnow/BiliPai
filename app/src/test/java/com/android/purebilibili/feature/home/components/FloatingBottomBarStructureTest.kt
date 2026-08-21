@@ -41,8 +41,8 @@ class FloatingBottomBarStructureTest {
         assertTrue(body.contains(".dropShadow("))
         assertTrue(body.contains("vibrancy()"))
         assertTrue(body.contains("blur(4.dp.toPx(), 4.dp.toPx())"))
-        assertTrue(body.contains("refractionHeight = 24.dp.toPx()"))
-        assertTrue(body.contains("refractionAmount = 24.dp.toPx()"))
+        assertTrue(body.contains("refractionHeight = shellLensPx"))
+        assertTrue(body.contains("refractionAmount = shellLensPx"))
         assertTrue(body.contains("baseHighlight.copy(alpha = 0.75f)"))
 
         assertTrue(body.contains(".alpha(0f)"))
@@ -52,11 +52,11 @@ class FloatingBottomBarStructureTest {
         assertTrue(body.contains("rememberCombinedBackdrop(backdrop, tabsBackdrop)"))
         assertTrue(body.contains("depthEffect = true"))
         assertTrue(body.contains("chromaticAberration = 0.5f"))
-        assertTrue(body.contains("refractionHeight = 10.dp.toPx() * progress"))
-        assertTrue(body.contains("refractionAmount = 14.dp.toPx() * progress"))
+        assertTrue(body.contains("refractionHeight = indicatorLensHeightPx * progress"))
+        assertTrue(body.contains("refractionAmount = indicatorLensAmountPx * progress"))
         assertTrue(body.contains(".innerShadow(shape = pillShape)"))
         assertTrue(body.contains("InnerShadow("))
-        assertTrue(body.contains("radius = 8.dp * dampedDragAnimation.pressProgress"))
+        assertTrue(body.contains("radius = innerShadowRadius * dampedDragAnimation.pressProgress"))
     }
 
     @Test
@@ -73,8 +73,10 @@ class FloatingBottomBarStructureTest {
 
         assertTrue(source.contains("import com.android.purebilibili.feature.home.components.miuix.DampedDragAnimation"))
         assertTrue(body.contains("DampedDragAnimation("))
-        assertTrue(body.contains("pressedScale = FloatingBottomBarPressedScale"))
+        assertTrue(body.contains("pressedScale = matchedGeometry.pressedScale"))
         assertTrue(body.contains("canDrag = { offset ->"))
+        assertTrue(body.contains("shouldAcceptFloatingDockDragAtWindowX("))
+        assertTrue(body.contains("fittedIndicatorHeight"))
         assertTrue(body.contains("onDragStarted = {}"))
         assertTrue(body.contains("onDragStopped = {"))
         assertTrue(body.contains("updateValue("))
@@ -164,8 +166,8 @@ class FloatingBottomBarStructureTest {
         val source = loadFloatingBottomBarSource()
         val body = source.substringAfter("fun FloatingBottomBar(")
 
-        assertTrue(body.contains("modifier = modifier.width(IntrinsicSize.Min)"))
-        assertFalse(body.contains("Modifier.width(IntrinsicSize.Min).then(modifier)"))
+        assertTrue(body.contains("modifier = modifier,"))
+        assertFalse(body.contains("modifier = modifier.width(IntrinsicSize.Min)"))
     }
 
     @Test
