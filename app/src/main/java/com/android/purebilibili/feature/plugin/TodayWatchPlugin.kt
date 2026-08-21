@@ -42,6 +42,7 @@ import com.android.purebilibili.core.plugin.RecommendedVideo
 import com.android.purebilibili.core.store.TodayWatchFeedbackSnapshot
 import com.android.purebilibili.core.store.TodayWatchFeedbackStore
 import com.android.purebilibili.core.store.TodayWatchProfileStore
+import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.components.AppSwitchPreference
 import com.android.purebilibili.core.util.Logger
 import com.android.purebilibili.feature.home.TodayWatchCreatorSignal
@@ -64,6 +65,9 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 
 private const val TAG = "TodayWatchPlugin"
 
@@ -285,10 +289,12 @@ class TodayWatchPlugin : RecommendationPluginApi {
             updateConfig { next }
         }
 
+        val settingsBackdrop = rememberLayerBackdrop()
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(16.dp)
+                .layerBackdrop(settingsBackdrop),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             AppText(
@@ -299,7 +305,8 @@ class TodayWatchPlugin : RecommendationPluginApi {
             TodayWatchPluginModeSegmentedControl(
                 selectedMode = uiConfig.currentMode,
                 onModeChange = { mode -> commit(uiConfig.copy(currentMode = mode)) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                miuixBackdrop = settingsBackdrop,
             )
 
             AppHorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
@@ -488,13 +495,16 @@ class TodayWatchPlugin : RecommendationPluginApi {
 private fun TodayWatchPluginModeSegmentedControl(
     selectedMode: TodayWatchPluginMode,
     onModeChange: (TodayWatchPluginMode) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    miuixBackdrop: MiuixBackdrop? = null,
 ) {
     val modes = TodayWatchPluginMode.entries
     val selectedIndex = modes.indexOf(selectedMode).coerceAtLeast(0)
     val labels = modes.map { mode ->
         if (mode == TodayWatchPluginMode.RELAX) "今晚轻松看" else "深度学习看"
     }
+    val fallbackBackdrop = rememberLayerBackdrop()
+    val backdrop = miuixBackdrop ?: fallbackBackdrop
 
     BottomBarLiquidSegmentedControl(
         items = labels,
@@ -503,12 +513,15 @@ private fun TodayWatchPluginModeSegmentedControl(
             modes.getOrNull(index)?.takeIf { it != selectedMode }?.let(onModeChange)
         },
         modifier = modifier,
-        height = 42.dp,
-        indicatorHeight = com.android.purebilibili.core.ui.roundMatchedLiquidIndicatorHeightDp(42f).dp,
-        labelFontSize = 14.sp,
+        height = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
+        indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
+        labelFontSize = 13.sp,
         containerHorizontalPadding = 4.dp,
         containerVerticalPadding = 4.dp,
+        miuixBackdrop = backdrop,
+        forceLiquidChrome = false,
         liquidGlassEffectsEnabled = true,
+        tapPressRefractionEnabled = true,
         dragSelectionEnabled = true,
         preferInlineContentStyle = false
     )
