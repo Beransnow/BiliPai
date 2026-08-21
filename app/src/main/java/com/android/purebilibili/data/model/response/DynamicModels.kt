@@ -745,6 +745,7 @@ data class DynamicAuthorModule(
     val name: String = "",
     val face: String = "",
     val pub_time: String = "", // "昨天 18:00"
+    @Serializable(with = FlexibleLongSerializer::class)
     val pub_ts: Long = 0, // 时间戳
     @Serializable(with = FlexibleBooleanSerializer::class)
     val following: Boolean? = null,
