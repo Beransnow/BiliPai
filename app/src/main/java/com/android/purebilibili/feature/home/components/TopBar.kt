@@ -137,8 +137,17 @@ internal fun resolveTopTabRowHorizontalPaddingDp(
 
 // Slightly tighter than before so rest capsule nearly fills the dock (bottom-bar feel),
 // while drag scale still overflows the chrome edge.
-internal fun resolveTopTabDockIndicatorHorizontalGapDp(hasOuterChromeSurface: Boolean): Float =
-    if (hasOuterChromeSurface) 2f else 2f
+internal fun resolveTopTabDockIndicatorHorizontalGapDp(
+    hasOuterChromeSurface: Boolean,
+    isLiquidGlassReuseEnabled: Boolean = false
+): Float {
+    val standardGap = if (hasOuterChromeSurface) 2f else 2f
+    return if (isLiquidGlassReuseEnabled) {
+        (standardGap - 1f).coerceAtLeast(1f)
+    } else {
+        standardGap
+    }
+}
 
 /**
  * Same 4dp start/end inset as [FloatingBottomBar] so the first and last
@@ -1104,7 +1113,8 @@ private fun LightweightHomeTopTabs(
         }
         val md3IndicatorWidth = if (skinPlainStyle) AppSpacingTokens.DoubleExtraLarge - AppSpacingTokens.Micro else AppSpacingTokens.ExtraLarge + AppSpacingTokens.ExtraSmall
         val dockIndicatorHorizontalGap = resolveTopTabDockIndicatorHorizontalGapDp(
-            hasOuterChromeSurface = hasOuterChromeSurface
+            hasOuterChromeSurface = hasOuterChromeSurface,
+            isLiquidGlassReuseEnabled = isLiquidGlassEnabled
         ).dp
         val dockIndicatorVerticalGap = resolveTopTabDockIndicatorVerticalGapDp(
             hasOuterChromeSurface = hasOuterChromeSurface
