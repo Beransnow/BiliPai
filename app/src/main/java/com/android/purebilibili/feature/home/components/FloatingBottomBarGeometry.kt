@@ -53,6 +53,22 @@ internal fun resolveCompactDockInnerShadowRadiusDp(shellHeightDp: Float): Float 
 internal fun resolveCompactDockTabPressScale(shellHeightDp: Float): Float =
     1f + FLOATING_DOCK_TAB_PRESS_SCALE_EXTRA * resolveCompactDockShellLensIntensity(shellHeightDp)
 
+/**
+ * Half the extra height a pressed indicator needs beyond the dock.
+ * Compact 40dp chrome must reserve this or the 78/56 bloom is clipped by
+ * siblings such as the detail-page pager.
+ */
+internal fun resolveCompactDockScaleOverflowDp(
+    shellHeightDp: Float,
+    indicatorHeightDp: Float,
+): Float {
+    val geometry = com.android.purebilibili.core.ui.resolveMatchedLiquidIndicatorGeometry(
+        dockHeightDp = shellHeightDp,
+        indicatorHeightDp = indicatorHeightDp,
+    )
+    return ((geometry.pressedHeightDp - shellHeightDp) / 2f).coerceAtLeast(0f)
+}
+
 internal fun resolveFloatingDockIndicatorHeightDp(
     requestedHeightDp: Float,
     tabWidthDp: Float,

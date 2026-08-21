@@ -82,6 +82,21 @@ class FloatingBottomBarGeometryTest {
     }
 
     @Test
+    fun `pressed indicator overflow is reserved so compact docks are not clipped`() {
+        val homeOverflow = resolveCompactDockScaleOverflowDp(
+            shellHeightDp = 64f,
+            indicatorHeightDp = 56f,
+        )
+        val compactOverflow = resolveCompactDockScaleOverflowDp(
+            shellHeightDp = 40f,
+            indicatorHeightDp = 35f,
+        )
+        assertEquals((78f - 64f) / 2f, homeOverflow, 0.001f)
+        assertEquals((40f * 78f / 64f - 40f) / 2f, compactOverflow, 0.001f)
+        assertTrue(compactOverflow > 0f)
+    }
+
+    @Test
     fun `system gesture inset never shrinks below the fallback edge`() {
         assertEquals(24f, resolveFloatingDockDragEdgeInsetPx(systemInsetPx = 0f, fallbackPx = 24f))
         assertEquals(80f, resolveFloatingDockDragEdgeInsetPx(systemInsetPx = 80f, fallbackPx = 24f))

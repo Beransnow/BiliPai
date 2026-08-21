@@ -296,6 +296,12 @@ fun FloatingBottomBar(
     val tabPressScale = remember(shellHeight) {
         resolveCompactDockTabPressScale(shellHeight.value)
     }
+    val scaleOverflowDp = remember(shellHeight, indicatorHeight) {
+        resolveCompactDockScaleOverflowDp(
+            shellHeightDp = shellHeight.value,
+            indicatorHeightDp = indicatorHeight.value,
+        ).dp
+    }
     val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
     val layoutDirection = LocalLayoutDirection.current
     val configuration = LocalConfiguration.current
@@ -430,13 +436,26 @@ fun FloatingBottomBar(
             }
     }
     LaunchedEffect(dampedDragAnimation, maxTabIndex) {
+        var pagerPressed = false
         snapshotFlow {
             val external = indicatorPositionLatest?.invoke()
             val scrolling = isScrollInProgressLatest()
             Triple(external, scrolling, dampedDragAnimation.isDragging)
-        }.collectLatest { (external, scrolling, dragging) ->
-            if (dragging || !scrolling || external == null) return@collectLatest
-            dampedDragAnimation.snapTo(external.coerceIn(0f, maxTabIndex.toFloat()))
+        }.collect { (external, scrolling, dragging) ->
+            if (dragging) {
+                pagerPressed = false
+                return@collect
+            }
+            if (scrolling && external != null) {
+                if (!pagerPressed) {
+                    dampedDragAnimation.press()
+                    pagerPressed = true
+                }
+                dampedDragAnimation.snapTo(external.coerceIn(0f, maxTabIndex.toFloat()))
+            } else if (pagerPressed) {
+                pagerPressed = false
+                dampedDragAnimation.release()
+            }
         }
     }
 
@@ -471,7 +490,7 @@ fun FloatingBottomBar(
     }
 
     Box(
-        modifier = modifier,
+        modifier = modifier.padding(vertical = scaleOverflowDp),
         contentAlignment = Alignment.CenterStart
     ) {
         CompositionLocalProvider(LocalFloatingBottomBarContentColor provides colors.contentColor) {

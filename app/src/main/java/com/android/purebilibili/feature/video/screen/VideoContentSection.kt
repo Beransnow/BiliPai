@@ -148,29 +148,27 @@ internal fun hasVideoContentTabBarIndicatorScaleClearance(
     return geometry.pressedHeightDp > containerHeightDp
 }
 
-internal const val VIDEO_CONTENT_LIQUID_DOCK_HEIGHT_DP = 64
-internal const val VIDEO_CONTENT_LIQUID_DOCK_INDICATOR_HEIGHT_DP = 56
-internal const val VIDEO_CONTENT_LIQUID_DOCK_LABEL_FONT_SIZE_SP = 14
 
 internal data class VideoContentTabBarLiquidChromeSpec(
     val reusesLiquidGlassDock: Boolean,
     val segmentedControlHeightDp: Int,
     val segmentedControlIndicatorHeightDp: Int,
     val labelFontSizeSp: Int,
+    val itemWidthDp: Int?,
     val liquidGlassEffectsEnabled: Boolean,
     val useTransparentTabRowBackground: Boolean,
 )
 
+/** Two-character labels (简介/评论) plus dock item padding; matches comment-sort 13sp → 66dp. */
+internal fun resolveVideoContentTabBarDockItemWidthDp(labelFontSizeSp: Int): Int {
+    if (labelFontSizeSp <= 0) return 0
+    return (labelFontSizeSp * 2) + 40
+}
+
 internal fun shouldReuseVideoContentTabBarLiquidGlassDock(
     androidNativeLiquidGlassEnabled: Boolean,
     hasBackdrop: Boolean,
-): Boolean {
-    @Suppress("UNUSED_PARAMETER")
-    val ignoredNative = androidNativeLiquidGlassEnabled
-    @Suppress("UNUSED_PARAMETER")
-    val ignoredBackdrop = hasBackdrop
-    return false
-}
+): Boolean = androidNativeLiquidGlassEnabled && hasBackdrop
 
 internal fun resolveVideoContentTabBarLiquidChromeSpec(
     androidNativeLiquidGlassEnabled: Boolean,
@@ -181,25 +179,20 @@ internal fun resolveVideoContentTabBarLiquidChromeSpec(
         androidNativeLiquidGlassEnabled = androidNativeLiquidGlassEnabled,
         hasBackdrop = hasBackdrop,
     )
-    return if (reusesLiquidGlassDock) {
-        VideoContentTabBarLiquidChromeSpec(
-            reusesLiquidGlassDock = true,
-            segmentedControlHeightDp = VIDEO_CONTENT_LIQUID_DOCK_HEIGHT_DP,
-            segmentedControlIndicatorHeightDp = VIDEO_CONTENT_LIQUID_DOCK_INDICATOR_HEIGHT_DP,
-            labelFontSizeSp = VIDEO_CONTENT_LIQUID_DOCK_LABEL_FONT_SIZE_SP,
-            liquidGlassEffectsEnabled = true,
-            useTransparentTabRowBackground = true,
-        )
-    } else {
-        VideoContentTabBarLiquidChromeSpec(
-            reusesLiquidGlassDock = false,
-            segmentedControlHeightDp = layoutSpec.segmentedControlHeightDp,
-            segmentedControlIndicatorHeightDp = layoutSpec.segmentedControlIndicatorHeightDp,
-            labelFontSizeSp = layoutSpec.unselectedTabFontSizeSp,
-            liquidGlassEffectsEnabled = hasBackdrop,
-            useTransparentTabRowBackground = false,
-        )
-    }
+    val labelFontSizeSp = layoutSpec.unselectedTabFontSizeSp
+    return VideoContentTabBarLiquidChromeSpec(
+        reusesLiquidGlassDock = reusesLiquidGlassDock,
+        segmentedControlHeightDp = layoutSpec.segmentedControlHeightDp,
+        segmentedControlIndicatorHeightDp = layoutSpec.segmentedControlIndicatorHeightDp,
+        labelFontSizeSp = labelFontSizeSp,
+        itemWidthDp = if (reusesLiquidGlassDock) {
+            resolveVideoContentTabBarDockItemWidthDp(labelFontSizeSp)
+        } else {
+            null
+        },
+        liquidGlassEffectsEnabled = reusesLiquidGlassDock,
+        useTransparentTabRowBackground = reusesLiquidGlassDock,
+    )
 }
 
 internal fun resolveVideoContentTabBarLayoutSpec(widthDp: Int): VideoContentTabBarLayoutSpec {
@@ -524,7 +517,7 @@ fun VideoContentSection(
     bottomContentPadding: Dp = if (showInteractionActions) 84.dp else 12.dp
 ) {
     val context = LocalContext.current
-    val tabs = listOf("简介", "评论 $replyCount")
+    val tabs = listOf("简介", "评论")
     val scope = rememberCoroutineScope()
     TrackJankStateFlag(
         stateName = "video_detail:tab_swipe",
@@ -1829,20 +1822,20 @@ private fun VideoContentTabBar(
                 selectedIndex = selectedTabIndex,
                 onSelected = onTabSelected,
                 modifier = if (liquidChromeSpec.reusesLiquidGlassDock) {
-                    Modifier.wrapContentWidth()
+                    Modifier
                 } else {
                     Modifier
                         .weight(layoutSpec.tabsRowWeight)
                         .padding(start = 0.dp, top = 2.dp, end = 8.dp, bottom = 2.dp)
                 },
+                itemWidth = liquidChromeSpec.itemWidthDp?.dp,
                 height = liquidChromeSpec.segmentedControlHeightDp.dp,
                 indicatorHeight = liquidChromeSpec.segmentedControlIndicatorHeightDp.dp,
                 labelFontSize = liquidChromeSpec.labelFontSizeSp.sp,
                 miuixBackdrop = miuixBackdrop,
                 forceLiquidChrome = homeSettings.androidNativeLiquidGlassEnabled,
                 liquidGlassEffectsEnabled = liquidChromeSpec.liquidGlassEffectsEnabled,
-                // Avoid extra press refraction in this compact in-content chrome.
-                tapPressRefractionEnabled = false,
+                tapPressRefractionEnabled = true,
                 indicatorPositionProvider = indicatorPositionProvider,
                 isScrollInProgressProvider = isScrollInProgressProvider,
                 externalPagerMotionEffectsEnabled = liquidChromeSpec.reusesLiquidGlassDock,
