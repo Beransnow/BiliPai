@@ -2,14 +2,9 @@ package com.android.purebilibili.feature.login
 
 import com.android.purebilibili.core.network.AppSignUtils
 
-internal const val SMS_APP_CHANNEL_UNAVAILABLE_CODE = 86104
-
-internal fun shouldFallbackToWebSms(responseCode: Int): Boolean =
-    responseCode == SMS_APP_CHANNEL_UNAVAILABLE_CODE
-
 internal fun buildAndroidSmsSendParams(
     phone: String,
-    countryCode: Int,
+    countryCode: Int, // PiliPlus countryId, e.g. China = 86
     token: String?,
     challenge: String?,
     validate: String?,
@@ -35,7 +30,6 @@ internal fun buildAndroidSmsLoginParams(
     countryCode: Int,
     code: Int,
     captchaKey: String,
-    loginSessionId: String,
     buvid: String,
     deviceId: String,
     encryptedDeviceToken: String,
@@ -47,7 +41,6 @@ internal fun buildAndroidSmsLoginParams(
     put("tel", phone)
     put("code", code.toString())
     put("captcha_key", captchaKey)
-    put("login_session_id", loginSessionId)
     put("from_pv", "main.my-information.my-login.0.click")
     // Pre-encode like BiliPai; AppSign percent-encodes again when hashing.
     put("from_url", AppSignUtils.percentEncode("bilibili://user_center/mine"))

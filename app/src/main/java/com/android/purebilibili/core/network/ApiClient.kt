@@ -35,6 +35,15 @@ import javax.net.ssl.X509TrustManager
 
 internal const val BANGUMI_PLAY_URL_PATH = "pgc/player/web/v2/playurl"
 internal const val BANGUMI_PLAY_URL_LEGACY_PATH = "pgc/player/web/playurl"
+internal const val FORCE_COOKIE_HEADER = "X-BiliPai-Force-Cookie"
+
+internal fun applyForcedCookieHeader(request: okhttp3.Request): okhttp3.Request {
+    val forcedCookie = request.header(FORCE_COOKIE_HEADER) ?: return request
+    return request.newBuilder()
+        .header("Cookie", forcedCookie)
+        .removeHeader(FORCE_COOKIE_HEADER)
+        .build()
+}
 
 private class AppSessionCookieJar : okhttp3.CookieJar {
     private val cookieLock = Any()
@@ -1674,7 +1683,6 @@ interface DynamicApi {
         @Query("type") type: String = "all",
         @Query("offset") offset: String = "",
         @Query("update_baseline") updateBaseline: String = "",
-        @Query("page") page: Int = 1,
         @Query("features") features: String = DYNAMIC_FEED_FEATURES,
         @Query("timezone_offset") timezoneOffset: Int = -480,
         @Query("platform") platform: String = "web",
@@ -2142,7 +2150,7 @@ interface BangumiApi {
 interface PassportApi {
     @GET("https://api.bilibili.com/x/web-interface/nav")
     suspend fun validateCookieSession(
-        @Header("Cookie") cookieHeader: String
+        @Header(FORCE_COOKIE_HEADER) cookieHeader: String
     ): NavResponse
 
     // 二维码登录
@@ -2638,7 +2646,11 @@ object NetworkModule {
             "/x/passport-login/sms/send",
             "/x/passport-login/login/sms",
             "/x/passport-login/oauth2/login",
-            "/x/passport-login/oauth2/access_token" -> "android_hd"
+            "/x/passport-login/oauth2/access_token",
+            "/x/safecenter/user/info",
+            "/x/safecenter/captcha/pre",
+            "/x/safecenter/common/sms/send",
+            "/x/safecenter/login/tel/verify" -> "android_hd"
             else -> null
         }
     }
@@ -2838,6 +2850,13 @@ object NetworkModule {
                         .header("env", "prod")
                         .header("x-bili-trace-id", "11111111111111111111111111111111:1111111111111111:0:0")
                 }
+                if (androidHdLoginAppKeyHeader != null) {
+                    // Match PiliPlus LoginHttp.headers exactly for Passport App requests.
+                    builder
+                        .header("x-bili-aurora-eid", "")
+                        .header("x-bili-aurora-zone", "")
+                        .header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8")
+                }
                 
                 //  [关键修复] WBI 签名接口绝对不能设置 Referer 头，否则会失败
                 // 参考：https://github.com/SocialSisterYi/bilibili-API-collect/blob/master/docs/misc/sign/wbi.md
@@ -2882,6 +2901,11 @@ object NetworkModule {
                     }
                     throw e
                 }
+            }
+            // CookieJar runs after application interceptors and replaces Cookie.
+            // Restore an explicit imported cookie after that, matching PiliPlus.
+            .addNetworkInterceptor { chain ->
+                chain.proceed(applyForcedCookieHeader(chain.request()))
             }
             .build()
     }

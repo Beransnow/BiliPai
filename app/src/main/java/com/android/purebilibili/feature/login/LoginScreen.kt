@@ -701,7 +701,7 @@ private fun SmsLoginContent(
             }
         } else {
             AppButton(
-                onClick = { onRequestCode(phone, selectedRegion.cid) },
+                onClick = { onRequestCode(phone, resolveSmsApiCid(selectedRegion)) },
                 enabled = phoneEligible && !isLoading,
                 modifier = Modifier.fillMaxWidth()
             ) {
