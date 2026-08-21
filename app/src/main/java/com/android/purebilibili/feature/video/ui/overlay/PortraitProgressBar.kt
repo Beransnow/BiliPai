@@ -34,6 +34,8 @@ import com.android.purebilibili.data.model.response.VideoshotData
 import com.android.purebilibili.feature.video.ui.components.CompactSeekPreview
 import com.android.purebilibili.feature.video.ui.components.SeekPreviewBubblePlacement
 import com.android.purebilibili.feature.video.ui.components.SeekPreviewBubbleSimple
+import com.android.purebilibili.feature.video.ui.components.resolveCompactSeekPreviewSize
+import com.android.purebilibili.feature.video.ui.components.resolveSeekPreviewBubbleOffsetPx
 import kotlin.math.roundToInt
 
 /**
@@ -116,6 +118,7 @@ fun ThinWigglyProgressBar(
     videoshotData: VideoshotData? = null,
     videoAspectRatio: Float? = null
 ) {
+    val configuration = LocalConfiguration.current
     var dragTargetPositionMs by remember { mutableLongStateOf(seekPositionMs.coerceAtLeast(0L)) }
     var containerWidth by remember { mutableFloatStateOf(0f) }
     val currentOnSeek by rememberUpdatedState(onSeek)
@@ -286,32 +289,51 @@ fun ThinWigglyProgressBar(
                 } else {
                     layoutPolicy.compactLandscapePreviewOffsetYDp
                 }
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .offset(y = compactPreviewOffsetY.dp)
+                val compactPreviewSize = remember(
+                    videoshotData.img_x_size,
+                    videoshotData.img_y_size,
+                    configuration.screenWidthDp,
+                    videoAspectRatio
                 ) {
-                    CompactSeekPreview(
-                        videoshotData = videoshotData,
-                        targetPositionMs = previewPositionMs,
-                        durationMs = duration,
+                    resolveCompactSeekPreviewSize(
+                        sourceWidthPx = videoshotData.img_x_size,
+                        sourceHeightPx = videoshotData.img_y_size,
+                        screenWidthDp = configuration.screenWidthDp,
                         videoAspectRatio = videoAspectRatio
                     )
                 }
-            } else {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .offset(y = layoutPolicy.bubbleOffsetYDp.dp)
-                ) {
-                    SeekPreviewBubbleSimple(
-                        targetPositionMs = previewPositionMs,
-                        currentPositionMs = currentPositionMs,
-                        offsetX = 0f,
-                        containerWidth = 0f,
-                        placement = SeekPreviewBubblePlacement.Centered
-                    )
+                val previewWidthPx = with(LocalDensity.current) {
+                    compactPreviewSize.widthDp.dp.toPx()
                 }
+                val previewOffsetX = resolveSeekPreviewBubbleOffsetPx(
+                    placement = SeekPreviewBubblePlacement.Anchored,
+                    offsetX = containerWidth * displayProgress,
+                    containerWidth = containerWidth,
+                    bubbleWidthPx = previewWidthPx
+                )
+                val previewOffsetYPx = with(LocalDensity.current) {
+                    compactPreviewOffsetY.dp.roundToPx()
+                }
+                CompactSeekPreview(
+                    videoshotData = videoshotData,
+                    targetPositionMs = previewPositionMs,
+                    durationMs = duration,
+                    videoAspectRatio = videoAspectRatio,
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .offset { IntOffset(previewOffsetX, previewOffsetYPx) }
+                )
+            } else {
+                SeekPreviewBubbleSimple(
+                    targetPositionMs = previewPositionMs,
+                    currentPositionMs = currentPositionMs,
+                    offsetX = containerWidth * displayProgress,
+                    containerWidth = containerWidth,
+                    placement = SeekPreviewBubblePlacement.Anchored,
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .offset(y = layoutPolicy.bubbleOffsetYDp.dp)
+                )
             }
         }
     }

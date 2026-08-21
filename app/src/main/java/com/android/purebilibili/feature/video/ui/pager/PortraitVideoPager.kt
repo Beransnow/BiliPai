@@ -2625,12 +2625,44 @@ private fun VideoPageItem(
         if (isSeekGesture && progressState.duration > 0) {
             val gestureVideoshotData = currentSuccess?.videoshotData
             if (gestureVideoshotData != null && gestureVideoshotData.isValid) {
+                val previewConfiguration = androidx.compose.ui.platform.LocalConfiguration.current
+                val gesturePreviewSize = remember(
+                    gestureVideoshotData.img_x_size,
+                    gestureVideoshotData.img_y_size,
+                    previewConfiguration.screenWidthDp
+                ) {
+                    com.android.purebilibili.feature.video.ui.components.resolveCompactSeekPreviewSize(
+                        sourceWidthPx = gestureVideoshotData.img_x_size,
+                        sourceHeightPx = gestureVideoshotData.img_y_size,
+                        screenWidthDp = previewConfiguration.screenWidthDp,
+                        videoAspectRatio = 9f / 16f
+                    )
+                }
+                val previewWidthPx = with(density) { gesturePreviewSize.widthDp.dp.toPx() }
+                val previewProgress = (
+                    seekTargetPosition / progressState.duration.toFloat()
+                ).coerceIn(0f, 1f)
+                val previewOffsetX =
+                    com.android.purebilibili.feature.video.ui.components.resolveSeekPreviewBubbleOffsetPx(
+                        placement = com.android.purebilibili.feature.video.ui.components.SeekPreviewBubblePlacement.Anchored,
+                        offsetX = portraitPageWidthPx * previewProgress,
+                        containerWidth = portraitPageWidthPx.toFloat(),
+                        bubbleWidthPx = previewWidthPx
+                    )
+                val previewBottomOffsetPx = with(density) { 120.dp.roundToPx() }
                 com.android.purebilibili.feature.video.ui.components.CompactSeekPreview(
                     videoshotData = gestureVideoshotData,
                     targetPositionMs = seekTargetPosition.toLong(),
                     durationMs = progressState.duration,
                     videoAspectRatio = 9f / 16f,
-                    modifier = Modifier.align(Alignment.Center)
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .offset {
+                            androidx.compose.ui.unit.IntOffset(
+                                x = previewOffsetX,
+                                y = -previewBottomOffsetPx
+                            )
+                        }
                 )
             } else {
                 val targetTimeText = FormatUtils.formatDuration(seekTargetPosition.toLong())

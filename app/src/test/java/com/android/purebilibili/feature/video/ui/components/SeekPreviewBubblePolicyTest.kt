@@ -9,6 +9,37 @@ import kotlin.test.assertEquals
 class SeekPreviewBubblePolicyTest {
 
     @Test
+    fun anchoredPreview_followsProgressAndClampsAtTrackEdges() {
+        assertEquals(
+            0,
+            resolveSeekPreviewBubbleOffsetPx(
+                placement = SeekPreviewBubblePlacement.Anchored,
+                offsetX = 0f,
+                containerWidth = 400f,
+                bubbleWidthPx = 120f
+            )
+        )
+        assertEquals(
+            140,
+            resolveSeekPreviewBubbleOffsetPx(
+                placement = SeekPreviewBubblePlacement.Anchored,
+                offsetX = 200f,
+                containerWidth = 400f,
+                bubbleWidthPx = 120f
+            )
+        )
+        assertEquals(
+            280,
+            resolveSeekPreviewBubbleOffsetPx(
+                placement = SeekPreviewBubblePlacement.Anchored,
+                offsetX = 400f,
+                containerWidth = 400f,
+                bubbleWidthPx = 120f
+            )
+        )
+    }
+
+    @Test
     fun seekPreviewAnchor_quantizesToCurrentVideoshotFrameBoundary() {
         val videoshotData = VideoshotData(
             img_x_len = 2,
