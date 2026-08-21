@@ -4,8 +4,16 @@ import com.android.purebilibili.core.network.AppSignUtils
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class LoginAppAuthPolicyTest {
+
+    @Test
+    fun `falls back to web sms only when Android HD channel is unavailable`() {
+        assertTrue(shouldFallbackToWebSms(86104))
+        assertFalse(shouldFallbackToWebSms(-105))
+        assertFalse(shouldFallbackToWebSms(1003))
+    }
 
     @Test
     fun `sms send uses Android HD credential and device parameters`() {

@@ -2,6 +2,11 @@ package com.android.purebilibili.feature.login
 
 import com.android.purebilibili.core.network.AppSignUtils
 
+internal const val SMS_APP_CHANNEL_UNAVAILABLE_CODE = 86104
+
+internal fun shouldFallbackToWebSms(responseCode: Int): Boolean =
+    responseCode == SMS_APP_CHANNEL_UNAVAILABLE_CODE
+
 internal fun buildAndroidSmsSendParams(
     phone: String,
     countryCode: Int,
