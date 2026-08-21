@@ -280,7 +280,7 @@ fun ThinWigglyProgressBar(
             if (videoshotData != null && videoshotData.isValid) {
                 val isPortraitVideo = videoAspectRatio
                     ?.let { it.isFinite() && it > 0f && it < 1f }
-                    == true
+                    ?: false
                 val compactPreviewOffsetY = if (isPortraitVideo) {
                     layoutPolicy.compactPortraitPreviewOffsetYDp
                 } else {
