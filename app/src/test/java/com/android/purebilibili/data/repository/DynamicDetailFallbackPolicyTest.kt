@@ -158,6 +158,33 @@ class DynamicDetailFallbackPolicyTest {
     }
 
     @Test
+    fun shouldFetchOpusDetail_returnsTrueForSpaceDrawPreview() {
+        val item = DynamicItem(
+            id_str = "1236527093179744277",
+            type = "DYNAMIC_TYPE_DRAW",
+            basic = DynamicBasic(comment_id_str = "405532534", comment_type = 11),
+            modules = DynamicModules(
+                module_dynamic = DynamicContentModule(
+                    desc = DynamicDesc(text = "开门见山介绍combo"),
+                    major = DynamicMajor(
+                        type = "MAJOR_TYPE_DRAW",
+                        draw = com.android.purebilibili.data.model.response.DrawMajor(
+                            id = 405532534L,
+                            items = listOf(
+                                com.android.purebilibili.data.model.response.DrawItem(
+                                    src = "https://i0.hdslb.com/1.jpg"
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+
+        assertTrue(shouldFetchOpusDetailForDynamicDetail(item))
+    }
+
+    @Test
     fun shouldFetchOpusDetail_returnsFalseForOrdinaryTextDynamic() {
         val item = DynamicItem(
             id_str = "987654321",

@@ -135,8 +135,12 @@ internal fun mergeDynamicDetailInteractionMetadata(
 }
 
 internal fun shouldFetchOpusDetailForDynamicDetail(item: DynamicItem): Boolean {
-    val major = item.modules.module_dynamic?.major ?: return false
-    return major.type == "MAJOR_TYPE_OPUS" || major.opus != null
+    val major = item.modules.module_dynamic?.major
+    if (major?.type == "MAJOR_TYPE_OPUS" || major?.opus != null) return true
+    // Space/web 详情把长图文当成 DRAW 九宫格预览；正文在 opus/detail。
+    if (major?.type == "MAJOR_TYPE_DRAW" || major?.draw != null) return true
+    if (item.type.equals("DYNAMIC_TYPE_DRAW", ignoreCase = true)) return true
+    return item.basic?.comment_type == 11
 }
 
 internal fun resolveOpusArticleFallbackCvId(
