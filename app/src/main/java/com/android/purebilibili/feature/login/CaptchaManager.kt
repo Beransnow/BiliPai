@@ -323,7 +323,6 @@ class CaptchaManager(private val activity: Activity) {
             margin-top: 10px;
         }
     </style>
-    <script src="https://static.geetest.com/static/js/fullpage.0.0.0.js"></script>
 </head>
 <body>
     <div class="container">
@@ -333,7 +332,8 @@ class CaptchaManager(private val activity: Activity) {
         </div>
         <div class="tip">点击图片上的文字完成验证</div>
     </div>
-    
+
+    <script src="https://static.geetest.com/static/js/fullpage.0.0.0.js"></script>
     <script>
         var geetestConfig = $configJson;
         var captchaObj = window.Geetest(geetestConfig)
