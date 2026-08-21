@@ -2,6 +2,7 @@ package com.android.purebilibili.feature.home.components
 
 import java.io.File
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -28,9 +29,21 @@ class FloatingBottomBarStructureTest {
         assertTrue(source.contains("fun FloatingBottomBar("))
         assertTrue(source.contains("shellHeight: Dp = FloatingBottomBarDefaultShellHeight"))
         assertTrue(source.contains("indicatorHeight: Dp = FloatingBottomBarIndicatorHeight"))
+        assertTrue(source.contains("dragTrackingMode: DampedDragTrackingMode = DampedDragTrackingMode.SPRING"))
         assertTrue(source.contains("FloatingBottomBarDefaultShellHeight: Dp = 64.dp"))
         assertTrue(source.contains("FloatingBottomBarIndicatorHeight: Dp = 56.dp"))
         assertTrue(source.contains("FloatingBottomBarPressedScale: Float = 78f / 56f"))
+    }
+
+    @Test
+    fun `compact segmented controls directly track drag while home keeps spring default`() {
+        val source = loadFloatingBottomBarSource()
+        val segmentedSource = loadSource(
+            "app/src/main/java/com/android/purebilibili/feature/home/components/BottomBarFloatingSegmentedControl.kt"
+        )
+
+        assertTrue(source.contains("dragTrackingMode: DampedDragTrackingMode = DampedDragTrackingMode.SPRING"))
+        assertTrue(segmentedSource.contains("dragTrackingMode = DampedDragTrackingMode.DIRECT"))
     }
 
     @Test
@@ -83,10 +96,14 @@ class FloatingBottomBarStructureTest {
         assertTrue(body.contains("onDragStarted = {}"))
         assertTrue(body.contains("onDragStopped = {"))
         assertTrue(body.contains("updateValue("))
-        assertTrue(body.contains("snapshotFlow { selectedIndex().coerceIn(0, maxTabIndex) }"))
-        assertTrue(body.contains("snapshotFlow { currentIndex }"))
-        assertTrue(body.contains(".drop(1)"))
-        assertTrue(body.contains("onSelected(index)"))
+        assertTrue(body.contains("snapshotFlow { selectedIndexLatest.value().coerceIn(0, maxTabIndex) }"))
+        assertTrue(body.contains("abs(dampedDragAnimation.targetValue - target) > 0.001f"))
+        assertFalse(body.contains("snapshotFlow { currentIndex }"))
+        assertFalse(body.contains(".drop(1)"))
+        val dragStopBody = body.substringAfter("onDragStopped = {").substringBefore("onDrag = {")
+        assertEquals(1, Regex("animateToValue\\(").findAll(dragStopBody).count())
+        assertTrue(dragStopBody.contains("animatePress = false"))
+        assertTrue(dragStopBody.contains("onSelectedLatest.value(targetIndex)"))
         assertFalse(baseRow.contains("interactiveHighlight.gestureModifier"))
         assertFalse(baseRow.contains(".then(dampedDragAnimation.modifier)"))
         assertTrue(movingIndicator.contains("interactiveHighlight?.gestureModifier"))
@@ -95,7 +112,7 @@ class FloatingBottomBarStructureTest {
         // Must not fall back to BiliPai self-developed drag stack.
         assertFalse(source.contains("rememberDampedDragAnimationState"))
         assertFalse(source.contains("horizontalDragGesture"))
-        assertFalse(source.contains("DampedDragTrackingMode"))
+        assertTrue(source.contains("DampedDragTrackingMode"))
 
         assertTrue(dragPort.contains("spring(1f, 1000f, visibilityThreshold)"))
         assertTrue(dragPort.contains("spring(0.5f, 300f, visibilityThreshold * 10f)"))
@@ -110,6 +127,11 @@ class FloatingBottomBarStructureTest {
         assertTrue(dragPort.contains("private var requestedValue = initialValue.coerceIn(valueRange)"))
         assertTrue(dragPort.contains("val targetValue: Float get() = requestedValue"))
         assertTrue(dragPort.contains("requestedValue = targetValue"))
+        assertTrue(dragPort.contains("trackingMode == DampedDragTrackingMode.DIRECT"))
+        assertTrue(dragPort.contains("valueAnimation.snapTo(targetValue)"))
+        assertTrue(dragPort.contains("animatePress: Boolean = true"))
+        assertTrue(dragPort.contains("if (animatePress) press()"))
+        assertTrue(dragPort.contains("if (animatePress) release()"))
         assertTrue(dragPort.contains("onDragStopped()"))
         assertFalse(dragPort.contains("onDragCancelled"))
     }
@@ -131,9 +153,8 @@ class FloatingBottomBarStructureTest {
         assertTrue(source.contains("4.dp.toPx()"))
         assertTrue(source.contains("InteractiveHighlight("))
         assertTrue(source.contains("Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU"))
-        assertTrue(source.contains("snapshotFlow { currentIndex }"))
-        assertTrue(source.contains(".drop(1)"))
-        assertTrue(source.contains("onSelected(index)"))
+        assertTrue(source.contains("snapshotFlow { selectedIndexLatest.value().coerceIn(0, maxTabIndex) }"))
+        assertTrue(source.contains("onSelectedLatest.value(targetIndex)"))
         assertFalse(source.contains("pendingUserSelectedIndex"))
     }
 

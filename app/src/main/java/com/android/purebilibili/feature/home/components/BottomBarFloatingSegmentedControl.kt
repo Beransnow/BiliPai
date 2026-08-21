@@ -20,6 +20,7 @@ import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.rememberAppSemanticVisualPolicy
+import com.android.purebilibili.feature.home.components.miuix.DampedDragTrackingMode
 import top.yukonga.miuix.kmp.blur.Backdrop
 
 /**
@@ -128,6 +129,7 @@ internal fun BottomBarFloatingSegmentedControl(
         indicatorPositionProvider = indicatorPositionProvider,
         isScrollInProgressProvider = isScrollInProgressProvider,
         dragSelectionEnabled = dragSelectionEnabled && enabled && itemCount > 1,
+        dragTrackingMode = DampedDragTrackingMode.DIRECT,
     ) {
         items.forEachIndexed { index, label ->
             FloatingBottomBarItem(

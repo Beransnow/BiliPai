@@ -43,7 +43,6 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
@@ -81,6 +80,7 @@ import com.android.purebilibili.feature.home.components.liquid.rememberCombinedB
 import com.android.purebilibili.feature.home.components.liquid.vibrancy
 import com.android.purebilibili.core.ui.resolveMatchedLiquidIndicatorGeometry
 import com.android.purebilibili.feature.home.components.miuix.DampedDragAnimation
+import com.android.purebilibili.feature.home.components.miuix.DampedDragTrackingMode
 import com.android.purebilibili.feature.home.components.miuix.InteractiveHighlight
 import kotlin.math.PI
 import kotlin.math.abs
@@ -89,7 +89,6 @@ import kotlin.math.sign
 import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.blur.Backdrop
 import top.yukonga.miuix.kmp.blur.blur
@@ -267,6 +266,7 @@ fun FloatingBottomBar(
     indicatorPositionProvider: (() -> Float)? = null,
     isScrollInProgressProvider: () -> Boolean = { false },
     dragSelectionEnabled: Boolean = true,
+    dragTrackingMode: DampedDragTrackingMode = DampedDragTrackingMode.SPRING,
     content: @Composable RowScope.() -> Unit
 ) {
     val isInDark = isSystemInDarkTheme()
@@ -354,9 +354,8 @@ fun FloatingBottomBar(
 
     val safeTabsCount = tabsCount.coerceAtLeast(1)
     val maxTabIndex = (safeTabsCount - 1).coerceAtLeast(0)
-    var currentIndex by remember(selectedIndex) {
-        mutableIntStateOf(selectedIndex().coerceIn(0, maxTabIndex))
-    }
+    val selectedIndexLatest = rememberUpdatedState(selectedIndex)
+    val onSelectedLatest = rememberUpdatedState(onSelected)
 
     class DampedDragAnimationHolder {
         var instance: DampedDragAnimation? = null
@@ -370,14 +369,16 @@ fun FloatingBottomBar(
         density,
         isLtr,
         matchedGeometry.pressedScale,
+        dragTrackingMode,
     ) {
         DampedDragAnimation(
             animationScope = animationScope,
-            initialValue = selectedIndex().coerceIn(0, maxTabIndex).toFloat(),
+            initialValue = selectedIndexLatest.value().coerceIn(0, maxTabIndex).toFloat(),
             valueRange = 0f..maxTabIndex.toFloat(),
             visibilityThreshold = 0.001f,
             initialScale = 1f,
             pressedScale = matchedGeometry.pressedScale,
+            trackingMode = dragTrackingMode,
             canDrag = { offset ->
                 val animation = holder.instance ?: return@DampedDragAnimation true
                 if (tabWidthPx == 0f) return@DampedDragAnimation false
@@ -400,8 +401,13 @@ fun FloatingBottomBar(
             onDragStarted = {},
             onDragStopped = {
                 val targetIndex = targetValue.fastRoundToInt().fastCoerceIn(0, maxTabIndex)
-                currentIndex = targetIndex
-                animateToValue(targetIndex.toFloat())
+                // The pointer gesture already owns press/release. Only settle the value here so
+                // release is not launched twice and the indicator cannot visibly rebound twice.
+                animateToValue(targetIndex.toFloat(), animatePress = false)
+                val selected = selectedIndexLatest.value().coerceIn(0, maxTabIndex)
+                if (targetIndex != selected) {
+                    onSelectedLatest.value(targetIndex)
+                }
                 animationScope.launch {
                     offsetAnimation.animateTo(0f, spring(1f, 300f, 0.5f))
                 }
@@ -423,16 +429,15 @@ fun FloatingBottomBar(
     val indicatorPositionLatest by rememberUpdatedState(indicatorPositionProvider)
     val isScrollInProgressLatest by rememberUpdatedState(isScrollInProgressProvider)
 
-    LaunchedEffect(selectedIndex) {
-        snapshotFlow { selectedIndex().coerceIn(0, maxTabIndex) }
-            .collectLatest { currentIndex = it }
-    }
-    LaunchedEffect(dampedDragAnimation) {
-        snapshotFlow { currentIndex }
-            .drop(1)
+    LaunchedEffect(dampedDragAnimation, maxTabIndex) {
+        snapshotFlow { selectedIndexLatest.value().coerceIn(0, maxTabIndex) }
             .collectLatest { index ->
-                dampedDragAnimation.animateToValue(index.toFloat())
-                onSelected(index)
+                val target = index.toFloat()
+                if (!dampedDragAnimation.isDragging &&
+                    abs(dampedDragAnimation.targetValue - target) > 0.001f
+                ) {
+                    dampedDragAnimation.animateToValue(target)
+                }
             }
     }
     LaunchedEffect(dampedDragAnimation, maxTabIndex) {

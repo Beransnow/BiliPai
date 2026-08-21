@@ -15,11 +15,17 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.unit.IntSize
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.math.abs
+
+enum class DampedDragTrackingMode {
+    SPRING,
+    DIRECT,
+}
 
 /**
  * Floating dock damped-drag kernel: spring-followed value, press/scale springs, velocity
@@ -32,6 +38,7 @@ class DampedDragAnimation(
     val visibilityThreshold: Float,
     val initialScale: Float,
     pressedScale: Float,
+    private val trackingMode: DampedDragTrackingMode = DampedDragTrackingMode.SPRING,
     val canDrag: (Offset) -> Boolean = { true },
     val onDragStarted: DampedDragAnimation.(position: Offset) -> Unit,
     val onDragStopped: DampedDragAnimation.() -> Unit,
@@ -67,6 +74,7 @@ class DampedDragAnimation(
     private val mutatorMutex = MutatorMutex()
 
     private val velocityTracker = VelocityTracker()
+    private var directTrackingJob: Job? = null
 
     val value: Float get() = valueAnimation.value
     val targetValue: Float get() = requestedValue
@@ -143,7 +151,7 @@ class DampedDragAnimation(
             if (value != targetValue) {
                 val threshold = (valueRange.endInclusive - valueRange.start) * 0.025f
                 snapshotFlow { valueAnimation.value }
-                    .filter { abs(it - valueAnimation.targetValue) < threshold }
+                    .filter { abs(it - targetValue) < threshold }
                     .first()
             }
             launch { pressProgressAnimation.animateTo(0f, pressProgressAnimationSpec) }
@@ -155,28 +163,41 @@ class DampedDragAnimation(
     fun snapTo(value: Float) {
         val next = value.coerceIn(valueRange)
         requestedValue = next
+        directTrackingJob?.cancel()
         animationScope.launch { valueAnimation.snapTo(next) }
     }
 
     fun updateValue(value: Float) {
         val targetValue = value.coerceIn(valueRange)
         requestedValue = targetValue
+        if (trackingMode == DampedDragTrackingMode.DIRECT) {
+            directTrackingJob?.cancel()
+            directTrackingJob = animationScope.launch {
+                valueAnimation.snapTo(targetValue)
+                updateVelocity()
+            }
+            return
+        }
         animationScope.launch {
             launch { valueAnimation.animateTo(targetValue, valueAnimationSpec) { updateVelocity() } }
         }
     }
 
-    fun animateToValue(value: Float) {
+    fun animateToValue(
+        value: Float,
+        animatePress: Boolean = true,
+    ) {
         val targetValue = value.coerceIn(valueRange)
         requestedValue = targetValue
+        directTrackingJob?.cancel()
         animationScope.launch {
             mutatorMutex.mutate {
-                press()
+                if (animatePress) press()
                 launch { valueAnimation.animateTo(targetValue, valueAnimationSpec) }
                 if (velocity != 0f) {
                     launch { velocityAnimation.animateTo(0f, velocityAnimationSpec) }
                 }
-                release()
+                if (animatePress) release()
             }
         }
     }
