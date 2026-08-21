@@ -97,6 +97,21 @@ class FloatingBottomBarGeometryTest {
     }
 
     @Test
+    fun `narrow fitted indicator still grows beyond the dock while dragging`() {
+        val fittedHeight = resolveFloatingDockIndicatorHeightDp(
+            requestedHeightDp = 39f,
+            tabWidthDp = 42f,
+        )
+        val geometry = com.android.purebilibili.core.ui.resolveMatchedLiquidIndicatorGeometry(
+            dockHeightDp = 44f,
+            indicatorHeightDp = fittedHeight,
+        )
+
+        assertTrue(fittedHeight < 39f)
+        assertTrue(geometry.pressedHeightDp > geometry.dockHeightDp)
+    }
+
+    @Test
     fun `system gesture inset never shrinks below the fallback edge`() {
         assertEquals(24f, resolveFloatingDockDragEdgeInsetPx(systemInsetPx = 0f, fallbackPx = 24f))
         assertEquals(80f, resolveFloatingDockDragEdgeInsetPx(systemInsetPx = 80f, fallbackPx = 24f))

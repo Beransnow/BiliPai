@@ -278,12 +278,6 @@ fun FloatingBottomBar(
 
     val tabsBackdrop = rememberLayerBackdrop()
     val density = LocalDensity.current
-    val matchedGeometry = remember(shellHeight, indicatorHeight) {
-        resolveMatchedLiquidIndicatorGeometry(
-            dockHeightDp = shellHeight.value,
-            indicatorHeightDp = indicatorHeight.value,
-        )
-    }
     val shellLensPx = with(density) { resolveCompactDockLensDp(shellHeight.value).dp.toPx() }
     val pressBloomPx = with(density) { resolveCompactDockPressBloomDp(shellHeight.value).dp.toPx() }
     val indicatorLensHeightPx = with(density) {
@@ -314,6 +308,12 @@ fun FloatingBottomBar(
         requestedHeightDp = indicatorHeight.value,
         tabWidthDp = with(density) { tabWidthPx.toDp().value },
     ).dp
+    val matchedGeometry = remember(shellHeight, fittedIndicatorHeight) {
+        resolveMatchedLiquidIndicatorGeometry(
+            dockHeightDp = shellHeight.value,
+            indicatorHeightDp = fittedIndicatorHeight.value,
+        )
+    }
 
     class DockDragHitTest {
         var dockWindowLeftPx = 0f
@@ -495,7 +495,9 @@ fun FloatingBottomBar(
     }
 
     Box(
-        modifier = modifier.padding(vertical = scaleOverflowDp),
+        modifier = modifier
+            .padding(vertical = scaleOverflowDp)
+            .graphicsLayer { clip = false },
         contentAlignment = Alignment.CenterStart
     ) {
         CompositionLocalProvider(LocalFloatingBottomBarContentColor provides colors.contentColor) {
@@ -507,7 +509,10 @@ fun FloatingBottomBar(
                         val contentWidthPx = totalWidthPx - with(density) { 8.dp.toPx() }
                         tabWidthPx = (contentWidthPx / safeTabsCount).coerceAtLeast(0f)
                     }
-                    .graphicsLayer { translationX = panelOffset }
+                    .graphicsLayer {
+                        translationX = panelOffset
+                        clip = false
+                    }
                     .dropShadow(
                         shape = pillShape,
                         shadow = Shadow(
@@ -593,7 +598,10 @@ fun FloatingBottomBar(
                         .clearAndSetSemantics {}
                         .alpha(0f)
                         .layerBackdrop(tabsBackdrop)
-                        .graphicsLayer { translationX = panelOffset }
+                        .graphicsLayer {
+                            translationX = panelOffset
+                            clip = false
+                        }
                         .drawBackdrop(
                             backdrop = backdrop,
                             shape = { pillShape },
@@ -630,6 +638,7 @@ fun FloatingBottomBar(
                             } else {
                                 -progressOffset + panelOffset
                             }
+                            clip = false
                         }
                         .then(interactiveHighlight?.gestureModifier ?: Modifier)
                         .then(
@@ -705,6 +714,7 @@ fun FloatingBottomBar(
                             } else {
                                 -progressOffset + panelOffset
                             }
+                            clip = false
                         }
                         .then(
                             if (dragSelectionEnabled && safeTabsCount > 1) {
