@@ -31,7 +31,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.data.model.response.VideoshotData
-import com.android.purebilibili.feature.video.ui.components.SeekPreviewBubble
+import com.android.purebilibili.feature.video.ui.components.CompactSeekPreview
 import com.android.purebilibili.feature.video.ui.components.SeekPreviewBubblePlacement
 import com.android.purebilibili.feature.video.ui.components.SeekPreviewBubbleSimple
 import kotlin.math.roundToInt
@@ -275,19 +275,20 @@ fun ThinWigglyProgressBar(
             }
 
             if (videoshotData != null && videoshotData.isValid) {
+                val compactPreviewOffsetY = if (videoshotData.img_y_size > videoshotData.img_x_size) {
+                    layoutPolicy.compactPortraitPreviewOffsetYDp
+                } else {
+                    layoutPolicy.compactLandscapePreviewOffsetYDp
+                }
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopCenter)
-                        .offset(y = layoutPolicy.previewBubbleOffsetYDp.dp)
+                        .offset(y = compactPreviewOffsetY.dp)
                 ) {
-                    SeekPreviewBubble(
+                    CompactSeekPreview(
                         videoshotData = videoshotData,
                         targetPositionMs = previewPositionMs,
-                        currentPositionMs = currentPositionMs,
-                        durationMs = duration,
-                        offsetX = 0f,
-                        containerWidth = 0f,
-                        placement = SeekPreviewBubblePlacement.Centered
+                        durationMs = duration
                     )
                 }
             } else {

@@ -89,4 +89,28 @@ class SeekPreviewBubblePolicyTest {
             )
         )
     }
+
+    @Test
+    fun compactPortraitPreview_usesSmallPortraitFrame() {
+        assertEquals(
+            CompactSeekPreviewSize(widthDp = 92, heightDp = 164),
+            resolveCompactSeekPreviewSize(
+                sourceWidthPx = 90,
+                sourceHeightPx = 160,
+                screenWidthDp = 393
+            )
+        )
+    }
+
+    @Test
+    fun compactLandscapePreview_keepsLandscapeRatio() {
+        assertEquals(
+            CompactSeekPreviewSize(widthDp = 144, heightDp = 81),
+            resolveCompactSeekPreviewSize(
+                sourceWidthPx = 160,
+                sourceHeightPx = 90,
+                screenWidthDp = 393
+            )
+        )
+    }
 }

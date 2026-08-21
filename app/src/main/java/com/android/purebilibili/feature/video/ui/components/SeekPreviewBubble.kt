@@ -3,6 +3,7 @@ package com.android.purebilibili.feature.video.ui.components
 import android.graphics.drawable.BitmapDrawable
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -65,6 +66,33 @@ private data class SeekPreviewBubbleStyle(
     val timeFontSp: Int,
     val deltaFontSp: Int
 )
+
+internal data class CompactSeekPreviewSize(
+    val widthDp: Int,
+    val heightDp: Int
+)
+
+internal fun resolveCompactSeekPreviewSize(
+    sourceWidthPx: Int,
+    sourceHeightPx: Int,
+    screenWidthDp: Int
+): CompactSeekPreviewSize {
+    val safeWidth = sourceWidthPx.coerceAtLeast(1)
+    val safeHeight = sourceHeightPx.coerceAtLeast(1)
+    val sourceAspectRatio = safeWidth.toFloat() / safeHeight.toFloat()
+    val scale = when {
+        screenWidthDp >= 840 -> 1.2f
+        screenWidthDp >= 600 -> 1.1f
+        else -> 1f
+    }
+    val baseWidthDp = if (sourceAspectRatio < 1f) 92 else 144
+    val widthDp = (baseWidthDp * scale).roundToInt()
+    val maxHeightDp = (164 * scale).roundToInt()
+    val heightDp = (widthDp / sourceAspectRatio)
+        .roundToInt()
+        .coerceIn((72 * scale).roundToInt(), maxHeightDp)
+    return CompactSeekPreviewSize(widthDp = widthDp, heightDp = heightDp)
+}
 
 private fun resolveSeekPreviewBubbleStyle(widthDp: Int): SeekPreviewBubbleStyle {
     return when {
@@ -243,6 +271,83 @@ internal fun SeekPreviewBubble(
                 deltaFontSp = style.deltaFontSp,
                 horizontalPaddingDp = style.timeHorizontalPaddingDp,
                 verticalPaddingDp = style.timeVerticalPaddingDp
+            )
+        }
+    }
+}
+
+/** 竖屏拖动样式：小预览图独立显示，时间位于图片下方。 */
+@Composable
+internal fun CompactSeekPreview(
+    videoshotData: VideoshotData,
+    targetPositionMs: Long,
+    durationMs: Long,
+    modifier: Modifier = Modifier
+) {
+    val configuration = LocalConfiguration.current
+    val previewSize = remember(
+        videoshotData.img_x_size,
+        videoshotData.img_y_size,
+        configuration.screenWidthDp
+    ) {
+        resolveCompactSeekPreviewSize(
+            sourceWidthPx = videoshotData.img_x_size,
+            sourceHeightPx = videoshotData.img_y_size,
+            screenWidthDp = configuration.screenWidthDp
+        )
+    }
+    val previewAnchorPositionMs = remember(videoshotData, targetPositionMs, durationMs) {
+        resolveSeekPreviewAnchorPositionMs(
+            videoshotData = videoshotData,
+            targetPositionMs = targetPositionMs,
+            durationMs = durationMs
+        )
+    }
+    val currentPreviewInfo = remember(videoshotData, previewAnchorPositionMs, durationMs) {
+        videoshotData.getPreviewInfo(previewAnchorPositionMs, durationMs)
+    }
+
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        AppSurface(
+            color = Color.Black.copy(alpha = 0.9f),
+            shape = RoundedCornerShape(9.dp),
+            shadowElevation = 8.dp,
+            modifier = Modifier
+                .width(previewSize.widthDp.dp)
+                .height(previewSize.heightDp.dp)
+                .border(1.dp, Color.White.copy(alpha = 0.78f), RoundedCornerShape(9.dp))
+                .clip(RoundedCornerShape(9.dp))
+        ) {
+            SeekPreviewImage(
+                videoshotData = videoshotData,
+                currentPreviewInfo = currentPreviewInfo,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            val shadow = Shadow(
+                color = Color.Black.copy(alpha = 0.65f),
+                offset = Offset(0f, 1.2f),
+                blurRadius = 4f
+            )
+            AppText(
+                text = FormatUtils.formatDuration((targetPositionMs / 1000L).toInt()),
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                style = androidx.compose.ui.text.TextStyle(shadow = shadow)
+            )
+            AppText(
+                text = " / ${FormatUtils.formatDuration((durationMs / 1000L).toInt())}",
+                color = Color.White.copy(alpha = 0.62f),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                style = androidx.compose.ui.text.TextStyle(shadow = shadow)
             )
         }
     }
