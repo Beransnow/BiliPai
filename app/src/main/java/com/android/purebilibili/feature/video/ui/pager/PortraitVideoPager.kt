@@ -2620,30 +2620,48 @@ private fun VideoPageItem(
         
         // 滑动进度提示
         if (isSeekGesture && progressState.duration > 0) {
-            val targetTimeText = FormatUtils.formatDuration(seekTargetPosition.toLong())
-            val totalTimeText = FormatUtils.formatDuration(progressState.duration)
-            val deltaMs = (seekTargetPosition - seekStartPosition).toLong()
-            val deltaText = if (deltaMs >= 0) "+${FormatUtils.formatDuration(deltaMs)}" else "-${FormatUtils.formatDuration(-deltaMs)}"
-            
-            Column(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .background(Color.Black.copy(alpha = 0.7f), AppShapes.container(ContainerLevel.Card))
-                    .padding(horizontal = 24.dp, vertical = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                AppText(
-                    text = "$targetTimeText / $totalTimeText",
-                    color = Color.White,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
+            val gestureVideoshotData = currentSuccess?.videoshotData
+            if (gestureVideoshotData != null && gestureVideoshotData.isValid) {
+                com.android.purebilibili.feature.video.ui.components.CompactSeekPreview(
+                    videoshotData = gestureVideoshotData,
+                    targetPositionMs = seekTargetPosition.toLong(),
+                    durationMs = progressState.duration,
+                    videoAspectRatio = 9f / 16f,
+                    modifier = Modifier.align(Alignment.Center)
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                AppText(
-                    text = deltaText,
-                    color = if (deltaMs >= 0) Color(0xFF66FF66) else Color(0xFFFF6666),
-                    fontSize = 14.sp
-                )
+            } else {
+                val targetTimeText = FormatUtils.formatDuration(seekTargetPosition.toLong())
+                val totalTimeText = FormatUtils.formatDuration(progressState.duration)
+                val deltaMs = (seekTargetPosition - seekStartPosition).toLong()
+                val deltaText = if (deltaMs >= 0) {
+                    "+${FormatUtils.formatDuration(deltaMs)}"
+                } else {
+                    "-${FormatUtils.formatDuration(-deltaMs)}"
+                }
+
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .background(
+                            Color.Black.copy(alpha = 0.7f),
+                            AppShapes.container(ContainerLevel.Card)
+                        )
+                        .padding(horizontal = 24.dp, vertical = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    AppText(
+                        text = "$targetTimeText / $totalTimeText",
+                        color = Color.White,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    AppText(
+                        text = deltaText,
+                        color = if (deltaMs >= 0) Color(0xFF66FF66) else Color(0xFFFF6666),
+                        fontSize = 14.sp
+                    )
+                }
             }
         }
 
@@ -3049,7 +3067,7 @@ private fun VideoPageItem(
             danmakuEnabled = danmakuEnabled,
             isStatusBarHidden = true,
             videoshotData = currentSuccess?.videoshotData,
-            videoAspectRatio = currentVideoAspect,
+            videoAspectRatio = 9f / 16f,
             isPlaybackRecovering = isCurrentPage && shouldShowPlaybackRecoveryUiAfterSeek(
                 state = seekSession,
                 playWhenReady = exoPlayer.playWhenReady,
