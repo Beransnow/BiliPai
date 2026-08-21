@@ -254,23 +254,25 @@ class VideoContentTabBarPolicyTest {
     }
 
     @Test
-    fun `video content section wires chrome backdrop into tab and comment segmented controls`() {
+    fun `video content section records a full size sibling backdrop for segmented controls`() {
         val source = loadSource(
             "app/src/main/java/com/android/purebilibili/feature/video/screen/VideoContentSection.kt"
         )
 
         assertTrue(source.contains("val videoContentMiuixBackdrop = rememberMiuixLayerBackdrop()"))
-        assertTrue(source.contains("val videoContentMiuixBackdrop = rememberMiuixLayerBackdrop()"))
         assertFalse(source.contains(".alpha(0f)"))
         assertTrue(source.contains("sortMode = sortMode"))
         assertTrue(source.contains("onSortModeChange = onSortModeChange"))
         assertTrue(source.contains("miuixBackdrop = videoContentMiuixBackdrop"))
-        assertTrue(source.contains("miuixBackdrop = videoContentMiuixBackdrop"))
-        assertTrue(source.contains("Modifier.miuixLayerBackdrop(chromeBackdrop)"))
+        assertTrue(source.contains(".miuixLayerBackdrop(videoContentMiuixBackdrop)"))
+        assertTrue(source.contains(".background(MaterialTheme.colorScheme.surface)"))
+        assertTrue(source.contains(".padding(top = tabBarVisibleHeightDp)"))
+        assertFalse(source.contains("Modifier.miuixLayerBackdrop(chromeBackdrop)"))
+        assertFalse(source.contains("chromeBackdrop: LayerBackdrop?"))
         assertTrue(source.contains("Column(modifier = modifier.fillMaxSize())"))
         assertTrue(
             source.contains(
-                "采样层只挂在 Tab 页滚动内容上；排序栏/顶栏分段控件必须在捕获区外"
+                "one full-size content source, with liquid docks rendered as"
             )
         )
         val commentTabSource = source.substringAfter("internal fun VideoCommentTab(")
