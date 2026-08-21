@@ -1673,6 +1673,9 @@ private const val DYNAMIC_FEED_FEATURES =
 internal const val DYNAMIC_DETAIL_FEATURES =
     "itemOpusStyle,listOnlyfans,opusBigCover,onlyfansVote,endFooterHidden,decorationCard,onlyfansAssetsV2,ugcDelete,onlyfansQaCard,commentsNewVersion,forwardListHidden,htmlNewStyle"
 
+/** PiliPlus opus/detail uses only htmlNewStyle so old columns return full paragraphs. */
+internal const val OPUS_DETAIL_FEATURES = "htmlNewStyle"
+
 internal const val SPACE_DYNAMIC_FEATURES =
     "itemOpusStyle,listOnlyfans,opusBigCover,commentsNewVersion,onlyfansVote,onlyfansAssetsV2,decorationCard,forwardListHidden,ugcDelete"
 
@@ -1724,11 +1727,10 @@ interface DynamicApi {
         @Query("timezone_offset") timezoneOffset: Int = -480
     ): DynamicDetailResponse
 
-    // 长图文/专栏 opus 详情接口，htmlNewStyle 用于兼容旧专栏正文结构。
+    // 长图文/专栏 opus 详情。PiliPlus：WBI + features=htmlNewStyle + timezone_offset。
     @GET("x/polymer/web-dynamic/v1/opus/detail")
     suspend fun getOpusDetail(
-        @Query("id") id: String,
-        @Query("features") features: String = DYNAMIC_DETAIL_FEATURES
+        @QueryMap params: Map<String, String>
     ): DynamicDetailResponse
 
     @GET("https://app.bilibili.com/x/topic/web/details/top")

@@ -67,7 +67,16 @@ data class DynamicDetailResponse(
 
 @Serializable
 data class DynamicDetailData(
-    val item: DynamicItem? = null
+    val item: DynamicItem? = null,
+    val fallback: DynamicOpusFallback? = null
+)
+
+@Serializable
+data class DynamicOpusFallback(
+    @Serializable(with = FlexibleLongSerializer::class)
+    val id: Long = 0,
+    @Serializable(with = FlexibleIntSerializer::class)
+    val type: Int = 0
 )
 
 @Serializable

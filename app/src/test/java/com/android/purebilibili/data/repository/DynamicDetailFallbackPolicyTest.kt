@@ -13,6 +13,7 @@ import com.android.purebilibili.data.model.response.OpusContentBlock
 import com.android.purebilibili.data.model.response.OpusMajor
 import com.android.purebilibili.data.model.response.OpusPic
 import com.android.purebilibili.data.model.response.OpusSummary
+import com.android.purebilibili.feature.article.ArticleContentBlock
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -228,6 +229,75 @@ class DynamicDetailFallbackPolicyTest {
         assertEquals(
             "opus-preview",
             merged.id_str
+        )
+    }
+
+    @Test
+    fun resolveOpusArticleFallbackCvId_prefersFallbackThenColumnCommentId() {
+        assertEquals(
+            34646640L,
+            resolveOpusArticleFallbackCvId(
+                fallbackId = 34646640L,
+                commentType = 11,
+                commentIdStr = "99"
+            )
+        )
+        assertEquals(
+            34646640L,
+            resolveOpusArticleFallbackCvId(
+                fallbackId = null,
+                commentType = 12,
+                commentIdStr = "34646640"
+            )
+        )
+        assertEquals(
+            null,
+            resolveOpusArticleFallbackCvId(
+                fallbackId = null,
+                commentType = 11,
+                commentIdStr = "34646640"
+            )
+        )
+    }
+
+    @Test
+    fun mergeArticleDetailIntoOpus_replacesPreviewGridWithArticleParagraphs() {
+        val preview = DynamicItem(
+            id_str = "opus-preview",
+            modules = DynamicModules(
+                module_dynamic = DynamicContentModule(
+                    major = DynamicMajor(
+                        type = "MAJOR_TYPE_OPUS",
+                        opus = OpusMajor(
+                            title = "预览标题",
+                            pics = listOf(OpusPic(url = "https://i0.hdslb.com/cover.jpg"))
+                        )
+                    )
+                )
+            )
+        )
+        val merged = mergeArticleDetailIntoOpus(
+            base = preview,
+            title = "新翼神龙卡组考卷，已快速公式答题",
+            blocks = listOf(
+                ArticleContentBlock.Paragraph("公式说明"),
+                ArticleContentBlock.Image(
+                    url = "https://i0.hdslb.com/card.jpg",
+                    width = 800,
+                    height = 600
+                ),
+                ArticleContentBlock.Paragraph("答题解析")
+            )
+        )
+
+        assertEquals(3, merged.modules.module_dynamic?.major?.opus?.contentBlocks?.size)
+        assertEquals(
+            "答题解析",
+            (merged.modules.module_dynamic?.major?.opus?.contentBlocks?.last() as? OpusContentBlock.Text)?.text
+        )
+        assertEquals(
+            "https://i0.hdslb.com/card.jpg",
+            (merged.modules.module_dynamic?.major?.opus?.contentBlocks?.get(1) as? OpusContentBlock.Image)?.pic?.url
         )
     }
 

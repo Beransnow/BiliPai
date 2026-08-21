@@ -1,8 +1,13 @@
 package com.android.purebilibili.data.repository
 
+import com.android.purebilibili.data.model.response.DynamicContentModule
 import com.android.purebilibili.data.model.response.DynamicItem
 import com.android.purebilibili.data.model.response.DynamicMajor
+import com.android.purebilibili.data.model.response.DynamicModules
+import com.android.purebilibili.data.model.response.OpusContentBlock
 import com.android.purebilibili.data.model.response.OpusMajor
+import com.android.purebilibili.data.model.response.OpusPic
+import com.android.purebilibili.feature.article.ArticleContentBlock
 
 internal fun shouldFetchStandardDetailForPlainTextDynamic(item: DynamicItem): Boolean {
     val content = item.modules.module_dynamic ?: return false
@@ -132,4 +137,68 @@ internal fun mergeDynamicDetailInteractionMetadata(
 internal fun shouldFetchOpusDetailForDynamicDetail(item: DynamicItem): Boolean {
     val major = item.modules.module_dynamic?.major ?: return false
     return major.type == "MAJOR_TYPE_OPUS" || major.opus != null
+}
+
+internal fun resolveOpusArticleFallbackCvId(
+    fallbackId: Long?,
+    commentType: Int,
+    commentIdStr: String
+): Long? {
+    val fallback = fallbackId?.takeIf { it > 0L }
+    if (fallback != null) return fallback
+    if (commentType != 12) return null
+    return commentIdStr.toLongOrNull()?.takeIf { it > 0L }
+}
+
+internal fun articleContentBlocksToOpusBlocks(
+    blocks: List<ArticleContentBlock>
+): List<OpusContentBlock> {
+    return blocks.map { block ->
+        when (block) {
+            is ArticleContentBlock.Heading -> OpusContentBlock.Text(block.text)
+            is ArticleContentBlock.Paragraph -> OpusContentBlock.Text(block.text)
+            is ArticleContentBlock.Quote -> OpusContentBlock.Text(block.text)
+            is ArticleContentBlock.ListBlock -> OpusContentBlock.Text(
+                block.items.mapIndexed { index, item ->
+                    if (block.ordered) "${index + 1}. $item" else "• $item"
+                }.joinToString("\n")
+            )
+            is ArticleContentBlock.Code -> OpusContentBlock.Text(block.content)
+            is ArticleContentBlock.Image -> OpusContentBlock.Image(
+                OpusPic(url = block.url, width = block.width, height = block.height)
+            )
+        }
+    }
+}
+
+internal fun mergeArticleDetailIntoOpus(
+    base: DynamicItem,
+    title: String,
+    blocks: List<ArticleContentBlock>
+): DynamicItem {
+    val opusBlocks = articleContentBlocksToOpusBlocks(blocks)
+    if (opusBlocks.isEmpty()) return base
+    return mergeRicherOpusDetailContent(
+        base = base,
+        candidates = listOf(
+            base,
+            DynamicItem(
+                id_str = base.id_str,
+                modules = DynamicModules(
+                    module_dynamic = DynamicContentModule(
+                        major = DynamicMajor(
+                            type = "MAJOR_TYPE_OPUS",
+                            opus = OpusMajor(
+                                title = title.takeIf { it.isNotBlank() },
+                                contentBlocks = opusBlocks,
+                                pics = opusBlocks.mapNotNull { block ->
+                                    (block as? OpusContentBlock.Image)?.pic
+                                }
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    )
 }
