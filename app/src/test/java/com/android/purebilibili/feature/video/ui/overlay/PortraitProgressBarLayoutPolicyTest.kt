@@ -17,7 +17,7 @@ class PortraitProgressBarLayoutPolicyTest {
         assertEquals(12, policy.draggingThumbSizeDp)
         assertEquals(4, policy.trackCornerRadiusDp)
         assertEquals(18, policy.bubbleFontSp)
-        assertEquals(-200, policy.compactPortraitPreviewOffsetYDp)
+        assertEquals(-250, policy.compactPortraitPreviewOffsetYDp)
         assertEquals(-124, policy.compactLandscapePreviewOffsetYDp)
     }
 

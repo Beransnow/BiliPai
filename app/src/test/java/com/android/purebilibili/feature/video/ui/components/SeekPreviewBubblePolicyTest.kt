@@ -91,13 +91,48 @@ class SeekPreviewBubblePolicyTest {
     }
 
     @Test
-    fun compactPortraitPreview_usesSmallPortraitFrame() {
+    fun compactPortraitPreview_usesReadablePortraitFrame() {
         assertEquals(
-            CompactSeekPreviewSize(widthDp = 92, heightDp = 164),
+            CompactSeekPreviewSize(widthDp = 120, heightDp = 213),
             resolveCompactSeekPreviewSize(
-                sourceWidthPx = 90,
-                sourceHeightPx = 160,
-                screenWidthDp = 393
+                sourceWidthPx = 160,
+                sourceHeightPx = 90,
+                screenWidthDp = 393,
+                videoAspectRatio = 9f / 16f
+            )
+        )
+    }
+
+    @Test
+    fun portraitVideoPreview_cropsLetterboxedSpriteCellToVideoRatio() {
+        assertEquals(
+            SeekPreviewSourceCrop(
+                offsetX = 55,
+                offsetY = 0,
+                width = 51,
+                height = 90
+            ),
+            resolveSeekPreviewSourceCrop(
+                sourceWidthPx = 160,
+                sourceHeightPx = 90,
+                videoAspectRatio = 9f / 16f
+            )
+        )
+    }
+
+    @Test
+    fun landscapeVideoPreview_keepsWholeSpriteCell() {
+        assertEquals(
+            SeekPreviewSourceCrop(
+                offsetX = 0,
+                offsetY = 0,
+                width = 160,
+                height = 90
+            ),
+            resolveSeekPreviewSourceCrop(
+                sourceWidthPx = 160,
+                sourceHeightPx = 90,
+                videoAspectRatio = 16f / 9f
             )
         )
     }

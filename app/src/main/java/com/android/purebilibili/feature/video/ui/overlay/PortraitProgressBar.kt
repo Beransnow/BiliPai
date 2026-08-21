@@ -52,6 +52,7 @@ fun PortraitBottomContainer(
     onSeekDragUpdate: (Long) -> Unit = {},
     onSeekDragCancel: () -> Unit = {},
     videoshotData: VideoshotData? = null,
+    videoAspectRatio: Float? = null,
     modifier: Modifier = Modifier
 ) {
     val configuration = LocalConfiguration.current
@@ -88,7 +89,8 @@ fun PortraitBottomContainer(
             onSeekDragCancel = onSeekDragCancel,
             duration = duration, // 传递时长用于显示
             bufferProgress = bufferProgress,
-            videoshotData = videoshotData
+            videoshotData = videoshotData,
+            videoAspectRatio = videoAspectRatio
         )
     }
 }
@@ -111,7 +113,8 @@ fun ThinWigglyProgressBar(
     onSeekDragCancel: () -> Unit = {},
     duration: Long,
     bufferProgress: Float = 0f,
-    videoshotData: VideoshotData? = null
+    videoshotData: VideoshotData? = null,
+    videoAspectRatio: Float? = null
 ) {
     var dragTargetPositionMs by remember { mutableLongStateOf(seekPositionMs.coerceAtLeast(0L)) }
     var containerWidth by remember { mutableFloatStateOf(0f) }
@@ -275,7 +278,10 @@ fun ThinWigglyProgressBar(
             }
 
             if (videoshotData != null && videoshotData.isValid) {
-                val compactPreviewOffsetY = if (videoshotData.img_y_size > videoshotData.img_x_size) {
+                val isPortraitVideo = videoAspectRatio
+                    ?.let { it.isFinite() && it > 0f && it < 1f }
+                    == true
+                val compactPreviewOffsetY = if (isPortraitVideo) {
                     layoutPolicy.compactPortraitPreviewOffsetYDp
                 } else {
                     layoutPolicy.compactLandscapePreviewOffsetYDp
@@ -288,7 +294,8 @@ fun ThinWigglyProgressBar(
                     CompactSeekPreview(
                         videoshotData = videoshotData,
                         targetPositionMs = previewPositionMs,
-                        durationMs = duration
+                        durationMs = duration,
+                        videoAspectRatio = videoAspectRatio
                     )
                 }
             } else {

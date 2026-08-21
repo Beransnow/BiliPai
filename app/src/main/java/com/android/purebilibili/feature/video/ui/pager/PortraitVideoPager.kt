@@ -3049,6 +3049,7 @@ private fun VideoPageItem(
             danmakuEnabled = danmakuEnabled,
             isStatusBarHidden = true,
             videoshotData = currentSuccess?.videoshotData,
+            videoAspectRatio = currentVideoAspect,
             isPlaybackRecovering = isCurrentPage && shouldShowPlaybackRecoveryUiAfterSeek(
                 state = seekSession,
                 playWhenReady = exoPlayer.playWhenReady,
