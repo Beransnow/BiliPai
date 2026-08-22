@@ -33,15 +33,20 @@ class DynamicScreenStructureTest {
         assertTrue(source.contains("onTabSelected = onDynamicTabSelected"))
         assertTrue(source.contains(".background(AppSurfaceTokens.background())"))
         assertTrue(source.contains("animateScale = false"))
-        assertTrue(source.contains("shouldUseDynamicTopBarHeaderBlur("))
+        assertTrue(!source.contains("TopReadabilityChrome("))
         assertTrue(!source.contains("dynamicFeedBackdrop"))
         assertTrue(!source.contains("rememberLayerBackdrop"))
         assertTrue(!source.contains(".layerBackdrop("))
+        assertTrue(!source.contains("hazeSourceCompat("))
+        assertTrue(!source.contains("rememberRecoverableHazeState("))
         val topBarSource = File(
             "src/main/java/com/android/purebilibili/feature/dynamic/components/DynamicTopBar.kt"
         ).readText()
-        assertTrue(topBarSource.contains("liquidGlassEffectsEnabled = false"))
-        assertTrue(!topBarSource.contains("miuixBackdrop"))
+        assertTrue(topBarSource.contains("forceLiquidChrome = true"))
+        assertTrue(topBarSource.contains("liquidGlassEffectsEnabled = true"))
+        assertTrue(topBarSource.contains("miuixBackdrop = null"))
+        assertTrue(topBarSource.contains("AppSurface("))
+        assertTrue(!topBarSource.contains("unifiedBlur("))
         val segmentedControlSource = File(
             "src/main/java/com/android/purebilibili/feature/home/components/BottomBarFloatingSegmentedControl.kt"
         ).readText()

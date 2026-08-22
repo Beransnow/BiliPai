@@ -5,8 +5,10 @@ import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppSpacingTokens
 
 import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.AppShapes
+import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.ui.components.AppSurface
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
@@ -30,15 +32,9 @@ import androidx.compose.ui.unit.sp
 //  Material Icons
 import com.android.purebilibili.core.ui.rememberAppGridLayoutIcon
 import com.android.purebilibili.core.ui.rememberAppListLayoutIcon
-import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
-import com.android.purebilibili.core.ui.resolveGlobalWallpaperProtectiveColor
-import com.android.purebilibili.core.ui.blur.unifiedBlur
 import com.android.purebilibili.feature.dynamic.resolveDynamicTopBarHorizontalPadding
 import com.android.purebilibili.feature.dynamic.resolveDynamicTopBarLiquidTabSpec
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
-import com.android.purebilibili.core.ui.blur.BlurStyles
-import com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity
-import dev.chrisbanes.haze.HazeState
 
 //  动态页面布局模式
 enum class DynamicDisplayMode {
@@ -80,103 +76,99 @@ fun DynamicTopBarWithTabs(
     displayMode: DynamicDisplayMode = DynamicDisplayMode.SIDEBAR,
     onDisplayModeChange: (DynamicDisplayMode) -> Unit = {},
     onPublishClick: (() -> Unit)? = null,
-    hazeState: HazeState? = null,
     indicatorPositionProvider: (() -> Float)? = null,
     isScrollInProgressProvider: () -> Boolean = { false },
 ) {
     val density = LocalDensity.current
     val statusBarHeight = WindowInsets.statusBars.getTop(density).let { with(density) { it.toDp() } }
     val liquidTabSpec = resolveDynamicTopBarLiquidTabSpec()
-    
-    //  读取当前模糊强度以确定背景透明度
-    val blurIntensity = currentUnifiedBlurIntensity()
-    val backgroundAlpha = BlurStyles.getBackgroundAlpha(blurIntensity)
-    val globalWallpaperVisible = LocalGlobalWallpaperBackdropVisible.current
-    val shouldUseHeaderBlur = shouldUseDynamicTopBarHeaderBlur(
-        hasHazeState = hazeState != null,
-        globalWallpaperVisible = globalWallpaperVisible,
-    )
-    
-    //  使用 blurIntensity 对应的背景透明度实现毛玻璃质感
-    val headerColor = resolveDynamicTopBarHeaderColor(
-        surfaceColor = AppSurfaceTokens.surface(),
-        backgroundAlpha = if (shouldUseHeaderBlur) backgroundAlpha else 0f,
-        globalWallpaperVisible = globalWallpaperVisible
-    )
 
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .then(if (shouldUseHeaderBlur && hazeState != null) Modifier.unifiedBlur(hazeState) else Modifier)
-            .background(headerColor)
+    Column(
+        modifier = modifier,
     ) {
-        Column {
-            Spacer(modifier = Modifier.height(statusBarHeight))
-            
-            //  紧凑标签行：宽屏动态页优先展示内容密度
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(liquidTabSpec.heightDp.dp)
-                    .padding(horizontal = resolveDynamicTopBarHorizontalPadding()),
-                verticalAlignment = Alignment.CenterVertically
+        Spacer(modifier = Modifier.height(statusBarHeight))
+
+        // 悬浮 Dock 与内容彻底解耦：不铺满顶部、不读取 haze，也不绘制毛玻璃背景。
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(liquidTabSpec.heightDp.dp)
+                .padding(horizontal = resolveDynamicTopBarHorizontalPadding()),
+            horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            AppSurface(
+                modifier = Modifier.weight(1f),
+                shape = AppShapes.container(ContainerLevel.Pill),
+                color = AppSurfaceTokens.surfaceContainerHigh(),
+                shadowElevation = AppSpacingTokens.ExtraSmall,
             ) {
                 BottomBarLiquidSegmentedControl(
                     items = tabs,
                     selectedIndex = selectedTab,
                     onSelected = onTabSelected,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.fillMaxWidth(),
                     height = liquidTabSpec.heightDp.dp,
                     indicatorHeight = liquidTabSpec.indicatorHeightDp.dp,
                     labelFontSize = liquidTabSpec.labelFontSizeSp.sp,
                     indicatorPositionProvider = indicatorPositionProvider,
                     isScrollInProgressProvider = isScrollInProgressProvider,
-                    liquidGlassEffectsEnabled = false,
+                    forceLiquidChrome = true,
+                    liquidGlassEffectsEnabled = true,
+                    miuixBackdrop = null,
+                    containerColorOverride = AppSurfaceTokens.surfaceContainerHigh(),
                 )
-                
-                //  布局模式切换按钮
-                var showLayoutMenu by remember { mutableStateOf(false) }
-                Box {
-                    AppIconButton(
-                        onClick = { showLayoutMenu = true },
-                        modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
-                    ) {
-                        AppIcon(
-                            imageVector = if (displayMode.isHorizontalUserList())
-                                rememberAppGridLayoutIcon() else rememberAppListLayoutIcon(),
-                            contentDescription = "关注列表位置",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro)
-                        )
-                    }
-                    AppDropdownMenu(
-                        expanded = showLayoutMenu,
-                        onDismissRequest = { showLayoutMenu = false }
-                    ) {
-                        DynamicDisplayMode.entries.forEach { mode ->
-                            AppDropdownMenuItem(
-                                text = { AppText(resolveDynamicDisplayModeLabel(mode)) },
-                                onClick = {
-                                    showLayoutMenu = false
-                                    onDisplayModeChange(mode)
-                                }
+            }
+
+            AppSurface(
+                shape = AppShapes.container(ContainerLevel.Pill),
+                color = AppSurfaceTokens.surfaceContainerHigh(),
+                shadowElevation = AppSpacingTokens.ExtraSmall,
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    var showLayoutMenu by remember { mutableStateOf(false) }
+                    Box {
+                        AppIconButton(
+                            onClick = { showLayoutMenu = true },
+                            modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
+                        ) {
+                            AppIcon(
+                                imageVector = if (displayMode.isHorizontalUserList())
+                                    rememberAppGridLayoutIcon() else rememberAppListLayoutIcon(),
+                                contentDescription = "关注列表位置",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro)
                             )
                         }
+                        AppDropdownMenu(
+                            expanded = showLayoutMenu,
+                            onDismissRequest = { showLayoutMenu = false }
+                        ) {
+                            DynamicDisplayMode.entries.forEach { mode ->
+                                AppDropdownMenuItem(
+                                    text = { AppText(resolveDynamicDisplayModeLabel(mode)) },
+                                    onClick = {
+                                        showLayoutMenu = false
+                                        onDisplayModeChange(mode)
+                                    }
+                                )
+                            }
+                        }
                     }
-                }
 
-                //  发布动态入口（对齐 BiliPai AppBar actions 的发布按钮）
-                if (onPublishClick != null) {
-                    AppIconButton(
-                        onClick = onPublishClick,
-                        modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
-                    ) {
-                        AppIcon(
-                            imageVector = Icons.Outlined.Edit,
-                            contentDescription = "发布动态",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro)
-                        )
+                    //  发布动态入口（对齐 BiliPai AppBar actions 的发布按钮）
+                    if (onPublishClick != null) {
+                        AppIconButton(
+                            onClick = onPublishClick,
+                            modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
+                        ) {
+                            AppIcon(
+                                imageVector = Icons.Outlined.Edit,
+                                contentDescription = "发布动态",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(AppSpacingTokens.ExtraLarge - AppSpacingTokens.Micro)
+                            )
+                        }
                     }
                 }
             }
@@ -185,24 +177,3 @@ fun DynamicTopBarWithTabs(
 }
 
 internal fun resolveDynamicTabSelectedColor(primaryColor: Color): Color = primaryColor
-
-internal fun resolveDynamicTopBarHeaderColor(
-    surfaceColor: Color,
-    backgroundAlpha: Float,
-    globalWallpaperVisible: Boolean
-): Color {
-    return if (globalWallpaperVisible) {
-        val protectiveColor = resolveGlobalWallpaperProtectiveColor(surfaceColor)
-        protectiveColor.copy(alpha = maxOf(protectiveColor.alpha, backgroundAlpha))
-    } else {
-        surfaceColor.copy(alpha = backgroundAlpha)
-    }
-}
-
-internal fun shouldUseDynamicTopBarHeaderBlur(
-    hasHazeState: Boolean,
-    globalWallpaperVisible: Boolean,
-    liquidGlassEnabled: Boolean = false,
-): Boolean {
-    return hasHazeState && !globalWallpaperVisible && !liquidGlassEnabled
-}
