@@ -7,6 +7,18 @@ import top.yukonga.miuix.kmp.blur.BackdropEffectScope
 import top.yukonga.miuix.kmp.blur.isRuntimeShaderSupported
 import top.yukonga.miuix.kmp.blur.runtimeShaderEffect
 
+private const val MAX_REFRACTION_BAND_FRACTION_OF_HALF_SIZE = 0.92f
+
+internal fun resolveSafeLensRefractionHeightPx(
+    requestedHeightPx: Float,
+    lensMinDimensionPx: Float,
+): Float {
+    if (requestedHeightPx <= 0f || lensMinDimensionPx <= 0f) return 0f
+    val maxBandHeight = lensMinDimensionPx * 0.5f *
+        MAX_REFRACTION_BAND_FRACTION_OF_HALF_SIZE
+    return requestedHeightPx.coerceAtMost(maxBandHeight)
+}
+
 fun BackdropEffectScope.lens(
     refractionHeight: Float,
     refractionAmount: Float,
@@ -15,6 +27,14 @@ fun BackdropEffectScope.lens(
 ) {
     if (!isRuntimeShaderSupported()) return
     if (refractionHeight <= 0f || refractionAmount <= 0f) return
+
+    // Keep a narrow undistorted center band. When the top and bottom refraction bands meet,
+    // their opposing SDF normals can stretch a high-contrast text row across the whole glass.
+    val safeRefractionHeight = resolveSafeLensRefractionHeightPx(
+        requestedHeightPx = refractionHeight,
+        lensMinDimensionPx = size.minDimension,
+    )
+    if (safeRefractionHeight <= 0f) return
 
     if (padding < refractionAmount) {
         padding = refractionAmount
@@ -35,7 +55,7 @@ fun BackdropEffectScope.lens(
     val scaledSizeW = size.width / sf
     val scaledSizeH = size.height / sf
     val scaledPadding = padding / sf
-    val scaledRefractionHeight = refractionHeight / sf
+    val scaledRefractionHeight = safeRefractionHeight / sf
     val scaledRefractionAmount = refractionAmount / sf
     val scaledRadii = FloatArray(radii.size) { radii[it] / sf }
 
@@ -91,10 +111,15 @@ float sdRoundedRect(float2 coord, float2 halfSize, float radius) {
     return outside + inside;
 }
 
+float2 safeNormalize(float2 value) {
+    float magnitude = length(value);
+    return magnitude > 0.0001 ? value / magnitude : float2(0.0);
+}
+
 float2 gradSdRoundedRect(float2 coord, float2 halfSize, float radius) {
     float2 cornerCoord = abs(coord) - (halfSize - float2(radius));
     if (cornerCoord.x >= 0.0 || cornerCoord.y >= 0.0) {
-        return sign(coord) * normalize(max(cornerCoord, 0.0));
+        return sign(coord) * safeNormalize(max(cornerCoord, 0.0));
     } else {
         float gradX = step(cornerCoord.y, cornerCoord.x);
         return sign(coord) * float2(gradX, 1.0 - gradX);
@@ -115,7 +140,8 @@ uniform float depthEffect;
 $ROUNDED_RECT_SDF
 
 float circleMap(float x) {
-    return 1.0 - sqrt(1.0 - x * x);
+    float clamped = clamp(x, 0.0, 1.0);
+    return 1.0 - sqrt(1.0 - clamped * clamped);
 }
 
 half4 main(float2 coord) {
@@ -131,7 +157,10 @@ half4 main(float2 coord) {
 
     float d = circleMap(1.0 - -sd / refractionHeight) * refractionAmount;
     float gradRadius = min(radius * 1.5, min(halfSize.x, halfSize.y));
-    float2 grad = normalize(gradSdRoundedRect(centeredCoord, halfSize, gradRadius) + depthEffect * normalize(centeredCoord));
+    float2 grad = safeNormalize(
+        gradSdRoundedRect(centeredCoord, halfSize, gradRadius) +
+            depthEffect * safeNormalize(centeredCoord)
+    );
 
     float2 refractedCoord = coord + d * grad;
     return content.eval(refractedCoord);
@@ -152,7 +181,8 @@ uniform float chromaticAberration;
 $ROUNDED_RECT_SDF
 
 float circleMap(float x) {
-    return 1.0 - sqrt(1.0 - x * x);
+    float clamped = clamp(x, 0.0, 1.0);
+    return 1.0 - sqrt(1.0 - clamped * clamped);
 }
 
 half4 main(float2 coord) {
@@ -168,7 +198,10 @@ half4 main(float2 coord) {
 
     float d = circleMap(1.0 - -sd / refractionHeight) * refractionAmount;
     float gradRadius = min(radius * 1.5, min(halfSize.x, halfSize.y));
-    float2 grad = normalize(gradSdRoundedRect(centeredCoord, halfSize, gradRadius) + depthEffect * normalize(centeredCoord));
+    float2 grad = safeNormalize(
+        gradSdRoundedRect(centeredCoord, halfSize, gradRadius) +
+            depthEffect * safeNormalize(centeredCoord)
+    );
 
     float2 refractedCoord = coord + d * grad;
     float dispersionIntensity = chromaticAberration * ((centeredCoord.x * centeredCoord.y) / (halfSize.x * halfSize.y));
