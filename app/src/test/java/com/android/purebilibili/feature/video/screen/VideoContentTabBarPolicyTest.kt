@@ -289,6 +289,9 @@ class VideoContentTabBarPolicyTest {
         assertTrue(commentTabSource.contains("CommentListHeader("))
         assertFalse(commentTabSource.contains("CommentSortFilterBar("))
         assertTrue(source.contains("if (selectedTabIndex == 1)"))
+        assertTrue(source.contains("AppPrimaryTabRow("))
+        assertTrue(source.contains("showNativeSortHeader = !homeSettings.androidNativeLiquidGlassEnabled"))
+        assertTrue(source.contains("title = \"${'$'}{sortMode.label}评论\""))
         val pagerBlock = source
             .substringAfter("HorizontalPager(")
             .substringBefore(") { page ->")

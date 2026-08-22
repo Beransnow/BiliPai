@@ -49,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import com.android.purebilibili.core.ui.common.copyOnLongPress
 import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
 import com.android.purebilibili.core.util.ShareUtils
+import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.ui.rememberAppCommentIcon
 import com.android.purebilibili.core.ui.rememberBackToTopButtonEnabled
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
@@ -60,6 +61,8 @@ import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
 import com.android.purebilibili.core.ui.components.AppSmallFloatingActionButton
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTextButton
+import com.android.purebilibili.core.ui.components.AppPrimaryTabRow
+import com.android.purebilibili.core.ui.components.AppTab
 import com.android.purebilibili.core.ui.performance.TrackJankStateFlag
 import com.android.purebilibili.core.ui.performance.TrackScrollJank
 import com.android.purebilibili.core.store.HomeSettings
@@ -89,6 +92,7 @@ import com.android.purebilibili.feature.video.ui.components.CollectionRow
 import com.android.purebilibili.feature.video.ui.components.CollectionSheet
 import com.android.purebilibili.feature.video.ui.components.PagesSelector
 import com.android.purebilibili.feature.video.ui.components.CommentListHeader
+import com.android.purebilibili.feature.video.ui.components.CommentSortHeader
 import com.android.purebilibili.feature.video.ui.components.CommentSortFilterBar
 import com.android.purebilibili.feature.video.ui.components.ReplyItemView
 import com.android.purebilibili.feature.video.ui.components.rememberVideoCommentAppearance
@@ -504,6 +508,9 @@ fun VideoContentSection(
     bottomContentPadding: Dp = if (showInteractionActions) 84.dp else 12.dp
 ) {
     val context = LocalContext.current
+    val homeSettings by SettingsManager
+        .getHomeSettings(context)
+        .collectAsStateWithLifecycle(initialValue = HomeSettings())
     val tabs = listOf("简介", "评论")
     val scope = rememberCoroutineScope()
     TrackJankStateFlag(
@@ -815,6 +822,9 @@ fun VideoContentSection(
                         onToggleTopComment = onToggleTopComment,
                         showIdentityDecorations = showIdentityDecorations,
                         lightweightCommentRendering = lightweightCommentRendering,
+                        sortMode = sortMode,
+                        onSortModeChange = onSortModeChange,
+                        showNativeSortHeader = !homeSettings.androidNativeLiquidGlassEnabled,
                     )
                 }
             }
@@ -839,6 +849,7 @@ fun VideoContentSection(
         ) {
             VideoContentTabBar(
                 tabs = tabs,
+                replyCount = replyCount,
                 selectedTabIndex = pagerState.currentPage,
                 onTabSelected = onTabSelected,
                 sortMode = sortMode,
@@ -1137,6 +1148,9 @@ internal fun VideoCommentTab(
     onToggleTopComment: (ReplyItem) -> Unit,
     showIdentityDecorations: Boolean,
     lightweightCommentRendering: Boolean,
+    sortMode: CommentSortMode = CommentSortMode.HOT,
+    onSortModeChange: (CommentSortMode) -> Unit = {},
+    showNativeSortHeader: Boolean = false,
 ) {
     val commentAppearance = rememberVideoCommentAppearance()
     val scope = rememberCoroutineScope()
@@ -1171,9 +1185,18 @@ internal fun VideoCommentTab(
         }
     }
     Column(modifier = modifier.fillMaxSize()) {
-        CommentListHeader(
-            count = replyCount,
-        )
+        if (showNativeSortHeader) {
+            CommentSortHeader(
+                count = replyCount,
+                sortMode = sortMode,
+                onSortModeChange = onSortModeChange,
+            )
+        } else {
+            CommentListHeader(
+                count = replyCount,
+                title = "${sortMode.label}评论",
+            )
+        }
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             LazyColumn(
                 state = listState,
@@ -1608,6 +1631,7 @@ private fun VideoHeaderContent(
 @Composable
 private fun VideoContentTabBar(
     tabs: List<String>,
+    replyCount: Int,
     selectedTabIndex: Int,
     onTabSelected: (Int) -> Unit,
     sortMode: CommentSortMode,
@@ -1665,31 +1689,45 @@ private fun VideoContentTabBar(
                 Arrangement.Start
             }
         ) {
-            BottomBarLiquidSegmentedControl(
-                items = tabs,
-                selectedIndex = selectedTabIndex,
-                onSelected = onTabSelected,
-                modifier = if (liquidChromeSpec.reusesLiquidGlassDock) {
-                    Modifier
-                } else {
-                    Modifier
-                        .weight(layoutSpec.tabsRowWeight)
-                        .padding(start = 0.dp, top = 2.dp, end = 8.dp, bottom = 2.dp)
-                },
-                itemWidth = liquidChromeSpec.itemWidthDp?.dp,
-                height = liquidChromeSpec.segmentedControlHeightDp.dp,
-                indicatorHeight = liquidChromeSpec.segmentedControlIndicatorHeightDp.dp,
-                labelFontSize = liquidChromeSpec.labelFontSizeSp.sp,
-                miuixBackdrop = miuixBackdrop,
-                forceLiquidChrome = homeSettings.androidNativeLiquidGlassEnabled,
-                liquidGlassEffectsEnabled = liquidChromeSpec.liquidGlassEffectsEnabled,
-                tapPressRefractionEnabled = true,
-                indicatorPositionProvider = indicatorPositionProvider,
-                isScrollInProgressProvider = isScrollInProgressProvider,
-                externalPagerMotionEffectsEnabled = liquidChromeSpec.reusesLiquidGlassDock,
-            )
+            if (liquidChromeSpec.reusesLiquidGlassDock) {
+                BottomBarLiquidSegmentedControl(
+                    items = tabs,
+                    selectedIndex = selectedTabIndex,
+                    onSelected = onTabSelected,
+                    modifier = Modifier,
+                    itemWidth = liquidChromeSpec.itemWidthDp?.dp,
+                    height = liquidChromeSpec.segmentedControlHeightDp.dp,
+                    indicatorHeight = liquidChromeSpec.segmentedControlIndicatorHeightDp.dp,
+                    labelFontSize = liquidChromeSpec.labelFontSizeSp.sp,
+                    miuixBackdrop = miuixBackdrop,
+                    forceLiquidChrome = homeSettings.androidNativeLiquidGlassEnabled,
+                    liquidGlassEffectsEnabled = liquidChromeSpec.liquidGlassEffectsEnabled,
+                    tapPressRefractionEnabled = true,
+                    indicatorPositionProvider = indicatorPositionProvider,
+                    isScrollInProgressProvider = isScrollInProgressProvider,
+                    externalPagerMotionEffectsEnabled = liquidChromeSpec.reusesLiquidGlassDock,
+                )
+            } else {
+                AppPrimaryTabRow(
+                    selectedTabIndex = selectedTabIndex,
+                    modifier = Modifier.weight(layoutSpec.tabsRowWeight),
+                ) {
+                    tabs.forEachIndexed { index, label ->
+                        AppTab(
+                            selected = selectedTabIndex == index,
+                            onClick = { onTabSelected(index) },
+                            text = {
+                                AppText(
+                                    text = if (index == 1) "$label ${FormatUtils.formatStat(replyCount.toLong())}" else label,
+                                    fontSize = layoutSpec.unselectedTabFontSizeSp.sp,
+                                )
+                            },
+                        )
+                    }
+                }
+            }
 
-            if (selectedTabIndex == 1) {
+            if (selectedTabIndex == 1 && liquidChromeSpec.reusesLiquidGlassDock) {
                 CommentSortFilterBar(
                     sortMode = sortMode,
                     onSortModeChange = onSortModeChange,

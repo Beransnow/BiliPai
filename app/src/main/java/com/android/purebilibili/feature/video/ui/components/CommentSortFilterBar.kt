@@ -1,8 +1,12 @@
 package com.android.purebilibili.feature.video.ui.components
 import com.android.purebilibili.core.ui.components.AppText
+import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppTextButton
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -47,6 +51,7 @@ internal fun hasCommentSortIndicatorScaleClearance(
 @Composable
 fun CommentListHeader(
     count: Int,
+    title: String = "评论",
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -56,16 +61,16 @@ fun CommentListHeader(
             .padding(top = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        CommentListTitle(count = count)
+        CommentListTitle(title = title, count = count)
     }
 }
 
 @Composable
-private fun CommentListTitle(count: Int) {
+private fun CommentListTitle(title: String, count: Int) {
     val appearance = rememberVideoCommentAppearance()
     Row(verticalAlignment = Alignment.CenterVertically) {
         AppText(
-            text = "评论",
+            text = title,
             fontSize = 20.sp, // iOS Large Title style scale
             fontWeight = FontWeight.Bold,
             color = appearance.primaryTextColor,
@@ -100,12 +105,22 @@ fun CommentSortHeader(
         verticalArrangement = Arrangement.spacedBy(2.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        CommentListTitle(count = count)
-        CommentSortFilterBar(
-            sortMode = sortMode,
-            onSortModeChange = onSortModeChange,
-            miuixBackdrop = miuixBackdrop,
-        )
+        CommentListTitle(title = "${sortMode.label}评论", count = count)
+        AppTextButton(
+            onClick = {
+                onSortModeChange(
+                    if (sortMode == CommentSortMode.HOT) CommentSortMode.NEWEST else CommentSortMode.HOT
+                )
+            },
+        ) {
+            AppIcon(
+                imageVector = Icons.AutoMirrored.Outlined.Sort,
+                contentDescription = "切换评论排序",
+                modifier = Modifier.size(18.dp),
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            AppText(text = sortMode.label, fontSize = 14.sp)
+        }
     }
 }
 
