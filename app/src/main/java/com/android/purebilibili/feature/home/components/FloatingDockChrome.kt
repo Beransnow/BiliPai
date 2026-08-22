@@ -134,7 +134,7 @@ internal fun Modifier.biliPaiFloatingDockShell(
     val refractionAmountDp = liquidGlassTuning.refractionAmount * resolvedLensIntensity
     val effectPaddingDp = resolveFloatingDockEffectPaddingDp(
         refractionAmountDp = refractionAmountDp,
-        pressBloomDp = FLOATING_DOCK_PRESS_BLOOM_DP,
+        pressBloomDp = MIUIX_UPSTREAM_DOCK_PRESS_BLOOM_DP,
     )
     return this
         .graphicsLayer { translationX = panelOffsetPx }

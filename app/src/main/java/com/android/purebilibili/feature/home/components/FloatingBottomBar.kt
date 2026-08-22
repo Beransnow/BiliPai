@@ -140,6 +140,7 @@ enum class FloatingBottomBarMode {
     None
 }
 
+/** Keep the Miuix upstream resting indicator height for the standard bottom dock. */
 val FloatingBottomBarIndicatorHeight: Dp = 56.dp
 
 val FloatingBottomBarDefaultShellHeight: Dp = 64.dp
@@ -359,10 +360,10 @@ fun FloatingBottomBar(
     val shellLensDp = resolveCompactDockLensDp(shellHeight.value)
     val pressBloomDp = resolveCompactDockPressBloomDp(shellHeight.value)
     val shellRefractionHeightDp = shellLensDp *
-        liquidGlassTuning.refractionHeight / FLOATING_DOCK_SHELL_LENS_DP *
+        liquidGlassTuning.refractionHeight / MIUIX_UPSTREAM_DOCK_SHELL_LENS_DP *
         liquidGlassTuning.contentDistortionScale
     val shellRefractionAmountDp = shellLensDp *
-        liquidGlassTuning.refractionAmount / FLOATING_DOCK_SHELL_LENS_DP *
+        liquidGlassTuning.refractionAmount / MIUIX_UPSTREAM_DOCK_SHELL_LENS_DP *
         liquidGlassTuning.contentDistortionScale
     val shellRefractionHeightPx = with(density) { shellRefractionHeightDp.dp.toPx() }
     val shellRefractionAmountPx = with(density) { shellRefractionAmountDp.dp.toPx() }

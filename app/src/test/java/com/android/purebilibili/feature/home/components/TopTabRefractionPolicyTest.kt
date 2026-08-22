@@ -21,7 +21,7 @@ class TopTabRefractionPolicyTest {
         assertTrue(header.contains("val useBottomBarMatchedTopControls = resolveHomeTopSearchLiquidGlassEnabled(homeSettings)"))
         assertTrue(searchChrome.contains("if (useBottomBarMatchedTopControls)"))
         assertTrue(searchChrome.contains("drawShellLens = true"))
-        assertTrue(searchChrome.contains("resolveCompactDockShellLensIntensity("))
+        assertTrue(searchChrome.contains("resolveFloatingDockGeometryScale("))
         assertFalse(searchChrome.contains("shellLensIntensity = TOP_DOCK_SHELL_LENS_INTENSITY"))
         assertTrue(searchChrome.contains("Modifier.clip(searchContainerShape)"))
     }

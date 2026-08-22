@@ -2013,7 +2013,7 @@ fun HomeHeader(
             drawChromeSurface = drawTopTabDockChrome,
             useBottomBarMatchedSurface = useTopTabBottomBarMatchedDock,
             drawMatchedShellLens = useTopTabBottomBarMatchedDock,
-            matchedShellLensIntensity = resolveCompactDockShellLensIntensity(
+            matchedShellLensIntensity = resolveFloatingDockGeometryScale(
                 currentTabHeight.value
             ),
             // Floating / matched dock: length follows icon+text × tab count (no full-bleed empty glass).
@@ -2450,7 +2450,7 @@ fun HomeHeader(
                                                     isTransitionRunning = topChromeMotionPolicy.isTransitionRunning,
                                                     forceLowBlurBudget = forceLowBlurBudget,
                                                     drawShellLens = true,
-                                                    shellLensIntensity = resolveCompactDockShellLensIntensity(
+                                                    shellLensIntensity = resolveFloatingDockGeometryScale(
                                                         resolveHomeTopSearchPillHeight(topChromePolicy).value
                                                     ),
                                                     isScrolling = topChromeMotionPolicy.isScrolling

@@ -492,7 +492,7 @@ fun AnimationSettingsContent(
                             AppSwitchPreference(
                                 icon = rememberSettingsSemanticIcon(SettingsIconRole.BOTTOM_BAR_GLASS),
                                 title = "底栏液态玻璃",
-                                subtitle = "底部导航栏的液态玻璃折射效果",
+                                subtitle = "按 Miuix 上游参数呈现底部导航栏液态玻璃效果",
                                 checked = bottomBarLiquidGlassEnabled,
                                 onCheckedChange = { viewModel.toggleBottomBarLiquidGlass(it) },
                                 iconTint = iOSBlue

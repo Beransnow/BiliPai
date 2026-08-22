@@ -141,7 +141,7 @@ internal fun LiquidGlassAdjustmentPanel(
                     fontWeight = FontWeight.Medium,
                 )
                 AppText(
-                    text = "顶部栏、搜索框、选择控件和底栏统一生效",
+                    text = "底栏遵循 Miuix 上游基准；顶部栏、搜索框和选择控件按高度适配",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -299,7 +299,7 @@ internal fun LiquidGlassAdjustmentPanel(
         AppText(
             text = when (advancedSettings.preset) {
                 LiquidGlassAdvancedPreset.READABLE -> "清晰：关闭内容扭曲，优先保证文字和图标正常显示"
-                LiquidGlassAdvancedPreset.BALANCED -> "均衡：保持 BiliPai 默认质感"
+                LiquidGlassAdvancedPreset.BALANCED -> "均衡：采用 Miuix 上游基准质感"
                 LiquidGlassAdvancedPreset.PRISM -> "棱镜：强化色散与内容折射"
                 LiquidGlassAdvancedPreset.CUSTOM -> "自定：使用下方高级参数"
             },
@@ -431,7 +431,7 @@ internal fun LiquidGlassAdjustmentPanel(
         }
 
         AppText(
-            text = "拖动时仅实时更新预览，松手后保存；50% 为原有 BiliPai 默认效果。",
+            text = "拖动时仅实时更新预览，松手后保存；50% 为 Miuix 上游基准效果。",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
