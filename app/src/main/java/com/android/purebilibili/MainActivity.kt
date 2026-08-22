@@ -194,6 +194,7 @@ internal fun resolveShortcutRoute(host: String): String? {
         "dynamic" -> ScreenRoutes.Dynamic.route
         "favorite" -> ScreenRoutes.Favorite.route
         "history" -> ScreenRoutes.History.route
+        "watch_later" -> ScreenRoutes.WatchLater.route
         "login" -> ScreenRoutes.Login.route
         "playback" -> ScreenRoutes.PlaybackSettings.route
         "plugins" -> ScreenRoutes.PluginsSettings.createRoute()
