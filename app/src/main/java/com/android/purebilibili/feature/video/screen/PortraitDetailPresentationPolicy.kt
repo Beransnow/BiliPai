@@ -57,7 +57,7 @@ internal fun shouldActivatePortraitFullscreenState(
 
 internal fun resolveStandalonePortraitPagerMotionSpec(): StandalonePortraitPagerMotionSpec {
     return StandalonePortraitPagerMotionSpec(
-        enterDurationMillis = 220,
+        enterDurationMillis = 0,
         exitDurationMillis = 220,
         exitScaleTarget = 0.96f,
         exitTranslateUpFraction = 0.08f,
@@ -82,10 +82,11 @@ internal fun shouldEnableInlinePortraitScrollTransform(
 }
 
 /**
- * Whether the standalone portrait pager should play enter/exit chrome animation.
+ * Whether the standalone portrait pager should cross-fade on entry.
  *
- * Direct-entry morph already animates the card shell to full-bleed; a second
- * fadeIn on the pager reads as “先详情再跳转竖全屏”.
+ * The detail player and fullscreen pager share one player. Cross-fading the old inline
+ * viewport with the new pager makes swipe-to-fullscreen visibly pause in a centered frame.
+ * Keep entry direct for every source; exit still owns its independent soft transition.
  */
 internal fun shouldAnimateStandalonePortraitPager(
     useSharedPlayer: Boolean,
@@ -93,7 +94,9 @@ internal fun shouldAnimateStandalonePortraitPager(
 ): Boolean {
     @Suppress("UNUSED_PARAMETER")
     val ignored = useSharedPlayer
-    return !directPortraitEntry
+    @Suppress("UNUSED_PARAMETER")
+    val ignoredDirectEntry = directPortraitEntry
+    return false
 }
 
 /**

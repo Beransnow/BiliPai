@@ -48,14 +48,14 @@ class PortraitDetailPresentationPolicyTest {
     }
 
     @Test
-    fun standalonePortraitPager_skipsEnterAnimationOnDirectPortraitMorph() {
+    fun standalonePortraitPager_alwaysEntersDirectlyWithoutCenteredCrossfade() {
         assertFalse(
             shouldAnimateStandalonePortraitPager(
                 useSharedPlayer = true,
                 directPortraitEntry = true
             )
         )
-        assertTrue(
+        assertFalse(
             shouldAnimateStandalonePortraitPager(
                 useSharedPlayer = true,
                 directPortraitEntry = false
@@ -469,7 +469,7 @@ class PortraitDetailPresentationPolicyTest {
     fun standalonePortraitPagerMotionSpec_keepsExitTransitionShortAndTight() {
         val spec = resolveStandalonePortraitPagerMotionSpec()
 
-        assertEquals(220, spec.enterDurationMillis)
+        assertEquals(0, spec.enterDurationMillis)
         assertEquals(220, spec.exitDurationMillis)
         assertEquals(0.96f, spec.exitScaleTarget)
         assertEquals(0.08f, spec.exitTranslateUpFraction)
@@ -515,9 +515,9 @@ class PortraitDetailPresentationPolicyTest {
     }
 
     @Test
-    fun sharedPlayerPortraitExit_keepsPagerAnimationForDetailReturn() {
-        assertTrue(shouldAnimateStandalonePortraitPager(useSharedPlayer = true))
-        assertTrue(shouldAnimateStandalonePortraitPager(useSharedPlayer = false))
+    fun standalonePortraitEntry_isDirectForSharedAndDedicatedPlayers() {
+        assertFalse(shouldAnimateStandalonePortraitPager(useSharedPlayer = true))
+        assertFalse(shouldAnimateStandalonePortraitPager(useSharedPlayer = false))
     }
 
     @Test
