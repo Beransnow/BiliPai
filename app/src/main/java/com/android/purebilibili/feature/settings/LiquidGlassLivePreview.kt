@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -454,7 +455,7 @@ private fun LiquidGlassHomeSample(
     val glassColor = MaterialTheme.colorScheme.surfaceContainer
     val contentColor = MaterialTheme.colorScheme.onSurface
     val density = LocalDensity.current
-    val previewPanLimitPx = remember(density) { with(density) { 200.dp.toPx() } }
+    val previewPanLimitPx = remember(density) { with(density) { 280.dp.toPx() } }
     val sliderFollowRangePx = remember(density) { with(density) { 80.dp.toPx() } }
     var customImageFailed by remember(previewImageUri) { mutableStateOf(false) }
     var previewPanOffsetPx by remember(previewImageUri) { mutableFloatStateOf(0f) }
@@ -485,10 +486,11 @@ private fun LiquidGlassHomeSample(
                 modifier = Modifier
                     .align(Alignment.Center)
                     .fillMaxWidth()
-                    .height(920.dp)
+                    .requiredHeight(920.dp)
                     .graphicsLayer {
                         val sliderFollowOffset = (progress - 0.5f) * sliderFollowRangePx
-                        translationY = previewPanOffsetPx + sliderFollowOffset
+                        translationY = (previewPanOffsetPx + sliderFollowOffset)
+                            .coerceIn(-previewPanLimitPx, previewPanLimitPx)
                     }
             ) {
                 if (previewImageUri != null && !customImageFailed) {
