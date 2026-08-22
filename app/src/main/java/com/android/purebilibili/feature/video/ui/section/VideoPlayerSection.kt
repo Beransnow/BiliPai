@@ -3623,6 +3623,11 @@ fun VideoPlayerSection(
     val manualStartPlayButtonLayoutSpec = remember {
         resolveManualStartPlayButtonLayoutSpec()
     }
+    val loadCoverImage = shouldLoadVideoPlayerCoverImage(
+        isVerticalVideo = isVerticalVideo,
+        shouldKeepCoverForManualStart = keepCoverForManualStart,
+        forceCoverDuringReturnAnimation = forceCoverDuringReturnAnimation,
+    )
 
     LaunchedEffect(
         showControls,
@@ -3805,7 +3810,7 @@ fun VideoPlayerSection(
                         playFromManualStartCover()
                     }
             ) {
-                if (currentCoverUrl.isNotEmpty()) {
+                if (loadCoverImage && currentCoverUrl.isNotEmpty()) {
                     val sharedCoverCacheKey = if (useStationaryListCover) {
                         stationaryListKey
                     } else {
@@ -3843,7 +3848,7 @@ fun VideoPlayerSection(
                     Box(
                         modifier = Modifier
                             .matchParentSize()
-                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .background(Color.Black)
                     )
                 }
 
