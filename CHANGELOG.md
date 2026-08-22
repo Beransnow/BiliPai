@@ -33,6 +33,10 @@
 [更改] 历史记录页顶栏跟随「导航设置 → 首页顶栏显示」开关，开启时仅回顶显示、关闭时始终显示；收藏夹列表顶部栏说明文案同步
 [更改] 完善相册选择与缓存清理体验
 
+### 体积与清理
+[移除] 删除 `res/raw` 下 23 个无引用的本地 Lottie 动画资源（约 1.7MB），仅保留 CDN 区域插件数据 `cdn_region_catalog.json`
+[移除] 清理已废弃的 Telegram 风格设置页动画常量 `LottieUrls.SETTINGS_*` 及相关死代码（点赞/收藏 Lottie 按钮组件），设置页动画体系此前已迁移，本地打包动画不再被任何页面引用
+
 格式规范见 [docs/wiki/CHANGELOG_GUIDE.md](docs/wiki/CHANGELOG_GUIDE.md)。比较：[`dae1e521a...main`](https://github.com/jay3-yy/BiliPai/compare/dae1e521a...main)。
 
 ---
