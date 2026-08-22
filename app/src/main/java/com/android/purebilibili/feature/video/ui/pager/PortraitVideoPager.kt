@@ -165,6 +165,7 @@ import com.android.purebilibili.feature.video.ui.components.UpPreviewSheet
 import com.android.purebilibili.feature.video.ui.components.UP_PREVIEW_SHEET_HEIGHT_FRACTION
 import com.android.purebilibili.feature.video.ui.components.resolvePortraitOverlaySheetExpansion
 import com.android.purebilibili.feature.video.ui.components.VideoAspectRatio
+import com.android.purebilibili.feature.video.ui.components.PORTRAIT_SEEK_PREVIEW_ASPECT_RATIO
 import com.android.purebilibili.feature.video.ui.components.resolveSafeVideoAspectRatio
 import com.android.purebilibili.feature.video.ui.overlay.FullscreenDoubleTapAction
 import com.android.purebilibili.feature.video.ui.overlay.ImmersiveAmbientLetterboxBackdrop
@@ -236,9 +237,6 @@ internal enum class PortraitDanmakuSurfaceMode {
     VideoViewport,
     Page
 }
-
-// 竖屏播放器的进度条拖动和画面横滑共用同一套大尺寸预览。
-private const val PORTRAIT_SEEK_PREVIEW_ASPECT_RATIO = 9f / 16f
 
 /**
  * 竖屏无缝滑动播放页面 (TikTok Style)

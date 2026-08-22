@@ -4305,16 +4305,25 @@ fun VideoPlayerSection(
                 contentAlignment = Alignment.Center
             ) {
                 if (videoshotData != null && videoshotData.isValid) {
-                    // 🖼️ 有缩略图：显示完整预览
-                    com.android.purebilibili.feature.video.ui.components.SeekPreviewBubble(
-                        videoshotData = videoshotData,
-                        targetPositionMs = seekTargetTime,
-                        currentPositionMs = startPosition,
-                        durationMs = playerState.player.duration,
-                        offsetX = 0f,
-                        containerWidth = 0f,
-                        placement = com.android.purebilibili.feature.video.ui.components.SeekPreviewBubblePlacement.Centered
-                    )
+                    if (isPortraitFullscreen) {
+                        com.android.purebilibili.feature.video.ui.components.CompactSeekPreview(
+                            videoshotData = videoshotData,
+                            targetPositionMs = seekTargetTime,
+                            durationMs = playerState.player.duration,
+                            videoAspectRatio = com.android.purebilibili.feature.video.ui.components.PORTRAIT_SEEK_PREVIEW_ASPECT_RATIO
+                        )
+                    } else {
+                        // 普通播放器保留横向预览；竖屏全屏统一使用大尺寸 9:16 预览。
+                        com.android.purebilibili.feature.video.ui.components.SeekPreviewBubble(
+                            videoshotData = videoshotData,
+                            targetPositionMs = seekTargetTime,
+                            currentPositionMs = startPosition,
+                            durationMs = playerState.player.duration,
+                            offsetX = 0f,
+                            containerWidth = 0f,
+                            placement = com.android.purebilibili.feature.video.ui.components.SeekPreviewBubblePlacement.Centered
+                        )
+                    }
                 } else {
                     com.android.purebilibili.feature.video.ui.components.SeekPreviewBubbleSimple(
                         targetPositionMs = seekTargetTime,
