@@ -3371,11 +3371,23 @@ internal fun VideoDetailScreenStateHolder(
                                 isCollapsed = false
                             )
                         }
-                        val collapsedPortraitInlineSpec = remember(configuration.screenWidthDp, configuration.screenHeightDp) {
-                            resolvePortraitInlinePlayerLayoutSpec(
+                        val collapsedPortraitInlineSpec = remember(
+                            configuration.screenWidthDp,
+                            configuration.screenHeightDp,
+                            portraitPlayerCollapseMode,
+                            isPlaybackPaused,
+                        ) {
+                            val standardSpec = resolvePortraitInlinePlayerLayoutSpec(
                                 screenWidthDp = configuration.screenWidthDp.toFloat(),
                                 screenHeightDp = configuration.screenHeightDp.toFloat(),
                                 isCollapsed = true
+                            )
+                            standardSpec.copy(
+                                heightDp = resolvePiliPlusCollapsedPlayerViewportHeightDp(
+                                    standardCollapsedHeightDp = standardSpec.heightDp,
+                                    collapseMode = portraitPlayerCollapseMode,
+                                    isPlaybackPaused = isPlaybackPaused,
+                                )
                             )
                         }
                         val collapseRangePx = with(LocalDensity.current) {

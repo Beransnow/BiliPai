@@ -182,6 +182,26 @@ internal fun resolveInlinePortraitPlayerCommentCollapseDurationMillis(
 }
 
 /**
+ * PiliPlus keeps a playing player pinned at the regular 16:9 height, but lets the paused-only
+ * mode collapse to a single 56dp toolbar. Other user choices retain their existing compact
+ * viewport instead of silently changing playback behavior.
+ */
+internal fun resolvePiliPlusCollapsedPlayerViewportHeightDp(
+    standardCollapsedHeightDp: Float,
+    collapseMode: PortraitPlayerCollapseMode,
+    isPlaybackPaused: Boolean,
+    toolbarHeightDp: Float = 56f,
+): Float {
+    return if (
+        collapseMode == PortraitPlayerCollapseMode.PAUSED_ONLY && isPlaybackPaused
+    ) {
+        toolbarHeightDp
+    } else {
+        standardCollapsedHeightDp
+    }.coerceAtLeast(0f)
+}
+
+/**
  * Inline portrait detail player size.
  *
  * BiliPai parity for phone: expanded ≈ max(longestSide * 0.65, shortestSide),

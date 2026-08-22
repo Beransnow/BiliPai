@@ -151,6 +151,45 @@ class PortraitDetailPresentationPolicyTest {
     }
 
     @Test
+    fun pausedOnlyCollapse_usesPiliPlusToolbarHeightOnlyWhilePaused() {
+        assertEquals(
+            56f,
+            resolvePiliPlusCollapsedPlayerViewportHeightDp(
+                standardCollapsedHeightDp = 231.75f,
+                collapseMode = PortraitPlayerCollapseMode.PAUSED_ONLY,
+                isPlaybackPaused = true,
+            )
+        )
+        assertEquals(
+            231.75f,
+            resolvePiliPlusCollapsedPlayerViewportHeightDp(
+                standardCollapsedHeightDp = 231.75f,
+                collapseMode = PortraitPlayerCollapseMode.PAUSED_ONLY,
+                isPlaybackPaused = false,
+            )
+        )
+    }
+
+    @Test
+    fun regularCollapseModes_keepExistingCompactPlayerHeight() {
+        listOf(
+            PortraitPlayerCollapseMode.OFF,
+            PortraitPlayerCollapseMode.INTRO_ONLY,
+            PortraitPlayerCollapseMode.COMMENT_ONLY,
+            PortraitPlayerCollapseMode.BOTH,
+        ).forEach { mode ->
+            assertEquals(
+                231.75f,
+                resolvePiliPlusCollapsedPlayerViewportHeightDp(
+                    standardCollapsedHeightDp = 231.75f,
+                    collapseMode = mode,
+                    isPlaybackPaused = true,
+                )
+            )
+        }
+    }
+
+    @Test
     fun landscapeDetailPlayerHeight_matchesActualLayoutWidthFor16By9() {
         // vivo 类窄机：按真实布局宽算 9/16，避免 screenWidthDp 偏差导致左右黑边
         assertEquals(608, resolveLandscapeDetailPlayerContentHeightPx(layoutWidthPx = 1080))
