@@ -22,6 +22,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -33,7 +36,6 @@ import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Tune
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -108,9 +110,9 @@ internal fun LiquidGlassAdjustmentPanel(
     var presetSliderValue by remember(persistedAdvancedSettings) {
         mutableFloatStateOf(liquidGlassPresetSliderValue(persistedAdvancedSettings))
     }
-    var previewArtwork by rememberSaveable {
-        mutableStateOf(LiquidGlassPreviewArtwork.SKY)
-    }
+    val previewArtworkPagerState = rememberPagerState(
+        pageCount = { LiquidGlassPreviewArtwork.entries.size },
+    )
     var advancedSettingsExpanded by rememberSaveable { mutableStateOf(false) }
     val tuning = remember(previewProgress, advancedSettings) {
         resolveLiquidGlassTuning(previewProgress, advancedSettings)
@@ -153,50 +155,48 @@ internal fun LiquidGlassAdjustmentPanel(
         LiquidGlassHomeSample(
             progress = previewProgress,
             previewImageUri = previewImageUri,
-            previewArtwork = previewArtwork,
+            previewArtworkPagerState = previewArtworkPagerState,
             advancedSettings = advancedSettings,
             modifier = Modifier.fillMaxWidth(),
         )
 
         if (previewImageUri == null) {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                AppText(
-                    text = "内置预览背景",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Medium,
+            val selectedArtwork = LiquidGlassPreviewArtwork.entries[
+                previewArtworkPagerState.currentPage.coerceIn(
+                    0,
+                    LiquidGlassPreviewArtwork.entries.lastIndex,
                 )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    LiquidGlassPreviewArtwork.entries.forEach { artwork ->
-                        val selected = previewArtwork == artwork
-                        AppTextButton(
-                            onClick = { previewArtwork = artwork },
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(48.dp)
-                                .semantics {
-                                    contentDescription = "预览背景：${artwork.label}"
-                                    stateDescription = if (selected) "已选择" else "未选择"
-                                },
-                            colors = ButtonDefaults.textButtonColors(
-                                containerColor = if (selected) {
-                                    MaterialTheme.colorScheme.primaryContainer
+            ]
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                LiquidGlassPreviewArtwork.entries.forEachIndexed { index, _ ->
+                    val selected = index == previewArtworkPagerState.currentPage
+                    Box(
+                        modifier = Modifier
+                            .width(if (selected) 18.dp else 6.dp)
+                            .height(6.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (selected) {
+                                    MaterialTheme.colorScheme.primary
                                 } else {
-                                    MaterialTheme.colorScheme.surfaceContainer
-                                },
-                                contentColor = if (selected) {
-                                    MaterialTheme.colorScheme.onPrimaryContainer
-                                } else {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                },
-                            ),
-                        ) {
-                            AppText(artwork.label)
-                        }
+                                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.32f)
+                                }
+                            )
+                    )
+                    if (index != LiquidGlassPreviewArtwork.entries.lastIndex) {
+                        Spacer(modifier = Modifier.width(6.dp))
                     }
                 }
+                Spacer(modifier = Modifier.width(10.dp))
+                AppText(
+                    text = "${selectedArtwork.label} · 左右滑动切换",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
 
@@ -222,7 +222,7 @@ internal fun LiquidGlassAdjustmentPanel(
         }
         AppText(
             text = if (previewImageUri == null) {
-                "可在预览图中上下拖动背景；调节滑杆时图片与玻璃效果实时跟随。"
+                "左右滑动切换内置背景，上下拖动查看长图；调节滑杆时图片与玻璃效果实时跟随。"
             } else {
                 "所选图片仅用于本页预览；可上下拖动背景，滑杆效果实时跟随。"
             },
@@ -538,7 +538,7 @@ private enum class LiquidGlassPreviewArtwork(
 private fun LiquidGlassHomeSample(
     progress: Float,
     previewImageUri: String?,
-    previewArtwork: LiquidGlassPreviewArtwork,
+    previewArtworkPagerState: PagerState,
     advancedSettings: LiquidGlassAdvancedSettings,
     modifier: Modifier = Modifier,
 ) {
@@ -552,6 +552,12 @@ private fun LiquidGlassHomeSample(
     val density = LocalDensity.current
     val previewPanLimitPx = remember(density) { with(density) { 280.dp.toPx() } }
     val sliderFollowRangePx = remember(density) { with(density) { 80.dp.toPx() } }
+    val previewArtwork = LiquidGlassPreviewArtwork.entries[
+        previewArtworkPagerState.currentPage.coerceIn(
+            0,
+            LiquidGlassPreviewArtwork.entries.lastIndex,
+        )
+    ]
     var customImageFailed by remember(previewImageUri) { mutableStateOf(false) }
     var previewPanOffsetPx by remember(previewImageUri, previewArtwork) {
         mutableFloatStateOf(0f)
@@ -570,8 +576,15 @@ private fun LiquidGlassHomeSample(
                 }
             }
             .semantics {
-                contentDescription = "首页效果预览，可上下拖动图片"
-                stateDescription = "图片位置 ${(previewPanOffsetPx / previewPanLimitPx * 100f).roundToInt()}%"
+                val panPercentage =
+                    (previewPanOffsetPx / previewPanLimitPx * 100f).roundToInt()
+                if (previewImageUri == null || customImageFailed) {
+                    contentDescription = "首页效果预览，可左右切换、上下拖动图片"
+                    stateDescription = "${previewArtwork.label}，图片位置 $panPercentage%"
+                } else {
+                    contentDescription = "首页效果预览，可上下拖动图片"
+                    stateDescription = "相册图片，图片位置 $panPercentage%"
+                }
             },
     ) {
         Box(
@@ -604,17 +617,26 @@ private fun LiquidGlassHomeSample(
                             .background(Color.Black.copy(alpha = 0.08f))
                     )
                 } else {
-                    Image(
-                        painter = painterResource(previewArtwork.drawableResId),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
+                    HorizontalPager(
+                        state = previewArtworkPagerState,
+                        key = { page -> LiquidGlassPreviewArtwork.entries[page].name },
+                        beyondViewportPageCount = 1,
                         modifier = Modifier.fillMaxSize(),
-                    )
-                }
-                if (previewImageUri == null || customImageFailed) {
-                    LiquidGlassOpenSourceAcknowledgements(
-                        modifier = Modifier.align(Alignment.Center),
-                    )
+                    ) { page ->
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            Image(
+                                painter = painterResource(
+                                    LiquidGlassPreviewArtwork.entries[page].drawableResId
+                                ),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                            LiquidGlassOpenSourceAcknowledgements(
+                                modifier = Modifier.align(Alignment.Center),
+                            )
+                        }
+                    }
                 }
             }
         }

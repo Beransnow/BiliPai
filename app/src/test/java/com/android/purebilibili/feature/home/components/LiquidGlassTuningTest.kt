@@ -67,7 +67,7 @@ class LiquidGlassTuningTest {
     }
 
     @Test
-    fun `readability protection only ramps up near the transparent endpoint`() {
+    fun `readability protection stays active across the full material slider`() {
         val readablePreset = resolveLiquidGlassAdvancedPreset(LiquidGlassAdvancedPreset.READABLE)
         val clear = resolveLiquidGlassTuning(
             progress = 0f,
@@ -77,11 +77,18 @@ class LiquidGlassTuningTest {
             progress = 0.5f,
             advancedSettings = readablePreset,
         )
+        val frosted = resolveLiquidGlassTuning(
+            progress = 1f,
+            advancedSettings = readablePreset,
+        )
 
         assertEquals(1f, clear.contentReadabilityBoost, 0.0001f)
-        assertTrue(clear.contentReadabilityScrimAlpha > 0f)
-        assertEquals(0f, balanced.contentReadabilityBoost, 0.0001f)
-        assertEquals(0f, balanced.contentReadabilityScrimAlpha, 0.0001f)
+        assertTrue(clear.contentReadabilityBoost > balanced.contentReadabilityBoost)
+        assertTrue(balanced.contentReadabilityBoost > frosted.contentReadabilityBoost)
+        assertTrue(frosted.contentReadabilityBoost > 0f)
+        assertTrue(clear.contentReadabilityScrimAlpha > balanced.contentReadabilityScrimAlpha)
+        assertTrue(balanced.contentReadabilityScrimAlpha > frosted.contentReadabilityScrimAlpha)
+        assertTrue(frosted.contentReadabilityScrimAlpha > 0f)
     }
 
     @Test

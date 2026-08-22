@@ -647,9 +647,11 @@ fun FloatingBottomBar(
                                         )
                                         lens(
                                             refractionHeight = shellLensPx *
-                                                liquidGlassTuning.refractionHeight / 24f,
+                                                liquidGlassTuning.refractionHeight / 24f *
+                                                liquidGlassTuning.contentDistortionScale,
                                             refractionAmount = shellLensPx *
-                                                liquidGlassTuning.refractionAmount / 24f,
+                                                liquidGlassTuning.refractionAmount / 24f *
+                                                liquidGlassTuning.contentDistortionScale,
                                             depthEffect = liquidGlassTuning.depthEffectEnabled,
                                             chromaticAberration = liquidGlassTuning.chromaticAberrationAmount,
                                         )
@@ -736,9 +738,11 @@ fun FloatingBottomBar(
                                 )
                                 lens(
                                     refractionHeight = shellLensPx *
-                                        liquidGlassTuning.refractionHeight / 24f,
+                                        liquidGlassTuning.refractionHeight / 24f *
+                                        liquidGlassTuning.contentDistortionScale,
                                     refractionAmount = shellLensPx *
-                                        liquidGlassTuning.refractionAmount / 24f,
+                                        liquidGlassTuning.refractionAmount / 24f *
+                                        liquidGlassTuning.contentDistortionScale,
                                     depthEffect = liquidGlassTuning.depthEffectEnabled,
                                     chromaticAberration = liquidGlassTuning.chromaticAberrationAmount,
                                 )

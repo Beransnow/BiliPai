@@ -48,11 +48,11 @@ internal fun resolveLiquidGlassTuning(
         else -> LiquidGlassMode.FROSTED
     }
     val frostWeight = normalizedProgress
-    val clearReadabilityUrgency = (
-        (0.36f - normalizedProgress).coerceAtLeast(0f) / 0.36f
-    ).coerceIn(0f, 1f)
     val configuredReadability = advancedSettings.contentReadability.coerceIn(0f, 1f)
-    val contentReadabilityBoost = clearReadabilityUrgency * configuredReadability
+    // Readability protection must remain active across the full slider. It is strongest for
+    // transparent glass, but a user-selected 100% must not become a no-op around 50%.
+    val readabilityWeight = midpointLerp(1f, 0.6f, 0.25f, normalizedProgress)
+    val contentReadabilityBoost = readabilityWeight * configuredReadability
     val contentReadabilityScrimAlpha = contentReadabilityBoost *
         (0.12f + configuredReadability * 0.22f)
     // Miuix lens accepts a useful 0..0.5 range. Keep the user setting independent from
