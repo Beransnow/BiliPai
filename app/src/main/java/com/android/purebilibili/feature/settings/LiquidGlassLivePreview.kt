@@ -8,6 +8,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -42,19 +43,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.android.purebilibili.R
 import com.android.purebilibili.core.store.LiquidGlassAdvancedPreset
 import com.android.purebilibili.core.store.LiquidGlassAdvancedSettings
 import com.android.purebilibili.core.store.LiquidGlassMode
@@ -503,7 +505,12 @@ private fun LiquidGlassHomeSample(
                             .background(Color.Black.copy(alpha = 0.08f))
                     )
                 } else {
-                    DefaultLiquidGlassPreviewContent()
+                    Image(
+                        painter = painterResource(R.drawable.liquid_glass_preview_sky),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
                 }
             }
         }
@@ -600,69 +607,5 @@ private fun LiquidGlassAdvancedSlider(
                     stateDescription = "${(value * 100f).roundToInt()}%"
                 },
         )
-    }
-}
-
-@Composable
-private fun DefaultLiquidGlassPreviewContent() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.linearGradient(
-                    listOf(
-                        Color(0xFF345B7E),
-                        Color(0xFF9E7B58),
-                        Color(0xFF567D58),
-                    )
-                )
-            )
-            .padding(top = 58.dp, start = 16.dp, end = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        AppText(
-            text = "推荐",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = Color.White,
-        )
-        repeat(6) { rowIndex ->
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                repeat(2) { columnIndex ->
-                    val itemIndex = rowIndex * 2 + columnIndex
-                    val itemColor = when (itemIndex % 4) {
-                        0 -> Color(0xFFD6A667)
-                        1 -> Color(0xFF7296A8)
-                        2 -> Color(0xFF708E78)
-                        else -> Color(0xFFAA7A72)
-                    }
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(104.dp)
-                            .clip(RoundedCornerShape(15.dp))
-                            .background(itemColor)
-                            .padding(10.dp),
-                        verticalArrangement = Arrangement.Bottom,
-                    ) {
-                        Spacer(
-                            modifier = Modifier
-                                .width(if (itemIndex % 3 == 0) 88.dp else 70.dp)
-                                .height(7.dp)
-                                .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.88f))
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Spacer(
-                            modifier = Modifier
-                                .width(54.dp)
-                                .height(5.dp)
-                                .clip(CircleShape)
-                                .background(Color.White.copy(alpha = 0.58f))
-                        )
-                    }
-                }
-            }
-        }
     }
 }

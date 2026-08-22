@@ -75,7 +75,8 @@ class SettingsMiuixSimplificationStructureTest {
         assertTrue(source.contains("160.dp.toPx()"))
         assertTrue(source.contains(".height(360.dp)"))
         assertTrue(source.contains(".height(760.dp)"))
-        assertTrue(source.contains("repeat(6) { rowIndex ->"))
+        assertTrue(source.contains("R.drawable.liquid_glass_preview_sky"))
+        assertTrue(source.contains("painterResource("))
     }
 
     @Test
