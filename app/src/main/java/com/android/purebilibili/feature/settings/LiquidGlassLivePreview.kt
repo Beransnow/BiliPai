@@ -65,6 +65,7 @@ import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.feature.home.components.biliPaiFloatingDockShell
 import com.android.purebilibili.feature.home.components.resolveLiquidGlassTuning
 import coil.compose.AsyncImage
+import kotlin.math.abs
 import kotlin.math.roundToInt
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
@@ -98,13 +99,8 @@ internal fun LiquidGlassAdjustmentPanel(
     var advancedSettings by remember(persistedAdvancedSettings) {
         mutableStateOf(persistedAdvancedSettings)
     }
-    var customAdvancedSettings by remember(persistedAdvancedSettings) {
-        mutableStateOf(
-            persistedAdvancedSettings.copy(preset = LiquidGlassAdvancedPreset.CUSTOM)
-        )
-    }
     var presetSliderValue by remember(persistedAdvancedSettings) {
-        mutableFloatStateOf(liquidGlassPresetSliderValue(persistedAdvancedSettings.preset))
+        mutableFloatStateOf(liquidGlassPresetSliderValue(persistedAdvancedSettings))
     }
     var advancedSettingsExpanded by rememberSaveable { mutableStateOf(false) }
     val tuning = remember(previewProgress, advancedSettings) {
@@ -193,7 +189,11 @@ internal fun LiquidGlassAdjustmentPanel(
                 fontWeight = FontWeight.Medium,
             )
             AppText(
-                text = advancedSettings.preset.label,
+                text = if (advancedSettings.preset == LiquidGlassAdvancedPreset.CUSTOM) {
+                    "自定 · ${(presetSliderValue * 100f).roundToInt()}%"
+                } else {
+                    advancedSettings.preset.label
+                },
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary,
             )
@@ -201,29 +201,28 @@ internal fun LiquidGlassAdjustmentPanel(
         AppSlider(
             value = presetSliderValue,
             onValueChange = { value ->
-                val preset = liquidGlassPresetFromSliderValue(value)
-                presetSliderValue = liquidGlassPresetSliderValue(preset)
-                val resolvedSettings = if (preset == LiquidGlassAdvancedPreset.CUSTOM) {
-                    customAdvancedSettings
-                } else {
-                    resolveLiquidGlassAdvancedPreset(preset)
-                }
-                advancedSettings = resolvedSettings
+                presetSliderValue = value.coerceIn(0f, 1f)
+                advancedSettings = resolveLiquidGlassPresetSliderSettings(value)
             },
             onValueChangeFinished = {
                 onAdvancedSettingsCommitted(advancedSettings)
             },
             valueRange = 0f..1f,
-            steps = 2,
             modifier = Modifier
                 .fillMaxWidth()
                 .semantics {
                     contentDescription = "液态玻璃效果预设"
-                    stateDescription = advancedSettings.preset.label
+                    stateDescription = if (
+                        advancedSettings.preset == LiquidGlassAdvancedPreset.CUSTOM
+                    ) {
+                        "自定 ${(presetSliderValue * 100f).roundToInt()}%"
+                    } else {
+                        advancedSettings.preset.label
+                    }
                 },
         )
         Row(modifier = Modifier.fillMaxWidth()) {
-            LiquidGlassAdvancedPreset.entries.forEach { preset ->
+            LIQUID_GLASS_PRESET_SLIDER_ANCHORS.forEach { preset ->
                 AppText(
                     text = preset.label,
                     style = MaterialTheme.typography.labelSmall,
@@ -275,10 +274,7 @@ internal fun LiquidGlassAdjustmentPanel(
                             contentReadability = value,
                         )
                         advancedSettings = updatedSettings
-                        customAdvancedSettings = updatedSettings
-                        presetSliderValue = liquidGlassPresetSliderValue(
-                            LiquidGlassAdvancedPreset.CUSTOM
-                        )
+                        presetSliderValue = liquidGlassPresetSliderValue(updatedSettings)
                     },
                     onValueChangeFinished = {
                         onAdvancedSettingsCommitted(advancedSettings)
@@ -294,10 +290,7 @@ internal fun LiquidGlassAdjustmentPanel(
                             chromaticAberration = value,
                         )
                         advancedSettings = updatedSettings
-                        customAdvancedSettings = updatedSettings
-                        presetSliderValue = liquidGlassPresetSliderValue(
-                            LiquidGlassAdvancedPreset.CUSTOM
-                        )
+                        presetSliderValue = liquidGlassPresetSliderValue(updatedSettings)
                     },
                     onValueChangeFinished = {
                         onAdvancedSettingsCommitted(advancedSettings)
@@ -313,10 +306,7 @@ internal fun LiquidGlassAdjustmentPanel(
                             contentDistortion = value,
                         )
                         advancedSettings = updatedSettings
-                        customAdvancedSettings = updatedSettings
-                        presetSliderValue = liquidGlassPresetSliderValue(
-                            LiquidGlassAdvancedPreset.CUSTOM
-                        )
+                        presetSliderValue = liquidGlassPresetSliderValue(updatedSettings)
                     },
                     onValueChangeFinished = {
                         onAdvancedSettingsCommitted(advancedSettings)
@@ -362,15 +352,90 @@ internal fun LiquidGlassAdjustmentPanel(
     }
 }
 
-internal fun liquidGlassPresetSliderValue(preset: LiquidGlassAdvancedPreset): Float =
-    preset.value.toFloat() /
-        LiquidGlassAdvancedPreset.entries.lastIndex.coerceAtLeast(1).toFloat()
+private const val LIQUID_GLASS_PRESET_BALANCED_POSITION = 0.5f
+private const val LIQUID_GLASS_PRESET_ANCHOR_EPSILON = 0.001f
+private val LIQUID_GLASS_PRESET_SLIDER_ANCHORS = listOf(
+    LiquidGlassAdvancedPreset.READABLE,
+    LiquidGlassAdvancedPreset.BALANCED,
+    LiquidGlassAdvancedPreset.PRISM,
+)
 
-internal fun liquidGlassPresetFromSliderValue(value: Float): LiquidGlassAdvancedPreset {
-    val maxIndex = LiquidGlassAdvancedPreset.entries.lastIndex.coerceAtLeast(0)
-    val index = (value.coerceIn(0f, 1f) * maxIndex).roundToInt().coerceIn(0, maxIndex)
-    return LiquidGlassAdvancedPreset.entries[index]
+internal fun resolveLiquidGlassPresetSliderSettings(
+    value: Float,
+): LiquidGlassAdvancedSettings {
+    val position = value.coerceIn(0f, 1f)
+    val readable = resolveLiquidGlassAdvancedPreset(LiquidGlassAdvancedPreset.READABLE)
+    val balanced = resolveLiquidGlassAdvancedPreset(LiquidGlassAdvancedPreset.BALANCED)
+    val prism = resolveLiquidGlassAdvancedPreset(LiquidGlassAdvancedPreset.PRISM)
+    val (start, end, fraction) = if (position <= LIQUID_GLASS_PRESET_BALANCED_POSITION) {
+        Triple(readable, balanced, position / LIQUID_GLASS_PRESET_BALANCED_POSITION)
+    } else {
+        Triple(
+            balanced,
+            prism,
+            (position - LIQUID_GLASS_PRESET_BALANCED_POSITION) /
+                LIQUID_GLASS_PRESET_BALANCED_POSITION,
+        )
+    }
+    val preset = when {
+        position <= LIQUID_GLASS_PRESET_ANCHOR_EPSILON ->
+            LiquidGlassAdvancedPreset.READABLE
+        abs(position - LIQUID_GLASS_PRESET_BALANCED_POSITION) <=
+            LIQUID_GLASS_PRESET_ANCHOR_EPSILON -> LiquidGlassAdvancedPreset.BALANCED
+        position >= 1f - LIQUID_GLASS_PRESET_ANCHOR_EPSILON ->
+            LiquidGlassAdvancedPreset.PRISM
+        else -> LiquidGlassAdvancedPreset.CUSTOM
+    }
+    return LiquidGlassAdvancedSettings(
+        preset = preset,
+        contentReadability = lerpLiquidGlassPresetValue(
+            start.contentReadability,
+            end.contentReadability,
+            fraction,
+        ),
+        chromaticAberration = lerpLiquidGlassPresetValue(
+            start.chromaticAberration,
+            end.chromaticAberration,
+            fraction,
+        ),
+        contentDistortion = lerpLiquidGlassPresetValue(
+            start.contentDistortion,
+            end.contentDistortion,
+            fraction,
+        ),
+    )
 }
+
+internal fun liquidGlassPresetSliderValue(settings: LiquidGlassAdvancedSettings): Float =
+    when (settings.preset) {
+        LiquidGlassAdvancedPreset.READABLE -> 0f
+        LiquidGlassAdvancedPreset.BALANCED -> LIQUID_GLASS_PRESET_BALANCED_POSITION
+        LiquidGlassAdvancedPreset.PRISM -> 1f
+        LiquidGlassAdvancedPreset.CUSTOM -> {
+            val readableChromatic = resolveLiquidGlassAdvancedPreset(
+                LiquidGlassAdvancedPreset.READABLE
+            ).chromaticAberration
+            val balancedChromatic = resolveLiquidGlassAdvancedPreset(
+                LiquidGlassAdvancedPreset.BALANCED
+            ).chromaticAberration
+            val prismChromatic = resolveLiquidGlassAdvancedPreset(
+                LiquidGlassAdvancedPreset.PRISM
+            ).chromaticAberration
+            if (settings.chromaticAberration <= balancedChromatic) {
+                val fraction = (settings.chromaticAberration - readableChromatic) /
+                    (balancedChromatic - readableChromatic)
+                fraction.coerceIn(0f, 1f) * LIQUID_GLASS_PRESET_BALANCED_POSITION
+            } else {
+                val fraction = (settings.chromaticAberration - balancedChromatic) /
+                    (prismChromatic - balancedChromatic)
+                LIQUID_GLASS_PRESET_BALANCED_POSITION +
+                    fraction.coerceIn(0f, 1f) * LIQUID_GLASS_PRESET_BALANCED_POSITION
+            }
+        }
+    }
+
+private fun lerpLiquidGlassPresetValue(start: Float, end: Float, fraction: Float): Float =
+    start + (end - start) * fraction.coerceIn(0f, 1f)
 
 @Composable
 private fun LiquidGlassHomeSample(
@@ -387,14 +452,14 @@ private fun LiquidGlassHomeSample(
     val glassColor = MaterialTheme.colorScheme.surfaceContainer
     val contentColor = MaterialTheme.colorScheme.onSurface
     val density = LocalDensity.current
-    val previewPanLimitPx = remember(density) { with(density) { 40.dp.toPx() } }
-    val sliderFollowRangePx = remember(density) { with(density) { 40.dp.toPx() } }
+    val previewPanLimitPx = remember(density) { with(density) { 160.dp.toPx() } }
+    val sliderFollowRangePx = remember(density) { with(density) { 80.dp.toPx() } }
     var customImageFailed by remember(previewImageUri) { mutableStateOf(false) }
     var previewPanOffsetPx by remember(previewImageUri) { mutableFloatStateOf(0f) }
 
     Box(
         modifier = modifier
-            .height(224.dp)
+            .height(360.dp)
             .clip(sampleShape)
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .pointerInput(previewImageUri, previewPanLimitPx) {
@@ -418,7 +483,7 @@ private fun LiquidGlassHomeSample(
                 modifier = Modifier
                     .align(Alignment.Center)
                     .fillMaxWidth()
-                    .height(344.dp)
+                    .height(760.dp)
                     .graphicsLayer {
                         val sliderFollowOffset = (progress - 0.5f) * sliderFollowRangePx
                         translationY = previewPanOffsetPx + sliderFollowOffset
@@ -561,34 +626,41 @@ private fun DefaultLiquidGlassPreviewContent() {
             fontWeight = FontWeight.Bold,
             color = Color.White,
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            repeat(2) { index ->
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(104.dp)
-                        .clip(RoundedCornerShape(15.dp))
-                        .background(
-                            if (index == 0) Color(0xFFD6A667) else Color(0xFF7296A8)
+        repeat(6) { rowIndex ->
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                repeat(2) { columnIndex ->
+                    val itemIndex = rowIndex * 2 + columnIndex
+                    val itemColor = when (itemIndex % 4) {
+                        0 -> Color(0xFFD6A667)
+                        1 -> Color(0xFF7296A8)
+                        2 -> Color(0xFF708E78)
+                        else -> Color(0xFFAA7A72)
+                    }
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(104.dp)
+                            .clip(RoundedCornerShape(15.dp))
+                            .background(itemColor)
+                            .padding(10.dp),
+                        verticalArrangement = Arrangement.Bottom,
+                    ) {
+                        Spacer(
+                            modifier = Modifier
+                                .width(if (itemIndex % 3 == 0) 88.dp else 70.dp)
+                                .height(7.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.88f))
                         )
-                        .padding(10.dp),
-                    verticalArrangement = Arrangement.Bottom,
-                ) {
-                    Spacer(
-                        modifier = Modifier
-                            .width(if (index == 0) 88.dp else 70.dp)
-                            .height(7.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.88f))
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Spacer(
-                        modifier = Modifier
-                            .width(54.dp)
-                            .height(5.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.58f))
-                    )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(
+                            modifier = Modifier
+                                .width(54.dp)
+                                .height(5.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.58f))
+                        )
+                    }
                 }
             }
         }

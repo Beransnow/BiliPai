@@ -58,10 +58,11 @@ class SettingsMiuixSimplificationStructureTest {
         assertTrue(source.contains("takePersistableUriPermission("))
         assertTrue(source.contains("AsyncImage("))
         assertTrue(source.contains("onPreviewImageChanged(null)"))
-        assertTrue(source.contains("LiquidGlassAdvancedPreset.entries"))
+        assertTrue(source.contains("LIQUID_GLASS_PRESET_SLIDER_ANCHORS"))
         assertFalse(source.contains("AppNativeSegmentedControl("))
         assertTrue(source.contains("contentDescription = \"液态玻璃效果预设\""))
-        assertTrue(source.contains("steps = 2"))
+        assertFalse(source.contains("steps = 2"))
+        assertTrue(source.contains("resolveLiquidGlassPresetSliderSettings(value)"))
         assertTrue(source.contains("title = \"内容可读性\""))
         assertTrue(source.contains("title = \"色散强度\""))
         assertTrue(source.contains("title = \"文字与图标扭曲\""))
@@ -71,6 +72,10 @@ class SettingsMiuixSimplificationStructureTest {
         assertTrue(source.contains("previewPanOffsetPx"))
         assertTrue(source.contains("sliderFollowOffset"))
         assertTrue(source.contains("translationY = previewPanOffsetPx + sliderFollowOffset"))
+        assertTrue(source.contains("160.dp.toPx()"))
+        assertTrue(source.contains(".height(360.dp)"))
+        assertTrue(source.contains(".height(760.dp)"))
+        assertTrue(source.contains("repeat(6) { rowIndex ->"))
     }
 
     @Test
