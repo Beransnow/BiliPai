@@ -741,6 +741,11 @@ private fun ImagePreviewOverlayContent(
                                     }
                                 }
                             },
+                            onExtremeAspectRatioDetected = {
+                                // 长条图在 4096 方形采样档下短边像素不足，放大后仍会发糊。
+                                // 自动提升到现有原图解码档；极端长宽比下实际内存远低于方形上限。
+                                originalQualityPages = originalQualityPages + page
+                            },
                             onVerticalDismissDragCancel = {
                                 if (page == pagerState.currentPage && !isDismissing) {
                                     isVerticalDismissDragging = false
