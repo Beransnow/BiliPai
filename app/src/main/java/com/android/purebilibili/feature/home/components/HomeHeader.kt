@@ -83,7 +83,7 @@ import com.android.purebilibili.feature.home.rememberHomeGlassChromeColors
 import com.android.purebilibili.feature.home.rememberHomeGlassPillColors
 import com.android.purebilibili.feature.home.resolveHomeGlassChromeStyle
 import com.android.purebilibili.feature.home.resolveHomeGlassPillStyle
-import com.android.purebilibili.feature.home.components.liquid.rememberCombinedBackdrop
+import com.android.purebilibili.feature.home.components.liquid.vibrancy
 import com.android.purebilibili.core.store.resolveGlobalLiquidGlassReuseEnabled
 import com.android.purebilibili.core.store.resolveHomeHeaderBlurEnabled
 import com.android.purebilibili.navigation.resolveAppNavigationAppearance
@@ -94,6 +94,7 @@ import top.yukonga.miuix.kmp.icon.extended.Search
 import top.yukonga.miuix.kmp.icon.extended.Settings
 import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
+import top.yukonga.miuix.kmp.blur.drawBackdrop as miuixDrawBackdrop
 
 private const val HOME_HEADER_LIQUID_GLASS_ALPHA = 0.10f
 
@@ -111,9 +112,9 @@ internal data class HomeTopLinkedBottomBarAppearance(
 internal fun shouldExportHomeTopActionIconThroughLiquidGlass(
     usesMatchedTopControls: Boolean,
     renderMode: HomeTopChromeRenderMode,
-    hasCombinedBackdrop: Boolean,
+    hasBackdrop: Boolean,
 ): Boolean = usesMatchedTopControls &&
-    hasCombinedBackdrop &&
+    hasBackdrop &&
     (
         renderMode == HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP ||
             renderMode == HomeTopChromeRenderMode.LIQUID_GLASS_HAZE
@@ -2584,14 +2585,11 @@ fun HomeHeader(
 
                             val topRightActionButtonSize = resolveHomeTopSettingsButtonSize(topChromePolicy)
                             val topRightActionContentBackdrop = rememberMiuixLayerBackdrop()
-                            val topRightActionCombinedBackdrop = miuixBackdrop?.let { pageBackdrop ->
-                                rememberCombinedBackdrop(pageBackdrop, topRightActionContentBackdrop)
-                            }
                             val exportTopRightActionThroughGlass =
                                 shouldExportHomeTopActionIconThroughLiquidGlass(
                                     usesMatchedTopControls = useBottomBarMatchedTopControls,
                                     renderMode = searchChromeRenderMode,
-                                    hasCombinedBackdrop = topRightActionCombinedBackdrop != null,
+                                    hasBackdrop = miuixBackdrop != null,
                                 )
                             Box(
                                 modifier = Modifier
@@ -2645,11 +2643,7 @@ fun HomeHeader(
                                                     renderMode = searchChromeRenderMode,
                                                     shape = edgeButtonShape,
                                                     hazeState = hazeState,
-                                                    miuixBackdrop = if (exportTopRightActionThroughGlass) {
-                                                        topRightActionCombinedBackdrop
-                                                    } else {
-                                                        miuixBackdrop
-                                                    },
+                                                    miuixBackdrop = miuixBackdrop,
                                                     liquidGlassStyle = liquidStyle,
                                                     liquidGlassTuning = liquidGlassTuning,
                                                     liquidGlassPreset = bottomBarLiquidGlassPreset,
@@ -2713,7 +2707,22 @@ fun HomeHeader(
                                         },
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    if (!exportTopRightActionThroughGlass) {
+                                    if (exportTopRightActionThroughGlass) {
+                                        // 与底栏选中内容相同：图标从独立透明导出层取样。
+                                        // 这里只做 vibrancy，不重复背景 blur / 24dp shell lens，
+                                        // 因而仍经过玻璃内容通道，但保持原 Miuix 图标轮廓。
+                                        Box(
+                                            modifier = Modifier
+                                                .matchParentSize()
+                                                .miuixDrawBackdrop(
+                                                    backdrop = topRightActionContentBackdrop,
+                                                    shape = { edgeButtonShape },
+                                                    effects = {
+                                                        vibrancy(liquidGlassTuning.saturation)
+                                                    },
+                                                ),
+                                        )
+                                    } else {
                                         AppIcon(
                                             topRightActionIcon,
                                             contentDescription = null,

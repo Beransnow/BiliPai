@@ -31,21 +31,21 @@ class HomeHeaderVisualPolicyTest {
             shouldExportHomeTopActionIconThroughLiquidGlass(
                 usesMatchedTopControls = true,
                 renderMode = HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP,
-                hasCombinedBackdrop = true,
+                hasBackdrop = true,
             )
         )
         assertFalse(
             shouldExportHomeTopActionIconThroughLiquidGlass(
                 usesMatchedTopControls = true,
                 renderMode = HomeTopChromeRenderMode.PLAIN,
-                hasCombinedBackdrop = true,
+                hasBackdrop = true,
             )
         )
         assertFalse(
             shouldExportHomeTopActionIconThroughLiquidGlass(
                 usesMatchedTopControls = true,
                 renderMode = HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP,
-                hasCombinedBackdrop = false,
+                hasBackdrop = false,
             )
         )
     }
