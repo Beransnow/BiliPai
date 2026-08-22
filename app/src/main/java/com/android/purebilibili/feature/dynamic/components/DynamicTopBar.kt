@@ -28,10 +28,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 //  Material Icons
+import com.android.purebilibili.core.store.HomeSettings
+import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.rememberAppGridLayoutIcon
 import com.android.purebilibili.core.ui.rememberAppListLayoutIcon
 import com.android.purebilibili.feature.dynamic.resolveDynamicTopBarHorizontalPadding
@@ -87,10 +91,22 @@ fun DynamicTopBarWithTabs(
     indicatorPositionProvider: (() -> Float)? = null,
 ) {
     val density = LocalDensity.current
+    val context = LocalContext.current
     val statusBarHeight = WindowInsets.statusBars.getTop(density).let { with(density) { it.toDp() } }
     val liquidTabSpec = resolveDynamicTopBarLiquidTabSpec()
-    val clearLiquidTuning = remember {
-        resolveLiquidGlassTuning(progress = 0f)
+    val homeSettings by SettingsManager
+        .getHomeSettings(context)
+        .collectAsStateWithLifecycle(initialValue = HomeSettings())
+    val liquidGlassTuning = remember(
+        homeSettings.liquidGlassProgress,
+        homeSettings.liquidGlassAdvancedSettings,
+        homeSettings.liquidGlassReadabilityMode,
+    ) {
+        resolveLiquidGlassTuning(
+            progress = homeSettings.liquidGlassProgress,
+            advancedSettings = homeSettings.liquidGlassAdvancedSettings,
+            readabilityMode = homeSettings.liquidGlassReadabilityMode,
+        )
     }
     val dockShape = AppShapes.container(ContainerLevel.Pill)
     val dockColor = AppSurfaceTokens.surfaceContainerHigh()
@@ -100,7 +116,7 @@ fun DynamicTopBarWithTabs(
     ) {
         Spacer(modifier = Modifier.height(statusBarHeight))
 
-        // 悬浮 Dock 与内容彻底解耦：不铺满顶部、不读取 haze，也不绘制毛玻璃背景。
+        // 顶部不再铺设整块背景；两个悬浮 Dock 独立读取内容 Backdrop 和全局玻璃预设。
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -123,7 +139,7 @@ fun DynamicTopBarWithTabs(
                 liquidGlassEffectsEnabled = true,
                 miuixBackdrop = dockBackdrop,
                 containerColorOverride = dockColor,
-                liquidGlassTuningOverride = clearLiquidTuning,
+                liquidGlassTuningOverride = liquidGlassTuning,
             )
 
             val localActionDockBackdrop = rememberLayerBackdrop()
@@ -145,7 +161,7 @@ fun DynamicTopBarWithTabs(
                             containerColor = dockColor,
                             pressProgress = 0f,
                             shape = dockShape,
-                            liquidGlassTuning = clearLiquidTuning,
+                            liquidGlassTuning = liquidGlassTuning,
                         )
                         .clip(dockShape),
                     verticalAlignment = Alignment.CenterVertically,
