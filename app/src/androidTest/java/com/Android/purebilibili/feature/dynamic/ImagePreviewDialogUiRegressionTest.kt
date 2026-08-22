@@ -8,7 +8,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertCountEquals
-import androidx.compose.ui.test.click
 import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.longClick
@@ -19,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.purebilibili.feature.dynamic.components.IMAGE_PREVIEW_COMMENT_PANEL_TAG
 import com.android.purebilibili.feature.dynamic.components.IMAGE_PREVIEW_PAGE_TAG
+import com.android.purebilibili.feature.dynamic.components.IMAGE_PREVIEW_PAGE_INDICATOR_TAG
 import com.android.purebilibili.feature.dynamic.components.ImagePreviewDialog
 import com.android.purebilibili.feature.dynamic.components.ImagePreviewCommentContext
 import com.android.purebilibili.feature.dynamic.components.ImagePreviewOverlayHost
@@ -99,8 +99,7 @@ class ImagePreviewDialogUiRegressionTest {
     }
 
     @Test
-    fun commentPreview_keepsOpenWhenImageTappedAndShowsCommentChrome() {
-        var dismissed = false
+    fun commentPreview_usesTheSameGalleryChromeAsOrdinaryImages() {
         var liked = false
         var replied = false
 
@@ -129,23 +128,17 @@ class ImagePreviewDialogUiRegressionTest {
                                 onReplyClick = { replied = true }
                             )
                         ),
-                        onDismiss = { dismissed = true }
+                        onDismiss = {}
                     )
                     ImagePreviewOverlayHost(modifier = Modifier.fillMaxSize())
                 }
             }
         }
 
-        composeTestRule.onNodeWithTag(IMAGE_PREVIEW_COMMENT_PANEL_TAG).assertIsDisplayed()
-
-        composeTestRule
-            .onNodeWithTag(IMAGE_PREVIEW_PAGE_TAG)
-            .performTouchInput {
-                click(center)
-            }
+        composeTestRule.onAllNodesWithTag(IMAGE_PREVIEW_COMMENT_PANEL_TAG).assertCountEquals(0)
+        composeTestRule.onNodeWithTag(IMAGE_PREVIEW_PAGE_INDICATOR_TAG).assertIsDisplayed()
 
         composeTestRule.runOnIdle {
-            assertEquals(false, dismissed)
             assertEquals(false, liked)
             assertEquals(false, replied)
         }

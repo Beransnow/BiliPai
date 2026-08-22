@@ -1503,6 +1503,8 @@ object SettingsManager {
         booleanPreferencesKey("comment_member_decorations_enabled")
     private val KEY_IMAGE_PREVIEW_LONG_PRESS_SAVE_ENABLED =
         booleanPreferencesKey("image_preview_long_press_save_enabled")
+    private val KEY_IMAGE_PREVIEW_3D_PAGE_ENABLED =
+        booleanPreferencesKey("image_preview_3d_page_enabled")
     //  [新增] 离开播放页后停止播放（优先于小窗/画中画模式）
     private val KEY_STOP_PLAYBACK_ON_EXIT = booleanPreferencesKey("stop_playback_on_exit")
     private val KEY_BACKGROUND_PLAYBACK_ENABLED = booleanPreferencesKey("background_playback_enabled")
@@ -5440,6 +5442,16 @@ object SettingsManager {
             preferences[KEY_IMAGE_PREVIEW_LONG_PRESS_SAVE_ENABLED] = enabled
         }
     }
+
+    fun getImagePreview3dPageEnabled(context: Context): Flow<Boolean> =
+        context.settingsDataStore.data
+            .map { preferences -> preferences[KEY_IMAGE_PREVIEW_3D_PAGE_ENABLED] ?: false }
+
+    suspend fun setImagePreview3dPageEnabled(context: Context, enabled: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_IMAGE_PREVIEW_3D_PAGE_ENABLED] = enabled
+        }
+    }
     
     // ==========  空降助手 (SponsorBlock) ==========
     
@@ -7038,6 +7050,7 @@ object SettingsManager {
             BooleanShareablePreferenceDefinition(KEY_COMMENT_FRAUD_DETECTION_ENABLED, SettingsShareSection.PLAYBACK),
             BooleanShareablePreferenceDefinition(KEY_COMMENT_MEMBER_DECORATIONS_ENABLED, SettingsShareSection.PLAYBACK),
             BooleanShareablePreferenceDefinition(KEY_IMAGE_PREVIEW_LONG_PRESS_SAVE_ENABLED, SettingsShareSection.PLAYBACK),
+            BooleanShareablePreferenceDefinition(KEY_IMAGE_PREVIEW_3D_PAGE_ENABLED, SettingsShareSection.PLAYBACK),
             BooleanShareablePreferenceDefinition(KEY_STOP_PLAYBACK_ON_EXIT, SettingsShareSection.PLAYBACK),
             BooleanShareablePreferenceDefinition(KEY_BACKGROUND_PLAYBACK_ENABLED, SettingsShareSection.PLAYBACK),
             BooleanShareablePreferenceDefinition(KEY_AUDIO_FOCUS_ENABLED, SettingsShareSection.PLAYBACK),
