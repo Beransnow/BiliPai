@@ -13,7 +13,7 @@
 | Android | minSdk 26、targetSdk 35、compileSdk 37、arm64-v8a |
 | 构建工具 | AGP 9.3.1、Gradle 9.5、Kotlin 2.4、JDK 21 |
 | UI 与导航 | Compose BOM 2026.06.00、Navigation3 runtime/UI 1.2.0-alpha07、NavigationEvent 1.2.0-alpha03 |
-| 主要视觉实现 | Material 3、Miuix 0.9.3、Compose Cupertino、Haze 2、Miuix Backdrop / Liquid Glass |
+| 主要视觉实现 | Material 3、Miuix 0.9.4-4f86de92-SNAPSHOT、Compose Cupertino、Haze 2、Miuix Backdrop / Liquid Glass |
 
 ## 已形成产品基线
 
