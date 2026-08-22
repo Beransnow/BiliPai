@@ -825,6 +825,8 @@ fun VideoContentSection(
                         sortMode = sortMode,
                         onSortModeChange = onSortModeChange,
                         showNativeSortHeader = !homeSettings.androidNativeLiquidGlassEnabled,
+                        showSortControlInHeader = true,
+                        miuixBackdrop = videoContentMiuixBackdrop,
                     )
                 }
             }
@@ -1151,6 +1153,8 @@ internal fun VideoCommentTab(
     sortMode: CommentSortMode = CommentSortMode.HOT,
     onSortModeChange: (CommentSortMode) -> Unit = {},
     showNativeSortHeader: Boolean = false,
+    showSortControlInHeader: Boolean = false,
+    miuixBackdrop: MiuixBackdrop? = null,
 ) {
     val commentAppearance = rememberVideoCommentAppearance()
     val scope = rememberCoroutineScope()
@@ -1185,11 +1189,13 @@ internal fun VideoCommentTab(
         }
     }
     Column(modifier = modifier.fillMaxSize()) {
-        if (showNativeSortHeader) {
+        if (showSortControlInHeader) {
             CommentSortHeader(
                 count = replyCount,
                 sortMode = sortMode,
                 onSortModeChange = onSortModeChange,
+                miuixBackdrop = miuixBackdrop,
+                useLiquidDock = !showNativeSortHeader,
             )
         } else {
             CommentListHeader(
@@ -1727,14 +1733,7 @@ private fun VideoContentTabBar(
                 }
             }
 
-            if (selectedTabIndex == 1 && liquidChromeSpec.reusesLiquidGlassDock) {
-                CommentSortFilterBar(
-                    sortMode = sortMode,
-                    onSortModeChange = onSortModeChange,
-                    modifier = Modifier.padding(end = 8.dp),
-                    miuixBackdrop = miuixBackdrop,
-                )
-            } else {
+            if (selectedTabIndex != 1) {
                 // [新增] 恢复画面按钮 (仅在播放器折叠时显示)
                 AnimatedVisibility(
                     visible = isPlayerCollapsed,

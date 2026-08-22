@@ -74,13 +74,15 @@ private fun CommentListTitle(title: String, count: Int) {
             fontSize = 20.sp, // iOS Large Title style scale
             fontWeight = FontWeight.Bold,
             color = appearance.primaryTextColor,
+            modifier = Modifier.alignByBaseline(),
         )
         Spacer(modifier = Modifier.width(6.dp))
         AppText(
             text = FormatUtils.formatStat(count.toLong()),
-            fontSize = 15.sp,
+            fontSize = 16.sp,
             fontWeight = FontWeight.Normal,
             color = appearance.secondaryTextColor,
+            modifier = Modifier.alignByBaseline(),
         )
     }
 }
@@ -95,6 +97,7 @@ fun CommentSortHeader(
     onSortModeChange: (CommentSortMode) -> Unit,
     modifier: Modifier = Modifier,
     miuixBackdrop: MiuixBackdrop? = null,
+    useLiquidDock: Boolean = false,
 ) {
     FlowRow(
         modifier = modifier
@@ -106,20 +109,28 @@ fun CommentSortHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         CommentListTitle(title = "${sortMode.label}评论", count = count)
-        AppTextButton(
-            onClick = {
-                onSortModeChange(
-                    if (sortMode == CommentSortMode.HOT) CommentSortMode.NEWEST else CommentSortMode.HOT
-                )
-            },
-        ) {
-            AppIcon(
-                imageVector = Icons.AutoMirrored.Outlined.Sort,
-                contentDescription = "切换评论排序",
-                modifier = Modifier.size(18.dp),
+        if (useLiquidDock) {
+            CommentSortFilterBar(
+                sortMode = sortMode,
+                onSortModeChange = onSortModeChange,
+                miuixBackdrop = miuixBackdrop,
             )
-            Spacer(modifier = Modifier.width(6.dp))
-            AppText(text = sortMode.label, fontSize = 14.sp)
+        } else {
+            AppTextButton(
+                onClick = {
+                    onSortModeChange(
+                        if (sortMode == CommentSortMode.HOT) CommentSortMode.NEWEST else CommentSortMode.HOT
+                    )
+                },
+            ) {
+                AppIcon(
+                    imageVector = Icons.AutoMirrored.Outlined.Sort,
+                    contentDescription = "切换评论排序",
+                    modifier = Modifier.size(18.dp),
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                AppText(text = sortMode.label, fontSize = 14.sp)
+            }
         }
     }
 }
