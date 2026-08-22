@@ -639,7 +639,11 @@ private fun DrawScope.drawLiquidSphereSurface(
         )
     }
 
-    if (isMoving && lensProfile.aberrationStrength > 0f && tuning.chromaticAberrationAmount > 0f) {
+    if (
+        isMoving &&
+        lensProfile.aberrationStrength > 0f &&
+        tuning.indicatorChromaticAberrationAmount > 0f
+    ) {
         val fringe = (lensProfile.aberrationStrength * 3.2f * clearWeight).coerceIn(0f, 0.18f)
         drawRect(
             brush = Brush.horizontalGradient(
