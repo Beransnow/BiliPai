@@ -630,7 +630,9 @@ fun CommonListScreen(
     var commonListHeaderSettleJob by remember { androidx.compose.runtime.mutableStateOf<Job?>(null) }
     val commonListHeaderCollapseMode = resolveCommonListHeaderCollapseModeForScreen(
         configuredMode = homeSettings.commonListHeaderCollapseMode,
-        isFavoritePage = favoriteViewModel != null
+        isFavoritePage = favoriteViewModel != null,
+        isHistoryPage = historyViewModel != null,
+        homeHeaderCollapseMode = homeSettings.homeHeaderCollapseMode,
     )
     val commonListHeaderCollapseEnabled = supportsCollapsibleCommonListHeader &&
         commonListHeaderCollapseMode != CommonListHeaderCollapseMode.ALWAYS_VISIBLE

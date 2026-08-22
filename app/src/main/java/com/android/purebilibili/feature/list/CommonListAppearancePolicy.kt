@@ -2,8 +2,9 @@ package com.android.purebilibili.feature.list
 
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.CommonListHeaderCollapseMode
+import com.android.purebilibili.core.store.HomeHeaderCollapseMode
+import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.resolveHomeHeaderBlurEnabled
 import com.android.purebilibili.core.ui.AppTopChromePolicy
 import com.android.purebilibili.core.ui.AppTopTabPresentation
@@ -86,8 +87,19 @@ internal fun resolveCommonListHeaderOffsetPx(
  */
 internal fun resolveCommonListHeaderCollapseModeForScreen(
     configuredMode: CommonListHeaderCollapseMode,
-    isFavoritePage: Boolean
+    isFavoritePage: Boolean,
+    isHistoryPage: Boolean = false,
+    homeHeaderCollapseMode: HomeHeaderCollapseMode = HomeHeaderCollapseMode.BOTH,
 ): CommonListHeaderCollapseMode {
+    if (isHistoryPage) {
+        // 复用「导航设置 → 首页顶栏显示」开关：开启（仅回顶显示）时历史页顶栏
+        // 不跟随下滑、回顶才显示；关闭（始终显示）时历史页顶栏保持展开。
+        return if (homeHeaderCollapseMode.hasAnyCollapse) {
+            CommonListHeaderCollapseMode.SHOW_AT_TOP_ONLY
+        } else {
+            CommonListHeaderCollapseMode.ALWAYS_VISIBLE
+        }
+    }
     return if (
         isFavoritePage && configuredMode == CommonListHeaderCollapseMode.SHOW_ON_REVERSE_SCROLL
     ) {
