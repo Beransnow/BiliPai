@@ -72,9 +72,9 @@ class SettingsMiuixSimplificationStructureTest {
         assertTrue(source.contains("previewPanOffsetPx"))
         assertTrue(source.contains("sliderFollowOffset"))
         assertTrue(source.contains("translationY = previewPanOffsetPx + sliderFollowOffset"))
-        assertTrue(source.contains("160.dp.toPx()"))
+        assertTrue(source.contains("200.dp.toPx()"))
         assertTrue(source.contains(".height(360.dp)"))
-        assertTrue(source.contains(".height(760.dp)"))
+        assertTrue(source.contains(".height(920.dp)"))
         assertTrue(source.contains("R.drawable.liquid_glass_preview_sky"))
         assertTrue(source.contains("painterResource("))
     }

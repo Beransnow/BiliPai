@@ -454,7 +454,7 @@ private fun LiquidGlassHomeSample(
     val glassColor = MaterialTheme.colorScheme.surfaceContainer
     val contentColor = MaterialTheme.colorScheme.onSurface
     val density = LocalDensity.current
-    val previewPanLimitPx = remember(density) { with(density) { 160.dp.toPx() } }
+    val previewPanLimitPx = remember(density) { with(density) { 200.dp.toPx() } }
     val sliderFollowRangePx = remember(density) { with(density) { 80.dp.toPx() } }
     var customImageFailed by remember(previewImageUri) { mutableStateOf(false) }
     var previewPanOffsetPx by remember(previewImageUri) { mutableFloatStateOf(0f) }
@@ -485,7 +485,7 @@ private fun LiquidGlassHomeSample(
                 modifier = Modifier
                     .align(Alignment.Center)
                     .fillMaxWidth()
-                    .height(760.dp)
+                    .height(920.dp)
                     .graphicsLayer {
                         val sliderFollowOffset = (progress - 0.5f) * sliderFollowRangePx
                         translationY = previewPanOffsetPx + sliderFollowOffset
