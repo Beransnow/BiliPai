@@ -237,6 +237,9 @@ internal enum class PortraitDanmakuSurfaceMode {
     Page
 }
 
+// 竖屏播放器的进度条拖动和画面横滑共用同一套大尺寸预览。
+private const val PORTRAIT_SEEK_PREVIEW_ASPECT_RATIO = 9f / 16f
+
 /**
  * 竖屏无缝滑动播放页面 (TikTok Style)
  * 
@@ -2681,7 +2684,7 @@ private fun VideoPageItem(
                         sourceWidthPx = gestureVideoshotData.img_x_size,
                         sourceHeightPx = gestureVideoshotData.img_y_size,
                         screenWidthDp = previewConfiguration.screenWidthDp,
-                        videoAspectRatio = currentVideoAspect
+                        videoAspectRatio = PORTRAIT_SEEK_PREVIEW_ASPECT_RATIO
                     )
                 }
                 val previewWidthPx = with(density) { gesturePreviewSize.widthDp.dp.toPx() }
@@ -2700,7 +2703,7 @@ private fun VideoPageItem(
                     videoshotData = gestureVideoshotData,
                     targetPositionMs = seekTargetPosition.toLong(),
                     durationMs = progressState.duration,
-                    videoAspectRatio = currentVideoAspect,
+                    videoAspectRatio = PORTRAIT_SEEK_PREVIEW_ASPECT_RATIO,
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .offset {
@@ -3145,7 +3148,7 @@ private fun VideoPageItem(
             danmakuEnabled = danmakuEnabled,
             isStatusBarHidden = true,
             videoshotData = currentSuccess?.videoshotData,
-            videoAspectRatio = currentVideoAspect,
+            videoAspectRatio = PORTRAIT_SEEK_PREVIEW_ASPECT_RATIO,
             isPlaybackRecovering = isCurrentPage && shouldShowPlaybackRecoveryUiAfterSeek(
                 state = seekSession,
                 playWhenReady = exoPlayer.playWhenReady,
