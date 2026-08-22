@@ -1500,7 +1500,6 @@ fun VideoPlayerOverlay(
                     danmakuEnabled = danmakuEnabled,
                     onDanmakuToggle = onDanmakuToggle,
                     onDanmakuInputClick = onDanmakuInputClick,
-                    onDanmakuSettingsClick = { showDanmakuSettings = true },
                     isLoggedIn = isLoggedIn,
                     subtitleControlState = subtitleControlState,
                     subtitleControlCallbacks = subtitleControlCallbacks,
@@ -2051,6 +2050,10 @@ fun VideoPlayerOverlay(
                 sleepTimerMinutes = sleepTimerMinutes,
                 onSleepTimerChange = onSleepTimerChange,
                 onReload = onReloadVideo,
+                onDanmakuSettingsClick = {
+                    showVideoSettings = false
+                    showDanmakuSettings = true
+                },
                 currentQualityLabel = currentQualityLabel,
                 qualityLabels = qualityLabels,
                 qualityIds = qualityIds,

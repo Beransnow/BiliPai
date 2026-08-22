@@ -399,7 +399,6 @@ fun BottomControlBar(
     danmakuEnabled: Boolean = true,
     onDanmakuToggle: () -> Unit = {},
     onDanmakuInputClick: () -> Unit = {},
-    onDanmakuSettingsClick: () -> Unit = {},
     isLoggedIn: Boolean = true,
     subtitleControlState: SubtitleControlUiState = SubtitleControlUiState(),
     subtitleControlCallbacks: SubtitleControlCallbacks = SubtitleControlCallbacks(),
@@ -508,13 +507,10 @@ fun BottomControlBar(
             widthDp = configuration.screenWidthDp
         )
     }
-    val danmakuPlaceholderPolicy = remember(
-        layoutPolicy.danmakuSettingButtonSizeDp,
-        layoutPolicy.danmakuSettingEndPaddingDp
-    ) {
+    val danmakuPlaceholderPolicy = remember {
         resolveLandscapeDanmakuPlaceholderPolicy(
-            settingButtonSizeDp = layoutPolicy.danmakuSettingButtonSizeDp,
-            settingEndPaddingDp = layoutPolicy.danmakuSettingEndPaddingDp
+            settingButtonSizeDp = 0,
+            settingEndPaddingDp = 0,
         )
     }
     val fullscreenToggleTouchTargetDp = remember(layoutPolicy.fullscreenIconSizeDp) {
@@ -793,19 +789,6 @@ fun BottomControlBar(
                             )
                         }
 
-                        AppIconButton(
-                            onClick = onDanmakuSettingsClick,
-                            modifier = Modifier
-                                .padding(end = layoutPolicy.danmakuSettingEndPaddingDp.dp)
-                                .size(layoutPolicy.danmakuSettingButtonSizeDp.dp)
-                        ) {
-                            AppIcon(
-                                imageVector = Icons.Outlined.Settings,
-                                contentDescription = "弹幕显示设置",
-                                tint = Color.White.copy(alpha = 0.8f),
-                                modifier = Modifier.size(layoutPolicy.danmakuSettingIconSizeDp.dp)
-                            )
-                        }
                     }
 
                     Spacer(modifier = Modifier.width(layoutPolicy.afterInputSpacingDp.dp))
