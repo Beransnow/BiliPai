@@ -118,7 +118,13 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
         title = "诊断与开发",
         subtitle = "崩溃追踪、增强诊断日志、播放器诊断与日志导出",
         section = "设置",
-        aliases = listOf("诊断", "开发", "崩溃追踪", "使用情况统计", "增强诊断日志", "详细日志", "隐私脱敏", "播放器诊断日志", "画质降档诊断弹窗", "降档弹窗", "仅提示一次", "仅弹窗一次", "导出日志", "日志")
+        aliases = listOf(
+            "诊断", "开发", "崩溃追踪", "崩溃日志", "闪退", "卡死", "无响应", "anr",
+            "native崩溃", "native crash", "oom", "内存不足", "系统杀进程", "进程退出原因",
+            "使用情况统计", "增强诊断日志", "详细日志", "性能诊断", "隐私脱敏",
+            "播放器诊断日志", "画质降档诊断弹窗", "降档弹窗", "仅提示一次", "仅弹窗一次",
+            "导出日志", "日志"
+        )
     ),
     SettingsSearchEntry(
         target = SettingsSearchTarget.ABOUT_SUPPORT,
@@ -132,6 +138,8 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
         title = "外观设置",
         subtitle = "主题、字体、缩放、开屏与应用图标",
         section = "常规",
+        // 泛入口别名：具体子项词（主题色/hex/md3颜色/字体大小/dpi/开屏壁纸等）交由
+        // 更具体的子项条目承接，避免泛条目靠堆叠别名压过具体结果。
         aliases = listOf(
             "外观",
             "主题",
@@ -140,24 +148,13 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
             "皮肤",
             "玻璃",
             "液态玻璃",
-            "安卓原生液态玻璃",
-            "Android Native 液态玻璃",
-            "全局液态玻璃",
-            "评论区液态玻璃",
             "毛玻璃",
             "动态取色",
-            "自定义md3颜色",
-            "自定义 MD3 颜色",
             "自定义颜色",
-            "md3颜色",
             "主题色",
-            "hex",
-            "material you",
-            "materialyou",
             "动态颜色",
             "语言",
             "字体",
-            "字体大小",
             "应用字体",
             "本地字体",
             "导入字体",
@@ -165,17 +162,9 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
             "ttf",
             "otf",
             "界面缩放",
-            "dpi",
             "开屏",
-            "开屏壁纸",
             "自定义壁纸",
             "相册壁纸",
-            "随机壁纸",
-            "开屏图标遮罩动画",
-            "图标遮罩动画",
-            "显示开屏图标",
-            "隐藏开屏图标",
-            "开屏图标动画",
             "应用图标",
             "md3",
             "material",
@@ -401,7 +390,10 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
         title = "导出日志",
         subtitle = "用于反馈问题",
         section = "开发者选项",
-        aliases = listOf("日志", "log", "反馈", "诊断", "导出log", "播放器日志", "问题反馈")
+        aliases = listOf(
+            "日志", "log", "logs", "反馈", "诊断", "导出log", "导出日志", "分享日志",
+            "播放器日志", "崩溃日志", "闪退日志", "anr日志", "进程退出记录", "问题反馈"
+        )
     ),
     SettingsSearchEntry(
         target = SettingsSearchTarget.OPEN_SOURCE_LICENSES,
@@ -493,7 +485,8 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
         title = "界面预设 / 主题模式",
         subtitle = "iOS、安卓原生、深色风格、MD3 颜色来源、应用语言",
         section = "外观设置",
-        aliases = listOf("界面预设", "主题模式", "深色风格", "应用语言", "语言", "material you", "动态取色", "自定义md3颜色", "自定义 MD3 颜色", "自定义颜色", "md3颜色", "主题色", "hex"),
+        // 只保留本项专属别名；MD3 颜色/取色类词归「自定义 MD3 颜色」，避免重叠稀释精准度
+        aliases = listOf("界面预设", "主题模式", "深色风格", "应用语言", "语言"),
         focusId = SettingsSearchFocusIds.APPEARANCE_THEME
     ),
     SettingsSearchEntry(
@@ -725,21 +718,26 @@ internal fun resolveSettingsSearchResults(
     return SETTINGS_SEARCH_INDEX
         .mapNotNull { entry ->
             scoreSettingsSearchMatch(entry, normalizedQuery)?.let { score ->
-                score to SettingsSearchResult(
+                // 带上别名数量：同分时别名更克制（更少）的条目通常更精准，
+                // 避免泛条目靠堆叠别名压过具体子项。
+                Triple(score, entry.aliases.size, SettingsSearchResult(
                     target = entry.target,
                     title = entry.title,
                     subtitle = entry.subtitle,
                     section = entry.section,
                     focusId = entry.focusId
-                )
+                ))
             }
         }
         .sortedWith(
-            compareByDescending<Pair<Int, SettingsSearchResult>> { it.first }
-                .thenBy { it.second.title.length }
-                .thenBy { it.second.title }
+            compareByDescending<Triple<Int, Int, SettingsSearchResult>> { it.first }
+                .thenBy { it.second }            // 别名更少者优先（更精准）
+                .thenByDescending { it.third.title.length } // 再按标题更具体者优先
+                .thenBy { it.third.title }
         )
-        .map { it.second }
+        .map { it.third }
+        // 同一 target 只保留最优一条，避免同一设置页被多个重叠别名重复列出。
+        .distinctBy { it.target }
         .take(maxResults)
 }
 
@@ -753,6 +751,17 @@ private fun scoreSettingsSearchMatch(entry: SettingsSearchEntry, query: String):
     if (aliases.any { it.startsWith(query) }) return 140
     if (title.contains(query)) return 120
     if (aliases.any { it.contains(query) }) return 100
+    // 允许用户直接输入自然句，例如「怎么关闭自动播放」「我想调小字体」。
+    // 之前只检查「索引文案是否包含查询词」，这类句子会完全漏掉。
+    // 忽略单字别名，避免「我」「开」之类泛词造成大量误命中。
+    val containedTerms = buildList {
+        if (title.length >= 2 && query.contains(title)) add(title)
+        aliases.filterTo(this) { alias -> alias.length >= 2 && query.contains(alias) }
+    }
+    if (containedTerms.isNotEmpty()) {
+        val mostSpecificLength = containedTerms.maxOf(String::length)
+        return 92 + mostSpecificLength.coerceAtMost(24)
+    }
     if (matchesSettingsSearchPinyin(entry.title, query)) return 90
     if (entry.aliases.any { matchesSettingsSearchPinyin(it, query) }) return 80
     if (subtitle.contains(query)) return 70
