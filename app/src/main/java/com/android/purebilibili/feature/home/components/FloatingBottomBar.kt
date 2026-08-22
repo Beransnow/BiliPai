@@ -339,6 +339,7 @@ fun FloatingBottomBar(
     isScrollInProgressProvider: () -> Boolean = { false },
     dragSelectionEnabled: Boolean = true,
     dragTrackingMode: DampedDragTrackingMode = DampedDragTrackingMode.SPRING,
+    liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
     content: @Composable RowScope.() -> Unit
 ) {
     val isInDark = isSystemInDarkTheme()
@@ -346,7 +347,11 @@ fun FloatingBottomBar(
     val isLiquidGlassMode = mode == FloatingBottomBarMode.LiquidGlass
     val isBlurMode = mode == FloatingBottomBarMode.Blur
     val containerColor =
-        if (isLiquidGlassMode) colors.containerColor.copy(alpha = 0.4f) else colors.containerColor
+        if (isLiquidGlassMode) {
+            colors.containerColor.copy(alpha = liquidGlassTuning.surfaceAlpha)
+        } else {
+            colors.containerColor
+        }
 
     val tabsBackdrop = rememberLayerBackdrop()
     val density = LocalDensity.current
@@ -634,11 +639,18 @@ fun FloatingBottomBar(
                                     backdrop = backdrop,
                                     shape = { pillShape },
                                     effects = {
-                                        vibrancy()
-                                        blur(4.dp.toPx(), 4.dp.toPx())
+                                        vibrancy(liquidGlassTuning.saturation)
+                                        blur(
+                                            liquidGlassTuning.backdropBlurRadius.dp.toPx(),
+                                            liquidGlassTuning.backdropBlurRadius.dp.toPx()
+                                        )
                                         lens(
-                                            refractionHeight = shellLensPx,
-                                            refractionAmount = shellLensPx,
+                                            refractionHeight = shellLensPx *
+                                                liquidGlassTuning.refractionHeight / 24f,
+                                            refractionAmount = shellLensPx *
+                                                liquidGlassTuning.refractionAmount / 24f,
+                                            depthEffect = liquidGlassTuning.depthEffectEnabled,
+                                            chromaticAberration = liquidGlassTuning.chromaticAberrationAmount,
                                         )
                                     },
                                     highlight = { baseHighlight.copy(alpha = 0.75f) },
@@ -707,11 +719,18 @@ fun FloatingBottomBar(
                             backdrop = backdrop,
                             shape = { pillShape },
                             effects = {
-                                vibrancy()
-                                blur(4.dp.toPx(), 4.dp.toPx())
+                                vibrancy(liquidGlassTuning.saturation)
+                                blur(
+                                    liquidGlassTuning.backdropBlurRadius.dp.toPx(),
+                                    liquidGlassTuning.backdropBlurRadius.dp.toPx()
+                                )
                                 lens(
-                                    refractionHeight = shellLensPx,
-                                    refractionAmount = shellLensPx,
+                                    refractionHeight = shellLensPx *
+                                        liquidGlassTuning.refractionHeight / 24f,
+                                    refractionAmount = shellLensPx *
+                                        liquidGlassTuning.refractionAmount / 24f,
+                                    depthEffect = liquidGlassTuning.depthEffectEnabled,
+                                    chromaticAberration = liquidGlassTuning.chromaticAberrationAmount,
                                 )
                             },
                             onDrawSurface = { drawRect(containerColor) },
@@ -765,10 +784,13 @@ fun FloatingBottomBar(
                             effects = {
                                 val progress = dampedDragAnimation.pressProgress
                                 lens(
-                                    refractionHeight = indicatorLensHeightPx * progress,
-                                    refractionAmount = indicatorLensAmountPx * progress,
-                                    depthEffect = true,
-                                    chromaticAberration = 0.5f,
+                                    refractionHeight = indicatorLensHeightPx * progress *
+                                        liquidGlassTuning.indicatorLensBoost,
+                                    refractionAmount = indicatorLensAmountPx * progress *
+                                        liquidGlassTuning.indicatorEdgeWarpBoost,
+                                    depthEffect = liquidGlassTuning.depthEffectEnabled,
+                                    chromaticAberration = liquidGlassTuning.chromaticAberrationAmount *
+                                        liquidGlassTuning.indicatorChromaticBoost,
                                 )
                             },
                             highlight = {

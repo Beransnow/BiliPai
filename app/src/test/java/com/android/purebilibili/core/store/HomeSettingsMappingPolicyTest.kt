@@ -51,6 +51,7 @@ class HomeSettingsMappingPolicyTest {
         assertEquals(LiquidGlassStyle.SUKISU, result.liquidGlassStyle)
         assertEquals(LiquidGlassMode.BALANCED, result.liquidGlassMode)
         assertEquals(0.52f, result.liquidGlassStrength)
+        assertEquals(0.5f, result.liquidGlassProgress)
         assertEquals(0, result.gridColumnCount)
         assertEquals(HomeFeedCardWidthPreset.AUTO, result.homeFeedCardWidthPreset)
         assertFalse(result.cardAnimationEnabled)
@@ -142,9 +143,9 @@ class HomeSettingsMappingPolicyTest {
         assertEquals(BottomBarSearchLayoutMode.HOME_AND_SEARCH, result.bottomBarSearchLayoutMode)
         assertTrue(result.androidNativeLiquidGlassEnabled)
         assertFalse(result.isLiquidGlassEnabled)
-        assertEquals(LiquidGlassStyle.SUKISU, result.liquidGlassStyle)
-        assertEquals(LiquidGlassMode.BALANCED, result.liquidGlassMode)
-        assertEquals(0.52f, result.liquidGlassStrength)
+        assertEquals(LiquidGlassStyle.IOS26, result.liquidGlassStyle)
+        assertEquals(LiquidGlassMode.CLEAR, result.liquidGlassMode)
+        assertEquals(0.42f, result.liquidGlassStrength)
         assertEquals(0.5f, result.liquidGlassProgress)
         assertEquals(4, result.gridColumnCount)
         assertEquals(HomeFeedCardWidthPreset.WIDE, result.homeFeedCardWidthPreset)
@@ -348,18 +349,30 @@ class HomeSettingsMappingPolicyTest {
     }
 
     @Test
-    fun legacyLiquidGlassTuning_isCollapsedToSingleSharedMaterialRecipe() {
+    fun storedLiquidGlassProgress_isUsedBySharedMaterialRecipe() {
         val prefs = mutablePreferencesOf(
             intPreferencesKey("liquid_glass_style") to LiquidGlassStyle.SUKISU.value,
             intPreferencesKey("liquid_glass_mode") to LiquidGlassMode.BALANCED.value,
-            floatPreferencesKey("liquid_glass_strength") to 0.31f
+            floatPreferencesKey("liquid_glass_strength") to 0.31f,
+            floatPreferencesKey("liquid_glass_material_progress_v2") to 0.82f
         )
 
         val result = mapHomeSettingsFromPreferences(prefs)
 
         assertEquals(LiquidGlassStyle.SUKISU, result.liquidGlassStyle)
         assertEquals(LiquidGlassMode.BALANCED, result.liquidGlassMode)
-        assertEquals(0.52f, result.liquidGlassStrength)
+        assertEquals(0.31f, result.liquidGlassStrength)
+        assertEquals(0.82f, result.liquidGlassProgress)
+    }
+
+    @Test
+    fun staleLegacyLiquidGlassProgress_doesNotOverrideNewBaseline() {
+        val prefs = mutablePreferencesOf(
+            floatPreferencesKey("liquid_glass_progress") to 0.08f
+        )
+
+        val result = mapHomeSettingsFromPreferences(prefs)
+
         assertEquals(0.5f, result.liquidGlassProgress)
     }
 

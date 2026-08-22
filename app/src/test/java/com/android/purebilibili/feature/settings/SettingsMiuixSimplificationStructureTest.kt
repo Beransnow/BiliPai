@@ -37,9 +37,22 @@ class SettingsMiuixSimplificationStructureTest {
         assertTrue(source.contains("底栏液态玻璃"))
         assertFalse(source.contains("title = \"安卓原生液态玻璃\""))
         assertFalse(source.contains("toggleAndroidNativeLiquidGlass("))
+        assertTrue(source.contains("LiquidGlassAdjustmentPanel("))
         assertTrue(source.contains("转场时模糊背景"))
         assertTrue(source.contains("toggleVideoTransitionRealtimeBlur("))
         assertTrue(source.contains("SettingsPageScaffold("))
+    }
+
+    @Test
+    fun `liquid glass adjustment uses live miuix backdrop and commits on release`() {
+        val source = loadSource(
+            "app/src/main/java/com/android/purebilibili/feature/settings/LiquidGlassLivePreview.kt"
+        )
+
+        assertTrue(source.contains("rememberLayerBackdrop()"))
+        assertTrue(source.contains(".layerBackdrop(backdrop)"))
+        assertTrue(source.contains(".biliPaiFloatingDockShell("))
+        assertTrue(source.contains("onValueChangeFinished = { onProgressCommitted(previewProgress) }"))
     }
 
     @Test

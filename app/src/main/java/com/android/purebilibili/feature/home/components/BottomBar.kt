@@ -889,13 +889,15 @@ internal fun resolveAndroidNativeBottomBarContainerColor(
     surfaceColor: Color,
     tuning: AndroidNativeBottomBarTuning,
     glassEnabled: Boolean,
-    liquidGlassPreset: BottomBarLiquidGlassPreset = BottomBarLiquidGlassPreset.BILIPAI_TUNED
+    liquidGlassPreset: BottomBarLiquidGlassPreset = BottomBarLiquidGlassPreset.BILIPAI_TUNED,
+    liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f)
 ): Color {
     return resolveBottomBarGlassMaterialContainerColor(
         surfaceColor = surfaceColor,
         preset = liquidGlassPreset,
         glassEnabled = glassEnabled,
-        fallbackAlpha = tuning.shellSurfaceAlpha
+        fallbackAlpha = tuning.shellSurfaceAlpha,
+        liquidGlassTuning = liquidGlassTuning
     )
 }
 
@@ -906,6 +908,7 @@ internal fun resolveAndroidNativeFloatingBottomBarContainerColor(
     blurEnabled: Boolean,
     blurIntensity: com.android.purebilibili.core.ui.blur.BlurIntensity,
     liquidGlassPreset: BottomBarLiquidGlassPreset = BottomBarLiquidGlassPreset.BILIPAI_TUNED,
+    liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
     globalWallpaperVisible: Boolean = false
 ): Color {
     val resolvedColor = if (glassEnabled) {
@@ -913,7 +916,8 @@ internal fun resolveAndroidNativeFloatingBottomBarContainerColor(
             surfaceColor = surfaceColor,
             tuning = tuning,
             glassEnabled = true,
-            liquidGlassPreset = liquidGlassPreset
+            liquidGlassPreset = liquidGlassPreset,
+            liquidGlassTuning = liquidGlassTuning
         )
     } else {
         resolveBottomBarSurfaceColor(
@@ -949,10 +953,14 @@ internal fun shouldUseBottomBarCaptureLens(
 internal fun resolveBiliPaiBottomBarShellColor(
     containerColor: Color,
     liquidGlassEnabled: Boolean,
-    darkTheme: Boolean
+    darkTheme: Boolean,
+    liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f)
 ): Color {
     return if (liquidGlassEnabled) {
-        resolveBiliPaiBottomBarContainerColor(darkTheme = darkTheme)
+        resolveBiliPaiBottomBarContainerColor(
+            darkTheme = darkTheme,
+            liquidGlassTuning = liquidGlassTuning
+        )
     } else {
         containerColor
     }
@@ -995,7 +1003,8 @@ internal fun Modifier.biliPaiMiuixFloatingDockSurface(
     isScrolling: Boolean = false,
     materialScrollProgress: Float = 0f,
     materialMotionProgress: Float = 0f,
-    materialPressProgress: Float = 0f
+    materialPressProgress: Float = 0f,
+    liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f)
 ): Modifier = composed {
     val isDarkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.background())
     val renderGlassEffects = shouldRenderBottomBarLiquidGlassEffects(
@@ -1014,7 +1023,8 @@ internal fun Modifier.biliPaiMiuixFloatingDockSurface(
         scrollProgress = materialScrollProgress,
         glassEnabled = renderGlassEffects,
         motionProgress = materialMotionProgress,
-        pressProgress = materialPressProgress
+        pressProgress = materialPressProgress,
+        liquidGlassTuning = liquidGlassTuning
     )
     val baseHighlight = rememberGravityRotatedHighlight(iosIndicatorSpecular, extraDegrees = -45f)
     val effectiveShellLensIntensity = shellLensIntensity.coerceIn(0f, 1f)
@@ -1053,7 +1063,7 @@ internal fun Modifier.biliPaiMiuixFloatingDockSurface(
                         effects = {
                             if (renderGlassEffects) {
                                 if (materialSpec.vibrancy) {
-                                    miuixVibrancy()
+                                    miuixVibrancy(liquidGlassTuning.saturation)
                                 }
                                 val resolvedBlurRadius =
                                     materialSpec.blurRadiusDp?.dp ?: AppSpacingTokens.ExtraSmall
@@ -1072,7 +1082,9 @@ internal fun Modifier.biliPaiMiuixFloatingDockSurface(
                                         refractionAmount = (
                                             materialSpec.shellRefractionAmountDp *
                                                 effectiveShellLensIntensity
-                                            ).dp.toPx()
+                                            ).dp.toPx(),
+                                        depthEffect = liquidGlassTuning.depthEffectEnabled,
+                                        chromaticAberration = materialSpec.shellChromaticAberration
                                     )
                                 }
                             } else if (blurEnabled && !useHazeBlur) {
@@ -1209,13 +1221,16 @@ internal fun resolveAndroidNativeIdleIndicatorSurfaceColor(
     }
 }
 
-internal fun resolveBiliPaiBottomBarContainerColor(darkTheme: Boolean): Color {
+internal fun resolveBiliPaiBottomBarContainerColor(
+    darkTheme: Boolean,
+    liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f)
+): Color {
     val surfaceContainer = if (darkTheme) {
         HomeVisualPalette.BiliPaiDarkSurface
     } else {
         OpticalContrastPalette.Highlight
     }
-    return surfaceContainer.copy(alpha = 0.4f)
+    return surfaceContainer.copy(alpha = liquidGlassTuning.surfaceAlpha)
 }
 
 internal fun resolveBottomBarDarkTheme(backgroundColor: Color): Boolean {
@@ -2184,6 +2199,9 @@ private fun MaterialBottomBar(
         liquidGlassEnabled = sharedLiquidGlassEnabled,
         blurEnabled = blurEnabled
     )
+    val liquidGlassTuning = remember(homeSettings.liquidGlassProgress) {
+        resolveLiquidGlassTuning(homeSettings.liquidGlassProgress)
+    }
     val androidNativeTuning = resolveAndroidNativeBottomBarTuning(
         blurEnabled = glassEnabled || blurEnabled,
         darkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.chromeBackground()),
@@ -2203,6 +2221,7 @@ private fun MaterialBottomBar(
             blurEnabled = blurEnabled,
             blurIntensity = blurIntensity,
             liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
+            liquidGlassTuning = liquidGlassTuning,
             globalWallpaperVisible = globalWallpaperVisible
         )
     } else {
@@ -2242,6 +2261,7 @@ private fun MaterialBottomBar(
             tuning = androidNativeTuning,
             glassEnabled = glassEnabled,
             liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
+            liquidGlassTuning = liquidGlassTuning,
             haptic = haptic,
             bottomBarSearchEnabled = homeSettings.isBottomBarSearchEnabled,
             bottomBarSearchAutoExpandMode = homeSettings.bottomBarSearchAutoExpandMode,
@@ -2444,6 +2464,9 @@ private fun MiuixBottomBar(
         liquidGlassEnabled = sharedLiquidGlassEnabled,
         blurEnabled = blurEnabled
     )
+    val liquidGlassTuning = remember(homeSettings.liquidGlassProgress) {
+        resolveLiquidGlassTuning(homeSettings.liquidGlassProgress)
+    }
     val tuning = resolveAndroidNativeBottomBarTuning(
         blurEnabled = glassEnabled || blurEnabled,
         darkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.background()),
@@ -2463,6 +2486,7 @@ private fun MiuixBottomBar(
             blurEnabled = blurEnabled,
             blurIntensity = blurIntensity,
             liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
+            liquidGlassTuning = liquidGlassTuning,
             globalWallpaperVisible = globalWallpaperVisible
         )
     } else {
@@ -2491,6 +2515,7 @@ private fun MiuixBottomBar(
             tuning = tuning,
             glassEnabled = glassEnabled,
             liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
+            liquidGlassTuning = liquidGlassTuning,
             iconStyle = sharedBarIconStyle,
             haptic = haptic,
             hazeState = hazeState,
@@ -2802,6 +2827,7 @@ private fun BiliPaiFloatingBottomBar(
     tuning: AndroidNativeBottomBarTuning,
     glassEnabled: Boolean,
     liquidGlassPreset: BottomBarLiquidGlassPreset,
+    liquidGlassTuning: LiquidGlassTuning,
     iconStyle: SharedFloatingBottomBarIconStyle = SharedFloatingBottomBarIconStyle.MATERIAL,
     haptic: (HapticType) -> Unit,
     hazeState: HazeState? = null,
@@ -2830,7 +2856,8 @@ private fun BiliPaiFloatingBottomBar(
     val biliPaiContainerColor = resolveBiliPaiBottomBarShellColor(
         containerColor = containerColor,
         liquidGlassEnabled = effectiveGlassEnabled,
-        darkTheme = isDarkTheme
+        darkTheme = isDarkTheme,
+        liquidGlassTuning = liquidGlassTuning
     )
     val allItems = remember(visibleItems, isTablet, onToggleSidebar) {
         buildList {
@@ -3083,7 +3110,8 @@ private fun BiliPaiFloatingBottomBar(
                             mode = floatingMode,
                             colors = floatingColors,
                             shellHeight = dockHeight,
-                            indicatorHeight = BOTTOM_BAR_INDICATOR_DOCK_BAND_HEIGHT_DP.dp
+                            indicatorHeight = BOTTOM_BAR_INDICATOR_DOCK_BAND_HEIGHT_DP.dp,
+                            liquidGlassTuning = liquidGlassTuning
                         ) {
                             visibleItems.forEachIndexed { index, item ->
                                 val label = resolveBottomNavItemLabel(item, itemLabels)
@@ -3278,6 +3306,7 @@ private fun BiliPaiFloatingBottomBar(
                     materialScrollProgress = 0f,
                     materialMotionProgress = 0f,
                     materialPressProgress = 0f,
+                    liquidGlassTuning = liquidGlassTuning,
                     iconStyle = iconStyle
                 )
             }
@@ -3534,6 +3563,7 @@ private fun BiliPaiBottomBarSearchSlot(
     materialScrollProgress: Float,
     materialMotionProgress: Float,
     materialPressProgress: Float,
+    liquidGlassTuning: LiquidGlassTuning,
     iconStyle: SharedFloatingBottomBarIconStyle
 ) {
     if (!visible) return
@@ -3569,6 +3599,7 @@ private fun BiliPaiBottomBarSearchSlot(
             materialScrollProgress = materialScrollProgress,
             materialMotionProgress = materialMotionProgress,
             materialPressProgress = materialPressProgress,
+            liquidGlassTuning = liquidGlassTuning,
             iconStyle = iconStyle
         )
     }
@@ -3601,6 +3632,7 @@ private fun BiliPaiBottomBarSearchCapsule(
     materialScrollProgress: Float,
     materialMotionProgress: Float,
     materialPressProgress: Float,
+    liquidGlassTuning: LiquidGlassTuning,
     iconStyle: SharedFloatingBottomBarIconStyle
 ) {
     var searchLongPressHeld by remember { mutableStateOf(false) }
@@ -3654,7 +3686,8 @@ private fun BiliPaiBottomBarSearchCapsule(
                 isScrolling = isScrolling,
                 materialScrollProgress = materialScrollProgress,
                 materialMotionProgress = materialMotionProgress,
-                materialPressProgress = materialPressProgress
+                materialPressProgress = materialPressProgress,
+                liquidGlassTuning = liquidGlassTuning
             )
             .then(
                 if (!expanded) {

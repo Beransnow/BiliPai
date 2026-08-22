@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -70,6 +71,9 @@ internal fun BottomBarFloatingSegmentedControl(
         supportsIndependentLiquidGlass = false,
         androidNativeLiquidGlassEnabled = nativeGlassEnabled,
     )
+    val liquidGlassTuning = remember(homeSettings.liquidGlassProgress) {
+        resolveLiquidGlassTuning(homeSettings.liquidGlassProgress)
+    }
     val isDarkTheme = isSystemInDarkTheme()
     val itemCount = items.size
     val maxTabIndex = (itemCount - 1).coerceAtLeast(0)
@@ -84,6 +88,7 @@ internal fun BottomBarFloatingSegmentedControl(
         containerColor = AppSurfaceTokens.cardContainer(),
         liquidGlassEnabled = liquidGlassEnabled,
         darkTheme = isDarkTheme,
+        liquidGlassTuning = liquidGlassTuning,
     )
     // Reused docks cannot assume that a caller-provided backdrop covers the dock's
     // window coordinates. Keep a local, full-dock source behind the chrome just as
@@ -161,6 +166,7 @@ internal fun BottomBarFloatingSegmentedControl(
             isScrollInProgressProvider = isScrollInProgressProvider,
             dragSelectionEnabled = dragSelectionEnabled && enabled && itemCount > 1,
             dragTrackingMode = DampedDragTrackingMode.DIRECT,
+            liquidGlassTuning = liquidGlassTuning,
         ) {
             items.forEachIndexed { index, label ->
                 FloatingBottomBarItem(

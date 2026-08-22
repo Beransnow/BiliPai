@@ -18,6 +18,7 @@ class LiquidGlassTuningTest {
         assertTrue(clear.backdropBlurRadius < frosted.backdropBlurRadius)
         assertTrue(clear.surfaceAlpha < frosted.surfaceAlpha)
         assertTrue(clear.refractionAmount > frosted.refractionAmount)
+        assertTrue(clear.saturation > frosted.saturation)
     }
 
     @Test
@@ -91,8 +92,10 @@ class LiquidGlassTuningTest {
         val tuning = resolveLiquidGlassTuning(LiquidGlassStyle.SUKISU)
 
         assertEquals(LiquidGlassMode.BALANCED, tuning.mode)
-        assertEquals(8f, tuning.backdropBlurRadius, 0.0001f)
+        assertEquals(0.5f, tuning.progress, 0.0001f)
+        assertEquals(4f, tuning.backdropBlurRadius, 0.0001f)
         assertEquals(0.40f, tuning.surfaceAlpha, 0.0001f)
+        assertEquals(1.5f, tuning.saturation, 0.0001f)
         assertEquals(24f, tuning.refractionAmount, 0.0001f)
         assertEquals(24f, tuning.refractionHeight, 0.0001f)
         assertEquals(0.28f, tuning.indicatorTintAlpha, 0.0001f)

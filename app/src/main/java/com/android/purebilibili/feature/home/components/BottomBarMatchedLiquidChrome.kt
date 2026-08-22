@@ -173,6 +173,7 @@ internal fun BottomBarMatchedLiquidDock(
     isTransitionRunning: Boolean = false,
     forceLowBlurBudget: Boolean = false,
     liquidGlassPreset: BottomBarLiquidGlassPreset = BottomBarLiquidGlassPreset.BILIPAI_TUNED,
+    liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
     isScrollInProgressProvider: () -> Boolean = { false },
     materialScrollProgressOverride: Float? = null,
     materialMotionProgress: Float = 0f,
@@ -197,6 +198,7 @@ internal fun BottomBarMatchedLiquidDock(
                     isTransitionRunning = isTransitionRunning,
                     forceLowBlurBudget = forceLowBlurBudget,
                     liquidGlassPreset = liquidGlassPreset,
+                    liquidGlassTuning = liquidGlassTuning,
                     isScrollInProgressProvider = isScrollInProgressProvider,
                     materialScrollProgressOverride = materialScrollProgressOverride,
                     materialMotionProgress = materialMotionProgress,
@@ -220,6 +222,7 @@ internal fun Modifier.bottomBarMatchedLiquidDockSurface(
     isTransitionRunning: Boolean = false,
     forceLowBlurBudget: Boolean = false,
     liquidGlassPreset: BottomBarLiquidGlassPreset = BottomBarLiquidGlassPreset.BILIPAI_TUNED,
+    liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
     isScrollInProgressProvider: () -> Boolean = { false },
     materialScrollProgressOverride: Float? = null,
     materialMotionProgress: Float = 0f,
@@ -252,6 +255,7 @@ internal fun Modifier.bottomBarMatchedLiquidDockSurface(
         isTransitionRunning = isTransitionRunning,
         forceLowBlurBudget = forceLowBlurBudget,
         liquidGlassPreset = liquidGlassPreset,
+        liquidGlassTuning = liquidGlassTuning,
         isScrolling = isScrolling,
         materialScrollProgress = materialScrollProgress,
         materialMotionProgress = materialMotionProgress,
@@ -317,21 +321,24 @@ internal fun BottomBarMatchedReusableLiquidDock(
         blurEnabled = true,
         darkTheme = isDarkTheme
     )
+    val liquidGlassTuning = remember(homeSettings.liquidGlassProgress) {
+        resolveLiquidGlassTuning(homeSettings.liquidGlassProgress)
+    }
     val containerColor = resolveAndroidNativeFloatingBottomBarContainerColor(
         surfaceColor = AppSurfaceTokens.cardContainer(),
         tuning = tuning,
         glassEnabled = glassEnabled,
         blurEnabled = true,
         blurIntensity = blurIntensity,
-        liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset
+        liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
+        liquidGlassTuning = liquidGlassTuning
     )
     // 小胶囊关闭 shell lens 时不必做 capture overflow，减少边沿采样产生的亮线。
-    val fullCaptureLensSpec = resolveBottomBarBackdropPresetCaptureLens(progress = 1f)
     val captureSafeInset = if (drawShellLens) {
         resolveBottomBarCaptureSafeInsetDp(
             indicatorWidthDp = 0f,
-            refractionHeightDp = fullCaptureLensSpec.refractionHeightDp,
-            refractionAmountDp = fullCaptureLensSpec.refractionAmountDp,
+            refractionHeightDp = liquidGlassTuning.refractionHeight,
+            refractionAmountDp = liquidGlassTuning.refractionAmount,
             panelOffsetDp = 0f
         ).dp
     } else {
@@ -368,6 +375,7 @@ internal fun BottomBarMatchedReusableLiquidDock(
             blurRadius = tuning.shellBlurRadiusDp.dp,
             modifier = Modifier.matchParentSize(),
             liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
+            liquidGlassTuning = liquidGlassTuning,
             isScrollInProgressProvider = isScrollInProgressProvider
         ) {}
         content(true)

@@ -4,7 +4,6 @@ import com.android.purebilibili.core.store.LiquidGlassMode
 import com.android.purebilibili.core.store.LiquidGlassStyle
 import com.android.purebilibili.core.store.normalizeLiquidGlassProgress
 import com.android.purebilibili.core.store.normalizeLiquidGlassStrength
-import com.android.purebilibili.core.store.resolveDefaultLiquidGlassStrength
 import com.android.purebilibili.core.store.resolveLiquidGlassStrengthFromProgress
 import com.android.purebilibili.core.store.resolveLegacyLiquidGlassProgress
 import com.android.purebilibili.core.store.resolveLegacyLiquidGlassMode
@@ -16,6 +15,7 @@ data class LiquidGlassTuning(
     val backdropBlurRadius: Float,
     val surfaceAlpha: Float,
     val whiteOverlayAlpha: Float,
+    val saturation: Float,
     val refractIntensity: Float,
     val refractionAmount: Float,
     val refractionHeight: Float,
@@ -41,24 +41,27 @@ internal fun resolveLiquidGlassTuning(progress: Float): LiquidGlassTuning {
         else -> LiquidGlassMode.FROSTED
     }
     val frostWeight = normalizedProgress
-    val chromaticAmount = (1f - normalizedProgress).coerceIn(0f, 1f) * 0.18f
-    val scrollCouplingAmount = (1f - normalizedProgress * 1.15f).coerceIn(0f, 1f)
-    val neutralTintAmount = (1f - normalizedProgress * 2.2f).coerceIn(0f, 1f)
-    val depthEffectAmount = (1f - normalizedProgress * 1.2f).coerceIn(0f, 1f)
+    val chromaticAmount = midpointLerp(0.18f, 0f, 0f, normalizedProgress)
+    val scrollCouplingAmount = midpointLerp(1f, 0f, 0f, normalizedProgress)
+    val neutralTintAmount = midpointLerp(1f, 0f, 0f, normalizedProgress)
+    val depthEffectAmount = midpointLerp(1f, 1f, 0f, normalizedProgress)
     return LiquidGlassTuning(
         mode = mode,
         progress = normalizedProgress,
         strength = resolveLiquidGlassStrengthFromProgress(normalizedProgress),
-        backdropBlurRadius = lerp(3f, 30f, normalizedProgress),
-        surfaceAlpha = lerp(0.12f, 0.42f, normalizedProgress),
-        whiteOverlayAlpha = lerp(0.012f, 0.11f, normalizedProgress),
-        refractIntensity = lerp(0.5f, 0.14f, normalizedProgress),
-        refractionAmount = lerp(26f, 8f, normalizedProgress),
-        refractionHeight = lerp(22f, 8f, normalizedProgress),
-        indicatorTintAlpha = lerp(0.20f, 0.34f, normalizedProgress),
-        indicatorLensBoost = lerp(1.72f, 1.04f, frostWeight),
-        indicatorEdgeWarpBoost = lerp(1.78f, 1.08f, frostWeight),
-        indicatorChromaticBoost = lerp(1.36f, 0.82f, frostWeight),
+        // Keep 0.5 visually aligned with the previous fixed BiliPai material while allowing
+        // both endpoints to move far enough that the difference remains obvious on busy feeds.
+        backdropBlurRadius = midpointLerp(3f, 4f, 24f, normalizedProgress),
+        surfaceAlpha = midpointLerp(0.12f, 0.40f, 0.54f, normalizedProgress),
+        whiteOverlayAlpha = midpointLerp(0.012f, 0.04f, 0.14f, normalizedProgress),
+        saturation = midpointLerp(1.65f, 1.5f, 1.24f, normalizedProgress),
+        refractIntensity = midpointLerp(0.5f, 0.28f, 0.14f, normalizedProgress),
+        refractionAmount = midpointLerp(26f, 24f, 8f, normalizedProgress),
+        refractionHeight = midpointLerp(24f, 24f, 8f, normalizedProgress),
+        indicatorTintAlpha = midpointLerp(0.20f, 0.28f, 0.38f, normalizedProgress),
+        indicatorLensBoost = midpointLerp(1.35f, 1f, 0.78f, frostWeight),
+        indicatorEdgeWarpBoost = midpointLerp(1.40f, 1f, 0.82f, frostWeight),
+        indicatorChromaticBoost = midpointLerp(1.20f, 1f, 0.70f, frostWeight),
         chromaticAberrationEnabled = chromaticAmount > 0.01f,
         chromaticAberrationAmount = chromaticAmount,
         scrollCoupledRefraction = scrollCouplingAmount > 0.01f,
@@ -89,30 +92,17 @@ internal fun resolveLiquidGlassTuning(style: LiquidGlassStyle): LiquidGlassTunin
     }
 }
 
-private fun sukisuLiquidGlassTuning(): LiquidGlassTuning {
-    return LiquidGlassTuning(
-        mode = LiquidGlassMode.BALANCED,
-        progress = 0.5f,
-        strength = resolveDefaultLiquidGlassStrength(LiquidGlassMode.BALANCED),
-        backdropBlurRadius = 8f,
-        surfaceAlpha = 0.40f,
-        whiteOverlayAlpha = 0.04f,
-        refractIntensity = 0.28f,
-        refractionAmount = 24f,
-        refractionHeight = 24f,
-        indicatorTintAlpha = 0.28f,
-        indicatorLensBoost = 1.18f,
-        indicatorEdgeWarpBoost = 1.16f,
-        indicatorChromaticBoost = 0.90f,
-        chromaticAberrationEnabled = false,
-        chromaticAberrationAmount = 0f,
-        scrollCoupledRefraction = false,
-        scrollCoupledRefractionAmount = 0f,
-        useNeutralIndicatorTint = false,
-        neutralIndicatorTintAmount = 0f,
-        depthEffectEnabled = true,
-        depthEffectAmount = 1f
-    )
+private fun sukisuLiquidGlassTuning(): LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f)
+
+private fun midpointLerp(
+    start: Float,
+    midpoint: Float,
+    stop: Float,
+    fraction: Float
+): Float = if (fraction <= 0.5f) {
+    lerp(start, midpoint, fraction * 2f)
+} else {
+    lerp(midpoint, stop, (fraction - 0.5f) * 2f)
 }
 
 private fun lerp(start: Float, stop: Float, fraction: Float): Float {

@@ -1493,11 +1493,9 @@ fun HomeHeader(
     val liquidStyle = homeSettings?.liquidGlassStyle ?: LiquidGlassStyle.CLASSIC
     val bottomBarLiquidGlassPreset = homeSettings?.bottomBarLiquidGlassPreset
         ?: HomeSettings().bottomBarLiquidGlassPreset
-    val liquidGlassTuning = remember(
-        homeSettings?.liquidGlassProgress,
-        liquidStyle
-    ) {
-        resolveLiquidGlassTuning(liquidStyle)
+    val liquidGlassProgress = homeSettings?.liquidGlassProgress ?: 0.5f
+    val liquidGlassTuning = remember(liquidGlassProgress) {
+        resolveLiquidGlassTuning(liquidGlassProgress)
     }
     val topChromeRenderMode = resolveHomeTopChromeRenderMode(
         materialMode = topChromeMaterialMode,
