@@ -35,9 +35,9 @@ class CommonListHeaderCollapsePolicyTest {
 
     @Test
     fun `history header follows home top bar toggle`() {
-        // 首页顶部折叠开启 → 历史页使用同款下滑收起、反向上滑恢复。
+        // 首页顶部折叠开启 → 历史页使用同款下滑收起、回顶恢复。
         assertEquals(
-            CommonListHeaderCollapseMode.SHOW_ON_REVERSE_SCROLL,
+            CommonListHeaderCollapseMode.SHOW_AT_TOP_ONLY,
             resolveCommonListHeaderCollapseModeForScreen(
                 configuredMode = CommonListHeaderCollapseMode.SHOW_ON_REVERSE_SCROLL,
                 isFavoritePage = false,
@@ -57,7 +57,7 @@ class CommonListHeaderCollapsePolicyTest {
         )
         // 历史页不再受「列表顶部栏」独立配置影响
         assertEquals(
-            CommonListHeaderCollapseMode.SHOW_ON_REVERSE_SCROLL,
+            CommonListHeaderCollapseMode.SHOW_AT_TOP_ONLY,
             resolveCommonListHeaderCollapseModeForScreen(
                 configuredMode = CommonListHeaderCollapseMode.ALWAYS_VISIBLE,
                 isFavoritePage = false,

@@ -745,16 +745,12 @@ fun CommonListScreen(
         supportsCollapsibleCommonListHeader
     ) {
         object : NestedScrollConnection {
-            // 仅跟随内容实际消费的位移，避免横向标签行的纵向手势让顶部栏与列表占位失步。
-            override fun onPostScroll(
-                consumed: Offset,
-                available: Offset,
-                source: NestedScrollSource
-            ): Offset {
+            // 与首页一致，在内容消费滚动前更新顶部位移，保证 Dock 与手势同帧跟随。
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 if (
                     !supportsCollapsibleCommonListHeader ||
-                    kotlin.math.abs(consumed.y) < 0.5f ||
-                    kotlin.math.abs(consumed.y) < kotlin.math.abs(consumed.x)
+                    kotlin.math.abs(available.y) < 0.5f ||
+                    kotlin.math.abs(available.y) < kotlin.math.abs(available.x)
                 ) {
                     return Offset.Zero
                 }
@@ -762,7 +758,7 @@ fun CommonListScreen(
                 commonListHeaderSettleJob = null
                 commonListHeaderOffsetPx = resolveCommonListHeaderOffsetAfterContentScroll(
                     currentOffsetPx = commonListHeaderOffsetPx,
-                    contentConsumedDeltaYPx = consumed.y,
+                    contentConsumedDeltaYPx = available.y,
                     maxCollapsePx = commonListHeaderMaxCollapsePx,
                     isAtTop = isCommonListAtTop,
                     mode = commonListHeaderCollapseMode

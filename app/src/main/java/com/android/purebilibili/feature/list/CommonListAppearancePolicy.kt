@@ -110,10 +110,10 @@ internal fun resolveCommonListHeaderCollapseModeForScreen(
     homeHeaderCollapseMode: HomeHeaderCollapseMode = HomeHeaderCollapseMode.BOTH,
 ): CommonListHeaderCollapseMode {
     if (isHistoryPage) {
-        // 历史页直接采用首页悬浮 Chrome 的双向行为：下滑收起，反向上滑恢复；
+        // 与首页推荐流保持同一展开策略：开启时随列表收起，只有回到顶部才展开；
         // 首页关闭折叠时，历史页也固定显示。
         return if (homeHeaderCollapseMode.hasAnyCollapse) {
-            CommonListHeaderCollapseMode.SHOW_ON_REVERSE_SCROLL
+            CommonListHeaderCollapseMode.SHOW_AT_TOP_ONLY
         } else {
             CommonListHeaderCollapseMode.ALWAYS_VISIBLE
         }
