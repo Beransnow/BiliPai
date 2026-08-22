@@ -41,6 +41,7 @@ import com.android.purebilibili.feature.home.components.biliPaiFloatingDockShell
 import com.android.purebilibili.feature.home.components.resolveLiquidGlassTuning
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
+import top.yukonga.miuix.kmp.blur.Backdrop
 
 //  动态页面布局模式
 enum class DynamicDisplayMode {
@@ -82,8 +83,8 @@ fun DynamicTopBarWithTabs(
     displayMode: DynamicDisplayMode = DynamicDisplayMode.SIDEBAR,
     onDisplayModeChange: (DynamicDisplayMode) -> Unit = {},
     onPublishClick: (() -> Unit)? = null,
+    dockBackdrop: Backdrop? = null,
     indicatorPositionProvider: (() -> Float)? = null,
-    isScrollInProgressProvider: () -> Boolean = { false },
 ) {
     val density = LocalDensity.current
     val statusBarHeight = WindowInsets.statusBars.getTop(density).let { with(density) { it.toDp() } }
@@ -117,23 +118,26 @@ fun DynamicTopBarWithTabs(
                 indicatorHeight = liquidTabSpec.indicatorHeightDp.dp,
                 labelFontSize = liquidTabSpec.labelFontSizeSp.sp,
                 indicatorPositionProvider = indicatorPositionProvider,
-                isScrollInProgressProvider = isScrollInProgressProvider,
+                isScrollInProgressProvider = { false },
                 forceLiquidChrome = true,
                 liquidGlassEffectsEnabled = true,
-                miuixBackdrop = null,
+                miuixBackdrop = dockBackdrop,
                 containerColorOverride = dockColor,
                 liquidGlassTuningOverride = noBlurLiquidTuning,
             )
 
-            val actionDockBackdrop = rememberLayerBackdrop()
+            val localActionDockBackdrop = rememberLayerBackdrop()
+            val actionDockBackdrop = dockBackdrop ?: localActionDockBackdrop
             Box {
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .alpha(0f)
-                        .layerBackdrop(actionDockBackdrop)
-                        .background(AppSurfaceTokens.background())
-                )
+                if (dockBackdrop == null) {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .alpha(0f)
+                            .layerBackdrop(localActionDockBackdrop)
+                            .background(AppSurfaceTokens.background())
+                    )
+                }
                 Row(
                     modifier = Modifier
                         .biliPaiFloatingDockShell(

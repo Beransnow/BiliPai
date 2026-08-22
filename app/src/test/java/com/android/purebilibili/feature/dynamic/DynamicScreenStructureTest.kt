@@ -35,8 +35,8 @@ class DynamicScreenStructureTest {
         assertTrue(source.contains("animateScale = false"))
         assertTrue(!source.contains("TopReadabilityChrome("))
         assertTrue(!source.contains("dynamicFeedBackdrop"))
-        assertTrue(!source.contains("rememberLayerBackdrop"))
-        assertTrue(!source.contains(".layerBackdrop("))
+        assertTrue(source.contains("val dynamicDockBackdrop = rememberLayerBackdrop()"))
+        assertTrue(source.contains(".layerBackdrop(dynamicDockBackdrop)"))
         assertTrue(!source.contains("hazeSourceCompat("))
         assertTrue(!source.contains("rememberRecoverableHazeState("))
         val topBarSource = File(
@@ -44,12 +44,13 @@ class DynamicScreenStructureTest {
         ).readText()
         assertTrue(topBarSource.contains("forceLiquidChrome = true"))
         assertTrue(topBarSource.contains("liquidGlassEffectsEnabled = true"))
-        assertTrue(topBarSource.contains("miuixBackdrop = null"))
+        assertTrue(topBarSource.contains("miuixBackdrop = dockBackdrop"))
         assertTrue(topBarSource.contains("biliPaiFloatingDockShell("))
         assertTrue(topBarSource.contains("liquidGlassTuningOverride = noBlurLiquidTuning"))
         assertTrue(topBarSource.contains("backdropBlurRadius = 0f"))
         assertTrue(!topBarSource.contains("unifiedBlur("))
         assertTrue(!source.contains("activeListState?.isScrollInProgress == true ||"))
+        assertTrue(topBarSource.contains("isScrollInProgressProvider = { false }"))
         val segmentedControlSource = File(
             "src/main/java/com/android/purebilibili/feature/home/components/BottomBarFloatingSegmentedControl.kt"
         ).readText()

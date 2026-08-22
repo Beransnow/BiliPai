@@ -109,6 +109,8 @@ import com.android.purebilibili.feature.home.components.BottomBarMatchedDockVisi
 import com.android.purebilibili.feature.home.policy.resolveBottomBarChromeScrollOffset
 import com.android.purebilibili.core.util.resolveScrollToTopPlan
 import kotlinx.coroutines.channels.Channel
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -278,7 +280,8 @@ fun DynamicScreen(
         )
     }
 
-    //  [Haze] 模糊状态
+    // Dock 只采集内容用于折射，顶部 tuning 将 blur 半径固定为 0。
+    val dynamicDockBackdrop = rememberLayerBackdrop()
     val scope = rememberCoroutineScope()
     val onDynamicTabSelected: (Int) -> Unit = { visibleIndex ->
         scope.launch {
@@ -648,6 +651,7 @@ fun DynamicScreen(
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
+                                    .layerBackdrop(dynamicDockBackdrop)
                                     .background(AppSurfaceTokens.background())
                             ) {
                             HorizontalPager(
@@ -771,10 +775,8 @@ fun DynamicScreen(
                                     displayMode = displayMode,
                                     onDisplayModeChange = { viewModel.setDisplayMode(it) },
                                     onPublishClick = { showPublishDialog = true },
+                                    dockBackdrop = dynamicDockBackdrop,
                                     indicatorPositionProvider = dynamicTabIndicatorPositionProvider,
-                                    isScrollInProgressProvider = {
-                                        pagerState.isScrollInProgress
-                                    },
                                 )
                             }
 
@@ -819,6 +821,7 @@ fun DynamicScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
+                                .layerBackdrop(dynamicDockBackdrop)
                                 .background(AppSurfaceTokens.background())
                         ) {
                         HorizontalPager(
@@ -951,10 +954,8 @@ fun DynamicScreen(
                                     displayMode = displayMode,
                                     onDisplayModeChange = { viewModel.setDisplayMode(it) },
                                     onPublishClick = { showPublishDialog = true },
+                                    dockBackdrop = dynamicDockBackdrop,
                                     indicatorPositionProvider = dynamicTabIndicatorPositionProvider,
-                                    isScrollInProgressProvider = {
-                                        pagerState.isScrollInProgress
-                                    },
                                 )
                             }
 
