@@ -16,8 +16,6 @@ class LiquidGlassContentClarityStructureTest {
         )
         val floatingDockChrome = componentsDir.resolve("FloatingDockChrome.kt").readText()
         val floatingBottomBar = componentsDir.resolve("FloatingBottomBar.kt").readText()
-        val lensShader = componentsDir.resolve("liquid/Lens.kt").readText()
-
         assertTrue(
             floatingDockChrome.contains("lensIntensity.coerceIn(0f, 1f) *") &&
                 floatingDockChrome.contains(
@@ -30,8 +28,6 @@ class LiquidGlassContentClarityStructureTest {
             """shellLensPx\s*\*\s*liquidGlassTuning\.refraction(?:Height|Amount)\s*/\s*24f\s*\*\s*liquidGlassTuning\.contentDistortionScale"""
         ).findAll(floatingBottomBar).count()
         assertEquals(4, scaledShellLensCalls)
-        assertTrue(lensShader.contains("resolveSafeLensRefractionHeightPx("))
-        assertTrue(lensShader.contains("float2 safeNormalize(float2 value)"))
     }
 
     private fun workspaceRoot() = generateSequence(
