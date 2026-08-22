@@ -121,6 +121,9 @@ fun AnimationSettingsContent(
     }
     val isLiquidGlassAvailable = shouldAllowHomeChromeLiquidGlass(Build.VERSION.SDK_INT)
     val bottomBarLiquidGlassEnabled = state.bottomBarLiquidGlassEnabled
+    val liquidGlassPreviewImageUri by SettingsManager
+        .getLiquidGlassPreviewImageUri(context)
+        .collectAsStateWithLifecycle(initialValue = null)
     val uiEntranceAnimationEnabled by SettingsManager.getUiEntranceAnimationEnabled(context)
         .collectAsStateWithLifecycle(initialValue = true)
     val appNavigationSettings by SettingsManager.getAppNavigationSettings(context)
@@ -478,7 +481,9 @@ fun AnimationSettingsContent(
                                     AppPreferenceDivider()
                                     LiquidGlassAdjustmentPanel(
                                         persistedProgress = state.liquidGlassProgress,
+                                        previewImageUri = liquidGlassPreviewImageUri,
                                         onProgressCommitted = viewModel::setLiquidGlassProgress,
+                                        onPreviewImageChanged = viewModel::setLiquidGlassPreviewImageUri,
                                     )
                                 }
                             }

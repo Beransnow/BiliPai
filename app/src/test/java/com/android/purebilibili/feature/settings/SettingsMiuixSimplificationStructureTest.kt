@@ -53,6 +53,11 @@ class SettingsMiuixSimplificationStructureTest {
         assertTrue(source.contains(".layerBackdrop(backdrop)"))
         assertTrue(source.contains(".biliPaiFloatingDockShell("))
         assertTrue(source.contains("onValueChangeFinished = { onProgressCommitted(previewProgress) }"))
+        assertFalse(source.contains("import androidx.compose.foundation.layout.weight"))
+        assertTrue(source.contains("ActivityResultContracts.OpenDocument()"))
+        assertTrue(source.contains("takePersistableUriPermission("))
+        assertTrue(source.contains("AsyncImage("))
+        assertTrue(source.contains("onPreviewImageChanged(null)"))
     }
 
     @Test

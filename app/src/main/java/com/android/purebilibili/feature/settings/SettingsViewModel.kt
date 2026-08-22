@@ -1116,6 +1116,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    fun setLiquidGlassPreviewImageUri(uri: String?) {
+        viewModelScope.launch {
+            SettingsManager.setLiquidGlassPreviewImageUri(context, uri)
+        }
+    }
+
     // [New] 平板导航模式
     fun toggleTabletUseSidebar(value: Boolean) {
         viewModelScope.launch {

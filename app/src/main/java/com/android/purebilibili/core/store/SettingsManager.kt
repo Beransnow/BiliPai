@@ -1402,6 +1402,8 @@ object SettingsManager {
     // V2 intentionally avoids reviving stale values from the removed legacy tuning UI.
     // Existing installs therefore start from the current BiliPai baseline (0.5f).
     private val KEY_LIQUID_GLASS_PROGRESS = floatPreferencesKey("liquid_glass_material_progress_v2")
+    private val KEY_LIQUID_GLASS_PREVIEW_IMAGE_URI =
+        stringPreferencesKey("liquid_glass_preview_image_uri")
     //  [新增] 底栏自定义 - 顺序和可见性
     private val KEY_BOTTOM_BAR_ORDER = stringPreferencesKey("bottom_bar_order")  // 逗号分隔的项目顺序
     private val KEY_BOTTOM_BAR_VISIBLE_TABS = stringPreferencesKey("bottom_bar_visible_tabs")  // 逗号分隔的可见项目
@@ -3698,6 +3700,22 @@ object SettingsManager {
             preferences[KEY_LIQUID_GLASS_MODE] = resolveLiquidGlassModeFromProgress(normalizedProgress).value
             preferences[KEY_LIQUID_GLASS_STRENGTH] = resolveLiquidGlassStrengthFromProgress(normalizedProgress)
             preferences[KEY_LIQUID_GLASS_STYLE] = resolveLegacyLiquidGlassStyleFromProgress(normalizedProgress).value
+        }
+    }
+
+    fun getLiquidGlassPreviewImageUri(context: Context): Flow<String?> =
+        context.settingsDataStore.data.map { preferences ->
+            preferences[KEY_LIQUID_GLASS_PREVIEW_IMAGE_URI]?.takeIf(String::isNotBlank)
+        }
+
+    suspend fun setLiquidGlassPreviewImageUri(context: Context, uri: String?) {
+        context.settingsDataStore.edit { preferences ->
+            val normalizedUri = uri?.trim()?.takeIf(String::isNotEmpty)
+            if (normalizedUri == null) {
+                preferences.remove(KEY_LIQUID_GLASS_PREVIEW_IMAGE_URI)
+            } else {
+                preferences[KEY_LIQUID_GLASS_PREVIEW_IMAGE_URI] = normalizedUri
+            }
         }
     }
     
