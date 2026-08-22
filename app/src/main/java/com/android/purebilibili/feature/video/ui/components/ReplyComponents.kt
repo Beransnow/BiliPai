@@ -1090,6 +1090,8 @@ fun ReplyItemView(
     onImagePreview: ((List<String>, Int, Rect?, ImagePreviewTextContent?) -> Unit)? = null,
     isLiked: Boolean = item.action == 1,
     onLikeClick: (() -> Unit)? = null,
+    isHated: Boolean = item.action == 2,
+    onHateClick: (() -> Unit)? = null,
     onReplyClick: (() -> Unit)? = null,
     onLongClick: (() -> Unit)? = null,
     onDeleteClick: (() -> Unit)? = null,
@@ -1542,6 +1544,20 @@ fun ReplyItemView(
                                 color = if (isLiked) appearance.accentColor else appearance.actionTint
                             )
                         }
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+                    AppIconButton(
+                        onClick = { onHateClick?.invoke() },
+                        enabled = onHateClick != null,
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        AppIcon(
+                            imageVector = Icons.Outlined.ThumbDown,
+                            contentDescription = if (isHated) "取消点踩" else "点踩评论",
+                            tint = if (isHated) MaterialTheme.colorScheme.error else appearance.actionTint,
+                            modifier = Modifier.size(16.dp)
+                        )
                     }
 
                     // [新增] 删除按钮 (仅显示给本人)

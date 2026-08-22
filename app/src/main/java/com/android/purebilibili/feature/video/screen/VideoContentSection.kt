@@ -461,8 +461,10 @@ fun VideoContentSection(
     onDissolveStart: (Long) -> Unit = {},
     // [新增] 点赞回调
     onCommentLike: (Long) -> Unit = {},
+    onCommentHate: (Long) -> Unit = {},
     // [新增] 已点赞的评论 ID 集合
     likedComments: Set<Long> = emptySet(),
+    hatedComments: Set<Long> = emptySet(),
     onCommentUrlClick: (String) -> Unit = {},
     onDescriptionUrlClick: ((String) -> Unit)? = null,
     onSearchKeywordClick: (String) -> Unit = {},
@@ -816,7 +818,9 @@ fun VideoContentSection(
                         onDeleteComment = onDeleteComment,
                         onDissolveStart = onDissolveStart,
                         onCommentLike = onCommentLike,
+                        onCommentHate = onCommentHate,
                         likedComments = likedComments,
+                        hatedComments = hatedComments,
                         onCommentUrlClick = onCommentUrlClick,
                         onReportComment = onReportComment,
                         onToggleTopComment = onToggleTopComment,
@@ -1161,7 +1165,9 @@ internal fun VideoCommentTab(
     onDissolveStart: (Long) -> Unit,
     // [新增] 点赞回调
     onCommentLike: (Long) -> Unit,
+    onCommentHate: (Long) -> Unit,
     likedComments: Set<Long>,
+    hatedComments: Set<Long>,
     onCommentUrlClick: (String) -> Unit,
     onReportComment: (Long, Int) -> Unit,
     onToggleTopComment: (ReplyItem) -> Unit,
@@ -1278,6 +1284,7 @@ internal fun VideoCommentTab(
                             },
                             // [新增] 点赞事件
                             onLikeClick = { onCommentLike(reply.rpid) },
+                            onHateClick = { onCommentHate(reply.rpid) },
                             onReplyClick = { onCommentReplyClick(reply) },
                             onReportClick = { reason -> onReportComment(reply.rpid, reason) },
                             canToggleTop = shouldShowReplyTopAction(
@@ -1288,6 +1295,7 @@ internal fun VideoCommentTab(
                             onToggleTopClick = { onToggleTopComment(reply) },
                             // [修复] 正确传递点赞状态 (API数据 或 本地乐观更新)
                             isLiked = reply.action == 1 || reply.rpid in likedComments,
+                            isHated = reply.action == 2 || reply.rpid in hatedComments,
                             // [新增] 仅当评论 mid 与当前登录用户 mid 一致时显示删除按钮
                             onDeleteClick = if (currentMid > 0 && reply.mid == currentMid) {
                                 { onDissolveStart(reply.rpid) }
@@ -1365,6 +1373,7 @@ internal fun LandscapeCommentPanel(
     showIdentityDecorations: Boolean,
     dissolvingIds: Set<Long>,
     likedComments: Set<Long>,
+    hatedComments: Set<Long>,
     onSortModeChange: (CommentSortMode) -> Unit,
     onUpClick: (Long) -> Unit,
     onSubReplyClick: (ReplyItem, Long) -> Unit,
@@ -1373,6 +1382,7 @@ internal fun LandscapeCommentPanel(
     onDeleteComment: (Long) -> Unit,
     onDissolveStart: (Long) -> Unit,
     onCommentLike: (Long) -> Unit,
+    onCommentHate: (Long) -> Unit,
     onCommentUrlClick: (String) -> Unit,
     onReportComment: (Long, Int) -> Unit,
     onToggleTopComment: (ReplyItem) -> Unit,
@@ -1458,7 +1468,9 @@ internal fun LandscapeCommentPanel(
                         onDeleteComment = onDeleteComment,
                         onDissolveStart = onDissolveStart,
                         onCommentLike = onCommentLike,
+                        onCommentHate = onCommentHate,
                         likedComments = likedComments,
+                        hatedComments = hatedComments,
                         onCommentUrlClick = onCommentUrlClick,
                         onReportComment = onReportComment,
                         onToggleTopComment = onToggleTopComment,
