@@ -15,6 +15,28 @@ import kotlin.test.assertTrue
 
 class CommonListAppearancePolicyTest {
     @Test
+    fun historyLiquidReuse_usesTransparentFloatingHeaderChrome() {
+        assertTrue(
+            shouldUseFloatingCommonListHeaderChrome(
+                isHistoryPage = true,
+                globalLiquidGlassReuseEnabled = true,
+            )
+        )
+        assertFalse(
+            shouldUseFloatingCommonListHeaderChrome(
+                isHistoryPage = true,
+                globalLiquidGlassReuseEnabled = false,
+            )
+        )
+        assertFalse(
+            shouldUseFloatingCommonListHeaderChrome(
+                isHistoryPage = false,
+                globalLiquidGlassReuseEnabled = true,
+            )
+        )
+    }
+
+    @Test
     fun historyHeaderCollapse_retainsStatusInsetAndFilterDock() {
         assertEquals(
             180f,

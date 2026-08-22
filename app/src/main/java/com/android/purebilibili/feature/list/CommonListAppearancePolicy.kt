@@ -62,6 +62,11 @@ internal fun shouldUseCommonListHeaderLocalBlur(
     globalWallpaperVisible: Boolean
 ): Boolean = headerBlurEnabled && !globalWallpaperVisible
 
+internal fun shouldUseFloatingCommonListHeaderChrome(
+    isHistoryPage: Boolean,
+    globalLiquidGlassReuseEnabled: Boolean,
+): Boolean = isHistoryPage && globalLiquidGlassReuseEnabled
+
 internal fun resolveCommonListViewportTopPadding(headerHeight: Dp): Dp {
     return headerHeight.coerceAtLeast(0.dp)
 }

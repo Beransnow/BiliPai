@@ -56,6 +56,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -149,6 +150,8 @@ import com.android.purebilibili.feature.article.resolveHistoryArticleCoverAspect
 import com.android.purebilibili.feature.article.resolveArticleSharedTransitionKey
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import com.android.purebilibili.feature.home.components.BottomBarMatchedLiquidDock
+import com.android.purebilibili.feature.home.components.resolveBiliPaiBottomBarShellColor
+import com.android.purebilibili.feature.home.components.resolveLiquidGlassTuning
 import com.android.purebilibili.feature.space.SeasonSeriesDetailViewModel
 import com.android.purebilibili.feature.video.player.ExternalPlaylistSource
 import com.android.purebilibili.feature.video.player.PlayMode
@@ -793,6 +796,27 @@ fun CommonListScreen(
             topChromePolicy = topChromePolicy,
         )
     }
+    val historyUsesFloatingLiquidDocks = shouldUseFloatingCommonListHeaderChrome(
+        isHistoryPage = historyViewModel != null,
+        globalLiquidGlassReuseEnabled = historyFilterChrome.useLiquidDock,
+    )
+    val historyLiquidGlassTuning = remember(
+        homeSettings.liquidGlassProgress,
+        homeSettings.liquidGlassAdvancedSettings,
+        homeSettings.liquidGlassReadabilityMode,
+    ) {
+        resolveLiquidGlassTuning(
+            progress = homeSettings.liquidGlassProgress,
+            advancedSettings = homeSettings.liquidGlassAdvancedSettings,
+            readabilityMode = homeSettings.liquidGlassReadabilityMode,
+        )
+    }
+    val historyLiquidDockContainerColor = resolveBiliPaiBottomBarShellColor(
+        containerColor = AppSurfaceTokens.cardContainer(),
+        liquidGlassEnabled = historyUsesFloatingLiquidDocks,
+        darkTheme = isSystemInDarkTheme(),
+        liquidGlassTuning = historyLiquidGlassTuning,
+    )
     val blurIntensity = currentUnifiedBlurIntensity()
     val backgroundAlpha = BlurStyles.getBackgroundAlpha(blurIntensity)
     val headerBackgroundAlpha = if (favoriteViewModel != null) {
@@ -815,7 +839,10 @@ fun CommonListScreen(
     )
 
     // 决定顶栏背景 (使用私有的 localHazeState)
-    val topBarBackgroundModifier = if (shouldUseHeaderLocalBlur) {
+    val topBarBackgroundModifier = if (historyUsesFloatingLiquidDocks) {
+        // 悬浮 Dock 必须直接采样下方列表；整块顶栏背景会把动态折射退化成纯色壳。
+        Modifier.fillMaxWidth()
+    } else if (shouldUseHeaderLocalBlur) {
         Modifier
             .fillMaxWidth()
             .unifiedBlur(
@@ -1560,17 +1587,19 @@ fun CommonListScreen(
                         if (historyViewModel != null && historyFilterChrome.useLiquidDock) {
                             BottomBarMatchedLiquidDock(
                                 backdrop = commonListChromeBackdrop,
-                                containerColor = AppSurfaceTokens.cardContainer().copy(alpha = 0.18f),
+                                containerColor = historyLiquidDockContainerColor,
                                 shape = CircleShape,
                                 blurEnabled = true,
                                 glassEnabled = true,
-                                blurRadius = 24.dp,
+                                blurRadius = historyLiquidGlassTuning.backdropBlurRadius.dp,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(historyFilterChrome.heightDp.dp),
                                 isScrollInProgressProvider = {
                                     primaryGridState.isScrollInProgress
                                 },
+                                liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
+                                liquidGlassTuning = historyLiquidGlassTuning,
                             ) {
                                 searchField()
                             }
@@ -1712,7 +1741,8 @@ fun CommonListScreen(
                                     tapPressRefractionEnabled = true,
                                     isScrollInProgressProvider = {
                                         primaryGridState.isScrollInProgress
-                                    }
+                                    },
+                                    liquidGlassTuningOverride = historyLiquidGlassTuning,
                                 )
                             } else {
                                 FlowRow(
