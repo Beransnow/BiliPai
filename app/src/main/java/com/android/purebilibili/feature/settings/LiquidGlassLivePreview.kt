@@ -69,6 +69,7 @@ import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.feature.home.components.biliPaiFloatingDockShell
 import com.android.purebilibili.feature.home.components.BottomNavItem
+import com.android.purebilibili.feature.home.components.resolveFloatingDockGeometryScale
 import com.android.purebilibili.feature.home.components.resolveLiquidGlassTuning
 import com.android.purebilibili.feature.home.components.resolveMaterialBottomBarIcon
 import com.android.purebilibili.feature.home.components.rememberLiquidGlassAdaptiveContentColor
@@ -638,6 +639,7 @@ private fun LiquidGlassHomeSample(
     val previewSelectedBottomBarIndex = remember(previewBottomBarItems) {
         previewBottomBarItems.indexOf(BottomNavItem.HOME).takeIf { it >= 0 } ?: 0
     }
+    val previewSearchHeight = 40.dp
 
     Box(
         modifier = modifier
@@ -722,7 +724,7 @@ private fun LiquidGlassHomeSample(
                 .align(Alignment.TopCenter)
                 .padding(top = 10.dp, start = 12.dp, end = 12.dp)
                 .fillMaxWidth()
-                .height(40.dp)
+                .height(previewSearchHeight)
                 .trackLiquidGlassAdaptiveReadability(
                     state = topReadabilityState,
                     enabled = adaptiveReadabilityEnabled,
@@ -733,6 +735,9 @@ private fun LiquidGlassHomeSample(
                     pressProgress = 0f,
                     shape = CircleShape,
                     drawLens = true,
+                    lensIntensity = resolveFloatingDockGeometryScale(
+                        previewSearchHeight.value
+                    ),
                     liquidGlassTuning = tuning,
                 )
                 .padding(horizontal = 14.dp),

@@ -93,6 +93,7 @@ class SettingsMiuixSimplificationStructureTest {
         assertTrue(source.contains("LiquidGlassReadabilityMode.STABLE"))
         assertTrue(source.contains("LiquidGlassReadabilityMode.ADAPTIVE"))
         assertTrue(source.contains("drawLens = true"))
+        assertTrue(source.contains("lensIntensity = resolveFloatingDockGeometryScale("))
         assertTrue(source.contains("text = \"\$modeLabel · \$percentage%\""))
         assertTrue(source.contains("softWrap = false"))
         val acknowledgements = source
