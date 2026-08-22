@@ -826,7 +826,6 @@ fun VideoContentSection(
                         onSortModeChange = onSortModeChange,
                         showNativeSortHeader = !homeSettings.androidNativeLiquidGlassEnabled,
                         showSortControlInHeader = true,
-                        miuixBackdrop = videoContentMiuixBackdrop,
                     )
                 }
             }
@@ -882,6 +881,20 @@ fun VideoContentSection(
                     pagerState.currentPage + pagerState.currentPageOffsetFraction
                 },
                 isScrollInProgressProvider = { pagerState.isScrollInProgress },
+            )
+        }
+
+        if (pagerState.currentPage == 1 && homeSettings.androidNativeLiquidGlassEnabled) {
+            CommentSortFilterBar(
+                sortMode = sortMode,
+                onSortModeChange = onSortModeChange,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(
+                        top = tabBarVisibleHeightDp + 6.dp,
+                        end = 16.dp,
+                    ),
+                miuixBackdrop = videoContentMiuixBackdrop,
             )
         }
 
@@ -1154,7 +1167,6 @@ internal fun VideoCommentTab(
     onSortModeChange: (CommentSortMode) -> Unit = {},
     showNativeSortHeader: Boolean = false,
     showSortControlInHeader: Boolean = false,
-    miuixBackdrop: MiuixBackdrop? = null,
 ) {
     val commentAppearance = rememberVideoCommentAppearance()
     val scope = rememberCoroutineScope()
@@ -1190,13 +1202,18 @@ internal fun VideoCommentTab(
     }
     Column(modifier = modifier.fillMaxSize()) {
         if (showSortControlInHeader) {
-            CommentSortHeader(
-                count = replyCount,
-                sortMode = sortMode,
-                onSortModeChange = onSortModeChange,
-                miuixBackdrop = miuixBackdrop,
-                useLiquidDock = !showNativeSortHeader,
-            )
+            if (showNativeSortHeader) {
+                CommentSortHeader(
+                    count = replyCount,
+                    sortMode = sortMode,
+                    onSortModeChange = onSortModeChange,
+                )
+            } else {
+                CommentListHeader(
+                    count = replyCount,
+                    title = "${sortMode.label}评论",
+                )
+            }
         } else {
             CommentListHeader(
                 count = replyCount,

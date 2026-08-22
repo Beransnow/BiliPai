@@ -57,6 +57,7 @@ fun CommentListHeader(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .heightIn(min = 46.dp)
             .padding(horizontal = 16.dp)
             .padding(top = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -96,8 +97,6 @@ fun CommentSortHeader(
     sortMode: CommentSortMode,
     onSortModeChange: (CommentSortMode) -> Unit,
     modifier: Modifier = Modifier,
-    miuixBackdrop: MiuixBackdrop? = null,
-    useLiquidDock: Boolean = false,
 ) {
     FlowRow(
         modifier = modifier
@@ -109,28 +108,20 @@ fun CommentSortHeader(
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         CommentListTitle(title = "${sortMode.label}评论", count = count)
-        if (useLiquidDock) {
-            CommentSortFilterBar(
-                sortMode = sortMode,
-                onSortModeChange = onSortModeChange,
-                miuixBackdrop = miuixBackdrop,
-            )
-        } else {
-            AppTextButton(
-                onClick = {
-                    onSortModeChange(
-                        if (sortMode == CommentSortMode.HOT) CommentSortMode.NEWEST else CommentSortMode.HOT
-                    )
-                },
-            ) {
-                AppIcon(
-                    imageVector = Icons.AutoMirrored.Outlined.Sort,
-                    contentDescription = "切换评论排序",
-                    modifier = Modifier.size(18.dp),
+        AppTextButton(
+            onClick = {
+                onSortModeChange(
+                    if (sortMode == CommentSortMode.HOT) CommentSortMode.NEWEST else CommentSortMode.HOT
                 )
-                Spacer(modifier = Modifier.width(6.dp))
-                AppText(text = sortMode.label, fontSize = 14.sp)
-            }
+            },
+        ) {
+            AppIcon(
+                imageVector = Icons.AutoMirrored.Outlined.Sort,
+                contentDescription = "切换评论排序",
+                modifier = Modifier.size(18.dp),
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            AppText(text = sortMode.label, fontSize = 14.sp)
         }
     }
 }
