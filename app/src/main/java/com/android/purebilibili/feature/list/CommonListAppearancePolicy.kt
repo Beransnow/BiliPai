@@ -66,6 +66,19 @@ internal fun resolveCommonListViewportTopPadding(headerHeight: Dp): Dp {
     return headerHeight.coerceAtLeast(0.dp)
 }
 
+/**
+ * 首页式折叠只移走搜索/标题区，保留状态栏安全区与末尾标签 Dock。
+ */
+internal fun resolveCommonListHeaderMaxCollapsePx(
+    headerHeightPx: Int,
+    pinnedDockHeightPx: Int,
+    topInsetPx: Float,
+    retainPinnedDock: Boolean,
+): Float {
+    if (!retainPinnedDock) return headerHeightPx.coerceAtLeast(0).toFloat()
+    return (headerHeightPx - pinnedDockHeightPx - topInsetPx).coerceAtLeast(0f)
+}
+
 internal fun resolveCommonListHeaderOffsetPx(
     currentOffsetPx: Float,
     scrollDeltaYPx: Float,

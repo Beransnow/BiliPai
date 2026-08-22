@@ -2304,7 +2304,7 @@ fun HomeHeader(
                                         .then(
                                             if (useBottomBarMatchedTopControls) {
                                                 Modifier.homeTopBottomBarMatchedSurface(
-                                                    renderMode = localTopChromeRenderMode,
+                                                    renderMode = searchChromeRenderMode,
                                                     shape = edgeButtonShape,
                                                     hazeState = hazeState,
                                                     miuixBackdrop = miuixBackdrop,
@@ -2592,7 +2592,7 @@ fun HomeHeader(
                                         .then(
                                             if (useBottomBarMatchedTopControls) {
                                                 Modifier.homeTopBottomBarMatchedSurface(
-                                                    renderMode = localTopChromeRenderMode,
+                                                    renderMode = searchChromeRenderMode,
                                                     shape = edgeButtonShape,
                                                     hazeState = hazeState,
                                                     miuixBackdrop = miuixBackdrop,

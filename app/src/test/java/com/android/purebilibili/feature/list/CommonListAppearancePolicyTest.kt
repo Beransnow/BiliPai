@@ -14,6 +14,28 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class CommonListAppearancePolicyTest {
+    @Test
+    fun historyHeaderCollapse_retainsStatusInsetAndFilterDock() {
+        assertEquals(
+            180f,
+            resolveCommonListHeaderMaxCollapsePx(
+                headerHeightPx = 320,
+                pinnedDockHeightPx = 92,
+                topInsetPx = 48f,
+                retainPinnedDock = true,
+            ),
+        )
+        assertEquals(
+            320f,
+            resolveCommonListHeaderMaxCollapsePx(
+                headerHeightPx = 320,
+                pinnedDockHeightPx = 92,
+                topInsetPx = 48f,
+                retainPinnedDock = false,
+            ),
+        )
+    }
+
 
     @Test
     fun commonListGridWidth_preservesPhoneDensityAndTabletReadability() {

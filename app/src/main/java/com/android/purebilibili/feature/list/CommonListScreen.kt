@@ -228,6 +228,7 @@ fun CommonListScreen(
     // Fix: 手机端(Compact)使用较小的最小宽度以保证2列显示 (360dp / 170dp = 2.1 -> 2列)
     // 平板端(Expanded)使用较大的最小宽度以避免卡片过小
     val context = LocalContext.current
+    val density = LocalDensity.current
     val showOnlineCount by SettingsManager.getShowOnlineCount(context).collectAsStateWithLifecycle(initialValue = false
         )
     val homeSettings by SettingsManager.getHomeSettings(context).collectAsStateWithLifecycle(initialValue = com.android.purebilibili.core.store.HomeSettings(),
@@ -627,6 +628,9 @@ fun CommonListScreen(
     }
     // [New] 动态顶栏高度测量 (最准确的方式)
     var headerHeightPx by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
+    var historyPinnedDockHeightPx by androidx.compose.runtime.remember {
+        androidx.compose.runtime.mutableIntStateOf(0)
+    }
     val headerHeightDp = with(LocalDensity.current) { headerHeightPx.toDp() }
     var commonListHeaderOffsetPx by remember { mutableFloatStateOf(0f) }
     var commonListHeaderSettleJob by remember { androidx.compose.runtime.mutableStateOf<Job?>(null) }
@@ -638,6 +642,15 @@ fun CommonListScreen(
     )
     val commonListHeaderCollapseEnabled = supportsCollapsibleCommonListHeader &&
         commonListHeaderCollapseMode != CommonListHeaderCollapseMode.ALWAYS_VISIBLE
+    val statusBarHeightPx = with(LocalDensity.current) {
+        WindowInsets.statusBars.asPaddingValues().calculateTopPadding().toPx()
+    }
+    val commonListHeaderMaxCollapsePx = resolveCommonListHeaderMaxCollapsePx(
+        headerHeightPx = headerHeightPx,
+        pinnedDockHeightPx = historyPinnedDockHeightPx,
+        topInsetPx = statusBarHeightPx,
+        retainPinnedDock = historyViewModel != null,
+    )
     fun animateCommonListHeaderOffsetTo(targetOffsetPx: Float) {
         if (kotlin.math.abs(commonListHeaderOffsetPx - targetOffsetPx) <= 0.5f) {
             commonListHeaderOffsetPx = targetOffsetPx
@@ -693,7 +706,7 @@ fun CommonListScreen(
     }
     LaunchedEffect(
         commonListHeaderCollapseMode,
-        headerHeightPx,
+        commonListHeaderMaxCollapsePx,
         supportsCollapsibleCommonListHeader,
         isSubscribedBrowse,
         favoriteContentMode,
@@ -714,7 +727,7 @@ fun CommonListScreen(
         val targetOffsetPx = resolveCommonListHeaderOffsetForSettledContent(
             firstVisibleItemIndex = firstVisibleItemIndex,
             firstVisibleItemScrollOffset = firstVisibleItemScrollOffset,
-            maxCollapsePx = headerHeightPx.toFloat(),
+            maxCollapsePx = commonListHeaderMaxCollapsePx,
             mode = if (supportsCollapsibleCommonListHeader) {
                 commonListHeaderCollapseMode
             } else {
@@ -725,7 +738,7 @@ fun CommonListScreen(
     }
     val commonListHeaderScrollConnection = remember(
         commonListHeaderCollapseMode,
-        headerHeightPx,
+        commonListHeaderMaxCollapsePx,
         isCommonListAtTop,
         supportsCollapsibleCommonListHeader
     ) {
@@ -748,7 +761,7 @@ fun CommonListScreen(
                 commonListHeaderOffsetPx = resolveCommonListHeaderOffsetAfterContentScroll(
                     currentOffsetPx = commonListHeaderOffsetPx,
                     contentConsumedDeltaYPx = consumed.y,
-                    maxCollapsePx = headerHeightPx.toFloat(),
+                    maxCollapsePx = commonListHeaderMaxCollapsePx,
                     isAtTop = isCommonListAtTop,
                     mode = commonListHeaderCollapseMode
                 )
@@ -1532,6 +1545,11 @@ fun CommonListScreen(
                                 } else {
                                     MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.22f)
                                 },
+                                shapeOverride = if (historyFilterChrome.useLiquidDock) {
+                                    CircleShape
+                                } else {
+                                    null
+                                },
                                 heightOverride = if (historyFilterChrome.useLiquidDock) {
                                     historyFilterChrome.heightDp.dp
                                 } else {
@@ -1666,7 +1684,12 @@ fun CommonListScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = historyFilterChrome.horizontalPaddingDp.dp),
+                                .padding(horizontal = historyFilterChrome.horizontalPaddingDp.dp)
+                                .onGloballyPositioned { coordinates ->
+                                    historyPinnedDockHeightPx = coordinates.size.height + with(density) {
+                                        AppSpacingTokens.Small.toPx().toInt()
+                                    }
+                                },
                             contentAlignment = Alignment.Center
                         ) {
                             if (historyFilterChrome.useLiquidDock) {
