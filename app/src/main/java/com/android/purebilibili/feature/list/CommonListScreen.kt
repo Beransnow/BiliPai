@@ -631,9 +631,6 @@ fun CommonListScreen(
     }
     // [New] 动态顶栏高度测量 (最准确的方式)
     var headerHeightPx by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
-    var historyPinnedDockHeightPx by androidx.compose.runtime.remember {
-        androidx.compose.runtime.mutableIntStateOf(0)
-    }
     val headerHeightDp = with(LocalDensity.current) { headerHeightPx.toDp() }
     var commonListHeaderOffsetPx by remember { mutableFloatStateOf(0f) }
     var commonListHeaderSettleJob by remember { androidx.compose.runtime.mutableStateOf<Job?>(null) }
@@ -650,9 +647,11 @@ fun CommonListScreen(
     }
     val commonListHeaderMaxCollapsePx = resolveCommonListHeaderMaxCollapsePx(
         headerHeightPx = headerHeightPx,
-        pinnedDockHeightPx = historyPinnedDockHeightPx,
+        pinnedDockHeightPx = 0,
         topInsetPx = statusBarHeightPx,
-        retainPinnedDock = historyViewModel != null,
+        // 历史页的搜索与筛选 Dock 都应像首页顶部一样随内容收起，
+        // 不再把筛选 Dock 留作固定的 pinned chrome。
+        retainPinnedDock = false,
     )
     fun animateCommonListHeaderOffsetTo(targetOffsetPx: Float) {
         if (kotlin.math.abs(commonListHeaderOffsetPx - targetOffsetPx) <= 0.5f) {
@@ -1713,12 +1712,7 @@ fun CommonListScreen(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = historyFilterChrome.horizontalPaddingDp.dp)
-                                .onGloballyPositioned { coordinates ->
-                                    historyPinnedDockHeightPx = coordinates.size.height + with(density) {
-                                        AppSpacingTokens.Small.toPx().toInt()
-                                    }
-                                },
+                                .padding(horizontal = historyFilterChrome.horizontalPaddingDp.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             if (historyFilterChrome.useLiquidDock) {
