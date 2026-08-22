@@ -57,6 +57,7 @@ import dev.chrisbanes.haze.HazeState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.SwapHoriz
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
 
 /**
  * 首页侧边栏 - 优化版 (带毛玻璃效果)
@@ -80,7 +81,10 @@ fun MineSideDrawer(
     onAccountSwitchClick: (() -> Unit)? = null,
     hazeState: HazeState? = null, // 毛玻璃效果状态
     isBlurEnabled: Boolean = true, // [新增] 模糊开关状态
-    bottomOverlayHeight: Dp = AppSpacingTokens.None
+    bottomOverlayHeight: Dp = AppSpacingTokens.None,
+    miuixBackdrop: MiuixBackdrop? = null,
+    liquidGlassEnabled: Boolean = false,
+    liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
 ) {
     val scope = rememberCoroutineScope()
     val configuration = LocalConfiguration.current
@@ -114,7 +118,8 @@ fun MineSideDrawer(
     // 检测深色模式
     val isDark = androidx.compose.foundation.isSystemInDarkTheme()
 
-    val blurActive = hazeState != null && isBlurEnabled
+    val liquidGlassActive = liquidGlassEnabled && miuixBackdrop != null
+    val blurActive = hazeState != null && isBlurEnabled && !liquidGlassActive
     val drawerMotionBudget = resolveDrawerMotionBudget(
         isDrawerTransitionRunning = drawerState.currentValue != drawerState.targetValue
     )
@@ -123,10 +128,11 @@ fun MineSideDrawer(
         blurActive = blurActive,
         budget = drawerMotionBudget
     )
-    val visualPolicy = rememberAppDrawerVisualPolicy(blurEnabled = effectiveBlurActive)
+    val glassVisualActive = effectiveBlurActive || liquidGlassActive
+    val visualPolicy = rememberAppDrawerVisualPolicy(blurEnabled = glassVisualActive)
     val palette = resolveDrawerGlassPalette(
         isDark = isDark,
-        blurEnabled = effectiveBlurActive,
+        blurEnabled = glassVisualActive,
         budget = drawerMotionBudget
     )
     val colorScheme = MaterialTheme.colorScheme
@@ -165,26 +171,33 @@ fun MineSideDrawer(
     val itemBorderColor = colorScheme.outlineVariant.copy(alpha = palette.itemBorderAlpha)
     val chevronColor = secondaryContentColor.copy(alpha = if (isDark) 0.92f else 0.84f)
 
+    val drawerShape = RoundedCornerShape(
+        topEnd = layoutPolicy.drawerEdgeRadiusDp.dp,
+        bottomEnd = layoutPolicy.drawerEdgeRadiusDp.dp
+    )
+
     // 使用 Surface 替代 ModalDrawerSheet 以绕过最小宽度限制 (240dp)
     AppSurface(
-        color = drawerBaseColor,
+        color = if (liquidGlassActive) Color.Transparent else drawerBaseColor,
         contentColor = activeContentColor,
-        shape = RoundedCornerShape(
-            topEnd = layoutPolicy.drawerEdgeRadiusDp.dp,
-            bottomEnd = layoutPolicy.drawerEdgeRadiusDp.dp
-        ), // 保持抽屉的右侧圆角
+        shape = drawerShape,
         modifier = Modifier
             .fillMaxHeight()
             .width(drawerWidth)
             .then(
-                if (effectiveBlurActive) {
+                if (liquidGlassActive) {
+                    Modifier.biliPaiFloatingDockShell(
+                        backdrop = miuixBackdrop,
+                        containerColor = colorScheme.surfaceContainer,
+                        pressProgress = 0f,
+                        shape = drawerShape,
+                        liquidGlassTuning = liquidGlassTuning,
+                    )
+                } else if (effectiveBlurActive) {
                     Modifier.unifiedBlur(
                         hazeState = requireNotNull(hazeState),
                         enabled = true,
-                        shape = RoundedCornerShape(
-                            topEnd = layoutPolicy.drawerEdgeRadiusDp.dp,
-                            bottomEnd = layoutPolicy.drawerEdgeRadiusDp.dp
-                        ),
+                        shape = drawerShape,
                         forceLowBudget = forceLowBlurBudget
                     )
                 } else Modifier
