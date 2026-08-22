@@ -55,6 +55,8 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -4009,6 +4011,36 @@ internal fun VideoDetailScreenStateHolder(
                                 onSubtitleDisplayModePreferenceOverrideChange = { subtitleDisplayModeOverride = it }
                             )
                             }
+                            }
+                            AnimatedVisibility(
+                                visible = shouldShowPiliPlusCollapsedPlayAction(
+                                    collapseMode = portraitPlayerCollapseMode,
+                                    isPlaybackPaused = isPlaybackPaused,
+                                    collapseProgress = layoutCollapseProgress,
+                                ),
+                                enter = fadeIn(animationSpec = tween(durationMillis = 120)),
+                                exit = fadeOut(animationSpec = tween(durationMillis = 90)),
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .height(56.dp)
+                                    .zIndex(2f),
+                            ) {
+                                TextButton(
+                                    onClick = {
+                                        playPlayerFromUserAction(playerState.player)
+                                    },
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .padding(horizontal = 12.dp),
+                                    contentPadding = PaddingValues(horizontal = 12.dp),
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.PlayArrow,
+                                        contentDescription = null,
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                    Text("立即播放")
+                                }
                             }
                         }
                         Box(

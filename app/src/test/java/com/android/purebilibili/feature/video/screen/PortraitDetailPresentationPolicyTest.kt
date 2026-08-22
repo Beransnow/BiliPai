@@ -190,6 +190,38 @@ class PortraitDetailPresentationPolicyTest {
     }
 
     @Test
+    fun piliPlusPlayAction_appearsOnlyWhenPausedOnlyPlayerIsFullyCollapsed() {
+        assertTrue(
+            shouldShowPiliPlusCollapsedPlayAction(
+                collapseMode = PortraitPlayerCollapseMode.PAUSED_ONLY,
+                isPlaybackPaused = true,
+                collapseProgress = 1f,
+            )
+        )
+        assertFalse(
+            shouldShowPiliPlusCollapsedPlayAction(
+                collapseMode = PortraitPlayerCollapseMode.PAUSED_ONLY,
+                isPlaybackPaused = false,
+                collapseProgress = 1f,
+            )
+        )
+        assertFalse(
+            shouldShowPiliPlusCollapsedPlayAction(
+                collapseMode = PortraitPlayerCollapseMode.PAUSED_ONLY,
+                isPlaybackPaused = true,
+                collapseProgress = 0.75f,
+            )
+        )
+        assertFalse(
+            shouldShowPiliPlusCollapsedPlayAction(
+                collapseMode = PortraitPlayerCollapseMode.BOTH,
+                isPlaybackPaused = true,
+                collapseProgress = 1f,
+            )
+        )
+    }
+
+    @Test
     fun landscapeDetailPlayerHeight_matchesActualLayoutWidthFor16By9() {
         // vivo 类窄机：按真实布局宽算 9/16，避免 screenWidthDp 偏差导致左右黑边
         assertEquals(608, resolveLandscapeDetailPlayerContentHeightPx(layoutWidthPx = 1080))

@@ -201,6 +201,16 @@ internal fun resolvePiliPlusCollapsedPlayerViewportHeightDp(
     }.coerceAtLeast(0f)
 }
 
+internal fun shouldShowPiliPlusCollapsedPlayAction(
+    collapseMode: PortraitPlayerCollapseMode,
+    isPlaybackPaused: Boolean,
+    collapseProgress: Float,
+): Boolean {
+    return collapseMode == PortraitPlayerCollapseMode.PAUSED_ONLY &&
+        isPlaybackPaused &&
+        collapseProgress >= 0.98f
+}
+
 /**
  * Inline portrait detail player size.
  *
