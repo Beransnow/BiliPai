@@ -1112,6 +1112,13 @@ internal fun Modifier.biliPaiMiuixFloatingDockSurface(
                         } else null,
                         onDrawSurface = {
                             drawRect(containerColor)
+                            if (liquidGlassTuning.contentReadabilityScrimAlpha > 0f) {
+                                drawRect(
+                                    (if (isDarkTheme) Color.Black else Color.White).copy(
+                                        alpha = liquidGlassTuning.contentReadabilityScrimAlpha
+                                    )
+                                )
+                            }
                             if (materialSpec.foregroundTint.alpha > 0f) {
                                 drawRect(materialSpec.foregroundTint)
                             }
@@ -2199,8 +2206,14 @@ private fun MaterialBottomBar(
         liquidGlassEnabled = sharedLiquidGlassEnabled,
         blurEnabled = blurEnabled
     )
-    val liquidGlassTuning = remember(homeSettings.liquidGlassProgress) {
-        resolveLiquidGlassTuning(homeSettings.liquidGlassProgress)
+    val liquidGlassTuning = remember(
+        homeSettings.liquidGlassProgress,
+        homeSettings.liquidGlassAdvancedSettings,
+    ) {
+        resolveLiquidGlassTuning(
+            homeSettings.liquidGlassProgress,
+            homeSettings.liquidGlassAdvancedSettings,
+        )
     }
     val androidNativeTuning = resolveAndroidNativeBottomBarTuning(
         blurEnabled = glassEnabled || blurEnabled,
@@ -2464,8 +2477,14 @@ private fun MiuixBottomBar(
         liquidGlassEnabled = sharedLiquidGlassEnabled,
         blurEnabled = blurEnabled
     )
-    val liquidGlassTuning = remember(homeSettings.liquidGlassProgress) {
-        resolveLiquidGlassTuning(homeSettings.liquidGlassProgress)
+    val liquidGlassTuning = remember(
+        homeSettings.liquidGlassProgress,
+        homeSettings.liquidGlassAdvancedSettings,
+    ) {
+        resolveLiquidGlassTuning(
+            homeSettings.liquidGlassProgress,
+            homeSettings.liquidGlassAdvancedSettings,
+        )
     }
     val tuning = resolveAndroidNativeBottomBarTuning(
         blurEnabled = glassEnabled || blurEnabled,
@@ -2878,8 +2897,17 @@ private fun BiliPaiFloatingBottomBar(
         unselectedColor = baseUnselectedColor,
         skinTrimTint = uiSkinDecoration?.bottomTrimTint
     )
-    val selectedColor = skinContentColors.selectedColor
-    val unselectedColor = skinContentColors.unselectedColor
+    val readableContentColor = MaterialTheme.colorScheme.onSurface
+    val selectedColor = lerpColor(
+        skinContentColors.selectedColor,
+        readableContentColor,
+        liquidGlassTuning.contentReadabilityBoost * 0.65f,
+    )
+    val unselectedColor = lerpColor(
+        skinContentColors.unselectedColor,
+        readableContentColor,
+        liquidGlassTuning.contentReadabilityBoost,
+    ).copy(alpha = 1f)
     val totalItems = allItems.size.coerceAtLeast(1)
 
     var searchExpansionOverride by remember {

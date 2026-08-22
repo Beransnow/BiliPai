@@ -321,8 +321,14 @@ internal fun BottomBarMatchedReusableLiquidDock(
         blurEnabled = true,
         darkTheme = isDarkTheme
     )
-    val liquidGlassTuning = remember(homeSettings.liquidGlassProgress) {
-        resolveLiquidGlassTuning(homeSettings.liquidGlassProgress)
+    val liquidGlassTuning = remember(
+        homeSettings.liquidGlassProgress,
+        homeSettings.liquidGlassAdvancedSettings,
+    ) {
+        resolveLiquidGlassTuning(
+            homeSettings.liquidGlassProgress,
+            homeSettings.liquidGlassAdvancedSettings,
+        )
     }
     val containerColor = resolveAndroidNativeFloatingBottomBarContainerColor(
         surfaceColor = AppSurfaceTokens.cardContainer(),

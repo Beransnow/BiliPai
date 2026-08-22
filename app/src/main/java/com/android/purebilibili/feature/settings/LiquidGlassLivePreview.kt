@@ -3,6 +3,11 @@ package com.android.purebilibili.feature.settings
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -23,6 +28,7 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -30,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,7 +50,12 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.android.purebilibili.core.store.LiquidGlassAdvancedPreset
+import com.android.purebilibili.core.store.LiquidGlassAdvancedSettings
 import com.android.purebilibili.core.store.LiquidGlassMode
+import com.android.purebilibili.core.store.resolveLiquidGlassAdvancedPreset
+import com.android.purebilibili.core.ui.components.AppNativeSegmentedControl
+import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.AppSlider
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppTextButton
@@ -58,8 +70,10 @@ import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 internal fun LiquidGlassAdjustmentPanel(
     persistedProgress: Float,
     previewImageUri: String?,
+    persistedAdvancedSettings: LiquidGlassAdvancedSettings,
     onProgressCommitted: (Float) -> Unit,
     onPreviewImageChanged: (String?) -> Unit,
+    onAdvancedSettingsCommitted: (LiquidGlassAdvancedSettings) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -78,8 +92,12 @@ internal fun LiquidGlassAdjustmentPanel(
     var previewProgress by remember(persistedProgress) {
         mutableFloatStateOf(persistedProgress.coerceIn(0f, 1f))
     }
-    val tuning = remember(previewProgress) {
-        resolveLiquidGlassTuning(previewProgress)
+    var advancedSettings by remember(persistedAdvancedSettings) {
+        mutableStateOf(persistedAdvancedSettings)
+    }
+    var advancedSettingsExpanded by rememberSaveable { mutableStateOf(false) }
+    val tuning = remember(previewProgress, advancedSettings) {
+        resolveLiquidGlassTuning(previewProgress, advancedSettings)
     }
     val modeLabel = when (tuning.mode) {
         LiquidGlassMode.CLEAR -> "通透"
@@ -119,6 +137,7 @@ internal fun LiquidGlassAdjustmentPanel(
         LiquidGlassHomeSample(
             progress = previewProgress,
             previewImageUri = previewImageUri,
+            advancedSettings = advancedSettings,
             modifier = Modifier.fillMaxWidth(),
         )
 
@@ -147,6 +166,98 @@ internal fun LiquidGlassAdjustmentPanel(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+
+        val presetOptions = remember {
+            LiquidGlassAdvancedPreset.entries.map { preset ->
+                AppSegmentOption(preset, preset.label)
+            }
+        }
+        AppText(
+            text = "效果预设",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Medium,
+        )
+        AppNativeSegmentedControl(
+            options = presetOptions,
+            selectedValue = advancedSettings.preset,
+            modifier = Modifier.fillMaxWidth(),
+            onSelectionChange = { preset ->
+                val resolvedSettings = if (preset == LiquidGlassAdvancedPreset.CUSTOM) {
+                    advancedSettings.copy(preset = LiquidGlassAdvancedPreset.CUSTOM)
+                } else {
+                    resolveLiquidGlassAdvancedPreset(preset)
+                }
+                advancedSettings = resolvedSettings
+                onAdvancedSettingsCommitted(resolvedSettings)
+            },
+        )
+        AppText(
+            text = when (advancedSettings.preset) {
+                LiquidGlassAdvancedPreset.READABLE -> "清晰：优先保证图标和文字可读性（推荐极度通透）"
+                LiquidGlassAdvancedPreset.BALANCED -> "均衡：保持 BiliPai 默认质感"
+                LiquidGlassAdvancedPreset.PRISM -> "棱镜：强化色散与内容折射"
+                LiquidGlassAdvancedPreset.CUSTOM -> "自定：使用下方高级参数"
+            },
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        AppTextButton(
+            onClick = { advancedSettingsExpanded = !advancedSettingsExpanded },
+        ) {
+            Icon(Icons.Outlined.Tune, contentDescription = null)
+            Spacer(modifier = Modifier.width(6.dp))
+            AppText(if (advancedSettingsExpanded) "收起高级参数" else "高级参数")
+        }
+        AnimatedVisibility(
+            visible = advancedSettingsExpanded,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut(),
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                LiquidGlassAdvancedSlider(
+                    title = "内容可读性",
+                    description = "通透度越高，越主动保护图标和文字对比度",
+                    value = advancedSettings.contentReadability,
+                    onValueChange = { value ->
+                        advancedSettings = advancedSettings.copy(
+                            preset = LiquidGlassAdvancedPreset.CUSTOM,
+                            contentReadability = value,
+                        )
+                    },
+                    onValueChangeFinished = {
+                        onAdvancedSettingsCommitted(advancedSettings)
+                    },
+                )
+                LiquidGlassAdvancedSlider(
+                    title = "色散强度",
+                    description = "控制玻璃边缘的彩色分离效果",
+                    value = advancedSettings.chromaticAberration,
+                    onValueChange = { value ->
+                        advancedSettings = advancedSettings.copy(
+                            preset = LiquidGlassAdvancedPreset.CUSTOM,
+                            chromaticAberration = value,
+                        )
+                    },
+                    onValueChangeFinished = {
+                        onAdvancedSettingsCommitted(advancedSettings)
+                    },
+                )
+                LiquidGlassAdvancedSlider(
+                    title = "文字与图标扭曲",
+                    description = "控制选中内容经过移动玻璃指示器时的折射幅度",
+                    value = advancedSettings.contentDistortion,
+                    onValueChange = { value ->
+                        advancedSettings = advancedSettings.copy(
+                            preset = LiquidGlassAdvancedPreset.CUSTOM,
+                            contentDistortion = value,
+                        )
+                    },
+                    onValueChangeFinished = {
+                        onAdvancedSettingsCommitted(advancedSettings)
+                    },
+                )
+            }
+        }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -189,10 +300,13 @@ internal fun LiquidGlassAdjustmentPanel(
 private fun LiquidGlassHomeSample(
     progress: Float,
     previewImageUri: String?,
+    advancedSettings: LiquidGlassAdvancedSettings,
     modifier: Modifier = Modifier,
 ) {
     val backdrop = rememberLayerBackdrop()
-    val tuning = remember(progress) { resolveLiquidGlassTuning(progress) }
+    val tuning = remember(progress, advancedSettings) {
+        resolveLiquidGlassTuning(progress, advancedSettings)
+    }
     val sampleShape = RoundedCornerShape(24.dp)
     val glassColor = MaterialTheme.colorScheme.surfaceContainer
     val contentColor = MaterialTheme.colorScheme.onSurface
@@ -272,6 +386,53 @@ private fun LiquidGlassHomeSample(
             Icon(Icons.Outlined.DynamicFeed, contentDescription = null, tint = contentColor)
             Icon(Icons.Outlined.Person, contentDescription = null, tint = contentColor)
         }
+    }
+}
+
+@Composable
+private fun LiquidGlassAdvancedSlider(
+    title: String,
+    description: String,
+    value: Float,
+    onValueChange: (Float) -> Unit,
+    onValueChangeFinished: () -> Unit,
+) {
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                AppText(
+                    text = title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                )
+                AppText(
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            AppText(
+                text = "${(value * 100f).roundToInt()}%",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
+        AppSlider(
+            value = value,
+            onValueChange = { onValueChange(it.coerceIn(0f, 1f)) },
+            onValueChangeFinished = onValueChangeFinished,
+            valueRange = 0f..1f,
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics {
+                    contentDescription = title
+                    stateDescription = "${(value * 100f).roundToInt()}%"
+                },
+        )
     }
 }
 

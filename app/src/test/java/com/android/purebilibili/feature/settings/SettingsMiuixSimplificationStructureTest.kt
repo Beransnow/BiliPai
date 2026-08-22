@@ -58,6 +58,12 @@ class SettingsMiuixSimplificationStructureTest {
         assertTrue(source.contains("takePersistableUriPermission("))
         assertTrue(source.contains("AsyncImage("))
         assertTrue(source.contains("onPreviewImageChanged(null)"))
+        assertTrue(source.contains("LiquidGlassAdvancedPreset.entries"))
+        assertTrue(source.contains("title = \"内容可读性\""))
+        assertTrue(source.contains("title = \"色散强度\""))
+        assertTrue(source.contains("title = \"文字与图标扭曲\""))
+        assertTrue(source.contains("preset = LiquidGlassAdvancedPreset.CUSTOM"))
+        assertTrue(source.contains("onAdvancedSettingsCommitted(advancedSettings)"))
     }
 
     @Test

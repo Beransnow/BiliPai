@@ -71,8 +71,14 @@ internal fun BottomBarFloatingSegmentedControl(
         supportsIndependentLiquidGlass = false,
         androidNativeLiquidGlassEnabled = nativeGlassEnabled,
     )
-    val liquidGlassTuning = remember(homeSettings.liquidGlassProgress) {
-        resolveLiquidGlassTuning(homeSettings.liquidGlassProgress)
+    val liquidGlassTuning = remember(
+        homeSettings.liquidGlassProgress,
+        homeSettings.liquidGlassAdvancedSettings,
+    ) {
+        resolveLiquidGlassTuning(
+            homeSettings.liquidGlassProgress,
+            homeSettings.liquidGlassAdvancedSettings,
+        )
     }
     val isDarkTheme = isSystemInDarkTheme()
     val itemCount = items.size

@@ -26,6 +26,7 @@ import com.android.purebilibili.core.theme.*
 import com.android.purebilibili.core.ui.blur.BlurIntensity
 import com.android.purebilibili.core.ui.blur.shouldAllowHomeChromeLiquidGlass
 import com.android.purebilibili.core.store.AppNavigationSettings
+import com.android.purebilibili.core.store.LiquidGlassAdvancedSettings
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -124,6 +125,11 @@ fun AnimationSettingsContent(
     val liquidGlassPreviewImageUri by SettingsManager
         .getLiquidGlassPreviewImageUri(context)
         .collectAsStateWithLifecycle(initialValue = null)
+    val liquidGlassAdvancedSettings by SettingsManager
+        .getLiquidGlassAdvancedSettings(context)
+        .collectAsStateWithLifecycle(
+            initialValue = LiquidGlassAdvancedSettings()
+        )
     val uiEntranceAnimationEnabled by SettingsManager.getUiEntranceAnimationEnabled(context)
         .collectAsStateWithLifecycle(initialValue = true)
     val appNavigationSettings by SettingsManager.getAppNavigationSettings(context)
@@ -482,8 +488,11 @@ fun AnimationSettingsContent(
                                     LiquidGlassAdjustmentPanel(
                                         persistedProgress = state.liquidGlassProgress,
                                         previewImageUri = liquidGlassPreviewImageUri,
+                                        persistedAdvancedSettings = liquidGlassAdvancedSettings,
                                         onProgressCommitted = viewModel::setLiquidGlassProgress,
                                         onPreviewImageChanged = viewModel::setLiquidGlassPreviewImageUri,
+                                        onAdvancedSettingsCommitted =
+                                            viewModel::setLiquidGlassAdvancedSettings,
                                     )
                                 }
                             }

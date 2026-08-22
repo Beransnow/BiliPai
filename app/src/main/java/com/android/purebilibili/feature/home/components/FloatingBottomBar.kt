@@ -346,6 +346,7 @@ fun FloatingBottomBar(
     val pillShape = remember { CircleShape }
     val isLiquidGlassMode = mode == FloatingBottomBarMode.LiquidGlass
     val isBlurMode = mode == FloatingBottomBarMode.Blur
+    val readabilityScrimColor = if (isInDark) Color.Black else Color.White
     val containerColor =
         if (isLiquidGlassMode) {
             colors.containerColor.copy(alpha = liquidGlassTuning.surfaceAlpha)
@@ -664,7 +665,16 @@ fun FloatingBottomBar(
                                         scaleX = s
                                         scaleY = s
                                     },
-                                    onDrawSurface = { drawRect(containerColor) },
+                                    onDrawSurface = {
+                                        drawRect(containerColor)
+                                        if (liquidGlassTuning.contentReadabilityScrimAlpha > 0f) {
+                                            drawRect(
+                                                readabilityScrimColor.copy(
+                                                    alpha = liquidGlassTuning.contentReadabilityScrimAlpha
+                                                )
+                                            )
+                                        }
+                                    },
                                 )
                             }
                             isBlurMode && backdrop != null -> {
@@ -733,7 +743,16 @@ fun FloatingBottomBar(
                                     chromaticAberration = liquidGlassTuning.chromaticAberrationAmount,
                                 )
                             },
-                            onDrawSurface = { drawRect(containerColor) },
+                            onDrawSurface = {
+                                drawRect(containerColor)
+                                if (liquidGlassTuning.contentReadabilityScrimAlpha > 0f) {
+                                    drawRect(
+                                        readabilityScrimColor.copy(
+                                            alpha = liquidGlassTuning.contentReadabilityScrimAlpha
+                                        )
+                                    )
+                                }
+                            },
                         )
                         .then(interactiveHighlight?.modifier ?: Modifier)
                         .height(fittedIndicatorHeight)
@@ -785,9 +804,11 @@ fun FloatingBottomBar(
                                 val progress = dampedDragAnimation.pressProgress
                                 lens(
                                     refractionHeight = indicatorLensHeightPx * progress *
-                                        liquidGlassTuning.indicatorLensBoost,
+                                        liquidGlassTuning.indicatorLensBoost *
+                                        liquidGlassTuning.contentDistortionScale,
                                     refractionAmount = indicatorLensAmountPx * progress *
-                                        liquidGlassTuning.indicatorEdgeWarpBoost,
+                                        liquidGlassTuning.indicatorEdgeWarpBoost *
+                                        liquidGlassTuning.contentDistortionScale,
                                     depthEffect = liquidGlassTuning.depthEffectEnabled,
                                     chromaticAberration = liquidGlassTuning.chromaticAberrationAmount *
                                         liquidGlassTuning.indicatorChromaticBoost,

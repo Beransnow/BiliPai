@@ -1,7 +1,9 @@
 package com.android.purebilibili.feature.home.components
 
 import com.android.purebilibili.core.store.LiquidGlassMode
+import com.android.purebilibili.core.store.LiquidGlassAdvancedPreset
 import com.android.purebilibili.core.store.LiquidGlassStyle
+import com.android.purebilibili.core.store.resolveLiquidGlassAdvancedPreset
 import com.android.purebilibili.core.store.resolveLegacyLiquidGlassProgress
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -61,6 +63,44 @@ class LiquidGlassTuningTest {
 
         assertTrue(clear.refractionHeight <= 24f)
         assertTrue(frosted.refractionHeight <= clear.refractionHeight)
+    }
+
+    @Test
+    fun `readability protection only ramps up near the transparent endpoint`() {
+        val readablePreset = resolveLiquidGlassAdvancedPreset(LiquidGlassAdvancedPreset.READABLE)
+        val clear = resolveLiquidGlassTuning(
+            progress = 0f,
+            advancedSettings = readablePreset,
+        )
+        val balanced = resolveLiquidGlassTuning(
+            progress = 0.5f,
+            advancedSettings = readablePreset,
+        )
+
+        assertEquals(1f, clear.contentReadabilityBoost, 0.0001f)
+        assertTrue(clear.contentReadabilityScrimAlpha > 0f)
+        assertEquals(0f, balanced.contentReadabilityBoost, 0.0001f)
+        assertEquals(0f, balanced.contentReadabilityScrimAlpha, 0.0001f)
+    }
+
+    @Test
+    fun `prism preset adds more chromatic separation and distortion than readable preset`() {
+        val readable = resolveLiquidGlassTuning(
+            progress = 0f,
+            advancedSettings = resolveLiquidGlassAdvancedPreset(
+                LiquidGlassAdvancedPreset.READABLE
+            ),
+        )
+        val prism = resolveLiquidGlassTuning(
+            progress = 0f,
+            advancedSettings = resolveLiquidGlassAdvancedPreset(
+                LiquidGlassAdvancedPreset.PRISM
+            ),
+        )
+
+        assertTrue(prism.chromaticAberrationAmount > readable.chromaticAberrationAmount)
+        assertTrue(prism.contentDistortionScale > readable.contentDistortionScale)
+        assertTrue(prism.contentReadabilityBoost > 0f)
     }
 
     @Test

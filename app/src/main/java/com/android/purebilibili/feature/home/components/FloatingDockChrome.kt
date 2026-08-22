@@ -126,6 +126,7 @@ internal fun Modifier.biliPaiFloatingDockShell(
     val isDark = isSystemInDarkTheme()
     val baseHighlight = rememberBiliPaiGravityHighlight(extraDegrees = -45f)
     val surfaceColor = containerColor.copy(alpha = liquidGlassTuning.surfaceAlpha)
+    val readabilityScrimColor = if (isDark) Color.Black else Color.White
     val resolvedLensIntensity = lensIntensity.coerceIn(0f, 1f)
     return this
         .graphicsLayer { translationX = panelOffsetPx }
@@ -166,7 +167,16 @@ internal fun Modifier.biliPaiFloatingDockShell(
                 scaleX = s
                 scaleY = s
             },
-            onDrawSurface = { drawRect(surfaceColor) },
+            onDrawSurface = {
+                drawRect(surfaceColor)
+                if (liquidGlassTuning.contentReadabilityScrimAlpha > 0f) {
+                    drawRect(
+                        readabilityScrimColor.copy(
+                            alpha = liquidGlassTuning.contentReadabilityScrimAlpha
+                        )
+                    )
+                }
+            },
         )
 }
 
@@ -182,7 +192,9 @@ internal fun Modifier.biliPaiFloatingDockCaptureSurface(
     shape: Shape = CircleShape,
     liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
 ): Modifier {
+    val isDark = isSystemInDarkTheme()
     val surfaceColor = containerColor.copy(alpha = liquidGlassTuning.surfaceAlpha)
+    val readabilityScrimColor = if (isDark) Color.Black else Color.White
     return this
         .graphicsLayer { translationX = panelOffsetPx }
         .drawBackdrop(
@@ -201,7 +213,16 @@ internal fun Modifier.biliPaiFloatingDockCaptureSurface(
                     chromaticAberration = liquidGlassTuning.chromaticAberrationAmount,
                 )
             },
-            onDrawSurface = { drawRect(surfaceColor) },
+            onDrawSurface = {
+                drawRect(surfaceColor)
+                if (liquidGlassTuning.contentReadabilityScrimAlpha > 0f) {
+                    drawRect(
+                        readabilityScrimColor.copy(
+                            alpha = liquidGlassTuning.contentReadabilityScrimAlpha
+                        )
+                    )
+                }
+            },
         )
 }
 
@@ -247,9 +268,11 @@ internal fun BoxScope.BiliPaiFloatingDockIndicator(
                                 val progress = pressProgress
                                 lens(
                                     refractionHeight = 10.dp.toPx() * progress *
-                                        liquidGlassTuning.indicatorLensBoost,
+                                        liquidGlassTuning.indicatorLensBoost *
+                                        liquidGlassTuning.contentDistortionScale,
                                     refractionAmount = 14.dp.toPx() * progress *
-                                        liquidGlassTuning.indicatorEdgeWarpBoost,
+                                        liquidGlassTuning.indicatorEdgeWarpBoost *
+                                        liquidGlassTuning.contentDistortionScale,
                                     depthEffect = liquidGlassTuning.depthEffectEnabled,
                                     chromaticAberration = liquidGlassTuning.chromaticAberrationAmount *
                                         liquidGlassTuning.indicatorChromaticBoost,

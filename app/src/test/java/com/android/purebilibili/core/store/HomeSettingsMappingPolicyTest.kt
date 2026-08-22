@@ -52,6 +52,10 @@ class HomeSettingsMappingPolicyTest {
         assertEquals(LiquidGlassMode.BALANCED, result.liquidGlassMode)
         assertEquals(0.52f, result.liquidGlassStrength)
         assertEquals(0.5f, result.liquidGlassProgress)
+        assertEquals(LiquidGlassAdvancedPreset.BALANCED, result.liquidGlassAdvancedSettings.preset)
+        assertEquals(0.62f, result.liquidGlassAdvancedSettings.contentReadability)
+        assertEquals(0f, result.liquidGlassAdvancedSettings.chromaticAberration)
+        assertEquals(0.45f, result.liquidGlassAdvancedSettings.contentDistortion)
         assertEquals(0, result.gridColumnCount)
         assertEquals(HomeFeedCardWidthPreset.AUTO, result.homeFeedCardWidthPreset)
         assertFalse(result.cardAnimationEnabled)
@@ -98,6 +102,11 @@ class HomeSettingsMappingPolicyTest {
             intPreferencesKey("bottom_bar_search_layout_mode") to BottomBarSearchLayoutMode.HOME_AND_SEARCH.value,
             booleanPreferencesKey("android_native_liquid_glass_enabled") to true,
             intPreferencesKey("liquid_glass_style") to LiquidGlassStyle.IOS26.value,
+            intPreferencesKey("liquid_glass_advanced_preset") to
+                LiquidGlassAdvancedPreset.CUSTOM.value,
+            floatPreferencesKey("liquid_glass_content_readability") to 0.84f,
+            floatPreferencesKey("liquid_glass_chromatic_aberration") to 0.36f,
+            floatPreferencesKey("liquid_glass_content_distortion") to 0.71f,
             intPreferencesKey("grid_column_count") to 4,
             intPreferencesKey("home_feed_card_width_preset") to HomeFeedCardWidthPreset.WIDE.value,
             intPreferencesKey("home_feed_card_style") to HomeFeedCardStyle.OFFICIAL.value,
@@ -147,6 +156,10 @@ class HomeSettingsMappingPolicyTest {
         assertEquals(LiquidGlassMode.CLEAR, result.liquidGlassMode)
         assertEquals(0.42f, result.liquidGlassStrength)
         assertEquals(0.5f, result.liquidGlassProgress)
+        assertEquals(LiquidGlassAdvancedPreset.CUSTOM, result.liquidGlassAdvancedSettings.preset)
+        assertEquals(0.84f, result.liquidGlassAdvancedSettings.contentReadability)
+        assertEquals(0.36f, result.liquidGlassAdvancedSettings.chromaticAberration)
+        assertEquals(0.71f, result.liquidGlassAdvancedSettings.contentDistortion)
         assertEquals(4, result.gridColumnCount)
         assertEquals(HomeFeedCardWidthPreset.WIDE, result.homeFeedCardWidthPreset)
         assertTrue(result.cardAnimationEnabled)
@@ -175,6 +188,23 @@ class HomeSettingsMappingPolicyTest {
         val result = mapHomeSettingsFromPreferences(prefs)
 
         assertEquals(HomeFeedCardWidthPreset.AUTO, result.homeFeedCardWidthPreset)
+    }
+
+    @Test
+    fun liquidGlassAdvancedValuesAreClampedAndInvalidPresetFallsBackToBalanced() {
+        val prefs = mutablePreferencesOf(
+            intPreferencesKey("liquid_glass_advanced_preset") to 99,
+            floatPreferencesKey("liquid_glass_content_readability") to 2f,
+            floatPreferencesKey("liquid_glass_chromatic_aberration") to -1f,
+            floatPreferencesKey("liquid_glass_content_distortion") to Float.NaN,
+        )
+
+        val result = mapHomeSettingsFromPreferences(prefs).liquidGlassAdvancedSettings
+
+        assertEquals(LiquidGlassAdvancedPreset.BALANCED, result.preset)
+        assertEquals(1f, result.contentReadability)
+        assertEquals(0f, result.chromaticAberration)
+        assertEquals(0.45f, result.contentDistortion)
     }
 
     @Test

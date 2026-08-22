@@ -1,5 +1,6 @@
 package com.android.purebilibili.feature.home.components
 
+import com.android.purebilibili.core.store.LiquidGlassAdvancedSettings
 import com.android.purebilibili.core.store.LiquidGlassMode
 import com.android.purebilibili.core.store.LiquidGlassStyle
 import com.android.purebilibili.core.store.normalizeLiquidGlassProgress
@@ -23,6 +24,9 @@ data class LiquidGlassTuning(
     val indicatorLensBoost: Float,
     val indicatorEdgeWarpBoost: Float,
     val indicatorChromaticBoost: Float,
+    val contentReadabilityBoost: Float,
+    val contentReadabilityScrimAlpha: Float,
+    val contentDistortionScale: Float,
     val chromaticAberrationEnabled: Boolean,
     val chromaticAberrationAmount: Float,
     val scrollCoupledRefraction: Boolean,
@@ -33,7 +37,10 @@ data class LiquidGlassTuning(
     val depthEffectAmount: Float
 )
 
-internal fun resolveLiquidGlassTuning(progress: Float): LiquidGlassTuning {
+internal fun resolveLiquidGlassTuning(
+    progress: Float,
+    advancedSettings: LiquidGlassAdvancedSettings = LiquidGlassAdvancedSettings(),
+): LiquidGlassTuning {
     val normalizedProgress = normalizeLiquidGlassProgress(progress)
     val mode = when {
         normalizedProgress < 0.34f -> LiquidGlassMode.CLEAR
@@ -41,7 +48,18 @@ internal fun resolveLiquidGlassTuning(progress: Float): LiquidGlassTuning {
         else -> LiquidGlassMode.FROSTED
     }
     val frostWeight = normalizedProgress
-    val chromaticAmount = midpointLerp(0.18f, 0f, 0f, normalizedProgress)
+    val clearReadabilityUrgency = (
+        (0.36f - normalizedProgress).coerceAtLeast(0f) / 0.36f
+    ).coerceIn(0f, 1f)
+    val configuredReadability = advancedSettings.contentReadability.coerceIn(0f, 1f)
+    val contentReadabilityBoost = clearReadabilityUrgency * configuredReadability
+    val contentReadabilityScrimAlpha = contentReadabilityBoost *
+        (0.12f + configuredReadability * 0.22f)
+    val chromaticAmount = advancedSettings.chromaticAberration.coerceIn(0f, 1f) *
+        midpointLerp(0.50f, 0.18f, 0.06f, normalizedProgress)
+    val contentDistortionScale = (
+        advancedSettings.contentDistortion.coerceIn(0f, 1f) / 0.45f
+    ).coerceIn(0f, 1.8f)
     val scrollCouplingAmount = midpointLerp(1f, 0f, 0f, normalizedProgress)
     val neutralTintAmount = midpointLerp(1f, 0f, 0f, normalizedProgress)
     val depthEffectAmount = midpointLerp(1f, 1f, 0f, normalizedProgress)
@@ -62,6 +80,9 @@ internal fun resolveLiquidGlassTuning(progress: Float): LiquidGlassTuning {
         indicatorLensBoost = midpointLerp(1.35f, 1f, 0.78f, frostWeight),
         indicatorEdgeWarpBoost = midpointLerp(1.40f, 1f, 0.82f, frostWeight),
         indicatorChromaticBoost = midpointLerp(1.20f, 1f, 0.70f, frostWeight),
+        contentReadabilityBoost = contentReadabilityBoost,
+        contentReadabilityScrimAlpha = contentReadabilityScrimAlpha,
+        contentDistortionScale = contentDistortionScale,
         chromaticAberrationEnabled = chromaticAmount > 0.01f,
         chromaticAberrationAmount = chromaticAmount,
         scrollCoupledRefraction = scrollCouplingAmount > 0.01f,
