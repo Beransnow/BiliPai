@@ -28,9 +28,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.DynamicFeed
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material.icons.outlined.Search
@@ -70,7 +67,9 @@ import com.android.purebilibili.core.ui.components.AppSlider
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.feature.home.components.biliPaiFloatingDockShell
+import com.android.purebilibili.feature.home.components.BottomNavItem
 import com.android.purebilibili.feature.home.components.resolveLiquidGlassTuning
+import com.android.purebilibili.feature.home.components.resolveMaterialBottomBarIcon
 import coil.compose.AsyncImage
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -82,6 +81,8 @@ internal fun LiquidGlassAdjustmentPanel(
     persistedProgress: Float,
     previewImageUri: String?,
     persistedAdvancedSettings: LiquidGlassAdvancedSettings,
+    bottomBarItems: List<BottomNavItem>,
+    bottomBarSearchEnabled: Boolean,
     onProgressCommitted: (Float) -> Unit,
     onPreviewImageChanged: (String?) -> Unit,
     onAdvancedSettingsCommitted: (LiquidGlassAdvancedSettings) -> Unit,
@@ -157,6 +158,8 @@ internal fun LiquidGlassAdjustmentPanel(
             previewImageUri = previewImageUri,
             previewArtworkPagerState = previewArtworkPagerState,
             advancedSettings = advancedSettings,
+            bottomBarItems = bottomBarItems,
+            bottomBarSearchEnabled = bottomBarSearchEnabled,
             modifier = Modifier.fillMaxWidth(),
         )
 
@@ -540,6 +543,8 @@ private fun LiquidGlassHomeSample(
     previewImageUri: String?,
     previewArtworkPagerState: PagerState,
     advancedSettings: LiquidGlassAdvancedSettings,
+    bottomBarItems: List<BottomNavItem>,
+    bottomBarSearchEnabled: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val backdrop = rememberLayerBackdrop()
@@ -561,6 +566,12 @@ private fun LiquidGlassHomeSample(
     var customImageFailed by remember(previewImageUri) { mutableStateOf(false) }
     var previewPanOffsetPx by remember(previewImageUri, previewArtwork) {
         mutableFloatStateOf(0f)
+    }
+    val previewBottomBarItems = remember(bottomBarItems) {
+        bottomBarItems.ifEmpty { listOf(BottomNavItem.HOME) }
+    }
+    val previewSelectedBottomBarIndex = remember(previewBottomBarItems) {
+        previewBottomBarItems.indexOf(BottomNavItem.HOME).takeIf { it >= 0 } ?: 0
     }
 
     Box(
@@ -669,22 +680,71 @@ private fun LiquidGlassHomeSample(
         Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 10.dp)
-                .height(48.dp)
-                .biliPaiFloatingDockShell(
-                    backdrop = backdrop,
-                    containerColor = glassColor,
-                    pressProgress = 0f,
-                    shape = CircleShape,
-                    liquidGlassTuning = tuning,
-                )
-                .padding(horizontal = 18.dp),
-            horizontalArrangement = Arrangement.spacedBy(26.dp),
+                .fillMaxWidth()
+                .padding(start = 12.dp, end = 12.dp, bottom = 10.dp),
+            horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(Icons.Outlined.Home, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-            Icon(Icons.Outlined.DynamicFeed, contentDescription = null, tint = contentColor)
-            Icon(Icons.Outlined.Person, contentDescription = null, tint = contentColor)
+            Row(
+                modifier = Modifier
+                    .height(48.dp)
+                    .biliPaiFloatingDockShell(
+                        backdrop = backdrop,
+                        containerColor = glassColor,
+                        pressProgress = 0f,
+                        shape = CircleShape,
+                        liquidGlassTuning = tuning,
+                    )
+                    .padding(horizontal = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(
+                    if (previewBottomBarItems.size <= 3) 22.dp else 12.dp
+                ),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                previewBottomBarItems.forEachIndexed { index, item ->
+                    Icon(
+                        imageVector = resolveMaterialBottomBarIcon(
+                            item = item,
+                            selected = index == previewSelectedBottomBarIndex,
+                        ),
+                        contentDescription = item.label,
+                        tint = if (index == previewSelectedBottomBarIndex) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            contentColor
+                        },
+                    )
+                }
+            }
+            if (bottomBarSearchEnabled) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Row(
+                    modifier = Modifier
+                        .width(72.dp)
+                        .height(48.dp)
+                        .biliPaiFloatingDockShell(
+                            backdrop = backdrop,
+                            containerColor = glassColor,
+                            pressProgress = 0f,
+                            shape = CircleShape,
+                            liquidGlassTuning = tuning,
+                        )
+                        .padding(horizontal = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Search,
+                        contentDescription = "底栏搜索",
+                        tint = contentColor,
+                    )
+                    AppText(
+                        text = "搜索",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = contentColor.copy(alpha = 0.8f),
+                    )
+                }
+            }
         }
     }
 }
