@@ -145,7 +145,7 @@ fun DynamicTopBarWithTabs(
                             containerColor = dockColor,
                             pressProgress = 0f,
                             shape = dockShape,
-                    liquidGlassTuning = clearLiquidTuning,
+                            liquidGlassTuning = clearLiquidTuning,
                         )
                         .clip(dockShape),
                     verticalAlignment = Alignment.CenterVertically,
