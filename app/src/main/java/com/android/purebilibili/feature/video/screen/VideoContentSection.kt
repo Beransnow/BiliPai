@@ -49,7 +49,6 @@ import androidx.compose.ui.unit.sp
 import com.android.purebilibili.core.ui.common.copyOnLongPress
 import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
 import com.android.purebilibili.core.util.ShareUtils
-import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.ui.rememberAppCommentIcon
 import com.android.purebilibili.core.ui.rememberBackToTopButtonEnabled
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
@@ -1757,8 +1756,11 @@ private fun VideoContentTabBar(
                             onClick = { onTabSelected(index) },
                             text = {
                                 AppText(
-                                    text = if (index == 1) "$label ${FormatUtils.formatStat(replyCount.toLong())}" else label,
+                                    // 评论计数在列表头（「热评 68」）展示，Tab 上不带数字，
+                                    // 避免窄 Tab 下数字换行或被截断
+                                    text = label,
                                     fontSize = layoutSpec.unselectedTabFontSizeSp.sp,
+                                    maxLines = 1,
                                 )
                             },
                         )

@@ -1,11 +1,19 @@
 package com.android.purebilibili.core.ui.components
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.os.Build
+import android.widget.Toast
+
 import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.ui.LocalAppThemeConfig
 import com.android.purebilibili.core.ui.resolveFilledButtonContainerColor
 import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.KeyboardActions
@@ -101,8 +109,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorProducer
 import androidx.compose.ui.graphics.ImageBitmap
@@ -134,6 +146,65 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 private object AppPrimitiveNoOpHapticFeedback : HapticFeedback {
     override fun performHapticFeedback(hapticFeedbackType: HapticFeedbackType) = Unit
+}
+
+internal fun shouldCopyGlobalTextTap(
+    text: String,
+    gestureCanceled: Boolean,
+    pressDurationMillis: Long,
+    longPressTimeoutMillis: Long,
+): Boolean = text.isNotBlank() &&
+    !gestureCanceled &&
+    pressDurationMillis in 0 until longPressTimeoutMillis.coerceAtLeast(1L)
+
+private fun Modifier.globalTextTapCopy(text: String): Modifier = composed {
+    if (text.isBlank()) return@composed this
+    val context = LocalContext.current
+    val hapticFeedback = LocalHapticFeedback.current
+    pointerInput(text, context) {
+        awaitEachGesture {
+            val down = awaitFirstDown(
+                requireUnconsumed = false,
+                pass = PointerEventPass.Final,
+            )
+            val startPosition = down.position
+            var gestureCanceled = down.isConsumed
+            var upTimeMillis: Long? = null
+            while (upTimeMillis == null && !gestureCanceled) {
+                val event = awaitPointerEvent(PointerEventPass.Final)
+                val change = event.changes.firstOrNull { it.id == down.id }
+                if (change == null) {
+                    gestureCanceled = true
+                    break
+                }
+                if (
+                    change.isConsumed ||
+                    (change.position - startPosition).getDistance() > viewConfiguration.touchSlop
+                ) {
+                    gestureCanceled = true
+                }
+                if (!change.pressed) {
+                    upTimeMillis = change.uptimeMillis
+                }
+            }
+            val pressDurationMillis = (upTimeMillis ?: down.uptimeMillis) - down.uptimeMillis
+            if (
+                shouldCopyGlobalTextTap(
+                    text = text,
+                    gestureCanceled = gestureCanceled,
+                    pressDurationMillis = pressDurationMillis,
+                    longPressTimeoutMillis = viewConfiguration.longPressTimeoutMillis,
+                )
+            ) {
+                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                clipboard.setPrimaryClip(ClipData.newPlainText("BiliPai 文本", text.trim()))
+                hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
+                    Toast.makeText(context, "已复制到剪贴板", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -227,7 +298,7 @@ fun AppText(
     style: TextStyle = LocalTextStyle.current,
 ) = Text(
     text = text,
-    modifier = modifier,
+    modifier = modifier.globalTextTapCopy(text),
     color = color,
     autoSize = autoSize,
     fontSize = fontSize,
@@ -269,7 +340,7 @@ fun AppText(
 ) = Text(
     text = text,
     color = color,
-    modifier = modifier,
+    modifier = modifier.globalTextTapCopy(text),
     autoSize = autoSize,
     fontSize = fontSize,
     fontStyle = fontStyle,
@@ -310,7 +381,7 @@ fun AppText(
     style: TextStyle = LocalTextStyle.current,
 ) = Text(
     text = text,
-    modifier = modifier,
+    modifier = modifier.globalTextTapCopy(text.text),
     color = color,
     autoSize = autoSize,
     fontSize = fontSize,
@@ -354,7 +425,7 @@ fun AppText(
 ) = Text(
     text = text,
     color = color,
-    modifier = modifier,
+    modifier = modifier.globalTextTapCopy(text.text),
     autoSize = autoSize,
     fontSize = fontSize,
     fontStyle = fontStyle,
