@@ -143,7 +143,7 @@ internal fun LiquidGlassAdjustmentPanel(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 AppText(
                     text = "液态玻璃质感",
                     style = MaterialTheme.typography.bodyMedium,
@@ -159,6 +159,8 @@ internal fun LiquidGlassAdjustmentPanel(
                 text = "$modeLabel · $percentage%",
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary,
+                maxLines = 1,
+                softWrap = false,
             )
         }
 
@@ -730,7 +732,7 @@ private fun LiquidGlassHomeSample(
                     containerColor = glassColor,
                     pressProgress = 0f,
                     shape = CircleShape,
-                    drawLens = false,
+                    drawLens = true,
                     liquidGlassTuning = tuning,
                 )
                 .padding(horizontal = 14.dp),
@@ -828,8 +830,6 @@ private fun LiquidGlassOpenSourceAcknowledgements(
     Column(
         modifier = modifier
             .fillMaxWidth(0.82f)
-            .clip(RoundedCornerShape(18.dp))
-            .background(Color.Black.copy(alpha = 0.34f))
             .padding(horizontal = 18.dp, vertical = 14.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp),

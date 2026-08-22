@@ -1938,12 +1938,11 @@ private fun LightweightTopTabItem(
     val contentColor = when (colorMode) {
         TopTabLiquidColorMode.GLASS_EXPORT -> exportMonochromeColor
         TopTabLiquidColorMode.GLASS_VISIBLE -> adaptiveContentColorOverride ?: unselectedColor
-        TopTabLiquidColorMode.NORMAL -> adaptiveContentColorOverride
-            ?: androidx.compose.ui.graphics.lerp(
-                unselectedColor,
-                selectedColor,
-                selectionFraction
-            )
+        TopTabLiquidColorMode.NORMAL -> androidx.compose.ui.graphics.lerp(
+            adaptiveContentColorOverride ?: unselectedColor,
+            selectedColor,
+            selectionFraction
+        )
     }
     val containerColor = when {
         !drawContainer || colorMode == TopTabLiquidColorMode.GLASS_EXPORT -> Color.Transparent
