@@ -3,8 +3,11 @@ package com.android.purebilibili.feature.settings
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Analytics
 import androidx.compose.material.icons.outlined.Backup
+import androidx.compose.material.icons.outlined.BatteryFull
+import androidx.compose.material.icons.outlined.BrightnessMedium
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Memory
 import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.android.purebilibili.core.ui.AppSemanticIconFamily
@@ -100,6 +103,26 @@ class SettingsSemanticIconPolicyTest {
                 SettingsIconRole.HOME_FEED,
                 AppSemanticIconFamily.MATERIAL,
             ),
+        )
+    }
+
+    @Test
+    fun miuixMissingGlyphs_fallBackToAccurateMaterialSymbols() {
+        assertSameVectorAsset(
+            Icons.Outlined.BatteryFull,
+            resolveSettingsSemanticIcon(SettingsIconRole.BATTERY_STATUS, AppSemanticIconFamily.MIUIX),
+        )
+        assertSameVectorAsset(
+            Icons.Outlined.Memory,
+            resolveSettingsSemanticIcon(SettingsIconRole.HARDWARE_DECODER, AppSemanticIconFamily.MIUIX),
+        )
+        assertSameVectorAsset(
+            Icons.Outlined.BrightnessMedium,
+            resolveSettingsSemanticIcon(SettingsIconRole.SYSTEM_BRIGHTNESS, AppSemanticIconFamily.MIUIX),
+        )
+        assertSameVectorAsset(
+            Icons.Outlined.Analytics,
+            resolveSettingsSemanticIcon(SettingsIconRole.ANALYTICS, AppSemanticIconFamily.MIUIX),
         )
     }
 

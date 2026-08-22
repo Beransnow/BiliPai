@@ -285,7 +285,7 @@ private fun resolveMiuixSettingsSemanticIcon(role: SettingsIconRole): ImageVecto
     SettingsIconRole.DISCLAIMER -> MiuixIcons.Report
     SettingsIconRole.RELEASE_CHANNEL -> MiuixIcons.Promotions
     SettingsIconRole.CRASH_TRACKING -> MiuixIcons.Report
-    SettingsIconRole.ANALYTICS -> MiuixIcons.ListView
+    SettingsIconRole.ANALYTICS -> Icons.Outlined.Analytics
     SettingsIconRole.FEED_API -> MiuixIcons.Download
     SettingsIconRole.REFRESH_COUNT -> MiuixIcons.Refresh
     SettingsIconRole.DYNAMIC_PREVIEW_TEXT -> MiuixIcons.Show
@@ -296,7 +296,7 @@ private fun resolveMiuixSettingsSemanticIcon(role: SettingsIconRole): ImageVecto
     SettingsIconRole.BUILD_FINGERPRINT -> MiuixIcons.Scan
     SettingsIconRole.BUILD_VERIFICATION -> MiuixIcons.Ok
     SettingsIconRole.ANDROID_LIQUID_GLASS -> MiuixIcons.Layers
-    SettingsIconRole.DYNAMIC_COLOR -> MiuixIcons.Promotions
+    SettingsIconRole.DYNAMIC_COLOR -> Icons.Outlined.ColorLens
     SettingsIconRole.THEME_COLOR_PICKER -> MiuixIcons.Tune
     SettingsIconRole.COLOR_STYLE -> MiuixIcons.Edit
     SettingsIconRole.COLOR_SPEC -> MiuixIcons.Filter
@@ -327,7 +327,7 @@ private fun resolveMiuixSettingsSemanticIcon(role: SettingsIconRole): ImageVecto
     SettingsIconRole.HEADER_COLLAPSE -> MiuixIcons.ExpandLess
     SettingsIconRole.BOTTOM_BAR_BLUR -> MiuixIcons.Th4
     SettingsIconRole.FLOATING_BOTTOM_BAR -> MiuixIcons.Sidebar
-    SettingsIconRole.HARDWARE_DECODER -> MiuixIcons.Carrier
+    SettingsIconRole.HARDWARE_DECODER -> Icons.Outlined.Memory
     SettingsIconRole.PLAYBACK_SPEED -> MiuixIcons.Stopwatch
     SettingsIconRole.LONG_PRESS_SPEED_HINT -> MiuixIcons.Hide
     SettingsIconRole.RESUME_PLAYBACK_PROMPT -> MiuixIcons.Recent
@@ -356,11 +356,11 @@ private fun resolveMiuixSettingsSemanticIcon(role: SettingsIconRole): ImageVecto
     SettingsIconRole.FULLSCREEN_LOCK -> MiuixIcons.Lock
     SettingsIconRole.FULLSCREEN_SCREENSHOT -> MiuixIcons.ScreenCapture
     SettingsIconRole.CLEAN_SCREENSHOT -> MiuixIcons.Photos
-    SettingsIconRole.BATTERY_STATUS -> MiuixIcons.Carrier
+    SettingsIconRole.BATTERY_STATUS -> Icons.Outlined.BatteryFull
     SettingsIconRole.TIME_STATUS -> MiuixIcons.WorldClock
     SettingsIconRole.PLAYER_ACTIONS -> MiuixIcons.More
     SettingsIconRole.PRIVACY_CONTENT_AUTHENTICATION -> MiuixIcons.Unlock
-    SettingsIconRole.PLAYER_STATS -> MiuixIcons.Th28
+    SettingsIconRole.PLAYER_STATS -> Icons.Outlined.InsertChartOutlined
     SettingsIconRole.PLAYER_DIAGNOSTIC_LOGS -> MiuixIcons.Recording
     SettingsIconRole.QUALITY_WARNING_ONCE -> MiuixIcons.Alarm
     SettingsIconRole.DIRECTED_TRAFFIC -> MiuixIcons.SearchDevice
@@ -373,9 +373,9 @@ private fun resolveMiuixSettingsSemanticIcon(role: SettingsIconRole): ImageVecto
     SettingsIconRole.INTERACTIVE_COMMANDS -> MiuixIcons.Messages
     SettingsIconRole.PORTRAIT_SWIPE_FULLSCREEN -> MiuixIcons.VerticalSplit
     SettingsIconRole.CENTER_SWIPE_FULLSCREEN -> MiuixIcons.SelectAll
-    SettingsIconRole.SYSTEM_BRIGHTNESS -> MiuixIcons.Theme
+    SettingsIconRole.SYSTEM_BRIGHTNESS -> Icons.Outlined.BrightnessMedium
     SettingsIconRole.APP_ICON -> MiuixIcons.Album
-    SettingsIconRole.HOME_CARD_STATS_COMPACT -> MiuixIcons.Th29
+    SettingsIconRole.HOME_CARD_STATS_COMPACT -> Icons.Outlined.StackedBarChart
     SettingsIconRole.HOME_HERO_CAROUSEL -> MiuixIcons.MapAlbum
     SettingsIconRole.HOME_ONLINE_COUNT -> MiuixIcons.Contacts
     SettingsIconRole.PORTRAIT_STORY_ENTRY -> MiuixIcons.RecordingTape
@@ -385,21 +385,21 @@ private fun resolveMiuixSettingsSemanticIcon(role: SettingsIconRole): ImageVecto
     SettingsIconRole.FOLLOW_BUTTON -> MiuixIcons.AddCircle
     SettingsIconRole.PRIVACY_HISTORY -> MiuixIcons.Recent
     SettingsIconRole.CUSTOM_MD3_COLOR -> MiuixIcons.Tune
-    SettingsIconRole.THEME_LIGHT_BACKGROUND -> MiuixIcons.Background
-    SettingsIconRole.THEME_LIGHT_PRIMARY_TEXT -> MiuixIcons.Show
-    SettingsIconRole.THEME_LIGHT_SECONDARY_TEXT -> MiuixIcons.Notes
-    SettingsIconRole.THEME_LIGHT_CONTROL -> MiuixIcons.Settings
-    SettingsIconRole.THEME_DARK_BACKGROUND -> MiuixIcons.Hide
-    SettingsIconRole.THEME_DARK_PRIMARY_TEXT -> MiuixIcons.File
-    SettingsIconRole.THEME_DARK_SECONDARY_TEXT -> MiuixIcons.NotesFill
-    SettingsIconRole.THEME_DARK_CONTROL -> MiuixIcons.Tune
+    SettingsIconRole.THEME_LIGHT_BACKGROUND -> Icons.Outlined.LightMode
+    SettingsIconRole.THEME_LIGHT_PRIMARY_TEXT -> Icons.Outlined.Title
+    SettingsIconRole.THEME_LIGHT_SECONDARY_TEXT -> Icons.Outlined.ShortText
+    SettingsIconRole.THEME_LIGHT_CONTROL -> Icons.Outlined.ToggleOn
+    SettingsIconRole.THEME_DARK_BACKGROUND -> Icons.Outlined.DarkMode
+    SettingsIconRole.THEME_DARK_PRIMARY_TEXT -> Icons.Outlined.TextFields
+    SettingsIconRole.THEME_DARK_SECONDARY_TEXT -> Icons.Outlined.Subject
+    SettingsIconRole.THEME_DARK_CONTROL -> Icons.Outlined.Tune
     SettingsIconRole.DEVELOPER_CRASH_TRACKING -> MiuixIcons.Report
-    SettingsIconRole.DEVELOPER_ANALYTICS -> MiuixIcons.Th30
+    SettingsIconRole.DEVELOPER_ANALYTICS -> Icons.Outlined.DataUsage
     SettingsIconRole.APP_VERSION -> MiuixIcons.Info
     SettingsIconRole.BOTTOM_BAR_GLASS_PREVIEW -> MiuixIcons.Th2
     SettingsIconRole.ADVANCED_COLOR -> MiuixIcons.Theme
     SettingsIconRole.CAST_BUTTON -> MiuixIcons.ScreenMirroring
-    SettingsIconRole.PROGRESS_PEAK_DANMAKU -> MiuixIcons.RecordingTape
+    SettingsIconRole.PROGRESS_PEAK_DANMAKU -> Icons.Outlined.GraphicEq
 }
 
 private fun resolveMd3SettingsSemanticIcon(role: SettingsIconRole): ImageVector = when (role) {
