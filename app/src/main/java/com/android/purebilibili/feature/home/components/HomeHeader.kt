@@ -2314,7 +2314,7 @@ fun HomeHeader(
                                                     motionTier = motionTier,
                                                     isTransitionRunning = topChromeMotionPolicy.isTransitionRunning,
                                                     forceLowBlurBudget = forceLowBlurBudget,
-                                                    drawShellLens = false,
+                                                    drawShellLens = true,
                                                     isScrolling = topChromeMotionPolicy.isScrolling
                                                 )
                                             } else if (useUnifiedTopPanel) {

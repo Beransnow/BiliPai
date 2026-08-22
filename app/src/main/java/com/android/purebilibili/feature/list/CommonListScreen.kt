@@ -60,6 +60,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -147,6 +148,7 @@ import com.android.purebilibili.feature.article.ArticleSharedElementSlot
 import com.android.purebilibili.feature.article.resolveHistoryArticleCoverAspectRatio
 import com.android.purebilibili.feature.article.resolveArticleSharedTransitionKey
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
+import com.android.purebilibili.feature.home.components.BottomBarMatchedLiquidDock
 import com.android.purebilibili.feature.space.SeasonSeriesDetailViewModel
 import com.android.purebilibili.feature.video.player.ExternalPlaylistSource
 import com.android.purebilibili.feature.video.player.PlayMode
@@ -1502,7 +1504,8 @@ fun CommonListScreen(
                         scrollBehavior = scrollBehavior
                     )
 
-                    // 🔍 搜索栏
+                    // 🔍 搜索栏。历史页开启全局液态玻璃复用后，搜索与筛选各自成为
+                    // 一条独立 Dock，结构与首页顶部一致。
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -1511,19 +1514,51 @@ fun CommonListScreen(
                                 vertical = favoriteHeaderLayout.searchBarVerticalPaddingDp.dp
                             )
                     ) {
-                        AppSearchField(
-                            query = searchQuery,
-                            onQueryChange = { searchQuery = it },
-                            placeholder = when {
-                                isSubscribedBrowse -> "搜索追更"
-                                historyViewModel != null -> "搜索历史"
-                                favoriteViewModel != null && favoriteSection != FavoriteSection.VIDEO ->
-                                    "搜索${favoriteSection.label}收藏"
-                                else -> "搜索视频"
-                            },
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.22f),
-                            heightOverride = favoriteHeaderLayout.searchBarHeightDp.dp
-                        )
+                        val searchPlaceholder = when {
+                            isSubscribedBrowse -> "搜索追更"
+                            historyViewModel != null -> "搜索历史"
+                            favoriteViewModel != null && favoriteSection != FavoriteSection.VIDEO ->
+                                "搜索${favoriteSection.label}收藏"
+                            else -> "搜索视频"
+                        }
+                        val searchField: @Composable () -> Unit = {
+                            AppSearchField(
+                                query = searchQuery,
+                                onQueryChange = { searchQuery = it },
+                                modifier = Modifier.fillMaxWidth(),
+                                placeholder = searchPlaceholder,
+                                containerColor = if (historyFilterChrome.useLiquidDock) {
+                                    Color.Transparent
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.22f)
+                                },
+                                heightOverride = if (historyFilterChrome.useLiquidDock) {
+                                    historyFilterChrome.heightDp.dp
+                                } else {
+                                    favoriteHeaderLayout.searchBarHeightDp.dp
+                                }
+                            )
+                        }
+                        if (historyViewModel != null && historyFilterChrome.useLiquidDock) {
+                            BottomBarMatchedLiquidDock(
+                                backdrop = commonListChromeBackdrop,
+                                containerColor = AppSurfaceTokens.cardContainer().copy(alpha = 0.18f),
+                                shape = CircleShape,
+                                blurEnabled = true,
+                                glassEnabled = true,
+                                blurRadius = 24.dp,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(historyFilterChrome.heightDp.dp),
+                                isScrollInProgressProvider = {
+                                    primaryGridState.isScrollInProgress
+                                },
+                            ) {
+                                searchField()
+                            }
+                        } else {
+                            searchField()
+                        }
                     }
 
                     if (favoriteViewModel != null) {

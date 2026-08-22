@@ -1499,6 +1499,7 @@ fun VideoPlayerOverlay(
                     //  [新增] 竖屏模式弹幕和清晰度控制
                     danmakuEnabled = danmakuEnabled,
                     onDanmakuToggle = onDanmakuToggle,
+                    onDanmakuSettingsClick = { showDanmakuSettings = true },
                     onDanmakuInputClick = onDanmakuInputClick,
                     isLoggedIn = isLoggedIn,
                     subtitleControlState = subtitleControlState,

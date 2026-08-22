@@ -398,6 +398,7 @@ fun BottomControlBar(
     // Danmaku
     danmakuEnabled: Boolean = true,
     onDanmakuToggle: () -> Unit = {},
+    onDanmakuSettingsClick: () -> Unit = {},
     onDanmakuInputClick: () -> Unit = {},
     isLoggedIn: Boolean = true,
     subtitleControlState: SubtitleControlUiState = SubtitleControlUiState(),
@@ -751,6 +752,14 @@ fun BottomControlBar(
                         color = if (danmakuEnabled) danmakuActiveColor else danmakuInactiveColor,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+                AppIconButton(onClick = onDanmakuSettingsClick) {
+                    AppIcon(
+                        imageVector = Icons.Outlined.Settings,
+                        contentDescription = "弹幕设置",
+                        tint = Color.White.copy(alpha = 0.9f),
                     )
                 }
                 
