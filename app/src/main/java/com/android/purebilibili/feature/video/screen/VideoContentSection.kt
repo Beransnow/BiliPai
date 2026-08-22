@@ -885,17 +885,21 @@ fun VideoContentSection(
         }
 
         if (pagerState.currentPage == 1 && homeSettings.androidNativeLiquidGlassEnabled) {
-            CommentSortFilterBar(
-                sortMode = sortMode,
-                onSortModeChange = onSortModeChange,
+            Box(
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
+                    .fillMaxWidth()
                     .padding(
                         top = tabBarVisibleHeightDp + 6.dp,
                         end = 16.dp,
                     ),
-                miuixBackdrop = videoContentMiuixBackdrop,
-            )
+                contentAlignment = Alignment.TopEnd,
+            ) {
+                CommentSortFilterBar(
+                    sortMode = sortMode,
+                    onSortModeChange = onSortModeChange,
+                    miuixBackdrop = videoContentMiuixBackdrop,
+                )
+            }
         }
 
         // Inline 弹幕设置不是 Dialog，必须在详情内容之后绘制，避免被列表盖住。
