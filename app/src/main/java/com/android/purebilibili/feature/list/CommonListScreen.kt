@@ -128,6 +128,7 @@ import com.android.purebilibili.core.ui.LocalSharedTransitionScope
 import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
 import com.android.purebilibili.core.ui.rememberAppBackIcon
 import com.android.purebilibili.core.ui.rememberBackToTopButtonEnabled
+import com.android.purebilibili.core.ui.rememberAppBookmarkIcon
 import com.android.purebilibili.core.ui.rememberAppFolderIcon
 import com.android.purebilibili.core.ui.rememberAppHeadphonesIcon
 import com.android.purebilibili.core.ui.rememberAppPlayIcon
@@ -1656,16 +1657,23 @@ fun CommonListScreen(
                     if (
                         favoriteViewModel != null &&
                         favoriteSection == FavoriteSection.VIDEO &&
-                        !isSubscribedBrowse &&
-                        foldersState.isNotEmpty()
+                        (foldersState.isNotEmpty() || subscribedFoldersState.isNotEmpty())
                     ) {
                         FavoriteFolderSelector(
                             folders = foldersState,
                             selectedFolderIndex = selectedFolderIndex,
                             selectedFolderItems = selectedFolderUiState.items,
+                            subscribedSelected = isSubscribedBrowse,
                             layout = favoriteHeaderLayout,
                             onFolderSelected = { index ->
+                                favoriteBrowseSection = FavoriteBrowseSection.OWNED
                                 favoriteViewModel.switchFolder(index)
+                                searchQuery = ""
+                            },
+                            onSubscribedSelected = {
+                                favoriteBrowseSection = FavoriteBrowseSection.SUBSCRIBED
+                                isFavoriteBatchMode = false
+                                selectedFavoriteResourceIds = emptySet()
                                 searchQuery = ""
                             },
                         )
@@ -2107,16 +2115,21 @@ private fun FavoriteFolderSelector(
     folders: List<com.android.purebilibili.data.model.response.FavFolder>,
     selectedFolderIndex: Int,
     selectedFolderItems: List<com.android.purebilibili.data.model.response.VideoItem>,
+    subscribedSelected: Boolean,
     layout: CommonListFavoriteHeaderLayout,
     onFolderSelected: (Int) -> Unit,
+    onSubscribedSelected: () -> Unit,
 ) {
-    val selectedFolder = folders.getOrNull(selectedFolderIndex) ?: return
+    val selectedFolder = folders.getOrNull(selectedFolderIndex)
+    if (selectedFolder == null && !subscribedSelected) return
     var expanded by remember { androidx.compose.runtime.mutableStateOf(false) }
-    val selectedPreviewCover = remember(selectedFolder.cover, selectedFolderItems) {
-        resolveFavoriteFolderPreviewCover(
-            folder = selectedFolder,
-            loadedItems = selectedFolderItems,
-        )
+    val selectedPreviewCover = remember(selectedFolder?.cover, selectedFolderItems, subscribedSelected) {
+        selectedFolder?.takeUnless { subscribedSelected }?.let { folder ->
+            resolveFavoriteFolderPreviewCover(
+                folder = folder,
+                loadedItems = selectedFolderItems,
+            )
+        }
     }
 
     Box(
@@ -2147,7 +2160,7 @@ private fun FavoriteFolderSelector(
                     selected = true,
                 )
                 AppText(
-                    text = selectedFolder.title,
+                    text = if (subscribedSelected) "追更（订阅）" else selectedFolder?.title.orEmpty(),
                     modifier = Modifier.weight(1f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -2156,7 +2169,8 @@ private fun FavoriteFolderSelector(
                     color = MaterialTheme.colorScheme.primary,
                 )
                 AppText(
-                    text = "${selectedFolderIndex + 1}/${folders.size}",
+                    text = if (subscribedSelected) "1/${folders.size + 1}" else
+                        "${selectedFolderIndex + 2}/${folders.size + 1}",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -2173,8 +2187,42 @@ private fun FavoriteFolderSelector(
             onDismissRequest = { expanded = false },
             modifier = Modifier.widthIn(min = 280.dp, max = 420.dp),
         ) {
+            AppDropdownMenuItem(
+                text = {
+                    AppText(
+                        text = "追更（订阅）",
+                        fontWeight = if (subscribedSelected) FontWeight.SemiBold else FontWeight.Normal,
+                    )
+                },
+                leadingIcon = {
+                    AppIcon(
+                        imageVector = rememberAppBookmarkIcon(),
+                        contentDescription = null,
+                        tint = if (subscribedSelected) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                    )
+                },
+                trailingIcon = if (subscribedSelected) {
+                    {
+                        AppIcon(
+                            imageVector = Icons.Rounded.CheckCircle,
+                            contentDescription = "当前为追更",
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                } else {
+                    null
+                },
+                onClick = {
+                    expanded = false
+                    onSubscribedSelected()
+                },
+            )
             folders.forEachIndexed { index, folder ->
-                val isSelected = index == selectedFolderIndex
+                val isSelected = !subscribedSelected && index == selectedFolderIndex
                 AppDropdownMenuItem(
                     text = {
                         AppText(
