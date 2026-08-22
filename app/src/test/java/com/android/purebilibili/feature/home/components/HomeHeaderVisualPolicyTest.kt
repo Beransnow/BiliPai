@@ -25,6 +25,31 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class HomeHeaderVisualPolicyTest {
+    @Test
+    fun topActionIcon_exportsOnlyThroughActiveLiquidGlassBackdrop() {
+        assertTrue(
+            shouldExportHomeTopActionIconThroughLiquidGlass(
+                usesMatchedTopControls = true,
+                renderMode = HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP,
+                hasCombinedBackdrop = true,
+            )
+        )
+        assertFalse(
+            shouldExportHomeTopActionIconThroughLiquidGlass(
+                usesMatchedTopControls = true,
+                renderMode = HomeTopChromeRenderMode.PLAIN,
+                hasCombinedBackdrop = true,
+            )
+        )
+        assertFalse(
+            shouldExportHomeTopActionIconThroughLiquidGlass(
+                usesMatchedTopControls = true,
+                renderMode = HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP,
+                hasCombinedBackdrop = false,
+            )
+        )
+    }
+
 
     @Test
     fun `top right unread badge only appears for inbox action`() {

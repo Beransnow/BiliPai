@@ -42,6 +42,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance  //  状态栏亮度计算
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
@@ -81,6 +83,7 @@ import com.android.purebilibili.feature.home.rememberHomeGlassChromeColors
 import com.android.purebilibili.feature.home.rememberHomeGlassPillColors
 import com.android.purebilibili.feature.home.resolveHomeGlassChromeStyle
 import com.android.purebilibili.feature.home.resolveHomeGlassPillStyle
+import com.android.purebilibili.feature.home.components.liquid.rememberCombinedBackdrop
 import com.android.purebilibili.core.store.resolveGlobalLiquidGlassReuseEnabled
 import com.android.purebilibili.core.store.resolveHomeHeaderBlurEnabled
 import com.android.purebilibili.navigation.resolveAppNavigationAppearance
@@ -89,6 +92,8 @@ import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Messages
 import top.yukonga.miuix.kmp.icon.extended.Search
 import top.yukonga.miuix.kmp.icon.extended.Settings
+import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
 
 private const val HOME_HEADER_LIQUID_GLASS_ALPHA = 0.10f
 
@@ -102,6 +107,17 @@ internal data class HomeTopLinkedBottomBarAppearance(
     val blurEnabled: Boolean,
     val liquidGlassEnabled: Boolean
 )
+
+internal fun shouldExportHomeTopActionIconThroughLiquidGlass(
+    usesMatchedTopControls: Boolean,
+    renderMode: HomeTopChromeRenderMode,
+    hasCombinedBackdrop: Boolean,
+): Boolean = usesMatchedTopControls &&
+    hasCombinedBackdrop &&
+    (
+        renderMode == HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP ||
+            renderMode == HomeTopChromeRenderMode.LIQUID_GLASS_HAZE
+    )
 
 internal fun resolveHomeSkinSearchSurfaceColor(
     defaultSurfaceColor: Color,
@@ -2567,6 +2583,16 @@ fun HomeHeader(
                             Spacer(modifier = Modifier.width(resolveHomeTopEdgeControlGap(topChromePolicy)))
 
                             val topRightActionButtonSize = resolveHomeTopSettingsButtonSize(topChromePolicy)
+                            val topRightActionContentBackdrop = rememberMiuixLayerBackdrop()
+                            val topRightActionCombinedBackdrop = miuixBackdrop?.let { pageBackdrop ->
+                                rememberCombinedBackdrop(pageBackdrop, topRightActionContentBackdrop)
+                            }
+                            val exportTopRightActionThroughGlass =
+                                shouldExportHomeTopActionIconThroughLiquidGlass(
+                                    usesMatchedTopControls = useBottomBarMatchedTopControls,
+                                    renderMode = searchChromeRenderMode,
+                                    hasCombinedBackdrop = topRightActionCombinedBackdrop != null,
+                                )
                             Box(
                                 modifier = Modifier
                                     .fillMaxHeight()
@@ -2578,6 +2604,30 @@ fun HomeHeader(
                                         )
                                     )
                             ) {
+                                if (exportTopRightActionThroughGlass) {
+                                    Box(
+                                        modifier = Modifier
+                                            .align(Alignment.CenterStart)
+                                            .size(topRightActionButtonSize)
+                                            .clearAndSetSemantics {}
+                                            .alpha(0f)
+                                            .miuixLayerBackdrop(topRightActionContentBackdrop),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        AppIcon(
+                                            imageVector = topRightActionIcon,
+                                            contentDescription = null,
+                                            tint = if (isLightMode) {
+                                                topForegroundColor
+                                            } else {
+                                                topForegroundColor.copy(alpha = topActionIconAlpha)
+                                            },
+                                            modifier = Modifier.size(
+                                                resolveHomeTopSettingsIconSize(topChromePolicy)
+                                            ),
+                                        )
+                                    }
+                                }
                                 Box(
                                     modifier = Modifier
                                         .align(Alignment.CenterStart)
@@ -2595,14 +2645,18 @@ fun HomeHeader(
                                                     renderMode = searchChromeRenderMode,
                                                     shape = edgeButtonShape,
                                                     hazeState = hazeState,
-                                                    miuixBackdrop = miuixBackdrop,
+                                                    miuixBackdrop = if (exportTopRightActionThroughGlass) {
+                                                        topRightActionCombinedBackdrop
+                                                    } else {
+                                                        miuixBackdrop
+                                                    },
                                                     liquidGlassStyle = liquidStyle,
                                                     liquidGlassTuning = liquidGlassTuning,
                                                     liquidGlassPreset = bottomBarLiquidGlassPreset,
                                                     motionTier = motionTier,
                                                     isTransitionRunning = topChromeMotionPolicy.isTransitionRunning,
                                                     forceLowBlurBudget = forceLowBlurBudget,
-                                                    drawShellLens = false,
+                                                    drawShellLens = true,
                                                     isScrolling = topChromeMotionPolicy.isScrolling
                                                 )
                                             } else if (useUnifiedTopPanel) {
@@ -2653,19 +2707,26 @@ fun HomeHeader(
                                                     onTopRightActionClick()
                                                 }
                                             }
-                                        ),
+                                        )
+                                        .semantics {
+                                            contentDescription = topRightActionContentDescription
+                                        },
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    AppIcon(
-                                        topRightActionIcon,
-                                        contentDescription = topRightActionContentDescription,
-                                        tint = if (isLightMode) {
-                                            topForegroundColor
-                                        } else {
-                                            topForegroundColor.copy(alpha = topActionIconAlpha)
-                                        },
-                                        modifier = Modifier.size(resolveHomeTopSettingsIconSize(topChromePolicy))
-                                    )
+                                    if (!exportTopRightActionThroughGlass) {
+                                        AppIcon(
+                                            topRightActionIcon,
+                                            contentDescription = null,
+                                            tint = if (isLightMode) {
+                                                topForegroundColor
+                                            } else {
+                                                topForegroundColor.copy(alpha = topActionIconAlpha)
+                                            },
+                                            modifier = Modifier.size(
+                                                resolveHomeTopSettingsIconSize(topChromePolicy)
+                                            ),
+                                        )
+                                    }
                                 }
                                 if (topRightUnreadBadge != null) {
                                     HomeTopUnreadBadge(
