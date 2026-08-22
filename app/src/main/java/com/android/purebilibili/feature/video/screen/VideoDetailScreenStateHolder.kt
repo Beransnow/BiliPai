@@ -257,6 +257,35 @@ private const val CONTINUOUS_PLAYER_MORPH_DURATION_MILLIS = 280
 
 private const val VIDEO_DETAIL_COLLAPSE_SIGNAL_IDLE_TIMEOUT_MS = 120L
 
+@Composable
+private fun CollapsedPlayerPlayAction(
+    visible: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    AnimatedVisibility(
+        visible = visible,
+        modifier = modifier,
+        enter = fadeIn(animationSpec = tween(durationMillis = 120)),
+        exit = fadeOut(animationSpec = tween(durationMillis = 90)),
+    ) {
+        TextButton(
+            onClick = onClick,
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(horizontal = 12.dp),
+            contentPadding = PaddingValues(horizontal = 12.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Filled.PlayArrow,
+                contentDescription = "立即播放",
+            )
+            Spacer(Modifier.width(4.dp))
+            Text("立即播放")
+        }
+    }
+}
+
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @OptIn(
     ExperimentalSharedTransitionApi::class,
@@ -4012,36 +4041,20 @@ internal fun VideoDetailScreenStateHolder(
                             )
                             }
                             }
-                            AnimatedVisibility(
+                            CollapsedPlayerPlayAction(
                                 visible = shouldShowPiliPlusCollapsedPlayAction(
                                     collapseMode = portraitPlayerCollapseMode,
                                     isPlaybackPaused = isPlaybackPaused,
                                     collapseProgress = layoutCollapseProgress,
                                 ),
-                                enter = fadeIn(animationSpec = tween(durationMillis = 120)),
-                                exit = fadeOut(animationSpec = tween(durationMillis = 90)),
+                                onClick = {
+                                    playPlayerFromUserAction(playerState.player)
+                                },
                                 modifier = Modifier
                                     .align(Alignment.BottomCenter)
                                     .height(56.dp)
                                     .zIndex(2f),
-                            ) {
-                                TextButton(
-                                    onClick = {
-                                        playPlayerFromUserAction(playerState.player)
-                                    },
-                                    modifier = Modifier
-                                        .fillMaxHeight()
-                                        .padding(horizontal = 12.dp),
-                                    contentPadding = PaddingValues(horizontal = 12.dp),
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Filled.PlayArrow,
-                                        contentDescription = null,
-                                    )
-                                    Spacer(Modifier.width(4.dp))
-                                    Text("立即播放")
-                                }
-                            }
+                            )
                         }
                         Box(
                             modifier = Modifier
