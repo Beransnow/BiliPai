@@ -133,6 +133,16 @@ enum class LiquidGlassAdvancedPreset(val value: Int, val label: String) {
     }
 }
 
+enum class LiquidGlassReadabilityMode(val value: Int, val label: String) {
+    STABLE(0, "稳定内容色"),
+    ADAPTIVE(1, "自动适配");
+
+    companion object {
+        fun fromValue(value: Int): LiquidGlassReadabilityMode =
+            entries.find { it.value == value } ?: STABLE
+    }
+}
+
 data class LiquidGlassAdvancedSettings(
     val preset: LiquidGlassAdvancedPreset = LiquidGlassAdvancedPreset.BALANCED,
     val contentReadability: Float = 0.62f,
@@ -588,6 +598,8 @@ data class HomeSettings(
     val liquidGlassMode: LiquidGlassMode = LiquidGlassMode.BALANCED,
     val liquidGlassStrength: Float = 0.52f,
     val liquidGlassProgress: Float = 0.5f,
+    val liquidGlassReadabilityMode: LiquidGlassReadabilityMode =
+        LiquidGlassReadabilityMode.STABLE,
     val liquidGlassAdvancedSettings: LiquidGlassAdvancedSettings = LiquidGlassAdvancedSettings(),
     val homeHeaderCollapseMode: HomeHeaderCollapseMode = HomeHeaderCollapseMode.BOTH,
     val homeBarHideType: HomeBarHideType = HomeBarHideType.SYNC,
@@ -1476,6 +1488,8 @@ object SettingsManager {
     // V2 intentionally avoids reviving stale values from the removed legacy tuning UI.
     // Existing installs therefore start from the current BiliPai baseline (0.5f).
     private val KEY_LIQUID_GLASS_PROGRESS = floatPreferencesKey("liquid_glass_material_progress_v2")
+    private val KEY_LIQUID_GLASS_READABILITY_MODE =
+        intPreferencesKey("liquid_glass_readability_mode")
     private val KEY_LIQUID_GLASS_PREVIEW_IMAGE_URI =
         stringPreferencesKey("liquid_glass_preview_image_uri")
     private val KEY_LIQUID_GLASS_ADVANCED_PRESET =
@@ -1544,6 +1558,10 @@ object SettingsManager {
         val liquidGlassProgress = normalizeLiquidGlassProgress(
             preferences[KEY_LIQUID_GLASS_PROGRESS] ?: 0.5f
         )
+        val liquidGlassReadabilityMode = LiquidGlassReadabilityMode.fromValue(
+            preferences[KEY_LIQUID_GLASS_READABILITY_MODE]
+                ?: LiquidGlassReadabilityMode.STABLE.value
+        )
         val liquidGlassAdvancedSettings = resolveLiquidGlassAdvancedSettings(
             presetValue = preferences[KEY_LIQUID_GLASS_ADVANCED_PRESET],
             contentReadability = preferences[KEY_LIQUID_GLASS_CONTENT_READABILITY],
@@ -1585,6 +1603,7 @@ object SettingsManager {
             liquidGlassMode = liquidGlassMode,
             liquidGlassStrength = liquidGlassStrength,
             liquidGlassProgress = liquidGlassProgress,
+            liquidGlassReadabilityMode = liquidGlassReadabilityMode,
             liquidGlassAdvancedSettings = liquidGlassAdvancedSettings,
             homeHeaderCollapseMode = headerCollapseMode,
             homeBarHideType = HomeBarHideType.fromValue(
@@ -3830,6 +3849,23 @@ object SettingsManager {
                 normalizeLiquidGlassAdvancedValue(settings.chromaticAberration, 0.56f)
             preferences[KEY_LIQUID_GLASS_CONTENT_DISTORTION] =
                 normalizeLiquidGlassAdvancedValue(settings.contentDistortion, 0.45f)
+        }
+    }
+
+    fun getLiquidGlassReadabilityMode(context: Context): Flow<LiquidGlassReadabilityMode> =
+        context.settingsDataStore.data.map { preferences ->
+            LiquidGlassReadabilityMode.fromValue(
+                preferences[KEY_LIQUID_GLASS_READABILITY_MODE]
+                    ?: LiquidGlassReadabilityMode.STABLE.value
+            )
+        }
+
+    suspend fun setLiquidGlassReadabilityMode(
+        context: Context,
+        mode: LiquidGlassReadabilityMode,
+    ) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_LIQUID_GLASS_READABILITY_MODE] = mode.value
         }
     }
     
@@ -6966,6 +7002,10 @@ object SettingsManager {
                 KEY_LIQUID_GLASS_ADVANCED_PRESET,
                 SettingsShareSection.APPEARANCE,
             ),
+            IntShareablePreferenceDefinition(
+                KEY_LIQUID_GLASS_READABILITY_MODE,
+                SettingsShareSection.APPEARANCE,
+            ),
             FloatShareablePreferenceDefinition(
                 KEY_LIQUID_GLASS_CONTENT_READABILITY,
                 SettingsShareSection.APPEARANCE,
@@ -7196,6 +7236,7 @@ object SettingsManager {
             KEY_LIQUID_GLASS_STRENGTH.name,
             KEY_LIQUID_GLASS_PROGRESS.name,
             KEY_LIQUID_GLASS_ADVANCED_PRESET.name,
+            KEY_LIQUID_GLASS_READABILITY_MODE.name,
             KEY_LIQUID_GLASS_CONTENT_READABILITY.name,
             KEY_LIQUID_GLASS_CHROMATIC_ABERRATION.name,
             KEY_LIQUID_GLASS_CONTENT_DISTORTION.name,
@@ -7258,6 +7299,10 @@ object SettingsManager {
             KEY_LIQUID_GLASS_PROGRESS.name to JsonPrimitive(progress),
             KEY_LIQUID_GLASS_ADVANCED_PRESET.name to JsonPrimitive(
                 advancedSettings.preset.value
+            ),
+            KEY_LIQUID_GLASS_READABILITY_MODE.name to JsonPrimitive(
+                preferences[KEY_LIQUID_GLASS_READABILITY_MODE]
+                    ?: LiquidGlassReadabilityMode.STABLE.value
             ),
             KEY_LIQUID_GLASS_CONTENT_READABILITY.name to JsonPrimitive(
                 advancedSettings.contentReadability
