@@ -2681,7 +2681,7 @@ private fun VideoPageItem(
                         sourceWidthPx = gestureVideoshotData.img_x_size,
                         sourceHeightPx = gestureVideoshotData.img_y_size,
                         screenWidthDp = previewConfiguration.screenWidthDp,
-                        videoAspectRatio = 9f / 16f
+                        videoAspectRatio = currentVideoAspect
                     )
                 }
                 val previewWidthPx = with(density) { gesturePreviewSize.widthDp.dp.toPx() }
@@ -2700,7 +2700,7 @@ private fun VideoPageItem(
                     videoshotData = gestureVideoshotData,
                     targetPositionMs = seekTargetPosition.toLong(),
                     durationMs = progressState.duration,
-                    videoAspectRatio = 9f / 16f,
+                    videoAspectRatio = currentVideoAspect,
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .offset {
@@ -3145,7 +3145,7 @@ private fun VideoPageItem(
             danmakuEnabled = danmakuEnabled,
             isStatusBarHidden = true,
             videoshotData = currentSuccess?.videoshotData,
-            videoAspectRatio = 9f / 16f,
+            videoAspectRatio = currentVideoAspect,
             isPlaybackRecovering = isCurrentPage && shouldShowPlaybackRecoveryUiAfterSeek(
                 state = seekSession,
                 playWhenReady = exoPlayer.playWhenReady,
