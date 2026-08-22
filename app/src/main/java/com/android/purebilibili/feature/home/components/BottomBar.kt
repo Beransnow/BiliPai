@@ -2221,10 +2221,12 @@ private fun MaterialBottomBar(
     val liquidGlassTuning = remember(
         homeSettings.liquidGlassProgress,
         homeSettings.liquidGlassAdvancedSettings,
+        homeSettings.liquidGlassReadabilityMode,
     ) {
         resolveLiquidGlassTuning(
             homeSettings.liquidGlassProgress,
             homeSettings.liquidGlassAdvancedSettings,
+            homeSettings.liquidGlassReadabilityMode,
         )
     }
     val androidNativeTuning = resolveAndroidNativeBottomBarTuning(
@@ -2492,10 +2494,12 @@ private fun MiuixBottomBar(
     val liquidGlassTuning = remember(
         homeSettings.liquidGlassProgress,
         homeSettings.liquidGlassAdvancedSettings,
+        homeSettings.liquidGlassReadabilityMode,
     ) {
         resolveLiquidGlassTuning(
             homeSettings.liquidGlassProgress,
             homeSettings.liquidGlassAdvancedSettings,
+            homeSettings.liquidGlassReadabilityMode,
         )
     }
     val tuning = resolveAndroidNativeBottomBarTuning(

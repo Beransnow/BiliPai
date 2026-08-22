@@ -4,6 +4,7 @@ import com.android.purebilibili.core.store.LiquidGlassMode
 import com.android.purebilibili.core.store.LiquidGlassAdvancedPreset
 import com.android.purebilibili.core.store.LiquidGlassAdvancedSettings
 import com.android.purebilibili.core.store.LiquidGlassStyle
+import com.android.purebilibili.core.store.LiquidGlassReadabilityMode
 import com.android.purebilibili.core.store.resolveLiquidGlassAdvancedPreset
 import com.android.purebilibili.core.store.resolveLegacyLiquidGlassProgress
 import org.junit.Assert.assertEquals
@@ -11,6 +12,21 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class LiquidGlassTuningTest {
+
+    @Test
+    fun `stable readability is default and adaptive mode is explicit`() {
+        assertEquals(
+            LiquidGlassReadabilityMode.STABLE,
+            resolveLiquidGlassTuning(progress = 0.5f).readabilityMode,
+        )
+        assertEquals(
+            LiquidGlassReadabilityMode.ADAPTIVE,
+            resolveLiquidGlassTuning(
+                progress = 0.5f,
+                readabilityMode = LiquidGlassReadabilityMode.ADAPTIVE,
+            ).readabilityMode,
+        )
+    }
 
     @Test
     fun `clear progress stays more transparent than frosted progress`() {

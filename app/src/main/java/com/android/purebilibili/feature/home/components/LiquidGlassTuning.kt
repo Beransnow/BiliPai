@@ -2,6 +2,7 @@ package com.android.purebilibili.feature.home.components
 
 import com.android.purebilibili.core.store.LiquidGlassAdvancedSettings
 import com.android.purebilibili.core.store.LiquidGlassMode
+import com.android.purebilibili.core.store.LiquidGlassReadabilityMode
 import com.android.purebilibili.core.store.LiquidGlassStyle
 import com.android.purebilibili.core.store.normalizeLiquidGlassProgress
 import com.android.purebilibili.core.store.normalizeLiquidGlassStrength
@@ -10,6 +11,7 @@ import com.android.purebilibili.core.store.resolveLegacyLiquidGlassProgress
 import com.android.purebilibili.core.store.resolveLegacyLiquidGlassMode
 
 data class LiquidGlassTuning(
+    val readabilityMode: LiquidGlassReadabilityMode,
     val mode: LiquidGlassMode,
     val progress: Float,
     val strength: Float,
@@ -38,6 +40,7 @@ private const val UPSTREAM_INDICATOR_CHROMATIC_ABERRATION = 0.5f
 internal fun resolveLiquidGlassTuning(
     progress: Float,
     advancedSettings: LiquidGlassAdvancedSettings = LiquidGlassAdvancedSettings(),
+    readabilityMode: LiquidGlassReadabilityMode = LiquidGlassReadabilityMode.STABLE,
 ): LiquidGlassTuning {
     val normalizedProgress = normalizeLiquidGlassProgress(progress)
     val mode = when {
@@ -75,6 +78,7 @@ internal fun resolveLiquidGlassTuning(
     ).coerceIn(0f, 1.8f)
     val scrollCouplingAmount = midpointLerp(1f, 0f, 0f, normalizedProgress)
     return LiquidGlassTuning(
+        readabilityMode = readabilityMode,
         mode = mode,
         progress = normalizedProgress,
         strength = resolveLiquidGlassStrengthFromProgress(normalizedProgress),

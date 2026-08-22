@@ -68,6 +68,10 @@ class FloatingBottomBarStructureTest {
         assertTrue(body.contains("resolveLiquidGlassIndicatorChromaticAberration("))
         assertTrue(body.contains("refractionHeight = indicatorLensHeightPx * progress"))
         assertTrue(body.contains("refractionAmount = indicatorLensAmountPx * progress"))
+        assertTrue(body.contains("LiquidGlassReadabilityMode.ADAPTIVE"))
+        assertTrue(body.contains("rememberLiquidGlassAdaptiveReadabilityState("))
+        assertTrue(body.contains("trackLiquidGlassAdaptiveReadability("))
+        assertTrue(body.contains("LocalFloatingBottomBarContentColor provides resolvedContentColor"))
         assertTrue(body.contains(".innerShadow(shape = pillShape)"))
         assertTrue(body.contains("InnerShadow("))
         assertTrue(body.contains("radius = innerShadowRadius * dampedDragAnimation.pressProgress"))
@@ -81,7 +85,7 @@ class FloatingBottomBarStructureTest {
         )
         val body = source.substringAfter("fun FloatingBottomBar(")
         val baseRow = body
-            .substringAfter("CompositionLocalProvider(LocalFloatingBottomBarContentColor provides colors.contentColor)")
+            .substringAfter("LocalFloatingBottomBarContentColor provides resolvedContentColor")
             .substringBefore("if (isLiquidGlassMode && backdrop != null)")
         val movingIndicator = body.substringAfter("if (tabWidthPx > 0f)")
 

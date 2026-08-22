@@ -1496,8 +1496,18 @@ fun HomeHeader(
     val liquidGlassProgress = homeSettings?.liquidGlassProgress ?: 0.5f
     val liquidGlassAdvancedSettings = homeSettings?.liquidGlassAdvancedSettings
         ?: HomeSettings().liquidGlassAdvancedSettings
-    val liquidGlassTuning = remember(liquidGlassProgress, liquidGlassAdvancedSettings) {
-        resolveLiquidGlassTuning(liquidGlassProgress, liquidGlassAdvancedSettings)
+    val liquidGlassReadabilityMode = homeSettings?.liquidGlassReadabilityMode
+        ?: HomeSettings().liquidGlassReadabilityMode
+    val liquidGlassTuning = remember(
+        liquidGlassProgress,
+        liquidGlassAdvancedSettings,
+        liquidGlassReadabilityMode,
+    ) {
+        resolveLiquidGlassTuning(
+            liquidGlassProgress,
+            liquidGlassAdvancedSettings,
+            liquidGlassReadabilityMode,
+        )
     }
     val topChromeRenderMode = resolveHomeTopChromeRenderMode(
         materialMode = topChromeMaterialMode,
@@ -2374,24 +2384,41 @@ fun HomeHeader(
 
                             Spacer(modifier = Modifier.width(resolveHomeTopEdgeControlGap(topChromePolicy)))
 
+                            val isTablet =
+                                com.android.purebilibili.core.util.LocalWindowSizeClass.current.isTablet
+                            val stableSearchContentColor = if (usesNativeContainerTreatment) {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            } else if (isLightMode) {
+                                topForegroundColor
+                            } else {
+                                OpticalContrastPalette.Highlight.copy(alpha = 0.96f)
+                            }
+                            val adaptiveSearchReadabilityEnabled = isSearchGlassEnabled &&
+                                liquidGlassTuning.readabilityMode ==
+                                com.android.purebilibili.core.store.LiquidGlassReadabilityMode.ADAPTIVE
+                            val adaptiveSearchReadabilityState =
+                                rememberLiquidGlassAdaptiveReadabilityState(
+                                    enabled = adaptiveSearchReadabilityEnabled,
+                                )
+                            val searchContentColor = rememberLiquidGlassAdaptiveContentColor(
+                                stableColor = stableSearchContentColor,
+                                state = adaptiveSearchReadabilityState,
+                                enabled = adaptiveSearchReadabilityEnabled,
+                            )
                             Box(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(resolveHomeTopSearchPillHeight(topChromePolicy)),
+                                    .height(resolveHomeTopSearchPillHeight(topChromePolicy))
+                                    .trackLiquidGlassAdaptiveReadability(
+                                        state = adaptiveSearchReadabilityState,
+                                        enabled = adaptiveSearchReadabilityEnabled,
+                                    ),
                                 contentAlignment = Alignment.Center
                             ) {
-                                val isTablet = com.android.purebilibili.core.util.LocalWindowSizeClass.current.isTablet
-                                val stableSearchContentColor = if (usesNativeContainerTreatment) {
-                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                } else if (isLightMode) {
-                                    topForegroundColor
-                                } else {
-                                    OpticalContrastPalette.Highlight.copy(alpha = 0.96f)
-                                }
                                 val searchPillContent: @Composable () -> Unit = {
                                     HomeTopSearchPillContent(
                                         searchIcon = searchIcon,
-                                        contentColor = stableSearchContentColor,
+                                        contentColor = searchContentColor,
                                         textFontSize = if (usesNativeContainerTreatment) {
                                             if (isTablet) {
                                                 MaterialTheme.typography.bodyMedium.fontSize

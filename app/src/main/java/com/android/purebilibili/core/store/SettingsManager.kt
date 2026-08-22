@@ -21,6 +21,7 @@ import com.android.purebilibili.core.ui.transition.VIDEO_SHARED_TRANSITION_CUSTO
 import com.android.purebilibili.core.ui.transition.VideoSharedTransitionSpeed
 import com.android.purebilibili.core.ui.transition.normalizeVideoSharedTransitionCustomDurationMillis
 import com.android.purebilibili.core.store.home.HomeSettingsStore
+import com.android.purebilibili.core.store.home.liquidGlassReadabilityModePreferencesKey
 import com.android.purebilibili.core.store.navigation.NavigationSettingsStore
 import com.android.purebilibili.core.store.navigation.bottomBarItemLabelsPreferencesKey
 import com.android.purebilibili.core.store.navigation.parseBottomBarItemLabels
@@ -130,16 +131,6 @@ enum class LiquidGlassAdvancedPreset(val value: Int, val label: String) {
     companion object {
         fun fromValue(value: Int): LiquidGlassAdvancedPreset =
             entries.find { it.value == value } ?: BALANCED
-    }
-}
-
-enum class LiquidGlassReadabilityMode(val value: Int, val label: String) {
-    STABLE(0, "稳定内容色"),
-    ADAPTIVE(1, "自动适配");
-
-    companion object {
-        fun fromValue(value: Int): LiquidGlassReadabilityMode =
-            entries.find { it.value == value } ?: STABLE
     }
 }
 
@@ -1488,8 +1479,6 @@ object SettingsManager {
     // V2 intentionally avoids reviving stale values from the removed legacy tuning UI.
     // Existing installs therefore start from the current BiliPai baseline (0.5f).
     private val KEY_LIQUID_GLASS_PROGRESS = floatPreferencesKey("liquid_glass_material_progress_v2")
-    private val KEY_LIQUID_GLASS_READABILITY_MODE =
-        intPreferencesKey("liquid_glass_readability_mode")
     private val KEY_LIQUID_GLASS_PREVIEW_IMAGE_URI =
         stringPreferencesKey("liquid_glass_preview_image_uri")
     private val KEY_LIQUID_GLASS_ADVANCED_PRESET =
@@ -1559,7 +1548,7 @@ object SettingsManager {
             preferences[KEY_LIQUID_GLASS_PROGRESS] ?: 0.5f
         )
         val liquidGlassReadabilityMode = LiquidGlassReadabilityMode.fromValue(
-            preferences[KEY_LIQUID_GLASS_READABILITY_MODE]
+            preferences[liquidGlassReadabilityModePreferencesKey]
                 ?: LiquidGlassReadabilityMode.STABLE.value
         )
         val liquidGlassAdvancedSettings = resolveLiquidGlassAdvancedSettings(
@@ -3852,23 +3841,6 @@ object SettingsManager {
         }
     }
 
-    fun getLiquidGlassReadabilityMode(context: Context): Flow<LiquidGlassReadabilityMode> =
-        context.settingsDataStore.data.map { preferences ->
-            LiquidGlassReadabilityMode.fromValue(
-                preferences[KEY_LIQUID_GLASS_READABILITY_MODE]
-                    ?: LiquidGlassReadabilityMode.STABLE.value
-            )
-        }
-
-    suspend fun setLiquidGlassReadabilityMode(
-        context: Context,
-        mode: LiquidGlassReadabilityMode,
-    ) {
-        context.settingsDataStore.edit { preferences ->
-            preferences[KEY_LIQUID_GLASS_READABILITY_MODE] = mode.value
-        }
-    }
-    
     //  [修复] --- 模糊强度 (THIN, THICK, APPLE_DOCK) ---
     fun getBlurIntensity(context: Context): Flow<BlurIntensity> = context.settingsDataStore.data
         .map { preferences ->
@@ -7003,7 +6975,7 @@ object SettingsManager {
                 SettingsShareSection.APPEARANCE,
             ),
             IntShareablePreferenceDefinition(
-                KEY_LIQUID_GLASS_READABILITY_MODE,
+                liquidGlassReadabilityModePreferencesKey,
                 SettingsShareSection.APPEARANCE,
             ),
             FloatShareablePreferenceDefinition(
@@ -7236,7 +7208,7 @@ object SettingsManager {
             KEY_LIQUID_GLASS_STRENGTH.name,
             KEY_LIQUID_GLASS_PROGRESS.name,
             KEY_LIQUID_GLASS_ADVANCED_PRESET.name,
-            KEY_LIQUID_GLASS_READABILITY_MODE.name,
+            liquidGlassReadabilityModePreferencesKey.name,
             KEY_LIQUID_GLASS_CONTENT_READABILITY.name,
             KEY_LIQUID_GLASS_CHROMATIC_ABERRATION.name,
             KEY_LIQUID_GLASS_CONTENT_DISTORTION.name,
@@ -7300,8 +7272,8 @@ object SettingsManager {
             KEY_LIQUID_GLASS_ADVANCED_PRESET.name to JsonPrimitive(
                 advancedSettings.preset.value
             ),
-            KEY_LIQUID_GLASS_READABILITY_MODE.name to JsonPrimitive(
-                preferences[KEY_LIQUID_GLASS_READABILITY_MODE]
+            liquidGlassReadabilityModePreferencesKey.name to JsonPrimitive(
+                preferences[liquidGlassReadabilityModePreferencesKey]
                     ?: LiquidGlassReadabilityMode.STABLE.value
             ),
             KEY_LIQUID_GLASS_CONTENT_READABILITY.name to JsonPrimitive(

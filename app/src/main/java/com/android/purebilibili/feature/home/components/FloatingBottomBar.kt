@@ -78,6 +78,7 @@ import com.android.purebilibili.feature.home.components.liquid.innerShadow
 import com.android.purebilibili.feature.home.components.liquid.lens
 import com.android.purebilibili.feature.home.components.liquid.rememberCombinedBackdrop
 import com.android.purebilibili.feature.home.components.liquid.vibrancy
+import com.android.purebilibili.core.store.LiquidGlassReadabilityMode
 import com.android.purebilibili.core.ui.resolveMatchedLiquidIndicatorGeometry
 import com.android.purebilibili.feature.home.components.miuix.DampedDragAnimation
 import com.android.purebilibili.feature.home.components.miuix.DampedDragTrackingMode
@@ -347,6 +348,21 @@ fun FloatingBottomBar(
     val pillShape = remember { CircleShape }
     val isLiquidGlassMode = mode == FloatingBottomBarMode.LiquidGlass
     val isBlurMode = mode == FloatingBottomBarMode.Blur
+    val adaptiveReadabilityEnabled = isLiquidGlassMode &&
+        liquidGlassTuning.readabilityMode == LiquidGlassReadabilityMode.ADAPTIVE
+    val adaptiveReadabilityState = rememberLiquidGlassAdaptiveReadabilityState(
+        enabled = adaptiveReadabilityEnabled,
+    )
+    val resolvedContentColor = rememberLiquidGlassAdaptiveContentColor(
+        stableColor = colors.contentColor,
+        state = adaptiveReadabilityState,
+        enabled = adaptiveReadabilityEnabled,
+    )
+    val resolvedActiveContentColor = rememberLiquidGlassAdaptiveContentColor(
+        stableColor = colors.activeContentColor,
+        state = adaptiveReadabilityState,
+        enabled = adaptiveReadabilityEnabled,
+    )
     val readabilityScrimColor = if (isInDark) Color.Black else Color.White
     val containerColor =
         if (isLiquidGlassMode) {
@@ -616,6 +632,10 @@ fun FloatingBottomBar(
 
     Box(
         modifier = modifier
+            .trackLiquidGlassAdaptiveReadability(
+                state = adaptiveReadabilityState,
+                enabled = adaptiveReadabilityEnabled,
+            )
             .floatingDockScaleOverflow(
                 overflow = scaleOverflowDp,
                 shellHeight = shellHeight,
@@ -623,7 +643,9 @@ fun FloatingBottomBar(
             .graphicsLayer { clip = false },
         contentAlignment = Alignment.CenterStart
     ) {
-        CompositionLocalProvider(LocalFloatingBottomBarContentColor provides colors.contentColor) {
+        CompositionLocalProvider(
+            LocalFloatingBottomBarContentColor provides resolvedContentColor
+        ) {
             Row(
                 Modifier
                     .onGloballyPositioned { coords ->
@@ -731,7 +753,7 @@ fun FloatingBottomBar(
                 LocalFloatingBottomBarTabScale provides {
                     lerp(1f, tabPressScale, dampedDragAnimation.pressProgress)
                 },
-                LocalFloatingBottomBarContentColor provides colors.activeContentColor,
+                LocalFloatingBottomBarContentColor provides resolvedActiveContentColor,
                 LocalFloatingBottomBarActiveContent provides true
             ) {
                 Row(
@@ -892,7 +914,7 @@ fun FloatingBottomBar(
                     contentAlignment = Alignment.CenterStart
                 ) {
                     CompositionLocalProvider(
-                        LocalFloatingBottomBarContentColor provides colors.activeContentColor,
+                        LocalFloatingBottomBarContentColor provides resolvedActiveContentColor,
                         LocalFloatingBottomBarActiveContent provides true
                     ) {
                         Row(

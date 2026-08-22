@@ -62,6 +62,7 @@ import com.android.purebilibili.R
 import com.android.purebilibili.core.store.LiquidGlassAdvancedPreset
 import com.android.purebilibili.core.store.LiquidGlassAdvancedSettings
 import com.android.purebilibili.core.store.LiquidGlassMode
+import com.android.purebilibili.core.store.LiquidGlassReadabilityMode
 import com.android.purebilibili.core.store.resolveLiquidGlassAdvancedPreset
 import com.android.purebilibili.core.ui.components.AppSlider
 import com.android.purebilibili.core.ui.components.AppText
@@ -70,6 +71,9 @@ import com.android.purebilibili.feature.home.components.biliPaiFloatingDockShell
 import com.android.purebilibili.feature.home.components.BottomNavItem
 import com.android.purebilibili.feature.home.components.resolveLiquidGlassTuning
 import com.android.purebilibili.feature.home.components.resolveMaterialBottomBarIcon
+import com.android.purebilibili.feature.home.components.rememberLiquidGlassAdaptiveContentColor
+import com.android.purebilibili.feature.home.components.rememberLiquidGlassAdaptiveReadabilityState
+import com.android.purebilibili.feature.home.components.trackLiquidGlassAdaptiveReadability
 import coil.compose.AsyncImage
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -81,11 +85,13 @@ internal fun LiquidGlassAdjustmentPanel(
     persistedProgress: Float,
     previewImageUri: String?,
     persistedAdvancedSettings: LiquidGlassAdvancedSettings,
+    persistedReadabilityMode: LiquidGlassReadabilityMode,
     bottomBarItems: List<BottomNavItem>,
     bottomBarSearchEnabled: Boolean,
     onProgressCommitted: (Float) -> Unit,
     onPreviewImageChanged: (String?) -> Unit,
     onAdvancedSettingsCommitted: (LiquidGlassAdvancedSettings) -> Unit,
+    onReadabilityModeChanged: (LiquidGlassReadabilityMode) -> Unit,
     onShareSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -111,12 +117,15 @@ internal fun LiquidGlassAdjustmentPanel(
     var presetSliderValue by remember(persistedAdvancedSettings) {
         mutableFloatStateOf(liquidGlassPresetSliderValue(persistedAdvancedSettings))
     }
+    var readabilityMode by remember(persistedReadabilityMode) {
+        mutableStateOf(persistedReadabilityMode)
+    }
     val previewArtworkPagerState = rememberPagerState(
         pageCount = { LiquidGlassPreviewArtwork.entries.size },
     )
     var advancedSettingsExpanded by rememberSaveable { mutableStateOf(false) }
-    val tuning = remember(previewProgress, advancedSettings) {
-        resolveLiquidGlassTuning(previewProgress, advancedSettings)
+    val tuning = remember(previewProgress, advancedSettings, readabilityMode) {
+        resolveLiquidGlassTuning(previewProgress, advancedSettings, readabilityMode)
     }
     val modeLabel = when (tuning.mode) {
         LiquidGlassMode.CLEAR -> "通透"
@@ -158,9 +167,45 @@ internal fun LiquidGlassAdjustmentPanel(
             previewImageUri = previewImageUri,
             previewArtworkPagerState = previewArtworkPagerState,
             advancedSettings = advancedSettings,
+            readabilityMode = readabilityMode,
             bottomBarItems = bottomBarItems,
             bottomBarSearchEnabled = bottomBarSearchEnabled,
             modifier = Modifier.fillMaxWidth(),
+        )
+
+        AppText(
+            text = "内容可读性方案",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Medium,
+        )
+        AppSegmentedControl(
+            options = remember {
+                listOf(
+                    com.android.purebilibili.core.ui.components.AppSegmentOption(
+                        LiquidGlassReadabilityMode.STABLE,
+                        "稳定内容色",
+                    ),
+                    com.android.purebilibili.core.ui.components.AppSegmentOption(
+                        LiquidGlassReadabilityMode.ADAPTIVE,
+                        "自动适配",
+                    ),
+                )
+            },
+            selectedValue = readabilityMode,
+            onSelectionChange = { mode ->
+                readabilityMode = mode
+                onReadabilityModeChanged(mode)
+            },
+            modifier = Modifier.fillMaxWidth(),
+        )
+        AppText(
+            text = if (readabilityMode == LiquidGlassReadabilityMode.STABLE) {
+                "默认：图标与文字使用稳定主题色，不进行背景采样。"
+            } else {
+                "自动：低频采样玻璃区域，并通过滞回阈值平滑切换内容明暗。"
+            },
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         if (previewImageUri == null) {
@@ -543,17 +588,35 @@ private fun LiquidGlassHomeSample(
     previewImageUri: String?,
     previewArtworkPagerState: PagerState,
     advancedSettings: LiquidGlassAdvancedSettings,
+    readabilityMode: LiquidGlassReadabilityMode,
     bottomBarItems: List<BottomNavItem>,
     bottomBarSearchEnabled: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val backdrop = rememberLayerBackdrop()
-    val tuning = remember(progress, advancedSettings) {
-        resolveLiquidGlassTuning(progress, advancedSettings)
+    val tuning = remember(progress, advancedSettings, readabilityMode) {
+        resolveLiquidGlassTuning(progress, advancedSettings, readabilityMode)
     }
     val sampleShape = RoundedCornerShape(24.dp)
     val glassColor = MaterialTheme.colorScheme.surfaceContainer
     val contentColor = MaterialTheme.colorScheme.onSurface
+    val adaptiveReadabilityEnabled = readabilityMode == LiquidGlassReadabilityMode.ADAPTIVE
+    val topReadabilityState = rememberLiquidGlassAdaptiveReadabilityState(
+        enabled = adaptiveReadabilityEnabled,
+    )
+    val bottomReadabilityState = rememberLiquidGlassAdaptiveReadabilityState(
+        enabled = adaptiveReadabilityEnabled,
+    )
+    val topContentColor = rememberLiquidGlassAdaptiveContentColor(
+        stableColor = contentColor,
+        state = topReadabilityState,
+        enabled = adaptiveReadabilityEnabled,
+    )
+    val bottomContentColor = rememberLiquidGlassAdaptiveContentColor(
+        stableColor = contentColor,
+        state = bottomReadabilityState,
+        enabled = adaptiveReadabilityEnabled,
+    )
     val density = LocalDensity.current
     val previewPanLimitPx = remember(density) { with(density) { 280.dp.toPx() } }
     val sliderFollowRangePx = remember(density) { with(density) { 80.dp.toPx() } }
@@ -658,6 +721,10 @@ private fun LiquidGlassHomeSample(
                 .padding(top = 10.dp, start = 12.dp, end = 12.dp)
                 .fillMaxWidth()
                 .height(40.dp)
+                .trackLiquidGlassAdaptiveReadability(
+                    state = topReadabilityState,
+                    enabled = adaptiveReadabilityEnabled,
+                )
                 .biliPaiFloatingDockShell(
                     backdrop = backdrop,
                     containerColor = glassColor,
@@ -668,12 +735,12 @@ private fun LiquidGlassHomeSample(
                 .padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(Icons.Outlined.Search, contentDescription = null, tint = contentColor)
+            Icon(Icons.Outlined.Search, contentDescription = null, tint = topContentColor)
             Spacer(modifier = Modifier.width(8.dp))
             AppText(
                 text = "搜索感兴趣的视频",
                 style = MaterialTheme.typography.bodySmall,
-                color = contentColor.copy(alpha = 0.8f),
+                color = topContentColor.copy(alpha = 0.8f),
             )
         }
 
@@ -681,7 +748,11 @@ private fun LiquidGlassHomeSample(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .padding(start = 12.dp, end = 12.dp, bottom = 10.dp),
+                .padding(start = 12.dp, end = 12.dp, bottom = 10.dp)
+                .trackLiquidGlassAdaptiveReadability(
+                    state = bottomReadabilityState,
+                    enabled = adaptiveReadabilityEnabled,
+                ),
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -708,7 +779,9 @@ private fun LiquidGlassHomeSample(
                             selected = index == previewSelectedBottomBarIndex,
                         ),
                         contentDescription = item.label,
-                        tint = if (index == previewSelectedBottomBarIndex) {
+                        tint = if (adaptiveReadabilityEnabled) {
+                            bottomContentColor
+                        } else if (index == previewSelectedBottomBarIndex) {
                             MaterialTheme.colorScheme.primary
                         } else {
                             contentColor
@@ -736,12 +809,12 @@ private fun LiquidGlassHomeSample(
                     Icon(
                         imageVector = Icons.Outlined.Search,
                         contentDescription = "底栏搜索",
-                        tint = contentColor,
+                        tint = bottomContentColor,
                     )
                     AppText(
                         text = "搜索",
                         style = MaterialTheme.typography.labelSmall,
-                        color = contentColor.copy(alpha = 0.8f),
+                        color = bottomContentColor.copy(alpha = 0.8f),
                     )
                 }
             }

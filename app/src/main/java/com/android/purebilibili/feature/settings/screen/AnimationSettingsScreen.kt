@@ -29,6 +29,8 @@ import com.android.purebilibili.core.ui.blur.BlurIntensity
 import com.android.purebilibili.core.ui.blur.shouldAllowHomeChromeLiquidGlass
 import com.android.purebilibili.core.store.AppNavigationSettings
 import com.android.purebilibili.core.store.LiquidGlassAdvancedSettings
+import com.android.purebilibili.core.store.LiquidGlassReadabilityMode
+import com.android.purebilibili.core.store.home.LiquidGlassSettingsStore
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -138,6 +140,9 @@ fun AnimationSettingsContent(
         .collectAsStateWithLifecycle(
             initialValue = LiquidGlassAdvancedSettings()
         )
+    val liquidGlassReadabilityMode by LiquidGlassSettingsStore
+        .observeReadabilityMode(context)
+        .collectAsStateWithLifecycle(initialValue = LiquidGlassReadabilityMode.STABLE)
     val uiEntranceAnimationEnabled by SettingsManager.getUiEntranceAnimationEnabled(context)
         .collectAsStateWithLifecycle(initialValue = true)
     val appNavigationSettings by SettingsManager.getAppNavigationSettings(context)
@@ -510,12 +515,15 @@ fun AnimationSettingsContent(
                                         persistedProgress = state.liquidGlassProgress,
                                         previewImageUri = liquidGlassPreviewImageUri,
                                         persistedAdvancedSettings = liquidGlassAdvancedSettings,
+                                        persistedReadabilityMode = liquidGlassReadabilityMode,
                                         bottomBarItems = previewBottomBarItems,
                                         bottomBarSearchEnabled = state.bottomBarSearchEnabled,
                                         onProgressCommitted = viewModel::setLiquidGlassProgress,
                                         onPreviewImageChanged = viewModel::setLiquidGlassPreviewImageUri,
                                         onAdvancedSettingsCommitted =
                                             viewModel::setLiquidGlassAdvancedSettings,
+                                        onReadabilityModeChanged =
+                                            viewModel::setLiquidGlassReadabilityMode,
                                         onShareSettings = {
                                             scope.launch {
                                                 liquidGlassShareService

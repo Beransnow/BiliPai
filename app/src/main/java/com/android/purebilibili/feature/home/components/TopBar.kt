@@ -96,6 +96,7 @@ import com.android.purebilibili.feature.home.HomeCategory
 import com.android.purebilibili.feature.home.resolveHomeTopCategories
 import com.android.purebilibili.core.store.BottomBarLiquidGlassPreset
 import com.android.purebilibili.core.store.LiquidGlassStyle
+import com.android.purebilibili.core.store.LiquidGlassReadabilityMode
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -939,6 +940,16 @@ private fun LightweightHomeTopTabs(
     val resolvedLiquidGlassTuning = remember(liquidGlassStyle, liquidGlassTuning) {
         liquidGlassTuning ?: resolveLiquidGlassTuning(liquidGlassStyle)
     }
+    val adaptiveReadabilityEnabled = isLiquidGlassEnabled &&
+        resolvedLiquidGlassTuning.readabilityMode == LiquidGlassReadabilityMode.ADAPTIVE
+    val adaptiveReadabilityState = rememberLiquidGlassAdaptiveReadabilityState(
+        enabled = adaptiveReadabilityEnabled,
+    )
+    val adaptiveTopTabContentColor = rememberLiquidGlassAdaptiveContentColor(
+        stableColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        state = adaptiveReadabilityState,
+        enabled = adaptiveReadabilityEnabled,
+    )
     val haptic = com.android.purebilibili.core.util.rememberHapticFeedback()
     val scrollChannel = com.android.purebilibili.feature.home.LocalHomeScrollChannel.current
     val normalizedLabelMode = normalizeTopTabLabelMode(labelMode)
@@ -1347,10 +1358,15 @@ private fun LightweightHomeTopTabs(
         )
         val topTabVisibleContentZIndex = if (useTopTabGlassColorPath) 0f else 2f
         val topTabThemeColor = MaterialTheme.colorScheme.primary
-        val topTabExportTintColor = resolveAndroidNativeExportTintColor(
+        val stableTopTabExportTintColor = resolveAndroidNativeExportTintColor(
             themeColor = topTabThemeColor,
             darkTheme = isDarkTheme
         )
+        val topTabExportTintColor = if (adaptiveReadabilityEnabled) {
+            adaptiveTopTabContentColor
+        } else {
+            stableTopTabExportTintColor
+        }
         val topTabExportMonochromeColor = resolveSharedLiquidExportMonochromeColor(
             darkTheme = isDarkTheme
         )
@@ -1426,7 +1442,11 @@ private fun LightweightHomeTopTabs(
                     } else {
                         0f
                     }
-                },
+                }
+                .trackLiquidGlassAdaptiveReadability(
+                    state = adaptiveReadabilityState,
+                    enabled = adaptiveReadabilityEnabled,
+                ),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
@@ -1595,6 +1615,8 @@ private fun LightweightHomeTopTabs(
                             } else {
                                 TopTabLiquidColorMode.NORMAL
                             },
+                            adaptiveContentColorOverride = adaptiveTopTabContentColor
+                                .takeIf { adaptiveReadabilityEnabled },
                             modifier = measuredItemModifier,
                             onClick = {
                                 performHomeTopBarTap(haptic = haptic, onClick = {
@@ -1875,6 +1897,7 @@ private fun LightweightTopTabItem(
     useClickIndication: Boolean = true,
     colorMode: TopTabLiquidColorMode = TopTabLiquidColorMode.NORMAL,
     exportMonochromeColor: Color = OpticalContrastPalette.Highlight,
+    adaptiveContentColorOverride: Color? = null,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
@@ -1916,12 +1939,13 @@ private fun LightweightTopTabItem(
     }
     val contentColor = when (colorMode) {
         TopTabLiquidColorMode.GLASS_EXPORT -> exportMonochromeColor
-        TopTabLiquidColorMode.GLASS_VISIBLE -> unselectedColor
-        TopTabLiquidColorMode.NORMAL -> androidx.compose.ui.graphics.lerp(
-            unselectedColor,
-            selectedColor,
-            selectionFraction
-        )
+        TopTabLiquidColorMode.GLASS_VISIBLE -> adaptiveContentColorOverride ?: unselectedColor
+        TopTabLiquidColorMode.NORMAL -> adaptiveContentColorOverride
+            ?: androidx.compose.ui.graphics.lerp(
+                unselectedColor,
+                selectedColor,
+                selectionFraction
+            )
     }
     val containerColor = when {
         !drawContainer || colorMode == TopTabLiquidColorMode.GLASS_EXPORT -> Color.Transparent
