@@ -89,7 +89,7 @@ private fun biliPaiTunedBottomBarGlassMaterial(
         vibrancy = true,
         shellRefractionHeightDp = tuning.refractionHeight * tuning.contentDistortionScale,
         shellRefractionAmountDp = tuning.refractionAmount * tuning.contentDistortionScale,
-        shellChromaticAberration = tuning.chromaticAberrationAmount,
+        shellChromaticAberration = tuning.shellChromaticAberrationAmount,
         foregroundTint = Color.Transparent,
         highlightWidthScale = 1f,
         shadowAlphaScale = 1f,

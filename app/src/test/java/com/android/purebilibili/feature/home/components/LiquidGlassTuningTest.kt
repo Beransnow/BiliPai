@@ -7,7 +7,6 @@ import com.android.purebilibili.core.store.LiquidGlassStyle
 import com.android.purebilibili.core.store.resolveLiquidGlassAdvancedPreset
 import com.android.purebilibili.core.store.resolveLegacyLiquidGlassProgress
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -42,11 +41,14 @@ class LiquidGlassTuningTest {
 
         assertTrue(clear.indicatorLensBoost > middle.indicatorLensBoost)
         assertTrue(middle.indicatorLensBoost > frosted.indicatorLensBoost)
-        assertTrue(clear.chromaticAberrationAmount >= middle.chromaticAberrationAmount)
-        assertTrue(middle.chromaticAberrationAmount >= frosted.chromaticAberrationAmount)
+        assertTrue(
+            clear.shellChromaticAberrationAmount >= middle.shellChromaticAberrationAmount
+        )
+        assertTrue(
+            middle.shellChromaticAberrationAmount >= frosted.shellChromaticAberrationAmount
+        )
         assertTrue(clear.scrollCoupledRefractionAmount >= middle.scrollCoupledRefractionAmount)
         assertTrue(middle.scrollCoupledRefractionAmount >= frosted.scrollCoupledRefractionAmount)
-        assertFalse(frosted.depthEffectEnabled)
     }
 
     @Test
@@ -106,7 +108,9 @@ class LiquidGlassTuningTest {
             ),
         )
 
-        assertTrue(prism.chromaticAberrationAmount > readable.chromaticAberrationAmount)
+        assertTrue(
+            prism.shellChromaticAberrationAmount > readable.shellChromaticAberrationAmount
+        )
         assertTrue(prism.contentDistortionScale > readable.contentDistortionScale)
         assertEquals(0f, readable.contentDistortionScale, 0.0001f)
         assertTrue(prism.contentReadabilityBoost > 0f)
@@ -158,12 +162,9 @@ class LiquidGlassTuningTest {
         assertEquals(24f, tuning.refractionAmount, 0.0001f)
         assertEquals(24f, tuning.refractionHeight, 0.0001f)
         assertEquals(0.28f, tuning.indicatorTintAlpha, 0.0001f)
-        assertTrue(tuning.chromaticAberrationEnabled)
         assertEquals(0f, tuning.contentReadabilityScrimAlpha, 0.0001f)
-        assertEquals(0f, tuning.chromaticAberrationAmount, 0.0001f)
+        assertEquals(0f, tuning.shellChromaticAberrationAmount, 0.0001f)
         assertEquals(0.5f, tuning.indicatorChromaticAberrationAmount, 0.0001f)
-        assertFalse(tuning.depthEffectEnabled)
-        assertTrue(tuning.indicatorDepthEffectEnabled)
     }
 
     @Test

@@ -176,7 +176,7 @@ class BottomBarMiuixPolicyTest {
             ).containsMatchIn(floating)
         )
         assertTrue(floating.contains("resolveLiquidGlassIndicatorChromaticAberration("))
-        assertTrue(floating.contains("depthEffect = liquidGlassTuning.indicatorDepthEffectEnabled"))
+        assertTrue(floating.contains("depthEffect = true"))
     }
 
     @Test

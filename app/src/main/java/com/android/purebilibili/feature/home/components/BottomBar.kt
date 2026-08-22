@@ -1096,7 +1096,6 @@ internal fun Modifier.biliPaiMiuixFloatingDockSurface(
                                             materialSpec.shellRefractionAmountDp *
                                                 effectiveShellLensIntensity
                                             ).dp.toPx(),
-                                        depthEffect = liquidGlassTuning.depthEffectEnabled,
                                         chromaticAberration = materialSpec.shellChromaticAberration
                                     )
                                 }

@@ -17,7 +17,6 @@ data class LiquidGlassTuning(
     val surfaceAlpha: Float,
     val whiteOverlayAlpha: Float,
     val saturation: Float,
-    val refractIntensity: Float,
     val refractionAmount: Float,
     val refractionHeight: Float,
     val indicatorTintAlpha: Float,
@@ -27,16 +26,9 @@ data class LiquidGlassTuning(
     val contentReadabilityBoost: Float,
     val contentReadabilityScrimAlpha: Float,
     val contentDistortionScale: Float,
-    val chromaticAberrationEnabled: Boolean,
-    val chromaticAberrationAmount: Float,
+    val shellChromaticAberrationAmount: Float,
     val indicatorChromaticAberrationAmount: Float,
-    val scrollCoupledRefraction: Boolean,
     val scrollCoupledRefractionAmount: Float,
-    val useNeutralIndicatorTint: Boolean,
-    val neutralIndicatorTintAmount: Float,
-    val depthEffectEnabled: Boolean,
-    val indicatorDepthEffectEnabled: Boolean,
-    val depthEffectAmount: Float
 )
 
 private const val UPSTREAM_BALANCED_READABILITY = 0.62f
@@ -82,8 +74,6 @@ internal fun resolveLiquidGlassTuning(
         advancedSettings.contentDistortion.coerceIn(0f, 1f) / 0.45f
     ).coerceIn(0f, 1.8f)
     val scrollCouplingAmount = midpointLerp(1f, 0f, 0f, normalizedProgress)
-    val neutralTintAmount = midpointLerp(1f, 0f, 0f, normalizedProgress)
-    val depthEffectAmount = midpointLerp(1f, 1f, 0f, normalizedProgress)
     return LiquidGlassTuning(
         mode = mode,
         progress = normalizedProgress,
@@ -94,7 +84,6 @@ internal fun resolveLiquidGlassTuning(
         surfaceAlpha = midpointLerp(0.12f, 0.40f, 0.54f, normalizedProgress),
         whiteOverlayAlpha = midpointLerp(0.012f, 0.04f, 0.14f, normalizedProgress),
         saturation = midpointLerp(1.65f, 1.5f, 1.24f, normalizedProgress),
-        refractIntensity = midpointLerp(0.5f, 0.28f, 0.14f, normalizedProgress),
         refractionAmount = midpointLerp(26f, 24f, 8f, normalizedProgress),
         refractionHeight = midpointLerp(24f, 24f, 8f, normalizedProgress),
         indicatorTintAlpha = midpointLerp(0.20f, 0.28f, 0.38f, normalizedProgress),
@@ -104,23 +93,15 @@ internal fun resolveLiquidGlassTuning(
         contentReadabilityBoost = contentReadabilityBoost,
         contentReadabilityScrimAlpha = contentReadabilityScrimAlpha,
         contentDistortionScale = contentDistortionScale,
-        chromaticAberrationEnabled =
-            shellChromaticAmount > 0.01f || indicatorChromaticAmount > 0.01f,
-        chromaticAberrationAmount = shellChromaticAmount,
+        shellChromaticAberrationAmount = shellChromaticAmount,
         indicatorChromaticAberrationAmount = indicatorChromaticAmount,
-        scrollCoupledRefraction = scrollCouplingAmount > 0.01f,
         scrollCoupledRefractionAmount = scrollCouplingAmount,
-        useNeutralIndicatorTint = neutralTintAmount > 0.5f,
-        neutralIndicatorTintAmount = neutralTintAmount,
-        depthEffectEnabled = false,
-        indicatorDepthEffectEnabled = true,
-        depthEffectAmount = depthEffectAmount
     )
 }
 
 internal fun resolveLiquidGlassIndicatorChromaticAberration(
     tuning: LiquidGlassTuning,
-): Float = if (tuning.chromaticAberrationEnabled) {
+): Float = if (tuning.indicatorChromaticAberrationAmount > 0.01f) {
     (tuning.indicatorChromaticAberrationAmount * tuning.indicatorChromaticBoost)
         .coerceIn(0f, UPSTREAM_INDICATOR_CHROMATIC_ABERRATION)
 } else {

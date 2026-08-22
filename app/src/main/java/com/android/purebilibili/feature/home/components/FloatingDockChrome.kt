@@ -160,8 +160,7 @@ internal fun Modifier.biliPaiFloatingDockShell(
                     lens(
                         refractionHeight = refractionHeightDp.dp.toPx(),
                         refractionAmount = refractionAmountDp.dp.toPx(),
-                        depthEffect = liquidGlassTuning.depthEffectEnabled,
-                        chromaticAberration = liquidGlassTuning.chromaticAberrationAmount,
+                        chromaticAberration = liquidGlassTuning.shellChromaticAberrationAmount,
                     )
                 }
             },
@@ -228,8 +227,7 @@ internal fun Modifier.biliPaiFloatingDockCaptureSurface(
                             distortionScale,
                         refractionAmount = liquidGlassTuning.refractionAmount.dp.toPx() *
                             distortionScale,
-                        depthEffect = liquidGlassTuning.depthEffectEnabled,
-                        chromaticAberration = liquidGlassTuning.chromaticAberrationAmount,
+                        chromaticAberration = liquidGlassTuning.shellChromaticAberrationAmount,
                     )
                 }
             },
@@ -293,7 +291,7 @@ internal fun BoxScope.BiliPaiFloatingDockIndicator(
                                     refractionAmount = 14.dp.toPx() * progress *
                                         liquidGlassTuning.indicatorEdgeWarpBoost *
                                         liquidGlassTuning.contentDistortionScale,
-                                    depthEffect = liquidGlassTuning.indicatorDepthEffectEnabled,
+                                    depthEffect = true,
                                     chromaticAberration =
                                         resolveLiquidGlassIndicatorChromaticAberration(
                                             liquidGlassTuning

@@ -667,8 +667,8 @@ fun FloatingBottomBar(
                                         lens(
                                             refractionHeight = shellRefractionHeightPx,
                                             refractionAmount = shellRefractionAmountPx,
-                                            depthEffect = liquidGlassTuning.depthEffectEnabled,
-                                            chromaticAberration = liquidGlassTuning.chromaticAberrationAmount,
+                                            chromaticAberration =
+                                                liquidGlassTuning.shellChromaticAberrationAmount,
                                         )
                                     },
                                     highlight = { baseHighlight.copy(alpha = 0.75f) },
@@ -754,8 +754,8 @@ fun FloatingBottomBar(
                                 lens(
                                     refractionHeight = shellRefractionHeightPx,
                                     refractionAmount = shellRefractionAmountPx,
-                                    depthEffect = liquidGlassTuning.depthEffectEnabled,
-                                    chromaticAberration = liquidGlassTuning.chromaticAberrationAmount,
+                                    chromaticAberration =
+                                        liquidGlassTuning.shellChromaticAberrationAmount,
                                 )
                             },
                             onDrawSurface = {
@@ -824,7 +824,7 @@ fun FloatingBottomBar(
                                     refractionAmount = indicatorLensAmountPx * progress *
                                         liquidGlassTuning.indicatorEdgeWarpBoost *
                                         liquidGlassTuning.contentDistortionScale,
-                                    depthEffect = liquidGlassTuning.indicatorDepthEffectEnabled,
+                                    depthEffect = true,
                                     chromaticAberration =
                                         resolveLiquidGlassIndicatorChromaticAberration(
                                             liquidGlassTuning
