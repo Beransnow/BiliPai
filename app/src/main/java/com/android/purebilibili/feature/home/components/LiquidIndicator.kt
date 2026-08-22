@@ -484,7 +484,7 @@ internal fun resolveLiquidStyleTuning(tuning: LiquidGlassTuning): LiquidStyleTun
             deformationMultiplier = 0.92f + tuning.strength * 0.14f,
             idleBlurRadius = tuning.backdropBlurRadius,
             depthEffectEnabled = true,
-            allowChromaticAberration = tuning.chromaticAberrationAmount > 0.01f
+            allowChromaticAberration = tuning.indicatorChromaticAberrationAmount > 0.01f
         )
         LiquidGlassMode.FROSTED -> LiquidStyleTuning(
             idleThresholdPxPerSecond = 220f,

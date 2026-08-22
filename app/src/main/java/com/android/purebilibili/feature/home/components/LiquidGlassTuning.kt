@@ -29,13 +29,19 @@ data class LiquidGlassTuning(
     val contentDistortionScale: Float,
     val chromaticAberrationEnabled: Boolean,
     val chromaticAberrationAmount: Float,
+    val indicatorChromaticAberrationAmount: Float,
     val scrollCoupledRefraction: Boolean,
     val scrollCoupledRefractionAmount: Float,
     val useNeutralIndicatorTint: Boolean,
     val neutralIndicatorTintAmount: Float,
     val depthEffectEnabled: Boolean,
+    val indicatorDepthEffectEnabled: Boolean,
     val depthEffectAmount: Float
 )
+
+private const val UPSTREAM_BALANCED_READABILITY = 0.62f
+private const val UPSTREAM_BALANCED_CHROMATIC_CONTROL = 0.56f
+private const val UPSTREAM_INDICATOR_CHROMATIC_ABERRATION = 0.5f
 
 internal fun resolveLiquidGlassTuning(
     progress: Float,
@@ -49,15 +55,29 @@ internal fun resolveLiquidGlassTuning(
     }
     val frostWeight = normalizedProgress
     val configuredReadability = advancedSettings.contentReadability.coerceIn(0f, 1f)
+    val readabilityProtection = (
+        (configuredReadability - UPSTREAM_BALANCED_READABILITY) /
+            (1f - UPSTREAM_BALANCED_READABILITY)
+    ).coerceIn(0f, 1f)
     // Readability protection must remain active across the full slider. It is strongest for
     // transparent glass, but a user-selected 100% must not become a no-op around 50%.
     val readabilityWeight = midpointLerp(1f, 0.6f, 0.25f, normalizedProgress)
-    val contentReadabilityBoost = readabilityWeight * configuredReadability
+    val contentReadabilityBoost = readabilityWeight * readabilityProtection
     val contentReadabilityScrimAlpha = contentReadabilityBoost *
-        (0.12f + configuredReadability * 0.22f)
-    // Miuix lens accepts a useful 0..0.5 range. Keep the user setting independent from
-    // transparency so a reused indicator has the same visible dispersion as the home dock.
-    val chromaticAmount = advancedSettings.chromaticAberration.coerceIn(0f, 1f) * 0.5f
+        (0.12f + readabilityProtection * 0.22f)
+    val chromaticControl = advancedSettings.chromaticAberration.coerceIn(0f, 1f)
+    // Miuix keeps the 24dp shell achromatic and applies 0.5 dispersion to the moving
+    // 10dp/14dp indicator. The balanced anchor reproduces that split exactly.
+    val shellChromaticAmount = if (chromaticControl > UPSTREAM_BALANCED_CHROMATIC_CONTROL) {
+        (chromaticControl - UPSTREAM_BALANCED_CHROMATIC_CONTROL) /
+            (1f - UPSTREAM_BALANCED_CHROMATIC_CONTROL) *
+            UPSTREAM_INDICATOR_CHROMATIC_ABERRATION
+    } else {
+        0f
+    }
+    val indicatorChromaticAmount = (
+        chromaticControl / UPSTREAM_BALANCED_CHROMATIC_CONTROL
+    ).coerceIn(0f, 1f) * UPSTREAM_INDICATOR_CHROMATIC_ABERRATION
     val contentDistortionScale = (
         advancedSettings.contentDistortion.coerceIn(0f, 1f) / 0.45f
     ).coerceIn(0f, 1.8f)
@@ -84,13 +104,16 @@ internal fun resolveLiquidGlassTuning(
         contentReadabilityBoost = contentReadabilityBoost,
         contentReadabilityScrimAlpha = contentReadabilityScrimAlpha,
         contentDistortionScale = contentDistortionScale,
-        chromaticAberrationEnabled = chromaticAmount > 0.01f,
-        chromaticAberrationAmount = chromaticAmount,
+        chromaticAberrationEnabled =
+            shellChromaticAmount > 0.01f || indicatorChromaticAmount > 0.01f,
+        chromaticAberrationAmount = shellChromaticAmount,
+        indicatorChromaticAberrationAmount = indicatorChromaticAmount,
         scrollCoupledRefraction = scrollCouplingAmount > 0.01f,
         scrollCoupledRefractionAmount = scrollCouplingAmount,
         useNeutralIndicatorTint = neutralTintAmount > 0.5f,
         neutralIndicatorTintAmount = neutralTintAmount,
-        depthEffectEnabled = depthEffectAmount > 0.08f,
+        depthEffectEnabled = false,
+        indicatorDepthEffectEnabled = true,
         depthEffectAmount = depthEffectAmount
     )
 }
@@ -98,7 +121,8 @@ internal fun resolveLiquidGlassTuning(
 internal fun resolveLiquidGlassIndicatorChromaticAberration(
     tuning: LiquidGlassTuning,
 ): Float = if (tuning.chromaticAberrationEnabled) {
-    (tuning.chromaticAberrationAmount * tuning.indicatorChromaticBoost).coerceIn(0f, 0.5f)
+    (tuning.indicatorChromaticAberrationAmount * tuning.indicatorChromaticBoost)
+        .coerceIn(0f, UPSTREAM_INDICATOR_CHROMATIC_ABERRATION)
 } else {
     0f
 }

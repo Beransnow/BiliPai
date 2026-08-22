@@ -813,7 +813,7 @@ fun FloatingBottomBar(
                                     refractionAmount = indicatorLensAmountPx * progress *
                                         liquidGlassTuning.indicatorEdgeWarpBoost *
                                         liquidGlassTuning.contentDistortionScale,
-                                    depthEffect = liquidGlassTuning.depthEffectEnabled,
+                                    depthEffect = liquidGlassTuning.indicatorDepthEffectEnabled,
                                     chromaticAberration =
                                         resolveLiquidGlassIndicatorChromaticAberration(
                                             liquidGlassTuning

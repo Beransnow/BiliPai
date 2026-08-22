@@ -159,8 +159,11 @@ class LiquidGlassTuningTest {
         assertEquals(24f, tuning.refractionHeight, 0.0001f)
         assertEquals(0.28f, tuning.indicatorTintAlpha, 0.0001f)
         assertTrue(tuning.chromaticAberrationEnabled)
-        assertEquals(0.28f, tuning.chromaticAberrationAmount, 0.0001f)
-        assertTrue(tuning.depthEffectEnabled)
+        assertEquals(0f, tuning.contentReadabilityScrimAlpha, 0.0001f)
+        assertEquals(0f, tuning.chromaticAberrationAmount, 0.0001f)
+        assertEquals(0.5f, tuning.indicatorChromaticAberrationAmount, 0.0001f)
+        assertFalse(tuning.depthEffectEnabled)
+        assertTrue(tuning.indicatorDepthEffectEnabled)
     }
 
     @Test
@@ -173,7 +176,7 @@ class LiquidGlassTuningTest {
         )
 
         assertEquals(
-            0.28f,
+            0.5f,
             resolveLiquidGlassIndicatorChromaticAberration(tuning),
             0.0001f,
         )

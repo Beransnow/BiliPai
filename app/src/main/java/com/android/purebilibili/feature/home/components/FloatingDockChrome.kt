@@ -288,9 +288,11 @@ internal fun BoxScope.BiliPaiFloatingDockIndicator(
                                     refractionAmount = 14.dp.toPx() * progress *
                                         liquidGlassTuning.indicatorEdgeWarpBoost *
                                         liquidGlassTuning.contentDistortionScale,
-                                    depthEffect = liquidGlassTuning.depthEffectEnabled,
-                                    chromaticAberration = liquidGlassTuning.chromaticAberrationAmount *
-                                        liquidGlassTuning.indicatorChromaticBoost,
+                                    depthEffect = liquidGlassTuning.indicatorDepthEffectEnabled,
+                                    chromaticAberration =
+                                        resolveLiquidGlassIndicatorChromaticAberration(
+                                            liquidGlassTuning
+                                        ),
                                 )
                             },
                             highlight = { pillHighlight.copy(alpha = pressProgress) },
