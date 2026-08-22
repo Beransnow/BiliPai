@@ -1,5 +1,7 @@
 // 文件路径: feature/settings/AnimationSettingsScreen.kt
 package com.android.purebilibili.feature.settings
+import android.content.Intent
+import android.widget.Toast
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
 
@@ -35,6 +37,7 @@ import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.adaptive.resolveDeviceUiProfile
 import com.android.purebilibili.core.ui.transition.VIDEO_SHARED_TRANSITION_CUSTOM_MAX_MILLIS
 import com.android.purebilibili.feature.settings.ui.SettingsPageScaffold
+import com.android.purebilibili.feature.settings.share.SettingsShareService
 import com.android.purebilibili.core.ui.transition.VIDEO_SHARED_TRANSITION_CUSTOM_MIN_MILLIS
 import com.android.purebilibili.core.ui.transition.VideoSharedTransitionSpeed
 import com.android.purebilibili.core.ui.transition.normalizeVideoSharedTransitionCustomDurationMillis
@@ -93,6 +96,9 @@ fun AnimationSettingsContent(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val liquidGlassShareService = remember(context.applicationContext) {
+        SettingsShareService(context.applicationContext)
+    }
     val listState = rememberLazyListState()
     val focusRequest by SettingsSearchFocusController.request.collectAsStateWithLifecycle()
     val windowSizeClass = LocalWindowSizeClass.current
@@ -493,6 +499,53 @@ fun AnimationSettingsContent(
                                         onPreviewImageChanged = viewModel::setLiquidGlassPreviewImageUri,
                                         onAdvancedSettingsCommitted =
                                             viewModel::setLiquidGlassAdvancedSettings,
+                                        onShareSettings = {
+                                            scope.launch {
+                                                liquidGlassShareService
+                                                    .createLiquidGlassShareUri()
+                                                    .onSuccess { shareUri ->
+                                                        runCatching {
+                                                            val shareIntent = Intent(
+                                                                Intent.ACTION_SEND
+                                                            ).apply {
+                                                                type = "application/json"
+                                                                putExtra(
+                                                                    Intent.EXTRA_STREAM,
+                                                                    shareUri,
+                                                                )
+                                                                putExtra(
+                                                                    Intent.EXTRA_TEXT,
+                                                                    "BiliPai 液态玻璃设置，可在“设置分享”中导入。",
+                                                                )
+                                                                addFlags(
+                                                                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                                                                )
+                                                            }
+                                                            context.startActivity(
+                                                                Intent.createChooser(
+                                                                    shareIntent,
+                                                                    "分享液态玻璃设置",
+                                                                )
+                                                            )
+                                                        }.onFailure { error ->
+                                                            Toast.makeText(
+                                                                context,
+                                                                error.message
+                                                                    ?: "无法打开系统分享",
+                                                                Toast.LENGTH_SHORT,
+                                                            ).show()
+                                                        }
+                                                    }
+                                                    .onFailure { error ->
+                                                        Toast.makeText(
+                                                            context,
+                                                            error.message
+                                                                ?: "液态玻璃设置导出失败",
+                                                            Toast.LENGTH_SHORT,
+                                                        ).show()
+                                                    }
+                                            }
+                                        },
                                     )
                                 }
                             }

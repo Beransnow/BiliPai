@@ -66,6 +66,9 @@ class SettingsMiuixSimplificationStructureTest {
         assertTrue(source.contains("title = \"内容可读性\""))
         assertTrue(source.contains("title = \"色散强度\""))
         assertTrue(source.contains("title = \"文字与图标扭曲\""))
+        assertTrue(source.contains("调至 0% 可完全关闭折射"))
+        assertTrue(source.contains("AppText(\"完全关闭文字扭曲\")"))
+        assertTrue(source.contains("AppText(\"一键分享设置\")"))
         assertTrue(source.contains("preset = LiquidGlassAdvancedPreset.CUSTOM"))
         assertTrue(source.contains("onAdvancedSettingsCommitted(advancedSettings)"))
         assertTrue(source.contains("detectVerticalDragGestures"))
@@ -96,6 +99,9 @@ class SettingsMiuixSimplificationStructureTest {
             Regex("""icon = rememberSettingsSemanticIcon\(SettingsIconRole\.BOTTOM_BAR_GLASS\),\s*title = "底栏液态玻璃"""")
                 .containsMatchIn(source)
         )
+        assertTrue(source.contains("createLiquidGlassShareUri()"))
+        assertTrue(source.contains("Intent.ACTION_SEND"))
+        assertTrue(source.contains("Intent.FLAG_GRANT_READ_URI_PERMISSION"))
     }
 
     @Test

@@ -2,6 +2,7 @@ package com.android.purebilibili.feature.home.components
 
 import com.android.purebilibili.core.store.LiquidGlassMode
 import com.android.purebilibili.core.store.LiquidGlassAdvancedPreset
+import com.android.purebilibili.core.store.LiquidGlassAdvancedSettings
 import com.android.purebilibili.core.store.LiquidGlassStyle
 import com.android.purebilibili.core.store.resolveLiquidGlassAdvancedPreset
 import com.android.purebilibili.core.store.resolveLegacyLiquidGlassProgress
@@ -100,7 +101,18 @@ class LiquidGlassTuningTest {
 
         assertTrue(prism.chromaticAberrationAmount > readable.chromaticAberrationAmount)
         assertTrue(prism.contentDistortionScale > readable.contentDistortionScale)
+        assertEquals(0f, readable.contentDistortionScale, 0.0001f)
         assertTrue(prism.contentReadabilityBoost > 0f)
+    }
+
+    @Test
+    fun `zero content distortion disables content warping completely`() {
+        val tuning = resolveLiquidGlassTuning(
+            progress = 0f,
+            advancedSettings = LiquidGlassAdvancedSettings(contentDistortion = 0f),
+        )
+
+        assertEquals(0f, tuning.contentDistortionScale, 0.0001f)
     }
 
     @Test

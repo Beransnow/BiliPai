@@ -31,6 +31,7 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PhotoLibrary
 import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -81,6 +82,7 @@ internal fun LiquidGlassAdjustmentPanel(
     onProgressCommitted: (Float) -> Unit,
     onPreviewImageChanged: (String?) -> Unit,
     onAdvancedSettingsCommitted: (LiquidGlassAdvancedSettings) -> Unit,
+    onShareSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
@@ -246,7 +248,7 @@ internal fun LiquidGlassAdjustmentPanel(
         }
         AppText(
             text = when (advancedSettings.preset) {
-                LiquidGlassAdvancedPreset.READABLE -> "清晰：优先保证图标和文字可读性（推荐极度通透）"
+                LiquidGlassAdvancedPreset.READABLE -> "清晰：关闭内容扭曲，优先保证文字和图标正常显示"
                 LiquidGlassAdvancedPreset.BALANCED -> "均衡：保持 BiliPai 默认质感"
                 LiquidGlassAdvancedPreset.PRISM -> "棱镜：强化色散与内容折射"
                 LiquidGlassAdvancedPreset.CUSTOM -> "自定：使用下方高级参数"
@@ -254,12 +256,22 @@ internal fun LiquidGlassAdjustmentPanel(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
-        AppTextButton(
-            onClick = { advancedSettingsExpanded = !advancedSettingsExpanded },
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Icon(Icons.Outlined.Tune, contentDescription = null)
-            Spacer(modifier = Modifier.width(6.dp))
-            AppText(if (advancedSettingsExpanded) "收起高级参数" else "高级参数")
+            AppTextButton(
+                onClick = { advancedSettingsExpanded = !advancedSettingsExpanded },
+            ) {
+                Icon(Icons.Outlined.Tune, contentDescription = null)
+                Spacer(modifier = Modifier.width(6.dp))
+                AppText(if (advancedSettingsExpanded) "收起高级参数" else "高级参数")
+            }
+            AppTextButton(onClick = onShareSettings) {
+                Icon(Icons.Outlined.Share, contentDescription = null)
+                Spacer(modifier = Modifier.width(6.dp))
+                AppText("一键分享设置")
+            }
         }
         AnimatedVisibility(
             visible = advancedSettingsExpanded,
@@ -301,8 +313,13 @@ internal fun LiquidGlassAdjustmentPanel(
                 )
                 LiquidGlassAdvancedSlider(
                     title = "文字与图标扭曲",
-                    description = "控制选中内容经过移动玻璃指示器时的折射幅度",
+                    description = "调至 0% 可完全关闭折射，让文字和图标正常显示",
                     value = advancedSettings.contentDistortion,
+                    valueText = if (advancedSettings.contentDistortion <= 0.001f) {
+                        "关闭"
+                    } else {
+                        "${(advancedSettings.contentDistortion * 100f).roundToInt()}%"
+                    },
                     onValueChange = { value ->
                         val updatedSettings = advancedSettings.copy(
                             preset = LiquidGlassAdvancedPreset.CUSTOM,
@@ -315,6 +332,22 @@ internal fun LiquidGlassAdjustmentPanel(
                         onAdvancedSettingsCommitted(advancedSettings)
                     },
                 )
+                AppTextButton(
+                    onClick = {
+                        val updatedSettings = advancedSettings.copy(
+                            preset = LiquidGlassAdvancedPreset.CUSTOM,
+                            contentDistortion = 0f,
+                        )
+                        advancedSettings = updatedSettings
+                        presetSliderValue = liquidGlassPresetSliderValue(updatedSettings)
+                        onAdvancedSettingsCommitted(updatedSettings)
+                    },
+                    enabled = advancedSettings.contentDistortion > 0.001f,
+                ) {
+                    Icon(Icons.Outlined.Restore, contentDescription = null)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    AppText("完全关闭文字扭曲")
+                }
             }
         }
 
@@ -570,6 +603,7 @@ private fun LiquidGlassAdvancedSlider(
     title: String,
     description: String,
     value: Float,
+    valueText: String = "${(value * 100f).roundToInt()}%",
     onValueChange: (Float) -> Unit,
     onValueChangeFinished: () -> Unit,
 ) {
@@ -592,7 +626,7 @@ private fun LiquidGlassAdvancedSlider(
                 )
             }
             AppText(
-                text = "${(value * 100f).roundToInt()}%",
+                text = valueText,
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.primary,
             )
@@ -606,7 +640,7 @@ private fun LiquidGlassAdvancedSlider(
                 .fillMaxWidth()
                 .semantics {
                     contentDescription = title
-                    stateDescription = "${(value * 100f).roundToInt()}%"
+                    stateDescription = valueText
                 },
         )
     }

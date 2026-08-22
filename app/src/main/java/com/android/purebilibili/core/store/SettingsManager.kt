@@ -150,7 +150,7 @@ internal fun resolveLiquidGlassAdvancedPreset(
         preset = preset,
         contentReadability = 1f,
         chromaticAberration = 0.08f,
-        contentDistortion = 0.18f,
+        contentDistortion = 0f,
     )
     LiquidGlassAdvancedPreset.BALANCED -> LiquidGlassAdvancedSettings(
         preset = preset,
@@ -6937,6 +6937,14 @@ object SettingsManager {
             StringShareablePreferenceDefinition(KEY_DYNAMIC_TAB_VISIBLE_TABS, SettingsShareSection.APPEARANCE),
             BooleanShareablePreferenceDefinition(KEY_HEADER_BLUR_ENABLED, SettingsShareSection.APPEARANCE),
             BooleanShareablePreferenceDefinition(KEY_BOTTOM_BAR_BLUR_ENABLED, SettingsShareSection.APPEARANCE),
+            BooleanShareablePreferenceDefinition(
+                KEY_TOP_BAR_LIQUID_GLASS_ENABLED,
+                SettingsShareSection.APPEARANCE,
+            ),
+            BooleanShareablePreferenceDefinition(
+                KEY_HOME_SEARCH_LIQUID_GLASS_ENABLED,
+                SettingsShareSection.APPEARANCE,
+            ),
             BooleanShareablePreferenceDefinition(KEY_BOTTOM_BAR_LIQUID_GLASS_ENABLED, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_BOTTOM_BAR_SEARCH_LAYOUT_MODE, SettingsShareSection.APPEARANCE),
             BooleanShareablePreferenceDefinition(
@@ -6945,6 +6953,31 @@ object SettingsManager {
             ),
             BooleanShareablePreferenceDefinition(KEY_LIQUID_GLASS_ENABLED, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_LIQUID_GLASS_STYLE, SettingsShareSection.APPEARANCE),
+            IntShareablePreferenceDefinition(KEY_LIQUID_GLASS_MODE, SettingsShareSection.APPEARANCE),
+            FloatShareablePreferenceDefinition(
+                KEY_LIQUID_GLASS_STRENGTH,
+                SettingsShareSection.APPEARANCE,
+            ),
+            FloatShareablePreferenceDefinition(
+                KEY_LIQUID_GLASS_PROGRESS,
+                SettingsShareSection.APPEARANCE,
+            ),
+            IntShareablePreferenceDefinition(
+                KEY_LIQUID_GLASS_ADVANCED_PRESET,
+                SettingsShareSection.APPEARANCE,
+            ),
+            FloatShareablePreferenceDefinition(
+                KEY_LIQUID_GLASS_CONTENT_READABILITY,
+                SettingsShareSection.APPEARANCE,
+            ),
+            FloatShareablePreferenceDefinition(
+                KEY_LIQUID_GLASS_CHROMATIC_ABERRATION,
+                SettingsShareSection.APPEARANCE,
+            ),
+            FloatShareablePreferenceDefinition(
+                KEY_LIQUID_GLASS_CONTENT_DISTORTION,
+                SettingsShareSection.APPEARANCE,
+            ),
             StringShareablePreferenceDefinition(KEY_BLUR_INTENSITY, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_DISPLAY_MODE, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_GRID_COLUMN_COUNT, SettingsShareSection.APPEARANCE),
@@ -7151,6 +7184,30 @@ object SettingsManager {
         return shareableSettingDefinitions.map { it.entryDefinition }
     }
 
+    private val liquidGlassShareableStorageKeys: Set<String> by lazy {
+        setOf(
+            KEY_ANDROID_NATIVE_LIQUID_GLASS_ENABLED.name,
+            KEY_LIQUID_GLASS_ENABLED.name,
+            KEY_TOP_BAR_LIQUID_GLASS_ENABLED.name,
+            KEY_HOME_SEARCH_LIQUID_GLASS_ENABLED.name,
+            KEY_BOTTOM_BAR_LIQUID_GLASS_ENABLED.name,
+            KEY_LIQUID_GLASS_STYLE.name,
+            KEY_LIQUID_GLASS_MODE.name,
+            KEY_LIQUID_GLASS_STRENGTH.name,
+            KEY_LIQUID_GLASS_PROGRESS.name,
+            KEY_LIQUID_GLASS_ADVANCED_PRESET.name,
+            KEY_LIQUID_GLASS_CONTENT_READABILITY.name,
+            KEY_LIQUID_GLASS_CHROMATIC_ABERRATION.name,
+            KEY_LIQUID_GLASS_CONTENT_DISTORTION.name,
+        )
+    }
+
+    fun getLiquidGlassShareableSettingsEntryDefinitions(): List<SettingsShareEntryDefinition> {
+        return getShareableSettingsEntryDefinitions().filter { definition ->
+            definition.storageKey in liquidGlassShareableStorageKeys
+        }
+    }
+
     suspend fun exportShareableSettingsSnapshot(context: Context): Map<String, JsonElement> {
         val preferences = context.settingsDataStore.data.first()
         return linkedMapOf<String, JsonElement>().apply {
@@ -7160,6 +7217,58 @@ object SettingsManager {
                 }
             }
         }
+    }
+
+    suspend fun exportLiquidGlassShareableSettingsSnapshot(
+        context: Context,
+    ): Map<String, JsonElement> {
+        val preferences = context.settingsDataStore.data.first()
+        val legacyEnabled = preferences[KEY_LIQUID_GLASS_ENABLED] ?: false
+        val topBarEnabled = preferences[KEY_TOP_BAR_LIQUID_GLASS_ENABLED] ?: false
+        val homeSearchEnabled = preferences[KEY_HOME_SEARCH_LIQUID_GLASS_ENABLED]
+            ?: topBarEnabled
+        val bottomBarEnabled = preferences[KEY_BOTTOM_BAR_LIQUID_GLASS_ENABLED]
+            ?: legacyEnabled
+        val progress = normalizeLiquidGlassProgress(
+            preferences[KEY_LIQUID_GLASS_PROGRESS] ?: 0.5f
+        )
+        val advancedSettings = resolveLiquidGlassAdvancedSettings(
+            presetValue = preferences[KEY_LIQUID_GLASS_ADVANCED_PRESET],
+            contentReadability = preferences[KEY_LIQUID_GLASS_CONTENT_READABILITY],
+            chromaticAberration = preferences[KEY_LIQUID_GLASS_CHROMATIC_ABERRATION],
+            contentDistortion = preferences[KEY_LIQUID_GLASS_CONTENT_DISTORTION],
+        )
+        return linkedMapOf(
+            KEY_ANDROID_NATIVE_LIQUID_GLASS_ENABLED.name to JsonPrimitive(
+                preferences[KEY_ANDROID_NATIVE_LIQUID_GLASS_ENABLED] ?: false
+            ),
+            KEY_LIQUID_GLASS_ENABLED.name to JsonPrimitive(bottomBarEnabled),
+            KEY_TOP_BAR_LIQUID_GLASS_ENABLED.name to JsonPrimitive(topBarEnabled),
+            KEY_HOME_SEARCH_LIQUID_GLASS_ENABLED.name to JsonPrimitive(homeSearchEnabled),
+            KEY_BOTTOM_BAR_LIQUID_GLASS_ENABLED.name to JsonPrimitive(bottomBarEnabled),
+            KEY_LIQUID_GLASS_STYLE.name to JsonPrimitive(
+                resolveLegacyLiquidGlassStyleFromProgress(progress).value
+            ),
+            KEY_LIQUID_GLASS_MODE.name to JsonPrimitive(
+                resolveLiquidGlassModeFromProgress(progress).value
+            ),
+            KEY_LIQUID_GLASS_STRENGTH.name to JsonPrimitive(
+                resolveLiquidGlassStrengthFromProgress(progress)
+            ),
+            KEY_LIQUID_GLASS_PROGRESS.name to JsonPrimitive(progress),
+            KEY_LIQUID_GLASS_ADVANCED_PRESET.name to JsonPrimitive(
+                advancedSettings.preset.value
+            ),
+            KEY_LIQUID_GLASS_CONTENT_READABILITY.name to JsonPrimitive(
+                advancedSettings.contentReadability
+            ),
+            KEY_LIQUID_GLASS_CHROMATIC_ABERRATION.name to JsonPrimitive(
+                advancedSettings.chromaticAberration
+            ),
+            KEY_LIQUID_GLASS_CONTENT_DISTORTION.name to JsonPrimitive(
+                advancedSettings.contentDistortion
+            ),
+        )
     }
 
     suspend fun applyShareableSettingsSnapshot(
