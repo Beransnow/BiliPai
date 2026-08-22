@@ -54,7 +54,7 @@ class HomeSettingsMappingPolicyTest {
         assertEquals(0.5f, result.liquidGlassProgress)
         assertEquals(LiquidGlassAdvancedPreset.BALANCED, result.liquidGlassAdvancedSettings.preset)
         assertEquals(0.62f, result.liquidGlassAdvancedSettings.contentReadability)
-        assertEquals(0f, result.liquidGlassAdvancedSettings.chromaticAberration)
+        assertEquals(0.56f, result.liquidGlassAdvancedSettings.chromaticAberration)
         assertEquals(0.45f, result.liquidGlassAdvancedSettings.contentDistortion)
         assertEquals(0, result.gridColumnCount)
         assertEquals(HomeFeedCardWidthPreset.AUTO, result.homeFeedCardWidthPreset)
@@ -191,7 +191,7 @@ class HomeSettingsMappingPolicyTest {
     }
 
     @Test
-    fun liquidGlassAdvancedValuesAreClampedAndInvalidPresetFallsBackToBalanced() {
+    fun invalidLiquidGlassPresetFallsBackToCanonicalBalancedValues() {
         val prefs = mutablePreferencesOf(
             intPreferencesKey("liquid_glass_advanced_preset") to 99,
             floatPreferencesKey("liquid_glass_content_readability") to 2f,
@@ -202,6 +202,24 @@ class HomeSettingsMappingPolicyTest {
         val result = mapHomeSettingsFromPreferences(prefs).liquidGlassAdvancedSettings
 
         assertEquals(LiquidGlassAdvancedPreset.BALANCED, result.preset)
+        assertEquals(0.62f, result.contentReadability)
+        assertEquals(0.56f, result.chromaticAberration)
+        assertEquals(0.45f, result.contentDistortion)
+    }
+
+    @Test
+    fun customLiquidGlassValuesAreClampedIndependently() {
+        val prefs = mutablePreferencesOf(
+            intPreferencesKey("liquid_glass_advanced_preset") to
+                LiquidGlassAdvancedPreset.CUSTOM.value,
+            floatPreferencesKey("liquid_glass_content_readability") to 2f,
+            floatPreferencesKey("liquid_glass_chromatic_aberration") to -1f,
+            floatPreferencesKey("liquid_glass_content_distortion") to Float.NaN,
+        )
+
+        val result = mapHomeSettingsFromPreferences(prefs).liquidGlassAdvancedSettings
+
+        assertEquals(LiquidGlassAdvancedPreset.CUSTOM, result.preset)
         assertEquals(1f, result.contentReadability)
         assertEquals(0f, result.chromaticAberration)
         assertEquals(0.45f, result.contentDistortion)

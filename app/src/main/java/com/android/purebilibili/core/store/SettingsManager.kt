@@ -136,7 +136,7 @@ enum class LiquidGlassAdvancedPreset(val value: Int, val label: String) {
 data class LiquidGlassAdvancedSettings(
     val preset: LiquidGlassAdvancedPreset = LiquidGlassAdvancedPreset.BALANCED,
     val contentReadability: Float = 0.62f,
-    val chromaticAberration: Float = 0f,
+    val chromaticAberration: Float = 0.56f,
     val contentDistortion: Float = 0.45f,
 )
 
@@ -149,19 +149,19 @@ internal fun resolveLiquidGlassAdvancedPreset(
     LiquidGlassAdvancedPreset.READABLE -> LiquidGlassAdvancedSettings(
         preset = preset,
         contentReadability = 1f,
-        chromaticAberration = 0.06f,
+        chromaticAberration = 0.08f,
         contentDistortion = 0.18f,
     )
     LiquidGlassAdvancedPreset.BALANCED -> LiquidGlassAdvancedSettings(
         preset = preset,
         contentReadability = 0.62f,
-        chromaticAberration = 0f,
+        chromaticAberration = 0.56f,
         contentDistortion = 0.45f,
     )
     LiquidGlassAdvancedPreset.PRISM -> LiquidGlassAdvancedSettings(
         preset = preset,
         contentReadability = 0.72f,
-        chromaticAberration = 0.86f,
+        chromaticAberration = 0.96f,
         contentDistortion = 0.90f,
     )
     LiquidGlassAdvancedPreset.CUSTOM -> LiquidGlassAdvancedSettings(preset = preset)
@@ -177,6 +177,7 @@ internal fun resolveLiquidGlassAdvancedSettings(
         ?.let(LiquidGlassAdvancedPreset::fromValue)
         ?: LiquidGlassAdvancedPreset.BALANCED
     val defaults = resolveLiquidGlassAdvancedPreset(preset)
+    if (preset != LiquidGlassAdvancedPreset.CUSTOM) return defaults
     return defaults.copy(
         contentReadability = normalizeLiquidGlassAdvancedValue(
             contentReadability ?: defaults.contentReadability,
@@ -3826,7 +3827,7 @@ object SettingsManager {
             preferences[KEY_LIQUID_GLASS_CONTENT_READABILITY] =
                 normalizeLiquidGlassAdvancedValue(settings.contentReadability, 0.62f)
             preferences[KEY_LIQUID_GLASS_CHROMATIC_ABERRATION] =
-                normalizeLiquidGlassAdvancedValue(settings.chromaticAberration, 0f)
+                normalizeLiquidGlassAdvancedValue(settings.chromaticAberration, 0.56f)
             preferences[KEY_LIQUID_GLASS_CONTENT_DISTORTION] =
                 normalizeLiquidGlassAdvancedValue(settings.contentDistortion, 0.45f)
         }

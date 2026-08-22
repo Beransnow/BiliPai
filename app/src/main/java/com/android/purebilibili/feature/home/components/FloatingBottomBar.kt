@@ -810,8 +810,10 @@ fun FloatingBottomBar(
                                         liquidGlassTuning.indicatorEdgeWarpBoost *
                                         liquidGlassTuning.contentDistortionScale,
                                     depthEffect = liquidGlassTuning.depthEffectEnabled,
-                                    chromaticAberration = liquidGlassTuning.chromaticAberrationAmount *
-                                        liquidGlassTuning.indicatorChromaticBoost,
+                                    chromaticAberration =
+                                        resolveLiquidGlassIndicatorChromaticAberration(
+                                            liquidGlassTuning
+                                        ),
                                 )
                             },
                             highlight = {

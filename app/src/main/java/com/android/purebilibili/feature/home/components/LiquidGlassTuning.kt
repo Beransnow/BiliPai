@@ -55,8 +55,9 @@ internal fun resolveLiquidGlassTuning(
     val contentReadabilityBoost = clearReadabilityUrgency * configuredReadability
     val contentReadabilityScrimAlpha = contentReadabilityBoost *
         (0.12f + configuredReadability * 0.22f)
-    val chromaticAmount = advancedSettings.chromaticAberration.coerceIn(0f, 1f) *
-        midpointLerp(0.50f, 0.18f, 0.06f, normalizedProgress)
+    // Miuix lens accepts a useful 0..0.5 range. Keep the user setting independent from
+    // transparency so a reused indicator has the same visible dispersion as the home dock.
+    val chromaticAmount = advancedSettings.chromaticAberration.coerceIn(0f, 1f) * 0.5f
     val contentDistortionScale = (
         advancedSettings.contentDistortion.coerceIn(0f, 1f) / 0.45f
     ).coerceIn(0f, 1.8f)
@@ -92,6 +93,14 @@ internal fun resolveLiquidGlassTuning(
         depthEffectEnabled = depthEffectAmount > 0.08f,
         depthEffectAmount = depthEffectAmount
     )
+}
+
+internal fun resolveLiquidGlassIndicatorChromaticAberration(
+    tuning: LiquidGlassTuning,
+): Float = if (tuning.chromaticAberrationEnabled) {
+    (tuning.chromaticAberrationAmount * tuning.indicatorChromaticBoost).coerceIn(0f, 0.5f)
+} else {
+    0f
 }
 
 internal fun resolveLiquidGlassTuning(

@@ -3440,6 +3440,7 @@ internal fun BoxScope.BiliPaiMiuixBottomBarIndicatorLayer(
     contentBackdrop: MiuixBackdrop?,
     backdrop: MiuixBackdrop?,
     indicatorLensSpec: BottomBarBackdropPresetLensSpec,
+    liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
     effectivePressProgress: Float,
     indicatorIdleSurfaceColor: Color,
     glassEnabled: Boolean,
@@ -3516,7 +3517,10 @@ internal fun BoxScope.BiliPaiMiuixBottomBarIndicatorLayer(
                                     refractionHeight = indicatorLensSpec.refractionHeightDp.dp.toPx(),
                                     refractionAmount = indicatorLensSpec.refractionAmountDp.dp.toPx(),
                                     depthEffect = true,
-                                    chromaticAberration = 0.5f
+                                    chromaticAberration =
+                                        resolveLiquidGlassIndicatorChromaticAberration(
+                                            liquidGlassTuning
+                                        )
                                 )
                             }
                         },

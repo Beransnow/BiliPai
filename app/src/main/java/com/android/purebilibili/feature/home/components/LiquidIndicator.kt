@@ -208,9 +208,9 @@ internal fun LiquidIndicator(
                                             (styleTuning.allowChromaticAberration &&
                                                 lensProfile.aberrationStrength > 0.01f)
                                         ) {
-                                            (resolvedTuning.chromaticAberrationAmount *
-                                                resolvedTuning.indicatorChromaticBoost)
-                                                .coerceIn(0f, 0.5f)
+                                            resolveLiquidGlassIndicatorChromaticAberration(
+                                                resolvedTuning
+                                            )
                                         } else {
                                             0f
                                         }
@@ -349,9 +349,9 @@ fun SimpleLiquidIndicator(
                                             styleTuning.allowChromaticAberration &&
                                             lensProfile.aberrationStrength > 0.01f
                                         ) {
-                                            (resolvedTuning.chromaticAberrationAmount *
-                                                resolvedTuning.indicatorChromaticBoost)
-                                                .coerceIn(0f, 0.5f)
+                                            resolveLiquidGlassIndicatorChromaticAberration(
+                                                resolvedTuning
+                                            )
                                         } else {
                                             0f
                                         }

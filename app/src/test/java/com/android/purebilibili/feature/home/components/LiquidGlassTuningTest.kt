@@ -139,7 +139,24 @@ class LiquidGlassTuningTest {
         assertEquals(24f, tuning.refractionAmount, 0.0001f)
         assertEquals(24f, tuning.refractionHeight, 0.0001f)
         assertEquals(0.28f, tuning.indicatorTintAlpha, 0.0001f)
-        assertFalse(tuning.chromaticAberrationEnabled)
+        assertTrue(tuning.chromaticAberrationEnabled)
+        assertEquals(0.28f, tuning.chromaticAberrationAmount, 0.0001f)
         assertTrue(tuning.depthEffectEnabled)
+    }
+
+    @Test
+    fun `shared indicator chromatic policy is identical at equal tuning`() {
+        val tuning = resolveLiquidGlassTuning(
+            progress = 0.5f,
+            advancedSettings = resolveLiquidGlassAdvancedPreset(
+                LiquidGlassAdvancedPreset.BALANCED
+            ),
+        )
+
+        assertEquals(
+            0.28f,
+            resolveLiquidGlassIndicatorChromaticAberration(tuning),
+            0.0001f,
+        )
     }
 }
