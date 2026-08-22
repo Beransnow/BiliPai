@@ -356,8 +356,23 @@ fun FloatingBottomBar(
 
     val tabsBackdrop = rememberLayerBackdrop()
     val density = LocalDensity.current
-    val shellLensPx = with(density) { resolveCompactDockLensDp(shellHeight.value).dp.toPx() }
-    val pressBloomPx = with(density) { resolveCompactDockPressBloomDp(shellHeight.value).dp.toPx() }
+    val shellLensDp = resolveCompactDockLensDp(shellHeight.value)
+    val pressBloomDp = resolveCompactDockPressBloomDp(shellHeight.value)
+    val shellRefractionHeightDp = shellLensDp *
+        liquidGlassTuning.refractionHeight / FLOATING_DOCK_SHELL_LENS_DP *
+        liquidGlassTuning.contentDistortionScale
+    val shellRefractionAmountDp = shellLensDp *
+        liquidGlassTuning.refractionAmount / FLOATING_DOCK_SHELL_LENS_DP *
+        liquidGlassTuning.contentDistortionScale
+    val shellRefractionHeightPx = with(density) { shellRefractionHeightDp.dp.toPx() }
+    val shellRefractionAmountPx = with(density) { shellRefractionAmountDp.dp.toPx() }
+    val shellEffectPaddingPx = with(density) {
+        resolveFloatingDockEffectPaddingDp(
+            refractionAmountDp = shellRefractionAmountDp,
+            pressBloomDp = pressBloomDp,
+        ).dp.toPx()
+    }
+    val pressBloomPx = with(density) { pressBloomDp.dp.toPx() }
     val indicatorLensHeightPx = with(density) {
         resolveCompactDockIndicatorLensHeightDp(shellHeight.value).dp.toPx()
     }
@@ -640,18 +655,18 @@ fun FloatingBottomBar(
                                     backdrop = backdrop,
                                     shape = { pillShape },
                                     effects = {
+                                        padding = maxOf(
+                                            padding,
+                                            shellEffectPaddingPx,
+                                        )
                                         vibrancy(liquidGlassTuning.saturation)
                                         blur(
                                             liquidGlassTuning.backdropBlurRadius.dp.toPx(),
                                             liquidGlassTuning.backdropBlurRadius.dp.toPx()
                                         )
                                         lens(
-                                            refractionHeight = shellLensPx *
-                                                liquidGlassTuning.refractionHeight / 24f *
-                                                liquidGlassTuning.contentDistortionScale,
-                                            refractionAmount = shellLensPx *
-                                                liquidGlassTuning.refractionAmount / 24f *
-                                                liquidGlassTuning.contentDistortionScale,
+                                            refractionHeight = shellRefractionHeightPx,
+                                            refractionAmount = shellRefractionAmountPx,
                                             depthEffect = liquidGlassTuning.depthEffectEnabled,
                                             chromaticAberration = liquidGlassTuning.chromaticAberrationAmount,
                                         )
@@ -737,12 +752,8 @@ fun FloatingBottomBar(
                                     liquidGlassTuning.backdropBlurRadius.dp.toPx()
                                 )
                                 lens(
-                                    refractionHeight = shellLensPx *
-                                        liquidGlassTuning.refractionHeight / 24f *
-                                        liquidGlassTuning.contentDistortionScale,
-                                    refractionAmount = shellLensPx *
-                                        liquidGlassTuning.refractionAmount / 24f *
-                                        liquidGlassTuning.contentDistortionScale,
+                                    refractionHeight = shellRefractionHeightPx,
+                                    refractionAmount = shellRefractionAmountPx,
                                     depthEffect = liquidGlassTuning.depthEffectEnabled,
                                     chromaticAberration = liquidGlassTuning.chromaticAberrationAmount,
                                 )

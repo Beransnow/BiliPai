@@ -95,8 +95,8 @@ class BottomBarMiuixStructureTest {
             .substringBefore("if (isLiquidGlassMode && backdrop != null)")
         val movingIndicator = floatingBody.substringAfter("if (tabWidthPx > 0f)")
 
-        assertTrue(floating.contains("vibrancy()"))
-        assertTrue(floating.contains("blur(4.dp.toPx(), 4.dp.toPx())"))
+        assertTrue(floating.contains("vibrancy(liquidGlassTuning.saturation)"))
+        assertTrue(floating.contains("liquidGlassTuning.backdropBlurRadius.dp.toPx()"))
         assertTrue(floating.contains("rememberCombinedBackdrop(backdrop, tabsBackdrop)"))
         assertTrue(floating.contains(".layerBackdrop(tabsBackdrop)"))
         // Floating-bar-local interaction stack, not the design-system drag stack.
@@ -111,7 +111,7 @@ class BottomBarMiuixStructureTest {
         assertTrue(floating.contains("onSelected(index)"))
         assertFalse(floating.contains("horizontalDragGesture"))
         assertFalse(floating.contains("rememberDampedDragAnimationState"))
-        assertTrue(floating.contains("chromaticAberration = 0.5f"))
+        assertTrue(floating.contains("resolveLiquidGlassIndicatorChromaticAberration("))
         assertTrue(floating.contains("rememberGravityRotatedHighlight("))
 
         // Host must not re-implement the three-layer drawBackdrop path.

@@ -130,6 +130,12 @@ internal fun Modifier.biliPaiFloatingDockShell(
     val resolvedLensIntensity = lensIntensity.coerceIn(0f, 1f) *
         liquidGlassTuning.contentDistortionScale.coerceIn(0f, 1.8f)
     val shouldDrawLens = drawLens && resolvedLensIntensity > 0.001f
+    val refractionHeightDp = liquidGlassTuning.refractionHeight * resolvedLensIntensity
+    val refractionAmountDp = liquidGlassTuning.refractionAmount * resolvedLensIntensity
+    val effectPaddingDp = resolveFloatingDockEffectPaddingDp(
+        refractionAmountDp = refractionAmountDp,
+        pressBloomDp = FLOATING_DOCK_PRESS_BLOOM_DP,
+    )
     return this
         .graphicsLayer { translationX = panelOffsetPx }
         .dropShadow(
@@ -144,6 +150,7 @@ internal fun Modifier.biliPaiFloatingDockShell(
             backdrop = backdrop,
             shape = { shape },
             effects = {
+                padding = maxOf(padding, effectPaddingDp.dp.toPx())
                 vibrancy(liquidGlassTuning.saturation)
                 blur(
                     liquidGlassTuning.backdropBlurRadius.dp.toPx(),
@@ -151,10 +158,8 @@ internal fun Modifier.biliPaiFloatingDockShell(
                 )
                 if (shouldDrawLens) {
                     lens(
-                        refractionHeight = liquidGlassTuning.refractionHeight.dp.toPx() *
-                            resolvedLensIntensity,
-                        refractionAmount = liquidGlassTuning.refractionAmount.dp.toPx() *
-                            resolvedLensIntensity,
+                        refractionHeight = refractionHeightDp.dp.toPx(),
+                        refractionAmount = refractionAmountDp.dp.toPx(),
                         depthEffect = liquidGlassTuning.depthEffectEnabled,
                         chromaticAberration = liquidGlassTuning.chromaticAberrationAmount,
                     )

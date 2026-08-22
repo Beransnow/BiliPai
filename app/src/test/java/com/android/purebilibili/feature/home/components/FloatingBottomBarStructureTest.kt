@@ -52,10 +52,11 @@ class FloatingBottomBarStructureTest {
         val body = source.substringAfter("fun FloatingBottomBar(")
 
         assertTrue(body.contains(".dropShadow("))
-        assertTrue(body.contains("vibrancy()"))
-        assertTrue(body.contains("blur(4.dp.toPx(), 4.dp.toPx())"))
-        assertTrue(body.contains("refractionHeight = shellLensPx"))
-        assertTrue(body.contains("refractionAmount = shellLensPx"))
+        assertTrue(body.contains("vibrancy(liquidGlassTuning.saturation)"))
+        assertTrue(body.contains("liquidGlassTuning.backdropBlurRadius.dp.toPx()"))
+        assertTrue(body.contains("padding = maxOf("))
+        assertTrue(body.contains("refractionHeight = shellRefractionHeightPx"))
+        assertTrue(body.contains("refractionAmount = shellRefractionAmountPx"))
         assertTrue(body.contains("baseHighlight.copy(alpha = 0.75f)"))
 
         assertTrue(body.contains(".alpha(0f)"))
@@ -63,8 +64,8 @@ class FloatingBottomBarStructureTest {
         assertTrue(body.contains("rememberLayerBackdrop()"))
 
         assertTrue(body.contains("rememberCombinedBackdrop(backdrop, tabsBackdrop)"))
-        assertTrue(body.contains("depthEffect = true"))
-        assertTrue(body.contains("chromaticAberration = 0.5f"))
+        assertTrue(body.contains("depthEffect = liquidGlassTuning.indicatorDepthEffectEnabled"))
+        assertTrue(body.contains("resolveLiquidGlassIndicatorChromaticAberration("))
         assertTrue(body.contains("refractionHeight = indicatorLensHeightPx * progress"))
         assertTrue(body.contains("refractionAmount = indicatorLensAmountPx * progress"))
         assertTrue(body.contains(".innerShadow(shape = pillShape)"))

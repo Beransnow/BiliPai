@@ -54,6 +54,11 @@ internal fun resolveCompactDockLensDp(shellHeightDp: Float): Float =
 internal fun resolveCompactDockPressBloomDp(shellHeightDp: Float): Float =
     FLOATING_DOCK_PRESS_BLOOM_DP * resolveCompactDockShellLensIntensity(shellHeightDp)
 
+internal fun resolveFloatingDockEffectPaddingDp(
+    refractionAmountDp: Float,
+    pressBloomDp: Float,
+): Float = refractionAmountDp.coerceAtLeast(0f) + pressBloomDp.coerceAtLeast(0f)
+
 internal fun resolveCompactDockIndicatorLensHeightDp(shellHeightDp: Float): Float =
     FLOATING_DOCK_INDICATOR_LENS_HEIGHT_DP * resolveCompactDockShellLensIntensity(shellHeightDp)
 

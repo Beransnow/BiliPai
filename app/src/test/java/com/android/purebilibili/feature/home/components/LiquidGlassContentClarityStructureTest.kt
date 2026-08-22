@@ -24,10 +24,10 @@ class LiquidGlassContentClarityStructureTest {
         )
         assertTrue(floatingDockChrome.contains("if (distortionScale > 0.001f)"))
 
-        val scaledShellLensCalls = Regex(
-            """shellLensPx\s*\*\s*liquidGlassTuning\.refraction(?:Height|Amount)\s*/\s*24f\s*\*\s*liquidGlassTuning\.contentDistortionScale"""
-        ).findAll(floatingBottomBar).count()
-        assertEquals(4, scaledShellLensCalls)
+        assertTrue(floatingBottomBar.contains("val shellRefractionHeightDp = shellLensDp *"))
+        assertTrue(floatingBottomBar.contains("val shellRefractionAmountDp = shellLensDp *"))
+        assertEquals(2, Regex("refractionHeight = shellRefractionHeightPx").findAll(floatingBottomBar).count())
+        assertEquals(2, Regex("refractionAmount = shellRefractionAmountPx").findAll(floatingBottomBar).count())
     }
 
     private fun workspaceRoot() = generateSequence(

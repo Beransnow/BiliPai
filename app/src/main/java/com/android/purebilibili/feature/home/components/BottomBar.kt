@@ -1062,6 +1062,19 @@ internal fun Modifier.biliPaiMiuixFloatingDockSurface(
                         shape = { shape },
                         effects = {
                             if (renderGlassEffects) {
+                                val resolvedShellRefractionAmountDp = if (drawShellLens) {
+                                    materialSpec.shellRefractionAmountDp *
+                                        effectiveShellLensIntensity
+                                } else {
+                                    0f
+                                }
+                                padding = maxOf(
+                                    padding,
+                                    resolveFloatingDockEffectPaddingDp(
+                                        refractionAmountDp = resolvedShellRefractionAmountDp,
+                                        pressBloomDp = AppSpacingTokens.Large.value,
+                                    ).dp.toPx(),
+                                )
                                 if (materialSpec.vibrancy) {
                                     miuixVibrancy(liquidGlassTuning.saturation)
                                 }

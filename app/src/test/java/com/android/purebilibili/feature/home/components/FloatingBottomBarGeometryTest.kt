@@ -8,6 +8,18 @@ import kotlin.test.assertTrue
 class FloatingBottomBarGeometryTest {
 
     @Test
+    fun `upstream effect padding combines 24dp lens and 16dp press bloom`() {
+        assertEquals(
+            40f,
+            resolveFloatingDockEffectPaddingDp(
+                refractionAmountDp = FLOATING_DOCK_SHELL_LENS_DP,
+                pressBloomDp = FLOATING_DOCK_PRESS_BLOOM_DP,
+            ),
+            0.001f,
+        )
+    }
+
+    @Test
     fun `home-sized slots keep the 56dp resting indicator`() {
         assertEquals(
             56f,
