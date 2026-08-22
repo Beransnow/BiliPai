@@ -374,9 +374,12 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
     SettingsSearchEntry(
         target = SettingsSearchTarget.CLEAR_CACHE,
         title = "清除缓存",
-        subtitle = "清理应用缓存并设置自动清理周期",
+        subtitle = "清理应用缓存并设置自动清理周期与容量上限",
         section = "数据与存储",
-        aliases = listOf("缓存", "清理", "释放空间", "清缓存", "删除缓存", "空间清理", "自动清理", "每周清理", "每月清理")
+        aliases = listOf(
+            "缓存", "清理", "释放空间", "清缓存", "删除缓存", "空间清理", "自动清理",
+            "每周清理", "每月清理", "缓存容量", "缓存上限", "容量上限", "5gb", "自动清理阈值"
+        )
     ),
     SettingsSearchEntry(
         target = SettingsSearchTarget.PLUGINS,

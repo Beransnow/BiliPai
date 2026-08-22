@@ -29,6 +29,19 @@ enum class CacheClearTarget {
     APP_METADATA
 }
 
+internal fun shouldAutomaticallyClearCache(
+    interval: SettingsManager.AutoCacheClearInterval,
+    lastClearAtMillis: Long,
+    nowMillis: Long,
+    reclaimableDiskBytes: Long,
+    thresholdBytes: Long
+): Boolean {
+    val intervalDue = interval != SettingsManager.AutoCacheClearInterval.NEVER &&
+        (lastClearAtMillis <= 0L || nowMillis - lastClearAtMillis >= interval.days * 24L * 60L * 60L * 1000L)
+    val thresholdReached = thresholdBytes > 0L && reclaimableDiskBytes >= thresholdBytes
+    return intervalDue || thresholdReached
+}
+
 /**
  *  缓存工具类 - 优化版
  * 
@@ -49,9 +62,27 @@ object CacheUtils {
         nowMillis: Long = System.currentTimeMillis()
     ): Boolean {
         val interval = SettingsManager.getAutoCacheClearInterval(context).first()
-        if (interval == SettingsManager.AutoCacheClearInterval.NEVER) return false
+        val thresholdGb = SettingsManager.getAutoCacheClearThresholdGb(context).first()
         val lastClearAt = SettingsManager.getLastAutoCacheClearAt(context)
-        if (lastClearAt > 0L && nowMillis - lastClearAt < interval.days * DAY_MILLIS) return false
+        val intervalDue = interval != SettingsManager.AutoCacheClearInterval.NEVER &&
+            (lastClearAt <= 0L || nowMillis - lastClearAt >= interval.days * DAY_MILLIS)
+        val thresholdBytes = thresholdGb.toLong() * 1024L * 1024L * 1024L
+        val reclaimableDiskBytes = getCacheBreakdown(context).reclaimableDiskSize
+        val thresholdReached = reclaimableDiskBytes >= thresholdBytes
+        if (!shouldAutomaticallyClearCache(
+                interval = interval,
+                lastClearAtMillis = lastClearAt,
+                nowMillis = nowMillis,
+                reclaimableDiskBytes = reclaimableDiskBytes,
+                thresholdBytes = thresholdBytes
+            )
+        ) return false
+        Logger.i(
+            TAG,
+            "Auto cache clear triggered: intervalDue=$intervalDue, " +
+                "thresholdReached=$thresholdReached, diskBytes=$reclaimableDiskBytes, " +
+                "thresholdGb=$thresholdGb"
+        )
         val result = clearCache(context, CacheClearTarget.entries.toSet())
         if (result.isSuccess) SettingsManager.setLastAutoCacheClearAt(context, nowMillis)
         return result.isSuccess
@@ -72,9 +103,11 @@ object CacheUtils {
         val imageCache: Long get() = imageDiskCache + imageMemoryCache
         val memoryCache: Long get() = imageMemoryCache + playUrlMemoryCache + subtitleDanmakuMemoryCache
         val networkCache: Long get() = httpCache + playbackMediaCache
-        val totalSize: Long get() = imageDiskCache + networkCache + otherCache + memoryCache
+        /** 与清理操作一致的、实际可回收磁盘字节数；不混入运行时内存估算。 */
+        val reclaimableDiskSize: Long get() = imageDiskCache + networkCache + otherCache
+        val totalSize: Long get() = reclaimableDiskSize + memoryCache
         
-        fun format(): String = formatSize(totalSize.toDouble())
+        fun format(): String = formatSize(reclaimableDiskSize.toDouble())
         
         fun formatBreakdown(): String = buildString {
             append("图片: ${formatSize(imageCache.toDouble())}")

@@ -1250,6 +1250,7 @@ internal fun encodeCollectionSortPreferences(
 }
 
 object SettingsManager {
+    const val DEFAULT_AUTO_CACHE_CLEAR_THRESHOLD_GB = 5
     enum class AutoCacheClearInterval(val days: Int, val label: String) {
         NEVER(0, "从不"),
         WEEKLY(7, "每周"),
@@ -1506,6 +1507,7 @@ object SettingsManager {
     private val KEY_COMMENT_FRAUD_DETECTION_ENABLED =
         booleanPreferencesKey("comment_fraud_detection_enabled")
     private val KEY_AUTO_CACHE_CLEAR_INTERVAL = intPreferencesKey("auto_cache_clear_interval_days")
+    private val KEY_AUTO_CACHE_CLEAR_THRESHOLD_GB = intPreferencesKey("auto_cache_clear_threshold_gb")
     private val KEY_LAST_AUTO_CACHE_CLEAR_AT = longPreferencesKey("last_auto_cache_clear_at")
     private val KEY_COMMENT_MEMBER_DECORATIONS_ENABLED =
         booleanPreferencesKey("comment_member_decorations_enabled")
@@ -5440,6 +5442,18 @@ object SettingsManager {
     suspend fun setAutoCacheClearInterval(context: Context, interval: AutoCacheClearInterval) {
         context.settingsDataStore.edit { preferences ->
             preferences[KEY_AUTO_CACHE_CLEAR_INTERVAL] = interval.days
+        }
+    }
+
+    fun getAutoCacheClearThresholdGb(context: Context): Flow<Int> =
+        context.settingsDataStore.data.map { preferences ->
+            (preferences[KEY_AUTO_CACHE_CLEAR_THRESHOLD_GB]
+                ?: DEFAULT_AUTO_CACHE_CLEAR_THRESHOLD_GB).coerceIn(1, 20)
+        }
+
+    suspend fun setAutoCacheClearThresholdGb(context: Context, thresholdGb: Int) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_AUTO_CACHE_CLEAR_THRESHOLD_GB] = thresholdGb.coerceIn(1, 20)
         }
     }
 
