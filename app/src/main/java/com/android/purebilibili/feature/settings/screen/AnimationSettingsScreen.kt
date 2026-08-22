@@ -145,6 +145,9 @@ fun AnimationSettingsContent(
         .collectAsStateWithLifecycle(initialValue = LiquidGlassReadabilityMode.STABLE)
     val uiEntranceAnimationEnabled by SettingsManager.getUiEntranceAnimationEnabled(context)
         .collectAsStateWithLifecycle(initialValue = true)
+    val globalTextTapCopyEnabled by SettingsManager
+        .getGlobalTextTapCopyEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = false)
     val appNavigationSettings by SettingsManager.getAppNavigationSettings(context)
         .collectAsStateWithLifecycle(initialValue = AppNavigationSettings())
     val previewBottomBarItems = remember(
@@ -263,6 +266,19 @@ fun AnimationSettingsContent(
                             checked = state.hapticFeedbackEnabled,
                             onCheckedChange = viewModel::toggleHapticFeedback,
                             iconTint = iOSBlue,
+                        )
+                        AppPreferenceDivider()
+                        AppSwitchPreference(
+                            icon = rememberSettingsSemanticIcon(SettingsIconRole.COPY_TEXT),
+                            title = "点按文字复制",
+                            subtitle = "点按非交互文字时复制内容；按钮、标签与导航不参与复制",
+                            checked = globalTextTapCopyEnabled,
+                            onCheckedChange = { enabled ->
+                                scope.launch {
+                                    SettingsManager.setGlobalTextTapCopyEnabled(context, enabled)
+                                }
+                            },
+                            iconTint = iOSOrange,
                         )
                         if (entranceDowngradedBySystem) {
                             AppPreferenceDivider()

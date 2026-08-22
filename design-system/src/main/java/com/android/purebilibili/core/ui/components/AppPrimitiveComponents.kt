@@ -150,15 +150,19 @@ private object AppPrimitiveNoOpHapticFeedback : HapticFeedback {
 
 internal fun shouldCopyGlobalTextTap(
     text: String,
+    globalCopyEnabled: Boolean,
     gestureCanceled: Boolean,
     pressDurationMillis: Long,
     longPressTimeoutMillis: Long,
-): Boolean = text.isNotBlank() &&
+): Boolean = globalCopyEnabled &&
+    text.isNotBlank() &&
     !gestureCanceled &&
     pressDurationMillis in 0 until longPressTimeoutMillis.coerceAtLeast(1L)
 
 private fun Modifier.globalTextTapCopy(text: String): Modifier = composed {
-    if (text.isBlank()) return@composed this
+    if (text.isBlank() || !LocalAppThemeConfig.current.globalTextTapCopyEnabled) {
+        return@composed this
+    }
     val context = LocalContext.current
     val hapticFeedback = LocalHapticFeedback.current
     pointerInput(text, context) {
@@ -191,6 +195,7 @@ private fun Modifier.globalTextTapCopy(text: String): Modifier = composed {
             if (
                 shouldCopyGlobalTextTap(
                     text = text,
+                    globalCopyEnabled = true,
                     gestureCanceled = gestureCanceled,
                     pressDurationMillis = pressDurationMillis,
                     longPressTimeoutMillis = viewConfiguration.longPressTimeoutMillis,
@@ -296,9 +301,10 @@ fun AppText(
     minLines: Int = 1,
     onTextLayout: ((TextLayoutResult) -> Unit)? = null,
     style: TextStyle = LocalTextStyle.current,
+    tapToCopyEnabled: Boolean = true,
 ) = Text(
     text = text,
-    modifier = modifier.globalTextTapCopy(text),
+    modifier = if (tapToCopyEnabled) modifier.globalTextTapCopy(text) else modifier,
     color = color,
     autoSize = autoSize,
     fontSize = fontSize,
@@ -337,10 +343,11 @@ fun AppText(
     minLines: Int = 1,
     onTextLayout: ((TextLayoutResult) -> Unit)? = null,
     style: TextStyle = LocalTextStyle.current,
+    tapToCopyEnabled: Boolean = true,
 ) = Text(
     text = text,
     color = color,
-    modifier = modifier.globalTextTapCopy(text),
+    modifier = if (tapToCopyEnabled) modifier.globalTextTapCopy(text) else modifier,
     autoSize = autoSize,
     fontSize = fontSize,
     fontStyle = fontStyle,
@@ -379,9 +386,10 @@ fun AppText(
     inlineContent: Map<String, InlineTextContent> = mapOf(),
     onTextLayout: (TextLayoutResult) -> Unit = {},
     style: TextStyle = LocalTextStyle.current,
+    tapToCopyEnabled: Boolean = true,
 ) = Text(
     text = text,
-    modifier = modifier.globalTextTapCopy(text.text),
+    modifier = if (tapToCopyEnabled) modifier.globalTextTapCopy(text.text) else modifier,
     color = color,
     autoSize = autoSize,
     fontSize = fontSize,
@@ -422,10 +430,11 @@ fun AppText(
     inlineContent: Map<String, InlineTextContent> = mapOf(),
     onTextLayout: (TextLayoutResult) -> Unit = {},
     style: TextStyle = LocalTextStyle.current,
+    tapToCopyEnabled: Boolean = true,
 ) = Text(
     text = text,
     color = color,
-    modifier = modifier.globalTextTapCopy(text.text),
+    modifier = if (tapToCopyEnabled) modifier.globalTextTapCopy(text.text) else modifier,
     autoSize = autoSize,
     fontSize = fontSize,
     fontStyle = fontStyle,

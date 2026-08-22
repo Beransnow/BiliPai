@@ -17,6 +17,7 @@ internal enum class SettingsIconRole {
     NAVIGATION,
     PLAYBACK_QUALITY,
     FULLSCREEN_GESTURE,
+    COPY_TEXT,
     INTERACTION_COMMENT,
     DATA_BACKUP,
     PRIVACY_PERMISSION,
@@ -256,6 +257,7 @@ private fun resolveMiuixSettingsSemanticIcon(role: SettingsIconRole): ImageVecto
     SettingsIconRole.NAVIGATION -> MiuixIcons.Sidebar
     SettingsIconRole.PLAYBACK_QUALITY -> MiuixIcons.Play
     SettingsIconRole.FULLSCREEN_GESTURE -> MiuixIcons.ScreenCapture
+    SettingsIconRole.COPY_TEXT -> Icons.Outlined.ContentCopy
     SettingsIconRole.INTERACTION_COMMENT -> MiuixIcons.Messages
     SettingsIconRole.DATA_BACKUP -> MiuixIcons.Backup
     SettingsIconRole.PRIVACY_PERMISSION -> MiuixIcons.Lock
@@ -408,6 +410,7 @@ private fun resolveMd3SettingsSemanticIcon(role: SettingsIconRole): ImageVector 
     SettingsIconRole.NAVIGATION -> Icons.Outlined.Dashboard
     SettingsIconRole.PLAYBACK_QUALITY -> Icons.Outlined.HighQuality
     SettingsIconRole.FULLSCREEN_GESTURE -> Icons.Outlined.TouchApp
+    SettingsIconRole.COPY_TEXT -> Icons.Outlined.ContentCopy
     SettingsIconRole.INTERACTION_COMMENT -> Icons.Outlined.ChatBubbleOutline
     SettingsIconRole.DATA_BACKUP -> Icons.Outlined.Backup
     SettingsIconRole.PRIVACY_PERMISSION -> Icons.Outlined.Lock

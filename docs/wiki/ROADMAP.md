@@ -8,7 +8,7 @@
 
 | 项目 | 当前状态 |
 | --- | --- |
-| 当前构建 | `0.2.3-beta.10` / `versionCode 299` |
+| 当前构建 | `0.2.3-beta.10` / `versionCode 300` |
 | 最近完整发布记录 | `v0.2.3-beta.10`（2026-08-22） |
 | Android | minSdk 26、targetSdk 35、compileSdk 37、arm64-v8a |
 | 构建工具 | AGP 9.3.1、Gradle 9.5、Kotlin 2.4、JDK 21 |

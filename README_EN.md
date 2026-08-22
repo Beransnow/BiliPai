@@ -448,7 +448,7 @@ See full changelog: [CHANGELOG.md](CHANGELOG.md)
 
 ### Current source build (v0.2.3-beta.10 · 2026-08-22)
 
-- Current source build: `0.2.3-beta.10` / `versionCode 299`.
+- Current source build: `0.2.3-beta.10` / `versionCode 300`.
 - SMS and password sign-in are restored with stronger captcha, risk-verification, device-identity, and session handling.
 - Night eye protection now applies a gradual warm tint, while plugins show clearer in-app activation feedback.
 - Liquid segmented controls and search tabs use a compact Dock; the Home top indicator spacing and search-state restoration are refined.

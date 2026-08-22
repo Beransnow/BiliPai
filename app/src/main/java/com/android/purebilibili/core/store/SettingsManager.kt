@@ -1285,6 +1285,8 @@ object SettingsManager {
     private val KEY_BG_PLAY = booleanPreferencesKey("bg_play")
     //  [新增] 触感反馈 (默认开启)
     private val KEY_HAPTIC_FEEDBACK_ENABLED = booleanPreferencesKey("haptic_feedback_enabled")
+    private val KEY_GLOBAL_TEXT_TAP_COPY_ENABLED =
+        booleanPreferencesKey("global_text_tap_copy_enabled")
     //  [新增] 手势灵敏度和主题色
     private val KEY_GESTURE_SENSITIVITY = floatPreferencesKey("gesture_sensitivity")
     private val KEY_SLIDE_VOLUME_BRIGHTNESS_ENABLED = booleanPreferencesKey("slide_volume_brightness_enabled")
@@ -2460,6 +2462,15 @@ object SettingsManager {
         // 优先读取缓存
         return context.getSharedPreferences("haptic_cache", Context.MODE_PRIVATE)
             .getBoolean("enabled", true)
+    }
+
+    fun getGlobalTextTapCopyEnabled(context: Context): Flow<Boolean> = context.settingsDataStore.data
+        .map { preferences -> preferences[KEY_GLOBAL_TEXT_TAP_COPY_ENABLED] ?: false }
+
+    suspend fun setGlobalTextTapCopyEnabled(context: Context, value: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_GLOBAL_TEXT_TAP_COPY_ENABLED] = value
+        }
     }
 
     //  [新增] --- 手势灵敏度 (0.5 ~ 2.0, 默认 1.0) ---
@@ -7136,6 +7147,10 @@ object SettingsManager {
             IntShareablePreferenceDefinition(KEY_COMMENT_COLLAPSED_REPLY_PREVIEW_LIMIT, SettingsShareSection.PLAYBACK),
 
             BooleanShareablePreferenceDefinition(KEY_HAPTIC_FEEDBACK_ENABLED, SettingsShareSection.GESTURE),
+            BooleanShareablePreferenceDefinition(
+                KEY_GLOBAL_TEXT_TAP_COPY_ENABLED,
+                SettingsShareSection.GESTURE,
+            ),
             FloatShareablePreferenceDefinition(KEY_GESTURE_SENSITIVITY, SettingsShareSection.GESTURE),
             BooleanShareablePreferenceDefinition(KEY_SLIDE_VOLUME_BRIGHTNESS_ENABLED, SettingsShareSection.GESTURE),
             BooleanShareablePreferenceDefinition(KEY_SET_SYSTEM_BRIGHTNESS, SettingsShareSection.GESTURE),

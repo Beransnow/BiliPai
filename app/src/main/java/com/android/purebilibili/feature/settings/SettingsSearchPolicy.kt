@@ -518,12 +518,15 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
     ),
     SettingsSearchEntry(
         target = SettingsSearchTarget.ANIMATION,
-        title = "动画与效果 / 触感反馈",
-        subtitle = "页面动画、玻璃效果与触感反馈",
+        title = "动画与效果 / 触感反馈 / 文字复制",
+        subtitle = "页面动画、玻璃效果、触感反馈与点按文字复制",
         section = "动画与效果",
         aliases = listOf(
             "动画与效果",
             "触感反馈",
+            "点按文字复制",
+            "全局复制",
+            "剪贴板",
             "动画设置",
             "页面动画",
             "玻璃效果",

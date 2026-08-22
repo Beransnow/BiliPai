@@ -196,7 +196,7 @@ cd BiliPai
 
 ## 最近更新
 
-当前构建为 `0.2.3-beta.10 / versionCode 299`；最新完整发布记录为 `v0.2.3-beta.10`。源码与变更以 GitHub 和 [CHANGELOG.md](CHANGELOG.md) 为准；安装包与公告见 [Telegram 频道](https://t.me/bilipai666) / [交流群](https://t.me/bilipai888/1)：
+当前构建为 `0.2.3-beta.10 / versionCode 300`；最新完整发布记录为 `v0.2.3-beta.10`。源码与变更以 GitHub 和 [CHANGELOG.md](CHANGELOG.md) 为准；安装包与公告见 [Telegram 频道](https://t.me/bilipai666) / [交流群](https://t.me/bilipai888/1)：
 
 - 恢复短信、密码登录，并完善验证码、风险验证、设备身份和登录态保持。
 - 夜间护眼改为渐进暖色遮罩，插件启用或生效时增加应用内状态提示。

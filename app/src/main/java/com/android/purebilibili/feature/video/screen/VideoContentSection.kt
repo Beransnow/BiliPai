@@ -1759,6 +1759,7 @@ private fun VideoContentTabBar(
                                     // 评论计数在列表头（「热评 68」）展示，Tab 上不带数字，
                                     // 避免窄 Tab 下数字换行或被截断
                                     text = label,
+                                    tapToCopyEnabled = false,
                                     fontSize = layoutSpec.unselectedTabFontSizeSp.sp,
                                     maxLines = 1,
                                 )

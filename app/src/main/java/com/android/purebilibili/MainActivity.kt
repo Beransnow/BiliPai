@@ -1252,6 +1252,9 @@ open class MainActivity : AppCompatActivity() {
                 .collectAsStateWithLifecycle(initialValue = BlurIntensity.THIN)
             val hapticFeedbackEnabled by SettingsManager.getHapticFeedbackEnabled(context)
                 .collectAsStateWithLifecycle(initialValue = true)
+            val globalTextTapCopyEnabled by SettingsManager
+                .getGlobalTextTapCopyEnabled(context)
+                .collectAsStateWithLifecycle(initialValue = false)
             val uiEntranceAnimationEnabled by SettingsManager
                 .getUiEntranceAnimationEnabled(context)
                 .collectAsStateWithLifecycle(initialValue = true)
@@ -1261,12 +1264,14 @@ open class MainActivity : AppCompatActivity() {
             val appThemeConfig = remember(
                 blurIntensity,
                 hapticFeedbackEnabled,
+                globalTextTapCopyEnabled,
                 uiEntranceAnimationEnabled,
                 runtimeVisualGuardEnabled,
             ) {
                 AppThemeConfig(
                     blurIntensity = blurIntensity,
                     hapticFeedbackEnabled = hapticFeedbackEnabled,
+                    globalTextTapCopyEnabled = globalTextTapCopyEnabled,
                     uiEntranceAnimationEnabled = uiEntranceAnimationEnabled,
                     runtimeVisualGuardEnabled = runtimeVisualGuardEnabled,
                 )

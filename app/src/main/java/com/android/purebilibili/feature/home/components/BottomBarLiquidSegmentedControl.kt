@@ -460,6 +460,7 @@ internal fun AndroidNativeUnderlinedSegmentedControl(
                 ) {
                     AppText(
                         text = label,
+                        tapToCopyEnabled = false,
                         color = if (selected) selectedTextColor else unselectedTextColor,
                         fontSize = labelFontSize,
                         fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
@@ -555,6 +556,7 @@ internal fun BottomBarLiquidSegmentedLabels(
             ) {
                 AppText(
                     text = label,
+                    tapToCopyEnabled = false,
                     color = textColor,
                     fontSize = labelFontSize,
                     fontWeight = if (visual.themeWeight > 0.5f && !forceUnselectedColor) {
