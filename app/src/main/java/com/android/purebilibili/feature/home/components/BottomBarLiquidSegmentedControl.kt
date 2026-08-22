@@ -330,6 +330,7 @@ fun BottomBarLiquidSegmentedControl(
     onIndicatorPositionChanged: ((Float) -> Unit)? = null,
     isScrollInProgressProvider: () -> Boolean = { false },
     externalPagerMotionEffectsEnabled: Boolean = false,
+    liquidGlassTuningOverride: LiquidGlassTuning? = null,
 ) {
     if (items.isEmpty()) return
 
@@ -393,6 +394,7 @@ fun BottomBarLiquidSegmentedControl(
         indicatorPositionProvider = indicatorPositionProvider,
         onIndicatorPositionChanged = onIndicatorPositionChanged,
         isScrollInProgressProvider = isScrollInProgressProvider,
+        liquidGlassTuningOverride = liquidGlassTuningOverride,
     )
 }
 

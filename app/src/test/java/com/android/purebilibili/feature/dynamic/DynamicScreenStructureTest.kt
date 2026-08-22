@@ -45,8 +45,11 @@ class DynamicScreenStructureTest {
         assertTrue(topBarSource.contains("forceLiquidChrome = true"))
         assertTrue(topBarSource.contains("liquidGlassEffectsEnabled = true"))
         assertTrue(topBarSource.contains("miuixBackdrop = null"))
-        assertTrue(topBarSource.contains("AppSurface("))
+        assertTrue(topBarSource.contains("biliPaiFloatingDockShell("))
+        assertTrue(topBarSource.contains("liquidGlassTuningOverride = noBlurLiquidTuning"))
+        assertTrue(topBarSource.contains("backdropBlurRadius = 0f"))
         assertTrue(!topBarSource.contains("unifiedBlur("))
+        assertTrue(!source.contains("activeListState?.isScrollInProgress == true ||"))
         val segmentedControlSource = File(
             "src/main/java/com/android/purebilibili/feature/home/components/BottomBarFloatingSegmentedControl.kt"
         ).readText()

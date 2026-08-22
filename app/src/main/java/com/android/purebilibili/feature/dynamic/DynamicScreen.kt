@@ -773,8 +773,7 @@ fun DynamicScreen(
                                     onPublishClick = { showPublishDialog = true },
                                     indicatorPositionProvider = dynamicTabIndicatorPositionProvider,
                                     isScrollInProgressProvider = {
-                                        activeListState?.isScrollInProgress == true ||
-                                            pagerState.isScrollInProgress
+                                        pagerState.isScrollInProgress
                                     },
                                 )
                             }
@@ -954,8 +953,7 @@ fun DynamicScreen(
                                     onPublishClick = { showPublishDialog = true },
                                     indicatorPositionProvider = dynamicTabIndicatorPositionProvider,
                                     isScrollInProgressProvider = {
-                                        activeListState?.isScrollInProgress == true ||
-                                            pagerState.isScrollInProgress
+                                        pagerState.isScrollInProgress
                                     },
                                 )
                             }

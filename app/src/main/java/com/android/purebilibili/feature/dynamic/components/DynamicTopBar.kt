@@ -7,8 +7,8 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
-import com.android.purebilibili.core.ui.components.AppSurface
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
@@ -25,6 +25,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
@@ -35,6 +37,10 @@ import com.android.purebilibili.core.ui.rememberAppListLayoutIcon
 import com.android.purebilibili.feature.dynamic.resolveDynamicTopBarHorizontalPadding
 import com.android.purebilibili.feature.dynamic.resolveDynamicTopBarLiquidTabSpec
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
+import com.android.purebilibili.feature.home.components.biliPaiFloatingDockShell
+import com.android.purebilibili.feature.home.components.resolveLiquidGlassTuning
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 
 //  动态页面布局模式
 enum class DynamicDisplayMode {
@@ -82,6 +88,11 @@ fun DynamicTopBarWithTabs(
     val density = LocalDensity.current
     val statusBarHeight = WindowInsets.statusBars.getTop(density).let { with(density) { it.toDp() } }
     val liquidTabSpec = resolveDynamicTopBarLiquidTabSpec()
+    val noBlurLiquidTuning = remember {
+        resolveLiquidGlassTuning(progress = 0.5f).copy(backdropBlurRadius = 0f)
+    }
+    val dockShape = AppShapes.container(ContainerLevel.Pill)
+    val dockColor = AppSurfaceTokens.surfaceContainerHigh()
 
     Column(
         modifier = modifier,
@@ -97,35 +108,44 @@ fun DynamicTopBarWithTabs(
             horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            AppSurface(
+            BottomBarLiquidSegmentedControl(
+                items = tabs,
+                selectedIndex = selectedTab,
+                onSelected = onTabSelected,
                 modifier = Modifier.weight(1f),
-                shape = AppShapes.container(ContainerLevel.Pill),
-                color = AppSurfaceTokens.surfaceContainerHigh(),
-                shadowElevation = AppSpacingTokens.ExtraSmall,
-            ) {
-                BottomBarLiquidSegmentedControl(
-                    items = tabs,
-                    selectedIndex = selectedTab,
-                    onSelected = onTabSelected,
-                    modifier = Modifier.fillMaxWidth(),
-                    height = liquidTabSpec.heightDp.dp,
-                    indicatorHeight = liquidTabSpec.indicatorHeightDp.dp,
-                    labelFontSize = liquidTabSpec.labelFontSizeSp.sp,
-                    indicatorPositionProvider = indicatorPositionProvider,
-                    isScrollInProgressProvider = isScrollInProgressProvider,
-                    forceLiquidChrome = true,
-                    liquidGlassEffectsEnabled = true,
-                    miuixBackdrop = null,
-                    containerColorOverride = AppSurfaceTokens.surfaceContainerHigh(),
-                )
-            }
+                height = liquidTabSpec.heightDp.dp,
+                indicatorHeight = liquidTabSpec.indicatorHeightDp.dp,
+                labelFontSize = liquidTabSpec.labelFontSizeSp.sp,
+                indicatorPositionProvider = indicatorPositionProvider,
+                isScrollInProgressProvider = isScrollInProgressProvider,
+                forceLiquidChrome = true,
+                liquidGlassEffectsEnabled = true,
+                miuixBackdrop = null,
+                containerColorOverride = dockColor,
+                liquidGlassTuningOverride = noBlurLiquidTuning,
+            )
 
-            AppSurface(
-                shape = AppShapes.container(ContainerLevel.Pill),
-                color = AppSurfaceTokens.surfaceContainerHigh(),
-                shadowElevation = AppSpacingTokens.ExtraSmall,
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+            val actionDockBackdrop = rememberLayerBackdrop()
+            Box {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .alpha(0f)
+                        .layerBackdrop(actionDockBackdrop)
+                        .background(AppSurfaceTokens.background())
+                )
+                Row(
+                    modifier = Modifier
+                        .biliPaiFloatingDockShell(
+                            backdrop = actionDockBackdrop,
+                            containerColor = dockColor,
+                            pressProgress = 0f,
+                            shape = dockShape,
+                            liquidGlassTuning = noBlurLiquidTuning,
+                        )
+                        .clip(dockShape),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     var showLayoutMenu by remember { mutableStateOf(false) }
                     Box {
                         AppIconButton(
