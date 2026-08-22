@@ -57,7 +57,6 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
@@ -1225,33 +1224,33 @@ private fun ImagePreviewOverlayContent(
         AlertDialog(
             onDismissRequest = { showOrdinaryImageActions = false },
             text = {
-                Column {
-                    ListItem(
-                        headlineContent = { AppText("分享", fontSize = 14.sp) },
-                        modifier = Modifier.clickable {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    ImagePreviewActionButton(
+                        label = "分享",
+                        onClick = {
                             showOrdinaryImageActions = false
                             requestShareCurrentImage(currentImageUrl)
                         }
                     )
-                    ListItem(
-                        headlineContent = { AppText("复制链接", fontSize = 14.sp) },
-                        modifier = Modifier.clickable {
+                    ImagePreviewActionButton(
+                        label = "复制链接",
+                        onClick = {
                             showOrdinaryImageActions = false
                             val clipboard = context.getSystemService(ClipboardManager::class.java)
                             clipboard?.setPrimaryClip(ClipData.newPlainText("图片链接", currentImageUrl))
                         }
                     )
-                    ListItem(
-                        headlineContent = { AppText("保存图片", fontSize = 14.sp) },
-                        modifier = Modifier.clickable {
+                    ImagePreviewActionButton(
+                        label = "保存图片",
+                        onClick = {
                             showOrdinaryImageActions = false
                             requestSaveCurrentImage(currentImageUrl)
                         }
                     )
                     if (images.size > 1) {
-                        ListItem(
-                            headlineContent = { AppText("保存全部图片", fontSize = 14.sp) },
-                            modifier = Modifier.clickable {
+                        ImagePreviewActionButton(
+                            label = "保存全部图片",
+                            onClick = {
                                 showOrdinaryImageActions = false
                                 requestSaveAllImages()
                             }
@@ -1260,6 +1259,29 @@ private fun ImagePreviewOverlayContent(
                 }
             },
             confirmButton = {}
+        )
+    }
+}
+
+@Composable
+private fun ImagePreviewActionButton(
+    label: String,
+    onClick: () -> Unit
+) {
+    TextButton(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = AppChromeSizeTokens.MinimumTouchTarget),
+        contentPadding = PaddingValues(horizontal = AppSpacingTokens.Medium),
+        colors = ButtonDefaults.textButtonColors(
+            contentColor = MaterialTheme.colorScheme.onSurface
+        )
+    ) {
+        AppText(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }
@@ -1566,6 +1588,7 @@ suspend fun shareImageFromPreview(context: Context, imageUrl: String): Boolean {
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
             val chooser = Intent.createChooser(sendIntent, "分享图片").apply {
+                putExtra(Intent.EXTRA_TITLE, "分享图片")
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 if (context !is Activity) {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

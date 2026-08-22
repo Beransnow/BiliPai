@@ -13,6 +13,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.longClick
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -96,6 +97,34 @@ class ImagePreviewDialogUiRegressionTest {
             assertEquals("https://example.com/demo.jpg", savedUrl)
         }
         composeTestRule.onNodeWithTag(IMAGE_PREVIEW_PAGE_TAG).assertIsDisplayed()
+    }
+
+    @Test
+    fun longPressOnPreviewImage_showsNativeActionDialog() {
+        composeTestRule.setContent {
+            MaterialTheme {
+                Box(modifier = Modifier.size(width = 390.dp, height = 844.dp)) {
+                    ImagePreviewDialog(
+                        images = listOf(
+                            "https://example.com/one.jpg",
+                            "https://example.com/two.jpg"
+                        ),
+                        initialIndex = 0,
+                        onDismiss = {}
+                    )
+                    ImagePreviewOverlayHost(modifier = Modifier.fillMaxSize())
+                }
+            }
+        }
+
+        composeTestRule.onNodeWithTag(IMAGE_PREVIEW_PAGE_TAG).performTouchInput {
+            longClick(center)
+        }
+
+        composeTestRule.onNodeWithText("分享").assertIsDisplayed()
+        composeTestRule.onNodeWithText("复制链接").assertIsDisplayed()
+        composeTestRule.onNodeWithText("保存图片").assertIsDisplayed()
+        composeTestRule.onNodeWithText("保存全部图片").assertIsDisplayed()
     }
 
     @Test
