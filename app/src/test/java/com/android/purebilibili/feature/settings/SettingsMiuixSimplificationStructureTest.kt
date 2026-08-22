@@ -59,11 +59,18 @@ class SettingsMiuixSimplificationStructureTest {
         assertTrue(source.contains("AsyncImage("))
         assertTrue(source.contains("onPreviewImageChanged(null)"))
         assertTrue(source.contains("LiquidGlassAdvancedPreset.entries"))
+        assertFalse(source.contains("AppNativeSegmentedControl("))
+        assertTrue(source.contains("contentDescription = \"液态玻璃效果预设\""))
+        assertTrue(source.contains("steps = 2"))
         assertTrue(source.contains("title = \"内容可读性\""))
         assertTrue(source.contains("title = \"色散强度\""))
         assertTrue(source.contains("title = \"文字与图标扭曲\""))
         assertTrue(source.contains("preset = LiquidGlassAdvancedPreset.CUSTOM"))
         assertTrue(source.contains("onAdvancedSettingsCommitted(advancedSettings)"))
+        assertTrue(source.contains("detectVerticalDragGestures"))
+        assertTrue(source.contains("previewPanOffsetPx"))
+        assertTrue(source.contains("sliderFollowOffset"))
+        assertTrue(source.contains("translationY = previewPanOffsetPx + sliderFollowOffset"))
     }
 
     @Test

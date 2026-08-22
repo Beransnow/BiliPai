@@ -9,6 +9,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,19 +44,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.store.LiquidGlassAdvancedPreset
 import com.android.purebilibili.core.store.LiquidGlassAdvancedSettings
 import com.android.purebilibili.core.store.LiquidGlassMode
 import com.android.purebilibili.core.store.resolveLiquidGlassAdvancedPreset
-import com.android.purebilibili.core.ui.components.AppNativeSegmentedControl
-import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.AppSlider
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppTextButton
@@ -94,6 +97,14 @@ internal fun LiquidGlassAdjustmentPanel(
     }
     var advancedSettings by remember(persistedAdvancedSettings) {
         mutableStateOf(persistedAdvancedSettings)
+    }
+    var customAdvancedSettings by remember(persistedAdvancedSettings) {
+        mutableStateOf(
+            persistedAdvancedSettings.copy(preset = LiquidGlassAdvancedPreset.CUSTOM)
+        )
+    }
+    var presetSliderValue by remember(persistedAdvancedSettings) {
+        mutableFloatStateOf(liquidGlassPresetSliderValue(persistedAdvancedSettings.preset))
     }
     var advancedSettingsExpanded by rememberSaveable { mutableStateOf(false) }
     val tuning = remember(previewProgress, advancedSettings) {
@@ -162,35 +173,75 @@ internal fun LiquidGlassAdjustmentPanel(
             }
         }
         AppText(
-            text = "所选图片仅用于本页效果预览。",
+            text = if (previewImageUri == null) {
+                "可在预览图中上下拖动背景；调节滑杆时图片与玻璃效果实时跟随。"
+            } else {
+                "所选图片仅用于本页预览；可上下拖动背景，滑杆效果实时跟随。"
+            },
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
-        val presetOptions = remember {
-            LiquidGlassAdvancedPreset.entries.map { preset ->
-                AppSegmentOption(preset, preset.label)
-            }
-        }
-        AppText(
-            text = "效果预设",
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Medium,
-        )
-        AppNativeSegmentedControl(
-            options = presetOptions,
-            selectedValue = advancedSettings.preset,
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            onSelectionChange = { preset ->
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            AppText(
+                text = "效果预设",
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Medium,
+            )
+            AppText(
+                text = advancedSettings.preset.label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
+        AppSlider(
+            value = presetSliderValue,
+            onValueChange = { value ->
+                val preset = liquidGlassPresetFromSliderValue(value)
+                presetSliderValue = liquidGlassPresetSliderValue(preset)
                 val resolvedSettings = if (preset == LiquidGlassAdvancedPreset.CUSTOM) {
-                    advancedSettings.copy(preset = LiquidGlassAdvancedPreset.CUSTOM)
+                    customAdvancedSettings
                 } else {
                     resolveLiquidGlassAdvancedPreset(preset)
                 }
                 advancedSettings = resolvedSettings
-                onAdvancedSettingsCommitted(resolvedSettings)
             },
+            onValueChangeFinished = {
+                onAdvancedSettingsCommitted(advancedSettings)
+            },
+            valueRange = 0f..1f,
+            steps = 2,
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics {
+                    contentDescription = "液态玻璃效果预设"
+                    stateDescription = advancedSettings.preset.label
+                },
         )
+        Row(modifier = Modifier.fillMaxWidth()) {
+            LiquidGlassAdvancedPreset.entries.forEach { preset ->
+                AppText(
+                    text = preset.label,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = if (preset == advancedSettings.preset) {
+                        FontWeight.SemiBold
+                    } else {
+                        FontWeight.Normal
+                    },
+                    color = if (preset == advancedSettings.preset) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
         AppText(
             text = when (advancedSettings.preset) {
                 LiquidGlassAdvancedPreset.READABLE -> "清晰：优先保证图标和文字可读性（推荐极度通透）"
@@ -219,9 +270,14 @@ internal fun LiquidGlassAdjustmentPanel(
                     description = "通透度越高，越主动保护图标和文字对比度",
                     value = advancedSettings.contentReadability,
                     onValueChange = { value ->
-                        advancedSettings = advancedSettings.copy(
+                        val updatedSettings = advancedSettings.copy(
                             preset = LiquidGlassAdvancedPreset.CUSTOM,
                             contentReadability = value,
+                        )
+                        advancedSettings = updatedSettings
+                        customAdvancedSettings = updatedSettings
+                        presetSliderValue = liquidGlassPresetSliderValue(
+                            LiquidGlassAdvancedPreset.CUSTOM
                         )
                     },
                     onValueChangeFinished = {
@@ -233,9 +289,14 @@ internal fun LiquidGlassAdjustmentPanel(
                     description = "控制玻璃边缘的彩色分离效果",
                     value = advancedSettings.chromaticAberration,
                     onValueChange = { value ->
-                        advancedSettings = advancedSettings.copy(
+                        val updatedSettings = advancedSettings.copy(
                             preset = LiquidGlassAdvancedPreset.CUSTOM,
                             chromaticAberration = value,
+                        )
+                        advancedSettings = updatedSettings
+                        customAdvancedSettings = updatedSettings
+                        presetSliderValue = liquidGlassPresetSliderValue(
+                            LiquidGlassAdvancedPreset.CUSTOM
                         )
                     },
                     onValueChangeFinished = {
@@ -247,9 +308,14 @@ internal fun LiquidGlassAdjustmentPanel(
                     description = "控制选中内容经过移动玻璃指示器时的折射幅度",
                     value = advancedSettings.contentDistortion,
                     onValueChange = { value ->
-                        advancedSettings = advancedSettings.copy(
+                        val updatedSettings = advancedSettings.copy(
                             preset = LiquidGlassAdvancedPreset.CUSTOM,
                             contentDistortion = value,
+                        )
+                        advancedSettings = updatedSettings
+                        customAdvancedSettings = updatedSettings
+                        presetSliderValue = liquidGlassPresetSliderValue(
+                            LiquidGlassAdvancedPreset.CUSTOM
                         )
                     },
                     onValueChangeFinished = {
@@ -296,6 +362,16 @@ internal fun LiquidGlassAdjustmentPanel(
     }
 }
 
+internal fun liquidGlassPresetSliderValue(preset: LiquidGlassAdvancedPreset): Float =
+    preset.value.toFloat() /
+        LiquidGlassAdvancedPreset.entries.lastIndex.coerceAtLeast(1).toFloat()
+
+internal fun liquidGlassPresetFromSliderValue(value: Float): LiquidGlassAdvancedPreset {
+    val maxIndex = LiquidGlassAdvancedPreset.entries.lastIndex.coerceAtLeast(0)
+    val index = (value.coerceIn(0f, 1f) * maxIndex).roundToInt().coerceIn(0, maxIndex)
+    return LiquidGlassAdvancedPreset.entries[index]
+}
+
 @Composable
 private fun LiquidGlassHomeSample(
     progress: Float,
@@ -310,34 +386,60 @@ private fun LiquidGlassHomeSample(
     val sampleShape = RoundedCornerShape(24.dp)
     val glassColor = MaterialTheme.colorScheme.surfaceContainer
     val contentColor = MaterialTheme.colorScheme.onSurface
+    val density = LocalDensity.current
+    val previewPanLimitPx = remember(density) { with(density) { 40.dp.toPx() } }
+    val sliderFollowRangePx = remember(density) { with(density) { 40.dp.toPx() } }
     var customImageFailed by remember(previewImageUri) { mutableStateOf(false) }
+    var previewPanOffsetPx by remember(previewImageUri) { mutableFloatStateOf(0f) }
 
     Box(
         modifier = modifier
             .height(224.dp)
             .clip(sampleShape)
-            .background(MaterialTheme.colorScheme.surfaceVariant),
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .pointerInput(previewImageUri, previewPanLimitPx) {
+                detectVerticalDragGestures { change, dragAmount ->
+                    change.consume()
+                    previewPanOffsetPx = (previewPanOffsetPx + dragAmount)
+                        .coerceIn(-previewPanLimitPx, previewPanLimitPx)
+                }
+            }
+            .semantics {
+                contentDescription = "首页效果预览，可上下拖动图片"
+                stateDescription = "图片位置 ${(previewPanOffsetPx / previewPanLimitPx * 100f).roundToInt()}%"
+            },
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .layerBackdrop(backdrop)
         ) {
-            if (previewImageUri != null && !customImageFailed) {
-                AsyncImage(
-                    model = previewImageUri,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize(),
-                    onError = { customImageFailed = true },
-                )
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.08f))
-                )
-            } else {
-                DefaultLiquidGlassPreviewContent()
+            Box(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .fillMaxWidth()
+                    .height(344.dp)
+                    .graphicsLayer {
+                        val sliderFollowOffset = (progress - 0.5f) * sliderFollowRangePx
+                        translationY = previewPanOffsetPx + sliderFollowOffset
+                    }
+            ) {
+                if (previewImageUri != null && !customImageFailed) {
+                    AsyncImage(
+                        model = previewImageUri,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                        onError = { customImageFailed = true },
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.08f))
+                    )
+                } else {
+                    DefaultLiquidGlassPreviewContent()
+                }
             }
         }
 
