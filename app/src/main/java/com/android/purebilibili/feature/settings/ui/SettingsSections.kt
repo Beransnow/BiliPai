@@ -328,7 +328,7 @@ internal fun SettingsRootCategoryNavigationSection(
                             imageVector = visual.icon,
                             contentDescription = null,
                             tint = iconContentColor,
-                            modifier = Modifier.size(22.dp)
+                            modifier = Modifier.size(visual.iconSizeDp.dp)
                         )
                         visual.iconResId != null -> AppIcon(
                             painter = painterResource(id = visual.iconResId),
@@ -398,6 +398,7 @@ internal fun SettingsRootCategoryListSection(
                 icon = visual.icon,
                 iconPainter = visual.iconResId?.let { painterResource(id = it) },
                 iconTint = siblingTints[index],
+                iconSizeDp = visual.iconSizeDp,
                 onClick = { onCategoryClick(category) },
             )
             if (index != categories.lastIndex) {
@@ -414,6 +415,7 @@ private fun SettingsRootCategoryRow(
     icon: ImageVector?,
     iconPainter: androidx.compose.ui.graphics.painter.Painter?,
     iconTint: Color,
+    iconSizeDp: Int,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -442,13 +444,13 @@ private fun SettingsRootCategoryRow(
                     painter = iconPainter,
                     contentDescription = null,
                     tint = iconContentColor,
-                    modifier = Modifier.size(visualSpec.categoryIconSize),
+                    modifier = Modifier.size(iconSizeDp.dp),
                 )
                 icon != null -> AppIcon(
                     imageVector = icon,
                     contentDescription = null,
                     tint = iconContentColor,
-                    modifier = Modifier.size(visualSpec.categoryIconSize),
+                    modifier = Modifier.size(iconSizeDp.dp),
                 )
             }
         }

@@ -220,13 +220,39 @@ internal fun resolveSettingsSemanticIcon(
     AppSemanticIconFamily.MIUIX -> resolveMiuixSettingsSemanticIcon(role)
 }
 
+internal fun resolveSettingsSemanticIconSizeDp(
+    role: SettingsIconRole,
+    iconFamily: AppSemanticIconFamily,
+): Int {
+    if (iconFamily != AppSemanticIconFamily.MIUIX) return 20
+    return when (role) {
+        SettingsIconRole.HOME_FEED,
+        SettingsIconRole.NAVIGATION,
+        SettingsIconRole.DIAGNOSTICS,
+        SettingsIconRole.ANIMATION,
+        SettingsIconRole.BOTTOM_BAR,
+        SettingsIconRole.DISPLAY_STYLE,
+        SettingsIconRole.GRID_COLUMNS,
+        SettingsIconRole.HOME_HERO_CAROUSEL,
+        SettingsIconRole.APP_ICON -> 19
+
+        SettingsIconRole.PLAYBACK_QUALITY,
+        SettingsIconRole.FOLLOW_BUTTON,
+        SettingsIconRole.BUILD_VERIFICATION,
+        SettingsIconRole.AUTO_EXIT_FULLSCREEN,
+        SettingsIconRole.HEADER_COLLAPSE -> 21
+
+        else -> 20
+    }
+}
+
 /**
  * Miuix 设置页优先使用 miuix-icons 自带字形。这里按设置语义集中映射，避免各页面
  * 自行混入 Material 图标；远隔层级允许复用，同一个可见设置组仍由角色保持区分。
  */
 private fun resolveMiuixSettingsSemanticIcon(role: SettingsIconRole): ImageVector = when (role) {
     SettingsIconRole.INTERFACE_THEME -> MiuixIcons.Theme
-    SettingsIconRole.HOME_FEED -> MiuixIcons.Th1
+    SettingsIconRole.HOME_FEED -> MiuixIcons.Home
     SettingsIconRole.NAVIGATION -> MiuixIcons.Sidebar
     SettingsIconRole.PLAYBACK_QUALITY -> MiuixIcons.Play
     SettingsIconRole.FULLSCREEN_GESTURE -> MiuixIcons.ScreenCapture
@@ -243,7 +269,7 @@ private fun resolveMiuixSettingsSemanticIcon(role: SettingsIconRole): ImageVecto
     SettingsIconRole.BLOCKED_LIST -> MiuixIcons.Blocklist
     SettingsIconRole.SETTINGS_SHARE -> MiuixIcons.Share
     SettingsIconRole.WEBDAV_BACKUP -> MiuixIcons.UploadCloud
-    SettingsIconRole.DOWNLOAD_PATH -> MiuixIcons.Folder
+    SettingsIconRole.DOWNLOAD_PATH -> MiuixIcons.FileDownloads
     SettingsIconRole.IMAGE_SAVE_PATH -> MiuixIcons.Photos
     SettingsIconRole.CLEAR_CACHE -> MiuixIcons.Clear
     SettingsIconRole.PLUGINS -> MiuixIcons.AddFolder
@@ -259,8 +285,8 @@ private fun resolveMiuixSettingsSemanticIcon(role: SettingsIconRole): ImageVecto
     SettingsIconRole.DISCLAIMER -> MiuixIcons.Report
     SettingsIconRole.RELEASE_CHANNEL -> MiuixIcons.Promotions
     SettingsIconRole.CRASH_TRACKING -> MiuixIcons.Report
-    SettingsIconRole.ANALYTICS -> MiuixIcons.Th28
-    SettingsIconRole.FEED_API -> MiuixIcons.All
+    SettingsIconRole.ANALYTICS -> MiuixIcons.ListView
+    SettingsIconRole.FEED_API -> MiuixIcons.Download
     SettingsIconRole.REFRESH_COUNT -> MiuixIcons.Refresh
     SettingsIconRole.DYNAMIC_PREVIEW_TEXT -> MiuixIcons.Show
     SettingsIconRole.DYNAMIC_TAB_VISIBILITY -> MiuixIcons.SelectAll
@@ -273,12 +299,12 @@ private fun resolveMiuixSettingsSemanticIcon(role: SettingsIconRole): ImageVecto
     SettingsIconRole.DYNAMIC_COLOR -> MiuixIcons.Promotions
     SettingsIconRole.THEME_COLOR_PICKER -> MiuixIcons.Tune
     SettingsIconRole.COLOR_STYLE -> MiuixIcons.Edit
-    SettingsIconRole.COLOR_SPEC -> MiuixIcons.Settings
+    SettingsIconRole.COLOR_SPEC -> MiuixIcons.Filter
     SettingsIconRole.APP_LANGUAGE -> MiuixIcons.Translate
     SettingsIconRole.FONT_FILE -> MiuixIcons.File
     SettingsIconRole.SPLASH_WALLPAPER -> MiuixIcons.Image
     SettingsIconRole.RANDOM_WALLPAPER -> MiuixIcons.Replace
-    SettingsIconRole.DISPLAY_STYLE -> MiuixIcons.GridView
+    SettingsIconRole.DISPLAY_STYLE -> MiuixIcons.ListView
     SettingsIconRole.HOME_COVER_GLASS -> MiuixIcons.Background
     SettingsIconRole.VIDEO_DURATION_BADGES -> MiuixIcons.Timer
     SettingsIconRole.HOME_INFO_GLASS -> MiuixIcons.Info
@@ -340,7 +366,7 @@ private fun resolveMiuixSettingsSemanticIcon(role: SettingsIconRole): ImageVecto
     SettingsIconRole.DIRECTED_TRAFFIC -> MiuixIcons.SearchDevice
     SettingsIconRole.AUTO_HIGHEST_QUALITY -> MiuixIcons.TopDownloads
     SettingsIconRole.AUTO_PLAY_ON_OPEN -> MiuixIcons.Play
-    SettingsIconRole.STARTUP_PORTRAIT_FEED -> MiuixIcons.Forward
+    SettingsIconRole.STARTUP_PORTRAIT_FEED -> MiuixIcons.Phone
     SettingsIconRole.HOME_HERO_AUTOPLAY -> MiuixIcons.Recording
     SettingsIconRole.AUTO_PLAY_NEXT -> MiuixIcons.Playlist
     SettingsIconRole.VIDEO_NOTE_COLLAPSE -> MiuixIcons.ExpandLess
@@ -348,13 +374,13 @@ private fun resolveMiuixSettingsSemanticIcon(role: SettingsIconRole): ImageVecto
     SettingsIconRole.PORTRAIT_SWIPE_FULLSCREEN -> MiuixIcons.VerticalSplit
     SettingsIconRole.CENTER_SWIPE_FULLSCREEN -> MiuixIcons.SelectAll
     SettingsIconRole.SYSTEM_BRIGHTNESS -> MiuixIcons.Theme
-    SettingsIconRole.APP_ICON -> MiuixIcons.AppRecording
+    SettingsIconRole.APP_ICON -> MiuixIcons.Album
     SettingsIconRole.HOME_CARD_STATS_COMPACT -> MiuixIcons.Th29
     SettingsIconRole.HOME_HERO_CAROUSEL -> MiuixIcons.MapAlbum
     SettingsIconRole.HOME_ONLINE_COUNT -> MiuixIcons.Contacts
     SettingsIconRole.PORTRAIT_STORY_ENTRY -> MiuixIcons.RecordingTape
     SettingsIconRole.DISPLAY_SCALE -> MiuixIcons.ZoomOut
-    SettingsIconRole.UI_ENTRANCE_ANIMATION -> MiuixIcons.Forward
+    SettingsIconRole.UI_ENTRANCE_ANIMATION -> MiuixIcons.RecordingTape
     SettingsIconRole.FULLSCREEN_SWIPE_BACK -> MiuixIcons.Back
     SettingsIconRole.FOLLOW_BUTTON -> MiuixIcons.AddCircle
     SettingsIconRole.PRIVACY_HISTORY -> MiuixIcons.Recent

@@ -15,10 +15,10 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 import top.yukonga.miuix.kmp.icon.MiuixIcons
 import top.yukonga.miuix.kmp.icon.extended.Backup
+import top.yukonga.miuix.kmp.icon.extended.Home as MiuixHome
 import top.yukonga.miuix.kmp.icon.extended.Lock
 import top.yukonga.miuix.kmp.icon.extended.Play
 import top.yukonga.miuix.kmp.icon.extended.Theme
-import top.yukonga.miuix.kmp.icon.extended.Th1
 
 class SettingsSemanticIconPolicyTest {
 
@@ -65,7 +65,7 @@ class SettingsSemanticIconPolicyTest {
             resolveSettingsSemanticIcon(SettingsIconRole.PLAYBACK_QUALITY, AppSemanticIconFamily.MIUIX),
         )
         assertSameVectorAsset(
-            MiuixIcons.Th1,
+            MiuixIcons.MiuixHome,
             resolveSettingsSemanticIcon(SettingsIconRole.HOME_FEED, AppSemanticIconFamily.MIUIX),
         )
         assertSameVectorAsset(
@@ -75,6 +75,31 @@ class SettingsSemanticIconPolicyTest {
         assertSameVectorAsset(
             MiuixIcons.Backup,
             resolveSettingsSemanticIcon(SettingsIconRole.DATA_BACKUP, AppSemanticIconFamily.MIUIX),
+        )
+    }
+
+    @Test
+    fun miuixSemanticIcons_useOpticallyBalancedSizes() {
+        assertEquals(
+            19,
+            resolveSettingsSemanticIconSizeDp(
+                SettingsIconRole.HOME_FEED,
+                AppSemanticIconFamily.MIUIX,
+            ),
+        )
+        assertEquals(
+            21,
+            resolveSettingsSemanticIconSizeDp(
+                SettingsIconRole.PLAYBACK_QUALITY,
+                AppSemanticIconFamily.MIUIX,
+            ),
+        )
+        assertEquals(
+            20,
+            resolveSettingsSemanticIconSizeDp(
+                SettingsIconRole.HOME_FEED,
+                AppSemanticIconFamily.MATERIAL,
+            ),
         )
     }
 
