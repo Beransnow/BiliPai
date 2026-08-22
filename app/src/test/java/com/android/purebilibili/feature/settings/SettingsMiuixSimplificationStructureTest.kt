@@ -80,6 +80,12 @@ class SettingsMiuixSimplificationStructureTest {
         assertTrue(source.contains(".requiredHeight(920.dp)"))
         assertTrue(source.contains(".coerceIn(-previewPanLimitPx, previewPanLimitPx)"))
         assertTrue(source.contains("R.drawable.liquid_glass_preview_sky"))
+        assertTrue(source.contains("R.drawable.liquid_glass_preview_prismatic"))
+        assertTrue(source.contains("LiquidGlassPreviewArtwork.entries.forEach"))
+        assertTrue(source.contains("AppText(artwork.label)"))
+        assertTrue(source.contains("text = \"感谢开源社区\""))
+        assertTrue(source.contains("Jetpack Compose · Miuix"))
+        assertTrue(source.contains("以及每一位开源贡献者"))
         assertTrue(source.contains("painterResource("))
     }
 

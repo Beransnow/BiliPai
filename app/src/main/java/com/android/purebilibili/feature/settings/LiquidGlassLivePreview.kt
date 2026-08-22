@@ -33,6 +33,7 @@ import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -107,6 +108,9 @@ internal fun LiquidGlassAdjustmentPanel(
     var presetSliderValue by remember(persistedAdvancedSettings) {
         mutableFloatStateOf(liquidGlassPresetSliderValue(persistedAdvancedSettings))
     }
+    var previewArtwork by rememberSaveable {
+        mutableStateOf(LiquidGlassPreviewArtwork.SKY)
+    }
     var advancedSettingsExpanded by rememberSaveable { mutableStateOf(false) }
     val tuning = remember(previewProgress, advancedSettings) {
         resolveLiquidGlassTuning(previewProgress, advancedSettings)
@@ -149,9 +153,52 @@ internal fun LiquidGlassAdjustmentPanel(
         LiquidGlassHomeSample(
             progress = previewProgress,
             previewImageUri = previewImageUri,
+            previewArtwork = previewArtwork,
             advancedSettings = advancedSettings,
             modifier = Modifier.fillMaxWidth(),
         )
+
+        if (previewImageUri == null) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                AppText(
+                    text = "内置预览背景",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Medium,
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    LiquidGlassPreviewArtwork.entries.forEach { artwork ->
+                        val selected = previewArtwork == artwork
+                        AppTextButton(
+                            onClick = { previewArtwork = artwork },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp)
+                                .semantics {
+                                    contentDescription = "预览背景：${artwork.label}"
+                                    stateDescription = if (selected) "已选择" else "未选择"
+                                },
+                            colors = ButtonDefaults.textButtonColors(
+                                containerColor = if (selected) {
+                                    MaterialTheme.colorScheme.primaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceContainer
+                                },
+                                contentColor = if (selected) {
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                },
+                            ),
+                        ) {
+                            AppText(artwork.label)
+                        }
+                    }
+                }
+            }
+        }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -473,10 +520,25 @@ internal fun liquidGlassPresetSliderValue(settings: LiquidGlassAdvancedSettings)
 private fun lerpLiquidGlassPresetValue(start: Float, end: Float, fraction: Float): Float =
     start + (end - start) * fraction.coerceIn(0f, 1f)
 
+private enum class LiquidGlassPreviewArtwork(
+    val label: String,
+    val drawableResId: Int,
+) {
+    SKY(
+        label = "蓝天白云",
+        drawableResId = R.drawable.liquid_glass_preview_sky,
+    ),
+    PRISMATIC_GLASS(
+        label = "彩色玻璃",
+        drawableResId = R.drawable.liquid_glass_preview_prismatic,
+    ),
+}
+
 @Composable
 private fun LiquidGlassHomeSample(
     progress: Float,
     previewImageUri: String?,
+    previewArtwork: LiquidGlassPreviewArtwork,
     advancedSettings: LiquidGlassAdvancedSettings,
     modifier: Modifier = Modifier,
 ) {
@@ -491,14 +553,16 @@ private fun LiquidGlassHomeSample(
     val previewPanLimitPx = remember(density) { with(density) { 280.dp.toPx() } }
     val sliderFollowRangePx = remember(density) { with(density) { 80.dp.toPx() } }
     var customImageFailed by remember(previewImageUri) { mutableStateOf(false) }
-    var previewPanOffsetPx by remember(previewImageUri) { mutableFloatStateOf(0f) }
+    var previewPanOffsetPx by remember(previewImageUri, previewArtwork) {
+        mutableFloatStateOf(0f)
+    }
 
     Box(
         modifier = modifier
             .height(360.dp)
             .clip(sampleShape)
             .background(MaterialTheme.colorScheme.surfaceVariant)
-            .pointerInput(previewImageUri, previewPanLimitPx) {
+            .pointerInput(previewImageUri, previewArtwork, previewPanLimitPx) {
                 detectVerticalDragGestures { change, dragAmount ->
                     change.consume()
                     previewPanOffsetPx = (previewPanOffsetPx + dragAmount)
@@ -541,10 +605,15 @@ private fun LiquidGlassHomeSample(
                     )
                 } else {
                     Image(
-                        painter = painterResource(R.drawable.liquid_glass_preview_sky),
+                        painter = painterResource(previewArtwork.drawableResId),
                         contentDescription = null,
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize(),
+                    )
+                }
+                if (previewImageUri == null || customImageFailed) {
+                    LiquidGlassOpenSourceAcknowledgements(
+                        modifier = Modifier.align(Alignment.Center),
                     )
                 }
             }
@@ -595,6 +664,42 @@ private fun LiquidGlassHomeSample(
             Icon(Icons.Outlined.DynamicFeed, contentDescription = null, tint = contentColor)
             Icon(Icons.Outlined.Person, contentDescription = null, tint = contentColor)
         }
+    }
+}
+
+@Composable
+private fun LiquidGlassOpenSourceAcknowledgements(
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth(0.82f)
+            .clip(RoundedCornerShape(18.dp))
+            .background(Color.Black.copy(alpha = 0.34f))
+            .padding(horizontal = 18.dp, vertical = 14.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        AppText(
+            text = "感谢开源社区",
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = Color.White,
+            textAlign = TextAlign.Center,
+        )
+        AppText(
+            text = "Kotlin · Jetpack Compose · Miuix\n" +
+                "AndroidX Media3 · Coil · kotlinx.serialization",
+            style = MaterialTheme.typography.labelMedium,
+            color = Color.White.copy(alpha = 0.92f),
+            textAlign = TextAlign.Center,
+        )
+        AppText(
+            text = "以及每一位开源贡献者",
+            style = MaterialTheme.typography.labelSmall,
+            color = Color.White.copy(alpha = 0.76f),
+            textAlign = TextAlign.Center,
+        )
     }
 }
 
