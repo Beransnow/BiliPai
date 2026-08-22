@@ -3,6 +3,7 @@ package com.android.purebilibili.feature.settings
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -98,7 +99,7 @@ internal fun LiquidGlassAdjustmentPanel(
 ) {
     val context = LocalContext.current
     val previewImagePicker = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument(),
+        contract = ActivityResultContracts.PickVisualMedia(),
     ) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
         runCatching {
@@ -257,7 +258,11 @@ internal fun LiquidGlassAdjustmentPanel(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             AppTextButton(
-                onClick = { previewImagePicker.launch(arrayOf("image/*")) },
+                onClick = {
+                    previewImagePicker.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                },
             ) {
                 Icon(Icons.Outlined.PhotoLibrary, contentDescription = null)
                 Spacer(modifier = Modifier.width(6.dp))

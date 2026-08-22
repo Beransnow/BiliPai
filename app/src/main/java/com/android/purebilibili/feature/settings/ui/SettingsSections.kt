@@ -215,6 +215,7 @@ internal data class SettingsRootCategoryActions(
     val onDownloadPathClick: () -> Unit,
     val onImageSavePathClick: () -> Unit,
     val onClearCacheClick: () -> Unit,
+    val onAutoCacheClearIntervalChange: (SettingsManager.AutoCacheClearInterval) -> Unit,
     val onGithubClick: () -> Unit,
     val onTelegramClick: () -> Unit,
     val onTelegramGroupClick: () -> Unit = {},
@@ -259,6 +260,7 @@ internal data class SettingsRootCategoryState(
     val customDownloadPath: String?,
     val customImageSavePath: String?,
     val cacheSize: String,
+    val autoCacheClearInterval: SettingsManager.AutoCacheClearInterval,
     val versionName: String,
     val appIcon: String,
     val easterEggEnabled: Boolean,
@@ -806,6 +808,8 @@ internal fun SettingsRootCategoryContent(
                             onDownloadPathClick = actions.onDownloadPathClick,
                             onImageSavePathClick = actions.onImageSavePathClick,
                             onClearCacheClick = actions.onClearCacheClick,
+                            autoCacheClearInterval = state.autoCacheClearInterval,
+                            onAutoCacheClearIntervalChange = actions.onAutoCacheClearIntervalChange,
                         )
                     }
                 }
@@ -991,7 +995,9 @@ internal fun SettingsRootCategoryContent(
                             onWebDavBackupClick = actions.onWebDavBackupClick,
                             onDownloadPathClick = actions.onDownloadPathClick,
                             onImageSavePathClick = actions.onImageSavePathClick,
-                            onClearCacheClick = actions.onClearCacheClick
+                            onClearCacheClick = actions.onClearCacheClick,
+                            autoCacheClearInterval = state.autoCacheClearInterval,
+                            onAutoCacheClearIntervalChange = actions.onAutoCacheClearIntervalChange,
                         )
                     }
                 }
@@ -1530,18 +1536,20 @@ fun DataStorageSection(
     customDownloadPath: String?,
     customImageSavePath: String?,
     cacheSize: String,
+    autoCacheClearInterval: SettingsManager.AutoCacheClearInterval,
     onSettingsShareClick: () -> Unit,
     onWebDavBackupClick: () -> Unit,
     onDownloadPathClick: () -> Unit,
     onImageSavePathClick: () -> Unit,
-    onClearCacheClick: () -> Unit
+    onClearCacheClick: () -> Unit,
+    onAutoCacheClearIntervalChange: (SettingsManager.AutoCacheClearInterval) -> Unit
 ) {
     val settingsShareVisual = rememberSettingsEntryVisual(SettingsSearchTarget.SETTINGS_SHARE)
     val webDavVisual = rememberSettingsEntryVisual(SettingsSearchTarget.WEBDAV_BACKUP)
     val downloadPathVisual = rememberSettingsEntryVisual(SettingsSearchTarget.DOWNLOAD_PATH)
     val imageSavePathVisual = rememberSettingsEntryVisual(SettingsSearchTarget.IMAGE_SAVE_PATH)
     val clearCacheVisual = rememberSettingsEntryVisual(SettingsSearchTarget.CLEAR_CACHE)
-    val siblingTints = remember { resolveSettingsSiblingIconTints(5, paletteOffset = 2) }
+    val siblingTints = remember { resolveSettingsSiblingIconTints(6, paletteOffset = 2) }
     val showExplicitActionChevron =
         rememberAdaptiveListVisualCapabilities().showExplicitActionChevron
 
@@ -1593,6 +1601,21 @@ fun DataStorageSection(
             onClick = onClearCacheClick,
             iconTint = siblingTints[4],
             showChevron = showExplicitActionChevron
+        )
+        SettingsAdaptiveDivider()
+        SettingsSingleChoicePreference(
+            title = "自动清理缓存",
+            subtitle = "应用启动时按周期清理可重建缓存",
+            options = SettingsManager.AutoCacheClearInterval.entries.map { interval ->
+                com.android.purebilibili.core.ui.components.AppSegmentOption(
+                    value = interval,
+                    label = interval.label
+                )
+            },
+            selectedValue = autoCacheClearInterval,
+            icon = clearCacheVisual.icon,
+            iconTint = siblingTints[5],
+            onSelectionChange = onAutoCacheClearIntervalChange
         )
     }
 }

@@ -8,6 +8,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -1249,6 +1250,11 @@ internal fun encodeCollectionSortPreferences(
 }
 
 object SettingsManager {
+    enum class AutoCacheClearInterval(val days: Int, val label: String) {
+        NEVER(0, "从不"),
+        WEEKLY(7, "每周"),
+        MONTHLY(30, "每月")
+    }
     // 键定义
     private val KEY_AUTO_PLAY = booleanPreferencesKey("auto_play")
     private val KEY_PLAYBACK_COMPLETION_BEHAVIOR = intPreferencesKey("playback_completion_behavior")
@@ -1499,6 +1505,8 @@ object SettingsManager {
     private val KEY_COMMENT_DEFAULT_SORT_MODE = intPreferencesKey("comment_default_sort_mode")
     private val KEY_COMMENT_FRAUD_DETECTION_ENABLED =
         booleanPreferencesKey("comment_fraud_detection_enabled")
+    private val KEY_AUTO_CACHE_CLEAR_INTERVAL = intPreferencesKey("auto_cache_clear_interval_days")
+    private val KEY_LAST_AUTO_CACHE_CLEAR_AT = longPreferencesKey("last_auto_cache_clear_at")
     private val KEY_COMMENT_MEMBER_DECORATIONS_ENABLED =
         booleanPreferencesKey("comment_member_decorations_enabled")
     private val KEY_IMAGE_PREVIEW_LONG_PRESS_SAVE_ENABLED =
@@ -5420,6 +5428,27 @@ object SettingsManager {
     suspend fun setCommentFraudDetectionEnabled(context: Context, enabled: Boolean) {
         context.settingsDataStore.edit { preferences ->
             preferences[KEY_COMMENT_FRAUD_DETECTION_ENABLED] = enabled
+        }
+    }
+
+    fun getAutoCacheClearInterval(context: Context): Flow<AutoCacheClearInterval> =
+        context.settingsDataStore.data.map { preferences ->
+            val days = preferences[KEY_AUTO_CACHE_CLEAR_INTERVAL] ?: AutoCacheClearInterval.NEVER.days
+            AutoCacheClearInterval.entries.firstOrNull { it.days == days } ?: AutoCacheClearInterval.NEVER
+        }
+
+    suspend fun setAutoCacheClearInterval(context: Context, interval: AutoCacheClearInterval) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_AUTO_CACHE_CLEAR_INTERVAL] = interval.days
+        }
+    }
+
+    suspend fun getLastAutoCacheClearAt(context: Context): Long =
+        context.settingsDataStore.data.first()[KEY_LAST_AUTO_CACHE_CLEAR_AT] ?: 0L
+
+    suspend fun setLastAutoCacheClearAt(context: Context, timestamp: Long) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_LAST_AUTO_CACHE_CLEAR_AT] = timestamp.coerceAtLeast(0L)
         }
     }
 

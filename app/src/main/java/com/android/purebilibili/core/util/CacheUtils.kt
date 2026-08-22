@@ -9,6 +9,7 @@ import com.android.purebilibili.core.cache.PlayUrlCache
 import com.android.purebilibili.core.cooldown.PlaybackCooldownManager
 import com.android.purebilibili.core.player.PlaybackMediaCache
 import com.android.purebilibili.core.store.FollowingCacheStore
+import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.data.repository.DanmakuRepository
 import com.android.purebilibili.data.repository.VideoRepository
 import kotlinx.coroutines.Dispatchers
@@ -16,6 +17,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.first
 import java.io.File
 
 enum class CacheClearTarget {
@@ -40,6 +42,20 @@ enum class CacheClearTarget {
 object CacheUtils {
 
     private const val TAG = "CacheUtils"
+    private const val DAY_MILLIS = 24L * 60L * 60L * 1000L
+
+    suspend fun clearCacheAutomaticallyIfDue(
+        context: Context,
+        nowMillis: Long = System.currentTimeMillis()
+    ): Boolean {
+        val interval = SettingsManager.getAutoCacheClearInterval(context).first()
+        if (interval == SettingsManager.AutoCacheClearInterval.NEVER) return false
+        val lastClearAt = SettingsManager.getLastAutoCacheClearAt(context)
+        if (lastClearAt > 0L && nowMillis - lastClearAt < interval.days * DAY_MILLIS) return false
+        val result = clearCache(context, CacheClearTarget.entries.toSet())
+        if (result.isSuccess) SettingsManager.setLastAutoCacheClearAt(context, nowMillis)
+        return result.isSuccess
+    }
 
     /**
      * 缓存详情数据类

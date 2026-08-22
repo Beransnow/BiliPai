@@ -1235,7 +1235,6 @@ private fun CinemaCommentsPane(
             onDeleteComment = commentActions.deleteSubComment,
             onCommentLike = commentActions.likeComment,
             onCommentHate = commentActions.hateComment,
-            hatedComments = commentState.hatedComments,
             onReportComment = commentActions.reportComment,
             onUrlClick = openCommentUrl,
             showIdentityDecorations = showIdentityDecorations,
