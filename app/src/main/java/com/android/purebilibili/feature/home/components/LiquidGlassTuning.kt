@@ -82,13 +82,15 @@ internal fun resolveLiquidGlassTuning(
         mode = mode,
         progress = normalizedProgress,
         strength = resolveLiquidGlassStrengthFromProgress(normalizedProgress),
-        // Keep 0.5 visually aligned with the previous fixed BiliPai material while allowing
-        // both endpoints to move far enough that the difference remains obvious on busy feeds.
-        backdropBlurRadius = midpointLerp(3f, 4f, 24f, normalizedProgress),
-        surfaceAlpha = midpointLerp(0.12f, 0.40f, 0.54f, normalizedProgress),
-        whiteOverlayAlpha = midpointLerp(0.012f, 0.04f, 0.14f, normalizedProgress),
-        saturation = midpointLerp(1.65f, 1.5f, 1.24f, normalizedProgress),
-        refractionAmount = midpointLerp(26f, 24f, 8f, normalizedProgress),
+        // The clear endpoint intentionally preserves the dynamic dock's formerly accidental
+        // crystal-glass recipe: no backdrop blur, but enough tint, saturation and refraction
+        // to keep the capsule legible over moving content. The midpoint remains the original
+        // BiliPai material and the frosted endpoint retains its stronger diffusion.
+        backdropBlurRadius = midpointLerp(0f, 4f, 24f, normalizedProgress),
+        surfaceAlpha = midpointLerp(0.40f, 0.40f, 0.54f, normalizedProgress),
+        whiteOverlayAlpha = midpointLerp(0.04f, 0.04f, 0.14f, normalizedProgress),
+        saturation = midpointLerp(1.5f, 1.5f, 1.24f, normalizedProgress),
+        refractionAmount = midpointLerp(24f, 24f, 8f, normalizedProgress),
         refractionHeight = midpointLerp(24f, 24f, 8f, normalizedProgress),
         indicatorTintAlpha = midpointLerp(0.20f, 0.28f, 0.38f, normalizedProgress),
         indicatorLensBoost = midpointLerp(1.35f, 1f, 0.78f, frostWeight),

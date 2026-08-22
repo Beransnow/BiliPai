@@ -89,8 +89,8 @@ fun DynamicTopBarWithTabs(
     val density = LocalDensity.current
     val statusBarHeight = WindowInsets.statusBars.getTop(density).let { with(density) { it.toDp() } }
     val liquidTabSpec = resolveDynamicTopBarLiquidTabSpec()
-    val noBlurLiquidTuning = remember {
-        resolveLiquidGlassTuning(progress = 0.5f).copy(backdropBlurRadius = 0f)
+    val clearLiquidTuning = remember {
+        resolveLiquidGlassTuning(progress = 0f)
     }
     val dockShape = AppShapes.container(ContainerLevel.Pill)
     val dockColor = AppSurfaceTokens.surfaceContainerHigh()
@@ -123,7 +123,7 @@ fun DynamicTopBarWithTabs(
                 liquidGlassEffectsEnabled = true,
                 miuixBackdrop = dockBackdrop,
                 containerColorOverride = dockColor,
-                liquidGlassTuningOverride = noBlurLiquidTuning,
+                liquidGlassTuningOverride = clearLiquidTuning,
             )
 
             val localActionDockBackdrop = rememberLayerBackdrop()
@@ -145,7 +145,7 @@ fun DynamicTopBarWithTabs(
                             containerColor = dockColor,
                             pressProgress = 0f,
                             shape = dockShape,
-                            liquidGlassTuning = noBlurLiquidTuning,
+                    liquidGlassTuning = clearLiquidTuning,
                         )
                         .clip(dockShape),
                     verticalAlignment = Alignment.CenterVertically,

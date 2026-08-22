@@ -68,11 +68,14 @@ class LiquidGlassTuningTest {
     }
 
     @Test
-    fun `clear progress keeps shell blur low enough for transparent glass`() {
+    fun `clear progress preserves the crystal dynamic dock material`() {
         val clear = resolveLiquidGlassTuning(progress = 0f)
 
-        assertTrue(clear.backdropBlurRadius <= 6f)
-        assertTrue(clear.surfaceAlpha <= 0.16f)
+        assertEquals(0f, clear.backdropBlurRadius, 0.0001f)
+        assertEquals(0.40f, clear.surfaceAlpha, 0.0001f)
+        assertEquals(0.04f, clear.whiteOverlayAlpha, 0.0001f)
+        assertEquals(1.5f, clear.saturation, 0.0001f)
+        assertEquals(24f, clear.refractionAmount, 0.0001f)
     }
 
     @Test
