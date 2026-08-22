@@ -810,7 +810,6 @@ internal fun VideoCommentMainList(
                     SettingsManager.setCommentDefaultSortMode(context, mode.apiMode)
                 }
             },
-            miuixBackdrop = commentChromeBackdrop
         )
 
         CommentFraudDetectingBanner(isDetecting = state.isDetectingFraud)

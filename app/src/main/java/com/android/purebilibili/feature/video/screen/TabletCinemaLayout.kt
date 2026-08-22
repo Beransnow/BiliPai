@@ -1251,7 +1251,6 @@ private fun CinemaCommentsPane(
                         SettingsManager.setCommentDefaultSortMode(context, mode.apiMode)
                     }
                 },
-                miuixBackdrop = commentChromeBackdrop
             )
             Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             LazyColumn(
