@@ -1362,11 +1362,9 @@ private fun LightweightHomeTopTabs(
             themeColor = topTabThemeColor,
             darkTheme = isDarkTheme
         )
-        val topTabExportTintColor = if (adaptiveReadabilityEnabled) {
-            adaptiveTopTabContentColor
-        } else {
-            stableTopTabExportTintColor
-        }
+        // Adaptive readability only changes neutral, unselected content. The moving
+        // indicator keeps the app theme tint so enabling adaptation cannot erase it.
+        val topTabExportTintColor = stableTopTabExportTintColor
         val topTabExportMonochromeColor = resolveSharedLiquidExportMonochromeColor(
             darkTheme = isDarkTheme
         )

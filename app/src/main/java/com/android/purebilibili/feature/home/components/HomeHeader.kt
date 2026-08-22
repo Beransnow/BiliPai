@@ -2476,7 +2476,9 @@ fun HomeHeader(
                                                     motionTier = motionTier,
                                                     isTransitionRunning = topChromeMotionPolicy.isTransitionRunning,
                                                     forceLowBlurBudget = forceLowBlurBudget,
-                                                    drawShellLens = true,
+                                                    // Inline search capsules use the flat-glass path. Refraction
+                                                    // can stretch glyph pixels into a horizontal seam.
+                                                    drawShellLens = false,
                                                     shellLensIntensity = resolveFloatingDockGeometryScale(
                                                         resolveHomeTopSearchPillHeight(topChromePolicy).value
                                                     ),

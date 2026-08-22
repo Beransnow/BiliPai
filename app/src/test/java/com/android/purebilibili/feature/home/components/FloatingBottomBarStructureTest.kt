@@ -72,6 +72,8 @@ class FloatingBottomBarStructureTest {
         assertTrue(body.contains("rememberLiquidGlassAdaptiveReadabilityState("))
         assertTrue(body.contains("trackLiquidGlassAdaptiveReadability("))
         assertTrue(body.contains("LocalFloatingBottomBarContentColor provides resolvedContentColor"))
+        assertTrue(body.contains("LocalFloatingBottomBarContentColor provides colors.activeContentColor"))
+        assertFalse(body.contains("resolvedActiveContentColor"))
         assertTrue(body.contains(".innerShadow(shape = pillShape)"))
         assertTrue(body.contains("InnerShadow("))
         assertTrue(body.contains("radius = innerShadowRadius * dampedDragAnimation.pressProgress"))

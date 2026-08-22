@@ -358,11 +358,6 @@ fun FloatingBottomBar(
         state = adaptiveReadabilityState,
         enabled = adaptiveReadabilityEnabled,
     )
-    val resolvedActiveContentColor = rememberLiquidGlassAdaptiveContentColor(
-        stableColor = colors.activeContentColor,
-        state = adaptiveReadabilityState,
-        enabled = adaptiveReadabilityEnabled,
-    )
     val readabilityScrimColor = if (isInDark) Color.Black else Color.White
     val containerColor =
         if (isLiquidGlassMode) {
@@ -753,7 +748,7 @@ fun FloatingBottomBar(
                 LocalFloatingBottomBarTabScale provides {
                     lerp(1f, tabPressScale, dampedDragAnimation.pressProgress)
                 },
-                LocalFloatingBottomBarContentColor provides resolvedActiveContentColor,
+                LocalFloatingBottomBarContentColor provides colors.activeContentColor,
                 LocalFloatingBottomBarActiveContent provides true
             ) {
                 Row(
@@ -914,7 +909,7 @@ fun FloatingBottomBar(
                     contentAlignment = Alignment.CenterStart
                 ) {
                     CompositionLocalProvider(
-                        LocalFloatingBottomBarContentColor provides resolvedActiveContentColor,
+                        LocalFloatingBottomBarContentColor provides colors.activeContentColor,
                         LocalFloatingBottomBarActiveContent provides true
                     ) {
                         Row(

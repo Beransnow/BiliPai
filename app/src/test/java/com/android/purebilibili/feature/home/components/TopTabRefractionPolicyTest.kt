@@ -47,6 +47,7 @@ class TopTabRefractionPolicyTest {
         assertTrue(source.contains("biliPaiFloatingDockShell("))
         assertTrue(source.contains("rememberLiquidGlassAdaptiveReadabilityState("))
         assertTrue(source.contains("adaptiveContentColorOverride = adaptiveTopTabContentColor"))
+        assertTrue(source.contains("val topTabExportTintColor = stableTopTabExportTintColor"))
         assertTrue(source.contains("trackLiquidGlassAdaptiveReadability("))
         assertFalse(source.contains("legacyContentBackdrop = topTabContentBackdrop"))
         assertFalse(source.contains("legacyBackdrop = topTabIndicatorLegacyBackdrop"))

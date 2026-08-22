@@ -730,6 +730,7 @@ private fun LiquidGlassHomeSample(
                     containerColor = glassColor,
                     pressProgress = 0f,
                     shape = CircleShape,
+                    drawLens = false,
                     liquidGlassTuning = tuning,
                 )
                 .padding(horizontal = 14.dp),
@@ -779,12 +780,10 @@ private fun LiquidGlassHomeSample(
                             selected = index == previewSelectedBottomBarIndex,
                         ),
                         contentDescription = item.label,
-                        tint = if (adaptiveReadabilityEnabled) {
-                            bottomContentColor
-                        } else if (index == previewSelectedBottomBarIndex) {
+                        tint = if (index == previewSelectedBottomBarIndex) {
                             MaterialTheme.colorScheme.primary
                         } else {
-                            contentColor
+                            bottomContentColor
                         },
                     )
                 }

@@ -92,6 +92,7 @@ class SettingsMiuixSimplificationStructureTest {
         assertTrue(source.contains("text = \"内容可读性方案\""))
         assertTrue(source.contains("LiquidGlassReadabilityMode.STABLE"))
         assertTrue(source.contains("LiquidGlassReadabilityMode.ADAPTIVE"))
+        assertTrue(source.contains("drawLens = false"))
         assertTrue(source.contains("默认：图标与文字使用稳定主题色，不进行背景采样"))
         assertTrue(source.contains("底栏遵循 Miuix 上游基准"))
         assertTrue(source.contains("顶部栏、搜索框和选择控件按高度适配"))
