@@ -2551,6 +2551,20 @@ fun HomeHeader(
                                         .padding(horizontal = resolveHomeTopSearchContentHorizontalPadding(topChromePolicy)),
                                     contentAlignment = Alignment.CenterStart
                                 ) {
+                                    uiSkinDecoration?.searchCapsuleImagePath
+                                        ?.takeIf { it.isNotBlank() }
+                                        ?.let { searchCapsuleImagePath ->
+                                            AsyncImage(
+                                                model = File(searchCapsuleImagePath),
+                                                contentDescription = null,
+                                                contentScale = ContentScale.Crop,
+                                                modifier = Modifier
+                                                    .matchParentSize()
+                                                    .clip(searchContainerShape)
+                                                    .alpha(0.52f)
+                                                    .clearAndSetSemantics {}
+                                            )
+                                        }
                                     if (
                                         shouldDrawHomeTopSearchLegacyHighlight(
                                             presentation = topChromePolicy.tabPresentation,

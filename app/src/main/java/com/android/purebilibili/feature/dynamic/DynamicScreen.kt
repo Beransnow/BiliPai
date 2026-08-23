@@ -136,6 +136,7 @@ fun DynamicScreen(
     onBack: () -> Unit,
     onLoginClick: () -> Unit = {},
     onHomeClick: () -> Unit = {},
+    publishSkinDecoration: com.android.purebilibili.feature.home.components.DynamicPublishSkinDecoration? = null,
     globalHazeState: dev.chrisbanes.haze.HazeState? = null  // [新增] 全局底栏模糊状态
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -775,6 +776,7 @@ fun DynamicScreen(
                                     displayMode = displayMode,
                                     onDisplayModeChange = { viewModel.setDisplayMode(it) },
                                     onPublishClick = { showPublishDialog = true },
+                                    publishSkinDecoration = publishSkinDecoration,
                                     dockBackdrop = dynamicDockBackdrop,
                                     indicatorPositionProvider = dynamicTabIndicatorPositionProvider,
                                 )
@@ -954,6 +956,7 @@ fun DynamicScreen(
                                     displayMode = displayMode,
                                     onDisplayModeChange = { viewModel.setDisplayMode(it) },
                                     onPublishClick = { showPublishDialog = true },
+                                    publishSkinDecoration = publishSkinDecoration,
                                     dockBackdrop = dynamicDockBackdrop,
                                     indicatorPositionProvider = dynamicTabIndicatorPositionProvider,
                                 )

@@ -2113,10 +2113,11 @@ fun FrostedBottomBar(
             lastHomeClickMs = nowMs
         }
     }
-    AppBottomNavigationHost(
-        androidNativeLiquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled,
-        materialContent = { policy ->
-            MaterialBottomBar(
+    ProvideBottomBarSkinMotion(uiSkinDecoration) {
+        AppBottomNavigationHost(
+            androidNativeLiquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled,
+            materialContent = { policy ->
+                MaterialBottomBar(
                 currentItem = currentItem,
                 onItemClick = resolvedItemClick,
                 modifier = modifier,
@@ -2139,10 +2140,10 @@ fun FrostedBottomBar(
                 isFeedScrollInProgress = isFeedScrollInProgress,
                 uiSkinDecoration = uiSkinDecoration,
                 sharedLiquidGlassEnabled = policy.liquidGlassEnabled,
-            )
-        },
-        platformContent = { policy ->
-            MiuixBottomBar(
+                )
+            },
+            platformContent = { policy ->
+                MiuixBottomBar(
                 currentItem = currentItem,
                 onItemClick = resolvedItemClick,
                 modifier = modifier,
@@ -2167,9 +2168,10 @@ fun FrostedBottomBar(
                 isFeedScrollInProgress = isFeedScrollInProgress,
                 uiSkinDecoration = uiSkinDecoration,
                 sharedLiquidGlassEnabled = policy.liquidGlassEnabled,
-            )
-        },
-    )
+                )
+            },
+        )
+    }
 }
 
 @Composable
@@ -2264,8 +2266,12 @@ private fun MaterialBottomBar(
         secondaryContainer = MaterialTheme.colorScheme.secondaryContainer
     )
     val skinDockedItemColors = resolveBottomBarSkinContentColors(
-        selectedColor = dockedItemColors.selectedIconColor,
-        unselectedColor = dockedItemColors.unselectedIconColor,
+        selectedColor = uiSkinDecoration?.bottomSelectedTint
+            ?.takeUnless { it == Color.Unspecified }
+            ?: dockedItemColors.selectedIconColor,
+        unselectedColor = uiSkinDecoration?.bottomUnselectedTint
+            ?.takeUnless { it == Color.Unspecified }
+            ?: dockedItemColors.unselectedIconColor,
         skinTrimTint = uiSkinDecoration?.bottomTrimTint
     )
 
@@ -2353,7 +2359,8 @@ private fun MaterialBottomBar(
                                     if (skinIconPath != null) {
                                         BottomBarSkinIcon(
                                             iconPath = skinIconPath,
-                                            contentDescription = itemContentDescription
+                                            contentDescription = itemContentDescription,
+                                            selected = currentItem == item,
                                         )
                                     } else {
                                         AppIcon(
@@ -2608,9 +2615,13 @@ private fun MiuixBottomBar(
         ) {
             val selectedItemColor = MaterialTheme.colorScheme.primary
             val unselectedItemColor = MaterialTheme.colorScheme.onSurfaceVariant
-            val skinItemColors = resolveBottomBarSkinContentColors(
-                selectedColor = selectedItemColor,
-                unselectedColor = unselectedItemColor,
+        val skinItemColors = resolveBottomBarSkinContentColors(
+                selectedColor = uiSkinDecoration?.bottomSelectedTint
+                    ?.takeUnless { it == Color.Unspecified }
+                    ?: selectedItemColor,
+            unselectedColor = uiSkinDecoration?.bottomUnselectedTint
+                ?.takeUnless { it == Color.Unspecified }
+                ?: unselectedItemColor,
                 skinTrimTint = uiSkinDecoration?.bottomTrimTint
             )
 
@@ -2785,6 +2796,7 @@ private fun RowScope.MiuixDockedBottomBarItem(
                     BottomBarSkinIcon(
                         iconPath = skinIconPath,
                         contentDescription = label,
+                        selected = selected,
                         size = resolveBottomBarMiuixSkinDockIconSize()
                     )
                 } else {
@@ -2909,8 +2921,12 @@ private fun BiliPaiFloatingBottomBar(
         MaterialTheme.colorScheme.onSurface
     }
     val skinContentColors = resolveBottomBarSkinContentColors(
-        selectedColor = baseSelectedColor,
-        unselectedColor = baseUnselectedColor,
+        selectedColor = uiSkinDecoration?.bottomSelectedTint
+            ?.takeUnless { it == Color.Unspecified }
+            ?: baseSelectedColor,
+        unselectedColor = uiSkinDecoration?.bottomUnselectedTint
+            ?.takeUnless { it == Color.Unspecified }
+            ?: baseUnselectedColor,
         skinTrimTint = uiSkinDecoration?.bottomTrimTint
     )
     val readableContentColor = MaterialTheme.colorScheme.onSurface
@@ -3270,6 +3286,7 @@ private fun BiliPaiFloatingBottomBar(
                                 BottomBarSkinIcon(
                                     iconPath = homeSkinIconPath,
                                     contentDescription = null,
+                                    selected = currentItem == BottomNavItem.HOME,
                                     size = resolveBottomBarCompactSkinHomeIconSize(),
                                     modifier = Modifier.graphicsLayer {
                                         scaleX = compactHomeIconScale
@@ -3396,7 +3413,8 @@ private fun ColumnScope.FloatingBottomBarTabVisual(
             ) {
                 BottomBarSkinIcon(
                     iconPath = skinIconPath,
-                    contentDescription = label
+                    contentDescription = label,
+                    selected = selected,
                 )
             }
         } else if (item == null) {
@@ -4017,6 +4035,7 @@ private fun RowScope.AndroidNativeBottomBarItem(
                 BottomBarSkinIcon(
                     iconPath = skinIconPathForLayout,
                     contentDescription = label,
+                    selected = selected,
                     modifier = Modifier
                         .align(Alignment.TopCenter)
                         .padding(top = resolveBottomBarSkinDockIconTopPadding())
@@ -4058,7 +4077,8 @@ private fun RowScope.AndroidNativeBottomBarItem(
                             skinIconPath != null -> {
                                 BottomBarSkinIcon(
                                     iconPath = skinIconPath,
-                                    contentDescription = label
+                                    contentDescription = label,
+                                    selected = selected,
                                 )
                             }
                             item == null && iconStyle == SharedFloatingBottomBarIconStyle.MIUIX -> {

@@ -2433,6 +2433,8 @@ fun HomeScreen(
                         liquidGlassEnabled = isLiquidGlassEnabled,
                         liquidGlassTuning = homeLiquidGlassTuning,
                         skinBackgroundImagePath = homeUiSkinDecoration?.sideBackgroundImagePath,
+                        skinBottomTrimImagePath = homeUiSkinDecoration?.sideBottomTrimImagePath,
+                        skinBackgroundTint = homeUiSkinDecoration?.sideBackgroundTint,
                     )
                 }
             ) {
