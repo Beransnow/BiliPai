@@ -55,13 +55,13 @@ data class BottomBarUiSkinDecoration(
     val iconMotion: BottomBarSkinMotionSpec = BottomBarSkinMotionSpec(),
     val bottomBarIconPaths: Map<BottomNavItem, BottomBarSkinIconPaths> = emptyMap()
 ) {
+    @Suppress("UNUSED_PARAMETER")
     fun iconPathFor(item: BottomNavItem, selected: Boolean = false): String? {
         val paths = bottomBarIconPaths[item] ?: return null
-        return if (selected) {
-            paths.selected ?: paths.unselected
-        } else {
-            paths.unselected
-        }
+        // Keep each destination visually stable. Some archived skins use a completely
+        // different illustration for the selected asset, which reads as a random icon swap
+        // in BiliPai where the moving indicator already communicates selection.
+        return paths.unselected
     }
 }
 
@@ -358,17 +358,19 @@ internal fun BottomBarSkinIcon(
     Box(modifier = modifier.size(size)) {
         if (motion.enabled) {
             AnimatedContent(
-                targetState = SkinIconRenderState(iconPath, selected),
+                targetState = iconPath,
                 transitionSpec = {
                     (fadeIn(tween(160)) + scaleIn(tween(220), initialScale = 0.86f)) togetherWith
                         fadeOut(tween(120))
                 },
-                contentKey = { state -> state.iconPath to state.selected },
+                // Selection may change scale/loop motion, but it must not replace the image
+                // subtree when the destination still resolves to the same fixed asset.
+                contentKey = { stableIconPath -> stableIconPath },
                 label = "skinIconSelection",
                 modifier = Modifier.fillMaxSize(),
-            ) { state ->
+            ) { stableIconPath ->
                 SkinIconImage(
-                    iconPath = state.iconPath,
+                    iconPath = stableIconPath,
                     contentDescription = contentDescription,
                     modifier = Modifier
                         .fillMaxSize()
@@ -388,11 +390,6 @@ internal fun BottomBarSkinIcon(
         }
     }
 }
-
-private data class SkinIconRenderState(
-    val iconPath: String,
-    val selected: Boolean,
-)
 
 private fun String?.isLoopingSkinMotionMode(): Boolean {
     return this?.trim()?.lowercase() in setOf("loop", "cycle", "repeat", "always")

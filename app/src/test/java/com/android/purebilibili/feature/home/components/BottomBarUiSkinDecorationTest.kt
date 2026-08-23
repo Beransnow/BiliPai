@@ -106,7 +106,7 @@ class BottomBarUiSkinDecorationTest {
     }
 
     @Test
-    fun activeExternalSkinMapsBilibiliTailIconsToBottomNavItems() {
+    fun activeExternalSkinKeepsEachBottomDestinationOnItsStableUnselectedArtwork() {
         val installed = InstalledUiSkinPackage(
             manifest = UiSkinManifest(
                 formatVersion = 1,
@@ -152,20 +152,20 @@ class BottomBarUiSkinDecorationTest {
         )
 
         assertEquals("/tmp/tail_icon_main.png", decoration?.iconPathFor(BottomNavItem.HOME))
-        assertEquals("/tmp/tail_icon_selected_main.png", decoration?.iconPathFor(BottomNavItem.HOME, selected = true))
+        assertEquals("/tmp/tail_icon_main.png", decoration?.iconPathFor(BottomNavItem.HOME, selected = true))
         assertEquals("/tmp/tail_icon_dynamic.png", decoration?.iconPathFor(BottomNavItem.DYNAMIC))
         assertEquals(
-            "/tmp/tail_icon_selected_dynamic.png",
+            "/tmp/tail_icon_dynamic.png",
             decoration?.iconPathFor(BottomNavItem.DYNAMIC, selected = true)
         )
         assertEquals("/tmp/tail_icon_shop.png", decoration?.iconPathFor(BottomNavItem.HISTORY))
         assertEquals(
-            "/tmp/tail_icon_selected_shop.png",
+            "/tmp/tail_icon_shop.png",
             decoration?.iconPathFor(BottomNavItem.HISTORY, selected = true)
         )
         assertEquals("/tmp/tail_icon_channel.png", decoration?.iconPathFor(BottomNavItem.LISTEN_VIDEO))
         assertEquals(
-            "/tmp/tail_icon_selected_channel.png",
+            "/tmp/tail_icon_channel.png",
             decoration?.iconPathFor(BottomNavItem.LISTEN_VIDEO, selected = true)
         )
         assertEquals("/tmp/tail_icon_myself.png", decoration?.iconPathFor(BottomNavItem.PROFILE))
@@ -244,13 +244,13 @@ class BottomBarUiSkinDecorationTest {
 
         assertEquals("/tmp/tail_icon_channel.png", decoration?.iconPathFor(BottomNavItem.LISTEN_VIDEO))
         assertEquals(
-            "/tmp/tail_icon_selected_channel.png",
+            "/tmp/tail_icon_channel.png",
             decoration?.iconPathFor(BottomNavItem.LISTEN_VIDEO, selected = true)
         )
     }
 
     @Test
-    fun selectedBottomSkinIconFallsBackToUnselectedAssetWhenSelectedAssetMissing() {
+    fun selectedBottomSkinIconAlwaysUsesStableUnselectedAsset() {
         val installed = InstalledUiSkinPackage(
             manifest = UiSkinManifest(
                 formatVersion = 1,

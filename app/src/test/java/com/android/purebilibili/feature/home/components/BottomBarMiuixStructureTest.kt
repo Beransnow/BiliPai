@@ -179,6 +179,8 @@ class BottomBarMiuixStructureTest {
         val renderer = biliPaiFloatingBody(source)
 
         assertTrue(skinDecorationSource.contains("fun iconPathFor(item: BottomNavItem, selected: Boolean = false): String?"))
+        assertTrue(skinDecorationSource.contains("targetState = iconPath"))
+        assertTrue(skinDecorationSource.contains("contentKey = { stableIconPath -> stableIconPath }"))
         assertTrue(renderer.contains("uiSkinDecoration?.iconPathFor("))
         assertTrue(tabVisual.contains("BottomBarSkinIcon(") || renderer.contains("BottomBarSkinIcon("))
         assertTrue(source.contains("FloatingBottomBarItem("))
