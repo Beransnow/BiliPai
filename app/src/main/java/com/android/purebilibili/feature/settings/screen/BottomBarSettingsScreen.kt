@@ -331,7 +331,7 @@ fun BottomBarSettingsContent(
                         AppSwitchPreference(
                             icon = rememberSettingsSemanticIcon(SettingsIconRole.FLOATING_BOTTOM_BAR),
                             title = "悬浮底栏",
-                            subtitle = "关闭后底栏沉浸式贴底显示",
+                            subtitle = "开启后底栏与屏幕边缘留出间距；关闭后贴近底部显示",
                             checked = isBottomBarFloating,
                             onCheckedChange = { enabled ->
                                 scope.launch { SettingsManager.setBottomBarFloating(context, enabled) }
@@ -342,7 +342,7 @@ fun BottomBarSettingsContent(
                         AppSwitchPreference(
                             icon = rememberSettingsSemanticIcon(SettingsIconRole.OPEN_LINKS),
                             title = "底栏搜索入口",
-                            subtitle = "在悬浮底栏右侧显示搜索入口",
+                            subtitle = "在底栏右侧增加可直接打开搜索的按钮",
                             checked = bottomBarSearchEnabled,
                             onCheckedChange = { enabled ->
                                 scope.launch { SettingsManager.setBottomBarSearchEnabled(context, enabled) }
@@ -352,7 +352,7 @@ fun BottomBarSettingsContent(
                         AppPreferenceDivider()
                         SettingsSingleChoicePreference(
                             title = "底栏搜索布局",
-                            subtitle = "选择显示完整导航，或只保留首页和搜索两个入口",
+                            subtitle = "选择保留全部导航，或精简为首页和搜索",
                             options = BottomBarSearchLayoutMode.entries.map { mode ->
                                 AppSegmentOption(mode, mode.label)
                             },
@@ -365,7 +365,7 @@ fun BottomBarSettingsContent(
                         AppPreferenceDivider()
                         SettingsSingleChoicePreference(
                             title = "搜索框自动展开",
-                            subtitle = "选择在回到首页顶部或开始浏览内容时展开搜索框",
+                            subtitle = "设置搜索框在回到首页顶部或浏览内容时如何展开",
                             options = BottomBarSearchAutoExpandMode.entries.map { mode ->
                                 AppSegmentOption(mode, mode.label)
                             },
@@ -663,7 +663,7 @@ fun BottomBarSettingsContent(
                         AppSwitchPreference(
                             icon = Icons.Outlined.SwapHoriz,
                             title = "侧边栏账号切换",
-                            subtitle = "在首页侧边栏底部显示账号切换按钮",
+                            subtitle = "在平板首页侧边栏底部显示切换账号按钮",
                             checked = sidebarAccountSwitcherEnabled,
                             onCheckedChange = { checked ->
                                 scope.launch {
