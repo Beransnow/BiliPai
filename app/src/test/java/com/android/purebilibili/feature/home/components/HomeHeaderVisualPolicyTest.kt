@@ -1893,11 +1893,20 @@ class HomeHeaderVisualPolicyTest {
     }
 
     @Test
-    fun `skin top atmosphere asset is not rendered in the home chrome`() {
+    fun `skin head artwork renders as a bounded top trim instead of a full background layer`() {
         val headerSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/HomeHeader.kt")
+        val trimSource = headerSource
+            .substringAfter("if (!topTrimImagePath.isNullOrBlank())")
+            .substringBefore("if (\n                    drawUnifiedTopPanelChrome")
 
         assertFalse(headerSource.contains("val topAtmosphereImagePath = uiSkinDecoration?.topAtmosphereImagePath"))
         assertFalse(headerSource.contains("model = File(topAtmosphereImagePath)"))
+        assertTrue(headerSource.contains("val topTrimImagePath = uiSkinDecoration?.topAtmosphereImagePath"))
+        assertTrue(trimSource.contains("model = File(topTrimImagePath)"))
+        assertTrue(trimSource.contains("contentScale = ContentScale.FillWidth"))
+        assertTrue(trimSource.contains(".aspectRatio(1242f / 264f)"))
+        assertTrue(trimSource.contains("alpha = 0.82f"))
+        assertFalse(trimSource.contains(".matchParentSize()"))
     }
 
     @Test
