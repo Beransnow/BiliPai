@@ -1896,6 +1896,7 @@ class HomeHeaderVisualPolicyTest {
         assertTrue(chromeSource.contains(".alpha(0.94f)"))
         assertTrue(headerSource.contains("drawChromeSurface = drawEffectiveTopTabDockChrome"))
         assertTrue(headerSource.contains("skinPlainContentColor = uiSkinDecoration?.let"))
+        assertTrue(headerSource.contains("labelMode = resolveHomeSkinTopTabLabelMode("))
         assertFalse(headerSource.contains("val tabRowHeightDp = if (shouldUseSkinPlainTopTabs)"))
         assertTrue(topBarSource.contains("val effectivePresentation = if (skinPlainStyle || forceMaterialUnderline)"))
     }

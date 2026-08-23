@@ -155,6 +155,15 @@ internal fun resolveHomeSkinTopTabUnselectedContentColor(contentColor: Color): C
 internal fun shouldUseHomeSkinPlainTopTabs(uiSkinDecoration: HomeUiSkinDecoration?): Boolean =
     !uiSkinDecoration?.topTabBackgroundImagePath.isNullOrBlank()
 
+internal fun resolveHomeSkinTopTabLabelMode(
+    requestedLabelMode: Int,
+    uiSkinDecoration: HomeUiSkinDecoration?,
+): Int = if (shouldUseHomeSkinPlainTopTabs(uiSkinDecoration)) {
+    com.android.purebilibili.core.store.SettingsManager.TopTabLabelMode.ICON_AND_TEXT
+} else {
+    requestedLabelMode
+}
+
 internal fun resolveHomeSkinTopTabIndicatorColor(contentColor: Color): Color =
     contentColor.copy(alpha = maxOf(contentColor.alpha, 0.92f))
 
@@ -2061,7 +2070,10 @@ fun HomeHeader(
                     if (topTabsVisible) onPartitionClick()
                 },
                 pagerState = pagerState,
-                labelMode = topTabLabelMode,
+                labelMode = resolveHomeSkinTopTabLabelMode(
+                    requestedLabelMode = topTabLabelMode,
+                    uiSkinDecoration = uiSkinDecoration,
+                ),
                 isLiquidGlassEnabled = resolveHomeTopTabIndicatorLiquidGlassEnabled(
                     homeSettings = homeSettings,
                 ),
