@@ -36,6 +36,7 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.rememberAppBackIcon
+import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.feature.settings.SettingsHomeSearchEntry
 import com.android.purebilibili.feature.settings.SettingsRootCategory
 import com.android.purebilibili.feature.settings.canonicalSettingsRootCategory
@@ -61,6 +62,17 @@ fun SettingsTabletShell(
     val categories = remember { resolveSettingsRootCategoryOrder() }
     val categoryIconTints = remember(categories.size) {
         resolveSettingsSiblingIconTints(categories.size)
+    }
+    val useThreePaneLayout = LocalWindowSizeClass.current.shouldUseThreePaneLayout
+    val detailPane: @Composable () -> Unit = {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(AppSurfaceTokens.groupedListContainer())
+                .padding(layoutPolicy.detailPanePaddingDp.dp),
+        ) {
+            rightPane()
+        }
     }
     AppSplitLayout(
         modifier = modifier.fillMaxSize(),
@@ -141,14 +153,29 @@ fun SettingsTabletShell(
             }
         },
         secondaryContent = {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(AppSurfaceTokens.groupedListContainer())
-                    .padding(layoutPolicy.detailPanePaddingDp.dp),
-            ) {
-                rightPane()
+            if (useThreePaneLayout) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(AppSurfaceTokens.groupedListContainer())
+                        .padding(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    AppText(
+                        text = selectedCategory?.title ?: stringResource(R.string.settings_title),
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    AppText(
+                        text = selectedCategory?.subtitle ?: "选择左侧分类以查看设置",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            } else {
+                detailPane()
             }
         },
+        tertiaryContent = if (useThreePaneLayout) detailPane else null,
     )
 }

@@ -152,7 +152,7 @@ private fun MiuixSideBar(
 ) {
     val haptic = rememberHapticFeedback()
     val isExpandedWidthClass =
-        LocalWindowSizeClass.current.widthSizeClass == WindowWidthSizeClass.Expanded
+        LocalWindowSizeClass.current.widthSizeClass >= WindowWidthSizeClass.Expanded
     val expandable = shouldUseExpandableMiuixSideBar(isExpandedWidthClass)
     val chromeBackground = AppSurfaceTokens.surface()
     val globalWallpaperVisible = LocalGlobalWallpaperBackdropVisible.current

@@ -1022,8 +1022,10 @@ internal fun VideoDetailScreenStateHolder(
 
     val interactiveChoicePanel by viewModel.interactiveChoicePanel.collectAsStateWithLifecycle()
 
-    // 📐 [大屏适配] 仅 Expanded 才启用平板分栏布局
+    // 📐 大屏与分离式折叠姿态使用分栏；紧凑高度强制回退单栏。
     val windowSizeClass = com.android.purebilibili.core.util.LocalWindowSizeClass.current
+    val appWindowAdaptiveInfo =
+        com.android.purebilibili.core.util.LocalAppWindowAdaptiveInfo.current
     val isFlatFoldable = com.android.purebilibili.core.util.rememberIsFlatFoldable()
     val horizontalAdaptationEnabled by com.android.purebilibili.core.store.SettingsManager
         .getHorizontalAdaptationEnabled(context)
@@ -1038,10 +1040,12 @@ internal fun VideoDetailScreenStateHolder(
                 .getHideVideoPageStatusBarSync(context),
             lifecycle = lifecycleOwner.lifecycle
         )
-    val useTabletLayout = shouldUseTabletVideoLayout(
-        isExpandedScreen = windowSizeClass.isExpandedScreen,
-        isTabletDevice = windowSizeClass.isTabletDevice
-    ) && horizontalAdaptationEnabled
+    val useTabletLayout = (
+        shouldUseTabletVideoLayout(
+            isExpandedScreen = windowSizeClass.isExpandedScreen,
+            isTabletDevice = windowSizeClass.isTablet,
+        ) && windowSizeClass.shouldUseSplitLayout || appWindowAdaptiveInfo.shouldAvoidHinge
+        ) && horizontalAdaptationEnabled
 
     // 🔧 [修复] 追踪用户是否主动请求全屏（点击全屏按钮）
     // 使用 rememberSaveable 确保状态在横竖屏切换时保持

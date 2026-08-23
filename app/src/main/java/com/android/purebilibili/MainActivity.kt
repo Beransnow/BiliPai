@@ -115,7 +115,9 @@ import com.android.purebilibili.core.ui.blur.ProvideUnifiedBlurIntensity
 import com.android.purebilibili.core.ui.performance.ProvideRuntimeVisualGuard
 import com.android.purebilibili.core.util.BilibiliUrlParser
 import com.android.purebilibili.core.util.LocalWindowSizeClass
+import com.android.purebilibili.core.util.LocalAppWindowAdaptiveInfo
 import com.android.purebilibili.core.util.calculateWindowSizeClass
+import com.android.purebilibili.core.util.rememberAppWindowAdaptiveInfo
 import com.android.purebilibili.data.repository.VideoRepository
 import com.android.purebilibili.feature.cast.LocalProxyServer
 import com.android.purebilibili.feature.onboarding.USER_AGREEMENT_ACK_KEY
@@ -1345,6 +1347,7 @@ open class MainActivity : AppCompatActivity() {
                 densityMultiplier = displayMetricsSnapshot.effectiveDensityMultiplier,
                 metrics = windowMetrics!!
             )
+            val appWindowAdaptiveInfo = rememberAppWindowAdaptiveInfo(windowSizeClass)
 
             // 6. 传入参数
             PureBiliBiliTheme(
@@ -1373,6 +1376,7 @@ open class MainActivity : AppCompatActivity() {
                     CompositionLocalProvider(
                         LocalDensity provides effectiveDensity,
                         LocalWindowSizeClass provides windowSizeClass,
+                        LocalAppWindowAdaptiveInfo provides appWindowAdaptiveInfo,
                         LocalDisplayMetricsSnapshot provides displayMetricsSnapshot,
                         LocalAppSingleChoicePresentation provides
                             appThemeSettings.singleChoicePresentation,
@@ -1767,7 +1771,7 @@ open class MainActivity : AppCompatActivity() {
                                                 scaleY = 1f + (splashFadeProgress * 0.015f)
                                             )
                                             .fillMaxWidth(
-                                                if (windowSizeClass.widthSizeClass == WindowWidthSizeClass.Expanded) {
+                                                if (windowSizeClass.widthSizeClass >= WindowWidthSizeClass.Expanded) {
                                                     0.34f
                                                 } else {
                                                     0.48f

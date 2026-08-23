@@ -195,8 +195,7 @@ fun CommentInputDialog(
 ) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.screenWidthDp > configuration.screenHeightDp
-    // 用设备稳定宽度判定平板（而非瞬时窗口），避免分屏窄窗时误用手机尺寸
-    val isTablet = LocalWindowSizeClass.current.isTabletDevice
+    val isTablet = LocalWindowSizeClass.current.isTablet
     val layoutPolicy = remember(isLandscape, isTablet) {
         resolveCommentInputDialogLayoutPolicy(
             isLandscape = isLandscape,
