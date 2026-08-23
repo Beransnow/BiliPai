@@ -1786,8 +1786,8 @@ private fun LightweightHomeTopTabs(
                 }
                 } // stable export + visible content with indicator-only motion
 
-                // 纯色 wash 胶囊仅在 skin 主题下兜底（skin 不走移动胶囊路径）；
-                // 常规主题始终由移动胶囊负责，玻璃只切换胶囊材质。
+                // 皮肤自带顶栏画面时只绘制短下划线，避免选中胶囊遮挡原始美术；
+                // 常规主题仍由移动胶囊负责，玻璃只切换胶囊材质。
                 if (effectivePresentation == AppTopTabPresentation.MATERIAL_UNDERLINE && !hasSkinStickerIcons && skinPlainStyle) {
                     val indicatorColor = if (skinPlainContentColor != null) {
                         resolveHomeSkinTopTabIndicatorColor(skinPlainContentColor)
@@ -1795,20 +1795,21 @@ private fun LightweightHomeTopTabs(
                         MaterialTheme.colorScheme.primary
                     }
                     if (!shouldUseMd3DockBackedCapsule && !shouldUseMd3LiquidCapsule) {
-                        // Selected-tab capsule: fully rounded (max corner radius) and sized to
-                        // the dock track minus breathing gap, so it never bleeds above or below
-                        // the tab row. No drag scale is applied here — only the liquid-glass
-                        // capsule paths may overflow the dock chrome.
+                        val skinUnderlineTranslationXPx = md3IndicatorTranslationXPx +
+                            with(density) {
+                                ((md3LiquidCapsuleWidth - md3IndicatorWidth) / 2).toPx()
+                            }
                         Box(
                             modifier = Modifier
-                                .align(Alignment.CenterStart)
+                                .align(Alignment.BottomStart)
                                 .graphicsLayer {
-                                    translationX = md3IndicatorTranslationXPx
+                                    translationX = skinUnderlineTranslationXPx
                                 }
-                                .width(md3LiquidCapsuleWidth)
-                                .height(dockIndicatorHeight)
+                                .offset(y = -AppSpacingTokens.ExtraSmall)
+                                .width(md3IndicatorWidth)
+                                .height(AppSpacingTokens.Micro * 1.5f)
                                 .clip(RoundedCornerShape(percent = 50))
-                                .background(indicatorColor.copy(alpha = 0.12f))
+                                .background(indicatorColor)
                         )
                     }
                 }

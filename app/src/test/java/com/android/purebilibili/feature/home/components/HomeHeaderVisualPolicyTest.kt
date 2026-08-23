@@ -1892,7 +1892,10 @@ class HomeHeaderVisualPolicyTest {
         assertTrue(headerSource.contains("partitionSkinIconPath = uiSkinDecoration?.topTabPartitionIconPath()"))
         assertTrue(headerSource.contains("skinBackgroundImagePath = uiSkinDecoration?.topTabBackgroundImagePath"))
         assertTrue(chromeSource.contains("model = File(skinBackgroundImagePath)"))
-        assertTrue(chromeSource.contains("contentScale = ContentScale.FillBounds"))
+        assertTrue(chromeSource.contains("contentScale = ContentScale.FillWidth"))
+        assertTrue(chromeSource.contains(".alpha(0.94f)"))
+        assertTrue(headerSource.contains("drawChromeSurface = drawEffectiveTopTabDockChrome"))
+        assertTrue(headerSource.contains("skinPlainContentColor = uiSkinDecoration?.let"))
         assertFalse(headerSource.contains("val tabRowHeightDp = if (shouldUseSkinPlainTopTabs)"))
         assertTrue(topBarSource.contains("val effectivePresentation = if (skinPlainStyle || forceMaterialUnderline)"))
     }

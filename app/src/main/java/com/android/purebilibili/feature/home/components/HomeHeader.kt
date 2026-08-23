@@ -153,7 +153,7 @@ internal fun resolveHomeSkinTopTabUnselectedContentColor(contentColor: Color): C
     contentColor.copy(alpha = if (contentColor.luminance() > 0.5f) 0.84f else 0.78f)
 
 internal fun shouldUseHomeSkinPlainTopTabs(uiSkinDecoration: HomeUiSkinDecoration?): Boolean =
-    false
+    !uiSkinDecoration?.topTabBackgroundImagePath.isNullOrBlank()
 
 internal fun resolveHomeSkinTopTabIndicatorColor(contentColor: Color): Color =
     contentColor.copy(alpha = maxOf(contentColor.alpha, 0.92f))
@@ -1943,11 +1943,12 @@ fun HomeHeader(
             searchRevealFraction > 0f
     val useTopTabBottomBarMatchedDock = resolveHomeTopChromeLiquidGlassEnabled(homeSettings)
     val drawTopTabDockChrome = drawTopTabOuterChromeSurface || useTopTabBottomBarMatchedDock || useDetachedTopTabDock
+    val drawEffectiveTopTabDockChrome = drawTopTabDockChrome && !shouldUseSkinPlainTopTabs
     val topTabLabelMode = homeSettings?.topTabLabelMode
         ?: com.android.purebilibili.core.store.SettingsManager.TopTabLabelMode.TEXT_ONLY
     // Floating dock shell + tabs share one wrap decision so glass length matches content.
     val wrapTopTabDockFloatingStyle = if (embedTopTabsInUnifiedPanel) false else isTabFloating
-    val wrapTopTabDockHasOuterChrome = drawTopTabDockChrome && !embedTopTabsInUnifiedPanel
+    val wrapTopTabDockHasOuterChrome = drawEffectiveTopTabDockChrome && !embedTopTabsInUnifiedPanel
     val wrapTopTabDockWidth = shouldWrapTopTabDockWidth(
         isFloatingStyle = wrapTopTabDockFloatingStyle,
         hasOuterChromeSurface = wrapTopTabDockHasOuterChrome,
@@ -2037,9 +2038,9 @@ fun HomeHeader(
                 !isTopTabsAutoCollapseEnabled,
             isTabsCollapsed = topTabsCollapsed,
             onTabsCollapsedChange = onTopTabsCollapsedChange,
-            drawChromeSurface = drawTopTabDockChrome,
-            useBottomBarMatchedSurface = useTopTabBottomBarMatchedDock,
-            drawMatchedShellLens = useTopTabBottomBarMatchedDock,
+            drawChromeSurface = drawEffectiveTopTabDockChrome,
+            useBottomBarMatchedSurface = useTopTabBottomBarMatchedDock && !shouldUseSkinPlainTopTabs,
+            drawMatchedShellLens = useTopTabBottomBarMatchedDock && !shouldUseSkinPlainTopTabs,
             matchedShellLensIntensity = resolveFloatingDockGeometryScale(
                 currentTabHeight.value
             ),
@@ -2071,7 +2072,7 @@ fun HomeHeader(
                 miuixBackdrop = miuixBackdrop,
                 isFloatingStyle = isTabFloating,
                 edgeToEdge = integratedCollapsedTopBar,
-                hasOuterChromeSurface = drawTopTabDockChrome,
+                hasOuterChromeSurface = drawEffectiveTopTabDockChrome,
                 // Same wrap decision as HomeTopTabChrome so shell length matches tab content.
                 wrapDockWidth = wrapTopTabDockWidth,
                 interactionBudget = interactionBudget,
@@ -2080,7 +2081,13 @@ fun HomeHeader(
                 forceLowBlurBudget = forceLowBlurBudget,
                 isViewportSyncEnabled = isTopTabViewportSyncEnabled,
                 skinPlainStyle = shouldUseSkinPlainTopTabs,
-                skinPlainContentColor = null,
+                skinPlainContentColor = uiSkinDecoration?.let { decoration ->
+                    resolveHomeSkinTopTabContentColor(
+                        topAtmosphereTint = decoration.topAtmosphereTint,
+                        hasTopAtmosphereImage = true,
+                        darkTheme = !isLightMode,
+                    )
+                },
                 topTabSkinIconPaths = uiSkinDecoration?.topTabSkinIconPaths.orEmpty(),
                 partitionSkinIconPath = uiSkinDecoration?.topTabPartitionIconPath(),
                 maxDockWidthDp = maxDockWidth.value,

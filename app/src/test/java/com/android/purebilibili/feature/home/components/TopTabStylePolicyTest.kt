@@ -776,7 +776,7 @@ class TopTabStylePolicyTest {
     }
 
     @Test
-    fun `skin decoration keeps host top tab readability strategy`() {
+    fun `dedicated skin tab background uses plain readable tab strategy`() {
         assertFalse(shouldUseHomeSkinPlainTopTabs(null))
         assertFalse(
             shouldUseHomeSkinPlainTopTabs(
@@ -784,6 +784,16 @@ class TopTabStylePolicyTest {
                     skinId = "test",
                     topAtmosphereTint = Color(0xFFE4F6FF),
                     searchCapsuleTint = Color.White
+                )
+            )
+        )
+        assertTrue(
+            shouldUseHomeSkinPlainTopTabs(
+                HomeUiSkinDecoration(
+                    skinId = "test",
+                    topAtmosphereTint = Color(0xFFE4F6FF),
+                    searchCapsuleTint = Color.White,
+                    topTabBackgroundImagePath = "/tmp/head_tab_bg.jpg",
                 )
             )
         )
