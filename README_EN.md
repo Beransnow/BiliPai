@@ -28,13 +28,16 @@
   <a href="https://x.com/YangY_0x00"><img src="https://img.shields.io/badge/X-Follow-000000?style=flat-square&logo=x" alt="X"></a>
 </p>
 
-## 🚀 Quick Links
+## 🚀 Repository Navigation
 
-| Category | Entry |
+| I want to… | Quick entry |
 | --- | --- |
-| Get Started | [Telegram channel](https://t.me/bilipai666) · [Group](https://t.me/bilipai888/1) · [Changelog](CHANGELOG.md) |
-| Docs | [Roadmap](docs/wiki/ROADMAP.md) · [Wiki Home](docs/wiki/README.md) · [User FAQ](docs/wiki/FAQ.md) · [AI / LLM Entry](llms.txt) |
-| Developer Reference | [JSON Plugin Guide](docs/PLUGIN_DEVELOPMENT.md) · [Native Plugin Guide](docs/NATIVE_PLUGIN_DEVELOPMENT.md) |
+| Download and try BiliPai | [Install](#-download--install) · [Changelog](CHANGELOG.md) · [Telegram channel](https://t.me/bilipai666) · [FAQ](docs/wiki/FAQ.md) |
+| Explore the project | [Device previews](#-preview) · [Features](#-features) · [Feature matrix](docs/wiki/FEATURE_MATRIX.md) · [Roadmap](docs/wiki/ROADMAP.md) |
+| Read the docs | [Wiki home](docs/wiki/README.md) · [Architecture](docs/wiki/ARCHITECTURE.md) · [UI design guide](docs/wiki/ui-design/README.md) · [QA guide](docs/wiki/QA.md) |
+| Build and develop | [Build](#️-build) · [Structure guidelines](STRUCTURE_GUIDELINES.adoc) · [Versioning](docs/wiki/VERSIONING.md) · [Release workflow](docs/wiki/RELEASE_WORKFLOW.md) |
+| Develop plugins | [JSON plugin guide](docs/PLUGIN_DEVELOPMENT.md) · [Native plugin guide](docs/NATIVE_PLUGIN_DEVELOPMENT.md) · [Plugin SDK](plugins/sdk/README.md) · [Samples](plugins/samples/) |
+| Contribute | [Contributing](#-contributing) · [Open an issue](https://github.com/jay3-yy/BiliPai/issues/new/choose) · [Pull requests](https://github.com/jay3-yy/BiliPai/pulls) · [AI / LLM entry](llms.txt) |
 
 > [!CAUTION]
 > `README`, `AI.txt`, `llm.txt`, `llms.txt`, and the Wiki are maintained periodically, but fast-moving main-branch changes can still make parts of them stale. Treat them as reference only; verify current behavior with source, `CHANGELOG.md`, and real builds.

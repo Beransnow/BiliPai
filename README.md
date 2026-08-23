@@ -39,6 +39,17 @@
 
 ---
 
+## 仓库导航
+
+| 我想要…… | 快速入口 |
+| --- | --- |
+| 下载与体验 | [下载说明](#下载与安装) · [版本变更](CHANGELOG.md) · [Telegram 频道](https://t.me/bilipai666) · [常见问题](docs/wiki/FAQ.md) |
+| 了解项目 | [真机预览](#真机预览) · [核心能力](#核心能力) · [功能矩阵](docs/wiki/FEATURE_MATRIX.md) · [路线图](docs/wiki/ROADMAP.md) |
+| 阅读文档 | [Wiki 首页](docs/wiki/README.md) · [架构说明](docs/wiki/ARCHITECTURE.md) · [UI 设计规范](docs/wiki/ui-design/README.md) · [QA 手册](docs/wiki/QA.md) |
+| 开发与构建 | [构建说明](#构建) · [代码结构规范](STRUCTURE_GUIDELINES.adoc) · [版本规范](docs/wiki/VERSIONING.md) · [发布流程](docs/wiki/RELEASE_WORKFLOW.md) |
+| 开发插件 | [JSON 插件](docs/PLUGIN_DEVELOPMENT.md) · [原生插件](docs/NATIVE_PLUGIN_DEVELOPMENT.md) · [Plugin SDK](plugins/sdk/README.md) · [示例](plugins/samples/) |
+| 参与项目 | [贡献说明](#参与贡献) · [提交 Issue](https://github.com/jay3-yy/BiliPai/issues/new/choose) · [Pull Requests](https://github.com/jay3-yy/BiliPai/pulls) · [AI / LLM 入口](llms.txt) |
+
 ## 项目定位
 
 BiliPai 是一个基于 Kotlin 与 Jetpack Compose 的第三方 Bilibili Android 客户端，覆盖视频、番剧、直播、动态、消息、离线缓存等日常使用流程，并支持插件扩展与平板/折叠屏等大屏形态。
@@ -268,16 +279,6 @@ BiliPai 依赖并参考了多个优秀开源项目：
 [GNU General Public License v3.0](LICENSE)
 
 你可以依照 GPLv3 使用、研究、修改与分发本项目。分发修改版本或二进制作品时，须按 GPLv3 提供对应源代码并保留许可证与版权声明。
-
-## Star History
-
-<div align="center">
-
-[![Star History Chart](https://api.star-history.com/svg?repos=jay3-yy/BiliPai&type=Date)](https://github.com/jay3-yy/BiliPai/stargazers)
-
-</div>
-
----
 
 <div align="center">
 
