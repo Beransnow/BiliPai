@@ -1965,7 +1965,6 @@ fun HomeHeader(
         tabContentAlpha = tabContentAlpha
     )
     val tabBorderAlpha = if (isTabFloating) tabChromeStyle.borderAlpha else 0f
-    val topAtmosphereImagePath = uiSkinDecoration?.topAtmosphereImagePath
     val topLayoutOrder = homeSettings?.homeTopLayoutOrder ?: HomeTopLayoutOrder.SEARCH_THEN_TABS
     val topTabsContent: @Composable (Dp) -> Unit = { maxDockWidth ->
         HomeTopTabChrome(
@@ -2184,30 +2183,6 @@ fun HomeHeader(
                         }
                     )
             ) {
-                if (!topAtmosphereImagePath.isNullOrBlank()) {
-                    AsyncImage(
-                        model = File(topAtmosphereImagePath),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .matchParentSize()
-                            .alpha(0.18f)
-                            .clearAndSetSemantics {}
-                    )
-                    Box(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    0.00f to Color.Transparent,
-                                    0.52f to headerChromeColors.containerColor.copy(alpha = 0.38f),
-                                    0.82f to headerChromeColors.containerColor,
-                                    1.00f to headerChromeColors.containerColor,
-                                )
-                            )
-                            .clearAndSetSemantics {}
-                    )
-                }
                 if (
                     drawUnifiedTopPanelChrome &&
                     useUnifiedTopPanel &&

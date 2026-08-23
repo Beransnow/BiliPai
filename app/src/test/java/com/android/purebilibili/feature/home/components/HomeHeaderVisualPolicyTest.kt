@@ -1893,15 +1893,11 @@ class HomeHeaderVisualPolicyTest {
     }
 
     @Test
-    fun `skin top atmosphere stays subtle and fades into native chrome before the lower edge`() {
+    fun `skin top atmosphere asset is not rendered in the home chrome`() {
         val headerSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/HomeHeader.kt")
-        val atmosphereSource = headerSource
-            .substringAfter("if (!topAtmosphereImagePath.isNullOrBlank())")
-            .substringBefore("if (\n                    drawUnifiedTopPanelChrome")
 
-        assertTrue(atmosphereSource.contains(".alpha(0.18f)"))
-        assertTrue(atmosphereSource.contains("0.82f to headerChromeColors.containerColor"))
-        assertTrue(atmosphereSource.contains("1.00f to headerChromeColors.containerColor"))
+        assertFalse(headerSource.contains("val topAtmosphereImagePath = uiSkinDecoration?.topAtmosphereImagePath"))
+        assertFalse(headerSource.contains("model = File(topAtmosphereImagePath)"))
     }
 
     @Test
