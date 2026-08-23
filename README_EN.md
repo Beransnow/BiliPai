@@ -40,7 +40,7 @@
 | Contribute | [Contributing](#-contributing) · [Open an issue](https://github.com/jay3-yy/BiliPai/issues/new/choose) · [Pull requests](https://github.com/jay3-yy/BiliPai/pulls) · [AI / LLM entry](llms.txt) |
 
 > [!CAUTION]
-> `README`, `AI.txt`, `llm.txt`, `llms.txt`, and the Wiki are maintained periodically, but fast-moving main-branch changes can still make parts of them stale. Treat them as reference only; verify current behavior with source, `CHANGELOG.md`, and real builds.
+> `README`, `AI.txt`, `llms.txt`, and the Wiki are maintained periodically, but fast-moving main-branch changes can still make parts of them stale. Treat them as reference only; verify current behavior with source, `CHANGELOG.md`, and real builds.
 
 ## 📸 Preview
 
@@ -423,7 +423,7 @@ BiliPai/
 
 - AI / LLM Entry: [`llms.txt`](llms.txt)
 - Current Roadmap: [`docs/wiki/ROADMAP.md`](docs/wiki/ROADMAP.md)
-- Compatibility aliases: `AI.txt` / `llm.txt`
+- Compatibility alias: `AI.txt`
 - AI Navigation Guide: [`docs/wiki/AI.md`](docs/wiki/AI.md)
 - Wiki Home: [`docs/wiki/README.md`](docs/wiki/README.md)
 - Feature Matrix: [`docs/wiki/FEATURE_MATRIX.md`](docs/wiki/FEATURE_MATRIX.md)

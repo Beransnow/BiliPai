@@ -29,7 +29,7 @@
 3. `docs/wiki/ROADMAP.md` 的当前优先级、完成条件与版本基线
 4. 本 Wiki 的功能矩阵、架构、QA 与发布流程
 5. 若 `app/build.gradle.kts` 的 `versionName` 已领先 `CHANGELOG.md`，需先补齐发布文档或明确说明仍是主线未同步状态
-6. 若调整了 AI 入口或文档优先级，需同步 `AI.txt`、`llm.txt`、`llms.txt` 与 `docs/wiki/AI.md`
+6. 若调整了 AI 入口或文档优先级，需同步 `AI.txt`、`llms.txt` 与 `docs/wiki/AI.md`
 
 ## 快速入口
 
@@ -41,4 +41,4 @@
 - 发布日志：`CHANGELOG.md`
 - 当前路线图：`docs/wiki/ROADMAP.md`
 - AI 入口：`llms.txt`
-- 兼容别名：`AI.txt` / `llm.txt`
+- 兼容别名：`AI.txt`
