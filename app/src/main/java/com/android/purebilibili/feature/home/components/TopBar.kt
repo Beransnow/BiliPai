@@ -1242,7 +1242,11 @@ private fun LightweightHomeTopTabs(
         val topTabIndicatorScaleProgress = rememberBottomBarIndicatorDragScaleProgress(
             isDragging = topTabShouldStretchIndicator
         )
-        val topTabPressProgress = 0f
+        val topTabIndicatorInteractionSource = remember { MutableInteractionSource() }
+        val topTabIndicatorPressed by topTabIndicatorInteractionSource.collectIsPressedAsState()
+        val topTabPressProgress = rememberBottomBarIndicatorDragScaleProgress(
+            isDragging = topTabIndicatorPressed
+        )
         val topTabIndicatorLayerScaleProgress = resolveTopTabIndicatorScaleProgress(
             dragScaleProgress = topTabIndicatorScaleProgress,
             pressProgress = topTabPressProgress
@@ -1677,7 +1681,7 @@ private fun LightweightHomeTopTabs(
                 }
                 val indicatorGestureModifier = Modifier
                     .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
+                        interactionSource = topTabIndicatorInteractionSource,
                         indication = null
                     ) {
                         performHomeTopBarTap(
