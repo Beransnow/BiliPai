@@ -2113,7 +2113,38 @@ fun HomeHeader(
                         isScrolling = topChromeMotionPolicy.isScrolling,
                         isTransitionRunning = topChromeMotionPolicy.isTransitionRunning,
                         forceLowBlurBudget = forceLowBlurBudget
+                )
+            )
+        }
+        // The skin head artwork belongs to the complete pinned header, not only the
+        // search/tabs panel. Drawing it here lets the same crop continue behind the
+        // transparent status bar while the controls remain layered above it.
+        if (!topTrimImagePath.isNullOrBlank()) {
+            AsyncImage(
+                model = File(topTrimImagePath),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                alignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(continuousSlabHeight)
+                    .graphicsLayer {
+                        alpha = 0.76f
+                    }
+                    .clearAndSetSemantics {}
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(continuousSlabHeight)
+                    .background(
+                        Brush.verticalGradient(
+                            0.00f to Color.Transparent,
+                            0.72f to Color.Transparent,
+                            1.00f to headerChromeColors.containerColor.copy(alpha = 0.42f),
+                        )
                     )
+                    .clearAndSetSemantics {}
             )
         }
         Column(
@@ -2187,32 +2218,6 @@ fun HomeHeader(
                         }
                     )
             ) {
-                if (!topTrimImagePath.isNullOrBlank()) {
-                    AsyncImage(
-                        model = File(topTrimImagePath),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        alignment = Alignment.Center,
-                        modifier = Modifier
-                            .matchParentSize()
-                            .graphicsLayer {
-                                alpha = 0.76f
-                            }
-                            .clearAndSetSemantics {}
-                    )
-                    Box(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    0.00f to Color.Transparent,
-                                    0.72f to Color.Transparent,
-                                    1.00f to headerChromeColors.containerColor.copy(alpha = 0.42f),
-                                )
-                            )
-                            .clearAndSetSemantics {}
-                    )
-                }
                 if (
                     drawUnifiedTopPanelChrome &&
                     useUnifiedTopPanel &&

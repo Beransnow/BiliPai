@@ -1893,18 +1893,18 @@ class HomeHeaderVisualPolicyTest {
     }
 
     @Test
-    fun `skin head artwork covers the full top controls and fades at the content edge`() {
+    fun `skin head artwork covers status bar and full top controls then fades at content edge`() {
         val headerSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/HomeHeader.kt")
         val trimSource = headerSource
             .substringAfter("if (!topTrimImagePath.isNullOrBlank())")
-            .substringBefore("if (\n                    drawUnifiedTopPanelChrome")
+            .substringBefore("Column(\n            modifier = Modifier")
 
         assertFalse(headerSource.contains("val topAtmosphereImagePath = uiSkinDecoration?.topAtmosphereImagePath"))
         assertFalse(headerSource.contains("model = File(topAtmosphereImagePath)"))
         assertTrue(headerSource.contains("val topTrimImagePath = uiSkinDecoration?.topAtmosphereImagePath"))
         assertTrue(trimSource.contains("model = File(topTrimImagePath)"))
         assertTrue(trimSource.contains("contentScale = ContentScale.Crop"))
-        assertTrue(trimSource.contains(".matchParentSize()"))
+        assertTrue(trimSource.contains(".height(continuousSlabHeight)"))
         assertTrue(trimSource.contains("alpha = 0.76f"))
         assertTrue(trimSource.contains("0.72f to Color.Transparent"))
         assertTrue(trimSource.contains("headerChromeColors.containerColor.copy(alpha = 0.42f)"))

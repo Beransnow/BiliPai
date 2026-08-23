@@ -1123,6 +1123,15 @@ fun HomeScreen(
     // 当使用滑动动画时，Theme.kt 的 SideEffect 可能不会重新执行
     val backgroundColor = AppSurfaceTokens.chromeBackground()
     val isLightBackground = remember(backgroundColor) { backgroundColor.luminance() > 0.5f }
+    val useDarkStatusBarIcons = remember(homeUiSkinDecoration, isLightBackground) {
+        resolveHomeStatusBarDarkIcons(
+            hasTopSkinArtwork = !homeUiSkinDecoration?.topAtmosphereImagePath.isNullOrBlank(),
+            skinColorMode = homeUiSkinDecoration?.colorMode,
+            topSkinTintIsLight = homeUiSkinDecoration?.topAtmosphereTint?.luminance()?.let { it > 0.5f }
+                ?: isLightBackground,
+            defaultBackgroundIsLight = isLightBackground,
+        )
+    }
     val homeWallpaperBackdropAppearance = remember(
         homeWallpaperUri,
         homeSettings.homeWallpaperEffectMode,
@@ -1142,7 +1151,7 @@ fun HomeScreen(
             val window = (context as? android.app.Activity)?.window ?: return@SideEffect
             val insetsController = androidx.core.view.WindowCompat.getInsetsController(window, view)
             //  根据背景亮度设置状态栏图标颜色
-            insetsController.isAppearanceLightStatusBars = isLightBackground
+            insetsController.isAppearanceLightStatusBars = useDarkStatusBarIcons
             //  [修复] 导航栏也需要根据背景亮度设置图标颜色
             insetsController.isAppearanceLightNavigationBars = isLightBackground
             //  确保状态栏可见且透明
