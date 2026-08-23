@@ -56,7 +56,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.isSecondaryPressed
-import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.Key
@@ -664,14 +663,19 @@ fun FullscreenPlayerOverlay(
                 contentDescription = "全屏视频播放器"
                 stateDescription = if (isPlaying) "正在播放" else "已暂停"
             }
-            .onPointerEvent(PointerEventType.Press) { event ->
-                if (event.buttons.isSecondaryPressed) {
-                    val position = event.changes.firstOrNull()?.position ?: return@onPointerEvent
-                    contextMenuOffset = with(density) {
-                        DpOffset(position.x.toDp(), position.y.toDp())
+            .pointerInput(density) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        if (event.type == PointerEventType.Press && event.buttons.isSecondaryPressed) {
+                            val position = event.changes.firstOrNull()?.position ?: continue
+                            contextMenuOffset = with(density) {
+                                DpOffset(position.x.toDp(), position.y.toDp())
+                            }
+                            showContextMenu = true
+                            event.changes.forEach { it.consume() }
+                        }
                     }
-                    showContextMenu = true
-                    event.changes.forEach { it.consume() }
                 }
             }
             .pointerInput(
