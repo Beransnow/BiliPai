@@ -106,6 +106,9 @@ import com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState
 import com.android.purebilibili.core.store.PortraitPlayerCollapseMode
 import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
 import com.android.purebilibili.core.ui.AppSurfaceTokens
+import com.android.purebilibili.core.ui.AppWindowSystemUiController
+import com.android.purebilibili.core.ui.setWindowNavigationBarColor
+import com.android.purebilibili.core.ui.setWindowStatusBarColor
 //  已改用 MaterialTheme.colorScheme.primary
 
 import com.android.purebilibili.data.model.response.RelatedVideo
@@ -1234,8 +1237,8 @@ internal fun VideoDetailScreenStateHolder(
                 insetsController.systemBarsBehavior = originalSystemBarsSnapshot.systemBarsBehavior
                 insetsController.isAppearanceLightStatusBars = originalSystemBarsSnapshot.lightStatusBars
                 insetsController.isAppearanceLightNavigationBars = originalSystemBarsSnapshot.lightNavigationBars
-                window.statusBarColor = originalSystemBarsSnapshot.statusBarColor
-                window.navigationBarColor = originalSystemBarsSnapshot.navigationBarColor
+                setWindowStatusBarColor(window, originalSystemBarsSnapshot.statusBarColor)
+                setWindowNavigationBarColor(window, originalSystemBarsSnapshot.navigationBarColor)
             }
         }
     }
@@ -1508,7 +1511,7 @@ internal fun VideoDetailScreenStateHolder(
     DisposableEffect(Unit) {
         //  [沉浸式] 启用边到边显示，让内容延伸到状态栏下方
         if (window != null) {
-            WindowCompat.setDecorFitsSystemWindows(window, false)
+            AppWindowSystemUiController.ensureEdgeToEdge(window)
         }
 
         onDispose {

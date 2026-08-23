@@ -107,6 +107,7 @@ import com.android.purebilibili.core.theme.buildDisplayMetricsSnapshot
 import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppDialogAction
 import com.android.purebilibili.core.ui.AppThemeConfig
+import com.android.purebilibili.core.ui.AppWindowSystemUiController
 import com.android.purebilibili.core.ui.ProvideAppThemeConfig
 import com.android.purebilibili.core.ui.components.LocalAppSingleChoicePresentation
 import com.android.purebilibili.core.ui.blur.BlurIntensity
@@ -962,6 +963,7 @@ open class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         //  初始调用，后续会根据主题动态更新
         enableEdgeToEdge()
+        AppWindowSystemUiController.configureEdgeToEdgeHost(this)
         
         // 初始化小窗管理器
         miniPlayerManager = MiniPlayerManager.getInstance(this)

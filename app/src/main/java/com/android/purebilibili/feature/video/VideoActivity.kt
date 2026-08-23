@@ -19,6 +19,7 @@ import com.android.purebilibili.core.util.Logger
 import android.util.Rational
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +33,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.metrics.performance.JankStats
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.AppThemeConfig
+import com.android.purebilibili.core.ui.AppWindowSystemUiController
 import com.android.purebilibili.core.ui.ProvideAppThemeConfig
 import com.android.purebilibili.core.ui.blur.BlurIntensity
 import com.android.purebilibili.core.ui.performance.AppRuntimeVisualGuardTracker
@@ -87,6 +89,8 @@ class VideoActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        AppWindowSystemUiController.configureEdgeToEdgeHost(this)
         if (savedInstanceState == null && resources.configuration.smallestScreenWidthDp < 600) {
             applyPlayerRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
         }

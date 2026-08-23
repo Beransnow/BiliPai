@@ -23,7 +23,6 @@ import android.content.Context
 import android.content.pm.ActivityInfo
 import android.media.AudioManager
 import android.provider.Settings
-import android.view.View
 import android.view.WindowManager
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
@@ -65,6 +64,7 @@ import com.android.purebilibili.core.store.DanmakuSettings
 import com.android.purebilibili.core.store.FullscreenAspectRatio
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
+import com.android.purebilibili.core.ui.AppWindowSystemUiController
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppSlider
 import com.android.purebilibili.core.ui.components.AppSurface
@@ -395,30 +395,20 @@ fun FullscreenPlayerOverlay(
         val activity = (context as? Activity) ?: return@DisposableEffect onDispose {}
         val window = activity.window
         val originalOrientation = activity.requestedOrientation
-
-        //  [重构] 定义设置沉浸式模式的函数（可复用）
-        val applyImmersiveMode = {
-            @Suppress("DEPRECATION")
-            window.decorView.systemUiVisibility = (
-                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                or View.SYSTEM_UI_FLAG_FULLSCREEN
-                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            )
-        }
+        val originalSystemUi = AppWindowSystemUiController.capture(window)
+        val desktopFullscreenRequested =
+            AppWindowSystemUiController.requestDesktopFullscreen(activity, enter = true)
 
         // 设置横屏
         activity.applyPlayerRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE)
         
         //  首次进入时应用沉浸式
-        applyImmersiveMode()
+        AppWindowSystemUiController.enterImmersive(window)
         
         //  [关键修复] 生命周期观察器：返回前台时重新应用沉浸式模式
         val lifecycleObserver = androidx.lifecycle.LifecycleEventObserver { _, event ->
             if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
-                applyImmersiveMode()
+                AppWindowSystemUiController.enterImmersive(window)
                 val view = playerViewRef
                 val exoPlayer = player
                 if (shouldRebindFullscreenSurfaceOnResume(
@@ -446,9 +436,10 @@ fun FullscreenPlayerOverlay(
                 )
             )
             
-            // 恢复系统栏
-            @Suppress("DEPRECATION")
-            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+            AppWindowSystemUiController.restore(window, originalSystemUi)
+            if (desktopFullscreenRequested) {
+                AppWindowSystemUiController.requestDesktopFullscreen(activity, enter = false)
+            }
             
             // 取消屏幕常亮
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)

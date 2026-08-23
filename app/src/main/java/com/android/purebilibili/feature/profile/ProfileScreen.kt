@@ -62,7 +62,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.Lifecycle
@@ -375,10 +374,9 @@ fun ProfileScreen(
         } ?: android.graphics.Color.TRANSPARENT
         val originalLightStatusBars = insetsController?.isAppearanceLightStatusBars ?: true
         val originalLightNavigationBars = insetsController?.isAppearanceLightNavigationBars ?: true
-        val originalDecorFits = window?.decorView?.fitsSystemWindows ?: true
-        
+
         if (shouldControlSystemBars && window != null) {
-            WindowCompat.setDecorFitsSystemWindows(window, false)
+            com.android.purebilibili.core.ui.AppWindowSystemUiController.ensureEdgeToEdge(window)
             com.android.purebilibili.core.ui.setWindowStatusBarColor(window, Color.Transparent.toArgb())
             com.android.purebilibili.core.ui.setWindowNavigationBarColor(window, Color.Transparent.toArgb())
             insetsController?.isAppearanceLightStatusBars = lightStatusBars
@@ -388,7 +386,6 @@ fun ProfileScreen(
         onDispose {
             // 离开时恢复原始配置
             if (shouldControlSystemBars && window != null && insetsController != null) {
-                WindowCompat.setDecorFitsSystemWindows(window, originalDecorFits)
                 com.android.purebilibili.core.ui.setWindowStatusBarColor(window, originalStatusBarColor)
                 com.android.purebilibili.core.ui.setWindowNavigationBarColor(window, originalNavBarColor)
                 insetsController.isAppearanceLightStatusBars = originalLightStatusBars

@@ -878,7 +878,7 @@ fun HomeScreen(
     SideEffect {
         val window = (view.context as? android.app.Activity)?.window ?: return@SideEffect
         // 保持边到边显示（与 VideoDetailScreen 一致）
-        androidx.core.view.WindowCompat.setDecorFitsSystemWindows(window, false)
+        com.android.purebilibili.core.ui.AppWindowSystemUiController.ensureEdgeToEdge(window)
     }
 
     // 解构设置值（避免每次访问都触发重组）
