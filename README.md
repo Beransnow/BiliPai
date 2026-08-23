@@ -60,10 +60,12 @@ BiliPai 是一个基于 Kotlin 与 Jetpack Compose 的第三方 Bilibili Android
 
 <img src="docs/images/screenshot1.png" height="440" alt="BiliPai screenshot 1" />
 <img src="docs/images/screenshot2.png" height="440" alt="BiliPai screenshot 2" />
+<img src="docs/images/screenshot3.png" height="440" alt="BiliPai screenshot 3" />
 <img src="docs/images/screenshot4.png" height="440" alt="BiliPai screenshot 4" />
 <img src="docs/images/screenshot5.png" height="440" alt="BiliPai screenshot 5" />
 <img src="docs/images/screenshot6.png" height="440" alt="BiliPai screenshot 6" />
 <img src="docs/images/screenshot7.png" height="440" alt="BiliPai screenshot 7" />
+<img src="docs/images/screenshot8.png" height="440" alt="BiliPai screenshot 8" />
 
 </div>
 
