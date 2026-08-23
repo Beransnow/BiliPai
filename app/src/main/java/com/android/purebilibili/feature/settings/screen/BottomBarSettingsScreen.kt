@@ -967,7 +967,7 @@ private fun BottomBarTabItem(
         // 图标 -  点击可更换颜色(仅多彩色预设开放)
         Box(
             modifier = Modifier
-                .size(36.dp)
+                .size(48.dp)
                 .clip(AppShapes.container(ContainerLevel.Field))
                 .background(itemContainerColor)
                 .clickable(enabled = !isMaterial3) { showColorPicker = true },

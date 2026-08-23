@@ -290,7 +290,7 @@ private fun ArticleDetailContent(
                                 model = article.authorFace,
                                 contentDescription = article.authorName,
                                 modifier = Modifier
-                                    .size(42.dp)
+                                    .size(48.dp)
                                     .clip(CircleShape)
                                     .clickable(enabled = article.authorMid > 0) {
                                         if (article.authorMid > 0) onUserClick(article.authorMid)

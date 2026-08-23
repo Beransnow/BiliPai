@@ -751,7 +751,7 @@ fun CommentInputDialog(
                                                     Box(
                                                         contentAlignment = Alignment.Center,
                                                         modifier = Modifier
-                                                            .height(36.dp)
+                                                            .height(48.dp)
                                                             .clip(AppShapes.container(ContainerLevel.Tag))
                                                             .clickable { insertTextAtCursor(kaomojis[i]) }
                                                             .background(
@@ -784,7 +784,7 @@ fun CommentInputDialog(
                                                     Box(
                                                         contentAlignment = Alignment.Center,
                                                         modifier = Modifier
-                                                            .size(40.dp)
+                                                            .size(48.dp)
                                                             .clickable { insertTextAtCursor(emojis[i]) }
                                                     ) {
                                                         AppText(emojis[i], fontSize = 24.sp)

@@ -39,7 +39,6 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleOut
-import androidx.activity.compose.BackHandler
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState

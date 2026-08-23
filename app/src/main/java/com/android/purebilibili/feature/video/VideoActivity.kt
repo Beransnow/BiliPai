@@ -221,6 +221,19 @@ class VideoActivity : ComponentActivity() {
         }
     }
 
+    override fun dispatchKeyEvent(event: android.view.KeyEvent): Boolean {
+        if (
+            event.keyCode == android.view.KeyEvent.KEYCODE_ESCAPE &&
+            !event.isCtrlPressed && !event.isAltPressed && !event.isMetaPressed
+        ) {
+            if (event.action == android.view.KeyEvent.ACTION_DOWN && event.repeatCount == 0) {
+                onBackPressedDispatcher.onBackPressed()
+            }
+            return true
+        }
+        return super.dispatchKeyEvent(event)
+    }
+
     override fun onStop() {
         AppRuntimeVisualGuardTracker.discardActiveWindow(runtimeVisualGuardSession)
         runtimeJankStats?.isTrackingEnabled = false

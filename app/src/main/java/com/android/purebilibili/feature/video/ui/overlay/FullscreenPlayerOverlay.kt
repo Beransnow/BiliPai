@@ -24,12 +24,12 @@ import android.content.pm.ActivityInfo
 import android.media.AudioManager
 import android.provider.Settings
 import android.view.WindowManager
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -49,14 +49,33 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.isSecondaryPressed
+import androidx.compose.ui.input.pointer.onPointerEvent
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isAltPressed
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -66,6 +85,8 @@ import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
 import com.android.purebilibili.core.ui.AppWindowSystemUiController
 import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppDropdownMenu
+import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import com.android.purebilibili.core.ui.components.AppSlider
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.blur.BlurSurfaceType
@@ -108,6 +129,10 @@ import dev.chrisbanes.haze.HazeState
 import com.android.purebilibili.core.ui.blur.hazeSourceCompat
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.NavigationEventTransitionState
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 
 private const val AUTO_HIDE_DELAY = 4000L
 private const val VISIBLE_TOP_CONTROLS_GESTURE_EXCLUSION_HEIGHT_DP = 96
@@ -118,6 +143,14 @@ enum class FullscreenGestureMode { None, Brightness, Volume, Seek }
 
 internal fun resolveFullscreenVisibleBottomControlsGestureExclusionHeightDp(): Int {
     return VISIBLE_BOTTOM_CONTROLS_GESTURE_EXCLUSION_HEIGHT_DP
+}
+
+private fun Key.toFullscreenShortcutKey(): FullscreenShortcutKey = when (this) {
+    Key.Spacebar -> FullscreenShortcutKey.Space
+    Key.DirectionLeft -> FullscreenShortcutKey.Left
+    Key.DirectionRight -> FullscreenShortcutKey.Right
+    Key.Escape -> FullscreenShortcutKey.Escape
+    else -> FullscreenShortcutKey.Other
 }
 
 internal fun resolveFullscreenPendingGestureSeekPosition(
@@ -225,6 +258,9 @@ fun FullscreenPlayerOverlay(
     
     //  画质选择菜单状态
     var showQualityMenu by remember { mutableStateOf(false) }
+    var showContextMenu by remember { mutableStateOf(false) }
+    var contextMenuOffset by remember { mutableStateOf(DpOffset.Zero) }
+    val rootFocusRequester = remember { FocusRequester() }
     val scope = rememberCoroutineScope()
     var playerViewRef by remember { mutableStateOf<PlayerView?>(null) }
     var keepFullscreenPlaybackAwake by remember(player) {
@@ -510,11 +546,37 @@ fun FullscreenPlayerOverlay(
         }
     }
     
-    // 返回键处理
-    BackHandler { onNavigateToDetail() }
-    
     // [问题6修复] 弹幕设置面板打开时禁用手势
-    val gesturesEnabled = !showDanmakuSettings && !showSpeedMenu && !showRatioMenu && !showQualityMenu
+    val gesturesEnabled = !showDanmakuSettings && !showSpeedMenu && !showRatioMenu &&
+        !showQualityMenu && !showContextMenu
+
+    val closeTopLayerOrExit: () -> Unit = {
+        when {
+            showContextMenu -> showContextMenu = false
+            showQualityMenu -> showQualityMenu = false
+            showRatioMenu -> showRatioMenu = false
+            showSpeedMenu -> showSpeedMenu = false
+            showDanmakuSettings -> showDanmakuSettings = false
+            else -> onNavigateToDetail()
+        }
+    }
+    val backEventState = rememberNavigationEventState(NavigationEventInfo.None)
+    val backProgress =
+        (backEventState.transitionState as? NavigationEventTransitionState.InProgress)
+            ?.latestEvent
+            ?.progress
+            ?: 0f
+    NavigationBackHandler(
+        state = backEventState,
+        isBackEnabled = true,
+        onBackCancelled = {
+            lastInteractionTime = System.currentTimeMillis()
+        },
+        onBackCompleted = closeTopLayerOrExit,
+    )
+    LaunchedEffect(rootFocusRequester) {
+        runCatching { rootFocusRequester.requestFocus() }
+    }
     
     // [问题8修复] 状态栏排除区域高度（像素）
     val statusBarExclusionZonePx = with(density) { 40.dp.toPx() }
@@ -548,8 +610,70 @@ fun FullscreenPlayerOverlay(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .graphicsLayer {
+                val progress = backProgress.coerceIn(0f, 1f)
+                scaleX = 1f - progress * 0.035f
+                scaleY = 1f - progress * 0.035f
+                alpha = 1f - progress * 0.12f
+            }
             .background(Color.Black)
             .hazeSourceCompat(overlayHazeState)
+            .focusRequester(rootFocusRequester)
+            .onPreviewKeyEvent { event ->
+                val action = resolveFullscreenKeyboardAction(
+                    key = event.key.toFullscreenShortcutKey(),
+                    isKeyDown = event.type == KeyEventType.KeyDown,
+                    hasCommandModifier = event.isCtrlPressed || event.isAltPressed ||
+                        event.isMetaPressed || event.isShiftPressed,
+                    shortcutsEnabled = gesturesEnabled || event.key == Key.Escape,
+                )
+                when (action) {
+                    FullscreenKeyboardAction.PlayPause -> {
+                        player?.let(::togglePlayerPlaybackFromUserAction)
+                        showControls = true
+                        lastInteractionTime = System.currentTimeMillis()
+                        true
+                    }
+                    FullscreenKeyboardAction.SeekBackward,
+                    FullscreenKeyboardAction.SeekForward -> {
+                        val targetPlayer = player ?: return@onPreviewKeyEvent false
+                        val deltaMs = if (action == FullscreenKeyboardAction.SeekBackward) {
+                            -seekBackwardSeconds * 1_000L
+                        } else {
+                            seekForwardSeconds * 1_000L
+                        }
+                        val upperBound = targetPlayer.duration.takeIf { it > 0L } ?: Long.MAX_VALUE
+                        val targetPosition = (targetPlayer.currentPosition + deltaMs)
+                            .coerceIn(0L, upperBound)
+                        pendingGestureSeekPositionMs = targetPosition
+                        seekPlayerFromUserAction(targetPlayer, targetPosition)
+                        danmakuManager.seekTo(targetPosition)
+                        showControls = true
+                        lastInteractionTime = System.currentTimeMillis()
+                        true
+                    }
+                    FullscreenKeyboardAction.CloseTopLayer -> {
+                        closeTopLayerOrExit()
+                        true
+                    }
+                    FullscreenKeyboardAction.None -> false
+                }
+            }
+            .focusable()
+            .semantics {
+                contentDescription = "全屏视频播放器"
+                stateDescription = if (isPlaying) "正在播放" else "已暂停"
+            }
+            .onPointerEvent(PointerEventType.Press) { event ->
+                if (event.buttons.isSecondaryPressed) {
+                    val position = event.changes.firstOrNull()?.position ?: return@onPointerEvent
+                    contextMenuOffset = with(density) {
+                        DpOffset(position.x.toDp(), position.y.toDp())
+                    }
+                    showContextMenu = true
+                    event.changes.forEach { it.consume() }
+                }
+            }
             .pointerInput(
                 gesturesEnabled,
                 doubleTapSeekEnabled,
@@ -746,6 +870,51 @@ fun FullscreenPlayerOverlay(
                 )
             }
     ) {
+        AppDropdownMenu(
+            expanded = showContextMenu,
+            onDismissRequest = { showContextMenu = false },
+            offset = contextMenuOffset,
+        ) {
+            AppDropdownMenuItem(
+                text = { AppText(if (isPlaying) "暂停" else "播放") },
+                onClick = {
+                    showContextMenu = false
+                    player?.let(::togglePlayerPlaybackFromUserAction)
+                },
+            )
+            AppDropdownMenuItem(
+                text = { AppText("快退 ${seekBackwardSeconds} 秒") },
+                onClick = {
+                    showContextMenu = false
+                    player?.let { targetPlayer ->
+                        val target = (targetPlayer.currentPosition - seekBackwardSeconds * 1_000L)
+                            .coerceAtLeast(0L)
+                        seekPlayerFromUserAction(targetPlayer, target)
+                        danmakuManager.seekTo(target)
+                    }
+                },
+            )
+            AppDropdownMenuItem(
+                text = { AppText("快进 ${seekForwardSeconds} 秒") },
+                onClick = {
+                    showContextMenu = false
+                    player?.let { targetPlayer ->
+                        val durationLimit = targetPlayer.duration.takeIf { it > 0L } ?: Long.MAX_VALUE
+                        val target = (targetPlayer.currentPosition + seekForwardSeconds * 1_000L)
+                            .coerceAtMost(durationLimit)
+                        seekPlayerFromUserAction(targetPlayer, target)
+                        danmakuManager.seekTo(target)
+                    }
+                },
+            )
+            AppDropdownMenuItem(
+                text = { AppText("退出全屏") },
+                onClick = {
+                    showContextMenu = false
+                    onNavigateToDetail()
+                },
+            )
+        }
         val danmakuScope = com.android.purebilibili.core.store.DanmakuSettingsScope.LANDSCAPE
         val danmakuSettings by SettingsManager
             .getDanmakuSettings(context, danmakuScope)
