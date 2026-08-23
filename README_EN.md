@@ -50,6 +50,7 @@
   <img src="docs/images/screenshot6.png" alt="Preview 6" height="500">
   <img src="docs/images/screenshot7.png" alt="Preview 7" height="500">
   <img src="docs/images/screenshot8.png" alt="Preview 8" height="500">
+  <img src="docs/images/screenshot9.png" alt="Preview 9" height="500">
 </p>
 ---
 
