@@ -3094,16 +3094,22 @@ private fun BiliPaiFloatingBottomBar(
                 searchExpanded = effectiveSearchExpanded,
                 searchLayoutMode = bottomBarSearchLayoutMode
             )
-            val dockContentAlpha by animateFloatAsState(
+            val animatedDockContentAlpha by animateFloatAsState(
                 targetValue = if (compactSearchLayout && effectiveSearchExpanded) 0f else 1f,
                 animationSpec = bottomBarContentVisibilityMotionSpec(),
                 label = "bottomBarDockContentAlpha"
             )
-            val compactHomeAlpha by animateFloatAsState(
+            val animatedCompactHomeAlpha by animateFloatAsState(
                 targetValue = if (compactSearchLayout && effectiveSearchExpanded) 1f else 0f,
                 animationSpec = bottomBarContentVisibilityMotionSpec(),
                 label = "bottomBarCompactHomeAlpha"
             )
+            // 非玻璃路径没有独立的采样/导出层遮蔽交叉淡化；两套推荐内容同时存在时，
+            // 大号首页图标会直接压到原 Dock 的“推荐”文字上。关闭玻璃时改为原子切换。
+            val useImmediatePlainHomeSwap = !effectiveGlassEnabled &&
+                compactSearchLayout && effectiveSearchExpanded
+            val dockContentAlpha = if (useImmediatePlainHomeSwap) 0f else animatedDockContentAlpha
+            val compactHomeAlpha = if (useImmediatePlainHomeSwap) 1f else animatedCompactHomeAlpha
             val shouldComposeDockContent = shouldComposeBottomBarDockContent(
                 dockContentAlpha = dockContentAlpha,
                 effectiveSearchExpanded = effectiveSearchExpanded

@@ -691,9 +691,18 @@ fun CommonListScreen(
             }
         }
     }
+    val isCommonListScrollInProgress by remember(activeCommonListScrollState) {
+        derivedStateOf {
+            when (val scrollState = activeCommonListScrollState()) {
+                is CommonListScrollState.Grid -> scrollState.state.isScrollInProgress
+                is CommonListScrollState.List -> scrollState.state.isScrollInProgress
+            }
+        }
+    }
     LaunchedEffect(
         commonListHeaderCollapseMode,
         isCommonListAtTop,
+        isCommonListScrollInProgress,
         headerHeightPx,
         supportsCollapsibleCommonListHeader,
         favoriteContentMode,
@@ -705,7 +714,7 @@ fun CommonListScreen(
         if (
             !supportsCollapsibleCommonListHeader ||
             commonListHeaderCollapseMode == CommonListHeaderCollapseMode.ALWAYS_VISIBLE ||
-            isCommonListAtTop
+            (isCommonListAtTop && !isCommonListScrollInProgress)
         ) {
             animateCommonListHeaderOffsetTo(0f)
         }

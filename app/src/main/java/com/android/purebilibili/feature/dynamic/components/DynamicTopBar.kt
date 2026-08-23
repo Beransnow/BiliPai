@@ -106,6 +106,7 @@ fun DynamicTopBarWithTabs(
     val homeSettings by SettingsManager
         .getHomeSettings(context)
         .collectAsStateWithLifecycle(initialValue = HomeSettings())
+    val liquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled
     val liquidGlassTuning = remember(
         homeSettings.liquidGlassProgress,
         homeSettings.liquidGlassAdvancedSettings,
@@ -144,8 +145,8 @@ fun DynamicTopBarWithTabs(
                 labelFontSize = liquidTabSpec.labelFontSizeSp.sp,
                 indicatorPositionProvider = indicatorPositionProvider,
                 isScrollInProgressProvider = { false },
-                forceLiquidChrome = true,
-                liquidGlassEffectsEnabled = true,
+                forceLiquidChrome = liquidGlassEnabled,
+                liquidGlassEffectsEnabled = liquidGlassEnabled,
                 miuixBackdrop = dockBackdrop,
                 containerColorOverride = dockColor,
                 liquidGlassTuningOverride = liquidGlassTuning,
@@ -165,12 +166,18 @@ fun DynamicTopBarWithTabs(
                 }
                 Row(
                     modifier = Modifier
-                        .biliPaiFloatingDockShell(
-                            backdrop = actionDockBackdrop,
-                            containerColor = dockColor,
-                            pressProgress = 0f,
-                            shape = dockShape,
-                            liquidGlassTuning = liquidGlassTuning,
+                        .then(
+                            if (liquidGlassEnabled) {
+                                Modifier.biliPaiFloatingDockShell(
+                                    backdrop = actionDockBackdrop,
+                                    containerColor = dockColor,
+                                    pressProgress = 0f,
+                                    shape = dockShape,
+                                    liquidGlassTuning = liquidGlassTuning,
+                                )
+                            } else {
+                                Modifier.background(dockColor, dockShape)
+                            }
                         )
                         .clip(dockShape),
                     verticalAlignment = Alignment.CenterVertically,
