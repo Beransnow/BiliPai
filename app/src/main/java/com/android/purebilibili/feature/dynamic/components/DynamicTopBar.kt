@@ -139,7 +139,17 @@ fun DynamicTopBarWithTabs(
                 items = tabs,
                 selectedIndex = selectedTab,
                 onSelected = onTabSelected,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .then(
+                        if (liquidGlassEnabled) {
+                            Modifier
+                        } else {
+                            Modifier
+                                .clip(dockShape)
+                                .background(dockColor)
+                        }
+                    ),
                 height = liquidTabSpec.heightDp.dp,
                 indicatorHeight = liquidTabSpec.indicatorHeightDp.dp,
                 labelFontSize = liquidTabSpec.labelFontSizeSp.sp,

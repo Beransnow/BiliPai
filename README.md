@@ -14,7 +14,7 @@
 </p>
 
 <p>
-  <img src="https://img.shields.io/badge/Release-0.2.3--beta.10-007AFF?style=flat-square&labelColor=ffffff" alt="Release 0.2.3-beta.10" />
+  <img src="https://img.shields.io/badge/Release-0.2.3--beta.11-007AFF?style=flat-square&labelColor=ffffff" alt="Release 0.2.3-beta.11" />
   <img src="https://img.shields.io/badge/Android-8.0%2B-34C759?style=flat-square&logo=android&logoColor=white" alt="Android 8.0+" />
   <img src="https://img.shields.io/badge/Kotlin-100%25-7F52FF?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin" />
   <img src="https://img.shields.io/badge/License-Non--Commercial-FF3B30?style=flat-square" alt="Non-Commercial License" />
@@ -175,7 +175,7 @@ cd BiliPai
 ./gradlew :app:assembleDev
 ```
 
-完成后可安装交付包位于 `app/build/outputs/bilipai/dev/BiliPai-0.2.3-beta.10-dev.apk`。正式发布构建对应输出 `app/build/outputs/bilipai/release/BiliPai-0.2.3-beta.10.apk`；AGP 内部的 `app-*.apk` 不作为交付文件。
+完成后可安装交付包位于 `app/build/outputs/bilipai/dev/BiliPai-0.2.3-beta.11-dev.apk`。正式发布构建对应输出 `app/build/outputs/bilipai/release/BiliPai-0.2.3-beta.11.apk`；AGP 内部的 `app-*.apk` 不作为交付文件。
 
 `google-services.json` 是可选项：放入 `app/` 后启用 Firebase Crashlytics / Analytics；缺失时构建脚本会跳过相关能力。
 
@@ -196,13 +196,14 @@ cd BiliPai
 
 ## 最近更新
 
-当前构建为 `0.2.3-beta.10 / versionCode 300`；最新完整发布记录为 `v0.2.3-beta.10`。源码与变更以 GitHub 和 [CHANGELOG.md](CHANGELOG.md) 为准；安装包与公告见 [Telegram 频道](https://t.me/bilipai666) / [交流群](https://t.me/bilipai888/1)：
+当前构建为 `0.2.3-beta.11 / versionCode 301`；最新完整发布记录为 `v0.2.3-beta.11`。源码与变更以 GitHub 和 [CHANGELOG.md](CHANGELOG.md) 为准；安装包与公告见 [Telegram 频道](https://t.me/bilipai666) / [交流群](https://t.me/bilipai888/1)：
 
-- 恢复短信、密码登录，并完善验证码、风险验证、设备身份和登录态保持。
-- 夜间护眼改为渐进暖色遮罩，插件启用或生效时增加应用内状态提示。
-- 液态分段控件与搜索标签统一为紧凑 Dock，首页顶部液态指示器和搜索状态恢复进一步优化。
-- 竖屏视频新增拖动缩略图预览，并修复播放上下文、弹幕时序、动态评论输入栏和「今日看点」折叠返回问题。
-- 完整 beta.9 → beta.10 说明见 [CHANGELOG.md](CHANGELOG.md)。
+- 完成归档主题皮肤适配，顶部装饰可延伸到标题区和状态栏，并兼容旧版频道图标与原生标签图标。
+- 新增发评反诈历史中心，支持重新检测、删除和 JSON 导入导出，同时修正评论分页与子回复检测算法。
+- 更换系统壁纸后会及时刷新 Monet 配色；液态玻璃预览新增他人设置导入，并完成全局设置文案优化。
+- 关闭液态玻璃后，共用分段控件统一使用 Material 3 下划线，动态顶部栏保留纯色 Dock；历史页折叠顶栏同步修正。
+- 修复播放器退出后的窗口亮度恢复，并减少收藏歌单的重复请求。
+- 完整 beta.10 → beta.11 说明见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 路线图
 

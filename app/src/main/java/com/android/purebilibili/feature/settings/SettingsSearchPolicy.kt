@@ -495,7 +495,7 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
     SettingsSearchEntry(
         target = SettingsSearchTarget.APPEARANCE,
         title = "安卓原生液态玻璃",
-        subtitle = "仅首页底栏与评论区底栏",
+        subtitle = "统一应用到首页顶部标签栏、搜索框、底部导航栏和评论区底栏",
         section = "外观设置",
         aliases = listOf("全局液态玻璃", "评论区液态玻璃", "Android Native 液态玻璃"),
         focusId = SettingsSearchFocusIds.APPEARANCE_THEME
