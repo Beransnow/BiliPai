@@ -56,7 +56,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -150,8 +149,7 @@ import com.android.purebilibili.feature.article.ArticleSharedElementSlot
 import com.android.purebilibili.feature.article.resolveHistoryArticleCoverAspectRatio
 import com.android.purebilibili.feature.article.resolveArticleSharedTransitionKey
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
-import com.android.purebilibili.feature.home.components.BottomBarMatchedLiquidDock
-import com.android.purebilibili.feature.home.components.resolveBiliPaiBottomBarShellColor
+import com.android.purebilibili.feature.home.components.BottomBarMatchedReusableLiquidDock
 import com.android.purebilibili.feature.home.components.resolveLiquidGlassTuning
 import com.android.purebilibili.feature.space.SeasonSeriesDetailViewModel
 import com.android.purebilibili.feature.video.player.ExternalPlaylistSource
@@ -807,12 +805,6 @@ fun CommonListScreen(
             readabilityMode = homeSettings.liquidGlassReadabilityMode,
         )
     }
-    val historyLiquidDockContainerColor = resolveBiliPaiBottomBarShellColor(
-        containerColor = AppSurfaceTokens.cardContainer(),
-        liquidGlassEnabled = historyUsesFloatingLiquidDocks,
-        darkTheme = isSystemInDarkTheme(),
-        liquidGlassTuning = historyLiquidGlassTuning,
-    )
     val blurIntensity = currentUnifiedBlurIntensity()
     val backgroundAlpha = BlurStyles.getBackgroundAlpha(blurIntensity)
     val headerBackgroundAlpha = if (favoriteViewModel != null) {
@@ -1581,22 +1573,18 @@ fun CommonListScreen(
                             )
                         }
                         if (historyViewModel != null && historyFilterChrome.useLiquidDock) {
-                            BottomBarMatchedLiquidDock(
+                            BottomBarMatchedReusableLiquidDock(
                                 backdrop = commonListChromeBackdrop,
-                                containerColor = historyLiquidDockContainerColor,
                                 shape = CircleShape,
-                                blurEnabled = true,
-                                glassEnabled = true,
-                                blurRadius = historyLiquidGlassTuning.backdropBlurRadius.dp,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(historyFilterChrome.heightDp.dp),
+                                reuseEnabled = true,
+                                drawShellLens = false,
                                 isScrollInProgressProvider = {
                                     primaryGridState.isScrollInProgress
                                 },
-                                liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
-                                liquidGlassTuning = historyLiquidGlassTuning,
-                            ) {
+                            ) { _ ->
                                 searchField()
                             }
                         } else {
