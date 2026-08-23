@@ -2191,7 +2191,7 @@ fun HomeHeader(
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .matchParentSize()
-                            .alpha(0.30f)
+                            .alpha(0.18f)
                             .clearAndSetSemantics {}
                     )
                     Box(
@@ -2199,10 +2199,10 @@ fun HomeHeader(
                             .matchParentSize()
                             .background(
                                 Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color.Transparent,
-                                        headerChromeColors.containerColor.copy(alpha = 0.52f)
-                                    )
+                                    0.00f to Color.Transparent,
+                                    0.52f to headerChromeColors.containerColor.copy(alpha = 0.38f),
+                                    0.82f to headerChromeColors.containerColor,
+                                    1.00f to headerChromeColors.containerColor,
                                 )
                             )
                             .clearAndSetSemantics {}
