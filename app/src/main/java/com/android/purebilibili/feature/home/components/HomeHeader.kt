@@ -2191,15 +2191,25 @@ fun HomeHeader(
                     AsyncImage(
                         model = File(topTrimImagePath),
                         contentDescription = null,
-                        contentScale = ContentScale.FillWidth,
-                        alignment = Alignment.TopCenter,
+                        contentScale = ContentScale.Crop,
+                        alignment = Alignment.Center,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1242f / 264f)
-                            .align(Alignment.TopCenter)
+                            .matchParentSize()
                             .graphicsLayer {
-                                alpha = 0.82f
+                                alpha = 0.76f
                             }
+                            .clearAndSetSemantics {}
+                    )
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    0.00f to Color.Transparent,
+                                    0.72f to Color.Transparent,
+                                    1.00f to headerChromeColors.containerColor.copy(alpha = 0.42f),
+                                )
+                            )
                             .clearAndSetSemantics {}
                     )
                 }

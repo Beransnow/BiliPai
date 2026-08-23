@@ -1893,7 +1893,7 @@ class HomeHeaderVisualPolicyTest {
     }
 
     @Test
-    fun `skin head artwork renders as a bounded top trim instead of a full background layer`() {
+    fun `skin head artwork covers the full top controls and fades at the content edge`() {
         val headerSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/HomeHeader.kt")
         val trimSource = headerSource
             .substringAfter("if (!topTrimImagePath.isNullOrBlank())")
@@ -1903,10 +1903,12 @@ class HomeHeaderVisualPolicyTest {
         assertFalse(headerSource.contains("model = File(topAtmosphereImagePath)"))
         assertTrue(headerSource.contains("val topTrimImagePath = uiSkinDecoration?.topAtmosphereImagePath"))
         assertTrue(trimSource.contains("model = File(topTrimImagePath)"))
-        assertTrue(trimSource.contains("contentScale = ContentScale.FillWidth"))
-        assertTrue(trimSource.contains(".aspectRatio(1242f / 264f)"))
-        assertTrue(trimSource.contains("alpha = 0.82f"))
-        assertFalse(trimSource.contains(".matchParentSize()"))
+        assertTrue(trimSource.contains("contentScale = ContentScale.Crop"))
+        assertTrue(trimSource.contains(".matchParentSize()"))
+        assertTrue(trimSource.contains("alpha = 0.76f"))
+        assertTrue(trimSource.contains("0.72f to Color.Transparent"))
+        assertTrue(trimSource.contains("headerChromeColors.containerColor.copy(alpha = 0.42f)"))
+        assertFalse(trimSource.contains("ContentScale.FillBounds"))
     }
 
     @Test
