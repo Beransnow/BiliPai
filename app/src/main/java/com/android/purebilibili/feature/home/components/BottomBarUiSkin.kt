@@ -336,5 +336,18 @@ private fun resolveBottomBarSkinIconPaths(
                 )
             }
         }
+        if (BottomNavItem.LISTEN_VIDEO !in this) {
+            activeSkin.assetFilePath(activeSkin.manifest.assets.homeChannelIcon)?.let { unselectedPath ->
+                put(
+                    BottomNavItem.LISTEN_VIDEO,
+                    BottomBarSkinIconPaths(
+                        unselected = unselectedPath,
+                        selected = activeSkin.assetFilePath(
+                            activeSkin.manifest.assets.homeChannelSelectedIcon
+                        )
+                    )
+                )
+            }
+        }
     }
 }

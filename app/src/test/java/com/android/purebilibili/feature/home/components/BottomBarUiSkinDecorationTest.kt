@@ -214,6 +214,41 @@ class BottomBarUiSkinDecorationTest {
     }
 
     @Test
+    fun legacyChannelFieldsStillPopulateListenVideoWithoutReimport() {
+        val installed = InstalledUiSkinPackage(
+            manifest = UiSkinManifest(
+                formatVersion = 1,
+                skinId = "dev.example.legacy-channel",
+                displayName = "旧版频道图标",
+                version = "1.0.0",
+                apiVersion = 1,
+                surfaces = setOf(UiSkinSurface.HOME_BOTTOM_BAR),
+                assets = UiSkinAssets(
+                    homeChannelIcon = "assets/tail_icon_channel.png",
+                    homeChannelSelectedIcon = "assets/tail_icon_selected_channel.png"
+                )
+            ),
+            packageSha256 = "sha",
+            packagePath = "/tmp/legacy-channel.bpskin",
+            installedAtMillis = 42L,
+            assetFiles = mapOf(
+                "assets/tail_icon_channel.png" to "/tmp/tail_icon_channel.png",
+                "assets/tail_icon_selected_channel.png" to "/tmp/tail_icon_selected_channel.png"
+            )
+        )
+
+        val decoration = resolveBottomBarUiSkinDecoration(
+            UiSkinState(enabled = true, activeSkin = installed)
+        )
+
+        assertEquals("/tmp/tail_icon_channel.png", decoration?.iconPathFor(BottomNavItem.LISTEN_VIDEO))
+        assertEquals(
+            "/tmp/tail_icon_selected_channel.png",
+            decoration?.iconPathFor(BottomNavItem.LISTEN_VIDEO, selected = true)
+        )
+    }
+
+    @Test
     fun selectedBottomSkinIconFallsBackToUnselectedAssetWhenSelectedAssetMissing() {
         val installed = InstalledUiSkinPackage(
             manifest = UiSkinManifest(
