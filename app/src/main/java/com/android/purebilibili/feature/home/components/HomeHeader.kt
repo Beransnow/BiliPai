@@ -1934,8 +1934,11 @@ fun HomeHeader(
             drawUnifiedTopPanelChrome &&
             currentSearchHeight > AppSpacingTokens.None &&
             searchRevealFraction > 0f
-    val useTopTabBottomBarMatchedDock = resolveHomeTopChromeLiquidGlassEnabled(homeSettings)
-    val drawTopTabDockChrome = drawTopTabOuterChromeSurface || useTopTabBottomBarMatchedDock || useDetachedTopTabDock
+    val topTabLiquidGlassEnabled = resolveHomeTopChromeLiquidGlassEnabled(homeSettings)
+    // 顶部分类始终复用底栏 dock 壳层；关闭液态玻璃时由同一表面降级为实色/轻 tint，
+    // 避免标签直接叠在首页头图上而失去可读性。
+    val useTopTabBottomBarMatchedDock = true
+    val drawTopTabDockChrome = drawTopTabOuterChromeSurface || useDetachedTopTabDock
     val topTabLabelMode = homeSettings?.topTabLabelMode
         ?: com.android.purebilibili.core.store.SettingsManager.TopTabLabelMode.TEXT_ONLY
     // Floating dock shell + tabs share one wrap decision so glass length matches content.
@@ -2031,7 +2034,7 @@ fun HomeHeader(
             onTabsCollapsedChange = onTopTabsCollapsedChange,
             drawChromeSurface = drawTopTabDockChrome,
             useBottomBarMatchedSurface = useTopTabBottomBarMatchedDock,
-            drawMatchedShellLens = useTopTabBottomBarMatchedDock,
+            drawMatchedShellLens = topTabLiquidGlassEnabled,
             matchedShellLensIntensity = resolveFloatingDockGeometryScale(
                 currentTabHeight.value
             ),
