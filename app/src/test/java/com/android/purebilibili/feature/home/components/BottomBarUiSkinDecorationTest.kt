@@ -35,9 +35,9 @@ class BottomBarUiSkinDecorationTest {
 
     @Test
     fun bottomSkinIconSizesMatchScreenshotLevelCharacterAssets() {
-        assertEquals(40.dp, resolveBottomBarSkinDockIconSize())
-        assertEquals(38.dp, resolveBottomBarMiuixSkinDockIconSize())
-        assertEquals(40.dp, resolveBottomBarCompactSkinHomeIconSize())
+        assertEquals(32.dp, resolveBottomBarSkinDockIconSize())
+        assertEquals(32.dp, resolveBottomBarMiuixSkinDockIconSize())
+        assertEquals(32.dp, resolveBottomBarCompactSkinHomeIconSize())
     }
 
     @Test
@@ -59,21 +59,21 @@ class BottomBarUiSkinDecorationTest {
     }
 
     @Test
-    fun bottomSkinDockLayoutKeepsLargeIconsAndLabelVisible() {
+    fun bottomSkinDockLayoutKeepsHostGeometryAndLabelVisible() {
         val padding = resolveBottomBarSkinDockContentPadding()
 
-        assertEquals(88.dp, resolveBottomBarSkinDockHeight())
+        assertEquals(64.dp, resolveBottomBarSkinDockHeight())
         assertEquals(64.dp, resolveMiuixDockedBottomBarItemHeight(hasUiSkinDecoration = false))
         assertEquals(
             resolveBottomBarSkinDockHeight(),
             resolveMiuixDockedBottomBarItemHeight(hasUiSkinDecoration = true)
         )
-        assertEquals(40.dp, resolveBottomBarSkinDockIconSize())
+        assertEquals(32.dp, resolveBottomBarSkinDockIconSize())
         assertEquals(0.dp, padding.calculateTopPadding())
         assertEquals(0.dp, padding.calculateBottomPadding())
         assertEquals(2.dp, resolveBottomBarSkinIconLabelGap())
-        assertEquals(10.dp, resolveBottomBarSkinDockIconTopPadding())
-        assertEquals(18.dp, resolveBottomBarSkinDockLabelBottomPadding())
+        assertEquals(4.dp, resolveBottomBarSkinDockIconTopPadding())
+        assertEquals(4.dp, resolveBottomBarSkinDockLabelBottomPadding())
         assertEquals(12.sp, resolveBottomBarSkinDockLabelFontSize())
         assertEquals(18.sp, resolveBottomBarSkinDockLabelLineHeight())
     }

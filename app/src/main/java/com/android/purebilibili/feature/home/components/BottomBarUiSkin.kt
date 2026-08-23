@@ -90,9 +90,9 @@ data class HomeUiSkinDecoration(
     }
 }
 
-internal fun resolveBottomBarSkinDockIconSize(): Dp = AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Small
+internal fun resolveBottomBarSkinDockIconSize(): Dp = AppSpacingTokens.DoubleExtraLarge
 
-internal fun resolveBottomBarSkinDockHeight(): Dp = AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Small
+internal fun resolveBottomBarSkinDockHeight(): Dp = AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Large
 
 internal fun resolveBottomBarSkinDockContentPadding(): PaddingValues = PaddingValues(
     start = AppSpacingTokens.ExtraSmall,
@@ -103,13 +103,13 @@ internal fun resolveBottomBarSkinDockContentPadding(): PaddingValues = PaddingVa
 
 internal fun resolveBottomBarSkinIconLabelGap(): Dp = AppSpacingTokens.Micro
 
-internal fun resolveBottomBarSkinDockIconTopPadding(): Dp = AppSpacingTokens.Small + AppSpacingTokens.Micro
+internal fun resolveBottomBarSkinDockIconTopPadding(): Dp = AppSpacingTokens.ExtraSmall
 
-internal fun resolveBottomBarSkinDockLabelBottomPadding(): Dp = AppSpacingTokens.Large + AppSpacingTokens.Micro
+internal fun resolveBottomBarSkinDockLabelBottomPadding(): Dp = AppSpacingTokens.ExtraSmall
 
-internal fun resolveBottomBarMiuixSkinDockIconSize(): Dp = AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro
+internal fun resolveBottomBarMiuixSkinDockIconSize(): Dp = AppSpacingTokens.DoubleExtraLarge
 
-internal fun resolveBottomBarCompactSkinHomeIconSize(): Dp = AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Small
+internal fun resolveBottomBarCompactSkinHomeIconSize(): Dp = AppSpacingTokens.DoubleExtraLarge
 
 internal fun resolveMiuixDockedBottomBarItemHeight(hasUiSkinDecoration: Boolean): Dp {
     return if (hasUiSkinDecoration) {
@@ -215,7 +215,7 @@ internal fun BottomBarSkinIcon(
  * 图标尺寸兼容策略：B 站装扮图标原图尺寸差异大（留白/装饰边/非正方形）。
  * 纯函数 [resolveSkinIconScalePolicy] 按原图宽高比决定缩放方式，便于单元测试。
  * 规则：正方形或近正方形 → Fit 居中；宽高比失衡（留白多）→ Crop 居中兜底，
- * 避免图标在 40dp 框内显得过小。
+ * 避免图标在 32dp 框内显得过小。
  */
 data class SkinIconScalePolicy(
     val contentScale: ContentScale,

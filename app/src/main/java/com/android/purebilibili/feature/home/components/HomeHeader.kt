@@ -2046,7 +2046,8 @@ fun HomeHeader(
             // Floating / matched dock: length follows icon+text × tab count (no full-bleed empty glass).
             wrapDockWidth = wrapTopTabDockWidth,
             dockCategoryCount = topCategories.size,
-            dockLabelMode = topTabLabelMode
+            dockLabelMode = topTabLabelMode,
+            skinBackgroundImagePath = uiSkinDecoration?.topTabBackgroundImagePath,
         ) {
             CategoryTabRow(
                 categories = topCategories,

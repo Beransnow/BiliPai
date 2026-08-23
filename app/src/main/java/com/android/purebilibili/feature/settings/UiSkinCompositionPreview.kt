@@ -109,7 +109,7 @@ fun parsePreviewColor(value: String?, fallback: Color): Color {
  * 让用户在导入前看到「启用后底栏实际长什么样」，而非资源网格。
  *
  * 尺寸复用 [com.android.purebilibili.feature.home.components] 的 token：
- * dock 高 88dp、图标 40dp，与生产底栏一致，确保预览所见即所得。
+ * dock 高 64dp、图标 32dp，与生产底栏一致，确保预览所见即所得。
  */
 @Composable
 fun UiSkinCompositionPreview(
@@ -156,11 +156,11 @@ fun UiSkinCompositionPreview(
     }
 }
 
-/** 迷你 dock 高度，与生产 resolveBottomBarSkinDockHeight() 对齐（48+32+8=88dp）。 */
-fun previewDockHeight(): Dp = AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Small
+/** 迷你 dock 高度，与生产 resolveBottomBarSkinDockHeight() 对齐（48+16=64dp）。 */
+fun previewDockHeight(): Dp = AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Large
 
-/** 迷你 dock 图标尺寸，与生产 resolveBottomBarSkinDockIconSize() 对齐（32+8=40dp）。 */
-fun previewDockIconSize(): Dp = AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Small
+/** 迷你 dock 图标尺寸，与生产 resolveBottomBarSkinDockIconSize() 对齐（32dp）。 */
+fun previewDockIconSize(): Dp = AppSpacingTokens.DoubleExtraLarge
 
 @Composable
 private fun PreviewTopAtmosphere(

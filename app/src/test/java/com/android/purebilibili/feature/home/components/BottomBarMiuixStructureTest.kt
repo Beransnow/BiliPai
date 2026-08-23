@@ -205,6 +205,7 @@ class BottomBarMiuixStructureTest {
         val navigationSource = loadSource("app/src/main/java/com/android/purebilibili/navigation/AppNavigation.kt")
         val sidebarSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/SideBar.kt")
         val headerSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/HomeHeader.kt")
+        val topTabChromeSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/HomeTopTabChrome.kt")
 
         val sideBarCallSource = navigationSource
             .substringAfter("FrostedSideBar(")
@@ -218,8 +219,8 @@ class BottomBarMiuixStructureTest {
         assertTrue(sideBarBodySource.contains("BottomBarSkinIcon("))
         assertTrue(headerSource.contains("val topAtmosphereImagePath = uiSkinDecoration?.topAtmosphereImagePath"))
         assertTrue(headerSource.contains("model = File(topAtmosphereImagePath)"))
-        assertFalse(headerSource.contains("val topTabBackgroundImagePath = uiSkinDecoration?.topTabBackgroundImagePath"))
-        assertFalse(headerSource.contains("model = File(topTabBackgroundImagePath)"))
+        assertTrue(headerSource.contains("skinBackgroundImagePath = uiSkinDecoration?.topTabBackgroundImagePath"))
+        assertTrue(topTabChromeSource.contains("model = File(skinBackgroundImagePath)"))
         assertTrue(headerSource.contains("ContentScale.Crop"))
     }
 

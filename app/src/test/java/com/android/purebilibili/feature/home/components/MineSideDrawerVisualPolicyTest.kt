@@ -27,6 +27,19 @@ class MineSideDrawerVisualPolicyTest {
     }
 
     @Test
+    fun `drawer renders the dedicated skin side background`() {
+        val drawerSource = File(
+            "src/main/java/com/android/purebilibili/feature/home/components/MineSideDrawer.kt"
+        ).readText()
+        val homeSource = File("src/main/java/com/android/purebilibili/feature/home/HomeScreen.kt")
+            .readText()
+
+        assertTrue(drawerSource.contains("skinBackgroundImagePath: String? = null"))
+        assertTrue(drawerSource.contains("model = File(requireNotNull(skinBackgroundImagePath))"))
+        assertTrue(homeSource.contains("skinBackgroundImagePath = homeUiSkinDecoration?.sideBackgroundImagePath"))
+    }
+
+    @Test
     fun `blur-enabled drawer should keep translucent glass surface`() {
         val light = resolveDrawerGlassPalette(isDark = false, blurEnabled = true)
         val dark = resolveDrawerGlassPalette(isDark = true, blurEnabled = true)

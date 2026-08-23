@@ -42,10 +42,9 @@ class UiSkinCompositionPreviewPolicyTest {
 
     @Test
     fun dockDimensionsMatchProductionTokens() {
-        // 32 + 8 = 40dp，与 resolveBottomBarSkinDockIconSize() 对齐
-        assertEquals(40.dp, previewDockIconSize())
-        // 48 + 32 + 8 = 88dp，与 resolveBottomBarSkinDockHeight() 对齐
-        assertEquals(88.dp, previewDockHeight())
+        assertEquals(32.dp, previewDockIconSize())
+        // 48 + 16 = 64dp，与 resolveBottomBarSkinDockHeight() 对齐
+        assertEquals(64.dp, previewDockHeight())
     }
 
     @Test

@@ -1881,16 +1881,18 @@ class HomeHeaderVisualPolicyTest {
     }
 
     @Test
-    fun `home header skin top tabs keep host readability and only pass sticker icons`() {
+    fun `home header skin top tabs keep host readability and use dedicated strip background`() {
         val headerSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/HomeHeader.kt")
         val topBarSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/TopBar.kt")
+        val chromeSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/HomeTopTabChrome.kt")
 
         assertTrue(headerSource.contains("val shouldUseSkinPlainTopTabs = shouldUseHomeSkinPlainTopTabs(uiSkinDecoration)"))
         assertTrue(headerSource.contains("skinPlainStyle = shouldUseSkinPlainTopTabs"))
         assertTrue(headerSource.contains("topTabSkinIconPaths = uiSkinDecoration?.topTabSkinIconPaths.orEmpty()"))
         assertTrue(headerSource.contains("partitionSkinIconPath = uiSkinDecoration?.topTabPartitionIconPath()"))
-        assertFalse(headerSource.contains("val topTabBackgroundImagePath = uiSkinDecoration?.topTabBackgroundImagePath"))
-        assertFalse(headerSource.contains("model = File(topTabBackgroundImagePath)"))
+        assertTrue(headerSource.contains("skinBackgroundImagePath = uiSkinDecoration?.topTabBackgroundImagePath"))
+        assertTrue(chromeSource.contains("model = File(skinBackgroundImagePath)"))
+        assertTrue(chromeSource.contains("contentScale = ContentScale.FillBounds"))
         assertFalse(headerSource.contains("val tabRowHeightDp = if (shouldUseSkinPlainTopTabs)"))
         assertTrue(topBarSource.contains("val effectivePresentation = if (skinPlainStyle || forceMaterialUnderline)"))
     }

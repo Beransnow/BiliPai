@@ -349,7 +349,7 @@ private fun SkinCatalogPreviewDialog(
                 } else if (previewData != null) {
                     UiSkinCompositionPreview(data = previewData)
                     AppText(
-                        text = "预览按真实底栏尺寸渲染（dock 高 88dp、图标 40dp），含液态玻璃叠加。",
+                        text = "预览按真实底栏尺寸渲染（dock 高 64dp、图标 32dp），含液态玻璃叠加。",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

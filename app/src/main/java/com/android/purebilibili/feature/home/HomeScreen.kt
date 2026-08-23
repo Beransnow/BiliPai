@@ -2027,7 +2027,6 @@ fun HomeScreen(
                                      popularSubCategory = selectedPopularSubCategory,
                                      onPopularSubCategoryChange = onPopularSubCategoryChange,
                                      onTodayWatchVideoClick = onTodayWatchVideoClick,
-                                     uiSkinDecoration = homeUiSkinDecoration,
                                      firstGridItemModifier = Modifier
                                  )
                                  }
@@ -2433,6 +2432,7 @@ fun HomeScreen(
                         miuixBackdrop = homeMiuixBackdrop,
                         liquidGlassEnabled = isLiquidGlassEnabled,
                         liquidGlassTuning = homeLiquidGlassTuning,
+                        skinBackgroundImagePath = homeUiSkinDecoration?.sideBackgroundImagePath,
                     )
                 }
             ) {
