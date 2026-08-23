@@ -717,30 +717,41 @@ fun CommonListScreen(
         isSubscribedBrowse,
         favoriteContentMode,
         pagerState.settledPage,
-        favoritePagerGridStates.size
+        favoritePagerGridStates.size,
+        activeCommonListScrollState,
     ) {
-        val (firstVisibleItemIndex, firstVisibleItemScrollOffset) =
+        snapshotFlow {
             when (val scrollState = activeCommonListScrollState()) {
-                is CommonListScrollState.Grid -> Pair(
+                is CommonListScrollState.Grid -> Triple(
                     scrollState.state.firstVisibleItemIndex,
-                    scrollState.state.firstVisibleItemScrollOffset
+                    scrollState.state.firstVisibleItemScrollOffset,
+                    scrollState.state.isScrollInProgress,
                 )
-                is CommonListScrollState.List -> Pair(
+                is CommonListScrollState.List -> Triple(
                     scrollState.state.firstVisibleItemIndex,
-                    scrollState.state.firstVisibleItemScrollOffset
+                    scrollState.state.firstVisibleItemScrollOffset,
+                    scrollState.state.isScrollInProgress,
                 )
             }
-        val targetOffsetPx = resolveCommonListHeaderOffsetForSettledContent(
-            firstVisibleItemIndex = firstVisibleItemIndex,
-            firstVisibleItemScrollOffset = firstVisibleItemScrollOffset,
-            maxCollapsePx = commonListHeaderMaxCollapsePx,
-            mode = if (supportsCollapsibleCommonListHeader) {
-                commonListHeaderCollapseMode
-            } else {
-                CommonListHeaderCollapseMode.ALWAYS_VISIBLE
+        }
+            .distinctUntilChanged()
+            .collect { (firstVisibleItemIndex, firstVisibleItemScrollOffset, isScrollInProgress) ->
+                // 手势期间由 nestedScroll 保持跟手；停止后以 Lazy 列表的真实位置校正，
+                // 避免部分 Scaffold 实现未把 pre-scroll 继续传给外层时顶栏永久停在展开态。
+                if (!isScrollInProgress) {
+                    val targetOffsetPx = resolveCommonListHeaderOffsetForSettledContent(
+                        firstVisibleItemIndex = firstVisibleItemIndex,
+                        firstVisibleItemScrollOffset = firstVisibleItemScrollOffset,
+                        maxCollapsePx = commonListHeaderMaxCollapsePx,
+                        mode = if (supportsCollapsibleCommonListHeader) {
+                            commonListHeaderCollapseMode
+                        } else {
+                            CommonListHeaderCollapseMode.ALWAYS_VISIBLE
+                        }
+                    )
+                    animateCommonListHeaderOffsetTo(targetOffsetPx)
+                }
             }
-        )
-        animateCommonListHeaderOffsetTo(targetOffsetPx)
     }
     val commonListHeaderScrollConnection = remember(
         commonListHeaderCollapseMode,
