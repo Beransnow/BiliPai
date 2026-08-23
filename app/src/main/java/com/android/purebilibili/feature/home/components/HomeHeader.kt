@@ -152,18 +152,6 @@ internal fun resolveHomeSkinTopTabContentColor(
 internal fun resolveHomeSkinTopTabUnselectedContentColor(contentColor: Color): Color =
     contentColor.copy(alpha = if (contentColor.luminance() > 0.5f) 0.84f else 0.78f)
 
-internal fun shouldUseHomeSkinPlainTopTabs(uiSkinDecoration: HomeUiSkinDecoration?): Boolean =
-    !uiSkinDecoration?.topTabBackgroundImagePath.isNullOrBlank()
-
-internal fun resolveHomeSkinTopTabLabelMode(
-    requestedLabelMode: Int,
-    uiSkinDecoration: HomeUiSkinDecoration?,
-): Int = if (shouldUseHomeSkinPlainTopTabs(uiSkinDecoration)) {
-    com.android.purebilibili.core.store.SettingsManager.TopTabLabelMode.ICON_AND_TEXT
-} else {
-    requestedLabelMode
-}
-
 internal fun resolveHomeSkinTopTabIndicatorColor(contentColor: Color): Color =
     contentColor.copy(alpha = maxOf(contentColor.alpha, 0.92f))
 
@@ -1427,7 +1415,6 @@ fun HomeHeader(
     val contentCardSurfaceSpec = rememberContentCardSurfaceSpec()
     val usesNativeContainerTreatment = semanticVisualPolicy.prefersNativeChrome
     val usesTonalContainerTreatment = contentCardSurfaceSpec.usesTonalContainerTreatment
-    val shouldUseSkinPlainTopTabs = shouldUseHomeSkinPlainTopTabs(uiSkinDecoration)
     val haptic = rememberHapticFeedback()
     val density = LocalDensity.current
     val resolvedHeaderBlurMode = homeSettings?.headerBlurMode ?: HomeHeaderBlurMode.FOLLOW_PRESET
@@ -1934,9 +1921,6 @@ fun HomeHeader(
     } else {
         tabSurfaceColor.copy(alpha = tabOverlayAlpha)
     }
-    val skinTintedTabSurfaceColor = uiSkinDecoration?.topAtmosphereTint?.copy(
-        alpha = effectiveTabSurfaceColor.alpha.coerceAtLeast(0.36f)
-    ) ?: effectiveTabSurfaceColor
     val renderUnifiedTopPanelChrome = embedTopTabsInUnifiedPanel && shouldRenderHomeTopUnifiedPanelChrome(
         searchHeightDp = currentSearchHeight.value,
         tabHeightDp = currentTabHeight.value,
@@ -1952,12 +1936,11 @@ fun HomeHeader(
             searchRevealFraction > 0f
     val useTopTabBottomBarMatchedDock = resolveHomeTopChromeLiquidGlassEnabled(homeSettings)
     val drawTopTabDockChrome = drawTopTabOuterChromeSurface || useTopTabBottomBarMatchedDock || useDetachedTopTabDock
-    val drawEffectiveTopTabDockChrome = drawTopTabDockChrome && !shouldUseSkinPlainTopTabs
     val topTabLabelMode = homeSettings?.topTabLabelMode
         ?: com.android.purebilibili.core.store.SettingsManager.TopTabLabelMode.TEXT_ONLY
     // Floating dock shell + tabs share one wrap decision so glass length matches content.
     val wrapTopTabDockFloatingStyle = if (embedTopTabsInUnifiedPanel) false else isTabFloating
-    val wrapTopTabDockHasOuterChrome = drawEffectiveTopTabDockChrome && !embedTopTabsInUnifiedPanel
+    val wrapTopTabDockHasOuterChrome = drawTopTabDockChrome && !embedTopTabsInUnifiedPanel
     val wrapTopTabDockWidth = shouldWrapTopTabDockWidth(
         isFloatingStyle = wrapTopTabDockFloatingStyle,
         hasOuterChromeSurface = wrapTopTabDockHasOuterChrome,
@@ -2015,7 +1998,7 @@ fun HomeHeader(
             } else {
                 effectiveTabChromeRenderMode
             },
-            tabSurfaceColor = skinTintedTabSurfaceColor,
+            tabSurfaceColor = effectiveTabSurfaceColor,
             hazeState = hazeState,
             miuixBackdrop = miuixBackdrop,
             liquidStyle = liquidStyle,
@@ -2047,9 +2030,9 @@ fun HomeHeader(
                 !isTopTabsAutoCollapseEnabled,
             isTabsCollapsed = topTabsCollapsed,
             onTabsCollapsedChange = onTopTabsCollapsedChange,
-            drawChromeSurface = drawEffectiveTopTabDockChrome,
-            useBottomBarMatchedSurface = useTopTabBottomBarMatchedDock && !shouldUseSkinPlainTopTabs,
-            drawMatchedShellLens = useTopTabBottomBarMatchedDock && !shouldUseSkinPlainTopTabs,
+            drawChromeSurface = drawTopTabDockChrome,
+            useBottomBarMatchedSurface = useTopTabBottomBarMatchedDock,
+            drawMatchedShellLens = useTopTabBottomBarMatchedDock,
             matchedShellLensIntensity = resolveFloatingDockGeometryScale(
                 currentTabHeight.value
             ),
@@ -2057,7 +2040,6 @@ fun HomeHeader(
             wrapDockWidth = wrapTopTabDockWidth,
             dockCategoryCount = topCategories.size,
             dockLabelMode = topTabLabelMode,
-            skinBackgroundImagePath = uiSkinDecoration?.topTabBackgroundImagePath,
         ) {
             CategoryTabRow(
                 categories = topCategories,
@@ -2070,10 +2052,7 @@ fun HomeHeader(
                     if (topTabsVisible) onPartitionClick()
                 },
                 pagerState = pagerState,
-                labelMode = resolveHomeSkinTopTabLabelMode(
-                    requestedLabelMode = topTabLabelMode,
-                    uiSkinDecoration = uiSkinDecoration,
-                ),
+                labelMode = topTabLabelMode,
                 isLiquidGlassEnabled = resolveHomeTopTabIndicatorLiquidGlassEnabled(
                     homeSettings = homeSettings,
                 ),
@@ -2084,7 +2063,7 @@ fun HomeHeader(
                 miuixBackdrop = miuixBackdrop,
                 isFloatingStyle = isTabFloating,
                 edgeToEdge = integratedCollapsedTopBar,
-                hasOuterChromeSurface = drawEffectiveTopTabDockChrome,
+                hasOuterChromeSurface = drawTopTabDockChrome,
                 // Same wrap decision as HomeTopTabChrome so shell length matches tab content.
                 wrapDockWidth = wrapTopTabDockWidth,
                 interactionBudget = interactionBudget,
@@ -2092,16 +2071,6 @@ fun HomeHeader(
                 isTransitionRunning = isTransitionRunning,
                 forceLowBlurBudget = forceLowBlurBudget,
                 isViewportSyncEnabled = isTopTabViewportSyncEnabled,
-                skinPlainStyle = shouldUseSkinPlainTopTabs,
-                skinPlainContentColor = uiSkinDecoration?.let { decoration ->
-                    resolveHomeSkinTopTabContentColor(
-                        topAtmosphereTint = decoration.topAtmosphereTint,
-                        hasTopAtmosphereImage = true,
-                        darkTheme = !isLightMode,
-                    )
-                },
-                topTabSkinIconPaths = uiSkinDecoration?.topTabSkinIconPaths.orEmpty(),
-                partitionSkinIconPath = uiSkinDecoration?.topTabPartitionIconPath(),
                 maxDockWidthDp = maxDockWidth.value,
                 forceMaterialUnderline = false
             )

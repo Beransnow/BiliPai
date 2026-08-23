@@ -2,7 +2,6 @@ package com.android.purebilibili.feature.home.components
 
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
-import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.theme.AndroidNativeVariant
 import com.android.purebilibili.core.theme.UiPreset
 import com.android.purebilibili.core.theme.resolveUiStyle
@@ -774,55 +773,6 @@ class TopTabStylePolicyTest {
                 contentColor
             )
         }
-    }
-
-    @Test
-    fun `dedicated skin tab background uses plain readable tab strategy`() {
-        assertFalse(shouldUseHomeSkinPlainTopTabs(null))
-        assertFalse(
-            shouldUseHomeSkinPlainTopTabs(
-                HomeUiSkinDecoration(
-                    skinId = "test",
-                    topAtmosphereTint = Color(0xFFE4F6FF),
-                    searchCapsuleTint = Color.White
-                )
-            )
-        )
-        assertTrue(
-            shouldUseHomeSkinPlainTopTabs(
-                HomeUiSkinDecoration(
-                    skinId = "test",
-                    topAtmosphereTint = Color(0xFFE4F6FF),
-                    searchCapsuleTint = Color.White,
-                    topTabBackgroundImagePath = "/tmp/head_tab_bg.jpg",
-                )
-            )
-        )
-    }
-
-    @Test
-    fun `dedicated skin tab background enables native semantic icons with labels`() {
-        val decoration = HomeUiSkinDecoration(
-            skinId = "test",
-            topAtmosphereTint = Color(0xFFE4F6FF),
-            searchCapsuleTint = Color.White,
-            topTabBackgroundImagePath = "/tmp/head_tab_bg.jpg",
-        )
-
-        assertEquals(
-            SettingsManager.TopTabLabelMode.ICON_AND_TEXT,
-            resolveHomeSkinTopTabLabelMode(
-                requestedLabelMode = SettingsManager.TopTabLabelMode.TEXT_ONLY,
-                uiSkinDecoration = decoration,
-            )
-        )
-        assertEquals(
-            SettingsManager.TopTabLabelMode.ICON_ONLY,
-            resolveHomeSkinTopTabLabelMode(
-                requestedLabelMode = SettingsManager.TopTabLabelMode.ICON_ONLY,
-                uiSkinDecoration = null,
-            )
-        )
     }
 
     @Test

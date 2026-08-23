@@ -1881,24 +1881,15 @@ class HomeHeaderVisualPolicyTest {
     }
 
     @Test
-    fun `home header skin top tabs keep host readability and use dedicated strip background`() {
+    fun `home header keeps native top tabs when a skin contains archived tab artwork`() {
         val headerSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/HomeHeader.kt")
-        val topBarSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/TopBar.kt")
-        val chromeSource = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/HomeTopTabChrome.kt")
 
-        assertTrue(headerSource.contains("val shouldUseSkinPlainTopTabs = shouldUseHomeSkinPlainTopTabs(uiSkinDecoration)"))
-        assertTrue(headerSource.contains("skinPlainStyle = shouldUseSkinPlainTopTabs"))
-        assertTrue(headerSource.contains("topTabSkinIconPaths = uiSkinDecoration?.topTabSkinIconPaths.orEmpty()"))
-        assertTrue(headerSource.contains("partitionSkinIconPath = uiSkinDecoration?.topTabPartitionIconPath()"))
-        assertTrue(headerSource.contains("skinBackgroundImagePath = uiSkinDecoration?.topTabBackgroundImagePath"))
-        assertTrue(chromeSource.contains("model = File(skinBackgroundImagePath)"))
-        assertTrue(chromeSource.contains("contentScale = ContentScale.FillWidth"))
-        assertTrue(chromeSource.contains(".alpha(0.94f)"))
-        assertTrue(headerSource.contains("drawChromeSurface = drawEffectiveTopTabDockChrome"))
-        assertTrue(headerSource.contains("skinPlainContentColor = uiSkinDecoration?.let"))
-        assertTrue(headerSource.contains("labelMode = resolveHomeSkinTopTabLabelMode("))
-        assertFalse(headerSource.contains("val tabRowHeightDp = if (shouldUseSkinPlainTopTabs)"))
-        assertTrue(topBarSource.contains("val effectivePresentation = if (skinPlainStyle || forceMaterialUnderline)"))
+        assertTrue(headerSource.contains("labelMode = topTabLabelMode"))
+        assertTrue(headerSource.contains("drawChromeSurface = drawTopTabDockChrome"))
+        assertTrue(headerSource.contains("hasOuterChromeSurface = drawTopTabDockChrome"))
+        assertFalse(headerSource.contains("skinBackgroundImagePath = uiSkinDecoration?.topTabBackgroundImagePath"))
+        assertFalse(headerSource.contains("skinPlainStyle = shouldUseSkinPlainTopTabs"))
+        assertFalse(headerSource.contains("topTabSkinIconPaths = uiSkinDecoration?.topTabSkinIconPaths"))
     }
 
     @Test

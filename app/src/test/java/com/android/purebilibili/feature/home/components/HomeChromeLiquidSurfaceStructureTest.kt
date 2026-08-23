@@ -67,7 +67,7 @@ class HomeChromeLiquidSurfaceStructureTest {
         )
         assertTrue(
             "top tab row should only treat chrome as external when the outer surface is actually drawn",
-            topHeaderSource.contains("hasOuterChromeSurface = drawEffectiveTopTabDockChrome")
+            topHeaderSource.contains("hasOuterChromeSurface = drawTopTabDockChrome")
         )
         assertTrue(
             "home header should draw a bottom-bar matched dock around top tabs inside the unified top panel",
@@ -77,10 +77,9 @@ class HomeChromeLiquidSurfaceStructureTest {
                 topHeaderSource.contains("effectiveTabMaterialMode == TopTabMaterialMode.LIQUID_GLASS") &&
                 topHeaderSource.contains("topTabDockChromeRenderMode == HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP") &&
                 topHeaderSource.contains("val drawTopTabDockChrome = drawTopTabOuterChromeSurface || useTopTabBottomBarMatchedDock") &&
-                topHeaderSource.contains("val drawEffectiveTopTabDockChrome = drawTopTabDockChrome && !shouldUseSkinPlainTopTabs") &&
-                topHeaderSource.contains("drawChromeSurface = drawEffectiveTopTabDockChrome") &&
-                topHeaderSource.contains("useBottomBarMatchedSurface = useTopTabBottomBarMatchedDock && !shouldUseSkinPlainTopTabs") &&
-                topHeaderSource.contains("drawMatchedShellLens = useTopTabBottomBarMatchedDock && !shouldUseSkinPlainTopTabs") &&
+                topHeaderSource.contains("drawChromeSurface = drawTopTabDockChrome") &&
+                topHeaderSource.contains("useBottomBarMatchedSurface = useTopTabBottomBarMatchedDock") &&
+                topHeaderSource.contains("drawMatchedShellLens = useTopTabBottomBarMatchedDock") &&
                 topHeaderSource.contains("matchedShellLensIntensity = resolveFloatingDockGeometryScale(") &&
                 topHeaderSource.contains("tabChromeRenderMode = if (useTopTabBottomBarMatchedDock)") &&
                 topHeaderSource.contains("val bottomBarLiquidGlassPreset = homeSettings?.bottomBarLiquidGlassPreset") &&
