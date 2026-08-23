@@ -98,10 +98,12 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -630,7 +632,11 @@ fun CommonListScreen(
     }
     // [New] 动态顶栏高度测量 (最准确的方式)
     var headerHeightPx by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
-    val headerHeightDp = with(LocalDensity.current) { headerHeightPx.toDp() }
+    var visibleHeaderHeightPx by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
+    var fixedTopBarHeightPx by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
+    val headerHeightDp = with(LocalDensity.current) {
+        (if (historyViewModel != null) visibleHeaderHeightPx else headerHeightPx).toDp()
+    }
     var commonListHeaderOffsetPx by remember { mutableFloatStateOf(0f) }
     var commonListHeaderSettleJob by remember { androidx.compose.runtime.mutableStateOf<Job?>(null) }
     val commonListHeaderCollapseMode = resolveCommonListHeaderCollapseModeForScreen(
@@ -646,11 +652,10 @@ fun CommonListScreen(
     }
     val commonListHeaderMaxCollapsePx = resolveCommonListHeaderMaxCollapsePx(
         headerHeightPx = headerHeightPx,
-        pinnedDockHeightPx = 0,
-        topInsetPx = statusBarHeightPx,
-        // 历史页的搜索与筛选 Dock 都应像首页顶部一样随内容收起，
-        // 不再把筛选 Dock 留作固定的 pinned chrome。
-        retainPinnedDock = false,
+        pinnedDockHeightPx = if (historyViewModel != null) fixedTopBarHeightPx else 0,
+        topInsetPx = if (historyViewModel != null) 0f else statusBarHeightPx,
+        // 历史页保留页面标题栏，只收起搜索与筛选 Dock；收藏夹沿用原有整栏策略。
+        retainPinnedDock = historyViewModel != null,
     )
     fun animateCommonListHeaderOffsetTo(targetOffsetPx: Float) {
         if (kotlin.math.abs(commonListHeaderOffsetPx - targetOffsetPx) <= 0.5f) {
@@ -1206,20 +1211,27 @@ fun CommonListScreen(
                     .zIndex(1f)
                     .align(Alignment.TopCenter)
                     .graphicsLayer {
-                        translationY = commonListHeaderOffsetPx
+                        translationY = if (historyViewModel != null) 0f else commonListHeaderOffsetPx
                     }
                     .then(topBarBackgroundModifier)
                     .onGloballyPositioned { coordinates ->
-                        headerHeightPx = coordinates.size.height
+                        visibleHeaderHeightPx = coordinates.size.height
+                        if (historyViewModel == null || commonListHeaderOffsetPx >= -0.5f) {
+                            headerHeightPx = coordinates.size.height
+                        }
                     }
             ) {
-                Column {
+                Layout(
+                    modifier = if (historyViewModel != null) Modifier.clipToBounds() else Modifier,
+                    content = {
                     AppTopBar(
                         title = state.title,
                         modifier = Modifier.favoriteCollectionSharedBounds(
                             route = favoriteCollectionSharedElementRoute,
                             transitionEnabled = favoriteCollectionSharedTransitionEnabled
-                        ),
+                        ).onGloballyPositioned { coordinates ->
+                            fixedTopBarHeightPx = coordinates.size.height
+                        },
                         navigationIcon = {
                             AppIconButton(onClick = onBack) {
                                 AppIcon(rememberAppBackIcon(), contentDescription = "Back")
@@ -1768,6 +1780,40 @@ fun CommonListScreen(
 
                     if (favoriteViewModel != null) {
                         Spacer(modifier = Modifier.height(favoriteHeaderLayout.headerBottomPaddingDp.dp))
+                    }
+                    },
+                ) { measurables, constraints ->
+                    val childConstraints = constraints.copy(minHeight = 0)
+                    val placeables = measurables.map { it.measure(childConstraints) }
+                    val width = placeables.maxOfOrNull { it.width }
+                        ?.coerceIn(constraints.minWidth, constraints.maxWidth)
+                        ?: constraints.minWidth
+                    if (historyViewModel != null && placeables.isNotEmpty()) {
+                        val fixedHeight = placeables.first().height
+                        val collapsibleHeight = placeables.drop(1).sumOf { it.height }
+                        val bodyOffset = commonListHeaderOffsetPx
+                            .coerceIn(-collapsibleHeight.toFloat(), 0f)
+                            .toInt()
+                        val height = (fixedHeight + collapsibleHeight + bodyOffset)
+                            .coerceIn(constraints.minHeight, constraints.maxHeight)
+                        layout(width, height) {
+                            placeables.first().placeRelative(0, 0)
+                            var y = fixedHeight + bodyOffset
+                            placeables.drop(1).forEach { placeable ->
+                                placeable.placeRelative(0, y)
+                                y += placeable.height
+                            }
+                        }
+                    } else {
+                        val height = placeables.sumOf { it.height }
+                            .coerceIn(constraints.minHeight, constraints.maxHeight)
+                        layout(width, height) {
+                            var y = 0
+                            placeables.forEach { placeable ->
+                                placeable.placeRelative(0, y)
+                                y += placeable.height
+                            }
+                        }
                     }
                 }
             }
