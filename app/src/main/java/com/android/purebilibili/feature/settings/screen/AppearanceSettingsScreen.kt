@@ -468,7 +468,7 @@ fun AppearanceSettingsContent(
         .getShowOnlineCount(context)
         .collectAsStateWithLifecycle(initialValue = false)
     val isLiquidGlassAvailable = shouldAllowHomeChromeLiquidGlass(Build.VERSION.SDK_INT)
-    val showThemeColorPicker = state.md3ColorSource == Md3ColorSource.CUSTOM
+    val showThemeColorPicker = shouldShowMd3CustomColorControls(state.md3ColorSource)
     var showMd3ColorPickerDialog by remember { mutableStateOf(false) }
     var roleColorTarget by remember { mutableStateOf<ThemeRoleColorTarget?>(null) }
     val md3ColorSourceOptions = remember { resolveMd3ColorSourceOptions() }
@@ -661,7 +661,7 @@ fun AppearanceSettingsContent(
                         SettingsSingleChoicePreference(
                             title = "MD3 颜色来源：$selectedMd3ColorSourceLabel",
                             subtitle = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                "可跟随系统壁纸，也可使用自定义主题色"
+                                "跟随时直接使用系统当前壁纸配色；自定义模式可选择色彩风格"
                             } else {
                                 "当前系统不支持 Monet 壁纸取色，可使用自定义主题色"
                             },
@@ -695,57 +695,65 @@ fun AppearanceSettingsContent(
                             iconTint = selectedCustomThemeColor
                         )
 
-                        AppPreferenceDivider()
-                        AppSwitchPreference(
-                            icon = rememberSettingsSemanticIcon(SettingsIconRole.ADVANCED_COLOR),
-                            title = "高级配色",
-                            subtitle = "分别覆盖明暗模式的背景、文字与控件色",
-                            checked = themeRoleOverrides.enabled,
-                            onCheckedChange = { enabled ->
-                                scope.launch {
-                                    SettingsManager.setThemeRoleOverrides(
-                                        context,
-                                        if (enabled) {
-                                            baseThemeRoleOverrides.copy(enabled = true)
-                                        } else {
-                                            themeRoleOverrides.copy(enabled = false)
-                                        }
-                                    )
-                                }
-                            },
-                            iconTint = MaterialTheme.colorScheme.primary
-                        )
-
                         AnimatedVisibility(
-                            visible = themeRoleOverrides.enabled,
+                            visible = showThemeColorPicker,
                             enter = expandVertically() + fadeIn(),
                             exit = shrinkVertically() + fadeOut()
                         ) {
-                            ThemeRoleOverrideEditor(
-                                overrides = themeRoleOverrides,
-                                onColorClick = { roleColorTarget = it }
-                            )
+                            Column {
+                                AppPreferenceDivider()
+                                AppSwitchPreference(
+                                    icon = rememberSettingsSemanticIcon(SettingsIconRole.ADVANCED_COLOR),
+                                    title = "高级配色",
+                                    subtitle = "自定义明暗模式的背景、文字与控件色",
+                                    checked = themeRoleOverrides.enabled,
+                                    onCheckedChange = { enabled ->
+                                        scope.launch {
+                                            SettingsManager.setThemeRoleOverrides(
+                                                context,
+                                                if (enabled) {
+                                                    baseThemeRoleOverrides.copy(enabled = true)
+                                                } else {
+                                                    themeRoleOverrides.copy(enabled = false)
+                                                }
+                                            )
+                                        }
+                                    },
+                                    iconTint = MaterialTheme.colorScheme.primary
+                                )
+
+                                AnimatedVisibility(
+                                    visible = themeRoleOverrides.enabled,
+                                    enter = expandVertically() + fadeIn(),
+                                    exit = shrinkVertically() + fadeOut()
+                                ) {
+                                    ThemeRoleOverrideEditor(
+                                        overrides = themeRoleOverrides,
+                                        onColorClick = { roleColorTarget = it }
+                                    )
+                                }
+
+                                AppPreferenceDivider()
+	                                ThemePresetChoiceSetting(
+	                                    icon = rememberSettingsSemanticIcon(SettingsIconRole.COLOR_STYLE),
+                                    title = "色彩风格",
+                                    selectedValue = state.colorStyle,
+                                    options = colorStyleOptions,
+                                    onSelectionChange = viewModel::setThemeColorStyle,
+                                    iconTint = iOSPurple
+                                )
+
+                                AppPreferenceDivider()
+	                                ThemePresetChoiceSetting(
+	                                    icon = rememberSettingsSemanticIcon(SettingsIconRole.COLOR_SPEC),
+                                    title = "色彩标准",
+                                    selectedValue = state.colorSpec,
+                                    options = colorSpecOptions,
+                                    onSelectionChange = viewModel::setThemeColorSpec,
+                                    iconTint = iOSBlue
+                                )
+                            }
                         }
-
-                        AppPreferenceDivider()
-	                        ThemePresetChoiceSetting(
-	                            icon = rememberSettingsSemanticIcon(SettingsIconRole.COLOR_STYLE),
-                            title = "色彩风格",
-                            selectedValue = state.colorStyle,
-                            options = colorStyleOptions,
-                            onSelectionChange = viewModel::setThemeColorStyle,
-                            iconTint = iOSPurple
-                        )
-
-                        AppPreferenceDivider()
-	                        ThemePresetChoiceSetting(
-	                            icon = rememberSettingsSemanticIcon(SettingsIconRole.COLOR_SPEC),
-                            title = "色彩标准",
-                            selectedValue = state.colorSpec,
-                            options = colorSpecOptions,
-                            onSelectionChange = viewModel::setThemeColorSpec,
-                            iconTint = iOSBlue
-                        )
 
                         // 主题色选择 (仅当动态取色关闭时显示)
                         androidx.compose.animation.AnimatedVisibility(
