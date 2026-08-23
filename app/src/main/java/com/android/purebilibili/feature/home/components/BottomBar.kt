@@ -3159,11 +3159,15 @@ private fun BiliPaiFloatingBottomBar(
                         ) {
                             visibleItems.forEachIndexed { index, item ->
                                 val label = resolveBottomNavItemLabel(item, itemLabels)
+                                val routeSelected = currentItem == item
                                 val selected = index == selectedIndexForBar ||
                                     LocalFloatingBottomBarActiveContent.current
                                 val skinIconPath = uiSkinDecoration?.iconPathFor(
                                     item,
-                                    selected = selected
+                                    // The indicator export layer marks every sampled item active
+                                    // while dragging. Asset choice must follow the committed route,
+                                    // otherwise the lens swaps to a different selected illustration.
+                                    selected = routeSelected
                                 )
                                 val reminderBadgeText = formatBottomBarDynamicReminderBadge(
                                     if (shouldShowBottomBarDynamicReminderBadge(
