@@ -3209,7 +3209,7 @@ private fun BiliPaiFloatingBottomBar(
                             colors = floatingColors,
                             shellHeight = dockHeight,
                             indicatorHeight = BOTTOM_BAR_INDICATOR_DOCK_BAND_HEIGHT_DP.dp,
-                            fitIndicatorHeightToTabWidth = false,
+                            fitIndicatorHeightToTabWidth = !isTablet,
                             liquidGlassTuning = liquidGlassTuning
                         ) {
                             visibleItems.forEachIndexed { index, item ->

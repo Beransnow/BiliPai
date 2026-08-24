@@ -249,7 +249,7 @@ class BottomBarMiuixStructureTest {
             "app/src/main/java/com/android/purebilibili/feature/home/components/FloatingBottomBar.kt"
         )
 
-        assertTrue(bottomBarSource.contains("fitIndicatorHeightToTabWidth = false"))
+        assertTrue(bottomBarSource.contains("fitIndicatorHeightToTabWidth = !isTablet"))
         assertTrue(floatingBarSource.contains("fitIndicatorHeightToTabWidth: Boolean = true"))
         assertTrue(floatingBarSource.contains("if (fitIndicatorHeightToTabWidth)"))
     }
