@@ -70,6 +70,8 @@ feature UI
 - 液态玻璃文件集合使用路径摘要冻结。
 - Miuix navigation 只能出现在已冻结的共享导航子系统文件集合。
 - app 生产源码不得直接调用原生 `Slider`，必须通过 `AppSlider` 分发。
+- app 生产源码不得直接调用原生 `Button` / `TextButton` / `OutlinedButton`，必须通过对应
+  `App*Button` 分发。
 - app 生产源码不得直接调用 Material 3 `Card` / `ElevatedCard` / `OutlinedCard`；只允许上述
   `Md3ThemeColorPreview` 精确例外。
 

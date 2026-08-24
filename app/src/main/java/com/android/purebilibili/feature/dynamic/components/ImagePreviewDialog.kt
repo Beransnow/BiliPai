@@ -40,6 +40,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import com.android.purebilibili.core.ui.components.AppFilledIconButton
 import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -1269,7 +1270,7 @@ private fun ImagePreviewActionButton(
     label: String,
     onClick: () -> Unit
 ) {
-    TextButton(
+    AppTextButton(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()

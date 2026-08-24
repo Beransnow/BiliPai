@@ -4,6 +4,7 @@ import com.android.purebilibili.core.ui.resolveFilledButtonContainerColor
 import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
 import com.android.purebilibili.core.refresh.HistoryRefreshSuppression
 import com.android.purebilibili.core.ui.components.AppText
+import com.android.purebilibili.core.ui.components.AppTextButton
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -271,7 +272,7 @@ private fun CollapsedPlayerPlayAction(
         enter = fadeIn(animationSpec = tween(durationMillis = 120)),
         exit = fadeOut(animationSpec = tween(durationMillis = 90)),
     ) {
-        TextButton(
+        AppTextButton(
             onClick = onClick,
             modifier = Modifier
                 .fillMaxHeight()
