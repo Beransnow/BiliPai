@@ -11,7 +11,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -58,8 +57,6 @@ import com.android.purebilibili.navigation3.predictiveback.miuixVideoCardNavTran
 import com.android.purebilibili.navigation3.predictiveback.MiuixVideoCardContentScale
 import com.android.purebilibili.navigation3.predictiveback.resolveMiuixVideoCardContentScaleForSourceLayout
 import com.android.purebilibili.navigation3.predictiveback.MiuixVideoCardTransitionProgress
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.nav.core.NavBackStack
 import top.yukonga.miuix.kmp.nav.core.NavCornerClipMode
 import top.yukonga.miuix.kmp.nav.core.NavDisplay
@@ -116,16 +113,19 @@ internal fun BiliPaiNavDisplayHost(
     val latestPrepareReturn by rememberUpdatedState(onPrepareVideoCardSharedReturn)
     val latestRelatedReturn by rememberUpdatedState(onRelatedVideoDetailReturned)
     val latestPreferWholeCardReturn by rememberUpdatedState(preferWholeCardReturn)
-    val relatedReturnRestoreScope = rememberCoroutineScope()
-    val relatedReturnRestoreDelayMillis = resolveRelatedReturnSourceRestoreDelayMillis(
+    val cardMorphMode = resolveBiliPaiVideoCardMorphMode(
         cardTransitionEnabled = cardTransitionEnabled,
         reduceMotion = reduceMotion,
-        transitionDurationMillis = videoSharedTransitionDurationMillis,
+        sourceRoute = sourceMetadata.sourceRoute,
+        hasUsableSourceBounds = sourceMetadata.sourceBounds
+            ?.let { it.width > 1f && it.height > 1f } == true,
     )
+    val cardMorphAvailable = cardMorphMode != BiliPaiVideoCardMorphMode.NONE
+    var relatedReturnRestorePending by remember { mutableStateOf(false) }
+    var relatedReturnTransitionObserved by remember { mutableStateOf(false) }
     val performBack = remember(
         backStack,
-        relatedReturnRestoreScope,
-        relatedReturnRestoreDelayMillis,
+        cardMorphAvailable,
     ) {
         {
             val leavingKey = backStack.lastOrNull()
@@ -138,8 +138,10 @@ internal fun BiliPaiNavDisplayHost(
                 ?.startsWith("video/") == true
             latestOnBack()
             if (returningFromRelated) {
-                relatedReturnRestoreScope.launch {
-                    delay(relatedReturnRestoreDelayMillis)
+                if (cardMorphAvailable) {
+                    relatedReturnTransitionObserved = false
+                    relatedReturnRestorePending = true
+                } else {
                     latestRelatedReturn()
                 }
             }
@@ -169,14 +171,6 @@ internal fun BiliPaiNavDisplayHost(
             miuixTransitionBlurEnabled = miuixTransitionBlurEnabled,
         )
     }
-    val cardMorphMode = resolveBiliPaiVideoCardMorphMode(
-        cardTransitionEnabled = cardTransitionEnabled,
-        reduceMotion = reduceMotion,
-        sourceRoute = sourceMetadata.sourceRoute,
-        hasUsableSourceBounds = sourceMetadata.sourceBounds
-            ?.let { it.width > 1f && it.height > 1f } == true,
-    )
-    val cardMorphAvailable = cardMorphMode != BiliPaiVideoCardMorphMode.NONE
     val videoCardTransitionProgress = remember { MiuixVideoCardTransitionProgress() }
     val videoCardContentScale = resolveMiuixVideoCardContentScaleForSourceLayout(
         sourceLayout = sourceMetadata.sourceLayout,
@@ -296,6 +290,26 @@ internal fun BiliPaiNavDisplayHost(
         }
     }
     val effectiveVideoCardExposure = videoCardExposureProvider()
+    LaunchedEffect(
+        relatedReturnRestorePending,
+        effectiveVideoCardExposure,
+        cardMorphAvailable,
+    ) {
+        val restoreDecision = resolveRelatedReturnSourceRestoreDecision(
+            restorePending = relatedReturnRestorePending,
+            transitionObserved = relatedReturnTransitionObserved,
+            cardMorphAvailable = cardMorphAvailable,
+            exposure = effectiveVideoCardExposure,
+        )
+        relatedReturnTransitionObserved = restoreDecision.transitionObserved
+        if (restoreDecision.shouldRestore) {
+            // The nested source geometry remains immutable through the complete predictive
+            // settle. Only arm the parent's older session after the navigation driver is idle.
+            relatedReturnRestorePending = false
+            relatedReturnTransitionObserved = false
+            latestRelatedReturn()
+        }
+    }
     LaunchedEffect(effectiveVideoCardExposure) {
         if (shouldReleaseHostOwnedDepthLayer(effectiveVideoCardExposure)) {
             videoCardSnapshotHandle.releaseSession()
