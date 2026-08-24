@@ -196,6 +196,7 @@ import com.android.purebilibili.navigation3.resolveBiliPaiNavEntryContentRole
 import com.android.purebilibili.navigation3.resolveRemovedNavigation3SaveableStateKeys
 import com.android.purebilibili.navigation3.resolveNavigation3SaveableStateKey
 import com.android.purebilibili.navigation3.resolveBiliPaiNavSourceMetadata
+import com.android.purebilibili.navigation3.relativeToHost
 import com.android.purebilibili.navigation3.shouldBindVideoDetailBackPreviewPlayer
 import com.android.purebilibili.navigation3.shouldActivateVideoDetailPlaybackSession
 import com.android.purebilibili.navigation3.shouldRecoverVideoPlayerAfterBackCancellation
@@ -206,6 +207,9 @@ import com.android.purebilibili.navigation3.resolveInitialBiliPaiBackStack
 import com.android.purebilibili.navigation3.toLegacyRoute
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier // 确保 Modifier 被导入
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.foundation.layout.Box // 确保 Box 被导入
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize // 确保 fillMaxSize 被导入
@@ -596,6 +600,7 @@ fun AppNavigation(
         val appNavigationSettings by SettingsManager.getAppNavigationSettings(context).collectAsStateWithLifecycle(initialValue = AppNavigationSettings(),
             context = kotlin.coroutines.EmptyCoroutineContext
         )
+        var navigationHostOriginInRoot by remember { mutableStateOf(Offset.Zero) }
         var sidebarAccountSwitcherVisible by rememberSaveable { mutableStateOf(false) }
         var sidebarAccountSessionGeneration by remember { mutableIntStateOf(0) }
         val sidebarAccounts = remember(
@@ -1170,6 +1175,7 @@ fun AppNavigation(
             }
         }
         val navigation3SourceMetadata = currentNavigation3SourceMetadata()
+            .relativeToHost(navigationHostOriginInRoot)
         val previousNavigation3Key = navigation3BackStack.getOrNull(navigation3BackStack.lastIndex - 1)
         val activeBottomTabRoute = resolveActiveBottomTabRoute(
             currentKey = currentNavigation3Key,
@@ -1256,13 +1262,19 @@ fun AppNavigation(
             shouldHideBottomBarOnTablet = shouldHideBottomBarOnTablet,
             shouldDeferReveal = false
         )
-        val sideBarMountGate = shouldShowBottomBarForNavigation(
+        val sideBarRouteGate = shouldShowBottomBarForNavigation(
             activeRoute = bottomBarMountRoute,
             visibleBottomBarRoutes = visibleBottomBarRoutes,
             useSideNavigation = false,
             shouldHideBottomBarOnTablet = shouldHideBottomBarOnTablet,
             shouldDeferReveal = false
         )
+        val sideBarMountGate = sideBarRouteGate &&
+            (!isVideoDetailDestination ||
+                (sharedVideoCardTransitionEnabled &&
+                    navigation3SourceMetadata.sharedTransitionReady &&
+                    videoCardTransitionClock.phase !=
+                        com.android.purebilibili.core.ui.transition.VideoCardTransitionBackgroundPhase.HELD))
         val showBottomBar = shouldShowBottomBarForNavigation(
             activeRoute = activeBottomTabRoute,
             visibleBottomBarRoutes = visibleBottomBarRoutes,
@@ -1695,9 +1707,8 @@ fun AppNavigation(
             }
             Box(modifier = Modifier.fillMaxSize()) {
             Row(modifier = Modifier.fillMaxSize()) {
-                // VideoDetail keeps MainHost underneath for the shared-card transition. Mount the
-                // rail from that retained route too, otherwise removing its width on navigation
-                // shifts every home-card coordinate after the transition anchor was captured.
+                // Keep only the rail's layout slot while a card morph is active. Its pixels are
+                // hidden on detail; after OPENING reaches HELD the slot is released as well.
                 if (windowSizeClass.shouldUseSideNavigation && sideBarMountGate) {
                     AnimatedVisibility(
                         visible = useSideNavigation,
@@ -1713,6 +1724,9 @@ fun AppNavigation(
                         FrostedSideBar(
                             currentItem = currentBottomNavItem,
                             onItemClick = handleNavItemClick,
+                            modifier = Modifier.graphicsLayer {
+                                alpha = if (isVideoDetailDestination) 0f else 1f
+                            },
                             firstItemModifier = Modifier,
                             onHomeDoubleTap = {
                                 homeScrollChannel.trySend(
@@ -3592,7 +3606,11 @@ fun AppNavigation(
                             navigation3ReturnSession.lastVideoSourceKey
                         )
                     },
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .onGloballyPositioned { coordinates ->
+                            navigationHostOriginInRoot = coordinates.positionInRoot()
+                        },
                 ) { key ->
                     navigation3SaveableStateHolder.SaveableStateProvider(
                         key = resolveNavigation3SaveableStateKey(key)
