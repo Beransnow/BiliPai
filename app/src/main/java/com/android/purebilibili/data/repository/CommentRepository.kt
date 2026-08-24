@@ -333,7 +333,16 @@ object CommentRepository {
             // 确保 buvid3 已初始化
             VideoRepository.ensureBuvid3()
 
-            if (shouldTryGrpcMainList(type = type, page = page, mode = mode, paginationOffset = paginationOffset)) {
+            val hasSession = !com.android.purebilibili.core.store.TokenManager.sessDataCache.isNullOrEmpty()
+            if (
+                shouldTryGrpcMainList(
+                    hasSession = hasSession,
+                    type = type,
+                    page = page,
+                    mode = mode,
+                    paginationOffset = paginationOffset
+                )
+            ) {
                 val grpcResult = CommentGrpcRepository.getMainList(
                     oid = oid,
                     type = type,
@@ -374,7 +383,6 @@ object CommentRepository {
                 }
             }
 
-            val hasSession = !com.android.purebilibili.core.store.TokenManager.sessDataCache.isNullOrEmpty()
             val readPlan = resolveCommentReadPlan(hasSession = hasSession)
             val primaryMode = readPlan.primary
             val primaryResponse = fetchCommentsByApi(
@@ -854,11 +862,16 @@ object CommentRepository {
     }
 
     internal fun shouldTryGrpcMainList(
+        hasSession: Boolean,
         type: Int,
         page: Int,
         mode: Int,
         paginationOffset: String?
     ): Boolean {
+        // The documented public web flow is x/v2/reply/wbi/main + pagination_str.
+        // Guest gRPC can return a successful but restricted slice, which prevents the
+        // REST fallback and makes the comment section appear complete prematurely.
+        if (!hasSession) return false
         if (type == 17) return false
         val supportedMode = mode == CommentGrpcRepository.MODE_HOT || mode == CommentGrpcRepository.MODE_TIME
         if (!supportedMode) return false
