@@ -104,7 +104,8 @@ class AppNavigationAppearancePolicyTest {
         assertTrue(capturedLayerSource.contains("depthProgressProvider"))
         assertTrue(capturedLayerSource.contains("videoCardTransitionClock.depthProgress()"))
         assertFalse(capturedLayerSource.contains("onVideoCardDepthFrame"))
-        assertTrue(capturedLayerSource.contains(".then(if (mainHazeState != null) Modifier.hazeSourceCompat(mainHazeState) else Modifier)"))
+        assertTrue(capturedLayerSource.contains("if (isBottomBarBlurEnabled && mainHazeState != null)"))
+        assertTrue(capturedLayerSource.contains("Modifier.hazeSourceCompat(mainHazeState)"))
     }
 
     @Test

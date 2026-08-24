@@ -295,10 +295,13 @@ fun ProfileScreen(
     // [注意] 移除了 globalHazeState - 双 hazeSource 模式与 Haze 库冲突
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val headerBlurEnabled by SettingsManager
+        .getHeaderBlurEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = true)
     val accounts by viewModel.accounts.collectAsStateWithLifecycle()
     val activeAccountMid by viewModel.activeAccountMid.collectAsStateWithLifecycle()
     val playbackAccountMid by viewModel.playbackAccountMid.collectAsStateWithLifecycle()
-    val context = LocalContext.current
     val view = LocalView.current
     var showAccountSwitchDialog by remember { mutableStateOf(false) }
     val windowSizeClass = LocalWindowSizeClass.current
@@ -646,7 +649,7 @@ fun ProfileScreen(
                                 surfaceColor = MaterialTheme.colorScheme.background,
                                 surfaceAlpha = 0.82f,
                                 hazeState = hazeState,
-                                hazeEnabled = true
+                                hazeEnabled = headerBlurEnabled
                             )
                             AppTopBar(
                                 title = "我的",
