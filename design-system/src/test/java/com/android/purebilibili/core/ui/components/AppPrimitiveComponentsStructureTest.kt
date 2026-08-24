@@ -35,14 +35,6 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(source.contains(") = LinearProgressIndicator("))
         assertTrue(source.contains("fun AppCheckbox("))
         assertTrue(source.contains(") = Checkbox("))
-        assertTrue(source.contains("fun AppSwitch("))
-        assertTrue(source.contains("colors: SwitchColors = SwitchDefaults.colors()"))
-        assertTrue(source.contains("showThumbIcon: Boolean = true"))
-        assertTrue(source.contains("Icons.Filled.Check"))
-        assertTrue(source.contains("Icons.Filled.Close"))
-        assertTrue(source.contains("resolveAppAdaptiveSwitchTreatment("))
-        assertTrue(source.contains("MiuixSwitch("))
-        assertTrue(source.contains("Switch("))
         assertTrue(source.contains("fun AppRadioButton("))
         assertTrue(source.contains(") = RadioButton("))
         assertTrue(source.contains("fun AppOutlinedButton("))
@@ -151,6 +143,31 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(miuix.contains("import top.yukonga.miuix.kmp.basic.Slider"))
         assertTrue(miuix.contains("SliderDefaults.sliderColors("))
         assertTrue(miuix.contains("modifier.appDesktopFocusableItemVisuals(enabled)"))
+        assertFalse(miuix.contains("import androidx.compose.material3"))
+    }
+
+    @Test
+    fun switchFacadeRoutesEachThemeToNativeDefaults() {
+        val primitiveSource = loadSource()
+        val facade = loadSource("components/AppSwitch.kt")
+        val material = loadSource("renderer/material3/AppMaterial3Switch.kt")
+        val miuix = loadSource("renderer/miuix/AppMiuixSwitch.kt")
+
+        assertFalse(primitiveSource.contains("fun AppSwitch("))
+        assertTrue(facade.contains("AppUiStyle.MATERIAL3 -> AppMaterial3Switch("))
+        assertTrue(facade.contains("AppUiStyle.MIUIX -> AppMiuixSwitch("))
+        assertTrue(facade.contains("showThumbIcon: Boolean = true"))
+        assertFalse(facade.contains("SwitchColors"))
+        assertFalse(facade.contains("import androidx.compose.material3"))
+        assertFalse(facade.contains("import top.yukonga.miuix"))
+
+        assertTrue(material.contains("import androidx.compose.material3.Switch"))
+        assertTrue(material.contains("SwitchDefaults.colors()"))
+        assertTrue(material.contains("Icons.Filled.Check"))
+        assertTrue(material.contains("Icons.Filled.Close"))
+        assertTrue(miuix.contains("import top.yukonga.miuix.kmp.basic.Switch"))
+        assertTrue(miuix.contains("LocalAppThemeConfig.current.hapticFeedbackEnabled"))
+        assertTrue(miuix.contains("modifier.appDesktopFocusableItemVisuals("))
         assertFalse(miuix.contains("import androidx.compose.material3"))
     }
 

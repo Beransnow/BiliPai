@@ -1,7 +1,6 @@
 package com.android.purebilibili.core.ui.components
 
 import com.android.purebilibili.core.theme.LocalAppUiStyle
-import com.android.purebilibili.core.ui.LocalAppThemeConfig
 import com.android.purebilibili.core.ui.resolveFilledButtonContainerColor
 import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
 import androidx.compose.foundation.BorderStroke
@@ -12,7 +11,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -43,7 +41,6 @@ import androidx.compose.material3.SelectableChipElevation
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
@@ -71,9 +68,6 @@ import androidx.compose.material3.NavigationDrawerItemDefaults
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchColors
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Tab
@@ -82,16 +76,9 @@ import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.contentColorFor
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.material3.LocalContentColor
-import androidx.compose.ui.hapticfeedback.HapticFeedback
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -102,14 +89,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
-import top.yukonga.miuix.kmp.basic.Switch as MiuixSwitch
 import top.yukonga.miuix.kmp.basic.TextField as MiuixTextField
 import top.yukonga.miuix.kmp.basic.TextFieldDefaults as MiuixTextFieldDefaults
 import top.yukonga.miuix.kmp.theme.MiuixTheme
-
-private object AppPrimitiveNoOpHapticFeedback : HapticFeedback {
-    override fun performHapticFeedback(hapticFeedbackType: HapticFeedbackType) = Unit
-}
 
 @Composable
 fun AppSnackbar(
@@ -559,63 +541,6 @@ fun AppCheckbox(
         colors = colors,
         interactionSource = resolvedInteractionSource,
     )
-}
-
-@Composable
-fun AppSwitch(
-    checked: Boolean,
-    onCheckedChange: ((Boolean) -> Unit)?,
-    modifier: Modifier = Modifier,
-    thumbContent: (@Composable () -> Unit)? = null,
-    enabled: Boolean = true,
-    colors: SwitchColors = SwitchDefaults.colors(),
-    interactionSource: MutableInteractionSource? = null,
-    showThumbIcon: Boolean = true,
-) {
-    val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
-    val interactive = enabled && onCheckedChange != null
-    when (resolveAppAdaptiveSwitchTreatment(LocalAppUiStyle.current)) {
-        AppAdaptiveSwitchTreatment.MIUIX -> {
-            val platformHaptic = LocalHapticFeedback.current
-            val effectiveHaptic = if (LocalAppThemeConfig.current.hapticFeedbackEnabled) {
-                platformHaptic
-            } else {
-                AppPrimitiveNoOpHapticFeedback
-            }
-            CompositionLocalProvider(LocalHapticFeedback provides effectiveHaptic) {
-                MiuixSwitch(
-                    checked = checked,
-                    onCheckedChange = onCheckedChange,
-                    enabled = enabled,
-                    modifier = modifier.appDesktopFocusableItemVisuals(interactive),
-                )
-            }
-        }
-        AppAdaptiveSwitchTreatment.MATERIAL -> Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            modifier = modifier.appDesktopInteractionVisuals(resolvedInteractionSource, interactive),
-            thumbContent = thumbContent ?: if (showThumbIcon) {
-                {
-                    Icon(
-                        imageVector = if (checked) Icons.Filled.Check else Icons.Filled.Close,
-                        contentDescription = null,
-                        tint = if (checked) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.surfaceContainerHighest
-                        },
-                        modifier = Modifier.size(SwitchDefaults.IconSize),
-                    )
-                }
-            } else {
-                null
-            },
-            enabled = enabled,
-            colors = colors,
-            interactionSource = resolvedInteractionSource,
-        )
-    }
 }
 
 @Composable
