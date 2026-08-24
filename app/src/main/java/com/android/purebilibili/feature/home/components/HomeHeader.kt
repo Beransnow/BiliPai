@@ -839,6 +839,30 @@ internal fun resolveHomeTopUnifiedLocalTabChromeRenderMode(
     )
 }
 
+internal fun resolveHomeTopTabDockChromeRenderMode(
+    embeddedInUnifiedPanel: Boolean,
+    continuousSlabRenderMode: HomeTopChromeRenderMode,
+    detachedTopTabDock: Boolean,
+    localTabChromeRenderMode: HomeTopChromeRenderMode,
+    hasHazeState: Boolean,
+): HomeTopChromeRenderMode {
+    if (
+        embeddedInUnifiedPanel &&
+        continuousSlabRenderMode == HomeTopChromeRenderMode.BLUR
+    ) {
+        return HomeTopChromeRenderMode.PLAIN
+    }
+    return if (
+        detachedTopTabDock &&
+        localTabChromeRenderMode == HomeTopChromeRenderMode.PLAIN &&
+        hasHazeState
+    ) {
+        HomeTopChromeRenderMode.BLUR
+    } else {
+        localTabChromeRenderMode
+    }
+}
+
 internal fun resolveHomeTopUnifiedTabSurfaceColor(
     tabContainerColor: Color,
     tabOverlayAlpha: Float,
@@ -1041,10 +1065,14 @@ internal fun shouldEnableTopTabSecondaryBlur(
     hasHeaderBlur: Boolean,
     topTabMaterialMode: TopTabMaterialMode,
     isScrolling: Boolean,
-    isTransitionRunning: Boolean
+    isTransitionRunning: Boolean,
+    isEmbeddedInUnifiedPanel: Boolean = false,
 ): Boolean {
     if (!hasHeaderBlur) return false
     if (topTabMaterialMode == TopTabMaterialMode.PLAIN) return false
+    // The continuous header slab already samples everything behind an embedded tab row.
+    // A second Haze pass here only thickens the material and records the same pixels twice.
+    if (isEmbeddedInUnifiedPanel) return false
     if (topTabMaterialMode == TopTabMaterialMode.LIQUID_GLASS && (isScrolling || isTransitionRunning)) {
         return false
     }
@@ -1495,11 +1523,15 @@ fun HomeHeader(
     val isTabFloating = topTabStyle.floating
     val isTabGlassEnabled = topChromeMaterialMode == TopTabMaterialMode.LIQUID_GLASS
     val isTabBlurEnabled = topChromeMaterialMode == TopTabMaterialMode.BLUR
+    val useUnifiedTopPanel = shouldUseUnifiedHomeTopPanel(topChromePolicy)
+    val useDetachedTopTabDock = shouldUseDetachedHomeTopTabDock(topChromePolicy.tabPresentation)
+    val embedTopTabsInUnifiedPanel = useUnifiedTopPanel && !useDetachedTopTabDock
     val enableTopTabSecondaryBlur = shouldEnableTopTabSecondaryBlur(
         hasHeaderBlur = hazeState != null,
         topTabMaterialMode = topChromeMaterialMode,
         isScrolling = isScrolling,
-        isTransitionRunning = isTransitionRunning
+        isTransitionRunning = isTransitionRunning,
+        isEmbeddedInUnifiedPanel = embedTopTabsInUnifiedPanel,
     )
     val isGlassSupported = shouldAllowHomeChromeLiquidGlass(Build.VERSION.SDK_INT)
     val allowHazeLiquidGlassFallback = shouldAllowDirectHazeLiquidGlassFallback(Build.VERSION.SDK_INT)
@@ -1679,9 +1711,6 @@ fun HomeHeader(
         isScrolling = isScrolling,
         isTransitionRunning = isTransitionRunning
     )
-    val useUnifiedTopPanel = shouldUseUnifiedHomeTopPanel(topChromePolicy)
-    val useDetachedTopTabDock = shouldUseDetachedHomeTopTabDock(topChromePolicy.tabPresentation)
-    val embedTopTabsInUnifiedPanel = useUnifiedTopPanel && !useDetachedTopTabDock
     val topPanelChromeRenderMode = resolveHomeTopPanelChromeRenderMode(
         renderMode = topChromeRenderMode,
         usesNativeContainerTreatment = usesNativeContainerTreatment,
@@ -1896,15 +1925,13 @@ fun HomeHeader(
     } else {
         localTabChromeRenderMode
     }
-    val topTabDockChromeRenderMode = if (
-        useDetachedTopTabDock &&
-        unifiedLocalTabChromeRenderMode == HomeTopChromeRenderMode.PLAIN &&
-        hazeState != null
-    ) {
-        HomeTopChromeRenderMode.BLUR
-    } else {
-        unifiedLocalTabChromeRenderMode
-    }
+    val topTabDockChromeRenderMode = resolveHomeTopTabDockChromeRenderMode(
+        embeddedInUnifiedPanel = embedTopTabsInUnifiedPanel,
+        continuousSlabRenderMode = continuousSlabRenderMode,
+        detachedTopTabDock = useDetachedTopTabDock,
+        localTabChromeRenderMode = unifiedLocalTabChromeRenderMode,
+        hasHazeState = hazeState != null,
+    )
     val effectiveTabSurfaceColor = if (useDetachedTopTabDock) {
         resolveHomeTopDetachedTabDockSurfaceColor(
             isLightMode = isLightMode,

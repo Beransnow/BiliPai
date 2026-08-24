@@ -1768,6 +1768,43 @@ class HomeHeaderVisualPolicyTest {
     }
 
     @Test
+    fun `embedded top tabs do not duplicate the unified header haze pass`() {
+        assertFalse(
+            shouldEnableTopTabSecondaryBlur(
+                hasHeaderBlur = true,
+                topTabMaterialMode = TopTabMaterialMode.BLUR,
+                isScrolling = false,
+                isTransitionRunning = false,
+                isEmbeddedInUnifiedPanel = true
+            )
+        )
+        assertEquals(
+            HomeTopChromeRenderMode.PLAIN,
+            resolveHomeTopTabDockChromeRenderMode(
+                embeddedInUnifiedPanel = true,
+                continuousSlabRenderMode = HomeTopChromeRenderMode.BLUR,
+                detachedTopTabDock = false,
+                localTabChromeRenderMode = HomeTopChromeRenderMode.BLUR,
+                hasHazeState = true,
+            )
+        )
+    }
+
+    @Test
+    fun `detached top tab dock keeps its own haze without a parent blur slab`() {
+        assertEquals(
+            HomeTopChromeRenderMode.BLUR,
+            resolveHomeTopTabDockChromeRenderMode(
+                embeddedInUnifiedPanel = false,
+                continuousSlabRenderMode = HomeTopChromeRenderMode.PLAIN,
+                detachedTopTabDock = true,
+                localTabChromeRenderMode = HomeTopChromeRenderMode.PLAIN,
+                hasHazeState = true,
+            )
+        )
+    }
+
+    @Test
     fun `liquid glass top tab secondary blur disabled during motion to reduce duplicate blur passes`() {
         assertFalse(
             shouldEnableTopTabSecondaryBlur(
