@@ -1687,9 +1687,12 @@ fun AppNavigation(
                 )
             }
             Box(modifier = Modifier.fillMaxSize()) {
-            Row(modifier = Modifier.fillMaxSize()) {
+            Box(modifier = Modifier.fillMaxSize()) {
                 if (windowSizeClass.shouldUseSideNavigation && isBottomBarDestination) {
                     AnimatedVisibility(
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .zIndex(2f),
                         visible = useSideNavigation,
                         enter = slideInHorizontally(
                             animationSpec = softLandingSpring(),
@@ -3594,7 +3597,7 @@ fun AppNavigation(
                 }
                 }
             } // End of Content Box
-            } // End of Row
+            } // End of navigation content overlay
 
             if (bottomBarCanMount) {
                 val bottomBarModifier = Modifier

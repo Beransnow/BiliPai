@@ -165,6 +165,19 @@ class AppNavigationAppearancePolicyTest {
     }
 
     @Test
+    fun tabletSidebarOverlaysContentWithoutChangingSharedTransitionGeometry() {
+        val source = loadSource("app/src/main/java/com/android/purebilibili/navigation/AppNavigation.kt")
+        val navigationOverlay = source
+            .substringAfter("Box(modifier = Modifier.fillMaxSize()) {\n            Box(modifier = Modifier.fillMaxSize()) {")
+            .substringBefore("// End of navigation content overlay")
+
+        assertTrue(navigationOverlay.contains("AnimatedVisibility("))
+        assertTrue(navigationOverlay.contains(".align(Alignment.CenterStart)"))
+        assertTrue(navigationOverlay.contains(".zIndex(2f)"))
+        assertFalse(navigationOverlay.contains("Row(modifier = Modifier.fillMaxSize())"))
+    }
+
+    @Test
     fun appNavigationUsesFlyingSourceContentInsteadOfStationaryWholeCardReveal() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/navigation/AppNavigation.kt")
         val navHostSource = loadSource(
