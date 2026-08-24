@@ -1419,7 +1419,9 @@ fun HomeHeader(
     categoryIndex: Int,
     onCategorySelected: (Int) -> Unit,
     onPartitionClick: () -> Unit = {},  //  新增：分区按钮回调
-    hazeState: HazeState? = null,  // 保留参数兼容性，但不用于模糊
+    // Non-null only when an explicit header/bottom blur preference enables Haze.
+    // Liquid-glass reuse alone must stay on the independent Miuix Backdrop path.
+    hazeState: HazeState? = null,
     onStatusBarDoubleTap: () -> Unit = {},
     //  [新增] 下拉刷新状态
     isRefreshing: Boolean = false,

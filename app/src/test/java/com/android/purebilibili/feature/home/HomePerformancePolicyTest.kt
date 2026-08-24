@@ -9,6 +9,32 @@ import kotlin.test.assertTrue
 class HomePerformancePolicyTest {
 
     @Test
+    fun liquidGlassReuseDoesNotAttachHazeWhenBlurIsDisabled() {
+        assertFalse(
+            shouldAttachHomeHeaderHaze(
+                headerBlurEnabled = false,
+                bottomBarBlurEnabled = false,
+            )
+        )
+    }
+
+    @Test
+    fun explicitHeaderOrBottomBlurAttachesHaze() {
+        assertTrue(
+            shouldAttachHomeHeaderHaze(
+                headerBlurEnabled = true,
+                bottomBarBlurEnabled = false,
+            )
+        )
+        assertTrue(
+            shouldAttachHomeHeaderHaze(
+                headerBlurEnabled = false,
+                bottomBarBlurEnabled = true,
+            )
+        )
+    }
+
+    @Test
     fun keepsHomeVisualSettingsWhenDataSaverOff() {
         val config = resolveHomePerformanceConfig(
             supportsIndependentLiquidGlass = true,

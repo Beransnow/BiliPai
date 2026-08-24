@@ -927,6 +927,10 @@ fun HomeScreen(
     }
     val isHeaderBlurEnabled = homePerformanceConfig.headerBlurEnabled
     val isBottomBarBlurEnabled = homePerformanceConfig.bottomBarBlurEnabled
+    val attachHomeHeaderHaze = shouldAttachHomeHeaderHaze(
+        headerBlurEnabled = isHeaderBlurEnabled,
+        bottomBarBlurEnabled = isBottomBarBlurEnabled,
+    )
     // [统一门控] 系统「减弱动效」是所有界面动效的通用开关:开启时关闭卡片进场/消散等所有卡片动效,
     // 各功能面自身的开关(此处为卡片动画开关)仍各自独立。与设置页入场动画共用同一 reduce-motion 判定。
     val systemReduceMotion = rememberSystemReduceMotion()
@@ -1437,8 +1441,8 @@ fun HomeScreen(
         homeHeaderCollapseMode = homeSettings.homeHeaderCollapseMode
     )
     val homeBarHideType = homeSettings.homeBarHideType
-    val collapseSearchOnScroll = headerCollapseMode.hasAnyCollapse
-    val collapseTabsOnScroll = headerCollapseMode.hasAnyCollapse
+    val collapseSearchOnScroll = headerCollapseMode.collapseSearch
+    val collapseTabsOnScroll = headerCollapseMode.collapseTabs
     val isAnyHeaderCollapseEnabled = headerCollapseMode.hasAnyCollapse
     val headerAutoCollapseDistancePx = if (isAnyHeaderCollapseEnabled) {
         searchCollapseDistancePx
@@ -1649,8 +1653,15 @@ fun HomeScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .miuixLayerBackdrop(homeMiuixBackdrop)
-                            // 首页使用 Pager + Lazy 子层，source 挂在外层容器更稳定。
-                            .hazeSourceCompat(state = hazeState)
+                            .then(
+                                // Liquid-glass reuse is independent from Haze. Register a Haze
+                                // source only when a blur preference actually consumes it.
+                                if (attachHomeHeaderHaze) {
+                                    Modifier.hazeSourceCompat(state = hazeState)
+                                } else {
+                                    Modifier
+                                }
+                            )
                     ) {
                     HomeWallpaperBackdrop(
                         wallpaperUri = homeWallpaperUri,
@@ -2204,11 +2215,7 @@ fun HomeScreen(
             },
             onPartitionClick = onPartitionClick,
             // isScrollingUp = isHeaderVisible, // [Removed] logic moved to offset
-            hazeState = if (topChromeMaterialMode != com.android.purebilibili.feature.home.components.TopTabMaterialMode.PLAIN) {
-                hazeState
-            } else {
-                null
-            },
+            hazeState = hazeState.takeIf { attachHomeHeaderHaze },
             onStatusBarDoubleTap = {
                 coroutineScope.launch {
                     activeGridState?.animateScrollToItem(0)

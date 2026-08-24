@@ -3209,9 +3209,6 @@ private fun BiliPaiFloatingBottomBar(
                             colors = floatingColors,
                             shellHeight = dockHeight,
                             indicatorHeight = BOTTOM_BAR_INDICATOR_DOCK_BAND_HEIGHT_DP.dp,
-                            // The home dock can contain six destinations plus search on phones.
-                            // Fitting height to that narrow tab width clips icon-and-label content.
-                            fitIndicatorHeightToTabWidth = false,
                             liquidGlassTuning = liquidGlassTuning
                         ) {
                             visibleItems.forEachIndexed { index, item ->

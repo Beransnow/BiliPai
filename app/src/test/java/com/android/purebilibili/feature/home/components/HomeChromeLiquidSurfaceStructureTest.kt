@@ -25,6 +25,9 @@ class HomeChromeLiquidSurfaceStructureTest {
         val componentsDir = workspaceRoot.resolve(
             "app/src/main/java/com/android/purebilibili/feature/home/components"
         )
+        val homeScreenSource = workspaceRoot.resolve(
+            "app/src/main/java/com/android/purebilibili/feature/home/HomeScreen.kt"
+        ).readText()
 
         val topHeader = componentsDir.resolve("HomeHeader.kt")
         val topTabChrome = componentsDir.resolve("HomeTopTabChrome.kt")
@@ -39,6 +42,17 @@ class HomeChromeLiquidSurfaceStructureTest {
         val topHeaderSource = topHeader.readText()
         val topBarSource = topBar.readText()
         val sharedChromeSource = sharedChrome.readText()
+        assertTrue(
+            "liquid-glass reuse must not attach Haze unless a blur preference is enabled",
+            homeScreenSource.contains("val attachHomeHeaderHaze = shouldAttachHomeHeaderHaze(") &&
+                homeScreenSource.contains("if (attachHomeHeaderHaze) {") &&
+                homeScreenSource.contains("hazeState = hazeState.takeIf { attachHomeHeaderHaze }")
+        )
+        assertTrue(
+            "search-only collapse must keep the top dock visible",
+            homeScreenSource.contains("val collapseSearchOnScroll = headerCollapseMode.collapseSearch") &&
+                homeScreenSource.contains("val collapseTabsOnScroll = headerCollapseMode.collapseTabs")
+        )
         assertTrue(
             "top header liquid chrome should route through the bottom-bar matched BiliPai surface",
             topHeaderSource.contains("return@composed this.homeTopBottomBarMatchedSurface(") &&

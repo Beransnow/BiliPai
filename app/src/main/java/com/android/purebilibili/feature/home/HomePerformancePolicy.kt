@@ -26,6 +26,11 @@ internal fun resolveHomePreloadAheadCount(
     return normalPreloadAheadCount.coerceAtLeast(0).coerceAtMost(2)
 }
 
+internal fun shouldAttachHomeHeaderHaze(
+    headerBlurEnabled: Boolean,
+    bottomBarBlurEnabled: Boolean,
+): Boolean = headerBlurEnabled || bottomBarBlurEnabled
+
 internal fun resolveHomeCoverPreloadRange(
     isDataSaverActive: Boolean,
     isScrollInProgress: Boolean,
