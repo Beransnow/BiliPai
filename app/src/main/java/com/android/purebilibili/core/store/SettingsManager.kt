@@ -5906,12 +5906,12 @@ object SettingsManager {
     
     /**
      *  底栏显示模式
-     * - SCROLL_HIDE: 上滑隐藏，下滑显示
+     * - SCROLL_HIDE: 向下浏览时隐藏，向上返回时显示
      * - ALWAYS_VISIBLE: 始终显示（默认）
      * - ALWAYS_HIDDEN: 永久隐藏
      */
     enum class BottomBarVisibilityMode(val value: Int, val label: String, val description: String) {
-        SCROLL_HIDE(0, "上滑隐藏", "上滑时隐藏底栏，下滑时显示"),
+        SCROLL_HIDE(0, "向下浏览时隐藏", "浏览更下方内容时隐藏，向上返回时显示"),
         ALWAYS_VISIBLE(1, "始终显示", "底栏始终可见"),
         ALWAYS_HIDDEN(2, "永久隐藏", "完全隐藏底栏");
         

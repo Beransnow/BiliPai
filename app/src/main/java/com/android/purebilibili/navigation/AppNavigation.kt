@@ -1267,7 +1267,7 @@ fun AppNavigation(
         // 核心可见性逻辑：
         // 1. 永久隐藏模式 -> 始终隐藏
         // 2. 始终显示模式 -> 始终显示
-        // 3. 上滑隐藏模式 -> 由子页面通过 LocalSetBottomBarVisible 控制，初始为 true
+        // 3. 向下浏览时隐藏模式 -> 由子页面通过 LocalSetBottomBarVisible 控制，初始为 true
         // 根据模式强制重置状态（防止模式切换后状态卡死）
         LaunchedEffect(bottomBarVisibilityMode) {
             isBottomBarVisible = true
@@ -1304,7 +1304,7 @@ fun AppNavigation(
         // - 必须是用户配置的可见主入口页面
         // - 不是侧边栏模式
         // - 不是故事模式
-        // - 且 (模式为始终显示 OR (模式为上滑隐藏 AND 当前状态为可见))
+        // - 且 (模式为始终显示 OR (模式为向下浏览时隐藏 AND 当前状态为可见))
         // - 且 模式不是永久隐藏
         val finalBottomBarVisible = showBottomBar &&
             !isVideoDetailDestination &&

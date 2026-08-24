@@ -1307,7 +1307,7 @@ fun HomeScreen(
             return@LaunchedEffect
         }
         
-        // 上滑隐藏模式：监听滚动方向
+        // 向下浏览时隐藏模式：监听滚动方向
         val currentGridState = if (currentCategory == HomeCategory.POPULAR) {
             popularGridStates[popularSubCategory]
         } else {
