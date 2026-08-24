@@ -3545,6 +3545,8 @@ fun AppNavigation(
                     predictiveBackExitDirection = predictiveBackExitDirection,
                     miuixTransitionBlurEnabled =
                         appNavigationSettings.miuixTransitionBlurEnabled,
+                    videoSharedReturnGestureFollowEnabled =
+                        appNavigationSettings.videoSharedReturnGestureFollowEnabled,
                     sourceMetadata = navigation3SourceMetadata,
                     programmaticBackDispatcher = navigation3ProgrammaticBackDispatcher,
                     // 来源卡内容进入飞行 shared-bounds 壳，在后段由播放器/详情信息

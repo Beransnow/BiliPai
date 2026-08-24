@@ -367,6 +367,27 @@ fun AnimationSettingsContent(
                         )
                         AppPreferenceDivider()
                         AppSwitchPreference(
+                            icon = rememberSettingsSemanticIcon(SettingsIconRole.CARD_TRANSITION_ANIMATION),
+                            title = "视频返回跟手姿态",
+                            subtitle = if (appNavigationSettings.videoSharedReturnGestureFollowEnabled) {
+                                "侧滑返回时共享卡片跟随手指移动和轻微旋转，落点保持不变"
+                            } else {
+                                "共享卡片仅按固定路径返回原位置"
+                            },
+                            checked = appNavigationSettings.videoSharedReturnGestureFollowEnabled,
+                            onCheckedChange = { enabled ->
+                                scope.launch {
+                                    SettingsManager.setVideoSharedReturnGestureFollowEnabled(
+                                        context,
+                                        enabled,
+                                    )
+                                }
+                            },
+                            enabled = state.cardTransitionEnabled,
+                            iconTint = iOSTeal,
+                        )
+                        AppPreferenceDivider()
+                        AppSwitchPreference(
                             icon = rememberSettingsSemanticIcon(SettingsIconRole.WALLPAPER_EFFECT),
                             title = "转场时模糊背景",
                             subtitle = "让视频转场更有层次；关闭可减少性能和耗电开销",

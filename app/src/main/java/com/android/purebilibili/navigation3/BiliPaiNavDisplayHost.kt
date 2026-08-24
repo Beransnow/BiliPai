@@ -99,6 +99,7 @@ internal fun BiliPaiNavDisplayHost(
     predictiveBackExitDirection: BiliPaiPredictiveBackExitDirection =
         BiliPaiPredictiveBackExitDirection.ALWAYS_RIGHT,
     miuixTransitionBlurEnabled: Boolean = true,
+    videoSharedReturnGestureFollowEnabled: Boolean = true,
     sourceMetadata: BiliPaiNavSourceMetadata,
     programmaticBackDispatcher: BiliPaiProgrammaticBackDispatcher,
     preferWholeCardReturn: Boolean = false,
@@ -187,6 +188,7 @@ internal fun BiliPaiNavDisplayHost(
         videoSharedTransitionDurationMillis,
         globalTransition,
         videoCardContentScale,
+        videoSharedReturnGestureFollowEnabled,
     ) {
         if (cardMorphAvailable) {
             miuixVideoCardNavTransition(
@@ -196,6 +198,7 @@ internal fun BiliPaiNavDisplayHost(
                 fallback = globalTransition,
                 progress = videoCardTransitionProgress,
                 contentScale = videoCardContentScale,
+                gestureFollowEnabled = videoSharedReturnGestureFollowEnabled,
             )
         } else {
             globalTransition
@@ -207,6 +210,7 @@ internal fun BiliPaiNavDisplayHost(
         sourceMetadata.sourceCornerDp,
         videoSharedTransitionDurationMillis,
         globalTransition,
+        videoSharedReturnGestureFollowEnabled,
     ) {
         if (cardMorphAvailable) {
             miuixVideoCardNavTransition(
@@ -216,6 +220,7 @@ internal fun BiliPaiNavDisplayHost(
                 fallback = globalTransition,
                 progress = videoCardTransitionProgress,
                 contentScale = MiuixVideoCardContentScale.CropCenter,
+                gestureFollowEnabled = videoSharedReturnGestureFollowEnabled,
             )
         } else {
             globalTransition

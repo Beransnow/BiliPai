@@ -939,6 +939,7 @@ data class AppNavigationSettings(
     val predictiveBackAnimationStyle: String = "miuix",
     val predictiveBackExitDirection: String = "always_right",
     val miuixTransitionBlurEnabled: Boolean = true,
+    val videoSharedReturnGestureFollowEnabled: Boolean = true,
 )
 
 internal data class BottomTabMigrationResult(
@@ -6703,6 +6704,8 @@ object SettingsManager {
     private val KEY_PREDICTIVE_BACK_EXIT_DIRECTION = stringPreferencesKey("predictive_back_exit_direction")
     private val KEY_MIUIX_TRANSITION_BLUR_ENABLED =
         booleanPreferencesKey("miuix_transition_blur_enabled")
+    private val KEY_VIDEO_SHARED_RETURN_GESTURE_FOLLOW_ENABLED =
+        booleanPreferencesKey("video_shared_return_gesture_follow_enabled")
     
     /**
      *  平板导航模式
@@ -6746,6 +6749,8 @@ object SettingsManager {
             predictiveBackExitDirection =
                 preferences[KEY_PREDICTIVE_BACK_EXIT_DIRECTION] ?: "always_right",
             miuixTransitionBlurEnabled = preferences[KEY_MIUIX_TRANSITION_BLUR_ENABLED] ?: true,
+            videoSharedReturnGestureFollowEnabled =
+                preferences[KEY_VIDEO_SHARED_RETURN_GESTURE_FOLLOW_ENABLED] ?: true,
         )
     }
 
@@ -6785,6 +6790,10 @@ object SettingsManager {
 
     suspend fun setMiuixTransitionBlurEnabled(context: Context, enabled: Boolean) {
         NavigationSettingsStore.setMiuixTransitionBlurEnabled(context, enabled)
+    }
+
+    suspend fun setVideoSharedReturnGestureFollowEnabled(context: Context, enabled: Boolean) {
+        NavigationSettingsStore.setVideoSharedReturnGestureFollowEnabled(context, enabled)
     }
 
     fun getFullScreenSwipeBackEnabled(context: Context): Flow<Boolean> =
@@ -7100,6 +7109,10 @@ object SettingsManager {
             ),
             BooleanShareablePreferenceDefinition(
                 KEY_MIUIX_TRANSITION_BLUR_ENABLED,
+                SettingsShareSection.APPEARANCE,
+            ),
+            BooleanShareablePreferenceDefinition(
+                KEY_VIDEO_SHARED_RETURN_GESTURE_FOLLOW_ENABLED,
                 SettingsShareSection.APPEARANCE,
             ),
             IntShareablePreferenceDefinition(KEY_VIDEO_SHARED_TRANSITION_SPEED, SettingsShareSection.APPEARANCE),

@@ -67,6 +67,8 @@ object NavigationSettingsStore {
     private val keyPredictiveBackExitDirection = stringPreferencesKey("predictive_back_exit_direction")
     private val keyMiuixTransitionBlurEnabled =
         booleanPreferencesKey("miuix_transition_blur_enabled")
+    private val keyVideoSharedReturnGestureFollowEnabled =
+        booleanPreferencesKey("video_shared_return_gesture_follow_enabled")
     private val keyFullScreenSwipeBackEnabled =
         booleanPreferencesKey("full_screen_swipe_back_enabled")
     private val keyBottomBarOrder = stringPreferencesKey("bottom_bar_order")
@@ -194,6 +196,12 @@ object NavigationSettingsStore {
     suspend fun setMiuixTransitionBlurEnabled(context: Context, enabled: Boolean) {
         context.settingsDataStore.edit { preferences ->
             preferences[keyMiuixTransitionBlurEnabled] = enabled
+        }
+    }
+
+    suspend fun setVideoSharedReturnGestureFollowEnabled(context: Context, enabled: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[keyVideoSharedReturnGestureFollowEnabled] = enabled
         }
     }
 
