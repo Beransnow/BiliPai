@@ -119,6 +119,59 @@ class DynamicRichTextPolicyTest {
     }
 
     @Test
+    fun buildDynamicRichTextAnnotatedString_marksStructuredBvTitleAsClickableLink() {
+        val annotated = buildDynamicRichTextAnnotatedString(
+            desc = DynamicDesc(
+                rich_text_nodes = listOf(
+                    RichTextNode(
+                        type = "RICH_TEXT_NODE_TYPE_BV",
+                        text = "视频标题",
+                        jump_url = "https://www.bilibili.com/video/BV1xx411c7mD/",
+                    )
+                )
+            ),
+            primaryColor = Color.Blue,
+            textColor = Color.Black,
+        )
+
+        val annotation = annotated.getStringAnnotations(
+            tag = DYNAMIC_RICH_TEXT_URL_TAG,
+            start = 0,
+            end = annotated.length,
+        ).single()
+
+        assertEquals("https://www.bilibili.com/video/BV1xx411c7mD/", annotation.item)
+        assertEquals("视频标题", annotated.text)
+        assertEquals(Color.Blue, annotated.spanStyles.single().item.color)
+    }
+
+    @Test
+    fun buildDynamicRichTextAnnotatedString_usesVoteRidForClickableVote() {
+        val annotated = buildDynamicRichTextAnnotatedString(
+            desc = DynamicDesc(
+                rich_text_nodes = listOf(
+                    RichTextNode(
+                        type = "RICH_TEXT_NODE_TYPE_VOTE",
+                        text = "选择你支持的选项",
+                        rid = "3925886",
+                    )
+                )
+            ),
+            primaryColor = Color.Blue,
+            textColor = Color.Black,
+        )
+
+        val annotation = annotated.getStringAnnotations(
+            tag = DYNAMIC_RICH_TEXT_VOTE_TAG,
+            start = 0,
+            end = annotated.length,
+        ).single()
+
+        assertEquals("3925886", annotation.item)
+        assertEquals(Color.Blue, annotated.spanStyles.single().item.color)
+    }
+
+    @Test
     fun buildDynamicRichTextAnnotatedString_detectsPlainTextUrlWhenNodesMissing() {
         val desc = DynamicDesc(
             text = "https://b23.tv/cm-yaoyue-0-3jgPM iPhone16系列至高直降千元起"

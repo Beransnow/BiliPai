@@ -692,7 +692,8 @@ fun DynamicCardV2(
             if (shouldRenderDynamicRichText(desc)) {
                 RichTextContent(
                     desc = desc,
-                    onUserClick = onUserClick
+                    onUserClick = onUserClick,
+                    onVoteClick = { voteId -> pendingVoteId = voteId },
                 )
                 Spacer(modifier = Modifier.height(AppSpacingTokens.Medium))
             }
@@ -1086,7 +1087,8 @@ fun DynamicCardV2(
             ActionButton(
                 count = statModule.comment.count,
                 label = "评论",
-                enabled = !statModule.comment.forbidden,
+                // forbidden 代表评论操作受限；仍允许进入详情查看已有评论。
+                enabled = item.id_str.isNotBlank(),
                 onClick = {
                     DynamicRepository.rememberDynamicDetailSeed(item)
                     onCommentClick(item.id_str)
@@ -1230,6 +1232,7 @@ private fun DynamicAdditionalCard(
 fun RichTextContent(
     desc: DynamicDesc,
     onUserClick: (Long) -> Unit,
+    onVoteClick: (Long) -> Unit = {},
     onBlankTap: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
@@ -1286,7 +1289,7 @@ fun RichTextContent(
         lineHeight = MaterialTheme.typography.bodyLarge.lineHeight,
         color = textColor,
         onTextLayout = { textLayoutResult = it },
-        modifier = Modifier.pointerInput(copyText, annotatedText, onBlankTap) {
+        modifier = Modifier.pointerInput(copyText, annotatedText, onVoteClick, onBlankTap) {
             detectTapGestures(
                 onLongPress = {
                     if (copyText.isNotEmpty()) {
@@ -1309,6 +1312,18 @@ fun RichTextContent(
                             ?.let(onUserClick)
                         return@detectTapGestures
                     }
+
+                    annotatedText.getStringAnnotations(
+                        tag = DYNAMIC_RICH_TEXT_VOTE_TAG,
+                        start = searchStart,
+                        end = searchEnd
+                    ).firstOrNull()?.item
+                        ?.toLongOrNull()
+                        ?.takeIf { it > 0L }
+                        ?.let { voteId ->
+                            onVoteClick(voteId)
+                            return@detectTapGestures
+                        }
 
                     val urlAnnotation = annotatedText.getStringAnnotations(
                         tag = DYNAMIC_RICH_TEXT_URL_TAG,

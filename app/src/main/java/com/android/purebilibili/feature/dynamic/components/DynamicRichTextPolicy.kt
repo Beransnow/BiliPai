@@ -16,6 +16,7 @@ import com.android.purebilibili.data.model.response.RichTextNode
 
 internal const val DYNAMIC_RICH_TEXT_URL_TAG = "URL"
 internal const val DYNAMIC_RICH_TEXT_USER_TAG = "USER"
+internal const val DYNAMIC_RICH_TEXT_VOTE_TAG = "VOTE"
 
 internal enum class DynamicRichTextOpenMode {
     IN_APP,
@@ -264,6 +265,14 @@ private fun AnnotatedString.Builder.appendDynamicRichTextNode(
             }
         }
 
+        nodeType.equals("VOTE", ignoreCase = true) -> {
+            appendDynamicRichTextVote(
+                displayText = displayToken,
+                voteId = node.rid,
+                primaryColor = primaryColor,
+            )
+        }
+
         shouldRenderDynamicRichTextLink(nodeType, node) -> {
             appendDynamicRichTextLink(
                 displayText = displayToken,
@@ -277,12 +286,6 @@ private fun AnnotatedString.Builder.appendDynamicRichTextNode(
                 node = node,
                 primaryColor = primaryColor
             )
-        }
-
-        nodeType.equals("TOPIC", ignoreCase = true) -> {
-            withStyle(SpanStyle(color = primaryColor, fontWeight = FontWeight.Medium)) {
-                append(displayToken)
-            }
         }
 
         else -> {
@@ -333,12 +336,31 @@ private fun shouldRenderDynamicRichTextLink(
     node: RichTextNode
 ): Boolean {
     val normalized = nodeType.uppercase()
-    if (normalized in setOf("AT", "TOPIC", "EMOJI")) return false
-    if (normalized in setOf("WEB", "LINK", "URL")) return true
+    if (normalized in setOf("AT", "EMOJI", "VOTE")) return false
+    if (normalized in DYNAMIC_RICH_TEXT_LINK_NODE_TYPES) {
+        return !resolveDynamicRichTextLinkTarget(node).isNullOrBlank()
+    }
     val display = resolveDynamicRichTextNodeToken(node)
     return !resolveDynamicRichTextLinkTarget(node).isNullOrBlank() &&
         DYNAMIC_RICH_TEXT_URL_PATTERN.containsMatchIn(display)
 }
+
+private val DYNAMIC_RICH_TEXT_LINK_NODE_TYPES = setOf(
+    "WEB",
+    "LINK",
+    "URL",
+    "TOPIC",
+    "GOODS",
+    "BV",
+    "AV",
+    "CV",
+    "VIEW_PICTURE",
+    "TAOBAO",
+    "MAIL",
+    "OGV_SEASON",
+    "OGV_EP",
+    "LOTTERY",
+)
 
 private fun resolveDynamicRichTextLinkTarget(node: RichTextNode): String? {
     normalizeDynamicRichTextUrl(node.jump_url)?.let { return it }
@@ -436,6 +458,26 @@ private fun AnnotatedString.Builder.appendDynamicRichTextLink(
         append(displayText)
     }
     pop()
+}
+
+private fun AnnotatedString.Builder.appendDynamicRichTextVote(
+    displayText: String,
+    voteId: String?,
+    primaryColor: Color,
+) {
+    val normalizedVoteId = voteId?.trim()?.toLongOrNull()?.takeIf { it > 0L }
+    if (normalizedVoteId != null) {
+        pushStringAnnotation(
+            tag = DYNAMIC_RICH_TEXT_VOTE_TAG,
+            annotation = normalizedVoteId.toString(),
+        )
+    }
+    withStyle(SpanStyle(color = primaryColor, fontWeight = FontWeight.Medium)) {
+        append(displayText)
+    }
+    if (normalizedVoteId != null) {
+        pop()
+    }
 }
 
 private fun normalizeDynamicRichTextUrl(rawUrl: String?): String? {

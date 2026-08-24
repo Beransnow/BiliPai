@@ -629,7 +629,7 @@ fun CommonListScreen(
         if (isSearchDestination && favoriteViewModel != null) {
             kotlinx.coroutines.delay(350)
             favoriteViewModel.searchVideos(searchQuery, favoriteSearchScope)
-        } else if (isSearchDestination && historyViewModel != null) {
+        } else if (historyViewModel != null) {
             kotlinx.coroutines.delay(350)
             historyViewModel.searchHistory(searchQuery)
         }
