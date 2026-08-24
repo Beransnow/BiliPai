@@ -44,7 +44,6 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FilledIconButton
@@ -85,7 +84,6 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemColors
 import androidx.compose.material3.NavigationDrawerItemDefaults
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -119,7 +117,6 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorProducer
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.painter.Painter
@@ -212,38 +209,6 @@ private fun Modifier.globalTextTapCopy(text: String): Modifier = composed {
         }
     }
 }
-
-@Composable
-fun AppSurface(
-    modifier: Modifier = Modifier,
-    shape: Shape = RectangleShape,
-    color: Color = MaterialTheme.colorScheme.surface,
-    contentColor: Color = contentColorFor(color),
-    tonalElevation: Dp = 0.dp,
-    shadowElevation: Dp = 0.dp,
-    border: BorderStroke? = null,
-    content: @Composable () -> Unit,
-) = Surface(
-    modifier = modifier,
-    shape = shape,
-    color = color,
-    contentColor = contentColor,
-    tonalElevation = tonalElevation,
-    shadowElevation = shadowElevation,
-    border = border,
-    content = content,
-)
-
-@Composable
-fun AppHorizontalDivider(
-    modifier: Modifier = Modifier,
-    thickness: Dp = DividerDefaults.Thickness,
-    color: Color = DividerDefaults.color,
-) = HorizontalDivider(
-    modifier = modifier,
-    thickness = thickness,
-    color = color,
-)
 
 @Composable
 fun AppListItem(
@@ -531,39 +496,6 @@ fun AppScrollableTabRow(
     divider = divider,
     tabs = tabs,
 )
-
-@Composable
-fun AppSurface(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    shape: Shape = RectangleShape,
-    color: Color = MaterialTheme.colorScheme.surface,
-    contentColor: Color = contentColorFor(color),
-    tonalElevation: Dp = 0.dp,
-    shadowElevation: Dp = 0.dp,
-    border: BorderStroke? = null,
-    interactionSource: MutableInteractionSource? = null,
-    content: @Composable () -> Unit,
-) {
-    val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
-    Surface(
-        onClick = onClick,
-        modifier = Modifier
-            .minimumInteractiveComponentSize()
-            .then(modifier)
-            .appDesktopInteractionVisuals(resolvedInteractionSource, enabled),
-        enabled = enabled,
-        shape = shape,
-        color = color,
-        contentColor = contentColor,
-        tonalElevation = tonalElevation,
-        shadowElevation = shadowElevation,
-        border = border,
-        interactionSource = resolvedInteractionSource,
-        content = content,
-    )
-}
 
 @Composable
 fun AppButton(
