@@ -94,12 +94,7 @@ fun resolveTabletVideoLayoutPolicy(
     }
 }
 
-internal fun resolveTabletSecondaryDefaultTab(
-    replyCount: Int,
-    hasRelatedVideos: Boolean
-): Int {
-    return if (replyCount == 0 && hasRelatedVideos) 1 else 0
-}
+internal fun resolveTabletSecondaryDefaultTab(): Int = 0
 
 fun resolveTabletCinemaLayoutPolicy(
     widthDp: Int,

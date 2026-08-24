@@ -520,10 +520,7 @@ private fun TabletSecondaryContent(
     val relatedTabIndex = tabs.indexOf(TabletSecondaryTab.RELATED).coerceAtLeast(0)
     var selectedTab by rememberSaveable(success.info.bvid, fixedTab) {
         mutableIntStateOf(
-            if (fixedTab != null) 0 else resolveTabletSecondaryDefaultTab(
-                replyCount = commentState.replyCount,
-                hasRelatedVideos = success.related.isNotEmpty()
-            )
+            if (fixedTab != null) 0 else resolveTabletSecondaryDefaultTab()
         )
     }
     val pagerState = rememberPagerState(
