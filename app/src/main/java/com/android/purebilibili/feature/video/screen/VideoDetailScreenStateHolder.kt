@@ -1350,13 +1350,21 @@ internal fun VideoDetailScreenStateHolder(
         isActuallyLeaving = isActuallyLeaving,
         isSessionReturningToCard = isSessionReturningToCard,
     )
+    val miuixVisualAssetsActive = shouldConsumeMiuixTransitionVisualAssets(
+        entryOwnsMiuixCardTransition = entryOwnsMiuixCardTransition,
+        phase = videoCardDepthBackgroundState.phaseProvider(),
+        isReturnGestureInProgress =
+            videoCardDepthBackgroundState.isReturnGestureInProgressProvider(),
+        isGestureRestoreInProgress =
+            videoCardDepthBackgroundState.isGestureRestoreInProgressProvider(),
+    )
     val miuixCoverSnapshot =
         com.android.purebilibili.core.ui.transition.LocalMiuixVideoCardTransitionState.current
             .sourceChromeSnapshot
-            .takeIf { entryOwnsMiuixCardTransition }
+            .takeIf { miuixVisualAssetsActive }
     val clickCoverSnapshot =
         com.android.purebilibili.core.util.CardPositionManager.lastClickedVideoSourceChromeSnapshot
-            .takeIf { entryOwnsMiuixCardTransition }
+            .takeIf { miuixVisualAssetsActive }
     val homePrefetchCover = remember(bvid) {
         com.android.purebilibili.core.util.HomeCoverReturnPrefetchRegistry.snapshot()
             .firstOrNull { it.bvid == bvid.trim() }
@@ -4445,7 +4453,14 @@ internal fun VideoDetailScreenStateHolder(
                     // 返回信息区必须画在飞行壳上：sharedBounds 遮罩盖住列表，真卡露不出来。
                     // 文案用点击快照 + ViewInfo，尽量对齐列表；卸层后再露列表真卡。
                     if (
-                        entryOwnsMiuixCardTransition &&
+                        shouldConsumeMiuixTransitionVisualAssets(
+                            entryOwnsMiuixCardTransition = entryOwnsMiuixCardTransition,
+                            phase = videoCardDepthBackgroundState.phaseProvider(),
+                            isReturnGestureInProgress = videoCardDepthBackgroundState
+                                .isReturnGestureInProgressProvider(),
+                            isGestureRestoreInProgress = videoCardDepthBackgroundState
+                                .isGestureRestoreInProgressProvider(),
+                        ) &&
                         shouldDrawFlyingReturnSourceCardChrome() &&
                         !suppressPhoneDetailBodyForDirectPortrait
                     ) {
