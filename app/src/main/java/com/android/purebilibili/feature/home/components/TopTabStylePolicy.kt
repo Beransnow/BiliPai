@@ -440,7 +440,7 @@ internal fun resolveMd3TopTabVisualSpec(
     if (presentation == AppTopTabPresentation.TONAL_CAPSULE) {
         return if (isFloatingStyle) {
             Md3TopTabVisualSpec(
-                rowHeight = 40.dp,
+                rowHeight = if (showIconAndText) 60.dp else 40.dp,
                 selectedCapsuleHeight = 30.dp,
                 selectedCapsuleCornerRadius = 9.dp,
                 selectedCapsuleTonalElevation = 0.dp,
@@ -453,7 +453,7 @@ internal fun resolveMd3TopTabVisualSpec(
             )
         } else {
             Md3TopTabVisualSpec(
-                rowHeight = 36.dp,
+                rowHeight = if (showIconAndText) 56.dp else 36.dp,
                 selectedCapsuleHeight = 30.dp,
                 selectedCapsuleCornerRadius = 9.dp,
                 selectedCapsuleTonalElevation = 0.dp,
@@ -471,7 +471,7 @@ internal fun resolveMd3TopTabVisualSpec(
     // Older 54–64dp Material TabRow heights clip inside the 36/40 chrome and collapse labels.
     return if (isFloatingStyle) {
         Md3TopTabVisualSpec(
-            rowHeight = 40.dp,
+            rowHeight = if (showIconAndText) 60.dp else 40.dp,
             selectedCapsuleHeight = CompactTopTabIndicatorHeightDp.dp,
             selectedCapsuleCornerRadius = CompactTopTabIndicatorCornerDp.dp,
             selectedCapsuleTonalElevation = 0.dp,
@@ -484,7 +484,7 @@ internal fun resolveMd3TopTabVisualSpec(
         )
     } else {
         Md3TopTabVisualSpec(
-            rowHeight = 36.dp,
+            rowHeight = if (showIconAndText) 56.dp else 36.dp,
             selectedCapsuleHeight = CompactTopTabIndicatorHeightDp.dp,
             selectedCapsuleCornerRadius = CompactTopTabIndicatorCornerDp.dp,
             selectedCapsuleTonalElevation = 0.dp,

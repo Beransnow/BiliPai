@@ -503,7 +503,7 @@ class TopTabStylePolicyTest {
             labelMode = 0
         )
 
-        assertEquals(36.dp, spec.rowHeight)
+        assertEquals(56.dp, spec.rowHeight)
         assertEquals(10.dp, spec.itemHorizontalPadding)
         assertEquals(6.dp, spec.iconLabelSpacing)
         assertEquals(18.dp, spec.iconSize)

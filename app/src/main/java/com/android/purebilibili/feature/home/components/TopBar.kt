@@ -1845,7 +1845,7 @@ private fun LightweightHomeTopTabs(
                     val nativeIndicatorWidth = if (iconOnlyIndicator) {
                         resolveIconOnlyTopTabIndicatorWidth()
                     } else {
-                        md3IndicatorWidth
+                        itemWidth
                     }
                     val nativeUnderlineBounds = with(density) {
                         resolveMd3TopTabUnderlineBounds(
@@ -2063,12 +2063,12 @@ private fun LightweightTopTabItem(
             ),
         contentAlignment = Alignment.Center
     ) {
-        Row(
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
+                .wrapContentWidth()
                 .padding(horizontal = itemContentHorizontalPadding),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             if (showIcon) {
                 if (!skinIconPath.isNullOrBlank()) {
@@ -2091,7 +2091,7 @@ private fun LightweightTopTabItem(
                 }
             }
             if (showIcon && showText) {
-                Spacer(modifier = Modifier.width(resolveTopTabIconTextSpacingDp(0).dp))
+                Spacer(modifier = Modifier.height(resolveTopTabIconTextSpacingDp(0).dp))
             }
             if (showText) {
                 val labelMode = when {
@@ -2627,9 +2627,9 @@ fun CategoryTabItem(
          contentAlignment = Alignment.Center
      ) {
          if (showIcon && showText) {
-             Row(
-                 horizontalArrangement = Arrangement.Center,
-                 verticalAlignment = Alignment.CenterVertically,
+             Column(
+                 horizontalAlignment = Alignment.CenterHorizontally,
+                 verticalArrangement = Arrangement.Center,
                  modifier = Modifier.graphicsLayer {
                      scaleX = targetScale
                      scaleY = targetScale
@@ -2643,7 +2643,7 @@ fun CategoryTabItem(
                      tint = contentColor,
                      modifier = Modifier.size(iconSize)
                  )
-                 Spacer(modifier = Modifier.width(iconTextSpacing))
+                 Spacer(modifier = Modifier.height(iconTextSpacing))
                  AppText(
                      text = category,
                      color = contentColor,
