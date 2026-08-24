@@ -45,6 +45,7 @@ import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.feature.personal.PersonalMediaCardFrame
+import kotlin.math.roundToInt
 
 internal fun resolveFavoriteDateLabel(
     timestampSeconds: Long,
@@ -101,6 +102,7 @@ internal fun FavoritePersonalCard(
             .diskCacheKey(stationaryCoverUrl)
             .build()
     }
+    val cardCornerRadiusDp = AppShapes.containerCornerDp(ContainerLevel.Card).value.roundToInt()
     val triggerClick = {
         if (!batchMode) {
             cardBounds.value?.let { bounds ->
@@ -110,7 +112,7 @@ internal fun FavoritePersonalCard(
                     bounds = bounds,
                     screenWidth = configuration.screenWidthDp * density.density,
                     screenHeight = configuration.screenHeightDp * density.density,
-                    sourceCornerDp = 12,
+                    sourceCornerDp = cardCornerRadiusDp,
                     coverBounds = coverBounds.value,
                     sourceLayout = VideoCardSourceLayout.SIDE_BY_SIDE,
                     sourceChromeSnapshot = VideoCardSourceChromeSnapshot(

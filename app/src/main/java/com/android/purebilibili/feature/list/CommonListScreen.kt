@@ -13,6 +13,8 @@ import com.android.purebilibili.core.ui.components.AppCardVariant
 import com.android.purebilibili.core.ui.components.AppDropdownMenu
 import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import com.android.purebilibili.core.ui.components.AppFilterChip
+import com.android.purebilibili.core.ui.components.AppNativeTabRow
+import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppSmallFloatingActionButton
 import com.android.purebilibili.core.ui.components.AppSurface
@@ -1627,29 +1629,28 @@ fun CommonListScreen(
                     }
 
                     if (favoriteViewModel != null) {
-                        FlowRow(
+                        val favoriteSectionOptions = remember {
+                            FavoriteSection.entries.map { section ->
+                                AppSegmentOption(value = section, label = section.label)
+                            }
+                        }
+                        AppNativeTabRow(
+                            options = favoriteSectionOptions,
+                            selectedValue = favoriteSection,
+                            onSelectionChange = { section ->
+                                if (favoriteSection != section) {
+                                    favoriteSection = section
+                                    favoriteBrowseSection = FavoriteBrowseSection.OWNED
+                                    searchQuery = ""
+                                    isFavoriteBatchMode = false
+                                    selectedFavoriteResourceIds = emptySet()
+                                }
+                            },
+                            scrollable = FavoriteSection.entries.size > 4,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(horizontal = AppSpacingTokens.Medium),
-                            horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
-                            verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
-                        ) {
-                            FavoriteSection.entries.forEach { section ->
-                                AppFilterChip(
-                                    selected = favoriteSection == section,
-                                    onClick = {
-                                        if (favoriteSection != section) {
-                                            favoriteSection = section
-                                            favoriteBrowseSection = FavoriteBrowseSection.OWNED
-                                            searchQuery = ""
-                                            isFavoriteBatchMode = false
-                                            selectedFavoriteResourceIds = emptySet()
-                                        }
-                                    },
-                                    label = { AppText(section.label) },
-                                )
-                            }
-                        }
+                        )
                         Spacer(modifier = Modifier.height(AppSpacingTokens.Small))
                     }
 
@@ -2930,7 +2931,7 @@ private fun FavoriteSubscribedFolderRow(
             )
             .clickable(onClick = onClick),
         color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.32f),
-        shape = AppShapes.container(ContainerLevel.Dialog)
+        shape = AppShapes.container(ContainerLevel.Card)
     ) {
         Row(
             modifier = Modifier
@@ -2971,7 +2972,7 @@ private fun FavoriteSubscribedFolderPreview(
     coverUrl: String?,
     title: String
 ) {
-    val shape = AppShapes.container(ContainerLevel.Field)
+    val shape = AppShapes.container(ContainerLevel.Card)
     Box(
         modifier = Modifier
             .width(resolveFavoriteSubscribedFolderPreviewWidth())
@@ -3028,7 +3029,7 @@ private fun Modifier.favoriteCollectionSharedBounds(
             sharedContentState = rememberSharedContentState(key = sharedElementKey),
             animatedVisibilityScope = animatedVisibilityScope,
             boundsTransform = { _, _ -> commonListSharedBoundsMotionSpec() },
-            clipInOverlayDuringTransition = OverlayClip(AppShapes.container(ContainerLevel.Dialog))
+            clipInOverlayDuringTransition = OverlayClip(AppShapes.container(ContainerLevel.Card))
         )
     }
 }

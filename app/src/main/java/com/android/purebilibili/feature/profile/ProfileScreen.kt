@@ -137,14 +137,14 @@ import com.android.purebilibili.core.ui.components.AppPreferenceGridItem
 import com.android.purebilibili.core.store.StoredAccountSession
 import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.SettingsManager
-import com.android.purebilibili.core.ui.rememberAppChromeLiquidGlassEnabled
 import com.android.purebilibili.data.model.response.FavFolder
 import com.android.purebilibili.data.model.response.FollowBangumiItem
 import com.android.purebilibili.data.model.response.SpaceAggregateArchiveItem
 import com.android.purebilibili.data.model.response.SpaceDynamicItem
 import com.android.purebilibili.data.model.response.SpaceVideoItem
 import com.android.purebilibili.feature.dynamic.DynamicDeleteAction
-import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
+import com.android.purebilibili.core.ui.components.AppNativeTabRow
+import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.feature.settings.AppThemeMode
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 
@@ -1196,8 +1196,6 @@ private fun ProfileSpaceContent(
                         ProfileSpaceTabs(
                             selectedTab = space.selectedTab,
                             onTabSelected = onTabSelected,
-                            contentChrome = contentChrome,
-                            embeddedInPanel = true
                         )
                         ProfileSpaceTabBody(
                             user = user,
@@ -1289,7 +1287,6 @@ private fun ProfileSpaceFeedColumn(
             ProfileSpaceTabs(
                 selectedTab = space.selectedTab,
                 onTabSelected = onTabSelected,
-                contentChrome = contentChrome
             )
         }
         item {
@@ -1809,79 +1806,21 @@ private fun ProfileSpaceStat(label: String, value: Int, color: Color, onClick: (
 private fun ProfileSpaceTabs(
     selectedTab: ProfileSpaceMainTab,
     onTabSelected: (ProfileSpaceMainTab) -> Unit,
-    contentChrome: ProfileContentChrome,
-    embeddedInPanel: Boolean = false
 ) {
     val tabs = remember { defaultProfileSpaceTabs() }
-    val context = LocalContext.current
-    val layoutTokens = remember { resolveProfileLayoutTokens() }
     val chromeSpec = remember { resolveProfileSpaceTabChromeSpec() }
-    val rowContainerShape = AppShapes.container(ContainerLevel.Pill)
-    val homeSettings by SettingsManager
-        .getHomeSettings(context)
-        .collectAsStateWithLifecycle(initialValue = HomeSettings())
-    val sharedLiquidGlassEnabled = rememberAppChromeLiquidGlassEnabled(
-        individualEnabled = homeSettings.isBottomBarLiquidGlassEnabled,
-        androidNativeEnabled = homeSettings.androidNativeLiquidGlassEnabled,
+    val options = remember(tabs) {
+        tabs.map { item -> AppSegmentOption(value = item.tab, label = item.title) }
+    }
+    AppNativeTabRow(
+        options = options,
+        selectedValue = selectedTab,
+        onSelectionChange = onTabSelected,
+        scrollable = tabs.size > 4,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = chromeSpec.rowHorizontalInsetDp.dp),
     )
-    val selectedIndex = tabs.indexOfFirst { it.tab == selectedTab }.coerceAtLeast(0)
-    val tabModifier = Modifier
-        .fillMaxWidth()
-        .padding(horizontal = chromeSpec.rowHorizontalInsetDp.dp)
-    val useUnderlineTabs = embeddedInPanel || !sharedLiquidGlassEnabled
-    if (!useUnderlineTabs) {
-        BottomBarLiquidSegmentedControl(
-            items = tabs.map { it.title },
-            selectedIndex = selectedIndex,
-            onSelected = { index -> tabs.getOrNull(index)?.let { onTabSelected(it.tab) } },
-            modifier = tabModifier
-                .padding(vertical = 6.dp)
-                .background(contentChrome.cardContainerColor, rowContainerShape)
-                .padding(horizontal = chromeSpec.controlHorizontalInsetDp.dp, vertical = 8.dp),
-            height = 46.dp,
-            indicatorHeight = 40.dp,
-            labelFontSize = 16.sp,
-            forceLiquidChrome = homeSettings.androidNativeLiquidGlassEnabled,
-            dragSelectionEnabled = true,
-            containerColorOverride = contentChrome.surfaceColor,
-            selectedTextColorOverride = contentChrome.onSurfaceColor,
-            unselectedTextColorOverride = contentChrome.onSurfaceVariantColor,
-            indicatorIdleSurfaceColorOverride = contentChrome.primaryColor.copy(alpha = 0.14f)
-        )
-        return
-    }
-
-    Row(
-        modifier = tabModifier
-            .height(layoutTokens.tabHeightDp.dp),
-        horizontalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterHorizontally),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        tabs.forEach { item ->
-            val selected = item.tab == selectedTab
-            Column(
-                modifier = Modifier
-                    .clickable { onTabSelected(item.tab) },
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                AppText(
-                    text = item.title,
-                    style = MaterialTheme.typography.titleSmall,
-                    color = if (selected) contentChrome.onSurfaceColor else contentChrome.onSurfaceVariantColor,
-                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Box(
-                    modifier = Modifier
-                        .width(24.dp)
-                        .height(3.dp)
-                        .clip(AppShapes.container(ContainerLevel.Pill))
-                        .background(if (selected) contentChrome.primaryColor else Color.Transparent)
-                )
-            }
-        }
-    }
 }
 
 @Composable
@@ -4395,7 +4334,7 @@ private fun ProfileFavoriteFolderShortcutChip(
     Row(
         modifier = modifier
             .heightIn(min = if (compact) 42.dp else 48.dp)
-            .clip(AppShapes.container(ContainerLevel.Dialog))
+            .clip(AppShapes.container(ContainerLevel.Card))
             .background(MaterialTheme.colorScheme.surface.copy(alpha = if (compact) 0.22f else 0.28f))
             .clickable(onClick = onClick)
             .padding(horizontal = if (compact) 9.dp else 10.dp, vertical = if (compact) 7.dp else 8.dp),
@@ -4437,7 +4376,7 @@ private fun ProfileFavoriteFolderMoreChip(
     Box(
         modifier = modifier
             .heightIn(min = 42.dp)
-            .clip(AppShapes.container(ContainerLevel.Dialog))
+            .clip(AppShapes.container(ContainerLevel.Card))
             .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.18f))
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 8.dp),

@@ -10,8 +10,7 @@ data class ProfileLayoutTokens(
     val contentSheetTopPaddingDp: Int = 8,
     val contentSheetBottomPaddingDp: Int = 24,
     val heroBottomInsetDp: Int = 24,
-    val sectionSpacingDp: Int = 20,
-    val tabHeightDp: Int = 48
+    val sectionSpacingDp: Int = 20
 )
 
 data class ProfileCardTokens(

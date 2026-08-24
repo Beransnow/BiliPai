@@ -11,7 +11,7 @@ class SpaceScreenStructureTest {
     fun `space chrome uses native tab rows and piliplus actions`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt")
 
-        assertTrue(source.contains("BottomBarLiquidSegmentedControl("))
+        assertTrue(source.contains("AppNativeTabRow("))
         assertTrue(source.contains("SpaceSecondarySwitchRow("))
         assertTrue(source.contains("resolveSpacePrimaryTab(selectedMainTab)"))
         assertTrue(source.contains("showTabRail = false"))
@@ -19,7 +19,8 @@ class SpaceScreenStructureTest {
         assertTrue(source.contains("onFansClick"))
         assertTrue(source.contains("Intent.ACTION_SEND"))
         assertFalse(source.contains("暂不支持私信"))
-        assertFalse(source.contains("AppNativeTabRow("))
+        assertFalse(source.contains("BottomBarLiquidSegmentedControl("))
+        assertFalse(source.contains("AppFilterChip("))
     }
 
     @Test
@@ -81,13 +82,27 @@ class SpaceScreenStructureTest {
     }
 
     @Test
-    fun `secondary contribution switch keeps the native tab row`() {
+    fun `secondary contribution switch follows the theme native tab row`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt")
 
         assertTrue(source.contains("SpaceSecondarySwitchRow("))
-        assertTrue(source.contains("AppFilterChip("))
-        assertTrue(source.contains("BottomBarLiquidSegmentedControl("))
+        assertTrue(source.contains("AppNativeTabRow("))
+        assertTrue(source.contains("AppSegmentOption(value = item.id, label = item.title)"))
+        assertFalse(source.contains("AppFilterChip("))
+        assertFalse(source.contains("BottomBarLiquidSegmentedControl("))
         assertFalse(source.contains("rememberTextMeasurer()"))
+    }
+
+    @Test
+    fun `space media library uses card semantic corners`() {
+        val source = loadSource("app/src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt")
+
+        assertTrue(source.contains("AppShapes.borderedContainer(ContainerLevel.Card)"))
+        assertTrue(source.contains("AppShapes.containerCornerDp(ContainerLevel.Card)"))
+        assertFalse(source.contains("RoundedCornerShape("))
+        assertFalse(source.contains("ContainerLevel.Dialog"))
+        assertFalse(source.contains("sourceCornerDp = 12"))
+        assertFalse(source.contains("sourceCornerDp = 14"))
     }
 
     @Test

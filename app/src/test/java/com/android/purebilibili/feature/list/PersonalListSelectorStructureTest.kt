@@ -16,8 +16,8 @@ class PersonalListSelectorStructureTest {
             .substringAfter("if (favoriteViewModel != null) {")
             .substringBefore("if (favoriteViewModel != null && isSearchDestination")
 
-        assertTrue(categorySelector.contains("FlowRow("))
-        assertTrue(categorySelector.contains("FavoriteSection.entries.forEach"))
+        assertTrue(categorySelector.contains("AppNativeTabRow("))
+        assertTrue(categorySelector.contains("FavoriteSection.entries.map"))
         assertFalse(categorySelector.contains("LazyRow("))
         assertFalse(source.contains("systemGestureExclusion"))
     }
@@ -59,7 +59,8 @@ class PersonalListSelectorStructureTest {
         val profileTabs = profileSource
             .substringAfter("private fun ProfileSpaceTabs(")
             .substringBefore("private fun ProfileSpaceTabBody(")
-        assertTrue(profileTabs.contains("dragSelectionEnabled = true"))
+        assertTrue(profileTabs.contains("AppNativeTabRow("))
+        assertFalse(profileTabs.contains("BottomBarLiquidSegmentedControl("))
     }
 
     private fun loadSource(path: String): String {

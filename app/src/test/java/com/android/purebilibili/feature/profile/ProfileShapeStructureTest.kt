@@ -14,6 +14,8 @@ class ProfileShapeStructureTest {
         assertTrue(screenSource.contains("AppShapes.borderedContainer(ContainerLevel.Sheet)"))
         assertTrue(screenSource.contains("AppShapes.container(ContainerLevel.Pill)"))
         assertTrue(screenSource.contains("AppShapes.borderedContainer(ContainerLevel.Card)"))
+        assertTrue(screenSource.contains("AppNativeTabRow("))
+        assertTrue(!screenSource.contains("BottomBarLiquidSegmentedControl("))
         assertTrue(skeletonSource.contains("AppShapes.container(ContainerLevel.Sheet)"))
         assertTrue(!screenSource.contains("RoundedCornerShape("))
         assertTrue(!skeletonSource.contains("RoundedCornerShape("))
