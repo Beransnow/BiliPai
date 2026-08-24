@@ -88,6 +88,15 @@ internal fun resolveDynamicFollowingsPageLimit(isStartupHydration: Boolean): Int
     return if (isStartupHydration) 1 else 3
 }
 
+internal fun hasLoadedAllDynamicFollowings(
+    pageSize: Int,
+    accumulatedCount: Int,
+    reportedTotal: Int,
+): Boolean {
+    return pageSize < DYNAMIC_FOLLOWINGS_PAGE_SIZE ||
+        (reportedTotal > 0 && accumulatedCount >= reportedTotal)
+}
+
 /**
  *  动态页面 ViewModel
  * 支持：动态列表、侧边栏关注用户、在线状态
@@ -107,6 +116,8 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
     private var incrementalTimelineRefreshEnabled: Boolean = false
     private var lastFollowingsLoadMs: Long = 0L
     private var isFollowingsLoading: Boolean = false
+    private var followingsFullyLoaded: Boolean = false
+    private var completeFollowingsLoadRequested: Boolean = false
     private var cacheSaveJob: Job? = null
     private var startupFollowingsHydrationScheduled: Boolean = false
     private var startupLoadsActivated: Boolean = false
@@ -167,12 +178,17 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
         if (startupLoadsActivated) return
         startupLoadsActivated = true
         refreshInBackground(resolveDynamicStartupLoadPlan())
+        if (_selectedTab.value == 4) {
+            requestCompleteFollowingsLoad()
+        }
     }
 
     private fun observeFollowStateChanges() {
         viewModelScope.launch {
             ActionRepository.followStateChanges.collect { change ->
                 if (change.isFollowing) {
+                    followingsFullyLoaded = false
+                    lastFollowingsLoadMs = 0L
                     requestFollowingsRefreshIfStale()
                 } else {
                     applyAuthorUnfollow(change.mid)
@@ -325,7 +341,7 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
      */
     private suspend fun loadAllFollowings(
         force: Boolean = false,
-        pageLimit: Int = resolveDynamicFollowingsPageLimit(isStartupHydration = false)
+        pageLimit: Int? = null,
     ) {
         if (isFollowingsLoading) return
         val now = System.currentTimeMillis()
@@ -338,23 +354,44 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
             val navResponse = NetworkModule.api.getNavInfo()
             val myMid = navResponse.data?.mid ?: return
             
-            val maxPages = pageLimit.coerceAtLeast(1)
-            // 加载关注列表（首轮保守拉取，后续按需补齐）
+            val maxPages = pageLimit?.coerceAtLeast(1) ?: Int.MAX_VALUE
+            // 首轮可限制一页；进入 UP 模式后按接口 total 拉完整关注列表。
             val allFollowings = mutableListOf<FollowingUser>()
+            var reachedEnd = false
             for (page in 1..maxPages) {
-                val response = NetworkModule.api.getFollowings(vmid = myMid, pn = page, ps = 50)
-                val users = response.data?.list ?: break
+                val response = NetworkModule.api.getFollowings(
+                    vmid = myMid,
+                    pn = page,
+                    ps = DYNAMIC_FOLLOWINGS_PAGE_SIZE,
+                )
+                val responseData = response.data ?: break
+                val users = responseData.list ?: break
                 allFollowings.addAll(users)
-                if (users.size < 50) break // 没有更多了
+                if (hasLoadedAllDynamicFollowings(
+                        pageSize = users.size,
+                        accumulatedCount = allFollowings.size,
+                        reportedTotal = responseData.total,
+                    )
+                ) {
+                    reachedEnd = true
+                    break
+                }
             }
             
             cachedFollowings = allFollowings
+            followingsFullyLoaded = reachedEnd
             lastFollowingsLoadMs = now
             rebuildFollowedUsers()
         } catch (e: Exception) {
             e.printStackTrace()
         } finally {
             isFollowingsLoading = false
+            if (completeFollowingsLoadRequested && !followingsFullyLoaded) {
+                completeFollowingsLoadRequested = false
+                viewModelScope.launch {
+                    loadAllFollowings(force = true, pageLimit = null)
+                }
+            }
         }
     }
 
@@ -363,6 +400,18 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
         if (!shouldReloadFollowings(nowMs = now, lastLoadMs = lastFollowingsLoadMs)) return
         viewModelScope.launch {
             loadAllFollowings(force = true)
+        }
+    }
+
+    private fun requestCompleteFollowingsLoad() {
+        if (followingsFullyLoaded) return
+        if (isFollowingsLoading) {
+            completeFollowingsLoadRequested = true
+            return
+        }
+        completeFollowingsLoadRequested = false
+        viewModelScope.launch {
+            loadAllFollowings(force = true, pageLimit = null)
         }
     }
 
@@ -512,25 +561,23 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
         if (uid != null) {
             //  [新增] 点击 UP 后清除其未读红点
             clearUplistUpdate(uid)
-            val localMatchCount = _uiState.value.timelinePage("all").items.count { item ->
-                item.modules.module_author?.mid == uid
-            }
             val shouldReload = shouldReloadSelectedUserDynamics(
                 previousUid = previousUid,
                 nextUid = uid,
                 currentItems = _uiState.value.userItems,
                 userError = _uiState.value.userError,
-                localMatchCount = localMatchCount
             )
-            _uiState.value = _uiState.value.copy(
-                userItems = emptyList<DynamicItem>().toImmutableList(),
-                hasUserMore = true,
-                userIsLoading = false,
-                userError = null
-            )
+            if (previousUid != uid) {
+                _uiState.value = _uiState.value.copy(
+                    userItems = emptyList<DynamicItem>().toImmutableList(),
+                    hasUserMore = true,
+                    userIsLoading = false,
+                    userError = null
+                )
+            }
             if (!shouldReload) return
 
-            // 切换用户时废弃旧请求，仅在本地没有匹配时才补远端数据
+            // 切换用户时废弃旧请求；同一用户失败重试时保留当前可见内容。
             userDynamicsJob?.cancel()
             activeUserDynamicsRequestToken += 1L
             val requestToken = activeUserDynamicsRequestToken
@@ -699,6 +746,9 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
             selectedTab = resolvedTab,
             selectedUserId = previousSelectedUserId
         )
+        if (resolvedTab == 4) {
+            requestCompleteFollowingsLoad()
+        }
         if (_selectedTab.value == resolvedTab && previousSelectedUserId == nextSelectedUserId) return
         if (previousSelectedUserId != nextSelectedUserId) {
             selectUser(nextSelectedUserId)
@@ -2050,6 +2100,8 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
         private const val MAX_CACHE_ITEMS = 100
     }
 }
+
+private const val DYNAMIC_FOLLOWINGS_PAGE_SIZE = 50
 
 /**
  *  侧边栏用户数据

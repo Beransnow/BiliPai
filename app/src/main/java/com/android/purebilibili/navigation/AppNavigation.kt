@@ -2194,6 +2194,23 @@ fun AppNavigation(
                                     pushNavigation3Route(ScreenRoutes.BangumiDetail.createRoute(seasonId, epId))
                                 }
                             },
+                            onArticleClick = { articleId, title ->
+                                coroutineScope.launch {
+                                    when (val target = resolveArticleNavigationTarget(articleId)) {
+                                        is ArticleNavigationTarget.NativeDynamic -> {
+                                            pushNavigation3Route(
+                                                ScreenRoutes.DynamicDetail.createRoute(target.dynamicId)
+                                            )
+                                        }
+                                        is ArticleNavigationTarget.NativeArticle -> {
+                                            pushNavigation3Route(
+                                                ScreenRoutes.ArticleDetail.createRoute(target.articleId, title)
+                                            )
+                                        }
+                                        null -> Unit
+                                    }
+                                }
+                            },
                             onDynamicDetailClick = { dynamicId ->
                                 pushNavigation3Route(ScreenRoutes.DynamicDetail.createRoute(dynamicId))
                             },

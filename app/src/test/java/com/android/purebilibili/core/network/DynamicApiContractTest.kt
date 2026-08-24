@@ -231,13 +231,14 @@ class DynamicApiContractTest {
         assertTrue(SPACE_DYNAMIC_FEATURES.contains("itemOpusStyle"))
         assertTrue(SPACE_DYNAMIC_FEATURES.contains("opusBigCover"))
         assertTrue(SPACE_DYNAMIC_FEATURES.contains("commentsNewVersion"))
+        assertTrue(SPACE_DYNAMIC_FEATURES.contains("onlyfansQaCard"))
     }
 
     @Test
-    fun getUserDynamicFeed_usesDynamicFeedAllEndpointAndQueryMap() {
+    fun getUserDynamicFeed_usesDocumentedSpaceFeedEndpointAndQueryMap() {
         val method = DynamicApi::class.java.methods.first { it.name == "getUserDynamicFeed" }
         val get = method.getAnnotation(GET::class.java)
-        assertEquals("x/polymer/web-dynamic/v1/feed/all", get?.value)
+        assertEquals("x/polymer/web-dynamic/v1/feed/space", get?.value)
 
         val firstParamAnnotations = method.parameterAnnotations[0].toList()
         assertTrue(firstParamAnnotations.any { it is QueryMap })

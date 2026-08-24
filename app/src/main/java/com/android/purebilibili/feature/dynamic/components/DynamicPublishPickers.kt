@@ -160,7 +160,8 @@ internal fun DynamicEmotePickerDialog(
     onSelected: (String) -> Unit,
 ) {
     var emotes by remember { mutableStateOf(DynamicEmoteCatalog.snapshot()) }
-    LaunchedEffect(Unit) { emotes = DynamicEmoteCatalog.ensureLoaded() }
+    val emoteCatalogSessionKey = DynamicEmoteCatalog.currentSessionKey()
+    LaunchedEffect(emoteCatalogSessionKey) { emotes = DynamicEmoteCatalog.ensureLoaded() }
     AppAlertDialog(
         onDismissRequest = onDismiss,
         title = { AppText("选择表情") },

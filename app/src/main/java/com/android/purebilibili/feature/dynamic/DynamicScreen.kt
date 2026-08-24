@@ -6,6 +6,7 @@ import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSw
 
 import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppDialogAction
+import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppSpacingTokens
 
 import androidx.compose.animation.AnimatedContent
@@ -43,10 +44,12 @@ import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppListItem
 import com.android.purebilibili.core.ui.components.AppRadioButton
 import com.android.purebilibili.core.ui.components.AppText
+import com.android.purebilibili.core.ui.components.AppFilterChip
 import com.android.purebilibili.feature.dynamic.components.DynamicPublishComposer
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -130,6 +133,7 @@ fun DynamicScreen(
     isCurrentPage: Boolean = true,
     onVideoClick: (String) -> Unit,
     onBangumiClick: (Long, Long) -> Unit = { _, _ -> },
+    onArticleClick: ((Long, String) -> Unit)? = null,
     onDynamicDetailClick: (String) -> Unit = {},
     onUserClick: (Long) -> Unit = {},
     onLiveClick: (roomId: Long, title: String, uname: String) -> Unit = { _, _, _ -> },
@@ -184,6 +188,16 @@ fun DynamicScreen(
     val showHiddenUsers by viewModel.showHiddenUsers.collectAsStateWithLifecycle()
     val hiddenUserIds by viewModel.hiddenUserIds.collectAsStateWithLifecycle()
     val selectedTab by viewModel.selectedTab.collectAsStateWithLifecycle()
+    var selectedUserContentFilterName by rememberSaveable(selectedUserId) {
+        mutableStateOf(DynamicUserContentFilter.ALL.name)
+    }
+    val selectedUserContentFilter = remember(selectedUserContentFilterName) {
+        runCatching { DynamicUserContentFilter.valueOf(selectedUserContentFilterName) }
+            .getOrDefault(DynamicUserContentFilter.ALL)
+    }
+    val selectedUserName = remember(displayUsers, selectedUserId) {
+        displayUsers.firstOrNull { it.uid == selectedUserId }?.name.orEmpty()
+    }
 
     //  [新增] 点赞/转发状态
     val likedDynamics by viewModel.likedDynamics.collectAsStateWithLifecycle()
@@ -392,8 +406,14 @@ fun DynamicScreen(
         }
     }
 
-    val activePresentation = remember(state, displayedLogicalTab, selectedUserId) {
+    val activePresentation = remember(
+        state,
+        displayedLogicalTab,
+        selectedUserId,
+        selectedUserContentFilter,
+    ) {
         resolveDynamicPagePresentation(state, displayedLogicalTab, selectedUserId)
+            .withUserContentFilter(selectedUserContentFilter)
     }
     val filteredItems = activePresentation.items
     val oldContentDividerLabel = remember(displayedLogicalTab, visibleTabs) {
@@ -667,8 +687,14 @@ fun DynamicScreen(
                             ) { page ->
                                 val tab = visibleTabs[page]
                                 val pageListState = requireNotNull(listStates[tab.logicalIndex])
-                                val pagePresentation = remember(state, tab.logicalIndex, selectedUserId) {
+                                val pagePresentation = remember(
+                                    state,
+                                    tab.logicalIndex,
+                                    selectedUserId,
+                                    selectedUserContentFilter,
+                                ) {
                                     resolveDynamicPagePresentation(state, tab.logicalIndex, selectedUserId)
+                                        .withUserContentFilter(selectedUserContentFilter)
                                 }
                                 val pageDividerIndex = remember(pagePresentation) {
                                     if (pagePresentation.isSelectedUserFeed) {
@@ -707,6 +733,14 @@ fun DynamicScreen(
                                         hasMore = pagePresentation.hasMore,
                                         selectedTab = tab.logicalIndex,
                                         isSelectedUserTabActive = pagePresentation.isSelectedUserFeed,
+                                        selectedUserName = selectedUserName,
+                                        selectedUserContentFilter = selectedUserContentFilter,
+                                        onSelectedUserContentFilterChange = { filter ->
+                                            selectedUserContentFilterName = filter.name
+                                        },
+                                        onOpenSelectedUser = {
+                                            selectedUserId?.takeIf { it > 0L }?.let(onUserClick)
+                                        },
                                         filteredItems = pagePresentation.items,
                                         listState = pageListState,
                                         statusBarHeight = statusBarHeight,
@@ -716,6 +750,7 @@ fun DynamicScreen(
                                         oldContentDividerLabel = pageDividerLabel,
                                         onVideoClick = onVideoClick,
                                         onBangumiClick = onBangumiClick,
+                                        onArticleClick = onArticleClick,
                                         onDynamicDetailClick = onDynamicDetailClick,
                                         onUserClick = onUserClick,
                                         onLiveClick = onLiveClick,
@@ -838,8 +873,14 @@ fun DynamicScreen(
                         ) { page ->
                             val tab = visibleTabs[page]
                             val pageListState = requireNotNull(listStates[tab.logicalIndex])
-                            val pagePresentation = remember(state, tab.logicalIndex, selectedUserId) {
+                            val pagePresentation = remember(
+                                state,
+                                tab.logicalIndex,
+                                selectedUserId,
+                                selectedUserContentFilter,
+                            ) {
                                 resolveDynamicPagePresentation(state, tab.logicalIndex, selectedUserId)
+                                    .withUserContentFilter(selectedUserContentFilter)
                             }
                             val pageDividerIndex = remember(pagePresentation) {
                                 if (pagePresentation.isSelectedUserFeed) {
@@ -879,6 +920,14 @@ fun DynamicScreen(
                                     hasMore = pagePresentation.hasMore,
                                     selectedTab = tab.logicalIndex,
                                     isSelectedUserTabActive = pagePresentation.isSelectedUserFeed,
+                                    selectedUserName = selectedUserName,
+                                    selectedUserContentFilter = selectedUserContentFilter,
+                                    onSelectedUserContentFilterChange = { filter ->
+                                        selectedUserContentFilterName = filter.name
+                                    },
+                                    onOpenSelectedUser = {
+                                        selectedUserId?.takeIf { it > 0L }?.let(onUserClick)
+                                    },
                                     filteredItems = pagePresentation.items,
                                     listState = pageListState,
                                     statusBarHeight = statusBarHeight,
@@ -888,6 +937,7 @@ fun DynamicScreen(
                                     oldContentDividerLabel = pageDividerLabel,
                                     onVideoClick = onVideoClick,
                                     onBangumiClick = onBangumiClick,
+                                    onArticleClick = onArticleClick,
                                     onDynamicDetailClick = onDynamicDetailClick,
                                     onUserClick = onUserClick,
                                     onLiveClick = onLiveClick,
@@ -1163,6 +1213,10 @@ private fun DynamicList(
     hasMore: Boolean,
     selectedTab: Int,
     isSelectedUserTabActive: Boolean,
+    selectedUserName: String,
+    selectedUserContentFilter: DynamicUserContentFilter,
+    onSelectedUserContentFilterChange: (DynamicUserContentFilter) -> Unit,
+    onOpenSelectedUser: () -> Unit,
     filteredItems: List<com.android.purebilibili.data.model.response.DynamicItem>,
     listState: LazyStaggeredGridState,
     statusBarHeight: androidx.compose.ui.unit.Dp,
@@ -1172,6 +1226,7 @@ private fun DynamicList(
     oldContentDividerLabel: String,
     onVideoClick: (String) -> Unit,
     onBangumiClick: (Long, Long) -> Unit,
+    onArticleClick: ((Long, String) -> Unit)?,
     onDynamicDetailClick: (String) -> Unit,
     onUserClick: (Long) -> Unit,
     onLiveClick: (Long, String, String) -> Unit,
@@ -1194,6 +1249,7 @@ private fun DynamicList(
             item = item,
             onVideoClick = onVideoClick,
             onBangumiClick = onBangumiClick,
+            onArticleClick = onArticleClick,
             onDynamicDetailClick = onDynamicDetailClick,
             onUserClick = onUserClick,
             onLiveClick = onLiveClick,
@@ -1233,6 +1289,21 @@ private fun DynamicList(
             .responsiveContentWidth(maxWidth = resolveDynamicTimelineMaxWidth())
             .fillMaxSize()
     ) {
+        if (isSelectedUserTabActive) {
+            item(
+                key = "dynamic_selected_user_header",
+                contentType = "dynamic_selected_user_header",
+                span = StaggeredGridItemSpan.FullLine,
+            ) {
+                DynamicSelectedUserFeedHeader(
+                    userName = selectedUserName,
+                    selectedFilter = selectedUserContentFilter,
+                    onFilterSelected = onSelectedUserContentFilterChange,
+                    onOpenUser = onOpenSelectedUser,
+                )
+            }
+        }
+
         // 首屏骨架屏（列表为空且加载中时显示，对齐 BiliPai dynSkeleton）
         if (showSkeleton) {
             items(
@@ -1254,11 +1325,20 @@ private fun DynamicList(
                 span = StaggeredGridItemSpan.FullLine
             ) {
                 DynamicEmptyState(
-                    title = if (selectedTab == 4 && !isSelectedUserTabActive) "选择一个 UP 查看动态" else "暂无动态",
-                    subtitle = if (selectedTab == 4 && !isSelectedUserTabActive) {
-                        "从左侧或顶部的 UP 列表中选择一个用户"
-                    } else {
-                        "登录后即可查看关注 UP 主的最新动态"
+                    title = when {
+                        selectedTab == 4 && !isSelectedUserTabActive -> "选择一个 UP 查看动态"
+                        isSelectedUserTabActive && selectedUserContentFilter != DynamicUserContentFilter.ALL ->
+                            "该 UP 暂无${selectedUserContentFilter.label}"
+                        isSelectedUserTabActive -> "该 UP 暂无动态"
+                        else -> "暂无动态"
+                    },
+                    subtitle = when {
+                        selectedTab == 4 && !isSelectedUserTabActive ->
+                            "从左侧或顶部的 UP 列表中选择一个用户"
+                        isSelectedUserTabActive && selectedUserContentFilter != DynamicUserContentFilter.ALL ->
+                            "可以切换到“全部”继续查看"
+                        isSelectedUserTabActive -> "该用户暂时没有可显示的公开动态"
+                        else -> "登录后即可查看关注 UP 主的最新动态"
                     },
                     modifier = Modifier.height(AppSpacingTokens.TripleExtraLarge * 6 + AppSpacingTokens.Medium)
                 )
@@ -1330,6 +1410,52 @@ private fun DynamicList(
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.5f),
                     fontSize = MaterialTheme.typography.labelMedium.fontSize
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DynamicSelectedUserFeedHeader(
+    userName: String,
+    selectedFilter: DynamicUserContentFilter,
+    onFilterSelected: (DynamicUserContentFilter) -> Unit,
+    onOpenUser: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = AppSpacingTokens.Large, vertical = AppSpacingTokens.Small),
+        verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            AppText(
+                text = when {
+                    userName == "我" -> "我的动态"
+                    userName.isNotBlank() -> "$userName 的动态"
+                    else -> "UP 动态"
+                },
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.weight(1f),
+            )
+            com.android.purebilibili.core.ui.components.AppTextButton(onClick = onOpenUser) {
+                AppText("查看主页")
+            }
+        }
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+        ) {
+            items(DynamicUserContentFilter.entries, key = { it.name }) { filter ->
+                AppFilterChip(
+                    selected = selectedFilter == filter,
+                    onClick = { onFilterSelected(filter) },
+                    label = { AppText(filter.label) },
+                    modifier = Modifier.heightIn(min = AppChromeSizeTokens.MinimumTouchTarget),
                 )
             }
         }

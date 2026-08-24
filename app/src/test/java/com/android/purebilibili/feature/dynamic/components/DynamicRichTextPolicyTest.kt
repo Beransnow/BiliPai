@@ -395,6 +395,25 @@ class DynamicRichTextPolicyTest {
     }
 
     @Test
+    fun buildDynamicRichText_expandsDecoratedDogeShortcodeFromCatalog() {
+        val token = "[doge_金饰]"
+        val result = buildDynamicRichText(
+            desc = DynamicDesc(text = "媒体会结束了$token"),
+            primaryColor = Color.Blue,
+            textColor = Color.Black,
+            extraEmoteUrlMap = mapOf(
+                token to "https://i0.hdslb.com/bfs/emote/doge_gold.png",
+            ),
+        )
+
+        assertEquals(
+            "https://i0.hdslb.com/bfs/emote/doge_gold.png",
+            result.emojiUrlById[token],
+        )
+        assertTrue(result.annotatedString.hasInlineContent())
+    }
+
+    @Test
     fun shouldUseDynamicRichTextNodes_prefersNodesWhenTheyContainEmojiEvenIfShorter() {
         val desc = DynamicDesc(
             text = "第一段\n第二段\n第三段[豹富]",

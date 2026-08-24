@@ -1681,7 +1681,7 @@ internal fun buildFavoriteFolderDynamicRequest(
 }
 
 private const val DYNAMIC_FEED_FEATURES =
-    "itemOpusStyle,listOnlyfans"
+    "itemOpusStyle,listOnlyfans,opusBigCover,onlyfansVote,decorationCard,onlyfansAssetsV2,forwardListHidden,ugcDelete"
 
 internal const val DYNAMIC_DETAIL_FEATURES =
     "itemOpusStyle,listOnlyfans,opusBigCover,onlyfansVote,endFooterHidden,decorationCard,onlyfansAssetsV2,ugcDelete,onlyfansQaCard,commentsNewVersion,forwardListHidden,htmlNewStyle"
@@ -1690,7 +1690,7 @@ internal const val DYNAMIC_DETAIL_FEATURES =
 internal const val OPUS_DETAIL_FEATURES = "htmlNewStyle"
 
 internal const val SPACE_DYNAMIC_FEATURES =
-    "itemOpusStyle,listOnlyfans,opusBigCover,commentsNewVersion,onlyfansVote,onlyfansAssetsV2,decorationCard,forwardListHidden,ugcDelete"
+    "itemOpusStyle,listOnlyfans,opusBigCover,commentsNewVersion,onlyfansVote,onlyfansAssetsV2,decorationCard,forwardListHidden,ugcDelete,onlyfansQaCard"
 
 interface DynamicApi {
     //  添加 features 参数以获取 rich_text_nodes 表情数据
@@ -1705,8 +1705,9 @@ interface DynamicApi {
         @Query("web_location") webLocation: String = "333.1365"
     ): DynamicFeedResponse
     
-    //  [新增] 获取指定用户的动态列表
-    @GET("x/polymer/web-dynamic/v1/feed/all")
+    // 用户空间动态。不要用 feed/all + host_mid 代替：本接口才保证返回该 UP 的
+    // 完整视频、图文/Opus、专栏等内容与空间分页语义。
+    @GET("x/polymer/web-dynamic/v1/feed/space")
     suspend fun getUserDynamicFeed(
         @QueryMap params: Map<String, String>
     ): DynamicFeedResponse

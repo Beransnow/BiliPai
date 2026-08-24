@@ -1445,7 +1445,8 @@ fun RichTextContent(
     val uriHandler = LocalUriHandler.current
     val scope = rememberCoroutineScope()
     var catalogEmoteMap by remember { mutableStateOf(DynamicEmoteCatalog.snapshot()) }
-    LaunchedEffect(Unit) {
+    val emoteCatalogSessionKey = DynamicEmoteCatalog.currentSessionKey()
+    LaunchedEffect(emoteCatalogSessionKey) {
         catalogEmoteMap = DynamicEmoteCatalog.ensureLoaded()
     }
     val primaryColor = MaterialTheme.colorScheme.primary
