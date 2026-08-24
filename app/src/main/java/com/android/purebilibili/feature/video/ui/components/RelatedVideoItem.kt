@@ -31,9 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInRoot
@@ -116,7 +114,7 @@ internal fun resolveRelatedVideoCoverWidthDp(
 ): Float = when (layoutMode) {
     RelatedVideoCardLayoutMode.STACKED -> availableWidthDp
     RelatedVideoCardLayoutMode.COMPACT_SIDE_BY_SIDE ->
-        (availableWidthDp * 0.42f).coerceIn(84f, 120f)
+        (availableWidthDp * 0.46f).coerceIn(112f, 132f)
     RelatedVideoCardLayoutMode.SIDE_BY_SIDE -> HORIZONTAL_VIDEO_CARD_COVER_WIDTH_DP.toFloat()
 }
 
@@ -297,36 +295,13 @@ fun RelatedVideoItem(
                 alignment = Alignment.Center,
                 modifier = Modifier.fillMaxSize()
             )
-            RelatedVideoCoverStatPill(
-                icon = Icons.Filled.PlayArrow,
-                text = FormatUtils.formatStat(video.stat.view.toLong()),
-                modifier = Modifier
-                    .align(Alignment.TopStart)
-                    .padding(6.dp),
-            )
-            RelatedVideoCoverStatPill(
-                icon = Icons.Filled.ChatBubble,
-                text = FormatUtils.formatStat(video.stat.danmaku.toLong()),
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(6.dp),
-            )
-            AppText(
-                text = FormatUtils.formatDuration(video.duration),
-                color = Color.White,
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    shadow = Shadow(
-                        color = Color.Black.copy(alpha = 0.6f),
-                        blurRadius = 4f,
-                        offset = Offset(0f, 1f)
-                    )
-                ),
+            RelatedVideoCoverMetadata(
+                playText = FormatUtils.formatStat(video.stat.view.toLong()),
+                danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
+                durationText = FormatUtils.formatDuration(video.duration),
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(6.dp)
-                    .background(Color.Black.copy(alpha = 0.58f), CircleShape)
-                    .padding(horizontal = 5.dp, vertical = 2.dp),
+                    .fillMaxWidth(),
             )
         }
     }
@@ -443,15 +418,41 @@ fun RelatedVideoItem(
 }
 
 @Composable
-private fun RelatedVideoCoverStatPill(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    text: String,
+private fun RelatedVideoCoverMetadata(
+    playText: String,
+    danmakuText: String,
+    durationText: String,
     modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier
-            .background(Color.Black.copy(alpha = 0.58f), CircleShape)
-            .padding(horizontal = 5.dp, vertical = 2.dp),
+            .background(Color.Black.copy(alpha = 0.68f))
+            .padding(horizontal = 6.dp, vertical = 3.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.Bottom,
+    ) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(1.dp),
+        ) {
+            RelatedVideoCoverStat(icon = Icons.Filled.PlayArrow, text = playText)
+            RelatedVideoCoverStat(icon = Icons.Filled.ChatBubble, text = danmakuText)
+        }
+        AppText(
+            text = durationText,
+            color = Color.White,
+            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+            maxLines = 1,
+        )
+    }
+}
+
+@Composable
+private fun RelatedVideoCoverStat(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    text: String,
+) {
+    Row(
         horizontalArrangement = Arrangement.spacedBy(2.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -459,7 +460,7 @@ private fun RelatedVideoCoverStatPill(
             imageVector = icon,
             contentDescription = null,
             tint = Color.White,
-            modifier = Modifier.size(11.dp),
+            modifier = Modifier.size(10.dp),
         )
         AppText(
             text = text,
@@ -479,9 +480,9 @@ private fun RelatedVideoMoreButton(
     val haptic = rememberHapticFeedback()
     Box(
         modifier = modifier
-            .size(48.dp)
+            .size(32.dp)
             .clip(CircleShape)
-            .background(if (overlay) Color.Black.copy(alpha = 0.45f) else Color.Transparent)
+            .background(if (overlay) Color.Black.copy(alpha = 0.56f) else Color.Transparent)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
