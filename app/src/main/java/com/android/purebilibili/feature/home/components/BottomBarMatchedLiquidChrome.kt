@@ -279,8 +279,7 @@ internal fun BottomBarMatchedReusableLiquidDock(
     backdrop: Backdrop? = null,
     liquidGlassEffectsEnabled: Boolean = true,
     /**
-     * Allowlisted callers only: home search field, comment [BottomInputBar], and the
-     * dynamic-card action row. The action row shares one dock across all three actions.
+     * Allowlisted callers only: home search field and comment [BottomInputBar].
      * Other chrome must leave this false.
      */
     reuseEnabled: Boolean = false,
