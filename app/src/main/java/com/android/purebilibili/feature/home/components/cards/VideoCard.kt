@@ -334,11 +334,16 @@ private fun VideoCardOwnerMetadata(
         trailingSlotMinWidth = AppSpacingTokens.None,
         trailingSlotMinHeight = AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall,
         showUpBadge = showUpBadge,
+        maxLines = Int.MAX_VALUE,
+        overflow = TextOverflow.Visible,
+        metaMaxLines = Int.MAX_VALUE,
+        metaOverflow = TextOverflow.Visible,
         modifier = ownerModifier
     )
 }
 
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 internal fun VideoCardDurationPublishRow(
     durationText: String,
     publishTimeText: String,
@@ -350,20 +355,19 @@ internal fun VideoCardDurationPublishRow(
     val contentTypography = feedContentTypography()
 
     Spacer(modifier = Modifier.height(topSpacing))
-    Row(
+    FlowRow(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro)
+        itemVerticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro),
+        verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Micro)
     ) {
         if (publishTimeText.isNotBlank()) {
             VideoCardPublishTime(
                 text = publishTimeText,
                 emphasized = emphasizePublishTime,
                 color = publishTimeColor,
-                modifier = Modifier.weight(1f, fill = !emphasizePublishTime)
+                modifier = Modifier.wrapContentWidth()
             )
-        } else {
-            Spacer(modifier = Modifier.weight(1f))
         }
 
         if (durationText.isNotBlank()) {
@@ -371,7 +375,9 @@ internal fun VideoCardDurationPublishRow(
                 text = durationText,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = contentTypography.statistic.copy(fontWeight = FontWeight.Medium),
-                maxLines = 1
+                maxLines = 1,
+                softWrap = false,
+                overflow = TextOverflow.Visible
             )
         }
     }
@@ -395,8 +401,8 @@ private fun VideoCardPublishTime(
                 text = text,
                 style = contentTypography.statistic.copy(fontWeight = FontWeight.Medium),
                 color = color.copy(alpha = 0.92f),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+                softWrap = true,
+                overflow = TextOverflow.Visible,
                 modifier = Modifier.padding(horizontal = AppSpacingTokens.Small, vertical = AppSpacingTokens.ExtraSmall - AppSpacingTokens.Micro / 2)
             )
         }
@@ -405,8 +411,8 @@ private fun VideoCardPublishTime(
             text = text,
             style = contentTypography.statistic,
             color = color,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+            softWrap = true,
+            overflow = TextOverflow.Visible,
             modifier = modifier
         )
     }
@@ -1155,7 +1161,7 @@ internal fun ElegantVideoCard(
                                 style = coverOverlayTextStyle,
                                 maxLines = 1,
                                 softWrap = false,
-                                overflow = TextOverflow.Ellipsis
+                                overflow = TextOverflow.Visible
                             )
                         }
 
@@ -1183,7 +1189,7 @@ internal fun ElegantVideoCard(
                                     style = coverOverlayTextStyle,
                                     maxLines = 1,
                                     softWrap = false,
-                                    overflow = TextOverflow.Ellipsis
+                                    overflow = TextOverflow.Visible
                                 )
                             }
                         }
@@ -1211,7 +1217,7 @@ internal fun ElegantVideoCard(
                                     style = coverOverlayTextStyle,
                                     maxLines = 1,
                                     softWrap = false,
-                                    overflow = TextOverflow.Ellipsis
+                                    overflow = TextOverflow.Visible
                                 )
                             }
                         }
@@ -1239,7 +1245,7 @@ internal fun ElegantVideoCard(
                                     style = coverOverlayTextStyle,
                                     maxLines = 1,
                                     softWrap = false,
-                                    overflow = TextOverflow.Ellipsis
+                                    overflow = TextOverflow.Visible
                                 )
                             }
                         }
@@ -1377,9 +1383,8 @@ internal fun ElegantVideoCard(
         // 标题独占整行：更多操作移至右下角，不再挤占两行标题的可用宽度。
         AppText(
             text = highlightedTitle ?: AnnotatedString(video.title),
-            maxLines = titleMaxLines,
             minLines = titleMinLines,
-            overflow = TextOverflow.Ellipsis,
+            overflow = TextOverflow.Visible,
             style = contentTypography.title.copy(
                 color = MaterialTheme.colorScheme.onSurface
             ),

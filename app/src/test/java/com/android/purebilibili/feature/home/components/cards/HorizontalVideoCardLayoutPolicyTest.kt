@@ -49,6 +49,18 @@ class HorizontalVideoCardLayoutPolicyTest {
                 .substringBefore("VideoCardOwnerMetadata(")
                 .contains("overflow = TextOverflow.Ellipsis")
         )
+        assertTrue(source.contains("maxLines = Int.MAX_VALUE"))
+        assertTrue(source.contains("metaMaxLines = Int.MAX_VALUE"))
+        assertTrue(
+            source.substringAfter("text = highlightedTitle ?: AnnotatedString(video.title)")
+                .substringBefore("style = contentTypography.title")
+                .contains("overflow = TextOverflow.Visible")
+        )
+        assertTrue(
+            source.substringAfter("internal fun VideoCardDurationPublishRow(")
+                .substringBefore("private fun VideoCardPublishTime(")
+                .contains("FlowRow(")
+        )
     }
 
     @Test
