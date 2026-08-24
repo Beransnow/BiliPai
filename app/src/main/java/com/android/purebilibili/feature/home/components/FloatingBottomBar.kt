@@ -43,6 +43,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
@@ -341,6 +342,7 @@ fun FloatingBottomBar(
     isScrollInProgressProvider: () -> Boolean = { false },
     dragSelectionEnabled: Boolean = true,
     dragTrackingMode: DampedDragTrackingMode = DampedDragTrackingMode.SPRING,
+    selectionSettleMotionEnabled: Boolean = false,
     liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
     content: @Composable RowScope.() -> Unit
 ) {
@@ -542,6 +544,34 @@ fun FloatingBottomBar(
             }
         ).also { holder.instance = it }
     }
+
+    var indicatorSettlePulseKey by remember { mutableIntStateOf(0) }
+    LaunchedEffect(dampedDragAnimation, maxTabIndex) {
+        var lastSettledIndex = dampedDragAnimation.value.fastRoundToInt()
+        snapshotFlow {
+            Triple(
+                dampedDragAnimation.value,
+                dampedDragAnimation.targetValue,
+                dampedDragAnimation.isDragging,
+            )
+        }.collect { (value, target, dragging) ->
+            val settledIndex = target.fastRoundToInt().fastCoerceIn(0, maxTabIndex)
+            if (
+                selectionSettleMotionEnabled &&
+                !dragging &&
+                !isScrollInProgressLatest() &&
+                abs(value - target) <= 0.001f &&
+                abs(target - settledIndex.toFloat()) <= 0.001f &&
+                settledIndex != lastSettledIndex
+            ) {
+                lastSettledIndex = settledIndex
+                indicatorSettlePulseKey += 1
+            }
+        }
+    }
+    val indicatorSettleTransform = rememberNavigationIndicatorSettleTransform(
+        pulseKey = indicatorSettlePulseKey,
+    )
 
     LaunchedEffect(dampedDragAnimation, maxTabIndex) {
         snapshotFlow { selectedIndexLatest.value().coerceIn(0, maxTabIndex) }
@@ -810,6 +840,9 @@ fun FloatingBottomBar(
                             } else {
                                 -progressOffset + panelOffset
                             }
+                            scaleX = indicatorSettleTransform.scale()
+                            scaleY = indicatorSettleTransform.scale()
+                            rotationZ = indicatorSettleTransform.rotationDegrees()
                             clip = false
                         }
                         .then(interactiveHighlight?.gestureModifier ?: Modifier)
@@ -893,6 +926,9 @@ fun FloatingBottomBar(
                             } else {
                                 -progressOffset + panelOffset
                             }
+                            scaleX = indicatorSettleTransform.scale()
+                            scaleY = indicatorSettleTransform.scale()
+                            rotationZ = indicatorSettleTransform.rotationDegrees()
                             clip = false
                         }
                         .then(

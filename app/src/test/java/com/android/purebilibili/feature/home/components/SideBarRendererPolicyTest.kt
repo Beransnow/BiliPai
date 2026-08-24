@@ -80,6 +80,8 @@ class SideBarRendererPolicyTest {
         assertTrue(source.contains("shouldUseExpandableMiuixSideBar("))
         assertTrue(source.contains("shouldUseMiuixOfficialSideBarItem(skinIconPath)"))
         assertTrue(source.contains("MiuixSideBarSkinItem("))
+        assertTrue(source.contains("label = \"\${item.name}_miuix_side_bar\""))
+        assertTrue(source.contains("modifier = animatedItemModifier"))
         assertTrue(source.contains("SideBarAccountSwitchButton("))
         assertTrue(source.contains("onAccountSwitchClick"))
         assertTrue(source.contains("resolveHomeSideBarClickAction("))
@@ -88,7 +90,7 @@ class SideBarRendererPolicyTest {
     }
 
     @Test
-    fun materialSideBarUsesMd3IconPairsWithoutSelectionTransform() {
+    fun materialSideBarUsesMd3IconPairsWithSharedSelectionTransform() {
         val source = File("src/main/java/com/android/purebilibili/feature/home/components/SideBar.kt")
             .takeIf { it.exists() }
             ?.readText()
@@ -97,7 +99,8 @@ class SideBarRendererPolicyTest {
 
         assertTrue(materialSideBarSource.contains("resolveMaterialBottomBarIcon("))
         assertFalse(materialSideBarSource.contains("resolveHomeNavigationBarIcon("))
-        assertFalse(materialSideBarSource.contains("rotationZ"))
-        assertFalse(materialSideBarSource.contains("scaleX"))
+        assertTrue(materialSideBarSource.contains("rememberNavigationSelectionTransform("))
+        assertTrue(materialSideBarSource.contains("rotationZ = selectionTransform.rotationDegrees()"))
+        assertTrue(materialSideBarSource.contains("scaleX = selectionTransform.scale()"))
     }
 }

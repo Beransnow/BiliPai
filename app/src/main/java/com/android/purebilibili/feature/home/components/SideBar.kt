@@ -41,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -196,6 +197,15 @@ private fun MiuixSideBar(
             val itemLabel = resolveBottomNavItemLabel(item, itemLabels)
             val skinIconPath = uiSkinDecoration?.iconPathFor(item, selected = isSelected)
             val itemModifier = if (itemIndex == 0) firstItemModifier else Modifier
+            val selectionTransform = rememberNavigationSelectionTransform(
+                selected = isSelected,
+                label = "${item.name}_miuix_side_bar",
+            )
+            val animatedItemModifier = itemModifier.graphicsLayer {
+                scaleX = selectionTransform.scale()
+                scaleY = selectionTransform.scale()
+                rotationZ = selectionTransform.rotationDegrees()
+            }
             val onItemTap = {
                 val nowMs = SystemClock.elapsedRealtime()
                 when (
@@ -227,7 +237,7 @@ private fun MiuixSideBar(
                     onClick = onItemTap,
                     icon = resolveHomeNavigationBarIcon(item, isSelected),
                     label = itemLabel,
-                    modifier = itemModifier
+                    modifier = animatedItemModifier
                 )
             } else {
                 MiuixSideBarSkinItem(
@@ -235,7 +245,7 @@ private fun MiuixSideBar(
                     label = itemLabel,
                     skinIconPath = skinIconPath,
                     onClick = onItemTap,
-                    modifier = itemModifier
+                    modifier = animatedItemModifier
                 )
             }
         }
@@ -398,6 +408,10 @@ private fun FrostedSideBarContent(
                 val primaryColor = MaterialTheme.colorScheme.primary
                 val unselectedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 val skinIconPath = uiSkinDecoration?.iconPathFor(item, selected = isSelected)
+                val selectionTransform = rememberNavigationSelectionTransform(
+                    selected = isSelected,
+                    label = "${item.name}_md3_side_bar",
+                )
 
                 val iconColor by animateColorAsState(
                     targetValue = if (isSelected) primaryColor else unselectedColor,
@@ -440,7 +454,13 @@ private fun FrostedSideBarContent(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Box {
+                    Box(
+                        modifier = Modifier.graphicsLayer {
+                            scaleX = selectionTransform.scale()
+                            scaleY = selectionTransform.scale()
+                            rotationZ = selectionTransform.rotationDegrees()
+                        }
+                    ) {
                         CompositionLocalProvider(LocalContentColor provides iconColor) {
                             if (skinIconPath != null) {
                                 BottomBarSkinIcon(

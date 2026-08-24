@@ -30,6 +30,7 @@ class FloatingBottomBarStructureTest {
         assertTrue(source.contains("shellHeight: Dp = FloatingBottomBarDefaultShellHeight"))
         assertTrue(source.contains("indicatorHeight: Dp = FloatingBottomBarIndicatorHeight"))
         assertTrue(source.contains("dragTrackingMode: DampedDragTrackingMode = DampedDragTrackingMode.SPRING"))
+        assertTrue(source.contains("selectionSettleMotionEnabled: Boolean = false"))
         assertTrue(source.contains("FloatingBottomBarDefaultShellHeight: Dp = 64.dp"))
         assertTrue(source.contains("FloatingBottomBarIndicatorHeight: Dp = 56.dp"))
         assertTrue(source.contains("FloatingBottomBarPressedScale: Float = 78f / 56f"))
@@ -202,6 +203,25 @@ class FloatingBottomBarStructureTest {
         assertTrue(indicatorSource.contains(".then(dampedDragAnimation.modifier)"))
         assertTrue(indicatorSource.contains("onClick = onReselected"))
         assertTrue(indicatorSource.contains(".clearAndSetSemantics {}"))
+    }
+
+    @Test
+    fun `home opt-in animates the indicator only after it settles`() {
+        val source = loadFloatingBottomBarSource()
+        val body = source.substringAfter("fun FloatingBottomBar(")
+
+        assertTrue(body.contains("var indicatorSettlePulseKey by remember { mutableIntStateOf(0) }"))
+        assertTrue(body.contains("rememberNavigationIndicatorSettleTransform("))
+        assertTrue(body.contains("selectionSettleMotionEnabled &&"))
+        assertTrue(body.contains("abs(value - target) <= 0.001f"))
+        assertTrue(body.contains("!isScrollInProgressLatest()"))
+        assertTrue(body.contains("scaleX = indicatorSettleTransform.scale()"))
+        assertTrue(body.contains("rotationZ = indicatorSettleTransform.rotationDegrees()"))
+
+        val bottomBar = loadSource(
+            "app/src/main/java/com/android/purebilibili/feature/home/components/BottomBar.kt"
+        )
+        assertTrue(bottomBar.contains("selectionSettleMotionEnabled = true"))
     }
 
     @Test

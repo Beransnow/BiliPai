@@ -5,10 +5,12 @@ import kotlin.test.assertEquals
 
 class SideBarMotionSpecTest {
     @Test
-    fun materialBottomBarMotion_keepsIndicatorCompanionMotionRestrained() {
-        val selection = materialBottomBarSelectionScaleMotionSpec<Float>()
-        val wobble = materialBottomBarIndicatorWobbleMotionSpec<Float>()
+    fun navigationSelectionMotion_isSharedAndRestrained() {
+        val selection = navigationSelectionScaleMotionSpec<Float>()
+        val wobble = navigationSelectionWobbleMotionSpec<Float>()
 
+        assertEquals(1.1f, NavigationSelectionScale)
+        assertEquals(4f, NavigationSelectionWobbleDegrees)
         assertEquals(0.72f, selection.dampingRatio)
         assertEquals(420f, selection.stiffness)
         assertEquals(0.62f, wobble.dampingRatio)

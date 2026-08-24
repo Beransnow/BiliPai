@@ -2457,37 +2457,18 @@ private fun MaterialBottomBarAnimatedIcon(
     selected: Boolean,
     contentDescription: String?,
 ) {
-    var wobbleTarget by remember { mutableFloatStateOf(0f) }
-    var hasObservedSelection by remember { mutableStateOf(false) }
-    val scale by animateFloatAsState(
-        targetValue = if (selected) 1.1f else 1f,
-        animationSpec = materialBottomBarSelectionScaleMotionSpec(),
-        label = "${item.name}_md3_indicator_scale",
+    val transform = rememberNavigationSelectionTransform(
+        selected = selected,
+        label = "${item.name}_md3_bottom_bar",
     )
-    val rotation by animateFloatAsState(
-        targetValue = wobbleTarget,
-        animationSpec = materialBottomBarIndicatorWobbleMotionSpec(),
-        label = "${item.name}_md3_indicator_wobble",
-    )
-
-    LaunchedEffect(selected) {
-        if (hasObservedSelection && selected) {
-            wobbleTarget = 4f
-            delay(45)
-            wobbleTarget = 0f
-        } else {
-            wobbleTarget = 0f
-        }
-        hasObservedSelection = true
-    }
 
     AppIcon(
         imageVector = resolveMaterialBottomBarIcon(item = item, selected = selected),
         contentDescription = contentDescription,
         modifier = Modifier.graphicsLayer {
-            scaleX = scale
-            scaleY = scale
-            rotationZ = rotation
+            scaleX = transform.scale()
+            scaleY = transform.scale()
+            rotationZ = transform.rotationDegrees()
         },
     )
 }
@@ -3224,6 +3205,7 @@ private fun BiliPaiFloatingBottomBar(
                             colors = floatingColors,
                             shellHeight = dockHeight,
                             indicatorHeight = BOTTOM_BAR_INDICATOR_DOCK_BAND_HEIGHT_DP.dp,
+                            selectionSettleMotionEnabled = true,
                             liquidGlassTuning = liquidGlassTuning
                         ) {
                             visibleItems.forEachIndexed { index, item ->
