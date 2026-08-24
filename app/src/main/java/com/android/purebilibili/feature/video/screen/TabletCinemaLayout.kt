@@ -105,6 +105,7 @@ import com.android.purebilibili.feature.video.note.buildVideoNoteShareText
 import com.android.purebilibili.feature.video.note.shouldShowVideoNoteCard
 import com.android.purebilibili.feature.video.progress.PbpProgressData
 import com.android.purebilibili.feature.video.ui.components.CommentSortHeader
+import com.android.purebilibili.feature.video.ui.components.BottomInputBar
 import com.android.purebilibili.feature.video.ui.components.CollectionRow
 import com.android.purebilibili.feature.video.ui.components.CollectionSheet
 import com.android.purebilibili.feature.video.ui.components.PagesSelector
@@ -1086,8 +1087,10 @@ private fun CinemaSideCurtain(
                                         CinemaCommentsPane(
                                             success = success,
                                             commentState = commentState,
+                                            engagementState = engagementState,
                                             subReplyState = subReplyState,
                                             playbackActions = playbackActions,
+                                            engagementActions = engagementActions,
                                             commentActions = commentActions,
                                             playerState = playerState,
                                             onUpClick = onUpClick,
@@ -1121,8 +1124,10 @@ private fun CinemaSideCurtain(
 private fun CinemaCommentsPane(
     success: VideoPlaybackUiState.Success,
     commentState: CommentUiState,
+    engagementState: VideoEngagementUiState,
     subReplyState: SubReplyUiState,
     playbackActions: VideoDetailPlaybackActions,
+    engagementActions: VideoDetailEngagementActions,
     commentActions: VideoDetailCommentActions,
     playerState: VideoPlayerState,
     onUpClick: (Long) -> Unit,
@@ -1245,27 +1250,8 @@ private fun CinemaCommentsPane(
                 modifier = Modifier
                     .fillMaxSize()
                     .layerBackdrop(commentChromeBackdrop),
-                contentPadding = PaddingValues(bottom = 74.dp)
+                contentPadding = PaddingValues(bottom = 112.dp)
             ) {
-            item {
-                AppSurface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    color = commentAppearance.composerHintBackgroundColor,
-                    shape = AppShapes.container(ContainerLevel.Dialog),
-                    onClick = {
-                        playbackActions.openRootCommentComposer()
-                    }
-                ) {
-                    AppText(
-                        text = "写评论，直接和 UP 主交流",
-                        color = commentAppearance.secondaryTextColor,
-                        fontSize = 13.sp,
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
-                    )
-                }
-            }
             items(
                 items = commentState.replies,
                 key = { "curtain_reply_${it.rpid}" },
@@ -1349,6 +1335,22 @@ private fun CinemaCommentsPane(
                 }
             }
             }
+
+            BottomInputBar(
+                modifier = Modifier.align(Alignment.BottomCenter),
+                isLiked = engagementState.isLiked,
+                isFavorited = engagementState.isFavorited,
+                isCoined = engagementState.coinCount > 0,
+                onLikeClick = engagementActions.toggleLike,
+                onFavoriteClick = engagementActions.toggleFavorite,
+                onCoinClick = engagementActions.openCoinDialog,
+                onShareClick = {
+                    ShareUtils.shareVideo(context, success.info.title, success.info.bvid)
+                },
+                onCommentClick = playbackActions.openRootCommentComposer,
+                backdrop = commentChromeBackdrop,
+                isScrollInProgressProvider = { listState.isScrollInProgress },
+            )
 
             }
         }
