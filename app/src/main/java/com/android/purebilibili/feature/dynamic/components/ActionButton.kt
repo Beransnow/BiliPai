@@ -119,9 +119,7 @@ fun ActionButton(
                 AppUiStyle.MATERIAL3 -> FilledTonalButton(
                     onClick = onClick,
                     enabled = enabled,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = AppChromeSizeTokens.MinimumTouchTarget)
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
                         imageVector = buttonIcon,
@@ -139,7 +137,6 @@ fun ActionButton(
                 AppUiStyle.MIUIX -> MiuixButton(
                     onClick = onClick,
                     enabled = enabled,
-                    minHeight = AppChromeSizeTokens.MinimumTouchTarget,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     AppIcon(
