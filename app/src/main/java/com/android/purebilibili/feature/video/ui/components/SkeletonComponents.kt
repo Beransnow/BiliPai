@@ -30,7 +30,6 @@ import com.android.purebilibili.core.store.HomeFeedCardStyle
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.feature.home.components.cards.HORIZONTAL_VIDEO_CARD_COVER_ASPECT_RATIO
 import com.android.purebilibili.feature.home.components.cards.HORIZONTAL_VIDEO_CARD_COVER_INFO_GAP_DP
-import com.android.purebilibili.feature.home.components.cards.HORIZONTAL_VIDEO_CARD_COVER_WIDTH_DP
 import com.android.purebilibili.feature.home.resolveHomeFeedCardLayout
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
@@ -265,39 +264,55 @@ private fun RelatedVideoGridRowSkeleton() {
 @Composable
 private fun RelatedVideoItemSkeleton(
     modifier: Modifier = Modifier,
-    @Suppress("UNUSED_PARAMETER") coverAspectRatio: Float = RELATED_VIDEO_CARD_COVER_ASPECT_RATIO,
+    coverAspectRatio: Float = RELATED_VIDEO_CARD_COVER_ASPECT_RATIO,
 ) {
-    val coverWidth = HORIZONTAL_VIDEO_CARD_COVER_WIDTH_DP.dp
-    Row(
+    BoxWithConstraints(
         modifier = modifier
             .clip(VideoDetailShapes.contentCard())
             .background(MaterialTheme.colorScheme.surface)
             .padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(HORIZONTAL_VIDEO_CARD_COVER_INFO_GAP_DP.dp),
-        verticalAlignment = Alignment.Top,
     ) {
-        SkeletonBlock(
-            modifier = Modifier
-                .width(coverWidth)
-                .aspectRatio(HORIZONTAL_VIDEO_CARD_COVER_ASPECT_RATIO),
-            shape = VideoDetailShapes.media(),
-        )
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            SkeletonBox(modifier = Modifier.fillMaxWidth(), height = 16.dp, cornerRadius = 8.dp)
-            SkeletonBox(modifier = Modifier.fillMaxWidth(0.82f), height = 16.dp, cornerRadius = 8.dp)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                SkeletonBlock(modifier = Modifier.size(16.dp), shape = CircleShape)
-                Spacer(modifier = Modifier.width(6.dp))
-                SkeletonBox(modifier = Modifier.width(72.dp), height = 14.dp, cornerRadius = 7.dp)
+        when (resolveRelatedVideoCardLayoutMode(maxWidth.value)) {
+            RelatedVideoCardLayoutMode.STACKED -> Column(modifier = Modifier.fillMaxWidth()) {
+                SkeletonBlock(
+                    modifier = Modifier.fillMaxWidth().aspectRatio(coverAspectRatio),
+                    shape = VideoDetailShapes.media(),
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                RelatedVideoInfoSkeleton(modifier = Modifier.fillMaxWidth())
             }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                SkeletonBox(modifier = Modifier.width(48.dp), height = 13.dp, cornerRadius = 7.dp)
-                Spacer(modifier = Modifier.width(12.dp))
-                SkeletonBox(modifier = Modifier.width(48.dp), height = 13.dp, cornerRadius = 7.dp)
+
+            RelatedVideoCardLayoutMode.COMPACT_SIDE_BY_SIDE,
+            RelatedVideoCardLayoutMode.SIDE_BY_SIDE -> Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(HORIZONTAL_VIDEO_CARD_COVER_INFO_GAP_DP.dp),
+                verticalAlignment = Alignment.Top,
+            ) {
+                val layoutMode = resolveRelatedVideoCardLayoutMode(maxWidth.value)
+                SkeletonBlock(
+                    modifier = Modifier
+                        .width(resolveRelatedVideoCoverWidthDp(maxWidth.value, layoutMode).dp)
+                        .aspectRatio(HORIZONTAL_VIDEO_CARD_COVER_ASPECT_RATIO),
+                    shape = VideoDetailShapes.media(),
+                )
+                RelatedVideoInfoSkeleton(modifier = Modifier.weight(1f))
             }
+        }
+    }
+}
+
+@Composable
+private fun RelatedVideoInfoSkeleton(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        SkeletonBox(modifier = Modifier.fillMaxWidth(), height = 16.dp, cornerRadius = 8.dp)
+        SkeletonBox(modifier = Modifier.fillMaxWidth(0.82f), height = 16.dp, cornerRadius = 8.dp)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            SkeletonBlock(modifier = Modifier.size(16.dp), shape = CircleShape)
+            Spacer(modifier = Modifier.width(6.dp))
+            SkeletonBox(modifier = Modifier.width(72.dp), height = 14.dp, cornerRadius = 7.dp)
         }
     }
 }

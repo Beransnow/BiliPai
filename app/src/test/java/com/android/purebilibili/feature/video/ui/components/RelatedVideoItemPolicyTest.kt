@@ -64,14 +64,16 @@ class RelatedVideoItemPolicyTest {
         assertTrue(source.contains("coverAspectRatio: Float = RELATED_VIDEO_CARD_COVER_ASPECT_RATIO"))
         assertTrue(source.contains("HORIZONTAL_VIDEO_CARD_COVER_WIDTH_DP"))
         assertTrue(source.contains("HORIZONTAL_VIDEO_CARD_COVER_ASPECT_RATIO"))
-        assertTrue(source.contains("HorizontalVideoStatRow("))
+        assertTrue(source.contains("RelatedVideoCoverStatPill("))
+        assertFalse(source.contains("HorizontalVideoStatRow("))
         assertTrue(source.contains("resolveHomeFeedCardLayout(homeFeedCardStyle)"))
         assertTrue(source.contains("RELATED_VIDEO_GRID_COLUMNS = 1"))
         assertTrue(source.contains("coverAspectRatio = cardLayout.coverAspectRatio"))
         assertTrue(source.contains("modifier = Modifier.fillMaxWidth()"))
         assertFalse(source.contains("videoCardShellSharedBoundsOrEmpty("))
         assertFalse(source.contains("videoCoverSharedBoundsOrEmpty("))
-        assertTrue(source.contains("sourceLayout = VideoCardSourceLayout.SIDE_BY_SIDE"))
+        assertTrue(source.contains("sourceLayout = resolveVideoCardSourceLayout("))
+        assertTrue(source.contains("showStatsInInfo = false"))
         assertTrue(source.contains("sourceChromeSnapshot = VideoCardSourceChromeSnapshot("))
         assertTrue(source.contains("coverBounds = coverCoordinatesRef.value"))
         assertFalse(source.contains(".videoCardShellReturnChromeAlpha("))
@@ -81,8 +83,20 @@ class RelatedVideoItemPolicyTest {
         assertTrue(source.contains("chunkRelatedVideosForHomeStyleGrid("))
         assertFalse(source.contains("relatedCoverWidth = 130.dp"))
         assertFalse(source.contains(".height(coverHeight)"))
-        assertTrue(
-            source.indexOf("UpBadgeName(") < source.indexOf("HorizontalVideoStatRow(")
+        assertTrue(source.contains("resolveRelatedVideoCardLayoutMode(maxWidth.value)"))
+    }
+
+    @Test
+    fun `supporting pane adapts related card instead of compressing text`() {
+        assertEquals(RelatedVideoCardLayoutMode.STACKED, resolveRelatedVideoCardLayoutMode(180f))
+        assertEquals(RelatedVideoCardLayoutMode.COMPACT_SIDE_BY_SIDE, resolveRelatedVideoCardLayoutMode(240f))
+        assertEquals(RelatedVideoCardLayoutMode.COMPACT_SIDE_BY_SIDE, resolveRelatedVideoCardLayoutMode(359f))
+        assertEquals(RelatedVideoCardLayoutMode.SIDE_BY_SIDE, resolveRelatedVideoCardLayoutMode(360f))
+        assertEquals(RelatedVideoCardLayoutMode.SIDE_BY_SIDE, resolveRelatedVideoCardLayoutMode(480f))
+        assertEquals(
+            100.8f,
+            resolveRelatedVideoCoverWidthDp(240f, RelatedVideoCardLayoutMode.COMPACT_SIDE_BY_SIDE),
+            0.001f,
         )
     }
 
