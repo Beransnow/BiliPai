@@ -165,16 +165,16 @@ class AppNavigationAppearancePolicyTest {
     }
 
     @Test
-    fun tabletSidebarOverlaysContentWithoutChangingSharedTransitionGeometry() {
+    fun tabletSidebarReservesSpaceWithoutCoveringVideoCards() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/navigation/AppNavigation.kt")
-        val navigationOverlay = source
-            .substringAfter("Box(modifier = Modifier.fillMaxSize()) {\n            Box(modifier = Modifier.fillMaxSize()) {")
-            .substringBefore("// End of navigation content overlay")
+        val navigationRow = source
+            .substringAfter("Box(modifier = Modifier.fillMaxSize()) {\n            Row(modifier = Modifier.fillMaxSize()) {")
+            .substringBefore("// End of navigation content row")
 
-        assertTrue(navigationOverlay.contains("AnimatedVisibility("))
-        assertTrue(navigationOverlay.contains(".align(Alignment.CenterStart)"))
-        assertTrue(navigationOverlay.contains(".zIndex(2f)"))
-        assertFalse(navigationOverlay.contains("Row(modifier = Modifier.fillMaxSize())"))
+        assertTrue(navigationRow.contains("AnimatedVisibility("))
+        assertTrue(navigationRow.contains("FrostedSideBar("))
+        assertFalse(navigationRow.contains(".align(Alignment.CenterStart)"))
+        assertFalse(navigationRow.contains(".zIndex(2f)"))
     }
 
     @Test
