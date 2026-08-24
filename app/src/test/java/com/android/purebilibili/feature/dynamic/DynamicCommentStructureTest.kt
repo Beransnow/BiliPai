@@ -65,6 +65,9 @@ class DynamicCommentStructureTest {
         assertTrue(!source.contains("detailDockBackdrop"))
         assertTrue(!composer.contains("BottomBarMatchedReusableLiquidDock("))
         assertTrue(composer.contains("liquidGlassEnabled = liquidGlassEnabled"))
+        assertTrue(source.contains("val floatingCommentComposer = liquidGlassEnabled"))
+        assertTrue(source.contains("contentPadding = PaddingValues(bottom = commentContentBottomPadding)"))
+        assertTrue(source.contains("widthIn(max = 360.dp)"))
 
         val componentSource = File(
             "src/main/java/com/android/purebilibili/feature/dynamic/components/DynamicCommentSheet.kt"
@@ -75,6 +78,7 @@ class DynamicCommentStructureTest {
         assertTrue(inputComposer.split("BottomBarMatchedReusableLiquidDock(").size - 1 == 2)
         assertTrue(inputComposer.contains("reuseEnabled = liquidGlassEnabled"))
         assertTrue(inputComposer.contains("containerColor = Color.Transparent"))
+        assertTrue(inputComposer.contains("AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Small"))
     }
 
     @Test

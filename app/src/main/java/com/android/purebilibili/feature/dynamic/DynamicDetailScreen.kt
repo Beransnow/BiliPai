@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.weight
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import com.android.purebilibili.core.ui.components.AppButton
@@ -291,7 +292,7 @@ fun DynamicDetailScreen(
                         },
                     )
                 }
-                val commentComposer: @Composable () -> Unit = {
+                val commentComposer: @Composable (Modifier) -> Unit = { modifier ->
                     DynamicInlineCommentComposer(
                         onPostComment = { message ->
                             interactionViewModel.postComment(state.item.id_str, message) { _, toastMessage ->
@@ -301,15 +302,11 @@ fun DynamicDetailScreen(
                         replyTargetUname = commentReplyTarget?.uname,
                         onClearReplyTarget = interactionViewModel::clearCommentReplyTarget,
                         liquidGlassEnabled = liquidGlassEnabled,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = AppSpacingTokens.Medium,
-                                end = AppSpacingTokens.Medium,
-                                bottom = AppSpacingTokens.Small,
-                            ),
+                        modifier = modifier,
                     )
                 }
+                val floatingCommentComposer = liquidGlassEnabled
+                val commentContentBottomPadding = if (floatingCommentComposer) 112.dp else AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall
 
                 if (useSplitLayout) {
                     //  [新增] 大屏/横屏：左卡片 + 右评论（对齐 BiliPai 横屏分栏）
@@ -328,22 +325,55 @@ fun DynamicDetailScreen(
                             }
                         },
                         secondaryContent = {
-                            Column(modifier = Modifier.fillMaxSize()) {
-                                LazyColumn(
-                                    state = commentListState,
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxWidth(),
-                                    contentPadding = PaddingValues(bottom = AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall)
-                                ) {
-                                    commentContent()
+                            if (floatingCommentComposer) {
+                                Box(modifier = Modifier.fillMaxSize()) {
+                                    LazyColumn(
+                                        state = commentListState,
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentPadding = PaddingValues(bottom = commentContentBottomPadding),
+                                    ) {
+                                        commentContent()
+                                    }
+                                    Box(
+                                        modifier = Modifier
+                                            .align(Alignment.BottomCenter)
+                                            .fillMaxWidth()
+                                            .padding(horizontal = AppSpacingTokens.ExtraLarge)
+                                            .padding(bottom = AppSpacingTokens.Medium),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        commentComposer(
+                                            Modifier
+                                                .widthIn(max = 360.dp)
+                                                .fillMaxWidth(),
+                                        )
+                                    }
                                 }
-                                commentComposer()
+                            } else {
+                                Column(modifier = Modifier.fillMaxSize()) {
+                                    LazyColumn(
+                                        state = commentListState,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .fillMaxWidth(),
+                                        contentPadding = PaddingValues(bottom = commentContentBottomPadding)
+                                    ) {
+                                        commentContent()
+                                    }
+                                    commentComposer(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(
+                                                horizontal = AppSpacingTokens.Large,
+                                                vertical = AppSpacingTokens.Medium,
+                                            ),
+                                    )
+                                }
                             }
                         }
                     )
                 } else {
-                    Column(
+                    Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(paddingValues)
@@ -351,15 +381,38 @@ fun DynamicDetailScreen(
                     ) {
                         LazyColumn(
                             state = detailListState,
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxWidth(),
-                            contentPadding = PaddingValues(bottom = AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall)
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(bottom = commentContentBottomPadding),
                         ) {
                             cardContent()
                             commentContent()
                         }
-                        commentComposer()
+                        if (floatingCommentComposer) {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .fillMaxWidth()
+                                    .padding(horizontal = AppSpacingTokens.ExtraLarge)
+                                    .padding(bottom = AppSpacingTokens.Medium),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                commentComposer(
+                                    Modifier
+                                        .widthIn(max = 360.dp)
+                                        .fillMaxWidth(),
+                                )
+                            }
+                        } else {
+                            commentComposer(
+                                Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .fillMaxWidth()
+                                    .padding(
+                                        horizontal = AppSpacingTokens.Large,
+                                        vertical = AppSpacingTokens.Medium,
+                                    ),
+                            )
+                        }
                     }
                 }
 

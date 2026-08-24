@@ -600,9 +600,7 @@ fun DynamicInlineCommentComposer(
         hint = resolveDynamicCommentComposerHint(replyTargetUname),
         onClearReplyTarget = if (replyTargetUname.isNullOrBlank()) null else onClearReplyTarget,
         liquidGlassEnabled = liquidGlassEnabled,
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(AppSpacingTokens.Large),
+        modifier = modifier,
     )
 }
 
@@ -626,7 +624,7 @@ private fun DynamicCommentComposer(
             shape = AppShapes.container(ContainerLevel.Pill),
             modifier = Modifier
                 .weight(1f)
-                .height(AppSpacingTokens.TripleExtraLarge),
+                .height(AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Small),
             reuseEnabled = liquidGlassEnabled,
             drawShellLens = true,
         ) { liquidChromeActive ->
@@ -667,7 +665,7 @@ private fun DynamicCommentComposer(
         }
         Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
         BottomBarMatchedReusableLiquidDock(
-            modifier = Modifier.height(AppSpacingTokens.TripleExtraLarge),
+            modifier = Modifier.height(AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Small),
             shape = AppShapes.container(ContainerLevel.Pill),
             reuseEnabled = liquidGlassEnabled,
             drawShellLens = true,
