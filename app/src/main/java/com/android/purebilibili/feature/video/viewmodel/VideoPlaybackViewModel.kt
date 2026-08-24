@@ -6257,6 +6257,8 @@ class VideoPlaybackViewModel : ViewModel() {
                     val result = VideoRepository.getAiSummary(bvid, cid, upMid)
                     var shouldPollAgain = false
                     var nextDelayMs = 0L
+                    var completedQueuedRetry = false
+                    var completedRequestRetry = false
 
                     result.onSuccess { response ->
                         val diagnosis =
@@ -6294,6 +6296,7 @@ class VideoPlaybackViewModel : ViewModel() {
                                     isInBackground = BackgroundManager.isInBackground
                                 )
                                 shouldPollAgain = true
+                                completedQueuedRetry = true
                                 Logger.i(
                                     "PlayerVM",
                                     "🤖 AI Summary queued, retry later: bvid=$bvid cid=$cid stid=${diagnosis.stid ?: ""} retryInMs=$nextDelayMs retryCount=$queuedRetryCount"
@@ -6331,12 +6334,12 @@ class VideoPlaybackViewModel : ViewModel() {
                         val diagnosis =
                             com.android.purebilibili.data.repository.diagnoseAiSummaryFailure(throwable)
                         if (shouldRetryAiSummaryRequestFailure(diagnosis.status, requestRetryCount)) {
-                            requestRetryCount += 1
                             nextDelayMs = resolveAiSummaryRetryDelayMs(
                                 queuedRetryCount = requestRetryCount,
                                 isInBackground = BackgroundManager.isInBackground
                             )
                             shouldPollAgain = true
+                            completedRequestRetry = true
                             Logger.i(
                                 "PlayerVM",
                                 "🤖 AI Summary retryable failure, retry scheduled: bvid=$bvid cid=$cid retryInMs=$nextDelayMs retryCount=$requestRetryCount"
@@ -6359,7 +6362,8 @@ class VideoPlaybackViewModel : ViewModel() {
                         return@launch
                     }
 
-                    queuedRetryCount += 1
+                    if (completedQueuedRetry) queuedRetryCount += 1
+                    if (completedRequestRetry) requestRetryCount += 1
                     delay(nextDelayMs)
                     val currentSuccess = _uiState.value as? VideoPlaybackUiState.Success
                     if (
@@ -6369,6 +6373,8 @@ class VideoPlaybackViewModel : ViewModel() {
                     ) {
                         return@launch
                     }
+                } catch (e: kotlinx.coroutines.CancellationException) {
+                    throw e
                 } catch (e: Exception) {
                     Logger.d("PlayerVM", "🤖 Failed to load AI Summary: ${e.message}")
                     return@launch

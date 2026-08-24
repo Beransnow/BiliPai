@@ -243,6 +243,8 @@ object VideoRepository {
                     buvidInitialized = true
                 }
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             android.util.Log.e("VideoRepo", " Failed to get buvid3 from SPI: ${e.message}")
         }
@@ -1302,66 +1304,45 @@ object VideoRepository {
             upMid = upMid
         )
 
-        var attempt = 1
-        var lastError: Throwable? = null
+        try {
+            val (imgKey, subKey) = getWbiKeys()
+            val params = buildAiSummaryParams(
+                bvid = bvid,
+                cid = cid,
+                upMid = upMid
+            )
+            val signedParams = WbiUtils.sign(params, imgKey, subKey)
 
-        while (attempt <= 2) {
-            try {
-                if (attempt > 1) {
-                    wbiKeysCache = null
-                    wbiKeysTimestamp = 0
-                    kotlinx.coroutines.delay(350L)
-                }
+            com.android.purebilibili.core.util.Logger.d(
+                "VideoRepo",
+                "🤖 AI Summary request: bvid=$bvid cid=$cid upMidPresent=${upMid > 0L}"
+            )
+            val response = api.getAiConclusion(signedParams)
+            val diagnosis = diagnoseAiSummaryResponse(response)
+            logAiSummaryResponse(
+                bvid = bvid,
+                cid = cid,
+                diagnosis = diagnosis,
+                hasModelResult = response.data?.modelResult != null,
+                summaryLength = response.data?.modelResult?.summary?.length ?: 0,
+                outlineCount = response.data?.modelResult?.outline?.size ?: 0
+            )
 
-                val (imgKey, subKey) = getWbiKeys()
-                val params = buildAiSummaryParams(
-                    bvid = bvid,
-                    cid = cid,
-                    upMid = upMid
-                )
-                val signedParams = WbiUtils.sign(params, imgKey, subKey)
-
-                com.android.purebilibili.core.util.Logger.d(
-                    "VideoRepo",
-                    "🤖 AI Summary request: attempt=$attempt bvid=$bvid cid=$cid upMidPresent=${upMid > 0L}"
-                )
-                val response = api.getAiConclusion(signedParams)
-                val diagnosis = diagnoseAiSummaryResponse(response)
-                logAiSummaryResponse(
-                    bvid = bvid,
-                    cid = cid,
-                    attempt = attempt,
-                    diagnosis = diagnosis,
-                    hasModelResult = response.data?.modelResult != null,
-                    summaryLength = response.data?.modelResult?.summary?.length ?: 0,
-                    outlineCount = response.data?.modelResult?.outline?.size ?: 0
-                )
-
-                return@withContext if (response.code == 0) {
-                    Result.success(response)
-                } else {
-                    Result.failure(Exception("AI Summary API error: code=${response.code}, msg=${response.message}"))
-                }
-            } catch (e: Exception) {
-                lastError = e
-                val diagnosis = diagnoseAiSummaryFailure(e)
-                com.android.purebilibili.core.util.Logger.w(
-                    "VideoRepo",
-                    "🤖 AI Summary request failed: attempt=$attempt bvid=$bvid cid=$cid status=${diagnosis.status} reason=${diagnosis.reason} retryable=${diagnosis.shouldRetryRequest}"
-                )
-                if (attempt == 1 && diagnosis.shouldRetryRequest) {
-                    com.android.purebilibili.core.util.Logger.i(
-                        "VideoRepo",
-                        "🤖 AI Summary retry scheduled: bvid=$bvid cid=$cid reason=${diagnosis.reason}"
-                    )
-                    attempt++
-                    continue
-                }
-                return@withContext Result.failure(e)
+            Result.success(response)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            val diagnosis = diagnoseAiSummaryFailure(e)
+            if ((e as? retrofit2.HttpException)?.code() == 412 || e.message.orEmpty().contains("412")) {
+                wbiKeysCache = null
+                wbiKeysTimestamp = 0L
             }
+            com.android.purebilibili.core.util.Logger.w(
+                "VideoRepo",
+                "🤖 AI Summary request failed: bvid=$bvid cid=$cid status=${diagnosis.status} reason=${diagnosis.reason} retryable=${diagnosis.shouldRetryRequest}"
+            )
+            Result.failure(e)
         }
-
-        Result.failure(lastError ?: IllegalStateException("AI Summary unknown failure"))
     }
 
     private fun buildAiSummaryParams(
@@ -1397,7 +1378,6 @@ object VideoRepository {
     private fun logAiSummaryResponse(
         bvid: String,
         cid: Long,
-        attempt: Int,
         diagnosis: AiSummaryFetchDiagnosis,
         hasModelResult: Boolean,
         summaryLength: Int,
@@ -1405,7 +1385,7 @@ object VideoRepository {
     ) {
         com.android.purebilibili.core.util.Logger.i(
             "VideoRepo",
-            "🤖 AI Summary response: attempt=$attempt bvid=$bvid cid=$cid status=${diagnosis.status} reason=${diagnosis.reason} rootCode=${diagnosis.rootCode} dataCode=${diagnosis.dataCode} stid=${diagnosis.stid ?: ""} hasModelResult=$hasModelResult summaryLength=$summaryLength outlineCount=$outlineCount retryLater=${diagnosis.shouldRetryLater}"
+            "🤖 AI Summary response: bvid=$bvid cid=$cid status=${diagnosis.status} reason=${diagnosis.reason} rootCode=${diagnosis.rootCode} dataCode=${diagnosis.dataCode} stid=${diagnosis.stid ?: ""} hasModelResult=$hasModelResult summaryLength=$summaryLength outlineCount=$outlineCount retryLater=${diagnosis.shouldRetryLater}"
         )
     }
 
@@ -1443,6 +1423,8 @@ object VideoRepository {
                     com.android.purebilibili.core.util.Logger.d("VideoRepo", " WBI Keys obtained successfully (attempt $attempt)")
                     return wbiKeysCache!!
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 lastError = e
                 android.util.Log.w("VideoRepo", "getWbiKeys attempt $attempt failed: ${e.message}")
