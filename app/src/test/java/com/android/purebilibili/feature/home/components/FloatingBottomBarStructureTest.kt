@@ -208,6 +208,24 @@ class FloatingBottomBarStructureTest {
     }
 
     @Test
+    fun `selected indicator hit target stays inside logical tab slot`() {
+        val source = loadFloatingBottomBarSource()
+        val indicatorSource = source.substringAfter("if (tabWidthPx > 0f)")
+        val hitTarget = indicatorSource.substringAfter(
+            "Keep pointer input in the logical tab slot"
+        )
+
+        assertTrue(hitTarget.contains("val slotOffsetPx = dampedDragAnimation.value * tabWidthPx"))
+        assertTrue(hitTarget.contains(".width(tabWidthDp)"))
+        assertTrue(hitTarget.contains("onClick = onReselected"))
+        assertFalse(
+            indicatorSource
+                .substringBefore("Keep pointer input in the logical tab slot")
+                .contains("dampedDragAnimation.modifier")
+        )
+    }
+
+    @Test
     fun `home icons scale continuously with indicator coverage without settle pulse`() {
         val source = loadFloatingBottomBarSource()
         val body = source.substringAfter("fun FloatingBottomBar(")

@@ -852,6 +852,9 @@ fun FloatingBottomBar(
         }
 
         if (tabWidthPx > 0f) {
+            val tabWidthDp = with(density) { tabWidthPx.toDp() }
+            val tabsContentStartPx = with(density) { 4.dp.toPx() }
+
             if (isLiquidGlassMode && combinedBackdrop != null) {
                 Box(
                     Modifier
@@ -870,23 +873,6 @@ fun FloatingBottomBar(
                             }
                             clip = false
                         }
-                        .then(interactiveHighlight?.gestureModifier ?: Modifier)
-                        .then(
-                            if (dragSelectionEnabled && safeTabsCount > 1) {
-                                dampedDragAnimation.modifier
-                            } else {
-                                Modifier
-                            }
-                        )
-                        // The indicator is the topmost hit target over the selected tab. Forward
-                        // taps so reselect and double-tap actions are not swallowed. Compose's
-                        // clickable cancels itself when the same pointer gesture becomes a drag.
-                        .clickable(
-                            interactionSource = null,
-                            indication = null,
-                            role = Role.Tab,
-                            onClick = onReselected,
-                        )
                         .clearAndSetSemantics {}
                         .drawBackdrop(
                             backdrop = combinedBackdrop,
@@ -958,13 +944,6 @@ fun FloatingBottomBar(
                             }
                             clip = false
                         }
-                        .then(
-                            if (dragSelectionEnabled && safeTabsCount > 1) {
-                                dampedDragAnimation.modifier
-                            } else {
-                                Modifier
-                            }
-                        )
                         .clip(pillShape)
                         .background(colors.indicatorColor.copy(alpha = 0.15f), pillShape)
                         .height(fittedIndicatorHeight)
@@ -1005,6 +984,39 @@ fun FloatingBottomBar(
                     }
                 }
             }
+
+            // The selected capsule can be wider than its tab when the adjacent search button
+            // compresses the dock. Keep pointer input in the logical tab slot so the visual
+            // overflow cannot steal taps from neighbouring destinations.
+            Box(
+                modifier = Modifier
+                    .graphicsLayer {
+                        val slotOffsetPx = dampedDragAnimation.value * tabWidthPx
+                        translationX = if (isLtr) {
+                            tabsContentStartPx + slotOffsetPx + panelOffset
+                        } else {
+                            -tabsContentStartPx - slotOffsetPx + panelOffset
+                        }
+                        clip = false
+                    }
+                    .then(interactiveHighlight?.gestureModifier ?: Modifier)
+                    .then(
+                        if (dragSelectionEnabled && safeTabsCount > 1) {
+                            dampedDragAnimation.modifier
+                        } else {
+                            Modifier
+                        }
+                    )
+                    .clickable(
+                        interactionSource = null,
+                        indication = null,
+                        role = Role.Tab,
+                        onClick = onReselected,
+                    )
+                    .clearAndSetSemantics {}
+                    .height(fittedIndicatorHeight)
+                    .width(tabWidthDp),
+            )
         }
     }
 }
