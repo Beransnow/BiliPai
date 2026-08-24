@@ -6209,6 +6209,7 @@ object SettingsManager {
         booleanPreferencesKey("player_diagnostic_logging_enabled")
     private val KEY_DASH_SEGMENT_REQUESTS_ENABLED =
         booleanPreferencesKey("dash_segment_requests_enabled")
+    private val KEY_PLAYBACK_CDN_PREFERENCE = stringPreferencesKey("playback_cdn_preference")
     private val KEY_QUALITY_SWITCH_FAILURE_DIALOG_ENABLED =
         booleanPreferencesKey("quality_switch_failure_dialog_enabled")
     private val KEY_QUALITY_SWITCH_FAILURE_DIALOG_ONCE_ENABLED =
@@ -6616,6 +6617,17 @@ object SettingsManager {
             preferences[KEY_DASH_SEGMENT_REQUESTS_ENABLED] = enabled
         }
         PlayerSettingsCache.setDashSegmentRequestsEnabled(context, enabled)
+    }
+
+    fun getPlaybackCdnPreference(context: Context): Flow<String> =
+        context.settingsDataStore.data.map { preferences ->
+            preferences[KEY_PLAYBACK_CDN_PREFERENCE] ?: "base_url"
+        }
+
+    suspend fun setPlaybackCdnPreference(context: Context, preference: String) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_PLAYBACK_CDN_PREFERENCE] = preference
+        }
     }
 
     fun getQualitySwitchFailureDialogEnabled(context: Context): Flow<Boolean> =

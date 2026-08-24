@@ -69,6 +69,7 @@ import com.android.purebilibili.feature.screenshot.AppScreenshotCaptureMode
 import com.android.purebilibili.feature.screenshot.AppScreenshotGestureMode
 import com.android.purebilibili.feature.video.subtitle.SubtitleAutoPreference
 import com.android.purebilibili.feature.video.subtitle.isSubtitleFeatureEnabledForUser
+import com.android.purebilibili.feature.plugin.PlaybackCdnPreference
 import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 import com.android.purebilibili.core.ui.components.*
@@ -193,6 +194,17 @@ fun PlaybackSettingsContent(
         .getVideoCodec(context).collectAsStateWithLifecycle(initialValue = "hev1")
     val videoSecondCodecPreference by com.android.purebilibili.core.store.SettingsManager
         .getVideoSecondCodec(context).collectAsStateWithLifecycle(initialValue = "avc1")
+    val playbackCdnPreferenceValue by SettingsManager
+        .getPlaybackCdnPreference(context)
+        .collectAsStateWithLifecycle(initialValue = PlaybackCdnPreference.BASE_URL.storageValue)
+    val playbackCdnPreference = remember(playbackCdnPreferenceValue) {
+        PlaybackCdnPreference.fromStorageValue(playbackCdnPreferenceValue)
+    }
+    val playbackCdnOptions = remember {
+        PlaybackCdnPreference.entries.map { preference ->
+            AppSegmentOption(preference, preference.displayName)
+        }
+    }
 
     // ... [保留原有逻辑: checkPipPermission, gotoPipSettings] ...
 
@@ -278,7 +290,7 @@ fun PlaybackSettingsContent(
                         else -> "未知"
                     }
                     AppPreferenceGroup {
-                        AppSwitchPreference(
+		                        AppSwitchPreference(
                             icon = rememberSettingsSemanticIcon(SettingsIconRole.HARDWARE_DECODER),
                             title = "启用硬件解码",
                             subtitle = "推荐保持开启；只有遇到绿屏或无法播放时再尝试关闭，关闭后更耗电",
@@ -329,7 +341,7 @@ fun PlaybackSettingsContent(
                 Box(modifier = Modifier.entrance()) {
                     val scope = rememberCoroutineScope()
                     AppPreferenceGroup {
-	                        AppSwitchPreference(
+		                        AppSwitchPreference(
 	                            icon = rememberSettingsSemanticIcon(SettingsIconRole.LONG_PRESS_SPEED_HINT),
                             title = "记忆上次播放速度",
                             subtitle = if (rememberLastPlaybackSpeed) {
@@ -845,8 +857,27 @@ fun PlaybackSettingsContent(
                     )
 
                     AppPreferenceGroup {
-	                        AppSwitchPreference(
-	                            icon = rememberSettingsSemanticIcon(SettingsIconRole.DIRECTED_TRAFFIC),
+                        SettingsSingleChoicePreference(
+                            icon = Icons.Outlined.Dns,
+                            title = "CDN 设置：${playbackCdnPreference.displayName}",
+                            subtitle = "新视频优先使用此线路；不可用时自动回退主/备用 URL",
+                            options = playbackCdnOptions,
+                            selectedValue = playbackCdnPreference,
+                            onSelectionChange = { preference ->
+                                scope.launch {
+                                    SettingsManager.setPlaybackCdnPreference(
+                                        context,
+                                        preference.storageValue,
+                                    )
+                                }
+                            },
+                            iconTint = iOSTeal,
+                        )
+
+                        AppPreferenceDivider()
+
+		                        AppSwitchPreference(
+		                            icon = rememberSettingsSemanticIcon(SettingsIconRole.DIRECTED_TRAFFIC),
                             title = "B站定向流量支持",
                             subtitle = if (directedTrafficEnabled) {
                                 "移动数据下优先使用应用内播放链路（实验性）"

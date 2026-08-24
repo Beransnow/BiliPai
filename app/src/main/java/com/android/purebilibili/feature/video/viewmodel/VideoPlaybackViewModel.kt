@@ -24,6 +24,7 @@ import com.android.purebilibili.core.plugin.SkipAction
 import com.android.purebilibili.core.store.TodayWatchFeedbackSnapshot
 import com.android.purebilibili.core.store.TodayWatchFeedbackStore
 import com.android.purebilibili.core.store.TodayWatchProfileStore
+import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.util.AnalyticsHelper
 import com.android.purebilibili.core.util.CrashReporter
 import com.android.purebilibili.core.util.Logger
@@ -42,6 +43,9 @@ import com.android.purebilibili.feature.plugin.CdnDashPrefetchRequest
 import com.android.purebilibili.feature.plugin.CdnDashSegmentPrefetcher
 import com.android.purebilibili.feature.plugin.CdnLineDiagnostic
 import com.android.purebilibili.feature.plugin.PlaybackCdnPlugin
+import com.android.purebilibili.feature.plugin.PlaybackCdnPreference
+import com.android.purebilibili.feature.plugin.applyPlaybackCdnPreference
+import com.android.purebilibili.feature.plugin.buildPlaybackCdnCacheKeys
 import com.android.purebilibili.feature.plugin.buildCdnLineDiagnostics
 import com.android.purebilibili.feature.plugin.buildCdnTrackCacheKey
 import com.android.purebilibili.feature.plugin.parseCdnByteRange
@@ -1322,6 +1326,10 @@ class VideoPlaybackViewModel : ViewModel() {
     private val playbackCoordinator = PlaybackCoordinator(playbackSessionStore)
     private val interactionUseCase = VideoInteractionUseCase()
     private val qualityManager = QualityManager()
+    private val playbackCdnPreference = SettingsManager
+        .getPlaybackCdnPreference(PluginManager.getContext())
+        .map { PlaybackCdnPreference.fromStorageValue(it) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, PlaybackCdnPreference.BASE_URL)
 
     // HDR auto-upgrade state
     private val attemptedUpgradeKeys = mutableSetOf<String>()
@@ -8183,11 +8191,12 @@ class VideoPlaybackViewModel : ViewModel() {
             .firstOrNull()
         val cdnRewrite = cdnPlugin?.rewritePlaybackCandidates(rawVideoUrls, rawAudioUrls)
 
-        val allVideoUrls = cdnRewrite?.videoUrls ?: rawVideoUrls
-        val allAudioUrls = cdnRewrite?.audioUrls ?: buildPlaybackAudioUrlCandidates(
-            audioUrl = audioUrl,
-            cachedDashAudios = cachedDashAudios
-        ).let { urls -> List(allVideoUrls.size) { index -> urls.getOrNull(index).orEmpty() } }
+        val preferredCandidates = applyPlaybackCdnPreference(
+            candidates = cdnRewrite?.candidates ?: originalCandidates,
+            preference = playbackCdnPreference.value,
+        )
+        val allVideoUrls = preferredCandidates.map { it.videoUrl }
+        val allAudioUrls = preferredCandidates.map { it.audioUrl.orEmpty() }
         val selectedVideoUrl = allVideoUrls.firstOrNull() ?: videoUrl
         val selectedAudioUrl = allAudioUrls.firstOrNull()?.takeIf { it.isNotBlank() } ?: audioUrl
         val selectedAdaptiveDashSource =
@@ -8203,17 +8212,17 @@ class VideoPlaybackViewModel : ViewModel() {
             adaptiveDashSource = selectedAdaptiveDashSource,
             allVideoUrls = allVideoUrls,
             allAudioUrls = allAudioUrls,
-            cdnCacheKeysByUrl = cdnRewrite?.cacheKeysByUrl.orEmpty(),
-            candidateSources = cdnRewrite?.sources.orEmpty(),
+            cdnCacheKeysByUrl = buildPlaybackCdnCacheKeys(preferredCandidates),
+            candidateSources = preferredCandidates.map { it.source },
             regionLabel = cdnRewrite?.regionLabel,
             lineDiagnostics = cdnPlugin?.buildPlaybackCdnDiagnostics(
                 videoUrls = allVideoUrls,
-                sources = cdnRewrite?.sources.orEmpty()
+                sources = preferredCandidates.map { it.source }
             ).orEmpty().ifEmpty {
                 buildCdnLineDiagnostics(
                     urls = allVideoUrls,
                     healthByHost = emptyMap(),
-                    sources = cdnRewrite?.sources.orEmpty()
+                    sources = preferredCandidates.map { it.source }
                 )
             },
             fallbackState = buildPlaybackCdnFallbackState(

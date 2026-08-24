@@ -426,4 +426,37 @@ class CdnRegionPolicyTest {
         assertEquals("基础URL（不推荐）", resolvePlaybackCdnDisplayName("unknown.example.com", index = 0))
         assertEquals("备用URL", resolvePlaybackCdnDisplayName("unknown.example.com", index = 1))
     }
+
+    @Test
+    fun `global playback cdn preference rewrites paired tracks and preserves fallbacks`() {
+        val original = buildPlaybackCdnCandidates(
+            videoUrls = listOf(
+                "https://upos-sz-mirrorali.bilivideo.com/video.m4s?deadline=1",
+                "https://upos-sz-mirrorcos.bilivideo.com/video.m4s?deadline=1",
+            ),
+            audioUrls = listOf(
+                "https://upos-sz-mirrorali.bilivideo.com/audio.m4s?deadline=1",
+                "https://upos-sz-mirrorcos.bilivideo.com/audio.m4s?deadline=1",
+            ),
+        )
+
+        val preferred = applyPlaybackCdnPreference(original, PlaybackCdnPreference.HW)
+
+        assertEquals("upos-sz-mirrorhw.bilivideo.com", hostFromCdnUrl(preferred.first().videoUrl))
+        assertEquals("upos-sz-mirrorhw.bilivideo.com", hostFromCdnUrl(preferred.first().audioUrl.orEmpty()))
+        assertTrue(preferred.drop(1).any { it.videoUrl == original.first().videoUrl })
+    }
+
+    @Test
+    fun `backup preference promotes returned backup without discarding base`() {
+        val original = buildPlaybackCdnCandidates(
+            videoUrls = listOf("https://base.bilivideo.com/v", "https://backup.bilivideo.com/v"),
+            audioUrls = emptyList(),
+        )
+
+        val preferred = applyPlaybackCdnPreference(original, PlaybackCdnPreference.BACKUP_URL)
+
+        assertEquals("backup.bilivideo.com", hostFromCdnUrl(preferred.first().videoUrl))
+        assertEquals("base.bilivideo.com", hostFromCdnUrl(preferred.last().videoUrl))
+    }
 }
