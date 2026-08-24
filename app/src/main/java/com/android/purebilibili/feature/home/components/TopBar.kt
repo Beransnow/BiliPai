@@ -1333,16 +1333,21 @@ private fun LightweightHomeTopTabs(
         val shouldUseLiquidGlassIndicator = isLiquidGlassEnabled &&
             !skinPlainStyle &&
             !hasSkinStickerIcons
-        // 移动胶囊本体与玻璃状态解耦：顶部只保留 BiliPai 指示器；
-        // 液态玻璃只切换材质，关闭时回退半透明 wash。
+        // 液态玻璃复用开启时沿用 BiliPai 胶囊；关闭后恢复 MD3 原生短下划线。
         val shouldUseMd3LiquidCapsule = effectivePresentation == AppTopTabPresentation.MATERIAL_UNDERLINE &&
             !skinPlainStyle &&
             !hasSkinStickerIcons &&
+            isLiquidGlassEnabled &&
             !hasOuterChromeSurface
         val shouldUseMd3DockBackedCapsule = effectivePresentation == AppTopTabPresentation.MATERIAL_UNDERLINE &&
             !skinPlainStyle &&
             !hasSkinStickerIcons &&
+            isLiquidGlassEnabled &&
             hasOuterChromeSurface
+        val shouldUseMd3NativeUnderline = effectivePresentation == AppTopTabPresentation.MATERIAL_UNDERLINE &&
+            !hasSkinStickerIcons &&
+            !shouldUseMd3DockBackedCapsule &&
+            !shouldUseMd3LiquidCapsule
         val shouldPrimeTopTabLiquidGlassCapture =
             isLiquidGlassEnabled &&
                 !skinPlainStyle &&
@@ -1794,32 +1799,34 @@ private fun LightweightHomeTopTabs(
                 }
                 } // stable export + visible content with indicator-only motion
 
-                // 皮肤自带顶栏画面时只绘制短下划线，避免选中胶囊遮挡原始美术；
-                // 常规主题仍由移动胶囊负责，玻璃只切换胶囊材质。
-                if (effectivePresentation == AppTopTabPresentation.MATERIAL_UNDERLINE && !hasSkinStickerIcons && skinPlainStyle) {
+                // 非玻璃 MD3 与皮肤顶栏都使用单层短下划线；移动时两端错峰，先拉长再收拢。
+                if (shouldUseMd3NativeUnderline) {
                     val indicatorColor = if (skinPlainContentColor != null) {
                         resolveHomeSkinTopTabIndicatorColor(skinPlainContentColor)
                     } else {
                         MaterialTheme.colorScheme.primary
                     }
-                    if (!shouldUseMd3DockBackedCapsule && !shouldUseMd3LiquidCapsule) {
-                        val skinUnderlineTranslationXPx = md3IndicatorTranslationXPx +
-                            with(density) {
-                                ((md3LiquidCapsuleWidth - md3IndicatorWidth) / 2).toPx()
-                            }
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.BottomStart)
-                                .graphicsLayer {
-                                    translationX = skinUnderlineTranslationXPx
-                                }
-                                .offset(y = -AppSpacingTokens.ExtraSmall)
-                                .width(md3IndicatorWidth)
-                                .height(AppSpacingTokens.Micro * 1.5f)
-                                .clip(RoundedCornerShape(percent = 50))
-                                .background(indicatorColor)
+                    val nativeUnderlineBounds = with(density) {
+                        resolveMd3TopTabUnderlineBounds(
+                            absolutePagerPosition = topTabIndicatorPosition,
+                            itemWidthPx = itemWidth.toPx(),
+                            rowScrollOffsetPx = rowScrollOffsetPx,
+                            indicatorWidthPx = md3IndicatorWidth.toPx(),
+                            contentPaddingPx = md3ContentPadding.toPx(),
                         )
                     }
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .graphicsLayer {
+                                translationX = nativeUnderlineBounds.translationXPx
+                            }
+                            .offset(y = -AppSpacingTokens.ExtraSmall)
+                            .width(with(density) { nativeUnderlineBounds.widthPx.toDp() })
+                            .height(AppSpacingTokens.Micro * 1.5f)
+                            .clip(RoundedCornerShape(percent = 50))
+                            .background(indicatorColor)
+                    )
                 }
             }
 

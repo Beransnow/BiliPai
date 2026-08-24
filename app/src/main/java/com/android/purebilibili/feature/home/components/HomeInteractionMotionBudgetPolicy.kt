@@ -193,6 +193,55 @@ internal fun resolveMd3TopTabIndicatorTranslationPx(
     return indicatorCenterPx - rowScrollOffsetPx - (indicatorWidthPx / 2f)
 }
 
+internal data class Md3TopTabUnderlineBounds(
+    val translationXPx: Float,
+    val widthPx: Float,
+)
+
+/**
+ * PiliPlus-style elastic underline: while the pager crosses a tab boundary the underline
+ * temporarily spans the old and new tab centers, then contracts back to its resting width.
+ */
+internal fun resolveMd3TopTabUnderlineBounds(
+    absolutePagerPosition: Float,
+    itemWidthPx: Float,
+    rowScrollOffsetPx: Float,
+    indicatorWidthPx: Float,
+    contentPaddingPx: Float = 0f,
+): Md3TopTabUnderlineBounds {
+    val restingLeft = resolveMd3TopTabIndicatorTranslationPx(
+        absolutePagerPosition = absolutePagerPosition,
+        itemWidthPx = itemWidthPx,
+        rowScrollOffsetPx = rowScrollOffsetPx,
+        indicatorWidthPx = indicatorWidthPx,
+        contentPaddingPx = contentPaddingPx,
+    )
+    if (itemWidthPx <= 0f || indicatorWidthPx <= 0f) {
+        return Md3TopTabUnderlineBounds(restingLeft, indicatorWidthPx.coerceAtLeast(0f))
+    }
+
+    val transitionFraction = (
+        absolutePagerPosition - kotlin.math.floor(absolutePagerPosition)
+    ).coerceIn(0f, 1f)
+    // The leading edge gets ahead while the trailing edge catches up. Traversing the same
+    // geometry backwards automatically swaps their roles, so swipe direction needs no state.
+    val trailingEdgeProgress = transitionFraction * transitionFraction
+    val leadingEdgeProgress = 1f - (1f - transitionFraction) * (1f - transitionFraction)
+    val startTranslation = resolveMd3TopTabIndicatorTranslationPx(
+        absolutePagerPosition = kotlin.math.floor(absolutePagerPosition),
+        itemWidthPx = itemWidthPx,
+        rowScrollOffsetPx = rowScrollOffsetPx,
+        indicatorWidthPx = indicatorWidthPx,
+        contentPaddingPx = contentPaddingPx,
+    )
+    val stretchedWidth = indicatorWidthPx +
+        itemWidthPx * (leadingEdgeProgress - trailingEdgeProgress)
+    return Md3TopTabUnderlineBounds(
+        translationXPx = startTranslation + itemWidthPx * trailingEdgeProgress,
+        widthPx = stretchedWidth,
+    )
+}
+
 internal fun resolveIosTopTabCapsuleTranslationPx(
     absolutePagerPosition: Float,
     itemWidthPx: Float,
