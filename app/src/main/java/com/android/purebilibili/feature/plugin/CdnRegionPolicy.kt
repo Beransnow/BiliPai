@@ -83,6 +83,7 @@ data class CdnProbeCandidate(
 data class CdnLineDiagnostic(
     val index: Int,
     val host: String,
+    val displayName: String,
     val statusLabel: String,
     val latencyMs: Long?,
     val speedKbps: Long?,
@@ -434,6 +435,7 @@ internal fun buildCdnLineDiagnostics(
         CdnLineDiagnostic(
             index = index,
             host = host.ifBlank { "未知线路" },
+            displayName = resolvePlaybackCdnDisplayName(host, index),
             statusLabel = resolveCdnHealthStatusLabel(health),
             latencyMs = health?.manualProbeLatencyMs,
             speedKbps = health?.manualProbeSpeedKbps,
@@ -445,6 +447,40 @@ internal fun buildCdnLineDiagnostics(
         )
     }
 }
+
+/** User-facing CDN names aligned with PiliPlus' playback CDN selector. */
+internal fun resolvePlaybackCdnDisplayName(host: String, index: Int): String {
+    val normalizedHost = host.lowercase()
+    return PILIPLUS_CDN_DISPLAY_NAMES[normalizedHost]
+        ?: when {
+            normalizedHost.contains("mcdn") -> "mcdn（Bilibili）"
+            normalizedHost.contains("bcache") -> "bcache（Bilibili）"
+            index == 0 -> "基础URL（不推荐）"
+            else -> "备用URL"
+        }
+}
+
+private val PILIPLUS_CDN_DISPLAY_NAMES = mapOf(
+    "upos-sz-mirrorali.bilivideo.com" to "ali（阿里云）",
+    "upos-sz-mirroralib.bilivideo.com" to "alib（阿里云）",
+    "upos-sz-mirroralio1.bilivideo.com" to "alio1（阿里云）",
+    "upos-sz-mirrorcos.bilivideo.com" to "cos（腾讯云）",
+    "upos-sz-mirrorcosb.bilivideo.com" to "cosb（腾讯云，VOD加速类型）",
+    "upos-sz-mirrorcoso1.bilivideo.com" to "coso1（腾讯云）",
+    "upos-sz-mirrorhw.bilivideo.com" to "hw（华为云，融合CDN）",
+    "upos-sz-mirrorhwb.bilivideo.com" to "hwb（华为云，融合CDN）",
+    "upos-sz-mirrorhwo1.bilivideo.com" to "hwo1（华为云，融合CDN）",
+    "upos-sz-mirror08c.bilivideo.com" to "08c（华为云，融合CDN）",
+    "upos-sz-mirror08h.bilivideo.com" to "08h（华为云，融合CDN）",
+    "upos-sz-mirror08ct.bilivideo.com" to "08ct（华为云，融合CDN）",
+    "upos-tf-all-hw.bilivideo.com" to "tf_hw（华为云）",
+    "upos-tf-all-tx.bilivideo.com" to "tf_tx（腾讯云）",
+    "upos-hz-mirrorakam.akamaized.net" to "akamai（Akamai海外）",
+    "upos-sz-mirroraliov.bilivideo.com" to "aliov（阿里云海外）",
+    "upos-sz-mirrorcosov.bilivideo.com" to "cosov（腾讯云海外）",
+    "upos-sz-mirrorhwov.bilivideo.com" to "hwov（华为云海外）",
+    "cn-hk-eq-bcache-01.bilivideo.com" to "hk_bcache（Bilibili海外）"
+)
 
 internal fun cdnCandidateSourceLabel(source: PlaybackCdnCandidateSource): String = when (source) {
     PlaybackCdnCandidateSource.CUSTOM -> "自定义"

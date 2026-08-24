@@ -42,6 +42,7 @@ import com.android.purebilibili.feature.plugin.CdnDashPrefetchRequest
 import com.android.purebilibili.feature.plugin.CdnDashSegmentPrefetcher
 import com.android.purebilibili.feature.plugin.CdnLineDiagnostic
 import com.android.purebilibili.feature.plugin.PlaybackCdnPlugin
+import com.android.purebilibili.feature.plugin.buildCdnLineDiagnostics
 import com.android.purebilibili.feature.plugin.buildCdnTrackCacheKey
 import com.android.purebilibili.feature.plugin.parseCdnByteRange
 import com.android.purebilibili.feature.plugin.SponsorBlockInsightStore
@@ -8208,7 +8209,13 @@ class VideoPlaybackViewModel : ViewModel() {
             lineDiagnostics = cdnPlugin?.buildPlaybackCdnDiagnostics(
                 videoUrls = allVideoUrls,
                 sources = cdnRewrite?.sources.orEmpty()
-            ).orEmpty(),
+            ).orEmpty().ifEmpty {
+                buildCdnLineDiagnostics(
+                    urls = allVideoUrls,
+                    healthByHost = emptyMap(),
+                    sources = cdnRewrite?.sources.orEmpty()
+                )
+            },
             fallbackState = buildPlaybackCdnFallbackState(
                 selectedVideoUrl = selectedVideoUrl,
                 selectedAudioUrl = selectedAudioUrl,

@@ -404,4 +404,26 @@ class CdnRegionPolicyTest {
         assertEquals(42L, diagnostics.single().latencyMs)
         assertEquals("延迟较低", diagnostics.single().statusLabel)
     }
+
+    @Test
+    fun `playback cdn names match PiliPlus provider labels`() {
+        assertEquals(
+            "ali（阿里云）",
+            resolvePlaybackCdnDisplayName("upos-sz-mirrorali.bilivideo.com", index = 0)
+        )
+        assertEquals(
+            "cosb（腾讯云，VOD加速类型）",
+            resolvePlaybackCdnDisplayName("upos-sz-mirrorcosb.bilivideo.com", index = 1)
+        )
+        assertEquals(
+            "hw（华为云，融合CDN）",
+            resolvePlaybackCdnDisplayName("upos-sz-mirrorhw.bilivideo.com", index = 2)
+        )
+    }
+
+    @Test
+    fun `unknown playback cdn names fall back to base and backup labels`() {
+        assertEquals("基础URL（不推荐）", resolvePlaybackCdnDisplayName("unknown.example.com", index = 0))
+        assertEquals("备用URL", resolvePlaybackCdnDisplayName("unknown.example.com", index = 1))
+    }
 }
