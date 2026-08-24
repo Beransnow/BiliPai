@@ -58,6 +58,7 @@ import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import com.android.purebilibili.core.ui.components.AppSlider
 import com.android.purebilibili.core.ui.components.AppSliderDefaults
+import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.runtime.Composable
@@ -1171,26 +1172,36 @@ private fun LyricsPrimaryControls(
     onOpenSettings: () -> Unit,
     onHideControls: () -> Unit
 ) {
-    // Miuix 玻璃高光会描边；iOS 连续圆角的 Generic outline 在该路径会退化成倒角。
-    val shape = AppShapes.borderedContainer(ContainerLevel.Floating)
-    Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(AppSurfaceTokens.cardContainer(), shape)
-                .padding(horizontal = 14.dp, vertical = 8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            MusicProgress(state, onSeek)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                PlaybackControls(state, onPlayPause, onPrevious, onNext, modifier = Modifier.weight(1f))
-                AppTextButton(onClick = onOpenSettings, modifier = Modifier.height(48.dp)) {
-                    AppText("歌词设置", color = MusicContentColor, fontSize = 12.sp)
-                }
-                AppTextButton(onClick = onHideControls, modifier = Modifier.height(48.dp)) {
-                    AppText("收起", color = MusicContentColor, fontSize = 12.sp)
+    val panelColor = AppSurfaceTokens.cardContainer()
+    val panelContentColor = resolveMusicPlayerContentColor(
+        backgroundColor = panelColor,
+        onLightBackground = MaterialTheme.colorScheme.onSurface,
+        onDarkBackground = Color.White,
+    )
+    AppSurface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = AppShapes.container(ContainerLevel.Floating),
+        color = panelColor,
+        contentColor = panelContentColor,
+    ) {
+        CompositionLocalProvider(LocalMusicContentColor provides panelContentColor) {
+            Column(
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                MusicProgress(state, onSeek)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    PlaybackControls(state, onPlayPause, onPrevious, onNext, modifier = Modifier.weight(1f))
+                    AppTextButton(onClick = onOpenSettings, modifier = Modifier.height(48.dp)) {
+                        AppText("歌词设置", color = MusicContentColor, fontSize = 12.sp)
+                    }
+                    AppTextButton(onClick = onHideControls, modifier = Modifier.height(48.dp)) {
+                        AppText("收起", color = MusicContentColor, fontSize = 12.sp)
+                    }
                 }
             }
         }
+    }
 }
 
 private fun formatLyricsOffset(offsetMs: Long): String {
