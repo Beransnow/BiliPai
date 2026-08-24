@@ -227,7 +227,10 @@ internal fun shouldRenderProfileImmersiveBackground(
     hasTopPhoto: Boolean,
     deferImmersiveRenderBudget: Boolean
 ): Boolean {
-    return hasTopPhoto && !deferImmersiveRenderBudget
+    // A decoded static wallpaper is cheap to retain and is part of the persistent profile
+    // chrome. Dropping it during a bottom-tab transition produces a visible blank flash.
+    // The transition budget still applies to the skin video layer below.
+    return hasTopPhoto
 }
 
 internal fun resolveProfileTopBarScrimAlpha(
@@ -800,7 +803,7 @@ private fun BoxScope.ProfileBackground(
             .height(heroHeight)
             .align(Alignment.TopCenter)
     ) {
-        if (shouldRenderProfileImmersiveBackground(hasWallpaper, deferImmersiveRenderBudget)) {
+        if (shouldRenderProfileImmersiveBackground(user.topPhoto.isNotEmpty(), deferImmersiveRenderBudget)) {
             if (user.topPhoto.isNotEmpty()) {
                 AsyncImage(
                     model = ImageRequest.Builder(context)
@@ -823,7 +826,7 @@ private fun BoxScope.ProfileBackground(
                         )
                 )
             }
-            if (hasSkinVideo) {
+            if (hasSkinVideo && !deferImmersiveRenderBudget) {
                 ProfileSkinVideoBackground(
                     videoPath = requireNotNull(skinVideoBackgroundPath),
                     playMode = skinVideoPlayMode,
@@ -831,6 +834,13 @@ private fun BoxScope.ProfileBackground(
                     modifier = Modifier.fillMaxSize(),
                 )
             }
+        } else if (hasSkinVideo && !deferImmersiveRenderBudget) {
+            ProfileSkinVideoBackground(
+                videoPath = requireNotNull(skinVideoBackgroundPath),
+                playMode = skinVideoPlayMode,
+                playbackEnabled = playSkinVideo,
+                modifier = Modifier.fillMaxSize(),
+            )
         } else if (heroFallbackGradient != null) {
             Box(
                 modifier = Modifier

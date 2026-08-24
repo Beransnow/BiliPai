@@ -1253,9 +1253,17 @@ fun CommonListScreen(
                         modifier = Modifier.favoriteCollectionSharedBounds(
                             route = favoriteCollectionSharedElementRoute,
                             transitionEnabled = favoriteCollectionSharedTransitionEnabled
-                        ).onGloballyPositioned { coordinates ->
-                            fixedTopBarHeightPx = coordinates.size.height
-                        },
+                        )
+                            .then(
+                                if (historyViewModel != null) {
+                                    Modifier.background(AppSurfaceTokens.surface())
+                                } else {
+                                    Modifier
+                                }
+                            )
+                            .onGloballyPositioned { coordinates ->
+                                fixedTopBarHeightPx = coordinates.size.height
+                            },
                         navigationIcon = {
                             AppIconButton(onClick = onBack) {
                                 AppIcon(rememberAppBackIcon(), contentDescription = "Back")
@@ -1820,12 +1828,15 @@ fun CommonListScreen(
                         val height = (fixedHeight + collapsibleHeight + bodyOffset)
                             .coerceIn(constraints.minHeight, constraints.maxHeight)
                         layout(width, height) {
-                            placeables.first().placeRelative(0, 0)
                             var y = fixedHeight + bodyOffset
                             placeables.drop(1).forEach { placeable ->
                                 placeable.placeRelative(0, y)
                                 y += placeable.height
                             }
+                            // The pinned title bar is the foreground clipping cap. Collapsible
+                            // search/filter docks may move beneath it, but must never paint over
+                            // the title or actions while the history list is scrolled.
+                            placeables.first().placeRelative(0, 0)
                         }
                     } else {
                         val height = placeables.sumOf { it.height }
