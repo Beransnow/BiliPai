@@ -1,7 +1,7 @@
 # 双主题原生组件迁移
 
 最后更新：2026-08-24  
-状态：实施中（阶段 0）
+状态：实施中（阶段 1；基础视觉与选择控件并行推进）
 
 ## 目标合同
 
@@ -67,6 +67,25 @@ feature UI
 - MD3 renderer 禁止导入 Miuix；Miuix renderer 禁止导入 Material 3。
 - 液态玻璃文件集合使用路径摘要冻结。
 - Miuix navigation 只能出现在已冻结的共享导航子系统文件集合。
+
+## 当前实施进度（2026-08-24）
+
+阶段 0 已完成，renderer 骨架已经投入使用：
+
+| 状态 | 中性入口 | 说明 |
+|---|---|---|
+| 已双原生化 | `AppText` / `AppIcon` | facade 保留全部重载与文本点击复制；默认样式、内容色来自当前原生主题 |
+| 已双原生化 | `AppSurface` / `AppHorizontalDivider` | 两个主题分别调用原生 Surface / Divider |
+| 已双原生化 | `AppBadge` | 未显式传色时分别解析原生 Badge token |
+| 已双原生化 | `AppListItem` | MD3 使用 `ListItem`，MIUIX 使用官方 `BasicComponent` slot API |
+| 已双原生化 | `AppCheckbox` / `AppRadioButton` / `AppSwitch` | facade 不再暴露 MD3 colors；MIUIX 原生触觉受应用总开关约束 |
+| 已双原生化 | `AppSlider` | 自定义颜色通过 `AppSliderColors` 映射到两套原生 defaults |
+| 已完成几何收敛 | 分段控制 | 视觉高度与圆角共同解析，不再把 48dp 触控下限写成固定视觉高度 |
+| 待迁移 | `AppCard` | 现有 API 暴露 MD3 `CardColors` / `CardElevation`，需先替换为中立属性 |
+| 待迁移 | Progress | MIUIX determinate API 只接收 `Float`；provider 保留到 renderer 最末端读取 |
+
+`AppPrimitiveComponents.kt` 的 Material 3 import 棘轮已由 78 降至 59。已迁移 facade
+均不导入 Material 3 或 Miuix 可见组件；厂商 import 只存在于对应 renderer。
 
 ## 组件映射
 
