@@ -453,6 +453,9 @@ internal fun BottomBarSkinDecorativeTrim(
             .then(clipShape?.let { Modifier.clip(it) } ?: Modifier)
             .clearAndSetSemantics {}
             .drawBehind {
+                // Imported trims commonly keep transparent padding around the artwork.
+                // Paint the complete dock first so those pixels never expose the host surface.
+                drawRect(decoration.bottomTrimTint)
                 val trimHeight = size.height * 0.36f
                 val top = size.height - trimHeight
                 drawRoundRect(

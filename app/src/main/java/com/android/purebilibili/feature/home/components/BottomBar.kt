@@ -1230,19 +1230,49 @@ internal fun resolveBottomBarSkinContentColors(
     unselectedColor: Color,
     skinTrimTint: Color?
 ): BottomBarSkinContentColors {
-    val readableBackgroundIsLight = skinTrimTint?.luminance()?.let { it >= 0.45f } == true
-    val labelScrimColor = when {
-        skinTrimTint == null -> Color.Transparent
-        readableBackgroundIsLight -> OpticalContrastPalette.Highlight
-        else -> OpticalContrastPalette.Shadow
+    if (skinTrimTint == null) {
+        return BottomBarSkinContentColors(
+            selectedColor = selectedColor,
+            unselectedColor = unselectedColor,
+        )
     }
-    val labelScrimAlpha = 0f
-    return BottomBarSkinContentColors(
-        selectedColor = selectedColor,
-        unselectedColor = unselectedColor,
-        labelScrimColor = labelScrimColor,
-        labelScrimAlpha = labelScrimAlpha
+    val readableSelectedColor = resolveReadableBottomBarSkinForeground(
+        preferredColor = selectedColor,
+        backgroundColor = skinTrimTint,
     )
+    val readableUnselectedColor = resolveReadableBottomBarSkinForeground(
+        preferredColor = unselectedColor,
+        backgroundColor = skinTrimTint,
+    )
+    val labelScrimColor = if (readableUnselectedColor.luminance() >= 0.5f) {
+        OpticalContrastPalette.Shadow
+    } else {
+        OpticalContrastPalette.Highlight
+    }
+    return BottomBarSkinContentColors(
+        selectedColor = readableSelectedColor,
+        unselectedColor = readableUnselectedColor,
+        labelScrimColor = labelScrimColor,
+        labelScrimAlpha = 0.32f,
+    )
+}
+
+internal fun resolveReadableBottomBarSkinForeground(
+    preferredColor: Color,
+    backgroundColor: Color,
+): Color {
+    val opaquePreferred = preferredColor.copy(alpha = 1f)
+    if (bottomBarColorContrastRatio(opaquePreferred, backgroundColor) >= 3f) {
+        return preferredColor
+    }
+    return listOf(OpticalContrastPalette.Shadow, OpticalContrastPalette.Highlight)
+        .maxBy { candidate -> bottomBarColorContrastRatio(candidate, backgroundColor) }
+}
+
+private fun bottomBarColorContrastRatio(foreground: Color, background: Color): Float {
+    val lighter = maxOf(foreground.luminance(), background.luminance())
+    val darker = minOf(foreground.luminance(), background.luminance())
+    return (lighter + 0.05f) / (darker + 0.05f)
 }
 
 @Composable
