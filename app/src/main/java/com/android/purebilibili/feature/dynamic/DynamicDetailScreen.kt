@@ -306,7 +306,8 @@ fun DynamicDetailScreen(
                             .then(
                                 if (liquidGlassEnabled) {
                                     Modifier.padding(
-                                        horizontal = AppSpacingTokens.Medium,
+                                        start = AppSpacingTokens.Medium,
+                                        end = AppSpacingTokens.Medium,
                                         bottom = AppSpacingTokens.Small,
                                     )
                                 } else {
