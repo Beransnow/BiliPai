@@ -199,6 +199,10 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(miuixHaptic.contains("NoOpHapticFeedback"))
         assertFalse(miuixCheckbox.contains("import androidx.compose.material3"))
         assertFalse(miuixRadio.contains("import androidx.compose.material3"))
+        assertFalse(
+            loadSource("components/AppSelectionPreferenceComponents.kt")
+                .contains("modifier = Modifier.size(48.dp)"),
+        )
     }
 
     @Test
@@ -227,7 +231,8 @@ class AppPrimitiveComponentsStructureTest {
         assertFalse(iconFacade.contains("import top.yukonga.miuix"))
 
         assertTrue(themeDefaults.contains("MaterialLocalTextStyle.current"))
-        assertTrue(themeDefaults.contains("MiuixLocalTextStyles.current.main"))
+        assertTrue(themeDefaults.contains("MiuixTheme.textStyles.main"))
+        assertFalse(themeDefaults.contains("LocalTextStyles"))
         assertFalse(themeDefaults.contains(".kmp.basic."))
         assertTrue(materialText.contains("import androidx.compose.material3.Text"))
         assertTrue(materialIcon.contains("import androidx.compose.material3.Icon"))
