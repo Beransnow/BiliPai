@@ -1,6 +1,7 @@
 package com.android.purebilibili.data.repository
 
 import com.android.purebilibili.data.model.response.DynamicContentModule
+import com.android.purebilibili.data.model.response.DynamicDesc
 import com.android.purebilibili.data.model.response.DynamicItem
 import com.android.purebilibili.data.model.response.DynamicMajor
 import com.android.purebilibili.data.model.response.DynamicModules
@@ -117,7 +118,7 @@ internal fun mergeRicherOpusDetailContent(
     )
 }
 
-/** Retains feed-defined comment metadata when detail/opus responses omit it. */
+/** Retains feed-defined interaction and rich-text metadata when detail/opus responses omit it. */
 internal fun mergeDynamicDetailInteractionMetadata(
     detailItem: DynamicItem,
     seedItem: DynamicItem?
@@ -129,12 +130,36 @@ internal fun mergeDynamicDetailInteractionMetadata(
     val seedBasic = seedItem.basic?.takeIf {
         it.comment_type > 0 && it.comment_id_str.toLongOrNull()?.let { oid -> oid > 0L } == true
     }
+    val detailContent = detailItem.modules.module_dynamic
+    val seedEmojiNodes = seedItem.modules.module_dynamic?.desc
+        ?.rich_text_nodes
+        .orEmpty()
+        .takeIf(::containsDynamicEmojiMetadata)
+    val mergedContent = if (detailContent != null && !seedEmojiNodes.isNullOrEmpty()) {
+        detailContent.copy(
+            desc = detailContent.desc?.copy(rich_text_nodes = seedEmojiNodes)
+                ?: DynamicDesc(rich_text_nodes = seedEmojiNodes),
+        )
+    } else {
+        detailContent
+    }
     return detailItem.copy(
         basic = detailBasic ?: seedBasic ?: detailItem.basic,
         modules = detailItem.modules.copy(
-            module_stat = detailItem.modules.module_stat ?: seedItem.modules.module_stat
+            module_dynamic = mergedContent,
+            module_stat = detailItem.modules.module_stat ?: seedItem.modules.module_stat,
         )
     )
+}
+
+private fun containsDynamicEmojiMetadata(
+    nodes: List<com.android.purebilibili.data.model.response.RichTextNode>
+): Boolean = nodes.any { node ->
+    val type = node.type.removePrefix("RICH_TEXT_NODE_TYPE_")
+    type.equals("EMOJI", ignoreCase = true) &&
+        node.emoji?.let { emoji ->
+            emoji.icon_url.isNotBlank() || emoji.webp_url.isNotBlank() || emoji.gif_url.isNotBlank()
+        } == true
 }
 
 internal fun shouldFetchOpusDetailForDynamicDetail(item: DynamicItem): Boolean {
