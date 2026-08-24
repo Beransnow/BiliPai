@@ -47,7 +47,7 @@ enum class PlaybackCdnPreference(
     val displayName: String,
     val host: String? = null,
 ) {
-    BASE_URL("base_url", "基础URL（不推荐）"),
+    BASE_URL("base_url", "基础URL"),
     BACKUP_URL("backup_url", "备用URL"),
     ALI("ali", "ali（阿里云）", "upos-sz-mirrorali.bilivideo.com"),
     ALIB("alib", "alib（阿里云）", "upos-sz-mirroralib.bilivideo.com"),
@@ -505,7 +505,7 @@ internal fun resolvePlaybackCdnDisplayName(host: String, index: Int): String {
         ?: when {
             normalizedHost.contains("mcdn") -> "mcdn（Bilibili）"
             normalizedHost.contains("bcache") -> "bcache（Bilibili）"
-            index == 0 -> "基础URL（不推荐）"
+            index == 0 -> "基础URL"
             else -> "备用URL"
         }
 }

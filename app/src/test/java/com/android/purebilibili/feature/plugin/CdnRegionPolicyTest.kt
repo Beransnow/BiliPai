@@ -423,7 +423,7 @@ class CdnRegionPolicyTest {
 
     @Test
     fun `unknown playback cdn names fall back to base and backup labels`() {
-        assertEquals("基础URL（不推荐）", resolvePlaybackCdnDisplayName("unknown.example.com", index = 0))
+        assertEquals("基础URL", resolvePlaybackCdnDisplayName("unknown.example.com", index = 0))
         assertEquals("备用URL", resolvePlaybackCdnDisplayName("unknown.example.com", index = 1))
     }
 
