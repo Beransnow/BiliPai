@@ -126,7 +126,7 @@ class VideoCardScrollLiteVisualPolicyTest {
         // 内层 Column 才挂 sharedBounds（封面/标题，无 solid fill）。
         // 若把 cardContainer 画进 sharedBounds，预测返回时会盖住详情壳实时视频。
         val cardShellBlock = source
-            .substringAfter("val cardShellShape = remember(cardCornerRadius)")
+            .substringAfter("val cardShellShape = AppShapes.container(ContainerLevel.Card)")
             .substringBefore("//  [性能优化] 封面圆角形状缓存")
         assertTrue(cardShellBlock.contains("Box(modifier = Modifier.fillMaxWidth())"))
         assertTrue(cardShellBlock.contains(".matchParentSize()"))
@@ -141,8 +141,7 @@ class VideoCardScrollLiteVisualPolicyTest {
         val coverShapeBlock = source
             .substringAfter("val coverShape = remember(cardCornerRadius)")
             .substringBefore("val coverSharedBoundsEnabled")
-        assertTrue(coverShapeBlock.contains("bottomStart = AppSpacingTokens.None"))
-        assertTrue(coverShapeBlock.contains("bottomEnd = AppSpacingTokens.None"))
+        assertTrue(coverShapeBlock.contains("AppShapes.topRounded(cardCornerRadius)"))
     }
 
     @Test

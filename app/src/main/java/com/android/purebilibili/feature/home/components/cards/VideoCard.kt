@@ -19,7 +19,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -69,7 +68,6 @@ import com.android.purebilibili.core.store.HomeDurationStyle
 import com.android.purebilibili.core.ui.LocalWallpaperHazeState
 import com.android.purebilibili.core.ui.blur.BlurSurfaceType
 import com.android.purebilibili.core.ui.blur.unifiedBlur
-import com.android.purebilibili.core.theme.LocalCornerRadiusScale
 import com.android.purebilibili.core.util.HapticType
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
@@ -522,10 +520,7 @@ internal fun ElegantVideoCard(
         PlaybackProgressManager.getInstance(context)
     }
     
-    //  [HIG] 动态圆角 - 8dp 紧凑圆角（比 12dp 更锐利，减小卡片视觉质量）
-    val cornerRadiusScale = LocalCornerRadiusScale.current
-    val cardCornerRadius = AppSpacingTokens.Small * cornerRadiusScale
-    val smallCornerRadius = AppShapes.containerCornerDp(ContainerLevel.Tag)
+    val cardCornerRadius = AppShapes.containerCornerDp(ContainerLevel.Card)
     val durationBadgeStyle = remember { resolveVideoCardDurationBadgeVisualStyle() }
     val cardTexts = remember(video.duration, video.stat.view, video.stat.reply, video.stat.danmaku, video.progress) {
         val durationText = FormatUtils.formatDuration(video.duration)
@@ -884,9 +879,7 @@ internal fun ElegantVideoCard(
         }
         val requestCoverUrl = pinnedSharedReturnCover?.first ?: coverUrl
         val requestCoverCacheKey = pinnedSharedReturnCover?.second ?: coverCacheKey
-        val cardShellShape = remember(cardCornerRadius) {
-            RoundedCornerShape(cardCornerRadius)
-        }
+        val cardShellShape = AppShapes.container(ContainerLevel.Card)
         // sharedBounds 与卡片底色拆开：
         // - 外层 Box 量尺寸 + 画 surface（只在源布局层，不进 overlay）
         // - 内层 Column 挂 sharedBounds（封面/标题等，无 solid fill）
@@ -914,12 +907,7 @@ internal fun ElegantVideoCard(
             ) {
         //  [性能优化] 封面圆角形状缓存（避免重组时重复创建）
         val coverShape = remember(cardCornerRadius) {
-            RoundedCornerShape(
-                topStart = cardCornerRadius,
-                topEnd = cardCornerRadius,
-                bottomStart = AppSpacingTokens.None,
-                bottomEnd = AppSpacingTokens.None
-            )
+            AppShapes.topRounded(cardCornerRadius)
         }
 
         val coverSharedBoundsEnabled = shouldEnableVideoCoverSharedTransition(
@@ -1025,7 +1013,7 @@ internal fun ElegantVideoCard(
                 HomeVideoBadgePill(
                     style = badgeStylePolicy.coverStyle,
                     useRealtimeHaze = badgeEffectVisual.useRealtimeHaze,
-                    shape = RoundedCornerShape(smallCornerRadius),
+                    shape = AppShapes.container(ContainerLevel.Tag),
                     containerColor = BiliPink.copy(alpha = if (badgeStylePolicy.coverStyle == HomeVideoBadgeStyle.GLASS) 0.78f else 1f),
                     borderColor = MediaContrastPalette.Foreground.copy(alpha = 0.24f),
                     modifier = Modifier
@@ -1279,12 +1267,7 @@ internal fun ElegantVideoCard(
         }
         
         val infoSurfaceShape = remember(cardCornerRadius) {
-            RoundedCornerShape(
-                topStart = AppSpacingTokens.None,
-                topEnd = AppSpacingTokens.None,
-                bottomStart = cardCornerRadius,
-                bottomEnd = cardCornerRadius
-            )
+            AppShapes.bottomRounded(cardCornerRadius)
         }
         val infoContainerModifier = if (infoSurfaceAppearance.useTintedSurface) {
             // Wallpaper-only Haze for realtime blur (never main content HazeState).

@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,7 +35,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.store.HomeWallpaperEffectMode
-import com.android.purebilibili.core.theme.LocalCornerRadiusScale
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
@@ -69,9 +67,8 @@ internal fun HomeFeedSkeletonCard(
     coverAspectRatio: Float = VIDEO_SHARED_COVER_ASPECT_RATIO,
     modifier: Modifier = Modifier
 ) {
-    // 与真实视频卡保持一致：8dp 紧凑圆角（AppSpacingTokens.Small × scale）。
-    val cardCornerRadius = AppSpacingTokens.Small * LocalCornerRadiusScale.current
-    val cardShape = RoundedCornerShape(cardCornerRadius)
+    val cardCornerRadius = AppShapes.containerCornerDp(ContainerLevel.Card)
+    val cardShape = AppShapes.container(ContainerLevel.Card)
     val isDarkCardTheme = AppSurfaceTokens.chromeBackground().luminance() < 0.5f
     val infoSurfaceAppearance = remember(
         wallpaperTintEnabled,

@@ -22,6 +22,8 @@ enum class ContainerLevel {
     Field,
     /** Standard surface cards. base = 12dp. */
     Card,
+    /** Prominent media / hero cards with a full large-radius outline. base = 20dp. */
+    ProminentCard,
     /** Alert / confirm dialog containers. base = 14dp. */
     Dialog,
     /** Bottom sheet / modal sheet (top-rounded). base = 20dp. */
@@ -45,6 +47,7 @@ object AppShapes {
         ContainerLevel.Chip -> 6f
         ContainerLevel.Field -> 10f
         ContainerLevel.Card -> 12f
+        ContainerLevel.ProminentCard -> 20f
         ContainerLevel.Dialog -> 14f
         ContainerLevel.Sheet -> 20f
         ContainerLevel.Floating -> 28f

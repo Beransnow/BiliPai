@@ -13,7 +13,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -125,10 +124,9 @@ internal fun StoryVideoCard(
     )
     val haptic = rememberHapticFeedback()
     
-    // [新增] 获取圆角缩放比例
-    val cardCornerRadius = AppShapes.containerCornerDp(ContainerLevel.Sheet)
-    val coverShape = RoundedCornerShape(cardCornerRadius)
-    val smallCornerRadius = AppShapes.containerCornerDp(ContainerLevel.Field)
+    val cardCornerRadius = AppShapes.containerCornerDp(ContainerLevel.ProminentCard)
+    val cardShape = AppShapes.container(ContainerLevel.ProminentCard)
+    val coverShape = cardShape
     val durationText = remember(video.duration) { FormatUtils.formatDuration(video.duration) }
     val showDurationOnCover = homeDurationStyle == HomeDurationStyle.OVERLAY_TEXT_ONLY
     val coverOverlayTextStyle = remember {
@@ -266,7 +264,7 @@ internal fun StoryVideoCard(
         )
     }
     
-    val cardShellShape = remember(cardCornerRadius) { RoundedCornerShape(cardCornerRadius) }
+    val cardShellShape = cardShape
     val enterAnimationEnabledAtMount = remember(video.bvid) {
         resolveHomeCardEnterAnimationEnabledAtMount(
             baseAnimationEnabled = animationEnabled,

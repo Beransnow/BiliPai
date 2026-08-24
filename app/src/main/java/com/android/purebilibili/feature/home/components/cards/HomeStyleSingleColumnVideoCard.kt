@@ -71,6 +71,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.PlayArrow
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
@@ -116,6 +117,7 @@ internal fun HomeStyleSingleColumnVideoCard(
     val cardBounds = remember { object { var value: Rect? = null } }
     val coverBounds = remember { object { var value: Rect? = null } }
     val cardShape = AppShapes.container(ContainerLevel.Card)
+    val cardCornerDp = AppShapes.containerCornerDp(ContainerLevel.Card)
     val coverShape = AppShapes.container(ContainerLevel.Field)
     val useCardShellSharedBounds = shouldUseVideoCardShellSharedBounds(
         sourceRoute = sourceRoute,
@@ -141,7 +143,7 @@ internal fun HomeStyleSingleColumnVideoCard(
                 screenWidth = screenWidthPx,
                 screenHeight = screenHeightPx,
                 density = density.density,
-                sourceCornerDp = 12,
+                sourceCornerDp = cardCornerDp.value.roundToInt(),
                 coverBounds = coverBounds.value,
                 sourceLayout = VideoCardSourceLayout.SIDE_BY_SIDE,
                 sourceChromeSnapshot = VideoCardSourceChromeSnapshot(
