@@ -157,8 +157,8 @@ internal fun rememberRelatedVideoCardLayout(): HomeFeedCardLayout {
 }
 
 /**
- * 相关推荐单列横卡：点击时保留来源标识与几何供嵌套导航恢复；页面切换由默认 Miuix
- * 导航负责，不参与整卡飞行或手绘 chrome 交接。
+ * 相关推荐单列横卡：点击时冻结来源标识、几何与 chrome，供嵌套卡片 Morph 及逐层返回。
+ * 导航宿主统一驱动动效，卡片本身不额外叠加 AnimatedContent 或封面 crossfade。
  */
 @Composable
 fun RelatedVideoItem(

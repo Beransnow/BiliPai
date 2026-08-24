@@ -107,11 +107,10 @@ internal fun resolveVideoCardTransitionBackgroundScaleReduction(
 }
 
 /** Whether the retained source snapshot should receive the progress-driven blur effect. */
-@Suppress("UNUSED_PARAMETER")
 internal fun shouldUseRealtimeVideoCardTransitionBackgroundBlur(
     source: VideoCardTransitionBackgroundSource,
     realtimeBlurEnabled: Boolean,
-): Boolean = realtimeBlurEnabled
+): Boolean = realtimeBlurEnabled && source != VideoCardTransitionBackgroundSource.RelatedVideo
 
 /**
  * 详情压详情时保留真实父 entry，不录制整页 Host 快照。

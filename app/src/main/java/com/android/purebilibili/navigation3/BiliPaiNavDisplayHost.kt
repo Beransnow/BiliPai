@@ -169,13 +169,14 @@ internal fun BiliPaiNavDisplayHost(
             miuixTransitionBlurEnabled = miuixTransitionBlurEnabled,
         )
     }
-    val cardMorphAvailable = shouldUseMiuixVideoCardMorph(
+    val cardMorphMode = resolveBiliPaiVideoCardMorphMode(
         cardTransitionEnabled = cardTransitionEnabled,
         reduceMotion = reduceMotion,
         sourceRoute = sourceMetadata.sourceRoute,
         hasUsableSourceBounds = sourceMetadata.sourceBounds
             ?.let { it.width > 1f && it.height > 1f } == true,
     )
+    val cardMorphAvailable = cardMorphMode != BiliPaiVideoCardMorphMode.NONE
     val videoCardTransitionProgress = remember { MiuixVideoCardTransitionProgress() }
     val videoCardContentScale = resolveMiuixVideoCardContentScaleForSourceLayout(
         sourceLayout = sourceMetadata.sourceLayout,

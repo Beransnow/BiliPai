@@ -8,7 +8,7 @@ import kotlin.test.assertTrue
 class BiliPaiVideoSourcePolicyTest {
 
     @Test
-    fun relatedDetailUsesDefaultMiuixNavigationWhileListCardsUseCardMorph() {
+    fun listAndRelatedDetailUseDistinctCardMorphModes() {
         assertTrue(isRelatedVideoCardMorphSourceRoute("video/BV_PARENT"))
         assertFalse(isRelatedVideoCardMorphSourceRoute("partition"))
         assertFalse(isRelatedVideoCardMorphSourceRoute("home?category=1"))
@@ -23,6 +23,15 @@ class BiliPaiVideoSourcePolicyTest {
             "favorite",
             "history",
         ).forEach { sourceRoute ->
+            assertEquals(
+                BiliPaiVideoCardMorphMode.PRIMARY_WHOLE_CARD,
+                resolveBiliPaiVideoCardMorphMode(
+                    cardTransitionEnabled = true,
+                    reduceMotion = false,
+                    sourceRoute = sourceRoute,
+                    hasUsableSourceBounds = true,
+                ),
+            )
             assertTrue(
                 shouldUseMiuixVideoCardMorph(
                     cardTransitionEnabled = true,
@@ -33,14 +42,23 @@ class BiliPaiVideoSourcePolicyTest {
                 "Expected card morph for source=$sourceRoute",
             )
         }
-        assertFalse(
+        assertEquals(
+            BiliPaiVideoCardMorphMode.NESTED_RELATED,
+            resolveBiliPaiVideoCardMorphMode(
+                cardTransitionEnabled = true,
+                reduceMotion = false,
+                sourceRoute = "video/BV_PARENT",
+                hasUsableSourceBounds = true,
+            ),
+        )
+        assertTrue(
             shouldUseMiuixVideoCardMorph(
                 cardTransitionEnabled = true,
                 reduceMotion = false,
                 sourceRoute = "video/BV_PARENT",
                 hasUsableSourceBounds = true,
             ),
-            "相关推荐应回退到默认 Miuix 页面导航",
+            "相关推荐应使用嵌套卡片 Morph",
         )
         assertFalse(
             shouldUseMiuixVideoCardMorph(
@@ -49,6 +67,15 @@ class BiliPaiVideoSourcePolicyTest {
                 sourceRoute = "partition",
                 hasUsableSourceBounds = false,
             )
+        )
+        assertEquals(
+            BiliPaiVideoCardMorphMode.NONE,
+            resolveBiliPaiVideoCardMorphMode(
+                cardTransitionEnabled = true,
+                reduceMotion = true,
+                sourceRoute = "video/BV_PARENT",
+                hasUsableSourceBounds = true,
+            ),
         )
     }
 
