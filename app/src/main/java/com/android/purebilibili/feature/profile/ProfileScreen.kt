@@ -19,7 +19,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
@@ -1510,12 +1509,7 @@ private fun ProfileContentSheet(
     layoutTokens: ProfileLayoutTokens,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val shape = remember(layoutTokens.contentSheetTopRadiusDp) {
-        RoundedCornerShape(
-            topStart = layoutTokens.contentSheetTopRadiusDp.dp,
-            topEnd = layoutTokens.contentSheetTopRadiusDp.dp
-        )
-    }
+    val shape = AppShapes.borderedContainer(ContainerLevel.Sheet)
     AppSurface(
         modifier = Modifier
             .fillMaxWidth()
@@ -1822,9 +1816,7 @@ private fun ProfileSpaceTabs(
     val context = LocalContext.current
     val layoutTokens = remember { resolveProfileLayoutTokens() }
     val chromeSpec = remember { resolveProfileSpaceTabChromeSpec() }
-    val rowContainerShape = remember(chromeSpec.rowCornerRadiusDp) {
-        RoundedCornerShape(chromeSpec.rowCornerRadiusDp.dp)
-    }
+    val rowContainerShape = AppShapes.container(ContainerLevel.Pill)
     val homeSettings by SettingsManager
         .getHomeSettings(context)
         .collectAsStateWithLifecycle(initialValue = HomeSettings())
@@ -2246,7 +2238,7 @@ private fun ProfileSpacePosterCard(
     onClick: () -> Unit
 ) {
     val cardTokens = remember { resolveProfileCardTokens() }
-    val cardShape = RoundedCornerShape(cardTokens.cornerRadiusDp.dp)
+    val cardShape = AppShapes.borderedContainer(ContainerLevel.Card)
     val cardWidth = cardTokens.widthDp.dp
     val coverHeight = resolveProfileCardCoverHeightDp(cardTokens).dp
     val cardHeight = resolveProfileCardHeightDp(cardTokens).dp
