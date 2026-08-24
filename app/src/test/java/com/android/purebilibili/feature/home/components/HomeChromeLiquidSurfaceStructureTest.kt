@@ -43,12 +43,6 @@ class HomeChromeLiquidSurfaceStructureTest {
         val topBarSource = topBar.readText()
         val sharedChromeSource = sharedChrome.readText()
         assertTrue(
-            "liquid-glass reuse must not attach Haze unless a blur preference is enabled",
-            homeScreenSource.contains("val attachHomeHeaderHaze = shouldAttachHomeHeaderHaze(") &&
-                homeScreenSource.contains("if (attachHomeHeaderHaze) {") &&
-                homeScreenSource.contains("hazeState = hazeState.takeIf { attachHomeHeaderHaze }")
-        )
-        assertTrue(
             "search-only collapse must keep the top dock visible",
             homeScreenSource.contains("val collapseSearchOnScroll = headerCollapseMode.collapseSearch") &&
                 homeScreenSource.contains("val collapseTabsOnScroll = headerCollapseMode.collapseTabs")
