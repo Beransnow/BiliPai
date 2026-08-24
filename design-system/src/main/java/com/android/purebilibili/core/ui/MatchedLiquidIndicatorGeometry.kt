@@ -9,7 +9,7 @@ const val BottomBarReferenceShellHeightDp = 64f
 const val BottomBarReferenceIndicatorHeightDp = 48f
 
 /** Home floating bottom-bar pressed / drag height. */
-const val BottomBarReferencePressedHeightDp = 68f
+const val BottomBarReferencePressedHeightDp = 78f
 
 /** Shared compact bloom used by the home floating bottom bar itself. */
 const val BottomBarReferencePressedScale = BottomBarReferencePressedHeightDp /

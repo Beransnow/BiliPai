@@ -265,8 +265,8 @@ private fun FloatingLiquidBottomInputBar(
             BottomBarMatchedReusableLiquidDock(
                 shape = shellShape,
                 modifier = Modifier
-                    .weight(1f)
-                    .height(52.dp),
+                    .weight(0.9f)
+                    .height(44.dp),
                 backdrop = backdrop,
                 reuseEnabled = true,
                 drawShellLens = true,
@@ -276,15 +276,15 @@ private fun FloatingLiquidBottomInputBar(
                     modifier = Modifier
                         .fillMaxSize()
                         .clickable(role = Role.Button) { onCommentClick() }
-                        .padding(horizontal = 14.dp),
+                        .padding(horizontal = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
                 ) {
                     AppIcon(
                         imageVector = Icons.Outlined.Edit,
                         contentDescription = null,
                         tint = inputTextColor,
-                        modifier = Modifier.size(22.dp),
+                        modifier = Modifier.size(20.dp),
                     )
                     AppText(
                         text = "写评论",
@@ -298,17 +298,21 @@ private fun FloatingLiquidBottomInputBar(
 
             BottomBarMatchedReusableLiquidDock(
                 shape = shellShape,
-                modifier = Modifier.height(52.dp),
+                modifier = Modifier
+                    .weight(1.1f)
+                    .height(44.dp),
                 backdrop = backdrop,
                 reuseEnabled = true,
                 drawShellLens = true,
                 isScrollInProgressProvider = isScrollInProgressProvider,
             ) {
                 BottomInputBarActionButtons(
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
-                    itemSize = 36.dp,
-                    iconSize = 20.dp,
-                    itemSpacing = 2.dp,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 2.dp, vertical = 6.dp),
+                    itemSize = 32.dp,
+                    iconSize = 19.dp,
+                    spreadItems = true,
                     favoriteIcon = rememberAppBookmarkIcon(),
                     coinIcon = rememberAppCoinIcon(),
                     likeIcon = rememberAppLikeIcon(),
@@ -395,6 +399,7 @@ private fun BottomInputBarActionButtons(
     itemSize: Dp = 48.dp,
     iconSize: Dp = 24.dp,
     itemSpacing: Dp = 4.dp,
+    spreadItems: Boolean = false,
     favoriteIcon: ImageVector,
     coinIcon: ImageVector,
     likeIcon: ImageVector,
@@ -410,7 +415,11 @@ private fun BottomInputBarActionButtons(
 ) {
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(itemSpacing),
+        horizontalArrangement = if (spreadItems) {
+            Arrangement.SpaceEvenly
+        } else {
+            Arrangement.spacedBy(itemSpacing)
+        },
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconActionButton(

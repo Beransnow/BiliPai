@@ -626,8 +626,8 @@ class BottomBarIndicatorPolicyTest {
             motionSpec = resolveBottomBarMotionSpec(BottomBarMotionProfile.ANDROID_NATIVE_FLOATING)
         )
 
-        assertEquals(68f / 48f, transform.scaleX, 0.001f)
-        assertEquals(68f / 48f, transform.scaleY, 0.001f)
+        assertEquals(78f / 48f, transform.scaleX, 0.001f)
+        assertEquals(78f / 48f, transform.scaleY, 0.001f)
     }
 
     @Test
@@ -684,8 +684,8 @@ class BottomBarIndicatorPolicyTest {
 
         assertEquals(full.scaleX, partial.scaleX, 0.001f)
         assertEquals(full.scaleY, partial.scaleY, 0.001f)
-        assertEquals(68f / 48f, partial.scaleX, 0.001f)
-        assertEquals(68f / 48f, partial.scaleY, 0.001f)
+        assertEquals(78f / 48f, partial.scaleX, 0.001f)
+        assertEquals(78f / 48f, partial.scaleY, 0.001f)
         assertTrue(deformed.scaleX > partial.scaleX)
         assertTrue(deformed.scaleY < partial.scaleY)
     }
@@ -736,7 +736,7 @@ class BottomBarIndicatorPolicyTest {
 
     @Test
     fun `indicator velocity deformation follows BiliPai constants without changing drag scale target`() {
-        val baseScale = 68f / 48f
+        val baseScale = 78f / 48f
         val transform = resolveBottomBarIndicatorLayerTransform(
             motionProgress = 1f,
             velocityItemsPerSecond = 2f,

@@ -7,7 +7,7 @@ import kotlin.test.assertTrue
 class MatchedLiquidIndicatorGeometryTest {
 
     @Test
-    fun `home bottom bar keeps the flatter 64 48 68 reference`() {
+    fun `home bottom bar keeps flat rest state and visible pressed overflow`() {
         val geometry = resolveMatchedLiquidIndicatorGeometry(
             dockHeightDp = BottomBarReferenceShellHeightDp,
             indicatorHeightDp = BottomBarReferenceIndicatorHeightDp,
@@ -24,7 +24,7 @@ class MatchedLiquidIndicatorGeometryTest {
 
         assertEquals(30f, geometry.indicatorHeightDp, 0.0001f)
         assertEquals(BottomBarReferencePressedScale, geometry.pressedScale, 0.0001f)
-        assertEquals(40f * 68f / 64f, geometry.pressedHeightDp, 0.0001f)
+        assertEquals(40f * 78f / 64f, geometry.pressedHeightDp, 0.0001f)
         assertEquals(30, roundMatchedLiquidIndicatorHeightDp(40f))
     }
 
@@ -35,7 +35,7 @@ class MatchedLiquidIndicatorGeometryTest {
             indicatorHeightDp = 27f,
         )
 
-        assertEquals(40f * 68f / 64f / 27f, geometry.pressedScale, 0.0001f)
+        assertEquals(40f * 78f / 64f / 27f, geometry.pressedScale, 0.0001f)
         assertTrue(geometry.pressedHeightDp > geometry.dockHeightDp)
     }
 
@@ -46,8 +46,8 @@ class MatchedLiquidIndicatorGeometryTest {
             indicatorHeightDp = 56f,
         )
 
-        assertEquals(58f * 68f / 64f / 56f, geometry.pressedScale, 0.0001f)
-        assertEquals(58f * 68f / 64f, geometry.pressedHeightDp, 0.0001f)
+        assertEquals(58f * 78f / 64f / 56f, geometry.pressedScale, 0.0001f)
+        assertEquals(58f * 78f / 64f, geometry.pressedHeightDp, 0.0001f)
         assertEquals(44, roundMatchedLiquidIndicatorHeightDp(58f))
     }
 }
