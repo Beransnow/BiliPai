@@ -1969,7 +1969,9 @@ fun HomeHeader(
     // 顶部分类始终复用底栏 dock 壳层；关闭液态玻璃时由同一表面降级为实色/轻 tint，
     // 避免标签直接叠在首页头图上而失去可读性。
     val useTopTabBottomBarMatchedDock = true
-    val drawTopTabDockChrome = drawTopTabOuterChromeSurface || useDetachedTopTabDock
+    val drawTopTabDockChrome = useTopTabBottomBarMatchedDock ||
+        drawTopTabOuterChromeSurface ||
+        useDetachedTopTabDock
     val topTabLabelMode = homeSettings?.topTabLabelMode
         ?: com.android.purebilibili.core.store.SettingsManager.TopTabLabelMode.TEXT_ONLY
     // Floating dock shell + tabs share one wrap decision so glass length matches content.
