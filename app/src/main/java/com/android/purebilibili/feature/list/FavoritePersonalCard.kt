@@ -34,6 +34,7 @@ import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppLinearProgressIndicator
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppText
+import com.android.purebilibili.core.ui.components.UpBadgeName
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
@@ -169,10 +170,10 @@ internal fun FavoritePersonalCard(
         },
         supportingContent = {
             Column {
-                AppText(
-                    text = item.owner.name.ifBlank { "未知UP主" },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                UpBadgeName(
+                    name = item.owner.name.ifBlank { "未知UP主" },
+                    nameStyle = MaterialTheme.typography.bodySmall,
+                    nameColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     overflow = TextOverflow.Visible,
                 )
                 val dateLabel = resolveFavoriteDateLabel(item.view_at)
