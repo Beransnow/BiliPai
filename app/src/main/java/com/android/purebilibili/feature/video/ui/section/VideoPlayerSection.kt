@@ -399,6 +399,7 @@ private fun BoxScope.VideoSubtitleOverlayHost(
     primaryTextSizeSp: Int,
     secondaryTextSizeSp: Int,
     initialVerticalOffsetFraction: Float,
+    positionLocked: Boolean,
     isInPipMode: Boolean,
     isAudioOnly: Boolean,
     suppressSubtitleOverlay: Boolean,
@@ -547,6 +548,7 @@ private fun BoxScope.VideoSubtitleOverlayHost(
                 val subtitleBottomOffsetPx = resolveSubtitleBottomOffsetPx(
                     isFullscreen = isFullscreen,
                     controlsVisible = controlsVisible,
+                    positionLocked = positionLocked,
                     navigationInsetPx = navigationBottomInsetPx,
                     bottomControlsHeightPx = bottomControlsHeightPx,
                     density = density.density
@@ -560,33 +562,40 @@ private fun BoxScope.VideoSubtitleOverlayHost(
             .fillMaxWidth(0.9f)
             .padding(horizontal = 10.dp)
             .padding(horizontal = 12.dp, vertical = 8.dp)
-            .pointerInput(playerViewportSize.height) {
-                detectDragGestures(
-                    onDragStart = { isDraggingSubtitleOffset = true },
-                    onDragEnd = {
-                        isDraggingSubtitleOffset = false
-                        settingsScope.launch {
-                            SettingsManager.setSubtitleVerticalOffsetFraction(
-                                context,
-                                subtitleVerticalOffsetFraction
-                            )
-                        }
-                    },
-                    onDragCancel = { isDraggingSubtitleOffset = false },
-                    onDrag = { change, dragAmount ->
-                        val screenHeightPx = playerViewportSize.height
-                            .takeIf { it > 0 }
-                            ?.toFloat()
-                            ?: with(density) {
-                                configuration.screenHeightDp.dp.toPx()
-                            }.coerceAtLeast(1f)
-                        subtitleVerticalOffsetFraction = normalizeSubtitleVerticalOffsetFraction(
-                            subtitleVerticalOffsetFraction + dragAmount.y / screenHeightPx
+            .then(
+                if (positionLocked) {
+                    Modifier
+                } else {
+                    Modifier.pointerInput(playerViewportSize.height) {
+                        detectDragGestures(
+                            onDragStart = { isDraggingSubtitleOffset = true },
+                            onDragEnd = {
+                                isDraggingSubtitleOffset = false
+                                settingsScope.launch {
+                                    SettingsManager.setSubtitleVerticalOffsetFraction(
+                                        context,
+                                        subtitleVerticalOffsetFraction
+                                    )
+                                }
+                            },
+                            onDragCancel = { isDraggingSubtitleOffset = false },
+                            onDrag = { change, dragAmount ->
+                                val screenHeightPx = playerViewportSize.height
+                                    .takeIf { it > 0 }
+                                    ?.toFloat()
+                                    ?: with(density) {
+                                        configuration.screenHeightDp.dp.toPx()
+                                    }.coerceAtLeast(1f)
+                                subtitleVerticalOffsetFraction =
+                                    normalizeSubtitleVerticalOffsetFraction(
+                                        subtitleVerticalOffsetFraction + dragAmount.y / screenHeightPx
+                                    )
+                                change.consume()
+                            }
                         )
-                        change.consume()
                     }
-                )
-            },
+                }
+            ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         val subtitleShadow = Shadow(
@@ -4318,6 +4327,7 @@ fun VideoPlayerSection(
             primaryTextSizeSp = subtitleTextSizeSpec.primarySp,
             secondaryTextSizeSp = subtitleTextSizeSpec.secondarySp,
             initialVerticalOffsetFraction = playerInteractionSettings.subtitleVerticalOffsetFraction,
+            positionLocked = playerInteractionSettings.subtitlePositionLocked,
             isInPipMode = isInPipMode,
             isAudioOnly = isAudioOnly,
             suppressSubtitleOverlay = suppressSubtitleOverlay,
@@ -5120,7 +5130,8 @@ fun VideoPlayerSection(
                     primaryLabel = subtitlePrimaryLabel,
                     secondaryLabel = subtitleSecondaryLabel,
                     trackOptions = subtitleTrackOptions,
-                    largeTextEnabled = subtitleLargeTextByUser
+                    largeTextEnabled = subtitleLargeTextByUser,
+                    positionLocked = playerInteractionSettings.subtitlePositionLocked
                 ),
                 subtitleControlCallbacks = SubtitleControlCallbacks(
                     onDisplayModeChange = { mode ->
@@ -5154,6 +5165,11 @@ fun VideoPlayerSection(
                             "字幕大字号切换: enabled=$enabled"
                         )
                         subtitleLargeTextByUser = enabled
+                    },
+                    onPositionLockedChange = { locked ->
+                        scope.launch {
+                            SettingsManager.setSubtitlePositionLocked(context, locked)
+                        }
                     }
                 ),
                 

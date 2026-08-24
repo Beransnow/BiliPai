@@ -1500,6 +1500,28 @@ class VideoPlayerSectionPolicyTest {
     }
 
     @Test
+    fun subtitleBottomOffset_staysFixedWhenPositionIsLocked() {
+        val hidden = resolveSubtitleBottomOffsetPx(
+            isFullscreen = true,
+            controlsVisible = false,
+            positionLocked = true,
+            navigationInsetPx = 12,
+            bottomControlsHeightPx = 80,
+            density = 2f
+        )
+        val visible = resolveSubtitleBottomOffsetPx(
+            isFullscreen = true,
+            controlsVisible = true,
+            positionLocked = true,
+            navigationInsetPx = 12,
+            bottomControlsHeightPx = 80,
+            density = 2f
+        )
+
+        assertEquals(hidden, visible)
+    }
+
+    @Test
     fun longPressSpeedFeedback_usesLightweightTextAndNoDefaultLockInstruction() {
         val source = loadVideoPlayerSectionSource()
 

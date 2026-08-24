@@ -1047,6 +1047,8 @@ data class PlayerInteractionSettings(
     val subtitleVerticalOffsetFraction: Float = 0.0f,
     /** Vertical offset for portrait immersive / story subtitles (independent of landscape). */
     val subtitlePortraitVerticalOffsetFraction: Float = 0.0f,
+    /** Prevent player gestures from accidentally moving subtitle overlays. */
+    val subtitlePositionLocked: Boolean = true,
     val twoFingerVerticalSpeedEnabled: Boolean = false,
     val twoFingerHorizontalSpeedEnabled: Boolean = false,
     val hiResLongPressCompatHintShown: Boolean = false,
@@ -1328,6 +1330,8 @@ object SettingsManager {
         floatPreferencesKey("subtitle_vertical_offset_fraction")
     private val KEY_SUBTITLE_PORTRAIT_VERTICAL_OFFSET_FRACTION =
         floatPreferencesKey("subtitle_portrait_vertical_offset_fraction")
+    private val KEY_SUBTITLE_POSITION_LOCKED =
+        booleanPreferencesKey("subtitle_position_locked")
     //  [新增] 默认播放速度/记忆上次播放速度
     private val KEY_DEFAULT_PLAYBACK_SPEED = floatPreferencesKey("default_playback_speed")
     private val KEY_REMEMBER_LAST_PLAYBACK_SPEED = booleanPreferencesKey("remember_last_playback_speed")
@@ -1767,6 +1771,7 @@ object SettingsManager {
             subtitlePortraitVerticalOffsetFraction = normalizeSubtitleVerticalOffsetFraction(
                 preferences[KEY_SUBTITLE_PORTRAIT_VERTICAL_OFFSET_FRACTION] ?: 0.0f
             ),
+            subtitlePositionLocked = preferences[KEY_SUBTITLE_POSITION_LOCKED] ?: true,
             twoFingerVerticalSpeedEnabled = preferences[KEY_TWO_FINGER_VERTICAL_SPEED_ENABLED] ?: false,
             twoFingerHorizontalSpeedEnabled = preferences[KEY_TWO_FINGER_HORIZONTAL_SPEED_ENABLED] ?: false,
             hiResLongPressCompatHintShown = preferences[KEY_HI_RES_LONG_PRESS_COMPAT_HINT_SHOWN] ?: false,
@@ -2707,6 +2712,17 @@ object SettingsManager {
         context.settingsDataStore.edit { preferences ->
             preferences[KEY_SUBTITLE_PORTRAIT_VERTICAL_OFFSET_FRACTION] =
                 normalizeSubtitleVerticalOffsetFraction(value)
+        }
+    }
+
+    fun getSubtitlePositionLocked(context: Context): Flow<Boolean> =
+        context.settingsDataStore.data.map { preferences ->
+            preferences[KEY_SUBTITLE_POSITION_LOCKED] ?: true
+        }
+
+    suspend fun setSubtitlePositionLocked(context: Context, locked: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_SUBTITLE_POSITION_LOCKED] = locked
         }
     }
 
@@ -7200,6 +7216,10 @@ object SettingsManager {
             ),
             FloatShareablePreferenceDefinition(
                 KEY_SUBTITLE_PORTRAIT_VERTICAL_OFFSET_FRACTION,
+                SettingsShareSection.GESTURE
+            ),
+            BooleanShareablePreferenceDefinition(
+                KEY_SUBTITLE_POSITION_LOCKED,
                 SettingsShareSection.GESTURE
             ),
             BooleanShareablePreferenceDefinition(KEY_PIP_NO_DANMAKU, SettingsShareSection.GESTURE),

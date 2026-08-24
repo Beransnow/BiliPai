@@ -94,6 +94,7 @@ internal fun resolveLongPressSpeedLockZoneVisualPolicy(): LongPressSpeedLockZone
 internal fun resolveSubtitleBottomOffsetPx(
     isFullscreen: Boolean,
     controlsVisible: Boolean,
+    positionLocked: Boolean = false,
     navigationInsetPx: Int,
     bottomControlsHeightPx: Int,
     density: Float
@@ -102,7 +103,7 @@ internal fun resolveSubtitleBottomOffsetPx(
     fun dp(value: Int): Int = (value * safeDensity).roundToInt()
     if (!isFullscreen) return dp(48)
     val safeInset = navigationInsetPx.coerceAtLeast(0)
-    return if (controlsVisible) {
+    return if (controlsVisible && !positionLocked) {
         maxOf(safeInset + bottomControlsHeightPx.coerceAtLeast(0) + dp(8), dp(56))
     } else {
         maxOf(safeInset + dp(16), dp(24))

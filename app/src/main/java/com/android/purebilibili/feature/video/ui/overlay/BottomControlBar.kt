@@ -451,9 +451,11 @@ fun BottomControlBar(
     val subtitleSecondaryLabel = subtitleControlState.secondaryLabel
     val subtitleTrackOptions = subtitleControlState.trackOptions
     val subtitleLargeTextEnabled = subtitleControlState.largeTextEnabled
+    val subtitlePositionLocked = subtitleControlState.positionLocked
     val onSubtitleDisplayModeChange = subtitleControlCallbacks.onDisplayModeChange
     val onSubtitleTrackSelected = subtitleControlCallbacks.onTrackSelected
     val onSubtitleLargeTextChange = subtitleControlCallbacks.onLargeTextChange
+    val onSubtitlePositionLockedChange = subtitleControlCallbacks.onPositionLockedChange
 
     val configuration = LocalConfiguration.current
     val layoutPolicy = remember(configuration.screenWidthDp) {
@@ -1059,6 +1061,26 @@ fun BottomControlBar(
                                 modifier = Modifier.height(28.dp)
                             )
                         }
+                    }
+                    AppHorizontalDivider(color = Color.White.copy(alpha = 0.10f))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp)
+                    ) {
+                        AppText(
+                            text = "锁定位置",
+                            color = Color.White.copy(alpha = 0.85f),
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        AppSwitch(
+                            checked = subtitlePositionLocked,
+                            onCheckedChange = onSubtitlePositionLockedChange,
+                            modifier = Modifier.height(28.dp)
+                        )
                     }
                 }
             }
