@@ -103,8 +103,9 @@ internal fun resolveDynamicOpusTextBlockRichDesc(
     preferredDesc: DynamicDesc?,
 ): DynamicDesc? {
     if (blockText.isBlank() || preferredDesc == null) return null
-    val emoteTokens = collectDynamicEmojiUrlMap(preferredDesc.rich_text_nodes).keys
-    if (emoteTokens.none(blockText::contains)) return null
+    // Detail opus payloads often omit emoji nodes while retaining shortcode text. Always
+    // route text blocks through RichTextContent so its existing catalog fallback can expand
+    // those shortcodes just as it does in the dynamic preview.
     return preferredDesc.copy(text = blockText)
 }
 

@@ -468,6 +468,22 @@ class DynamicRichTextPolicyTest {
     }
 
     @Test
+    fun resolveDynamicOpusTextBlockRichDesc_keepsPlainShortcodesForCatalogExpansion() {
+        val preferred = DynamicDesc(
+            text = "摘要",
+            rich_text_nodes = listOf(RichTextNode(type = "TEXT", text = "摘要")),
+        )
+
+        val resolved = resolveDynamicOpusTextBlockRichDesc(
+            blockText = "正文[UPOWER_3546635395139954_舔舔]",
+            preferredDesc = preferred,
+        )
+
+        assertEquals("正文[UPOWER_3546635395139954_舔舔]", resolved?.text)
+        assertEquals(preferred.rich_text_nodes, resolved?.rich_text_nodes)
+    }
+
+    @Test
     fun resolvePreferredDynamicDesc_prefersSideWithRenderableEmoji() {
         val plain = DynamicDesc(text = "画完芽衣，大家新年快乐[豹富][豹富]")
         val withEmoji = DynamicDesc(
