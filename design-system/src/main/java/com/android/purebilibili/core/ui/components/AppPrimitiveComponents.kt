@@ -1,24 +1,14 @@
 package com.android.purebilibili.core.ui.components
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
-import android.os.Build
-import android.widget.Toast
-
 import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.ui.LocalAppThemeConfig
 import com.android.purebilibili.core.ui.resolveFilledButtonContainerColor
 import com.android.purebilibili.core.ui.resolveFilledButtonContentColor
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ScrollState
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -96,7 +86,6 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabPosition
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.contentColorFor
 import androidx.compose.material.icons.Icons
@@ -108,32 +97,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorProducer
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import top.yukonga.miuix.kmp.basic.Slider as MiuixSlider
@@ -144,70 +116,6 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 
 private object AppPrimitiveNoOpHapticFeedback : HapticFeedback {
     override fun performHapticFeedback(hapticFeedbackType: HapticFeedbackType) = Unit
-}
-
-internal fun shouldCopyGlobalTextTap(
-    text: String,
-    globalCopyEnabled: Boolean,
-    gestureCanceled: Boolean,
-    pressDurationMillis: Long,
-    longPressTimeoutMillis: Long,
-): Boolean = globalCopyEnabled &&
-    text.isNotBlank() &&
-    !gestureCanceled &&
-    pressDurationMillis in 0 until longPressTimeoutMillis.coerceAtLeast(1L)
-
-private fun Modifier.globalTextTapCopy(text: String): Modifier = composed {
-    if (text.isBlank() || !LocalAppThemeConfig.current.globalTextTapCopyEnabled) {
-        return@composed this
-    }
-    val context = LocalContext.current
-    val hapticFeedback = LocalHapticFeedback.current
-    pointerInput(text, context) {
-        awaitEachGesture {
-            val down = awaitFirstDown(
-                requireUnconsumed = false,
-                pass = PointerEventPass.Final,
-            )
-            val startPosition = down.position
-            var gestureCanceled = down.isConsumed
-            var upTimeMillis: Long? = null
-            while (upTimeMillis == null && !gestureCanceled) {
-                val event = awaitPointerEvent(PointerEventPass.Final)
-                val change = event.changes.firstOrNull { it.id == down.id }
-                if (change == null) {
-                    gestureCanceled = true
-                    break
-                }
-                if (
-                    change.isConsumed ||
-                    (change.position - startPosition).getDistance() > viewConfiguration.touchSlop
-                ) {
-                    gestureCanceled = true
-                }
-                if (!change.pressed) {
-                    upTimeMillis = change.uptimeMillis
-                }
-            }
-            val pressDurationMillis = (upTimeMillis ?: down.uptimeMillis) - down.uptimeMillis
-            if (
-                shouldCopyGlobalTextTap(
-                    text = text,
-                    globalCopyEnabled = true,
-                    gestureCanceled = gestureCanceled,
-                    pressDurationMillis = pressDurationMillis,
-                    longPressTimeoutMillis = viewConfiguration.longPressTimeoutMillis,
-                )
-            ) {
-                val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                clipboard.setPrimaryClip(ClipData.newPlainText("BiliPai 文本", text.trim()))
-                hapticFeedback.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.S_V2) {
-                    Toast.makeText(context, "已复制到剪贴板", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-    }
 }
 
 @Composable
@@ -244,230 +152,6 @@ fun AppSnackbarHost(
     modifier: Modifier = Modifier,
 ) = SnackbarHost(
     hostState = hostState,
-    modifier = modifier,
-)
-
-@Composable
-fun AppText(
-    text: String,
-    modifier: Modifier = Modifier,
-    color: Color = Color.Unspecified,
-    autoSize: TextAutoSize? = null,
-    fontSize: TextUnit = TextUnit.Unspecified,
-    fontStyle: FontStyle? = null,
-    fontWeight: FontWeight? = null,
-    fontFamily: FontFamily? = null,
-    letterSpacing: TextUnit = TextUnit.Unspecified,
-    textDecoration: TextDecoration? = null,
-    textAlign: TextAlign? = null,
-    lineHeight: TextUnit = TextUnit.Unspecified,
-    overflow: TextOverflow = TextOverflow.Clip,
-    softWrap: Boolean = true,
-    maxLines: Int = Int.MAX_VALUE,
-    minLines: Int = 1,
-    onTextLayout: ((TextLayoutResult) -> Unit)? = null,
-    style: TextStyle = LocalTextStyle.current,
-    tapToCopyEnabled: Boolean = true,
-) = Text(
-    text = text,
-    modifier = if (tapToCopyEnabled) modifier.globalTextTapCopy(text) else modifier,
-    color = color,
-    autoSize = autoSize,
-    fontSize = fontSize,
-    fontStyle = fontStyle,
-    fontWeight = fontWeight,
-    fontFamily = fontFamily,
-    letterSpacing = letterSpacing,
-    textDecoration = textDecoration,
-    textAlign = textAlign,
-    lineHeight = lineHeight,
-    overflow = overflow,
-    softWrap = softWrap,
-    maxLines = maxLines,
-    minLines = minLines,
-    onTextLayout = onTextLayout,
-    style = style,
-)
-
-@Composable
-fun AppText(
-    text: String,
-    color: ColorProducer,
-    modifier: Modifier = Modifier,
-    autoSize: TextAutoSize? = null,
-    fontSize: TextUnit = TextUnit.Unspecified,
-    fontStyle: FontStyle? = null,
-    fontWeight: FontWeight? = null,
-    fontFamily: FontFamily? = null,
-    letterSpacing: TextUnit = TextUnit.Unspecified,
-    textDecoration: TextDecoration? = null,
-    textAlign: TextAlign? = null,
-    lineHeight: TextUnit = TextUnit.Unspecified,
-    overflow: TextOverflow = TextOverflow.Clip,
-    softWrap: Boolean = true,
-    maxLines: Int = Int.MAX_VALUE,
-    minLines: Int = 1,
-    onTextLayout: ((TextLayoutResult) -> Unit)? = null,
-    style: TextStyle = LocalTextStyle.current,
-    tapToCopyEnabled: Boolean = true,
-) = Text(
-    text = text,
-    color = color,
-    modifier = if (tapToCopyEnabled) modifier.globalTextTapCopy(text) else modifier,
-    autoSize = autoSize,
-    fontSize = fontSize,
-    fontStyle = fontStyle,
-    fontWeight = fontWeight,
-    fontFamily = fontFamily,
-    letterSpacing = letterSpacing,
-    textDecoration = textDecoration,
-    textAlign = textAlign,
-    lineHeight = lineHeight,
-    overflow = overflow,
-    softWrap = softWrap,
-    maxLines = maxLines,
-    minLines = minLines,
-    onTextLayout = onTextLayout,
-    style = style,
-)
-
-@Composable
-fun AppText(
-    text: AnnotatedString,
-    modifier: Modifier = Modifier,
-    color: Color = Color.Unspecified,
-    autoSize: TextAutoSize? = null,
-    fontSize: TextUnit = TextUnit.Unspecified,
-    fontStyle: FontStyle? = null,
-    fontWeight: FontWeight? = null,
-    fontFamily: FontFamily? = null,
-    letterSpacing: TextUnit = TextUnit.Unspecified,
-    textDecoration: TextDecoration? = null,
-    textAlign: TextAlign? = null,
-    lineHeight: TextUnit = TextUnit.Unspecified,
-    overflow: TextOverflow = TextOverflow.Clip,
-    softWrap: Boolean = true,
-    maxLines: Int = Int.MAX_VALUE,
-    minLines: Int = 1,
-    inlineContent: Map<String, InlineTextContent> = mapOf(),
-    onTextLayout: (TextLayoutResult) -> Unit = {},
-    style: TextStyle = LocalTextStyle.current,
-    tapToCopyEnabled: Boolean = true,
-) = Text(
-    text = text,
-    modifier = if (tapToCopyEnabled) modifier.globalTextTapCopy(text.text) else modifier,
-    color = color,
-    autoSize = autoSize,
-    fontSize = fontSize,
-    fontStyle = fontStyle,
-    fontWeight = fontWeight,
-    fontFamily = fontFamily,
-    letterSpacing = letterSpacing,
-    textDecoration = textDecoration,
-    textAlign = textAlign,
-    lineHeight = lineHeight,
-    overflow = overflow,
-    softWrap = softWrap,
-    maxLines = maxLines,
-    minLines = minLines,
-    inlineContent = inlineContent,
-    onTextLayout = onTextLayout,
-    style = style,
-)
-
-@Composable
-fun AppText(
-    text: AnnotatedString,
-    color: ColorProducer,
-    modifier: Modifier = Modifier,
-    autoSize: TextAutoSize? = null,
-    fontSize: TextUnit = TextUnit.Unspecified,
-    fontStyle: FontStyle? = null,
-    fontWeight: FontWeight? = null,
-    fontFamily: FontFamily? = null,
-    letterSpacing: TextUnit = TextUnit.Unspecified,
-    textDecoration: TextDecoration? = null,
-    textAlign: TextAlign? = null,
-    lineHeight: TextUnit = TextUnit.Unspecified,
-    overflow: TextOverflow = TextOverflow.Clip,
-    softWrap: Boolean = true,
-    maxLines: Int = Int.MAX_VALUE,
-    minLines: Int = 1,
-    inlineContent: Map<String, InlineTextContent> = mapOf(),
-    onTextLayout: (TextLayoutResult) -> Unit = {},
-    style: TextStyle = LocalTextStyle.current,
-    tapToCopyEnabled: Boolean = true,
-) = Text(
-    text = text,
-    color = color,
-    modifier = if (tapToCopyEnabled) modifier.globalTextTapCopy(text.text) else modifier,
-    autoSize = autoSize,
-    fontSize = fontSize,
-    fontStyle = fontStyle,
-    fontWeight = fontWeight,
-    fontFamily = fontFamily,
-    letterSpacing = letterSpacing,
-    textDecoration = textDecoration,
-    textAlign = textAlign,
-    lineHeight = lineHeight,
-    overflow = overflow,
-    softWrap = softWrap,
-    maxLines = maxLines,
-    minLines = minLines,
-    inlineContent = inlineContent,
-    onTextLayout = onTextLayout,
-    style = style,
-)
-
-@Composable
-fun AppIcon(
-    imageVector: ImageVector,
-    contentDescription: String?,
-    modifier: Modifier = Modifier,
-    tint: Color = LocalContentColor.current,
-) = Icon(
-    imageVector = imageVector,
-    contentDescription = contentDescription,
-    modifier = modifier,
-    tint = tint,
-)
-
-@Composable
-fun AppIcon(
-    bitmap: ImageBitmap,
-    contentDescription: String?,
-    modifier: Modifier = Modifier,
-    tint: Color = LocalContentColor.current,
-) = Icon(
-    bitmap = bitmap,
-    contentDescription = contentDescription,
-    modifier = modifier,
-    tint = tint,
-)
-
-@Composable
-fun AppIcon(
-    painter: Painter,
-    contentDescription: String?,
-    modifier: Modifier = Modifier,
-    tint: Color = LocalContentColor.current,
-) = Icon(
-    painter = painter,
-    contentDescription = contentDescription,
-    modifier = modifier,
-    tint = tint,
-)
-
-@Composable
-fun AppIcon(
-    painter: Painter,
-    tint: ColorProducer?,
-    contentDescription: String?,
-    modifier: Modifier = Modifier,
-) = Icon(
-    painter = painter,
-    tint = tint,
-    contentDescription = contentDescription,
     modifier = modifier,
 )
 

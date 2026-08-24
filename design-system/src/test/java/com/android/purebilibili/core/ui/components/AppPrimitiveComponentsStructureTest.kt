@@ -2,6 +2,7 @@ package com.android.purebilibili.core.ui.components
 
 import java.io.File
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -91,6 +92,42 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(miuix.contains("import top.yukonga.miuix.kmp.basic.Surface"))
         assertTrue(miuix.contains("import top.yukonga.miuix.kmp.basic.HorizontalDivider"))
         assertFalse(miuix.contains("import androidx.compose.material3"))
+    }
+
+    @Test
+    fun textAndIconFacadesRouteEachThemeToNativeRenderers() {
+        val primitiveSource = loadSource()
+        val textFacade = loadSource("components/AppText.kt")
+        val iconFacade = loadSource("components/AppIcon.kt")
+        val themeDefaults = loadSource("AppPrimitiveThemeDefaults.kt")
+        val materialText = loadSource("renderer/material3/AppMaterial3Text.kt")
+        val materialIcon = loadSource("renderer/material3/AppMaterial3Icon.kt")
+        val miuixText = loadSource("renderer/miuix/AppMiuixText.kt")
+        val miuixIcon = loadSource("renderer/miuix/AppMiuixIcon.kt")
+
+        assertFalse(primitiveSource.contains("fun AppText("))
+        assertFalse(primitiveSource.contains("fun AppIcon("))
+        assertEquals(4, textFacade.lineSequence().count { it == "fun AppText(" })
+        assertEquals(4, iconFacade.lineSequence().count { it == "fun AppIcon(" })
+        assertTrue(textFacade.contains("AppUiStyle.MATERIAL3 -> AppMaterial3Text("))
+        assertTrue(textFacade.contains("AppUiStyle.MIUIX -> AppMiuixText("))
+        assertTrue(iconFacade.contains("AppUiStyle.MATERIAL3 -> AppMaterial3Icon("))
+        assertTrue(iconFacade.contains("AppUiStyle.MIUIX -> AppMiuixIcon("))
+        assertTrue(textFacade.contains("globalTextTapCopy"))
+        assertFalse(textFacade.contains("import androidx.compose.material3"))
+        assertFalse(textFacade.contains("import top.yukonga.miuix"))
+        assertFalse(iconFacade.contains("import androidx.compose.material3"))
+        assertFalse(iconFacade.contains("import top.yukonga.miuix"))
+
+        assertTrue(themeDefaults.contains("MaterialLocalTextStyle.current"))
+        assertTrue(themeDefaults.contains("MiuixLocalTextStyles.current.main"))
+        assertFalse(themeDefaults.contains(".kmp.basic."))
+        assertTrue(materialText.contains("import androidx.compose.material3.Text"))
+        assertTrue(materialIcon.contains("import androidx.compose.material3.Icon"))
+        assertTrue(miuixText.contains("import top.yukonga.miuix.kmp.basic.Text"))
+        assertTrue(miuixIcon.contains("import top.yukonga.miuix.kmp.basic.Icon"))
+        assertFalse(miuixText.contains("import androidx.compose.material3"))
+        assertFalse(miuixIcon.contains("import androidx.compose.material3"))
     }
 
     private fun loadSource(): String {

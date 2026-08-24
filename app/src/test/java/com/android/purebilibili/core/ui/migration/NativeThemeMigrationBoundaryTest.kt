@@ -231,7 +231,7 @@ class NativeThemeMigrationBoundaryTest {
         const val MAX_FEATURE_MIUIX_ICON_IMPORTS = 26
         const val MAX_FEATURE_THEME_BRANCH_FILES = 8
         const val MAX_FEATURE_THEME_BRANCH_LINES = 34
-        const val MAX_PRIMITIVE_FACADE_MATERIAL3_IMPORTS = 76
+        const val MAX_PRIMITIVE_FACADE_MATERIAL3_IMPORTS = 75
 
         const val LIQUID_GLASS_EXCEPTION_FILE_COUNT = 45
         const val LIQUID_GLASS_EXCEPTION_PATHS_SHA256 =
