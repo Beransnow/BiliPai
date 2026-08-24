@@ -1366,8 +1366,8 @@ private fun PlaybackInteractionSettingsSection(
             )
         }
         AppPreferenceDivider()
-	        AppSwitchPreference(
-	            icon = rememberSettingsSemanticIcon(SettingsIconRole.LIKE_INTERACTION),
+        AppSwitchPreference(
+            icon = rememberSettingsSemanticIcon(SettingsIconRole.LIKE_INTERACTION),
             title = "双击点赞",
             subtitle = "双击视频画面快捷点赞",
             checked = state.doubleTapLike,
@@ -1377,6 +1377,25 @@ private fun PlaybackInteractionSettingsSection(
                 com.android.purebilibili.core.util.AnalyticsHelper.logSettingChange("double_tap_like", it.toString())
             },
             iconTint = com.android.purebilibili.core.theme.iOSPink
+        )
+        AppPreferenceDivider()
+        AppSwitchPreference(
+            icon = rememberSettingsSemanticIcon(SettingsIconRole.AUTO_PLAY_NEXT),
+            title = "自动跳过片头片尾",
+            subtitle = if (state.autoSkipOpEd) {
+                "番剧提供跳过区间时，播放中自动跳过片头和片尾"
+            } else {
+                "保留完整片头片尾播放"
+            },
+            checked = state.autoSkipOpEd,
+            onCheckedChange = {
+                viewModel.toggleAutoSkipOpEd(it)
+                com.android.purebilibili.core.util.AnalyticsHelper.logSettingChange(
+                    "auto_skip_op_ed",
+                    it.toString()
+                )
+            },
+            iconTint = com.android.purebilibili.core.theme.iOSOrange
         )
         AppPreferenceDivider()
         SettingsSingleChoicePreference(

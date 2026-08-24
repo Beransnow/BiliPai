@@ -165,6 +165,8 @@ class BangumiPlayerViewModel : BasePlayerViewModel() {
     private var currentSeasonId: Long = 0
     private var currentEpId: Long = 0
     private var bangumiHeartbeatJob: Job? = null
+    private var openingSkippedEpisodeId: Long = 0L
+    private var endingSkippedEpisodeId: Long = 0L
     private var progressManager: PlaybackProgressManager? = null
 
     //  [修复] 与详情页保持一致的追番状态缓存
@@ -228,6 +230,25 @@ class BangumiPlayerViewModel : BasePlayerViewModel() {
                 _toastEvent.send("已是最后一集")
             }
         }
+    }
+
+    fun checkAndSkipEpisodeOpEd() {
+        val currentState = _uiState.value as? BangumiPlayerState.Success ?: return
+        val player = exoPlayer ?: return
+        val episode = currentState.currentEpisode
+        val action = resolveBangumiEpisodeSkipAction(
+            currentPositionMs = player.currentPosition,
+            durationMs = player.duration.takeIf { it > 0L } ?: episode.duration,
+            skip = episode.skip,
+            openingAlreadySkipped = openingSkippedEpisodeId == episode.id,
+            endingAlreadySkipped = endingSkippedEpisodeId == episode.id
+        ) ?: return
+        when (action.kind) {
+            BangumiEpisodeSkipKind.OPENING -> openingSkippedEpisodeId = episode.id
+            BangumiEpisodeSkipKind.ENDING -> endingSkippedEpisodeId = episode.id
+        }
+        player.seekTo(action.seekToMs)
+        _toastEvent.trySend("已跳过${action.kind.label}")
     }
     
     /**

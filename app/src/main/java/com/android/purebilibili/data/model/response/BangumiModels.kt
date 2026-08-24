@@ -356,9 +356,9 @@ data class StyleInfo(
 @Serializable
 data class BangumiRights(
     @SerialName("allow_download")
-    val allowDownload: Int = 0,
+    val allowDownload: Int? = null,
     @SerialName("allow_review")
-    val allowReview: Int = 0,
+    val allowReview: Int? = null,
     @SerialName("is_preview")
     val isPreview: Int = 0,           // 是否预告/预览
     @SerialName("watch_platform")
@@ -368,7 +368,7 @@ data class BangumiRights(
     @SerialName("area_limit")
     val areaLimit: Int = 0,
     @SerialName("allow_dm")
-    val allowDanmaku: Int = 1
+    val allowDanmaku: Int? = null
 )
 
 @Serializable
