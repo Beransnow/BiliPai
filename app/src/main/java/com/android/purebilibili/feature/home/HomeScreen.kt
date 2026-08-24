@@ -42,6 +42,7 @@ import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
+import com.android.purebilibili.core.ui.common.HOME_PAGER_HORIZONTAL_LOCK_SLOP_MULTIPLIER
 import androidx.compose.material3.rememberDrawerState
 import com.android.purebilibili.feature.home.components.MineSideDrawer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -1683,6 +1684,8 @@ fun HomeScreen(
                                 .verticalPriorityHorizontalPagerSwipe(
                                     state = pagerState,
                                     enabled = homeTopPagerSwipeEnabled,
+                                    horizontalLockSlopMultiplier =
+                                        HOME_PAGER_HORIZONTAL_LOCK_SLOP_MULTIPLIER,
                                 ),
                             key = { index -> resolveHomeTopTabEntryKey(topTabEntries, index) }
                         ) { page ->
