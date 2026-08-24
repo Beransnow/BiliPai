@@ -2924,8 +2924,7 @@ private fun SpaceHomeVideoCard(
                 style = feedContentTypography().title.copy(
                     color = MaterialTheme.colorScheme.onSurface
                 ),
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Visible
             )
             val metadata = remember(video.created, video.play, progressState.progressSec) {
                 buildList {
@@ -2940,8 +2939,7 @@ private fun SpaceHomeVideoCard(
                     text = metadata,
                     fontSize = 12.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Visible
                 )
             }
         }
@@ -3065,8 +3063,7 @@ private fun SpaceAggregateMediaCard(
             fontSize = 14.sp,
             lineHeight = 20.sp,
             fontWeight = FontWeight.Medium,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
+            overflow = TextOverflow.Visible,
             color = MaterialTheme.colorScheme.onSurface
         )
     }
@@ -3107,8 +3104,7 @@ private fun SpaceAggregatePosterCard(
             fontSize = 14.sp,
             lineHeight = 20.sp,
             fontWeight = FontWeight.Medium,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Visible
         )
         if (item.subtitle.isNotBlank()) {
             Spacer(modifier = Modifier.height(4.dp))
@@ -3116,8 +3112,7 @@ private fun SpaceAggregatePosterCard(
                 text = item.subtitle,
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Visible
             )
         }
     }
@@ -3228,9 +3223,7 @@ private fun SpaceTopVideoCard(
                 )
             }
             Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(90.dp),
+                modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
                 AppText(
@@ -3238,8 +3231,7 @@ private fun SpaceTopVideoCard(
                     fontSize = 15.sp,
                     lineHeight = 21.sp,
                     fontWeight = FontWeight.Medium,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Visible
                 )
                 AppText(
                     text = video.reason.ifBlank { FormatUtils.formatPublishTime(video.pubdate) },
@@ -3494,8 +3486,7 @@ private fun SpaceArchiveListItemRow(
                     fontSize = 15.sp,
                     lineHeight = 22.sp,
                     fontWeight = FontWeight.Medium,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
+                    overflow = TextOverflow.Visible,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 AppIcon(

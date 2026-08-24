@@ -493,8 +493,7 @@ fun GlassVideoCard(
                         text = video.title,
                         color = onSurface,
                         style = contentTypography.title,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Visible
                     )
                     
                     Spacer(modifier = Modifier.height(AppSpacingTokens.Small))
@@ -525,6 +524,8 @@ fun GlassVideoCard(
                             badgeTextColor = onSurfaceVariant.copy(alpha = 0.85f),
                             badgeBackgroundColor = onSurfaceVariant.copy(alpha = 0.12f),
                             showUpBadge = showUpBadge,
+                            maxLines = Int.MAX_VALUE,
+                            overflow = TextOverflow.Visible,
                             modifier = Modifier.weight(1f)
                         )
                         

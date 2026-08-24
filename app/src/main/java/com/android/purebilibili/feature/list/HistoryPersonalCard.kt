@@ -188,8 +188,7 @@ internal fun HistoryPersonalCard(
                 text = video.title,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
+                overflow = TextOverflow.Visible,
             )
         },
         overlineContent = {
@@ -207,8 +206,7 @@ internal fun HistoryPersonalCard(
                     text = owner,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                    overflow = TextOverflow.Visible,
                 )
                 FormatUtils.formatPublishTime(video.view_at).takeIf { it.isNotBlank() }?.let { viewedAt ->
                     AppText(

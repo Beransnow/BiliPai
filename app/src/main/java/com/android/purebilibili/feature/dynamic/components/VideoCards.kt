@@ -347,16 +347,14 @@ private fun VideoCardLargeInfo(
             text = collectionTitle,
             fontSize = MaterialTheme.typography.bodyMedium.fontSize,
             fontWeight = FontWeight.Bold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+            overflow = TextOverflow.Visible,
             color = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.height(AppSpacingTokens.Micro))
         AppText(
             text = archive.title,
             fontSize = MaterialTheme.typography.labelMedium.fontSize,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
+            overflow = TextOverflow.Visible,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = titleModifier
         )
@@ -365,8 +363,7 @@ private fun VideoCardLargeInfo(
             text = archive.title,
             fontSize = MaterialTheme.typography.bodyMedium.fontSize,
             fontWeight = FontWeight.Bold,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
+            overflow = TextOverflow.Visible,
             lineHeight = MaterialTheme.typography.bodyLarge.lineHeight,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = titleModifier

@@ -357,8 +357,7 @@ fun CinematicVideoCard(
             ) {
                 AppText(
                     text = video.title,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
+                    overflow = TextOverflow.Visible,
                     style = contentTypography.title.copy(color = MediaContrastPalette.Foreground),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -396,6 +395,8 @@ fun CinematicVideoCard(
                          badgeTextColor = MediaContrastPalette.Foreground.copy(alpha = 0.92f),
                          badgeBorderColor = MediaContrastPalette.Foreground.copy(alpha = 0.45f),
                          showUpBadge = showUpBadge,
+                         maxLines = Int.MAX_VALUE,
+                         overflow = TextOverflow.Visible,
                          modifier = Modifier.weight(1f)
                      )
                      

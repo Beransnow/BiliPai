@@ -414,8 +414,7 @@ private fun HomeHeroCarouselCard(
                         color = MediaContrastPalette.Foreground,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Visible
                     )
                 }
                 // 统计信息：时长 · 播放量 · 弹幕

@@ -301,8 +301,7 @@ fun RelatedVideoItem(
                 AppText(
                     text = video.title,
                     style = contentTypography.title,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
+                    overflow = TextOverflow.Visible,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -349,6 +348,8 @@ fun RelatedVideoItem(
                     badgeTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
                     badgeBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
                     showUpBadge = showUpBadge,
+                    maxLines = Int.MAX_VALUE,
+                    overflow = TextOverflow.Visible,
                     modifier = Modifier.fillMaxWidth()
                 )
                 HorizontalVideoStatRow(

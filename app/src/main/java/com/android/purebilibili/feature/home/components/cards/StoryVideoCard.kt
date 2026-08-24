@@ -86,6 +86,7 @@ import kotlin.math.roundToInt
  */
 @OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 internal fun StoryVideoCard(
     video: VideoItem,
     index: Int = 0,  //  [新增] 索引用于动画延迟
@@ -428,8 +429,7 @@ internal fun StoryVideoCard(
             color = MaterialTheme.colorScheme.onSurface,
             style = contentTypography.title,
             minLines = titleMinLines,
-            maxLines = titleMaxLines,
-            overflow = TextOverflow.Ellipsis,
+            overflow = TextOverflow.Visible,
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -439,9 +439,10 @@ internal fun StoryVideoCard(
             modifier = Modifier.fillMaxWidth()
         ) {
             if (scrollLitePolicy.showSecondaryStatsRow && video.stat.view > 0) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
+                FlowRow(
+                    itemVerticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(HORIZONTAL_VIDEO_STAT_ROW_SPACING_DP.dp),
+                    verticalArrangement = Arrangement.spacedBy(HORIZONTAL_VIDEO_STAT_WRAP_SPACING_DP.dp),
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     HorizontalVideoStatRow(
@@ -455,13 +456,11 @@ internal fun StoryVideoCard(
                         danmakuIcon = Icons.Outlined.ChatBubbleOutline,
                     )
                     if (publishTimeRowText.isNotBlank()) {
-                        Spacer(modifier = Modifier.weight(1f))
                         AppText(
                             text = publishTimeRowText,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f),
                             style = contentTypography.statistic,
-                            maxLines = 1,
-                            softWrap = false,
+                            overflow = TextOverflow.Visible,
                         )
                     }
                 }
@@ -502,6 +501,10 @@ internal fun StoryVideoCard(
                 badgeTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
                 badgeBackgroundColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.12f),
                 showUpBadge = showUpBadge,
+                maxLines = Int.MAX_VALUE,
+                overflow = TextOverflow.Visible,
+                metaMaxLines = Int.MAX_VALUE,
+                metaOverflow = TextOverflow.Visible,
                 modifier = upNameModifier
             )
 

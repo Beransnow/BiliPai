@@ -2882,6 +2882,7 @@ private fun SearchResultCardSurface(
  *  搜索结果卡片 (显示发布时间)
  */
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 fun SearchResultCard(
     video: VideoItem,
     index: Int,
@@ -2976,9 +2977,8 @@ fun SearchResultCard(
         // 标题
         AppText(
             text = video.title,
-            maxLines = 2,
             minLines = 1,
-            overflow = TextOverflow.Ellipsis,
+            overflow = TextOverflow.Visible,
             fontSize = 13.sp,
             fontWeight = FontWeight.Medium,
             lineHeight = 18.sp,
@@ -2989,9 +2989,11 @@ fun SearchResultCard(
         Spacer(modifier = Modifier.height(6.dp))
         
         // UP主 + 发布时间
-        Row(
+        FlowRow(
             modifier = Modifier.padding(horizontal = 2.dp),
-            verticalAlignment = Alignment.CenterVertically
+            itemVerticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             UpBadgeName(
                 name = video.owner.name,
@@ -3017,13 +3019,15 @@ fun SearchResultCard(
                 nameColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 badgeTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
                 badgeBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
-                modifier = Modifier.weight(1f, fill = false)
+                maxLines = Int.MAX_VALUE,
+                overflow = TextOverflow.Visible,
+                modifier = Modifier.wrapContentWidth()
             )
             
             //  显示发布时间
             if (video.pubdate > 0) {
                 AppText(
-                    text = " · ${FormatUtils.formatPublishTime(video.pubdate)}",
+                    text = "· ${FormatUtils.formatPublishTime(video.pubdate)}",
                     fontSize = 11.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )

@@ -164,8 +164,7 @@ internal fun FavoritePersonalCard(
                 text = item.title,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
+                overflow = TextOverflow.Visible,
             )
         },
         supportingContent = {
@@ -174,8 +173,7 @@ internal fun FavoritePersonalCard(
                     text = item.owner.name.ifBlank { "未知UP主" },
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                    overflow = TextOverflow.Visible,
                 )
                 val dateLabel = resolveFavoriteDateLabel(item.view_at)
                 val stats = "${FormatUtils.formatStat(item.stat.view.toLong())}播放 · ${FormatUtils.formatStat(item.stat.danmaku.toLong())}弹幕"
@@ -183,8 +181,7 @@ internal fun FavoritePersonalCard(
                     text = listOf(dateLabel, stats).filter(String::isNotBlank).joinToString(" · "),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.76f),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                    overflow = TextOverflow.Visible,
                 )
             }
         },

@@ -1309,8 +1309,7 @@ private fun WatchLaterVideoCard(
                 text = item.title,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
+                overflow = TextOverflow.Visible,
                 color = MaterialTheme.colorScheme.onSurface,
             )
         },
@@ -1320,8 +1319,7 @@ private fun WatchLaterVideoCard(
                     badges,
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                    overflow = TextOverflow.Visible,
                 )
             }
         },
@@ -1338,8 +1336,7 @@ private fun WatchLaterVideoCard(
                     text = item.owner.name,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                    overflow = TextOverflow.Visible,
                 )
                 AppText(
                     text = "${formatNumber(item.stat.view)}播放 · ${formatNumber(item.stat.danmaku)}弹幕",
