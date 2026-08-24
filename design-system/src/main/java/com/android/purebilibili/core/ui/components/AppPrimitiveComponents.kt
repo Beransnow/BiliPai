@@ -62,9 +62,6 @@ import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonColors
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.ScrollableTabRow
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderColors
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.ModalNavigationDrawer
@@ -105,7 +102,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
-import top.yukonga.miuix.kmp.basic.Slider as MiuixSlider
 import top.yukonga.miuix.kmp.basic.Switch as MiuixSwitch
 import top.yukonga.miuix.kmp.basic.TextField as MiuixTextField
 import top.yukonga.miuix.kmp.basic.TextFieldDefaults as MiuixTextFieldDefaults
@@ -643,42 +639,6 @@ fun AppRadioButton(
         colors = colors,
         interactionSource = resolvedInteractionSource,
     )
-}
-
-@Composable
-fun AppSlider(
-    value: Float,
-    onValueChange: (Float) -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
-    steps: Int = 0,
-    onValueChangeFinished: (() -> Unit)? = null,
-    colors: SliderColors = SliderDefaults.colors(),
-    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-) {
-    when (resolveAppSliderRenderer(LocalAppUiStyle.current)) {
-        AppPrimitiveRenderer.MIUIX -> MiuixSlider(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = modifier.appDesktopFocusableItemVisuals(enabled),
-            enabled = enabled,
-            valueRange = valueRange,
-            steps = steps,
-            onValueChangeFinished = onValueChangeFinished,
-        )
-        AppPrimitiveRenderer.MATERIAL -> Slider(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = modifier.appDesktopInteractionVisuals(interactionSource, enabled),
-            enabled = enabled,
-            valueRange = valueRange,
-            steps = steps,
-            onValueChangeFinished = onValueChangeFinished,
-            colors = colors,
-            interactionSource = interactionSource,
-        )
-    }
 }
 
 @Composable

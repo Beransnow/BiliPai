@@ -24,6 +24,7 @@ import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppOutlinedButton
 import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import com.android.purebilibili.core.ui.components.AppSlider
+import com.android.purebilibili.core.ui.components.AppSliderDefaults
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppSwitch
 import com.android.purebilibili.core.ui.components.AppTextButton
@@ -45,7 +46,6 @@ import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.SliderDefaults
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
@@ -1801,7 +1801,7 @@ private fun DanmakuSliderItem(
                 valueRange = valueRange,
                 steps = steps,
                 // 横竖屏统一使用面板调色板（主题色 thumb + 轨道），不再用白色 thumb。
-                colors = SliderDefaults.colors(
+                colors = AppSliderDefaults.colors(
                     thumbColor = colors.sliderThumbColor,
                     activeTrackColor = colors.sliderActiveTrackColor,
                     inactiveTrackColor = colors.sliderInactiveTrackColor

@@ -45,10 +45,6 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(source.contains("Switch("))
         assertTrue(source.contains("fun AppRadioButton("))
         assertTrue(source.contains(") = RadioButton("))
-        assertTrue(source.contains("fun AppSlider("))
-        assertTrue(source.contains("resolveAppSliderRenderer("))
-        assertTrue(source.contains("MiuixSlider("))
-        assertTrue(source.contains("Slider("))
         assertTrue(source.contains("fun AppOutlinedButton("))
         assertTrue(source.contains(") = OutlinedButton("))
         assertTrue(source.contains("fun AppCard("))
@@ -132,6 +128,29 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(miuix.contains("import top.yukonga.miuix.kmp.basic.Badge"))
         assertTrue(miuix.contains("BadgeDefaults.containerColor"))
         assertTrue(miuix.contains("BadgeDefaults.contentColor"))
+        assertFalse(miuix.contains("import androidx.compose.material3"))
+    }
+
+    @Test
+    fun sliderFacadeMapsNeutralColorsToEachNativeRenderer() {
+        val primitiveSource = loadSource()
+        val facade = loadSource("components/AppSlider.kt")
+        val material = loadSource("renderer/material3/AppMaterial3Slider.kt")
+        val miuix = loadSource("renderer/miuix/AppMiuixSlider.kt")
+
+        assertFalse(primitiveSource.contains("fun AppSlider("))
+        assertTrue(facade.contains("data class AppSliderColors("))
+        assertTrue(facade.contains("AppUiStyle.MATERIAL3 -> AppMaterial3Slider("))
+        assertTrue(facade.contains("AppUiStyle.MIUIX -> AppMiuixSlider("))
+        assertFalse(facade.contains("import androidx.compose.material3"))
+        assertFalse(facade.contains("import top.yukonga.miuix"))
+
+        assertTrue(material.contains("import androidx.compose.material3.Slider"))
+        assertTrue(material.contains("SliderDefaults.colors("))
+        assertTrue(material.contains("modifier.appDesktopInteractionVisuals("))
+        assertTrue(miuix.contains("import top.yukonga.miuix.kmp.basic.Slider"))
+        assertTrue(miuix.contains("SliderDefaults.sliderColors("))
+        assertTrue(miuix.contains("modifier.appDesktopFocusableItemVisuals(enabled)"))
         assertFalse(miuix.contains("import androidx.compose.material3"))
     }
 

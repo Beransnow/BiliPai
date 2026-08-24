@@ -57,7 +57,7 @@ import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.AppModalBottomSheet
 import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import com.android.purebilibili.core.ui.components.AppSlider
-import androidx.compose.material3.SliderDefaults
+import com.android.purebilibili.core.ui.components.AppSliderDefaults
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.runtime.Composable
@@ -907,7 +907,7 @@ private fun MusicProgress(state: MusicPlayerUiState, onSeek: (Long) -> Unit) {
             draggedPosition = null
         },
         valueRange = 0f..duration.toFloat(),
-        colors = SliderDefaults.colors(
+        colors = AppSliderDefaults.colors(
             thumbColor = MusicAccentColor,
             activeTrackColor = MusicAccentColor,
             inactiveTrackColor = MusicContentColor.copy(alpha = 0.28f)
