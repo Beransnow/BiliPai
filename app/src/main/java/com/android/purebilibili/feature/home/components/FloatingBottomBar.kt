@@ -359,6 +359,7 @@ fun FloatingBottomBar(
     colors: FloatingBottomBarColors = FloatingBottomBarDefaults.colors(),
     shellHeight: Dp = FloatingBottomBarDefaultShellHeight,
     indicatorHeight: Dp = FloatingBottomBarIndicatorHeight,
+    fitIndicatorHeightToTabWidth: Boolean = true,
     indicatorPositionProvider: (() -> Float)? = null,
     isScrollInProgressProvider: () -> Boolean = { false },
     dragSelectionEnabled: Boolean = true,
@@ -431,10 +432,14 @@ fun FloatingBottomBar(
 
     var tabWidthPx by remember { mutableFloatStateOf(0f) }
     var totalWidthPx by remember { mutableFloatStateOf(0f) }
-    val fittedIndicatorHeight = resolveFloatingDockIndicatorHeightDp(
-        requestedHeightDp = indicatorHeight.value,
-        tabWidthDp = with(density) { tabWidthPx.toDp().value },
-    ).dp
+    val fittedIndicatorHeight = if (fitIndicatorHeightToTabWidth) {
+        resolveFloatingDockIndicatorHeightDp(
+            requestedHeightDp = indicatorHeight.value,
+            tabWidthDp = with(density) { tabWidthPx.toDp().value },
+        ).dp
+    } else {
+        indicatorHeight
+    }
     val matchedGeometry = remember(shellHeight, fittedIndicatorHeight) {
         resolveMatchedLiquidIndicatorGeometry(
             dockHeightDp = shellHeight.value,
