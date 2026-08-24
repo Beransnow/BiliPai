@@ -32,9 +32,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.lazy.LazyRow
 import com.android.purebilibili.core.ui.AppSplitLayout
-import com.android.purebilibili.core.ui.components.AppPrimaryTabRow
 import com.android.purebilibili.core.ui.components.AppSurface
-import com.android.purebilibili.core.ui.components.AppTab
 import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
 import com.android.purebilibili.core.util.ShareUtils
@@ -47,6 +45,7 @@ import com.android.purebilibili.feature.dynamic.components.ImagePreviewDialog
 import com.android.purebilibili.feature.dynamic.components.ImagePreviewTextContent
 import com.android.purebilibili.feature.video.state.VideoPlayerState
 import com.android.purebilibili.feature.video.ui.components.*
+import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import com.android.purebilibili.feature.video.ui.section.ActionButtonsRow
 import com.android.purebilibili.feature.video.ui.section.resolveDisplayBgmList
 import com.android.purebilibili.feature.video.ui.section.UpInfoSection
@@ -91,6 +90,33 @@ private enum class TabletSecondaryTab(val label: String) {
     RELATED("相关推荐"),
     COLLECTION("合集"),
     OWNER_UPLOADS("UP 投稿")
+}
+
+@Composable
+internal fun TabletSecondaryLiquidTabRow(
+    labels: List<String>,
+    selectedIndex: Int,
+    onSelected: (Int) -> Unit,
+    indicatorPositionProvider: () -> Float,
+    isScrollInProgressProvider: () -> Boolean,
+    modifier: Modifier = Modifier,
+) {
+    BottomBarLiquidSegmentedControl(
+        items = labels,
+        selectedIndex = selectedIndex,
+        onSelected = onSelected,
+        modifier = modifier,
+        itemWidth = if (labels.size <= 2) 108.dp else null,
+        height = 48.dp,
+        indicatorHeight = 42.dp,
+        labelFontSize = 15.sp,
+        liquidGlassEffectsEnabled = true,
+        dragSelectionEnabled = true,
+        tapPressRefractionEnabled = true,
+        indicatorPositionProvider = indicatorPositionProvider,
+        isScrollInProgressProvider = isScrollInProgressProvider,
+        externalPagerMotionEffectsEnabled = true,
+    )
 }
 
 /**
@@ -633,23 +659,20 @@ private fun TabletSecondaryContent(
                 }
             }
 
-            AppPrimaryTabRow(
-                selectedTabIndex = pagerState.currentPage,
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface
-            ) {
-                tabs.forEachIndexed { index, tab ->
-                    AppTab(
-                        selected = pagerState.currentPage == index,
-                        onClick = {
-                            scope.launch {
-                                pagerState.animateScrollToPage(index)
-                            }
-                        },
-                        text = { AppText(tab.label) }
-                    )
-                }
-            }
+            TabletSecondaryLiquidTabRow(
+                labels = tabs.map { it.label },
+                selectedIndex = pagerState.currentPage,
+                onSelected = { index ->
+                    scope.launch { pagerState.animateScrollToPage(index) }
+                },
+                indicatorPositionProvider = {
+                    pagerState.currentPage + pagerState.currentPageOffsetFraction
+                },
+                isScrollInProgressProvider = { pagerState.isScrollInProgress },
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(vertical = 6.dp),
+            )
         } else {
             AppText(
                 text = fixedTab.label,

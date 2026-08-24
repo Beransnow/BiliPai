@@ -55,8 +55,6 @@ import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppSurface
-import com.android.purebilibili.core.ui.components.AppTab
-import com.android.purebilibili.core.ui.components.AppPrimaryTabRow
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
 import androidx.compose.runtime.Composable
@@ -1047,29 +1045,18 @@ private fun CinemaSideCurtain(
                         }
                     } else {
                         Column(modifier = Modifier.fillMaxSize()) {
-                            AppPrimaryTabRow(
-                                selectedTabIndex = pagerState.currentPage,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                AppTab(
-                                    selected = pagerState.currentPage == 0,
-                                    onClick = {
-                                        onTabSelected(0)
-                                    },
-                                    text = {
-                                        AppText(
-                                            text = "评论"
-                                        )
-                                    }
-                                )
-                                AppTab(
-                                    selected = pagerState.currentPage == 1,
-                                    onClick = {
-                                        onTabSelected(1)
-                                    },
-                                    text = { AppText("相关推荐") }
-                                )
-                            }
+                            TabletSecondaryLiquidTabRow(
+                                labels = listOf("评论", "相关推荐"),
+                                selectedIndex = pagerState.currentPage,
+                                onSelected = onTabSelected,
+                                indicatorPositionProvider = {
+                                    pagerState.currentPage + pagerState.currentPageOffsetFraction
+                                },
+                                isScrollInProgressProvider = { pagerState.isScrollInProgress },
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(vertical = 6.dp),
+                            )
 
                             HorizontalPager(
                                 state = pagerState,
