@@ -1968,12 +1968,10 @@ fun HomeHeader(
             currentSearchHeight > AppSpacingTokens.None &&
             searchRevealFraction > 0f
     val topTabLiquidGlassEnabled = resolveHomeTopChromeLiquidGlassEnabled(homeSettings)
-    // 顶部分类始终复用底栏 dock 壳层；关闭液态玻璃时由同一表面降级为实色/轻 tint，
-    // 避免标签直接叠在首页头图上而失去可读性。
-    val useTopTabBottomBarMatchedDock = true
-    val drawTopTabDockChrome = useTopTabBottomBarMatchedDock ||
-        drawTopTabOuterChromeSurface ||
-        useDetachedTopTabDock
+    // 移动胶囊只绘制选中项，标签轨道直接承接顶部连续模糊层，避免搜索框下方
+    // 再出现一整块高对比的白色 dock。其余 presentation 仍保留独立轨道以保证可读性。
+    val drawTopTabDockChrome = drawTopTabOuterChromeSurface
+    val useTopTabBottomBarMatchedDock = drawTopTabDockChrome
     val topTabLabelMode = homeSettings?.topTabLabelMode
         ?: com.android.purebilibili.core.store.SettingsManager.TopTabLabelMode.TEXT_ONLY
     // Floating dock shell + tabs share one wrap decision so glass length matches content.
@@ -1995,9 +1993,8 @@ fun HomeHeader(
         tabRowHeight = currentTabHeight,
         searchToTabsSpacing = currentTabToSearchSpacing,
         renderMode = effectiveContinuousSlabRenderMode,
-        // 分离式标签 dock 自带独立毛玻璃承托；外层 slab 只覆盖状态栏与搜索行，
-        // 避免标签区域叠加两次模糊，并消除 dock 底部的整宽硬切边。
-        includeTabInBlur = !useDetachedTopTabDock,
+        // 没有独立轨道时让连续模糊层覆盖标签区域；有轨道时避免重复模糊。
+        includeTabInBlur = !drawTopTabDockChrome,
     )
     val continuousSlabHeight = pinnedChromeLayout.blurHeight
     val pinnedChromeContentHeight = pinnedChromeLayout.tabTop + currentTabHeight

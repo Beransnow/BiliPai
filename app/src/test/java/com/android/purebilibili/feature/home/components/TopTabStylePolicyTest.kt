@@ -567,7 +567,7 @@ class TopTabStylePolicyTest {
                 materialMode = TopTabMaterialMode.BLUR
             )
         )
-        assertTrue(
+        assertFalse(
             shouldDrawHomeTopTabOuterChromeSurface(
                 presentation = AppTopTabPresentation.MOVING_CAPSULE,
                 materialMode = TopTabMaterialMode.LIQUID_GLASS

@@ -647,16 +647,18 @@ internal fun resolveEffectiveTopTabLiquidGlassEnabled(
     return isLiquidGlassEnabled
 }
 
+@Suppress("UNUSED_PARAMETER")
 internal fun shouldDrawHomeTopTabOuterChromeSurface(
     presentation: AppTopTabPresentation,
     materialMode: TopTabMaterialMode
 ): Boolean {
-    // All presentations share the BiliPai floating dock shell so top tabs match
-    // bottom FloatingBottomBar (outer glass track + moving indicator). TONAL_CAPSULE
-    // no longer relies on per-item secondaryContainer fills.
+    // Capsule presentations already have a strong selected-item affordance. Drawing a
+    // second full-width capsule around the row competes with the search pill and makes
+    // the tabs look pasted onto the header. Keep them on the continuous top blur;
+    // the underline presentation retains a readability track of its own.
     return when (presentation) {
+        AppTopTabPresentation.MATERIAL_UNDERLINE -> true
         AppTopTabPresentation.TONAL_CAPSULE,
-        AppTopTabPresentation.MATERIAL_UNDERLINE,
-        AppTopTabPresentation.MOVING_CAPSULE -> true
+        AppTopTabPresentation.MOVING_CAPSULE -> false
     }
 }
