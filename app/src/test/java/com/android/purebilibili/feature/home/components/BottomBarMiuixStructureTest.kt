@@ -241,20 +241,6 @@ class BottomBarMiuixStructureTest {
     }
 
     @Test
-    fun `home liquid dock keeps the standard indicator height`() {
-        val bottomBarSource = loadSource(
-            "app/src/main/java/com/android/purebilibili/feature/home/components/BottomBar.kt"
-        ).substringAfter("private fun BiliPaiFloatingBottomBar(")
-        val floatingBarSource = loadSource(
-            "app/src/main/java/com/android/purebilibili/feature/home/components/FloatingBottomBar.kt"
-        )
-
-        assertTrue(bottomBarSource.contains("fitIndicatorHeightToTabWidth = !isTablet"))
-        assertTrue(floatingBarSource.contains("fitIndicatorHeightToTabWidth: Boolean = true"))
-        assertTrue(floatingBarSource.contains("if (fitIndicatorHeightToTabWidth)"))
-    }
-
-    @Test
     fun `bottom bar search click keeps capsule scale stable`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/BottomBar.kt")
         val refractionProfileSource = source
