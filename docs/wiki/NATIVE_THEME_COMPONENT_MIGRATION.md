@@ -43,7 +43,7 @@ feature UI
 - **普通圆角矩形**：通过比例上限避免 `radius >= height / 2` 后意外变为全胶囊。
 
 页面不得使用 `AppChromeSizeTokens.MinimumTouchTarget` 充当视觉 `.size(...)`。现有
-`AppShapes`、`resolveCompactCapsuleChromeSpec` 与 `resolveHeightCappedCornerRadius` 是迁移起点；
+`AppShapes`、`resolveCompactCapsuleChromeSpec` 与 `resolveRoundedControlVisualGeometry` 是迁移起点；
 后续统一收敛到按主题和组件角色解析的几何策略。
 
 ## 阶段 0 基线（2026-08-24）
