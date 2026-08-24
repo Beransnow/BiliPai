@@ -241,6 +241,21 @@ class FloatingBottomBarStructureTest {
     }
 
     @Test
+    fun `non liquid indicator hides the covered base content copy`() {
+        val source = loadFloatingBottomBarSource()
+
+        assertTrue(source.contains("LocalFloatingBottomBarBaseContentAlpha"))
+        assertTrue(source.contains("LocalFloatingBottomBarActiveContent.current"))
+        assertTrue(source.contains("baseContentAlpha(itemIndex)"))
+        assertTrue(source.contains("1f - coverage"))
+        assertTrue(
+            source.contains(
+                "LocalFloatingBottomBarBaseContentAlpha provides baseContentAlphaProvider"
+            )
+        )
+    }
+
+    @Test
     fun `home icons scale continuously with indicator coverage without settle pulse`() {
         val source = loadFloatingBottomBarSource()
         val body = source.substringAfter("fun FloatingBottomBar(")

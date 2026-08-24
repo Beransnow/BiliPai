@@ -116,6 +116,9 @@ internal val LocalFloatingBottomBarItemSelectionScale = staticCompositionLocalOf
 internal val LocalFloatingBottomBarItemAlignmentOffset =
     staticCompositionLocalOf<(Int) -> Float> { { 0f } }
 
+internal val LocalFloatingBottomBarBaseContentAlpha =
+    staticCompositionLocalOf<(Int) -> Float> { { 1f } }
+
 /** 激活内容捕获层会为指示器提供每个槽位的选中态图标。 */
 internal val LocalFloatingBottomBarActiveContent = staticCompositionLocalOf { false }
 
@@ -299,6 +302,8 @@ fun RowScope.FloatingBottomBarItem(
     val scale = LocalFloatingBottomBarTabScale.current
     val indicatorPosition = LocalFloatingBottomBarIndicatorPosition.current
     val alignmentOffset = LocalFloatingBottomBarItemAlignmentOffset.current
+    val baseContentAlpha = LocalFloatingBottomBarBaseContentAlpha.current
+    val activeContent = LocalFloatingBottomBarActiveContent.current
     val contentColor = LocalFloatingBottomBarContentColor.current
     val selectionScale = remember(itemIndex, indicatorPosition) {
         {
@@ -335,6 +340,11 @@ fun RowScope.FloatingBottomBarItem(
                 scaleX = s
                 scaleY = s
                 translationX = itemIndex?.let(alignmentOffset) ?: 0f
+                alpha = if (!activeContent && itemIndex != null) {
+                    baseContentAlpha(itemIndex)
+                } else {
+                    1f
+                }
                 // Keep badge pixels outside the item bounds.
                 clip = false
             },
@@ -592,6 +602,15 @@ fun FloatingBottomBar(
             }
         }
     }
+    val baseContentAlphaProvider: (Int) -> Float = { itemIndex ->
+        if (isLiquidGlassMode) {
+            1f
+        } else {
+            val coverage = (1f - abs(itemIndex.toFloat() - dampedDragAnimation.value))
+                .coerceIn(0f, 1f)
+            1f - coverage
+        }
+    }
 
     LaunchedEffect(dampedDragAnimation, maxTabIndex) {
         snapshotFlow {
@@ -695,6 +714,7 @@ fun FloatingBottomBar(
             LocalFloatingBottomBarContentColor provides resolvedContentColor,
             LocalFloatingBottomBarIndicatorPosition provides { dampedDragAnimation.value },
             LocalFloatingBottomBarItemAlignmentOffset provides itemAlignmentOffsetProvider,
+            LocalFloatingBottomBarBaseContentAlpha provides baseContentAlphaProvider,
         ) {
             Row(
                 Modifier
