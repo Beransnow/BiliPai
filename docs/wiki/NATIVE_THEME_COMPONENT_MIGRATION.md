@@ -1,7 +1,7 @@
 # 双主题原生组件迁移
 
 最后更新：2026-08-24  
-状态：实施中（阶段 1；基础视觉与选择控件并行推进）
+状态：实施中（阶段 1；基础视觉、选择与反馈控件并行推进）
 
 ## 目标合同
 
@@ -80,11 +80,11 @@ feature UI
 | 已双原生化 | `AppListItem` | MD3 使用 `ListItem`，MIUIX 使用官方 `BasicComponent` slot API |
 | 已双原生化 | `AppCheckbox` / `AppRadioButton` / `AppSwitch` | facade 不再暴露 MD3 colors；MIUIX 原生触觉受应用总开关约束 |
 | 已双原生化 | `AppSlider` | 自定义颜色通过 `AppSliderColors` 映射到两套原生 defaults |
+| 已双原生化 | `AppCircularProgressIndicator` / `AppLinearProgressIndicator` | 颜色与线宽默认使用中立 sentinel；MD3 保留 provider 延迟读取，MIUIX 在最终 renderer 边界求值；feature 直调归零 |
 | 已完成几何收敛 | 分段控制 | 视觉高度与圆角共同解析，不再把 48dp 触控下限写成固定视觉高度 |
 | 待迁移 | `AppCard` | 现有 API 暴露 MD3 `CardColors` / `CardElevation`，需先替换为中立属性 |
-| 待迁移 | Progress | MIUIX determinate API 只接收 `Float`；provider 保留到 renderer 最末端读取 |
 
-`AppPrimitiveComponents.kt` 的 Material 3 import 棘轮已由 78 降至 59。已迁移 facade
+`AppPrimitiveComponents.kt` 的 Material 3 import 棘轮已由 78 降至 56。已迁移 facade
 均不导入 Material 3 或 Miuix 可见组件；厂商 import 只存在于对应 renderer。
 
 ## 组件映射

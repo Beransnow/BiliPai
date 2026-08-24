@@ -1,6 +1,7 @@
 // 文件路径: feature/watchlater/WatchLaterScreen.kt
 package com.android.purebilibili.feature.watchlater
 import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppLinearProgressIndicator
 import com.android.purebilibili.core.ui.components.AppText
 
 import com.android.purebilibili.core.ui.MediaContrastPalette
@@ -1365,7 +1366,7 @@ private fun WatchLaterVideoCard(
                 )
             }
             if (item.duration > 0 && item.progress > 0) {
-                LinearProgressIndicator(
+                AppLinearProgressIndicator(
                     progress = { (item.progress.toFloat() / item.duration).coerceIn(0f, 1f) },
                     modifier = Modifier.fillMaxWidth().align(Alignment.BottomCenter),
                     color = MaterialTheme.colorScheme.primary,

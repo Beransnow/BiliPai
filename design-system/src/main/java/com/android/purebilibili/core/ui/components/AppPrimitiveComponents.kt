@@ -23,7 +23,6 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.ChipColors
 import androidx.compose.material3.ChipElevation
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -40,7 +39,6 @@ import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.MenuItemColors
@@ -49,7 +47,6 @@ import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.ScrollableTabRow
@@ -76,7 +73,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
@@ -453,66 +449,6 @@ fun AppNavigationDrawerItem(
         interactionSource = resolvedInteractionSource,
     )
 }
-
-@Composable
-fun AppCircularProgressIndicator(
-    progress: () -> Float,
-    modifier: Modifier = Modifier,
-    color: Color = ProgressIndicatorDefaults.circularColor,
-    strokeWidth: Dp = ProgressIndicatorDefaults.CircularStrokeWidth,
-    trackColor: Color = ProgressIndicatorDefaults.circularDeterminateTrackColor,
-    strokeCap: StrokeCap = ProgressIndicatorDefaults.CircularDeterminateStrokeCap,
-) = CircularProgressIndicator(
-    progress = progress,
-    modifier = modifier,
-    color = color,
-    strokeWidth = strokeWidth,
-    trackColor = trackColor,
-    strokeCap = strokeCap,
-)
-
-@Composable
-fun AppCircularProgressIndicator(
-    modifier: Modifier = Modifier,
-    color: Color = ProgressIndicatorDefaults.circularColor,
-    strokeWidth: Dp = ProgressIndicatorDefaults.CircularStrokeWidth,
-    trackColor: Color = ProgressIndicatorDefaults.circularIndeterminateTrackColor,
-    strokeCap: StrokeCap = ProgressIndicatorDefaults.CircularIndeterminateStrokeCap,
-) = CircularProgressIndicator(
-    modifier = modifier,
-    color = color,
-    strokeWidth = strokeWidth,
-    trackColor = trackColor,
-    strokeCap = strokeCap,
-)
-
-@Composable
-fun AppLinearProgressIndicator(
-    modifier: Modifier = Modifier,
-    color: Color = ProgressIndicatorDefaults.linearColor,
-    trackColor: Color = ProgressIndicatorDefaults.linearTrackColor,
-    strokeCap: StrokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
-) = LinearProgressIndicator(
-    modifier = modifier,
-    color = color,
-    trackColor = trackColor,
-    strokeCap = strokeCap,
-)
-
-@Composable
-fun AppLinearProgressIndicator(
-    progress: () -> Float,
-    modifier: Modifier = Modifier,
-    color: Color = ProgressIndicatorDefaults.linearColor,
-    trackColor: Color = ProgressIndicatorDefaults.linearTrackColor,
-    strokeCap: StrokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
-) = LinearProgressIndicator(
-    progress = progress,
-    modifier = modifier,
-    color = color,
-    trackColor = trackColor,
-    strokeCap = strokeCap,
-)
 
 @Composable
 fun AppOutlinedButton(

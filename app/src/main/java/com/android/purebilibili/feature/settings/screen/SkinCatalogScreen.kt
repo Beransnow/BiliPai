@@ -35,7 +35,6 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Brush
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -56,6 +55,7 @@ import coil.request.ImageRequest
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.components.AppIcon
+import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppTextButton
@@ -195,7 +195,7 @@ fun SkinCatalogScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator()
+                AppCircularProgressIndicator()
             }
             return@SettingsPageScaffold
         }
@@ -352,7 +352,7 @@ private fun SkinCatalogPreviewDialog(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (loading) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                        AppCircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                         AppText("正在下载并生成真实预览...", style = MaterialTheme.typography.bodySmall)
                     }
                 } else if (error != null) {

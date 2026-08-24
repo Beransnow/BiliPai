@@ -97,6 +97,49 @@ class NativeThemeMigrationBoundaryTest {
     }
 
     @Test
+    fun featureDirectProgressCallsOnlyDecrease() {
+        val directCalls = kotlinFiles("app/src/main/java/com/android/purebilibili/feature")
+            .flatMap { file ->
+                file.readLines().mapIndexedNotNull { index, line ->
+                    if (DIRECT_PROGRESS_INDICATOR_CALL.containsMatchIn(line)) {
+                        "${repoRelativePath(file)}:${index + 1}: $line"
+                    } else {
+                        null
+                    }
+                }
+            }
+
+        assertAtMost(
+            actual = directCalls.size,
+            maximum = MAX_FEATURE_DIRECT_PROGRESS_CALLS,
+            label = "feature direct native progress calls",
+        )
+    }
+
+    @Test
+    fun designSystemComponentsUseTheProgressFacade() {
+        val offenders = kotlinFiles(
+            "design-system/src/main/java/com/android/purebilibili/core/ui/components"
+        )
+            .filterNot { it.name == "AppProgressIndicator.kt" }
+            .flatMap { file ->
+                file.readLines().mapIndexedNotNull { index, line ->
+                    if (DIRECT_PROGRESS_INDICATOR_CALL.containsMatchIn(line)) {
+                        "${repoRelativePath(file)}:${index + 1}: $line"
+                    } else {
+                        null
+                    }
+                }
+            }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "Design-system components must use App* progress facades:\n" +
+                offenders.joinToString("\n"),
+        )
+    }
+
+    @Test
     fun primitiveFacadeVendorImportsOnlyDecrease() {
         val source = repoFile(
             "design-system/src/main/java/com/android/purebilibili/core/ui/components/" +
@@ -241,10 +284,12 @@ class NativeThemeMigrationBoundaryTest {
         )
         val APP_UI_STYLE_BRANCH = Regex("\\bAppUiStyle\\.")
         val MATERIAL_SLIDER_DEFAULTS_CALL = Regex("(?<![A-Za-z0-9_])SliderDefaults\\.colors\\(")
+        val DIRECT_PROGRESS_INDICATOR_CALL =
+            Regex("(?<!App)(?:Circular|Linear)ProgressIndicator\\(")
 
         // Frozen from production sources on 2026-08-24; lower after each migration batch.
         const val MAX_FEATURE_MATERIAL3_FILES = 237
-        const val MAX_FEATURE_MATERIAL3_IMPORTS = 341
+        const val MAX_FEATURE_MATERIAL3_IMPORTS = 337
         const val MAX_FEATURE_MATERIAL3_WILDCARD_IMPORTS = 89
         const val MAX_FEATURE_MIUIX_COMPONENT_FILES = 1
         const val MAX_FEATURE_MIUIX_COMPONENT_IMPORTS = 1
@@ -252,7 +297,8 @@ class NativeThemeMigrationBoundaryTest {
         const val MAX_FEATURE_MIUIX_ICON_IMPORTS = 26
         const val MAX_FEATURE_THEME_BRANCH_FILES = 8
         const val MAX_FEATURE_THEME_BRANCH_LINES = 34
-        const val MAX_PRIMITIVE_FACADE_MATERIAL3_IMPORTS = 59
+        const val MAX_FEATURE_DIRECT_PROGRESS_CALLS = 0
+        const val MAX_PRIMITIVE_FACADE_MATERIAL3_IMPORTS = 56
 
         const val LIQUID_GLASS_EXCEPTION_FILE_COUNT = 45
         const val LIQUID_GLASS_EXCEPTION_PATHS_SHA256 =

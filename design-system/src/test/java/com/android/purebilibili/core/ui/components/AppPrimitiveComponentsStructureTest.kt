@@ -29,10 +29,6 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(source.contains("fun AppModalNavigationDrawer("))
         assertTrue(source.contains("fun AppNavigationDrawerItem("))
         assertTrue(source.contains(") = NavigationDrawerItem("))
-        assertTrue(source.contains("fun AppCircularProgressIndicator("))
-        assertTrue(source.contains(") = CircularProgressIndicator("))
-        assertTrue(source.contains("fun AppLinearProgressIndicator("))
-        assertTrue(source.contains(") = LinearProgressIndicator("))
         assertTrue(source.contains("fun AppOutlinedButton("))
         assertTrue(source.contains(") = OutlinedButton("))
         assertTrue(source.contains("fun AppCard("))
@@ -140,6 +136,49 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(miuix.contains("SliderDefaults.sliderColors("))
         assertTrue(miuix.contains("modifier.appDesktopFocusableItemVisuals(enabled)"))
         assertFalse(miuix.contains("import androidx.compose.material3"))
+    }
+
+    @Test
+    fun progressFacadePreservesProvidersAndRoutesToNativeRenderers() {
+        val primitiveSource = loadSource()
+        val facade = loadSource("components/AppProgressIndicator.kt")
+        val material = loadSource("renderer/material3/AppMaterial3ProgressIndicator.kt")
+        val miuix = loadSource("renderer/miuix/AppMiuixProgressIndicator.kt")
+
+        assertFalse(primitiveSource.contains("fun AppCircularProgressIndicator("))
+        assertFalse(primitiveSource.contains("fun AppLinearProgressIndicator("))
+        assertEquals(2, facade.lineSequence().count { it == "fun AppCircularProgressIndicator(" })
+        assertEquals(2, facade.lineSequence().count { it == "fun AppLinearProgressIndicator(" })
+        assertTrue(facade.contains("progress: () -> Float"))
+        assertTrue(facade.contains("color: Color = Color.Unspecified"))
+        assertTrue(facade.contains("strokeWidth: Dp = Dp.Unspecified"))
+        assertTrue(facade.contains("AppUiStyle.MATERIAL3 -> AppMaterial3CircularProgressIndicator("))
+        assertTrue(facade.contains("AppUiStyle.MIUIX -> AppMiuixCircularProgressIndicator("))
+        assertTrue(facade.contains("AppUiStyle.MATERIAL3 -> AppMaterial3LinearProgressIndicator("))
+        assertTrue(facade.contains("AppUiStyle.MIUIX -> AppMiuixLinearProgressIndicator("))
+        assertFalse(facade.contains("ProgressIndicatorDefaults"))
+        assertFalse(facade.contains("import androidx.compose.material3"))
+        assertFalse(facade.contains("import top.yukonga.miuix"))
+
+        assertTrue(material.contains("import androidx.compose.material3.CircularProgressIndicator"))
+        assertTrue(material.contains("import androidx.compose.material3.LinearProgressIndicator"))
+        assertTrue(material.contains("progress = progress,"))
+        assertTrue(miuix.contains("import top.yukonga.miuix.kmp.basic.CircularProgressIndicator"))
+        assertTrue(miuix.contains("import top.yukonga.miuix.kmp.basic.LinearProgressIndicator"))
+        assertTrue(miuix.contains("progress = progress(),"))
+        assertFalse(miuix.contains("import androidx.compose.material3"))
+        assertFalse(facade.contains("48.dp"))
+        assertFalse(material.contains("48.dp"))
+        assertFalse(miuix.contains("48.dp"))
+    }
+
+    @Test
+    fun primaryButtonLoadingUsesTheThemeAwareProgressFacade() {
+        val source = loadSource("components/AppPrimaryButton.kt")
+
+        assertTrue(source.contains("AppCircularProgressIndicator("))
+        assertFalse(source.contains("import androidx.compose.material3.CircularProgressIndicator"))
+        assertFalse(Regex("(?<!App)CircularProgressIndicator\\(").containsMatchIn(source))
     }
 
     @Test
