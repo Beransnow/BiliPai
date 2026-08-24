@@ -54,6 +54,7 @@ import com.android.purebilibili.feature.dynamic.resolveDynamicCommentSheetTotalC
 import com.android.purebilibili.feature.dynamic.resolveDynamicSubReplyCount
 import com.android.purebilibili.feature.dynamic.shouldOpenDynamicCommentThreadOnTap
 import com.android.purebilibili.feature.home.components.BottomBarMatchedReusableLiquidDock
+import com.android.purebilibili.feature.home.components.resolveSharedBottomBarCapsuleShape
 import com.android.purebilibili.feature.video.ui.components.CommentPictures
 import com.android.purebilibili.feature.video.ui.components.RichCommentText
 import com.android.purebilibili.feature.video.ui.components.ReplyMemberAvatar
@@ -587,6 +588,7 @@ fun DynamicInlineCommentComposer(
     replyTargetUname: String? = null,
     onClearReplyTarget: () -> Unit = {},
     liquidGlassEnabled: Boolean = false,
+    backdrop: MiuixBackdrop? = null,
     modifier: Modifier = Modifier,
 ) {
     var commentText by remember { mutableStateOf("") }
@@ -600,6 +602,7 @@ fun DynamicInlineCommentComposer(
         hint = resolveDynamicCommentComposerHint(replyTargetUname),
         onClearReplyTarget = if (replyTargetUname.isNullOrBlank()) null else onClearReplyTarget,
         liquidGlassEnabled = liquidGlassEnabled,
+        backdrop = backdrop,
         modifier = modifier,
     )
 }
@@ -612,20 +615,23 @@ private fun DynamicCommentComposer(
     hint: String = resolveDynamicCommentComposerHint(),
     onClearReplyTarget: (() -> Unit)? = null,
     liquidGlassEnabled: Boolean = false,
+    backdrop: MiuixBackdrop? = null,
     modifier: Modifier = Modifier,
 ) {
     val trimmedComment = value.trim()
+    val dockShape = resolveSharedBottomBarCapsuleShape()
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val commentFieldContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         BottomBarMatchedReusableLiquidDock(
-            shape = AppShapes.container(ContainerLevel.Pill),
+            shape = dockShape,
             modifier = Modifier
                 .weight(1f)
                 .height(AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Small),
             reuseEnabled = liquidGlassEnabled,
+            backdrop = backdrop,
             drawShellLens = true,
         ) { liquidChromeActive ->
             val fieldColor = if (liquidChromeActive) Color.Transparent else commentFieldContainerColor
@@ -642,7 +648,7 @@ private fun DynamicCommentComposer(
                     )
                 },
                 singleLine = true,
-                shape = AppShapes.container(ContainerLevel.Pill),
+                shape = dockShape,
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = fieldColor,
                     unfocusedContainerColor = fieldColor,
@@ -666,15 +672,16 @@ private fun DynamicCommentComposer(
         Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
         BottomBarMatchedReusableLiquidDock(
             modifier = Modifier.height(AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Small),
-            shape = AppShapes.container(ContainerLevel.Pill),
+            shape = dockShape,
             reuseEnabled = liquidGlassEnabled,
+            backdrop = backdrop,
             drawShellLens = true,
         ) { liquidChromeActive ->
             AppButton(
                 onClick = { onSubmit(trimmedComment) },
                 enabled = trimmedComment.isNotEmpty(),
                 modifier = Modifier.fillMaxHeight(),
-                shape = AppShapes.container(ContainerLevel.Pill),
+                shape = dockShape,
                 colors = if (liquidChromeActive) {
                     ButtonDefaults.buttonColors(
                         containerColor = Color.Transparent,

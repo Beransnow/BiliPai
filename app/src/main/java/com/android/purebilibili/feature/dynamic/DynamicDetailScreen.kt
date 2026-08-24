@@ -57,9 +57,13 @@ import com.android.purebilibili.feature.dynamic.components.ImagePreviewDialog
 import com.android.purebilibili.feature.dynamic.components.ImagePreviewTextContent
 import com.android.purebilibili.feature.dynamic.components.dynamicInlineCommentItems
 import com.android.purebilibili.feature.dynamic.components.RepostDialog
+import com.android.purebilibili.feature.video.ui.components.resolveBottomInputBarContentBottomPadding
+import com.android.purebilibili.feature.video.ui.components.shouldUseFloatingLiquidBottomInputBar
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 
 private sealed interface DynamicDetailUiState {
     data object Loading : DynamicDetailUiState
@@ -107,6 +111,9 @@ fun DynamicDetailScreen(
     val homeSettings by SettingsManager.getHomeSettings(context)
         .collectAsStateWithLifecycle(initialValue = HomeSettings())
     val liquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled
+    // Only scrolling content captures this backdrop. The comment controls remain sibling
+    // overlays, matching video detail and preventing a RenderNode backdrop cycle.
+    val detailCommentBackdrop = rememberLayerBackdrop()
     val gifImageLoader = context.imageLoader
     val likedDynamics by interactionViewModel.likedDynamics.collectAsStateWithLifecycle()
     val comments by interactionViewModel.comments.collectAsStateWithLifecycle()
@@ -301,11 +308,18 @@ fun DynamicDetailScreen(
                         replyTargetUname = commentReplyTarget?.uname,
                         onClearReplyTarget = interactionViewModel::clearCommentReplyTarget,
                         liquidGlassEnabled = liquidGlassEnabled,
+                        backdrop = detailCommentBackdrop,
                         modifier = modifier,
                     )
                 }
-                val floatingCommentComposer = liquidGlassEnabled
-                val commentContentBottomPadding = if (floatingCommentComposer) 112.dp else 80.dp
+                val floatingCommentComposer = shouldUseFloatingLiquidBottomInputBar(
+                    androidNativeLiquidGlassEnabled = liquidGlassEnabled,
+                )
+                val commentContentBottomPadding = resolveBottomInputBarContentBottomPadding(
+                    showBar = true,
+                    floatingLiquidGlass = floatingCommentComposer,
+                    showActionButtonsFallback = false,
+                )
 
                 if (useSplitLayout) {
                     //  [新增] 大屏/横屏：左卡片 + 右评论（对齐 BiliPai 横屏分栏）
@@ -328,7 +342,9 @@ fun DynamicDetailScreen(
                                 Box(modifier = Modifier.fillMaxSize()) {
                                     LazyColumn(
                                         state = commentListState,
-                                        modifier = Modifier.fillMaxSize(),
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .layerBackdrop(detailCommentBackdrop),
                                         contentPadding = PaddingValues(bottom = commentContentBottomPadding),
                                     ) {
                                         commentContent()
@@ -381,7 +397,15 @@ fun DynamicDetailScreen(
                     ) {
                         LazyColumn(
                             state = detailListState,
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .then(
+                                    if (floatingCommentComposer) {
+                                        Modifier.layerBackdrop(detailCommentBackdrop)
+                                    } else {
+                                        Modifier
+                                    }
+                                ),
                             contentPadding = PaddingValues(bottom = commentContentBottomPadding),
                         ) {
                             cardContent()
