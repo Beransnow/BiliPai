@@ -35,7 +35,7 @@ class RelatedVideoGridPerformancePolicyTest {
         assertTrue(source.contains("coverCoordinatesRef.value = coordinates"))
         assertFalse(source.contains("cardBoundsRef.value = coordinates.boundsInRoot()"))
         assertTrue(source.contains("val coverRequest = remember(video.pic)"))
-        assertTrue(source.contains("sourceLayout = resolveVideoCardSourceLayout("))
+        assertTrue(source.contains("sourceLayout = VideoCardSourceLayout.SIDE_BY_SIDE"))
         assertTrue(source.contains("sourceChromeSnapshot = VideoCardSourceChromeSnapshot("))
     }
 }
