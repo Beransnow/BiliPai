@@ -225,8 +225,10 @@ internal fun resolveNativeUnderlineGeometry(
 
     val startWidth = resolvedWidth(startIndex)
     val endWidth = resolvedWidth(endIndex)
-    val trailingEdgeProgress = fraction * fraction
-    val leadingEdgeProgress = 1f - (1f - fraction) * (1f - fraction)
+    // Flutter TabIndicatorAnimation.elastic: target-side edge decelerates with sine while
+    // the trailing edge accelerates with cosine, producing PiliPlus' fast-then-slow pull.
+    val trailingEdgeProgress = 1f - kotlin.math.cos(fraction * Math.PI.toFloat() / 2f)
+    val leadingEdgeProgress = kotlin.math.sin(fraction * Math.PI.toFloat() / 2f)
     val startLeft = segmentWidthDp * (startIndex + 0.5f) - startWidth / 2f
     val startRight = startLeft + startWidth
     val endLeft = segmentWidthDp * (endIndex + 0.5f) - endWidth / 2f

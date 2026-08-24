@@ -225,8 +225,10 @@ internal fun resolveMd3TopTabUnderlineBounds(
     ).coerceIn(0f, 1f)
     // The leading edge gets ahead while the trailing edge catches up. Traversing the same
     // geometry backwards automatically swaps their roles, so swipe direction needs no state.
-    val trailingEdgeProgress = transitionFraction * transitionFraction
-    val leadingEdgeProgress = 1f - (1f - transitionFraction) * (1f - transitionFraction)
+    val trailingEdgeProgress = 1f -
+        kotlin.math.cos(transitionFraction * Math.PI.toFloat() / 2f)
+    val leadingEdgeProgress =
+        kotlin.math.sin(transitionFraction * Math.PI.toFloat() / 2f)
     val startTranslation = resolveMd3TopTabIndicatorTranslationPx(
         absolutePagerPosition = kotlin.math.floor(absolutePagerPosition),
         itemWidthPx = itemWidthPx,

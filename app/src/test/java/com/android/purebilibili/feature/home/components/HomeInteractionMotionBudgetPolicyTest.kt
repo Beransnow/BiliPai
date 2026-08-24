@@ -368,15 +368,14 @@ class HomeInteractionMotionBudgetPolicyTest {
                 indicatorWidthPx = 28f,
             ),
         )
-        assertEquals(
-            Md3TopTabUnderlineBounds(61f, 78f),
-            resolveMd3TopTabUnderlineBounds(
+        val midpoint = resolveMd3TopTabUnderlineBounds(
                 absolutePagerPosition = 0.5f,
                 itemWidthPx = 100f,
                 rowScrollOffsetPx = 0f,
                 indicatorWidthPx = 28f,
-            ),
-        )
+            )
+        assertEquals(65.289f, midpoint.translationXPx, 0.001f)
+        assertEquals(69.421f, midpoint.widthPx, 0.001f)
         assertEquals(
             Md3TopTabUnderlineBounds(136f, 28f),
             resolveMd3TopTabUnderlineBounds(

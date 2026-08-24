@@ -236,14 +236,13 @@ class BottomBarLiquidSegmentedControlStructureTest {
 
     @Test
     fun `native underline stretches between labels during page motion`() {
-        assertEquals(
-            NativeUnderlineGeometry(offsetDp = 50f, widthDp = 110f),
-            resolveNativeUnderlineGeometry(
+        val midpoint = resolveNativeUnderlineGeometry(
                 indicatorPosition = 0.5f,
                 segmentWidthDp = 100f,
                 labelWidthsDp = listOf(40f, 80f),
             )
-        )
+        assertEquals(53.431f, midpoint.offsetDp, 0.001f)
+        assertEquals(101.421f, midpoint.widthDp, 0.001f)
     }
 
     @Test

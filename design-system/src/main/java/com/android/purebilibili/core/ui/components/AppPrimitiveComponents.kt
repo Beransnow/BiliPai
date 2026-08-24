@@ -12,9 +12,9 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.AnimationVector1D
-import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.Easing
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -42,8 +42,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.PrimaryScrollableTabRow
-import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.TextFieldColors
@@ -58,17 +56,17 @@ import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabPosition
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
@@ -81,28 +79,60 @@ import top.yukonga.miuix.kmp.basic.TextField as MiuixTextField
 import top.yukonga.miuix.kmp.basic.TextFieldDefaults as MiuixTextFieldDefaults
 import top.yukonga.miuix.kmp.theme.MiuixTheme
 
-private const val APP_TAB_INDICATOR_STRETCH_SCALE = 1.65f
+private const val APP_TAB_INDICATOR_DURATION_MILLIS = 300
+private val flutterEase = CubicBezierEasing(0.25f, 0.1f, 0.25f, 1f)
+private val PiliPlusIndicatorDecelerate = Easing { fraction ->
+    kotlin.math.sin(flutterEase.transform(fraction) * Math.PI.toFloat() / 2f)
+}
+private val PiliPlusIndicatorAccelerate = Easing { fraction ->
+    1f - kotlin.math.cos(flutterEase.transform(fraction) * Math.PI.toFloat() / 2f)
+}
 
 @Composable
-private fun rememberAppTabIndicatorStretch(
+private fun AppElasticTabIndicator(
     selectedTabIndex: Int,
-): Animatable<Float, AnimationVector1D> {
-    val scale = remember { Animatable(1f) }
+    tabPositions: List<TabPosition>,
+    matchContentSize: Boolean,
+    primary: Boolean,
+) {
+    if (tabPositions.isEmpty()) return
+    val safeIndex = selectedTabIndex.coerceIn(tabPositions.indices)
     val previousIndex = remember { mutableIntStateOf(selectedTabIndex) }
-    LaunchedEffect(selectedTabIndex) {
-        if (previousIndex.intValue == selectedTabIndex) return@LaunchedEffect
-        previousIndex.intValue = selectedTabIndex
-        scale.snapTo(1f)
-        scale.animateTo(
-            targetValue = APP_TAB_INDICATOR_STRETCH_SCALE,
-            animationSpec = tween(durationMillis = 110, easing = EaseOut),
-        )
-        scale.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(durationMillis = 190, easing = EaseOut),
-        )
+    val movingRight = remember(safeIndex) { safeIndex >= previousIndex.intValue }
+    val target = tabPositions[safeIndex]
+    val targetWidth = if (matchContentSize) target.contentWidth else target.width
+    val targetLeft = target.left + (target.width - targetWidth) / 2f
+    val targetRight = targetLeft + targetWidth
+    val left by animateDpAsState(
+        targetValue = targetLeft,
+        animationSpec = tween(
+            durationMillis = APP_TAB_INDICATOR_DURATION_MILLIS,
+            easing = if (movingRight) PiliPlusIndicatorAccelerate else PiliPlusIndicatorDecelerate,
+        ),
+        label = "appTabIndicatorLeft",
+    )
+    val right by animateDpAsState(
+        targetValue = targetRight,
+        animationSpec = tween(
+            durationMillis = APP_TAB_INDICATOR_DURATION_MILLIS,
+            easing = if (movingRight) PiliPlusIndicatorDecelerate else PiliPlusIndicatorAccelerate,
+        ),
+        label = "appTabIndicatorRight",
+    )
+    SideEffect {
+        previousIndex.intValue = safeIndex
     }
-    return scale
+    val indicatorModifier = Modifier
+        .offset(x = left)
+        .width((right - left).coerceAtLeast(0.dp))
+    if (primary) {
+        TabRowDefaults.PrimaryIndicator(
+            modifier = indicatorModifier,
+            width = Dp.Unspecified,
+        )
+    } else {
+        TabRowDefaults.SecondaryIndicator(modifier = indicatorModifier)
+    }
 }
 
 @Composable
@@ -134,11 +164,11 @@ fun AppScrollableTabRow(
     contentColor: Color = TabRowDefaults.primaryContentColor,
     edgePadding: Dp = TabRowDefaults.ScrollableTabRowEdgeStartPadding,
     indicator: @Composable (tabPositions: List<TabPosition>) -> Unit = @Composable { tabPositions ->
-        val stretch = rememberAppTabIndicatorStretch(selectedTabIndex)
-        TabRowDefaults.SecondaryIndicator(
-            Modifier
-                .tabIndicatorOffset(tabPositions[selectedTabIndex])
-                .graphicsLayer { scaleX = stretch.value },
+        AppElasticTabIndicator(
+            selectedTabIndex = selectedTabIndex,
+            tabPositions = tabPositions,
+            matchContentSize = false,
+            primary = false,
         )
     },
     divider: @Composable () -> Unit = @Composable { HorizontalDivider() },
@@ -632,18 +662,18 @@ fun AppPrimaryTabRow(
     contentColor: Color = TabRowDefaults.primaryContentColor,
     tabs: @Composable () -> Unit,
 ) {
-    val stretch = rememberAppTabIndicatorStretch(selectedTabIndex)
-    PrimaryTabRow(
+    @Suppress("DEPRECATION")
+    TabRow(
         selectedTabIndex = selectedTabIndex,
         modifier = modifier,
         containerColor = containerColor,
         contentColor = contentColor,
-        indicator = {
-            TabRowDefaults.PrimaryIndicator(
-                modifier = Modifier
-                    .tabIndicatorOffset(selectedTabIndex, matchContentSize = true)
-                    .graphicsLayer { scaleX = stretch.value },
-                width = Dp.Unspecified,
+        indicator = { tabPositions ->
+            AppElasticTabIndicator(
+                selectedTabIndex = selectedTabIndex,
+                tabPositions = tabPositions,
+                matchContentSize = true,
+                primary = true,
             )
         },
         tabs = tabs,
@@ -661,23 +691,21 @@ fun AppPrimaryScrollableTabRow(
     minTabWidth: Dp = TabRowDefaults.ScrollableTabRowMinTabWidth,
     tabs: @Composable () -> Unit,
 ) {
-    val stretch = rememberAppTabIndicatorStretch(selectedTabIndex)
-    PrimaryScrollableTabRow(
+    @Suppress("DEPRECATION")
+    ScrollableTabRow(
         selectedTabIndex = selectedTabIndex,
         modifier = modifier,
-        scrollState = scrollState,
         containerColor = containerColor,
         contentColor = contentColor,
         edgePadding = edgePadding,
-        indicator = {
-            TabRowDefaults.PrimaryIndicator(
-                modifier = Modifier
-                    .tabIndicatorOffset(selectedTabIndex, matchContentSize = true)
-                    .graphicsLayer { scaleX = stretch.value },
-                width = Dp.Unspecified,
+        indicator = { tabPositions ->
+            AppElasticTabIndicator(
+                selectedTabIndex = selectedTabIndex,
+                tabPositions = tabPositions,
+                matchContentSize = true,
+                primary = true,
             )
         },
-        minTabWidth = minTabWidth,
         tabs = tabs,
     )
 }
