@@ -349,6 +349,21 @@ class HomeHeaderVisualPolicyTest {
     }
 
     @Test
+    fun `detached tab dock is excluded from parent blur slab`() {
+        val layout = resolveHomeTopPinnedChromeLayout(
+            statusBarHeight = 44.dp,
+            visibleSearchHeight = 48.dp,
+            tabRowHeight = 56.dp,
+            searchToTabsSpacing = 4.dp,
+            renderMode = HomeTopChromeRenderMode.BLUR,
+            includeTabInBlur = false,
+        )
+
+        assertEquals(96.dp, layout.tabTop)
+        assertEquals(96.dp, layout.blurHeight)
+    }
+
+    @Test
     fun `tiny reverse scroll keeps collapsed search row hidden until reveal threshold is crossed`() {
         val layout = resolveHomeHeaderScrollLayout(
             headerOffsetPx = -44f,
@@ -1949,7 +1964,7 @@ class HomeHeaderVisualPolicyTest {
         assertTrue(headerSource.contains("val topTrimImagePath = uiSkinDecoration?.topAtmosphereImagePath"))
         assertTrue(trimSource.contains("model = File(topTrimImagePath)"))
         assertTrue(trimSource.contains("contentScale = ContentScale.Crop"))
-        assertTrue(trimSource.contains(".height(continuousSlabHeight)"))
+        assertTrue(trimSource.contains(".height(pinnedChromeContentHeight)"))
         assertTrue(trimSource.contains("alpha = 0.76f"))
         assertTrue(trimSource.contains("0.72f to Color.Transparent"))
         assertTrue(trimSource.contains("headerChromeColors.containerColor.copy(alpha = 0.42f)"))

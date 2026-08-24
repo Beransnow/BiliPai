@@ -369,14 +369,16 @@ internal fun resolveHomeTopPinnedChromeLayout(
     visibleSearchHeight: Dp,
     tabRowHeight: Dp,
     searchToTabsSpacing: Dp,
-    renderMode: HomeTopChromeRenderMode
+    renderMode: HomeTopChromeRenderMode,
+    includeTabInBlur: Boolean = true,
 ): HomeTopPinnedChromeLayout {
     val visibleSearchBlockHeight = if (visibleSearchHeight > AppSpacingTokens.None) {
         searchToTabsSpacing + visibleSearchHeight
     } else {
         AppSpacingTokens.None
     }
-    val visibleChromeHeight = statusBarHeight + tabRowHeight + visibleSearchBlockHeight
+    val visibleChromeHeight = statusBarHeight + visibleSearchBlockHeight +
+        if (includeTabInBlur) tabRowHeight else AppSpacingTokens.None
     return HomeTopPinnedChromeLayout(
         tabTop = statusBarHeight + visibleSearchBlockHeight,
         searchTop = statusBarHeight,
@@ -1992,9 +1994,13 @@ fun HomeHeader(
         visibleSearchHeight = currentSearchHeight,
         tabRowHeight = currentTabHeight,
         searchToTabsSpacing = currentTabToSearchSpacing,
-        renderMode = effectiveContinuousSlabRenderMode
+        renderMode = effectiveContinuousSlabRenderMode,
+        // 分离式标签 dock 自带独立毛玻璃承托；外层 slab 只覆盖状态栏与搜索行，
+        // 避免标签区域叠加两次模糊，并消除 dock 底部的整宽硬切边。
+        includeTabInBlur = !useDetachedTopTabDock,
     )
     val continuousSlabHeight = pinnedChromeLayout.blurHeight
+    val pinnedChromeContentHeight = pinnedChromeLayout.tabTop + currentTabHeight
     val isTopTabViewportSyncEnabled = resolveHomeTopTabViewportSyncEnabled(
         currentTabHeightDp = currentTabHeight.value,
         tabAlpha = tabAlpha,
@@ -2160,7 +2166,7 @@ fun HomeHeader(
                 alignment = Alignment.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(continuousSlabHeight)
+                    .height(pinnedChromeContentHeight)
                     .graphicsLayer {
                         alpha = 0.76f
                     }
@@ -2169,7 +2175,7 @@ fun HomeHeader(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(continuousSlabHeight)
+                    .height(pinnedChromeContentHeight)
                     .background(
                         Brush.verticalGradient(
                             0.00f to Color.Transparent,
