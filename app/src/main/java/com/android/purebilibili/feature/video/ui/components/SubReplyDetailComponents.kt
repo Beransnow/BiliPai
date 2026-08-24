@@ -17,7 +17,7 @@ import androidx.compose.material.icons.automirrored.outlined.Reply
 import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.ThumbDown
+import androidx.compose.material.icons.filled.ThumbDown
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -85,7 +85,6 @@ import com.android.purebilibili.feature.dynamic.components.ImagePreviewTextConte
 import com.android.purebilibili.core.ui.animation.MaybeDissolvableVideoCard
 import com.android.purebilibili.core.ui.common.rememberClipboardCopyHandler
 import com.android.purebilibili.core.ui.rememberAppLikeFilledIcon
-import com.android.purebilibili.core.ui.rememberAppLikeIcon
 import com.android.purebilibili.feature.video.viewmodel.CommentUiState
 import com.android.purebilibili.feature.video.viewmodel.SubReplyUiState
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
@@ -1279,7 +1278,6 @@ private fun SubReplyDetailItem(
                         Spacer(modifier = Modifier.width(18.dp))
                     }
 
-                    val likeIcon = rememberAppLikeIcon()
                     val likeFilledIcon = rememberAppLikeFilledIcon()
 
                     Row(
@@ -1289,7 +1287,7 @@ private fun SubReplyDetailItem(
                             .padding(4.dp)
                     ) {
                         AppIcon(
-                            imageVector = if (isLiked) likeFilledIcon else likeIcon,
+                            imageVector = likeFilledIcon,
                             contentDescription = "Like",
                             tint = if (isLiked) appearance.primaryTextColor else appearance.actionTint,
                             modifier = Modifier.size(16.dp)
@@ -1310,7 +1308,7 @@ private fun SubReplyDetailItem(
                         enabled = onHateClick != null
                     ) {
                         AppIcon(
-                            imageVector = Icons.Outlined.ThumbDown,
+                            imageVector = Icons.Filled.ThumbDown,
                             contentDescription = if (isHated) "取消点踩" else "点踩评论",
                             tint = if (isHated) MaterialTheme.colorScheme.error else appearance.actionTint,
                             modifier = Modifier.size(16.dp)
