@@ -61,6 +61,18 @@ class QualityManagerDeviceCapabilityTest {
     }
 
     @Test
+    fun `exact playable server track overrides stale local vip state`() {
+        val result = qualityManager.checkQualityPermission(
+            qualityId = 120,
+            isLoggedIn = true,
+            isVip = false,
+            serverPlayableQualities = listOf(120, 80)
+        )
+
+        assertEquals(QualityPermissionResult.Permitted, result)
+    }
+
+    @Test
     fun `checkQualityPermission allows dolby when server advertises target quality`() {
         val result = qualityManager.checkQualityPermission(
             qualityId = 126,

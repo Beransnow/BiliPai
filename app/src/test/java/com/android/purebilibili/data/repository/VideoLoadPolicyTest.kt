@@ -445,6 +445,18 @@ class VideoLoadPolicyTest {
     }
 
     @Test
+    fun `explicit 4K does not trust response quality without exact playable dash track`() {
+        assertFalse(
+            shouldAcceptAppApiResultForTargetQuality(
+                requestKind = PlayUrlRequestKind.EXPLICIT,
+                targetQn = 120,
+                returnedQuality = 120,
+                dashVideoIds = listOf(116, 112, 80)
+            )
+        )
+    }
+
+    @Test
     fun `shouldAcceptAppApiResultForTargetQuality accepts when target exists in dash list`() {
         assertTrue(
             shouldAcceptAppApiResultForTargetQuality(

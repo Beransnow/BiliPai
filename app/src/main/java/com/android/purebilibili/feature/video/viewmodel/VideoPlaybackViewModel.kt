@@ -7031,7 +7031,11 @@ class VideoPlaybackViewModel : ViewModel() {
             isVip = current.isVip,
             isHdrSupported = isHdrSupported,
             isDolbyVisionSupported = isDolbyVisionSupported,
-            serverAdvertisedQualities = current.qualityIds
+            serverAdvertisedQualities = current.qualityIds,
+            serverPlayableQualities = current.cachedDashVideos
+                .filter { it.getValidUrl().isNotEmpty() }
+                .map { it.id }
+                .distinct()
         )
 
         val currentPos = playbackUseCase.getCurrentPosition().coerceAtLeast(0L)

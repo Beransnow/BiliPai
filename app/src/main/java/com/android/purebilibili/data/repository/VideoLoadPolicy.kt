@@ -309,8 +309,10 @@ internal fun shouldAcceptAppApiResultForTargetQuality(
     // and non-VIP users; otherwise the UI reports a successful switch while the
     // backend silently returns a lower tier.
     if (targetQn < 80) return true
-    if (dashVideoIds.distinct().contains(targetQn)) return true
-    return returnedQuality >= targetQn && returnedQuality > 0
+    // In DASH responses `quality` is response metadata, not proof that the
+    // requested representation is playable. Only an exact playable track may
+    // finish an explicit high-quality request; otherwise continue to APP fallback.
+    return targetQn in dashVideoIds
 }
 
 internal fun buildGuestFallbackQualities(): List<Int> {
@@ -343,8 +345,7 @@ internal fun isRequestedQualitySatisfied(
     dashVideoIds: List<Int>
 ): Boolean {
     if (requestedQuality < 80) return true
-    if (requestedQuality in dashVideoIds) return true
-    return returnedQuality >= requestedQuality && returnedQuality > 0
+    return requestedQuality in dashVideoIds
 }
 
 /**

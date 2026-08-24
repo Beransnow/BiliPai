@@ -146,12 +146,20 @@ class QualityManager {
         isVip: Boolean,
         isHdrSupported: Boolean = true,
         isDolbyVisionSupported: Boolean = true,
-        serverAdvertisedQualities: List<Int> = emptyList()
+        serverAdvertisedQualities: List<Int> = emptyList(),
+        serverPlayableQualities: List<Int> = emptyList()
     ): QualityPermissionResult {
         // [New] 检查是否开启“解锁高画质” - REVERTED
         // if (context != null) ...
         
         val label = getQualityLabel(qualityId)
+
+        // A concrete playable DASH representation is authoritative. Local login/VIP
+        // state can lag behind the authenticated playurl response and must not block it.
+        if (qualityId in serverPlayableQualities) {
+            Logger.d(TAG, "Quality $qualityId permitted by exact playable server track")
+            return QualityPermissionResult.Permitted
+        }
         
         return when {
             // VIP 画质 (≥112): 需要大会员
