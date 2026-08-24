@@ -32,6 +32,8 @@ feature UI
 2. `BiliPaiNavDisplayHost` 继续使用 Miuix `NavDisplay`，相关 back stack、transition 与手势桥接
    作为 MD3 与 MIUIX 共用的导航子系统；当前 12 个源码文件以精确集合冻结。
 3. `AndroidView`、Media3 播放表面、系统 UI 与第三方插件内部 UI 不属于本次组件迁移。
+4. `AppearanceSettingsScreen.Md3ThemeColorPreview` 是 Material 3 配色生成器的原生预览，固定保留
+   一处 `ElevatedCard`。门禁按“文件 + 函数 + 组件”精确校验，不作为普通 feature Card 的数量预算。
 
 ## 尺寸与圆角合同
 
@@ -67,6 +69,8 @@ feature UI
 - MD3 renderer 禁止导入 Miuix；Miuix renderer 禁止导入 Material 3。
 - 液态玻璃文件集合使用路径摘要冻结。
 - Miuix navigation 只能出现在已冻结的共享导航子系统文件集合。
+- app 生产源码不得直接调用 Material 3 `Card` / `ElevatedCard` / `OutlinedCard`；只允许上述
+  `Md3ThemeColorPreview` 精确例外。
 
 ## 当前实施进度（2026-08-24）
 
@@ -81,11 +85,16 @@ feature UI
 | 已双原生化 | `AppCheckbox` / `AppRadioButton` / `AppSwitch` | facade 不再暴露 MD3 colors；MIUIX 原生触觉受应用总开关约束 |
 | 已双原生化 | `AppSlider` | 自定义颜色通过 `AppSliderColors` 映射到两套原生 defaults |
 | 已双原生化 | `AppCircularProgressIndicator` / `AppLinearProgressIndicator` | 颜色与线宽默认使用中立 sentinel；MD3 保留 provider 延迟读取，MIUIX 在最终 renderer 边界求值；feature 直调归零 |
+| 已双原生化 | `AppCard` | `AppCardShape` 仅接受语义层级或显式均匀半径；MD3 使用原生 `Card` / `ElevatedCard`，MIUIX 使用原生 `Card`；21 个既有调用、反诈历史与启动壁纸裸 Card 已收口 |
 | 已完成几何收敛 | 分段控制 | 视觉高度与圆角共同解析，不再把 48dp 触控下限写成固定视觉高度 |
-| 待迁移 | `AppCard` | 现有 API 暴露 MD3 `CardColors` / `CardElevation`，需先替换为中立属性 |
 
-`AppPrimitiveComponents.kt` 的 Material 3 import 棘轮已由 78 降至 56。已迁移 facade
+`AppPrimitiveComponents.kt` 的 Material 3 import 棘轮已由 78 降至 52。已迁移 facade
 均不导入 Material 3 或 Miuix 可见组件；厂商 import 只存在于对应 renderer。
+
+Card 圆角不会从任意 Compose `Shape` 反推：语义层级在 MD3 renderer 中解析为 MD3 对应
+`Shape`，在 MIUIX renderer 中解析为 MIUIX 对应 `cornerRadius`；显式均匀圆角则直接映射。
+`ContainerLevel.Sheet` 在 MD3 保留顶部圆角，MIUIX 受官方 Card 单一半径参数约束，受控映射为
+四角统一圆角。默认形状与颜色始终由各自原生 defaults 提供。
 
 ## 组件映射
 

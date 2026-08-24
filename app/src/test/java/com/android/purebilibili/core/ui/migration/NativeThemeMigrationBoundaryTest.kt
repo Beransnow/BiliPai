@@ -140,6 +140,27 @@ class NativeThemeMigrationBoundaryTest {
     }
 
     @Test
+    fun appNativeCardCallsStayWithinTheExactMd3PreviewException() {
+        val directCalls = kotlinFiles("app/src/main/java")
+            .flatMap { file ->
+                var enclosingFunction = "<top-level>"
+                buildList {
+                    file.readLines().forEach { line ->
+                        FUNCTION_DECLARATION.find(line)?.groupValues?.get(1)?.let {
+                            enclosingFunction = it
+                        }
+                        DIRECT_NATIVE_CARD_CALL.findAll(line).forEach { match ->
+                            add("${repoRelativePath(file)}#$enclosingFunction#${match.value.removeSuffix("(")}")
+                        }
+                    }
+                }
+            }
+            .sorted()
+
+        assertEquals(MD3_CARD_PREVIEW_EXCEPTIONS, directCalls)
+    }
+
+    @Test
     fun primitiveFacadeVendorImportsOnlyDecrease() {
         val source = repoFile(
             "design-system/src/main/java/com/android/purebilibili/core/ui/components/" +
@@ -286,10 +307,18 @@ class NativeThemeMigrationBoundaryTest {
         val MATERIAL_SLIDER_DEFAULTS_CALL = Regex("(?<![A-Za-z0-9_])SliderDefaults\\.colors\\(")
         val DIRECT_PROGRESS_INDICATOR_CALL =
             Regex("(?<!App)(?:Circular|Linear)ProgressIndicator\\(")
+        val DIRECT_NATIVE_CARD_CALL =
+            Regex("(?<![A-Za-z0-9_])(?:Card|ElevatedCard|OutlinedCard)\\(")
+        val FUNCTION_DECLARATION = Regex("\\bfun\\s+([A-Za-z0-9_]+)\\s*\\(")
+
+        val MD3_CARD_PREVIEW_EXCEPTIONS = listOf(
+            "app/src/main/java/com/android/purebilibili/feature/settings/screen/" +
+                "AppearanceSettingsScreen.kt#Md3ThemeColorPreview#ElevatedCard",
+        )
 
         // Frozen from production sources on 2026-08-24; lower after each migration batch.
         const val MAX_FEATURE_MATERIAL3_FILES = 237
-        const val MAX_FEATURE_MATERIAL3_IMPORTS = 337
+        const val MAX_FEATURE_MATERIAL3_IMPORTS = 333
         const val MAX_FEATURE_MATERIAL3_WILDCARD_IMPORTS = 89
         const val MAX_FEATURE_MIUIX_COMPONENT_FILES = 1
         const val MAX_FEATURE_MIUIX_COMPONENT_IMPORTS = 1
@@ -298,7 +327,7 @@ class NativeThemeMigrationBoundaryTest {
         const val MAX_FEATURE_THEME_BRANCH_FILES = 8
         const val MAX_FEATURE_THEME_BRANCH_LINES = 34
         const val MAX_FEATURE_DIRECT_PROGRESS_CALLS = 0
-        const val MAX_PRIMITIVE_FACADE_MATERIAL3_IMPORTS = 56
+        const val MAX_PRIMITIVE_FACADE_MATERIAL3_IMPORTS = 52
 
         const val LIQUID_GLASS_EXCEPTION_FILE_COUNT = 45
         const val LIQUID_GLASS_EXCEPTION_PATHS_SHA256 =

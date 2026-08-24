@@ -31,9 +31,6 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(source.contains(") = NavigationDrawerItem("))
         assertTrue(source.contains("fun AppOutlinedButton("))
         assertTrue(source.contains(") = OutlinedButton("))
-        assertTrue(source.contains("fun AppCard("))
-        assertTrue(source.contains("content: @Composable ColumnScope.() -> Unit"))
-        assertTrue(source.contains(") = Card("))
         assertTrue(source.contains("fun AppAssistChip("))
         assertTrue(source.contains(") = AssistChip("))
         assertTrue(source.contains("fun AppFilterChip("))
@@ -70,6 +67,40 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(miuix.contains("import top.yukonga.miuix.kmp.basic.Surface"))
         assertTrue(miuix.contains("import top.yukonga.miuix.kmp.basic.HorizontalDivider"))
         assertFalse(miuix.contains("import androidx.compose.material3"))
+    }
+
+    @Test
+    fun cardFacadeUsesControlledShapesAndNativeRenderers() {
+        val primitiveSource = loadSource()
+        val facade = loadSource("components/AppCard.kt")
+        val material = loadSource("renderer/material3/AppMaterial3Card.kt")
+        val miuix = loadSource("renderer/miuix/AppMiuixCard.kt")
+
+        assertFalse(primitiveSource.contains("fun AppCard("))
+        assertTrue(facade.contains("sealed interface AppCardShape"))
+        assertTrue(facade.contains("data class Semantic(val level: ContainerLevel)"))
+        assertTrue(facade.contains("data class Uniform(val cornerRadius: Dp)"))
+        assertTrue(facade.contains("data class AppCardColors("))
+        assertTrue(facade.contains("enum class AppCardVariant"))
+        assertTrue(facade.contains("content: @Composable ColumnScope.() -> Unit"))
+        assertTrue(facade.contains("AppUiStyle.MATERIAL3 -> AppMaterial3Card("))
+        assertTrue(facade.contains("AppUiStyle.MIUIX -> AppMiuixCard("))
+        assertFalse(facade.contains("import androidx.compose.material3"))
+        assertFalse(facade.contains("import top.yukonga.miuix"))
+        assertFalse(facade.contains("import androidx.compose.ui.graphics.Shape"))
+
+        assertTrue(material.contains("import androidx.compose.material3.Card"))
+        assertTrue(material.contains("import androidx.compose.material3.ElevatedCard"))
+        assertTrue(material.contains("uiStyle = AppUiStyle.MATERIAL3"))
+        assertTrue(material.contains("is AppCardShape.Uniform -> RoundedCornerShape(cornerRadius)"))
+        assertTrue(miuix.contains("import top.yukonga.miuix.kmp.basic.Card"))
+        assertTrue(miuix.contains("CardDefaults.CornerRadius"))
+        assertTrue(miuix.contains("uiStyle = AppUiStyle.MIUIX"))
+        assertFalse(miuix.contains("import androidx.compose.material3"))
+        assertFalse(miuix.contains("import androidx.compose.ui.graphics.Shape"))
+        assertFalse(facade.contains("48.dp"))
+        assertFalse(material.contains("48.dp"))
+        assertFalse(miuix.contains("48.dp"))
     }
 
     @Test

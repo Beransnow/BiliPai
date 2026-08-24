@@ -18,7 +18,7 @@ import androidx.compose.foundation.lazy.grid.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppCard
-import androidx.compose.material3.CardDefaults
+import com.android.purebilibili.core.ui.components.AppCardDefaults
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppTextButton
@@ -624,7 +624,7 @@ private fun TodayWatchPlanCard(
     }
 
     AppCard(
-        colors = CardDefaults.cardColors(
+        colors = AppCardDefaults.colors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
         ),
         modifier = Modifier

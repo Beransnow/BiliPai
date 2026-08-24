@@ -47,6 +47,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
@@ -109,6 +110,8 @@ import com.android.purebilibili.core.ui.AppDialogAction
 import com.android.purebilibili.core.ui.AppThemeConfig
 import com.android.purebilibili.core.ui.AppWindowSystemUiController
 import com.android.purebilibili.core.ui.ProvideAppThemeConfig
+import com.android.purebilibili.core.ui.components.AppCard
+import com.android.purebilibili.core.ui.components.AppCardShape
 import com.android.purebilibili.core.ui.components.LocalAppSingleChoicePresentation
 import com.android.purebilibili.core.ui.blur.BlurIntensity
 import com.android.purebilibili.core.ui.blur.ProvideUnifiedBlurIntensity
@@ -1761,9 +1764,10 @@ open class MainActivity : AppCompatActivity() {
                                                 )
                                             )
                                     )
-                                    Card(
-                                        shape = AppShapes.container(ContainerLevel.Floating),
-                                        elevation = CardDefaults.cardElevation(defaultElevation = 16.dp),
+                                    val posterCardCornerRadius =
+                                        AppShapes.containerCornerDp(ContainerLevel.Floating)
+                                    AppCard(
+                                        shape = AppCardShape.Semantic(ContainerLevel.Floating),
                                         modifier = Modifier
                                             .align(Alignment.Center)
                                             .graphicsLayer(
@@ -1779,6 +1783,10 @@ open class MainActivity : AppCompatActivity() {
                                             )
                                             .widthIn(min = 190.dp, max = 340.dp)
                                             .aspectRatio(9f / 16f)
+                                            .shadow(
+                                                elevation = 16.dp,
+                                                shape = RoundedCornerShape(posterCardCornerRadius),
+                                            )
                                     ) {
                                         AsyncImage(
                                             model = splashUri,

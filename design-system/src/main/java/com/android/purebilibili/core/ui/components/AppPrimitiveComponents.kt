@@ -15,10 +15,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.ChipColors
@@ -477,23 +473,6 @@ fun AppOutlinedButton(
         content = content,
     )
 }
-
-@Composable
-fun AppCard(
-    modifier: Modifier = Modifier,
-    shape: Shape = CardDefaults.shape,
-    colors: CardColors = CardDefaults.cardColors(),
-    elevation: CardElevation = CardDefaults.cardElevation(),
-    border: BorderStroke? = null,
-    content: @Composable ColumnScope.() -> Unit,
-) = Card(
-    modifier = modifier,
-    shape = shape,
-    colors = colors,
-    elevation = elevation,
-    border = border,
-    content = content,
-)
 
 @Composable
 fun AppAssistChip(

@@ -271,12 +271,12 @@ private fun CommentFraudItemCard(
         }
     }
 
-    Card(
+    AppCard(
         modifier = Modifier
             .fillMaxWidth()
             .animateContentSize(), // 👈 手风琴平滑展开折叠动画
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        shape = AppCardShape.Uniform(14.dp),
+        colors = AppCardDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             

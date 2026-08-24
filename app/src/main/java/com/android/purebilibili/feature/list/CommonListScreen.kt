@@ -7,6 +7,9 @@ import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.components.AppAssistChip
 import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.components.AppCard
+import com.android.purebilibili.core.ui.components.AppCardDefaults
+import com.android.purebilibili.core.ui.components.AppCardShape
+import com.android.purebilibili.core.ui.components.AppCardVariant
 import com.android.purebilibili.core.ui.components.AppDropdownMenu
 import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import com.android.purebilibili.core.ui.components.AppFilterChip
@@ -71,7 +74,6 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.DisposableEffect // [Fix] Missing import
 import kotlinx.coroutines.launch // [Fix] Import
 //  Material Icons
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChipDefaults
 import com.android.purebilibili.core.ui.components.AppIcon
@@ -2791,11 +2793,11 @@ private fun HistoryArticleCard(
                 onClick = triggerArticleClick,
                 onLongClick = onLongClick
             ),
-        shape = AppShapes.container(ContainerLevel.Sheet),
-        colors = CardDefaults.elevatedCardColors(
+        shape = AppCardShape.Semantic(ContainerLevel.Sheet),
+        colors = AppCardDefaults.colors(
             containerColor = AppSurfaceTokens.cardContainer()
         ),
-        elevation = CardDefaults.elevatedCardElevation()
+        variant = AppCardVariant.Elevated,
     ) {
         Column {
             Box(
