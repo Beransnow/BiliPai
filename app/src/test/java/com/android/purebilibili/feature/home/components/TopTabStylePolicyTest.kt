@@ -180,8 +180,8 @@ class TopTabStylePolicyTest {
         val iconAndText = topStyle(UiPreset.MD3, AndroidNativeVariant.MIUIX, labelMode = 0)
 
         assertEquals(AppTopTabPresentation.MATERIAL_UNDERLINE, iconAndText.presentation)
-        assertEquals(36.dp, iconAndText.tabRowHeightDocked)
-        assertEquals(40.dp, iconAndText.tabRowHeightFloating)
+        assertEquals(56.dp, iconAndText.tabRowHeightDocked)
+        assertEquals(60.dp, iconAndText.tabRowHeightFloating)
         assertEquals(30.dp, iconAndText.md3VisualSpec.selectedCapsuleHeight)
         assertEquals(44.dp, iconAndText.actionButtonSizeDocked)
     }

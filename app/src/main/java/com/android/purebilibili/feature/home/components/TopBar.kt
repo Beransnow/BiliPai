@@ -79,6 +79,8 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -645,19 +647,18 @@ internal fun resolveTopTabSkinStickerItemVerticalPadding(showText: Boolean): Dp 
     if (showText) AppSpacingTokens.Micro else AppSpacingTokens.ExtraSmall
 
 /**
- * iOS top-tab track must match [resolveHomeTopPresetStyle] chrome height (36/40).
- * Taller content rows get clipped by HomeTopTabChrome and collapse labels to "...".
+ * Keep this in sync with [resolveHomeTopPresetStyle]. Icon+text uses a taller track
+ * because its content is stacked vertically like the bottom navigation bar.
  */
 internal fun resolveIosTopTabRowHeight(
     isFloatingStyle: Boolean,
     labelMode: Int = SettingsManager.TopTabLabelMode.TEXT_ONLY
 ): Dp {
-    @Suppress("UNUSED_PARAMETER")
-    val ignoredLabelMode = labelMode
+    val iconAndText = normalizeTopTabLabelMode(labelMode) == 0
     return if (isFloatingStyle) {
-        AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Small
+        if (iconAndText) 60.dp else AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Small
     } else {
-        AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall
+        if (iconAndText) 56.dp else AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.ExtraSmall
     }
 }
 
@@ -1174,7 +1175,34 @@ private fun LightweightHomeTopTabs(
                 IOS_TOP_TAB_CONTENT_PADDING_DP.dp
             else -> md3ContentPadding
         }
-        val md3IndicatorWidth = if (skinPlainStyle) AppSpacingTokens.DoubleExtraLarge - AppSpacingTokens.Micro else AppSpacingTokens.ExtraLarge + AppSpacingTokens.ExtraSmall
+        val textMeasurer = rememberTextMeasurer()
+        val md3ContentWidths = remember(categories, normalizedLabelMode, density, textMeasurer) {
+            categories.map { category ->
+                val textWidth = if (showText) {
+                    with(density) {
+                        textMeasurer.measure(
+                            text = category,
+                            style = TextStyle(
+                                fontSize = resolveTopTabLabelTextSizeSp(normalizedLabelMode).sp,
+                                fontWeight = FontWeight.SemiBold
+                            ),
+                            maxLines = 1
+                        ).size.width.toDp()
+                    }
+                } else {
+                    0.dp
+                }
+                val iconWidth = if (showIcon) {
+                    resolveTopTabIconSizeDp(normalizedLabelMode).dp
+                } else {
+                    0.dp
+                }
+                maxOf(textWidth, iconWidth) + AppSpacingTokens.ExtraSmall * 2
+            }
+        }
+        val md3IndicatorWidth = md3ContentWidths.getOrElse(selectedIndex) {
+            AppSpacingTokens.ExtraLarge + AppSpacingTokens.ExtraSmall
+        }
         val dockIndicatorHorizontalGap = resolveTopTabDockIndicatorHorizontalGapDp(
             hasOuterChromeSurface = hasOuterChromeSurface,
             isLiquidGlassReuseEnabled = isLiquidGlassEnabled
@@ -1845,7 +1873,15 @@ private fun LightweightHomeTopTabs(
                     val nativeIndicatorWidth = if (iconOnlyIndicator) {
                         resolveIconOnlyTopTabIndicatorWidth()
                     } else {
-                        itemWidth
+                        val clampedPosition = topTabIndicatorPosition
+                            .coerceIn(0f, categories.lastIndex.toFloat())
+                        val startIndex = clampedPosition.toInt()
+                        val endIndex = (startIndex + 1).coerceAtMost(categories.lastIndex)
+                        lerp(
+                            md3ContentWidths.getOrElse(startIndex) { md3IndicatorWidth }.value,
+                            md3ContentWidths.getOrElse(endIndex) { md3IndicatorWidth }.value,
+                            clampedPosition - startIndex
+                        ).dp
                     }
                     val nativeUnderlineBounds = with(density) {
                         resolveMd3TopTabUnderlineBounds(

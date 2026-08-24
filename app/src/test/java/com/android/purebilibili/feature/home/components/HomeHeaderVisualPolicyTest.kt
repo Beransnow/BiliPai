@@ -227,7 +227,7 @@ class HomeHeaderVisualPolicyTest {
     @Test
     fun `md3 home header expands top tab row for icon plus text`() {
         assertEquals(
-            36.dp,
+            56.dp,
             resolveHomeTopTabRowHeight(
                 isTabFloating = false,
                 uiPreset = UiPreset.MD3,
@@ -235,7 +235,7 @@ class HomeHeaderVisualPolicyTest {
             )
         )
         assertEquals(
-            40.dp,
+            60.dp,
             resolveHomeTopTabRowHeight(
                 isTabFloating = true,
                 uiPreset = UiPreset.MD3,
@@ -247,7 +247,7 @@ class HomeHeaderVisualPolicyTest {
     @Test
     fun `ios home header expands docked top tab row for icon plus text`() {
         assertEquals(
-            36.dp,
+            56.dp,
             resolveHomeTopTabRowHeight(
                 isTabFloating = false,
                 uiPreset = UiPreset.IOS,
@@ -255,7 +255,7 @@ class HomeHeaderVisualPolicyTest {
             )
         )
         assertEquals(
-            40.dp,
+            60.dp,
             resolveHomeTopTabRowHeight(
                 isTabFloating = true,
                 uiPreset = UiPreset.IOS,

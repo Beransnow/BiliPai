@@ -176,7 +176,7 @@ fun AppScrollableTabRow(
         AppElasticTabIndicator(
             selectedTabIndex = selectedTabIndex,
             tabPositions = tabPositions,
-            matchContentSize = false,
+            matchContentSize = true,
             primary = false,
         )
     },
@@ -681,7 +681,7 @@ fun AppPrimaryTabRow(
             AppElasticTabIndicator(
                 selectedTabIndex = selectedTabIndex,
                 tabPositions = tabPositions,
-                matchContentSize = false,
+                matchContentSize = true,
                 primary = true,
             )
         },
@@ -711,7 +711,7 @@ fun AppPrimaryScrollableTabRow(
             AppElasticTabIndicator(
                 selectedTabIndex = selectedTabIndex,
                 tabPositions = tabPositions,
-                matchContentSize = false,
+                matchContentSize = true,
                 primary = true,
             )
         },

@@ -168,8 +168,8 @@ internal fun resolveHomeTopPresetStyle(
                 tabs = HomeTopTabsStyle(
                     horizontalPadding = HomeTopDpPair(docked = 0.dp, floating = 2.dp),
                     rowHeight = HomeTopDpPair(
-                        docked = 36.dp,
-                        floating = 40.dp
+                        docked = if (isIconAndText) 56.dp else 36.dp,
+                        floating = if (isIconAndText) 60.dp else 40.dp
                     ),
                     md3VisualSpec = resolveMd3TopTabVisualSpec(
                         false,
@@ -229,8 +229,8 @@ internal fun resolveHomeTopPresetStyle(
                 tabs = HomeTopTabsStyle(
                     horizontalPadding = HomeTopDpPair(docked = 0.dp, floating = 2.dp),
                     rowHeight = HomeTopDpPair(
-                        docked = 36.dp,
-                        floating = 40.dp
+                        docked = if (isIconAndText) 56.dp else 36.dp,
+                        floating = if (isIconAndText) 60.dp else 40.dp
                     ),
                     md3VisualSpec = resolveMd3TopTabVisualSpec(
                         false,
@@ -288,7 +288,10 @@ internal fun resolveHomeTopPresetStyle(
                 tabs = HomeTopTabsStyle(
                     horizontalPadding = HomeTopDpPair(docked = 0.dp, floating = 2.dp),
                     // Align with resolveMd3TopTabVisualSpec used by the tab row.
-                    rowHeight = HomeTopDpPair(docked = 36.dp, floating = 40.dp),
+                    rowHeight = HomeTopDpPair(
+                        docked = if (isIconAndText) 56.dp else 36.dp,
+                        floating = if (isIconAndText) 60.dp else 40.dp
+                    ),
                     md3VisualSpec = resolveMd3TopTabVisualSpec(
                         false,
                         AppTopTabPresentation.MATERIAL_UNDERLINE,

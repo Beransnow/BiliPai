@@ -44,8 +44,7 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(source.contains("PiliPlusIndicatorDecelerate"))
         assertTrue(source.contains("PiliPlusIndicatorAccelerate"))
         assertTrue(source.contains(".wrapContentSize(Alignment.BottomStart)"))
-        assertEquals(3, source.windowed("matchContentSize = false".length)
-            .count { it == "matchContentSize = false" })
+        assertFalse(source.contains("matchContentSize = false"))
         assertTrue(source.contains("fun AppSuggestionChip("))
         assertTrue(source.contains(") = SuggestionChip("))
     }
