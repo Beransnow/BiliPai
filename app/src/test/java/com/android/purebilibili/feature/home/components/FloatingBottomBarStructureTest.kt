@@ -250,6 +250,29 @@ class FloatingBottomBarStructureTest {
     }
 
     @Test
+    fun `non liquid capsule reuses liquid indicator movement deformation`() {
+        val source = loadFloatingBottomBarSource()
+        val nonLiquidIndicator = source
+            .substringAfter("if (isLiquidGlassMode && combinedBackdrop != null)")
+            .substringBefore("// The selected capsule can be wider than its tab")
+            .substringAfterLast("} else {")
+
+        assertTrue(nonLiquidIndicator.contains("scaleX = dampedDragAnimation.scaleX"))
+        assertTrue(nonLiquidIndicator.contains("scaleY = dampedDragAnimation.scaleY"))
+        assertTrue(nonLiquidIndicator.contains("val velocity = dampedDragAnimation.velocity / 10f"))
+        assertTrue(
+            nonLiquidIndicator.contains(
+                "scaleX /= 1f - (velocity * 0.75f).fastCoerceIn(-0.2f, 0.2f)"
+            )
+        )
+        assertTrue(
+            nonLiquidIndicator.contains(
+                "scaleY *= 1f - (velocity * 0.25f).fastCoerceIn(-0.2f, 0.2f)"
+            )
+        )
+    }
+
+    @Test
     fun `non liquid indicator hides the covered base content copy`() {
         val source = loadFloatingBottomBarSource()
 
