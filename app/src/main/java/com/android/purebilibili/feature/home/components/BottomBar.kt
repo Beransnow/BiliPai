@@ -2300,6 +2300,7 @@ private fun MaterialBottomBar(
             glassEnabled = glassEnabled,
             liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
             liquidGlassTuning = liquidGlassTuning,
+            navigationIconCrossScaleEnabled = homeSettings.navigationIconCrossScaleEnabled,
             haptic = haptic,
             bottomBarSearchEnabled = homeSettings.isBottomBarSearchEnabled,
             bottomBarSearchAutoExpandMode = homeSettings.bottomBarSearchAutoExpandMode,
@@ -2587,6 +2588,7 @@ private fun MiuixBottomBar(
             liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
             liquidGlassTuning = liquidGlassTuning,
             iconStyle = sharedBarIconStyle,
+            navigationIconCrossScaleEnabled = homeSettings.navigationIconCrossScaleEnabled,
             haptic = haptic,
             hazeState = hazeState,
             motionTier = motionTier,
@@ -2904,6 +2906,7 @@ private fun BiliPaiFloatingBottomBar(
     liquidGlassPreset: BottomBarLiquidGlassPreset,
     liquidGlassTuning: LiquidGlassTuning,
     iconStyle: SharedFloatingBottomBarIconStyle = SharedFloatingBottomBarIconStyle.MATERIAL,
+    navigationIconCrossScaleEnabled: Boolean = false,
     haptic: (HapticType) -> Unit,
     hazeState: HazeState? = null,
     motionTier: MotionTier = MotionTier.Normal,
@@ -3234,7 +3237,7 @@ private fun BiliPaiFloatingBottomBar(
                                     onClick = { handleBottomBarItemClick(index, item) },
                                     selected = index == selectedIndexForBar,
                                     itemIndex = index,
-                                    iconCrossScaleEnabled = homeSettings.navigationIconCrossScaleEnabled,
+                                    iconCrossScaleEnabled = navigationIconCrossScaleEnabled,
                                 ) {
                                     FloatingBottomBarTabVisual(
                                         item = item,
@@ -3258,7 +3261,7 @@ private fun BiliPaiFloatingBottomBar(
                                     onClick = ::handleBottomBarSidebarClick,
                                     selected = false,
                                     itemIndex = visibleItems.size,
-                                    iconCrossScaleEnabled = homeSettings.navigationIconCrossScaleEnabled,
+                                    iconCrossScaleEnabled = navigationIconCrossScaleEnabled,
                                 ) {
                                     FloatingBottomBarTabVisual(
                                         item = null,
