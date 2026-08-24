@@ -10,6 +10,7 @@ class BangumiLiquidGlassStructureTest {
     fun `bangumi hub uses adaptive native controls and independent poster ratio`() {
         val screenSource = sourceOf("BangumiScreen.kt")
         val contentSource = sourceOf("BangumiHubContent.kt")
+        val detailSource = sourceOf("BangumiDetailScreen.kt")
         val tabRowSource = sourceOf("BangumiLiquidTabRow.kt")
         val homeTabSource = sourceOf("HomeBangumiTabPage.kt")
 
@@ -21,6 +22,10 @@ class BangumiLiquidGlassStructureTest {
         assertTrue(contentSource.contains("slideOutHorizontally("))
         assertTrue(contentSource.contains("BANGUMI_POSTER_ASPECT_RATIO = 0.75f"))
         assertTrue(contentSource.contains("追番时间表"))
+        assertTrue(contentSource.contains("minTabWidth = 112.dp"))
+        assertTrue(contentSource.contains("modifier = Modifier.fillMaxWidth()"))
+        assertTrue(detailSource.contains("color = restrictionColors.contentColor"))
+        assertTrue(detailSource.contains("resolveAccessibleContainerColors("))
         assertTrue(contentSource.contains("AppFilterChip("))
         assertTrue(contentSource.contains("showPgcTimeline"))
         assertTrue(!screenSource.contains("AppNativeTabRow("))

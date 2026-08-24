@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.android.purebilibili.core.theme.resolveAdaptivePrimaryAccentColors
+import com.android.purebilibili.core.theme.resolveAccessibleContainerColors
 import com.android.purebilibili.core.theme.iOSYellow
 import com.android.purebilibili.core.ui.AppAlertDialog
 import com.android.purebilibili.core.ui.AppScaffold
@@ -1083,7 +1084,14 @@ private fun BangumiDetailMetaSection(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        val restrictionColors = resolveAdaptivePrimaryAccentColors(MaterialTheme.colorScheme)
+        val colorScheme = MaterialTheme.colorScheme
+        val adaptiveRestrictionColors = resolveAdaptivePrimaryAccentColors(colorScheme)
+        val restrictionColors = resolveAccessibleContainerColors(
+            containerColor = adaptiveRestrictionColors.backgroundColor,
+            contentColor = adaptiveRestrictionColors.contentColor,
+            backgroundColor = colorScheme.surface,
+            fallbackContentColors = listOf(colorScheme.onSurface, Color.White, Color.Black),
+        )
         if (metaChips.isNotEmpty()) {
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -1114,6 +1122,7 @@ private fun BangumiDetailMetaSection(
                         label = {
                             AppText(
                                 text = label,
+                                color = restrictionColors.contentColor,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )

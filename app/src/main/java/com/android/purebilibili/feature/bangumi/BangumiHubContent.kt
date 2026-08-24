@@ -353,26 +353,20 @@ private fun TimelineSection(
             val today = state.days.indexOfFirst { it.isToday == 1 }.coerceAtLeast(0)
             var selectedDay by remember(state.days) { mutableIntStateOf(today) }
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Row(
+                AppText(
+                    text = "追番时间表",
+                    style = MaterialTheme.typography.titleMedium,
+                )
+                BangumiLiquidAwareTabRow(
+                    options = state.days.mapIndexed { index, item ->
+                        AppSegmentOption(index, resolveBangumiTimelineDayLabel(item))
+                    },
+                    selectedValue = selectedDay,
+                    onSelectionChange = { selectedDay = it },
+                    scrollable = true,
+                    minTabWidth = 112.dp,
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    AppText(
-                        text = "追番时间表",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(end = 12.dp),
-                    )
-                    BangumiLiquidAwareTabRow(
-                        options = state.days.mapIndexed { index, item ->
-                            AppSegmentOption(index, resolveBangumiTimelineDayLabel(item))
-                        },
-                        selectedValue = selectedDay,
-                        onSelectionChange = { selectedDay = it },
-                        scrollable = true,
-                        minTabWidth = 88.dp,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
+                )
                 AnimatedContent(
                     targetState = selectedDay,
                     transitionSpec = {
