@@ -101,7 +101,7 @@ private fun Modifier.mirrorMiuixPointerPressInteractions(
                 pass = PointerEventPass.Initial,
             )
             val press = PressInteraction.Press(down.position)
-            interactionSource.emit(press)
+            interactionSource.tryEmit(press)
             var released = false
             try {
                 released = waitForUpOrCancellation(PointerEventPass.Initial) != null

@@ -148,7 +148,9 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(miuix.contains("PressInteraction.Release"))
         assertTrue(miuix.contains("PressInteraction.Cancel"))
         assertTrue(miuix.contains("finally"))
+        assertTrue(miuix.contains("interactionSource.tryEmit(press)"))
         assertTrue(miuix.contains("interactionSource.tryEmit("))
+        assertFalse(miuix.contains("interactionSource.emit("))
         assertFalse(miuix.contains(".clickable("))
         assertFalse(miuix.contains(".consume("))
         assertFalse(miuix.contains("minWidth ="))
@@ -157,6 +159,8 @@ class AppPrimitiveComponentsStructureTest {
         assertFalse(miuix.contains("import androidx.compose.material3"))
 
         assertEquals(2, desktopInteraction.lineSequence().count { it == "    shape: Shape? = null," })
+        assertTrue(desktopInteraction.contains("import androidx.compose.ui.graphics.drawOutline"))
+        assertFalse(desktopInteraction.contains("import androidx.compose.ui.graphics.drawscope.drawOutline"))
         assertTrue(desktopInteraction.contains("shape?.createOutline(size, layoutDirection, this)"))
         assertFalse(facade.contains("48.dp"))
         assertFalse(material.contains("48.dp"))
