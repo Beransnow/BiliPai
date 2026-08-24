@@ -1418,16 +1418,16 @@ internal fun ElegantVideoCard(
         val resolvedUpBadgeVisibility = com.android.purebilibili.core.ui.LocalUpBadgeVisibility.current
         if (scrollLitePolicy.showSecondaryStatsRow) {
             Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall + AppSpacingTokens.Micro))
-            Row(
+            Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(HORIZONTAL_VIDEO_STAT_ROW_SPACING_DP.dp)
+                verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall)
             ) {
                 HorizontalVideoStatRow(
                     playText = primaryStatText,
                     danmakuText = secondaryStatText.orEmpty(),
                     playIcon = Icons.Outlined.PlayCircle,
                     danmakuIcon = Icons.Outlined.ChatBubbleOutline,
+                    modifier = Modifier.fillMaxWidth(),
                 )
 
                 if (onlineCount.isNotEmpty()) {
@@ -1450,46 +1450,9 @@ internal fun ElegantVideoCard(
                             style = contentTypography.statistic.copy(fontWeight = FontWeight.Medium),
                             maxLines = 1,
                             softWrap = false,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Clip
                         )
                     }
-                }
-
-                if (showDurationOutside && durationText.isNotBlank()) {
-                    HomeVideoBadgePill(
-                        style = badgeStylePolicy.infoStyle,
-                        useRealtimeHaze = badgeEffectVisual.useRealtimeHaze,
-                        shape = AppShapes.container(ContainerLevel.Pill),
-                        containerColor = inlinePillColors.containerColor,
-                        borderColor = inlinePillColors.borderColor
-                    ) {
-                        AppIcon(
-                            imageVector = Icons.Outlined.Alarm,
-                            contentDescription = null,
-                            modifier = Modifier.size(AppSpacingTokens.Medium),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        AppText(
-                            text = durationText,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = contentTypography.statistic.copy(fontWeight = FontWeight.Medium),
-                            maxLines = 1,
-                            softWrap = false,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
-
-                if (publishTimeRowText.isNotBlank()) {
-                    Spacer(modifier = Modifier.weight(1f))
-                    AppText(
-                        text = publishTimeRowText,
-                        color = metadataColors.publishTimeColor,
-                        style = contentTypography.statistic,
-                        maxLines = 1,
-                        softWrap = false,
-                        overflow = TextOverflow.Clip,
-                    )
                 }
             }
         }
@@ -1508,19 +1471,17 @@ internal fun ElegantVideoCard(
             modifier = resolveVideoCardMetadataRowModifier()
         )
 
-        if (!scrollLitePolicy.showSecondaryStatsRow) {
-            VideoCardDurationPublishRow(
-                durationText = "",
-                publishTimeText = publishTimeRowText,
-                emphasizePublishTime = emphasizePublishTime,
-                publishTimeColor = metadataColors.publishTimeColor,
-                topSpacing = if (compactMetadata) {
-                    AppSpacingTokens.ExtraSmall
-                } else {
-                    AppSpacingTokens.Small - AppSpacingTokens.Micro
-                }
-            )
-        }
+        VideoCardDurationPublishRow(
+            durationText = durationText.takeIf { showDurationOutside }.orEmpty(),
+            publishTimeText = publishTimeRowText,
+            emphasizePublishTime = emphasizePublishTime,
+            publishTimeColor = metadataColors.publishTimeColor,
+            topSpacing = if (compactMetadata) {
+                AppSpacingTokens.ExtraSmall
+            } else {
+                AppSpacingTokens.Small - AppSpacingTokens.Micro
+            }
+        )
         }
         }
 

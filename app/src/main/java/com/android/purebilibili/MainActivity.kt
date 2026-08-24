@@ -71,6 +71,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.Density
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import androidx.metrics.performance.JankStats
 import androidx.window.layout.WindowMetrics
@@ -1563,6 +1564,7 @@ open class MainActivity : AppCompatActivity() {
                                     PlayerView(viewContext).apply {
                                         player = pipPlayer
                                         useController = false
+                                        resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
                                         setShowBuffering(PlayerView.SHOW_BUFFERING_WHEN_PLAYING)
                                     }
                                 },

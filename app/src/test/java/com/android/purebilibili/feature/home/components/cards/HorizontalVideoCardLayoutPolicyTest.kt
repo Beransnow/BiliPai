@@ -2,6 +2,7 @@ package com.android.purebilibili.feature.home.components.cards
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class HorizontalVideoCardLayoutPolicyTest {
@@ -28,6 +29,26 @@ class HorizontalVideoCardLayoutPolicyTest {
         assertTrue(source.contains("HorizontalVideoStatRow("))
         assertTrue(source.contains("modifier = Modifier.fillMaxWidth()"))
         assertTrue(!source.contains(".height(coverHeight)"))
+    }
+
+    @Test
+    fun gridCardKeepsEnabledMetadataCompleteOnSeparateRows() {
+        val source = java.io.File(
+            "src/main/java/com/android/purebilibili/feature/home/components/cards/VideoCard.kt",
+        ).let { file ->
+            listOf(file, java.io.File("app/${file.path}")).first { it.exists() }.readText()
+        }
+
+        assertTrue(
+            source.contains(
+                "durationText = durationText.takeIf { showDurationOutside }.orEmpty()"
+            )
+        )
+        assertFalse(
+            source.substringAfter("if (scrollLitePolicy.showSecondaryStatsRow)")
+                .substringBefore("VideoCardOwnerMetadata(")
+                .contains("overflow = TextOverflow.Ellipsis")
+        )
     }
 
     @Test
