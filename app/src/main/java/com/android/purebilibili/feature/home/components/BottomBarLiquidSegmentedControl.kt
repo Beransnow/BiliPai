@@ -6,6 +6,8 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.OpticalContrastPalette
 
 import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -33,6 +35,8 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -78,6 +82,7 @@ import top.yukonga.miuix.kmp.blur.drawBackdrop as miuixDrawBackdrop
 import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
 import kotlin.math.abs
+import kotlin.math.floor
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sign
@@ -187,6 +192,44 @@ internal fun resolveSegmentedControlIndicatorPosition(
     if (itemCount <= 0) return 0f
     return (externalPosition ?: internalPosition)
         .coerceIn(0f, (itemCount - 1).toFloat())
+}
+
+internal data class NativeUnderlineGeometry(
+    val offsetDp: Float,
+    val widthDp: Float,
+)
+
+internal fun resolveNativeUnderlineGeometry(
+    indicatorPosition: Float,
+    segmentWidthDp: Float,
+    labelWidthsDp: List<Float>,
+    minimumWidthDp: Float = 24f,
+    fallbackWidthFraction: Float = 0.42f,
+): NativeUnderlineGeometry {
+    if (segmentWidthDp <= 0f || labelWidthsDp.isEmpty()) {
+        return NativeUnderlineGeometry(offsetDp = 0f, widthDp = 0f)
+    }
+
+    val lastIndex = labelWidthsDp.lastIndex
+    val safePosition = indicatorPosition.coerceIn(0f, lastIndex.toFloat())
+    val startIndex = floor(safePosition).toInt()
+    val endIndex = (startIndex + 1).coerceAtMost(lastIndex)
+    val fraction = safePosition - startIndex
+    val fallbackWidth = segmentWidthDp * fallbackWidthFraction
+
+    fun resolvedWidth(index: Int): Float = labelWidthsDp[index]
+        .takeIf { it > 0f }
+        ?.coerceIn(minimumWidthDp, segmentWidthDp)
+        ?: fallbackWidth.coerceIn(minimumWidthDp, segmentWidthDp)
+
+    val startWidth = resolvedWidth(startIndex)
+    val endWidth = resolvedWidth(endIndex)
+    val width = startWidth + (endWidth - startWidth) * fraction
+    val center = segmentWidthDp * (safePosition + 0.5f)
+    return NativeUnderlineGeometry(
+        offsetDp = center - width / 2f,
+        widthDp = width,
+    )
 }
 
 internal fun shouldDrawSegmentedControlIndicatorBackdrop(
@@ -421,8 +464,17 @@ internal fun AndroidNativeUnderlinedSegmentedControl(
     val unselectedTextColor = unselectedTextColorOverride
         ?: MaterialTheme.colorScheme.onSurface.copy(alpha = if (enabled) 0.78f else 0.42f)
     val underlineShape = CircleShape
+    val density = LocalDensity.current
+    val measuredLabelWidths: SnapshotStateList<Float> = remember(items) {
+        List(itemCount) { 0f }.toMutableStateList()
+    }
+    val animatedSelectedIndex by animateFloatAsState(
+        targetValue = safeSelectedIndex.toFloat(),
+        animationSpec = tween(durationMillis = 250, easing = EaseOut),
+        label = "nativeUnderlinePosition",
+    )
     val indicatorPosition = resolveSegmentedControlIndicatorPosition(
-        internalPosition = safeSelectedIndex.toFloat(),
+        internalPosition = animatedSelectedIndex,
         externalPosition = indicatorPositionProvider?.invoke(),
         itemCount = itemCount
     )
@@ -443,10 +495,11 @@ internal fun AndroidNativeUnderlinedSegmentedControl(
             .height(height)
     ) {
         val segmentWidth = maxWidth / itemCount
-        val underlineWidth = (segmentWidth * 0.42f)
-            .coerceAtLeast(AppSpacingTokens.ExtraLarge + AppSpacingTokens.ExtraSmall)
-            .coerceAtMost(AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Small)
-        val underlineOffsetX = (segmentWidth * indicatorPosition) + ((segmentWidth - underlineWidth) / 2)
+        val underlineGeometry = resolveNativeUnderlineGeometry(
+            indicatorPosition = indicatorPosition,
+            segmentWidthDp = segmentWidth.value,
+            labelWidthsDp = measuredLabelWidths,
+        )
         Row(
             modifier = Modifier.fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically
@@ -467,7 +520,13 @@ internal fun AndroidNativeUnderlinedSegmentedControl(
                         fontSize = labelFontSize,
                         fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        onTextLayout = { result ->
+                            val measuredWidthDp = with(density) { result.size.width.toDp().value }
+                            if (measuredLabelWidths[index] != measuredWidthDp) {
+                                measuredLabelWidths[index] = measuredWidthDp
+                            }
+                        },
                     )
                 }
             }
@@ -475,8 +534,8 @@ internal fun AndroidNativeUnderlinedSegmentedControl(
         Box(
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .offset(x = underlineOffsetX)
-                .width(underlineWidth)
+                .offset(x = underlineGeometry.offsetDp.dp)
+                .width(underlineGeometry.widthDp.dp)
                 .height(AppSpacingTokens.ExtraSmall - AppSpacingTokens.Micro / 2)
                 .clip(underlineShape)
                 .background(selectedTextColor)

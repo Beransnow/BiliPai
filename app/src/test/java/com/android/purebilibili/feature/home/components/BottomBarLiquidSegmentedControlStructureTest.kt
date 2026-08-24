@@ -215,6 +215,38 @@ class BottomBarLiquidSegmentedControlStructureTest {
     }
 
     @Test
+    fun `native underline matches label width and remains centered in its segment`() {
+        assertEquals(
+            NativeUnderlineGeometry(offsetDp = 30f, widthDp = 40f),
+            resolveNativeUnderlineGeometry(
+                indicatorPosition = 0f,
+                segmentWidthDp = 100f,
+                labelWidthsDp = listOf(40f, 80f),
+            )
+        )
+        assertEquals(
+            NativeUnderlineGeometry(offsetDp = 110f, widthDp = 80f),
+            resolveNativeUnderlineGeometry(
+                indicatorPosition = 1f,
+                segmentWidthDp = 100f,
+                labelWidthsDp = listOf(40f, 80f),
+            )
+        )
+    }
+
+    @Test
+    fun `native underline interpolates position and label width during page motion`() {
+        assertEquals(
+            NativeUnderlineGeometry(offsetDp = 70f, widthDp = 60f),
+            resolveNativeUnderlineGeometry(
+                indicatorPosition = 0.5f,
+                segmentWidthDp = 100f,
+                labelWidthsDp = listOf(40f, 80f),
+            )
+        )
+    }
+
+    @Test
     fun `segmented indicator only samples hidden tab backdrop while sliding without external backdrop`() {
         assertFalse(
             shouldDrawSegmentedControlIndicatorBackdrop(
@@ -367,7 +399,9 @@ class BottomBarLiquidSegmentedControlStructureTest {
         assertTrue(source.contains("resolveSegmentedControlChromeStyle("))
         assertTrue(source.contains("AndroidNativeUnderlinedSegmentedControl("))
         assertTrue(source.contains("indicatorPositionProvider: (() -> Float)? = null"))
-        assertTrue(source.contains("val underlineOffsetX = (segmentWidth * indicatorPosition) + ((segmentWidth - underlineWidth) / 2)"))
+        assertTrue(source.contains("resolveNativeUnderlineGeometry("))
+        assertTrue(source.contains("animateFloatAsState("))
+        assertTrue(source.contains("onTextLayout = { result ->"))
         assertTrue(floating.contains("FloatingBottomBarMode.LiquidGlass"))
         assertTrue(floating.contains("LocalFloatingBottomBarContentColor.current"))
         assertTrue(sharedChrome.contains("holdPressUntilReleaseTargetSettles = true"))
