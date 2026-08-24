@@ -388,10 +388,6 @@ fun CommonListScreen(
         ?: androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
     val favoriteSearchUiState by favoriteViewModel?.searchUiState?.collectAsStateWithLifecycle()
         ?: androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(ListUiState()) }
-    val favoriteDetailProgressState by seasonSeriesDetailViewModel?.favoriteDetailProgressState?.collectAsStateWithLifecycle()
-        ?: androidx.compose.runtime.remember {
-            androidx.compose.runtime.mutableStateOf(SeasonSeriesDetailViewModel.FavoriteDetailProgressState())
-        }
     var favoriteBrowseSection by rememberSaveable { androidx.compose.runtime.mutableStateOf(FavoriteBrowseSection.OWNED) }
     var showFavoriteManagementMenu by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     var showFavoriteCleanInvalidConfirm by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
@@ -469,27 +465,6 @@ fun CommonListScreen(
             selectedFavoriteResourceIds = selectedFavoriteResourceIds + resourceId
         }
     }
-    val progressBadge = remember(
-        favoriteDetailProgressState,
-        seasonSeriesDetailViewModel
-    ) {
-        if (
-            seasonSeriesDetailViewModel != null &&
-            (favoriteDetailProgressState.expectedCount > 0 || favoriteDetailProgressState.loadedCount > 0)
-        ) {
-            resolveFavoriteDetailProgressBadge(
-                loadedCount = favoriteDetailProgressState.loadedCount,
-                expectedCount = favoriteDetailProgressState.expectedCount,
-                currentPage = favoriteDetailProgressState.currentPage,
-                lastAddedCount = favoriteDetailProgressState.lastAddedCount,
-                invalidCount = favoriteDetailProgressState.invalidCount,
-                hasMore = favoriteDetailProgressState.hasMore
-            )
-        } else {
-            null
-        }
-    }
-
     // 返回收藏页时直接从已选文件夹恢复，避免先创建第 1 页再跨多页补间加载。
     val pagerState = rememberPagerState(
         initialPage = selectedFolderIndex.coerceIn(0, foldersState.lastIndex.coerceAtLeast(0))
@@ -1215,17 +1190,6 @@ fun CommonListScreen(
                         gridState = primaryGridState
                     )
                 }
-            }
-
-            progressBadge?.let { badge ->
-                FavoriteProgressBadgeCapsule(
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .padding(end = AppSpacingTokens.Medium)
-                        .zIndex(2f),
-                    title = "进度",
-                    badge = badge
-                )
             }
 
             // 2. 顶层：悬浮顶栏 (使用 onGloballyPositioned 测量高度)
@@ -3041,55 +3005,6 @@ private fun Modifier.favoriteCollectionSharedBounds(
             boundsTransform = { _, _ -> commonListSharedBoundsMotionSpec() },
             clipInOverlayDuringTransition = OverlayClip(AppShapes.container(ContainerLevel.Card))
         )
-    }
-}
-
-@Composable
-private fun FavoriteProgressBadgeCapsule(
-    modifier: Modifier = Modifier,
-    title: String,
-    badge: FavoriteProgressBadge
-) {
-    val widthSpec = resolveFavoriteProgressBadgeWidthSpec()
-    AppSurface(
-        modifier = modifier.widthIn(min = widthSpec.minWidth, max = widthSpec.maxWidth),
-        shape = AppShapes.container(ContainerLevel.Floating),
-        color = AppSurfaceTokens.cardContainer().copy(alpha = 0.9f),
-        tonalElevation = AppSpacingTokens.ExtraSmall - AppSpacingTokens.Micro / 2,
-        shadowElevation = AppSpacingTokens.Small
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = AppSpacingTokens.Medium, vertical = AppSpacingTokens.Small + AppSpacingTokens.Micro),
-            verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Micro)
-        ) {
-            AppText(
-                text = title,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            AppText(
-                text = badge.primaryText,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            AppText(
-                text = badge.secondaryText,
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.primary
-            )
-            badge.footnoteText?.let { footnote ->
-                AppHorizontalDivider(
-                    modifier = Modifier.padding(vertical = AppSpacingTokens.Micro),
-                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f),
-                    thickness = AppSpacingTokens.Micro / 4
-                )
-                AppText(
-                    text = footnote,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
     }
 }
 
