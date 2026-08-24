@@ -15,6 +15,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import androidx.compose.ui.unit.IntSize
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.flow.filter
@@ -167,23 +168,21 @@ class DampedDragAnimation(
     fun snapTo(value: Float) {
         val next = value.coerceIn(valueRange)
         requestedValue = next
-        valueTrackingJob?.cancel()
-        valueTrackingJob = animationScope.launch { valueAnimation.snapTo(next) }
+        launchValueTracking { valueAnimation.snapTo(next) }
     }
 
     fun updateValue(value: Float) {
         val targetValue = value.coerceIn(valueRange)
         requestedValue = targetValue
-        valueTrackingJob?.cancel()
         if (trackingMode == DampedDragTrackingMode.DIRECT) {
-            valueTrackingJob = animationScope.launch {
+            launchValueTracking {
                 valueAnimation.snapTo(targetValue)
                 updateVelocity()
             }
             return
         }
-        valueTrackingJob = animationScope.launch {
-            launch { valueAnimation.animateTo(targetValue, valueAnimationSpec) { updateVelocity() } }
+        launchValueTracking {
+            valueAnimation.animateTo(targetValue, valueAnimationSpec) { updateVelocity() }
         }
     }
 
@@ -193,8 +192,7 @@ class DampedDragAnimation(
     ) {
         val targetValue = value.coerceIn(valueRange)
         requestedValue = targetValue
-        valueTrackingJob?.cancel()
-        valueTrackingJob = animationScope.launch {
+        launchValueTracking {
             mutatorMutex.mutate {
                 if (animatePress) press()
                 launch { valueAnimation.animateTo(targetValue, valueAnimationSpec) }
@@ -204,6 +202,20 @@ class DampedDragAnimation(
                 if (animatePress) release()
             }
         }
+    }
+
+    /**
+     * Installs the newest position mutation before the caller returns. Pointer updates can arrive
+     * faster than the dispatcher gets a chance to run a normally launched coroutine; cancelling a
+     * still-pending job on every event leaves [valueAnimation] frozen while [requestedValue] moves.
+     * Undispatched start closes that scheduling gap while cancellation still guarantees latest-wins.
+     */
+    private fun launchValueTracking(block: suspend CoroutineScope.() -> Unit) {
+        valueTrackingJob?.cancel()
+        valueTrackingJob = animationScope.launch(
+            start = CoroutineStart.UNDISPATCHED,
+            block = block,
+        )
     }
 
     private fun updateVelocity() {

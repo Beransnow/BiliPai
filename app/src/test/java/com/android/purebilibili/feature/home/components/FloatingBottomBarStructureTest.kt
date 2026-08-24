@@ -145,7 +145,14 @@ class FloatingBottomBarStructureTest {
         assertTrue(dragPort.contains("private var requestedValue = initialValue.coerceIn(valueRange)"))
         assertTrue(dragPort.contains("private var valueTrackingJob: Job? = null"))
         assertTrue(dragPort.contains("valueTrackingJob?.cancel()"))
-        assertTrue(dragPort.contains("valueTrackingJob = animationScope.launch { valueAnimation.snapTo(next) }"))
+        assertTrue(dragPort.contains("private fun launchValueTracking("))
+        assertTrue(dragPort.contains("start = CoroutineStart.UNDISPATCHED"))
+        assertTrue(dragPort.contains("launchValueTracking { valueAnimation.snapTo(next) }"))
+        assertFalse(
+            dragPort.contains(
+                "launch { valueAnimation.animateTo(targetValue, valueAnimationSpec) { updateVelocity() } }"
+            )
+        )
         assertTrue(dragPort.contains("val targetValue: Float get() = requestedValue"))
         assertTrue(dragPort.contains("requestedValue = targetValue"))
         assertTrue(dragPort.contains("trackingMode == DampedDragTrackingMode.DIRECT"))
