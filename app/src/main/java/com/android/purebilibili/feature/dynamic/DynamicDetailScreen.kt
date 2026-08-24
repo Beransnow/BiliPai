@@ -64,8 +64,6 @@ import com.android.purebilibili.feature.home.components.BottomBarMatchedReusable
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
-import top.yukonga.miuix.kmp.blur.layerBackdrop
-import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 
 private sealed interface DynamicDetailUiState {
     data object Loading : DynamicDetailUiState
@@ -113,7 +111,6 @@ fun DynamicDetailScreen(
     val homeSettings by SettingsManager.getHomeSettings(context)
         .collectAsStateWithLifecycle(initialValue = HomeSettings())
     val liquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled
-    val detailDockBackdrop = rememberLayerBackdrop()
     val gifImageLoader = context.imageLoader
     val likedDynamics by interactionViewModel.likedDynamics.collectAsStateWithLifecycle()
     val comments by interactionViewModel.comments.collectAsStateWithLifecycle()
@@ -314,7 +311,6 @@ fun DynamicDetailScreen(
                                     Modifier
                                 }
                             ),
-                        backdrop = detailDockBackdrop,
                         reuseEnabled = liquidGlassEnabled,
                         drawShellLens = true,
                     ) { liquidChromeActive ->
@@ -340,12 +336,7 @@ fun DynamicDetailScreen(
                     //  [新增] 大屏/横屏：左卡片 + 右评论（对齐 BiliPai 横屏分栏）
                     AppSplitLayout(
                         primaryRatio = 0.5f,
-                        modifier = Modifier
-                            .padding(paddingValues)
-                            .then(
-                                if (liquidGlassEnabled) Modifier.layerBackdrop(detailDockBackdrop)
-                                else Modifier
-                            ),
+                        modifier = Modifier.padding(paddingValues),
                         primaryContent = {
                             LazyColumn(
                                 state = detailListState,
@@ -378,10 +369,6 @@ fun DynamicDetailScreen(
                             .fillMaxSize()
                             .padding(paddingValues)
                             .responsiveContentWidth(maxWidth = resolveDynamicFeedMaxWidth())
-                            .then(
-                                if (liquidGlassEnabled) Modifier.layerBackdrop(detailDockBackdrop)
-                                else Modifier
-                            )
                     ) {
                         LazyColumn(
                             state = detailListState,

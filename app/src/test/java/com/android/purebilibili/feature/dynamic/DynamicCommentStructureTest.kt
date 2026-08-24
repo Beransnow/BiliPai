@@ -62,9 +62,9 @@ class DynamicCommentStructureTest {
             .substringAfter("val commentComposer:")
             .substringBefore("if (useSplitLayout)")
 
-        assertTrue(source.contains("rememberLayerBackdrop()"))
-        assertTrue(source.contains("Modifier.layerBackdrop(detailDockBackdrop)"))
+        assertTrue(!source.contains("detailDockBackdrop"))
         assertTrue(composer.contains("BottomBarMatchedReusableLiquidDock("))
+        assertTrue(!composer.contains("backdrop ="))
         assertTrue(composer.contains("reuseEnabled = liquidGlassEnabled"))
         assertTrue(composer.contains("drawShellLens = true"))
         assertTrue(composer.contains("if (liquidChromeActive) Modifier"))
