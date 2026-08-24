@@ -47,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RenderEffect as ComposeRenderEffect
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.asComposeRenderEffect
 import androidx.compose.ui.graphics.graphicsLayer
@@ -112,6 +113,22 @@ internal const val IMAGE_PREVIEW_COMMENT_PANEL_TAG = "image_preview_comment_pane
 internal const val IMAGE_PREVIEW_ORIGINAL_CHIP_TAG = "image_preview_original_chip"
 internal const val IMAGE_PREVIEW_PAGE_INDICATOR_TAG = "image_preview_page_indicator"
 private const val IMAGE_PREVIEW_SHARE_CACHE_MAX_AGE_MS = 24L * 60L * 60L * 1000L
+
+private class ImagePreviewBlurEffectCache {
+    private val effects = mutableMapOf<Int, ComposeRenderEffect>()
+
+    fun resolve(radiusPx: Float): ComposeRenderEffect? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S || radiusPx <= 0.01f) return null
+        val radiusKey = radiusPx.toInt().coerceAtLeast(1)
+        return effects.getOrPut(radiusKey) {
+            RenderEffect.createBlurEffect(
+                radiusKey.toFloat(),
+                radiusKey.toFloat(),
+                Shader.TileMode.CLAMP,
+            ).asComposeRenderEffect()
+        }
+    }
+}
 
 private data class ImagePreviewOverlayRequest(
     val token: Long,
@@ -271,6 +288,17 @@ private fun ImagePreviewOverlayContent(
     //  动画状态控制
     // 0f = 关闭/初始状态 (at sourceRect), 1f = 打开状态 (Fullscreen)
     val animateTrigger = remember { androidx.compose.animation.core.Animatable(0f) }
+    val blurEffectCache = remember { ImagePreviewBlurEffectCache() }
+    val backEventState = rememberNavigationEventState(NavigationEventInfo.None)
+    val predictiveBackGestureEnabled = LocalPredictiveBackGestureEnabled.current
+    val backProgress = if (predictiveBackGestureEnabled) {
+        (backEventState.transitionState as? NavigationEventTransitionState.InProgress)
+            ?.latestEvent
+            ?.progress
+            ?: 0f
+    } else {
+        0f
+    }
     var isDismissing by remember { mutableStateOf(false) }
     var currentImageDisplayRect by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
     var dismissImageDisplayRect by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
@@ -413,7 +441,11 @@ private fun ImagePreviewOverlayContent(
                 (AppSpacingTokens.Large + AppSpacingTokens.Micro).toPx()
             }
             
-            val rawProgress = animateTrigger.value
+            val rawProgress = if (!isDismissing && backProgress > 0f) {
+                1f - backProgress
+            } else {
+                animateTrigger.value
+            }
             val verticalDragFrame = resolveImagePreviewVerticalDragFrame(
                 dragOffsetYPx = verticalDismissOffsetYPx,
                 containerHeightPx = fullHeightPx
@@ -436,7 +468,7 @@ private fun ImagePreviewOverlayContent(
             )
             val visualFrame = resolveImagePreviewVisualFrame(
                 visualProgress = transitionFrame.visualProgress,
-                transitionEnabled = !isDismissing,
+                transitionEnabled = true,
                 maxBlurRadiusPx = maxBlurRadiusPx
             )
             val backdropAlpha = if (isDismissing) {
@@ -500,28 +532,13 @@ private fun ImagePreviewOverlayContent(
                 }
             }
 
-            val backEventState = rememberNavigationEventState(NavigationEventInfo.None)
-            val predictiveBackGestureEnabled = LocalPredictiveBackGestureEnabled.current
-            val backProgress =
-                if (predictiveBackGestureEnabled) {
-                    (backEventState.transitionState as? NavigationEventTransitionState.InProgress)
-                        ?.latestEvent
-                        ?.progress
-                        ?: 0f
-                } else {
-                    0f
-                }
-            LaunchedEffect(backProgress, isDismissing) {
-                if (!isDismissing && backProgress > 0f) {
-                    animateTrigger.snapTo(1f - backProgress)
-                }
-            }
             NavigationBackHandler(
                 state = backEventState,
                 isBackEnabled = !isDismissing,
                 onBackCancelled = {
                     scope.launch {
                         val dismissMotion = imagePreviewDismissMotion()
+                        animateTrigger.snapTo(rawProgress)
                         animateTrigger.animateTo(
                             targetValue = 1f,
                             animationSpec = emphasizedEnterTween(
@@ -531,7 +548,10 @@ private fun ImagePreviewOverlayContent(
                     }
                 },
                 onBackCompleted = {
-                    triggerDismiss()
+                    scope.launch {
+                        animateTrigger.snapTo(rawProgress)
+                        triggerDismiss()
+                    }
                 },
             )
             
@@ -579,7 +599,7 @@ private fun ImagePreviewOverlayContent(
                     .clip(RoundedCornerShape(presentedCornerRadiusDp.dp))
                     .graphicsLayer {
                         alpha = visualFrame.contentAlpha
-                        renderEffect = null
+                        renderEffect = blurEffectCache.resolve(visualFrame.blurRadiusPx)
                     }
             } else {
                 Modifier
@@ -588,17 +608,7 @@ private fun ImagePreviewOverlayContent(
                     .clip(RoundedCornerShape(presentedCornerRadiusDp.dp))
                     .graphicsLayer {
                         alpha = visualFrame.contentAlpha
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-                            visualFrame.blurRadiusPx > 0.01f
-                        ) {
-                            renderEffect = RenderEffect.createBlurEffect(
-                                visualFrame.blurRadiusPx,
-                                visualFrame.blurRadiusPx,
-                                Shader.TileMode.CLAMP
-                            ).asComposeRenderEffect()
-                        } else {
-                            renderEffect = null
-                        }
+                        renderEffect = blurEffectCache.resolve(visualFrame.blurRadiusPx)
                         if (!shouldUseRectAnim) {
                             scaleX = transitionFrame.fallbackScale
                             scaleY = transitionFrame.fallbackScale

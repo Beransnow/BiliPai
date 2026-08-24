@@ -1051,7 +1051,8 @@ internal fun ElegantVideoCard(
                             Brush.verticalGradient(
                                 colors = listOf(
                                     Color.Transparent,
-                                    MediaContrastPalette.Scrim.copy(alpha = 0.6f)
+                                    MediaContrastPalette.Scrim.copy(alpha = 0.3f),
+                                    MediaContrastPalette.Scrim.copy(alpha = 0.78f),
                                 )
                             )
                         )
