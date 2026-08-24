@@ -3205,7 +3205,6 @@ private fun BiliPaiFloatingBottomBar(
                             colors = floatingColors,
                             shellHeight = dockHeight,
                             indicatorHeight = BOTTOM_BAR_INDICATOR_DOCK_BAND_HEIGHT_DP.dp,
-                            selectionSettleMotionEnabled = true,
                             liquidGlassTuning = liquidGlassTuning
                         ) {
                             visibleItems.forEachIndexed { index, item ->
@@ -3233,7 +3232,8 @@ private fun BiliPaiFloatingBottomBar(
                                 )
                                 FloatingBottomBarItem(
                                     onClick = { handleBottomBarItemClick(index, item) },
-                                    selected = index == selectedIndexForBar
+                                    selected = index == selectedIndexForBar,
+                                    itemIndex = index,
                                 ) {
                                     FloatingBottomBarTabVisual(
                                         item = item,
@@ -3255,7 +3255,8 @@ private fun BiliPaiFloatingBottomBar(
                                 val sidebarLabel = stringResource(R.string.sidebar_toggle)
                                 FloatingBottomBarItem(
                                     onClick = ::handleBottomBarSidebarClick,
-                                    selected = false
+                                    selected = false,
+                                    itemIndex = visibleItems.size,
                                 ) {
                                     FloatingBottomBarTabVisual(
                                         item = null,
@@ -3439,47 +3440,58 @@ private fun ColumnScope.FloatingBottomBarTabVisual(
         localColor
     }
     val selectedAlpha = if (selected) 1f else 0f
+    val selectionScale = LocalFloatingBottomBarItemSelectionScale.current
 
     if (showIcon) {
-        if (skinIconPath != null) {
-            BottomBarReminderBadgeAnchor(
-                badgeText = reminderBadgeText,
-                floatingCompact = true
-            ) {
-                BottomBarSkinIcon(
-                    iconPath = skinIconPath,
+        Box(
+            modifier = Modifier.graphicsLayer {
+                val scale = selectionScale()
+                scaleX = scale
+                scaleY = scale
+                clip = false
+            },
+            contentAlignment = Alignment.Center,
+        ) {
+            if (skinIconPath != null) {
+                BottomBarReminderBadgeAnchor(
+                    badgeText = reminderBadgeText,
+                    floatingCompact = true
+                ) {
+                    BottomBarSkinIcon(
+                        iconPath = skinIconPath,
+                        contentDescription = label,
+                        selected = selected,
+                    )
+                }
+            } else if (item == null) {
+                AppIcon(
+                    imageVector = if (iconStyle == SharedFloatingBottomBarIconStyle.MIUIX) {
+                        resolveMiuixPreferredHomeNavigationIcon(tabId = "PARTITION")
+                    } else {
+                        Icons.AutoMirrored.Outlined.MenuOpen
+                    },
                     contentDescription = label,
-                    selected = selected,
+                    tint = contentColor
+                )
+            } else if (iconStyle == SharedFloatingBottomBarIconStyle.MIUIX) {
+                BottomBarBlendedMiuixIcon(
+                    item = item,
+                    unreadCount = dynamicUnreadCount,
+                    selectedAlpha = selectedAlpha,
+                    contentDescription = label,
+                    contentColor = contentColor,
+                    floatingCompactBadge = true
+                )
+            } else {
+                BottomBarBlendedMaterialIcon(
+                    item = item,
+                    unreadCount = dynamicUnreadCount,
+                    selectedAlpha = selectedAlpha,
+                    contentDescription = label,
+                    contentColor = contentColor,
+                    floatingCompactBadge = true
                 )
             }
-        } else if (item == null) {
-            AppIcon(
-                imageVector = if (iconStyle == SharedFloatingBottomBarIconStyle.MIUIX) {
-                    resolveMiuixPreferredHomeNavigationIcon(tabId = "PARTITION")
-                } else {
-                    Icons.AutoMirrored.Outlined.MenuOpen
-                },
-                contentDescription = label,
-                tint = contentColor
-            )
-        } else if (iconStyle == SharedFloatingBottomBarIconStyle.MIUIX) {
-            BottomBarBlendedMiuixIcon(
-                item = item,
-                unreadCount = dynamicUnreadCount,
-                selectedAlpha = selectedAlpha,
-                contentDescription = label,
-                contentColor = contentColor,
-                floatingCompactBadge = true
-            )
-        } else {
-            BottomBarBlendedMaterialIcon(
-                item = item,
-                unreadCount = dynamicUnreadCount,
-                selectedAlpha = selectedAlpha,
-                contentDescription = label,
-                contentColor = contentColor,
-                floatingCompactBadge = true
-            )
         }
     }
     if (showText) {

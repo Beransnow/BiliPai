@@ -43,7 +43,6 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
@@ -109,6 +108,10 @@ import top.yukonga.miuix.kmp.theme.LocalContentColor as MiuixLocalContentColor
 val LocalFloatingBottomBarContentColor = staticCompositionLocalOf { Color.Unspecified }
 
 val LocalFloatingBottomBarTabScale = staticCompositionLocalOf { { 1f } }
+
+internal val LocalFloatingBottomBarIndicatorPosition = staticCompositionLocalOf { { 0f } }
+
+internal val LocalFloatingBottomBarItemSelectionScale = staticCompositionLocalOf { { 1f } }
 
 /** 激活内容捕获层会为指示器提供每个槽位的选中态图标。 */
 internal val LocalFloatingBottomBarActiveContent = staticCompositionLocalOf { false }
@@ -286,10 +289,23 @@ fun RowScope.FloatingBottomBarItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     selected: Boolean = false,
+    itemIndex: Int? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val scale = LocalFloatingBottomBarTabScale.current
+    val indicatorPosition = LocalFloatingBottomBarIndicatorPosition.current
     val contentColor = LocalFloatingBottomBarContentColor.current
+    val selectionScale = remember(itemIndex, indicatorPosition) {
+        {
+            if (itemIndex == null) {
+                1f
+            } else {
+                val coverage = (1f - abs(itemIndex.toFloat() - indicatorPosition()))
+                    .coerceIn(0f, 1f)
+                lerp(1f, NavigationSelectionScale, coverage)
+            }
+        }
+    }
 
     // Do not clip(CircleShape): BiliPai reminder badges offset outside the icon and would be
     // cropped (BiliPai items are icon-only and can clip safely).
@@ -319,7 +335,8 @@ fun RowScope.FloatingBottomBarItem(
         val columnScope = this
         CompositionLocalProvider(
             MiuixLocalContentColor provides contentColor,
-            M3LocalContentColor provides contentColor
+            M3LocalContentColor provides contentColor,
+            LocalFloatingBottomBarItemSelectionScale provides selectionScale,
         ) {
             content(columnScope)
         }
@@ -342,7 +359,6 @@ fun FloatingBottomBar(
     isScrollInProgressProvider: () -> Boolean = { false },
     dragSelectionEnabled: Boolean = true,
     dragTrackingMode: DampedDragTrackingMode = DampedDragTrackingMode.SPRING,
-    selectionSettleMotionEnabled: Boolean = false,
     liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
     content: @Composable RowScope.() -> Unit
 ) {
@@ -545,37 +561,6 @@ fun FloatingBottomBar(
         ).also { holder.instance = it }
     }
 
-    var indicatorSettlePulseKey by remember { mutableIntStateOf(0) }
-    var indicatorSettleDirection by remember { mutableFloatStateOf(0f) }
-    LaunchedEffect(dampedDragAnimation, maxTabIndex) {
-        var lastSettledIndex = dampedDragAnimation.value.fastRoundToInt()
-        snapshotFlow {
-            Triple(
-                dampedDragAnimation.value,
-                dampedDragAnimation.targetValue,
-                dampedDragAnimation.isDragging,
-            )
-        }.collect { (value, target, dragging) ->
-            val settledIndex = target.fastRoundToInt().fastCoerceIn(0, maxTabIndex)
-            if (
-                selectionSettleMotionEnabled &&
-                !dragging &&
-                !isScrollInProgressLatest() &&
-                abs(value - target) <= 0.001f &&
-                abs(target - settledIndex.toFloat()) <= 0.001f &&
-                settledIndex != lastSettledIndex
-            ) {
-                indicatorSettleDirection = (settledIndex - lastSettledIndex).toFloat().sign
-                lastSettledIndex = settledIndex
-                indicatorSettlePulseKey += 1
-            }
-        }
-    }
-    val indicatorSettleTransform = rememberNavigationIndicatorSettleTransform(
-        pulseKey = indicatorSettlePulseKey,
-        direction = indicatorSettleDirection,
-    )
-
     LaunchedEffect(dampedDragAnimation, maxTabIndex) {
         snapshotFlow { selectedIndexLatest.value().coerceIn(0, maxTabIndex) }
             .collectLatest { index ->
@@ -672,7 +657,8 @@ fun FloatingBottomBar(
         contentAlignment = Alignment.CenterStart
     ) {
         CompositionLocalProvider(
-            LocalFloatingBottomBarContentColor provides resolvedContentColor
+            LocalFloatingBottomBarContentColor provides resolvedContentColor,
+            LocalFloatingBottomBarIndicatorPosition provides { dampedDragAnimation.value },
         ) {
             Row(
                 Modifier
@@ -782,7 +768,8 @@ fun FloatingBottomBar(
                     lerp(1f, tabPressScale, dampedDragAnimation.pressProgress)
                 },
                 LocalFloatingBottomBarContentColor provides colors.activeContentColor,
-                LocalFloatingBottomBarActiveContent provides true
+                LocalFloatingBottomBarActiveContent provides true,
+                LocalFloatingBottomBarIndicatorPosition provides { dampedDragAnimation.value },
             ) {
                 Row(
                     Modifier
@@ -843,10 +830,6 @@ fun FloatingBottomBar(
                             } else {
                                 -progressOffset + panelOffset
                             }
-                            translationX += indicatorSettleTransform.translationXDp().dp.toPx() *
-                                if (isLtr) 1f else -1f
-                            scaleX = indicatorSettleTransform.scaleX()
-                            scaleY = indicatorSettleTransform.scaleY()
                             clip = false
                         }
                         .then(interactiveHighlight?.gestureModifier ?: Modifier)
@@ -930,10 +913,6 @@ fun FloatingBottomBar(
                             } else {
                                 -progressOffset + panelOffset
                             }
-                            translationX += indicatorSettleTransform.translationXDp().dp.toPx() *
-                                if (isLtr) 1f else -1f
-                            scaleX = indicatorSettleTransform.scaleX()
-                            scaleY = indicatorSettleTransform.scaleY()
                             clip = false
                         }
                         .then(
@@ -951,7 +930,8 @@ fun FloatingBottomBar(
                 ) {
                     CompositionLocalProvider(
                         LocalFloatingBottomBarContentColor provides colors.activeContentColor,
-                        LocalFloatingBottomBarActiveContent provides true
+                        LocalFloatingBottomBarActiveContent provides true,
+                        LocalFloatingBottomBarIndicatorPosition provides { dampedDragAnimation.value },
                     ) {
                         Row(
                             Modifier

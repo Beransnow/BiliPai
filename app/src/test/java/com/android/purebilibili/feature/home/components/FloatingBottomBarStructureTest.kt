@@ -30,7 +30,6 @@ class FloatingBottomBarStructureTest {
         assertTrue(source.contains("shellHeight: Dp = FloatingBottomBarDefaultShellHeight"))
         assertTrue(source.contains("indicatorHeight: Dp = FloatingBottomBarIndicatorHeight"))
         assertTrue(source.contains("dragTrackingMode: DampedDragTrackingMode = DampedDragTrackingMode.SPRING"))
-        assertTrue(source.contains("selectionSettleMotionEnabled: Boolean = false"))
         assertTrue(source.contains("FloatingBottomBarDefaultShellHeight: Dp = 64.dp"))
         assertTrue(source.contains("FloatingBottomBarIndicatorHeight: Dp = 56.dp"))
         assertTrue(source.contains("FloatingBottomBarPressedScale: Float = 78f / 56f"))
@@ -206,25 +205,22 @@ class FloatingBottomBarStructureTest {
     }
 
     @Test
-    fun `home opt-in animates the indicator only after it settles`() {
+    fun `home icons scale continuously with indicator coverage without settle pulse`() {
         val source = loadFloatingBottomBarSource()
         val body = source.substringAfter("fun FloatingBottomBar(")
 
-        assertTrue(body.contains("var indicatorSettlePulseKey by remember { mutableIntStateOf(0) }"))
-        assertTrue(body.contains("rememberNavigationIndicatorSettleTransform("))
-        assertTrue(body.contains("direction = indicatorSettleDirection"))
-        assertTrue(body.contains("selectionSettleMotionEnabled &&"))
-        assertTrue(body.contains("abs(value - target) <= 0.001f"))
-        assertTrue(body.contains("!isScrollInProgressLatest()"))
-        assertTrue(body.contains("scaleX = indicatorSettleTransform.scaleX()"))
-        assertTrue(body.contains("scaleY = indicatorSettleTransform.scaleY()"))
-        assertTrue(body.contains("indicatorSettleTransform.translationXDp().dp.toPx()"))
-        assertFalse(body.contains("rotationZ = indicatorSettleTransform"))
+        assertTrue(source.contains("LocalFloatingBottomBarIndicatorPosition"))
+        assertTrue(source.contains("LocalFloatingBottomBarItemSelectionScale"))
+        assertTrue(source.contains("itemIndex: Int? = null"))
+        assertTrue(source.contains("lerp(1f, NavigationSelectionScale, coverage)"))
+        assertFalse(body.contains("indicatorSettlePulseKey"))
+        assertFalse(body.contains("rememberNavigationIndicatorSettleTransform("))
 
         val bottomBar = loadSource(
             "app/src/main/java/com/android/purebilibili/feature/home/components/BottomBar.kt"
         )
-        assertTrue(bottomBar.contains("selectionSettleMotionEnabled = true"))
+        assertTrue(bottomBar.contains("itemIndex = index"))
+        assertTrue(bottomBar.contains("LocalFloatingBottomBarItemSelectionScale.current"))
     }
 
     @Test
