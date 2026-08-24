@@ -1522,6 +1522,8 @@ object SettingsManager {
     private val KEY_LAST_AUTO_CACHE_CLEAR_AT = longPreferencesKey("last_auto_cache_clear_at")
     private val KEY_COMMENT_MEMBER_DECORATIONS_ENABLED =
         booleanPreferencesKey("comment_member_decorations_enabled")
+    private val KEY_SUB_REPLY_LOADED_COUNT_ENABLED =
+        booleanPreferencesKey("sub_reply_loaded_count_enabled")
     private val KEY_IMAGE_PREVIEW_LONG_PRESS_SAVE_ENABLED =
         booleanPreferencesKey("image_preview_long_press_save_enabled")
     private val KEY_IMAGE_PREVIEW_3D_PAGE_ENABLED =
@@ -5519,6 +5521,16 @@ object SettingsManager {
     suspend fun setCommentMemberDecorationsEnabled(context: Context, enabled: Boolean) {
         context.settingsDataStore.edit { preferences ->
             preferences[KEY_COMMENT_MEMBER_DECORATIONS_ENABLED] = enabled
+        }
+    }
+
+    fun getSubReplyLoadedCountEnabled(context: Context): Flow<Boolean> =
+        context.settingsDataStore.data
+            .map { preferences -> preferences[KEY_SUB_REPLY_LOADED_COUNT_ENABLED] ?: false }
+
+    suspend fun setSubReplyLoadedCountEnabled(context: Context, enabled: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_SUB_REPLY_LOADED_COUNT_ENABLED] = enabled
         }
     }
 

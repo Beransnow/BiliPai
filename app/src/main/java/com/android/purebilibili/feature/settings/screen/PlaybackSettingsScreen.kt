@@ -1139,6 +1139,9 @@ private fun PlaybackInteractionSettingsSection(
     val commentMemberDecorationsEnabled by com.android.purebilibili.core.store.SettingsManager
         .getCommentMemberDecorationsEnabled(context)
         .collectAsStateWithLifecycle(initialValue = false)
+    val subReplyLoadedCountEnabled by com.android.purebilibili.core.store.SettingsManager
+        .getSubReplyLoadedCountEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = false)
     val imagePreviewLongPressSaveEnabled by com.android.purebilibili.core.store.SettingsManager
         .getImagePreviewLongPressSaveEnabled(context)
         .collectAsStateWithLifecycle(initialValue = true)
@@ -1414,6 +1417,20 @@ private fun PlaybackInteractionSettingsSection(
                         .setCommentCollapsedReplyPreviewLimit(context, limit)
                 }
             }
+        )
+        AppPreferenceDivider()
+        AppSwitchPreference(
+            icon = rememberSettingsSemanticIcon(SettingsIconRole.INTERACTION_COMMENT),
+            title = "楼中楼已加载数量",
+            subtitle = "在回复总数后显示当前已加载的条数",
+            checked = subReplyLoadedCountEnabled,
+            onCheckedChange = { enabled ->
+                scope.launch {
+                    com.android.purebilibili.core.store.SettingsManager
+                        .setSubReplyLoadedCountEnabled(context, enabled)
+                }
+            },
+            iconTint = com.android.purebilibili.core.theme.iOSBlue
         )
         AppPreferenceDivider()
 	        AppSwitchPreference(

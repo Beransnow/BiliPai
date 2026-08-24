@@ -55,6 +55,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -206,15 +207,37 @@ internal fun resolveSubReplyDetailRevealSpec(
 
 internal fun resolveSubReplyDetailSectionTitle(
     replyCount: Int,
-    loadedReplyCount: Int = replyCount
+    loadedReplyCount: Int = replyCount,
+    showLoadedReplyCount: Boolean = false,
 ): String {
     val total = replyCount.coerceAtLeast(0)
     val loaded = loadedReplyCount.coerceAtLeast(0)
-    return if (total > loaded) {
+    return if (showLoadedReplyCount && total > loaded) {
         "相关回复共${total}条（已加载${loaded}条）"
     } else {
         "相关回复共${total}条"
     }
+}
+
+internal enum class SubReplySortMode(val label: String) {
+    TIME("按时间"),
+    HOT("按热度");
+
+    fun toggled(): SubReplySortMode = if (this == TIME) HOT else TIME
+}
+
+internal fun sortSubReplies(
+    replies: List<ReplyItem>,
+    mode: SubReplySortMode,
+): List<ReplyItem> = when (mode) {
+    SubReplySortMode.TIME -> replies.sortedWith(
+        compareByDescending<ReplyItem> { it.ctime }.thenByDescending { it.rpid }
+    )
+    SubReplySortMode.HOT -> replies.sortedWith(
+        compareByDescending<ReplyItem> { it.like }
+            .thenByDescending { it.ctime }
+            .thenByDescending { it.rpid }
+    )
 }
 
 internal fun resolveLazyListCanScrollForward(
@@ -502,6 +525,11 @@ internal fun SubReplyDetailContent(
         resolveSubReplyDetailLayoutPolicy(showRootCommentEntry = false)
     }
     val appearance = rememberVideoCommentAppearance()
+    val context = LocalContext.current
+    val showLoadedReplyCount by com.android.purebilibili.core.store.SettingsManager
+        .getSubReplyLoadedCountEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = false)
+    var sortMode by remember(rootReply.rpid) { mutableStateOf(SubReplySortMode.TIME) }
     val unusedShowUpFlag = showUpFlag
     val listState = rememberLazyListState()
     var highlightedTargetId by remember(rootReply.rpid) { mutableLongStateOf(0L) }
@@ -510,10 +538,14 @@ internal fun SubReplyDetailContent(
     var savedListScroll by remember(rootReply.rpid) {
         mutableStateOf<SubReplyDetailSavedScrollPosition?>(null)
     }
-    val visibleReplies = remember(subReplies, conversationAnchor, isConversationMode) {
+    val visibleReplies = remember(subReplies, conversationAnchor, isConversationMode, sortMode) {
         val anchor = conversationAnchor
         if (anchor == null || isConversationMode) {
-            subReplies
+            if (anchor == null && !isConversationMode) {
+                sortSubReplies(subReplies, sortMode)
+            } else {
+                subReplies
+            }
         } else {
             resolveSubReplyConversationItems(
                 anchorReply = anchor,
@@ -771,7 +803,8 @@ internal fun SubReplyDetailContent(
                                 } else {
                                     resolveSubReplyDetailSectionTitle(
                                         replyCount = detailReplyDisplayCount,
-                                        loadedReplyCount = visibleReplies.size
+                                        loadedReplyCount = visibleReplies.size,
+                                        showLoadedReplyCount = showLoadedReplyCount,
                                     )
                                 },
                                 fontSize = 14.sp,
@@ -797,18 +830,22 @@ internal fun SubReplyDetailContent(
                                 )
                             } else {
                                 Row(
-                                    modifier = Modifier.testTag(SUB_REPLY_DETAIL_SORT_TAG),
+                                    modifier = Modifier
+                                        .testTag(SUB_REPLY_DETAIL_SORT_TAG)
+                                        .clickable { sortMode = sortMode.toggled() }
+                                        .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
+                                        .padding(horizontal = 6.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
                                     AppIcon(
                                         imageVector = Icons.AutoMirrored.Outlined.Sort,
-                                        contentDescription = "Sort",
+                                        contentDescription = "切换楼中楼排序",
                                         tint = appearance.sortTint,
                                         modifier = Modifier.size(16.dp)
                                     )
                                     AppText(
-                                        text = "按时间",
+                                        text = sortMode.label,
                                         fontSize = 14.sp,
                                         color = appearance.sortTint,
                                         fontWeight = FontWeight.Medium
