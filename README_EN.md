@@ -454,7 +454,7 @@ See full changelog: [CHANGELOG.md](CHANGELOG.md)
 
 ### Current source build (v0.2.3-beta.12 · 2026-08-25)
 
-- Current source build: `0.2.3-beta.12` / `versionCode 302`.
+- Current source build: `0.2.3-beta.12` / `versionCode 303`.
 - Phone, tablet, foldable, desktop, and TV layouts are expanded, with unified Material 3/Miuix native component rendering.
 - Video details gain gesture-following shared transitions with an option to use the default transition; navigation and liquid-glass indicators are refined.
 - Dynamic publishing and comments, bangumi media/playback support, skin catalog search, and large-screen content layouts are completed further.

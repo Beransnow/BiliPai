@@ -2,12 +2,13 @@
 //  [重构] 简化版 VideoPlaybackViewModel - 使用 UseCase 层
 package com.android.purebilibili.feature.video.viewmodel
 
+import android.app.Application
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.annotation.SuppressLint
 import com.android.purebilibili.feature.video.usecase.*
 
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.C
 import androidx.media3.common.PlaybackException
@@ -1318,7 +1319,7 @@ internal fun shouldReplacePlaybackSourceForQualityChange(
 }
 
 // ========== ViewModel ==========
-class VideoPlaybackViewModel : ViewModel() {
+class VideoPlaybackViewModel(application: Application) : AndroidViewModel(application) {
     // UseCases
     private val playbackUseCase = VideoPlaybackUseCase()
     private val playbackLoader = PlaybackLoader.from(playbackUseCase)
@@ -1327,7 +1328,7 @@ class VideoPlaybackViewModel : ViewModel() {
     private val interactionUseCase = VideoInteractionUseCase()
     private val qualityManager = QualityManager()
     private val playbackCdnPreference = SettingsManager
-        .getPlaybackCdnPreference(PluginManager.getContext())
+        .getPlaybackCdnPreference(application.applicationContext)
         .map { PlaybackCdnPreference.fromStorageValue(it) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, PlaybackCdnPreference.BASE_URL)
 

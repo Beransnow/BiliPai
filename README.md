@@ -210,7 +210,7 @@ cd BiliPai
 
 ## 最近更新
 
-当前构建为 `0.2.3-beta.12 / versionCode 302`；最新完整发布记录为 `v0.2.3-beta.12`。源码与变更以 GitHub 和 [CHANGELOG.md](CHANGELOG.md) 为准；安装包与公告见 [Telegram 频道](https://t.me/bilipai666) / [交流群](https://t.me/bilipai888/1)：
+当前构建为 `0.2.3-beta.12 / versionCode 303`；最新完整发布记录为 `v0.2.3-beta.12`。源码与变更以 GitHub 和 [CHANGELOG.md](CHANGELOG.md) 为准；安装包与公告见 [Telegram 频道](https://t.me/bilipai666) / [交流群](https://t.me/bilipai888/1)：
 
 - 完成手机、平板、折叠屏、桌面与电视多级适配，并统一 Material 3/Miuix 原生控件渲染。
 - 视频详情新增手势跟随共享转场，可关闭相关推荐转场并恢复默认效果；导航与液态玻璃指示器同步完善。
