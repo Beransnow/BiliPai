@@ -450,7 +450,7 @@ private fun DynamicCommentSortControl(
         height = spec.heightDp.dp,
         indicatorHeight = spec.indicatorHeightDp.dp,
         labelFontSize = 13.sp,
-        modifier = modifier,
+        modifier = modifier.width((spec.itemWidthDp * items.size).dp),
         backdrop = miuixBackdrop,
     )
 }
