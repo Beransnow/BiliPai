@@ -977,6 +977,7 @@ fun FloatingBottomBar(
                         LocalFloatingBottomBarContentColor provides colors.activeContentColor,
                         LocalFloatingBottomBarActiveContent provides true,
                         LocalFloatingBottomBarIndicatorPosition provides { dampedDragAnimation.value },
+                        LocalFloatingBottomBarItemAlignmentOffset provides itemAlignmentOffsetProvider,
                     ) {
                         Row(
                             Modifier

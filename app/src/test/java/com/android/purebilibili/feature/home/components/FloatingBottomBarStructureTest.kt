@@ -235,9 +235,18 @@ class FloatingBottomBarStructureTest {
         val alignmentProvider = source
             .substringAfter("val itemAlignmentOffsetProvider")
             .substringBefore("LaunchedEffect(dampedDragAnimation, maxTabIndex)")
+        val nonLiquidIndicator = source
+            .substringAfter("if (isLiquidGlassMode && combinedBackdrop != null)")
+            .substringBefore("// The selected capsule can be wider than its tab")
+            .substringAfterLast("} else {")
 
         assertTrue(alignmentProvider.contains("resolveFloatingDockIndicatorContentAlignmentPx("))
         assertFalse(alignmentProvider.contains("!isLiquidGlassMode"))
+        assertTrue(
+            nonLiquidIndicator.contains(
+                "LocalFloatingBottomBarItemAlignmentOffset provides itemAlignmentOffsetProvider"
+            )
+        )
     }
 
     @Test
