@@ -964,7 +964,14 @@ object CommentRepository {
     /**
      * [新增] 删除评论
      */
-    suspend fun deleteComment(aid: Long, rpid: Long): Result<Unit> = withContext(Dispatchers.IO) {
+    suspend fun deleteComment(aid: Long, rpid: Long): Result<Unit> =
+        deleteCommentForSubject(oid = aid, type = 1, rpid = rpid)
+
+    suspend fun deleteCommentForSubject(
+        oid: Long,
+        type: Int,
+        rpid: Long,
+    ): Result<Unit> = withContext(Dispatchers.IO) {
         try {
             val csrf = com.android.purebilibili.core.store.TokenManager.csrfCache
             if (csrf.isNullOrEmpty()) {
@@ -972,8 +979,8 @@ object CommentRepository {
             }
             
             val response = api.deleteReply(
-                oid = aid,
-                type = 1,
+                oid = oid,
+                type = type,
                 rpid = rpid,
                 csrf = csrf
             )
@@ -997,6 +1004,18 @@ object CommentRepository {
         aid: Long,
         rpid: Long,
         isCurrentlyTop: Boolean
+    ): Result<Unit> = setCommentTopForSubject(
+        oid = aid,
+        type = 1,
+        rpid = rpid,
+        isCurrentlyTop = isCurrentlyTop,
+    )
+
+    suspend fun setCommentTopForSubject(
+        oid: Long,
+        type: Int,
+        rpid: Long,
+        isCurrentlyTop: Boolean,
     ): Result<Unit> = withContext(Dispatchers.IO) {
         try {
             val csrf = com.android.purebilibili.core.store.TokenManager.csrfCache
@@ -1005,8 +1024,8 @@ object CommentRepository {
             }
 
             val response = api.setReplyTop(
-                oid = aid,
-                type = 1,
+                oid = oid,
+                type = type,
                 rpid = rpid,
                 action = resolveReplyTopActionField(isCurrentlyTop),
                 csrf = csrf
@@ -1030,7 +1049,16 @@ object CommentRepository {
      * [新增] 举报评论
      * @param reason 举报原因: 0=其他, 1=垃圾广告, 2=色情, 3=刷屏, 4=引战, 5=剧透, 6=政治, 7=人身攻击
      */
-    suspend fun reportComment(aid: Long, rpid: Long, reason: Int, content: String = ""): Result<Unit> = withContext(Dispatchers.IO) {
+    suspend fun reportComment(aid: Long, rpid: Long, reason: Int, content: String = ""): Result<Unit> =
+        reportCommentForSubject(oid = aid, type = 1, rpid = rpid, reason = reason, content = content)
+
+    suspend fun reportCommentForSubject(
+        oid: Long,
+        type: Int,
+        rpid: Long,
+        reason: Int,
+        content: String = "",
+    ): Result<Unit> = withContext(Dispatchers.IO) {
         try {
             val csrf = com.android.purebilibili.core.store.TokenManager.csrfCache
             if (csrf.isNullOrEmpty()) {
@@ -1038,8 +1066,8 @@ object CommentRepository {
             }
             
             val response = api.reportReply(
-                oid = aid,
-                type = 1,
+                oid = oid,
+                type = type,
                 rpid = rpid,
                 reason = reason,
                 content = content,

@@ -260,6 +260,23 @@ fun DynamicDetailScreen(
                         onViewReplies = { reply -> interactionViewModel.openSubReply(reply) },
                         onReply = { reply -> interactionViewModel.startCommentReply(reply) },
                         onLike = { reply -> interactionViewModel.likeComment(reply.rpid) },
+                        dynamicAuthorMid = state.item.modules.module_author?.mid ?: 0L,
+                        currentUserMid = com.android.purebilibili.core.store.TokenManager.midCache,
+                        onDelete = { reply ->
+                            interactionViewModel.deleteDynamicComment(reply.rpid) { _, message ->
+                                android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        onToggleTop = { reply ->
+                            interactionViewModel.toggleDynamicCommentTop(reply) { _, message ->
+                                android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        onReport = { reply, reason ->
+                            interactionViewModel.reportDynamicComment(reply.rpid, reason) { _, message ->
+                                android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        },
                         onUserClick = onUserClick,
                         onImagePreview = { images, index, sourceRect, textContent ->
                             previewImages = images
@@ -344,6 +361,16 @@ fun DynamicDetailScreen(
                     onUserClick = onUserClick,
                     onReplyClick = { reply -> interactionViewModel.startCommentReply(reply) },
                     onCommentLike = { rpid -> interactionViewModel.likeComment(rpid) },
+                    currentMid = com.android.purebilibili.core.store.TokenManager.midCache ?: 0L,
+                    onDeleteComment = { rpid ->
+                        interactionViewModel.deleteDynamicComment(rpid) { _, message ->
+                            android.widget.Toast.makeText(
+                                context,
+                                message,
+                                android.widget.Toast.LENGTH_SHORT,
+                            ).show()
+                        }
+                    },
                 )
 
                 if (showImagePreview && previewImages.isNotEmpty()) {

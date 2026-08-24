@@ -19,6 +19,8 @@ fun DynamicSubReplyPreviewHost(
     onUserClick: (Long) -> Unit,
     onReplyClick: ((ReplyItem) -> Unit)? = null,
     onCommentLike: ((Long) -> Unit)? = null,
+    currentMid: Long = 0L,
+    onDeleteComment: ((Long) -> Unit)? = null,
 ) {
     var showImagePreview by remember { mutableStateOf(false) }
     var previewImages by remember { mutableStateOf<List<String>>(emptyList()) }
@@ -47,6 +49,8 @@ fun DynamicSubReplyPreviewHost(
         onAvatarClick = { mid -> mid.toLongOrNull()?.let(onUserClick) },
         onReplyClick = onReplyClick,
         onCommentLike = onCommentLike,
+        currentMid = currentMid,
+        onDeleteComment = onDeleteComment,
         onImagePreview = { images, index, rect, textContent ->
             previewImages = images
             previewInitialIndex = index

@@ -1522,6 +1522,98 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
             }
         }
     }
+
+    fun deleteDynamicComment(rpid: Long, onResult: (Boolean, String) -> Unit) {
+        val target = _selectedCommentTarget.value
+        if (target == null || rpid <= 0L) {
+            onResult(false, "无法确定评论参数")
+            return
+        }
+        viewModelScope.launch {
+            CommentRepository.deleteCommentForSubject(
+                oid = target.oid,
+                type = target.type,
+                rpid = rpid,
+            ).fold(
+                onSuccess = {
+                    _comments.value = removeDynamicCommentFromList(_comments.value, rpid)
+                    val subState = _subReplyState.value
+                    _subReplyState.value = if (subState.rootReply?.rpid == rpid) {
+                        SubReplyUiState()
+                    } else {
+                        subState.copy(
+                            items = subState.items.filterNot { it.rpid == rpid }.toImmutableList(),
+                            totalCount = (subState.totalCount - 1).coerceAtLeast(0),
+                        )
+                    }
+                    _commentTotalCount.value = (_commentTotalCount.value - 1).coerceAtLeast(0)
+                    onResult(true, "评论已删除")
+                },
+                onFailure = { onResult(false, it.message ?: "删除失败") },
+            )
+        }
+    }
+
+    fun toggleDynamicCommentTop(
+        reply: com.android.purebilibili.data.model.response.ReplyItem,
+        onResult: (Boolean, String) -> Unit,
+    ) {
+        val target = _selectedCommentTarget.value
+        if (target == null || reply.rpid <= 0L) {
+            onResult(false, "无法确定评论参数")
+            return
+        }
+        viewModelScope.launch {
+            CommentRepository.setCommentTopForSubject(
+                oid = target.oid,
+                type = target.type,
+                rpid = reply.rpid,
+                isCurrentlyTop = reply.replyControl?.isUpTop == true,
+            ).fold(
+                onSuccess = {
+                    _selectedDynamic.value?.id_str?.takeIf(String::isNotBlank)?.let(::loadComments)
+                    onResult(true, if (reply.replyControl?.isUpTop == true) "已取消置顶" else "已置顶")
+                },
+                onFailure = { onResult(false, it.message ?: "置顶操作失败") },
+            )
+        }
+    }
+
+    fun reportDynamicComment(
+        rpid: Long,
+        reason: Int,
+        onResult: (Boolean, String) -> Unit,
+    ) {
+        val target = _selectedCommentTarget.value
+        if (target == null || rpid <= 0L) {
+            onResult(false, "无法确定评论参数")
+            return
+        }
+        viewModelScope.launch {
+            CommentRepository.reportCommentForSubject(
+                oid = target.oid,
+                type = target.type,
+                rpid = rpid,
+                reason = reason,
+            ).fold(
+                onSuccess = { onResult(true, "举报成功") },
+                onFailure = { onResult(false, it.message ?: "举报失败") },
+            )
+        }
+    }
+
+    private fun removeDynamicCommentFromList(
+        comments: List<com.android.purebilibili.data.model.response.ReplyItem>,
+        rpid: Long,
+    ): List<com.android.purebilibili.data.model.response.ReplyItem> = comments.mapNotNull { reply ->
+        if (reply.rpid == rpid) {
+            null
+        } else {
+            reply.copy(
+                replies = reply.replies?.filterNot { child -> child.rpid == rpid },
+            )
+        }
+    }
     
     /**
      *  点赞动态

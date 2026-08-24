@@ -1091,6 +1091,13 @@ interface BilibiliApi {
         @Query("keyword") keyword: String? = null
     ): MentionSearchResponse
 
+    @GET("x/topic/pub/search")
+    suspend fun searchDynamicPublishTopics(
+        @Query("keywords") keywords: String? = null,
+        @Query("page_size") pageSize: Int = 20,
+        @Query("page_num") pageNum: Int = 1,
+    ): com.android.purebilibili.data.model.response.DynamicTopicSearchResponse
+
     // [新增] 发送评论
     @retrofit2.http.FormUrlEncoded
     @retrofit2.http.POST("x/v2/reply/add")

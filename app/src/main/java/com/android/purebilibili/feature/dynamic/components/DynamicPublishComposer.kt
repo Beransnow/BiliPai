@@ -51,6 +51,8 @@ import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import com.android.purebilibili.data.model.response.DynamicCreatedReserve
 import com.android.purebilibili.data.model.response.DynamicCreatedVote
 import com.android.purebilibili.data.model.response.DynamicPublishDraft
+import com.android.purebilibili.data.model.response.DynamicPublishMention
+import com.android.purebilibili.data.model.response.DynamicPublishTopic
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
@@ -71,9 +73,15 @@ fun DynamicPublishComposer(
     var imageUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
     var vote by remember { mutableStateOf<DynamicCreatedVote?>(null) }
     var reserve by remember { mutableStateOf<DynamicCreatedReserve?>(null) }
+    var mentions by remember { mutableStateOf<List<DynamicPublishMention>>(emptyList()) }
+    var emotes by remember { mutableStateOf<List<String>>(emptyList()) }
+    var topic by remember { mutableStateOf<DynamicPublishTopic?>(null) }
     var privatePublish by remember { mutableStateOf(false) }
     var showVoteDialog by remember { mutableStateOf(false) }
     var showReserveDialog by remember { mutableStateOf(false) }
+    var showMentionDialog by remember { mutableStateOf(false) }
+    var showTopicDialog by remember { mutableStateOf(false) }
+    var showEmoteDialog by remember { mutableStateOf(false) }
     val picker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickMultipleVisualMedia(maxItems = 9)
     ) { uris ->
@@ -150,10 +158,10 @@ fun DynamicPublishComposer(
                         shape = AppShapes.container(ContainerLevel.Pill),
                         modifier = Modifier.fillMaxWidth(),
                         backdrop = publishChromeBackdrop,
-                        reuseEnabled = true,
+                        reuseEnabled = liquidGlassEnabled,
                         drawShellLens = true,
                     ) { liquidChromeActive ->
-                        Row(
+                        LazyRow(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(
@@ -161,18 +169,35 @@ fun DynamicPublishComposer(
                                 ),
                             horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
                         ) {
-                            AppTextButton(
-                                onClick = {
-                                    picker.launch(
-                                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                    )
+                            item {
+                                AppTextButton(onClick = { showTopicDialog = true }) {
+                                    AppText(topic?.name?.let { "#$it#" } ?: "话题")
                                 }
-                            ) { AppText(if (imageUris.isEmpty()) "图片" else "图片 ${imageUris.size}/9") }
-                            AppTextButton(onClick = { showVoteDialog = true }) {
-                                AppText(vote?.title?.let { "投票：$it" } ?: "投票")
                             }
-                            AppTextButton(onClick = { showReserveDialog = true }) {
-                                AppText(reserve?.title?.let { "预约：$it" } ?: "预约")
+                            item {
+                                AppTextButton(onClick = { showMentionDialog = true }) { AppText("@用户") }
+                            }
+                            item {
+                                AppTextButton(onClick = { showEmoteDialog = true }) { AppText("表情") }
+                            }
+                            item {
+                                AppTextButton(
+                                    onClick = {
+                                        picker.launch(
+                                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                        )
+                                    }
+                                ) { AppText(if (imageUris.isEmpty()) "图片" else "图片 ${imageUris.size}/9") }
+                            }
+                            item {
+                                AppTextButton(onClick = { showVoteDialog = true }) {
+                                    AppText(vote?.title?.let { "投票：$it" } ?: "投票")
+                                }
+                            }
+                            item {
+                                AppTextButton(onClick = { showReserveDialog = true }) {
+                                    AppText(reserve?.title?.let { "预约：$it" } ?: "预约")
+                                }
                             }
                         }
                     }
@@ -214,7 +239,10 @@ fun DynamicPublishComposer(
                             voteId = vote?.voteId ?: 0L,
                             voteTitle = vote?.title.orEmpty(),
                             reserveId = reserve?.reserveId ?: 0L,
-                            private = privatePublish
+                            private = privatePublish,
+                            mentions = mentions,
+                            emotes = emotes,
+                            topic = topic,
                         )
                     )
                 }
@@ -250,5 +278,43 @@ fun DynamicPublishComposer(
                 showReserveDialog = false
             }
         )
+    }
+    if (showMentionDialog) {
+        DynamicMentionPickerDialog(
+            onDismiss = { showMentionDialog = false },
+            onSelected = { mention ->
+                mentions = (mentions + mention).distinctBy { it.uid }
+                text = appendDynamicComposerToken(text, "@${mention.name} ")
+                showMentionDialog = false
+            },
+        )
+    }
+    if (showTopicDialog) {
+        DynamicTopicPickerDialog(
+            onDismiss = { showTopicDialog = false },
+            onSelected = { selectedTopic ->
+                topic = selectedTopic
+                showTopicDialog = false
+            },
+        )
+    }
+    if (showEmoteDialog) {
+        DynamicEmotePickerDialog(
+            onDismiss = { showEmoteDialog = false },
+            onSelected = { emote ->
+                emotes = (emotes + emote).distinct()
+                text = appendDynamicComposerToken(text, emote)
+                showEmoteDialog = false
+            },
+        )
+    }
+}
+
+internal fun appendDynamicComposerToken(text: String, token: String): String {
+    if (token.isBlank()) return text
+    return when {
+        text.isBlank() -> token
+        text.last().isWhitespace() || token.first().isWhitespace() -> text + token
+        else -> "$text $token"
     }
 }

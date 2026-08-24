@@ -36,7 +36,9 @@ fun DynamicCreateVoteDialog(
     var optionOne by remember { mutableStateOf("") }
     var optionTwo by remember { mutableStateOf("") }
     var optionThree by remember { mutableStateOf("") }
+    var optionFour by remember { mutableStateOf("") }
     var choiceCount by remember { mutableIntStateOf(1) }
+    var durationDays by remember { mutableIntStateOf(1) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var submitting by remember { mutableStateOf(false) }
 
@@ -46,6 +48,7 @@ fun DynamicCreateVoteDialog(
         text = {
             val voteChromeBackdrop = rememberLayerBackdrop()
             val choiceLabels = remember { listOf("单选", "多选") }
+            val durationLabels = remember { listOf("1 天", "3 天", "7 天") }
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -57,10 +60,22 @@ fun DynamicCreateVoteDialog(
                 AppTextField(value = optionOne, onValueChange = { optionOne = it }, placeholder = "选项 1", singleLine = true)
                 AppTextField(value = optionTwo, onValueChange = { optionTwo = it }, placeholder = "选项 2", singleLine = true)
                 AppTextField(value = optionThree, onValueChange = { optionThree = it }, placeholder = "选项 3（可选）", singleLine = true)
+                AppTextField(value = optionFour, onValueChange = { optionFour = it }, placeholder = "选项 4（可选）", singleLine = true)
                 DynamicAdaptiveSegmentedControl(
                     items = choiceLabels,
                     selectedIndex = if (choiceCount == 1) 0 else 1,
                     onSelected = { index -> choiceCount = if (index == 0) 1 else 2 },
+                    itemWidth = 66.dp,
+                    height = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
+                    indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
+                    labelFontSize = 13.sp,
+                    backdrop = voteChromeBackdrop,
+                )
+                AppText("有效期")
+                DynamicAdaptiveSegmentedControl(
+                    items = durationLabels,
+                    selectedIndex = when (durationDays) { 3 -> 1; 7 -> 2; else -> 0 },
+                    onSelected = { index -> durationDays = listOf(1, 3, 7).getOrElse(index) { 1 } },
                     itemWidth = 66.dp,
                     height = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
                     indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
@@ -79,10 +94,10 @@ fun DynamicCreateVoteDialog(
                     scope.launch {
                         DynamicCreateRepository.createVote(
                             title = title,
-                            options = listOf(optionOne, optionTwo, optionThree),
+                            options = listOf(optionOne, optionTwo, optionThree, optionFour),
                             description = description,
                             choiceCount = choiceCount,
-                            durationSeconds = 24 * 60 * 60
+                            durationSeconds = durationDays * 24 * 60 * 60
                         ).fold(
                             onSuccess = { created ->
                                 submitting = false
