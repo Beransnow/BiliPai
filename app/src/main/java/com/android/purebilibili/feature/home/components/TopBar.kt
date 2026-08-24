@@ -615,8 +615,6 @@ internal fun resolveMd3TopTabIndicatorBottomPadding(): Dp = AppSpacingTokens.Sma
 
 internal fun resolveIconOnlyTopTabIndicatorWidth(): Dp = AppSpacingTokens.Small + AppSpacingTokens.Micro
 
-internal fun resolveIconOnlyTopTabIndicatorSideGap(): Dp = AppSpacingTokens.Micro
-
 internal fun resolveHomeSkinTopTabActionButtonSize(): Dp = AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Medium
 
 internal fun resolveHomeSkinTopTabActionIconSize(): Dp = AppSpacingTokens.ExtraLarge
@@ -1866,8 +1864,7 @@ private fun LightweightHomeTopTabs(
                 }
                 } // stable export + visible content with indicator-only motion
 
-                // 非玻璃 MD3 与皮肤顶栏使用单层短指示线；仅图标模式放在图标右侧，
-                // 图文/纯文字模式仍放在文字底部。
+                // 非玻璃 MD3 与皮肤顶栏使用单层短指示线，始终位于内容底部居中。
                 if (shouldUseMd3NativeUnderline) {
                     val indicatorColor = if (skinPlainContentColor != null) {
                         resolveHomeSkinTopTabIndicatorColor(skinPlainContentColor)
@@ -1897,30 +1894,13 @@ private fun LightweightHomeTopTabs(
                             contentPaddingPx = md3ContentPadding.toPx(),
                         )
                     }
-                    val iconOnlySideOffsetPx = if (iconOnlyIndicator) {
-                        with(density) {
-                            (
-                                resolveTopTabIconSizeDp(1).dp / 2 +
-                                    resolveIconOnlyTopTabIndicatorSideGap() +
-                                    nativeIndicatorWidth / 2
-                            ).toPx()
-                        }
-                    } else {
-                        0f
-                    }
                     Box(
                         modifier = Modifier
-                            .align(if (iconOnlyIndicator) Alignment.CenterStart else Alignment.BottomStart)
+                            .align(Alignment.BottomStart)
                             .graphicsLayer {
-                                translationX = nativeUnderlineBounds.translationXPx + iconOnlySideOffsetPx
+                                translationX = nativeUnderlineBounds.translationXPx
                             }
-                            .then(
-                                if (iconOnlyIndicator) {
-                                    Modifier
-                                } else {
-                                    Modifier.offset(y = -AppSpacingTokens.ExtraSmall)
-                                }
-                            )
+                            .offset(y = -AppSpacingTokens.ExtraSmall)
                             .width(with(density) { nativeUnderlineBounds.widthPx.toDp() })
                             .height(AppSpacingTokens.Micro * 1.5f)
                             .clip(RoundedCornerShape(percent = 50))

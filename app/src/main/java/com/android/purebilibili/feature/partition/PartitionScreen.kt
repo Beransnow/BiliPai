@@ -212,9 +212,9 @@ private val PartitionSideRailItemHeight = 48.dp
 private val PartitionSideRailIndicatorHeight =
     resolveMatchedLiquidIndicatorHeightDp(PartitionSideRailItemHeight.value).dp
 private val PartitionSideRailItemSpacing = 4.dp
-private val PartitionSideRailMd3UnderlineWidth = 28.dp
-private val PartitionSideRailMd3UnderlineHeight = 3.dp
-private val PartitionSideRailMd3UnderlineBottomPadding = 3.dp
+private val PartitionSideRailMd3UnderlineWidth = 3.dp
+private val PartitionSideRailMd3UnderlineHeight = 28.dp
+private val PartitionSideRailMd3UnderlineStartPadding = 3.dp
 private val PartitionVideoListMaxPush = 20.dp
 
 internal fun resolvePartitionBangumiType(partitionId: Int): Int? = when (partitionId) {
@@ -744,6 +744,15 @@ private fun PartitionSideRail(
                 itemSlotHeightPx = itemSlotHeightPx
             )
         }
+        val selectedIndicatorOffsetPxProvider = {
+            resolvePartitionSideRailIndicatorOffsetPx(
+                indicatorPosition = selectedIndex.toFloat(),
+                firstVisibleItemIndex = listState.firstVisibleItemIndex,
+                firstVisibleItemScrollOffsetPx = listState.firstVisibleItemScrollOffset,
+                contentTopPaddingPx = contentTopPaddingPx,
+                itemSlotHeightPx = itemSlotHeightPx
+            )
+        }
         val indicatorWidth = (maxWidth - indicatorHorizontalPadding.start - indicatorHorizontalPadding.end)
             .coerceAtLeast(0.dp)
         val fullIndicatorLensSpec = resolveBottomBarBackdropPresetIndicatorLens(progress = 1f)
@@ -856,6 +865,7 @@ private fun PartitionSideRail(
             indicatorHeight = PartitionSideRailIndicatorHeight,
             dragScaleTarget = FloatingBottomBarPressedScale,
             indicatorOffsetPxProvider = currentIndicatorOffsetPxProvider,
+            selectedIndicatorOffsetPxProvider = selectedIndicatorOffsetPxProvider,
             indicatorWidth = indicatorWidth,
             liquidGlassIndicatorEnabled = liquidGlassIndicatorEnabled,
             liquidGlassPreset = liquidGlassPreset,
@@ -892,6 +902,7 @@ private fun PartitionSideRailMovingIndicator(
     indicatorHeight: androidx.compose.ui.unit.Dp,
     dragScaleTarget: Float,
     indicatorOffsetPxProvider: () -> Float,
+    selectedIndicatorOffsetPxProvider: () -> Float,
     indicatorWidth: androidx.compose.ui.unit.Dp,
     liquidGlassIndicatorEnabled: Boolean,
     liquidGlassPreset: BottomBarLiquidGlassPreset,
@@ -915,7 +926,7 @@ private fun PartitionSideRailMovingIndicator(
             onVideoListPushChanged(0f)
         }
         Box(modifier = modifier.then(highlightModifier)) {
-            val indicatorTopPx = indicatorOffsetPxProvider()
+            val indicatorTopPx = selectedIndicatorOffsetPxProvider()
             Box(
                 modifier = Modifier
                     .graphicsLayer {
@@ -925,11 +936,11 @@ private fun PartitionSideRailMovingIndicator(
                     .width(indicatorWidth)
                     .height(with(density) { itemHeightPx.toDp() })
                     .then(interactionModifier),
-                contentAlignment = Alignment.BottomCenter,
+                contentAlignment = Alignment.CenterStart,
             ) {
                 Box(
                     modifier = Modifier
-                        .offset(y = -PartitionSideRailMd3UnderlineBottomPadding)
+                        .offset(x = PartitionSideRailMd3UnderlineStartPadding)
                         .width(PartitionSideRailMd3UnderlineWidth)
                         .height(PartitionSideRailMd3UnderlineHeight)
                         .clip(RoundedCornerShape(percent = 50))
