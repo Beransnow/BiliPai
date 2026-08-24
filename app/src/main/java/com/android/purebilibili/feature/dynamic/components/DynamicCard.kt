@@ -19,6 +19,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 //  Material Icons
@@ -1036,6 +1037,22 @@ fun DynamicCardV2(
             )
             Spacer(modifier = Modifier.height(AppSpacingTokens.Medium))
         }
+
+        resolveDynamicMajorCard(
+            major = content?.major,
+            darkTheme = isSystemInDarkTheme(),
+        )?.let { majorCard ->
+            DynamicNativeLinkCard(
+                title = majorCard.title,
+                subtitle = majorCard.subtitle,
+                cover = majorCard.cover,
+                kindLabel = majorCard.kindLabel,
+                actionLabel = majorCard.actionLabel,
+                enabled = majorCard.enabled && majorCard.jumpUrl.isNotBlank(),
+                onClick = { openDynamicUrl(uriHandler, majorCard.jumpUrl) },
+            )
+            Spacer(modifier = Modifier.height(AppSpacingTokens.Medium))
+        }
         
         //  转发动态 - 嵌套显示原始内容
         if (type == DynamicType.FORWARD && item.orig != null) {
@@ -1058,7 +1075,7 @@ fun DynamicCardV2(
                     if (additionalCard.voteId > 0L) {
                         pendingVoteId = additionalCard.voteId
                     } else if (additionalCard.jumpUrl.isNotBlank()) {
-                        runCatching { uriHandler.openUri(additionalCard.jumpUrl) }
+                        openDynamicUrl(uriHandler, additionalCard.jumpUrl)
                     }
                 }
             )
@@ -1172,41 +1189,62 @@ private fun DynamicAdditionalCard(
     model: DynamicAdditionalCardModel,
     onClick: () -> Unit
 ) {
+    DynamicNativeLinkCard(
+        title = model.title,
+        subtitle = model.subtitle,
+        cover = model.cover,
+        kindLabel = model.kindLabel,
+        actionLabel = model.actionLabel,
+        enabled = model.enabled,
+        onClick = onClick,
+    )
+}
+
+@Composable
+private fun DynamicNativeLinkCard(
+    title: String,
+    subtitle: String,
+    cover: String,
+    kindLabel: String,
+    actionLabel: String,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
     AppContentCard(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .clickable(enabled = enabled, onClick = onClick),
         contentPadding = PaddingValues(horizontal = AppSpacingTokens.ExtraSmall)
     ) {
         AppListItem(
             overlineContent = {
                 AppText(
-                    text = model.kindLabel,
+                    text = kindLabel,
                     color = MaterialTheme.colorScheme.primary
                 )
             },
             headlineContent = {
                 AppText(
-                    text = model.title,
+                    text = title,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     fontWeight = FontWeight.Medium
                 )
             },
-            supportingContent = model.subtitle.takeIf { it.isNotBlank() }?.let { subtitle ->
+            supportingContent = subtitle.takeIf { it.isNotBlank() }?.let { supportingText ->
                 {
                     AppText(
-                        text = subtitle,
+                        text = supportingText,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             },
-            leadingContent = if (model.cover.isNotBlank()) {
+            leadingContent = if (cover.isNotBlank()) {
                 {
                     AsyncImage(
-                        model = model.cover,
+                        model = cover,
                         contentDescription = null,
                         modifier = Modifier
                             .size(width = 88.dp, height = 56.dp)
@@ -1216,9 +1254,30 @@ private fun DynamicAdditionalCard(
                 }
             } else {
                 null
-            }
+            },
+            trailingContent = actionLabel.takeIf(String::isNotBlank)?.let { label ->
+                {
+                    AppText(
+                        text = label,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Medium,
+                    )
+                }
+            },
         )
     }
+}
+
+private fun openDynamicUrl(
+    uriHandler: androidx.compose.ui.platform.UriHandler,
+    rawUrl: String,
+) {
+    if (rawUrl.isBlank()) return
+    val target = when {
+        rawUrl.startsWith("//") -> "https:$rawUrl"
+        else -> rawUrl
+    }
+    runCatching { uriHandler.openUri(target) }
 }
 
 /**

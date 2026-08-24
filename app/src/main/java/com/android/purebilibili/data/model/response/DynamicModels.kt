@@ -780,11 +780,28 @@ data class DynamicContentModule(
 @Serializable
 data class DynamicAdditional(
     val type: String = "",
+    val common: DynamicAdditionalCommon? = null,
     val ugc: DynamicAdditionalUgc? = null,
     val reserve: DynamicAdditionalReserve? = null,
     val goods: DynamicAdditionalGoods? = null,
     val vote: DynamicAdditionalVote? = null,
-    val match: DynamicAdditionalMatch? = null
+    val match: DynamicAdditionalMatch? = null,
+    val upower_lottery: DynamicAdditionalUpowerLottery? = null
+)
+
+@Serializable
+data class DynamicAdditionalCommon(
+    val button: DynamicCardButton? = null,
+    val cover: String = "",
+    val desc1: String = "",
+    val desc2: String = "",
+    val head_text: String = "",
+    @Serializable(with = FlexibleStringSerializer::class)
+    val id_str: String = "",
+    val jump_url: String = "",
+    val style: Int = 0,
+    val sub_type: String = "",
+    val title: String = ""
 )
 
 @Serializable
@@ -801,7 +818,16 @@ data class DynamicAdditionalReserve(
     val state: Int = 0,
     val desc1: DynamicAdditionalText? = null,
     val desc2: DynamicAdditionalText? = null,
-    val desc3: DynamicAdditionalText? = null
+    val desc3: DynamicAdditionalText? = null,
+    val button: DynamicCardButton? = null,
+    val jump_url: String = "",
+    @Serializable(with = FlexibleLongSerializer::class)
+    val reserve_total: Long = 0,
+    @Serializable(with = FlexibleLongSerializer::class)
+    val rid: Long = 0,
+    val stype: Int = 0,
+    @Serializable(with = FlexibleLongSerializer::class)
+    val up_mid: Long = 0
 )
 
 @Serializable
@@ -830,6 +856,40 @@ data class DynamicAdditionalMatch(
     val title: String = "",
     val sub_title: String = "",
     val jump_url: String = ""
+)
+
+@Serializable
+data class DynamicAdditionalUpowerLottery(
+    val button: DynamicCardButton? = null,
+    val desc: DynamicAdditionalText? = null,
+    val hint: DynamicAdditionalText? = null,
+    val jump_url: String = "",
+    @Serializable(with = FlexibleLongSerializer::class)
+    val rid: Long = 0,
+    val state: Int = 0,
+    val title: String = "",
+    @Serializable(with = FlexibleLongSerializer::class)
+    val up_mid: Long = 0,
+    val upower_action_state: Int = 0,
+    val upower_level: Int = 0
+)
+
+@Serializable
+data class DynamicCardButton(
+    val jump_style: DynamicCardButtonStyle? = null,
+    val jump_url: String = "",
+    val type: Int = 0,
+    val status: Int = 0,
+    val check: DynamicCardButtonStyle? = null,
+    val uncheck: DynamicCardButtonStyle? = null
+)
+
+@Serializable
+data class DynamicCardButtonStyle(
+    val disable: Int = 0,
+    val icon_url: String = "",
+    val text: String = "",
+    val toast: String = ""
 )
 
 @Serializable
@@ -882,7 +942,11 @@ data class DynamicMajor(
     val ugc_season: UgcSeasonMajor? = null, // [新增] 合集
     val medialist: MedialistMajor? = null,
     val courses: CoursesMajor? = null,
-    val subscription_new: SubscriptionNewMajor? = null
+    val subscription_new: SubscriptionNewMajor? = null,
+    val common: CommonMajor? = null,
+    val music: MusicMajor? = null,
+    val none: NoneMajor? = null,
+    val upower_common: UpowerCommonMajor? = null
 )
 
 //  [新增] 图文动态 (MAJOR_TYPE_OPUS) - B站新版图文格式
@@ -934,7 +998,12 @@ data class LiveMajor(
     val id: String = "",
     val title: String = "",
     val cover: String = "",
-    val jump_url: String = ""
+    val jump_url: String = "",
+    val desc_first: String = "",
+    val desc_second: String = "",
+    val live_state: Int = 0,
+    val reserve_type: Int = 0,
+    val badge: DynamicMajorBadge? = null
 )
 
 @Serializable
@@ -952,7 +1021,64 @@ data class CoursesMajor(
     val id: String = "",
     val title: String = "",
     val cover: String = "",
-    val jump_url: String = ""
+    val jump_url: String = "",
+    val desc: String = "",
+    val sub_title: String = "",
+    val badge: DynamicMajorBadge? = null
+)
+
+@Serializable
+data class CommonMajor(
+    val badge: DynamicMajorBadge? = null,
+    val biz_type: Int = 0,
+    val cover: String = "",
+    val desc: String = "",
+    @Serializable(with = FlexibleStringSerializer::class)
+    val id: String = "",
+    val jump_url: String = "",
+    val label: String = "",
+    @Serializable(with = FlexibleStringSerializer::class)
+    val sketch_id: String = "",
+    val style: Int = 0,
+    val title: String = ""
+)
+
+@Serializable
+data class MusicMajor(
+    val cover: String = "",
+    @Serializable(with = FlexibleStringSerializer::class)
+    val id: String = "",
+    val jump_url: String = "",
+    val label: String = "",
+    val title: String = ""
+)
+
+@Serializable
+data class NoneMajor(
+    val tips: String = ""
+)
+
+@Serializable
+data class UpowerCommonMajor(
+    val background: DynamicThemeImage? = null,
+    val button: DynamicCardButton? = null,
+    val icon: DynamicThemeImage? = null,
+    val jump_url: String = "",
+    @Serializable(with = FlexibleLongSerializer::class)
+    val rid: Long = 0,
+    val title: String = "",
+    val title_prefix: String = "",
+    val type: Int = 0,
+    @Serializable(with = FlexibleLongSerializer::class)
+    val up_mid: Long = 0,
+    val upower_action_state: Int = 0,
+    val upower_level: Int = 0
+)
+
+@Serializable
+data class DynamicThemeImage(
+    val dark_src: String = "",
+    val light_src: String = ""
 )
 
 @Serializable
