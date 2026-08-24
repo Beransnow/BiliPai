@@ -6,6 +6,20 @@ import org.junit.Test
 class TopTabIndicatorGeometryTest {
 
     @Test
+    fun `top tab panel offset cannot travel outward past dock edges`() {
+        assertEquals(0f, resolveTopTabEdgeAwarePanelOffsetPx(4f, 4, 6f), 0.01f)
+        assertEquals(0f, resolveTopTabEdgeAwarePanelOffsetPx(0f, 4, -6f), 0.01f)
+        assertEquals(-6f, resolveTopTabEdgeAwarePanelOffsetPx(4f, 4, -6f), 0.01f)
+        assertEquals(6f, resolveTopTabEdgeAwarePanelOffsetPx(0f, 4, 6f), 0.01f)
+    }
+
+    @Test
+    fun `top tab outward panel offset fades during final quarter slot`() {
+        assertEquals(3f, resolveTopTabEdgeAwarePanelOffsetPx(3.875f, 4, 6f), 0.01f)
+        assertEquals(6f, resolveTopTabEdgeAwarePanelOffsetPx(2f, 4, 6f), 0.01f)
+    }
+
+    @Test
     fun `indicator width follows ratio when within bounds`() {
         val width = resolveTopTabIndicatorWidthPx(
             itemWidthPx = 100f,

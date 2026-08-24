@@ -288,6 +288,24 @@ internal fun resolveTopTabDockIndicatorOffsetPx(
     horizontalGapPx: Float
 ): Float = slotTranslationPx + horizontalGapPx.coerceAtLeast(0f)
 
+internal fun resolveTopTabEdgeAwarePanelOffsetPx(
+    position: Float,
+    lastIndex: Int,
+    panelOffsetPx: Float,
+): Float {
+    if (lastIndex <= 0 || panelOffsetPx == 0f) return 0f
+    val clampedPosition = position.coerceIn(0f, lastIndex.toFloat())
+    val outwardDistance = if (panelOffsetPx > 0f) {
+        lastIndex - clampedPosition
+    } else {
+        clampedPosition
+    }
+    // Fade only the outward inertia during the final quarter-slot. At the hard edge the
+    // indicator stays inside the dock, avoiding a second outline from the shell end-cap.
+    val edgeFactor = (outwardDistance / 0.25f).coerceIn(0f, 1f)
+    return panelOffsetPx * edgeFactor
+}
+
 internal fun resolveTopTabVisibleSlots(
     categoryCount: Int,
     longestLabelLength: Int = 0
@@ -1273,11 +1291,16 @@ private fun LightweightHomeTopTabs(
             isDragging = indicatorIsInteracting,
             motionSpec = topTabMotionSpec
         )
-        val topTabPanelOffsetPx = resolveTopTabMatchedPanelOffsetPx(
+        val rawTopTabPanelOffsetPx = resolveTopTabMatchedPanelOffsetPx(
             dragPanelOffsetPx = 0f,
             pagerPanelOffsetFraction = topTabRefractionMotionProfile.indicatorPanelOffsetFraction,
             maxOffsetPx = with(density) { AppSpacingTokens.ExtraSmall.toPx() },
             dragActive = false
+        )
+        val topTabPanelOffsetPx = resolveTopTabEdgeAwarePanelOffsetPx(
+            position = topTabIndicatorPosition,
+            lastIndex = categories.lastIndex,
+            panelOffsetPx = rawTopTabPanelOffsetPx,
         )
         // Pager swipes have no direct press event. Reuse the bottom-bar drag-scale animation
         // as their effective press so the indicator surface fades and lens ramps identically.
