@@ -613,7 +613,7 @@ internal fun resolveMd3TopTabRowVerticalTranslationDp(
 
 internal fun resolveMd3TopTabIndicatorBottomPadding(): Dp = AppSpacingTokens.Small
 
-internal fun resolveIconOnlyTopTabIndicatorWidth(): Dp = AppSpacingTokens.Small + AppSpacingTokens.Micro
+internal fun resolveIconOnlyTopTabIndicatorWidth(): Dp = AppSpacingTokens.ExtraLarge
 
 internal fun resolveHomeSkinTopTabActionButtonSize(): Dp = AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Medium
 

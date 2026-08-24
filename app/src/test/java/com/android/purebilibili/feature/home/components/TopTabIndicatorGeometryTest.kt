@@ -8,7 +8,7 @@ class TopTabIndicatorGeometryTest {
 
     @Test
     fun `icon only top tab uses a compact side indicator`() {
-        assertEquals(10.dp, resolveIconOnlyTopTabIndicatorWidth())
+        assertEquals(24.dp, resolveIconOnlyTopTabIndicatorWidth())
     }
 
     @Test

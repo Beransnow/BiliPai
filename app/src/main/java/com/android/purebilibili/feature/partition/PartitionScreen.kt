@@ -744,15 +744,6 @@ private fun PartitionSideRail(
                 itemSlotHeightPx = itemSlotHeightPx
             )
         }
-        val selectedIndicatorOffsetPxProvider = {
-            resolvePartitionSideRailIndicatorOffsetPx(
-                indicatorPosition = selectedIndex.toFloat(),
-                firstVisibleItemIndex = listState.firstVisibleItemIndex,
-                firstVisibleItemScrollOffsetPx = listState.firstVisibleItemScrollOffset,
-                contentTopPaddingPx = contentTopPaddingPx,
-                itemSlotHeightPx = itemSlotHeightPx
-            )
-        }
         val indicatorWidth = (maxWidth - indicatorHorizontalPadding.start - indicatorHorizontalPadding.end)
             .coerceAtLeast(0.dp)
         val fullIndicatorLensSpec = resolveBottomBarBackdropPresetIndicatorLens(progress = 1f)
@@ -865,7 +856,6 @@ private fun PartitionSideRail(
             indicatorHeight = PartitionSideRailIndicatorHeight,
             dragScaleTarget = FloatingBottomBarPressedScale,
             indicatorOffsetPxProvider = currentIndicatorOffsetPxProvider,
-            selectedIndicatorOffsetPxProvider = selectedIndicatorOffsetPxProvider,
             indicatorWidth = indicatorWidth,
             liquidGlassIndicatorEnabled = liquidGlassIndicatorEnabled,
             liquidGlassPreset = liquidGlassPreset,
@@ -902,7 +892,6 @@ private fun PartitionSideRailMovingIndicator(
     indicatorHeight: androidx.compose.ui.unit.Dp,
     dragScaleTarget: Float,
     indicatorOffsetPxProvider: () -> Float,
-    selectedIndicatorOffsetPxProvider: () -> Float,
     indicatorWidth: androidx.compose.ui.unit.Dp,
     liquidGlassIndicatorEnabled: Boolean,
     liquidGlassPreset: BottomBarLiquidGlassPreset,
@@ -926,7 +915,7 @@ private fun PartitionSideRailMovingIndicator(
             onVideoListPushChanged(0f)
         }
         Box(modifier = modifier.then(highlightModifier)) {
-            val indicatorTopPx = selectedIndicatorOffsetPxProvider()
+            val indicatorTopPx = indicatorOffsetPxProvider()
             Box(
                 modifier = Modifier
                     .graphicsLayer {

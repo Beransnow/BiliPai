@@ -103,7 +103,7 @@ class PartitionScreenStructureTest {
         )
         assertTrue(indicator.contains("PartitionSideRailMd3UnderlineWidth"))
         assertTrue(indicator.contains("PartitionSideRailMd3UnderlineHeight"))
-        assertTrue(indicator.contains("selectedIndicatorOffsetPxProvider()"))
+        assertTrue(indicator.contains("indicatorOffsetPxProvider()"))
         assertTrue(indicator.contains("contentAlignment = Alignment.CenterStart"))
         assertTrue(indicator.contains("PartitionSideRailMd3UnderlineStartPadding"))
         assertTrue(indicator.contains("onVideoListPushChanged(0f)"))
