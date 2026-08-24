@@ -212,11 +212,14 @@ class FloatingBottomBarStructureTest {
 
         assertTrue(body.contains("var indicatorSettlePulseKey by remember { mutableIntStateOf(0) }"))
         assertTrue(body.contains("rememberNavigationIndicatorSettleTransform("))
+        assertTrue(body.contains("direction = indicatorSettleDirection"))
         assertTrue(body.contains("selectionSettleMotionEnabled &&"))
         assertTrue(body.contains("abs(value - target) <= 0.001f"))
         assertTrue(body.contains("!isScrollInProgressLatest()"))
-        assertTrue(body.contains("scaleX = indicatorSettleTransform.scale()"))
-        assertTrue(body.contains("rotationZ = indicatorSettleTransform.rotationDegrees()"))
+        assertTrue(body.contains("scaleX = indicatorSettleTransform.scaleX()"))
+        assertTrue(body.contains("scaleY = indicatorSettleTransform.scaleY()"))
+        assertTrue(body.contains("indicatorSettleTransform.translationXDp().dp.toPx()"))
+        assertFalse(body.contains("rotationZ = indicatorSettleTransform"))
 
         val bottomBar = loadSource(
             "app/src/main/java/com/android/purebilibili/feature/home/components/BottomBar.kt"

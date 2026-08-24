@@ -546,6 +546,7 @@ fun FloatingBottomBar(
     }
 
     var indicatorSettlePulseKey by remember { mutableIntStateOf(0) }
+    var indicatorSettleDirection by remember { mutableFloatStateOf(0f) }
     LaunchedEffect(dampedDragAnimation, maxTabIndex) {
         var lastSettledIndex = dampedDragAnimation.value.fastRoundToInt()
         snapshotFlow {
@@ -564,6 +565,7 @@ fun FloatingBottomBar(
                 abs(target - settledIndex.toFloat()) <= 0.001f &&
                 settledIndex != lastSettledIndex
             ) {
+                indicatorSettleDirection = (settledIndex - lastSettledIndex).toFloat().sign
                 lastSettledIndex = settledIndex
                 indicatorSettlePulseKey += 1
             }
@@ -571,6 +573,7 @@ fun FloatingBottomBar(
     }
     val indicatorSettleTransform = rememberNavigationIndicatorSettleTransform(
         pulseKey = indicatorSettlePulseKey,
+        direction = indicatorSettleDirection,
     )
 
     LaunchedEffect(dampedDragAnimation, maxTabIndex) {
@@ -840,9 +843,10 @@ fun FloatingBottomBar(
                             } else {
                                 -progressOffset + panelOffset
                             }
-                            scaleX = indicatorSettleTransform.scale()
-                            scaleY = indicatorSettleTransform.scale()
-                            rotationZ = indicatorSettleTransform.rotationDegrees()
+                            translationX += indicatorSettleTransform.translationXDp().dp.toPx() *
+                                if (isLtr) 1f else -1f
+                            scaleX = indicatorSettleTransform.scaleX()
+                            scaleY = indicatorSettleTransform.scaleY()
                             clip = false
                         }
                         .then(interactiveHighlight?.gestureModifier ?: Modifier)
@@ -926,9 +930,10 @@ fun FloatingBottomBar(
                             } else {
                                 -progressOffset + panelOffset
                             }
-                            scaleX = indicatorSettleTransform.scale()
-                            scaleY = indicatorSettleTransform.scale()
-                            rotationZ = indicatorSettleTransform.rotationDegrees()
+                            translationX += indicatorSettleTransform.translationXDp().dp.toPx() *
+                                if (isLtr) 1f else -1f
+                            scaleX = indicatorSettleTransform.scaleX()
+                            scaleY = indicatorSettleTransform.scaleY()
                             clip = false
                         }
                         .then(

@@ -18,6 +18,10 @@ import kotlinx.coroutines.launch
 
 internal const val NavigationSelectionScale = 1.1f
 internal const val NavigationSelectionWobbleDegrees = 4f
+internal const val NavigationSelectionCounterWobbleDegrees = -3f
+internal const val NavigationIndicatorSettleScaleX = 1.06f
+internal const val NavigationIndicatorSettleScaleY = 0.97f
+internal const val NavigationIndicatorSettleTranslationDp = 3f
 
 internal fun <T> navigationSelectionScaleMotionSpec(): SpringSpec<T> = spring(
     dampingRatio = 0.72f,
@@ -57,6 +61,8 @@ internal fun rememberNavigationSelectionTransform(
         if (hasObservedSelection && selected) {
             wobbleTarget = NavigationSelectionWobbleDegrees
             delay(45)
+            wobbleTarget = NavigationSelectionCounterWobbleDegrees
+            delay(45)
         }
         wobbleTarget = 0f
         hasObservedSelection = true
@@ -69,36 +75,54 @@ internal fun rememberNavigationSelectionTransform(
     }
 }
 
+@Immutable
+internal data class NavigationIndicatorSettleTransform(
+    val scaleX: () -> Float,
+    val scaleY: () -> Float,
+    val translationXDp: () -> Float,
+)
+
 @Composable
 internal fun rememberNavigationIndicatorSettleTransform(
     pulseKey: Int,
-): NavigationSelectionTransform {
-    val scale = remember { Animatable(1f) }
-    val rotation = remember { Animatable(0f) }
+    direction: Float,
+): NavigationIndicatorSettleTransform {
+    val scaleX = remember { Animatable(1f) }
+    val scaleY = remember { Animatable(1f) }
+    val translationXDp = remember { Animatable(0f) }
 
     LaunchedEffect(pulseKey) {
         if (pulseKey <= 0) return@LaunchedEffect
-        scale.snapTo(1f)
-        rotation.snapTo(0f)
+        scaleX.snapTo(1f)
+        scaleY.snapTo(1f)
+        translationXDp.snapTo(0f)
         coroutineScope {
             launch {
-                scale.animateTo(
-                    NavigationSelectionScale,
+                scaleX.animateTo(
+                    NavigationIndicatorSettleScaleX,
                     navigationSelectionScaleMotionSpec(),
                 )
-                scale.animateTo(1f, navigationSelectionScaleMotionSpec())
+                scaleX.animateTo(1f, navigationSelectionScaleMotionSpec())
             }
             launch {
-                rotation.animateTo(
-                    NavigationSelectionWobbleDegrees,
+                scaleY.animateTo(
+                    NavigationIndicatorSettleScaleY,
+                    navigationSelectionScaleMotionSpec(),
+                )
+                scaleY.animateTo(1f, navigationSelectionScaleMotionSpec())
+            }
+            launch {
+                translationXDp.animateTo(
+                    direction.coerceIn(-1f, 1f) * NavigationIndicatorSettleTranslationDp,
                     navigationSelectionWobbleMotionSpec(),
                 )
-                rotation.animateTo(0f, navigationSelectionWobbleMotionSpec())
+                translationXDp.animateTo(0f, navigationSelectionWobbleMotionSpec())
             }
         }
     }
-    return NavigationSelectionTransform(
-        scale = { scale.value },
-        rotationDegrees = { rotation.value },
+    return NavigationIndicatorSettleTransform(
+        scaleX = { scaleX.value },
+        scaleY = { scaleY.value },
+        translationXDp = { translationXDp.value },
     )
 }
