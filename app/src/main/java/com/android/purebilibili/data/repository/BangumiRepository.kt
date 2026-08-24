@@ -39,7 +39,8 @@ internal fun buildBangumiPlayUrlParams(
         "ep_id" to epId.toString(),
         "cid" to cid.toString(),
         "qn" to qn.toString(),
-        "fnval" to "4048",
+        // DASH + HDR + 4K + Dolby + 8K + AV1 + smart-repair capabilities.
+        "fnval" to "12240",
         "fnver" to "0",
         "fourk" to "1",
         "voice_balance" to "1",

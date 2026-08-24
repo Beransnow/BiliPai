@@ -530,6 +530,7 @@ class BangumiPlayerViewModel : BasePlayerViewModel() {
                 cachedIsVip = com.android.purebilibili.data.repository.VideoRepository.isPlaybackVip(),
                 seasonUserVip = detail.userStatus?.vip == 1
             )
+            val qualityOptions = resolveBangumiQualityOptions(playData)
 
             _uiState.value = BangumiPlayerState.Success(
                 seasonDetail = correctedDetail,
@@ -538,8 +539,8 @@ class BangumiPlayerViewModel : BasePlayerViewModel() {
                 playUrl = videoUrl,
                 audioUrl = audioUrl,
                 quality = playData.quality,
-                acceptQuality = playData.acceptQuality ?: emptyList(),
-                acceptDescription = playData.acceptDescription ?: emptyList(),
+                acceptQuality = qualityOptions.ids,
+                acceptDescription = qualityOptions.labels,
                 cachedDash = playData.dash,
                 requestedAudioQuality = audioSelection?.requestedPreferenceId ?: requestedAudioQuality,
                 selectedAudioQuality = audioSelection?.selectedPreferenceId ?: -1,
@@ -681,11 +682,14 @@ class BangumiPlayerViewModel : BasePlayerViewModel() {
                 }
                 
                 if (videoUrl.isNullOrEmpty()) return@onSuccess
+                val qualityOptions = resolveBangumiQualityOptions(playData)
                 
                 _uiState.value = currentState.copy(
                     playUrl = videoUrl,
                     audioUrl = audioUrl,
                     quality = playData.quality,
+                    acceptQuality = qualityOptions.ids.ifEmpty { currentState.acceptQuality },
+                    acceptDescription = qualityOptions.labels.ifEmpty { currentState.acceptDescription },
                     cachedDash = dash,
                     requestedAudioQuality = currentState.requestedAudioQuality,
                     selectedAudioQuality = audioSelection?.selectedPreferenceId ?: -1,

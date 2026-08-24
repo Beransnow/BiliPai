@@ -458,6 +458,18 @@ data class BangumiPlayUrlResponse(
  */
 @Serializable
 data class BangumiVideoInfo(
+    val fnver: Int = 0,
+    val fnval: Int = 0,
+    val type: String = "",
+    val bp: Int = 0,
+    @SerialName("vip_type")
+    val vipType: Int = 0,
+    @SerialName("vip_status")
+    val vipStatus: Int = 0,
+    @SerialName("is_drm")
+    val isDrm: Boolean = false,
+    @SerialName("no_rexcode")
+    val noRexcode: Int = 0,
     val quality: Int = 0,
     val format: String = "",
     val timelength: Long = 0,
@@ -469,14 +481,27 @@ data class BangumiVideoInfo(
     val acceptDescription: List<String>? = null,
     @SerialName("video_codecid")
     val videoCodecid: Int = 0,
+    @SerialName("seek_param")
+    val seekParam: String = "",
+    @SerialName("seek_type")
+    val seekType: String = "",
     //  关键：durl 和 dash 字段
     val durl: List<Durl>? = null,
     val durls: List<Durl>? = null,  // 某些情况下叫 durls
     val dash: Dash? = null,
     @SerialName("support_formats")
-    val supportFormats: List<FormatItem>? = null
+    val supportFormats: List<FormatItem>? = null,
+    @SerialName("record_info")
+    val recordInfo: BangumiRecordInfo? = null
     //  [修复] 移除类型不稳定的字段：has_paid, is_preview, status 等
     // 这些字段有时返回 Int (0/1)，有时返回 Boolean (true/false)，导致解析失败
+)
+
+@Serializable
+data class BangumiRecordInfo(
+    @SerialName("record_icon")
+    val recordIcon: String = "",
+    val record: String = ""
 )
 
 /**
