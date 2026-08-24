@@ -40,11 +40,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.imageLoader
 import com.android.purebilibili.R
 import com.android.purebilibili.core.ui.AppScaffold
-import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSplitLayout
-import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.AppTopBar
-import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.util.LocalWindowSizeClass
@@ -60,7 +57,6 @@ import com.android.purebilibili.feature.dynamic.components.ImagePreviewDialog
 import com.android.purebilibili.feature.dynamic.components.ImagePreviewTextContent
 import com.android.purebilibili.feature.dynamic.components.dynamicInlineCommentItems
 import com.android.purebilibili.feature.dynamic.components.RepostDialog
-import com.android.purebilibili.feature.home.components.BottomBarMatchedReusableLiquidDock
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
@@ -296,40 +292,23 @@ fun DynamicDetailScreen(
                     )
                 }
                 val commentComposer: @Composable () -> Unit = {
-                    BottomBarMatchedReusableLiquidDock(
-                        shape = AppShapes.container(ContainerLevel.Pill),
+                    DynamicInlineCommentComposer(
+                        onPostComment = { message ->
+                            interactionViewModel.postComment(state.item.id_str, message) { _, toastMessage ->
+                                android.widget.Toast.makeText(context, toastMessage, android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        replyTargetUname = commentReplyTarget?.uname,
+                        onClearReplyTarget = interactionViewModel::clearCommentReplyTarget,
+                        liquidGlassEnabled = liquidGlassEnabled,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .then(
-                                if (liquidGlassEnabled) {
-                                    Modifier.padding(
-                                        start = AppSpacingTokens.Medium,
-                                        end = AppSpacingTokens.Medium,
-                                        bottom = AppSpacingTokens.Small,
-                                    )
-                                } else {
-                                    Modifier
-                                }
+                            .padding(
+                                start = AppSpacingTokens.Medium,
+                                end = AppSpacingTokens.Medium,
+                                bottom = AppSpacingTokens.Small,
                             ),
-                        reuseEnabled = liquidGlassEnabled,
-                        drawShellLens = true,
-                    ) { liquidChromeActive ->
-                        DynamicInlineCommentComposer(
-                            onPostComment = { message ->
-                                interactionViewModel.postComment(state.item.id_str, message) { _, toastMessage ->
-                                    android.widget.Toast.makeText(context, toastMessage, android.widget.Toast.LENGTH_SHORT).show()
-                                }
-                            },
-                            replyTargetUname = commentReplyTarget?.uname,
-                            onClearReplyTarget = interactionViewModel::clearCommentReplyTarget,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .then(
-                                    if (liquidChromeActive) Modifier
-                                    else Modifier.background(AppSurfaceTokens.surface())
-                                ),
-                        )
-                    }
+                    )
                 }
 
                 if (useSplitLayout) {

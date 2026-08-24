@@ -63,11 +63,18 @@ class DynamicCommentStructureTest {
             .substringBefore("if (useSplitLayout)")
 
         assertTrue(!source.contains("detailDockBackdrop"))
-        assertTrue(composer.contains("BottomBarMatchedReusableLiquidDock("))
-        assertTrue(!composer.contains("backdrop ="))
-        assertTrue(composer.contains("reuseEnabled = liquidGlassEnabled"))
-        assertTrue(composer.contains("drawShellLens = true"))
-        assertTrue(composer.contains("if (liquidChromeActive) Modifier"))
+        assertTrue(!composer.contains("BottomBarMatchedReusableLiquidDock("))
+        assertTrue(composer.contains("liquidGlassEnabled = liquidGlassEnabled"))
+
+        val componentSource = File(
+            "src/main/java/com/android/purebilibili/feature/dynamic/components/DynamicCommentSheet.kt"
+        ).readText()
+        val inputComposer = componentSource
+            .substringAfter("private fun DynamicCommentComposer(")
+            .substringBefore("/**\n *  单条评论项")
+        assertTrue(inputComposer.split("BottomBarMatchedReusableLiquidDock(").size - 1 == 2)
+        assertTrue(inputComposer.contains("reuseEnabled = liquidGlassEnabled"))
+        assertTrue(inputComposer.contains("containerColor = Color.Transparent"))
     }
 
     @Test

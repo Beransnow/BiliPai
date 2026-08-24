@@ -53,6 +53,7 @@ import com.android.purebilibili.feature.dynamic.resolveDynamicCommentLocationLab
 import com.android.purebilibili.feature.dynamic.resolveDynamicCommentSheetTotalCount
 import com.android.purebilibili.feature.dynamic.resolveDynamicSubReplyCount
 import com.android.purebilibili.feature.dynamic.shouldOpenDynamicCommentThreadOnTap
+import com.android.purebilibili.feature.home.components.BottomBarMatchedReusableLiquidDock
 import com.android.purebilibili.feature.video.ui.components.CommentPictures
 import com.android.purebilibili.feature.video.ui.components.RichCommentText
 import com.android.purebilibili.feature.video.ui.components.ReplyMemberAvatar
@@ -585,6 +586,7 @@ fun DynamicInlineCommentComposer(
     onPostComment: (String) -> Unit,
     replyTargetUname: String? = null,
     onClearReplyTarget: () -> Unit = {},
+    liquidGlassEnabled: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     var commentText by remember { mutableStateOf("") }
@@ -597,6 +599,7 @@ fun DynamicInlineCommentComposer(
         },
         hint = resolveDynamicCommentComposerHint(replyTargetUname),
         onClearReplyTarget = if (replyTargetUname.isNullOrBlank()) null else onClearReplyTarget,
+        liquidGlassEnabled = liquidGlassEnabled,
         modifier = modifier
             .fillMaxWidth()
             .padding(AppSpacingTokens.Large),
@@ -610,6 +613,7 @@ private fun DynamicCommentComposer(
     onSubmit: (String) -> Unit,
     hint: String = resolveDynamicCommentComposerHint(),
     onClearReplyTarget: (() -> Unit)? = null,
+    liquidGlassEnabled: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     val trimmedComment = value.trim()
@@ -618,30 +622,40 @@ private fun DynamicCommentComposer(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         val commentFieldContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            modifier = Modifier.weight(1f),
-            placeholder = {
-                AppText(
-                    text = hint,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            },
-            singleLine = true,
+        BottomBarMatchedReusableLiquidDock(
             shape = AppShapes.container(ContainerLevel.Pill),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = commentFieldContainerColor,
-                unfocusedContainerColor = commentFieldContainerColor,
-                disabledContainerColor = commentFieldContainerColor,
-                focusedBorderColor = Color.Transparent,
-                unfocusedBorderColor = Color.Transparent,
-                disabledBorderColor = Color.Transparent,
-                cursorColor = MaterialTheme.colorScheme.onSurface,
-            ),
-        )
+            modifier = Modifier
+                .weight(1f)
+                .height(AppSpacingTokens.TripleExtraLarge),
+            reuseEnabled = liquidGlassEnabled,
+            drawShellLens = true,
+        ) { liquidChromeActive ->
+            val fieldColor = if (liquidChromeActive) Color.Transparent else commentFieldContainerColor
+            OutlinedTextField(
+                value = value,
+                onValueChange = onValueChange,
+                modifier = Modifier.fillMaxSize(),
+                placeholder = {
+                    AppText(
+                        text = hint,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
+                singleLine = true,
+                shape = AppShapes.container(ContainerLevel.Pill),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = fieldColor,
+                    unfocusedContainerColor = fieldColor,
+                    disabledContainerColor = fieldColor,
+                    focusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Color.Transparent,
+                    disabledBorderColor = Color.Transparent,
+                    cursorColor = MaterialTheme.colorScheme.onSurface,
+                ),
+            )
+        }
         if (onClearReplyTarget != null) {
             AppIconButton(onClick = onClearReplyTarget) {
                 AppIcon(
@@ -652,14 +666,29 @@ private fun DynamicCommentComposer(
             }
         }
         Spacer(modifier = Modifier.width(AppSpacingTokens.Medium))
-        AppButton(
-            onClick = { onSubmit(trimmedComment) },
-            enabled = trimmedComment.isNotEmpty(),
+        BottomBarMatchedReusableLiquidDock(
             modifier = Modifier.height(AppSpacingTokens.TripleExtraLarge),
             shape = AppShapes.container(ContainerLevel.Pill),
-            contentPadding = PaddingValues(horizontal = AppSpacingTokens.Large),
-        ) {
-            AppText("发送")
+            reuseEnabled = liquidGlassEnabled,
+            drawShellLens = true,
+        ) { liquidChromeActive ->
+            AppButton(
+                onClick = { onSubmit(trimmedComment) },
+                enabled = trimmedComment.isNotEmpty(),
+                modifier = Modifier.fillMaxHeight(),
+                shape = AppShapes.container(ContainerLevel.Pill),
+                colors = if (liquidChromeActive) {
+                    ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent,
+                    )
+                } else {
+                    null
+                },
+                contentPadding = PaddingValues(horizontal = AppSpacingTokens.Large),
+            ) {
+                AppText("发送")
+            }
         }
     }
 }
