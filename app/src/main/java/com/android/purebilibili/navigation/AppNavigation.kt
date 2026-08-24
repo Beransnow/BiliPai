@@ -1742,13 +1742,7 @@ fun AppNavigation(
                         .miuixLayerBackdrop(bottomBarBackdrop)
                         // [Fix] 将内容标记为全局底栏模糊的源
                         // 必须添加 hazeSource，否则底栏的 hazeEffect 无法获取背景内容，导致模糊失效
-                        .then(
-                            if (isBottomBarBlurEnabled && mainHazeState != null) {
-                                Modifier.hazeSourceCompat(mainHazeState)
-                            } else {
-                                Modifier
-                            }
-                        )
+                        .then(if (mainHazeState != null) Modifier.hazeSourceCompat(mainHazeState) else Modifier)
                 ) {
                     DepthSyncedGlobalHomeWallpaperBackdrop(
                         wallpaperUri = globalHomeWallpaperUri,
