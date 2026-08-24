@@ -1404,7 +1404,12 @@ fun AppNavigation(
                     pushNavigation3Key(BiliPaiNavKey.Live(roomId = target.roomId.toString()))
                 }
                 is BilibiliNavigationTarget.BangumiSeason -> {
-                    pushNavigation3Key(BiliPaiNavKey.BangumiDetail(seasonId = target.seasonId))
+                    pushNavigation3Key(
+                        BiliPaiNavKey.BangumiDetail(
+                            seasonId = target.seasonId,
+                            mediaId = target.mediaId
+                        )
+                    )
                 }
                 is BilibiliNavigationTarget.BangumiEpisode -> {
                     pushNavigation3Key(BiliPaiNavKey.BangumiDetail(seasonId = 0L, epId = target.epId))
@@ -1488,7 +1493,12 @@ fun AppNavigation(
                     pushNavigation3Key(BiliPaiNavKey.Live(roomId = action.roomId.toString()))
                 }
                 is MessageLinkNavigationAction.BangumiSeason -> {
-                    pushNavigation3Key(BiliPaiNavKey.BangumiDetail(seasonId = action.seasonId))
+                    pushNavigation3Key(
+                        BiliPaiNavKey.BangumiDetail(
+                            seasonId = action.seasonId,
+                            mediaId = action.mediaId
+                        )
+                    )
                 }
                 is MessageLinkNavigationAction.BangumiEpisode -> {
                     pushNavigation3Key(BiliPaiNavKey.BangumiDetail(seasonId = 0L, epId = action.epId))
@@ -3370,9 +3380,13 @@ fun AppNavigation(
                                     onDynamicClick = { dynamicId ->
                                         replaceNavigation3TopWithKey(BiliPaiNavKey.DynamicDetail(dynamicId))
                                     },
-                                    onBangumiClick = { seasonId, epId ->
+                                    onBangumiClick = { seasonId, epId, mediaId ->
                                         replaceNavigation3TopWithKey(
-                                            BiliPaiNavKey.BangumiDetail(seasonId = seasonId, epId = epId)
+                                            BiliPaiNavKey.BangumiDetail(
+                                                seasonId = seasonId,
+                                                epId = epId,
+                                                mediaId = mediaId
+                                            )
                                         )
                                     },
                                     onMusicClick = { musicId ->
@@ -3471,6 +3485,7 @@ fun AppNavigation(
                                 com.android.purebilibili.feature.bangumi.BangumiDetailScreen(
                                     seasonId = bangumiKey.seasonId,
                                     epId = bangumiKey.epId,
+                                    mediaId = bangumiKey.mediaId,
                                     onBack = { performSystemBackAction() },
                                     onEpisodeClick = { actionSeasonId, episode ->
                                         pushNavigation3Key(

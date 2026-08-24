@@ -360,7 +360,8 @@ internal fun resolveMainActivityLinkNavigation(
 
         is BilibiliNavigationTarget.BangumiSeason -> MainActivityLinkNavigation(
             pendingNavigationRoute = ScreenRoutes.BangumiDetail.createRoute(
-                seasonId = target.seasonId
+                seasonId = target.seasonId,
+                mediaId = target.mediaId
             )
         )
 

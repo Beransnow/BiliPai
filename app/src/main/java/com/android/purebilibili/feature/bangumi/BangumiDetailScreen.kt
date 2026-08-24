@@ -72,6 +72,7 @@ import com.android.purebilibili.core.ui.ContainerLevel
 fun BangumiDetailScreen(
     seasonId: Long,
     epId: Long = 0,
+    mediaId: Long = 0,
     onBack: () -> Unit,
     onEpisodeClick: (Long, BangumiEpisode) -> Unit,  // 点击剧集播放
     onSeasonClick: (Long) -> Unit = {},        //  点击切换季度
@@ -81,8 +82,8 @@ fun BangumiDetailScreen(
     val detailState by viewModel.detailState.collectAsStateWithLifecycle()
     
     // 加载详情
-    LaunchedEffect(seasonId, epId) {
-        viewModel.loadSeasonDetail(seasonId, epId)
+    LaunchedEffect(seasonId, epId, mediaId) {
+        viewModel.loadSeasonDetail(seasonId = seasonId, epId = epId, mediaId = mediaId)
     }
     
     AppScaffold(
@@ -125,7 +126,15 @@ fun BangumiDetailScreen(
                             color = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        AppButton(onClick = { viewModel.loadSeasonDetail(seasonId) }) {
+                        AppButton(
+                            onClick = {
+                                viewModel.loadSeasonDetail(
+                                    seasonId = seasonId,
+                                    epId = epId,
+                                    mediaId = mediaId
+                                )
+                            }
+                        ) {
                             AppText("重试")
                         }
                     }
