@@ -1925,14 +1925,7 @@ interface DynamicApi {
 interface SpaceApi {
     @GET("https://app.bilibili.com/x/v2/space")
     suspend fun getSpaceAggregate(
-        @Query("vmid") mid: Long,
-        @Query("build") build: Int = 8430300,
-        @Query("version") version: String = "8.43.0",
-        @Query("c_locale") cLocale: String = "zh_CN",
-        @Query("channel") channel: String = "master",
-        @Query("mobi_app") mobiApp: String = "android",
-        @Query("platform") platform: String = "android",
-        @Query("s_locale") sLocale: String = "zh_CN"
+        @QueryMap params: Map<String, String>
     ): com.android.purebilibili.data.model.response.SpaceAggregateResponse
 
     // 获取用户详细信息 (需要 WBI 签名)
@@ -2018,6 +2011,33 @@ interface SpaceApi {
     suspend fun getSpaceArticleList(
         @QueryMap params: Map<String, String>
     ): com.android.purebilibili.data.model.response.SpaceArticleResponse
+}
+
+suspend fun SpaceApi.getSpaceAggregate(
+    mid: Long
+): com.android.purebilibili.data.model.response.SpaceAggregateResponse {
+    return getSpaceAggregate(buildSpaceAggregateParams(mid, TokenManager.accessTokenCache))
+}
+
+internal fun buildSpaceAggregateParams(
+    mid: Long,
+    accessToken: String?
+): Map<String, String> {
+    val params = linkedMapOf(
+        "actionKey" to "appkey",
+        "appkey" to AppSignUtils.ANDROID_APP_KEY,
+        "build" to "8430300",
+        "version" to "8.43.0",
+        "c_locale" to "zh_CN",
+        "channel" to "master",
+        "mobi_app" to "android",
+        "platform" to "android",
+        "s_locale" to "zh_CN",
+        "ts" to AppSignUtils.getTimestamp().toString(),
+        "vmid" to mid.toString()
+    )
+    accessToken?.takeIf { it.isNotBlank() }?.let { params["access_key"] = it }
+    return AppSignUtils.signForAndroidApi(params)
 }
 
 //  [新增] 番剧/影视 API

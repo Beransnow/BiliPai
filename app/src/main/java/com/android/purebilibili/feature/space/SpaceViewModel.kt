@@ -5,6 +5,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.android.purebilibili.core.network.NetworkModule
 import com.android.purebilibili.core.network.WbiUtils
+import com.android.purebilibili.core.network.getSpaceAggregate
 import com.android.purebilibili.data.model.response.*
 import com.android.purebilibili.data.repository.BangumiRepository
 import com.android.purebilibili.data.repository.ActionRepository
