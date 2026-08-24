@@ -575,7 +575,7 @@ fun FloatingBottomBar(
         ).also { holder.instance = it }
     }
     val itemAlignmentOffsetProvider: (Int) -> Float = { itemIndex ->
-        if (!isLiquidGlassMode || tabWidthPx <= 0f) {
+        if (tabWidthPx <= 0f) {
             0f
         } else {
             val position = dampedDragAnimation.value

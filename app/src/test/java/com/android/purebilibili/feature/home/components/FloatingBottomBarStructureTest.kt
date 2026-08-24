@@ -230,6 +230,17 @@ class FloatingBottomBarStructureTest {
     }
 
     @Test
+    fun `widened indicator centers item content in every visual mode`() {
+        val source = loadFloatingBottomBarSource()
+        val alignmentProvider = source
+            .substringAfter("val itemAlignmentOffsetProvider")
+            .substringBefore("LaunchedEffect(dampedDragAnimation, maxTabIndex)")
+
+        assertTrue(alignmentProvider.contains("resolveFloatingDockIndicatorContentAlignmentPx("))
+        assertFalse(alignmentProvider.contains("!isLiquidGlassMode"))
+    }
+
+    @Test
     fun `home icons scale continuously with indicator coverage without settle pulse`() {
         val source = loadFloatingBottomBarSource()
         val body = source.substringAfter("fun FloatingBottomBar(")
