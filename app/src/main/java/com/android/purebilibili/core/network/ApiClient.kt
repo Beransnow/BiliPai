@@ -2091,6 +2091,16 @@ interface BangumiApi {
         @Query("season_id") seasonId: Long? = null,
         @Query("ep_id") epId: Long? = null
     ): ResponseBody
+
+    @GET("pgc/review/user")
+    suspend fun getBangumiMediaInfo(
+        @Query("media_id") mediaId: Long
+    ): com.android.purebilibili.data.model.response.BangumiMediaInfoResponse
+
+    @GET("pgc/web/season/section")
+    suspend fun getSeasonSections(
+        @Query("season_id") seasonId: Long
+    ): com.android.purebilibili.data.model.response.BangumiSectionResponse
     
     // 番剧播放地址 - BiliPai parity path
     @GET(BANGUMI_PLAY_URL_PATH)

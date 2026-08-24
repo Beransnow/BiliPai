@@ -162,6 +162,75 @@ data class BangumiDetailResponse(
     val result: BangumiDetail? = null
 )
 
+/**
+ * 通过 media_id 查询剧集基础信息。
+ * 对应 /pgc/review/user，主要用于 md 链接解析和仅持有 media_id 的入口。
+ */
+@Serializable
+data class BangumiMediaInfoResponse(
+    val code: Int = 0,
+    val message: String = "",
+    val result: BangumiMediaInfoResult? = null
+)
+
+@Serializable
+data class BangumiMediaInfoResult(
+    val media: BangumiMediaInfo? = null,
+    val review: BangumiMediaReviewStatus? = null
+)
+
+@Serializable
+data class BangumiMediaInfo(
+    val areas: List<AreaInfo>? = null,
+    val cover: String = "",
+    @SerialName("horizontal_picture")
+    val horizontalPicture: String = "",
+    @SerialName("media_id")
+    val mediaId: Long = 0,
+    @SerialName("new_ep")
+    val newEpisode: BangumiMediaNewEpisode? = null,
+    val rating: BangumiRating? = null,
+    @SerialName("season_id")
+    val seasonId: Long = 0,
+    @SerialName("share_url")
+    val shareUrl: String = "",
+    val title: String = "",
+    val type: Int = 0,
+    @SerialName("type_name")
+    val typeName: String = ""
+)
+
+@Serializable
+data class BangumiMediaNewEpisode(
+    val id: Long = 0,
+    val index: String = "",
+    @SerialName("index_show")
+    val indexShow: String = ""
+)
+
+@Serializable
+data class BangumiMediaReviewStatus(
+    @SerialName("is_coin")
+    val isCoin: Int = 0,
+    @SerialName("is_open")
+    val isOpen: Int = 0
+)
+
+/** 独立分集接口响应，用于详情响应未携带完整分区时补全。 */
+@Serializable
+data class BangumiSectionResponse(
+    val code: Int = 0,
+    val message: String = "",
+    val result: BangumiSectionResult? = null
+)
+
+@Serializable
+data class BangumiSectionResult(
+    @SerialName("main_section")
+    val mainSection: BangumiSection? = null,
+    val section: List<BangumiSection>? = null
+)
+
 @Serializable
 data class BangumiDetail(
     @SerialName("season_id")
