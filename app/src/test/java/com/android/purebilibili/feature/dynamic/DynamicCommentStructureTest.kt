@@ -68,6 +68,7 @@ class DynamicCommentStructureTest {
         assertTrue(source.contains("val floatingCommentComposer = liquidGlassEnabled"))
         assertTrue(source.contains("contentPadding = PaddingValues(bottom = commentContentBottomPadding)"))
         assertTrue(source.contains("widthIn(max = 360.dp)"))
+        assertTrue(!source.contains(".weight(1f)"))
 
         val componentSource = File(
             "src/main/java/com/android/purebilibili/feature/dynamic/components/DynamicCommentSheet.kt"

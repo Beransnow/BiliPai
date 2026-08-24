@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -306,7 +305,7 @@ fun DynamicDetailScreen(
                     )
                 }
                 val floatingCommentComposer = liquidGlassEnabled
-                val commentContentBottomPadding = if (floatingCommentComposer) 112.dp else AppSpacingTokens.Large + AppSpacingTokens.ExtraSmall
+                val commentContentBottomPadding = if (floatingCommentComposer) 112.dp else 80.dp
 
                 if (useSplitLayout) {
                     //  [新增] 大屏/横屏：左卡片 + 右评论（对齐 BiliPai 横屏分栏）
@@ -350,24 +349,25 @@ fun DynamicDetailScreen(
                                     }
                                 }
                             } else {
-                                Column(modifier = Modifier.fillMaxSize()) {
+                                Box(modifier = Modifier.fillMaxSize()) {
                                     LazyColumn(
                                         state = commentListState,
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .fillMaxWidth(),
-                                        contentPadding = PaddingValues(bottom = commentContentBottomPadding)
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentPadding = PaddingValues(bottom = commentContentBottomPadding),
                                     ) {
                                         commentContent()
                                     }
-                                    commentComposer(
-                                        Modifier
+                                    Box(
+                                        modifier = Modifier
+                                            .align(Alignment.BottomCenter)
                                             .fillMaxWidth()
                                             .padding(
                                                 horizontal = AppSpacingTokens.Large,
                                                 vertical = AppSpacingTokens.Medium,
                                             ),
-                                    )
+                                    ) {
+                                        commentComposer(Modifier.fillMaxWidth())
+                                    }
                                 }
                             }
                         }
