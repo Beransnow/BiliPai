@@ -2,6 +2,8 @@ package com.android.purebilibili.feature.home.components
 
 import android.os.Build
 import com.android.purebilibili.core.ui.AppSpacingTokens
+import com.android.purebilibili.core.theme.AppUiStyle
+import com.android.purebilibili.core.theme.LocalAppUiStyle
 
 import com.android.purebilibili.core.ui.OpticalContrastPalette
 
@@ -115,6 +117,7 @@ internal val BOTTOM_BAR_LIQUID_SEGMENTED_CONTROL_INDICATOR_HEIGHT_DP =
 private const val SEGMENTED_CONTROL_MIN_INDICATOR_ASPECT_RATIO = 1.6f
 
 internal fun resolveSegmentedControlChromeStyle(
+    uiStyle: AppUiStyle,
     prefersNativeChrome: Boolean,
     androidNativeLiquidGlassEnabled: Boolean,
     preferInlineContentStyle: Boolean = false
@@ -123,10 +126,15 @@ internal fun resolveSegmentedControlChromeStyle(
     val ignoredNativeChrome = prefersNativeChrome
     @Suppress("UNUSED_PARAMETER")
     val ignoredInline = preferInlineContentStyle
-    return if (androidNativeLiquidGlassEnabled) {
-        SegmentedControlChromeStyle.LIQUID_PILL
-    } else {
-        SegmentedControlChromeStyle.ANDROID_NATIVE_UNDERLINE
+    return when (
+        resolveHomeSelectionIndicatorStyle(
+            uiStyle = uiStyle,
+            liquidGlassEnabled = androidNativeLiquidGlassEnabled,
+        )
+    ) {
+        HomeSelectionIndicatorStyle.CAPSULE -> SegmentedControlChromeStyle.LIQUID_PILL
+        HomeSelectionIndicatorStyle.MD3_UNDERLINE ->
+            SegmentedControlChromeStyle.ANDROID_NATIVE_UNDERLINE
     }
 }
 
@@ -405,6 +413,7 @@ fun BottomBarLiquidSegmentedControl(
     val effectiveAndroidNativeLiquidGlassEnabled =
         forceLiquidChrome || homeSettings.androidNativeLiquidGlassEnabled
     val chromeStyle = resolveSegmentedControlChromeStyle(
+        uiStyle = LocalAppUiStyle.current,
         prefersNativeChrome = visualPolicy.prefersNativeChrome,
         androidNativeLiquidGlassEnabled = effectiveAndroidNativeLiquidGlassEnabled,
         preferInlineContentStyle = preferInlineContentStyle

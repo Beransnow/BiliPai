@@ -95,7 +95,12 @@ class PartitionScreenStructureTest {
             .substringAfter("private fun PartitionSideRailMovingIndicator(")
             .substringBefore("private fun PartitionSideRailItem(")
 
-        assertTrue(indicator.contains("if (!liquidGlassIndicatorEnabled)"))
+        assertTrue(indicator.contains("resolveHomeSelectionIndicatorStyle("))
+        assertTrue(
+            indicator.contains(
+                "selectionIndicatorStyle == HomeSelectionIndicatorStyle.MD3_UNDERLINE"
+            )
+        )
         assertTrue(indicator.contains("PartitionSideRailMd3UnderlineWidth"))
         assertTrue(indicator.contains("PartitionSideRailMd3UnderlineHeight"))
         assertTrue(indicator.contains("onVideoListPushChanged(0f)"))

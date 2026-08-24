@@ -2,6 +2,7 @@
 package com.android.purebilibili.feature.partition
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
+import com.android.purebilibili.core.theme.LocalAppUiStyle
 
 import android.os.Build
 import androidx.compose.animation.core.Animatable
@@ -146,6 +147,8 @@ import com.android.purebilibili.core.ui.resolveMatchedLiquidIndicatorGeometry
 import com.android.purebilibili.core.ui.resolveMatchedLiquidIndicatorHeightDp
 import com.android.purebilibili.feature.home.components.shouldShowTopTabIcon
 import com.android.purebilibili.feature.home.components.shouldShowTopTabText
+import com.android.purebilibili.feature.home.components.HomeSelectionIndicatorStyle
+import com.android.purebilibili.feature.home.components.resolveHomeSelectionIndicatorStyle
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import dev.chrisbanes.haze.HazeState
@@ -903,7 +906,11 @@ private fun PartitionSideRailMovingIndicator(
     modifier: Modifier = Modifier
 ) {
     val density = LocalDensity.current
-    if (!liquidGlassIndicatorEnabled) {
+    val selectionIndicatorStyle = resolveHomeSelectionIndicatorStyle(
+        uiStyle = LocalAppUiStyle.current,
+        liquidGlassEnabled = liquidGlassIndicatorEnabled,
+    )
+    if (selectionIndicatorStyle == HomeSelectionIndicatorStyle.MD3_UNDERLINE) {
         SideEffect {
             onVideoListPushChanged(0f)
         }

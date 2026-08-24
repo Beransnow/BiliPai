@@ -1,6 +1,7 @@
 package com.android.purebilibili.feature.home.components
 
 import androidx.compose.ui.graphics.Color
+import com.android.purebilibili.core.theme.AppUiStyle
 import androidx.compose.ui.graphics.luminance
 import com.android.purebilibili.core.store.BottomBarLiquidGlassPreset
 import com.android.purebilibili.core.theme.UiPreset
@@ -304,10 +305,11 @@ class BottomBarSurfaceColorPolicyTest {
     }
 
     @Test
-    fun `segmented controls use md3 underline whenever global liquid glass is disabled`() {
+    fun `segmented controls route non glass indicator by ui theme`() {
         assertEquals(
             SegmentedControlChromeStyle.ANDROID_NATIVE_UNDERLINE,
             resolveSegmentedControlChromeStyle(
+                uiStyle = AppUiStyle.MATERIAL3,
                 prefersNativeChrome = true,
                 androidNativeLiquidGlassEnabled = false
             )
@@ -316,14 +318,16 @@ class BottomBarSurfaceColorPolicyTest {
         assertEquals(
             SegmentedControlChromeStyle.LIQUID_PILL,
             resolveSegmentedControlChromeStyle(
+                uiStyle = AppUiStyle.MATERIAL3,
                 prefersNativeChrome = true,
                 androidNativeLiquidGlassEnabled = true
             )
         )
 
         assertEquals(
-            SegmentedControlChromeStyle.ANDROID_NATIVE_UNDERLINE,
+            SegmentedControlChromeStyle.LIQUID_PILL,
             resolveSegmentedControlChromeStyle(
+                uiStyle = AppUiStyle.MIUIX,
                 prefersNativeChrome = false,
                 androidNativeLiquidGlassEnabled = false
             )

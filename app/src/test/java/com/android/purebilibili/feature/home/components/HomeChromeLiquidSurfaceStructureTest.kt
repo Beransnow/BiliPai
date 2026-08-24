@@ -211,6 +211,8 @@ class HomeChromeLiquidSurfaceStructureTest {
         assertTrue(
             "top tab indicator should reuse the bottom bar matched indicator and sibling capture topology",
             topBarSource.contains("val shouldUseMd3LiquidCapsule = effectivePresentation == AppTopTabPresentation.MATERIAL_UNDERLINE") &&
+                topBarSource.contains("resolveHomeSelectionIndicatorStyle(") &&
+                topBarSource.contains("shouldUseHomeCapsule") &&
                 topBarSource.contains("!hasOuterChromeSurface") &&
                 topBarSource.contains("val shouldUseMd3DockBackedCapsule =") &&
                 topBarSource.contains("BiliPaiFloatingDockIndicator(") &&

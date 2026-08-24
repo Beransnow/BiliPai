@@ -3,6 +3,7 @@ package com.android.purebilibili.feature.home.components
 import java.io.File
 import com.android.purebilibili.core.theme.UiPreset
 import androidx.compose.ui.graphics.Color
+import com.android.purebilibili.core.theme.AppUiStyle
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -304,6 +305,7 @@ class BottomBarLiquidSegmentedControlStructureTest {
         assertEquals(
             SegmentedControlChromeStyle.LIQUID_PILL,
             resolveSegmentedControlChromeStyle(
+                uiStyle = AppUiStyle.MATERIAL3,
                 prefersNativeChrome = true,
                 androidNativeLiquidGlassEnabled = true,
                 preferInlineContentStyle = true
@@ -316,6 +318,7 @@ class BottomBarLiquidSegmentedControlStructureTest {
         assertEquals(
             SegmentedControlChromeStyle.LIQUID_PILL,
             resolveSegmentedControlChromeStyle(
+                uiStyle = AppUiStyle.MIUIX,
                 prefersNativeChrome = true,
                 androidNativeLiquidGlassEnabled = true,
                 preferInlineContentStyle = false
@@ -396,6 +399,8 @@ class BottomBarLiquidSegmentedControlStructureTest {
         assertTrue(source.contains("liquidGlassEffectsEnabled: Boolean = true"))
         assertTrue(source.contains("dragSelectionEnabled: Boolean = true"))
         assertTrue(source.contains("resolveSegmentedControlChromeStyle("))
+        assertTrue(source.contains("uiStyle = LocalAppUiStyle.current"))
+        assertTrue(source.contains("resolveHomeSelectionIndicatorStyle("))
         assertTrue(source.contains("AndroidNativeUnderlinedSegmentedControl("))
         assertTrue(source.contains("indicatorPositionProvider: (() -> Float)? = null"))
         assertTrue(source.contains("resolveNativeUnderlineGeometry("))

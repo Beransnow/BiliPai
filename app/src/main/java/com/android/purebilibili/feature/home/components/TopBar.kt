@@ -7,6 +7,7 @@ import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.theme.LocalAppUiStyle
 
 import com.android.purebilibili.core.ui.OpticalContrastPalette
 import com.android.purebilibili.feature.home.HomeVisualPalette
@@ -1333,16 +1334,22 @@ private fun LightweightHomeTopTabs(
         val shouldUseLiquidGlassIndicator = isLiquidGlassEnabled &&
             !skinPlainStyle &&
             !hasSkinStickerIcons
-        // 液态玻璃复用开启时沿用 BiliPai 胶囊；关闭后恢复 MD3 原生短下划线。
+        val homeSelectionIndicatorStyle = resolveHomeSelectionIndicatorStyle(
+            uiStyle = LocalAppUiStyle.current,
+            liquidGlassEnabled = isLiquidGlassEnabled,
+        )
+        val shouldUseHomeCapsule =
+            homeSelectionIndicatorStyle == HomeSelectionIndicatorStyle.CAPSULE
+        // 玻璃开启或 Miuix 主题使用胶囊；仅 Material3 的非玻璃路径使用短下划线。
         val shouldUseMd3LiquidCapsule = effectivePresentation == AppTopTabPresentation.MATERIAL_UNDERLINE &&
             !skinPlainStyle &&
             !hasSkinStickerIcons &&
-            isLiquidGlassEnabled &&
+            shouldUseHomeCapsule &&
             !hasOuterChromeSurface
         val shouldUseMd3DockBackedCapsule = effectivePresentation == AppTopTabPresentation.MATERIAL_UNDERLINE &&
             !skinPlainStyle &&
             !hasSkinStickerIcons &&
-            isLiquidGlassEnabled &&
+            shouldUseHomeCapsule &&
             hasOuterChromeSurface
         val shouldUseMd3NativeUnderline = effectivePresentation == AppTopTabPresentation.MATERIAL_UNDERLINE &&
             !hasSkinStickerIcons &&
