@@ -97,6 +97,26 @@ class NativeThemeMigrationBoundaryTest {
     }
 
     @Test
+    fun appDirectSliderCallsUseFacade() {
+        val offenders = kotlinFiles("app/src/main/java")
+            .flatMap { file ->
+                file.readLines().mapIndexedNotNull { index, line ->
+                    if (DIRECT_NATIVE_SLIDER_CALL.containsMatchIn(line)) {
+                        "${repoRelativePath(file)}:${index + 1}: $line"
+                    } else {
+                        null
+                    }
+                }
+            }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "App production sources must use AppSlider, not a direct native Slider:\n" +
+                offenders.joinToString("\n"),
+        )
+    }
+
+    @Test
     fun featureDirectProgressCallsOnlyDecrease() {
         val directCalls = kotlinFiles("app/src/main/java/com/android/purebilibili/feature")
             .flatMap { file ->
@@ -305,6 +325,7 @@ class NativeThemeMigrationBoundaryTest {
         )
         val APP_UI_STYLE_BRANCH = Regex("\\bAppUiStyle\\.")
         val MATERIAL_SLIDER_DEFAULTS_CALL = Regex("(?<![A-Za-z0-9_])SliderDefaults\\.colors\\(")
+        val DIRECT_NATIVE_SLIDER_CALL = Regex("(?<![A-Za-z0-9_])Slider\\(")
         val DIRECT_PROGRESS_INDICATOR_CALL =
             Regex("(?<!App)(?:Circular|Linear)ProgressIndicator\\(")
         val DIRECT_NATIVE_CARD_CALL =

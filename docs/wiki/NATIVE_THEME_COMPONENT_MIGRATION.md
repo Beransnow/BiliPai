@@ -69,6 +69,7 @@ feature UI
 - MD3 renderer 禁止导入 Miuix；Miuix renderer 禁止导入 Material 3。
 - 液态玻璃文件集合使用路径摘要冻结。
 - Miuix navigation 只能出现在已冻结的共享导航子系统文件集合。
+- app 生产源码不得直接调用原生 `Slider`，必须通过 `AppSlider` 分发。
 - app 生产源码不得直接调用 Material 3 `Card` / `ElevatedCard` / `OutlinedCard`；只允许上述
   `Md3ThemeColorPreview` 精确例外。
 
@@ -83,7 +84,7 @@ feature UI
 | 已双原生化 | `AppBadge` | 未显式传色时分别解析原生 Badge token |
 | 已双原生化 | `AppListItem` | MD3 使用 `ListItem`，MIUIX 使用官方 `BasicComponent` slot API |
 | 已双原生化 | `AppCheckbox` / `AppRadioButton` / `AppSwitch` | facade 不再暴露 MD3 colors；MIUIX 原生触觉受应用总开关约束 |
-| 已双原生化 | `AppSlider` | 自定义颜色通过 `AppSliderColors` 映射到两套原生 defaults |
+| 已双原生化 | `AppSlider` | 自定义颜色通过 `AppSliderColors` 映射到两套原生 defaults；app 生产源码直调归零 |
 | 已双原生化 | `AppCircularProgressIndicator` / `AppLinearProgressIndicator` | 颜色与线宽默认使用中立 sentinel；MD3 保留 provider 延迟读取，MIUIX 在最终 renderer 边界求值；feature 直调归零 |
 | 已双原生化 | `AppCard` | `AppCardShape` 仅接受语义层级或显式均匀半径；MD3 使用原生 `Card` / `ElevatedCard`，MIUIX 使用原生 `Card`；21 个既有调用、反诈历史与启动壁纸裸 Card 已收口 |
 | 已完成几何收敛 | 分段控制 | 视觉高度与圆角共同解析，不再把 48dp 触控下限写成固定视觉高度 |

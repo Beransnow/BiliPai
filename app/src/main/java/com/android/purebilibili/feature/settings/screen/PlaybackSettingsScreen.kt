@@ -410,7 +410,7 @@ fun PlaybackSettingsContent(
                                     )
                                 }
                             }
-                            Slider(
+                            AppSlider(
                                 value = hintScale,
                                 onValueChange = { hintScale = it },
                                 onValueChangeFinished = {
@@ -456,7 +456,7 @@ fun PlaybackSettingsContent(
                                     )
                                 }
                             }
-                            Slider(
+                            AppSlider(
                                 value = hintAlpha,
                                 onValueChange = { hintAlpha = it },
                                 onValueChangeFinished = {
