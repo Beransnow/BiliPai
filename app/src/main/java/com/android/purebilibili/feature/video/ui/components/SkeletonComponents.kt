@@ -272,9 +272,7 @@ private fun RelatedVideoItemSkeleton(
             .background(MaterialTheme.colorScheme.surface)
             .padding(8.dp),
     ) {
-        val availableWidthDp = maxWidth.value
-        val layoutMode = resolveRelatedVideoCardLayoutMode(availableWidthDp)
-        when (layoutMode) {
+        when (resolveRelatedVideoCardLayoutMode(maxWidth.value)) {
             RelatedVideoCardLayoutMode.STACKED -> Column(modifier = Modifier.fillMaxWidth()) {
                 SkeletonBlock(
                     modifier = Modifier.fillMaxWidth().aspectRatio(coverAspectRatio),
@@ -290,9 +288,10 @@ private fun RelatedVideoItemSkeleton(
                 horizontalArrangement = Arrangement.spacedBy(HORIZONTAL_VIDEO_CARD_COVER_INFO_GAP_DP.dp),
                 verticalAlignment = Alignment.Top,
             ) {
+                val layoutMode = resolveRelatedVideoCardLayoutMode(maxWidth.value)
                 SkeletonBlock(
                     modifier = Modifier
-                        .width(resolveRelatedVideoCoverWidthDp(availableWidthDp, layoutMode).dp)
+                        .width(resolveRelatedVideoCoverWidthDp(maxWidth.value, layoutMode).dp)
                         .aspectRatio(HORIZONTAL_VIDEO_CARD_COVER_ASPECT_RATIO),
                     shape = VideoDetailShapes.media(),
                 )
