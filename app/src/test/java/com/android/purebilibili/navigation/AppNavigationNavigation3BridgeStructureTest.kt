@@ -521,6 +521,7 @@ class AppNavigationNavigation3BridgeStructureTest {
             .substringBefore("val navigation3ProgrammaticBackDispatcher")
 
         assertTrue(replacement.contains("Snapshot.withMutableSnapshot"))
+        assertTrue(replacement.contains("if (navigation3BackStack == replacementStack) return"))
         assertTrue(replacement.contains("navigation3BackStack.clear()"))
         assertTrue(replacement.contains("navigation3BackStack.addAll(replacementStack)"))
     }

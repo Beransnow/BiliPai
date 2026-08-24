@@ -164,8 +164,10 @@ fun SettingsTabletShell(
                                 },
                                 selected = selected,
                                 onClick = {
-                                    splitLayoutState.navigateTo(AppSplitPane.Secondary)
-                                    onCategoryClick(category)
+                                    if (!selected) {
+                                        splitLayoutState.navigateTo(AppSplitPane.Secondary)
+                                        onCategoryClick(category)
+                                    }
                                 },
                                 icon = {
                                     Box(

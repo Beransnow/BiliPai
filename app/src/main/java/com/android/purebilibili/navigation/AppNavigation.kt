@@ -510,6 +510,7 @@ fun AppNavigation(
         val navigation3SaveableStateHolder = rememberSaveableStateHolder()
         fun replaceNavigation3BackStack(keys: List<BiliPaiNavKey>) {
             val replacementStack = keys.ifEmpty { listOf(BiliPaiNavKey.MainHost) }
+            if (navigation3BackStack == replacementStack) return
             val removedStateKeys = resolveRemovedNavigation3SaveableStateKeys(
                 currentStack = navigation3BackStack,
                 replacementStack = replacementStack,
