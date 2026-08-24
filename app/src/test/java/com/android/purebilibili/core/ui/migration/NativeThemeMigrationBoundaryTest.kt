@@ -77,6 +77,26 @@ class NativeThemeMigrationBoundaryTest {
     }
 
     @Test
+    fun featureSliderColorsUseNeutralAppTokens() {
+        val offenders = kotlinFiles("app/src/main/java/com/android/purebilibili/feature")
+            .flatMap { file ->
+                file.readLines().mapIndexedNotNull { index, line ->
+                    if (MATERIAL_SLIDER_DEFAULTS_CALL.containsMatchIn(line)) {
+                        "${repoRelativePath(file)}:${index + 1}: $line"
+                    } else {
+                        null
+                    }
+                }
+            }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "AppSlider colors must use AppSliderDefaults, not Material3 SliderDefaults:\n" +
+                offenders.joinToString("\n"),
+        )
+    }
+
+    @Test
     fun primitiveFacadeVendorImportsOnlyDecrease() {
         val source = repoFile(
             "design-system/src/main/java/com/android/purebilibili/core/ui/components/" +
@@ -220,6 +240,7 @@ class NativeThemeMigrationBoundaryTest {
             "import top.yukonga.miuix.kmp.squircle.",
         )
         val APP_UI_STYLE_BRANCH = Regex("\\bAppUiStyle\\.")
+        val MATERIAL_SLIDER_DEFAULTS_CALL = Regex("(?<![A-Za-z0-9_])SliderDefaults\\.colors\\(")
 
         // Frozen from production sources on 2026-08-24; lower after each migration batch.
         const val MAX_FEATURE_MATERIAL3_FILES = 237
