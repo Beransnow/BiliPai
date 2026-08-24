@@ -145,6 +145,11 @@ internal fun resolveDashRetryDelays(
     return if (isPrimaryAttempt || targetQn <= 80) listOf(0L, 450L) else listOf(0L)
 }
 
+internal fun shouldRetryOnlyTransientEmptyDashResponse(
+    targetQn: Int,
+    isPrimaryAttempt: Boolean,
+): Boolean = isPrimaryAttempt && targetQn > 80
+
 internal fun shouldRetryDashTrackRecovery(
     targetQn: Int,
     returnedQuality: Int,

@@ -173,6 +173,9 @@ class VideoLoadPolicyTest {
     fun `resolveDashRetryDelays retries the primary premium quality once`() {
         assertEquals(listOf(0L, 450L), resolveDashRetryDelays(125, isPrimaryAttempt = true))
         assertEquals(listOf(0L), resolveDashRetryDelays(120, isPrimaryAttempt = false))
+        assertTrue(shouldRetryOnlyTransientEmptyDashResponse(125, isPrimaryAttempt = true))
+        assertFalse(shouldRetryOnlyTransientEmptyDashResponse(80, isPrimaryAttempt = true))
+        assertFalse(shouldRetryOnlyTransientEmptyDashResponse(125, isPrimaryAttempt = false))
     }
 
     @Test

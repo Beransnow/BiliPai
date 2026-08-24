@@ -1624,7 +1624,11 @@ object VideoRepository {
                 targetQn = dashQn,
                 isPrimaryAttempt = qualityIndex == 0
             )
-            for ((attempt, delayMs) in retryDelays.withIndex()) {
+            val retryOnlyTransientEmptyResponse = shouldRetryOnlyTransientEmptyDashResponse(
+                targetQn = dashQn,
+                isPrimaryAttempt = qualityIndex == 0,
+            )
+            dashRetry@ for ((attempt, delayMs) in retryDelays.withIndex()) {
                 if (delayMs > 0L) {
                     com.android.purebilibili.core.util.Logger.d(
                         "VideoRepo",
@@ -1671,7 +1675,10 @@ object VideoRepository {
                                 "VideoRepo",
                                 " [LoggedIn] Reject downgraded result for explicit quality request: requestedQn=$dashQn, quality=${payload.quality}, dashIds=$dashVideoIds"
                             )
-                            continue
+                            if (retryOnlyTransientEmptyResponse) {
+                                break@dashRetry
+                            }
+                            continue@dashRetry
                         }
                         com.android.purebilibili.core.util.Logger.d(
                             "VideoRepo",
@@ -1694,6 +1701,9 @@ object VideoRepository {
                             wbiKeysCache = null
                             wbiKeysTimestamp = 0L
                         }
+                    }
+                    if (retryOnlyTransientEmptyResponse) {
+                        break@dashRetry
                     }
                 }
             }
