@@ -207,7 +207,7 @@ internal fun resolveVideoContentTabBarLayoutSpec(widthDp: Int): VideoContentTabB
             unselectedTabFontSizeSp = 15,
             indicatorWidthDp = 28,
             segmentedControlHeightDp = 40,
-            segmentedControlIndicatorHeightDp = 35
+            segmentedControlIndicatorHeightDp = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp
         )
     } else {
         VideoContentTabBarLayoutSpec(
@@ -221,7 +221,7 @@ internal fun resolveVideoContentTabBarLayoutSpec(widthDp: Int): VideoContentTabB
             unselectedTabFontSizeSp = 16,
             indicatorWidthDp = 32,
             segmentedControlHeightDp = 40,
-            segmentedControlIndicatorHeightDp = 35
+            segmentedControlIndicatorHeightDp = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp
         )
     }
 }

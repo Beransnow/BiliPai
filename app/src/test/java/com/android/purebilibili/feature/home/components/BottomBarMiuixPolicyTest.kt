@@ -160,7 +160,7 @@ class BottomBarMiuixPolicyTest {
         assertTrue(floating.contains("padding = maxOf("))
         assertTrue(floating.contains("refractionHeight = shellRefractionHeightPx"))
         assertTrue(floating.contains("refractionAmount = shellRefractionAmountPx"))
-        assertTrue(floating.contains("FloatingBottomBarPressedScale: Float = 78f / 56f"))
+        assertTrue(floating.contains("BottomBarReferencePressedScale"))
     }
 
     @Test
@@ -191,11 +191,11 @@ class BottomBarMiuixPolicyTest {
 
         assertTrue(floating.contains("rememberCombinedBackdrop(backdrop, tabsBackdrop)"))
         assertTrue(floating.contains(".layerBackdrop(tabsBackdrop)"))
-        assertTrue(floating.contains("FloatingBottomBarIndicatorHeight: Dp = 56.dp"))
+        assertTrue(floating.contains("BottomBarReferenceIndicatorHeightDp.dp"))
         assertTrue(renderer.contains("FloatingBottomBar("))
         assertTrue(renderer.contains("indicatorHeight = BOTTOM_BAR_INDICATOR_DOCK_BAND_HEIGHT_DP.dp"))
         assertTrue(
-            floating.contains("FloatingBottomBarPressedScale: Float = 78f / 56f") ||
+            floating.contains("BottomBarReferencePressedScale") ||
                 host.contains("BOTTOM_BAR_INDICATOR_DRAG_SCALE_TARGET =")
         )
     }

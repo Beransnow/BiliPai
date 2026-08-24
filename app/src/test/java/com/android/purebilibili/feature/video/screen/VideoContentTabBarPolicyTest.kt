@@ -159,7 +159,7 @@ class VideoContentTabBarPolicyTest {
         assertEquals(12, spec.containerHorizontalPaddingDp)
         assertEquals(12, spec.tabHorizontalPaddingDp)
         assertEquals(40, spec.segmentedControlHeightDp)
-        assertEquals(35, spec.segmentedControlIndicatorHeightDp)
+        assertEquals(30, spec.segmentedControlIndicatorHeightDp)
         assertTrue(
             hasVideoContentTabBarIndicatorScaleClearance(
                 containerHeightDp = spec.segmentedControlHeightDp,

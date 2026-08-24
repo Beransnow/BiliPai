@@ -1441,7 +1441,8 @@ private const val BILIPAI_INDICATOR_VELOCITY_NORMALIZATION_DIVISOR = 10f
 private const val BILIPAI_INDICATOR_VELOCITY_SCALE_X_MULTIPLIER = 0.75f
 private const val BILIPAI_INDICATOR_VELOCITY_SCALE_Y_MULTIPLIER = 0.25f
 private const val BILIPAI_INDICATOR_VELOCITY_CLAMP = 0.2f
-internal const val BOTTOM_BAR_INDICATOR_DOCK_BAND_HEIGHT_DP = 56f
+internal const val BOTTOM_BAR_INDICATOR_DOCK_BAND_HEIGHT_DP =
+    com.android.purebilibili.core.ui.BottomBarReferenceIndicatorHeightDp
 
 internal fun resolveBottomBarIndicatorVisualPolicyWithHold(
     basePolicy: BottomBarIndicatorVisualPolicy,

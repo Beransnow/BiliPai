@@ -151,12 +151,14 @@ enum class FloatingBottomBarMode {
     None
 }
 
-/** Keep the Miuix upstream resting indicator height for the standard bottom dock. */
-val FloatingBottomBarIndicatorHeight: Dp = 56.dp
+/** Flatter resting indicator; the shell and indicator retain the same capsule shape. */
+val FloatingBottomBarIndicatorHeight: Dp =
+    com.android.purebilibili.core.ui.BottomBarReferenceIndicatorHeightDp.dp
 
 val FloatingBottomBarDefaultShellHeight: Dp = 64.dp
 
-const val FloatingBottomBarPressedScale: Float = 78f / 56f
+const val FloatingBottomBarPressedScale: Float =
+    com.android.purebilibili.core.ui.BottomBarReferencePressedScale
 
 private val iosIndicatorSpecular: Highlight = Highlight(
     width = 1.dp,

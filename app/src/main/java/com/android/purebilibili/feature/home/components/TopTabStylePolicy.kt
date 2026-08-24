@@ -349,7 +349,7 @@ enum class TopTabIndicatorStyle {
 }
 
 // Compact top docks scale the 56/64 rest fill from the 64dp home bottom bar.
-internal const val CompactTopTabIndicatorHeightDp = 35f
+internal const val CompactTopTabIndicatorHeightDp = 30f
 internal const val CompactTopTabIndicatorCornerDp = 9f
 
 data class TopTabVisualTuning(

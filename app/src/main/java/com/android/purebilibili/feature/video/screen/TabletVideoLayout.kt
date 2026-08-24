@@ -108,7 +108,8 @@ internal fun TabletSecondaryLiquidTabRow(
         modifier = modifier,
         itemWidth = if (labels.size <= 2) 108.dp else null,
         height = 48.dp,
-        indicatorHeight = 42.dp,
+        indicatorHeight = com.android.purebilibili.core.ui
+            .roundMatchedLiquidIndicatorHeightDp(48f).dp,
         labelFontSize = 15.sp,
         liquidGlassEffectsEnabled = true,
         dragSelectionEnabled = true,

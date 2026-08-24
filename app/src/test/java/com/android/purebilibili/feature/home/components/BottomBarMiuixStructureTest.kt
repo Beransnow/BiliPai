@@ -54,7 +54,7 @@ class BottomBarMiuixStructureTest {
         assertTrue(source.contains("resolveBiliPaiBottomBarSearchLayout("))
         assertTrue(source.contains("val shellHeight = if (dockHeight > searchHeight) dockHeight else searchHeight"))
         assertTrue(source.contains("BOTTOM_BAR_INDICATOR_DRAG_SCALE_TARGET =") ||
-            floatingSource.contains("FloatingBottomBarPressedScale: Float = 78f / 56f"))
+            floatingSource.contains("BottomBarReferencePressedScale"))
 
         // Old multi-layer path removed (no dual render).
         assertFalse(source.contains("private fun BiliPaiBottomBarShell("))
