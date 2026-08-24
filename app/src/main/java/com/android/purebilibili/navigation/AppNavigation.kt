@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.material3.MaterialTheme
@@ -499,8 +500,12 @@ fun AppNavigation(
                 currentStack = navigation3BackStack,
                 replacementStack = replacementStack,
             )
-            navigation3BackStack.clear()
-            navigation3BackStack.addAll(replacementStack)
+            // NavDisplay rejects an empty stack. clear()+addAll() as two observable writes can
+            // expose an empty intermediate frame when a bottom-tab switch races recomposition.
+            Snapshot.withMutableSnapshot {
+                navigation3BackStack.clear()
+                navigation3BackStack.addAll(replacementStack)
+            }
             // SaveableStateHolder intentionally retains disposed providers. Media detail keys are
             // session-scoped, so without explicit eviction every watched video remains in the
             // Activity saved-state Bundle and eventually causes TransactionTooLargeException.

@@ -513,6 +513,18 @@ class AppNavigationNavigation3BridgeStructureTest {
         assertTrue(source.contains("scrollToTopChannel = watchLaterScrollChannel"))
     }
 
+    @Test
+    fun navigationBackStackReplacementIsAtomicForNavDisplay() {
+        val source = appNavigationSource()
+        val replacement = source
+            .substringAfter("fun replaceNavigation3BackStack(keys: List<BiliPaiNavKey>)")
+            .substringBefore("val navigation3ProgrammaticBackDispatcher")
+
+        assertTrue(replacement.contains("Snapshot.withMutableSnapshot"))
+        assertTrue(replacement.contains("navigation3BackStack.clear()"))
+        assertTrue(replacement.contains("navigation3BackStack.addAll(replacementStack)"))
+    }
+
     private fun appNavigationSource(): String {
         return listOf(
             File("app/src/main/java/com/android/purebilibili/navigation/AppNavigation.kt"),

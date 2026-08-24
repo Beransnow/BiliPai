@@ -135,7 +135,6 @@ import com.android.purebilibili.core.util.WindowWidthSizeClass
 import com.android.purebilibili.core.ui.components.AppPreference
 import com.android.purebilibili.core.ui.components.AppPreferenceGridItem
 import com.android.purebilibili.core.store.StoredAccountSession
-import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.data.model.response.FavFolder
 import com.android.purebilibili.data.model.response.FollowBangumiItem
@@ -143,8 +142,6 @@ import com.android.purebilibili.data.model.response.SpaceAggregateArchiveItem
 import com.android.purebilibili.data.model.response.SpaceDynamicItem
 import com.android.purebilibili.data.model.response.SpaceVideoItem
 import com.android.purebilibili.feature.dynamic.DynamicDeleteAction
-import com.android.purebilibili.core.ui.components.AppNativeTabRow
-import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.feature.settings.AppThemeMode
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 
@@ -170,14 +167,8 @@ import androidx.compose.ui.unit.times
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import com.android.purebilibili.core.ui.AppShapes
-import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
-import com.android.purebilibili.feature.home.components.LiquidGlassTuning
-import com.android.purebilibili.feature.home.components.biliPaiFloatingDockShell
-import com.android.purebilibili.feature.home.components.resolveLiquidGlassTuning
-import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
-import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
-import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
+import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 
 
 internal fun shouldEnableProfileHeaderLoginClick(isLogin: Boolean): Boolean = !isLogin
@@ -993,7 +984,6 @@ private fun ProfileSpaceContent(
     isTablet: Boolean,
     scrollToTopRequestId: Int = 0
 ) {
-    val context = LocalContext.current
     var showEditDialog by remember { mutableStateOf(false) }
     var showAdjustmentSheet by remember { mutableStateOf(false) }
     var tempSelectedUri by remember { mutableStateOf<Uri?>(null) }
@@ -1109,32 +1099,13 @@ private fun ProfileSpaceContent(
     val tabletRailScrollState = rememberScrollState()
     val tabletFeedListState = rememberLazyListState()
     val mobileListState = rememberLazyListState()
-    val profileTabBackdrop = rememberMiuixLayerBackdrop()
-    val homeSettings by SettingsManager
-        .getHomeSettings(context)
-        .collectAsStateWithLifecycle(initialValue = HomeSettings())
-    val profileTabLiquidGlassTuning = remember(
-        homeSettings.liquidGlassProgress,
-        homeSettings.liquidGlassAdvancedSettings,
-        homeSettings.liquidGlassReadabilityMode,
-    ) {
-        resolveLiquidGlassTuning(
-            progress = homeSettings.liquidGlassProgress,
-            advancedSettings = homeSettings.liquidGlassAdvancedSettings,
-            readabilityMode = homeSettings.liquidGlassReadabilityMode,
-        )
-    }
     ObserveProfileScrollToTop(
         requestId = scrollToTopRequestId,
         listState = if (isTablet) tabletFeedListState else mobileListState,
         scrollState = if (isTablet) tabletRailScrollState else null
     )
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .miuixLayerBackdrop(profileTabBackdrop)
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         if (isTablet) {
             Row(
                 modifier = Modifier
@@ -1195,9 +1166,6 @@ private fun ProfileSpaceContent(
                     modifier = Modifier.weight(1f),
                     contentPadding = PaddingValues(bottom = 48.dp),
                     listState = tabletFeedListState,
-                    tabBackdrop = profileTabBackdrop,
-                    tabLiquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled,
-                    tabLiquidGlassTuning = profileTabLiquidGlassTuning,
                 )
             }
         } else {
@@ -1236,9 +1204,6 @@ private fun ProfileSpaceContent(
                         ProfileSpaceTabs(
                             selectedTab = space.selectedTab,
                             onTabSelected = onTabSelected,
-                            backdrop = profileTabBackdrop,
-                            liquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled,
-                            liquidGlassTuning = profileTabLiquidGlassTuning,
                         )
                         ProfileSpaceTabBody(
                             user = user,
@@ -1320,9 +1285,6 @@ private fun ProfileSpaceFeedColumn(
     modifier: Modifier,
     contentPadding: PaddingValues,
     listState: LazyListState,
-    tabBackdrop: MiuixBackdrop,
-    tabLiquidGlassEnabled: Boolean,
-    tabLiquidGlassTuning: LiquidGlassTuning,
 ) {
     LazyColumn(
         state = listState,
@@ -1333,9 +1295,6 @@ private fun ProfileSpaceFeedColumn(
             ProfileSpaceTabs(
                 selectedTab = space.selectedTab,
                 onTabSelected = onTabSelected,
-                backdrop = tabBackdrop,
-                liquidGlassEnabled = tabLiquidGlassEnabled,
-                liquidGlassTuning = tabLiquidGlassTuning,
             )
         }
         item {
@@ -1855,33 +1814,18 @@ private fun ProfileSpaceStat(label: String, value: Int, color: Color, onClick: (
 private fun ProfileSpaceTabs(
     selectedTab: ProfileSpaceMainTab,
     onTabSelected: (ProfileSpaceMainTab) -> Unit,
-    backdrop: MiuixBackdrop,
-    liquidGlassEnabled: Boolean,
-    liquidGlassTuning: LiquidGlassTuning,
 ) {
     val tabs = remember { defaultProfileSpaceTabs() }
     val chromeSpec = remember { resolveProfileSpaceTabChromeSpec() }
-    val options = remember(tabs) {
-        tabs.map { item -> AppSegmentOption(value = item.tab, label = item.title) }
-    }
-    val tabShape = AppShapes.borderedContainer(ContainerLevel.Card)
-    AppNativeTabRow(
-        options = options,
-        selectedValue = selectedTab,
-        onSelectionChange = onTabSelected,
-        scrollable = tabs.size > 4,
+    val selectedIndex = tabs.indexOfFirst { it.tab == selectedTab }.coerceAtLeast(0)
+    BottomBarLiquidSegmentedControl(
+        items = tabs.map { it.title },
+        selectedIndex = selectedIndex,
+        onSelected = { index -> tabs.getOrNull(index)?.tab?.let(onTabSelected) },
+        forceLiquidChrome = true,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = chromeSpec.rowHorizontalInsetDp.dp, vertical = 6.dp)
-            .biliPaiFloatingDockShell(
-                backdrop = backdrop,
-                containerColor = AppSurfaceTokens.cardContainer(),
-                pressProgress = 0f,
-                shape = tabShape,
-                enabled = liquidGlassEnabled,
-                drawLens = false,
-                liquidGlassTuning = liquidGlassTuning,
-            ),
+            .padding(horizontal = chromeSpec.rowHorizontalInsetDp.dp, vertical = 6.dp),
     )
 }
 
