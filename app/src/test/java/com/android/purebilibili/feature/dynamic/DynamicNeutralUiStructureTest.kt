@@ -72,6 +72,16 @@ class DynamicNeutralUiStructureTest {
     }
 
     @Test
+    fun `dynamic native action buttons reserve width for complete labels`() {
+        val actionSource = File(sourceRoot, "components/ActionButton.kt").readText()
+
+        assertTrue(actionSource.contains("contentPadding = PaddingValues("))
+        assertTrue(actionSource.contains("insideMargin = PaddingValues("))
+        assertTrue(actionSource.contains("horizontal = AppSpacingTokens.Small"))
+        assertTrue(actionSource.contains("shape = AppShapes.container(ContainerLevel.Card)"))
+    }
+
+    @Test
     fun `dynamic segmented controls do not depend on another feature renderer`() {
         val commentSource = File(sourceRoot, "components/DynamicCommentSheet.kt").readText()
         val topBarSource = File(sourceRoot, "components/DynamicTopBar.kt").readText()

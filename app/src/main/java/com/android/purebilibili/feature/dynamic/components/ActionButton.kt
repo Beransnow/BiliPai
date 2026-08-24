@@ -26,7 +26,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,7 +39,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.android.purebilibili.core.ui.rememberAppCommentIcon
 import com.android.purebilibili.core.ui.rememberAppLikeFilledIcon
 import com.android.purebilibili.core.ui.rememberAppLikeIcon
@@ -119,7 +117,12 @@ fun ActionButton(
                 AppUiStyle.MATERIAL3 -> FilledTonalButton(
                     onClick = onClick,
                     enabled = enabled,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = AppShapes.container(ContainerLevel.Card),
+                    contentPadding = PaddingValues(
+                        horizontal = AppSpacingTokens.Small,
+                        vertical = AppSpacingTokens.Small
+                    )
                 ) {
                     Icon(
                         imageVector = buttonIcon,
@@ -137,7 +140,11 @@ fun ActionButton(
                 AppUiStyle.MIUIX -> MiuixButton(
                     onClick = onClick,
                     enabled = enabled,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    insideMargin = PaddingValues(
+                        horizontal = AppSpacingTokens.Small,
+                        vertical = AppSpacingTokens.Medium
+                    )
                 ) {
                     AppIcon(
                         imageVector = buttonIcon,
