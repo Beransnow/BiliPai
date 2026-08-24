@@ -77,6 +77,8 @@ class SideBarRendererPolicyTest {
         assertTrue(source.contains("AppPlatformNavigationRail("))
         assertTrue(source.contains("AppPlatformNavigationRailItem("))
         assertTrue(source.contains("expanded = expandable"))
+        assertTrue(source.contains("initiallyExpanded = sidebarExpanded"))
+        assertTrue(source.contains("onExpandedChange = onSidebarExpandedChange"))
         assertTrue(source.contains("shouldUseExpandableMiuixSideBar("))
         assertTrue(source.contains("shouldUseMiuixOfficialSideBarItem(skinIconPath)"))
         assertTrue(source.contains("MiuixSideBarSkinItem("))

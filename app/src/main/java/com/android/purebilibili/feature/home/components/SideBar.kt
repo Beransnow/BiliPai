@@ -96,6 +96,8 @@ fun FrostedSideBar(
     itemColorIndices: Map<String, Int> = emptyMap(),
     itemLabels: Map<String, String> = emptyMap(),
     uiSkinDecoration: BottomBarUiSkinDecoration? = null,
+    sidebarExpanded: Boolean = true,
+    onSidebarExpandedChange: (Boolean) -> Unit = {},
     onToggleSidebar: (() -> Unit)? = null,
     onAccountSwitchClick: (() -> Unit)? = null,
 ) {
@@ -115,6 +117,8 @@ fun FrostedSideBar(
                 visibleItems = visibleItems,
                 itemLabels = itemLabels,
                 uiSkinDecoration = uiSkinDecoration,
+                sidebarExpanded = sidebarExpanded,
+                onSidebarExpandedChange = onSidebarExpandedChange,
                 onToggleSidebar = onToggleSidebar,
                 onAccountSwitchClick = onAccountSwitchClick,
             )
@@ -147,6 +151,8 @@ private fun MiuixSideBar(
     visibleItems: List<BottomNavItem>,
     itemLabels: Map<String, String>,
     uiSkinDecoration: BottomBarUiSkinDecoration?,
+    sidebarExpanded: Boolean,
+    onSidebarExpandedChange: (Boolean) -> Unit,
     onToggleSidebar: (() -> Unit)?,
     onAccountSwitchClick: (() -> Unit)?,
 ) {
@@ -180,6 +186,8 @@ private fun MiuixSideBar(
 
     AppPlatformNavigationRail(
         expanded = expandable,
+        initiallyExpanded = sidebarExpanded,
+        onExpandedChange = onSidebarExpandedChange,
         modifier = modifier
             .fillMaxHeight()
             .then(

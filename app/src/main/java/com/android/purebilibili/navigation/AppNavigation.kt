@@ -1711,6 +1711,12 @@ fun AppNavigation(
                             itemColorIndices = bottomBarItemColors,
                             itemLabels = bottomBarItemLabels,
                             uiSkinDecoration = bottomBarUiSkinDecoration,
+                            sidebarExpanded = appNavigationSettings.sidebarExpanded,
+                            onSidebarExpandedChange = { expanded ->
+                                coroutineScope.launch {
+                                    SettingsManager.setSidebarExpanded(context, expanded)
+                                }
+                            },
                             onToggleSidebar = {
                                 // [Tablet] Toggle sidebar mode
                                 coroutineScope.launch {

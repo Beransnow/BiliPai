@@ -934,6 +934,7 @@ data class AppNavigationSettings(
     val bottomBarItemColors: Map<String, Int> = emptyMap(),
     val bottomBarItemLabels: Map<String, String> = emptyMap(),
     val tabletUseSidebar: Boolean = false,
+    val sidebarExpanded: Boolean = true,
     val sidebarAccountSwitcherEnabled: Boolean = true,
     val predictiveBackEnabled: Boolean = true,
     val predictiveBackAnimationStyle: String = "miuix",
@@ -6713,6 +6714,7 @@ object SettingsManager {
     // ========== 📱 平板导航模式 ==========
     
     private val KEY_TABLET_NAVIGATION_MODE = booleanPreferencesKey("tablet_use_sidebar")
+    private val KEY_SIDEBAR_EXPANDED = booleanPreferencesKey("sidebar_expanded")
     private val KEY_SIDEBAR_ACCOUNT_SWITCHER_ENABLED =
         booleanPreferencesKey("sidebar_account_switcher_enabled")
     private val KEY_PREDICTIVE_BACK_ENABLED = booleanPreferencesKey("predictive_back_enabled")
@@ -6758,6 +6760,7 @@ object SettingsManager {
                 preferences[bottomBarItemLabelsPreferencesKey].orEmpty()
             ),
             tabletUseSidebar = preferences[KEY_TABLET_NAVIGATION_MODE] ?: defaultTabletUseSidebar,
+            sidebarExpanded = preferences[KEY_SIDEBAR_EXPANDED] ?: true,
             sidebarAccountSwitcherEnabled =
                 preferences[KEY_SIDEBAR_ACCOUNT_SWITCHER_ENABLED] ?: true,
             predictiveBackEnabled = preferences[KEY_PREDICTIVE_BACK_ENABLED] ?: true,
@@ -6786,6 +6789,10 @@ object SettingsManager {
 
     suspend fun setTabletUseSidebar(context: Context, useSidebar: Boolean) {
         NavigationSettingsStore.setTabletUseSidebar(context, useSidebar)
+    }
+
+    suspend fun setSidebarExpanded(context: Context, expanded: Boolean) {
+        NavigationSettingsStore.setSidebarExpanded(context, expanded)
     }
 
     suspend fun setSidebarAccountSwitcherEnabled(context: Context, enabled: Boolean) {
@@ -7294,6 +7301,7 @@ object SettingsManager {
             BooleanShareablePreferenceDefinition(KEY_HEADER_COLLAPSE_ENABLED, SettingsShareSection.NAVIGATION),
             BooleanShareablePreferenceDefinition(KEY_SHOW_PGC_TIMELINE, SettingsShareSection.NAVIGATION),
             BooleanShareablePreferenceDefinition(KEY_TABLET_NAVIGATION_MODE, SettingsShareSection.NAVIGATION),
+            BooleanShareablePreferenceDefinition(KEY_SIDEBAR_EXPANDED, SettingsShareSection.NAVIGATION),
             BooleanShareablePreferenceDefinition(
                 KEY_SIDEBAR_ACCOUNT_SWITCHER_ENABLED,
                 SettingsShareSection.NAVIGATION
