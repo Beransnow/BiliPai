@@ -1128,7 +1128,7 @@ private fun BangumiDetailMetaSection(
                             )
                         },
                         colors = SuggestionChipDefaults.suggestionChipColors(
-                            containerColor = restrictionColors.backgroundColor,
+                            containerColor = restrictionColors.containerColor,
                             labelColor = restrictionColors.contentColor
                         )
                     )
