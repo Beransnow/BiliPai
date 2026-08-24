@@ -71,6 +71,7 @@ import com.android.purebilibili.core.ui.transition.LocalVideoCardTransitionBackg
 import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppFilledIconButton
 import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.data.model.response.ViewPoint
 import com.android.purebilibili.feature.video.progress.PbpProgressData
@@ -161,6 +162,7 @@ import androidx.media3.ui.PlayerView
 import com.android.purebilibili.core.store.FullscreenAspectRatio
 import com.android.purebilibili.core.plugin.PluginManager
 import com.android.purebilibili.core.store.SettingsManager
+import com.android.purebilibili.core.ui.AppSemanticIconFamily
 import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
 import com.android.purebilibili.core.ui.performance.TrackJankStateFlag
 import com.android.purebilibili.core.ui.performance.TrackJankStateValue
@@ -178,6 +180,8 @@ import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.core.util.HapticType
 import com.android.purebilibili.core.util.Logger
 import com.android.purebilibili.core.util.rememberHapticFeedback
+import top.yukonga.miuix.kmp.icon.MiuixIcons
+import top.yukonga.miuix.kmp.icon.extended.Play
 import com.android.purebilibili.feature.screenshot.AppScreenshotGestureBlockState
 import com.android.purebilibili.feature.anime4k.Anime4KConfig
 import com.android.purebilibili.feature.anime4k.Anime4KBypassReason
@@ -1355,6 +1359,10 @@ fun VideoPlayerSection(
     var hasObservedOrientationChange by remember { mutableStateOf(false) }
     val gestureMotionSpec = remember { resolveVideoGestureMotionSpec() }
     val playerChromeProfile = rememberAppPlayerChromeProfile()
+    val manualStartPlayIcon = when (playerChromeProfile.iconFamily) {
+        AppSemanticIconFamily.MIUIX -> MiuixIcons.Play
+        AppSemanticIconFamily.MATERIAL -> Icons.Filled.PlayArrow
+    }
     val gestureLevelOverlayStyle = remember(playerChromeProfile.tabPresentation) {
         resolveGestureLevelOverlayStyle(playerChromeProfile.tabPresentation)
     }
@@ -3912,7 +3920,8 @@ fun VideoPlayerSection(
                                 .background(Color.Black.copy(alpha = 0.18f))
                         )
                     }
-                    Box(
+                    AppFilledIconButton(
+                        onClick = playFromManualStartCover,
                         modifier = Modifier
                             .align(
                                 when (manualStartPlayButtonLayoutSpec.anchor) {
@@ -3932,46 +3941,13 @@ fun VideoPlayerSection(
                             .size(
                                 width = manualStartPlayButtonLayoutSpec.iconWidthDp.dp,
                                 height = manualStartPlayButtonLayoutSpec.iconHeightDp.dp
-                            )
-                            .clickable {
-                                playFromManualStartCover()
-                            },
+                            ),
                     ) {
-                        if (manualStartPlayButtonLayoutSpec.showTopDecorations) {
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.TopCenter)
-                                    .offset(x = (-11).dp, y = 4.dp)
-                                    .size(width = 12.dp, height = 6.dp)
-                                    .clip(AppShapes.container(ContainerLevel.Pill))
-                                    .background(Color.White.copy(alpha = 0.96f))
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.TopCenter)
-                                    .offset(x = 11.dp, y = 4.dp)
-                                    .size(width = 12.dp, height = 6.dp)
-                                    .clip(AppShapes.container(ContainerLevel.Pill))
-                                    .background(Color.White.copy(alpha = 0.96f))
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .align(if (manualStartPlayButtonLayoutSpec.showTopDecorations) Alignment.BottomCenter else Alignment.Center)
-                                .size(width = 58.dp, height = 46.dp)
-                                .clip(AppShapes.container(ContainerLevel.Card))
-                                .background(Color.White.copy(alpha = 0.96f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            AppIcon(
-                                imageVector = Icons.Filled.PlayArrow,
-                                contentDescription = "Play video",
-                                tint = Color(0xFF4D5160),
-                                modifier = Modifier
-                                    .size(28.dp)
-                                    .offset(x = 2.dp)
-                            )
-                        }
+                        AppIcon(
+                            imageVector = manualStartPlayIcon,
+                            contentDescription = "播放视频",
+                            modifier = Modifier.size(28.dp)
+                        )
                     }
                 }
             }
