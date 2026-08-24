@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -968,17 +969,27 @@ private fun BottomBarTabItem(
         Box(
             modifier = Modifier
                 .size(48.dp)
-                .clip(AppShapes.container(ContainerLevel.Field))
-                .background(itemContainerColor)
-                .clickable(enabled = !isMaterial3) { showColorPicker = true },
+                .appDesktopFocusableItemVisuals(enabled = !isMaterial3)
+                .clickable(
+                    enabled = !isMaterial3,
+                    role = Role.Button,
+                ) { showColorPicker = true },
             contentAlignment = Alignment.Center
         ) {
-            AppIcon(
-                imageVector = tab.icon,
-                contentDescription = null,
-                tint = iconContentColor,
-                modifier = Modifier.size(20.dp)
-            )
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(AppShapes.container(ContainerLevel.Field))
+                    .background(itemContainerColor),
+                contentAlignment = Alignment.Center,
+            ) {
+                AppIcon(
+                    imageVector = tab.icon,
+                    contentDescription = null,
+                    tint = iconContentColor,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
         
         Spacer(modifier = Modifier.width(14.dp))

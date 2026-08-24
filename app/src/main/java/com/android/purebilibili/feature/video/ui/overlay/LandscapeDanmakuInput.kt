@@ -63,15 +63,21 @@ fun LandscapeQuickActionButton(
     Box(
         modifier = modifier
             .size(48.dp)
-            .clip(AppShapes.container(ContainerLevel.Card))
-            .background(Color.White.copy(alpha = 0.15f))
             .appDesktopFocusableItemVisuals()
             .clickable(role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        AppText(
-            text = emoji,
-            fontSize = 14.sp
-        )
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .clip(AppShapes.container(ContainerLevel.Card))
+                .background(Color.White.copy(alpha = 0.15f)),
+            contentAlignment = Alignment.Center,
+        ) {
+            AppText(
+                text = emoji,
+                fontSize = 14.sp
+            )
+        }
     }
 }

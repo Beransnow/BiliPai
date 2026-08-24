@@ -16,6 +16,7 @@ import com.android.purebilibili.core.ui.components.AppOutlinedTextField
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTab
 import com.android.purebilibili.core.ui.components.AppTextButton
+import com.android.purebilibili.core.ui.components.appDesktopFocusableItemVisuals
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -61,6 +62,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -752,16 +754,26 @@ fun CommentInputDialog(
                                                         contentAlignment = Alignment.Center,
                                                         modifier = Modifier
                                                             .height(48.dp)
-                                                            .clip(AppShapes.container(ContainerLevel.Tag))
-                                                            .clickable { insertTextAtCursor(kaomojis[i]) }
-                                                            .background(
-                                                                opaqueCompositeOver(
-                                                                    MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.1f),
-                                                                    MaterialTheme.colorScheme.surface,
-                                                                )
-                                                            )
+                                                            .appDesktopFocusableItemVisuals()
+                                                            .clickable(role = Role.Button) {
+                                                                insertTextAtCursor(kaomojis[i])
+                                                            },
                                                     ) {
-                                                        AppText(kaomojis[i], fontSize = 13.sp)
+                                                        Box(
+                                                            modifier = Modifier
+                                                                .fillMaxWidth()
+                                                                .height(36.dp)
+                                                                .clip(AppShapes.container(ContainerLevel.Tag))
+                                                                .background(
+                                                                    opaqueCompositeOver(
+                                                                        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.1f),
+                                                                        MaterialTheme.colorScheme.surface,
+                                                                    )
+                                                                ),
+                                                            contentAlignment = Alignment.Center,
+                                                        ) {
+                                                            AppText(kaomojis[i], fontSize = 13.sp)
+                                                        }
                                                     }
                                                 }
                                             }
@@ -776,7 +788,7 @@ fun CommentInputDialog(
                                                 "🐶", "🐱", "🐭", "🐹", "🐰", "🦊", "🐻", "🐼"
                                             )
                                             androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
-                                                columns = androidx.compose.foundation.lazy.grid.GridCells.Adaptive(40.dp),
+                                                columns = androidx.compose.foundation.lazy.grid.GridCells.Adaptive(48.dp),
                                                 verticalArrangement = Arrangement.spacedBy(8.dp),
                                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                                             ) {
@@ -785,7 +797,10 @@ fun CommentInputDialog(
                                                         contentAlignment = Alignment.Center,
                                                         modifier = Modifier
                                                             .size(48.dp)
-                                                            .clickable { insertTextAtCursor(emojis[i]) }
+                                                            .appDesktopFocusableItemVisuals()
+                                                            .clickable(role = Role.Button) {
+                                                                insertTextAtCursor(emojis[i])
+                                                            }
                                                     ) {
                                                         AppText(emojis[i], fontSize = 24.sp)
                                                     }
