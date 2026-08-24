@@ -20,7 +20,7 @@ internal fun isStrictPremiumQualityRequest(
     requestKind: PlayUrlRequestKind,
     targetQn: Int
 ): Boolean {
-    return requestKind == PlayUrlRequestKind.EXPLICIT && targetQn in 125..127
+    return requestKind == PlayUrlRequestKind.EXPLICIT && (targetQn == 100 || targetQn >= 112)
 }
 
 internal data class VideoInfoLookupInput(
@@ -129,7 +129,7 @@ internal fun shouldAcceptCachedPlayUrlForAutoHighest(
 internal fun buildDashAttemptQualities(targetQn: Int): List<Int> {
     if (targetQn <= 80) return listOf(targetQn)
 
-    val premiumQualities = listOf(127, 126, 125, 120, 116, 112)
+    val premiumQualities = listOf(129, 127, 126, 125, 120, 116, 112, 100)
     val lowerFallbacks = premiumQualities.filter { quality -> quality < targetQn }
 
     return (listOf(targetQn) + lowerFallbacks + 80).distinct()

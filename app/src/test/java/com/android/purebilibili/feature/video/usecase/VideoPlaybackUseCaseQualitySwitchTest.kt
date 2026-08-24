@@ -314,6 +314,21 @@ class VideoPlaybackUseCaseQualitySwitchTest {
     }
 
     @Test
+    fun `resolveAutoHighestTargetQuality includes app only HDR Vivid tier`() {
+        val useCase = VideoPlaybackUseCase()
+
+        val result = useCase.resolveAutoHighestTargetQuality(
+            acceptQualities = listOf(129, 127, 125, 120, 80),
+            isLoggedIn = true,
+            isVip = true,
+            isHdrSupported = true,
+            isDolbyVisionSupported = true
+        )
+
+        assertEquals(129, result)
+    }
+
+    @Test
     fun `buildPlaybackSelectionSummary describes final selection context`() {
         val useCase = VideoPlaybackUseCase()
 

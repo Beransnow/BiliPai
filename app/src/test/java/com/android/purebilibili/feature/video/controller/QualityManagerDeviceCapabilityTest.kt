@@ -45,6 +45,8 @@ class QualityManagerDeviceCapabilityTest {
         assertEquals("1080P+", qualityManager.getQualityLabel(112))
         assertEquals("1080P60", qualityManager.getQualityLabel(116))
         assertEquals("4K", qualityManager.getQualityLabel(120))
+        assertEquals("智能修复", qualityManager.getQualityLabel(100))
+        assertEquals("HDR Vivid", qualityManager.getQualityLabel(129))
     }
 
     @Test

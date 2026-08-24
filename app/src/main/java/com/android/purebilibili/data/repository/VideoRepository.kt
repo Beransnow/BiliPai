@@ -2025,7 +2025,8 @@ object VideoRepository {
             "bvid" to bvid,
             "cid" to cid.toString(),
             "qn" to qn.toString(),
-            "fnval" to "4048",  // All DASH formats
+            // 4048 (Web DASH formats) + 16384 (APP-only HDR Vivid, qn=129).
+            "fnval" to "20432",
             "fnver" to "0",
             "fourk" to "1",
             "access_key" to accessToken,

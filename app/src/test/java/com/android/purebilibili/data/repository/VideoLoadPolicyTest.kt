@@ -151,22 +151,23 @@ class VideoLoadPolicyTest {
 
     @Test
     fun `buildDashAttemptQualities includes premium fallbacks for high target`() {
-        assertEquals(listOf(120, 116, 112, 80), buildDashAttemptQualities(120))
+        assertEquals(listOf(120, 116, 112, 100, 80), buildDashAttemptQualities(120))
         assertEquals(listOf(80), buildDashAttemptQualities(80))
     }
 
     @Test
     fun `buildDashAttemptQualities walks premium 1080p tiers before plain 1080p`() {
-        assertEquals(listOf(120, 116, 112, 80), buildDashAttemptQualities(120))
-        assertEquals(listOf(116, 112, 80), buildDashAttemptQualities(116))
-        assertEquals(listOf(112, 80), buildDashAttemptQualities(112))
+        assertEquals(listOf(120, 116, 112, 100, 80), buildDashAttemptQualities(120))
+        assertEquals(listOf(116, 112, 100, 80), buildDashAttemptQualities(116))
+        assertEquals(listOf(112, 100, 80), buildDashAttemptQualities(112))
     }
 
     @Test
     fun `buildDashAttemptQualities leads with requested HDR Dolby and 8K targets`() {
-        assertEquals(listOf(125, 120, 116, 112, 80), buildDashAttemptQualities(125))
-        assertEquals(listOf(126, 125, 120, 116, 112, 80), buildDashAttemptQualities(126))
-        assertEquals(listOf(127, 126, 125, 120, 116, 112, 80), buildDashAttemptQualities(127))
+        assertEquals(listOf(125, 120, 116, 112, 100, 80), buildDashAttemptQualities(125))
+        assertEquals(listOf(126, 125, 120, 116, 112, 100, 80), buildDashAttemptQualities(126))
+        assertEquals(listOf(127, 126, 125, 120, 116, 112, 100, 80), buildDashAttemptQualities(127))
+        assertEquals(listOf(129, 127, 126, 125, 120, 116, 112, 100, 80), buildDashAttemptQualities(129))
     }
 
     @Test
@@ -556,7 +557,9 @@ class VideoLoadPolicyTest {
         assertTrue(isStrictPremiumQualityRequest(PlayUrlRequestKind.EXPLICIT, 125))
         assertTrue(isStrictPremiumQualityRequest(PlayUrlRequestKind.EXPLICIT, 126))
         assertTrue(isStrictPremiumQualityRequest(PlayUrlRequestKind.EXPLICIT, 127))
-        assertFalse(isStrictPremiumQualityRequest(PlayUrlRequestKind.EXPLICIT, 120))
+        assertTrue(isStrictPremiumQualityRequest(PlayUrlRequestKind.EXPLICIT, 120))
+        assertTrue(isStrictPremiumQualityRequest(PlayUrlRequestKind.EXPLICIT, 100))
+        assertTrue(isStrictPremiumQualityRequest(PlayUrlRequestKind.EXPLICIT, 129))
         assertFalse(isStrictPremiumQualityRequest(PlayUrlRequestKind.INITIAL, 125))
     }
 
