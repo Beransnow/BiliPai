@@ -44,7 +44,7 @@ class VideoLoadPolicyTest {
     }
 
     @Test
-    fun `resolveInitialStartQuality requests HDR capable qn for vip auto highest`() {
+    fun `resolveInitialStartQuality requests documented highest qn for vip auto highest`() {
         val quality = resolveInitialStartQuality(
             targetQuality = 127,
             isAutoHighestQuality = true,
@@ -53,31 +53,29 @@ class VideoLoadPolicyTest {
             auto1080pEnabled = true
         )
 
-        assertEquals(125, quality)
+        assertEquals(127, quality)
     }
 
     @Test
-    fun `resolveInitialStartQuality prefers faster mobile start for auto highest`() {
+    fun `resolveInitialStartQuality keeps auto highest at entitlement ceiling`() {
         assertEquals(
-            112,
+            127,
             resolveInitialStartQuality(
                 targetQuality = 127,
                 isAutoHighestQuality = true,
                 isLogin = true,
                 isVip = true,
-                auto1080pEnabled = true,
-                preferFastStartOnMobile = true
+                auto1080pEnabled = true
             )
         )
         assertEquals(
-            64,
+            80,
             resolveInitialStartQuality(
                 targetQuality = 127,
                 isAutoHighestQuality = true,
                 isLogin = true,
                 isVip = false,
-                auto1080pEnabled = true,
-                preferFastStartOnMobile = true
+                auto1080pEnabled = true
             )
         )
     }

@@ -835,6 +835,11 @@ internal fun resolveInitialQualityWarningTarget(
     }
 }
 
+internal fun shouldShowInitialQualityUnavailableDialog(
+    unavailableReason: InitialQualityUnavailableReason?,
+    premiumAutoUpgradeScheduled: Boolean
+): Boolean = unavailableReason != null && !premiumAutoUpgradeScheduled
+
 
 internal fun shouldBlockPremiumQualitySwitchDuringCooldown(
     requestedQualityId: Int,
@@ -3388,7 +3393,7 @@ class VideoPlaybackViewModel : ViewModel() {
                             .map { it.id }
                             .distinct()
                         val hasToken = !com.android.purebilibili.core.store.TokenManager.accessTokenCache.isNullOrEmpty()
-                        scheduleHdrAutoUpgradeIfNeeded(
+                        val premiumAutoUpgradeScheduled = scheduleHdrAutoUpgradeIfNeeded(
                             bvid = result.info.bvid,
                             cid = result.info.cid,
                             audioLang = result.curAudioLang,
@@ -3419,7 +3424,13 @@ class VideoPlaybackViewModel : ViewModel() {
                             isVip = result.isVip,
                             dataSaverLimited = dataSaverLimitedQuality
                         )
-                        if (initialQualityUnavailableReason != null) {
+                        // A fast-start payload may legitimately be upgraded in the background.
+                        // Do not report it as a terminal failure before that exact-track request finishes.
+                        if (shouldShowInitialQualityUnavailableDialog(
+                                unavailableReason = initialQualityUnavailableReason,
+                                premiumAutoUpgradeScheduled = premiumAutoUpgradeScheduled
+                            )
+                        ) {
                             showQualitySwitchFailureDialog(
                                 requestedQualityId = initialQualityWarningTarget,
                                 hasCachedDashTracks = result.cachedDashVideos.isNotEmpty(),
@@ -3537,7 +3548,7 @@ class VideoPlaybackViewModel : ViewModel() {
         isMobileData: Boolean,
         hasAccessToken: Boolean,
         initialQuality: Int
-    ) {
+    ): Boolean {
         val playbackKey = buildPremiumAutoUpgradePlaybackKey(bvid, cid, audioLang)
         hdrAutoUpgradeJob?.cancel()
         hdrAutoUpgradeJob = null
@@ -3556,7 +3567,7 @@ class VideoPlaybackViewModel : ViewModel() {
                 upgradeAlreadyAttempted = attemptedUpgradeKeys.contains(playbackKey)
             )
         ) {
-            return
+            return false
         }
 
         attemptedUpgradeKeys.add(playbackKey)
@@ -3604,6 +3615,7 @@ class VideoPlaybackViewModel : ViewModel() {
 
             applyHdrUpgrade(playbackKey, hdrData)
         }
+        return true
     }
 
     /**

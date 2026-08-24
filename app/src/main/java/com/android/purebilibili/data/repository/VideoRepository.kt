@@ -376,19 +376,12 @@ object VideoRepository {
         } catch (e: Exception) {
             true
         }
-        val preferFastStartOnMobile = try {
-            val context = NetworkModule.appContext
-            context != null && com.android.purebilibili.core.util.NetworkUtils.isMobileData(context)
-        } catch (_: Exception) {
-            false
-        }
         val startQuality = resolveInitialStartQuality(
             targetQuality = targetQuality,
             isAutoHighestQuality = isAutoHighestQuality,
             isLogin = isLogin,
             isVip = isVip,
-            auto1080pEnabled = auto1080pEnabled,
-            preferFastStartOnMobile = preferFastStartOnMobile
+            auto1080pEnabled = auto1080pEnabled
         )
 
         if (!shouldSkipPlayUrlCache(isAutoHighestQuality, isVip, audioLang)) {
@@ -1183,20 +1176,12 @@ object VideoRepository {
                 true // 出错时默认开启
             }
             
-            // 自动最高画质在非大会员场景先走稳定首播档；蜂窝网再降一档以加快出画。
-            val preferFastStartOnMobile = try {
-                val context = com.android.purebilibili.core.network.NetworkModule.appContext
-                context != null && com.android.purebilibili.core.util.NetworkUtils.isMobileData(context)
-            } catch (_: Exception) {
-                false
-            }
             val startQuality = resolveInitialStartQuality(
                 targetQuality = targetQuality,
                 isAutoHighestQuality = isAutoHighestQuality,
                 isLogin = isLogin,
                 isVip = isVip,
-                auto1080pEnabled = auto1080pEnabled,
-                preferFastStartOnMobile = preferFastStartOnMobile
+                auto1080pEnabled = auto1080pEnabled
             )
             com.android.purebilibili.core.util.Logger.d(
                 "VideoRepo",

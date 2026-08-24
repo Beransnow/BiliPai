@@ -71,20 +71,12 @@ internal fun resolveInitialStartQuality(
     isAutoHighestQuality: Boolean,
     isLogin: Boolean,
     isVip: Boolean,
-    auto1080pEnabled: Boolean,
-    /**
-     * Cellular / constrained network: prefer a slightly lower first hop so the first
-     * frame arrives sooner; Wi‑Fi keeps the premium first request.
-     */
-    preferFastStartOnMobile: Boolean = false
+    auto1080pEnabled: Boolean
 ): Int {
     return when {
-        // VIP auto-highest must request HDR-capable qn first on Wi‑Fi; bilibili often
-        // omits 125 tracks when the first playurl call only asks for 4K (120).
-        // On mobile, start at 1080P+ for faster TTFF; UI can still switch up later.
-        isAutoHighestQuality && isVip && preferFastStartOnMobile -> 112
-        isAutoHighestQuality && isVip -> 125
-        isAutoHighestQuality && isLogin && preferFastStartOnMobile -> 64
+        // The API documents 127 as the highest qn and 126/125 as separate Dolby/HDR
+        // tiers. Requesting 125 here can omit the Dolby track until a manual switch.
+        isAutoHighestQuality && isVip -> 127
         isAutoHighestQuality && isLogin -> 80
         isAutoHighestQuality -> 64
         targetQuality != null -> targetQuality
