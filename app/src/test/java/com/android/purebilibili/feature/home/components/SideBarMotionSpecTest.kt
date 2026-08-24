@@ -5,13 +5,13 @@ import kotlin.test.assertEquals
 
 class SideBarMotionSpecTest {
     @Test
-    fun interactionSprings_preserveSelectionAndWobblePhysics() {
-        val selection = sideBarSelectionScaleMotionSpec<Float>()
-        val wobble = sideBarWobbleMotionSpec<Float>()
+    fun materialBottomBarMotion_keepsIndicatorCompanionMotionRestrained() {
+        val selection = materialBottomBarSelectionScaleMotionSpec<Float>()
+        val wobble = materialBottomBarIndicatorWobbleMotionSpec<Float>()
 
-        assertEquals(0.35f, selection.dampingRatio)
-        assertEquals(300f, selection.stiffness)
-        assertEquals(0.2f, wobble.dampingRatio)
-        assertEquals(600f, wobble.stiffness)
+        assertEquals(0.72f, selection.dampingRatio)
+        assertEquals(420f, selection.stiffness)
+        assertEquals(0.62f, wobble.dampingRatio)
+        assertEquals(720f, wobble.stiffness)
     }
 }

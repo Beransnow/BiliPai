@@ -4,7 +4,6 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 
 import android.os.SystemClock
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -34,19 +33,14 @@ import com.android.purebilibili.core.ui.components.AppPlatformNavigationRailItem
 import com.android.purebilibili.core.ui.components.AppText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -72,7 +66,6 @@ import dev.chrisbanes.haze.HazeState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material.icons.outlined.ViewSidebar
-import kotlinx.coroutines.launch
 
 /**
  * 平板端侧边导航栏 - 垂直版本的 FrostedBottomBar
@@ -338,8 +331,6 @@ private fun FrostedSideBarContent(
     onAccountSwitchClick: (() -> Unit)?,
 ) {
     val haptic = rememberHapticFeedback()
-    val scope = rememberCoroutineScope()
-
     val blurIntensity = com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity()
     val backgroundAlpha = com.android.purebilibili.core.ui.blur.BlurStyles.getBackgroundAlpha(blurIntensity)
     val chromeBackground = AppSurfaceTokens.chromeBackground()
@@ -404,48 +395,20 @@ private fun FrostedSideBarContent(
                 val isSelected = item == currentItem
                 val itemLabel = resolveBottomNavItemLabel(item, itemLabels)
 
-                var isPending by remember { mutableStateOf(false) }
-                var wobbleAngle by remember { mutableFloatStateOf(0f) }
-
                 val primaryColor = MaterialTheme.colorScheme.primary
                 val unselectedColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 val skinIconPath = uiSkinDecoration?.iconPathFor(item, selected = isSelected)
 
                 val iconColor by animateColorAsState(
-                    targetValue = if (isSelected || isPending) primaryColor else unselectedColor,
+                    targetValue = if (isSelected) primaryColor else unselectedColor,
                     animationSpec = AppMotionTokens.standardSpec(),
                     label = "iconColor"
                 )
-
-                val scale by animateFloatAsState(
-                    targetValue = if (isSelected) 1.15f else 1.0f,
-                    animationSpec = sideBarSelectionScaleMotionSpec(),
-                    label = "scale"
-                )
-
-                val animatedWobble by animateFloatAsState(
-                    targetValue = wobbleAngle,
-                    animationSpec = sideBarWobbleMotionSpec(),
-                    label = "wobble"
-                )
-
-                LaunchedEffect(wobbleAngle) {
-                    if (wobbleAngle != 0f) {
-                        kotlinx.coroutines.delay(50)
-                        wobbleAngle = 0f
-                    }
-                }
                 val triggerItemClick = {
-                    isPending = true
                     performHomeSideBarItemTap(
                         haptic = haptic,
                         onClick = { onItemClick(item) }
                     )
-                    wobbleAngle = 8f
-                    scope.launch {
-                        kotlinx.coroutines.delay(90)
-                        isPending = false
-                    }
                 }
 
                 Column(
@@ -477,14 +440,7 @@ private fun FrostedSideBarContent(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .graphicsLayer {
-                                scaleX = scale
-                                scaleY = scale
-                                rotationZ = animatedWobble
-                            }
-                    ) {
+                    Box {
                         CompositionLocalProvider(LocalContentColor provides iconColor) {
                             if (skinIconPath != null) {
                                 BottomBarSkinIcon(
@@ -495,7 +451,7 @@ private fun FrostedSideBarContent(
                                 )
                             } else {
                                 AppIcon(
-                                    imageVector = resolveHomeNavigationBarIcon(
+                                    imageVector = resolveMaterialBottomBarIcon(
                                         item = item,
                                         selected = isSelected
                                     ),

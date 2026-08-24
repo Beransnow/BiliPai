@@ -86,4 +86,18 @@ class SideBarRendererPolicyTest {
         assertFalse(source.contains("import top.yukonga.miuix.kmp.basic.NavigationRail as MiuixNavigationRail"))
         assertFalse(source.contains("import top.yukonga.miuix.kmp.basic.NavigationRailItem as MiuixNavigationRailItem"))
     }
+
+    @Test
+    fun materialSideBarUsesMd3IconPairsWithoutSelectionTransform() {
+        val source = File("src/main/java/com/android/purebilibili/feature/home/components/SideBar.kt")
+            .takeIf { it.exists() }
+            ?.readText()
+            ?: File("app/src/main/java/com/android/purebilibili/feature/home/components/SideBar.kt").readText()
+        val materialSideBarSource = source.substringAfter("private fun FrostedSideBarContent(")
+
+        assertTrue(materialSideBarSource.contains("resolveMaterialBottomBarIcon("))
+        assertFalse(materialSideBarSource.contains("resolveHomeNavigationBarIcon("))
+        assertFalse(materialSideBarSource.contains("rotationZ"))
+        assertFalse(materialSideBarSource.contains("scaleX"))
+    }
 }

@@ -2368,8 +2368,9 @@ private fun MaterialBottomBar(
                                             selected = currentItem == item,
                                         )
                                     } else {
-                                        AppIcon(
-                                            imageVector = resolveMaterialBottomBarIcon(item = item, selected = currentItem == item),
+                                        MaterialBottomBarAnimatedIcon(
+                                            item = item,
+                                            selected = currentItem == item,
                                             contentDescription = itemContentDescription
                                         )
                                     }
@@ -2448,6 +2449,47 @@ private fun MaterialBottomBar(
             }
         }
     }
+}
+
+@Composable
+private fun MaterialBottomBarAnimatedIcon(
+    item: BottomNavItem,
+    selected: Boolean,
+    contentDescription: String?,
+) {
+    var wobbleTarget by remember { mutableFloatStateOf(0f) }
+    var hasObservedSelection by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (selected) 1.1f else 1f,
+        animationSpec = materialBottomBarSelectionScaleMotionSpec(),
+        label = "${item.name}_md3_indicator_scale",
+    )
+    val rotation by animateFloatAsState(
+        targetValue = wobbleTarget,
+        animationSpec = materialBottomBarIndicatorWobbleMotionSpec(),
+        label = "${item.name}_md3_indicator_wobble",
+    )
+
+    LaunchedEffect(selected) {
+        if (hasObservedSelection && selected) {
+            wobbleTarget = 4f
+            delay(45)
+            wobbleTarget = 0f
+        } else {
+            wobbleTarget = 0f
+        }
+        hasObservedSelection = true
+    }
+
+    AppIcon(
+        imageVector = resolveMaterialBottomBarIcon(item = item, selected = selected),
+        contentDescription = contentDescription,
+        modifier = Modifier.graphicsLayer {
+            scaleX = scale
+            scaleY = scale
+            rotationZ = rotation
+        },
+    )
 }
 
 @Composable
