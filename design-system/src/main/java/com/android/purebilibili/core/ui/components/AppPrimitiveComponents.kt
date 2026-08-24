@@ -176,7 +176,7 @@ fun AppScrollableTabRow(
         AppElasticTabIndicator(
             selectedTabIndex = selectedTabIndex,
             tabPositions = tabPositions,
-            matchContentSize = false,
+            matchContentSize = true,
             primary = false,
         )
     },
