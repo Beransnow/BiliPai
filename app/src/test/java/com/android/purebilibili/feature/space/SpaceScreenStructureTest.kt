@@ -12,6 +12,10 @@ class SpaceScreenStructureTest {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt")
 
         assertTrue(source.contains("AppNativeTabRow("))
+        assertTrue(source.contains(".miuixLayerBackdrop(spaceTabBackdrop)"))
+        assertTrue(source.contains(".biliPaiFloatingDockShell("))
+        assertTrue(source.contains("enabled = liquidGlassEnabled"))
+        assertTrue(source.contains("drawLens = false"))
         assertTrue(source.contains("SpaceSecondarySwitchRow("))
         assertTrue(source.contains("resolveSpacePrimaryTab(selectedMainTab)"))
         assertTrue(source.contains("showTabRail = false"))

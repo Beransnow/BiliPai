@@ -83,6 +83,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
@@ -170,6 +171,16 @@ internal fun resolveMusicPlayerContentColor(
         onDarkBackground
     }
 }
+
+/** Bottom controls inherit the artwork palette while staying on the dark immersive floor. */
+internal fun resolveMusicImmersivePanelColor(
+    backgroundColor: Color,
+    darkOverlayFraction: Float = 0.62f,
+): Color = lerp(
+    start = backgroundColor,
+    stop = Color.Black,
+    fraction = darkOverlayFraction.coerceIn(0f, 1f),
+)
 
 /** 听视频强调色：直接使用应用主题 primary，与播放器一致。 */
 internal fun resolveMusicPlayerAccentColor(primary: Color): Color = primary
@@ -352,6 +363,7 @@ internal fun MusicPlayerContent(
                                 blurEffectsEnabled = lyricsBlurEffectsEnabled,
                                 reduceMotion = effectiveReduceMotion,
                                 glassTintColor = backgroundColor,
+                                liquidGlassTuning = liquidGlassTuning,
                                 miuixBackdrop = musicBackdrop,
                                 progressSeekRevision = progressSeekRevision,
                                 controlsVisible = lyricsControlsVisible,
@@ -442,6 +454,7 @@ internal fun MusicPlayerContent(
                     blurEffectsEnabled = lyricsBlurEffectsEnabled,
                     reduceMotion = effectiveReduceMotion,
                     glassTintColor = backgroundColor,
+                    liquidGlassTuning = liquidGlassTuning,
                     miuixBackdrop = musicBackdrop,
                     progressSeekRevision = progressSeekRevision,
                     controlsVisible = lyricsControlsVisible,
@@ -986,6 +999,7 @@ private fun LyricsPage(
     blurEffectsEnabled: Boolean,
     reduceMotion: Boolean,
     glassTintColor: Color,
+    liquidGlassTuning: LiquidGlassTuning,
     miuixBackdrop: MiuixBackdrop?,
     progressSeekRevision: Int,
     controlsVisible: Boolean,
@@ -1104,6 +1118,8 @@ private fun LyricsPage(
                 state = state,
                 glassEnabled = glassEnabled,
                 miuixBackdrop = miuixBackdrop,
+                glassTintColor = glassTintColor,
+                liquidGlassTuning = liquidGlassTuning,
                 onPlayPause = onPlayPause,
                 onSeek = onSeek,
                 onPrevious = onPrevious,
@@ -1164,6 +1180,8 @@ private fun LyricsPrimaryControls(
     state: MusicPlayerUiState,
     glassEnabled: Boolean,
     miuixBackdrop: MiuixBackdrop?,
+    glassTintColor: Color,
+    liquidGlassTuning: LiquidGlassTuning,
     onPlayPause: () -> Unit,
     onSeek: (Long) -> Unit,
     onPrevious: (() -> Unit)?,
@@ -1171,16 +1189,26 @@ private fun LyricsPrimaryControls(
     onOpenSettings: () -> Unit,
     onHideControls: () -> Unit
 ) {
-    val panelColor = AppSurfaceTokens.cardContainer()
+    val panelColor = resolveMusicImmersivePanelColor(glassTintColor)
     val panelContentColor = resolveMusicPlayerContentColor(
         backgroundColor = panelColor,
         onLightBackground = MaterialTheme.colorScheme.onSurface,
         onDarkBackground = Color.White,
     )
+    val panelShape = AppShapes.borderedContainer(ContainerLevel.Card)
     AppSurface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = AppShapes.container(ContainerLevel.Floating),
-        color = panelColor,
+        modifier = Modifier
+            .fillMaxWidth()
+            .biliPaiFloatingDockShell(
+                backdrop = miuixBackdrop,
+                containerColor = panelColor,
+                pressProgress = 0f,
+                shape = panelShape,
+                enabled = glassEnabled,
+                liquidGlassTuning = liquidGlassTuning,
+            ),
+        shape = panelShape,
+        color = Color.Transparent,
         contentColor = panelContentColor,
     ) {
         CompositionLocalProvider(LocalMusicContentColor provides panelContentColor) {

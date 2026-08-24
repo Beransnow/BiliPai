@@ -76,12 +76,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -109,6 +107,7 @@ import com.android.purebilibili.R
 import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppShapes
+import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
 import com.android.purebilibili.core.ui.OfficialVerifyBadge
@@ -125,6 +124,9 @@ import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpe
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
 import com.android.purebilibili.feature.home.components.cards.HORIZONTAL_VIDEO_CARD_COVER_ASPECT_RATIO
 import com.android.purebilibili.feature.home.components.cards.HORIZONTAL_VIDEO_CARD_COVER_WIDTH_DP
+import com.android.purebilibili.feature.home.components.LiquidGlassTuning
+import com.android.purebilibili.feature.home.components.biliPaiFloatingDockShell
+import com.android.purebilibili.feature.home.components.resolveLiquidGlassTuning
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.feedContentTypography
@@ -166,6 +168,9 @@ import com.android.purebilibili.feature.list.VideoProgressDisplayState
 import com.android.purebilibili.feature.video.controller.PlaybackProgressManager
 import com.android.purebilibili.core.ui.blur.hazeSourceCompat
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
+import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
@@ -984,6 +989,18 @@ private fun SpaceContent(
     val homeSettings by com.android.purebilibili.core.store.SettingsManager
         .getHomeSettings(context)
         .collectAsStateWithLifecycle(initialValue = com.android.purebilibili.core.store.HomeSettings())
+    val spaceTabBackdrop = rememberMiuixLayerBackdrop()
+    val spaceTabLiquidGlassTuning = remember(
+        homeSettings.liquidGlassProgress,
+        homeSettings.liquidGlassAdvancedSettings,
+        homeSettings.liquidGlassReadabilityMode,
+    ) {
+        resolveLiquidGlassTuning(
+            progress = homeSettings.liquidGlassProgress,
+            advancedSettings = homeSettings.liquidGlassAdvancedSettings,
+            readabilityMode = homeSettings.liquidGlassReadabilityMode,
+        )
+    }
     val selectedMainTab = state.tabShellState.selectedTab
     val displayedMainTabs = remember(state.mainTabs, selectedMainTab) {
         resolveSpaceDisplayedMainTabs(
@@ -1192,6 +1209,7 @@ private fun SpaceContent(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .miuixLayerBackdrop(spaceTabBackdrop)
             .responsiveContentWidth(maxWidth = SPACE_CONTENT_MAX_WIDTH_DP.dp)
             .then(modifier)
     ) {
@@ -1256,6 +1274,9 @@ private fun SpaceContent(
                     tabs = displayedMainTabs,
                     selectedTab = resolveSpacePrimaryTab(selectedMainTab),
                     onSelect = onMainTabSelected,
+                    backdrop = spaceTabBackdrop,
+                    liquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled,
+                    liquidGlassTuning = spaceTabLiquidGlassTuning,
                 )
             }
             if (shouldShowSpaceSecondarySwitch(selectedMainTab) && secondarySwitchItems.isNotEmpty()) {
@@ -2180,14 +2201,15 @@ private fun SpaceContent(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .fillMaxWidth()
-                .shadow(elevation = 6.dp, shape = RectangleShape)
-                .background(MaterialTheme.colorScheme.surface)
         ) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 SpaceMainTabRow(
                     tabs = displayedMainTabs,
                     selectedTab = resolveSpacePrimaryTab(selectedMainTab),
-                    onSelect = onMainTabSelected
+                    onSelect = onMainTabSelected,
+                    backdrop = spaceTabBackdrop,
+                    liquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled,
+                    liquidGlassTuning = spaceTabLiquidGlassTuning,
                 )
                 if (shouldShowSpaceSecondarySwitch(selectedMainTab) && secondarySwitchItems.isNotEmpty()) {
                     SpaceSecondarySwitchRow(
@@ -2604,7 +2626,10 @@ private fun SpaceSecondarySwitchRow(
 private fun SpaceMainTabRow(
     tabs: List<SpaceMainTabItem>,
     selectedTab: SpaceMainTab,
-    onSelect: (SpaceMainTab) -> Unit
+    onSelect: (SpaceMainTab) -> Unit,
+    backdrop: MiuixBackdrop,
+    liquidGlassEnabled: Boolean,
+    liquidGlassTuning: LiquidGlassTuning,
 ) {
     val spec = remember(tabs, selectedTab) {
         resolveSpaceMainTabChromeSpec(tabs = tabs, selectedTab = selectedTab)
@@ -2612,6 +2637,7 @@ private fun SpaceMainTabRow(
     val options = remember(tabs) {
         tabs.map { item -> AppSegmentOption(value = item.tab, label = item.title) }
     }
+    val tabShape = AppShapes.borderedContainer(ContainerLevel.Card)
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -2624,7 +2650,16 @@ private fun SpaceMainTabRow(
             scrollable = spec.scrollable,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = spec.horizontalPaddingDp.dp),
+                .padding(horizontal = spec.horizontalPaddingDp.dp)
+                .biliPaiFloatingDockShell(
+                    backdrop = backdrop,
+                    containerColor = AppSurfaceTokens.cardContainer(),
+                    pressProgress = 0f,
+                    shape = tabShape,
+                    enabled = liquidGlassEnabled,
+                    drawLens = false,
+                    liquidGlassTuning = liquidGlassTuning,
+                ),
         )
     }
 }
