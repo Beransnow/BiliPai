@@ -719,6 +719,7 @@ internal fun ElegantVideoCard(
     //  [性能优化] 存储 LayoutCoordinates 引用而非 Rect，boundsInRoot() 仅在交互时惰性计算，
     //  避免滚动期间每帧 4 次坐标树遍历开销。
     val cardCoordsRef = remember { object { var value: LayoutCoordinates? = null } }
+    val sharedSourceInstanceId = remember { CardPositionManager.newVideoCardSourceInstanceId() }
     val coverCoordsRef = remember { object { var value: LayoutCoordinates? = null } }
     val titleCoordsRef = remember { object { var value: LayoutCoordinates? = null } }
     val menuButtonCoordsRef = remember { object { var value: LayoutCoordinates? = null } }
@@ -779,6 +780,7 @@ internal fun ElegantVideoCard(
                     coverDecodeWidthPx = coverRequestSpec?.widthPx ?: 0,
                     coverDecodeHeightPx = coverRequestSpec?.heightPx ?: 0,
                 ),
+                sourceInstanceId = sharedSourceInstanceId,
             )
         }
         onClick(video.bvid, video.cid)
@@ -860,8 +862,7 @@ internal fun ElegantVideoCard(
         }
         val homeSharedTransitionMotionSpec = homeSharedTransitionSpecs.motion
         val homeSharedTransitionVisualSpec = homeSharedTransitionSpecs.visual
-        val useCardShellSharedBounds = sharedTransitionOwnership.useCardContainerSharedBounds
-        val isCoverSharedReturnTarget = remember(
+        val routeMatchesSharedReturnTarget = remember(
             video.bvid,
             effectiveSharedElementSourceRoute,
             CardPositionManager.lastClickedVideoSourceKey,
@@ -872,6 +873,13 @@ internal fun ElegantVideoCard(
                 lastClickedVideoSourceKey = CardPositionManager.lastClickedVideoSourceKey,
             )
         }
+        val sharedSourceOwnershipAllowed = isVideoCardSharedSourceInstanceOwner(
+            sourceInstanceId = sharedSourceInstanceId,
+            lastClickedSourceInstanceId = CardPositionManager.lastClickedVideoSourceInstanceId,
+        )
+        val isCoverSharedReturnTarget = routeMatchesSharedReturnTarget && sharedSourceOwnershipAllowed
+        val useCardShellSharedBounds = sharedTransitionOwnership.useCardContainerSharedBounds &&
+            sharedSourceOwnershipAllowed
         val coverCrossfadeEnabled = shouldEnableVideoCardCoverCrossfade(
             isScrollInProgress = scrollLiteModeEnabled,
             isReturningFromDetail = isReturningFromVideoDetail,
@@ -923,7 +931,7 @@ internal fun ElegantVideoCard(
             transitionEnabled = sharedTransitionOwnership.useCoverSharedBounds,
             hasSharedTransitionScope = sharedTransitionScope != null,
             hasAnimatedVisibilityScope = animatedVisibilityScope != null,
-        ) && !useCardShellSharedBounds
+        ) && !useCardShellSharedBounds && sharedSourceOwnershipAllowed
         val coverSharedBoundsModifier = if (coverSharedBoundsEnabled) {
             with(requireNotNull(sharedTransitionScope)) {
                 Modifier.sharedBounds(

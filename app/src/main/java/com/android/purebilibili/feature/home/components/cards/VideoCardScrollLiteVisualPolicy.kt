@@ -320,6 +320,16 @@ internal fun isVideoCardSharedReturnTarget(
     return key == lastClickedVideoSourceKey
 }
 
+/**
+ * Disambiguates duplicate videos that are simultaneously visible in large-screen grids.
+ * Route + bvid alone is insufficient when a hero card and a feed card show the same video.
+ */
+internal fun isVideoCardSharedSourceInstanceOwner(
+    sourceInstanceId: Long,
+    lastClickedSourceInstanceId: Long?,
+): Boolean = lastClickedSourceInstanceId == null ||
+    sourceInstanceId == lastClickedSourceInstanceId
+
 internal data class StoryVideoCardScrollLiteVisualPolicy(
     val coverShadowElevationDp: Float,
     val showSecondaryStatsRow: Boolean

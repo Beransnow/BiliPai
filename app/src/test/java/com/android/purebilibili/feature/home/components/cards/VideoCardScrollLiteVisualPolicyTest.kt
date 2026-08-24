@@ -539,6 +539,13 @@ class VideoCardScrollLiteVisualPolicyTest {
     }
 
     @Test
+    fun duplicateLargeScreenCards_onlyClickedInstanceOwnsSharedReturn() {
+        assertTrue(isVideoCardSharedSourceInstanceOwner(12L, null))
+        assertTrue(isVideoCardSharedSourceInstanceOwner(12L, 12L))
+        assertFalse(isVideoCardSharedSourceInstanceOwner(13L, 12L))
+    }
+
+    @Test
     fun horizontalCardChrome_followsOpeningAndReappearsBeforeLanding() {
         val openingStart = resolveHorizontalCardChromeMotionFrame(
             useCardContainerSharedBounds = true,
