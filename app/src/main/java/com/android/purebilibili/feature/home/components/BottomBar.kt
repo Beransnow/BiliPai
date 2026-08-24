@@ -389,6 +389,11 @@ internal fun resolveMaterialDockedBottomBarItemColors(
     )
 }
 
+internal fun resolveDockedBottomBarIndicatorColor(
+    defaultColor: Color,
+    hasUiSkinDecoration: Boolean,
+): Color = if (hasUiSkinDecoration) Color.Transparent else defaultColor
+
 internal fun resolveMd3BottomBarFloatingChromeSpec(
     isFloating: Boolean
 ): Md3BottomBarFloatingChromeSpec {
@@ -2292,6 +2297,10 @@ private fun MaterialBottomBar(
             ?: dockedItemColors.unselectedIconColor,
         skinTrimTint = uiSkinDecoration?.bottomTrimTint
     )
+    val dockedIndicatorColor = resolveDockedBottomBarIndicatorColor(
+        defaultColor = dockedItemColors.indicatorColor,
+        hasUiSkinDecoration = uiSkinDecoration != null,
+    )
 
     if (isFloating) {
         BiliPaiFloatingBottomBar(
@@ -2410,7 +2419,7 @@ private fun MaterialBottomBar(
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = skinDockedItemColors.selectedColor,
                             selectedTextColor = skinDockedItemColors.selectedColor,
-                            indicatorColor = dockedItemColors.indicatorColor,
+                            indicatorColor = dockedIndicatorColor,
                             unselectedIconColor = skinDockedItemColors.unselectedColor,
                             unselectedTextColor = skinDockedItemColors.unselectedColor
                         )
@@ -2658,6 +2667,10 @@ private fun MiuixBottomBar(
         ) {
             val selectedItemColor = MaterialTheme.colorScheme.primary
             val unselectedItemColor = MaterialTheme.colorScheme.onSurfaceVariant
+            val dockedIndicatorColor = resolveDockedBottomBarIndicatorColor(
+                defaultColor = MaterialTheme.colorScheme.secondaryContainer,
+                hasUiSkinDecoration = uiSkinDecoration != null,
+            )
         val skinItemColors = resolveBottomBarSkinContentColors(
                 selectedColor = uiSkinDecoration?.bottomSelectedTint
                     ?.takeUnless { it == Color.Unspecified }
@@ -2723,7 +2736,7 @@ private fun MiuixBottomBar(
                         unselectedColor = skinItemColors.unselectedColor,
                         labelScrimColor = skinItemColors.labelScrimColor,
                         labelScrimAlpha = skinItemColors.labelScrimAlpha,
-                        indicatorColor = MaterialTheme.colorScheme.secondaryContainer,
+                        indicatorColor = dockedIndicatorColor,
                         skinIconPath = skinIconPath,
                         reminderBadgeText = reminderBadgeText
                     )

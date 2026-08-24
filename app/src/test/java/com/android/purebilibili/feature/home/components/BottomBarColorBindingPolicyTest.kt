@@ -12,6 +12,26 @@ import kotlin.test.assertTrue
 class BottomBarColorBindingPolicyTest {
 
     @Test
+    fun `docked skin suppresses material selected indicator`() {
+        val defaultColor = Color(0xFF765432)
+
+        assertEquals(
+            Color.Transparent,
+            resolveDockedBottomBarIndicatorColor(
+                defaultColor = defaultColor,
+                hasUiSkinDecoration = true,
+            ),
+        )
+        assertEquals(
+            defaultColor,
+            resolveDockedBottomBarIndicatorColor(
+                defaultColor = defaultColor,
+                hasUiSkinDecoration = false,
+            ),
+        )
+    }
+
+    @Test
     fun `resolves custom color by enum name`() {
         val binding = resolveBottomBarItemColorBinding(
             item = BottomNavItem.DYNAMIC,
