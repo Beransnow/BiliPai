@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -118,7 +119,7 @@ internal fun BottomBarFloatingSegmentedControl(
     } else {
         FloatingBottomBarMode.None
     }
-    val dockModifier = if (itemWidth != null) {
+    val rootModifier = if (itemWidth != null) {
         modifier.width(itemWidth * itemCount + containerHorizontalPadding * 2)
     } else {
         modifier
@@ -127,7 +128,9 @@ internal fun BottomBarFloatingSegmentedControl(
     val onSelectedState = rememberUpdatedState(onSelected)
     val enabledState = rememberUpdatedState(enabled)
 
-    BoxWithConstraints {
+    BoxWithConstraints(
+        modifier = rootModifier.height(height)
+    ) {
         val indicatorWidthDp = when {
             itemWidth != null -> itemWidth.value
             constraints.hasBoundedWidth ->
@@ -162,7 +165,7 @@ internal fun BottomBarFloatingSegmentedControl(
             },
             backdrop = effectiveBackdrop,
             tabsCount = itemCount,
-            modifier = dockModifier,
+            modifier = Modifier.matchParentSize(),
             mode = floatingMode,
             colors = FloatingBottomBarColors(
                 containerColor = shellColor,
