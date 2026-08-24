@@ -148,6 +148,34 @@ class BottomBarLayoutPolicyTest {
         assertEquals(279.dp, layout.dockWidth)
         assertEquals(64.dp, layout.searchWidth)
         assertEquals(10.dp, layout.gap)
+        assertTrue(
+            layout.minimumIndicatorWidth > resolveBiliPaiBottomBarItemSlotWidth(
+                dockWidth = layout.dockWidth,
+                horizontalPadding = 4.dp,
+                itemCount = 4,
+            )
+        )
+    }
+
+    @Test
+    fun `five item dock keeps its uncompressed indicator width beside search`() {
+        val layout = resolveBiliPaiBottomBarSearchLayout(
+            containerWidth = 393.dp,
+            itemCount = 5,
+            minEdgePadding = 20.dp,
+            searchEnabled = true,
+            searchExpanded = false,
+        )
+
+        assertEquals(279.dp, layout.dockWidth)
+        assertEquals(69.dp, layout.minimumIndicatorWidth)
+        assertTrue(
+            layout.minimumIndicatorWidth > resolveBiliPaiBottomBarItemSlotWidth(
+                dockWidth = layout.dockWidth,
+                horizontalPadding = 4.dp,
+                itemCount = 5,
+            )
+        )
     }
 
     @Test

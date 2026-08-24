@@ -703,12 +703,10 @@ fun SearchScreen(
         .collectAsStateWithLifecycle(initialValue = false)
     val hotSearchEnabled by SettingsManager.getSearchHotSectionEnabled(context).collectAsStateWithLifecycle(initialValue = true)
     val discoverSectionEnabled by SettingsManager.getSearchDiscoverSectionEnabled(context).collectAsStateWithLifecycle(initialValue = true)
-    val liquidGlassEnabled by SettingsManager.getLiquidGlassEnabled(context).collectAsStateWithLifecycle(initialValue = true)
     val androidNativeLiquidGlassEnabled by SettingsManager
         .getAndroidNativeLiquidGlassEnabled(context)
         .collectAsStateWithLifecycle(initialValue = false)
     val effectiveLiquidGlassEnabled = rememberAppChromeLiquidGlassEnabled(
-        individualEnabled = liquidGlassEnabled,
         androidNativeEnabled = androidNativeLiquidGlassEnabled,
     )
     val headerBlurEnabled by SettingsManager.getHeaderBlurEnabled(context).collectAsStateWithLifecycle(initialValue = true)

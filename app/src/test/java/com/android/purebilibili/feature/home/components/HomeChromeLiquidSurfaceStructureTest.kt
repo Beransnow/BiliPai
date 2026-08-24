@@ -48,6 +48,14 @@ class HomeChromeLiquidSurfaceStructureTest {
                 homeScreenSource.contains("val collapseTabsOnScroll = headerCollapseMode.collapseTabs")
         )
         assertTrue(
+            "cold start must wait until the shared layer backdrop has recorded before consumers sample it",
+            homeScreenSource.contains("var homeMiuixBackdropReady") &&
+                homeScreenSource.contains("withFrameNanos { }") &&
+                homeScreenSource.contains("val readyHomeMiuixBackdrop") &&
+                homeScreenSource.contains(".miuixLayerBackdrop(homeMiuixBackdrop)") &&
+                homeScreenSource.contains("miuixBackdrop = readyHomeMiuixBackdrop")
+        )
+        assertTrue(
             "top header liquid chrome should route through the bottom-bar matched BiliPai surface",
             topHeaderSource.contains("return@composed this.homeTopBottomBarMatchedSurface(") &&
                 topHeaderSource.contains("liquidGlassPreset: BottomBarLiquidGlassPreset") &&

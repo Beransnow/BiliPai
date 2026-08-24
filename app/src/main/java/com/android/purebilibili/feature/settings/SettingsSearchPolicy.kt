@@ -494,10 +494,21 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
     ),
     SettingsSearchEntry(
         target = SettingsSearchTarget.APPEARANCE,
-        title = "安卓原生液态玻璃",
+        title = "安卓液态玻璃",
         subtitle = "统一应用到首页顶部标签栏、搜索框、底部导航栏和评论区底栏",
         section = "外观设置",
-        aliases = listOf("全局液态玻璃", "评论区液态玻璃", "Android Native 液态玻璃"),
+        aliases = listOf(
+            "安卓原生液态玻璃",
+            "全局液态玻璃",
+            "评论区液态玻璃",
+            "Android Native 液态玻璃",
+            "顶部标签栏液态玻璃",
+            "顶部 Dock 液态玻璃",
+            "顶部dock栏液态玻璃",
+            "首页搜索框液态玻璃",
+            "底部导航栏液态玻璃",
+            "底栏液态玻璃",
+        ),
         focusId = SettingsSearchFocusIds.APPEARANCE_THEME
     ),
     SettingsSearchEntry(
@@ -647,24 +658,6 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
             "底栏标签样式"
         ),
         focusId = SettingsSearchFocusIds.BOTTOM_BAR_DISPLAY
-    ),
-    SettingsSearchEntry(
-        target = SettingsSearchTarget.ANIMATION,
-        title = "标签栏 / 搜索框 / 底栏液态玻璃",
-        subtitle = "分别控制首页顶部、搜索框和底部导航栏的玻璃效果",
-        section = "动画与效果",
-        aliases = listOf(
-            "顶部 Dock 液态玻璃",
-            "顶部dock栏液态玻璃",
-            "顶部玻璃效果",
-            "首页搜索框液态玻璃",
-            "首页搜索液态玻璃",
-            "搜索框玻璃效果",
-            "底栏玻璃效果",
-            "底栏液态玻璃",
-            "BiliPai 调校"
-        ),
-        focusId = SettingsSearchFocusIds.ANIMATION_VISUAL_EFFECTS
     ),
     SettingsSearchEntry(
         target = SettingsSearchTarget.BOTTOM_BAR,

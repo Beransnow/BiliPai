@@ -18,8 +18,6 @@ import com.android.purebilibili.core.ui.components.AppIcon
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppIconButton
-import com.android.purebilibili.core.ui.components.AppNativeTabRow
-import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.AppDropdownMenu
 import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import androidx.compose.runtime.Composable
@@ -136,34 +134,22 @@ fun DynamicTopBarWithTabs(
             horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (liquidGlassEnabled) {
-                BottomBarLiquidSegmentedControl(
-                    items = tabs,
-                    selectedIndex = selectedTab,
-                    onSelected = onTabSelected,
-                    modifier = Modifier.weight(1f),
-                    height = liquidTabSpec.heightDp.dp,
-                    indicatorHeight = liquidTabSpec.indicatorHeightDp.dp,
-                    labelFontSize = liquidTabSpec.labelFontSizeSp.sp,
-                    indicatorPositionProvider = indicatorPositionProvider,
-                    isScrollInProgressProvider = { false },
-                    forceLiquidChrome = true,
-                    liquidGlassEffectsEnabled = true,
-                    miuixBackdrop = dockBackdrop,
-                    containerColorOverride = dockColor,
-                    liquidGlassTuningOverride = liquidGlassTuning,
-                )
-            } else {
-                val nativeTabs = remember(tabs) {
-                    tabs.mapIndexed { index, label -> AppSegmentOption(index, label) }
-                }
-                AppNativeTabRow(
-                    options = nativeTabs,
-                    selectedValue = selectedTab,
-                    modifier = Modifier.weight(1f),
-                    onSelectionChange = onTabSelected,
-                )
-            }
+            BottomBarLiquidSegmentedControl(
+                items = tabs,
+                selectedIndex = selectedTab,
+                onSelected = onTabSelected,
+                modifier = Modifier.weight(1f),
+                height = liquidTabSpec.heightDp.dp,
+                indicatorHeight = liquidTabSpec.indicatorHeightDp.dp,
+                labelFontSize = liquidTabSpec.labelFontSizeSp.sp,
+                indicatorPositionProvider = indicatorPositionProvider,
+                isScrollInProgressProvider = { false },
+                forceLiquidChrome = liquidGlassEnabled,
+                liquidGlassEffectsEnabled = liquidGlassEnabled,
+                miuixBackdrop = dockBackdrop.takeIf { liquidGlassEnabled },
+                containerColorOverride = dockColor,
+                liquidGlassTuningOverride = liquidGlassTuning,
+            )
 
             val localActionDockBackdrop = rememberLayerBackdrop()
             val actionDockBackdrop = dockBackdrop ?: localActionDockBackdrop

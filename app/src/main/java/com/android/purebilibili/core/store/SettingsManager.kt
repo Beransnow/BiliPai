@@ -634,7 +634,7 @@ data class HomeSettings(
     val crashTrackingConsentShown: Boolean = true
 ) {
     val isLiquidGlassEnabled: Boolean
-        get() = isBottomBarLiquidGlassEnabled
+        get() = androidNativeLiquidGlassEnabled
 }
 
 data class AppThemeSettings(

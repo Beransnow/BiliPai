@@ -359,6 +359,7 @@ fun FloatingBottomBar(
     colors: FloatingBottomBarColors = FloatingBottomBarDefaults.colors(),
     shellHeight: Dp = FloatingBottomBarDefaultShellHeight,
     indicatorHeight: Dp = FloatingBottomBarIndicatorHeight,
+    minimumIndicatorWidth: Dp = 0.dp,
     indicatorPositionProvider: (() -> Float)? = null,
     isScrollInProgressProvider: () -> Boolean = { false },
     dragSelectionEnabled: Boolean = true,
@@ -431,9 +432,14 @@ fun FloatingBottomBar(
 
     var tabWidthPx by remember { mutableFloatStateOf(0f) }
     var totalWidthPx by remember { mutableFloatStateOf(0f) }
+    val fittedIndicatorWidth = maxOf(
+        with(density) { tabWidthPx.toDp() },
+        minimumIndicatorWidth,
+    )
+    val fittedIndicatorWidthPx = with(density) { fittedIndicatorWidth.toPx() }
     val fittedIndicatorHeight = resolveFloatingDockIndicatorHeightDp(
         requestedHeightDp = indicatorHeight.value,
-        tabWidthDp = with(density) { tabWidthPx.toDp().value },
+        tabWidthDp = fittedIndicatorWidth.value,
     ).dp
     val matchedGeometry = remember(shellHeight, fittedIndicatorHeight) {
         resolveMatchedLiquidIndicatorGeometry(
@@ -781,7 +787,13 @@ fun FloatingBottomBar(
                         .alpha(0f)
                         .layerBackdrop(tabsBackdrop)
                         .graphicsLayer {
-                            translationX = panelOffset
+                            val alignmentPx = resolveFloatingDockIndicatorContentAlignmentPx(
+                                position = dampedDragAnimation.value,
+                                tabWidthPx = tabWidthPx,
+                                tabsCount = safeTabsCount,
+                                indicatorWidthPx = fittedIndicatorWidthPx,
+                            )
+                            translationX = panelOffset + if (isLtr) alignmentPx else -alignmentPx
                             clip = false
                         }
                         .drawBackdrop(
@@ -822,17 +834,21 @@ fun FloatingBottomBar(
         }
 
         if (tabWidthPx > 0f) {
-            val tabWidthDp = with(density) { tabWidthPx.toDp() }
             if (isLiquidGlassMode && combinedBackdrop != null) {
                 Box(
                     Modifier
                         .padding(horizontal = 4.dp)
                         .graphicsLayer {
-                            val progressOffset = dampedDragAnimation.value * tabWidthPx
+                            val indicatorOffsetPx = resolveFloatingDockIndicatorOffsetPx(
+                                position = dampedDragAnimation.value,
+                                tabWidthPx = tabWidthPx,
+                                tabsCount = safeTabsCount,
+                                indicatorWidthPx = fittedIndicatorWidthPx,
+                            )
                             translationX = if (isLtr) {
-                                progressOffset + panelOffset
+                                indicatorOffsetPx + panelOffset
                             } else {
-                                -progressOffset + panelOffset
+                                -indicatorOffsetPx + panelOffset
                             }
                             clip = false
                         }
@@ -904,18 +920,23 @@ fun FloatingBottomBar(
                             )
                         }
                         .height(fittedIndicatorHeight)
-                        .width(tabWidthDp)
+                        .width(fittedIndicatorWidth)
                 )
             } else {
                 Box(
                     modifier = Modifier
                         .padding(horizontal = 4.dp)
                         .graphicsLayer {
-                            val progressOffset = dampedDragAnimation.value * tabWidthPx
+                            val indicatorOffsetPx = resolveFloatingDockIndicatorOffsetPx(
+                                position = dampedDragAnimation.value,
+                                tabWidthPx = tabWidthPx,
+                                tabsCount = safeTabsCount,
+                                indicatorWidthPx = fittedIndicatorWidthPx,
+                            )
                             translationX = if (isLtr) {
-                                progressOffset + panelOffset
+                                indicatorOffsetPx + panelOffset
                             } else {
-                                -progressOffset + panelOffset
+                                -indicatorOffsetPx + panelOffset
                             }
                             clip = false
                         }
@@ -929,7 +950,7 @@ fun FloatingBottomBar(
                         .clip(pillShape)
                         .background(colors.indicatorColor.copy(alpha = 0.15f), pillShape)
                         .height(fittedIndicatorHeight)
-                        .width(tabWidthDp),
+                        .width(fittedIndicatorWidth),
                     contentAlignment = Alignment.CenterStart
                 ) {
                     CompositionLocalProvider(
@@ -948,8 +969,17 @@ fun FloatingBottomBar(
                                 )
                                 .height(fittedIndicatorHeight)
                                 .graphicsLayer {
-                                    val progressOffset = dampedDragAnimation.value * tabWidthPx
-                                    translationX = if (isLtr) -progressOffset else progressOffset
+                                    val contentTranslationPx =
+                                        resolveFloatingDockClippedContentTranslationPx(
+                                            position = dampedDragAnimation.value,
+                                            tabWidthPx = tabWidthPx,
+                                            indicatorWidthPx = fittedIndicatorWidthPx,
+                                        )
+                                    translationX = if (isLtr) {
+                                        contentTranslationPx
+                                    } else {
+                                        -contentTranslationPx
+                                    }
                                 },
                             verticalAlignment = Alignment.CenterVertically,
                             content = { content(this) }

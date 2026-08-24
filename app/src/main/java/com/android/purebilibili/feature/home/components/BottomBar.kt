@@ -489,7 +489,8 @@ internal fun resolveBiliPaiBottomBarItemCenterX(
 internal data class BiliPaiBottomBarSearchLayout(
     val dockWidth: Dp,
     val searchWidth: Dp,
-    val gap: Dp
+    val gap: Dp,
+    val minimumIndicatorWidth: Dp,
 )
 
 internal fun resolveBiliPaiBottomBarSearchCircleSize(): Dp = AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Large
@@ -526,7 +527,8 @@ internal fun resolveBiliPaiBottomBarSearchLayout(
         return BiliPaiBottomBarSearchLayout(
             dockWidth = baseDockWidth,
             searchWidth = AppSpacingTokens.None,
-            gap = AppSpacingTokens.None
+            gap = AppSpacingTokens.None,
+            minimumIndicatorWidth = AppSpacingTokens.None,
         )
     }
 
@@ -554,7 +556,14 @@ internal fun resolveBiliPaiBottomBarSearchLayout(
     return BiliPaiBottomBarSearchLayout(
         dockWidth = targetDockWidth,
         searchWidth = targetSearchWidth,
-        gap = gap
+        gap = gap,
+        // The search capsule may narrow the dock, but it must not also squeeze the selected
+        // indicator. Preserve the slot width the dock had before allocating search space.
+        minimumIndicatorWidth = resolveBiliPaiBottomBarItemSlotWidth(
+            dockWidth = baseDockWidth,
+            horizontalPadding = AppSpacingTokens.ExtraSmall,
+            itemCount = itemCount,
+        ),
     )
 }
 
@@ -591,6 +600,7 @@ internal fun resolveBottomBarRefractionCaptureWidth(
 private data class BiliPaiBottomBarSearchLayoutState(
     val dockWidth: Dp,
     val dockHeight: Dp,
+    val minimumIndicatorWidth: Dp,
     val searchWidth: Dp,
     val searchHeight: Dp,
     val searchGap: Dp,
@@ -637,6 +647,7 @@ private fun rememberBiliPaiBottomBarSearchLayoutState(
         return BiliPaiBottomBarSearchLayoutState(
             dockWidth = dockWidth,
             dockHeight = dockHeight,
+            minimumIndicatorWidth = targetSearchLayout.minimumIndicatorWidth,
             searchWidth = AppSpacingTokens.None,
             searchHeight = AppSpacingTokens.None,
             searchGap = AppSpacingTokens.None,
@@ -676,6 +687,7 @@ private fun rememberBiliPaiBottomBarSearchLayoutState(
     return BiliPaiBottomBarSearchLayoutState(
         dockWidth = dockWidth,
         dockHeight = dockHeight,
+        minimumIndicatorWidth = targetSearchLayout.minimumIndicatorWidth,
         searchWidth = searchWidth,
         searchHeight = searchHeight,
         searchGap = searchGap,
@@ -3209,6 +3221,7 @@ private fun BiliPaiFloatingBottomBar(
                             colors = floatingColors,
                             shellHeight = dockHeight,
                             indicatorHeight = BOTTOM_BAR_INDICATOR_DOCK_BAND_HEIGHT_DP.dp,
+                            minimumIndicatorWidth = searchLayoutState.minimumIndicatorWidth,
                             liquidGlassTuning = liquidGlassTuning
                         ) {
                             visibleItems.forEachIndexed { index, item ->

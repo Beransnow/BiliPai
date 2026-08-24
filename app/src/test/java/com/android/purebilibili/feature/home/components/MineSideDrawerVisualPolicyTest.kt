@@ -20,7 +20,7 @@ class MineSideDrawerVisualPolicyTest {
 
         assertTrue(drawerSource.contains("Modifier.biliPaiFloatingDockShell("))
         assertTrue(drawerSource.contains("liquidGlassTuning = liquidGlassTuning"))
-        assertTrue(homeSource.contains("miuixBackdrop = homeMiuixBackdrop"))
+        assertTrue(homeSource.contains("miuixBackdrop = readyHomeMiuixBackdrop"))
         assertTrue(homeSource.contains("homeSettings.liquidGlassProgress"))
         assertTrue(homeSource.contains("homeSettings.liquidGlassAdvancedSettings"))
         assertTrue(homeSource.contains("homeSettings.liquidGlassReadabilityMode"))

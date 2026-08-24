@@ -244,7 +244,6 @@ fun CommonListScreen(
     )
     val topChromePolicy = rememberAppTopChromePolicy()
     val liquidGlassEnabled = rememberAppChromeLiquidGlassEnabled(
-        individualEnabled = homeSettings.isLiquidGlassEnabled,
         androidNativeEnabled = homeSettings.androidNativeLiquidGlassEnabled,
     )
     val windowSizeClass = LocalWindowSizeClass.current

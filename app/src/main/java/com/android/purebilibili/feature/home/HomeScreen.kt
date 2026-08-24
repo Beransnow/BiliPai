@@ -304,6 +304,7 @@ fun HomeScreen(
     val targetVideoItemState = remember { mutableStateOf<VideoItem?>(null) }
     var pendingNotInterestedVideo by remember { mutableStateOf<VideoItem?>(null) }
     val homeMiuixBackdrop = rememberMiuixLayerBackdrop()
+    var homeMiuixBackdropReady by remember(homeMiuixBackdrop) { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope() // 用于双击回顶动画
     val headerSettleMotionSpec = AppMotionTokens.standardSpec<Float>()
@@ -946,6 +947,17 @@ fun HomeScreen(
         )
     }
     val isLiquidGlassEnabled = homePerformanceConfig.isAnyLiquidGlassEnabled
+    // The layer source records during draw. On a cold launch the header can otherwise consume
+    // the backdrop before that first recording exists and stay blank until a lifecycle redraw.
+    LaunchedEffect(homeMiuixBackdrop, isLiquidGlassEnabled) {
+        homeMiuixBackdropReady = false
+        if (isLiquidGlassEnabled) {
+            withFrameNanos { }
+            withFrameNanos { }
+            homeMiuixBackdropReady = true
+        }
+    }
+    val readyHomeMiuixBackdrop = homeMiuixBackdrop.takeIf { homeMiuixBackdropReady }
     val isDataSaverActive = homePerformanceConfig.isDataSaverActive
     val preloadAheadCount = homePerformanceConfig.preloadAheadCount
     val configuredHomeWallpaperUri by SettingsManager.getHomeWallpaperUri(context).collectAsStateWithLifecycle(initialValue = ""
@@ -2219,7 +2231,7 @@ fun HomeScreen(
             isRefreshing = isRefreshing,
             pullProgress = 0f, // [Fix] Outer header doesn't track inner pull state
             pagerState = pagerState,
-            miuixBackdrop = homeMiuixBackdrop,
+            miuixBackdrop = readyHomeMiuixBackdrop,
             homeSettings = effectiveHomeSettings,
             topTabsVisible = resolveHomeTopTabsVisible(
                 isDelayedForCardSettle = delayTopTabsUntilCardSettled,
@@ -2461,7 +2473,7 @@ fun HomeScreen(
                         hazeState = hazeState,
                         isBlurEnabled = isHeaderBlurEnabled,
                         bottomOverlayHeight = drawerBottomOverlayHeight,
-                        miuixBackdrop = homeMiuixBackdrop,
+                        miuixBackdrop = readyHomeMiuixBackdrop,
                         liquidGlassEnabled = isLiquidGlassEnabled,
                         liquidGlassTuning = homeLiquidGlassTuning,
                         skinBackgroundImagePath = homeUiSkinDecoration?.sideBackgroundImagePath,

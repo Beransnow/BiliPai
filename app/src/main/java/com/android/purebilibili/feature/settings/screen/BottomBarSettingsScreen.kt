@@ -141,7 +141,9 @@ fun BottomBarSettingsScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    val settingsLiquidGlassEnabled by SettingsManager.getLiquidGlassEnabled(context).collectAsStateWithLifecycle(initialValue = true)
+    val androidLiquidGlassEnabled by SettingsManager
+        .getAndroidNativeLiquidGlassEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = false)
     val screenTitle = stringResource(R.string.bottom_bar_management_title)
     val backLabel = stringResource(R.string.common_back)
     val bottomContentPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
@@ -153,7 +155,7 @@ fun BottomBarSettingsScreen(
         bottomContentPadding = bottomContentPadding,
         scrollHost = SettingsPageScrollHost.External,
     ) {
-        CompositionLocalProvider(LocalSettingsLiquidGlassEnabled provides settingsLiquidGlassEnabled) {
+        CompositionLocalProvider(LocalSettingsLiquidGlassEnabled provides androidLiquidGlassEnabled) {
             BottomBarSettingsContent()
         }
     }

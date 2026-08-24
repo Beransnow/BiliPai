@@ -540,7 +540,7 @@ fun AppearanceSettingsContent(
                             Spacer(modifier = Modifier.height(8.dp))
                             AppSwitchPreference(
                                 icon = rememberSettingsSemanticIcon(SettingsIconRole.ANDROID_LIQUID_GLASS),
-                                title = "安卓原生液态玻璃",
+                                title = "安卓液态玻璃",
                                 subtitle = if (isLiquidGlassAvailable) {
                                     "开启后，首页顶部标签栏、搜索框、底部导航栏和评论区底栏统一使用液态玻璃"
                                 } else {
