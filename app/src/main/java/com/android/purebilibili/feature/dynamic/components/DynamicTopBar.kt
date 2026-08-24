@@ -142,6 +142,7 @@ fun DynamicTopBarWithTabs(
                 height = liquidTabSpec.heightDp.dp,
                 indicatorHeight = liquidTabSpec.indicatorHeightDp.dp,
                 labelFontSize = liquidTabSpec.labelFontSizeSp.sp,
+                allowNativeLabelOverflow = true,
                 indicatorPositionProvider = indicatorPositionProvider,
                 isScrollInProgressProvider = { false },
                 forceLiquidChrome = liquidGlassEnabled,

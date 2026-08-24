@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -359,6 +360,7 @@ fun BottomBarLiquidSegmentedControl(
     height: Dp = BOTTOM_BAR_LIQUID_SEGMENTED_CONTROL_HEIGHT_DP.dp,
     indicatorHeight: Dp = BOTTOM_BAR_LIQUID_SEGMENTED_CONTROL_INDICATOR_HEIGHT_DP.dp,
     labelFontSize: TextUnit = TextUnit.Unspecified,
+    allowNativeLabelOverflow: Boolean = false,
     containerHorizontalPadding: Dp = AppSpacingTokens.ExtraSmall,
     containerVerticalPadding: Dp = AppSpacingTokens.ExtraSmall,
     liquidGlassEffectsEnabled: Boolean = true,
@@ -409,6 +411,7 @@ fun BottomBarLiquidSegmentedControl(
             itemWidth = itemWidth,
             height = height,
             labelFontSize = effectiveLabelFontSize,
+            allowLabelOverflow = allowNativeLabelOverflow,
             selectedTextColorOverride = selectedTextColorOverride,
             unselectedTextColorOverride = unselectedTextColorOverride,
             indicatorPositionProvider = indicatorPositionProvider,
@@ -453,6 +456,7 @@ internal fun AndroidNativeUnderlinedSegmentedControl(
     itemWidth: Dp? = null,
     height: Dp,
     labelFontSize: TextUnit,
+    allowLabelOverflow: Boolean = false,
     selectedTextColorOverride: Color? = null,
     unselectedTextColorOverride: Color? = null,
     indicatorPositionProvider: (() -> Float)? = null,
@@ -515,6 +519,13 @@ internal fun AndroidNativeUnderlinedSegmentedControl(
                 ) {
                     AppText(
                         text = label,
+                        modifier = Modifier.then(
+                            if (allowLabelOverflow) {
+                                Modifier.wrapContentWidth(unbounded = true)
+                            } else {
+                                Modifier
+                            }
+                        ),
                         tapToCopyEnabled = false,
                         color = if (selected) selectedTextColor else unselectedTextColor,
                         fontSize = labelFontSize,

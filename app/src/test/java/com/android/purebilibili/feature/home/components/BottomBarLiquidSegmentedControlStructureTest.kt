@@ -420,6 +420,7 @@ class BottomBarLiquidSegmentedControlStructureTest {
         assertTrue(dynamicTopBar.contains("BottomBarLiquidSegmentedControl("))
         assertFalse(dynamicTopBar.contains("AppNativeTabRow("))
         assertTrue(dynamicTopBar.contains("forceLiquidChrome = liquidGlassEnabled"))
+        assertTrue(dynamicTopBar.contains("allowNativeLabelOverflow = true"))
         assertTrue(dynamicTopBar.contains("indicatorPositionProvider = indicatorPositionProvider"))
         assertTrue(dynamicTopBar.contains("isScrollInProgressProvider = isScrollInProgressProvider"))
         assertFalse(dynamicTopBar.contains("DynamicCompactTabRow("))

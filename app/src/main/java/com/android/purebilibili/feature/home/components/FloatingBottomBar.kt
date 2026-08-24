@@ -113,6 +113,9 @@ internal val LocalFloatingBottomBarIndicatorPosition = staticCompositionLocalOf 
 
 internal val LocalFloatingBottomBarItemSelectionScale = staticCompositionLocalOf { { 1f } }
 
+internal val LocalFloatingBottomBarItemAlignmentOffset =
+    staticCompositionLocalOf<(Int) -> Float> { { 0f } }
+
 /** 激活内容捕获层会为指示器提供每个槽位的选中态图标。 */
 internal val LocalFloatingBottomBarActiveContent = staticCompositionLocalOf { false }
 
@@ -295,6 +298,7 @@ fun RowScope.FloatingBottomBarItem(
 ) {
     val scale = LocalFloatingBottomBarTabScale.current
     val indicatorPosition = LocalFloatingBottomBarIndicatorPosition.current
+    val alignmentOffset = LocalFloatingBottomBarItemAlignmentOffset.current
     val contentColor = LocalFloatingBottomBarContentColor.current
     val selectionScale = remember(itemIndex, indicatorPosition) {
         {
@@ -330,6 +334,7 @@ fun RowScope.FloatingBottomBarItem(
                 val s = scale()
                 scaleX = s
                 scaleY = s
+                translationX = itemIndex?.let(alignmentOffset) ?: 0f
                 // Keep badge pixels outside the item bounds.
                 clip = false
             },
@@ -447,7 +452,6 @@ fun FloatingBottomBar(
             indicatorHeightDp = fittedIndicatorHeight.value,
         )
     }
-
     class DockDragHitTest {
         var dockWindowLeftPx = 0f
         var screenWidthPx = 0f
@@ -570,6 +574,24 @@ fun FloatingBottomBar(
             }
         ).also { holder.instance = it }
     }
+    val itemAlignmentOffsetProvider: (Int) -> Float = { itemIndex ->
+        if (!isLiquidGlassMode || tabWidthPx <= 0f) {
+            0f
+        } else {
+            val position = dampedDragAnimation.value
+            if (itemIndex != position.fastRoundToInt().fastCoerceIn(0, maxTabIndex)) {
+                0f
+            } else {
+                val alignmentPx = resolveFloatingDockIndicatorContentAlignmentPx(
+                    position = position,
+                    tabWidthPx = tabWidthPx,
+                    tabsCount = safeTabsCount,
+                    indicatorWidthPx = fittedIndicatorWidthPx,
+                )
+                if (isLtr) alignmentPx else -alignmentPx
+            }
+        }
+    }
 
     LaunchedEffect(dampedDragAnimation, maxTabIndex) {
         snapshotFlow { selectedIndexLatest.value().coerceIn(0, maxTabIndex) }
@@ -669,6 +691,7 @@ fun FloatingBottomBar(
         CompositionLocalProvider(
             LocalFloatingBottomBarContentColor provides resolvedContentColor,
             LocalFloatingBottomBarIndicatorPosition provides { dampedDragAnimation.value },
+            LocalFloatingBottomBarItemAlignmentOffset provides itemAlignmentOffsetProvider,
         ) {
             Row(
                 Modifier
@@ -780,6 +803,7 @@ fun FloatingBottomBar(
                 LocalFloatingBottomBarContentColor provides colors.activeContentColor,
                 LocalFloatingBottomBarActiveContent provides true,
                 LocalFloatingBottomBarIndicatorPosition provides { dampedDragAnimation.value },
+                LocalFloatingBottomBarItemAlignmentOffset provides itemAlignmentOffsetProvider,
             ) {
                 Row(
                     Modifier
@@ -787,13 +811,7 @@ fun FloatingBottomBar(
                         .alpha(0f)
                         .layerBackdrop(tabsBackdrop)
                         .graphicsLayer {
-                            val alignmentPx = resolveFloatingDockIndicatorContentAlignmentPx(
-                                position = dampedDragAnimation.value,
-                                tabWidthPx = tabWidthPx,
-                                tabsCount = safeTabsCount,
-                                indicatorWidthPx = fittedIndicatorWidthPx,
-                            )
-                            translationX = panelOffset + if (isLtr) alignmentPx else -alignmentPx
+                            translationX = panelOffset
                             clip = false
                         }
                         .drawBackdrop(
