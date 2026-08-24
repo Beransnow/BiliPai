@@ -611,6 +611,10 @@ internal fun resolveMd3TopTabRowVerticalTranslationDp(
 
 internal fun resolveMd3TopTabIndicatorBottomPadding(): Dp = AppSpacingTokens.Small
 
+internal fun resolveIconOnlyTopTabIndicatorWidth(): Dp = AppSpacingTokens.Small + AppSpacingTokens.Micro
+
+internal fun resolveIconOnlyTopTabIndicatorSideGap(): Dp = AppSpacingTokens.Micro
+
 internal fun resolveHomeSkinTopTabActionButtonSize(): Dp = AppSpacingTokens.DoubleExtraLarge + AppSpacingTokens.Medium
 
 internal fun resolveHomeSkinTopTabActionIconSize(): Dp = AppSpacingTokens.ExtraLarge
@@ -1829,29 +1833,53 @@ private fun LightweightHomeTopTabs(
                 }
                 } // stable export + visible content with indicator-only motion
 
-                // 非玻璃 MD3 与皮肤顶栏都使用单层短下划线；移动时两端错峰，先拉长再收拢。
+                // 非玻璃 MD3 与皮肤顶栏使用单层短指示线；仅图标模式放在图标右侧，
+                // 图文/纯文字模式仍放在文字底部。
                 if (shouldUseMd3NativeUnderline) {
                     val indicatorColor = if (skinPlainContentColor != null) {
                         resolveHomeSkinTopTabIndicatorColor(skinPlainContentColor)
                     } else {
                         MaterialTheme.colorScheme.primary
                     }
+                    val iconOnlyIndicator = showIcon && !showText
+                    val nativeIndicatorWidth = if (iconOnlyIndicator) {
+                        resolveIconOnlyTopTabIndicatorWidth()
+                    } else {
+                        md3IndicatorWidth
+                    }
                     val nativeUnderlineBounds = with(density) {
                         resolveMd3TopTabUnderlineBounds(
                             absolutePagerPosition = topTabIndicatorPosition,
                             itemWidthPx = itemWidth.toPx(),
                             rowScrollOffsetPx = rowScrollOffsetPx,
-                            indicatorWidthPx = md3IndicatorWidth.toPx(),
+                            indicatorWidthPx = nativeIndicatorWidth.toPx(),
                             contentPaddingPx = md3ContentPadding.toPx(),
                         )
                     }
+                    val iconOnlySideOffsetPx = if (iconOnlyIndicator) {
+                        with(density) {
+                            (
+                                resolveTopTabIconSizeDp(1).dp / 2 +
+                                    resolveIconOnlyTopTabIndicatorSideGap() +
+                                    nativeIndicatorWidth / 2
+                            ).toPx()
+                        }
+                    } else {
+                        0f
+                    }
                     Box(
                         modifier = Modifier
-                            .align(Alignment.BottomStart)
+                            .align(if (iconOnlyIndicator) Alignment.CenterStart else Alignment.BottomStart)
                             .graphicsLayer {
-                                translationX = nativeUnderlineBounds.translationXPx
+                                translationX = nativeUnderlineBounds.translationXPx + iconOnlySideOffsetPx
                             }
-                            .offset(y = -AppSpacingTokens.ExtraSmall)
+                            .then(
+                                if (iconOnlyIndicator) {
+                                    Modifier
+                                } else {
+                                    Modifier.offset(y = -AppSpacingTokens.ExtraSmall)
+                                }
+                            )
                             .width(with(density) { nativeUnderlineBounds.widthPx.toDp() })
                             .height(AppSpacingTokens.Micro * 1.5f)
                             .clip(RoundedCornerShape(percent = 50))

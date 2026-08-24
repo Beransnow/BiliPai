@@ -1,9 +1,16 @@
 package com.android.purebilibili.feature.home.components
 
+import androidx.compose.ui.unit.dp
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class TopTabIndicatorGeometryTest {
+
+    @Test
+    fun `icon only top tab uses a compact side indicator`() {
+        assertEquals(10.dp, resolveIconOnlyTopTabIndicatorWidth())
+        assertEquals(2.dp, resolveIconOnlyTopTabIndicatorSideGap())
+    }
 
     @Test
     fun `top tab panel offset cannot travel outward past dock edges`() {
