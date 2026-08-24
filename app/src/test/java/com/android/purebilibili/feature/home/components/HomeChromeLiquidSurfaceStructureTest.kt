@@ -72,6 +72,8 @@ class HomeChromeLiquidSurfaceStructureTest {
         assertTrue(
             "home header should draw a bottom-bar matched dock around top tabs inside the unified top panel",
             topHeaderSource.contains("val topTabDockChromeRenderMode = resolveHomeTopTabDockChromeRenderMode(") &&
+                topHeaderSource.contains("val topTabDockHazeState = hazeState.takeIf") &&
+                topHeaderSource.contains("shouldApplyHomeTopTabDockHaze(") &&
                 topHeaderSource.contains("localTabChromeRenderMode = unifiedLocalTabChromeRenderMode") &&
                 topHeaderSource.contains("val topTabLiquidGlassEnabled =") &&
                 topHeaderSource.contains("val useTopTabBottomBarMatchedDock = true") &&
@@ -84,6 +86,7 @@ class HomeChromeLiquidSurfaceStructureTest {
                 topHeaderSource.contains("tabChromeRenderMode = if (useTopTabBottomBarMatchedDock)") &&
                 topHeaderSource.contains("val bottomBarLiquidGlassPreset = homeSettings?.bottomBarLiquidGlassPreset") &&
                 topHeaderSource.contains("liquidGlassPreset = bottomBarLiquidGlassPreset") &&
+                topHeaderSource.contains("hazeState = topTabDockHazeState") &&
                 topHeaderSource.contains("topTabDockChromeRenderMode") &&
                 topHeaderSource.contains("tabShape = if (useUnifiedTopPanel)") &&
                 topHeaderSource.contains("resolveSharedBottomBarCapsuleShape()") &&

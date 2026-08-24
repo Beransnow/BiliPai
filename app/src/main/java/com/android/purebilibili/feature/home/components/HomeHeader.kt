@@ -840,18 +840,10 @@ internal fun resolveHomeTopUnifiedLocalTabChromeRenderMode(
 }
 
 internal fun resolveHomeTopTabDockChromeRenderMode(
-    embeddedInUnifiedPanel: Boolean,
-    continuousSlabRenderMode: HomeTopChromeRenderMode,
     detachedTopTabDock: Boolean,
     localTabChromeRenderMode: HomeTopChromeRenderMode,
     hasHazeState: Boolean,
 ): HomeTopChromeRenderMode {
-    if (
-        embeddedInUnifiedPanel &&
-        continuousSlabRenderMode == HomeTopChromeRenderMode.BLUR
-    ) {
-        return HomeTopChromeRenderMode.PLAIN
-    }
     return if (
         detachedTopTabDock &&
         localTabChromeRenderMode == HomeTopChromeRenderMode.PLAIN &&
@@ -862,6 +854,14 @@ internal fun resolveHomeTopTabDockChromeRenderMode(
         localTabChromeRenderMode
     }
 }
+
+internal fun shouldApplyHomeTopTabDockHaze(
+    embeddedInUnifiedPanel: Boolean,
+    continuousSlabRenderMode: HomeTopChromeRenderMode,
+): Boolean = !(
+    embeddedInUnifiedPanel &&
+        continuousSlabRenderMode == HomeTopChromeRenderMode.BLUR
+    )
 
 internal fun resolveHomeTopUnifiedTabSurfaceColor(
     tabContainerColor: Color,
@@ -1926,12 +1926,16 @@ fun HomeHeader(
         localTabChromeRenderMode
     }
     val topTabDockChromeRenderMode = resolveHomeTopTabDockChromeRenderMode(
-        embeddedInUnifiedPanel = embedTopTabsInUnifiedPanel,
-        continuousSlabRenderMode = continuousSlabRenderMode,
         detachedTopTabDock = useDetachedTopTabDock,
         localTabChromeRenderMode = unifiedLocalTabChromeRenderMode,
         hasHazeState = hazeState != null,
     )
+    val topTabDockHazeState = hazeState.takeIf {
+        shouldApplyHomeTopTabDockHaze(
+            embeddedInUnifiedPanel = embedTopTabsInUnifiedPanel,
+            continuousSlabRenderMode = continuousSlabRenderMode,
+        )
+    }
     val effectiveTabSurfaceColor = if (useDetachedTopTabDock) {
         resolveHomeTopDetachedTabDockSurfaceColor(
             isLightMode = isLightMode,
@@ -2029,7 +2033,7 @@ fun HomeHeader(
                 effectiveTabChromeRenderMode
             },
             tabSurfaceColor = effectiveTabSurfaceColor,
-            hazeState = hazeState,
+            hazeState = topTabDockHazeState,
             miuixBackdrop = miuixBackdrop,
             liquidStyle = liquidStyle,
             liquidGlassTuning = liquidGlassTuning,

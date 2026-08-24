@@ -227,6 +227,20 @@ class BottomBarMiuixStructureTest {
     }
 
     @Test
+    fun `fold posture keeps large screen bottom dock geometry`() {
+        val source = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/BottomBar.kt")
+        val bottomBarSource = source.substringAfter("fun FrostedBottomBar(")
+
+        assertTrue(
+            bottomBarSource.contains(
+                "val isTablet = com.android.purebilibili.core.util.LocalWindowSizeClass.current.isTablet"
+            )
+        )
+        assertFalse(bottomBarSource.contains("isTablet &&\n        !forceBottomNavigation"))
+        assertTrue(bottomBarSource.contains("onToggleSidebar.takeUnless { forceBottomNavigation }"))
+    }
+
+    @Test
     fun `bottom bar search click keeps capsule scale stable`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/home/components/BottomBar.kt")
         val refractionProfileSource = source

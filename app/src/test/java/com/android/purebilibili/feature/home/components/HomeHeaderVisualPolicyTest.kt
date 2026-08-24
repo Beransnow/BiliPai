@@ -1779,13 +1779,17 @@ class HomeHeaderVisualPolicyTest {
             )
         )
         assertEquals(
-            HomeTopChromeRenderMode.PLAIN,
+            HomeTopChromeRenderMode.BLUR,
             resolveHomeTopTabDockChromeRenderMode(
-                embeddedInUnifiedPanel = true,
-                continuousSlabRenderMode = HomeTopChromeRenderMode.BLUR,
                 detachedTopTabDock = false,
                 localTabChromeRenderMode = HomeTopChromeRenderMode.BLUR,
                 hasHazeState = true,
+            )
+        )
+        assertFalse(
+            shouldApplyHomeTopTabDockHaze(
+                embeddedInUnifiedPanel = true,
+                continuousSlabRenderMode = HomeTopChromeRenderMode.BLUR,
             )
         )
     }
@@ -1795,11 +1799,15 @@ class HomeHeaderVisualPolicyTest {
         assertEquals(
             HomeTopChromeRenderMode.BLUR,
             resolveHomeTopTabDockChromeRenderMode(
-                embeddedInUnifiedPanel = false,
-                continuousSlabRenderMode = HomeTopChromeRenderMode.PLAIN,
                 detachedTopTabDock = true,
                 localTabChromeRenderMode = HomeTopChromeRenderMode.PLAIN,
                 hasHazeState = true,
+            )
+        )
+        assertTrue(
+            shouldApplyHomeTopTabDockHaze(
+                embeddedInUnifiedPanel = false,
+                continuousSlabRenderMode = HomeTopChromeRenderMode.PLAIN,
             )
         )
     }
