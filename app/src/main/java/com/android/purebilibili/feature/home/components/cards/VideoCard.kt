@@ -500,6 +500,7 @@ internal fun ElegantVideoCard(
     coverAspectRatio: Float = 4f / 3f,
     compactMetadata: Boolean = true,
     titleMinLines: Int = 2,
+    titleMaxLines: Int = 2,
     highlightedTitle: AnnotatedString? = null,
     showOnlineCount: Boolean = false,
     upFollowerCount: Int? = null,
@@ -1367,7 +1368,7 @@ internal fun ElegantVideoCard(
         // 标题独占整行：更多操作移至右下角，不再挤占两行标题的可用宽度。
         AppText(
             text = highlightedTitle ?: AnnotatedString(video.title),
-            maxLines = 2,
+            maxLines = titleMaxLines,
             minLines = titleMinLines,
             overflow = TextOverflow.Ellipsis,
             style = contentTypography.title.copy(

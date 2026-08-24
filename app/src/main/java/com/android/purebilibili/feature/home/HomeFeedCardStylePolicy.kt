@@ -9,8 +9,13 @@ internal data class HomeFeedCardLayout(
     val itemSpacingDp: Int,
     val verticalItemSpacingDp: Int = itemSpacingDp,
     val storyCardHorizontalPaddingDp: Int,
-    val compactMetadata: Boolean
-)
+    val density: HomeFeedCardDensityPolicy,
+) {
+    val compactMetadata: Boolean get() = density.compactMetadata
+    val titleMinLines: Int get() = density.titleMinLines
+    val titleMaxLines: Int get() = density.titleMaxLines
+    val compactStatsOnCover: Boolean get() = density.compactStatsOnCover
+}
 
 /** 4:3 更高列表框。CDN 16:9 源图会左右裁。 */
 internal const val HOME_FEED_OFFICIAL_COVER_ASPECT_RATIO = 4f / 3f
@@ -56,6 +61,11 @@ internal fun resolveHomeFeedCardLayout(
         gridColumns = gridColumns,
         widthSizeClass = widthSizeClass,
     )
+    val density = resolveHomeFeedCardDensityPolicy(
+        style = style,
+        gridColumns = gridColumns,
+        widthSizeClass = widthSizeClass,
+    )
     return when (style) {
         HomeFeedCardStyle.CURRENT -> HomeFeedCardLayout(
             coverAspectRatio = coverAspectRatio,
@@ -63,7 +73,7 @@ internal fun resolveHomeFeedCardLayout(
             itemSpacingDp = 6,
             verticalItemSpacingDp = 6,
             storyCardHorizontalPaddingDp = 16,
-            compactMetadata = false
+            density = density,
         )
 
         HomeFeedCardStyle.OFFICIAL -> HomeFeedCardLayout(
@@ -73,7 +83,7 @@ internal fun resolveHomeFeedCardLayout(
             itemSpacingDp = 6,
             verticalItemSpacingDp = 6,
             storyCardHorizontalPaddingDp = 0,
-            compactMetadata = true
+            density = density,
         )
 
         HomeFeedCardStyle.BILIPAI -> HomeFeedCardLayout(
@@ -83,7 +93,7 @@ internal fun resolveHomeFeedCardLayout(
             itemSpacingDp = 6,
             verticalItemSpacingDp = 6,
             storyCardHorizontalPaddingDp = 8,
-            compactMetadata = true
+            density = density,
         )
     }
 }

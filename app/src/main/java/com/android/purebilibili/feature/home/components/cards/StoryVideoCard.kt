@@ -107,6 +107,8 @@ internal fun StoryVideoCard(
     coverAspectRatio: Float = 4f / 3f,
     cardHorizontalPadding: Dp = AppSpacingTokens.None,
     compactMetadata: Boolean = true,
+    titleMinLines: Int = 1,
+    titleMaxLines: Int = 2,
     showOnlineCount: Boolean = false,
     showPublishTime: Boolean = false,
     upFollowerCount: Int? = null,
@@ -425,7 +427,8 @@ internal fun StoryVideoCard(
             text = video.title,
             color = MaterialTheme.colorScheme.onSurface,
             style = contentTypography.title,
-            maxLines = 2,
+            minLines = titleMinLines,
+            maxLines = titleMaxLines,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier.fillMaxWidth()
         )
