@@ -241,7 +241,7 @@ class FloatingBottomBarStructureTest {
         val source = loadFloatingBottomBarSource()
         val alignmentProvider = source
             .substringAfter("val itemAlignmentOffsetProvider")
-            .substringBefore("LaunchedEffect(dampedDragAnimation, maxTabIndex)")
+            .substringBefore("LaunchedEffect(dampedDragAnimation, maxTabIndex, isLiquidGlassMode)")
         val nonLiquidIndicator = source
             .substringAfter("if (isLiquidGlassMode && combinedBackdrop != null)")
             .substringBefore("// The selected capsule can be wider than its tab")
@@ -257,26 +257,32 @@ class FloatingBottomBarStructureTest {
     }
 
     @Test
-    fun `non liquid capsule reuses liquid indicator movement deformation`() {
+    fun `non liquid capsule does not reuse liquid indicator movement deformation`() {
         val source = loadFloatingBottomBarSource()
         val nonLiquidIndicator = source
             .substringAfter("if (isLiquidGlassMode && combinedBackdrop != null)")
             .substringBefore("// The selected capsule can be wider than its tab")
             .substringAfterLast("} else {")
 
-        assertTrue(nonLiquidIndicator.contains("scaleX = dampedDragAnimation.scaleX"))
-        assertTrue(nonLiquidIndicator.contains("scaleY = dampedDragAnimation.scaleY"))
-        assertTrue(nonLiquidIndicator.contains("val velocity = dampedDragAnimation.velocity / 10f"))
-        assertTrue(
-            nonLiquidIndicator.contains(
-                "scaleX /= 1f - (velocity * 0.75f).fastCoerceIn(-0.2f, 0.2f)"
+        assertFalse(nonLiquidIndicator.contains("scaleX = dampedDragAnimation.scaleX"))
+        assertFalse(nonLiquidIndicator.contains("scaleY = dampedDragAnimation.scaleY"))
+        assertFalse(nonLiquidIndicator.contains("val velocity = dampedDragAnimation.velocity / 10f"))
+    }
+
+    @Test
+    fun `non liquid indicator snaps while liquid glass keeps animated settling`() {
+        val source = loadFloatingBottomBarSource()
+        val selectionSync = source
+            .substringAfter("shouldAnimateIndicatorToSelectedIndex(")
+            .substringBefore(
+                "LaunchedEffect(dampedDragAnimation, maxTabIndex)",
+                missingDelimiterValue = ""
             )
-        )
-        assertTrue(
-            nonLiquidIndicator.contains(
-                "scaleY *= 1f - (velocity * 0.25f).fastCoerceIn(-0.2f, 0.2f)"
-            )
-        )
+
+        assertTrue(selectionSync.contains("if (isLiquidGlassMode)"))
+        assertTrue(selectionSync.contains("dampedDragAnimation.animateToValue(index.toFloat())"))
+        assertTrue(selectionSync.contains("dampedDragAnimation.snapTo(index.toFloat())"))
+        assertTrue(source.contains("if (isLiquidGlassMode && dragSelectionEnabled && safeTabsCount > 1)"))
     }
 
     @Test

@@ -612,7 +612,7 @@ fun FloatingBottomBar(
         }
     }
 
-    LaunchedEffect(dampedDragAnimation, maxTabIndex) {
+    LaunchedEffect(dampedDragAnimation, maxTabIndex, isLiquidGlassMode) {
         snapshotFlow {
             selectedIndexLatest.value().coerceIn(0, maxTabIndex) to
                 dampedDragAnimation.isDragging
@@ -626,7 +626,11 @@ fun FloatingBottomBar(
                         ownedTargetIndex = pagerFollowGate.ownedTargetIndex,
                     )
                 ) {
-                    dampedDragAnimation.animateToValue(index.toFloat())
+                    if (isLiquidGlassMode) {
+                        dampedDragAnimation.animateToValue(index.toFloat())
+                    } else {
+                        dampedDragAnimation.snapTo(index.toFloat())
+                    }
                 }
             }
     }
@@ -967,14 +971,6 @@ fun FloatingBottomBar(
                             }
                             clip = false
                         }
-                        .graphicsLayer {
-                            scaleX = dampedDragAnimation.scaleX
-                            scaleY = dampedDragAnimation.scaleY
-                            val velocity = dampedDragAnimation.velocity / 10f
-                            scaleX /= 1f - (velocity * 0.75f).fastCoerceIn(-0.2f, 0.2f)
-                            scaleY *= 1f - (velocity * 0.25f).fastCoerceIn(-0.2f, 0.2f)
-                            clip = false
-                        }
                         .clip(pillShape)
                         .background(colors.indicatorColor.copy(alpha = 0.15f), pillShape)
                         .height(fittedIndicatorHeight)
@@ -1034,7 +1030,7 @@ fun FloatingBottomBar(
                     }
                     .then(interactiveHighlight?.gestureModifier ?: Modifier)
                     .then(
-                        if (dragSelectionEnabled && safeTabsCount > 1) {
+                        if (isLiquidGlassMode && dragSelectionEnabled && safeTabsCount > 1) {
                             dampedDragAnimation.modifier
                         } else {
                             Modifier
