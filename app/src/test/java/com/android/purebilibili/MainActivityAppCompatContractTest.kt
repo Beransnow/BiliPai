@@ -344,6 +344,11 @@ class MainActivityAppCompatContractTest {
             )
         }
         assertTrue(
+            loadResourceText("drawable/ic_launcher_blue_snow_maid_round_background.xml")
+                .contains("#FF0A9FE8"),
+            "Round maid icons should use a blue field so circular launchers do not expose an outer shell"
+        )
+        assertTrue(
             loadResourceText("drawable/ic_launcher_blue_snow_maid_announcement_background.xml")
                 .contains("#FFFFFFFF"),
             "The light announcement icon should keep its distinct white circular background"
@@ -392,6 +397,26 @@ class MainActivityAppCompatContractTest {
             frontWidthRatio in 0.57f..0.59f,
             "Front maid foreground should preserve the same theme-aware outer field without being cropped"
         )
+
+        listOf(
+            "ic_launcher_blue_snow_maid_round_foreground.png",
+            "ic_launcher_blue_snow_maid_front_round_foreground.png"
+        ).forEach { fileName ->
+            val rows = readPngRgbaRows(loadResourceFile("mipmap-xxxhdpi/$fileName"))
+            val imageWidth = rows.first().size / 4
+            val opaqueXs = buildList {
+                rows.forEach { row ->
+                    for (x in 0 until imageWidth) {
+                        if (row[x * 4 + 3] != 0) add(x)
+                    }
+                }
+            }
+            val foregroundWidthRatio = (opaqueXs.max() - opaqueXs.min() + 1).toFloat() / imageWidth
+            assertTrue(
+                foregroundWidthRatio in 0.66f..0.68f,
+                "$fileName should fill a circular launcher mask without changing rounded-square icons"
+            )
+        }
 
         val announcementRows = readPngRgbaRows(
             loadResourceFile("mipmap-xxxhdpi/ic_launcher_blue_snow_maid_announcement_foreground.png")
@@ -479,14 +504,22 @@ class MainActivityAppCompatContractTest {
                 "ic_launcher_blue_snow_maid_announcement_background_dark",
             "ic_launcher_blue_snow_maid_front" to "ic_launcher_blue_snow_maid_background_dark"
         ).forEach { (iconStem, backgroundStem) ->
-            listOf("", "_round").forEach { suffix ->
-                assertTrue(
-                    loadResourceText("mipmap-night-anydpi-v26/$iconStem$suffix.xml")
-                        .contains("@drawable/$backgroundStem"),
-                    "$iconStem$suffix should remain adaptive in dark mode instead of falling back to a legacy PNG"
-                )
-            }
+            assertTrue(
+                loadResourceText("mipmap-night-anydpi-v26/$iconStem.xml")
+                    .contains("@drawable/$backgroundStem"),
+                "$iconStem should remain adaptive in dark mode instead of falling back to a legacy PNG"
+            )
         }
+        listOf("ic_launcher_blue_snow_maid", "ic_launcher_blue_snow_maid_front").forEach { iconStem ->
+            val roundAdaptive = loadResourceText("mipmap-night-anydpi-v26/${iconStem}_round.xml")
+            assertTrue(roundAdaptive.contains("@drawable/ic_launcher_blue_snow_maid_round_background"))
+            assertTrue(roundAdaptive.contains("@mipmap/${iconStem}_round_foreground"))
+        }
+        assertTrue(
+            loadResourceText("mipmap-night-anydpi-v26/ic_launcher_blue_snow_maid_announcement_round.xml")
+                .contains("@drawable/ic_launcher_blue_snow_maid_announcement_background_dark"),
+            "The announcement round icon should retain its existing dark adaptive shell"
+        )
         val announcementFallbackRows = readPngRgbaRows(
             loadResourceFile("mipmap-night-xxxhdpi/ic_launcher_blue_snow_maid_announcement_round.png")
         )
