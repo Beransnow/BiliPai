@@ -162,15 +162,17 @@ internal fun articleContentBlocksToOpusBlocks(
 ): List<OpusContentBlock> {
     return blocks.map { block ->
         when (block) {
-            is ArticleContentBlock.Heading -> OpusContentBlock.Text(block.text)
+            is ArticleContentBlock.Heading -> OpusContentBlock.Heading(block.text)
             is ArticleContentBlock.Paragraph -> OpusContentBlock.Text(block.text)
-            is ArticleContentBlock.Quote -> OpusContentBlock.Text(block.text)
-            is ArticleContentBlock.ListBlock -> OpusContentBlock.Text(
-                block.items.mapIndexed { index, item ->
-                    if (block.ordered) "${index + 1}. $item" else "• $item"
-                }.joinToString("\n")
+            is ArticleContentBlock.Quote -> OpusContentBlock.Quote(block.text)
+            is ArticleContentBlock.ListBlock -> OpusContentBlock.ListBlock(
+                items = block.items,
+                ordered = block.ordered,
             )
-            is ArticleContentBlock.Code -> OpusContentBlock.Text(block.content)
+            is ArticleContentBlock.Code -> OpusContentBlock.Code(
+                text = block.content,
+                language = block.language,
+            )
             is ArticleContentBlock.Image -> OpusContentBlock.Image(
                 OpusPic(url = block.url, width = block.width, height = block.height)
             )

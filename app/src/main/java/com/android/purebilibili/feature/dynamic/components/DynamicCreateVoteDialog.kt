@@ -21,7 +21,6 @@ import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppTextField
 import com.android.purebilibili.data.model.response.DynamicCreatedVote
 import com.android.purebilibili.data.repository.DynamicCreateRepository
-import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import kotlinx.coroutines.launch
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
@@ -58,7 +57,7 @@ fun DynamicCreateVoteDialog(
                 AppTextField(value = optionOne, onValueChange = { optionOne = it }, placeholder = "选项 1", singleLine = true)
                 AppTextField(value = optionTwo, onValueChange = { optionTwo = it }, placeholder = "选项 2", singleLine = true)
                 AppTextField(value = optionThree, onValueChange = { optionThree = it }, placeholder = "选项 3（可选）", singleLine = true)
-                BottomBarLiquidSegmentedControl(
+                DynamicAdaptiveSegmentedControl(
                     items = choiceLabels,
                     selectedIndex = if (choiceCount == 1) 0 else 1,
                     onSelected = { index -> choiceCount = if (index == 0) 1 else 2 },
@@ -66,10 +65,7 @@ fun DynamicCreateVoteDialog(
                     height = AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.dp,
                     indicatorHeight = AppChromeSizeTokens.BottomBarMatchedSegmentedIndicatorHeightDp.dp,
                     labelFontSize = 13.sp,
-                    miuixBackdrop = voteChromeBackdrop,
-                    forceLiquidChrome = false,
-                    liquidGlassEffectsEnabled = true,
-                    tapPressRefractionEnabled = true,
+                    backdrop = voteChromeBackdrop,
                 )
                 errorMessage?.let { AppText(it) }
             }

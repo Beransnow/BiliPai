@@ -223,19 +223,30 @@ object DynamicModulesFlexibleSerializer : KSerializer<DynamicModules> {
 
     private fun extractParagraphBlocks(paragraph: JsonObject): List<OpusContentBlock> {
         val blocks = mutableListOf<OpusContentBlock>()
-        extractParagraphHeading(paragraph)?.let { blocks += OpusContentBlock.Text(it) }
-        val listText = extractParagraphList(paragraph)
+        val paragraphType = paragraph["para_type"]?.jsonPrimitive?.intOrNull ?: 0
+        val alignment = paragraph["align"]?.jsonPrimitive?.intOrNull ?: 0
+        extractParagraphHeading(paragraph)?.let {
+            blocks += OpusContentBlock.Heading(text = it, alignment = alignment)
+        }
+        val listBlock = extractParagraphList(paragraph, alignment)
         val codeText = extractParagraphCode(paragraph)
-        listText?.let { blocks += OpusContentBlock.Text(it) }
-        codeText?.let { blocks += OpusContentBlock.Text(it) }
-        if (listText == null && codeText == null) {
+        listBlock?.let { blocks += it }
+        codeText?.let { blocks += OpusContentBlock.Code(it) }
+        if (paragraphType == 3) {
+            blocks += OpusContentBlock.Divider(extractParagraphLinePic(paragraph))
+        }
+        if (listBlock == null && codeText == null && paragraphType != 3) {
             extractParagraphText(paragraph)?.let { text ->
-                if (blocks.none { it is OpusContentBlock.Text && it.text == text }) {
-                    blocks += OpusContentBlock.Text(text)
+                if (blocks.none { it.plainText == text }) {
+                    blocks += if (paragraphType == 4) {
+                        OpusContentBlock.Quote(text = text, alignment = alignment)
+                    } else {
+                        OpusContentBlock.Text(text = text, alignment = alignment)
+                    }
                 }
             }
         }
-        extractParagraphPics(paragraph).forEach { pic ->
+        extractParagraphPics(paragraph, includeLinePic = paragraphType != 3).forEach { pic ->
             blocks += OpusContentBlock.Image(pic)
         }
         extractParagraphLinkCard(paragraph)?.let { blocks += OpusContentBlock.LinkCard(it) }
@@ -249,7 +260,10 @@ object DynamicModulesFlexibleSerializer : KSerializer<DynamicModules> {
         return extractParagraphNodesText(nodes).takeIf { it.isNotBlank() }
     }
 
-    private fun extractParagraphList(paragraph: JsonObject): String? {
+    private fun extractParagraphList(
+        paragraph: JsonObject,
+        alignment: Int,
+    ): OpusContentBlock.ListBlock? {
         val listObject = paragraph["list"]?.let { runCatching { it.jsonObject }.getOrNull() } ?: return null
         val ordered = listObject["style"]?.jsonPrimitive?.intOrNull == 1
         val items = listObject["items"]
@@ -260,9 +274,11 @@ object DynamicModulesFlexibleSerializer : KSerializer<DynamicModules> {
                 extractParagraphNodesText(itemObject["nodes"]).takeIf { it.isNotBlank() }
             }
         if (items.isEmpty()) return null
-        return items.mapIndexed { index, item ->
-            if (ordered) "${index + 1}. $item" else "• $item"
-        }.joinToString("\n")
+        return OpusContentBlock.ListBlock(
+            items = items,
+            ordered = ordered,
+            alignment = alignment,
+        )
     }
 
     private fun extractParagraphCode(paragraph: JsonObject): String? {
@@ -309,7 +325,10 @@ object DynamicModulesFlexibleSerializer : KSerializer<DynamicModules> {
         return extractParagraphNodesText(nodes).takeIf { it.isNotBlank() }
     }
 
-    private fun extractParagraphPics(paragraph: JsonObject): List<OpusPic> {
+    private fun extractParagraphPics(
+        paragraph: JsonObject,
+        includeLinePic: Boolean,
+    ): List<OpusPic> {
         val results = mutableListOf<OpusPic>()
         val picObject = paragraph["pic"]?.let { runCatching { it.jsonObject }.getOrNull() }
         val pics = picObject?.get("pics") as? JsonArray
@@ -327,14 +346,17 @@ object DynamicModulesFlexibleSerializer : KSerializer<DynamicModules> {
                 parseOpusPic(pic)
             }
         }
-        paragraph["line"]
-            ?.let { runCatching { it.jsonObject }.getOrNull() }
-            ?.get("pic")
-            ?.let { runCatching { it.jsonObject }.getOrNull() }
-            ?.let(::parseOpusPic)
-            ?.let(results::add)
+        if (includeLinePic) {
+            extractParagraphLinePic(paragraph)?.let(results::add)
+        }
         return results
     }
+
+    private fun extractParagraphLinePic(paragraph: JsonObject): OpusPic? = paragraph["line"]
+        ?.let { runCatching { it.jsonObject }.getOrNull() }
+        ?.get("pic")
+        ?.let { runCatching { it.jsonObject }.getOrNull() }
+        ?.let(::parseOpusPic)
 
     private fun parseOpusPic(pic: JsonObject?): OpusPic? {
         if (pic == null) return null
@@ -364,6 +386,9 @@ object DynamicModulesFlexibleSerializer : KSerializer<DynamicModules> {
             "LINK_CARD_TYPE_MUSIC" -> parseMusicLinkCard(card, type)
             "LINK_CARD_TYPE_GOODS" -> parseGoodsLinkCard(card, type)
             "LINK_CARD_TYPE_VOTE" -> parseVoteLinkCard(card, type)
+            "LINK_CARD_TYPE_RESERVE" -> parseReserveLinkCard(card, type)
+            "LINK_CARD_TYPE_MATCH" -> parseMatchLinkCard(card, type)
+            "LINK_CARD_TYPE_UPOWER_LOTTERY" -> parseUpowerLotteryLinkCard(card, type)
             "LINK_CARD_TYPE_ITEM_NULL" -> parseItemNullLinkCard(card, type)
             else -> parseGenericLinkCard(card, type)
         }.takeIf { it.title.isNotBlank() || it.cover.isNotBlank() || it.jumpUrl.isNotBlank() }
@@ -473,6 +498,59 @@ object DynamicModulesFlexibleSerializer : KSerializer<DynamicModules> {
         )
     }
 
+    private fun parseReserveLinkCard(card: JsonObject, type: String): OpusLinkCard {
+        val reserve = card.objectValue("reserve")
+        val button = reserve.objectValue("button")
+        val buttonStatus = button.stringValue("status").toIntOrNull() ?: 0
+        val buttonState = if (buttonStatus == 2) button.objectValue("check") else button.objectValue("uncheck")
+        return OpusLinkCard(
+            type = type,
+            oid = card.stringValue("oid").ifBlank { reserve.stringValue("rid") },
+            title = reserve.stringValue("title").ifBlank { "预约" },
+            description = listOf(
+                reserve.objectValue("desc1").stringValue("text"),
+                reserve.objectValue("desc2").stringValue("text"),
+                reserve.objectValue("desc3").stringValue("text"),
+            ).filter(String::isNotBlank).joinToString(" · "),
+            jumpUrl = reserve.stringValue("jump_url").ifBlank { button.stringValue("jump_url") },
+            badgeText = buttonState.stringValue("text").ifBlank {
+                button.objectValue("jump_style").stringValue("text")
+            },
+        )
+    }
+
+    private fun parseMatchLinkCard(card: JsonObject, type: String): OpusLinkCard {
+        val match = card.objectValue("match")
+        val matchInfo = match.objectValue("match_info")
+        return OpusLinkCard(
+            type = type,
+            oid = card.stringValue("oid").ifBlank { match.stringValue("id") },
+            title = match.stringValue("title").ifBlank { matchInfo.stringValue("title") },
+            description = match.stringValue("sub_title").ifBlank { matchInfo.stringValue("sub_title") },
+            label = "赛事",
+            cover = normalizeOptionalOpusImageUrl(match.stringValue("cover")),
+            jumpUrl = match.stringValue("jump_url"),
+        )
+    }
+
+    private fun parseUpowerLotteryLinkCard(card: JsonObject, type: String): OpusLinkCard {
+        val lottery = card.objectValue("upower_lottery")
+        val button = lottery.objectValue("button")
+        return OpusLinkCard(
+            type = type,
+            oid = card.stringValue("oid").ifBlank { lottery.stringValue("rid") },
+            title = lottery.stringValue("title").ifBlank { "充电专属抽奖" },
+            description = listOf(
+                lottery.objectValue("desc").stringValue("text"),
+                lottery.objectValue("hint").stringValue("text"),
+            ).filter(String::isNotBlank).joinToString(" · "),
+            label = "充电专属抽奖",
+            jumpUrl = lottery.stringValue("jump_url").ifBlank { button.stringValue("jump_url") },
+            badgeText = button.objectValue("jump_style").stringValue("text")
+                .ifBlank { button.objectValue("check").stringValue("text") },
+        )
+    }
+
     private fun parseItemNullLinkCard(card: JsonObject, type: String): OpusLinkCard {
         val itemNull = card.objectValue("item_null")
         return OpusLinkCard(
@@ -522,14 +600,18 @@ object DynamicModulesFlexibleSerializer : KSerializer<DynamicModules> {
     ): DynamicModules {
         val existing = module_dynamic
         val paragraphTexts = contentBlocks.mapNotNull { block ->
-            (block as? OpusContentBlock.Text)?.text
+            block.plainText.takeIf(String::isNotBlank)
         }
         val pics = contentBlocks.mapNotNull { block ->
-            (block as? OpusContentBlock.Image)?.pic
+            when (block) {
+                is OpusContentBlock.Image -> block.pic
+                is OpusContentBlock.Divider -> block.pic
+                else -> null
+            }
         }
         val descText = paragraphTexts.joinToString(separator = "\n").trim()
         val cleanTitle = title?.trim().takeUnless { it.isNullOrBlank() }
-        val hasDerivedContent = descText.isNotBlank() || pics.isNotEmpty() || cleanTitle != null
+        val hasDerivedContent = contentBlocks.isNotEmpty() || descText.isNotBlank() || pics.isNotEmpty() || cleanTitle != null
         if (!hasDerivedContent) return this
 
         val existingDesc = existing?.desc
@@ -566,15 +648,10 @@ object DynamicModulesFlexibleSerializer : KSerializer<DynamicModules> {
             pics = if (pics.isNotEmpty()) pics else existingOpus?.pics.orEmpty(),
             contentBlocks = if (contentBlocks.isNotEmpty()) contentBlocks else existingOpus?.contentBlocks.orEmpty()
         )
-        val mergedMajor = DynamicMajor(
+        val mergedMajor = existingMajor?.copy(
             type = "MAJOR_TYPE_OPUS",
-            archive = existingMajor?.archive,
-            article = existingMajor?.article,
-            draw = existingMajor?.draw,
-            live_rcmd = existingMajor?.live_rcmd,
             opus = mergedOpus,
-            ugc_season = existingMajor?.ugc_season
-        )
+        ) ?: DynamicMajor(type = "MAJOR_TYPE_OPUS", opus = mergedOpus)
         return copy(
             module_dynamic = DynamicContentModule(
                 desc = mergedDesc ?: existingDesc,
@@ -731,7 +808,13 @@ data class DynamicThreePointParams(
     val dyn_id_str: String = "",
     @Serializable(with = FlexibleIntSerializer::class)
     val dyn_type: Int = 0,
-    val rid_str: String = ""
+    val rid_str: String = "",
+    @Serializable(with = FlexibleStringSerializer::class)
+    val dynamic_id: String = "",
+    @Serializable(with = FlexibleIntSerializer::class)
+    val status: Int = 0,
+    @Serializable(with = FlexibleIntSerializer::class)
+    val type: Int = 0
 )
 
 // --- 作者模块 ---
@@ -961,10 +1044,33 @@ data class OpusMajor(
 )
 
 sealed interface OpusContentBlock {
-    data class Text(val text: String) : OpusContentBlock
+    data class Text(val text: String, val alignment: Int = 0) : OpusContentBlock
+    data class Heading(val text: String, val level: Int = 2, val alignment: Int = 0) : OpusContentBlock
+    data class Quote(val text: String, val alignment: Int = 0) : OpusContentBlock
+    data class ListBlock(
+        val items: List<String>,
+        val ordered: Boolean,
+        val alignment: Int = 0,
+    ) : OpusContentBlock
+    data class Code(val text: String, val language: String = "") : OpusContentBlock
+    data class Divider(val pic: OpusPic? = null) : OpusContentBlock
     data class Image(val pic: OpusPic) : OpusContentBlock
     data class LinkCard(val card: OpusLinkCard) : OpusContentBlock
 }
+
+val OpusContentBlock.plainText: String
+    get() = when (this) {
+        is OpusContentBlock.Text -> text
+        is OpusContentBlock.Heading -> text
+        is OpusContentBlock.Quote -> text
+        is OpusContentBlock.ListBlock -> items.mapIndexed { index, item ->
+            if (ordered) "${index + 1}. $item" else "• $item"
+        }.joinToString("\n")
+        is OpusContentBlock.Code -> text
+        is OpusContentBlock.Divider,
+        is OpusContentBlock.Image,
+        is OpusContentBlock.LinkCard -> ""
+    }
 
 @Serializable
 data class OpusLinkCard(

@@ -48,7 +48,6 @@ import com.android.purebilibili.feature.dynamic.resolveDynamicCommentLocationLab
 import com.android.purebilibili.feature.dynamic.resolveDynamicCommentSheetTotalCount
 import com.android.purebilibili.feature.dynamic.resolveDynamicSubReplyCount
 import com.android.purebilibili.feature.dynamic.shouldOpenDynamicCommentThreadOnTap
-import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import com.android.purebilibili.feature.video.ui.components.CommentPictures
 import com.android.purebilibili.feature.video.ui.components.RichCommentText
 import com.android.purebilibili.feature.video.ui.components.ReplyMemberAvatar
@@ -398,7 +397,7 @@ private fun DynamicCommentSortControl(
     val spec = remember(items.size) {
         resolveDynamicCommentSortControlSpec(itemCount = items.size)
     }
-    BottomBarLiquidSegmentedControl(
+    DynamicAdaptiveSegmentedControl(
         items = items,
         selectedIndex = selectedIndex,
         onSelected = onSelected,
@@ -407,10 +406,7 @@ private fun DynamicCommentSortControl(
         indicatorHeight = spec.indicatorHeightDp.dp,
         labelFontSize = 13.sp,
         modifier = modifier,
-        miuixBackdrop = miuixBackdrop,
-        forceLiquidChrome = false,
-        liquidGlassEffectsEnabled = true,
-        tapPressRefractionEnabled = true,
+        backdrop = miuixBackdrop,
     )
 }
 

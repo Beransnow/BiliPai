@@ -23,6 +23,7 @@ import com.android.purebilibili.data.model.response.ReplyData
 import com.android.purebilibili.data.model.response.ReplyInteractionData
 import com.android.purebilibili.data.model.response.ReplyItem
 import com.android.purebilibili.data.repository.ActionRepository
+import com.android.purebilibili.data.repository.BlockedUpRepository
 import com.android.purebilibili.data.repository.CommentRepository
 import com.android.purebilibili.data.repository.DynamicCreateRepository
 import com.android.purebilibili.data.repository.DynamicFeedScope
@@ -97,6 +98,7 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
     private val cachePrefs = appContext.getSharedPreferences(PREFS_DYNAMIC_CACHE, Context.MODE_PRIVATE)
     private val userPrefs = appContext.getSharedPreferences(PREFS_DYNAMIC_USERS, Context.MODE_PRIVATE)
     private val json = Json { ignoreUnknownKeys = true }
+    private val blockedUpRepository = BlockedUpRepository(appContext)
 
     private var cachedLiveRooms: List<LiveRoom> = emptyList()
     
@@ -1744,7 +1746,7 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
             is DynamicManageAction.ToggleTop -> toggleDynamicTop(action, onResult)
             is DynamicManageAction.SetVisibility -> setDynamicVisibility(action, onResult)
             is DynamicManageAction.SetReplySubject -> modifyReplySubject(action, onResult)
-            is DynamicManageAction.TempBlock -> tempBlockDynamic(action.dynamicId, onResult)
+            is DynamicManageAction.BlockAuthor -> blockDynamicAuthor(action, onResult)
             is DynamicManageAction.Report -> Unit
             is DynamicManageAction.Edit -> Unit
         }
@@ -1910,17 +1912,34 @@ class DynamicViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun tempBlockDynamic(dynamicId: String, onResult: (Boolean, String) -> Unit) {
-        if (dynamicId.isBlank()) {
-            onResult(false, "无法屏蔽该动态")
+    private fun blockDynamicAuthor(
+        action: DynamicManageAction.BlockAuthor,
+        onResult: (Boolean, String) -> Unit,
+    ) {
+        if (action.authorMid <= 0L) {
+            onResult(false, "无法识别该用户")
             return
         }
-        _uiState.value = _uiState.value.copy(
-            tempBannedDynamicIds = (
-                _uiState.value.tempBannedDynamicIds + dynamicId
-            ).toImmutableSet()
-        )
-        onResult(true, "已临时屏蔽（重启后恢复）")
+        viewModelScope.launch {
+            val result = runCatching {
+                blockedUpRepository.blockUpWithBilibiliSync(
+                    mid = action.authorMid,
+                    name = action.authorName,
+                    face = action.authorFace,
+                )
+            }.getOrElse { error ->
+                onResult(false, error.message ?: "屏蔽失败")
+                return@launch
+            }
+            _uiState.value = mapDynamicTimelineItems(_uiState.value) { items ->
+                items.filterNot { it.modules.module_author?.mid == action.authorMid }
+            }.copy(
+                userItems = _uiState.value.userItems
+                    .filterNot { it.modules.module_author?.mid == action.authorMid }
+                    .toImmutableList(),
+            )
+            onResult(result.localChanged, result.message)
+        }
     }
 
     companion object {
