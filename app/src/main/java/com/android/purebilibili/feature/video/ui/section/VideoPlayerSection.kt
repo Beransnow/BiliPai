@@ -71,8 +71,6 @@ import com.android.purebilibili.core.ui.transition.LocalVideoCardTransitionBackg
 import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppIconButton
-import com.android.purebilibili.core.ui.components.AppFilledIconButton
-import com.android.purebilibili.core.ui.components.AppIconButtonDefaults
 import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.resolveAppTvIcon
 import com.android.purebilibili.data.model.response.ViewPoint
@@ -3915,12 +3913,8 @@ fun VideoPlayerSection(
                                 .background(Color.Black.copy(alpha = 0.18f))
                         )
                     }
-                    AppFilledIconButton(
+                    AppIconButton(
                         onClick = playFromManualStartCover,
-                        colors = AppIconButtonDefaults.colors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                        ),
                         modifier = Modifier
                             .align(
                                 when (manualStartPlayButtonLayoutSpec.anchor) {
@@ -3945,7 +3939,8 @@ fun VideoPlayerSection(
                         AppIcon(
                             imageVector = manualStartPlayIcon,
                             contentDescription = "播放视频",
-                            modifier = Modifier.size(32.dp)
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(32.dp),
                         )
                     }
                 }
