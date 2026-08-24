@@ -209,6 +209,9 @@ private val PartitionSideRailItemHeight = 48.dp
 private val PartitionSideRailIndicatorHeight =
     resolveMatchedLiquidIndicatorHeightDp(PartitionSideRailItemHeight.value).dp
 private val PartitionSideRailItemSpacing = 4.dp
+private val PartitionSideRailMd3UnderlineWidth = 28.dp
+private val PartitionSideRailMd3UnderlineHeight = 3.dp
+private val PartitionSideRailMd3UnderlineBottomPadding = 3.dp
 private val PartitionVideoListMaxPush = 20.dp
 
 internal fun resolvePartitionBangumiType(partitionId: Int): Int? = when (partitionId) {
@@ -899,6 +902,37 @@ private fun PartitionSideRailMovingIndicator(
     highlightModifier: Modifier = Modifier,
     modifier: Modifier = Modifier
 ) {
+    val density = LocalDensity.current
+    if (!liquidGlassIndicatorEnabled) {
+        SideEffect {
+            onVideoListPushChanged(0f)
+        }
+        Box(modifier = modifier.then(highlightModifier)) {
+            val indicatorTopPx = indicatorOffsetPxProvider()
+            Box(
+                modifier = Modifier
+                    .graphicsLayer {
+                        translationX = with(density) { horizontalPadding.start.toPx() }
+                        translationY = indicatorTopPx
+                    }
+                    .width(indicatorWidth)
+                    .height(with(density) { itemHeightPx.toDp() })
+                    .then(interactionModifier),
+                contentAlignment = Alignment.BottomCenter,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .offset(y = -PartitionSideRailMd3UnderlineBottomPadding)
+                        .width(PartitionSideRailMd3UnderlineWidth)
+                        .height(PartitionSideRailMd3UnderlineHeight)
+                        .clip(RoundedCornerShape(percent = 50))
+                        .background(MaterialTheme.colorScheme.primary),
+                )
+            }
+        }
+        return
+    }
+
     val shape = resolveSharedBottomBarCapsuleShape()
     val isDarkTheme = isSystemInDarkTheme()
     val motionSpec = remember { resolveSegmentedControlMotionSpec() }
@@ -932,7 +966,6 @@ private fun PartitionSideRailMovingIndicator(
     )
 
     Box(modifier = modifier.then(highlightModifier)) {
-        val density = LocalDensity.current
         val indicatorHeightPx = with(density) { indicatorHeight.toPx() }
         val centeredIndicatorOffsetPx = indicatorOffsetPxProvider() +
             ((itemHeightPx - indicatorHeightPx) / 2f).coerceAtLeast(0f)
