@@ -10,7 +10,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
@@ -19,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -361,7 +361,7 @@ private fun MessageCenterShortcutCard(
         modifier = modifier
             .height(if (useGroupedListCards) 88.dp else 96.dp)
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(if (useGroupedListCards) 18.dp else 20.dp),
+        shape = AppShapes.container(ContainerLevel.Card),
         color = if (useGroupedListCards) AppSurfaceTokens.surfaceContainer() else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
         border = if (useGroupedListCards) {
             androidx.compose.foundation.BorderStroke(
@@ -547,7 +547,11 @@ fun SessionListItem(
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(horizontal = if (useGroupedListCards) 12.dp else 0.dp, vertical = if (useGroupedListCards) 3.dp else 0.dp),
-        shape = RoundedCornerShape(if (useGroupedListCards) 16.dp else 0.dp),
+        shape = if (useGroupedListCards) {
+            AppShapes.container(ContainerLevel.Card)
+        } else {
+            RectangleShape
+        },
         color = when {
             useGroupedListCards && session.top_ts > 0 -> AppSurfaceTokens.secondaryContainer().copy(alpha = 0.55f)
             useGroupedListCards -> AppSurfaceTokens.surfaceContainer()

@@ -144,12 +144,6 @@ fun PlaybackSettingsContent(
     var showPipPermissionDialog by remember { mutableStateOf(false) }
     val playbackInsightScope = rememberCoroutineScope()
 
-    // 获取动态圆角用于统一风格
-    // 注意：这里需要导入 LocalCornerRadiusScale，如果该文件没有导入，可能需要添加。
-    // 假设 iOSCornerRadius 和 LocalCornerRadiusScale 未在此文件导入，先使用硬编码或尝试导入
-    // 为了稳妥，这里先检查导入。原文件没有导入这些。
-    // 但为了保持原样，我先不做动态圆角修改，或者之后再做。
-
     val miniPlayerMode by com.android.purebilibili.core.store.SettingsManager
         .getMiniPlayerMode(context).collectAsStateWithLifecycle(initialValue = com.android.purebilibili.core.store.SettingsManager.MiniPlayerMode.OFF
         )

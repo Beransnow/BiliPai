@@ -32,7 +32,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Brush
 import androidx.compose.material3.MaterialTheme
@@ -294,7 +293,7 @@ private fun SkinCatalogCard(
                 // 能力位标签（左下角）
                 if (!entry.capabilities.isEmpty) {
                     AppSurface(
-                        shape = RoundedCornerShape(6.dp),
+                        shape = AppShapes.container(ContainerLevel.Chip),
                         color = Color.Black.copy(alpha = 0.45f),
                         modifier = Modifier
                             .align(Alignment.BottomStart)
@@ -327,7 +326,7 @@ private fun ColorChip(colorHex: String) {
     Box(
         modifier = Modifier
             .size(12.dp)
-            .clip(RoundedCornerShape(3.dp))
+            .clip(AppShapes.container(ContainerLevel.Tag))
             .background(color)
     )
 }

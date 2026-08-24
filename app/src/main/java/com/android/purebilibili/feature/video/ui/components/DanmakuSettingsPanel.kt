@@ -38,7 +38,6 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.Icons
@@ -476,7 +475,7 @@ fun DanmakuSettingsPanel(
                         interactionSource = remember { MutableInteractionSource() }
                     ) { },
                 color = panelColors.panelColor,
-                shape = RoundedCornerShape(if (isFullscreenStyle) 16.dp else 20.dp),
+                shape = AppShapes.container(ContainerLevel.Dialog),
                 tonalElevation = if (isFullscreenStyle) 6.dp else 16.dp,
                 shadowElevation = if (isFullscreenStyle) 8.dp else 24.dp
             ) {
