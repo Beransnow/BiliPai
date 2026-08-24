@@ -232,6 +232,10 @@ class SettingsRootCategoryContentStructureTest {
         assertTrue(source.contains("NavigationDrawerItem("))
         assertTrue(source.contains("text = category.subtitle"))
         assertTrue(source.contains("rightPane()"))
+        assertTrue(source.contains("if (selectedCategory == null) emptyDetailPane() else detailPane()"))
+        assertTrue(source.contains("text = \"选择设置分类\""))
+        assertTrue(source.contains("AppTopBar("))
+        assertTrue(source.contains(".padding(horizontal = layoutPolicy.detailPanePaddingDp.dp)"))
     }
 
     @Test

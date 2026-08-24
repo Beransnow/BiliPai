@@ -121,6 +121,7 @@ import androidx.compose.foundation.combinedClickable // [Added]
 import java.io.File
 
 private const val IOS_TOP_TAB_CONTENT_PADDING_DP = 2f
+private const val TOP_TAB_WIDE_CENTER_BREAKPOINT_DP = 600f
 private const val TOP_TAB_INDICATOR_SETTLE_TIMEOUT_MILLIS = 1_500L
 
 // 指示器拖动释放后允许 spring 飞掷动画 settle 的兜底时长；
@@ -397,16 +398,14 @@ internal fun resolveMd3TopTabContentPaddingDp(
     if (containerWidthDp <= 0f || itemWidthDp <= 0f || categoryCount <= 0) return 0f
     val contentWidth = itemWidthDp * categoryCount
     val leftover = (containerWidthDp - contentWidth).coerceAtLeast(0f)
-    // Multi-tab rows (MD3 / MIUIX / all label modes): lead-align so the first indicator
-    // sits at the leading edge. The 72dp item-width cap on 4–5 tabs creates leftover;
-    // centering it pushes "推荐" away from the left of the dock.
-    // Sparse rows (1–2 tabs): keep residual centered so a single tab is not glued left.
+    // Phone rows with several categories stay lead-aligned for predictable reach and
+    // overflow. Wide windows center the complete tab group inside the full-width dock.
     @Suppress("UNUSED_PARAMETER")
     val ignoredLabelMode = labelMode
-    return if (categoryCount >= 3) {
-        0f
-    } else {
+    return if (containerWidthDp >= TOP_TAB_WIDE_CENTER_BREAKPOINT_DP || categoryCount < 3) {
         leftover / 2f
+    } else {
+        0f
     }
 }
 
@@ -1123,9 +1122,18 @@ private fun LightweightHomeTopTabs(
         // Match the bottom bar's actual app-surface luminance. The system theme can differ
         // from the active app theme and previously produced a dark gray capture on light pages.
         val isDarkTheme = resolveBottomBarDarkTheme(AppSurfaceTokens.background())
-        // When dock wraps content, no leftover to center — lead padding is always 0.
+        val centerTabsInWideWindow = maxWidth.value >= TOP_TAB_WIDE_CENTER_BREAKPOINT_DP
         val md3ContentPadding = if (wrapDock || isFloatingStyle) {
-            dockEndInsetDp.dp
+            if (!wrapDock && centerTabsInWideWindow) {
+                resolveMd3TopTabContentPaddingDp(
+                    containerWidthDp = maxWidth.value,
+                    itemWidthDp = itemWidth.value,
+                    categoryCount = categories.size,
+                    labelMode = normalizedLabelMode
+                ).dp
+            } else {
+                dockEndInsetDp.dp
+            }
         } else if (effectivePresentation != AppTopTabPresentation.MOVING_CAPSULE) {
             resolveMd3TopTabContentPaddingDp(
                 containerWidthDp = maxWidth.value,
@@ -1135,6 +1143,14 @@ private fun LightweightHomeTopTabs(
             ).dp
         } else {
             AppSpacingTokens.None
+        }
+        val topTabHorizontalPadding = when {
+            wrapDock -> dockEndInsetDp.dp
+            centerTabsInWideWindow -> md3ContentPadding
+            isFloatingStyle -> dockEndInsetDp.dp
+            effectivePresentation == AppTopTabPresentation.MOVING_CAPSULE ->
+                IOS_TOP_TAB_CONTENT_PADDING_DP.dp
+            else -> md3ContentPadding
         }
         val md3IndicatorWidth = if (skinPlainStyle) AppSpacingTokens.DoubleExtraLarge - AppSpacingTokens.Micro else AppSpacingTokens.ExtraLarge + AppSpacingTokens.ExtraSmall
         val dockIndicatorHorizontalGap = resolveTopTabDockIndicatorHorizontalGapDp(
@@ -1400,11 +1416,7 @@ private fun LightweightHomeTopTabs(
                         absolutePagerPosition = iosCapsulePosition,
                         itemWidthPx = itemWidth.toPx(),
                         rowScrollOffsetPx = rowScrollOffsetPx,
-                        contentPaddingPx = if (wrapDock || isFloatingStyle) {
-                            dockEndInsetDp.dp.toPx()
-                        } else {
-                            IOS_TOP_TAB_CONTENT_PADDING_DP.dp.toPx()
-                        },
+                        contentPaddingPx = topTabHorizontalPadding.toPx(),
                         followPagerPosition = pagerIsDragging || pagerIsScrolling ||
                             topTabIndicatorOwnsPosition
                     )
@@ -1429,11 +1441,11 @@ private fun LightweightHomeTopTabs(
             modifier = Modifier
                 .then(
                     if (wrapDock) {
-                        // 与搜索行左对齐（头像左缘），宽度封顶于设置按钮右缘。
+                        // A compact dock remains content-sized but is centered in wide chrome.
                         Modifier
                             .width(dockContentWidthDp.dp)
                             .fillMaxHeight()
-                            .align(Alignment.CenterStart)
+                            .align(Alignment.Center)
                     } else {
                         Modifier.fillMaxSize()
                     }
@@ -1459,13 +1471,6 @@ private fun LightweightHomeTopTabs(
                         tabViewportLeftInWindowPx = coordinates.boundsInWindow().left
                     }
             ) {
-                val topTabHorizontalPadding = if (wrapDock || isFloatingStyle) {
-                    dockEndInsetDp.dp
-                } else if (effectivePresentation == AppTopTabPresentation.MOVING_CAPSULE) {
-                    IOS_TOP_TAB_CONTENT_PADDING_DP.dp
-                } else {
-                    md3ContentPadding
-                }
                 val topTabContentPadding = PaddingValues(horizontal = topTabHorizontalPadding)
                 // Read LazyRow motion from the layer phase so the hidden export and visible row
                 // are transformed in the same frame without scroll-driven recomposition.
