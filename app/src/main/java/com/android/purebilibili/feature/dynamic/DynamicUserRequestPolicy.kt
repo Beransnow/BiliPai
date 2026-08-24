@@ -7,7 +7,6 @@ internal enum class DynamicUserContentFilter(val label: String) {
     ALL("全部"),
     VIDEO("视频"),
     ARTICLE("图文专栏"),
-    PGC("番剧"),
 }
 
 internal fun filterSelectedUserDynamicItems(
@@ -17,7 +16,15 @@ internal fun filterSelectedUserDynamicItems(
     DynamicUserContentFilter.ALL -> items
     DynamicUserContentFilter.VIDEO -> items.filter(::shouldIncludeDynamicItemInVideoTab)
     DynamicUserContentFilter.ARTICLE -> items.filter(::shouldIncludeDynamicItemInArticleTab)
-    DynamicUserContentFilter.PGC -> items.filter(::shouldIncludeDynamicItemInPgcTab)
+}
+
+internal fun shouldAutoLoadMoreForUserContentFilter(
+    isSelectedUserFeed: Boolean,
+    filter: DynamicUserContentFilter,
+    visibleItemCount: Int,
+): Boolean {
+    if (!isSelectedUserFeed || filter == DynamicUserContentFilter.ALL) return true
+    return visibleItemCount > 0
 }
 
 internal fun DynamicPagePresentation.withUserContentFilter(

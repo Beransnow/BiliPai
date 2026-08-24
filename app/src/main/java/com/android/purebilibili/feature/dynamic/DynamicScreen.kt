@@ -44,8 +44,8 @@ import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppListItem
 import com.android.purebilibili.core.ui.components.AppRadioButton
 import com.android.purebilibili.core.ui.components.AppText
-import com.android.purebilibili.core.ui.components.AppFilterChip
 import com.android.purebilibili.feature.dynamic.components.DynamicPublishComposer
+import com.android.purebilibili.feature.dynamic.components.DynamicAdaptiveSegmentedControl
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
@@ -443,6 +443,17 @@ fun DynamicScreen(
     val currentHasMore = activePresentation.hasMore
     val activeLoading = activePresentation.isLoading
     val activeError = activePresentation.error
+    val allowAutomaticLoadMore = remember(
+        isSelectedUserTabActive,
+        selectedUserContentFilter,
+        filteredItems.size,
+    ) {
+        shouldAutoLoadMoreForUserContentFilter(
+            isSelectedUserFeed = isSelectedUserTabActive,
+            filter = selectedUserContentFilter,
+            visibleItemCount = filteredItems.size,
+        )
+    }
 
     var handledUserListRefreshBoundary by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(
@@ -466,13 +477,22 @@ fun DynamicScreen(
     }
 
     // 加载更多
-    val shouldLoadMore by remember(activeListState, activeLoading, currentHasMore) {
+    val shouldLoadMore by remember(
+        activeListState,
+        activeLoading,
+        currentHasMore,
+        allowAutomaticLoadMore,
+    ) {
         derivedStateOf {
             val state = activeListState ?: return@derivedStateOf false
             val layoutInfo = state.layoutInfo
             val totalItems = layoutInfo.totalItemsCount
             val lastVisibleItemIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-            totalItems > 0 && lastVisibleItemIndex >= totalItems - 3 && !activeLoading && currentHasMore
+            allowAutomaticLoadMore &&
+                totalItems > 0 &&
+                lastVisibleItemIndex >= totalItems - 3 &&
+                !activeLoading &&
+                currentHasMore
         }
     }
     //  [埋点] 页面浏览追踪
@@ -1327,6 +1347,9 @@ private fun DynamicList(
                 DynamicEmptyState(
                     title = when {
                         selectedTab == 4 && !isSelectedUserTabActive -> "选择一个 UP 查看动态"
+                        isSelectedUserTabActive &&
+                            selectedUserContentFilter != DynamicUserContentFilter.ALL &&
+                            hasMore -> "当前已加载内容中暂无${selectedUserContentFilter.label}"
                         isSelectedUserTabActive && selectedUserContentFilter != DynamicUserContentFilter.ALL ->
                             "该 UP 暂无${selectedUserContentFilter.label}"
                         isSelectedUserTabActive -> "该 UP 暂无动态"
@@ -1335,6 +1358,9 @@ private fun DynamicList(
                     subtitle = when {
                         selectedTab == 4 && !isSelectedUserTabActive ->
                             "从左侧或顶部的 UP 列表中选择一个用户"
+                        isSelectedUserTabActive &&
+                            selectedUserContentFilter != DynamicUserContentFilter.ALL &&
+                            hasMore -> "已停止自动翻页，可切换到“全部”继续查看"
                         isSelectedUserTabActive && selectedUserContentFilter != DynamicUserContentFilter.ALL ->
                             "可以切换到“全部”继续查看"
                         isSelectedUserTabActive -> "该用户暂时没有可显示的公开动态"
@@ -1447,18 +1473,17 @@ private fun DynamicSelectedUserFeedHeader(
                 AppText("查看主页")
             }
         }
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
-        ) {
-            items(DynamicUserContentFilter.entries, key = { it.name }) { filter ->
-                AppFilterChip(
-                    selected = selectedFilter == filter,
-                    onClick = { onFilterSelected(filter) },
-                    label = { AppText(filter.label) },
-                    modifier = Modifier.heightIn(min = AppChromeSizeTokens.MinimumTouchTarget),
-                )
-            }
-        }
+        val filters = DynamicUserContentFilter.entries
+        DynamicAdaptiveSegmentedControl(
+            items = filters.map(DynamicUserContentFilter::label),
+            selectedIndex = filters.indexOf(selectedFilter).coerceAtLeast(0),
+            onSelected = { index -> filters.getOrNull(index)?.let(onFilterSelected) },
+            itemWidth = 96.dp,
+            height = AppChromeSizeTokens.MinimumTouchTarget,
+            indicatorHeight = 42.dp,
+            labelFontSize = MaterialTheme.typography.labelLarge.fontSize,
+            modifier = Modifier.width(304.dp),
+        )
     }
 }
 

@@ -141,6 +141,35 @@ class DynamicUserRequestPolicyTest {
             ).map { it.id_str },
         )
     }
+
+    @Test
+    fun `empty concrete user filter does not trigger unbounded pagination`() {
+        assertEquals(
+            listOf("全部", "视频", "图文专栏"),
+            DynamicUserContentFilter.entries.map(DynamicUserContentFilter::label),
+        )
+        assertTrue(
+            shouldAutoLoadMoreForUserContentFilter(
+                isSelectedUserFeed = true,
+                filter = DynamicUserContentFilter.ALL,
+                visibleItemCount = 0,
+            )
+        )
+        assertFalse(
+            shouldAutoLoadMoreForUserContentFilter(
+                isSelectedUserFeed = true,
+                filter = DynamicUserContentFilter.ARTICLE,
+                visibleItemCount = 0,
+            )
+        )
+        assertTrue(
+            shouldAutoLoadMoreForUserContentFilter(
+                isSelectedUserFeed = true,
+                filter = DynamicUserContentFilter.ARTICLE,
+                visibleItemCount = 1,
+            )
+        )
+    }
 }
 
 private fun buildDynamicItem(id: String, mid: Long) = DynamicItem(
