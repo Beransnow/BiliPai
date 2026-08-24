@@ -58,7 +58,7 @@ import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppTextButton
-import com.android.purebilibili.core.ui.components.AppTextField
+import com.android.purebilibili.core.ui.components.AppSearchField
 import com.android.purebilibili.feature.settings.SettingsPageScrollHost
 import com.android.purebilibili.feature.settings.ui.SettingsPageScaffold
 import kotlinx.coroutines.Dispatchers
@@ -214,9 +214,9 @@ fun SkinCatalogScreen(
         }
 
         Column(modifier = Modifier.fillMaxSize()) {
-            AppTextField(
-                value = state.searchQuery,
-                onValueChange = stateHolder::setSearchQuery,
+            AppSearchField(
+                query = state.searchQuery,
+                onQueryChange = stateHolder::setSearchQuery,
                 placeholder = "搜索装扮名称",
                 modifier = Modifier
                     .fillMaxWidth()

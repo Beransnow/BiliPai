@@ -34,8 +34,8 @@ class SkinCatalogSearchPolicyTest {
             "src/main/java/com/android/purebilibili/feature/settings/screen/SkinCatalogScreen.kt"
         ).readText()
 
-        assertTrue(source.contains("AppTextField("))
-        assertTrue(source.contains("onValueChange = stateHolder::setSearchQuery"))
+        assertTrue(source.contains("AppSearchField("))
+        assertTrue(source.contains("onQueryChange = stateHolder::setSearchQuery"))
         assertTrue(source.contains("没有找到相关装扮"))
     }
 

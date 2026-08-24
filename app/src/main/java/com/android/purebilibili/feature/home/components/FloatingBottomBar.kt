@@ -1030,7 +1030,7 @@ fun FloatingBottomBar(
                     }
                     .then(interactiveHighlight?.gestureModifier ?: Modifier)
                     .then(
-                        if (isLiquidGlassMode && dragSelectionEnabled && safeTabsCount > 1) {
+                        if (dragSelectionEnabled && safeTabsCount > 1) {
                             dampedDragAnimation.modifier
                         } else {
                             Modifier
