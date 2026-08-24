@@ -63,6 +63,7 @@ fun ActionButton(
     enabled: Boolean = true,
     onClick: () -> Unit = {},
     activeColor: Color = MaterialTheme.colorScheme.onSurfaceVariant.copy(0.6f),
+    liquidChromeActive: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val isLike = label == "点赞"
@@ -120,7 +121,11 @@ fun ActionButton(
                 .scale(scale)
                 .clip(AppShapes.container(ContainerLevel.Pill))
                 .background(
-                    color = buttonColor.copy(alpha = if (isActive && isLike) 0.15f else 0.08f)
+                    color = when {
+                        liquidChromeActive && isActive && isLike -> buttonColor.copy(alpha = 0.14f)
+                        liquidChromeActive -> Color.Transparent
+                        else -> buttonColor.copy(alpha = if (isActive && isLike) 0.15f else 0.08f)
+                    }
                 )
                 .clickable(
                     enabled = enabled,

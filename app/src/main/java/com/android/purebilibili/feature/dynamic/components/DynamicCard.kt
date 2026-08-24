@@ -76,6 +76,7 @@ import com.android.purebilibili.feature.dynamic.resolveDynamicActionButtonSlotWe
 import com.android.purebilibili.feature.dynamic.resolveDynamicActionButtonSpacing
 import com.android.purebilibili.feature.dynamic.resolveDynamicCardContentPadding
 import com.android.purebilibili.feature.dynamic.resolveDynamicCardOuterPadding
+import com.android.purebilibili.feature.home.components.BottomBarMatchedReusableLiquidDock
 import com.android.purebilibili.data.model.response.DynamicStatModule
 import com.android.purebilibili.data.model.response.DynamicType
 import com.android.purebilibili.data.model.response.OpusContentBlock
@@ -1226,42 +1227,54 @@ fun DynamicCardV2(
         //  [修复] 底部操作栏：转发、评论、点赞 - 始终显示
         val statModule = stat ?: DynamicStatModule()  // 使用默认值避免按钮消失
         val actionButtonWeight = resolveDynamicActionButtonSlotWeight()
-        Row(
+        BottomBarMatchedReusableLiquidDock(
+            shape = AppShapes.container(ContainerLevel.Pill),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = AppSpacingTokens.ExtraSmall),
-            horizontalArrangement = Arrangement.spacedBy(resolveDynamicActionButtonSpacing())
-        ) {
-            // 转发按钮
-            ActionButton(
-                count = (statModule.forward.count + forwardCountDelta).coerceAtLeast(0),
-                label = "转发",
-                enabled = !statModule.forward.forbidden,
-                onClick = { onRepostClick(item.id_str) },
-                modifier = Modifier.weight(actionButtonWeight)
-            )
-            
-            // 评论按钮
-            ActionButton(
-                count = statModule.comment.count,
-                label = "评论",
-                // forbidden 代表评论操作受限；仍允许进入详情查看已有评论。
-                enabled = item.id_str.isNotBlank(),
-                onClick = {
-                    DynamicRepository.rememberDynamicDetailSeed(item)
-                    onCommentClick(item.id_str)
-                },
-                modifier = Modifier.weight(actionButtonWeight)
-            )
-            
-            // 点赞按钮
-            ActionButton(
-                count = statModule.like.count,
-                label = "点赞",
-                isActive = isLiked,
-                onClick = { onLikeClick(item.id_str) },
-                modifier = Modifier.weight(actionButtonWeight)
-            )
+            reuseEnabled = true,
+            drawShellLens = false,
+        ) { liquidChromeActive ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(if (liquidChromeActive) AppSpacingTokens.Micro else AppSpacingTokens.None),
+                horizontalArrangement = Arrangement.spacedBy(resolveDynamicActionButtonSpacing()),
+            ) {
+                // 转发按钮
+                ActionButton(
+                    count = (statModule.forward.count + forwardCountDelta).coerceAtLeast(0),
+                    label = "转发",
+                    enabled = !statModule.forward.forbidden,
+                    onClick = { onRepostClick(item.id_str) },
+                    liquidChromeActive = liquidChromeActive,
+                    modifier = Modifier.weight(actionButtonWeight)
+                )
+
+                // 评论按钮
+                ActionButton(
+                    count = statModule.comment.count,
+                    label = "评论",
+                    // forbidden 代表评论操作受限；仍允许进入详情查看已有评论。
+                    enabled = item.id_str.isNotBlank(),
+                    onClick = {
+                        DynamicRepository.rememberDynamicDetailSeed(item)
+                        onCommentClick(item.id_str)
+                    },
+                    liquidChromeActive = liquidChromeActive,
+                    modifier = Modifier.weight(actionButtonWeight)
+                )
+
+                // 点赞按钮
+                ActionButton(
+                    count = statModule.like.count,
+                    label = "点赞",
+                    isActive = isLiked,
+                    onClick = { onLikeClick(item.id_str) },
+                    liquidChromeActive = liquidChromeActive,
+                    modifier = Modifier.weight(actionButtonWeight)
+                )
+            }
         }
         
         //  相关动态折叠条（module_fold：如“展开3条相关动态”，点击进动态详情）

@@ -70,6 +70,18 @@ class DynamicNeutralUiStructureTest {
     }
 
     @Test
+    fun `dynamic action row reuses liquid chrome with native fallback`() {
+        val actionSource = File(sourceRoot, "components/ActionButton.kt").readText()
+        val cardSource = File(sourceRoot, "components/DynamicCard.kt").readText()
+
+        assertTrue(cardSource.contains("BottomBarMatchedReusableLiquidDock("))
+        assertTrue(cardSource.contains("reuseEnabled = true"))
+        assertTrue(cardSource.contains("liquidChromeActive = liquidChromeActive"))
+        assertTrue(actionSource.contains("liquidChromeActive -> Color.Transparent"))
+        assertTrue(actionSource.contains("else -> buttonColor.copy"))
+    }
+
+    @Test
     fun `dynamic segmented controls do not depend on another feature renderer`() {
         val commentSource = File(sourceRoot, "components/DynamicCommentSheet.kt").readText()
         val topBarSource = File(sourceRoot, "components/DynamicTopBar.kt").readText()
