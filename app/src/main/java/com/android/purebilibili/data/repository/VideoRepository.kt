@@ -1619,8 +1619,11 @@ object VideoRepository {
         } else {
             buildDashAttemptQualities(targetQn)
         }
-        for (dashQn in dashQualities) {
-            val retryDelays = resolveDashRetryDelays(dashQn)
+        for ((qualityIndex, dashQn) in dashQualities.withIndex()) {
+            val retryDelays = resolveDashRetryDelays(
+                targetQn = dashQn,
+                isPrimaryAttempt = qualityIndex == 0
+            )
             for ((attempt, delayMs) in retryDelays.withIndex()) {
                 if (delayMs > 0L) {
                     com.android.purebilibili.core.util.Logger.d(

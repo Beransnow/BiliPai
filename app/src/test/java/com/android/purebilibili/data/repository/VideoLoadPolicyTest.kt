@@ -170,8 +170,13 @@ class VideoLoadPolicyTest {
     }
 
     @Test
+    fun `resolveDashRetryDelays retries the primary premium quality once`() {
+        assertEquals(listOf(0L, 450L), resolveDashRetryDelays(125, isPrimaryAttempt = true))
+        assertEquals(listOf(0L), resolveDashRetryDelays(120, isPrimaryAttempt = false))
+    }
+
+    @Test
     fun `resolveDashRetryDelays allows one retry for standard qualities`() {
-        assertEquals(listOf(0L), resolveDashRetryDelays(120))
         assertEquals(listOf(0L, 450L), resolveDashRetryDelays(80))
         assertEquals(listOf(0L, 450L), resolveDashRetryDelays(64))
     }

@@ -135,9 +135,14 @@ internal fun buildDashAttemptQualities(targetQn: Int): List<Int> {
     return (listOf(targetQn) + lowerFallbacks + 80).distinct()
 }
 
-internal fun resolveDashRetryDelays(targetQn: Int): List<Long> {
-    // 标准画质（80/64 等）偶发返回空流时，给一次短重试窗口，避免误降级到游客 720。
-    return if (targetQn <= 80) listOf(0L, 450L) else listOf(0L)
+internal fun resolveDashRetryDelays(
+    targetQn: Int,
+    isPrimaryAttempt: Boolean = false
+): List<Long> {
+    // 播放接口偶发以 code=0 返回空流。首次目标画质应先原档重试，避免自动最高模式
+    // 立即逐档降级，最终只保留 Legacy/Guest 返回的 720P、360P 轨道。
+    // 后续高级画质 fallback 不重复重试，防止短时间内放大请求并触发接口风控。
+    return if (isPrimaryAttempt || targetQn <= 80) listOf(0L, 450L) else listOf(0L)
 }
 
 internal fun shouldRetryDashTrackRecovery(
