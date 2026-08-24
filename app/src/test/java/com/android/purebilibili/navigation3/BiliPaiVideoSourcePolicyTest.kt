@@ -8,6 +8,31 @@ import kotlin.test.assertTrue
 class BiliPaiVideoSourcePolicyTest {
 
     @Test
+    fun relatedTransitionPreferenceOnlyDisablesRelatedCardMorph() {
+        assertFalse(
+            resolveVideoCardTransitionEnabledForSource(
+                cardTransitionEnabled = true,
+                relatedVideoTransitionEnabled = false,
+                sourceRoute = "video/BV_PARENT",
+            )
+        )
+        assertTrue(
+            resolveVideoCardTransitionEnabledForSource(
+                cardTransitionEnabled = true,
+                relatedVideoTransitionEnabled = false,
+                sourceRoute = "home",
+            )
+        )
+        assertFalse(
+            resolveVideoCardTransitionEnabledForSource(
+                cardTransitionEnabled = false,
+                relatedVideoTransitionEnabled = true,
+                sourceRoute = "video/BV_PARENT",
+            )
+        )
+    }
+
+    @Test
     fun listAndRelatedDetailUseDistinctCardMorphModes() {
         assertTrue(isRelatedVideoCardMorphSourceRoute("video/BV_PARENT"))
         assertFalse(isRelatedVideoCardMorphSourceRoute("partition"))

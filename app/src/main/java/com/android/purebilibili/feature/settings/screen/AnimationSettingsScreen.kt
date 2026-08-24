@@ -199,6 +199,9 @@ fun AnimationSettingsContent(
     val liveSurfaceCardTransitionEnabled by SettingsManager
         .getLiveSurfaceCardTransitionEnabled(context)
         .collectAsStateWithLifecycle(initialValue = false)
+    val relatedVideoTransitionEnabled by SettingsManager
+        .getRelatedVideoTransitionEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = true)
     val fullScreenSwipeBackEnabled by SettingsManager
         .getFullScreenSwipeBackEnabled(context)
         .collectAsStateWithLifecycle(initialValue = false)
@@ -352,6 +355,24 @@ fun AnimationSettingsContent(
                             subtitle = "点击视频卡片时，让封面和标题自然移动到详情页",
                             checked = state.cardTransitionEnabled,
                             onCheckedChange = { viewModel.toggleCardTransition(it) },
+                            iconTint = iOSTeal
+                        )
+                        AppPreferenceDivider()
+                        AppSwitchPreference(
+                            icon = rememberSettingsSemanticIcon(SettingsIconRole.CARD_TRANSITION_ANIMATION),
+                            title = "相关推荐过渡动画",
+                            subtitle = if (relatedVideoTransitionEnabled) {
+                                "点击相关推荐时使用卡片变形过渡"
+                            } else {
+                                "点击相关推荐时使用默认页面过渡"
+                            },
+                            checked = relatedVideoTransitionEnabled,
+                            onCheckedChange = { enabled ->
+                                scope.launch {
+                                    SettingsManager.setRelatedVideoTransitionEnabled(context, enabled)
+                                }
+                            },
+                            enabled = state.cardTransitionEnabled,
                             iconTint = iOSTeal
                         )
                         AppPreferenceDivider()

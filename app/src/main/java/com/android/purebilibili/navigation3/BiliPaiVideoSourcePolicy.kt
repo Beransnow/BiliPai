@@ -47,6 +47,14 @@ internal fun isRelatedVideoCardMorphSourceRoute(sourceRoute: String?): Boolean {
     return route.startsWith("video/")
 }
 
+internal fun resolveVideoCardTransitionEnabledForSource(
+    cardTransitionEnabled: Boolean,
+    relatedVideoTransitionEnabled: Boolean,
+    sourceRoute: String?,
+): Boolean = cardTransitionEnabled && (
+    relatedVideoTransitionEnabled || !isRelatedVideoCardMorphSourceRoute(sourceRoute)
+)
+
 /**
  * Card morph depth is part of the navigation meaning, not a card-local animation choice.
  *

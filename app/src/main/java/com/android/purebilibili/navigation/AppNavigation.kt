@@ -396,6 +396,9 @@ fun AppNavigation(
     val videoTransitionRealtimeBlurEnabled by SettingsManager
         .getVideoTransitionRealtimeBlurEnabled(context)
         .collectAsStateWithLifecycle(initialValue = false)
+    val relatedVideoTransitionEnabled by SettingsManager
+        .getRelatedVideoTransitionEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = true)
     val isBottomBarBlurEnabled = appearance.bottomBarBlurEnabled
     val bottomBarLabelMode = appearance.bottomBarLabelMode
     val isBottomBarFloating = appearance.bottomBarFloating
@@ -3540,7 +3543,12 @@ fun AppNavigation(
 
                 BiliPaiNavDisplayHost(
                     backStack = navigation3BackStack,
-                    cardTransitionEnabled = sharedVideoCardTransitionEnabled,
+                    cardTransitionEnabled =
+                        com.android.purebilibili.navigation3.resolveVideoCardTransitionEnabledForSource(
+                            cardTransitionEnabled = sharedVideoCardTransitionEnabled,
+                            relatedVideoTransitionEnabled = relatedVideoTransitionEnabled,
+                            sourceRoute = navigation3SourceMetadata.sourceRoute,
+                        ),
                     videoTransitionRealtimeBlurEnabled = videoTransitionRealtimeBlurEnabled,
                     isLightBackground = isLightBackground,
                     reduceMotion = systemReduceMotion,
