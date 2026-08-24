@@ -1,6 +1,9 @@
 package com.android.purebilibili.feature.space
 
+import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.store.HomeFeedCardWidthPreset
+import com.android.purebilibili.core.util.WindowWidthSizeClass
+import com.android.purebilibili.core.util.resolveWindowWidthSizeClass
 import com.android.purebilibili.feature.home.resolveHomeFeedGridColumns
 import com.android.purebilibili.data.model.response.FavFolder
 import com.android.purebilibili.data.model.response.SeasonArchiveItem
@@ -281,14 +284,16 @@ internal fun resolveSpaceContentGridColumnCount(
     widthDp: Int,
     fixedColumnCount: Int = 0,
     cardWidthPreset: HomeFeedCardWidthPreset = HomeFeedCardWidthPreset.AUTO,
-    contentMaxWidthDp: Int = SPACE_CONTENT_MAX_WIDTH_DP
+    contentMaxWidthDp: Int = SPACE_CONTENT_MAX_WIDTH_DP,
+    widthSizeClass: WindowWidthSizeClass = resolveWindowWidthSizeClass(widthDp.dp)
 ): Int {
     val contentWidthDp = minOf(widthDp, contentMaxWidthDp)
     return resolveHomeFeedGridColumns(
         contentWidthDp = contentWidthDp,
         displayMode = 0,
         fixedColumnCount = fixedColumnCount,
-        cardWidthPreset = cardWidthPreset
+        cardWidthPreset = cardWidthPreset,
+        widthSizeClass = widthSizeClass
     )
 }
 

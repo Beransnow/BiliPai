@@ -93,16 +93,19 @@ internal fun HistoryPersonalCard(
     val sharedTransitionScope = LocalSharedTransitionScope.current
     val animatedVisibilityScope = LocalAnimatedVisibilityScope.current
     val speedSettings = LocalVideoSharedTransitionSpeedSettings.current
+    val transitionAdaptiveInfo = com.android.purebilibili.core.ui.transition
+        .LocalVideoTransitionAdaptiveInfo.current
     val sharedElementReady = transitionEnabled &&
         video.bvid.isNotBlank() &&
         sourceRoute != null &&
         sharedTransitionScope != null &&
         animatedVisibilityScope != null
-    val motionSpec = remember(sourceRoute, transitionEnabled, speedSettings) {
+    val motionSpec = remember(sourceRoute, transitionEnabled, speedSettings, transitionAdaptiveInfo) {
         resolveVideoCardSharedTransitionMotionSpec(
             sourceRoute = sourceRoute,
             transitionEnabled = transitionEnabled,
             speedSettings = speedSettings,
+            adaptiveInfo = transitionAdaptiveInfo,
         )
     }
     val useSharedBounds = shouldUseVideoCardShellSharedBounds(

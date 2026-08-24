@@ -63,8 +63,10 @@ import com.android.purebilibili.core.ui.motion.AppMotionTokens
 import com.android.purebilibili.core.ui.resolveGlobalWallpaperProtectiveColor
 import com.android.purebilibili.core.ui.rememberAppNavigationCapabilities
 import com.android.purebilibili.core.util.HapticType
+import com.android.purebilibili.core.util.AppFoldPosture
+import com.android.purebilibili.core.util.LocalAppWindowAdaptiveInfo
 import com.android.purebilibili.core.util.LocalWindowSizeClass
-import com.android.purebilibili.core.util.WindowWidthSizeClass
+import com.android.purebilibili.core.util.shouldUseExpandedNavigationRailForLayout
 import com.android.purebilibili.core.util.rememberHapticFeedback
 import dev.chrisbanes.haze.HazeState
 import androidx.compose.material.icons.Icons
@@ -103,6 +105,10 @@ fun FrostedSideBar(
     onToggleSidebar: (() -> Unit)? = null,
     onAccountSwitchClick: (() -> Unit)? = null,
 ) {
+    val foldPosture = LocalAppWindowAdaptiveInfo.current.posture
+    if (foldPosture == AppFoldPosture.Book || foldPosture == AppFoldPosture.Tabletop) {
+        return
+    }
     ProvideBottomBarSkinMotion(uiSkinDecoration) {
         if (rememberAppNavigationCapabilities().usePlatformSideRail) {
             MiuixSideBar(
@@ -151,9 +157,12 @@ private fun MiuixSideBar(
     onAccountSwitchClick: (() -> Unit)?,
 ) {
     val haptic = rememberHapticFeedback()
-    val isExpandedWidthClass =
-        LocalWindowSizeClass.current.widthSizeClass >= WindowWidthSizeClass.Expanded
-    val expandable = shouldUseExpandableMiuixSideBar(isExpandedWidthClass)
+    val expandable = shouldUseExpandableMiuixSideBar(
+        shouldUseExpandedNavigationRailForLayout(
+            windowSizeClass = LocalWindowSizeClass.current,
+            foldPosture = LocalAppWindowAdaptiveInfo.current.posture,
+        ),
+    )
     val chromeBackground = AppSurfaceTokens.surface()
     val globalWallpaperVisible = LocalGlobalWallpaperBackdropVisible.current
     val blurIntensity = com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity()

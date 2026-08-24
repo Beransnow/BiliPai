@@ -2095,7 +2095,12 @@ fun FrostedBottomBar(
     isFeedScrollInProgress: Boolean = false,
     uiSkinDecoration: BottomBarUiSkinDecoration? = null
 ) {
-    val isTablet = com.android.purebilibili.core.util.LocalWindowSizeClass.current.isTablet
+    val foldPosture = com.android.purebilibili.core.util.LocalAppWindowAdaptiveInfo.current.posture
+    val forceBottomNavigation = foldPosture == com.android.purebilibili.core.util.AppFoldPosture.Book ||
+        foldPosture == com.android.purebilibili.core.util.AppFoldPosture.Tabletop
+    val isTablet = com.android.purebilibili.core.util.LocalWindowSizeClass.current.isTablet &&
+        !forceBottomNavigation
+    val effectiveToggleSidebar = onToggleSidebar.takeUnless { forceBottomNavigation }
     var lastHomeClickMs by remember { mutableLongStateOf(0L) }
     val resolvedItemClick: (BottomNavItem) -> Unit = { item ->
         val nowMs = SystemClock.elapsedRealtime()
@@ -2123,7 +2128,7 @@ fun FrostedBottomBar(
                 modifier = modifier,
                 visibleItems = visibleItems,
                 itemLabels = itemLabels,
-                onToggleSidebar = onToggleSidebar,
+                onToggleSidebar = effectiveToggleSidebar,
                 dynamicUnreadCount = dynamicUnreadCount,
                 isFloating = isFloating,
                 isTablet = isTablet,
@@ -2149,7 +2154,7 @@ fun FrostedBottomBar(
                 modifier = modifier,
                 visibleItems = visibleItems,
                 itemLabels = itemLabels,
-                onToggleSidebar = onToggleSidebar,
+                onToggleSidebar = effectiveToggleSidebar,
                 dynamicUnreadCount = dynamicUnreadCount,
                 isFloating = isFloating,
                 isTablet = isTablet,

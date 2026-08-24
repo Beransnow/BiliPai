@@ -145,7 +145,7 @@ internal fun resolveFullscreenVisibleBottomControlsGestureExclusionHeightDp(): I
     return VISIBLE_BOTTOM_CONTROLS_GESTURE_EXCLUSION_HEIGHT_DP
 }
 
-private fun Key.toFullscreenShortcutKey(): FullscreenShortcutKey = when (this) {
+internal fun Key.toFullscreenShortcutKey(): FullscreenShortcutKey = when (this) {
     Key.Spacebar -> FullscreenShortcutKey.Space
     Key.DirectionLeft -> FullscreenShortcutKey.Left
     Key.DirectionRight -> FullscreenShortcutKey.Right
@@ -261,6 +261,9 @@ fun FullscreenPlayerOverlay(
     var showContextMenu by remember { mutableStateOf(false) }
     var contextMenuOffset by remember { mutableStateOf(DpOffset.Zero) }
     val rootFocusRequester = remember { FocusRequester() }
+    val inputDevicePolicy = com.android.purebilibili.core.ui.adaptive.resolveInputDevicePolicy(
+        com.android.purebilibili.core.util.LocalAppWindowAdaptiveInfo.current,
+    )
     val scope = rememberCoroutineScope()
     var playerViewRef by remember { mutableStateOf<PlayerView?>(null) }
     var keepFullscreenPlaybackAwake by remember(player) {
@@ -574,8 +577,10 @@ fun FullscreenPlayerOverlay(
         },
         onBackCompleted = closeTopLayerOrExit,
     )
-    LaunchedEffect(rootFocusRequester) {
-        runCatching { rootFocusRequester.requestFocus() }
+    LaunchedEffect(rootFocusRequester, inputDevicePolicy.enableKeyboardNavigation) {
+        if (inputDevicePolicy.enableKeyboardNavigation) {
+            runCatching { rootFocusRequester.requestFocus() }
+        }
     }
     
     // [问题8修复] 状态栏排除区域高度（像素）
@@ -625,7 +630,8 @@ fun FullscreenPlayerOverlay(
                     isKeyDown = event.type == KeyEventType.KeyDown,
                     hasCommandModifier = event.isCtrlPressed || event.isAltPressed ||
                         event.isMetaPressed || event.isShiftPressed,
-                    shortcutsEnabled = gesturesEnabled || event.key == Key.Escape,
+                    shortcutsEnabled = inputDevicePolicy.enableKeyboardNavigation &&
+                        (gesturesEnabled || event.key == Key.Escape),
                 )
                 when (action) {
                     FullscreenKeyboardAction.PlayPause -> {
@@ -659,7 +665,7 @@ fun FullscreenPlayerOverlay(
                     FullscreenKeyboardAction.None -> false
                 }
             }
-            .focusable()
+            .focusable(enabled = inputDevicePolicy.enableKeyboardNavigation)
             .semantics {
                 contentDescription = "全屏视频播放器"
                 stateDescription = if (isPlaying) "正在播放" else "已暂停"

@@ -188,10 +188,25 @@ internal fun HomeCategoryPageContent(
     val sourceRoute = remember(category) {
         resolveHomeCategoryVideoSourceRoute(category)
     }
-    val cardLayout = remember(homeFeedCardStyle, gridColumns) {
+    val widthSizeClass = com.android.purebilibili.core.util.LocalAppWindowAdaptiveInfo.current
+        .windowSizeClass.widthSizeClass
+    val cardLayout = remember(homeFeedCardStyle, gridColumns, widthSizeClass) {
         resolveHomeFeedCardLayout(
             style = homeFeedCardStyle,
             gridColumns = gridColumns,
+            widthSizeClass = widthSizeClass,
+        )
+    }
+    val adaptiveInfo = com.android.purebilibili.core.util.LocalAppWindowAdaptiveInfo.current
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    val hingeGridSpec = remember(adaptiveInfo, density.density) {
+        resolveHomeFeedBookHingeGridSpec(adaptiveInfo, density.density)
+    }
+    val horizontalArrangement = remember(gridColumns, cardLayout.itemSpacingDp, hingeGridSpec) {
+        resolveHomeFeedHorizontalArrangement(
+            columns = gridColumns,
+            baseSpacing = cardLayout.itemSpacingDp.dp,
+            hingeSpec = hingeGridSpec,
         )
     }
     TrackScrollJank(
@@ -228,7 +243,7 @@ internal fun HomeCategoryPageContent(
                 state = gridState,
                 columns = GridCells.Fixed(gridColumns),
                 contentPadding = contentPadding,
-                horizontalArrangement = Arrangement.spacedBy(cardLayout.itemSpacingDp.dp),
+                horizontalArrangement = horizontalArrangement,
                 verticalArrangement = Arrangement.spacedBy(cardLayout.verticalItemSpacingDp.dp),
                 modifier = Modifier.fillMaxSize()
             ) {

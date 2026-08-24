@@ -79,6 +79,7 @@ import com.android.purebilibili.feature.space.SpaceViewModel
 
 private enum class TabletSecondaryTab(val label: String) {
     COMMENTS("评论"),
+    INTRO("简介"),
     RELATED("相关推荐"),
     COLLECTION("合集"),
     OWNER_UPLOADS("UP 投稿")
@@ -139,9 +140,13 @@ internal fun TabletVideoLayout(
     predictiveBackCancelRecoveryGeneration: Int = 0,
     liveSurfaceCardTransitionEnabled: Boolean = true
 ) {
-    val layoutPolicy = remember(configuration.screenWidthDp) {
+    val adaptiveInfo = com.android.purebilibili.core.util.LocalAppWindowAdaptiveInfo.current
+    val foldHalfOpened = adaptiveInfo.posture == com.android.purebilibili.core.util.AppFoldPosture.Book ||
+        adaptiveInfo.posture == com.android.purebilibili.core.util.AppFoldPosture.Tabletop
+    val layoutPolicy = remember(configuration.screenWidthDp, adaptiveInfo.posture) {
         resolveTabletVideoLayoutPolicy(
-            widthDp = configuration.screenWidthDp
+            widthDp = configuration.screenWidthDp,
+            foldPosture = adaptiveInfo.posture,
         )
     }
     var secondaryPaneModeName by rememberSaveable(bvid) {
@@ -156,7 +161,8 @@ internal fun TabletVideoLayout(
         basePrimaryRatio = layoutPolicy.primaryRatio,
         secondaryPaneMode = secondaryPaneMode
     )
-    val useThreePaneLayout = LocalWindowSizeClass.current.shouldUseThreePaneLayout
+    val useThreePaneLayout = LocalWindowSizeClass.current.shouldUseThreePaneLayout &&
+        !layoutPolicy.useTabletopLayout
     
     // 🖥️ [修复] 使用 LocalContext 获取 Activity，而非 playerState.context
     val context = LocalContext.current
@@ -187,6 +193,7 @@ internal fun TabletVideoLayout(
                 //  为播放器容器添加共享元素标记（受开关控制）
                 val playerContainerModifier = if (
                     transitionEnabled &&
+                    !foldHalfOpened &&
                     sharedTransitionScope != null &&
                     animatedVisibilityScope != null &&
                     !forceCoverOnlyOnReturn
@@ -224,13 +231,14 @@ internal fun TabletVideoLayout(
                             isFullscreen = false,
                             isInPipMode = isInPipMode,
                             useTextureSurfaceForNavigation = resolveNavigationLiveSurfaceTextureEnabled(
-                                cardTransitionEnabled = transitionEnabled,
+                                cardTransitionEnabled = transitionEnabled && !foldHalfOpened,
                                 liveSurfaceCardTransitionEnabled = liveSurfaceCardTransitionEnabled,
                             ),
-                            allowLivePlayerSharedElement = resolveAllowLivePlayerSharedElementForMorph(
-                                cardTransitionEnabled = transitionEnabled,
-                                liveSurfaceCardTransitionEnabled = liveSurfaceCardTransitionEnabled,
-                            ),
+                            allowLivePlayerSharedElement = !foldHalfOpened &&
+                                resolveAllowLivePlayerSharedElementForMorph(
+                                    cardTransitionEnabled = transitionEnabled,
+                                    liveSurfaceCardTransitionEnabled = liveSurfaceCardTransitionEnabled,
+                                ),
                             predictiveBackCancelRecoveryGeneration = predictiveBackCancelRecoveryGeneration,
                             onToggleFullscreen = onToggleFullscreen,
                             onQualityChange = playbackActions.changeQuality,
@@ -279,46 +287,26 @@ internal fun TabletVideoLayout(
                     }
                 }
                 
-                // 📜 视频信息区域（可滚动）
-                if (uiState is VideoPlaybackUiState.Success) {
-                    val success = uiState
-                    val engagementSuccess = success.withEngagementUiState(engagementState)
-                    val currentPageIndex = success.info.pages.indexOfFirst { it.cid == success.info.cid }.coerceAtLeast(0)
-                    ScrollableVideoInfoSection(
-                        info = engagementSuccess.info,
-                        isFollowing = engagementState.isFollowing,
-                        isFavorited = engagementState.isFavorited,
-                        isLiked = engagementState.isLiked,
-                        coinCount = engagementState.coinCount,
-                        currentPageIndex = currentPageIndex,
+                // Tabletop 把简介移到铰链下方；普通平板仍在播放器下方展示。
+                if (uiState is VideoPlaybackUiState.Success && !layoutPolicy.useTabletopLayout) {
+                    TabletVideoInfoPane(
+                        success = uiState,
+                        engagementState = engagementState,
                         downloadProgress = downloadProgress,
-                        isInWatchLater = engagementState.isInWatchLater,
-                        videoTags = success.videoTags,
-                        ownerFollowerCount = success.ownerFollowerCount,
-                        ownerVideoCount = success.ownerVideoCount,
-                        bgmInfo = success.bgmInfo,
-                        bgmInfoList = success.bgmInfoList,
+                        playbackActions = playbackActions,
+                        engagementActions = engagementActions,
                         onBgmClick = onBgmClick,
-                        relatedVideos = success.related,
-                        onFollowClick = engagementActions.toggleFollow,
-                        onFavoriteClick = engagementActions.toggleFavorite,
-                        onLikeClick = engagementActions.toggleLike,
-                        onCoinClick = engagementActions.openCoinDialog,
-                        onTripleClick = engagementActions.doTripleAction,
-                        onPageSelect = playbackActions.switchPage,
-                        onUpClick = {
+                        onRelatedVideoClick = onRelatedVideoClick,
+                        onOpenBilibiliLink = onOpenBilibiliLink,
+                        onOwnerUploadsClick = {
                             requestedSecondaryTabName = TabletSecondaryTab.OWNER_UPLOADS.name
                             secondaryPaneModeName = TabletSecondaryPaneMode.EXPANDED.name
                         },
-                        onDownloadClick = playbackActions.openDownloadDialog,
-                        onWatchLaterClick = engagementActions.toggleWatchLater,
-                        onRelatedVideoClick = onRelatedVideoClick,
-                        onOpenBilibiliLink = onOpenBilibiliLink,
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxWidth()
                             .widthIn(max = layoutPolicy.infoMaxWidthDp.dp)
-                            .align(Alignment.CenterHorizontally)
+                            .align(Alignment.CenterHorizontally),
                     )
                 }
             }
@@ -349,6 +337,24 @@ internal fun TabletVideoLayout(
                     requestedTabName = requestedSecondaryTabName,
                     onRequestedTabConsumed = { requestedSecondaryTabName = null },
                     fixedTab = if (useThreePaneLayout) TabletSecondaryTab.COMMENTS else null,
+                    introContent = if (layoutPolicy.useTabletopLayout) {
+                        {
+                            TabletVideoInfoPane(
+                                success = success,
+                                engagementState = engagementState,
+                                downloadProgress = downloadProgress,
+                                playbackActions = playbackActions,
+                                engagementActions = engagementActions,
+                                onBgmClick = onBgmClick,
+                                onRelatedVideoClick = onRelatedVideoClick,
+                                onOpenBilibiliLink = onOpenBilibiliLink,
+                                onOwnerUploadsClick = {
+                                    requestedSecondaryTabName = TabletSecondaryTab.OWNER_UPLOADS.name
+                                },
+                                modifier = Modifier.fillMaxSize(),
+                            )
+                        }
+                    } else null,
                 )
             }
         },
@@ -374,11 +380,60 @@ internal fun TabletVideoLayout(
                         requestedTabName = null,
                         onRequestedTabConsumed = {},
                         fixedTab = TabletSecondaryTab.RELATED,
+                        introContent = null,
                     )
                 }
             }
         } else null,
         primaryRatio = primaryRatio
+    )
+}
+
+@Composable
+private fun TabletVideoInfoPane(
+    success: VideoPlaybackUiState.Success,
+    engagementState: VideoEngagementUiState,
+    downloadProgress: Float,
+    playbackActions: VideoDetailPlaybackActions,
+    engagementActions: VideoDetailEngagementActions,
+    onBgmClick: (BgmInfo) -> Unit,
+    onRelatedVideoClick: (String, android.os.Bundle?) -> Unit,
+    onOpenBilibiliLink: ((String) -> Unit)?,
+    onOwnerUploadsClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val engagementSuccess = success.withEngagementUiState(engagementState)
+    val currentPageIndex = success.info.pages
+        .indexOfFirst { it.cid == success.info.cid }
+        .coerceAtLeast(0)
+    ScrollableVideoInfoSection(
+        info = engagementSuccess.info,
+        isFollowing = engagementState.isFollowing,
+        isFavorited = engagementState.isFavorited,
+        isLiked = engagementState.isLiked,
+        coinCount = engagementState.coinCount,
+        currentPageIndex = currentPageIndex,
+        downloadProgress = downloadProgress,
+        isInWatchLater = engagementState.isInWatchLater,
+        videoTags = success.videoTags,
+        ownerFollowerCount = success.ownerFollowerCount,
+        ownerVideoCount = success.ownerVideoCount,
+        bgmInfo = success.bgmInfo,
+        bgmInfoList = success.bgmInfoList,
+        onBgmClick = onBgmClick,
+        relatedVideos = success.related,
+        onFollowClick = engagementActions.toggleFollow,
+        onFavoriteClick = engagementActions.toggleFavorite,
+        onLikeClick = engagementActions.toggleLike,
+        onCoinClick = engagementActions.openCoinDialog,
+        onTripleClick = engagementActions.doTripleAction,
+        onPageSelect = playbackActions.switchPage,
+        onUpClick = { onOwnerUploadsClick() },
+        onDownloadClick = playbackActions.openDownloadDialog,
+        onWatchLaterClick = engagementActions.toggleWatchLater,
+        onRelatedVideoClick = onRelatedVideoClick,
+        onOpenBilibiliLink = onOpenBilibiliLink,
+        modifier = modifier,
     )
 }
 
@@ -405,20 +460,23 @@ private fun TabletSecondaryContent(
     requestedTabName: String?,
     onRequestedTabConsumed: () -> Unit,
     fixedTab: TabletSecondaryTab? = null,
+    introContent: (@Composable () -> Unit)? = null,
 ) {
     val commentAppearance = rememberVideoCommentAppearance()
-    val tabs = remember(success.info.ugc_season, success.info.owner.mid, fixedTab) {
+    val tabs = remember(success.info.ugc_season, success.info.owner.mid, fixedTab, introContent != null) {
         if (fixedTab != null) {
             listOf(fixedTab)
         } else {
             buildList {
                 add(TabletSecondaryTab.COMMENTS)
+                if (introContent != null) add(TabletSecondaryTab.INTRO)
                 add(TabletSecondaryTab.RELATED)
                 if (success.info.ugc_season != null) add(TabletSecondaryTab.COLLECTION)
                 if (success.info.owner.mid > 0L) add(TabletSecondaryTab.OWNER_UPLOADS)
             }
         }
     }
+    val relatedTabIndex = tabs.indexOf(TabletSecondaryTab.RELATED).coerceAtLeast(0)
     var selectedTab by rememberSaveable(success.info.bvid, fixedTab) {
         mutableIntStateOf(
             if (fixedTab != null) 0 else resolveTabletSecondaryDefaultTab(
@@ -785,7 +843,7 @@ private fun TabletSecondaryContent(
                                 Spacer(modifier = Modifier.height(12.dp))
                                 AppTextButton(onClick = {
                                     scope.launch {
-                                        pagerState.animateScrollToPage(1)
+                                        pagerState.animateScrollToPage(relatedTabIndex)
                                     }
                                 }) {
                                     AppText("切换到相关推荐")
@@ -796,6 +854,10 @@ private fun TabletSecondaryContent(
                            }
                         }
                     }
+                }
+
+                TabletSecondaryTab.INTRO -> {
+                    introContent?.invoke()
                 }
 
                 TabletSecondaryTab.RELATED -> {

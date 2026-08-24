@@ -43,6 +43,7 @@ import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.core.util.rememberHapticFeedback
 import com.android.purebilibili.core.ui.adaptive.MotionTier
+import com.android.purebilibili.core.ui.adaptive.adaptiveCardHoverEffect
 import com.android.purebilibili.core.ui.components.UpBadgeName
 import com.android.purebilibili.core.util.HapticType
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -173,15 +174,19 @@ fun GlassVideoCard(
     }
     val effectiveTransitionEnabled = transitionEnabled && LocalSharedTransitionEnabled.current
     val sharedTransitionSpeedSettings = LocalVideoSharedTransitionSpeedSettings.current
+    val transitionAdaptiveInfo = com.android.purebilibili.core.ui.transition
+        .LocalVideoTransitionAdaptiveInfo.current
     val cardSharedTransitionMotionSpec = remember(
         effectiveSharedElementSourceRoute,
         effectiveTransitionEnabled,
-        sharedTransitionSpeedSettings
+        sharedTransitionSpeedSettings,
+        transitionAdaptiveInfo,
     ) {
         resolveVideoCardSharedTransitionMotionSpec(
             sourceRoute = effectiveSharedElementSourceRoute,
             transitionEnabled = effectiveTransitionEnabled,
-            speedSettings = sharedTransitionSpeedSettings
+            speedSettings = sharedTransitionSpeedSettings,
+            adaptiveInfo = transitionAdaptiveInfo,
         )
     }
     val coverCacheKey = remember(video.bvid, useLowQualityCover) {
@@ -265,6 +270,7 @@ fun GlassVideoCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .adaptiveCardHoverEffect(shape = cardShellShape)
             .videoCardShellSharedBoundsOrEmpty(
                 enabled = useCardShellSharedBounds,
                 sharedTransitionScope = sharedTransitionScope,

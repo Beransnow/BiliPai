@@ -104,7 +104,10 @@ import com.android.purebilibili.shouldNavigateToVideoFromNotification
 import com.android.purebilibili.core.ui.transition.LocalPredictiveBackBackgroundState
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
 import com.android.purebilibili.core.ui.transition.LocalVideoCardTransitionBackgroundState
+import com.android.purebilibili.core.ui.adaptive.toAdaptiveFoldPosture
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
+import com.android.purebilibili.core.ui.transition.LocalVideoTransitionAdaptiveInfo
+import com.android.purebilibili.core.ui.transition.VideoTransitionAdaptiveInfo
 import com.android.purebilibili.core.ui.transition.rememberVideoCardTransitionClock
 import com.android.purebilibili.core.ui.transition.VideoCardTransitionVisualTimeline
 import com.android.purebilibili.core.ui.motion.rememberSystemReduceMotion
@@ -150,6 +153,7 @@ import com.android.purebilibili.core.ui.LocalPredictiveBackGestureEnabled
 import com.android.purebilibili.core.ui.motion.emphasizedEnterTween
 import com.android.purebilibili.core.ui.motion.emphasizedExitTween
 import com.android.purebilibili.core.ui.motion.softLandingSpring
+import com.android.purebilibili.core.util.LocalAppWindowAdaptiveInfo
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.shouldUseSidebarNavigationForLayout
 import com.android.purebilibili.core.plugin.skin.rememberUiSkinState
@@ -464,8 +468,16 @@ fun AppNavigation(
             customDurationMillis = homeSettings.videoSharedTransitionCustomDurationMillis,
         )
     }
-    val videoSharedTransitionDurationMillis = remember(videoSharedTransitionSpeedSettings) {
-        resolveVideoSharedTransitionDurationMillis(videoSharedTransitionSpeedSettings)
+    val windowSizeClass = LocalWindowSizeClass.current
+    val appWindowAdaptiveInfo = LocalAppWindowAdaptiveInfo.current
+    val videoTransitionAdaptiveInfo = remember(windowSizeClass, appWindowAdaptiveInfo) {
+        VideoTransitionAdaptiveInfo(
+            widthSizeClass = windowSizeClass.widthSizeClass,
+            foldPosture = appWindowAdaptiveInfo.posture.toAdaptiveFoldPosture(),
+        )
+    }
+    val videoSharedTransitionDurationMillis = remember(videoSharedTransitionSpeedSettings, videoTransitionAdaptiveInfo) {
+        resolveVideoSharedTransitionDurationMillis(videoSharedTransitionSpeedSettings, videoTransitionAdaptiveInfo)
     }
     val videoCardTransitionClock = rememberVideoCardTransitionClock()
     val systemReduceMotion = rememberSystemReduceMotion()
@@ -476,7 +488,8 @@ fun AppNavigation(
         videoSharedTransitionDurationMillis
     }
     CompositionLocalProvider(
-            LocalVideoSharedTransitionSpeedSettings provides videoSharedTransitionSpeedSettings
+            LocalVideoSharedTransitionSpeedSettings provides videoSharedTransitionSpeedSettings,
+            LocalVideoTransitionAdaptiveInfo provides videoTransitionAdaptiveInfo,
         ) {
         // [新增] 全局底栏状态管理
         val initialNavigationBackStack = remember(
@@ -643,14 +656,16 @@ fun AppNavigation(
         }
         val bottomBarItemColors = appNavigationSettings.bottomBarItemColors
         val bottomBarItemLabels = appNavigationSettings.bottomBarItemLabels
-        // 平板侧边栏模式 (替代 WindowSizeClass)
-        val windowSizeClass = LocalWindowSizeClass.current
 
         // [修复] 平板模式下，仅当用户开启侧边栏设置时才使用侧边导航
         val tabletUseSidebar = appNavigationSettings.tabletUseSidebar
         
-        // 统一侧边栏判定策略：600dp+ 且用户开启侧边栏
-        val useSideNavigation = shouldUseSidebarNavigationForLayout(windowSizeClass, tabletUseSidebar)
+        // 统一侧边栏判定策略：Expanded(840dp)+ 且用户开启侧边栏；折叠半开时强制底栏
+        val useSideNavigation = shouldUseSidebarNavigationForLayout(
+            windowSizeClass = windowSizeClass,
+            tabletUseSidebar = tabletUseSidebar,
+            foldPosture = appWindowAdaptiveInfo.posture,
+        )
         // 由所有入口共用的底栏内部显隐状态。进视频前先置为隐藏，避免返回到主入口后再补一次隐藏动画。
         var isBottomBarVisible by remember(launchToPortraitFeedOnStartupAtInit) {
             mutableStateOf(!launchToPortraitFeedOnStartupAtInit)

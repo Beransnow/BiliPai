@@ -1,6 +1,7 @@
 package com.android.purebilibili.feature.home
 
 import com.android.purebilibili.core.store.HomeFeedCardStyle
+import com.android.purebilibili.core.util.WindowWidthSizeClass
 
 internal data class HomeFeedCardLayout(
     val coverAspectRatio: Float,
@@ -29,7 +30,13 @@ internal const val HOME_FEED_CURRENT_COVER_ASPECT_RATIO = HOME_FEED_FULL_COVER_A
 internal fun resolveHomeFeedCoverAspectRatio(
     style: HomeFeedCardStyle,
     gridColumns: Int = 2,
+    widthSizeClass: WindowWidthSizeClass = WindowWidthSizeClass.Compact,
 ): Float {
+    if (widthSizeClass >= WindowWidthSizeClass.Expanded &&
+        (gridColumns <= 1 || style == HomeFeedCardStyle.BILIPAI)
+    ) {
+        return HOME_FEED_FULL_COVER_ASPECT_RATIO
+    }
     // 单列横卡封面固定为 16:10；双列及以上继续尊重用户选择。
     if (gridColumns <= 1) return HOME_FEED_BILIPAI_COVER_ASPECT_RATIO
     return when (style) {
@@ -42,10 +49,12 @@ internal fun resolveHomeFeedCoverAspectRatio(
 internal fun resolveHomeFeedCardLayout(
     style: HomeFeedCardStyle,
     gridColumns: Int = 2,
+    widthSizeClass: WindowWidthSizeClass = WindowWidthSizeClass.Compact,
 ): HomeFeedCardLayout {
     val coverAspectRatio = resolveHomeFeedCoverAspectRatio(
         style = style,
         gridColumns = gridColumns,
+        widthSizeClass = widthSizeClass,
     )
     return when (style) {
         HomeFeedCardStyle.CURRENT -> HomeFeedCardLayout(

@@ -211,15 +211,19 @@ private fun HomeHeroCarouselCard(
         animatedVisibilityScope != null &&
         video.bvid.isNotBlank() &&
         !sourceRoute.isNullOrBlank()
+    val transitionAdaptiveInfo = com.android.purebilibili.core.ui.transition
+        .LocalVideoTransitionAdaptiveInfo.current
     val cardShellMotionSpec = remember(
         sourceRoute,
         useCardShellSharedBounds,
-        sharedTransitionSpeedSettings
+        sharedTransitionSpeedSettings,
+        transitionAdaptiveInfo,
     ) {
         resolveVideoCardSharedTransitionMotionSpec(
             sourceRoute = sourceRoute,
             transitionEnabled = useCardShellSharedBounds,
-            speedSettings = sharedTransitionSpeedSettings
+            speedSettings = sharedTransitionSpeedSettings,
+            adaptiveInfo = transitionAdaptiveInfo,
         )
     }
 

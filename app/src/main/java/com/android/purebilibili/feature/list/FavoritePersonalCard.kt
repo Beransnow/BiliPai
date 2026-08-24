@@ -75,13 +75,20 @@ internal fun FavoritePersonalCard(
     val sharedTransitionScope = LocalSharedTransitionScope.current
     val animatedVisibilityScope = LocalAnimatedVisibilityScope.current
     val speedSettings = LocalVideoSharedTransitionSpeedSettings.current
+    val transitionAdaptiveInfo = com.android.purebilibili.core.ui.transition
+        .LocalVideoTransitionAdaptiveInfo.current
     val sharedElementReady = transitionEnabled &&
         item.bvid.isNotBlank() &&
         sourceRoute != null &&
         sharedTransitionScope != null &&
         animatedVisibilityScope != null
-    val motionSpec = remember(sourceRoute, transitionEnabled, speedSettings) {
-        resolveVideoCardSharedTransitionMotionSpec(sourceRoute, transitionEnabled, speedSettings)
+    val motionSpec = remember(sourceRoute, transitionEnabled, speedSettings, transitionAdaptiveInfo) {
+        resolveVideoCardSharedTransitionMotionSpec(
+            sourceRoute,
+            transitionEnabled,
+            speedSettings,
+            adaptiveInfo = transitionAdaptiveInfo,
+        )
     }
     val useSharedBounds = shouldUseVideoCardShellSharedBounds(sourceRoute, sharedElementReady)
     val cardBounds = remember { object { var value: androidx.compose.ui.geometry.Rect? = null } }

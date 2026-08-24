@@ -63,6 +63,7 @@ import com.android.purebilibili.core.ui.feedContentTypography
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.adaptive.MotionTier
+import com.android.purebilibili.core.ui.adaptive.adaptiveCardHoverEffect
 import com.android.purebilibili.core.ui.components.UpBadgeName
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
@@ -151,15 +152,19 @@ fun CinematicVideoCard(
     }
     val effectiveTransitionEnabled = transitionEnabled && LocalSharedTransitionEnabled.current
     val sharedTransitionSpeedSettings = LocalVideoSharedTransitionSpeedSettings.current
+    val transitionAdaptiveInfo = com.android.purebilibili.core.ui.transition
+        .LocalVideoTransitionAdaptiveInfo.current
     val cardSharedTransitionMotionSpec = remember(
         effectiveSharedElementSourceRoute,
         effectiveTransitionEnabled,
-        sharedTransitionSpeedSettings
+        sharedTransitionSpeedSettings,
+        transitionAdaptiveInfo,
     ) {
         resolveVideoCardSharedTransitionMotionSpec(
             sourceRoute = effectiveSharedElementSourceRoute,
             transitionEnabled = effectiveTransitionEnabled,
-            speedSettings = sharedTransitionSpeedSettings
+            speedSettings = sharedTransitionSpeedSettings,
+            adaptiveInfo = transitionAdaptiveInfo,
         )
     }
     val coverCacheKey = remember(video.bvid, useLowQualityCover) {
@@ -243,6 +248,7 @@ fun CinematicVideoCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .adaptiveCardHoverEffect(shape = cardShellShape)
             .padding(bottom = AppSpacingTokens.ExtraLarge, start = AppSpacingTokens.Large, end = AppSpacingTokens.Large) // 增加间距
             .animateEnter(
                 index = index,

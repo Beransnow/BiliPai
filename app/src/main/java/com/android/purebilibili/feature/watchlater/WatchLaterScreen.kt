@@ -1221,11 +1221,19 @@ private fun WatchLaterVideoCard(
         sourceRoute != null &&
         sharedTransitionScope != null &&
         animatedVisibilityScope != null
-    val sharedTransitionMotionSpec = remember(sourceRoute, transitionEnabled, sharedTransitionSpeedSettings) {
+    val transitionAdaptiveInfo = com.android.purebilibili.core.ui.transition
+        .LocalVideoTransitionAdaptiveInfo.current
+    val sharedTransitionMotionSpec = remember(
+        sourceRoute,
+        transitionEnabled,
+        sharedTransitionSpeedSettings,
+        transitionAdaptiveInfo,
+    ) {
         resolveVideoCardSharedTransitionMotionSpec(
             sourceRoute = sourceRoute,
             transitionEnabled = transitionEnabled,
-            speedSettings = sharedTransitionSpeedSettings
+            speedSettings = sharedTransitionSpeedSettings,
+            adaptiveInfo = transitionAdaptiveInfo,
         )
     }
     val stationaryCoverUrl = remember(item.pic) { fixCoverUrl(item.pic) }

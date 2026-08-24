@@ -1,5 +1,17 @@
 // 文件路径: feature/video/VideoPlayerSection.kt
 package com.android.purebilibili.feature.video.ui.section
+
+import androidx.compose.foundation.focusGroup
+import androidx.compose.foundation.focusable
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isAltPressed
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
+import androidx.compose.ui.input.key.isShiftPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppText
 
@@ -1802,6 +1814,32 @@ fun VideoPlayerSection(
         .clipToBounds()
         .background(Color.Black)
         .hazeSourceCompat(overlayDrawerHazeState)
+    val inputDevicePolicy = com.android.purebilibili.core.ui.adaptive.resolveInputDevicePolicy(
+        com.android.purebilibili.core.util.LocalAppWindowAdaptiveInfo.current,
+    )
+    if (inputDevicePolicy.enableKeyboardNavigation) {
+        rootModifier = rootModifier
+            .focusGroup()
+            .onKeyEvent { event ->
+                val hasCommandModifier = event.isCtrlPressed || event.isAltPressed ||
+                    event.isMetaPressed || event.isShiftPressed
+                if (
+                    event.type == KeyEventType.KeyDown &&
+                    event.key == Key.Spacebar &&
+                    !hasCommandModifier &&
+                    !isScreenLocked &&
+                    !isInPipMode
+                ) {
+                    togglePlayerPlaybackFromUserAction(playerState.player)
+                    showControls = true
+                    true
+                } else {
+                    // Let unhandled D-pad/arrow keys use Compose's spatial focus search.
+                    false
+                }
+            }
+            .focusable()
+    }
     val playerContentModifier = Modifier
         .fillMaxSize()
         .padding(top = contentTopInset)
@@ -3667,6 +3705,8 @@ fun VideoPlayerSection(
     }
     val transitionSourceCornerDp =
         LocalVideoCardTransitionBackgroundState.current.sourceCornerDpProvider()
+    val transitionAdaptiveInfo = com.android.purebilibili.core.ui.transition
+        .LocalVideoTransitionAdaptiveInfo.current
     val videoSharedTransitionVisualSpec = remember(
         sourceRouteForSharedElement,
         transitionSourceCornerDp,
@@ -3676,6 +3716,7 @@ fun VideoPlayerSection(
         isPortraitFullscreen,
         isVerticalVideo,
         videoSharedPlaybackIntent,
+        transitionAdaptiveInfo,
     ) {
         resolveVideoSharedTransitionVisualSpec(
             sourceRoute = sourceRouteForSharedElement,
@@ -3686,7 +3727,8 @@ fun VideoPlayerSection(
             autoPortrait = isPortraitFullscreen || isVerticalVideo,
             initialVertical = isPortraitFullscreen || isVerticalVideo,
             isVerticalVideo = isVerticalVideo,
-            isReturning = forceCoverDuringReturnAnimation
+            isReturning = forceCoverDuringReturnAnimation,
+            adaptiveInfo = transitionAdaptiveInfo,
         )
     }
     val entryPresentationSpec = remember(
@@ -3725,12 +3767,14 @@ fun VideoPlayerSection(
     val coverOverlaySharedTransitionMotionSpec = remember(
         sourceRouteForSharedElement,
         transitionEnabled,
-        sharedTransitionSpeedSettings
+        sharedTransitionSpeedSettings,
+        transitionAdaptiveInfo,
     ) {
         resolveVideoCardSharedTransitionMotionSpec(
             sourceRoute = sourceRouteForSharedElement,
             transitionEnabled = transitionEnabled,
-            speedSettings = sharedTransitionSpeedSettings
+            speedSettings = sharedTransitionSpeedSettings,
+            adaptiveInfo = transitionAdaptiveInfo,
         )
     }
     val forcedReturnCoverSharedElementSourceRoute = resolveForcedReturnCoverSharedElementSourceRoute(

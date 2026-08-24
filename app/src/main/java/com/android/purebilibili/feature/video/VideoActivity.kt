@@ -38,6 +38,9 @@ import com.android.purebilibili.core.ui.ProvideAppThemeConfig
 import com.android.purebilibili.core.ui.blur.BlurIntensity
 import com.android.purebilibili.core.ui.performance.AppRuntimeVisualGuardTracker
 import com.android.purebilibili.core.ui.performance.ProvideRuntimeVisualGuard
+import com.android.purebilibili.core.ui.adaptive.toAdaptiveFoldPosture
+import com.android.purebilibili.core.ui.transition.LocalVideoTransitionAdaptiveInfo
+import com.android.purebilibili.core.ui.transition.VideoTransitionAdaptiveInfo
 import com.android.purebilibili.core.util.LocalAppWindowAdaptiveInfo
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.calculateWindowSizeClass
@@ -137,6 +140,15 @@ class VideoActivity : ComponentActivity() {
             )
             val windowWidthSizeClass = windowSizeClass.widthSizeClass
             val appWindowAdaptiveInfo = rememberAppWindowAdaptiveInfo(windowSizeClass)
+            val videoTransitionAdaptiveInfo = remember(
+                windowWidthSizeClass,
+                appWindowAdaptiveInfo.posture,
+            ) {
+                VideoTransitionAdaptiveInfo(
+                    widthSizeClass = windowWidthSizeClass,
+                    foldPosture = appWindowAdaptiveInfo.posture.toAdaptiveFoldPosture(),
+                )
+            }
             val blurIntensity by SettingsManager.getBlurIntensity(this@VideoActivity)
                 .collectAsStateWithLifecycle(initialValue = BlurIntensity.THIN)
             val hapticFeedbackEnabled by SettingsManager
@@ -175,6 +187,7 @@ class VideoActivity : ComponentActivity() {
                 CompositionLocalProvider(
                     LocalWindowSizeClass provides windowSizeClass,
                     LocalAppWindowAdaptiveInfo provides appWindowAdaptiveInfo,
+                    LocalVideoTransitionAdaptiveInfo provides videoTransitionAdaptiveInfo,
                 ) {
                 // VideoDetailScreen handles its own UI state and player initialization
                 com.android.purebilibili.feature.video.screen.VideoDetailScreen(

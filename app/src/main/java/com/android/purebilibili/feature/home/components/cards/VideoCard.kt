@@ -90,6 +90,7 @@ import com.android.purebilibili.core.ui.ContainerLevel
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
 import com.android.purebilibili.core.ui.adaptive.MotionTier
+import com.android.purebilibili.core.ui.adaptive.adaptiveCardHoverEffect
 import com.android.purebilibili.core.ui.components.UpBadgeName
 import com.android.purebilibili.core.ui.components.resolveUpStatsText
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
@@ -792,9 +793,11 @@ internal fun ElegantVideoCard(
     val coordinateEnterWithTransition = remember(animationEnabled, transitionEnabled) {
         animationEnabled && transitionEnabled
     }
+    val adaptiveHoverShape = AppShapes.container(ContainerLevel.Card)
     Box(
         modifier = modifier
             .fillMaxWidth()
+            .adaptiveCardHoverEffect(shape = adaptiveHoverShape)
             // 进场动画：挂载门控已含滚动/返回/切分类；与过渡并存时仅淡入不改几何
             .animateEnter(
                 index = index,
@@ -812,6 +815,8 @@ internal fun ElegantVideoCard(
         val sharedTransitionScope = LocalSharedTransitionScope.current
         val animatedVisibilityScope = LocalAnimatedVisibilityScope.current
         val sharedTransitionSpeedSettings = LocalVideoSharedTransitionSpeedSettings.current
+        val transitionAdaptiveInfo = com.android.purebilibili.core.ui.transition
+            .LocalVideoTransitionAdaptiveInfo.current
         val effectiveTransitionEnabled = transitionEnabled && LocalSharedTransitionEnabled.current
         val coverSharedEnabled = shouldEnableVideoCoverSharedTransition(
             transitionEnabled = effectiveTransitionEnabled,
@@ -834,18 +839,21 @@ internal fun ElegantVideoCard(
             effectiveTransitionEnabled,
             cardCornerRadius,
             sharedTransitionSpeedSettings,
-            videoSharedPlaybackIntent
+            videoSharedPlaybackIntent,
+            transitionAdaptiveInfo,
         ) {
             VideoCardSharedTransitionSpecs(
                 motion = resolveVideoCardSharedTransitionMotionSpec(
                     sourceRoute = effectiveSharedElementSourceRoute,
                     transitionEnabled = effectiveTransitionEnabled,
-                    speedSettings = sharedTransitionSpeedSettings
+                    speedSettings = sharedTransitionSpeedSettings,
+                    adaptiveInfo = transitionAdaptiveInfo,
                 ),
                 visual = resolveVideoSharedTransitionVisualSpec(
                     sourceRoute = effectiveSharedElementSourceRoute,
                     sourceCornerDp = cardCornerRadius.value.roundToInt(),
-                    playbackIntent = videoSharedPlaybackIntent
+                    playbackIntent = videoSharedPlaybackIntent,
+                    adaptiveInfo = transitionAdaptiveInfo,
                 )
             )
         }

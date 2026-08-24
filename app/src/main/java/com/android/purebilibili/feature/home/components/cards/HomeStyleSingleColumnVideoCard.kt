@@ -60,6 +60,7 @@ import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpe
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 import com.android.purebilibili.core.ui.transition.resolveVideoCardSharedTransitionMotionSpec
+import com.android.purebilibili.core.ui.adaptive.adaptiveCardHoverEffect
 import com.android.purebilibili.core.ui.transition.shouldUseVideoCardShellSharedBounds
 import com.android.purebilibili.core.ui.transition.videoCardShellSharedBoundsOrEmpty
 import com.android.purebilibili.core.util.CardPositionManager
@@ -107,11 +108,19 @@ internal fun HomeStyleSingleColumnVideoCard(
         sharedTransitionScope != null &&
         animatedVisibilityScope != null
     val motionSettings = LocalVideoSharedTransitionSpeedSettings.current
-    val motionSpec = remember(sourceRoute, effectiveTransitionEnabled, motionSettings) {
+    val transitionAdaptiveInfo = com.android.purebilibili.core.ui.transition
+        .LocalVideoTransitionAdaptiveInfo.current
+    val motionSpec = remember(
+        sourceRoute,
+        effectiveTransitionEnabled,
+        motionSettings,
+        transitionAdaptiveInfo,
+    ) {
         resolveVideoCardSharedTransitionMotionSpec(
             sourceRoute = sourceRoute,
             transitionEnabled = effectiveTransitionEnabled,
             speedSettings = motionSettings,
+            adaptiveInfo = transitionAdaptiveInfo,
         )
     }
     val cardBounds = remember { object { var value: Rect? = null } }
@@ -181,6 +190,7 @@ internal fun HomeStyleSingleColumnVideoCard(
 
     Row(
         modifier = modifier
+            .adaptiveCardHoverEffect(shape = cardShape)
             .onGloballyPositioned { coordinates ->
                 cardBounds.value = coordinates.boundsInRoot()
             }

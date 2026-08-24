@@ -196,10 +196,12 @@ internal fun TabletCinemaLayout(
     liveSurfaceCardTransitionEnabled: Boolean = true,
 ) {
     val appContext = LocalContext.current
-    val policy = remember(configuration.screenWidthDp, tabletCommentPanelWidthPreset) {
+    val foldPosture = com.android.purebilibili.core.util.LocalAppWindowAdaptiveInfo.current.posture
+    val policy = remember(configuration.screenWidthDp, tabletCommentPanelWidthPreset, foldPosture) {
         resolveTabletCinemaLayoutPolicy(
             widthDp = configuration.screenWidthDp,
-            commentWidthPreset = tabletCommentPanelWidthPreset
+            commentWidthPreset = tabletCommentPanelWidthPreset,
+            foldPosture = foldPosture,
         )
     }
     val success = uiState as? VideoPlaybackUiState.Success

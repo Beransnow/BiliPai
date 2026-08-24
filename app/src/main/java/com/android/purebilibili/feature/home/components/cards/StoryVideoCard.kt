@@ -57,6 +57,7 @@ import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.theme.BiliPink
 import com.android.purebilibili.core.store.HomeDurationStyle
 import com.android.purebilibili.core.ui.adaptive.MotionTier
+import com.android.purebilibili.core.ui.adaptive.adaptiveCardHoverEffect
 import com.android.purebilibili.core.ui.components.UpBadgeName
 import com.android.purebilibili.core.ui.components.AppDropdownMenu
 import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
@@ -252,15 +253,19 @@ internal fun StoryVideoCard(
         useCoverSharedBounds = useCardShellSharedBounds,
         isSharedReturnTarget = isSharedReturnTarget,
     )
+    val transitionAdaptiveInfo = com.android.purebilibili.core.ui.transition
+        .LocalVideoTransitionAdaptiveInfo.current
     val cardSharedTransitionMotionSpec = remember(
         effectiveSharedElementSourceRoute,
         effectiveTransitionEnabled,
-        sharedTransitionSpeedSettings
+        sharedTransitionSpeedSettings,
+        transitionAdaptiveInfo,
     ) {
         resolveVideoCardSharedTransitionMotionSpec(
             sourceRoute = effectiveSharedElementSourceRoute,
             transitionEnabled = effectiveTransitionEnabled,
-            speedSettings = sharedTransitionSpeedSettings
+            speedSettings = sharedTransitionSpeedSettings,
+            adaptiveInfo = transitionAdaptiveInfo,
         )
     }
     
@@ -280,6 +285,7 @@ internal fun StoryVideoCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .adaptiveCardHoverEffect(shape = cardShellShape)
             .videoCardShellSharedBoundsOrEmpty(
                 enabled = useCardShellSharedBounds,
                 sharedTransitionScope = sharedTransitionScope,

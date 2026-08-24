@@ -1214,11 +1214,13 @@ private fun SpaceContent(
         val gridColumns = resolveSpaceContentGridColumnCount(
             widthDp = LocalConfiguration.current.screenWidthDp,
             fixedColumnCount = homeSettings.gridColumnCount,
-            cardWidthPreset = homeSettings.homeFeedCardWidthPreset
+            cardWidthPreset = homeSettings.homeFeedCardWidthPreset,
+            widthSizeClass = com.android.purebilibili.core.util.LocalWindowSizeClass.current.widthSizeClass,
         )
         val spaceFeedCardLayout = resolveHomeFeedCardLayout(
             style = homeSettings.homeFeedCardStyle,
-            gridColumns = gridColumns
+            gridColumns = gridColumns,
+            widthSizeClass = com.android.purebilibili.core.util.LocalWindowSizeClass.current.widthSizeClass,
         )
         val spaceFeedCoverAspectRatio = spaceFeedCardLayout.coverAspectRatio
         LazyVerticalGrid(
@@ -2668,15 +2670,19 @@ private fun Modifier.spaceVideoCoverSharedBounds(
 ): Modifier {
     val sourceRoute = LocalVideoCardSharedElementSourceRoute.current
     val sharedTransitionSpeedSettings = LocalVideoSharedTransitionSpeedSettings.current
+    val transitionAdaptiveInfo = com.android.purebilibili.core.ui.transition
+        .LocalVideoTransitionAdaptiveInfo.current
     val cardSharedTransitionMotionSpec = remember(
         sourceRoute,
         sharedTransitionKey,
-        sharedTransitionSpeedSettings
+        sharedTransitionSpeedSettings,
+        transitionAdaptiveInfo,
     ) {
         resolveVideoCardSharedTransitionMotionSpec(
             sourceRoute = sourceRoute,
             transitionEnabled = sharedTransitionKey != null,
-            speedSettings = sharedTransitionSpeedSettings
+            speedSettings = sharedTransitionSpeedSettings,
+            adaptiveInfo = transitionAdaptiveInfo,
         )
     }
     val sharedTransitionReady = sharedTransitionKey != null &&
@@ -2763,15 +2769,19 @@ private fun SpaceHomeVideoCard(
         sharedTransitionScope != null &&
         animatedVisibilityScope != null
     val sharedTransitionSpeedSettings = LocalVideoSharedTransitionSpeedSettings.current
+    val transitionAdaptiveInfo = com.android.purebilibili.core.ui.transition
+        .LocalVideoTransitionAdaptiveInfo.current
     val cardSharedTransitionMotionSpec = remember(
         sourceRoute,
         sharedTransitionKey,
-        sharedTransitionSpeedSettings
+        sharedTransitionSpeedSettings,
+        transitionAdaptiveInfo,
     ) {
         resolveVideoCardSharedTransitionMotionSpec(
             sourceRoute = sourceRoute,
             transitionEnabled = sharedTransitionReady,
-            speedSettings = sharedTransitionSpeedSettings
+            speedSettings = sharedTransitionSpeedSettings,
+            adaptiveInfo = transitionAdaptiveInfo,
         )
     }
     val useCardShellSharedBounds = shouldUseVideoCardShellSharedBounds(
@@ -3321,15 +3331,19 @@ private fun SpaceArchiveListItemRow(
             .build()
     }
     val sharedTransitionSpeedSettings = LocalVideoSharedTransitionSpeedSettings.current
+    val transitionAdaptiveInfo = com.android.purebilibili.core.ui.transition
+        .LocalVideoTransitionAdaptiveInfo.current
     val cardSharedTransitionMotionSpec = remember(
         sourceRoute,
         sharedTransitionKey,
-        sharedTransitionSpeedSettings
+        sharedTransitionSpeedSettings,
+        transitionAdaptiveInfo,
     ) {
         resolveVideoCardSharedTransitionMotionSpec(
             sourceRoute = sourceRoute,
             transitionEnabled = sharedTransitionKey != null,
-            speedSettings = sharedTransitionSpeedSettings
+            speedSettings = sharedTransitionSpeedSettings,
+            adaptiveInfo = transitionAdaptiveInfo,
         )
     }
     var cardBounds by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
