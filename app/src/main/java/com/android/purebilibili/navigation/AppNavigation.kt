@@ -1256,6 +1256,13 @@ fun AppNavigation(
             shouldHideBottomBarOnTablet = shouldHideBottomBarOnTablet,
             shouldDeferReveal = false
         )
+        val sideBarMountGate = shouldShowBottomBarForNavigation(
+            activeRoute = bottomBarMountRoute,
+            visibleBottomBarRoutes = visibleBottomBarRoutes,
+            useSideNavigation = false,
+            shouldHideBottomBarOnTablet = shouldHideBottomBarOnTablet,
+            shouldDeferReveal = false
+        )
         val showBottomBar = shouldShowBottomBarForNavigation(
             activeRoute = activeBottomTabRoute,
             visibleBottomBarRoutes = visibleBottomBarRoutes,
@@ -1688,7 +1695,10 @@ fun AppNavigation(
             }
             Box(modifier = Modifier.fillMaxSize()) {
             Row(modifier = Modifier.fillMaxSize()) {
-                if (windowSizeClass.shouldUseSideNavigation && isBottomBarDestination) {
+                // VideoDetail keeps MainHost underneath for the shared-card transition. Mount the
+                // rail from that retained route too, otherwise removing its width on navigation
+                // shifts every home-card coordinate after the transition anchor was captured.
+                if (windowSizeClass.shouldUseSideNavigation && sideBarMountGate) {
                     AnimatedVisibility(
                         visible = useSideNavigation,
                         enter = slideInHorizontally(

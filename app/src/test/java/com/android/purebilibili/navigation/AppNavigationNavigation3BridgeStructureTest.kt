@@ -483,6 +483,8 @@ class AppNavigationNavigation3BridgeStructureTest {
         assertTrue(source.contains("activeRoute = bottomBarMountRoute"))
         assertTrue(source.contains("!isVideoDetailDestination"))
         assertTrue(source.contains("val bottomBarCanMount = bottomBarMountGate"))
+        assertTrue(source.contains("val sideBarMountGate = shouldShowBottomBarForNavigation("))
+        assertTrue(source.contains("windowSizeClass.shouldUseSideNavigation && sideBarMountGate"))
         assertTrue(source.contains("val bottomBarReservesSpace = bottomBarCanMount"))
         assertTrue(bottomBarOverlay.contains("visibleState = bottomBarVisibilityState"))
         assertTrue(bottomBarOverlay.contains("BottomBarMatchedDockVisibility("))
