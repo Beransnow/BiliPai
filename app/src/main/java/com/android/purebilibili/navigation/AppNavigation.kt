@@ -105,6 +105,7 @@ import com.android.purebilibili.core.ui.transition.LocalPredictiveBackBackground
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
 import com.android.purebilibili.core.ui.transition.LocalVideoCardTransitionBackgroundState
 import com.android.purebilibili.core.ui.adaptive.toAdaptiveFoldPosture
+import com.android.purebilibili.core.ui.adaptive.HingeOcclusionInputShield
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.LocalVideoTransitionAdaptiveInfo
 import com.android.purebilibili.core.ui.transition.VideoTransitionAdaptiveInfo
@@ -3665,6 +3666,13 @@ fun AppNavigation(
                 modifier = Modifier
                     .fillMaxSize()
                     .zIndex(100f)
+            )
+
+            HingeOcclusionInputShield(
+                adaptiveInfo = appWindowAdaptiveInfo,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .zIndex(101f),
             )
         } // End of Main Box
         } // End of CompositionLocalProvider
