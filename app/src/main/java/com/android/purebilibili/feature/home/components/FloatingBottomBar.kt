@@ -594,11 +594,14 @@ fun FloatingBottomBar(
     }
 
     LaunchedEffect(dampedDragAnimation, maxTabIndex) {
-        snapshotFlow { selectedIndexLatest.value().coerceIn(0, maxTabIndex) }
-            .collectLatest { index ->
+        snapshotFlow {
+            selectedIndexLatest.value().coerceIn(0, maxTabIndex) to
+                dampedDragAnimation.isDragging
+        }
+            .collectLatest { (index, isDragging) ->
                 if (
                     shouldAnimateIndicatorToSelectedIndex(
-                        isDragging = dampedDragAnimation.isDragging,
+                        isDragging = isDragging,
                         indicatorTarget = dampedDragAnimation.targetValue,
                         selectedIndex = index,
                         ownedTargetIndex = pagerFollowGate.ownedTargetIndex,
@@ -970,6 +973,7 @@ fun FloatingBottomBar(
                                         resolveFloatingDockClippedContentTranslationPx(
                                             position = dampedDragAnimation.value,
                                             tabWidthPx = tabWidthPx,
+                                            tabsCount = safeTabsCount,
                                             indicatorWidthPx = fittedIndicatorWidthPx,
                                         )
                                     translationX = if (isLtr) {

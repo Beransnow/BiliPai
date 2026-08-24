@@ -74,7 +74,9 @@ class DampedDragAnimation(
     private val mutatorMutex = MutatorMutex()
 
     private val velocityTracker = VelocityTracker()
-    private var directTrackingJob: Job? = null
+    // Pager progress can request a new position every frame. Keep exactly one value mutation
+    // alive so an older coroutine can never run after a newer request and restore stale UI.
+    private var valueTrackingJob: Job? = null
 
     val value: Float get() = valueAnimation.value
     val targetValue: Float get() = requestedValue
@@ -165,22 +167,22 @@ class DampedDragAnimation(
     fun snapTo(value: Float) {
         val next = value.coerceIn(valueRange)
         requestedValue = next
-        directTrackingJob?.cancel()
-        animationScope.launch { valueAnimation.snapTo(next) }
+        valueTrackingJob?.cancel()
+        valueTrackingJob = animationScope.launch { valueAnimation.snapTo(next) }
     }
 
     fun updateValue(value: Float) {
         val targetValue = value.coerceIn(valueRange)
         requestedValue = targetValue
+        valueTrackingJob?.cancel()
         if (trackingMode == DampedDragTrackingMode.DIRECT) {
-            directTrackingJob?.cancel()
-            directTrackingJob = animationScope.launch {
+            valueTrackingJob = animationScope.launch {
                 valueAnimation.snapTo(targetValue)
                 updateVelocity()
             }
             return
         }
-        animationScope.launch {
+        valueTrackingJob = animationScope.launch {
             launch { valueAnimation.animateTo(targetValue, valueAnimationSpec) { updateVelocity() } }
         }
     }
@@ -191,8 +193,8 @@ class DampedDragAnimation(
     ) {
         val targetValue = value.coerceIn(valueRange)
         requestedValue = targetValue
-        directTrackingJob?.cancel()
-        animationScope.launch {
+        valueTrackingJob?.cancel()
+        valueTrackingJob = animationScope.launch {
             mutatorMutex.mutate {
                 if (animatePress) press()
                 launch { valueAnimation.animateTo(targetValue, valueAnimationSpec) }

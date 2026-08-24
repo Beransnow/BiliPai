@@ -82,10 +82,21 @@ class FloatingBottomBarGeometryTest {
             0.001f,
         )
         assertEquals(
-            7.4f,
+            0f,
             resolveFloatingDockClippedContentTranslationPx(
                 position = 0f,
                 tabWidthPx = 54.2f,
+                tabsCount = 5,
+                indicatorWidthPx = 69f,
+            ),
+            0.001f,
+        )
+        assertEquals(
+            -(54.2f * 5f - 69f),
+            resolveFloatingDockClippedContentTranslationPx(
+                position = 4f,
+                tabWidthPx = 54.2f,
+                tabsCount = 5,
                 indicatorWidthPx = 69f,
             ),
             0.001f,

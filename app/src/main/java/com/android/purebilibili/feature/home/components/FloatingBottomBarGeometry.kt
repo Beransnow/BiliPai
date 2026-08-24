@@ -195,8 +195,14 @@ internal fun resolveFloatingDockIndicatorContentAlignmentPx(
 internal fun resolveFloatingDockClippedContentTranslationPx(
     position: Float,
     tabWidthPx: Float,
+    tabsCount: Int,
     indicatorWidthPx: Float,
-): Float = -position * tabWidthPx + (indicatorWidthPx - tabWidthPx) / 2f
+): Float = -resolveFloatingDockIndicatorOffsetPx(
+    position = position,
+    tabWidthPx = tabWidthPx,
+    tabsCount = tabsCount,
+    indicatorWidthPx = indicatorWidthPx,
+)
 
 internal fun resolveFloatingDockCaptureInsets(
     shellHeightDp: Float,
