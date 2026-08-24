@@ -43,6 +43,7 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(source.contains("ScrollableTabRow("))
         assertTrue(source.contains("PiliPlusIndicatorDecelerate"))
         assertTrue(source.contains("PiliPlusIndicatorAccelerate"))
+        assertTrue(source.contains(".wrapContentSize(Alignment.BottomStart)"))
         assertTrue(source.contains("fun AppSuggestionChip("))
         assertTrue(source.contains(") = SuggestionChip("))
     }

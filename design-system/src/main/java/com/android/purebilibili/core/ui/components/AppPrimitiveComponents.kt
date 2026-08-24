@@ -68,6 +68,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -125,6 +126,10 @@ private fun AppElasticTabIndicator(
         previousIndex.intValue = safeIndex
     }
     val indicatorModifier = Modifier
+        // Legacy TabRow measures the indicator slot to the full row. Recreate Material's
+        // indicator host contract so the elastic line stays pinned above the bottom divider.
+        .fillMaxWidth()
+        .wrapContentSize(Alignment.BottomStart)
         .offset(x = left)
         .width((right - left).coerceAtLeast(0.dp))
     if (primary) {
