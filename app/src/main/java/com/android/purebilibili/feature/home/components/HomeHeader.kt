@@ -2209,7 +2209,18 @@ fun HomeHeader(
                         if (embedTopTabsInUnifiedPanel) {
                             Modifier
                                 .padding(horizontal = unifiedPanelHorizontalPadding)
-                                .clip(unifiedPanelShape)
+                                .then(
+                                    // Search and tabs draw independent liquid-glass capsules when
+                                    // the unified panel has no outer chrome. Keeping an otherwise
+                                    // empty parent clip here makes the search-collapse layer own the
+                                    // tab dock's drawBackdrop and can drop that backdrop while the
+                                    // tab glyphs continue to render.
+                                    if (drawUnifiedTopPanelChrome) {
+                                        Modifier.clip(unifiedPanelShape)
+                                    } else {
+                                        Modifier
+                                    }
+                                )
                                 .then(
                                     if (drawUnifiedTopPanelChrome) {
                                         Modifier.homeTopChromeSurface(

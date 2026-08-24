@@ -124,6 +124,10 @@ class HomeChromeLiquidSurfaceStructureTest {
                 topHeaderSource.indexOf("topTabsContent(", startIndex = searchThenTabsIndex) > searchThenTabsIndex
         )
         assertTrue(
+            "an independently rendered liquid dock must not inherit the collapsing search panel clip",
+            topHeaderSource.contains("if (drawUnifiedTopPanelChrome) {\n                                        Modifier.clip(unifiedPanelShape)")
+        )
+        assertTrue(
             "tabs-first mode should keep its explicit branch before the search layer",
             tabsThenSearchIndex in 0 until searchLayerIndex
         )
