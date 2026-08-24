@@ -27,6 +27,17 @@ class MineSideDrawerVisualPolicyTest {
     }
 
     @Test
+    fun `drawer uses semantic shapes for its edge and grouped surfaces`() {
+        val drawerSource = File(
+            "src/main/java/com/android/purebilibili/feature/home/components/MineSideDrawer.kt"
+        ).readText()
+
+        assertTrue(drawerSource.contains("AppShapes.endRounded(layoutPolicy.drawerEdgeRadiusDp.dp)"))
+        assertTrue(drawerSource.contains("AppShapes.borderedContainer(ContainerLevel.Card)"))
+        assertTrue(!drawerSource.contains("RoundedCornerShape("))
+    }
+
+    @Test
     fun `drawer renders the dedicated skin side background`() {
         val drawerSource = File(
             "src/main/java/com/android/purebilibili/feature/home/components/MineSideDrawer.kt"
