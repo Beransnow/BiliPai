@@ -504,7 +504,7 @@ class VideoPlayerCoverPolicyTest {
     }
 
     @Test
-    fun manualStartPlaybackButton_usesThemeNativeIconButtonAndIconFamily() {
+    fun manualStartPlaybackButton_usesThemeNativeTvIcon() {
         val source = listOf(
             File("app/src/main/java/com/android/purebilibili/feature/video/ui/section/VideoPlayerSection.kt"),
             File("src/main/java/com/android/purebilibili/feature/video/ui/section/VideoPlayerSection.kt"),
@@ -515,8 +515,10 @@ class VideoPlayerCoverPolicyTest {
 
         assertTrue(buttonSource.contains("AppFilledIconButton("))
         assertTrue(buttonSource.contains("imageVector = manualStartPlayIcon"))
-        assertTrue(source.contains("AppSemanticIconFamily.MIUIX -> MiuixIcons.Play"))
-        assertTrue(source.contains("AppSemanticIconFamily.MATERIAL -> Icons.Filled.PlayArrow"))
+        assertTrue(source.contains("val manualStartPlayIcon = resolveAppTvIcon()"))
+        assertTrue(buttonSource.contains("containerColor = MaterialTheme.colorScheme.primaryContainer"))
+        assertTrue(buttonSource.contains("contentColor = MaterialTheme.colorScheme.onPrimaryContainer"))
+        assertTrue(buttonSource.contains("Modifier.size(32.dp)"))
         assertFalse(buttonSource.contains("Color(0xFF4D5160)"))
         assertFalse(buttonSource.contains("Color.White.copy(alpha = 0.96f)"))
     }
