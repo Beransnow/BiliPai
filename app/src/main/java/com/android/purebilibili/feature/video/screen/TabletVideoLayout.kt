@@ -12,6 +12,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.core.tween
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -35,6 +39,7 @@ import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
 import com.android.purebilibili.core.util.ShareUtils
 import com.android.purebilibili.core.util.LocalWindowSizeClass
+import com.android.purebilibili.core.util.LocalAppWindowAdaptiveInfo
 import com.android.purebilibili.data.model.response.BgmInfo
 import com.android.purebilibili.data.model.response.ViewPoint
 import com.android.purebilibili.feature.common.resolveIndexedVideoLazyKey
@@ -58,6 +63,9 @@ import com.android.purebilibili.feature.video.viewmodel.VideoPlaybackUiState
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.ui.adaptive.resolveDeviceUiProfile
+import com.android.purebilibili.core.ui.motion.AppMotionEasing
+import com.android.purebilibili.core.ui.motion.rememberSystemReduceMotion
 import androidx.compose.material.icons.outlined.*
 import kotlinx.coroutines.launch
 
@@ -1106,6 +1114,26 @@ private fun ScrollableVideoInfoSection(
     modifier: Modifier = Modifier
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
+    val windowSizeClass = LocalWindowSizeClass.current
+    val adaptiveInfo = LocalAppWindowAdaptiveInfo.current
+    val systemReduceMotion = rememberSystemReduceMotion()
+    val entranceSpec = remember(
+        windowSizeClass.widthSizeClass,
+        adaptiveInfo.posture,
+        systemReduceMotion,
+    ) {
+        resolveTabletVideoInfoEntranceSpec(
+            motionTier = resolveDeviceUiProfile(
+                widthSizeClass = windowSizeClass.widthSizeClass,
+                foldPosture = adaptiveInfo.posture,
+            ).motionTier,
+            systemReduceMotion = systemReduceMotion,
+        )
+    }
+    var entranceVisible by remember(info.bvid) { mutableStateOf(false) }
+    LaunchedEffect(info.bvid) {
+        entranceVisible = true
+    }
 
     LazyColumn(
         modifier = modifier,
@@ -1113,59 +1141,77 @@ private fun ScrollableVideoInfoSection(
     ) {
         // 1. 视频标题
         item {
-            VideoTitleWithDesc(
-                info = info,
-                videoTags = videoTags,
-                bgmList = resolveDisplayBgmList(
-                    bgmInfo = bgmInfo,
-                    bgmInfoList = bgmInfoList
-                ),
-                onBgmClick = onBgmClick,
-                onRelatedVideoClick = onRelatedVideoClick,
-                onDescriptionUrlClick = onOpenBilibiliLink,
-                onTagClick = onSearchKeywordClick
-            )
-            Spacer(modifier = Modifier.height(12.dp))
+            TabletVideoInfoStaggeredItem(
+                visible = entranceVisible,
+                index = 0,
+                spec = entranceSpec,
+            ) {
+                VideoTitleWithDesc(
+                    info = info,
+                    videoTags = videoTags,
+                    bgmList = resolveDisplayBgmList(
+                        bgmInfo = bgmInfo,
+                        bgmInfoList = bgmInfoList
+                    ),
+                    onBgmClick = onBgmClick,
+                    onRelatedVideoClick = onRelatedVideoClick,
+                    onDescriptionUrlClick = onOpenBilibiliLink,
+                    onTagClick = onSearchKeywordClick
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
         }
 
         // 2. UP主信息
         item {
-            UpInfoSection(
-                info = info,
-                isFollowing = isFollowing,
-                onFollowClick = onFollowClick,
-                onUpClick = onUpClick,
-                followerCount = ownerFollowerCount,
-                videoCount = ownerVideoCount
-            )
-            Spacer(modifier = Modifier.height(12.dp))
+            TabletVideoInfoStaggeredItem(
+                visible = entranceVisible,
+                index = 1,
+                spec = entranceSpec,
+            ) {
+                UpInfoSection(
+                    info = info,
+                    isFollowing = isFollowing,
+                    onFollowClick = onFollowClick,
+                    onUpClick = onUpClick,
+                    followerCount = ownerFollowerCount,
+                    videoCount = ownerVideoCount
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+            }
         }
 
         // 3. 互动按钮
         item {
-            ActionButtonsRow(
-                info = info,
-                isLiked = isLiked,
-                isFavorited = isFavorited,
-                coinCount = coinCount,
-                isInWatchLater = isInWatchLater,
-                onLikeClick = onLikeClick,
-                onCoinClick = onCoinClick,
-                onFavoriteClick = onFavoriteClick,
-                onTripleClick = onTripleClick,
-                onDownloadClick = onDownloadClick,
-                onWatchLaterClick = onWatchLaterClick,
-                downloadProgress = downloadProgress ?: -1f,
-                onCommentClick = { /* 平板模式不需要跳转评论 */ },
-                showCommentAction = false,
-                onShareClick = {
-                    ShareUtils.shareVideo(
-                        context,
-                        info.title,
-                        info.bvid
-                    )
-                }
-            )
+            TabletVideoInfoStaggeredItem(
+                visible = entranceVisible,
+                index = 2,
+                spec = entranceSpec,
+            ) {
+                ActionButtonsRow(
+                    info = info,
+                    isLiked = isLiked,
+                    isFavorited = isFavorited,
+                    coinCount = coinCount,
+                    isInWatchLater = isInWatchLater,
+                    onLikeClick = onLikeClick,
+                    onCoinClick = onCoinClick,
+                    onFavoriteClick = onFavoriteClick,
+                    onTripleClick = onTripleClick,
+                    onDownloadClick = onDownloadClick,
+                    onWatchLaterClick = onWatchLaterClick,
+                    downloadProgress = downloadProgress ?: -1f,
+                    onCommentClick = { /* 平板模式不需要跳转评论 */ },
+                    showCommentAction = false,
+                    onShareClick = {
+                        ShareUtils.shareVideo(
+                            context,
+                            info.title,
+                            info.bvid
+                        )
+                    }
+                )
+            }
         }
 
         // 4. 分P选择器（合集已移到右侧内容栏）
@@ -1337,5 +1383,40 @@ private fun ScrollableVideoInfoSection(
             // 底部留白，防止被圆角遮挡
             Spacer(modifier = Modifier.height(24.dp))
         }
+    }
+}
+
+@Composable
+private fun TabletVideoInfoStaggeredItem(
+    visible: Boolean,
+    index: Int,
+    spec: TabletVideoInfoEntranceSpec,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    if (!spec.enabled) {
+        Box(modifier = modifier) { content() }
+        return
+    }
+    val delayMillis = index.coerceAtLeast(0) * spec.staggerDelayMillis
+    AnimatedVisibility(
+        visible = visible,
+        modifier = modifier,
+        enter = fadeIn(
+            animationSpec = tween(
+                durationMillis = spec.durationMillis,
+                delayMillis = delayMillis,
+                easing = AppMotionEasing.EmphasizedEnter,
+            ),
+        ) + slideInVertically(
+            animationSpec = tween(
+                durationMillis = spec.durationMillis,
+                delayMillis = delayMillis,
+                easing = AppMotionEasing.EmphasizedEnter,
+            ),
+            initialOffsetY = { fullHeight -> -fullHeight / spec.initialOffsetDivisor },
+        ),
+    ) {
+        content()
     }
 }
