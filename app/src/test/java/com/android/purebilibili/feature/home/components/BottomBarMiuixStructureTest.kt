@@ -23,6 +23,7 @@ class BottomBarMiuixStructureTest {
         assertTrue(renderer.contains("FloatingBottomBarMode.LiquidGlass"))
         assertTrue(renderer.contains("FloatingBottomBarMode.Blur"))
         assertTrue(renderer.contains("FloatingBottomBarMode.None"))
+        assertTrue(renderer.contains("containerColor = floatingContainerColor"))
         assertTrue(
             renderer.contains("effectiveGlassEnabled && miuixBackdrop != null -> FloatingBottomBarMode.LiquidGlass")
         )

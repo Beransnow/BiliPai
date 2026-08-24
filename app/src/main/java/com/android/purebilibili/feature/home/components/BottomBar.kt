@@ -394,6 +394,16 @@ internal fun resolveDockedBottomBarIndicatorColor(
     hasUiSkinDecoration: Boolean,
 ): Color = if (hasUiSkinDecoration) Color.Transparent else defaultColor
 
+internal fun resolveFloatingBottomBarContainerColor(
+    defaultColor: Color,
+    mode: FloatingBottomBarMode,
+    hasUiSkinDecoration: Boolean,
+): Color = if (mode == FloatingBottomBarMode.None && hasUiSkinDecoration) {
+    Color.Transparent
+} else {
+    defaultColor
+}
+
 internal fun resolveMd3BottomBarFloatingChromeSpec(
     isFloating: Boolean
 ): Md3BottomBarFloatingChromeSpec {
@@ -3063,8 +3073,13 @@ private fun BiliPaiFloatingBottomBar(
         blurEnabled && miuixBackdrop != null -> FloatingBottomBarMode.Blur
         else -> FloatingBottomBarMode.None
     }
+    val floatingContainerColor = resolveFloatingBottomBarContainerColor(
+        defaultColor = biliPaiContainerColor,
+        mode = floatingMode,
+        hasUiSkinDecoration = uiSkinDecoration != null,
+    )
     val floatingColors = FloatingBottomBarColors(
-        containerColor = biliPaiContainerColor,
+        containerColor = floatingContainerColor,
         indicatorColor = selectedColor,
         contentColor = unselectedColor,
         activeContentColor = selectedColor
