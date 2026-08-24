@@ -390,7 +390,16 @@ class TopTabStylePolicyTest {
 
         assertTrue(source.contains("val topTabVisibleContentZIndex = if (useTopTabGlassColorPath) 0f else 2f"))
         assertTrue(visibleTabsBlock.contains(".zIndex(topTabVisibleContentZIndex)"))
+        assertTrue(visibleTabsBlock.contains("resolveTopTabVisibleContentAlpha("))
         assertTrue(indicatorLayerBlock.contains(".zIndex(1f)"))
+    }
+
+    @Test
+    fun `liquid top tab visible glyph fades as export coverage increases`() {
+        assertEquals(1f, resolveTopTabVisibleContentAlpha(false, 1f), 0.001f)
+        assertEquals(1f, resolveTopTabVisibleContentAlpha(true, 0f), 0.001f)
+        assertEquals(0.5f, resolveTopTabVisibleContentAlpha(true, 0.5f), 0.001f)
+        assertEquals(0f, resolveTopTabVisibleContentAlpha(true, 1f), 0.001f)
     }
 
     @Test

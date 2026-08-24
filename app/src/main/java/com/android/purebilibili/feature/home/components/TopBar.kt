@@ -1690,7 +1690,12 @@ private fun LightweightHomeTopTabs(
                             },
                             adaptiveContentColorOverride = adaptiveTopTabContentColor
                                 .takeIf { adaptiveReadabilityEnabled },
-                            modifier = measuredItemModifier,
+                            modifier = measuredItemModifier.graphicsLayer {
+                                alpha = resolveTopTabVisibleContentAlpha(
+                                    useGlassColorPath = useTopTabGlassColorPath,
+                                    selectionFraction = selectionFraction,
+                                )
+                            },
                             onClick = {
                                 performHomeTopBarTap(haptic = haptic, onClick = {
                                     when (resolveTopTabClickAction(index, selectedIndex)) {
@@ -1983,6 +1988,15 @@ internal enum class TopTabLiquidColorMode {
     GLASS_VISIBLE,
     /** Hidden export layer monochrome glyphs before theme ColorFilter.tint. */
     GLASS_EXPORT
+}
+
+internal fun resolveTopTabVisibleContentAlpha(
+    useGlassColorPath: Boolean,
+    selectionFraction: Float,
+): Float = if (useGlassColorPath) {
+    1f - selectionFraction.coerceIn(0f, 1f)
+} else {
+    1f
 }
 
 @Composable
