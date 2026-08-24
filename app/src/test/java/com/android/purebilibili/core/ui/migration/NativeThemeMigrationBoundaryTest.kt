@@ -157,6 +157,30 @@ class NativeThemeMigrationBoundaryTest {
     }
 
     @Test
+    fun appDirectIconButtonCallsAndDefaultsUseFacade() {
+        val offenders = kotlinFiles("app/src/main/java")
+            .flatMap { file ->
+                file.readLines().mapIndexedNotNull { index, line ->
+                    if (
+                        DIRECT_NATIVE_ICON_BUTTON_CALL.containsMatchIn(line) ||
+                        MATERIAL_ICON_BUTTON_DEFAULTS_REFERENCE.containsMatchIn(line) ||
+                        DIRECT_ICON_BUTTON_VENDOR_IMPORT.containsMatchIn(line)
+                    ) {
+                        "${repoRelativePath(file)}:${index + 1}: $line"
+                    } else {
+                        null
+                    }
+                }
+            }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "App production sources must use App*IconButton and AppIconButtonDefaults:\n" +
+                offenders.joinToString("\n"),
+        )
+    }
+
+    @Test
     fun featureDirectProgressCallsOnlyDecrease() {
         val directCalls = kotlinFiles("app/src/main/java/com/android/purebilibili/feature")
             .flatMap { file ->
@@ -404,6 +428,17 @@ class NativeThemeMigrationBoundaryTest {
                 "(?:48\\.dp|(?:AppChromeSizeTokens\\.)?MinimumTouchTarget)",
             RegexOption.DOT_MATCHES_ALL,
         )
+        val DIRECT_NATIVE_ICON_BUTTON_CALL = Regex(
+            "(?<![A-Za-z0-9_])(?:IconButton|FilledIconButton|FilledTonalIconButton|" +
+                "OutlinedIconButton)\\s*\\(",
+        )
+        val MATERIAL_ICON_BUTTON_DEFAULTS_REFERENCE =
+            Regex("(?<![A-Za-z0-9_])IconButtonDefaults\\.")
+        val DIRECT_ICON_BUTTON_VENDOR_IMPORT = Regex(
+            "^import (?:androidx\\.compose\\.material3\\.(?:IconButton|FilledIconButton|" +
+                "FilledTonalIconButton|OutlinedIconButton|IconButtonDefaults)|" +
+                "top\\.yukonga\\.miuix\\.kmp\\.basic\\.IconButton)(?:\\s+as\\s+\\w+)?$",
+        )
         val DIRECT_PROGRESS_INDICATOR_CALL =
             Regex("(?<!App)(?:Circular|Linear)ProgressIndicator\\(")
         val DIRECT_NATIVE_CARD_CALL =
@@ -417,7 +452,7 @@ class NativeThemeMigrationBoundaryTest {
 
         // Frozen from production sources on 2026-08-24; lower after each migration batch.
         const val MAX_FEATURE_MATERIAL3_FILES = 237
-        const val MAX_FEATURE_MATERIAL3_IMPORTS = 333
+        const val MAX_FEATURE_MATERIAL3_IMPORTS = 332
         const val MAX_FEATURE_MATERIAL3_WILDCARD_IMPORTS = 89
         const val MAX_FEATURE_MIUIX_COMPONENT_FILES = 1
         const val MAX_FEATURE_MIUIX_COMPONENT_IMPORTS = 1
@@ -426,7 +461,7 @@ class NativeThemeMigrationBoundaryTest {
         const val MAX_FEATURE_THEME_BRANCH_FILES = 8
         const val MAX_FEATURE_THEME_BRANCH_LINES = 34
         const val MAX_FEATURE_DIRECT_PROGRESS_CALLS = 0
-        const val MAX_PRIMITIVE_FACADE_MATERIAL3_IMPORTS = 52
+        const val MAX_PRIMITIVE_FACADE_MATERIAL3_IMPORTS = 47
 
         const val LIQUID_GLASS_EXCEPTION_FILE_COUNT = 45
         const val LIQUID_GLASS_EXCEPTION_PATHS_SHA256 =

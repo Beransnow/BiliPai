@@ -40,6 +40,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import com.android.purebilibili.core.ui.components.AppFilledIconButton
 import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppIconButtonDefaults
 import com.android.purebilibili.core.ui.components.AppTextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -1012,7 +1013,7 @@ private fun ImagePreviewOverlayContent(
                     // 关闭按钮
                     AppFilledIconButton(
                         onClick = { triggerDismiss() },
-                        colors = IconButtonDefaults.filledIconButtonColors(
+                        colors = AppIconButtonDefaults.colors(
                             containerColor = MediaContrastPalette.Scrim.copy(0.5f)
                         )
                     ) {
@@ -1124,7 +1125,7 @@ private fun ImagePreviewOverlayContent(
                                 imagePreviewTextVisible =
                                     resolveImagePreviewTextVisibilityAfterToggle(imagePreviewTextVisible)
                             },
-                            colors = IconButtonDefaults.filledIconButtonColors(
+                            colors = AppIconButtonDefaults.colors(
                                 containerColor = MediaContrastPalette.Scrim.copy(0.5f)
                             )
                         ) {
@@ -1147,7 +1148,7 @@ private fun ImagePreviewOverlayContent(
                             requestShareCurrentImage(currentImageUrl)
                         },
                         enabled = !isSharing && !isSaving,
-                        colors = IconButtonDefaults.filledIconButtonColors(
+                        colors = AppIconButtonDefaults.colors(
                             containerColor = MediaContrastPalette.Scrim.copy(0.5f)
                         )
                     ) {
@@ -1174,7 +1175,7 @@ private fun ImagePreviewOverlayContent(
                             requestSaveCurrentImage(currentImageUrl)
                         },
                         enabled = !isSaving && !isSharing,
-                        colors = IconButtonDefaults.filledIconButtonColors(
+                        colors = AppIconButtonDefaults.colors(
                             containerColor = MediaContrastPalette.Scrim.copy(0.5f)
                         )
                     ) {
