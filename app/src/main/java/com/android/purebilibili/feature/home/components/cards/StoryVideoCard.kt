@@ -84,9 +84,8 @@ import kotlin.math.roundToInt
  * - 标题叠加在封面底部
  * - 沉浸电影感
  */
-@OptIn(ExperimentalSharedTransitionApi::class)
 @Composable
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalLayoutApi::class)
 internal fun StoryVideoCard(
     video: VideoItem,
     index: Int = 0,  //  [新增] 索引用于动画延迟
