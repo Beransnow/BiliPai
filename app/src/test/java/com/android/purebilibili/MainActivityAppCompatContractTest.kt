@@ -331,11 +331,17 @@ class MainActivityAppCompatContractTest {
             "drawable/ic_launcher_blue_snow_maid_background_dark.xml",
             "drawable-night/ic_launcher_blue_snow_maid_background.xml"
         ).forEach { resourcePath ->
+            val resourceText = loadResourceText(resourcePath)
             assertTrue(
-                loadResourceText(resourcePath).contains("#FF0A9FE8"),
-                "$resourcePath should stay full-bleed blue under every launcher mask"
+                resourceText.contains("#FF017EE2") && resourceText.contains("#FF1CC2FB"),
+                "$resourcePath should continue the side maid portrait gradient under every launcher mask"
             )
         }
+        val frontBackground = loadResourceText("drawable/ic_launcher_blue_snow_maid_front_background.xml")
+        assertTrue(
+            frontBackground.contains("#FF05B5FE") && frontBackground.contains("#FF1DC3FD"),
+            "Front maid icons should use a gradient matched to their distinct portrait edge"
+        )
         assertTrue(
             loadResourceText("drawable/ic_launcher_blue_snow_maid_announcement_background.xml")
                 .contains("#FFFFFFFF"),
@@ -457,9 +463,10 @@ class MainActivityAppCompatContractTest {
     @Test
     fun blueSnowMaidLauncherIcons_shouldUseMaskAgnosticAdaptiveFieldsAndCircularFallbacks() {
         assertTrue(
-            loadResourceText("drawable-night/ic_launcher_blue_snow_maid_background.xml")
-                .contains("#FF0A9FE8"),
-            "Dark mode adaptive icons should retain the full-bleed brand blue field"
+            loadResourceText("drawable-night/ic_launcher_blue_snow_maid_background.xml").let {
+                it.contains("#FF017EE2") && it.contains("#FF1CC2FB")
+            },
+            "Dark mode adaptive icons should retain the portrait-matched blue gradient"
         )
         assertTrue(
             loadResourceText("drawable-night/ic_launcher_blue_snow_maid_announcement_background.xml")
@@ -470,7 +477,7 @@ class MainActivityAppCompatContractTest {
             "ic_launcher_blue_snow_maid" to "ic_launcher_blue_snow_maid_background_dark",
             "ic_launcher_blue_snow_maid_announcement" to
                 "ic_launcher_blue_snow_maid_announcement_background_dark",
-            "ic_launcher_blue_snow_maid_front" to "ic_launcher_blue_snow_maid_background_dark"
+            "ic_launcher_blue_snow_maid_front" to "ic_launcher_blue_snow_maid_front_background"
         ).forEach { (iconStem, backgroundStem) ->
             listOf("", "_round").forEach { suffix ->
                 assertTrue(
