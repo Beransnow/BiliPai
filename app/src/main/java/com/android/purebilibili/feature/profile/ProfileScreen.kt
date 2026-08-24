@@ -1625,8 +1625,7 @@ private fun ProfileSpaceHeader(
                 }
             }
             AppIconButton(
-                onClick = { identityExpanded = !identityExpanded },
-                modifier = Modifier.size(48.dp)
+                onClick = { identityExpanded = !identityExpanded }
             ) {
                 AppIcon(
                     imageVector = if (identityExpanded) rememberAppChevronUpIcon() else rememberAppChevronDownIcon(),

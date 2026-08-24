@@ -72,6 +72,8 @@ feature UI
 - app 生产源码不得直接调用原生 `Slider`，必须通过 `AppSlider` 分发。
 - app 生产源码不得直接调用原生 `Button` / `TextButton` / `OutlinedButton`，必须通过对应
   `App*Button` 分发。
+- `AppIconButton` 调用不得把 `48.dp` 或最小触控 token 写成根视觉尺寸；使用原生视觉几何，
+  触控命中由 Compose 的系统最小触控目标扩展机制独立保证。
 - app 生产源码不得直接调用 Material 3 `Card` / `ElevatedCard` / `OutlinedCard`；只允许上述
   `Md3ThemeColorPreview` 精确例外。
 
@@ -90,6 +92,7 @@ feature UI
 | 已双原生化 | `AppCircularProgressIndicator` / `AppLinearProgressIndicator` | 颜色与线宽默认使用中立 sentinel；MD3 保留 provider 延迟读取，MIUIX 在最终 renderer 边界求值；feature 直调归零 |
 | 已双原生化 | `AppCard` | `AppCardShape` 仅接受语义层级或显式均匀半径；MD3 使用原生 `Card` / `ElevatedCard`，MIUIX 使用原生 `Card`；21 个既有调用、反诈历史与启动壁纸裸 Card 已收口 |
 | 已完成几何收敛 | 分段控制 | 视觉高度与圆角共同解析，不再把 48dp 触控下限写成固定视觉高度 |
+| 已完成迁移前几何收敛 | `AppIconButton` | 22 处固定 48dp / 最小触控 token 根尺寸已移除；保留 55 处角色或策略尺寸，默认视觉几何交还原生组件 |
 
 `AppPrimitiveComponents.kt` 的 Material 3 import 棘轮已由 78 降至 52。已迁移 facade
 均不导入 Material 3 或 Miuix 可见组件；厂商 import 只存在于对应 renderer。

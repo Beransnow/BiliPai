@@ -1,7 +1,6 @@
 // 文件路径: feature/dynamic/components/DynamicTopBar.kt
 package com.android.purebilibili.feature.dynamic.components
 
-import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppSpacingTokens
 
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -195,8 +194,7 @@ fun DynamicTopBarWithTabs(
                     var showLayoutMenu by remember { mutableStateOf(false) }
                     Box {
                         AppIconButton(
-                            onClick = { showLayoutMenu = true },
-                            modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
+                            onClick = { showLayoutMenu = true }
                         ) {
                             AppIcon(
                                 imageVector = if (displayMode.isHorizontalUserList())
@@ -229,7 +227,6 @@ fun DynamicTopBarWithTabs(
                         val publishIconPaths = publishSkinDecoration?.iconPaths
                         AppIconButton(
                             onClick = onPublishClick,
-                            modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget),
                             interactionSource = publishInteractionSource,
                         ) {
                             if (publishIconPaths != null) {

@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -33,7 +32,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.ContainerLevel
@@ -535,7 +533,7 @@ private fun FavoritePgcCard(
                 if (!batchMode) {
                     AppIconButton(
                         onClick = onRemove,
-                        modifier = Modifier.align(Alignment.TopEnd).size(AppChromeSizeTokens.MinimumTouchTarget),
+                        modifier = Modifier.align(Alignment.TopEnd),
                     ) {
                         AppIcon(Icons.Rounded.Close, contentDescription = "取消收藏")
                     }
@@ -610,7 +608,7 @@ private fun FavoriteGenericCategoryCard(
         },
         trailingContent = if (batchMode) null else {
             {
-                AppIconButton(onClick = onRemove, modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)) {
+                AppIconButton(onClick = onRemove) {
                     AppIcon(Icons.Rounded.Close, contentDescription = "移除收藏")
                 }
             }

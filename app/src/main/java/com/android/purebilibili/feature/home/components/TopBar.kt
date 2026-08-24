@@ -784,8 +784,7 @@ fun FluidHomeTopBar(
                 
                 //  右侧：设置按钮
                 AppIconButton(
-                    onClick = onSettingsClick,
-                    modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
+                    onClick = onSettingsClick
                 ) {
                     AppIcon(
                         Icons.Outlined.Settings,

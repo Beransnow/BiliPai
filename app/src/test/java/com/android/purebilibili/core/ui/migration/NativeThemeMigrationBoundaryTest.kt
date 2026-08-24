@@ -137,6 +137,26 @@ class NativeThemeMigrationBoundaryTest {
     }
 
     @Test
+    fun appIconButtonVisualGeometryDoesNotReuseTouchTargetDimensions() {
+        val offenders = kotlinFiles("app/src/main/java")
+            .flatMap { file ->
+                file.callHeaders("AppIconButton").mapNotNull { (lineNumber, header) ->
+                    if (FIXED_ICON_BUTTON_DIMENSION.containsMatchIn(header)) {
+                        "${repoRelativePath(file)}:$lineNumber: ${header.trim()}"
+                    } else {
+                        null
+                    }
+                }
+            }
+
+        assertTrue(
+            offenders.isEmpty(),
+            "AppIconButton visual geometry must come from the native component or a role policy, " +
+                "not a fixed 48dp touch-target dimension:\n${offenders.joinToString("\n")}",
+        )
+    }
+
+    @Test
     fun featureDirectProgressCallsOnlyDecrease() {
         val directCalls = kotlinFiles("app/src/main/java/com/android/purebilibili/feature")
             .flatMap { file ->
@@ -289,6 +309,37 @@ class NativeThemeMigrationBoundaryTest {
         lines.any { line -> prefixes.any(line::startsWith) }
     }
 
+    private fun File.callHeaders(callName: String): List<Pair<Int, String>> {
+        val marker = "$callName("
+        var startLine = -1
+        var parenthesisDepth = 0
+        var header = StringBuilder()
+
+        return buildList {
+            readLines().forEachIndexed { index, line ->
+                if (startLine < 0) {
+                    val markerIndex = line.indexOf(marker)
+                    if (markerIndex < 0) return@forEachIndexed
+                    startLine = index + 1
+                    val firstLine = line.substring(markerIndex)
+                    header.appendLine(firstLine)
+                    parenthesisDepth += firstLine.count { it == '(' } - firstLine.count { it == ')' }
+                } else {
+                    header.appendLine(line)
+                    parenthesisDepth += line.count { it == '(' } - line.count { it == ')' }
+                }
+
+                if (parenthesisDepth <= 0) {
+                    add(startLine to header.toString())
+                    startLine = -1
+                    parenthesisDepth = 0
+                    header = StringBuilder()
+                }
+            }
+            check(startLine < 0) { "Unterminated $callName call header in ${path}" }
+        }
+    }
+
     private fun assertAtMost(actual: Int, maximum: Int, label: String) {
         assertTrue(
             actual <= maximum,
@@ -348,6 +399,11 @@ class NativeThemeMigrationBoundaryTest {
         val DIRECT_NATIVE_SLIDER_CALL = Regex("(?<![A-Za-z0-9_])Slider\\(")
         val DIRECT_NATIVE_BUTTON_CALL =
             Regex("(?<![A-Za-z0-9_])(?:Button|TextButton|OutlinedButton)\\(")
+        val FIXED_ICON_BUTTON_DIMENSION = Regex(
+            "\\.(?:size|width|height|sizeIn|widthIn|heightIn)\\s*\\([^)]*" +
+                "(?:48\\.dp|(?:AppChromeSizeTokens\\.)?MinimumTouchTarget)",
+            RegexOption.DOT_MATCHES_ALL,
+        )
         val DIRECT_PROGRESS_INDICATOR_CALL =
             Regex("(?<!App)(?:Circular|Linear)ProgressIndicator\\(")
         val DIRECT_NATIVE_CARD_CALL =

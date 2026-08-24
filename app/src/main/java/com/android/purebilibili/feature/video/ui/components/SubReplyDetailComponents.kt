@@ -1307,8 +1307,7 @@ private fun SubReplyDetailItem(
                     Spacer(modifier = Modifier.width(8.dp))
                     AppIconButton(
                         onClick = { onHateClick?.invoke() },
-                        enabled = onHateClick != null,
-                        modifier = Modifier.size(48.dp)
+                        enabled = onHateClick != null
                     ) {
                         AppIcon(
                             imageVector = Icons.Outlined.ThumbDown,

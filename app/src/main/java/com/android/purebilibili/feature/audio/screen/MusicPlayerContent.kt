@@ -1381,16 +1381,14 @@ private fun GlassIconButton(
 ) {
     AppIconButton(
         onClick = onClick,
-        modifier = Modifier
-            .size(48.dp)
-            .biliPaiFloatingDockShell(
-                backdrop = miuixBackdrop,
-                containerColor = AppSurfaceTokens.cardContainer(),
-                pressProgress = 0f,
-                shape = CircleShape,
-                enabled = glassEnabled,
-                liquidGlassTuning = liquidGlassTuning,
-            )
+        modifier = Modifier.biliPaiFloatingDockShell(
+            backdrop = miuixBackdrop,
+            containerColor = AppSurfaceTokens.cardContainer(),
+            pressProgress = 0f,
+            shape = CircleShape,
+            enabled = glassEnabled,
+            liquidGlassTuning = liquidGlassTuning,
+        )
     ) {
         AppIcon(
             icon,

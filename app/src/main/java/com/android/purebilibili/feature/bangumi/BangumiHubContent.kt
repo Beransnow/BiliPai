@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyRow
@@ -1058,7 +1057,6 @@ private fun FollowInfoCard(
             if (!selectionMode) {
                 AppIconButton(
                     onClick = onMore,
-                    modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp),
                 ) { AppIcon(rememberAppMoreIcon(), contentDescription = "更多") }
             }
         }
@@ -1082,7 +1080,7 @@ private fun SectionHeader(
             subtitle?.let { AppText(it, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp) }
         }
         onRefresh?.let {
-            AppIconButton(onClick = it, modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp)) {
+            AppIconButton(onClick = it) {
                 AppIcon(rememberAppRefreshIcon(), contentDescription = "刷新")
             }
         }

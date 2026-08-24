@@ -1304,8 +1304,7 @@ private fun ImagePreviewCommentTopBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         AppIconButton(
-            onClick = onDismiss,
-            modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
+            onClick = onDismiss
         ) {
             AppIcon(
                 imageVector = rememberAppClearIcon(),
@@ -1343,8 +1342,7 @@ private fun ImagePreviewCommentTopBar(
         }
         AppIconButton(
             onClick = onShare,
-            enabled = enabled,
-            modifier = Modifier.size(AppChromeSizeTokens.MinimumTouchTarget)
+            enabled = enabled
         ) {
             if (isSharing) {
                 AdaptiveLoadingIndicator(

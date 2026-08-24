@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -109,7 +107,6 @@ fun BangumiScreen(
                     navigationIcon = {
                         AppIconButton(
                             onClick = handleBack,
-                            modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp),
                         ) {
                             AppIcon(rememberAppBackIcon(), contentDescription = "返回")
                         }
@@ -118,7 +115,6 @@ fun BangumiScreen(
                         AppIconButton(
                             onClick = viewModel::openSearch,
                             enabled = !selectionActive,
-                            modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp),
                         ) {
                             AppIcon(rememberAppSearchIcon(), contentDescription = "搜索")
                         }
@@ -227,7 +223,6 @@ private fun BangumiSearchTopBar(
     ) {
         AppIconButton(
             onClick = onBack,
-            modifier = Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp),
         ) {
             AppIcon(rememberAppBackIcon(), contentDescription = "返回")
         }
@@ -244,9 +239,6 @@ private fun BangumiSearchTopBar(
         AppIconButton(
             onClick = onSearch,
             enabled = query.isNotBlank(),
-            modifier = Modifier
-                .width(48.dp)
-                .sizeIn(minHeight = 48.dp),
         ) {
             AppIcon(rememberAppSearchIcon(), contentDescription = "搜索")
         }
