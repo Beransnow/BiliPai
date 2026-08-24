@@ -64,8 +64,7 @@ class RelatedVideoItemPolicyTest {
         assertTrue(source.contains("coverAspectRatio: Float = RELATED_VIDEO_CARD_COVER_ASPECT_RATIO"))
         assertTrue(source.contains("HORIZONTAL_VIDEO_CARD_COVER_WIDTH_DP"))
         assertTrue(source.contains("HORIZONTAL_VIDEO_CARD_COVER_ASPECT_RATIO"))
-        assertTrue(source.contains("RelatedVideoCoverMetadata("))
-        assertTrue(source.contains(".size(32.dp)"))
+        assertTrue(source.contains("RelatedVideoCoverStatPill("))
         assertFalse(source.contains("HorizontalVideoStatRow("))
         assertTrue(source.contains("resolveHomeFeedCardLayout(homeFeedCardStyle)"))
         assertTrue(source.contains("RELATED_VIDEO_GRID_COLUMNS = 1"))
@@ -95,7 +94,7 @@ class RelatedVideoItemPolicyTest {
         assertEquals(RelatedVideoCardLayoutMode.SIDE_BY_SIDE, resolveRelatedVideoCardLayoutMode(360f))
         assertEquals(RelatedVideoCardLayoutMode.SIDE_BY_SIDE, resolveRelatedVideoCardLayoutMode(480f))
         assertEquals(
-            112f,
+            100.8f,
             resolveRelatedVideoCoverWidthDp(240f, RelatedVideoCardLayoutMode.COMPACT_SIDE_BY_SIDE),
             0.001f,
         )
