@@ -50,7 +50,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -230,20 +229,13 @@ private fun VideoNotePrimaryActionButton(
     onClick: () -> Unit
 ) {
     val colorScheme = MaterialTheme.colorScheme
-    // 浅色主题下用 primaryContainer 避免 primary 种子色偏深导致按钮过重,
-    // 深色主题保持 primary 强调色。
-    val darkTheme = colorScheme.surface.luminance() < 0.5f
     AppButton(
         onClick = onClick,
         enabled = enabled,
-        colors = if (darkTheme) {
-            ButtonDefaults.buttonColors()
-        } else {
-            ButtonDefaults.buttonColors(
-                containerColor = colorScheme.primaryContainer,
-                contentColor = colorScheme.onPrimaryContainer,
-            )
-        },
+        colors = ButtonDefaults.buttonColors(
+            containerColor = colorScheme.primaryContainer,
+            contentColor = colorScheme.onPrimaryContainer,
+        ),
     ) {
         AppIcon(
             imageVector = if (label == "新建") Icons.Outlined.Add else Icons.Outlined.Edit,
