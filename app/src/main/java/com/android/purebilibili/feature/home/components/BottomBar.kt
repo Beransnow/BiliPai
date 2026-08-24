@@ -3234,6 +3234,7 @@ private fun BiliPaiFloatingBottomBar(
                                     onClick = { handleBottomBarItemClick(index, item) },
                                     selected = index == selectedIndexForBar,
                                     itemIndex = index,
+                                    iconCrossScaleEnabled = homeSettings.navigationIconCrossScaleEnabled,
                                 ) {
                                     FloatingBottomBarTabVisual(
                                         item = item,
@@ -3257,6 +3258,7 @@ private fun BiliPaiFloatingBottomBar(
                                     onClick = ::handleBottomBarSidebarClick,
                                     selected = false,
                                     itemIndex = visibleItems.size,
+                                    iconCrossScaleEnabled = homeSettings.navigationIconCrossScaleEnabled,
                                 ) {
                                     FloatingBottomBarTabVisual(
                                         item = null,

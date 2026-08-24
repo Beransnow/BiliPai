@@ -618,8 +618,8 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
     ),
     SettingsSearchEntry(
         target = SettingsSearchTarget.BOTTOM_BAR,
-        title = "悬浮底栏 / 底栏搜索入口",
-        subtitle = "底栏形态、搜索入口、搜索布局与自动展开",
+        title = "悬浮底栏 / 导航图标动效",
+        subtitle = "底栏形态、图标交叉缩放、搜索入口与自动展开",
         section = "导航设置",
         aliases = listOf(
             "悬浮底栏",
@@ -627,6 +627,9 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
             "底栏搜索入口",
             "搜索入口",
             "悬浮搜索",
+            "导航图标交叉缩放",
+            "图标放大缩小",
+            "选中图标 1.10 倍",
             "底栏搜索布局",
             "搜索框自动展开",
         ),

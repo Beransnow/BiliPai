@@ -203,6 +203,9 @@ fun BottomBarSettingsContent(
         .collectAsStateWithLifecycle(initialValue = HomeTopRightAction.SETTINGS)
     val isBottomBarFloating by SettingsManager.getBottomBarFloating(context)
         .collectAsStateWithLifecycle(initialValue = true)
+    val navigationIconCrossScaleEnabled by SettingsManager
+        .getNavigationIconCrossScaleEnabled(context)
+        .collectAsStateWithLifecycle(initialValue = false)
     val bottomBarSearchEnabled by SettingsManager.getBottomBarSearchEnabled(context)
         .collectAsStateWithLifecycle(initialValue = false)
     val bottomBarSearchAutoExpandMode by SettingsManager.getBottomBarSearchAutoExpandMode(context)
@@ -338,6 +341,19 @@ fun BottomBarSettingsContent(
                                 scope.launch { SettingsManager.setBottomBarFloating(context, enabled) }
                             },
                             iconTint = com.android.purebilibili.core.theme.iOSPurple,
+                        )
+                        AppPreferenceDivider()
+                        AppSwitchPreference(
+                            icon = rememberSettingsSemanticIcon(SettingsIconRole.ANIMATION),
+                            title = "导航图标交叉缩放",
+                            subtitle = "指示器滑动时旧图标缩小、新图标放大；选中后稳定在 1.10 倍",
+                            checked = navigationIconCrossScaleEnabled,
+                            onCheckedChange = { enabled ->
+                                scope.launch {
+                                    SettingsManager.setNavigationIconCrossScaleEnabled(context, enabled)
+                                }
+                            },
+                            iconTint = com.android.purebilibili.core.theme.iOSBlue,
                         )
                         AppPreferenceDivider()
                         AppSwitchPreference(

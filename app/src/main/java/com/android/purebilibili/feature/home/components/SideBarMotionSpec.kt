@@ -17,6 +17,18 @@ internal const val NavigationSelectionScale = 1.1f
 internal const val NavigationSelectionWobbleDegrees = 4f
 internal const val NavigationSelectionCounterWobbleDegrees = -3f
 
+internal fun resolveNavigationIconCrossScale(
+    enabled: Boolean,
+    coverage: Float,
+): Float {
+    if (!enabled) return 1f
+    return androidx.compose.ui.util.lerp(
+        1f,
+        NavigationSelectionScale,
+        coverage.coerceIn(0f, 1f),
+    )
+}
+
 internal fun <T> navigationSelectionScaleMotionSpec(): SpringSpec<T> = spring(
     dampingRatio = 0.72f,
     stiffness = 420f,

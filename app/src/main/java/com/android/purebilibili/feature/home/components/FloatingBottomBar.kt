@@ -290,6 +290,7 @@ fun RowScope.FloatingBottomBarItem(
     modifier: Modifier = Modifier,
     selected: Boolean = false,
     itemIndex: Int? = null,
+    iconCrossScaleEnabled: Boolean = false,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val scale = LocalFloatingBottomBarTabScale.current
@@ -297,12 +298,15 @@ fun RowScope.FloatingBottomBarItem(
     val contentColor = LocalFloatingBottomBarContentColor.current
     val selectionScale = remember(itemIndex, indicatorPosition) {
         {
-            if (itemIndex == null) {
+            if (!iconCrossScaleEnabled || itemIndex == null) {
                 1f
             } else {
                 val coverage = (1f - abs(itemIndex.toFloat() - indicatorPosition()))
                     .coerceIn(0f, 1f)
-                lerp(1f, NavigationSelectionScale, coverage)
+                resolveNavigationIconCrossScale(
+                    enabled = true,
+                    coverage = coverage,
+                )
             }
         }
     }

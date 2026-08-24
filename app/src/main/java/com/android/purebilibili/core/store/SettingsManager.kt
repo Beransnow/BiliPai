@@ -568,6 +568,7 @@ enum class BottomBarLiquidGlassPreset(
 data class HomeSettings(
     val displayMode: Int = 0,              // 展示模式 (0=网格, 1=故事卡片)
     val isBottomBarFloating: Boolean = true,
+    val navigationIconCrossScaleEnabled: Boolean = false,
     val bottomBarLabelMode: Int = 0,       // (0=图标+文字, 1=仅图标, 2=仅文字)
     val topTabLabelMode: Int = 2,          // (0=图标+文字, 1=仅图标, 2=仅文字)
     val homeTopRightAction: HomeTopRightAction = HomeTopRightAction.SETTINGS,
@@ -1343,6 +1344,8 @@ object SettingsManager {
     private val KEY_APP_LIST_ITEM_STYLE = stringPreferencesKey("app_list_item_style")
     //  [新增] 底部栏样式 (true=悬浮, false=贴底)
     private val KEY_BOTTOM_BAR_FLOATING = booleanPreferencesKey("bottom_bar_floating")
+    private val KEY_NAVIGATION_ICON_CROSS_SCALE_ENABLED =
+        booleanPreferencesKey("navigation_icon_cross_scale_enabled")
     //  [新增] 底栏显示模式 (0=图标+文字, 1=仅图标, 2=仅文字)
     private val KEY_BOTTOM_BAR_LABEL_MODE = intPreferencesKey("bottom_bar_label_mode")
     //  [新增] 顶部标签显示模式 (0=图标+文字, 1=仅图标, 2=仅文字)
@@ -1574,6 +1577,8 @@ object SettingsManager {
         return HomeSettings(
             displayMode = preferences[KEY_DISPLAY_MODE] ?: 0,
             isBottomBarFloating = preferences[KEY_BOTTOM_BAR_FLOATING] ?: true,
+            navigationIconCrossScaleEnabled =
+                preferences[KEY_NAVIGATION_ICON_CROSS_SCALE_ENABLED] ?: false,
             bottomBarLabelMode = preferences[KEY_BOTTOM_BAR_LABEL_MODE] ?: BottomBarLabelMode.ICON_AND_TEXT,
             topTabLabelMode = preferences[KEY_TOP_TAB_LABEL_MODE] ?: TopTabLabelMode.TEXT_ONLY,
             homeTopRightAction = HomeTopRightAction.fromValue(
@@ -3366,6 +3371,17 @@ object SettingsManager {
         context.settingsDataStore.edit { preferences -> preferences[KEY_BOTTOM_BAR_FLOATING] = value }
     }
 
+    fun getNavigationIconCrossScaleEnabled(context: Context): Flow<Boolean> =
+        context.settingsDataStore.data.map { preferences ->
+            preferences[KEY_NAVIGATION_ICON_CROSS_SCALE_ENABLED] ?: false
+        }
+
+    suspend fun setNavigationIconCrossScaleEnabled(context: Context, value: Boolean) {
+        context.settingsDataStore.edit { preferences ->
+            preferences[KEY_NAVIGATION_ICON_CROSS_SCALE_ENABLED] = value
+        }
+    }
+
     fun getSearchHotSectionEnabled(context: Context): Flow<Boolean> = context.settingsDataStore.data
         .map { preferences -> preferences[KEY_SEARCH_HOT_SECTION_ENABLED] ?: true }
 
@@ -4974,6 +4990,7 @@ object SettingsManager {
             val currentVersion = preferences[KEY_HOME_VISUAL_DEFAULTS_VERSION] ?: 0
             if (currentVersion < HOME_VISUAL_DEFAULTS_VERSION) {
                 preferences[KEY_BOTTOM_BAR_FLOATING] = true
+                preferences[KEY_NAVIGATION_ICON_CROSS_SCALE_ENABLED] = false
                 preferences[KEY_LIQUID_GLASS_ENABLED] = true
                 preferences[KEY_BOTTOM_BAR_LIQUID_GLASS_ENABLED] = true
                 preferences[KEY_TOP_BAR_LIQUID_GLASS_ENABLED] = true
@@ -7003,6 +7020,10 @@ object SettingsManager {
             StringShareablePreferenceDefinition(KEY_APP_ICON_STYLE, SettingsShareSection.APPEARANCE),
             StringShareablePreferenceDefinition(KEY_APP_LIST_ITEM_STYLE, SettingsShareSection.APPEARANCE),
             BooleanShareablePreferenceDefinition(KEY_BOTTOM_BAR_FLOATING, SettingsShareSection.APPEARANCE),
+            BooleanShareablePreferenceDefinition(
+                KEY_NAVIGATION_ICON_CROSS_SCALE_ENABLED,
+                SettingsShareSection.APPEARANCE,
+            ),
             IntShareablePreferenceDefinition(KEY_BOTTOM_BAR_LABEL_MODE, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_TOP_TAB_LABEL_MODE, SettingsShareSection.APPEARANCE),
             IntShareablePreferenceDefinition(KEY_HOME_TOP_RIGHT_ACTION, SettingsShareSection.APPEARANCE),
