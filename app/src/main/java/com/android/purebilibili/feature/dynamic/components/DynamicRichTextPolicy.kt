@@ -87,10 +87,25 @@ internal fun buildDynamicRichText(
  */
 internal fun shouldUseDynamicRichTextNodes(desc: DynamicDesc): Boolean {
     if (desc.rich_text_nodes.isEmpty()) return false
-    if (desc.rich_text_nodes.any(::isRenderableDynamicEmojiNode)) return true
     if (desc.text.isBlank()) return true
-    return resolveDynamicRichTextNodeDisplayText(desc.rich_text_nodes)
-        .length >= desc.text.length
+    val nodeText = resolveDynamicRichTextNodeDisplayText(desc.rich_text_nodes)
+    if (desc.rich_text_nodes.any(::isRenderableDynamicEmojiNode)) {
+        // Some detail/opus payloads return emoji nodes with only a partial text-node stream.
+        // Keep the complete desc.text as the source of truth and use the nodes only as the
+        // shortcode -> image catalog in that case, otherwise adjacent body text disappears.
+        return nodeText == desc.text
+    }
+    return nodeText.length >= desc.text.length
+}
+
+internal fun resolveDynamicOpusTextBlockRichDesc(
+    blockText: String,
+    preferredDesc: DynamicDesc?,
+): DynamicDesc? {
+    if (blockText.isBlank() || preferredDesc == null) return null
+    val emoteTokens = collectDynamicEmojiUrlMap(preferredDesc.rich_text_nodes).keys
+    if (emoteTokens.none(blockText::contains)) return null
+    return preferredDesc.copy(text = blockText)
 }
 
 internal fun collectDynamicEmojiUrlMap(nodes: List<RichTextNode>): Map<String, String> {

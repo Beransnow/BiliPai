@@ -414,7 +414,7 @@ class DynamicRichTextPolicyTest {
     }
 
     @Test
-    fun shouldUseDynamicRichTextNodes_prefersNodesWhenTheyContainEmojiEvenIfShorter() {
+    fun buildDynamicRichText_keepsCompleteBodyWhenEmojiNodesAreShorter() {
         val desc = DynamicDesc(
             text = "第一段\n第二段\n第三段[豹富]",
             rich_text_nodes = listOf(
@@ -430,7 +430,41 @@ class DynamicRichTextPolicyTest {
             )
         )
 
-        assertTrue(shouldUseDynamicRichTextNodes(desc))
+        val result = buildDynamicRichText(
+            desc = desc,
+            primaryColor = Color.Blue,
+            textColor = Color.Black,
+        )
+
+        assertFalse(shouldUseDynamicRichTextNodes(desc))
+        assertTrue(result.annotatedString.text.startsWith("第一段\n第二段\n第三段"))
+        assertTrue(result.annotatedString.hasInlineContent())
+    }
+
+    @Test
+    fun resolveDynamicOpusTextBlockRichDesc_preservesFullBlockAndEmojiMetadata() {
+        val preferred = DynamicDesc(
+            text = "摘要[豹富]",
+            rich_text_nodes = listOf(
+                RichTextNode(type = "TEXT", text = "摘要"),
+                RichTextNode(
+                    type = "EMOJI",
+                    text = "[豹富]",
+                    emoji = com.android.purebilibili.data.model.response.EmojiInfo(
+                        icon_url = "https://i0.hdslb.com/bfs/emote/baofu.png",
+                        text = "[豹富]",
+                    ),
+                ),
+            ),
+        )
+
+        val resolved = resolveDynamicOpusTextBlockRichDesc(
+            blockText = "完整正文第一行\n完整正文第二行[豹富]",
+            preferredDesc = preferred,
+        )
+
+        assertEquals("完整正文第一行\n完整正文第二行[豹富]", resolved?.text)
+        assertEquals(preferred.rich_text_nodes, resolved?.rich_text_nodes)
     }
 
     @Test

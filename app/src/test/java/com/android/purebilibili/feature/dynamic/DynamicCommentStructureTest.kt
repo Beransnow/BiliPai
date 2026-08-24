@@ -55,6 +55,22 @@ class DynamicCommentStructureTest {
     }
 
     @Test
+    fun `dynamic detail comment composer becomes a liquid dock when enabled`() {
+        val source = File("src/main/java/com/android/purebilibili/feature/dynamic/DynamicDetailScreen.kt")
+            .readText()
+        val composer = source
+            .substringAfter("val commentComposer:")
+            .substringBefore("if (useSplitLayout)")
+
+        assertTrue(source.contains("rememberLayerBackdrop()"))
+        assertTrue(source.contains("Modifier.layerBackdrop(detailDockBackdrop)"))
+        assertTrue(composer.contains("BottomBarMatchedReusableLiquidDock("))
+        assertTrue(composer.contains("reuseEnabled = liquidGlassEnabled"))
+        assertTrue(composer.contains("drawShellLens = true"))
+        assertTrue(composer.contains("if (liquidChromeActive) Modifier"))
+    }
+
+    @Test
     fun `dynamic comment reload cancels and ignores the previous request`() {
         val source = File("src/main/java/com/android/purebilibili/feature/dynamic/DynamicViewModel.kt")
             .readText()

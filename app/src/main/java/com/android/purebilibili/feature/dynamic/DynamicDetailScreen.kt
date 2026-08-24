@@ -40,9 +40,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.imageLoader
 import com.android.purebilibili.R
 import com.android.purebilibili.core.ui.AppScaffold
+import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSplitLayout
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.AppTopBar
+import com.android.purebilibili.core.ui.ContainerLevel
+import com.android.purebilibili.core.store.HomeSettings
+import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.responsiveContentWidth
 import com.android.purebilibili.core.ui.rememberAppBackIcon
@@ -56,9 +60,12 @@ import com.android.purebilibili.feature.dynamic.components.ImagePreviewDialog
 import com.android.purebilibili.feature.dynamic.components.ImagePreviewTextContent
 import com.android.purebilibili.feature.dynamic.components.dynamicInlineCommentItems
 import com.android.purebilibili.feature.dynamic.components.RepostDialog
+import com.android.purebilibili.feature.home.components.BottomBarMatchedReusableLiquidDock
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
+import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 
 private sealed interface DynamicDetailUiState {
     data object Loading : DynamicDetailUiState
@@ -103,6 +110,10 @@ fun DynamicDetailScreen(
     }
 
     val context = LocalContext.current
+    val homeSettings by SettingsManager.getHomeSettings(context)
+        .collectAsStateWithLifecycle(initialValue = HomeSettings())
+    val liquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled
+    val detailDockBackdrop = rememberLayerBackdrop()
     val gifImageLoader = context.imageLoader
     val likedDynamics by interactionViewModel.likedDynamics.collectAsStateWithLifecycle()
     val comments by interactionViewModel.comments.collectAsStateWithLifecycle()
@@ -288,25 +299,52 @@ fun DynamicDetailScreen(
                     )
                 }
                 val commentComposer: @Composable () -> Unit = {
-                    DynamicInlineCommentComposer(
-                        onPostComment = { message ->
-                            interactionViewModel.postComment(state.item.id_str, message) { _, toastMessage ->
-                                android.widget.Toast.makeText(context, toastMessage, android.widget.Toast.LENGTH_SHORT).show()
-                            }
-                        },
-                        replyTargetUname = commentReplyTarget?.uname,
-                        onClearReplyTarget = interactionViewModel::clearCommentReplyTarget,
+                    BottomBarMatchedReusableLiquidDock(
+                        shape = AppShapes.container(ContainerLevel.Pill),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(AppSurfaceTokens.surface()),
-                    )
+                            .then(
+                                if (liquidGlassEnabled) {
+                                    Modifier.padding(
+                                        horizontal = AppSpacingTokens.Medium,
+                                        bottom = AppSpacingTokens.Small,
+                                    )
+                                } else {
+                                    Modifier
+                                }
+                            ),
+                        backdrop = detailDockBackdrop,
+                        reuseEnabled = liquidGlassEnabled,
+                        drawShellLens = true,
+                    ) { liquidChromeActive ->
+                        DynamicInlineCommentComposer(
+                            onPostComment = { message ->
+                                interactionViewModel.postComment(state.item.id_str, message) { _, toastMessage ->
+                                    android.widget.Toast.makeText(context, toastMessage, android.widget.Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            replyTargetUname = commentReplyTarget?.uname,
+                            onClearReplyTarget = interactionViewModel::clearCommentReplyTarget,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .then(
+                                    if (liquidChromeActive) Modifier
+                                    else Modifier.background(AppSurfaceTokens.surface())
+                                ),
+                        )
+                    }
                 }
 
                 if (useSplitLayout) {
                     //  [新增] 大屏/横屏：左卡片 + 右评论（对齐 BiliPai 横屏分栏）
                     AppSplitLayout(
                         primaryRatio = 0.5f,
-                        modifier = Modifier.padding(paddingValues),
+                        modifier = Modifier
+                            .padding(paddingValues)
+                            .then(
+                                if (liquidGlassEnabled) Modifier.layerBackdrop(detailDockBackdrop)
+                                else Modifier
+                            ),
                         primaryContent = {
                             LazyColumn(
                                 state = detailListState,
@@ -339,6 +377,10 @@ fun DynamicDetailScreen(
                             .fillMaxSize()
                             .padding(paddingValues)
                             .responsiveContentWidth(maxWidth = resolveDynamicFeedMaxWidth())
+                            .then(
+                                if (liquidGlassEnabled) Modifier.layerBackdrop(detailDockBackdrop)
+                                else Modifier
+                            )
                     ) {
                         LazyColumn(
                             state = detailListState,

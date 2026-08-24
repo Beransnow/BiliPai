@@ -845,15 +845,33 @@ fun DynamicCardV2(
                 fullOpusContentBlocks.forEach { block ->
                     when (block) {
                         is OpusContentBlock.Text -> {
-                            AppText(
-                                text = block.text,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                textAlign = resolveOpusTextAlign(block.alignment),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = AppSpacingTokens.Medium)
+                            val richBlockDesc = resolveDynamicOpusTextBlockRichDesc(
+                                blockText = block.text,
+                                preferredDesc = preferredBodyDesc,
                             )
+                            if (richBlockDesc != null) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = AppSpacingTokens.Medium),
+                                ) {
+                                    RichTextContent(
+                                        desc = richBlockDesc,
+                                        onUserClick = onUserClick,
+                                        onVoteClick = { voteId -> pendingVoteId = voteId },
+                                    )
+                                }
+                            } else {
+                                AppText(
+                                    text = block.text,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    textAlign = resolveOpusTextAlign(block.alignment),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = AppSpacingTokens.Medium)
+                                )
+                            }
                         }
                         is OpusContentBlock.Heading -> {
                             AppText(
