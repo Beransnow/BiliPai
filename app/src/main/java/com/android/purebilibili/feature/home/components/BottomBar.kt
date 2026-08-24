@@ -591,8 +591,12 @@ internal fun resolveBiliPaiBottomBarDockHeight(
     } else if (hasUiSkinDecoration) {
         resolveBottomBarSkinDockHeight()
     } else {
-        AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Large
+        56.dp
     }
+}
+
+internal fun resolveBiliPaiBottomBarIndicatorHeight(dockHeight: Dp): Dp {
+    return (dockHeight - 4.dp).coerceAtLeast(1.dp)
 }
 
 internal fun resolveBiliPaiBottomBarSearchHeight(searchExpanded: Boolean): Dp {
@@ -1441,9 +1445,6 @@ private const val BILIPAI_INDICATOR_VELOCITY_NORMALIZATION_DIVISOR = 10f
 private const val BILIPAI_INDICATOR_VELOCITY_SCALE_X_MULTIPLIER = 0.75f
 private const val BILIPAI_INDICATOR_VELOCITY_SCALE_Y_MULTIPLIER = 0.25f
 private const val BILIPAI_INDICATOR_VELOCITY_CLAMP = 0.2f
-internal const val BOTTOM_BAR_INDICATOR_DOCK_BAND_HEIGHT_DP =
-    com.android.purebilibili.core.ui.BottomBarReferenceIndicatorHeightDp
-
 internal fun resolveBottomBarIndicatorVisualPolicyWithHold(
     basePolicy: BottomBarIndicatorVisualPolicy,
     keepRefractionLayerAlive: Boolean
@@ -3279,7 +3280,7 @@ private fun BiliPaiFloatingBottomBar(
                             mode = floatingMode,
                             colors = floatingColors,
                             shellHeight = dockHeight,
-                            indicatorHeight = BOTTOM_BAR_INDICATOR_DOCK_BAND_HEIGHT_DP.dp,
+                            indicatorHeight = resolveBiliPaiBottomBarIndicatorHeight(dockHeight),
                             minimumIndicatorWidth = searchLayoutState.minimumIndicatorWidth,
                             liquidGlassTuning = liquidGlassTuning
                         ) {

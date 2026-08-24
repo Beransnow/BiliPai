@@ -30,8 +30,8 @@ class FloatingBottomBarStructureTest {
         assertTrue(source.contains("shellHeight: Dp = FloatingBottomBarDefaultShellHeight"))
         assertTrue(source.contains("indicatorHeight: Dp = FloatingBottomBarIndicatorHeight"))
         assertTrue(source.contains("dragTrackingMode: DampedDragTrackingMode = DampedDragTrackingMode.SPRING"))
-        assertTrue(source.contains("FloatingBottomBarDefaultShellHeight: Dp = 64.dp"))
-        assertTrue(source.contains("BottomBarReferenceIndicatorHeightDp.dp"))
+        assertTrue(source.contains("FloatingBottomBarDefaultShellHeight: Dp = 56.dp"))
+        assertTrue(source.contains("FloatingBottomBarIndicatorHeight: Dp = 52.dp"))
         assertTrue(source.contains("BottomBarReferencePressedScale"))
     }
 

@@ -235,7 +235,7 @@ class BottomBarLayoutPolicyTest {
     @Test
     fun `bilipai expanded home dock copies search circle size`() {
         assertEquals(64.dp, resolveBiliPaiBottomBarSearchCircleSize())
-        assertEquals(64.dp, resolveBiliPaiBottomBarDockHeight(searchExpanded = false))
+        assertEquals(56.dp, resolveBiliPaiBottomBarDockHeight(searchExpanded = false))
         assertEquals(
             64.dp,
             resolveBiliPaiBottomBarDockHeight(
@@ -244,6 +244,8 @@ class BottomBarLayoutPolicyTest {
             )
         )
         assertEquals(resolveBiliPaiBottomBarSearchCircleSize(), resolveBiliPaiBottomBarDockHeight(searchExpanded = true))
+        assertEquals(52.dp, resolveBiliPaiBottomBarIndicatorHeight(56.dp))
+        assertEquals(60.dp, resolveBiliPaiBottomBarIndicatorHeight(64.dp))
         assertEquals(64.dp, resolveBiliPaiBottomBarSearchHeight(searchExpanded = false))
         assertEquals(64.dp, resolveBiliPaiBottomBarSearchHeight(searchExpanded = true))
     }

@@ -44,7 +44,7 @@ class BottomBarMiuixStructureTest {
         assertTrue(renderer.contains("FloatingBottomBarTabVisual("))
         assertTrue(renderer.contains("FloatingBottomBarColors("))
         assertTrue(renderer.contains("shellHeight = dockHeight"))
-        assertTrue(renderer.contains("indicatorHeight = BOTTOM_BAR_INDICATOR_DOCK_BAND_HEIGHT_DP.dp"))
+        assertTrue(renderer.contains("indicatorHeight = resolveBiliPaiBottomBarIndicatorHeight(dockHeight)"))
         assertTrue(renderer.contains("BiliPaiBottomBarSearchSlot("))
         assertTrue(renderer.contains("BottomBarSkinDecorativeTrim("))
         assertTrue(renderer.contains("uiSkinDecoration: BottomBarUiSkinDecoration? = null"))

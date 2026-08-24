@@ -152,10 +152,9 @@ enum class FloatingBottomBarMode {
 }
 
 /** Flatter resting indicator; the shell and indicator retain the same capsule shape. */
-val FloatingBottomBarIndicatorHeight: Dp =
-    com.android.purebilibili.core.ui.BottomBarReferenceIndicatorHeightDp.dp
+val FloatingBottomBarIndicatorHeight: Dp = 52.dp
 
-val FloatingBottomBarDefaultShellHeight: Dp = 64.dp
+val FloatingBottomBarDefaultShellHeight: Dp = 56.dp
 
 const val FloatingBottomBarPressedScale: Float =
     com.android.purebilibili.core.ui.BottomBarReferencePressedScale

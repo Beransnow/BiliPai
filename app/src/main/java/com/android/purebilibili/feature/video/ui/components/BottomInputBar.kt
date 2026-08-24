@@ -266,7 +266,7 @@ private fun FloatingLiquidBottomInputBar(
                 shape = shellShape,
                 modifier = Modifier
                     .weight(1f)
-                    .height(64.dp),
+                    .height(52.dp),
                 backdrop = backdrop,
                 reuseEnabled = true,
                 drawShellLens = true,
@@ -276,20 +276,20 @@ private fun FloatingLiquidBottomInputBar(
                     modifier = Modifier
                         .fillMaxSize()
                         .clickable(role = Role.Button) { onCommentClick() }
-                        .padding(horizontal = 18.dp),
+                        .padding(horizontal = 14.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     AppIcon(
                         imageVector = Icons.Outlined.Edit,
                         contentDescription = null,
                         tint = inputTextColor,
-                        modifier = Modifier.size(24.dp),
+                        modifier = Modifier.size(22.dp),
                     )
                     AppText(
                         text = "写评论",
                         color = inputTextColor,
-                        fontSize = 15.sp,
+                        fontSize = 14.sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -298,16 +298,16 @@ private fun FloatingLiquidBottomInputBar(
 
             BottomBarMatchedReusableLiquidDock(
                 shape = shellShape,
-                modifier = Modifier.height(64.dp),
+                modifier = Modifier.height(52.dp),
                 backdrop = backdrop,
                 reuseEnabled = true,
                 drawShellLens = true,
                 isScrollInProgressProvider = isScrollInProgressProvider,
             ) {
                 BottomInputBarActionButtons(
-                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
-                    itemSize = 40.dp,
-                    iconSize = 22.dp,
+                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
+                    itemSize = 36.dp,
+                    iconSize = 20.dp,
                     itemSpacing = 2.dp,
                     favoriteIcon = rememberAppBookmarkIcon(),
                     coinIcon = rememberAppCoinIcon(),
