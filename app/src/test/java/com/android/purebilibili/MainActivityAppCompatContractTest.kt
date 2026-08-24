@@ -324,24 +324,25 @@ class MainActivityAppCompatContractTest {
     }
 
     @Test
-    fun blueSnowMaidAdaptiveForegrounds_shouldRemainMaskAgnostic() {
+    fun blueSnowMaidAdaptiveForegrounds_shouldKeepThemeAwareOuterShell() {
         listOf(
             "drawable/ic_launcher_blue_snow_maid_background.xml",
-            "drawable/ic_launcher_blue_snow_maid_background_light.xml",
+            "drawable/ic_launcher_blue_snow_maid_background_light.xml"
+        ).forEach { resourcePath ->
+            assertTrue(
+                loadResourceText(resourcePath).contains("#FFFFFFFF"),
+                "$resourcePath should keep a light outer field around the circular portrait"
+            )
+        }
+        listOf(
             "drawable/ic_launcher_blue_snow_maid_background_dark.xml",
             "drawable-night/ic_launcher_blue_snow_maid_background.xml"
         ).forEach { resourcePath ->
-            val resourceText = loadResourceText(resourcePath)
             assertTrue(
-                resourceText.contains("#FF017EE2") && resourceText.contains("#FF1CC2FB"),
-                "$resourcePath should continue the side maid portrait gradient under every launcher mask"
+                loadResourceText(resourcePath).contains("#FF090A0C"),
+                "$resourcePath should keep a dark outer field around the circular portrait"
             )
         }
-        val frontBackground = loadResourceText("drawable/ic_launcher_blue_snow_maid_front_background.xml")
-        assertTrue(
-            frontBackground.contains("#FF05B5FE") && frontBackground.contains("#FF1DC3FD"),
-            "Front maid icons should use a gradient matched to their distinct portrait edge"
-        )
         assertTrue(
             loadResourceText("drawable/ic_launcher_blue_snow_maid_announcement_background.xml")
                 .contains("#FFFFFFFF"),
@@ -369,8 +370,8 @@ class MainActivityAppCompatContractTest {
             }
             val foregroundWidthRatio = (opaqueXs.max() - opaqueXs.min() + 1).toFloat() / imageWidth
             assertTrue(
-                foregroundWidthRatio in 0.66f..0.68f,
-                "$fileName should fill the adaptive masked viewport without exposing an outer shell"
+                foregroundWidthRatio in 0.57f..0.59f,
+                "$fileName should preserve the circular portrait and theme-aware outer field on rounded-square launchers"
             )
         }
 
@@ -388,8 +389,8 @@ class MainActivityAppCompatContractTest {
         val frontWidthRatio =
             (frontOpaqueXs.max() - frontOpaqueXs.min() + 1).toFloat() / frontWidth
         assertTrue(
-            frontWidthRatio in 0.66f..0.68f,
-            "Front maid foreground should fill the adaptive masked viewport without exposing an outer shell"
+            frontWidthRatio in 0.57f..0.59f,
+            "Front maid foreground should preserve the same theme-aware outer field without being cropped"
         )
 
         val announcementRows = readPngRgbaRows(
@@ -461,12 +462,11 @@ class MainActivityAppCompatContractTest {
     }
 
     @Test
-    fun blueSnowMaidLauncherIcons_shouldUseMaskAgnosticAdaptiveFieldsAndCircularFallbacks() {
+    fun blueSnowMaidLauncherIcons_shouldUseThemeAwareAdaptiveShellsAndCircularFallbacks() {
         assertTrue(
-            loadResourceText("drawable-night/ic_launcher_blue_snow_maid_background.xml").let {
-                it.contains("#FF017EE2") && it.contains("#FF1CC2FB")
-            },
-            "Dark mode adaptive icons should retain the portrait-matched blue gradient"
+            loadResourceText("drawable-night/ic_launcher_blue_snow_maid_background.xml")
+                .contains("#FF090A0C"),
+            "Dark mode adaptive icons should use the dark outer field around the circular portrait"
         )
         assertTrue(
             loadResourceText("drawable-night/ic_launcher_blue_snow_maid_announcement_background.xml")
@@ -477,7 +477,7 @@ class MainActivityAppCompatContractTest {
             "ic_launcher_blue_snow_maid" to "ic_launcher_blue_snow_maid_background_dark",
             "ic_launcher_blue_snow_maid_announcement" to
                 "ic_launcher_blue_snow_maid_announcement_background_dark",
-            "ic_launcher_blue_snow_maid_front" to "ic_launcher_blue_snow_maid_front_background"
+            "ic_launcher_blue_snow_maid_front" to "ic_launcher_blue_snow_maid_background_dark"
         ).forEach { (iconStem, backgroundStem) ->
             listOf("", "_round").forEach { suffix ->
                 assertTrue(
