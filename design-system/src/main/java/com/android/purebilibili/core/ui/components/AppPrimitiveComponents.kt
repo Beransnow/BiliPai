@@ -23,8 +23,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CardElevation
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgeDefaults
 import androidx.compose.material3.ChipColors
 import androidx.compose.material3.ChipElevation
 import androidx.compose.material3.CircularProgressIndicator
@@ -809,19 +807,6 @@ fun AppInputChip(
     enabled = enabled,
     leadingIcon = leadingIcon,
     trailingIcon = trailingIcon,
-)
-
-@Composable
-fun AppBadge(
-    modifier: Modifier = Modifier,
-    containerColor: Color = BadgeDefaults.containerColor,
-    contentColor: Color = contentColorFor(containerColor),
-    content: @Composable (androidx.compose.foundation.layout.RowScope.() -> Unit)? = null,
-) = Badge(
-    modifier = modifier,
-    containerColor = containerColor,
-    contentColor = contentColor,
-    content = content,
 )
 
 @Composable

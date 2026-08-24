@@ -58,8 +58,6 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(source.contains(") = AssistChip("))
         assertTrue(source.contains("fun AppFilterChip("))
         assertTrue(source.contains(") = FilterChip("))
-        assertTrue(source.contains("fun AppBadge("))
-        assertTrue(source.contains(") = Badge("))
         assertTrue(source.contains("fun AppFloatingActionButton("))
         assertTrue(source.contains(") = FloatingActionButton("))
         assertTrue(source.contains("fun AppSmallFloatingActionButton("))
@@ -111,6 +109,29 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(miuix.contains("import top.yukonga.miuix.kmp.basic.BasicComponent"))
         assertTrue(miuix.contains("startAction = leadingContent"))
         assertTrue(miuix.contains("endActions = trailingContent?.let"))
+        assertFalse(miuix.contains("import androidx.compose.material3"))
+    }
+
+    @Test
+    fun badgeFacadeRoutesEachThemeToItsNativeRenderer() {
+        val primitiveSource = loadSource()
+        val facade = loadSource("components/AppBadge.kt")
+        val material = loadSource("renderer/material3/AppMaterial3Badge.kt")
+        val miuix = loadSource("renderer/miuix/AppMiuixBadge.kt")
+
+        assertFalse(primitiveSource.contains("fun AppBadge("))
+        assertTrue(facade.contains("AppUiStyle.MATERIAL3 -> AppMaterial3Badge("))
+        assertTrue(facade.contains("AppUiStyle.MIUIX -> AppMiuixBadge("))
+        assertTrue(facade.contains("containerColor: Color = Color.Unspecified"))
+        assertTrue(facade.contains("contentColor: Color = Color.Unspecified"))
+        assertFalse(facade.contains("import androidx.compose.material3"))
+        assertFalse(facade.contains("import top.yukonga.miuix"))
+
+        assertTrue(material.contains("import androidx.compose.material3.Badge"))
+        assertTrue(material.contains("BadgeDefaults.containerColor"))
+        assertTrue(miuix.contains("import top.yukonga.miuix.kmp.basic.Badge"))
+        assertTrue(miuix.contains("BadgeDefaults.containerColor"))
+        assertTrue(miuix.contains("BadgeDefaults.contentColor"))
         assertFalse(miuix.contains("import androidx.compose.material3"))
     }
 
