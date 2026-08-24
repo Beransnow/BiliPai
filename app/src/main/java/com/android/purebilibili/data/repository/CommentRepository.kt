@@ -97,16 +97,6 @@ object CommentRepository {
         paginationOffset: String? = null
     ): ReplyResponse {
         return when (mode) {
-            2 -> {
-                Logger.d("CommentRepo", " getComments (Legacy): oid=$oid, type=$type, page=$page, sort=0 (时间)")
-                apiClient.getReplyListLegacy(
-                    oid = oid,
-                    type = type,
-                    pn = page,
-                    ps = ps,
-                    sort = 0
-                )
-            }
             1 -> {
                 Logger.d("CommentRepo", " getComments (Legacy): oid=$oid, type=$type, page=$page, sort=2 (回复数)")
                 apiClient.getReplyListLegacy(
@@ -128,12 +118,16 @@ object CommentRepository {
                 )
             }
             else -> {
+                val mainListMode = resolveCommentMainListMode(mode)
                 val (imgKey, subKey) = getWbiKeys(apiClient)
-                Logger.d("CommentRepo", " getComments (WBI): oid=$oid, type=$type, page=$page, mode=3 (热度)")
+                Logger.d(
+                    "CommentRepo",
+                    " getComments (WBI): oid=$oid, type=$type, page=$page, mode=$mainListMode"
+                )
                 val params = TreeMap<String, String>()
                 params["oid"] = oid.toString()
                 params["type"] = type.toString()
-                params["mode"] = "3"
+                params["mode"] = mainListMode.toString()
                 params["ps"] = ps.toString()
                 params["plat"] = "1"
                 params["web_location"] = "1315875"
@@ -307,7 +301,7 @@ object CommentRepository {
     /**
      * 获取评论列表
      * @param mode 排序模式:
-     * 3=最热(WBI mode=3), 2=最新(legacy sort=0), 4=点赞(legacy sort=1), 1=回复(legacy sort=2)
+     * 3=最热(WBI mode=3), 2=最新(WBI mode=2), 4=点赞(legacy sort=1), 1=回复(legacy sort=2)
      */
     suspend fun getComments(
         aid: Long,
@@ -876,10 +870,7 @@ object CommentRepository {
         paginationOffset: String?
     ): Map<String, String> {
         if (page <= 1) {
-            return mapOf(
-                "seek_rpid" to "0",
-                "pagination_str" to """{"offset":""}"""
-            )
+            return mapOf("pagination_str" to """{"offset":""}""")
         }
         if (!paginationOffset.isNullOrBlank()) {
             return mapOf(
@@ -887,6 +878,14 @@ object CommentRepository {
             )
         }
         return mapOf("next" to page.toString())
+    }
+
+    internal fun resolveCommentMainListMode(mode: Int): Int {
+        return if (mode == CommentGrpcRepository.MODE_TIME) {
+            CommentGrpcRepository.MODE_TIME
+        } else {
+            CommentGrpcRepository.MODE_HOT
+        }
     }
 
     internal fun shouldTryGrpcPagedRequest(
