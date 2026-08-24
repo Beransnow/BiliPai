@@ -178,7 +178,7 @@ internal fun BottomBarFloatingSegmentedControl(
             indicatorPositionProvider = indicatorPositionProvider,
             isScrollInProgressProvider = isScrollInProgressProvider,
             dragSelectionEnabled = dragSelectionEnabled && enabled && itemCount > 1,
-            dragTrackingMode = DampedDragTrackingMode.DIRECT,
+            dragTrackingMode = DampedDragTrackingMode.SPRING,
             liquidGlassTuning = liquidGlassTuning,
         ) {
             items.forEachIndexed { index, label ->

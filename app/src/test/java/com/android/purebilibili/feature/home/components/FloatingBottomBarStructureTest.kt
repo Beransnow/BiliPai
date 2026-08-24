@@ -36,14 +36,14 @@ class FloatingBottomBarStructureTest {
     }
 
     @Test
-    fun `compact segmented controls directly track drag while home keeps spring default`() {
+    fun `compact segmented controls share the home spring drag tracking`() {
         val source = loadFloatingBottomBarSource()
         val segmentedSource = loadSource(
             "app/src/main/java/com/android/purebilibili/feature/home/components/BottomBarFloatingSegmentedControl.kt"
         )
 
         assertTrue(source.contains("dragTrackingMode: DampedDragTrackingMode = DampedDragTrackingMode.SPRING"))
-        assertTrue(segmentedSource.contains("dragTrackingMode = DampedDragTrackingMode.DIRECT"))
+        assertTrue(segmentedSource.contains("dragTrackingMode = DampedDragTrackingMode.SPRING"))
     }
 
     @Test

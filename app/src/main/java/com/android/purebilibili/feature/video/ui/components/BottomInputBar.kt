@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -17,7 +18,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Edit
 import com.android.purebilibili.core.ui.components.AppIcon
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppSurface
@@ -248,97 +250,74 @@ private fun FloatingLiquidBottomInputBar(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp)
+            .padding(horizontal = 16.dp)
             .padding(bottom = bottomInset),
         contentAlignment = Alignment.BottomCenter
     ) {
-        BottomBarMatchedReusableLiquidDock(
-            shape = shellShape,
+        Row(
             modifier = Modifier.fillMaxWidth(),
-            backdrop = backdrop,
-            reuseEnabled = true,
-            // 外层整条保留液态玻璃（含 shell lens）；内层提示框不再嵌套 liquid dock。
-            drawShellLens = true,
-            isScrollInProgressProvider = isScrollInProgressProvider
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            FloatingLiquidBottomInputBarContentRow(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
-                commentFieldShape = shellShape,
-                inputTextColor = inputTextColor,
-                isLiked = isLiked,
-                isFavorited = isFavorited,
-                isCoined = isCoined,
-                onLikeClick = onLikeClick,
-                onFavoriteClick = onFavoriteClick,
-                onCoinClick = onCoinClick,
-                onShareClick = onShareClick,
-                onCommentClick = onCommentClick
-            )
+            BottomBarMatchedReusableLiquidDock(
+                shape = shellShape,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(64.dp),
+                backdrop = backdrop,
+                reuseEnabled = true,
+                drawShellLens = true,
+                isScrollInProgressProvider = isScrollInProgressProvider,
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable(role = Role.Button) { onCommentClick() }
+                        .padding(horizontal = 18.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    AppIcon(
+                        imageVector = Icons.Outlined.Edit,
+                        contentDescription = null,
+                        tint = inputTextColor,
+                        modifier = Modifier.size(24.dp),
+                    )
+                    AppText(
+                        text = "写评论",
+                        color = inputTextColor,
+                        fontSize = 15.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+
+            BottomBarMatchedReusableLiquidDock(
+                shape = shellShape,
+                modifier = Modifier.height(64.dp),
+                backdrop = backdrop,
+                reuseEnabled = true,
+                drawShellLens = true,
+                isScrollInProgressProvider = isScrollInProgressProvider,
+            ) {
+                BottomInputBarActionButtons(
+                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
+                    favoriteIcon = rememberAppBookmarkIcon(),
+                    coinIcon = rememberAppCoinIcon(),
+                    likeIcon = rememberAppLikeIcon(),
+                    likeFilledIcon = rememberAppLikeFilledIcon(),
+                    shareIcon = rememberAppShareIcon(),
+                    isLiked = isLiked,
+                    isFavorited = isFavorited,
+                    isCoined = isCoined,
+                    onLikeClick = onLikeClick,
+                    onFavoriteClick = onFavoriteClick,
+                    onCoinClick = onCoinClick,
+                    onShareClick = onShareClick,
+                )
+            }
         }
-    }
-}
-
-@Composable
-private fun FloatingLiquidBottomInputBarContentRow(
-    modifier: Modifier,
-    commentFieldShape: androidx.compose.ui.graphics.Shape,
-    inputTextColor: Color,
-    isLiked: Boolean,
-    isFavorited: Boolean,
-    isCoined: Boolean,
-    onLikeClick: () -> Unit,
-    onFavoriteClick: () -> Unit,
-    onCoinClick: () -> Unit,
-    onShareClick: () -> Unit,
-    onCommentClick: () -> Unit,
-) {
-    val favoriteIcon = rememberAppBookmarkIcon()
-    val coinIcon = rememberAppCoinIcon()
-    val likeIcon = rememberAppLikeIcon()
-    val likeFilledIcon = rememberAppLikeFilledIcon()
-    val shareIcon = rememberAppShareIcon()
-
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        // 外层壳已是液态玻璃：内层提示框用实心半透明，禁止嵌套 liquid dock
-        // （嵌套 refraction 边沿会出现「虾线」，且 content padding 易丢失）。
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .height(48.dp)
-                .clip(commentFieldShape)
-                .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
-                .clickable(role = Role.Button) { onCommentClick() }
-                .padding(horizontal = 10.dp),
-            contentAlignment = Alignment.CenterStart
-        ) {
-            AppText(
-                text = "发一条友善的评论…",
-                color = inputTextColor,
-                fontSize = 13.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-
-        Spacer(modifier = Modifier.width(8.dp))
-
-        BottomInputBarActionButtons(
-            favoriteIcon = favoriteIcon,
-            coinIcon = coinIcon,
-            likeIcon = likeIcon,
-            likeFilledIcon = likeFilledIcon,
-            shareIcon = shareIcon,
-            isLiked = isLiked,
-            isFavorited = isFavorited,
-            isCoined = isCoined,
-            onLikeClick = onLikeClick,
-            onFavoriteClick = onFavoriteClick,
-            onCoinClick = onCoinClick,
-            onShareClick = onShareClick
-        )
     }
 }
 
@@ -406,6 +385,7 @@ private fun BottomInputBarContentRow(
 
 @Composable
 private fun BottomInputBarActionButtons(
+    modifier: Modifier = Modifier,
     favoriteIcon: ImageVector,
     coinIcon: ImageVector,
     likeIcon: ImageVector,
@@ -420,6 +400,7 @@ private fun BottomInputBarActionButtons(
     onShareClick: () -> Unit,
 ) {
     Row(
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
