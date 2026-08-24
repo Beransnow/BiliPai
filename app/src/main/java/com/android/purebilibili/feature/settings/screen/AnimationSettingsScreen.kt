@@ -412,17 +412,17 @@ fun AnimationSettingsContent(
                             },
                             iconTint = iOSTeal
                         )
-                        if (predictiveBackStyle == BiliPaiPredictiveBackAnimationStyle.MIUIX) {
+                        if (predictiveBackStyle != BiliPaiPredictiveBackAnimationStyle.NONE) {
                             AppPreferenceDivider()
                             AppSwitchPreference(
                                 icon = rememberSettingsSemanticIcon(
                                     SettingsIconRole.MIUIX_TRANSITION_BLUR
                                 ),
-                                title = "Miuix 过渡模糊",
+                                title = "返回过渡模糊",
                                 subtitle = if (appNavigationSettings.miuixTransitionBlurEnabled) {
-                                    "页面返回时为下层页面添加实时景深模糊"
+                                    "四种返回动画均为下层页面添加 Miuix 同款实时景深模糊"
                                 } else {
-                                    "保留 Miuix 位移与层级动画，不使用实时模糊"
+                                    "保留当前返回动画，不使用实时景深模糊"
                                 },
                                 checked = appNavigationSettings.miuixTransitionBlurEnabled,
                                 onCheckedChange = { enabled ->

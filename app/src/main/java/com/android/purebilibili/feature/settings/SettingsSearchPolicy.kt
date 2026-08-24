@@ -541,6 +541,7 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
             "动画设置",
             "页面动画",
             "玻璃效果",
+            "返回过渡模糊",
             "Miuix 过渡模糊",
             "miuix模糊",
             "返回动画模糊",
