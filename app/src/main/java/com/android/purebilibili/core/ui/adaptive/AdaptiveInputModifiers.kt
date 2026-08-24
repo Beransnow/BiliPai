@@ -2,8 +2,8 @@ package com.android.purebilibili.core.ui.adaptive
 
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -25,7 +25,7 @@ internal fun Modifier.adaptiveCardHoverEffect(
 
     val interactionSource = remember { MutableInteractionSource() }
     val hovered = interactionSource.collectIsHoveredAsState()
-    val transition = rememberTransition(
+    val transition = updateTransition(
         targetState = hovered.value,
         label = "adaptiveCardHover",
     )
