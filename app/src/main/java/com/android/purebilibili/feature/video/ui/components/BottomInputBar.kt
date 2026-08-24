@@ -315,7 +315,7 @@ private fun FloatingLiquidBottomInputBarContentRow(
             contentAlignment = Alignment.CenterStart
         ) {
             AppText(
-                text = "评论 UP 主和大家...",
+                text = "发一条友善的评论…",
                 color = inputTextColor,
                 fontSize = 13.sp,
                 maxLines = 1,
@@ -377,7 +377,7 @@ private fun BottomInputBarContentRow(
             contentAlignment = Alignment.CenterStart
         ) {
             AppText(
-                text = "评论 UP 主和大家...",
+                text = "发一条友善的评论…",
                 color = inputTextColor,
                 fontSize = 13.sp,
                 maxLines = 1,

@@ -39,7 +39,7 @@ class BottomInputBarStructureTest {
         assertTrue(source.contains(".padding(horizontal = 10.dp)"))
         assertTrue(source.contains("Arrangement.spacedBy(4.dp)"))
         assertTrue(source.contains("Spacer(modifier = Modifier.width(8.dp))"))
-        assertTrue(source.contains("评论 UP 主和大家"))
+        assertTrue(source.contains("发一条友善的评论…"))
         assertTrue(source.contains("onSurface.copy(alpha = 0.08f)"))
         assertFalse(source.contains("BottomBarMatchedLiquidDock("))
         assertTrue(!source.contains(".biliPaiFloatingDockSurface("))

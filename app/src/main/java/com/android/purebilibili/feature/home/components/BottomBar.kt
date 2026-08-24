@@ -1253,7 +1253,7 @@ internal fun resolveBottomBarSkinContentColors(
         selectedColor = readableSelectedColor,
         unselectedColor = readableUnselectedColor,
         labelScrimColor = labelScrimColor,
-        labelScrimAlpha = 0.32f,
+        labelScrimAlpha = 0f,
     )
 }
 

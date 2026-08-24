@@ -441,11 +441,11 @@ class BottomBarSurfaceColorPolicyTest {
         assertEquals(OpticalContrastPalette.Shadow, colors.selectedColor)
         assertEquals(OpticalContrastPalette.Shadow, colors.unselectedColor)
         assertEquals(OpticalContrastPalette.Highlight, colors.labelScrimColor)
-        assertEquals(0.32f, colors.labelScrimAlpha, 0.0001f)
+        assertEquals(0f, colors.labelScrimAlpha, 0.0001f)
     }
 
     @Test
-    fun `dark skin trim keeps readable foreground and adds a dark label scrim`() {
+    fun `dark skin trim keeps readable foreground without a label capsule`() {
         val colors = resolveBottomBarSkinContentColors(
             selectedColor = Color(0xFFFFA000),
             unselectedColor = Color.White,
@@ -454,7 +454,7 @@ class BottomBarSurfaceColorPolicyTest {
 
         assertEquals(Color.White, colors.unselectedColor)
         assertEquals(OpticalContrastPalette.Shadow, colors.labelScrimColor)
-        assertEquals(0.32f, colors.labelScrimAlpha, 0.0001f)
+        assertEquals(0f, colors.labelScrimAlpha, 0.0001f)
     }
 
     @Test
