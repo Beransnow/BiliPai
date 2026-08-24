@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Edit
 import com.android.purebilibili.core.ui.components.AppIcon
@@ -250,12 +251,14 @@ private fun FloatingLiquidBottomInputBar(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 24.dp)
             .padding(bottom = bottomInset),
         contentAlignment = Alignment.BottomCenter
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .widthIn(max = 360.dp)
+                .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -303,6 +306,9 @@ private fun FloatingLiquidBottomInputBar(
             ) {
                 BottomInputBarActionButtons(
                     modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
+                    itemSize = 40.dp,
+                    iconSize = 22.dp,
+                    itemSpacing = 2.dp,
                     favoriteIcon = rememberAppBookmarkIcon(),
                     coinIcon = rememberAppCoinIcon(),
                     likeIcon = rememberAppLikeIcon(),
@@ -386,6 +392,9 @@ private fun BottomInputBarContentRow(
 @Composable
 private fun BottomInputBarActionButtons(
     modifier: Modifier = Modifier,
+    itemSize: Dp = 48.dp,
+    iconSize: Dp = 24.dp,
+    itemSpacing: Dp = 4.dp,
     favoriteIcon: ImageVector,
     coinIcon: ImageVector,
     likeIcon: ImageVector,
@@ -401,7 +410,7 @@ private fun BottomInputBarActionButtons(
 ) {
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(itemSpacing),
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconActionButton(
@@ -409,6 +418,8 @@ private fun BottomInputBarActionButtons(
             label = "点赞",
             tint = if (isLiked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
             onClick = onLikeClick,
+            itemSize = itemSize,
+            iconSize = iconSize,
             showLabel = false
         )
         IconActionButton(
@@ -416,6 +427,8 @@ private fun BottomInputBarActionButtons(
             label = "投币",
             tint = if (isCoined) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
             onClick = onCoinClick,
+            itemSize = itemSize,
+            iconSize = iconSize,
             showLabel = false
         )
         IconActionButton(
@@ -423,6 +436,8 @@ private fun BottomInputBarActionButtons(
             label = "收藏",
             tint = if (isFavorited) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
             onClick = onFavoriteClick,
+            itemSize = itemSize,
+            iconSize = iconSize,
             showLabel = false
         )
         IconActionButton(
@@ -430,6 +445,8 @@ private fun BottomInputBarActionButtons(
             label = "分享",
             tint = MaterialTheme.colorScheme.onSurface,
             onClick = onShareClick,
+            itemSize = itemSize,
+            iconSize = iconSize,
             showLabel = false
         )
     }
@@ -441,13 +458,15 @@ private fun IconActionButton(
     label: String,
     tint: Color,
     onClick: () -> Unit,
+    itemSize: Dp,
+    iconSize: Dp,
     showLabel: Boolean = false
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
         modifier = Modifier
-            .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
+            .sizeIn(minWidth = itemSize, minHeight = itemSize)
             .clickable(role = Role.Button, onClick = onClick)
             .padding(4.dp)
     ) {
@@ -455,7 +474,7 @@ private fun IconActionButton(
             imageVector = icon,
             contentDescription = label,
             tint = tint,
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(iconSize)
         )
         if (showLabel) {
             Spacer(modifier = Modifier.height(2.dp))
