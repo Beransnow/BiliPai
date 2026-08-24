@@ -225,11 +225,17 @@ internal fun resolveNativeUnderlineGeometry(
 
     val startWidth = resolvedWidth(startIndex)
     val endWidth = resolvedWidth(endIndex)
-    val width = startWidth + (endWidth - startWidth) * fraction
-    val center = segmentWidthDp * (safePosition + 0.5f)
+    val trailingEdgeProgress = fraction * fraction
+    val leadingEdgeProgress = 1f - (1f - fraction) * (1f - fraction)
+    val startLeft = segmentWidthDp * (startIndex + 0.5f) - startWidth / 2f
+    val startRight = startLeft + startWidth
+    val endLeft = segmentWidthDp * (endIndex + 0.5f) - endWidth / 2f
+    val endRight = endLeft + endWidth
+    val left = startLeft + (endLeft - startLeft) * trailingEdgeProgress
+    val right = startRight + (endRight - startRight) * leadingEdgeProgress
     return NativeUnderlineGeometry(
-        offsetDp = center - width / 2f,
-        widthDp = width,
+        offsetDp = left,
+        widthDp = (right - left).coerceAtLeast(0f),
     )
 }
 

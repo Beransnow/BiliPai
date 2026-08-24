@@ -12,6 +12,10 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
+import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.tween
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
@@ -59,9 +63,12 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
@@ -73,6 +80,30 @@ import androidx.compose.ui.window.PopupProperties
 import top.yukonga.miuix.kmp.basic.TextField as MiuixTextField
 import top.yukonga.miuix.kmp.basic.TextFieldDefaults as MiuixTextFieldDefaults
 import top.yukonga.miuix.kmp.theme.MiuixTheme
+
+private const val APP_TAB_INDICATOR_STRETCH_SCALE = 1.65f
+
+@Composable
+private fun rememberAppTabIndicatorStretch(
+    selectedTabIndex: Int,
+): Animatable<Float, AnimationVector1D> {
+    val scale = remember { Animatable(1f) }
+    val previousIndex = remember { mutableIntStateOf(selectedTabIndex) }
+    LaunchedEffect(selectedTabIndex) {
+        if (previousIndex.intValue == selectedTabIndex) return@LaunchedEffect
+        previousIndex.intValue = selectedTabIndex
+        scale.snapTo(1f)
+        scale.animateTo(
+            targetValue = APP_TAB_INDICATOR_STRETCH_SCALE,
+            animationSpec = tween(durationMillis = 110, easing = EaseOut),
+        )
+        scale.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(durationMillis = 190, easing = EaseOut),
+        )
+    }
+    return scale
+}
 
 @Composable
 fun AppSnackbar(
@@ -103,8 +134,11 @@ fun AppScrollableTabRow(
     contentColor: Color = TabRowDefaults.primaryContentColor,
     edgePadding: Dp = TabRowDefaults.ScrollableTabRowEdgeStartPadding,
     indicator: @Composable (tabPositions: List<TabPosition>) -> Unit = @Composable { tabPositions ->
+        val stretch = rememberAppTabIndicatorStretch(selectedTabIndex)
         TabRowDefaults.SecondaryIndicator(
-            Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
+            Modifier
+                .tabIndicatorOffset(tabPositions[selectedTabIndex])
+                .graphicsLayer { scaleX = stretch.value },
         )
     },
     divider: @Composable () -> Unit = @Composable { HorizontalDivider() },
@@ -597,13 +631,24 @@ fun AppPrimaryTabRow(
     containerColor: Color = TabRowDefaults.primaryContainerColor,
     contentColor: Color = TabRowDefaults.primaryContentColor,
     tabs: @Composable () -> Unit,
-) = PrimaryTabRow(
-    selectedTabIndex = selectedTabIndex,
-    modifier = modifier,
-    containerColor = containerColor,
-    contentColor = contentColor,
-    tabs = tabs,
-)
+) {
+    val stretch = rememberAppTabIndicatorStretch(selectedTabIndex)
+    PrimaryTabRow(
+        selectedTabIndex = selectedTabIndex,
+        modifier = modifier,
+        containerColor = containerColor,
+        contentColor = contentColor,
+        indicator = {
+            TabRowDefaults.PrimaryIndicator(
+                modifier = Modifier
+                    .tabIndicatorOffset(selectedTabIndex, matchContentSize = true)
+                    .graphicsLayer { scaleX = stretch.value },
+                width = Dp.Unspecified,
+            )
+        },
+        tabs = tabs,
+    )
+}
 
 @Composable
 fun AppPrimaryScrollableTabRow(
@@ -615,16 +660,27 @@ fun AppPrimaryScrollableTabRow(
     edgePadding: Dp = TabRowDefaults.ScrollableTabRowEdgeStartPadding,
     minTabWidth: Dp = TabRowDefaults.ScrollableTabRowMinTabWidth,
     tabs: @Composable () -> Unit,
-) = PrimaryScrollableTabRow(
-    selectedTabIndex = selectedTabIndex,
-    modifier = modifier,
-    scrollState = scrollState,
-    containerColor = containerColor,
-    contentColor = contentColor,
-    edgePadding = edgePadding,
-    minTabWidth = minTabWidth,
-    tabs = tabs,
-)
+) {
+    val stretch = rememberAppTabIndicatorStretch(selectedTabIndex)
+    PrimaryScrollableTabRow(
+        selectedTabIndex = selectedTabIndex,
+        modifier = modifier,
+        scrollState = scrollState,
+        containerColor = containerColor,
+        contentColor = contentColor,
+        edgePadding = edgePadding,
+        indicator = {
+            TabRowDefaults.PrimaryIndicator(
+                modifier = Modifier
+                    .tabIndicatorOffset(selectedTabIndex, matchContentSize = true)
+                    .graphicsLayer { scaleX = stretch.value },
+                width = Dp.Unspecified,
+            )
+        },
+        minTabWidth = minTabWidth,
+        tabs = tabs,
+    )
+}
 
 @Composable
 fun AppSuggestionChip(

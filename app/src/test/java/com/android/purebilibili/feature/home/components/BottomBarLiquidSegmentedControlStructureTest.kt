@@ -235,9 +235,9 @@ class BottomBarLiquidSegmentedControlStructureTest {
     }
 
     @Test
-    fun `native underline interpolates position and label width during page motion`() {
+    fun `native underline stretches between labels during page motion`() {
         assertEquals(
-            NativeUnderlineGeometry(offsetDp = 70f, widthDp = 60f),
+            NativeUnderlineGeometry(offsetDp = 50f, widthDp = 110f),
             resolveNativeUnderlineGeometry(
                 indicatorPosition = 0.5f,
                 segmentWidthDp = 100f,

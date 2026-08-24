@@ -38,9 +38,11 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(source.contains("fun AppTab("))
         assertTrue(source.contains(") = Tab("))
         assertTrue(source.contains("fun AppPrimaryTabRow("))
-        assertTrue(source.contains(") = PrimaryTabRow("))
+        assertTrue(source.contains("PrimaryTabRow("))
         assertTrue(source.contains("fun AppPrimaryScrollableTabRow("))
-        assertTrue(source.contains(") = PrimaryScrollableTabRow("))
+        assertTrue(source.contains("PrimaryScrollableTabRow("))
+        assertTrue(source.contains("rememberAppTabIndicatorStretch(selectedTabIndex)"))
+        assertTrue(source.contains("scaleX = stretch.value"))
         assertTrue(source.contains("fun AppSuggestionChip("))
         assertTrue(source.contains(") = SuggestionChip("))
     }
