@@ -356,6 +356,8 @@ internal fun TabletVideoLayout(
                     commentState = commentState,
                     subReplyState = subReplyState,
                     playbackActions = playbackActions,
+                    engagementState = engagementState,
+                    engagementActions = engagementActions,
                     commentActions = commentActions,
                     playerState = playerState,
                     onUpClick = onUpClick,
@@ -401,6 +403,8 @@ internal fun TabletVideoLayout(
                         commentState = commentState,
                         subReplyState = subReplyState,
                         playbackActions = playbackActions,
+                        engagementState = engagementState,
+                        engagementActions = engagementActions,
                         commentActions = commentActions,
                         playerState = playerState,
                         onUpClick = onUpClick,
@@ -481,6 +485,8 @@ private fun TabletSecondaryContent(
     commentState: CommentUiState,
     subReplyState: SubReplyUiState,
     playbackActions: VideoDetailPlaybackActions,
+    engagementState: VideoEngagementUiState,
+    engagementActions: VideoDetailEngagementActions,
     commentActions: VideoDetailCommentActions,
     playerState: VideoPlayerState,
     onUpClick: (Long) -> Unit,
@@ -701,16 +707,27 @@ private fun TabletSecondaryContent(
             when (tabs[page]) {
                 TabletSecondaryTab.COMMENTS -> {
                     val listState = rememberLazyListState()
-                    val shouldLoadMore by remember {
+                    val shouldLoadMore by remember(listState) {
                         derivedStateOf {
                             val layoutInfo = listState.layoutInfo
                             val totalItems = layoutInfo.totalItemsCount
                             val lastVisibleItemIndex = layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-                            totalItems > 0 && lastVisibleItemIndex >= totalItems - 3 && !commentState.isRepliesLoading
+                            totalItems > 0 && lastVisibleItemIndex >= totalItems - 3
                         }
                     }
-                    LaunchedEffect(shouldLoadMore) {
-                        if (shouldLoadMore) commentActions.loadComments()
+                    LaunchedEffect(
+                        shouldLoadMore,
+                        commentState.isRepliesLoading,
+                        commentState.isRepliesEnd,
+                        commentState.replies.size,
+                    ) {
+                        if (
+                            shouldLoadMore &&
+                            !commentState.isRepliesLoading &&
+                            !commentState.isRepliesEnd
+                        ) {
+                            commentActions.loadComments()
+                        }
                     }
 
                     if (subReplyState.visible && subReplyState.rootReply != null) {
@@ -764,27 +781,13 @@ private fun TabletSecondaryContent(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .layerBackdrop(commentChromeBackdrop),
-                                contentPadding = PaddingValues(8.dp)
+                                contentPadding = PaddingValues(
+                                    start = 8.dp,
+                                    top = 8.dp,
+                                    end = 8.dp,
+                                    bottom = 104.dp,
+                                )
                             ) {
-                            item {
-                                AppSurface(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(horizontal = 8.dp, vertical = 6.dp),
-                                    color = commentAppearance.composerHintBackgroundColor,
-                                    shape = AppShapes.container(ContainerLevel.Dialog),
-                                    onClick = {
-                                        playbackActions.openRootCommentComposer()
-                                    }
-                                ) {
-                                    AppText(
-                                        text = "写评论，直接和 UP 主交流",
-                                        color = commentAppearance.secondaryTextColor,
-                                        fontSize = 13.sp,
-                                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
-                                    )
-                                }
-                            }
                             items(
                                 items = commentState.replies,
                                 key = { "reply_${it.rpid}" },
@@ -882,6 +885,22 @@ private fun TabletSecondaryContent(
                                 }
                             }
                         }
+
+                        BottomInputBar(
+                            modifier = Modifier.align(Alignment.BottomCenter),
+                            isLiked = engagementState.isLiked,
+                            isFavorited = engagementState.isFavorited,
+                            isCoined = engagementState.coinCount > 0,
+                            onLikeClick = engagementActions.toggleLike,
+                            onFavoriteClick = engagementActions.toggleFavorite,
+                            onCoinClick = engagementActions.openCoinDialog,
+                            onShareClick = {
+                                ShareUtils.shareVideo(context, success.info.title, success.info.bvid)
+                            },
+                            onCommentClick = playbackActions.openRootCommentComposer,
+                            backdrop = commentChromeBackdrop,
+                            isScrollInProgressProvider = { listState.isScrollInProgress },
+                        )
 
                            }
                         }
