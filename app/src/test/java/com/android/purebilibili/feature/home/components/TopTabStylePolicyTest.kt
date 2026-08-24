@@ -528,8 +528,8 @@ class TopTabStylePolicyTest {
 
 
     @Test
-    fun `android native miuix top tabs skip outer chrome surface`() {
-        assertFalse(
+    fun `top tabs only draw outer dock for liquid glass`() {
+        assertTrue(
             shouldDrawHomeTopTabOuterChromeSurface(
                 presentation = AppTopTabPresentation.TONAL_CAPSULE,
                 materialMode = TopTabMaterialMode.LIQUID_GLASS
@@ -553,21 +553,19 @@ class TopTabStylePolicyTest {
                 materialMode = TopTabMaterialMode.LIQUID_GLASS
             )
         )
-        // md3 下划线 tab 也统一绘制长胶囊背景（普通/模糊模式同样绘制），
-        // 避免滚动时 tab 文字直接浮现在信息流上方。
-        assertTrue(
+        assertFalse(
             shouldDrawHomeTopTabOuterChromeSurface(
                 presentation = AppTopTabPresentation.MATERIAL_UNDERLINE,
                 materialMode = TopTabMaterialMode.PLAIN
             )
         )
-        assertTrue(
+        assertFalse(
             shouldDrawHomeTopTabOuterChromeSurface(
                 presentation = AppTopTabPresentation.MATERIAL_UNDERLINE,
                 materialMode = TopTabMaterialMode.BLUR
             )
         )
-        assertFalse(
+        assertTrue(
             shouldDrawHomeTopTabOuterChromeSurface(
                 presentation = AppTopTabPresentation.MOVING_CAPSULE,
                 materialMode = TopTabMaterialMode.LIQUID_GLASS
@@ -657,15 +655,14 @@ class TopTabStylePolicyTest {
     }
 
     @Test
-    fun `md3 top tabs keep outer dock in every material mode`() {
-        // md3 下划线 tab 统一绘制长胶囊背景（BLUR/PLAIN/LIQUID_GLASS 均绘制）。
-        assertTrue(
+    fun `md3 top tabs only keep outer dock in liquid glass mode`() {
+        assertFalse(
             shouldDrawHomeTopTabOuterChromeSurface(
                 presentation = AppTopTabPresentation.MATERIAL_UNDERLINE,
                 materialMode = TopTabMaterialMode.BLUR
             )
         )
-        assertTrue(
+        assertFalse(
             shouldDrawHomeTopTabOuterChromeSurface(
                 presentation = AppTopTabPresentation.MATERIAL_UNDERLINE,
                 materialMode = TopTabMaterialMode.PLAIN

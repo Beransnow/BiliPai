@@ -652,13 +652,8 @@ internal fun shouldDrawHomeTopTabOuterChromeSurface(
     presentation: AppTopTabPresentation,
     materialMode: TopTabMaterialMode
 ): Boolean {
-    // Capsule presentations already have a strong selected-item affordance. Drawing a
-    // second full-width capsule around the row competes with the search pill and makes
-    // the tabs look pasted onto the header. Keep them on the continuous top blur;
-    // the underline presentation retains a readability track of its own.
-    return when (presentation) {
-        AppTopTabPresentation.MATERIAL_UNDERLINE -> true
-        AppTopTabPresentation.TONAL_CAPSULE,
-        AppTopTabPresentation.MOVING_CAPSULE -> false
-    }
+    // The full-width track is a liquid-glass affordance. In blur/plain modes it turns
+    // into a high-contrast white pill that competes with the search field, so let the
+    // tab row sit directly on the continuous top backdrop instead.
+    return materialMode == TopTabMaterialMode.LIQUID_GLASS
 }
