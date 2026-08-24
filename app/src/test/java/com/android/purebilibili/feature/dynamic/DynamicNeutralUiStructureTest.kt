@@ -43,7 +43,9 @@ class DynamicNeutralUiStructureTest {
         assertTrue(commentSource.contains("AppModalBottomSheet("))
         assertFalse(commentSource.contains("IOSModalBottomSheet("))
         assertTrue(commentSource.contains("AppTextField("))
-        assertFalse(commentSource.contains("OutlinedTextField("))
+        assertTrue(commentSource.contains("val commentFieldContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh"))
+        assertTrue(commentSource.contains("focusedContainerColor = commentFieldContainerColor"))
+        assertTrue(commentSource.contains("focusedBorderColor = Color.Transparent"))
         assertTrue(commentSource.contains("shape = AppShapes.container(ContainerLevel.Pill)"))
         assertFalse(commentSource.contains("shape = AppShapes.container(ContainerLevel.Sheet)"))
     }

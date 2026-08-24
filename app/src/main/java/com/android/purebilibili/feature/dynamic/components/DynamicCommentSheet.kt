@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -616,12 +617,30 @@ private fun DynamicCommentComposer(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        AppTextField(
+        val commentFieldContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh
+        OutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             modifier = Modifier.weight(1f),
-            placeholder = hint,
+            placeholder = {
+                AppText(
+                    text = hint,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            },
             singleLine = true,
+            shape = AppShapes.container(ContainerLevel.Pill),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = commentFieldContainerColor,
+                unfocusedContainerColor = commentFieldContainerColor,
+                disabledContainerColor = commentFieldContainerColor,
+                focusedBorderColor = Color.Transparent,
+                unfocusedBorderColor = Color.Transparent,
+                disabledBorderColor = Color.Transparent,
+                cursorColor = MaterialTheme.colorScheme.onSurface,
+            ),
         )
         if (onClearReplyTarget != null) {
             AppIconButton(onClick = onClearReplyTarget) {

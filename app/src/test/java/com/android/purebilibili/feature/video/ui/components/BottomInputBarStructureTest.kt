@@ -36,7 +36,9 @@ class BottomInputBarStructureTest {
         assertTrue(source.contains("reuseEnabled = true"))
         // 外层整条保留液态玻璃；内层提示框实心半透明 + 横向 padding（禁止嵌套 liquid dock）。
         assertTrue(source.contains("drawShellLens = true"))
-        assertTrue(source.contains(".padding(horizontal = 12.dp)"))
+        assertTrue(source.contains(".padding(horizontal = 10.dp)"))
+        assertTrue(source.contains("Arrangement.spacedBy(4.dp)"))
+        assertTrue(source.contains("Spacer(modifier = Modifier.width(8.dp))"))
         assertTrue(source.contains("评论 UP 主和大家"))
         assertTrue(source.contains("onSurface.copy(alpha = 0.08f)"))
         assertFalse(source.contains("BottomBarMatchedLiquidDock("))

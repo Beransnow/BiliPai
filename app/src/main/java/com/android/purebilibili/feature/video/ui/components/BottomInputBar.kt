@@ -311,19 +311,19 @@ private fun FloatingLiquidBottomInputBarContentRow(
                 .clip(commentFieldShape)
                 .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
                 .clickable(role = Role.Button) { onCommentClick() }
-                .padding(horizontal = 12.dp),
+                .padding(horizontal = 10.dp),
             contentAlignment = Alignment.CenterStart
         ) {
             AppText(
                 text = "评论 UP 主和大家...",
                 color = inputTextColor,
-                fontSize = 14.sp,
+                fontSize = 13.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }
 
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(8.dp))
 
         BottomInputBarActionButtons(
             favoriteIcon = favoriteIcon,
@@ -373,19 +373,19 @@ private fun BottomInputBarContentRow(
                 .clip(AppShapes.container(ContainerLevel.Card))
                 .background(inputContainerColor)
                 .clickable(role = Role.Button) { onCommentClick() }
-                .padding(horizontal = 12.dp),
+                .padding(horizontal = 10.dp),
             contentAlignment = Alignment.CenterStart
         ) {
             AppText(
                 text = "评论 UP 主和大家...",
                 color = inputTextColor,
-                fontSize = 14.sp,
+                fontSize = 13.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }
 
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(8.dp))
 
         BottomInputBarActionButtons(
             favoriteIcon = favoriteIcon,
@@ -420,7 +420,7 @@ private fun BottomInputBarActionButtons(
     onShareClick: () -> Unit,
 ) {
     Row(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconActionButton(
