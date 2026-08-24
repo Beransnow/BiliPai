@@ -2617,7 +2617,7 @@ private fun CommonListContent(
                                     blurEnabled = videoCardAppearance.blurEnabled,
                                     showCoverGlassBadges = videoCardAppearance.showCoverGlassBadges,
                                     showInfoGlassBadges = videoCardAppearance.showInfoGlassBadges,
-                                    showUpBadge = historyCardPresentation?.showUpBadge ?: true,
+                                    showUpBadge = historyCardPresentation?.showUpBadge,
                                     coverAspectRatio = cardLayout.coverAspectRatio,
                                     compactMetadata = cardLayout.compactMetadata,
                                     homeDurationStyle = homeDurationStyle,
