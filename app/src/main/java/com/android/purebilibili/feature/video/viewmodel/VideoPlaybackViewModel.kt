@@ -1717,6 +1717,9 @@ class VideoPlaybackViewModel : ViewModel() {
         }
 
     private var activeLoadJob: Job? = null
+    private var pageSwitchJob: Job? = null
+    private var pageSwitchGeneration: Long = 0L
+    private var pendingPageSwitchCid: Long? = null
     private var playerInfoJob: Job? = null
     private var aiSummaryJob: Job? = null
     private var videoNoteJob: Job? = null
@@ -2913,6 +2916,12 @@ class VideoPlaybackViewModel : ViewModel() {
         fallbackResumePositionMs: Long = 0L
     ) {
         if (bvid.isBlank()) return
+        // A full media load supersedes an in-place page switch. Without this, a slow page request
+        // can replace the player after navigation has already started loading another subject.
+        pageSwitchJob?.cancel()
+        pageSwitchJob = null
+        pendingPageSwitchCid = null
+        pageSwitchGeneration += 1L
         if (bvid != currentBvid || (cid > 0L && cid != currentCid)) {
             cancelPlaybackStallRecovery()
             playbackStallRecoveryFirstFrameRendered = false
@@ -7194,7 +7203,17 @@ class VideoPlaybackViewModel : ViewModel() {
     fun switchPage(pageIndex: Int, ignoreSavedProgress: Boolean = false) {
         val current = _uiState.value as? VideoPlaybackUiState.Success ?: return
         val page = current.info.pages.getOrNull(pageIndex) ?: return
-        if (page.cid == currentCid) { toast("\u5df2\u662f\u5f53\u524d\u5206P"); return }
+        // currentCid used to be changed before the play-url request completed. A second tap was
+        // then mistaken for the current page, while concurrent requests could commit/rollback in
+        // any order. Keep the committed identity unchanged and allow only the latest request to win.
+        if (page.cid == current.info.cid && pendingPageSwitchCid == null) {
+            toast("\u5df2\u662f\u5f53\u524d\u5206P")
+            return
+        }
+        if (page.cid == pendingPageSwitchCid && pageSwitchJob?.isActive == true) return
+        pageSwitchJob?.cancel()
+        val switchGeneration = ++pageSwitchGeneration
+        pendingPageSwitchCid = page.cid
         playbackCoordinator.dismissResumeSuggestion()
         subtitleLoadToken += 1
         val subtitleClearedState = clearTransientPlaybackPreviewData(clearSubtitleFields(current))
@@ -7203,13 +7222,12 @@ class VideoPlaybackViewModel : ViewModel() {
             flushPlaybackHeartbeatSnapshot(reason = "switch_page")
             playbackUseCase.savePosition(currentBvid, previousCid)
         }
-        currentCid = page.cid
         _uiState.value = subtitleClearedState.copy(
             isQualitySwitching = true,
             pendingPlaybackTransitionPositionMs = 0L
         )
         
-        viewModelScope.launch {
+        pageSwitchJob = viewModelScope.launch {
             try {
                 val playUrlData = VideoRepository.getPlayUrlData(currentBvid, page.cid, current.currentQuality)
                 if (playUrlData != null) {
@@ -7258,6 +7276,7 @@ class VideoPlaybackViewModel : ViewModel() {
                     )
                     
                     if (selection != null) {
+                        if (switchGeneration != pageSwitchGeneration) return@launch
                         val cdnSelection = resolvePlaybackCdnCandidateSelection(
                             videoUrl = selection.videoUrl,
                             audioUrl = selection.audioUrl,
@@ -7266,6 +7285,9 @@ class VideoPlaybackViewModel : ViewModel() {
                             cachedDashAudios = selection.cachedDashAudios,
                             adaptiveDashSource = selection.adaptiveDashSource
                         )
+                        // Commit the media identity immediately before replacing the player source.
+                        // The UI cid change then starts a danmaku request for exactly this source.
+                        currentCid = page.cid
                         playResolvedPlayback(
                             videoUrl = cdnSelection.playUrl,
                             audioUrl = cdnSelection.audioUrl,
@@ -7307,18 +7329,26 @@ class VideoPlaybackViewModel : ViewModel() {
                         return@launch
                     }
                 }
-                currentCid = previousCid
+                if (switchGeneration != pageSwitchGeneration) return@launch
                 _uiState.value = current.copy(
                     isQualitySwitching = false,
                     pendingPlaybackTransitionPositionMs = null
                 )
                 toast("\u5206P\u5207\u6362\u5931\u8d25")
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
-                currentCid = previousCid
+                if (switchGeneration != pageSwitchGeneration) return@launch
                 _uiState.value = current.copy(
                     isQualitySwitching = false,
                     pendingPlaybackTransitionPositionMs = null
                 )
+                toast("\u5206P\u5207\u6362\u5931\u8d25")
+            } finally {
+                if (switchGeneration == pageSwitchGeneration) {
+                    pendingPageSwitchCid = null
+                    pageSwitchJob = null
+                }
             }
         }
     }
