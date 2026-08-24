@@ -95,6 +95,26 @@ class AppPrimitiveComponentsStructureTest {
     }
 
     @Test
+    fun listItemFacadeRoutesEachThemeToItsNativeRenderer() {
+        val primitiveSource = loadSource()
+        val facade = loadSource("components/AppListItem.kt")
+        val material = loadSource("renderer/material3/AppMaterial3ListItem.kt")
+        val miuix = loadSource("renderer/miuix/AppMiuixListItem.kt")
+
+        assertFalse(primitiveSource.contains("fun AppListItem("))
+        assertTrue(facade.contains("AppUiStyle.MATERIAL3 -> AppMaterial3ListItem("))
+        assertTrue(facade.contains("AppUiStyle.MIUIX -> AppMiuixListItem("))
+        assertFalse(facade.contains("import androidx.compose.material3"))
+        assertFalse(facade.contains("import top.yukonga.miuix"))
+
+        assertTrue(material.contains("import androidx.compose.material3.ListItem"))
+        assertTrue(miuix.contains("import top.yukonga.miuix.kmp.basic.BasicComponent"))
+        assertTrue(miuix.contains("startAction = leadingContent"))
+        assertTrue(miuix.contains("endActions = trailingContent?.let"))
+        assertFalse(miuix.contains("import androidx.compose.material3"))
+    }
+
+    @Test
     fun textAndIconFacadesRouteEachThemeToNativeRenderers() {
         val primitiveSource = loadSource()
         val textFacade = loadSource("components/AppText.kt")

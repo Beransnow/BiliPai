@@ -49,7 +49,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.MenuItemColors
@@ -117,23 +116,6 @@ import top.yukonga.miuix.kmp.theme.MiuixTheme
 private object AppPrimitiveNoOpHapticFeedback : HapticFeedback {
     override fun performHapticFeedback(hapticFeedbackType: HapticFeedbackType) = Unit
 }
-
-@Composable
-fun AppListItem(
-    headlineContent: @Composable () -> Unit,
-    modifier: Modifier = Modifier,
-    overlineContent: (@Composable () -> Unit)? = null,
-    supportingContent: (@Composable () -> Unit)? = null,
-    leadingContent: (@Composable () -> Unit)? = null,
-    trailingContent: (@Composable () -> Unit)? = null,
-) = ListItem(
-    headlineContent = headlineContent,
-    modifier = modifier,
-    overlineContent = overlineContent,
-    supportingContent = supportingContent,
-    leadingContent = leadingContent,
-    trailingContent = trailingContent,
-)
 
 @Composable
 fun AppSnackbar(
