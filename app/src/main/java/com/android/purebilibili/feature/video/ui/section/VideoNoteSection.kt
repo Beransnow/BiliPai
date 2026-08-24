@@ -19,7 +19,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Redo
 import androidx.compose.material.icons.automirrored.outlined.Undo
 import androidx.compose.material.icons.outlined.AccessTime
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
@@ -237,12 +236,14 @@ private fun VideoNotePrimaryActionButton(
             contentColor = colorScheme.onPrimaryContainer,
         ),
     ) {
-        AppIcon(
-            imageVector = if (label == "新建") Icons.Outlined.Add else Icons.Outlined.Edit,
-            contentDescription = null,
-            modifier = Modifier.size(16.dp)
-        )
-        Spacer(modifier = Modifier.width(6.dp))
+        if (label != "新建") {
+            AppIcon(
+                imageVector = Icons.Outlined.Edit,
+                contentDescription = null,
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+        }
         AppText(label)
     }
 }
