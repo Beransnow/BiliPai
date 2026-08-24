@@ -1354,6 +1354,9 @@ private fun CinemaCommentsPane(
                 onCommentClick = playbackActions.openRootCommentComposer,
                 backdrop = commentChromeBackdrop,
                 isScrollInProgressProvider = { listState.isScrollInProgress },
+                scrollPositionProvider = {
+                    listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset
+                },
             )
 
             }

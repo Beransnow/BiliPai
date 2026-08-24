@@ -1,5 +1,10 @@
 package com.android.purebilibili.feature.video.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -26,7 +31,13 @@ import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,6 +51,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.purebilibili.core.store.AppNavigationSettings
 import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.store.resolveGlobalLiquidGlassReuseEnabled
@@ -59,6 +71,7 @@ import dev.chrisbanes.haze.HazeState
 import top.yukonga.miuix.kmp.blur.Backdrop
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 internal const val BOTTOM_INPUT_BAR_PLACEHOLDER_MIN_CONTRAST = 4.5f
 
@@ -119,11 +132,43 @@ fun BottomInputBar(
     backdrop: Backdrop? = null,
     hazeState: HazeState? = null,
     isScrollInProgressProvider: () -> Boolean = { false },
+    scrollPositionProvider: () -> Pair<Int, Int>? = { null },
 ) {
     val context = LocalContext.current
     val homeSettings by SettingsManager
         .getHomeSettings(context)
         .collectAsStateWithLifecycle(initialValue = HomeSettings())
+    val appNavigationSettings by SettingsManager
+        .getAppNavigationSettings(context)
+        .collectAsStateWithLifecycle(initialValue = AppNavigationSettings())
+    val autoHideOnScroll = appNavigationSettings.bottomBarVisibilityMode ==
+        SettingsManager.BottomBarVisibilityMode.SCROLL_HIDE
+    var isVisible by remember { mutableStateOf(true) }
+    val currentScrollPositionProvider by rememberUpdatedState(scrollPositionProvider)
+
+    LaunchedEffect(autoHideOnScroll) {
+        if (!autoHideOnScroll) {
+            isVisible = true
+            return@LaunchedEffect
+        }
+        var previousPosition = currentScrollPositionProvider() ?: return@LaunchedEffect
+        snapshotFlow { currentScrollPositionProvider() }
+            .distinctUntilChanged()
+            .collect { currentPosition ->
+                currentPosition ?: return@collect
+                val (previousItem, previousOffset) = previousPosition
+                val (currentItem, currentOffset) = currentPosition
+                isVisible = when {
+                    currentItem == 0 && currentOffset < 100 -> true
+                    currentItem > previousItem -> false
+                    currentItem < previousItem -> true
+                    currentOffset > previousOffset + 24 -> false
+                    currentOffset < previousOffset - 24 -> true
+                    else -> isVisible
+                }
+                previousPosition = currentPosition
+            }
+    }
     val floatingLiquidGlass = shouldUseFloatingLiquidBottomInputBar(
         androidNativeLiquidGlassEnabled = homeSettings.androidNativeLiquidGlassEnabled
     )
@@ -133,34 +178,41 @@ fun BottomInputBar(
         hasHazeState = hazeState != null
     )
 
-    if (floatingLiquidGlass) {
-        FloatingLiquidBottomInputBar(
-            modifier = modifier,
-            backdrop = backdrop,
-            isLiked = isLiked,
-            isFavorited = isFavorited,
-            isCoined = isCoined,
-            onLikeClick = onLikeClick,
-            onFavoriteClick = onFavoriteClick,
-            onCoinClick = onCoinClick,
-            onShareClick = onShareClick,
-            onCommentClick = onCommentClick,
-            isScrollInProgressProvider = isScrollInProgressProvider
-        )
-    } else {
-        DockedSolidBottomInputBar(
-            modifier = modifier,
-            hazeState = hazeState,
-            frostedBottomBar = frostedBottomBar,
-            isLiked = isLiked,
-            isFavorited = isFavorited,
-            isCoined = isCoined,
-            onLikeClick = onLikeClick,
-            onFavoriteClick = onFavoriteClick,
-            onCoinClick = onCoinClick,
-            onShareClick = onShareClick,
-            onCommentClick = onCommentClick
-        )
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+        exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
+        modifier = modifier,
+    ) {
+        if (floatingLiquidGlass) {
+            FloatingLiquidBottomInputBar(
+                modifier = Modifier,
+                backdrop = backdrop,
+                isLiked = isLiked,
+                isFavorited = isFavorited,
+                isCoined = isCoined,
+                onLikeClick = onLikeClick,
+                onFavoriteClick = onFavoriteClick,
+                onCoinClick = onCoinClick,
+                onShareClick = onShareClick,
+                onCommentClick = onCommentClick,
+                isScrollInProgressProvider = isScrollInProgressProvider
+            )
+        } else {
+            DockedSolidBottomInputBar(
+                modifier = Modifier,
+                hazeState = hazeState,
+                frostedBottomBar = frostedBottomBar,
+                isLiked = isLiked,
+                isFavorited = isFavorited,
+                isCoined = isCoined,
+                onLikeClick = onLikeClick,
+                onFavoriteClick = onFavoriteClick,
+                onCoinClick = onCoinClick,
+                onShareClick = onShareClick,
+                onCommentClick = onCommentClick
+            )
+        }
     }
 }
 
