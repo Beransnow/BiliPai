@@ -7950,6 +7950,10 @@ class VideoPlaybackViewModel : ViewModel() {
 
     fun cancelSponsorContribution() {
         sponsorContributionRequest = null
+        // REVIEW/SUCCESS are intentionally ignored by the availability refresher.
+        // Reset the dialog phase first so both the “完成” button and outside dismiss
+        // can close it, then restore the contribution marker when it is still available.
+        _sponsorContributionUiState.value = SponsorContributionUiState()
         refreshSponsorContributionAvailability()
     }
 
