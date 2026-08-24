@@ -24,9 +24,6 @@ import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.ChipColors
 import androidx.compose.material3.ChipElevation
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxColors
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -55,9 +52,6 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.ProgressIndicatorDefaults
 import androidx.compose.material3.PrimaryScrollableTabRow
 import androidx.compose.material3.PrimaryTabRow
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonColors
-import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.TextFieldColors
@@ -519,52 +513,6 @@ fun AppLinearProgressIndicator(
     trackColor = trackColor,
     strokeCap = strokeCap,
 )
-
-@Composable
-fun AppCheckbox(
-    checked: Boolean,
-    onCheckedChange: ((Boolean) -> Unit)?,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    colors: CheckboxColors = CheckboxDefaults.colors(),
-    interactionSource: MutableInteractionSource? = null,
-) {
-    val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
-    Checkbox(
-        checked = checked,
-        onCheckedChange = onCheckedChange,
-        modifier = modifier.appDesktopInteractionVisuals(
-            resolvedInteractionSource,
-            enabled && onCheckedChange != null,
-        ),
-        enabled = enabled,
-        colors = colors,
-        interactionSource = resolvedInteractionSource,
-    )
-}
-
-@Composable
-fun AppRadioButton(
-    selected: Boolean,
-    onClick: (() -> Unit)?,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    colors: RadioButtonColors = RadioButtonDefaults.colors(),
-    interactionSource: MutableInteractionSource? = null,
-) {
-    val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
-    RadioButton(
-        selected = selected,
-        onClick = onClick,
-        modifier = modifier.appDesktopInteractionVisuals(
-            resolvedInteractionSource,
-            enabled && onClick != null,
-        ),
-        enabled = enabled,
-        colors = colors,
-        interactionSource = resolvedInteractionSource,
-    )
-}
 
 @Composable
 fun AppOutlinedButton(

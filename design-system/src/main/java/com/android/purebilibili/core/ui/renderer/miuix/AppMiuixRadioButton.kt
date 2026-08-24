@@ -3,21 +3,21 @@ package com.android.purebilibili.core.ui.renderer.miuix
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.android.purebilibili.core.ui.components.appDesktopFocusableItemVisuals
-import top.yukonga.miuix.kmp.basic.Switch
+import top.yukonga.miuix.kmp.basic.RadioButton
 
 @Composable
-internal fun AppMiuixSwitch(
-    checked: Boolean,
-    onCheckedChange: ((Boolean) -> Unit)?,
+internal fun AppMiuixRadioButton(
+    selected: Boolean,
+    onClick: (() -> Unit)?,
     modifier: Modifier,
     enabled: Boolean,
 ) {
     ProvideAppMiuixHapticFeedback {
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
+        RadioButton(
+            selected = selected,
+            onClick = onClick,
+            modifier = modifier.appDesktopFocusableItemVisuals(enabled && onClick != null),
             enabled = enabled,
-            modifier = modifier.appDesktopFocusableItemVisuals(enabled && onCheckedChange != null),
         )
     }
 }

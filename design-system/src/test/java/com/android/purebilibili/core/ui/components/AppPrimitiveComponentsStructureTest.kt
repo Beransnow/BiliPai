@@ -33,10 +33,6 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(source.contains(") = CircularProgressIndicator("))
         assertTrue(source.contains("fun AppLinearProgressIndicator("))
         assertTrue(source.contains(") = LinearProgressIndicator("))
-        assertTrue(source.contains("fun AppCheckbox("))
-        assertTrue(source.contains(") = Checkbox("))
-        assertTrue(source.contains("fun AppRadioButton("))
-        assertTrue(source.contains(") = RadioButton("))
         assertTrue(source.contains("fun AppOutlinedButton("))
         assertTrue(source.contains(") = OutlinedButton("))
         assertTrue(source.contains("fun AppCard("))
@@ -166,9 +162,43 @@ class AppPrimitiveComponentsStructureTest {
         assertTrue(material.contains("Icons.Filled.Check"))
         assertTrue(material.contains("Icons.Filled.Close"))
         assertTrue(miuix.contains("import top.yukonga.miuix.kmp.basic.Switch"))
-        assertTrue(miuix.contains("LocalAppThemeConfig.current.hapticFeedbackEnabled"))
+        assertTrue(miuix.contains("ProvideAppMiuixHapticFeedback"))
         assertTrue(miuix.contains("modifier.appDesktopFocusableItemVisuals("))
         assertFalse(miuix.contains("import androidx.compose.material3"))
+    }
+
+    @Test
+    fun selectionFacadesRouteEachThemeToNativeRenderers() {
+        val primitiveSource = loadSource()
+        val checkboxFacade = loadSource("components/AppCheckbox.kt")
+        val radioFacade = loadSource("components/AppRadioButton.kt")
+        val materialCheckbox = loadSource("renderer/material3/AppMaterial3Checkbox.kt")
+        val materialRadio = loadSource("renderer/material3/AppMaterial3RadioButton.kt")
+        val miuixCheckbox = loadSource("renderer/miuix/AppMiuixCheckbox.kt")
+        val miuixRadio = loadSource("renderer/miuix/AppMiuixRadioButton.kt")
+        val miuixHaptic = loadSource("renderer/miuix/AppMiuixHapticFeedback.kt")
+
+        assertFalse(primitiveSource.contains("fun AppCheckbox("))
+        assertFalse(primitiveSource.contains("fun AppRadioButton("))
+        assertTrue(checkboxFacade.contains("data class AppCheckboxColors("))
+        assertTrue(checkboxFacade.contains("AppUiStyle.MATERIAL3 -> AppMaterial3Checkbox("))
+        assertTrue(checkboxFacade.contains("AppUiStyle.MIUIX -> AppMiuixCheckbox("))
+        assertTrue(radioFacade.contains("AppUiStyle.MATERIAL3 -> AppMaterial3RadioButton("))
+        assertTrue(radioFacade.contains("AppUiStyle.MIUIX -> AppMiuixRadioButton("))
+        assertFalse(checkboxFacade.contains("import androidx.compose.material3"))
+        assertFalse(radioFacade.contains("import androidx.compose.material3"))
+
+        assertTrue(materialCheckbox.contains("import androidx.compose.material3.Checkbox"))
+        assertTrue(materialRadio.contains("import androidx.compose.material3.RadioButton"))
+        assertTrue(miuixCheckbox.contains("import top.yukonga.miuix.kmp.basic.Checkbox"))
+        assertTrue(miuixCheckbox.contains("ToggleableState.On"))
+        assertTrue(miuixRadio.contains("import top.yukonga.miuix.kmp.basic.RadioButton"))
+        assertTrue(miuixCheckbox.contains("ProvideAppMiuixHapticFeedback"))
+        assertTrue(miuixRadio.contains("ProvideAppMiuixHapticFeedback"))
+        assertTrue(miuixHaptic.contains("LocalAppThemeConfig.current.hapticFeedbackEnabled"))
+        assertTrue(miuixHaptic.contains("NoOpHapticFeedback"))
+        assertFalse(miuixCheckbox.contains("import androidx.compose.material3"))
+        assertFalse(miuixRadio.contains("import androidx.compose.material3"))
     }
 
     @Test
