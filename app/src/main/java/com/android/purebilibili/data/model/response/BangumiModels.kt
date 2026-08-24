@@ -45,8 +45,17 @@ data class TimelineEpisode(
     @SerialName("pub_ts")
     val pubTs: Long = 0,              // 发布时间戳
     val delay: Int = 0,               // 是否延迟
+    @SerialName("delay_id")
+    val delayId: Long = 0,
+    @SerialName("delay_index")
+    val delayIndex: String = "",
     @SerialName("delay_reason")
     val delayReason: String = "",     // 延迟原因
+    @SerialName("ep_cover")
+    val episodeCover: String = "",
+    val published: Int? = null,
+    val follows: String = "",
+    val plays: String = "",
     val follow: Int = 0               // 是否追番
 )
 

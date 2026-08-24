@@ -67,9 +67,9 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
     SettingsSearchEntry(
         target = SettingsSearchTarget.HOME_FEED,
         title = "首页与推荐",
-        subtitle = "首页展示、推荐流、刷新数量、动态栏位、追番时间表、首页顶栏显示与首页壁纸",
+        subtitle = "首页展示、推荐流、刷新数量、动态栏位、番剧影视时间表、首页顶栏显示与首页壁纸",
         section = "设置",
-        aliases = listOf("首页", "推荐", "推荐流", "首页展示", "首页壁纸", "壁纸效果", "刷新数量", "动态栏位", "动态顶栏", "追番时间表", "展示追番时间表", "首页顶栏收起")
+        aliases = listOf("首页", "推荐", "推荐流", "首页展示", "首页壁纸", "壁纸效果", "刷新数量", "动态栏位", "动态顶栏", "追番时间表", "影视时间表", "电影时间线", "展示番剧影视时间表", "首页顶栏收起")
     ),
     SettingsSearchEntry(
         target = SettingsSearchTarget.NAVIGATION,
@@ -541,7 +541,7 @@ private val SETTINGS_SEARCH_INDEX: List<SettingsSearchEntry> = listOf(
         title = "首页与列表",
         subtitle = "展示样式、列表顶部栏、一键回顶、首页壁纸效果、推荐流卡片宽度",
         section = "首页设置",
-        aliases = listOf("首页展示", "首页与列表", "展示样式", "列表顶部栏", "历史记录顶部栏", "收藏夹顶部栏", "一键回顶", "回到顶部", "搜索回顶", "评论区回顶", "首页顶栏仅回顶显示", "仅回顶显示", "展示追番时间表", "追番时间表", "首页壁纸", "首页壁纸效果", "原图壁纸", "壁纸模糊", "强模糊", "推荐流卡片宽度", "首页卡片宽度", "卡片宽度", "统计信息贴封面", "UP主标识", "UP标识", "up主标识", "up标识", "UP主头像", "UP头像", "up主头像", "up头像", "隐藏头像"),
+        aliases = listOf("首页展示", "首页与列表", "展示样式", "列表顶部栏", "历史记录顶部栏", "收藏夹顶部栏", "一键回顶", "回到顶部", "搜索回顶", "评论区回顶", "首页顶栏仅回顶显示", "仅回顶显示", "展示番剧影视时间表", "追番时间表", "影视时间表", "电影时间线", "首页壁纸", "首页壁纸效果", "原图壁纸", "壁纸模糊", "强模糊", "推荐流卡片宽度", "首页卡片宽度", "卡片宽度", "统计信息贴封面", "UP主标识", "UP标识", "up主标识", "up标识", "UP主头像", "UP头像", "up主头像", "up头像", "隐藏头像"),
         focusId = SettingsSearchFocusIds.HOME_OVERVIEW
     ),
     SettingsSearchEntry(

@@ -1529,8 +1529,8 @@ fun AppearanceSettingsContent(
                         AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
                         AppSwitchPreference(
                             icon = rememberSettingsSemanticIcon(SettingsIconRole.HOME_FEED),
-                            title = "展示追番时间表",
-                            subtitle = "番剧页显示最近更新时间表",
+                            title = "展示番剧影视时间表",
+                            subtitle = "番剧与影视页显示最近更新时间表",
                             checked = showPgcTimeline,
                             onCheckedChange = { value ->
                                 scope.launch {

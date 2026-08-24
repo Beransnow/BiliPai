@@ -162,7 +162,7 @@ object BangumiRepository {
     
     /**
      * 获取番剧时间表
-     * @param type 1=番剧 4=国创
+     * @param type 1=番剧 3=电影 4=国创
      */
     suspend fun getTimeline(type: Int = 1): Result<List<TimelineDay>> = withContext(Dispatchers.IO) {
         try {

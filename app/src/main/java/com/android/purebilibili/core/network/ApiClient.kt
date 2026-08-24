@@ -2045,7 +2045,7 @@ interface BangumiApi {
     // 番剧时间表
     @GET("pgc/web/timeline")
     suspend fun getTimeline(
-        @Query("types") types: Int,      // 1=番剧 4=国创
+        @Query("types") types: Int,      // 1=番剧 3=电影 4=国创
         @Query("before") before: Int = 3,
         @Query("after") after: Int = 7
     ): com.android.purebilibili.data.model.response.BangumiTimelineResponse

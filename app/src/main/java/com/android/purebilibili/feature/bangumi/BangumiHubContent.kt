@@ -287,7 +287,7 @@ private fun BangumiHomeContent(
                 }
             }
 
-            if (channel == BangumiChannel.BANGUMI && showPgcTimeline) {
+            if (showPgcTimeline) {
                 item(span = { GridItemSpan(maxLineSpan) }, key = "timeline") {
                     TimelineSection(
                         state = state.timeline,
@@ -960,10 +960,10 @@ private fun TimelineEpisodeCard(episode: TimelineEpisode, onClick: () -> Unit) {
             .combinedClickable(onClick = onClick),
     ) {
         PosterImage(
-            cover = episode.cover,
+            cover = resolveTimelineEpisodeCover(episode, preferEpisodeCover = false),
             title = episode.title,
             badge = if (episode.follow == 1) "已追番" else "",
-            bottomBadge = episode.pubTime,
+            bottomBadge = resolveTimelineEpisodeScheduleLabel(episode),
         )
         AppText(
             episode.title,
@@ -972,9 +972,9 @@ private fun TimelineEpisodeCard(episode: TimelineEpisode, onClick: () -> Unit) {
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
-        if (episode.pubIndex.isNotBlank()) {
+        resolveTimelineEpisodeUpdateLabel(episode).takeIf(String::isNotBlank)?.let { updateLabel ->
             AppText(
-                text = episode.pubIndex,
+                text = updateLabel,
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
