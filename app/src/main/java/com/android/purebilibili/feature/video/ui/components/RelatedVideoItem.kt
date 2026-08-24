@@ -244,7 +244,7 @@ fun RelatedVideoItem(
         com.android.purebilibili.core.ui.FeedTitleHierarchy.Standard,
     )
 
-    Row(
+    Box(
         modifier = modifier
             .fillMaxWidth()
             .onGloballyPositioned { coordinates ->
@@ -254,113 +254,119 @@ fun RelatedVideoItem(
             .background(AppSurfaceTokens.cardContainer())
             .clickable(onClick = triggerRelatedVideoClick)
             .padding(6.dp),
-        horizontalArrangement = Arrangement.spacedBy(HORIZONTAL_VIDEO_CARD_COVER_INFO_GAP_DP.dp),
-        verticalAlignment = Alignment.Top,
     ) {
-        Box(
-            modifier = Modifier
-                .width(coverWidth)
-                .aspectRatio(HORIZONTAL_VIDEO_CARD_COVER_ASPECT_RATIO)
-                .onGloballyPositioned { coordinates ->
-                    coverCoordinatesRef.value = coordinates
-                }
-                .clip(coverShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(HORIZONTAL_VIDEO_CARD_COVER_INFO_GAP_DP.dp),
+            verticalAlignment = Alignment.Top,
         ) {
-            AsyncImage(
-                model = coverRequest,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                alignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize()
-            )
-            AppText(
-                text = FormatUtils.formatDuration(video.duration),
-                color = Color.White,
-                style = MaterialTheme.typography.labelMedium.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    shadow = Shadow(
-                        color = Color.Black.copy(alpha = 0.6f),
-                        blurRadius = 4f,
-                        offset = Offset(0f, 1f)
-                    )
-                ),
+            Box(
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(6.dp)
-            )
-        }
+                    .width(coverWidth)
+                    .aspectRatio(HORIZONTAL_VIDEO_CARD_COVER_ASPECT_RATIO)
+                    .onGloballyPositioned { coordinates ->
+                        coverCoordinatesRef.value = coordinates
+                    }
+                    .clip(coverShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                AsyncImage(
+                    model = coverRequest,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    alignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                )
+                AppText(
+                    text = FormatUtils.formatDuration(video.duration),
+                    color = Color.White,
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        shadow = Shadow(
+                            color = Color.Black.copy(alpha = 0.6f),
+                            blurRadius = 4f,
+                            offset = Offset(0f, 1f)
+                        )
+                    ),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(6.dp)
+                )
+            }
 
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
-        ) {
-            AppText(
-                text = video.title,
-                style = contentTypography.title,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            UpBadgeName(
-                name = video.owner.name,
-                inlineTrailingContent = if (isFollowed) {
-                    {
-                        val followVisualPolicy = resolveVideoFollowVisualPolicy(isFollowing = true, darkTheme = true)
-                        AppText(
-                            text = "已关注",
-                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
-                            color = when (followVisualPolicy.relatedBadgeTone) {
-                                FollowBadgeTone.PRIMARY -> MaterialTheme.colorScheme.primary
-                                null -> MaterialTheme.colorScheme.onSurfaceVariant
-                            }
-                        )
-                    }
-                } else {
-                    null
-                },
-                leadingContent = if (
-                    com.android.purebilibili.core.ui.LocalUpBadgeVisibility.current.showAvatars &&
-                    video.owner.face.isNotEmpty()
-                ) {
-                    {
-                        AsyncImage(
-                            model = ImageRequest.Builder(context)
-                                .data(FormatUtils.fixImageUrl(video.owner.face))
-                                .crossfade(false)
-                                .build(),
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .size(16.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                        )
-                    }
-                } else {
-                    null
-                },
-                nameStyle = MaterialTheme.typography.labelMedium,
-                nameColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                badgeTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
-                badgeBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
-                showUpBadge = showUpBadge,
-                modifier = Modifier.fillMaxWidth()
-            )
-            HorizontalVideoStatRow(
-                playText = FormatUtils.formatStat(video.stat.view.toLong()),
-                danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
-                playIcon = Icons.Filled.PlayArrow,
-                danmakuIcon = Icons.Filled.ChatBubble,
-            )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
+            ) {
+                AppText(
+                    text = video.title,
+                    style = contentTypography.title,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                UpBadgeName(
+                    name = video.owner.name,
+                    inlineTrailingContent = if (isFollowed) {
+                        {
+                            val followVisualPolicy = resolveVideoFollowVisualPolicy(isFollowing = true, darkTheme = true)
+                            AppText(
+                                text = "已关注",
+                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
+                                color = when (followVisualPolicy.relatedBadgeTone) {
+                                    FollowBadgeTone.PRIMARY -> MaterialTheme.colorScheme.primary
+                                    null -> MaterialTheme.colorScheme.onSurfaceVariant
+                                }
+                            )
+                        }
+                    } else {
+                        null
+                    },
+                    leadingContent = if (
+                        com.android.purebilibili.core.ui.LocalUpBadgeVisibility.current.showAvatars &&
+                        video.owner.face.isNotEmpty()
+                    ) {
+                        {
+                            AsyncImage(
+                                model = ImageRequest.Builder(context)
+                                    .data(FormatUtils.fixImageUrl(video.owner.face))
+                                    .crossfade(false)
+                                    .build(),
+                                contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(16.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                            )
+                        }
+                    } else {
+                        null
+                    },
+                    nameStyle = MaterialTheme.typography.labelMedium,
+                    nameColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    badgeTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
+                    badgeBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+                    showUpBadge = showUpBadge,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                HorizontalVideoStatRow(
+                    playText = FormatUtils.formatStat(video.stat.view.toLong()),
+                    danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
+                    playIcon = Icons.Filled.PlayArrow,
+                    danmakuIcon = Icons.Filled.ChatBubble,
+                    modifier = Modifier.padding(end = if (onMoreClick != null) 32.dp else 0.dp),
+                )
+            }
         }
 
         if (onMoreClick != null) {
             val moreHaptic = rememberHapticFeedback()
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .align(Alignment.BottomEnd)
+                    .size(32.dp)
                     .clip(CircleShape)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
