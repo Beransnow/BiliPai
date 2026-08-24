@@ -58,6 +58,7 @@ import com.android.purebilibili.core.ui.components.AppCircularProgressIndicator
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppTextButton
+import com.android.purebilibili.core.ui.components.AppTextField
 import com.android.purebilibili.feature.settings.SettingsPageScrollHost
 import com.android.purebilibili.feature.settings.ui.SettingsPageScaffold
 import kotlinx.coroutines.Dispatchers
@@ -212,24 +213,43 @@ fun SkinCatalogScreen(
             return@SettingsPageScaffold
         }
 
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 160.dp),
-            contentPadding = PaddingValues(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            items(
-                items = state.filteredThemes,
-                key = { it.id }
-            ) { entry ->
-                SkinCatalogCard(
-                    entry = entry,
-                    onClick = {
-                        stateHolder.openPreview(entry)
-                        preparePreview(entry)
+        Column(modifier = Modifier.fillMaxSize()) {
+            AppTextField(
+                value = state.searchQuery,
+                onValueChange = stateHolder::setSearchQuery,
+                placeholder = "搜索装扮名称",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+            if (state.filteredThemes.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AppText(
+                        text = "没有找到相关装扮",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = 160.dp),
+                    contentPadding = PaddingValues(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(items = state.filteredThemes, key = { it.id }) { entry ->
+                        SkinCatalogCard(
+                            entry = entry,
+                            onClick = {
+                                stateHolder.openPreview(entry)
+                                preparePreview(entry)
+                            }
+                        )
                     }
-                )
+                }
             }
         }
     }
@@ -436,6 +456,10 @@ private class SkinCatalogStateHolder(context: Context) {
 
     fun setInstalling() {
         _state.value = _state.value.copy(installing = true, installError = null, installed = false)
+    }
+
+    fun setSearchQuery(query: String) {
+        _state.value = _state.value.copy(searchQuery = query)
     }
 
     fun setInstallResult(result: Result<com.android.purebilibili.core.plugin.skin.InstalledUiSkinPackage>) {

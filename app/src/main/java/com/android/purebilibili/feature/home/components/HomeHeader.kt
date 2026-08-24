@@ -2164,9 +2164,6 @@ fun HomeHeader(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(pinnedChromeContentHeight)
-                    .graphicsLayer {
-                        alpha = 0.76f
-                    }
                     .clearAndSetSemantics {}
             )
             Box(

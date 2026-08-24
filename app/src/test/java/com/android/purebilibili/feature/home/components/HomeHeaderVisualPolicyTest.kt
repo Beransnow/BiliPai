@@ -1965,7 +1965,7 @@ class HomeHeaderVisualPolicyTest {
         assertTrue(trimSource.contains("model = File(topTrimImagePath)"))
         assertTrue(trimSource.contains("contentScale = ContentScale.Crop"))
         assertTrue(trimSource.contains(".height(pinnedChromeContentHeight)"))
-        assertTrue(trimSource.contains("alpha = 0.76f"))
+        assertFalse(trimSource.contains("alpha = 0.76f"))
         assertTrue(trimSource.contains("0.72f to Color.Transparent"))
         assertTrue(trimSource.contains("headerChromeColors.containerColor.copy(alpha = 0.42f)"))
         assertFalse(trimSource.contains("ContentScale.FillBounds"))
