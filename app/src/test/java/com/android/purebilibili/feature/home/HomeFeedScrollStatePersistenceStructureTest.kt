@@ -30,6 +30,7 @@ class HomeFeedScrollStatePersistenceStructureTest {
         assertTrue(pageSource.contains("LazyVerticalStaggeredGrid("))
         assertTrue(pageSource.contains("StaggeredGridCells.Fixed(gridColumns)"))
         assertTrue(pageSource.contains("StaggeredGridItemSpan.FullLine"))
+        assertTrue(pageSource.contains("verticalItemSpacing = cardLayout.verticalItemSpacingDp.dp"))
         assertTrue(pageSource.contains("visibleItemsInfo.maxOfOrNull { it.index }"))
         assertTrue(screenSource.contains("LazyVerticalStaggeredGrid("))
         assertFalse(pageSource.contains("LazyVerticalGrid("))

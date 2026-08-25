@@ -1910,7 +1910,7 @@ fun HomeScreen(
                                          top = listTopPadding
                                      ),
                                      horizontalArrangement = homeFeedHorizontalArrangement,
-                                     verticalArrangement = Arrangement.spacedBy(homeFeedCardLayout.verticalItemSpacingDp.dp),
+                                     verticalItemSpacing = homeFeedCardLayout.verticalItemSpacingDp.dp,
                                      modifier = Modifier.fillMaxSize()
                                  ) {
                                      // [新增] 用户启用首页横幅时，骨架顶部渲染横幅占位，

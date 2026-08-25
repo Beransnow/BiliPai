@@ -247,7 +247,7 @@ internal fun HomeCategoryPageContent(
                 columns = StaggeredGridCells.Fixed(gridColumns),
                 contentPadding = contentPadding,
                 horizontalArrangement = horizontalArrangement,
-                verticalArrangement = Arrangement.spacedBy(cardLayout.verticalItemSpacingDp.dp),
+                verticalItemSpacing = cardLayout.verticalItemSpacingDp.dp,
                 modifier = Modifier.fillMaxSize()
             ) {
         if (category == HomeCategory.LIVE) {
