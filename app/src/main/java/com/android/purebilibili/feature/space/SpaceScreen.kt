@@ -41,6 +41,7 @@ import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.PlayCircleOutline
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Subtitles
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.ViewAgenda
@@ -109,6 +110,7 @@ import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
+import com.android.purebilibili.core.ui.MediaContrastPalette
 import com.android.purebilibili.core.ui.OfficialVerifyBadgeSpec
 import com.android.purebilibili.core.ui.OfficialVerifyBadgeTone
 import com.android.purebilibili.core.ui.blur.BlurSurfaceType
@@ -123,6 +125,8 @@ import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpe
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
 import com.android.purebilibili.feature.home.components.cards.HORIZONTAL_VIDEO_CARD_COVER_ASPECT_RATIO
 import com.android.purebilibili.feature.home.components.cards.HORIZONTAL_VIDEO_CARD_COVER_WIDTH_DP
+import com.android.purebilibili.feature.home.components.cards.HorizontalVideoStatRow
+import com.android.purebilibili.feature.home.components.cards.resolveVideoCardCoverOverlayTextShadow
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import com.android.purebilibili.core.ui.transition.VideoCardSourceLayout
 import com.android.purebilibili.core.ui.AppSpacingTokens
@@ -2829,6 +2833,11 @@ private fun SpaceHomeVideoCard(
     }
     val cardCornerRadiusDp = AppShapes.containerCornerDp(ContainerLevel.Card).value.roundToInt()
     val coverShape = AppShapes.borderedContainer(ContainerLevel.Card)
+    val coverOverlayTextStyle = remember {
+        androidx.compose.ui.text.TextStyle(
+            shadow = resolveVideoCardCoverOverlayTextShadow()
+        )
+    }
     val sharedTransitionReady = sharedTransitionKey != null &&
         sharedTransitionScope != null &&
         animatedVisibilityScope != null
@@ -2947,18 +2956,33 @@ private fun SpaceHomeVideoCard(
                 }
             }
 
-            AppSurface(
+            Box(
                 modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(8.dp),
-                shape = AppShapes.container(ContainerLevel.Chip),
-                color = Color.Black.copy(alpha = 0.72f)
-            ) {
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .height(AppSpacingTokens.TripleExtraLarge + AppSpacingTokens.Small)
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                MediaContrastPalette.Scrim.copy(alpha = 0.30f),
+                                MediaContrastPalette.Scrim.copy(alpha = 0.78f),
+                            )
+                        )
+                    )
+            )
+
+            if (video.length.isNotBlank()) {
                 AppText(
                     text = video.length,
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                     fontSize = 11.sp,
-                    color = Color.White
+                    fontWeight = FontWeight.Medium,
+                    color = Color.White,
+                    style = coverOverlayTextStyle,
+                    maxLines = 1,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(horizontal = 8.dp, vertical = 7.dp),
                 )
             }
 
@@ -2988,12 +3012,13 @@ private fun SpaceHomeVideoCard(
                 style = feedContentTypography().title.copy(
                     color = MaterialTheme.colorScheme.onSurface
                 ),
-                overflow = TextOverflow.Visible
+                minLines = 2,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
-            val metadata = remember(video.created, video.play, progressState.progressSec) {
+            val metadata = remember(video.created, progressState.progressSec) {
                 buildList {
                     if (video.created > 0L) add(FormatUtils.formatPublishTime(video.created))
-                    if (video.play > 0) add("${FormatUtils.formatStat(video.play.toLong())}播放")
                     if (progressState.progressSec == -1) add("已看完")
                 }.joinToString(" · ")
             }
@@ -3006,6 +3031,14 @@ private fun SpaceHomeVideoCard(
                     overflow = TextOverflow.Visible
                 )
             }
+            Spacer(modifier = Modifier.height(4.dp))
+            HorizontalVideoStatRow(
+                playText = FormatUtils.formatStat(video.play.toLong()),
+                danmakuText = FormatUtils.formatStat(video.comment.toLong()),
+                playIcon = Icons.Outlined.PlayCircleOutline,
+                danmakuIcon = Icons.Outlined.Subtitles,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 }

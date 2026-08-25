@@ -37,6 +37,20 @@ class SpaceScreenStructureTest {
     }
 
     @Test
+    fun `space grid video card follows the home cover overlay treatment`() {
+        val source = loadSource("app/src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt")
+        val cardSource = source
+            .substringAfter("private fun SpaceHomeVideoCard(")
+            .substringBefore("private fun SpaceAggregateMediaCard(")
+
+        assertTrue(cardSource.contains("Brush.verticalGradient"))
+        assertTrue(cardSource.contains("resolveVideoCardCoverOverlayTextShadow"))
+        assertTrue(cardSource.contains("HorizontalVideoStatRow("))
+        assertTrue(cardSource.contains("danmakuIcon = Icons.Outlined.Subtitles"))
+        assertFalse(cardSource.contains("color = Color.Black.copy(alpha = 0.72f)"))
+    }
+
+    @Test
     fun `contribution videos switch layout without dual placing lazy grid content`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt")
         val contributionVideoItems = source
