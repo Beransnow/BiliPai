@@ -380,6 +380,7 @@ fun FloatingBottomBar(
     isScrollInProgressProvider: () -> Boolean = { false },
     dragSelectionEnabled: Boolean = true,
     longPressDragSelectionEnabled: Boolean = false,
+    onDragPositionChanged: ((Float) -> Unit)? = null,
     dragTrackingMode: DampedDragTrackingMode = DampedDragTrackingMode.SPRING,
     liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
     content: @Composable RowScope.() -> Unit
@@ -505,6 +506,7 @@ fun FloatingBottomBar(
     val maxTabIndex = (safeTabsCount - 1).coerceAtLeast(0)
     val selectedIndexLatest = rememberUpdatedState(selectedIndex)
     val onSelectedLatest = rememberUpdatedState(onSelected)
+    val onDragPositionChangedLatest = rememberUpdatedState(onDragPositionChanged)
     val indicatorPositionLatest by rememberUpdatedState(indicatorPositionProvider)
     val isScrollInProgressLatest by rememberUpdatedState(isScrollInProgressProvider)
     val pagerFollowGate = remember { ExternalPagerIndicatorFollowGate() }
@@ -575,10 +577,11 @@ fun FloatingBottomBar(
             },
             onDrag = { _, dragAmount ->
                 if (tabWidthPx > 0f) {
-                    updateValue(
+                    val nextPosition =
                         (targetValue + dragAmount.x / tabWidthPx * if (isLtr) 1f else -1f)
                             .fastCoerceIn(0f, maxTabIndex.toFloat())
-                    )
+                    updateValue(nextPosition)
+                    onDragPositionChangedLatest.value?.invoke(nextPosition)
                     animationScope.launch {
                         offsetAnimation.snapTo(offsetAnimation.value + dragAmount.x)
                     }

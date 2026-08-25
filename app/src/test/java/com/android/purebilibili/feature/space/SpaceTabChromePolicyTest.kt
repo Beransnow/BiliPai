@@ -199,6 +199,22 @@ class SpaceTabChromePolicyTest {
     }
 
     @Test
+    fun `dragged secondary indicator asks rail to follow only near viewport edges`() {
+        assertEquals(
+            0f,
+            resolveSpaceSecondarySwitchDragScrollDeltaPx(1f, 104f, 360f, 0f, 4f, 12f)
+        )
+        assertEquals(
+            72f,
+            resolveSpaceSecondarySwitchDragScrollDeltaPx(3f, 104f, 360f, 0f, 4f, 12f)
+        )
+        assertEquals(
+            -8f,
+            resolveSpaceSecondarySwitchDragScrollDeltaPx(0f, 104f, 360f, 0f, 4f, 12f)
+        )
+    }
+
+    @Test
     fun `contribution toolbar uses compact chrome and icon first actions on narrow phones`() {
         val spec = resolveSpaceContributionToolbarSpec(
             widthDp = 412,

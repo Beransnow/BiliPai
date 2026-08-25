@@ -181,6 +181,26 @@ internal fun resolveSpaceContributionTabCenteredScrollOffsetPx(
         .coerceAtLeast(0)
 }
 
+internal fun resolveSpaceSecondarySwitchDragScrollDeltaPx(
+    indicatorPosition: Float,
+    itemWidthPx: Float,
+    viewportWidthPx: Float,
+    currentScrollPx: Float,
+    containerHorizontalPaddingPx: Float,
+    edgePaddingPx: Float
+): Float {
+    if (itemWidthPx <= 0f || viewportWidthPx <= 0f) return 0f
+    val indicatorLeftPx =
+        containerHorizontalPaddingPx + indicatorPosition * itemWidthPx - currentScrollPx
+    val indicatorRightPx = indicatorLeftPx + itemWidthPx
+    return when {
+        indicatorLeftPx < edgePaddingPx -> indicatorLeftPx - edgePaddingPx
+        indicatorRightPx > viewportWidthPx - edgePaddingPx ->
+            indicatorRightPx - (viewportWidthPx - edgePaddingPx)
+        else -> 0f
+    }
+}
+
 private fun estimateSpaceContributionTabTitleWidthDp(title: String): Int {
     val textWidth = title.sumOf { char ->
         if (char.code in 0..127) {
