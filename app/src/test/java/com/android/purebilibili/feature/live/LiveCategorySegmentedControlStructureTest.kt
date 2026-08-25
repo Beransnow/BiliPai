@@ -8,14 +8,15 @@ import kotlin.test.assertTrue
 class LiveCategorySegmentedControlStructureTest {
 
     @Test
-    fun `live home category row delegates to native preset chip row`() {
+    fun `live home category row follows theme tabs and liquid reuse`() {
         val source = loadSource(
             "app/src/main/java/com/android/purebilibili/feature/live/LiveListScreen.kt"
         )
 
-        // 上游合流后：分区行 = LazyRow + LiveHomeSelectableChip（按 MD3/Miuix/iOS 原生分发）。
-        assertTrue(source.contains("LazyRow("))
-        assertTrue(source.contains("LiveHomeSelectableChip("))
+        assertTrue(source.contains("LocalAppUiStyle.current == AppUiStyle.MATERIAL3"))
+        assertTrue(source.contains("AppNativeTabRow("))
+        assertTrue(source.contains("AppLiquidAwareTabRow("))
+        assertTrue(source.contains("scrollable = true"))
         assertFalse(source.contains("dragSelectionEnabled = false"))
         assertFalse(source.contains("liquidGlassEffectsEnabled = false"))
         assertFalse(source.contains("SimpleLiquidIndicator"))

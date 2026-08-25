@@ -72,14 +72,14 @@ class BottomBarLiquidSegmentedControlStructureTest {
     }
 
     @Test
-    fun `three segment indicator stays aligned with the shell edge`() {
+    fun `multi segment indicator reuses the full home dock slot`() {
         val width = resolveSegmentedControlIndicatorWidthDp(
             slotWidthDp = 180f,
             indicatorHeightDp = 30f,
             itemCount = 3,
         )
 
-        assertEquals(172f, width)
+        assertEquals(180f, width)
     }
 
     @Test

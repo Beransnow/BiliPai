@@ -58,7 +58,12 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
 import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppLiquidAwareTabRow
+import com.android.purebilibili.core.ui.components.AppNativeTabRow
+import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
+import com.android.purebilibili.core.theme.AppUiStyle
+import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.responsiveContentWidth
 import com.android.purebilibili.data.model.response.LiveAreaParent
@@ -889,39 +894,55 @@ private fun LiveAreaHomeChipRow(
     onAreaListClick: () -> Unit,
     onMatchClick: () -> Unit,
 ) {
-    // BiliPai: 横向分区 chip + 右侧工具（封面/首帧、赛事、全部分区）
+    val categoryOptions = remember(areaEntries) {
+        buildList {
+            add(AppSegmentOption(LIVE_HOME_RECOMMEND_INDEX, "推荐"))
+            add(AppSegmentOption(LIVE_HOME_FOLLOWED_INDEX, "已关注"))
+            areaEntries.forEachIndexed { index, entry ->
+                add(
+                    AppSegmentOption(
+                        value = resolveLiveHomeSelectedIndexForArea(index),
+                        label = entry.title,
+                    ),
+                )
+            }
+        }
+    }
+    val selectedCategory = categoryOptions
+        .firstOrNull { it.value == selectedAreaIndex }
+        ?.value
+        ?: LIVE_HOME_RECOMMEND_INDEX
+    val categoryMinWidth = rememberAppTopChromePolicy()
+        .compactChromeSpec
+        .let(::resolveLiveHomeCategorySegmentedControlSpec)
+        .itemWidthDp
+        ?.dp
+        ?: 82.dp
+
+    // MD3 follows the app-wide animated underline. Miuix uses the shared moving
+    // capsule, which automatically opts into global liquid-glass reuse when enabled.
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        LazyRow(
-            modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            item(key = "recommend") {
-                LiveHomeSelectableChip(
-                    label = "推荐",
-                    selected = selectedAreaIndex == LIVE_HOME_RECOMMEND_INDEX,
-                    onClick = { onAreaSelected(LIVE_HOME_RECOMMEND_INDEX) },
-                )
-            }
-            item(key = "followed") {
-                LiveHomeSelectableChip(
-                    label = "已关注",
-                    selected = isLiveHomeFollowedTab(selectedAreaIndex),
-                    onClick = { onAreaSelected(LIVE_HOME_FOLLOWED_INDEX) },
-                )
-            }
-            items(areaEntries.size, key = { index -> "${areaEntries[index].parentAreaId}_${areaEntries[index].areaId}_$index" }) { index ->
-                val entry = areaEntries[index]
-                val chipIndex = resolveLiveHomeSelectedIndexForArea(index)
-                LiveHomeSelectableChip(
-                    label = entry.title,
-                    selected = selectedAreaIndex == chipIndex,
-                    onClick = { onAreaSelected(chipIndex) },
-                )
-            }
+        if (LocalAppUiStyle.current == AppUiStyle.MATERIAL3) {
+            AppNativeTabRow(
+                options = categoryOptions,
+                selectedValue = selectedCategory,
+                onSelectionChange = onAreaSelected,
+                scrollable = true,
+                minTabWidth = categoryMinWidth,
+                modifier = Modifier.weight(1f),
+            )
+        } else {
+            AppLiquidAwareTabRow(
+                options = categoryOptions,
+                selectedValue = selectedCategory,
+                onSelectionChange = onAreaSelected,
+                scrollable = true,
+                minTabWidth = categoryMinWidth,
+                modifier = Modifier.weight(1f),
+            )
         }
         AppIconButton(
             onClick = onToggleFirstFrame,

@@ -153,7 +153,9 @@ internal fun resolveSegmentedControlIndicatorWidthDp(
     if (slotWidthDp <= 0f || indicatorHeightDp <= 0f || itemCount <= 0) return 0f
     val insetWidth = (slotWidthDp - SEGMENTED_CONTROL_INDICATOR_HORIZONTAL_INSET_DP * 2f)
         .coerceAtLeast(0f)
-    if (itemCount >= 3) return insetWidth
+    // Multi-item rows follow the home dock exactly: the moving indicator owns the
+    // complete tab slot, so the first item does not accumulate another inner inset.
+    if (itemCount >= 3) return slotWidthDp
     return min(
         insetWidth,
         indicatorHeightDp * SEGMENTED_CONTROL_MAX_INDICATOR_ASPECT_RATIO,
