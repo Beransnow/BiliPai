@@ -4,7 +4,7 @@
 
 更新日志(ChangeLog)
 
-[更改] 版本号 0.2.3-beta.13，versionCode 320
+[更改] 版本号 0.2.3-beta.13，versionCode 321
 [更改] 正式包 BiliPai-0.2.3-beta.13.apk，Dev 包 BiliPai-0.2.3-beta.13-dev.apk
 [更改] 基准 v0.2.3-beta.12（2df4685），比较区间见 GitHub Compare
 
