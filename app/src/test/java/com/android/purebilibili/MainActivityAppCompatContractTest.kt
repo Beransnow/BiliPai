@@ -324,6 +324,30 @@ class MainActivityAppCompatContractTest {
     }
 
     @Test
+    fun launcherTargets_shouldReferenceDedicatedRoundIcons() {
+        val manifest = loadResourceText("../AndroidManifest.xml")
+        listOf(
+            "MainActivitySplashIcon3D" to "ic_launcher_3d_round",
+            "MainActivitySplashBiliPai" to "ic_launcher_bilipai_round",
+            "MainActivitySplashBiliPaiPink" to "ic_launcher_bilipai_pink_round",
+            "MainActivitySplashBiliPaiWhite" to "ic_launcher_bilipai_white_round",
+            "MainActivitySplashBiliPaiMonet" to "ic_launcher_bilipai_monet_round"
+        ).forEach { (activityName, roundIconName) ->
+            val activityDeclaration = Regex(
+                """<activity\s+android:name="\.$activityName".*?/>""",
+                RegexOption.DOT_MATCHES_ALL
+            ).find(manifest)?.value
+
+            assertTrue(
+                activityDeclaration?.contains(
+                    """android:roundIcon="@mipmap/$roundIconName"""
+                ) == true,
+                "$activityName should expose its dedicated round icon to system component resolvers"
+            )
+        }
+    }
+
+    @Test
     fun blueSnowMaidAdaptiveForegrounds_shouldKeepThemeAwareOuterShell() {
         listOf(
             "drawable/ic_launcher_blue_snow_maid_background.xml",
