@@ -1292,7 +1292,7 @@ fun AppearanceSettingsContent(
                         AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
                         SettingsSingleChoicePreference(
                             title = "列表顶部栏：${commonListHeaderCollapseMode.label}",
-                            subtitle = "收藏夹列表：${commonListHeaderCollapseMode.description}。历史记录跟随「导航设置 → 首页顶栏显示」开关",
+                            subtitle = "收藏夹列表：${commonListHeaderCollapseMode.description}。历史记录固定为下滑隐藏标题、回顶恢复",
                             options = commonListHeaderCollapseOptions,
                             selectedValue = commonListHeaderCollapseMode,
                             onSelectionChange = { mode ->

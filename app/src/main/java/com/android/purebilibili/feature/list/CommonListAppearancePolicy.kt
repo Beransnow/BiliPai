@@ -3,7 +3,6 @@ package com.android.purebilibili.feature.list
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.store.CommonListHeaderCollapseMode
-import com.android.purebilibili.core.store.HomeHeaderCollapseMode
 import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.resolveHomeHeaderBlurEnabled
 import com.android.purebilibili.core.ui.AppTopChromePolicy
@@ -99,16 +98,9 @@ internal fun resolveCommonListHeaderCollapseModeForScreen(
     configuredMode: CommonListHeaderCollapseMode,
     isFavoritePage: Boolean,
     isHistoryPage: Boolean = false,
-    homeHeaderCollapseMode: HomeHeaderCollapseMode = HomeHeaderCollapseMode.BOTH,
 ): CommonListHeaderCollapseMode {
     if (isHistoryPage) {
-        // 与首页推荐流保持同一展开策略：开启时随列表收起，只有回到顶部才展开；
-        // 首页关闭折叠时，历史页也固定显示。
-        return if (homeHeaderCollapseMode.hasAnyCollapse) {
-            CommonListHeaderCollapseMode.SHOW_AT_TOP_ONLY
-        } else {
-            CommonListHeaderCollapseMode.ALWAYS_VISIBLE
-        }
+        return CommonListHeaderCollapseMode.SHOW_AT_TOP_ONLY
     }
     return if (
         isFavoritePage && configuredMode == CommonListHeaderCollapseMode.SHOW_ON_REVERSE_SCROLL

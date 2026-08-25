@@ -623,7 +623,6 @@ fun CommonListScreen(
         configuredMode = homeSettings.commonListHeaderCollapseMode,
         isFavoritePage = favoriteViewModel != null,
         isHistoryPage = historyViewModel != null,
-        homeHeaderCollapseMode = homeSettings.homeHeaderCollapseMode,
     )
     val commonListHeaderCollapseEnabled = supportsCollapsibleCommonListHeader &&
         commonListHeaderCollapseMode != CommonListHeaderCollapseMode.ALWAYS_VISIBLE
