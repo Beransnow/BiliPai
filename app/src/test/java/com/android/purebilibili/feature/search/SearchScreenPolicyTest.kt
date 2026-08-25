@@ -166,9 +166,22 @@ class SearchScreenPolicyTest {
             )
         )
         assertEquals(
-            emptyList(),
+            listOf(
+                SearchFilterControl.PHOTO_ORDER,
+                SearchFilterControl.PHOTO_CATEGORY
+            ),
             resolveSearchFilterControls(
                 currentType = SearchType.PHOTO,
+                currentUpOrder = SearchUpOrder.DEFAULT
+            )
+        )
+        assertEquals(
+            listOf(
+                SearchFilterControl.ARTICLE_ORDER,
+                SearchFilterControl.ARTICLE_CATEGORY
+            ),
+            resolveSearchFilterControls(
+                currentType = SearchType.ARTICLE,
                 currentUpOrder = SearchUpOrder.DEFAULT
             )
         )

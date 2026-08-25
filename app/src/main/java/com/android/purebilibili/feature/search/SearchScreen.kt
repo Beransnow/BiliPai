@@ -145,6 +145,8 @@ import com.android.purebilibili.data.repository.SearchOrder
 import com.android.purebilibili.data.repository.SearchDuration
 import com.android.purebilibili.data.repository.SearchLiveOrder
 import com.android.purebilibili.data.repository.SearchOrderSort
+import com.android.purebilibili.data.repository.SearchArticleCategory
+import com.android.purebilibili.data.repository.SearchPhotoCategory
 import com.android.purebilibili.data.repository.SearchUpOrder
 import com.android.purebilibili.data.repository.SearchUserType
 import com.android.purebilibili.data.repository.resolveSearchDurationFilterLabel
@@ -411,7 +413,11 @@ internal enum class SearchFilterControl {
     UP_ORDER,
     UP_ORDER_SORT,
     UP_USER_TYPE,
-    LIVE_ORDER
+    LIVE_ORDER,
+    ARTICLE_ORDER,
+    ARTICLE_CATEGORY,
+    PHOTO_ORDER,
+    PHOTO_CATEGORY
 }
 
 internal fun resolveSearchFilterTabs(): List<SearchType> {
@@ -484,10 +490,16 @@ internal fun resolveSearchFilterControls(
         SearchType.LIVE -> listOf(SearchFilterControl.LIVE_ORDER)
         SearchType.BANGUMI,
         SearchType.MEDIA_FT,
-        SearchType.LIVE_USER,
-        SearchType.ARTICLE,
-        SearchType.TOPIC,
-        SearchType.PHOTO -> emptyList()
+        SearchType.LIVE_USER -> emptyList()
+        SearchType.ARTICLE -> listOf(
+            SearchFilterControl.ARTICLE_ORDER,
+            SearchFilterControl.ARTICLE_CATEGORY
+        )
+        SearchType.PHOTO -> listOf(
+            SearchFilterControl.PHOTO_ORDER,
+            SearchFilterControl.PHOTO_CATEGORY
+        )
+        SearchType.TOPIC -> emptyList()
     }
 }
 
@@ -1054,13 +1066,21 @@ fun SearchScreen(
                                         currentUpOrderSort = state.upOrderSort,
                                         currentUpUserType = state.upUserType,
                                         currentLiveOrder = state.liveOrder,
+                                        currentArticleOrder = state.articleOrder,
+                                        currentArticleCategory = state.articleCategory,
+                                        currentPhotoOrder = state.photoOrder,
+                                        currentPhotoCategory = state.photoCategory,
                                         onOrderChange = { viewModel.setSearchOrder(it) },
                                         onDurationToggle = { viewModel.toggleSearchDuration(it) },
                                         onVideoTidChange = { viewModel.setVideoTid(it) },
                                         onUpOrderChange = { viewModel.setUpOrder(it) },
                                         onUpOrderSortChange = { viewModel.setUpOrderSort(it) },
                                         onUpUserTypeChange = { viewModel.setUpUserType(it) },
-                                        onLiveOrderChange = { viewModel.setLiveOrder(it) }
+                                        onLiveOrderChange = { viewModel.setLiveOrder(it) },
+                                        onArticleOrderChange = viewModel::setArticleOrder,
+                                        onArticleCategoryChange = viewModel::setArticleCategory,
+                                        onPhotoOrderChange = viewModel::setPhotoOrder,
+                                        onPhotoCategoryChange = viewModel::setPhotoCategory
                                     )
                                 }
                             }
@@ -2618,13 +2638,21 @@ fun SearchFilterBar(
     currentUpOrderSort: SearchOrderSort,
     currentUpUserType: SearchUserType,
     currentLiveOrder: SearchLiveOrder,
+    currentArticleOrder: SearchOrder,
+    currentArticleCategory: SearchArticleCategory,
+    currentPhotoOrder: SearchOrder,
+    currentPhotoCategory: SearchPhotoCategory,
     onOrderChange: (SearchOrder) -> Unit,
     onDurationToggle: (SearchDuration) -> Unit,
     onVideoTidChange: (Int) -> Unit,
     onUpOrderChange: (SearchUpOrder) -> Unit,
     onUpOrderSortChange: (SearchOrderSort) -> Unit,
     onUpUserTypeChange: (SearchUserType) -> Unit,
-    onLiveOrderChange: (SearchLiveOrder) -> Unit
+    onLiveOrderChange: (SearchLiveOrder) -> Unit,
+    onArticleOrderChange: (SearchOrder) -> Unit,
+    onArticleCategoryChange: (SearchArticleCategory) -> Unit,
+    onPhotoOrderChange: (SearchOrder) -> Unit,
+    onPhotoCategoryChange: (SearchPhotoCategory) -> Unit
 ) {
     var showOrderMenu by remember { mutableStateOf(false) }
     var showDurationMenu by remember { mutableStateOf(false) }
@@ -2633,6 +2661,10 @@ fun SearchFilterBar(
     var showUpOrderSortMenu by remember { mutableStateOf(false) }
     var showUpUserTypeMenu by remember { mutableStateOf(false) }
     var showLiveOrderMenu by remember { mutableStateOf(false) }
+    var showArticleOrderMenu by remember { mutableStateOf(false) }
+    var showArticleCategoryMenu by remember { mutableStateOf(false) }
+    var showPhotoOrderMenu by remember { mutableStateOf(false) }
+    var showPhotoCategoryMenu by remember { mutableStateOf(false) }
 
     val videoTidOptions = remember {
         listOf(
@@ -2844,6 +2876,105 @@ fun SearchFilterBar(
                         }
                     }
                 }
+
+                if (SearchFilterControl.ARTICLE_ORDER in filterControls) {
+                    SearchOrderMenu(
+                        current = currentArticleOrder,
+                        expanded = showArticleOrderMenu,
+                        options = SearchOrder.entries,
+                        onExpandedChange = { showArticleOrderMenu = it },
+                        onSelected = onArticleOrderChange
+                    )
+                }
+
+                if (SearchFilterControl.ARTICLE_CATEGORY in filterControls) {
+                    SearchCategoryMenu(
+                        label = currentArticleCategory.displayName,
+                        highlighted = currentArticleCategory != SearchArticleCategory.ALL,
+                        expanded = showArticleCategoryMenu,
+                        options = SearchArticleCategory.entries.map { it.displayName },
+                        onExpandedChange = { showArticleCategoryMenu = it },
+                        onSelected = { index ->
+                            SearchArticleCategory.entries.getOrNull(index)?.let(onArticleCategoryChange)
+                        }
+                    )
+                }
+
+                if (SearchFilterControl.PHOTO_ORDER in filterControls) {
+                    SearchOrderMenu(
+                        current = currentPhotoOrder,
+                        expanded = showPhotoOrderMenu,
+                        options = SearchOrder.entries.filter { it != SearchOrder.ATTENTION },
+                        onExpandedChange = { showPhotoOrderMenu = it },
+                        onSelected = onPhotoOrderChange
+                    )
+                }
+
+                if (SearchFilterControl.PHOTO_CATEGORY in filterControls) {
+                    SearchCategoryMenu(
+                        label = currentPhotoCategory.displayName,
+                        highlighted = currentPhotoCategory != SearchPhotoCategory.ALL,
+                        expanded = showPhotoCategoryMenu,
+                        options = SearchPhotoCategory.entries.map { it.displayName },
+                        onExpandedChange = { showPhotoCategoryMenu = it },
+                        onSelected = { index ->
+                            SearchPhotoCategory.entries.getOrNull(index)?.let(onPhotoCategoryChange)
+                        }
+                    )
+                }
+        }
+    }
+}
+
+@Composable
+private fun SearchOrderMenu(
+    current: SearchOrder,
+    expanded: Boolean,
+    options: List<SearchOrder>,
+    onExpandedChange: (Boolean) -> Unit,
+    onSelected: (SearchOrder) -> Unit
+) {
+    Box {
+        FilterMenuChip(
+            text = current.displayName,
+            highlighted = current != SearchOrder.TOTALRANK,
+            onClick = { onExpandedChange(true) }
+        )
+        AppDropdownMenu(expanded = expanded, onDismissRequest = { onExpandedChange(false) }) {
+            options.forEach { order ->
+                AppDropdownMenuItem(
+                    text = { AppText(order.displayName) },
+                    onClick = {
+                        onSelected(order)
+                        onExpandedChange(false)
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchCategoryMenu(
+    label: String,
+    highlighted: Boolean,
+    expanded: Boolean,
+    options: List<String>,
+    onExpandedChange: (Boolean) -> Unit,
+    onSelected: (Int) -> Unit
+) {
+    Box {
+        FilterMenuChip(label, highlighted) { onExpandedChange(true) }
+        AppDropdownMenu(expanded = expanded, onDismissRequest = { onExpandedChange(false) }) {
+            options.forEachIndexed { index, option ->
+                AppDropdownMenuItem(
+                    text = { AppText(option) },
+                    onClick = {
+                        onSelected(index)
+                        onExpandedChange(false)
+                    }
+                )
+            }
         }
     }
 }
