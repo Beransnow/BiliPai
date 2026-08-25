@@ -420,13 +420,16 @@ internal fun resolveSearchFilterTabs(): List<SearchType> {
         SearchType.BANGUMI,
         SearchType.MEDIA_FT,
         SearchType.LIVE,
+        SearchType.LIVE_USER,
         SearchType.UP,
-        SearchType.ARTICLE
+        SearchType.ARTICLE,
+        SearchType.TOPIC,
+        SearchType.PHOTO
     )
 }
 
 internal fun resolveSearchDefaultPlaceholder(): String {
-    return "搜索视频、番剧、影视、直播、UP主、专栏..."
+    return "搜索视频、番剧、影视、直播、UP主、专栏等..."
 }
 
 internal fun resolveSearchUpUserTypeFilterLabel(userType: SearchUserType): String {

@@ -98,7 +98,7 @@ class SearchScreenPolicyTest {
     @Test
     fun `searchDefaultPlaceholder covers all visible tabs`() {
         assertEquals(
-            "搜索视频、番剧、影视、直播、UP主、专栏...",
+            "搜索视频、番剧、影视、直播、UP主、专栏等...",
             resolveSearchDefaultPlaceholder()
         )
     }
@@ -117,23 +117,21 @@ class SearchScreenPolicyTest {
                 SearchType.BANGUMI,
                 SearchType.MEDIA_FT,
                 SearchType.LIVE,
+                SearchType.LIVE_USER,
                 SearchType.UP,
-                SearchType.ARTICLE
+                SearchType.ARTICLE,
+                SearchType.TOPIC,
+                SearchType.PHOTO
             ),
             resolveSearchFilterTabs()
         )
     }
 
     @Test
-    fun searchFilterTabs_hideExtraTypesWithoutRemovingModelSupport() {
+    fun searchFilterTabs_exposeEverySupportedApiType() {
         val visibleTabs = resolveSearchFilterTabs()
 
-        assertFalse(SearchType.LIVE_USER in visibleTabs)
-        assertFalse(SearchType.TOPIC in visibleTabs)
-        assertFalse(SearchType.PHOTO in visibleTabs)
-        assertTrue(SearchType.entries.contains(SearchType.LIVE_USER))
-        assertTrue(SearchType.entries.contains(SearchType.TOPIC))
-        assertTrue(SearchType.entries.contains(SearchType.PHOTO))
+        assertEquals(SearchType.entries.toSet(), visibleTabs.toSet())
     }
 
     @Test
