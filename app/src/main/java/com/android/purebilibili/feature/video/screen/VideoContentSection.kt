@@ -169,6 +169,11 @@ internal fun shouldReuseVideoContentTabBarLiquidGlassDock(
     hasBackdrop: Boolean,
 ): Boolean = androidNativeLiquidGlassEnabled && hasBackdrop
 
+internal fun resolveVideoContentTabBarStartPaddingDp(
+    reusesLiquidGlassDock: Boolean,
+    containerHorizontalPaddingDp: Int,
+): Int = if (reusesLiquidGlassDock) 0 else containerHorizontalPaddingDp
+
 internal fun resolveVideoContentTabBarLiquidChromeSpec(
     androidNativeLiquidGlassEnabled: Boolean,
     hasBackdrop: Boolean,
@@ -1719,7 +1724,13 @@ private fun VideoContentTabBar(
                         Modifier.background(MaterialTheme.colorScheme.surface)
                     }
                 )
-                .padding(horizontal = layoutSpec.containerHorizontalPaddingDp.dp),
+                .padding(
+                    start = resolveVideoContentTabBarStartPaddingDp(
+                        reusesLiquidGlassDock = liquidChromeSpec.reusesLiquidGlassDock,
+                        containerHorizontalPaddingDp = layoutSpec.containerHorizontalPaddingDp,
+                    ).dp,
+                    end = layoutSpec.containerHorizontalPaddingDp.dp,
+                ),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = if (liquidChromeSpec.reusesLiquidGlassDock) {
                 Arrangement.spacedBy(8.dp)
