@@ -1210,7 +1210,11 @@ fun SearchScreen(
                                             homeDurationStyle = homeDurationStyle,
                                             highlightedTitle = highlightedTitle,
                                             showOnlineCount = showOnlineCount,
-                                            modifier = Modifier,
+                                            modifier = if (cardAnimationEnabled) {
+                                                Modifier.animateItem()
+                                            } else {
+                                                Modifier
+                                            },
                                             //  [交互优化] 传递 onWatchLater 用于显示菜单选项
                                             onWatchLater = if (video.bvid.isNotBlank()) {
                                                 { viewModel.addToWatchLater(video.bvid, video.id) }
