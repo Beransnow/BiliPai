@@ -13,10 +13,7 @@ class LiveCategorySegmentedControlStructureTest {
             "app/src/main/java/com/android/purebilibili/feature/live/LiveListScreen.kt"
         )
 
-        assertTrue(source.contains("LocalAppUiStyle.current == AppUiStyle.MATERIAL3"))
-        assertTrue(source.contains("AppNativeTabRow("))
-        assertTrue(source.contains("AppLiquidAwareTabRow("))
-        assertTrue(source.contains("LiveThemeAdaptiveTabRow("))
+        assertTrue(source.contains("AppThemeAdaptiveTabRow("))
         assertTrue(source.contains("private fun LiveSortTagChipRow("))
         assertTrue(source.contains("onSortTagSelected(value.takeIf { it.isNotBlank() })"))
         assertTrue(source.contains("scrollable = true"))
@@ -35,11 +32,20 @@ class LiveCategorySegmentedControlStructureTest {
         assertTrue(source.contains("HorizontalPager("))
         assertTrue(source.contains("pagerState.animateScrollToPage"))
         assertTrue(source.contains("selectedTab = pagerState.currentPage"))
-        // 上游合流后：全部分区 tab 行 = LazyRow + LiveHomeSelectableChip。
-        assertTrue(source.contains("LazyRow("))
-        assertTrue(source.contains("LiveHomeSelectableChip("))
+        assertTrue(source.contains("AppThemeAdaptiveTabRow("))
+        assertFalse(source.contains("LiveHomeSelectableChip("))
         assertFalse(source.contains("dragSelectionEnabled = false"))
         assertFalse(source.contains("liquidGlassEffectsEnabled = false"))
+    }
+
+    @Test
+    fun `live search result tabs use the global theme adaptive row`() {
+        val source = loadSource(
+            "app/src/main/java/com/android/purebilibili/feature/live/LiveSearchScreen.kt"
+        )
+
+        assertTrue(source.contains("AppThemeAdaptiveTabRow("))
+        assertFalse(source.contains("LiveHomeSelectableChip("))
     }
 
     @Test

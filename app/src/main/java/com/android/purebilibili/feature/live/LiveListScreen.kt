@@ -58,12 +58,9 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalBottomBarContentPadding
 import com.android.purebilibili.core.ui.components.AppIconButton
-import com.android.purebilibili.core.ui.components.AppLiquidAwareTabRow
-import com.android.purebilibili.core.ui.components.AppNativeTabRow
 import com.android.purebilibili.core.ui.components.AppSegmentOption
+import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
 import com.android.purebilibili.core.ui.rememberAppTopChromePolicy
-import com.android.purebilibili.core.theme.AppUiStyle
-import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.responsiveContentWidth
 import com.android.purebilibili.data.model.response.LiveAreaParent
@@ -925,7 +922,7 @@ private fun LiveAreaHomeChipRow(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        LiveThemeAdaptiveTabRow(
+        AppThemeAdaptiveTabRow(
             options = categoryOptions,
             selectedValue = selectedCategory,
             onSelectionChange = onAreaSelected,
@@ -987,7 +984,7 @@ private fun LiveSortTagChipRow(
     val selectedValue = selectedSortType
         ?.takeIf { selected -> options.any { it.value == selected } }
         ?: options.first().value
-    LiveThemeAdaptiveTabRow(
+    AppThemeAdaptiveTabRow(
         options = options,
         selectedValue = selectedValue,
         onSelectionChange = { value ->
@@ -996,35 +993,6 @@ private fun LiveSortTagChipRow(
         minTabWidth = 72.dp,
         modifier = Modifier.fillMaxWidth(),
     )
-}
-
-@Composable
-private fun <T> LiveThemeAdaptiveTabRow(
-    options: List<AppSegmentOption<T>>,
-    selectedValue: T,
-    onSelectionChange: (T) -> Unit,
-    modifier: Modifier = Modifier,
-    minTabWidth: androidx.compose.ui.unit.Dp = 72.dp,
-) {
-    if (LocalAppUiStyle.current == AppUiStyle.MATERIAL3) {
-        AppNativeTabRow(
-            options = options,
-            selectedValue = selectedValue,
-            onSelectionChange = onSelectionChange,
-            scrollable = true,
-            minTabWidth = minTabWidth,
-            modifier = modifier,
-        )
-    } else {
-        AppLiquidAwareTabRow(
-            options = options,
-            selectedValue = selectedValue,
-            onSelectionChange = onSelectionChange,
-            scrollable = true,
-            minTabWidth = minTabWidth,
-            modifier = modifier,
-        )
-    }
 }
 
 @Composable

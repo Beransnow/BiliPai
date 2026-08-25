@@ -10,8 +10,49 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
+import com.android.purebilibili.core.theme.AppUiStyle
+import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import top.yukonga.miuix.kmp.blur.Backdrop
+
+/**
+ * App-wide category/page tab contract: MD3 keeps the animated native underline;
+ * Miuix uses the shared moving capsule and participates in global liquid-glass reuse.
+ */
+@Composable
+fun <T> AppThemeAdaptiveTabRow(
+    options: List<AppSegmentOption<T>>,
+    selectedValue: T,
+    onSelectionChange: (T) -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    scrollable: Boolean = false,
+    minTabWidth: Dp = 72.dp,
+    miuixBackdrop: Backdrop? = null,
+) {
+    if (LocalAppUiStyle.current == AppUiStyle.MATERIAL3) {
+        AppNativeTabRow(
+            options = options,
+            selectedValue = selectedValue,
+            onSelectionChange = onSelectionChange,
+            modifier = modifier,
+            enabled = enabled,
+            scrollable = scrollable,
+            minTabWidth = minTabWidth,
+        )
+    } else {
+        AppLiquidAwareTabRow(
+            options = options,
+            selectedValue = selectedValue,
+            onSelectionChange = onSelectionChange,
+            modifier = modifier,
+            enabled = enabled,
+            scrollable = scrollable,
+            minTabWidth = minTabWidth,
+            miuixBackdrop = miuixBackdrop,
+        )
+    }
+}
 
 /**
  * App-level tab row that reuses the same liquid indicator and interaction contract as the

@@ -39,6 +39,8 @@ import com.android.purebilibili.core.util.LocalWindowSizeClass
 import com.android.purebilibili.core.util.responsiveContentWidth
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppSegmentOption
+import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTextButton
@@ -277,24 +279,19 @@ private fun LiveAreaParentTabRow(
 ) {
     if (areas.isEmpty()) return
     val safeSelectedTab = selectedTab.coerceIn(0, areas.lastIndex)
-    // BiliPai TabBar + SearchText 形态：横向 chip，按 MD3/Miuix/iOS 原生分发。
-    LazyRow(
+    val options = remember(areas) {
+        areas.mapIndexed { index, area -> AppSegmentOption(index, area.name) }
+    }
+    AppThemeAdaptiveTabRow(
+        options = options,
+        selectedValue = safeSelectedTab,
+        onSelectionChange = onTabSelected,
+        scrollable = true,
+        minTabWidth = 112.dp,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = horizontalPadding),
-        horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
-        verticalAlignment = Alignment.CenterVertically,
-        contentPadding = PaddingValues(vertical = AppSpacingTokens.ExtraSmall),
-    ) {
-        items(areas.size, key = { areas[it].id }) { index ->
-            val area = areas[index]
-            LiveHomeSelectableChip(
-                label = area.name,
-                selected = index == safeSelectedTab,
-                onClick = { onTabSelected(index) },
-            )
-        }
-    }
+    )
 }
 
 @Composable
