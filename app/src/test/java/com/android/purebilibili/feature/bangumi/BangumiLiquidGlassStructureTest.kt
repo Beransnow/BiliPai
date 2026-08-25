@@ -14,6 +14,9 @@ class BangumiLiquidGlassStructureTest {
         val tabRowSource = File(
             "src/main/java/com/android/purebilibili/core/ui/components/AppLiquidAwareTabRow.kt",
         ).readText()
+        val floatingDockSource = File(
+            "src/main/java/com/android/purebilibili/feature/home/components/FloatingBottomBar.kt",
+        ).readText()
         val homeTabSource = sourceOf("HomeBangumiTabPage.kt")
 
         assertTrue(screenSource.contains("AppLiquidAwareTabRow("))
@@ -39,6 +42,8 @@ class BangumiLiquidGlassStructureTest {
         assertTrue(tabRowSource.contains("Modifier.horizontalScroll(scrollState)"))
         assertTrue(tabRowSource.contains("itemWidth = minTabWidth"))
         assertTrue(tabRowSource.contains("longPressDragSelectionEnabled = options.size > 1"))
+        assertTrue(floatingDockSource.contains("resolveSharedBottomBarCapsuleShape()"))
+        assertTrue(!floatingDockSource.contains("remember { CircleShape }"))
         assertTrue(contentSource.contains("rememberLayerBackdrop()"))
         assertTrue(contentSource.contains("miuixBackdrop = followBackdrop"))
         assertTrue(!tabRowSource.contains("forceLiquidChrome = true"))
