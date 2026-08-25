@@ -40,7 +40,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 //  Material Icons
 import com.android.purebilibili.core.store.HomeSettings
 import com.android.purebilibili.core.store.SettingsManager
-import com.android.purebilibili.core.store.resolveHomeHeaderBlurEnabled
 import com.android.purebilibili.core.ui.rememberAppGridLayoutIcon
 import com.android.purebilibili.core.ui.rememberAppListLayoutIcon
 import com.android.purebilibili.feature.dynamic.resolveDynamicTopBarHorizontalPadding
@@ -126,7 +125,7 @@ fun DynamicTopBarWithTabs(
     Column(
         modifier = modifier.biliPaiProgressiveTopBlur(
             backdrop = dockBackdrop,
-            enabled = resolveHomeHeaderBlurEnabled(homeSettings.headerBlurMode),
+            enabled = liquidGlassEnabled,
         ),
     ) {
         Spacer(modifier = Modifier.height(statusBarHeight))

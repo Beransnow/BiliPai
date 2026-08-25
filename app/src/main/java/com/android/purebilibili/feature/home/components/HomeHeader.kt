@@ -1370,7 +1370,13 @@ internal fun Modifier.homeTopChromeSurface(
     when (renderMode) {
         HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP,
         HomeTopChromeRenderMode.LIQUID_GLASS_HAZE -> {
-            this.background(surfaceColor, shape)
+            this
+                .biliPaiProgressiveTopBlur(
+                    backdrop = miuixBackdrop,
+                    enabled = useProgressiveTopBlur,
+                    shape = shape,
+                )
+                .background(surfaceColor, shape)
         }
 
         HomeTopChromeRenderMode.BLUR -> {
@@ -2160,7 +2166,7 @@ fun HomeHeader(
                         isScrolling = topChromeMotionPolicy.isScrolling,
                         isTransitionRunning = topChromeMotionPolicy.isTransitionRunning,
                         forceLowBlurBudget = forceLowBlurBudget,
-                        useProgressiveTopBlur = true,
+                        useProgressiveTopBlur = homeSettings?.androidNativeLiquidGlassEnabled == true,
                 )
             )
         }

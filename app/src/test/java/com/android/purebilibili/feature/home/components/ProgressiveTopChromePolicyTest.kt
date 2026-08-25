@@ -21,8 +21,11 @@ class ProgressiveTopChromePolicyTest {
         val commonList = loadSource("feature/list/CommonListScreen.kt")
 
         assertTrue(homeHeader.contains("Modifier.biliPaiProgressiveTopBlur("))
+        assertTrue(homeHeader.contains("homeSettings?.androidNativeLiquidGlassEnabled == true"))
         assertTrue(dynamicTopBar.contains("modifier.biliPaiProgressiveTopBlur("))
+        assertTrue(dynamicTopBar.contains("enabled = liquidGlassEnabled"))
         assertTrue(commonList.contains(".biliPaiProgressiveTopBlur("))
+        assertTrue(commonList.contains("enabled = homeSettings.androidNativeLiquidGlassEnabled"))
     }
 
     private fun loadSource(relativePath: String): String {

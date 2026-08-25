@@ -836,7 +836,7 @@ fun CommonListScreen(
 
     // 决定顶栏背景 (使用私有的 localHazeState)
     val useProgressiveHeaderBlur = shouldUseBiliPaiProgressiveTopBlur(
-        enabled = isHeaderBlurEnabled,
+        enabled = homeSettings.androidNativeLiquidGlassEnabled,
         hasBackdrop = true,
     )
     val topBarBackgroundModifier = if (useProgressiveHeaderBlur) {
