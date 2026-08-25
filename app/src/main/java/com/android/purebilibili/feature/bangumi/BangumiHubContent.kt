@@ -427,6 +427,7 @@ private fun BangumiIndexContent(
     listBottomPadding: Dp,
 ) {
     val scope = rememberCoroutineScope()
+    val categories = bangumiIndexCategoriesForChannel(channel)
     AdaptivePullToRefreshBox(
         isRefreshing = state.results.isRefreshing,
         onRefresh = onRetryResults,
@@ -439,12 +440,12 @@ private fun BangumiIndexContent(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            if (channel == BangumiChannel.CINEMA) item(
+            if (categories.size > 1) item(
                 span = { GridItemSpan(maxLineSpan) },
-                key = "cinema_categories",
+                key = "index_categories",
             ) {
                 AppLiquidAwareTabRow(
-                    options = CINEMA_INDEX_CATEGORIES.map { AppSegmentOption(it, it.label) },
+                    options = categories.map { AppSegmentOption(it, it.label) },
                     selectedValue = category,
                     scrollable = true,
                     minTabWidth = 108.dp,
@@ -1120,11 +1121,3 @@ private fun InlineError(message: String, onRetry: () -> Unit) {
         primaryAction = AppContentStateAction("重试", onRetry),
     )
 }
-
-private val CINEMA_INDEX_CATEGORIES = listOf(
-    BangumiIndexCategory.CINEMA_ALL,
-    BangumiIndexCategory.MOVIE,
-    BangumiIndexCategory.TV_SHOW,
-    BangumiIndexCategory.DOCUMENTARY,
-    BangumiIndexCategory.VARIETY,
-)

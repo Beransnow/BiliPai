@@ -29,11 +29,28 @@ enum class BangumiIndexCategory(
     val indexType: Int? = null,
 ) {
     BANGUMI(label = "番剧", seasonType = 1),
+    GUOCHUANG(label = "国创", seasonType = 4),
     CINEMA_ALL(label = "全部", indexType = 102),
     MOVIE(label = "电影", indexType = 2),
     TV_SHOW(label = "电视剧", indexType = 5),
     DOCUMENTARY(label = "纪录片", indexType = 3),
     VARIETY(label = "综艺", indexType = 7),
+}
+
+fun bangumiIndexCategoriesForChannel(
+    channel: BangumiChannel,
+): List<BangumiIndexCategory> = when (channel) {
+    BangumiChannel.BANGUMI -> listOf(
+        BangumiIndexCategory.BANGUMI,
+        BangumiIndexCategory.GUOCHUANG,
+    )
+    BangumiChannel.CINEMA -> listOf(
+        BangumiIndexCategory.CINEMA_ALL,
+        BangumiIndexCategory.MOVIE,
+        BangumiIndexCategory.TV_SHOW,
+        BangumiIndexCategory.DOCUMENTARY,
+        BangumiIndexCategory.VARIETY,
+    )
 }
 
 @Immutable

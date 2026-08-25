@@ -266,7 +266,7 @@ class VideoContentTabBarPolicyTest {
     }
 
     @Test
-    fun `info comment tab bar keeps bottom-bar press scale during pager motion`() {
+    fun `info comment tab bar uses theme adaptive chrome during pager motion`() {
         val source = loadSource(
             "app/src/main/java/com/android/purebilibili/feature/video/screen/VideoContentSection.kt"
         )
@@ -275,13 +275,11 @@ class VideoContentTabBarPolicyTest {
             .substringBefore("// [新增] 恢复画面按钮")
 
         assertTrue(tabBarBlock.contains("tapPressRefractionEnabled = true"))
-        assertTrue(tabBarBlock.contains("itemWidth = liquidChromeSpec.itemWidthDp?.dp"))
+        assertTrue(tabBarBlock.contains("AppThemeAdaptiveTabRow("))
+        assertFalse(tabBarBlock.contains("AppPrimaryTabRow("))
+        assertTrue(tabBarBlock.contains("miuixBackdrop = miuixBackdrop"))
         assertTrue(tabBarBlock.contains("Arrangement.spacedBy(8.dp)"))
-        assertTrue(
-            tabBarBlock.contains(
-                "externalPagerMotionEffectsEnabled = liquidChromeSpec.reusesLiquidGlassDock"
-            )
-        )
+        assertTrue(tabBarBlock.contains("indicatorPositionProvider = indicatorPositionProvider"))
         assertTrue(source.contains("clip = tabBarCollapseProgress > 0.001f"))
     }
 
@@ -313,7 +311,8 @@ class VideoContentTabBarPolicyTest {
         assertFalse(commentTabSource.contains("CommentSortFilterBar("))
         assertTrue(source.contains("shouldShowVideoContentTabBarDanmakuActions(selectedTabIndex)"))
         assertFalse(source.contains("if (selectedTabIndex != 1)"))
-        assertTrue(source.contains("AppPrimaryTabRow("))
+        assertTrue(source.contains("AppThemeAdaptiveTabRow("))
+        assertFalse(source.contains("AppPrimaryTabRow("))
         assertTrue(source.contains("indicatorPositionProvider = indicatorPositionProvider"))
         assertTrue(source.contains("showNativeSortHeader = !homeSettings.androidNativeLiquidGlassEnabled"))
         assertTrue(source.contains("showSortControlInHeader = true"))
@@ -329,7 +328,7 @@ class VideoContentTabBarPolicyTest {
         )
         assertTrue(source.contains("hasBackdrop = miuixBackdrop != null"))
         assertFalse(source.contains("forceLiquidChrome"))
-        assertTrue(source.contains("liquidGlassEffectsEnabled = liquidChromeSpec.liquidGlassEffectsEnabled"))
+        assertTrue(source.contains("labelFontSize = liquidChromeSpec.labelFontSizeSp.sp"))
     }
 
     @Test

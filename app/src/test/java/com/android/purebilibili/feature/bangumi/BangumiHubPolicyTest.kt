@@ -146,7 +146,7 @@ class BangumiHubPolicyTest {
     }
 
     @Test
-    fun `cinema index categories produce BiliPai query targets`() {
+    fun `index categories produce BiliPai query targets`() {
         assertEquals(
             BangumiIndexQueryTarget(seasonType = null, indexType = 102),
             resolveBangumiIndexQueryTarget(BangumiIndexCategory.CINEMA_ALL),
@@ -158,6 +158,14 @@ class BangumiHubPolicyTest {
         assertEquals(
             BangumiIndexQueryTarget(seasonType = 1, indexType = null),
             resolveBangumiIndexQueryTarget(BangumiIndexCategory.BANGUMI),
+        )
+        assertEquals(
+            BangumiIndexQueryTarget(seasonType = 4, indexType = null),
+            resolveBangumiIndexQueryTarget(BangumiIndexCategory.GUOCHUANG),
+        )
+        assertEquals(
+            listOf(BangumiIndexCategory.BANGUMI, BangumiIndexCategory.GUOCHUANG),
+            bangumiIndexCategoriesForChannel(BangumiChannel.BANGUMI),
         )
     }
 
