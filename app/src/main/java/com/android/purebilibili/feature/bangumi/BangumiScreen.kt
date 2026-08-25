@@ -89,7 +89,7 @@ fun BangumiScreen(
                 BangumiSearchTopBar(
                     query = searchQuery,
                     focusRequester = focusRequester,
-                    channel = state.channel,
+                    category = state.search.category,
                     onQueryChange = { searchQuery = it },
                     onSearch = {
                         viewModel.search(searchQuery)
@@ -160,6 +160,7 @@ fun BangumiScreen(
                 onLoadMoreHomeRecommendations = viewModel::loadMoreHomeRecommendations,
                 onLoadMoreHomeFollows = viewModel::loadMoreHomeFollows,
                 onRetryTimeline = viewModel::retryTimeline,
+                onTimelineRangeSelected = viewModel::selectTimelineRange,
                 onOpenIndex = viewModel::openIndex,
                 onOpenFollow = viewModel::openFollowManager,
                 onIndexCategorySelected = viewModel::selectIndexCategory,
@@ -177,6 +178,7 @@ fun BangumiScreen(
                 onMoveSelectedFollow = viewModel::moveSelectedFollowItems,
                 onMoveSingleFollow = viewModel::updateSingleFollowItem,
                 onUnfollowSingle = viewModel::unfollowSingleItem,
+                onSearchCategorySelected = viewModel::selectSearchCategory,
                 onLoadMoreSearch = viewModel::loadMoreSearch,
                 onSaveCover = { url, title ->
                     scope.launch {
@@ -184,6 +186,7 @@ fun BangumiScreen(
                         snackbarHostState.showSnackbar(if (saved) "封面已保存" else "保存封面失败")
                     }
                 },
+                tabBackdrop = channelBackdrop,
             )
             }
         }
@@ -212,7 +215,7 @@ fun BangumiScreen(
 private fun BangumiSearchTopBar(
     query: String,
     focusRequester: FocusRequester,
-    channel: BangumiChannel,
+    category: BangumiIndexCategory,
     onQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
     onBack: () -> Unit,
@@ -233,7 +236,11 @@ private fun BangumiSearchTopBar(
             query = query,
             onQueryChange = onQueryChange,
             onSearch = onSearch,
-            placeholder = if (channel == BangumiChannel.BANGUMI) "搜索番剧" else "搜索影视",
+            placeholder = if (category == BangumiIndexCategory.CINEMA_ALL) {
+                "搜索影视"
+            } else {
+                "搜索${category.label}"
+            },
             presentation = AppSearchFieldPresentation.TOP_BAR,
             autoFocusEnabled = true,
             focusRequester = focusRequester,

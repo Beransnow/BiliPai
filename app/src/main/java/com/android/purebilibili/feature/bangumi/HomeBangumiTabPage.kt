@@ -88,6 +88,7 @@ fun HomeBangumiTabPage(
             onLoadMoreHomeRecommendations = viewModel::loadMoreHomeRecommendations,
             onLoadMoreHomeFollows = viewModel::loadMoreHomeFollows,
             onRetryTimeline = viewModel::retryTimeline,
+            onTimelineRangeSelected = viewModel::selectTimelineRange,
             onOpenIndex = viewModel::openIndex,
             onOpenFollow = viewModel::openFollowManager,
             onIndexCategorySelected = viewModel::selectIndexCategory,
@@ -105,6 +106,7 @@ fun HomeBangumiTabPage(
             onMoveSelectedFollow = viewModel::moveSelectedFollowItems,
             onMoveSingleFollow = viewModel::updateSingleFollowItem,
             onUnfollowSingle = viewModel::unfollowSingleItem,
+            onSearchCategorySelected = viewModel::selectSearchCategory,
             onLoadMoreSearch = viewModel::loadMoreSearch,
             onSaveCover = { url, title ->
                 scope.launch {
@@ -113,6 +115,7 @@ fun HomeBangumiTabPage(
             },
             scrollToTopRequestId = scrollToTopRequestId,
             listBottomPadding = contentPadding.calculateBottomPadding(),
+            tabBackdrop = channelBackdrop,
         )
         }
     }

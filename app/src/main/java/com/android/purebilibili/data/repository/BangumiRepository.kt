@@ -174,9 +174,17 @@ object BangumiRepository {
      * 获取番剧时间表
      * @param type 1=番剧 3=电影 4=国创
      */
-    suspend fun getTimeline(type: Int = 1): Result<List<TimelineDay>> = withContext(Dispatchers.IO) {
+    suspend fun getTimeline(
+        type: Int = 1,
+        before: Int = 3,
+        after: Int = 7,
+    ): Result<List<TimelineDay>> = withContext(Dispatchers.IO) {
         try {
-            val response = api.getTimeline(types = type)
+            val response = api.getTimeline(
+                types = type,
+                before = before.coerceIn(0, 7),
+                after = after.coerceIn(0, 7),
+            )
             if (response.code == 0 && response.result != null) {
                 Result.success(response.result)
             } else {

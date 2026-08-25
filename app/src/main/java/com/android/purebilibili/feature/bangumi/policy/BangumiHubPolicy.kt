@@ -2,6 +2,7 @@ package com.android.purebilibili.feature.bangumi
 
 import androidx.compose.runtime.Immutable
 import com.android.purebilibili.data.model.response.BangumiIndexConditionData
+import com.android.purebilibili.data.model.response.BangumiSearchItem
 import com.android.purebilibili.data.model.response.TimelineDay
 import com.android.purebilibili.data.model.response.TimelineEpisode
 
@@ -21,6 +22,16 @@ enum class BangumiFollowStatus(val value: Int, val label: String) {
     WANT(1, "想看"),
     WATCHING(2, "在看"),
     WATCHED(3, "看过"),
+}
+
+enum class BangumiTimelineRange(
+    val label: String,
+    val before: Int,
+    val after: Int,
+) {
+    UPCOMING(label = "未来一周", before = 0, after = 7),
+    DEFAULT(label = "前3后7天", before = 3, after = 7),
+    TWO_WEEKS(label = "前后一周", before = 7, after = 7),
 }
 
 enum class BangumiIndexCategory(
@@ -51,6 +62,37 @@ fun bangumiIndexCategoriesForChannel(
         BangumiIndexCategory.DOCUMENTARY,
         BangumiIndexCategory.VARIETY,
     )
+}
+
+fun resolveBangumiSearchCategories(
+    channel: BangumiChannel,
+): List<BangumiIndexCategory> = bangumiIndexCategoriesForChannel(channel)
+
+fun resolveDefaultBangumiSearchCategory(
+    channel: BangumiChannel,
+    preferred: BangumiIndexCategory?,
+): BangumiIndexCategory {
+    val categories = resolveBangumiSearchCategories(channel)
+    return preferred?.takeIf(categories::contains) ?: categories.first()
+}
+
+fun resolveBangumiSearchSeasonType(
+    category: BangumiIndexCategory,
+): Int = category.seasonType ?: category.indexType ?: 1
+
+fun filterBangumiSearchItems(
+    items: List<BangumiSearchItem>,
+    category: BangumiIndexCategory,
+): List<BangumiSearchItem> {
+    if (category == BangumiIndexCategory.CINEMA_ALL) return items
+    val targetType = resolveBangumiSearchSeasonType(category)
+    return items.filter { item ->
+        when {
+            item.seasonType > 0 -> item.seasonType == targetType
+            item.seasonTypeName.isNotBlank() -> item.seasonTypeName.contains(category.label)
+            else -> false
+        }
+    }
 }
 
 @Immutable
