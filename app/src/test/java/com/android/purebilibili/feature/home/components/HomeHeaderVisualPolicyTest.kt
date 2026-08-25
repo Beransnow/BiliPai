@@ -235,7 +235,7 @@ class HomeHeaderVisualPolicyTest {
             )
         )
         assertEquals(
-            resolveBiliPaiBottomBarDockHeight(searchExpanded = false),
+            60.dp,
             resolveHomeTopTabRowHeight(
                 isTabFloating = true,
                 uiPreset = UiPreset.MD3,
@@ -255,7 +255,7 @@ class HomeHeaderVisualPolicyTest {
             )
         )
         assertEquals(
-            resolveBiliPaiBottomBarDockHeight(searchExpanded = false),
+            60.dp,
             resolveHomeTopTabRowHeight(
                 isTabFloating = true,
                 uiPreset = UiPreset.IOS,
