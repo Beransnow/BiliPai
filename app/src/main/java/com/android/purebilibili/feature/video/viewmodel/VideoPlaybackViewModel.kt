@@ -7238,7 +7238,11 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
     
     // ========== Page Switch ==========
     
-    fun switchPage(pageIndex: Int, ignoreSavedProgress: Boolean = false) {
+    fun switchPage(
+        pageIndex: Int,
+        ignoreSavedProgress: Boolean = false,
+        onIdentityCommitted: ((String, Long) -> Unit)? = null,
+    ) {
         val current = _uiState.value as? VideoPlaybackUiState.Success ?: return
         val page = current.info.pages.getOrNull(pageIndex) ?: return
         // The playurl API identifies a part by the bvid/cid pair. Keep both values from the
@@ -7351,6 +7355,7 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                         // Commit both the media identity and its UI state before replacing the
                         // player source. Media3 may dispatch synchronous source callbacks; those
                         // callbacks must already observe the target page rather than stale P1.
+                        onIdentityCommitted?.invoke(targetBvid, page.cid)
                         currentCid = page.cid
                         _uiState.value = switchedState
                         playResolvedPlayback(

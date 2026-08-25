@@ -20,13 +20,15 @@ class VideoLoadRequestPolicyTest {
             java.io.File("src/main/java/com/android/purebilibili/feature/video/viewmodel/VideoPlaybackViewModel.kt"),
         ).first { it.exists() }.readText()
         val switchBlock = source
-            .substringAfter("fun switchPage(pageIndex: Int")
+            .substringAfter("fun switchPage(")
             .substringBefore("fun dismissResumePlaybackSuggestion()")
         val uiCommitIndex = switchBlock.indexOf("_uiState.value = switchedState")
         val playerReplaceIndex = switchBlock.indexOf("playResolvedPlayback(")
+        val identityCallbackIndex = switchBlock.indexOf("onIdentityCommitted?.invoke(targetBvid, page.cid)")
 
         assertTrue(uiCommitIndex >= 0)
         assertTrue(playerReplaceIndex > uiCommitIndex)
+        assertTrue(identityCallbackIndex in 0 until uiCommitIndex)
         assertTrue(switchBlock.contains("val targetBvid = current.info.bvid"))
         assertTrue(
             switchBlock.contains(

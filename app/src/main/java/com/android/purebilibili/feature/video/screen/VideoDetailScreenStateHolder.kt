@@ -67,6 +67,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.drawscope.clipRect
@@ -478,12 +479,23 @@ internal fun VideoDetailScreenStateHolder(
             transitionEnabled = transitionEnabled
         )
     }
+    val presentationState = rememberVideoDetailPresentationState(
+        routeBvid = bvid,
+        initialCid = 0L,
+        initialPortraitFullscreen = shouldStartInPortraitFullscreenFromRouteHint(
+            autoEnterPortraitFromRoute = autoEnterPortraitFromRoute,
+            startAudioFromRoute = startAudioFromRoute,
+            initialVerticalFromRoute = initialVerticalFromRoute,
+            directPortraitEntryFromRoute = directPortraitEntryFromRoute,
+        ),
+        initialPipMode = isInPipMode,
+    )
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val downloadProgress by viewModel.downloadProgress.collectAsStateWithLifecycle()
     val subjectSnapshot by viewModel.subjectSnapshot.collectAsStateWithLifecycle()
     val engagementState by engagementViewModel.uiState.collectAsStateWithLifecycle()
     val favoriteFolderSaveEvent by viewModel.favoriteFolderSaveEvent.collectAsStateWithLifecycle()
-    val playbackActions = remember(viewModel, context) {
+    val playbackActions = remember(viewModel, context, presentationState) {
         VideoDetailPlaybackActions(
             changeQuality = viewModel::changeQuality,
             reloadVideo = viewModel::reloadVideo,
@@ -492,7 +504,12 @@ internal fun VideoDetailScreenStateHolder(
             probeCdnCandidates = viewModel::probeCurrentCdnCandidates,
             setAudioMode = viewModel::setAudioMode,
             setSleepTimer = viewModel::setSleepTimer,
-            switchPage = viewModel::switchPage,
+            switchPage = { pageIndex ->
+                viewModel.switchPage(
+                    pageIndex = pageIndex,
+                    onIdentityCommitted = presentationState::syncPlaybackIdentity,
+                )
+            },
             openDownloadDialog = viewModel::openDownloadDialog,
             showDanmakuSendDialog = viewModel::showDanmakuSendDialog,
             skipSponsorSegment = viewModel::skipCurrentSponsorSegment,
@@ -576,17 +593,6 @@ internal fun VideoDetailScreenStateHolder(
         supplementViewModel = supplementViewModel,
     )
     val uriHandler = androidx.compose.ui.platform.LocalUriHandler.current
-    val presentationState = rememberVideoDetailPresentationState(
-        routeBvid = bvid,
-        initialCid = 0L,
-        initialPortraitFullscreen = shouldStartInPortraitFullscreenFromRouteHint(
-            autoEnterPortraitFromRoute = autoEnterPortraitFromRoute,
-            startAudioFromRoute = startAudioFromRoute,
-            initialVerticalFromRoute = initialVerticalFromRoute,
-            directPortraitEntryFromRoute = directPortraitEntryFromRoute,
-        ),
-        initialPipMode = isInPipMode,
-    )
     var isNavigatingToVideo by presentationState.navigatingToVideoState
     // `isNavigatingToVideo` 仅覆盖共享元素动画，动画结束会提前复位；NavHost 旧 entry
     // 仍可能再存活几帧。弹幕主机离开态必须保持到旧 entry 真正销毁。
@@ -2062,7 +2068,7 @@ internal fun VideoDetailScreenStateHolder(
         )
         hasAppliedInitialPageSwitch = true
         if (targetPageIndex != null) {
-            viewModel.switchPage(targetPageIndex)
+            playbackActions.switchPage(targetPageIndex)
         }
     }
 
@@ -2992,7 +2998,7 @@ internal fun VideoDetailScreenStateHolder(
                 },
                 onTriple = engagementViewModel::doTripleAction,
                 onRelatedVideoClick = navigateToRelatedVideo,
-                onPageSelect = viewModel::switchPage,
+                onPageSelect = playbackActions.switchPage,
                 hasFavoritePlaylist = isExternalPlaylist &&
                     externalPlaylistSource == ExternalPlaylistSource.FAVORITE &&
                     playlistItems.size > 1,
@@ -3242,7 +3248,7 @@ internal fun VideoDetailScreenStateHolder(
                     },
                     onTriple = { engagementViewModel.doTripleAction() },
                     onRelatedVideoClick = navigateToRelatedVideo,
-                    onPageSelect = { viewModel.switchPage(it) },
+                    onPageSelect = playbackActions.switchPage,
                     hasFavoritePlaylist = isExternalPlaylist &&
                         externalPlaylistSource == ExternalPlaylistSource.FAVORITE &&
                         playlistItems.size > 1,
@@ -4264,6 +4270,22 @@ internal fun VideoDetailScreenStateHolder(
                                         bottom = size.height * reveal,
                                     ) {
                                         this@drawWithContent.drawContent()
+                                    }
+                                    val collapseShadowAlpha =
+                                        resolveVideoDetailCollapseShadowAlpha(layoutCollapseProgress)
+                                    if (collapseShadowAlpha > 0f) {
+                                        val shadowHeight = 20.dp.toPx()
+                                        clipRect(bottom = shadowHeight) {
+                                            drawRect(
+                                                brush = Brush.verticalGradient(
+                                                    colors = listOf(
+                                                        Color.Black.copy(alpha = collapseShadowAlpha),
+                                                        Color.Transparent,
+                                                    ),
+                                                    endY = shadowHeight,
+                                                )
+                                            )
+                                        }
                                     }
                                 }
                                 .graphicsLayer {
