@@ -406,6 +406,7 @@ fun HomeScreen(
         displayedTabIndex = displayedTabIndexFromState
     )
     val pagerState = androidx.compose.foundation.pager.rememberPagerState(initialPage = initialPage) { topTabEntries.size }
+    var isHeroCarouselGestureActive by remember { mutableStateOf(false) }
     // PagerState 会从 SaveableState 恢复实际页码；不能用 initialPage 判断同步状态，
     // 否则详情返回后可能把恢复的旧页反向写回当前分类。
     val initialPageSyncedWithState = shouldTreatInitialHomePagerPageAsSyncedWithState(
@@ -1672,7 +1673,8 @@ fun HomeScreen(
                     )
                     // [Fix] Re-enabled default overscroll for better feedback
                         val homeTopPagerSwipeEnabled =
-                            shouldEnableHomeTopPagerUserScroll(isTopLevelActive)
+                            shouldEnableHomeTopPagerUserScroll(isTopLevelActive) &&
+                                !isHeroCarouselGestureActive
                         HorizontalPager(
                             state = pagerState,
                             beyondViewportPageCount = 0,
@@ -2034,6 +2036,9 @@ fun HomeScreen(
                                      homeFeedCardStyle = homeFeedCardStyle,
                                      homeHeroCarouselEnabled = homeSettings.homeHeroCarouselEnabled,
                                      homeHeroCarouselAutoplayEnabled = homeSettings.homeHeroCarouselAutoplayEnabled,
+                                     onHeroCarouselGestureActiveChange = { active ->
+                                         isHeroCarouselGestureActive = active
+                                     },
                                      onGetPreviewUrl = { bvid, cid -> viewModel.getPreviewVideoUrl(bvid, cid) },
                                      oldContentAnchorBvid = if (shouldShowRecommendOldContentDivider(
                                              currentCategory = category,

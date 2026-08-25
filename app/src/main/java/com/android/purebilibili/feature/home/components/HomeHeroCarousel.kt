@@ -10,6 +10,8 @@ import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -52,6 +54,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -86,6 +90,7 @@ import com.android.purebilibili.core.util.CardPositionManager
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.VideoItem
 import com.android.purebilibili.feature.home.HomeHeroCarouselCardTransform
+import com.android.purebilibili.feature.home.HOME_HERO_CAROUSEL_PAGE_SPACING_DP
 import com.android.purebilibili.feature.home.HOME_HERO_CAROUSEL_SIDE_PEEK_DP
 import com.android.purebilibili.feature.home.resolveHomeHeroCarouselAspectRatio
 import com.android.purebilibili.feature.home.resolveHomeHeroCarouselCardTransform
@@ -103,6 +108,7 @@ internal fun HomeHeroCarousel(
     autoplayEnabled: Boolean,
     onVideoClick: (VideoItem) -> Unit,
     onGetPreviewUrl: suspend (String, Long) -> String?,
+    onGestureActiveChange: (Boolean) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     if (videos.isEmpty()) return
@@ -111,11 +117,29 @@ internal fun HomeHeroCarousel(
     BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
+            .pointerInput(onGestureActiveChange) {
+                awaitEachGesture {
+                    awaitFirstDown(
+                        requireUnconsumed = false,
+                        pass = PointerEventPass.Initial,
+                    )
+                    onGestureActiveChange(true)
+                    try {
+                        do {
+                            val event = awaitPointerEvent(PointerEventPass.Initial)
+                        } while (event.changes.any { it.pressed })
+                    } finally {
+                        onGestureActiveChange(false)
+                    }
+                }
+            }
             .padding(vertical = AppSpacingTokens.ExtraSmall)
     ) {
         val sidePeek = HOME_HERO_CAROUSEL_SIDE_PEEK_DP.dp
+        val pageSpacing = HOME_HERO_CAROUSEL_PAGE_SPACING_DP.dp
         val carouselWidth = resolveHomeHeroCarouselWidthDp(maxWidth.value).dp
-        val pageWidth = (carouselWidth - sidePeek * 2).coerceAtLeast(AppSpacingTokens.None)
+        val pageWidth = (carouselWidth - sidePeek * 2 - pageSpacing)
+            .coerceAtLeast(AppSpacingTokens.None)
         val aspectRatio = resolveHomeHeroCarouselAspectRatio(carouselWidth.value)
         HorizontalPager(
             state = pagerState,
@@ -123,7 +147,7 @@ internal fun HomeHeroCarousel(
                 resolveHomeHeroCarouselItemKey(videos, page, VideoItem::bvid)
             },
             pageSize = PageSize.Fixed(pageWidth),
-            pageSpacing = AppSpacingTokens.None,
+            pageSpacing = pageSpacing,
             contentPadding = PaddingValues(horizontal = sidePeek),
             modifier = Modifier
                 .width(carouselWidth)
@@ -158,28 +182,27 @@ internal fun HomeHeroCarousel(
             )
         }
 
-        Row(
+        Box(
             modifier = Modifier
-                .width(carouselWidth)
-                .align(Alignment.BottomCenter)
-                .padding(start = AppSpacingTokens.ExtraLarge + AppSpacingTokens.ExtraSmall, bottom = AppSpacingTokens.Large + AppSpacingTokens.Micro),
-            horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            videos.forEachIndexed { index, _ ->
-                Box(
-                    modifier = Modifier
-                        .size(if (index == pagerState.currentPage) AppSpacingTokens.Medium - AppSpacingTokens.Micro / 2 else AppSpacingTokens.Small)
-                        .clip(CircleShape)
-                        .background(
-                            if (index == pagerState.currentPage) {
-                                MediaContrastPalette.Foreground
-                            } else {
-                                MediaContrastPalette.Foreground.copy(alpha = 0.46f)
-                            }
-                        )
+                .align(Alignment.TopEnd)
+                .padding(
+                    top = AppSpacingTokens.Medium,
+                    end = sidePeek + AppSpacingTokens.Medium,
                 )
-            }
+                .clip(CircleShape)
+                .background(MediaContrastPalette.Scrim.copy(alpha = 0.56f))
+                .padding(
+                    horizontal = AppSpacingTokens.Medium,
+                    vertical = AppSpacingTokens.ExtraSmall,
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            AppText(
+                text = "${pagerState.currentPage + 1} / ${videos.size}",
+                style = MaterialTheme.typography.labelMedium,
+                color = MediaContrastPalette.Foreground,
+                fontWeight = FontWeight.SemiBold,
+            )
         }
     }
 }
@@ -412,9 +435,20 @@ private fun HomeHeroCarouselCard(
                     AppText(
                         text = video.title,
                         color = MediaContrastPalette.Foreground,
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        overflow = TextOverflow.Visible
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+                if (video.owner.name.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(AppSpacingTokens.ExtraSmall))
+                    AppText(
+                        text = video.owner.name,
+                        color = MediaContrastPalette.Foreground.copy(alpha = 0.78f),
+                        style = MaterialTheme.typography.labelMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
                 // 统计信息：时长 · 播放量 · 弹幕
@@ -423,7 +457,7 @@ private fun HomeHeroCarouselCard(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.End
+                        horizontalArrangement = Arrangement.Start
                     ) {
                     var separatorNeeded = false
                     // 时长

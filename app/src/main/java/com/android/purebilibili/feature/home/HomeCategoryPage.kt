@@ -154,6 +154,7 @@ internal fun HomeCategoryPageContent(
     homeFeedCardStyle: HomeFeedCardStyle = HomeFeedCardStyle.BILIPAI,
     homeHeroCarouselEnabled: Boolean = true,
     homeHeroCarouselAutoplayEnabled: Boolean = false,
+    onHeroCarouselGestureActiveChange: (Boolean) -> Unit = {},
     onGetPreviewUrl: suspend (String, Long) -> String? = { _, _ -> null },
     oldContentAnchorBvid: String? = null,
     oldContentStartIndex: Int? = null,
@@ -306,6 +307,7 @@ internal fun HomeCategoryPageContent(
                         HomeHeroCarousel(
                             videos = carouselVideos,
                             autoplayEnabled = homeHeroCarouselAutoplayEnabled,
+                            onGestureActiveChange = onHeroCarouselGestureActiveChange,
                             onVideoClick = { video ->
                                 onVideoClick(
                                     HomeVideoClickRequest(

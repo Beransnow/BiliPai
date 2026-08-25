@@ -1,7 +1,8 @@
 package com.android.purebilibili.feature.home
 
 internal const val HOME_HERO_CAROUSEL_MAX_ITEMS = 8
-internal const val HOME_HERO_CAROUSEL_SIDE_PEEK_DP = 0f
+internal const val HOME_HERO_CAROUSEL_SIDE_PEEK_DP = 20f
+internal const val HOME_HERO_CAROUSEL_PAGE_SPACING_DP = 8f
 internal const val HOME_HERO_CAROUSEL_PHONE_ASPECT_RATIO = 16f / 9f
 internal const val HOME_HERO_CAROUSEL_TABLET_ASPECT_RATIO = 2f
 internal const val HOME_HERO_CAROUSEL_WIDE_ASPECT_RATIO = 21f / 9f

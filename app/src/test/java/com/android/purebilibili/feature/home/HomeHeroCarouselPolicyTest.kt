@@ -117,8 +117,9 @@ class HomeHeroCarouselPolicyTest {
     }
 
     @Test
-    fun `carousel uses no resting side peek so centered cover hides neighbors`() {
-        assertEquals(0f, HOME_HERO_CAROUSEL_SIDE_PEEK_DP)
+    fun `carousel exposes adjacent cards as a swipe affordance`() {
+        assertEquals(20f, HOME_HERO_CAROUSEL_SIDE_PEEK_DP)
+        assertEquals(8f, HOME_HERO_CAROUSEL_PAGE_SPACING_DP)
     }
 
     @Test

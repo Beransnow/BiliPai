@@ -89,6 +89,21 @@ class HomeHeroFlyoutStructureTest {
     }
 
     @Test
+    fun homeHeroCarouselOwnsItsGestureBeforeOuterCategoryPager() {
+        val carouselSource = loadSource(
+            "app/src/main/java/com/android/purebilibili/feature/home/components/HomeHeroCarousel.kt"
+        )
+        val homeSource = loadSource(
+            "app/src/main/java/com/android/purebilibili/feature/home/HomeScreen.kt"
+        )
+
+        assertTrue(carouselSource.contains("onGestureActiveChange(true)"))
+        assertTrue(carouselSource.contains("onGestureActiveChange(false)"))
+        assertTrue(homeSource.contains("!isHeroCarouselGestureActive"))
+        assertTrue(homeSource.contains("onHeroCarouselGestureActiveChange = { active ->"))
+    }
+
+    @Test
     fun inlinePartitionPageKeepsPartitionVideoSourceInsteadOfHomeFeed() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/home/HomeScreen.kt")
         val partitionPageSource = source
