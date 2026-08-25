@@ -4019,7 +4019,7 @@ private fun SpaceOfficialTag(
     AppSurface(
         modifier = modifier,
         shape = AppShapes.container(ContainerLevel.Pill),
-        color = MaterialTheme.colorScheme.onInverseSurface,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp),
