@@ -83,7 +83,7 @@ internal fun resolvePortraitSubtitleBottomPaddingDp(
     commentExpansionProgress: Float = 0f
 ): Int {
     if (commentExpansionProgress > 0.35f) return 36
-    return if (controlsVisible) 132 else 56
+    return if (controlsVisible) 88 else 40
 }
 
 internal fun shouldShowPortraitSubtitleChip(

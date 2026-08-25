@@ -665,7 +665,9 @@ fun BottomControlBar(
             pbpRidgeSamples = pbpRidgeSamples,
             currentChapter = currentChapter,
             onChapterClick = onChapterClick,
-            modifier = Modifier.testTag("player_progress")
+            modifier = Modifier
+                .padding(horizontal = if (isFullscreen) 48.dp else 0.dp)
+                .testTag("player_progress")
         )
     }
 

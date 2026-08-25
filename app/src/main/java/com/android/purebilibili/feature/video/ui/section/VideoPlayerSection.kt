@@ -211,6 +211,7 @@ import com.android.purebilibili.feature.video.playback.session.SEEK_PLAYBACK_REC
 import com.android.purebilibili.feature.video.playback.session.shouldAttemptPlaybackRecoveryAfterSeek
 import com.android.purebilibili.feature.video.playback.session.cancelPlaybackSeekInteraction
 import com.android.purebilibili.feature.video.playback.session.commitPlaybackSeekInteraction
+import com.android.purebilibili.feature.video.playback.session.expirePendingPlaybackSeek
 import com.android.purebilibili.feature.video.playback.session.finishPlaybackSeekInteraction
 import com.android.purebilibili.feature.video.playback.session.resetPlaybackSeekSessionForActivePlayback
 import com.android.purebilibili.feature.video.playback.session.startPlaybackSeekInteraction
@@ -1526,26 +1527,33 @@ fun VideoPlayerSection(
             return@LaunchedEffect
         }
 
-        delay(SEEK_PLAYBACK_RECOVERY_DELAY_MS)
         val player = playerState.player
-        if (!shouldAttemptPlaybackRecoveryAfterSeek(
+        repeat(3) { attempt ->
+            delay(SEEK_PLAYBACK_RECOVERY_DELAY_MS)
+            if (!shouldAttemptPlaybackRecoveryAfterSeek(
+                    state = sharedSeekSession,
+                    playWhenReady = player.playWhenReady,
+                    isPlaying = player.isPlaying,
+                    playbackState = player.playbackState
+                )
+            ) {
+                return@LaunchedEffect
+            }
+            if (player.playbackState == Player.STATE_IDLE && player.mediaItemCount > 0) {
+                player.prepare()
+            }
+            player.playWhenReady = true
+            player.play()
+            Logger.d("VideoPlayerSection") {
+                "▶️ Seek recovery attempt=${attempt + 1}: state=${player.playbackState}, " +
+                    "playWhenReady=${player.playWhenReady}, playing=${player.isPlaying}, pos=${player.currentPosition}"
+            }
+        }
+        if (sharedSeekSession.pendingSeekPositionMs != null && !player.isPlaying) {
+            sharedSeekSession = expirePendingPlaybackSeek(
                 state = sharedSeekSession,
-                playWhenReady = player.playWhenReady,
-                isPlaying = player.isPlaying,
-                playbackState = player.playbackState
+                playbackPositionMs = player.currentPosition,
             )
-        ) {
-            return@LaunchedEffect
-        }
-
-        if (player.playbackState == Player.STATE_IDLE && player.mediaItemCount > 0) {
-            player.prepare()
-        }
-        player.playWhenReady = true
-        player.play()
-        Logger.d("VideoPlayerSection") {
-            "▶️ Seek recovery kicked playback: state=${player.playbackState}, " +
-                "playWhenReady=${player.playWhenReady}, playing=${player.isPlaying}, pos=${player.currentPosition}"
         }
     }
 
@@ -1903,6 +1911,7 @@ fun VideoPlayerSection(
                     var gestureStartSpeed = playerState.player.playbackParameters.speed
                     val directionThresholdPx = viewConfiguration.touchSlop * 1.5f
                     var observedMultiTouch = false
+                    var viewportTransformObserved = false
 
                     while (true) {
                         val event = awaitPointerEvent()
@@ -1927,12 +1936,16 @@ fun VideoPlayerSection(
 
                         val pan = event.calculatePan()
                         val zoom = event.calculateZoom()
+                        if (kotlin.math.abs(zoom - 1f) > 0.005f) {
+                            viewportTransformObserved = true
+                        }
                         totalPanX += pan.x
                         totalPanY += pan.y
 
                         val speedModeAllowed = isFullscreen &&
                             !isInPipMode &&
                             !isScreenLocked &&
+                            !viewportTransformObserved &&
                             twoFingerSpeedMode != TwoFingerSpeedGestureMode.Off
 
                         if (speedModeAllowed && lockedAxis == null) {
@@ -1978,7 +1991,10 @@ fun VideoPlayerSection(
 
                         if (
                             shouldEnableViewportTransformGesture(
-                                isScreenLocked = isScreenLocked
+                                isScreenLocked = isScreenLocked,
+                                isFullscreen = isFullscreen,
+                                isPortraitFullscreen = isPortraitFullscreen,
+                                isVerticalVideo = isVerticalVideo,
                             ) && (zoom != 1f || pan != Offset.Zero)
                         ) {
                             scale = (scale * zoom).coerceIn(1f, 5f)
@@ -2062,6 +2078,11 @@ fun VideoPlayerSection(
                                 containerHeightPx = size.height.toFloat(),
                                 topGestureExclusionPx = gestureExclusions.topPx,
                                 bottomGestureExclusionPx = gestureExclusions.bottomPx
+                            ) || shouldIgnoreVideoPlayerHorizontalEdgeDragStart(
+                                offsetX = offset.x,
+                                containerWidthPx = size.width.toFloat(),
+                                isFullscreen = isFullscreen,
+                                edgeGestureExclusionPx = with(localDensity) { 48.dp.toPx() },
                             )
 
                             if (shouldIgnoreDragStart) {

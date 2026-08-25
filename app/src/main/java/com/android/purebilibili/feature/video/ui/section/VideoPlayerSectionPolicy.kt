@@ -101,7 +101,7 @@ internal fun resolveSubtitleBottomOffsetPx(
 ): Int {
     val safeDensity = density.takeIf { it.isFinite() && it > 0f } ?: 1f
     fun dp(value: Int): Int = (value * safeDensity).roundToInt()
-    if (!isFullscreen) return dp(48)
+    if (!isFullscreen) return dp(32)
     val safeInset = navigationInsetPx.coerceAtLeast(0)
     return if (controlsVisible && !positionLocked) {
         maxOf(safeInset + bottomControlsHeightPx.coerceAtLeast(0) + dp(8), dp(56))
@@ -174,6 +174,17 @@ internal fun shouldIgnoreVideoPlayerDragStart(
     val clampedBottomExclusionPx = bottomGestureExclusionPx.coerceIn(0f, containerHeightPx)
     return offsetY < clampedTopExclusionPx ||
         offsetY >= (containerHeightPx - clampedBottomExclusionPx)
+}
+
+internal fun shouldIgnoreVideoPlayerHorizontalEdgeDragStart(
+    offsetX: Float,
+    containerWidthPx: Float,
+    isFullscreen: Boolean,
+    edgeGestureExclusionPx: Float,
+): Boolean {
+    if (!isFullscreen || containerWidthPx <= 0f) return false
+    val exclusion = edgeGestureExclusionPx.coerceIn(0f, containerWidthPx / 2f)
+    return offsetX < exclusion || offsetX >= containerWidthPx - exclusion
 }
 
 internal data class VideoPlayerGestureVerticalExclusions(
@@ -316,11 +327,12 @@ internal fun shouldEnableLongPressSpeedGesture(
 }
 
 internal fun shouldEnableViewportTransformGesture(
-    isScreenLocked: Boolean
+    isScreenLocked: Boolean,
+    isFullscreen: Boolean,
+    isPortraitFullscreen: Boolean,
+    isVerticalVideo: Boolean,
 ): Boolean {
-    // Disable pinch-to-zoom/pan during playback to avoid accidental viewport
-    // distortion while keeping aspect ratio changes inside the explicit menu.
-    return false
+    return !isScreenLocked && (isFullscreen || isPortraitFullscreen || isVerticalVideo)
 }
 
 fun resolveSystemStreamVolumeFromGesture(
