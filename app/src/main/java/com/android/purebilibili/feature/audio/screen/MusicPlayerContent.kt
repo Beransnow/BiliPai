@@ -1443,11 +1443,8 @@ private fun GlassIconButton(
                     dragY = dragY.value,
                     maxDragPx = maxDragPx,
                 )
-                translationX = transform.translationX
-                translationY = transform.translationY
                 scaleX = transform.scaleX
                 scaleY = transform.scaleY
-                rotationZ = transform.rotationZ
             }
             .pointerInput(maxDragPx) {
                 detectDragGestures(
