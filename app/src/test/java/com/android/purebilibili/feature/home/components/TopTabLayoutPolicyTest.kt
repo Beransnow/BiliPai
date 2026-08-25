@@ -509,8 +509,18 @@ class TopTabLayoutPolicyTest {
     }
 
     @Test
-    fun `wrap dock item width uses preferred when pack fits otherwise falls back`() {
-        val preferred = resolveTopTabWrapItemWidthDp(labelMode = 0, isFloatingStyle = true)
+    fun `wrap dock item width reuses bottom bar width policy`() {
+        val preferredDockWidth = resolveBiliPaiFloatingBottomBarWidth(
+            containerWidth = 440.dp,
+            itemCount = 5,
+            minEdgePadding = 0.dp,
+            labelMode = 0
+        )
+        val preferred = resolveBiliPaiBottomBarItemSlotWidth(
+            dockWidth = preferredDockWidth,
+            horizontalPadding = resolveTopTabDockEndInsetDp(true, true).dp,
+            itemCount = 5
+        ).value
         assertEquals(
             preferred,
             resolveTopTabDockItemWidthDp(
@@ -523,9 +533,20 @@ class TopTabLayoutPolicyTest {
             ),
             0.001f
         )
-        // Too narrow for preferred pack → use fill width
+        val narrowDockWidth = resolveBiliPaiFloatingBottomBarWidth(
+            containerWidth = 300.dp,
+            itemCount = 5,
+            minEdgePadding = 0.dp,
+            labelMode = 0
+        )
+        val narrowItemWidth = resolveBiliPaiBottomBarItemSlotWidth(
+            dockWidth = narrowDockWidth,
+            horizontalPadding = resolveTopTabDockEndInsetDp(true, true).dp,
+            itemCount = 5
+        ).value
+        // Narrow docks use the same capped slot width as the bottom bar.
         assertEquals(
-            60f,
+            narrowItemWidth,
             resolveTopTabDockItemWidthDp(
                 maxWidthDp = 300f,
                 categoryCount = 5,

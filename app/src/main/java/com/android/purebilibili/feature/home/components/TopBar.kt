@@ -266,23 +266,23 @@ internal fun resolveTopTabDockItemWidthDp(
     fillItemWidthDp: Float
 ): Float {
     if (!wrapContent || categoryCount <= 0) return fillItemWidthDp
-    val preferred = resolveTopTabWrapItemWidthDp(labelMode, isFloatingStyle)
+    if (maxWidthDp <= 0f) return fillItemWidthDp
     val endInset = resolveTopTabDockEndInsetDp(
         wrapContent = true,
         isFloatingStyle = isFloatingStyle
     )
-    val wrapWidth = resolveTopTabDockWrapWidthDp(
-        itemWidthDp = preferred,
-        categoryCount = categoryCount,
-        maxWidthDp = maxWidthDp,
-        contentPaddingHorizontalDp = endInset
+    val bottomBarMatchedDockWidth = resolveBiliPaiFloatingBottomBarWidth(
+        containerWidth = maxWidthDp.dp,
+        itemCount = categoryCount,
+        minEdgePadding = 0.dp,
+        labelMode = labelMode
     )
-    // Preferred pack fits: use content-driven item width.
-    if (wrapWidth <= maxWidthDp + 0.01f && preferred * categoryCount + endInset * 2f <= maxWidthDp + 0.01f) {
-        return preferred
-    }
-    // Overflow: pack into available width.
-    return fillItemWidthDp
+    val bottomBarMatchedItemWidth = resolveBiliPaiBottomBarItemSlotWidth(
+        dockWidth = bottomBarMatchedDockWidth,
+        horizontalPadding = endInset.dp,
+        itemCount = categoryCount
+    )
+    return bottomBarMatchedItemWidth.value
 }
 
 internal fun resolveTopTabDockIndicatorOffsetPx(
