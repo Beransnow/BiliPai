@@ -438,6 +438,9 @@ fun AppearanceSettingsContent(
     val homeUpAvatarsVisible by SettingsManager
         .getHomeUpAvatarsVisible(context)
         .collectAsStateWithLifecycle(initialValue = true)
+    val fullVideoCardContentVisible by SettingsManager
+        .getFullVideoCardContentVisible(context)
+        .collectAsStateWithLifecycle(initialValue = false)
     val homeDurationStyle by SettingsManager
         .getHomeDurationStyle(context)
         .collectAsStateWithLifecycle(initialValue = HomeDurationStyle.OUTSIDE_COVER)
@@ -1553,6 +1556,24 @@ fun AppearanceSettingsContent(
                             onCheckedChange = {
                                 scope.launch {
                                     SettingsManager.setHomeUpBadgesVisible(context, it)
+                                }
+                            },
+                            iconTint = com.android.purebilibili.core.theme.iOSBlue
+                        )
+
+                        AppPreferenceDivider(modifier = Modifier.padding(start = 16.dp))
+                        AppSwitchPreference(
+                            icon = rememberSettingsSemanticIcon(SettingsIconRole.FULL_VIDEO_CARD_CONTENT),
+                            title = "完整卡片展示",
+                            subtitle = if (fullVideoCardContentVisible) {
+                                "完整显示视频标题，卡片高度可能不同"
+                            } else {
+                                "标题最多显示两行；发布时间等卡片信息始终完整显示"
+                            },
+                            checked = fullVideoCardContentVisible,
+                            onCheckedChange = {
+                                scope.launch {
+                                    SettingsManager.setFullVideoCardContentVisible(context, it)
                                 }
                             },
                             iconTint = com.android.purebilibili.core.theme.iOSBlue

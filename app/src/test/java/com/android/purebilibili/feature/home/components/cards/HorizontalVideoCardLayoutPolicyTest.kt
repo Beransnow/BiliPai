@@ -32,7 +32,7 @@ class HorizontalVideoCardLayoutPolicyTest {
     }
 
     @Test
-    fun gridCardKeepsEnabledMetadataCompleteOnSeparateRows() {
+    fun gridCardOnlyTruncatesTitleWhileKeepingEnabledMetadataComplete() {
         val source = java.io.File(
             "src/main/java/com/android/purebilibili/feature/home/components/cards/VideoCard.kt",
         ).let { file ->
@@ -54,8 +54,12 @@ class HorizontalVideoCardLayoutPolicyTest {
         assertTrue(
             source.substringAfter("text = highlightedTitle ?: AnnotatedString(video.title)")
                 .substringBefore("style = contentTypography.title")
-                .contains("overflow = TextOverflow.Visible")
+                .contains(
+                    "overflow = if (showFullCardContent) " +
+                        "TextOverflow.Visible else TextOverflow.Ellipsis"
+                )
         )
+        assertTrue(source.contains(".collectAsStateWithLifecycle(initialValue = false)"))
         assertTrue(
             source.substringAfter("internal fun VideoCardDurationPublishRow(")
                 .substringBefore("private fun VideoCardPublishTime(")

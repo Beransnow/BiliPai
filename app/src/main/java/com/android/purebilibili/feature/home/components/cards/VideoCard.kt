@@ -349,7 +349,7 @@ internal fun VideoCardDurationPublishRow(
     publishTimeText: String,
     emphasizePublishTime: Boolean,
     publishTimeColor: Color,
-    topSpacing: Dp
+    topSpacing: Dp,
 ) {
     if (durationText.isBlank() && publishTimeText.isBlank()) return
     val contentTypography = feedContentTypography()
@@ -366,7 +366,7 @@ internal fun VideoCardDurationPublishRow(
                 text = publishTimeText,
                 emphasized = emphasizePublishTime,
                 color = publishTimeColor,
-                modifier = Modifier.wrapContentWidth()
+                modifier = Modifier.wrapContentWidth(),
             )
         }
 
@@ -388,7 +388,7 @@ private fun VideoCardPublishTime(
     text: String,
     emphasized: Boolean,
     color: Color,
-    modifier: Modifier
+    modifier: Modifier,
 ) {
     val contentTypography = feedContentTypography()
     if (emphasized) {
@@ -524,6 +524,9 @@ internal fun ElegantVideoCard(
     val contentTypography = feedContentTypography()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val showFullCardContent by SettingsManager
+        .getFullVideoCardContentVisible(context)
+        .collectAsStateWithLifecycle(initialValue = false)
     val playbackProgressManager = remember(context) {
         PlaybackProgressManager.getInstance(context)
     }
@@ -1383,8 +1386,9 @@ internal fun ElegantVideoCard(
         // 标题独占整行：更多操作移至右下角，不再挤占两行标题的可用宽度。
         AppText(
             text = highlightedTitle ?: AnnotatedString(video.title),
+            maxLines = if (showFullCardContent) Int.MAX_VALUE else titleMaxLines,
             minLines = titleMinLines,
-            overflow = TextOverflow.Visible,
+            overflow = if (showFullCardContent) TextOverflow.Visible else TextOverflow.Ellipsis,
             style = contentTypography.title.copy(
                 color = MaterialTheme.colorScheme.onSurface
             ),
@@ -1494,7 +1498,7 @@ internal fun ElegantVideoCard(
                 AppSpacingTokens.ExtraSmall
             } else {
                 AppSpacingTokens.Small - AppSpacingTokens.Micro
-            }
+            },
         )
         }
         }
