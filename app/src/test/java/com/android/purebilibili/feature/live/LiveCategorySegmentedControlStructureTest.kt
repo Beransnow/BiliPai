@@ -20,6 +20,10 @@ class LiveCategorySegmentedControlStructureTest {
             .substringBefore("private fun LiveSortTagChipRow(")
         assertTrue(homeCategoryRow.contains("scrollable = true"))
         assertTrue(homeCategoryRow.contains("minTabWidth = categoryMinWidth"))
+        val sortTagRow = source.substringAfter("private fun LiveSortTagChipRow(")
+            .substringBefore("private fun LiveHomeLoadMoreFooter(")
+        assertTrue(sortTagRow.contains("AppThemeAdaptiveTabRow("))
+        assertTrue(sortTagRow.contains("scrollable = true"))
         assertFalse(source.contains("dragSelectionEnabled = false"))
         assertFalse(source.contains("liquidGlassEffectsEnabled = false"))
         assertFalse(source.contains("SimpleLiquidIndicator"))
@@ -90,6 +94,8 @@ class LiveCategorySegmentedControlStructureTest {
         assertTrue(screenSource.contains("viewModel.resumeLiveHeartbeatIfNeeded()"))
         assertTrue(sheetSource.contains("permission: LiveDanmakuPermission"))
         assertTrue(sheetSource.contains("permission.canSend"))
+        assertTrue(sheetSource.contains("AppThemeAdaptiveTabRow("))
+        assertFalse(sheetSource.contains("AppFilterChip("))
     }
 
     @Test

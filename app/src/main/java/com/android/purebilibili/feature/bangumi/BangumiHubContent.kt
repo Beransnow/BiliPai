@@ -70,7 +70,7 @@ import com.android.purebilibili.core.ui.components.AppErrorState
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppLiquidAwareTabRow
-import com.android.purebilibili.core.ui.components.AppNativeTabRow
+import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
 import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppText
@@ -537,7 +537,7 @@ private fun IndexFilterPanel(
                     maxLines = 1,
                 )
                 if (selectedChoice != null) {
-                    AppNativeTabRow(
+                    AppThemeAdaptiveTabRow(
                         options = group.choices.map { choice ->
                             AppSegmentOption(choice, choice.label)
                         },

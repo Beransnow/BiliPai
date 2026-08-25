@@ -31,7 +31,7 @@ class BangumiLiquidGlassStructureTest {
         assertTrue(contentSource.contains("modifier = Modifier.fillMaxWidth()"))
         assertTrue(detailSource.contains("color = restrictionColors.contentColor"))
         assertTrue(detailSource.contains("resolveAccessibleContainerColors("))
-        assertTrue(contentSource.contains("AppNativeTabRow("))
+        assertTrue(contentSource.contains("AppThemeAdaptiveTabRow("))
         assertTrue(contentSource.contains("modifier = Modifier.width(56.dp)"))
         assertTrue(contentSource.contains("modifier = Modifier.weight(1f)"))
         assertTrue(contentSource.contains("showPgcTimeline"))

@@ -991,6 +991,7 @@ private fun LiveSortTagChipRow(
         onSelectionChange = { value ->
             onSortTagSelected(value.takeIf { it.isNotBlank() })
         },
+        scrollable = true,
         minTabWidth = 72.dp,
         modifier = Modifier.fillMaxWidth(),
     )
