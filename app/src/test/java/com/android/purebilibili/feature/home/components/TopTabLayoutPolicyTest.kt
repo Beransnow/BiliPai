@@ -383,17 +383,10 @@ class TopTabLayoutPolicyTest {
                 edgeToEdge = false
             )
         )
-        assertTrue(
-            shouldWrapTopTabDockWidth(
-                isFloatingStyle = true,
-                hasOuterChromeSurface = true,
-                edgeToEdge = true
-            )
-        )
         assertFalse(
             shouldWrapTopTabDockWidth(
                 isFloatingStyle = true,
-                hasOuterChromeSurface = false,
+                hasOuterChromeSurface = true,
                 edgeToEdge = true
             )
         )

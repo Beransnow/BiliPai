@@ -233,7 +233,8 @@ internal fun shouldWrapTopTabDockWidth(
     hasOuterChromeSurface: Boolean,
     edgeToEdge: Boolean
 ): Boolean {
-    return hasOuterChromeSurface || (isFloatingStyle && !edgeToEdge)
+    if (edgeToEdge) return false
+    return isFloatingStyle || hasOuterChromeSurface
 }
 
 /**
