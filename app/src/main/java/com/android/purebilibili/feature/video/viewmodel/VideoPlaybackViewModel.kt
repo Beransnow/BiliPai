@@ -7323,18 +7323,6 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                             cachedDashAudios = selection.cachedDashAudios,
                             adaptiveDashSource = selection.adaptiveDashSource
                         )
-                        // Commit the media identity immediately before replacing the player source.
-                        // The UI cid change then starts a danmaku request for exactly this source.
-                        currentCid = page.cid
-                        playResolvedPlayback(
-                            videoUrl = cdnSelection.playUrl,
-                            audioUrl = cdnSelection.audioUrl,
-                            adaptiveDashSource = cdnSelection.adaptiveDashSource,
-                            startPositionMs = restoredPosition,
-                            cdnFallbackState = cdnSelection.fallbackState,
-                            cdnCacheKeysByUrl = cdnSelection.cdnCacheKeysByUrl
-                        )
-                        
                         val switchedState = subtitleClearedState.copy(
                             info = current.info.copy(cid = page.cid), playUrl = cdnSelection.playUrl, audioUrl = cdnSelection.audioUrl,
                             startPosition = restoredPosition, isQualitySwitching = false,
@@ -7356,7 +7344,19 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                             cdnCandidateSources = cdnSelection.candidateSources,
                             cdnLineDiagnostics = cdnSelection.lineDiagnostics
                         )
+                        // Commit both the media identity and its UI state before replacing the
+                        // player source. Media3 may dispatch synchronous source callbacks; those
+                        // callbacks must already observe the target page rather than stale P1.
+                        currentCid = page.cid
                         _uiState.value = switchedState
+                        playResolvedPlayback(
+                            videoUrl = cdnSelection.playUrl,
+                            audioUrl = cdnSelection.audioUrl,
+                            adaptiveDashSource = cdnSelection.adaptiveDashSource,
+                            startPositionMs = restoredPosition,
+                            cdnFallbackState = cdnSelection.fallbackState,
+                            cdnCacheKeysByUrl = cdnSelection.cdnCacheKeysByUrl
+                        )
                         publishSubjectSnapshot(switchedState)
                         monitorPlaybackTransitionPosition(restoredPosition.coerceAtLeast(0L))
                         startHeartbeat()
@@ -7368,6 +7368,7 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                     }
                 }
                 if (switchGeneration != pageSwitchGeneration) return@launch
+                currentCid = previousCid
                 _uiState.value = current.copy(
                     isQualitySwitching = false,
                     pendingPlaybackTransitionPositionMs = null
@@ -7377,6 +7378,7 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                 throw e
             } catch (e: Exception) {
                 if (switchGeneration != pageSwitchGeneration) return@launch
+                currentCid = previousCid
                 _uiState.value = current.copy(
                     isQualitySwitching = false,
                     pendingPlaybackTransitionPositionMs = null
