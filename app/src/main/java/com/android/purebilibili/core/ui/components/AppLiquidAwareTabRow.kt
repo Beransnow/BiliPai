@@ -4,10 +4,12 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -114,7 +116,11 @@ fun <T> AppLiquidAwareTabRow(
         val density = LocalDensity.current
         val viewportMaxWidth = LocalConfiguration.current.screenWidthDp.dp
         BoxWithConstraints(
-            modifier = modifier.widthIn(max = viewportMaxWidth),
+            modifier = modifier
+                .widthIn(max = viewportMaxWidth)
+                // The liquid shell intentionally draws beyond its content bounds for capture.
+                // A rectangular scroll viewport would expose that overflow at either edge.
+                .clip(CircleShape),
         ) {
             val viewportWidthPx = with(density) { maxWidth.toPx() }
             val itemWidthPx = with(density) { minTabWidth.toPx() }
