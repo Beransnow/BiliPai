@@ -115,6 +115,8 @@ internal val BOTTOM_BAR_LIQUID_SEGMENTED_CONTROL_INDICATOR_HEIGHT_DP =
         BOTTOM_BAR_LIQUID_SEGMENTED_CONTROL_HEIGHT_DP.toFloat()
     )
 private const val SEGMENTED_CONTROL_MIN_INDICATOR_ASPECT_RATIO = 1.6f
+private const val SEGMENTED_CONTROL_MAX_INDICATOR_ASPECT_RATIO = 3.2f
+private const val SEGMENTED_CONTROL_INDICATOR_HORIZONTAL_INSET_DP = 4f
 
 internal fun resolveSegmentedControlChromeStyle(
     uiStyle: AppUiStyle,
@@ -149,7 +151,12 @@ internal fun resolveSegmentedControlIndicatorWidthDp(
     itemCount: Int
 ): Float {
     if (slotWidthDp <= 0f || indicatorHeightDp <= 0f || itemCount <= 0) return 0f
-    return slotWidthDp
+    val insetWidth = (slotWidthDp - SEGMENTED_CONTROL_INDICATOR_HORIZONTAL_INSET_DP * 2f)
+        .coerceAtLeast(0f)
+    return min(
+        insetWidth,
+        indicatorHeightDp * SEGMENTED_CONTROL_MAX_INDICATOR_ASPECT_RATIO,
+    )
 }
 
 internal fun resolveSegmentedControlIndicatorHeightDp(

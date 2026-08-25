@@ -50,14 +50,25 @@ class BottomBarLiquidSegmentedControlStructureTest {
     }
 
     @Test
-    fun `segmented indicator keeps slot width so content remains centered`() {
+    fun `segmented indicator stays compact inside a wide slot`() {
         val width = resolveSegmentedControlIndicatorWidthDp(
-            slotWidthDp = 60f,
-            indicatorHeightDp = 56f,
-            itemCount = 5
+            slotWidthDp = 180f,
+            indicatorHeightDp = 30f,
+            itemCount = 2
         )
 
-        assertEquals(60f, width)
+        assertEquals(96f, width)
+    }
+
+    @Test
+    fun `segmented indicator keeps equal edge insets in a compact slot`() {
+        val width = resolveSegmentedControlIndicatorWidthDp(
+            slotWidthDp = 66f,
+            indicatorHeightDp = 30f,
+            itemCount = 4,
+        )
+
+        assertEquals(58f, width)
     }
 
     @Test

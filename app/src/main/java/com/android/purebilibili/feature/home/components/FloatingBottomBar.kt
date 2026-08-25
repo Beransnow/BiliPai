@@ -374,6 +374,7 @@ fun FloatingBottomBar(
     colors: FloatingBottomBarColors = FloatingBottomBarDefaults.colors(),
     shellHeight: Dp = FloatingBottomBarDefaultShellHeight,
     indicatorHeight: Dp = FloatingBottomBarIndicatorHeight,
+    indicatorWidth: Dp? = null,
     minimumIndicatorWidth: Dp = 0.dp,
     indicatorPositionProvider: (() -> Float)? = null,
     isScrollInProgressProvider: () -> Boolean = { false },
@@ -449,10 +450,12 @@ fun FloatingBottomBar(
 
     var tabWidthPx by remember { mutableFloatStateOf(0f) }
     var totalWidthPx by remember { mutableFloatStateOf(0f) }
-    val fittedIndicatorWidth = maxOf(
-        with(density) { tabWidthPx.toDp() },
-        minimumIndicatorWidth,
-    )
+    val tabWidth = with(density) { tabWidthPx.toDp() }
+    val fittedIndicatorWidth = if (indicatorWidth != null) {
+        minOf(indicatorWidth, tabWidth).coerceAtLeast(minimumIndicatorWidth)
+    } else {
+        maxOf(tabWidth, minimumIndicatorWidth)
+    }
     val fittedIndicatorWidthPx = with(density) { fittedIndicatorWidth.toPx() }
     val fittedIndicatorHeight = resolveFloatingDockIndicatorHeightDp(
         requestedHeightDp = indicatorHeight.value,

@@ -138,10 +138,15 @@ internal fun BottomBarFloatingSegmentedControl(
                 ((maxWidth.value - 8f).coerceAtLeast(0f) / itemCount)
             else -> indicatorHeight.value * FLOATING_DOCK_MIN_INDICATOR_ASPECT
         }
+        val fittedSegmentedIndicatorWidth = resolveSegmentedControlIndicatorWidthDp(
+            slotWidthDp = indicatorWidthDp,
+            indicatorHeightDp = indicatorHeight.value,
+            itemCount = itemCount,
+        ).dp
         val captureInsets = resolveFloatingDockCaptureInsets(
             shellHeightDp = height.value,
             requestedIndicatorHeightDp = indicatorHeight.value,
-            indicatorWidthDp = indicatorWidthDp,
+            indicatorWidthDp = fittedSegmentedIndicatorWidth.value,
         )
         if (effectiveBackdrop != null) {
             Box(
@@ -176,6 +181,7 @@ internal fun BottomBarFloatingSegmentedControl(
             ),
             shellHeight = height,
             indicatorHeight = indicatorHeight,
+            indicatorWidth = fittedSegmentedIndicatorWidth,
             indicatorPositionProvider = indicatorPositionProvider,
             isScrollInProgressProvider = isScrollInProgressProvider,
             dragSelectionEnabled = dragSelectionEnabled && enabled && itemCount > 1,
