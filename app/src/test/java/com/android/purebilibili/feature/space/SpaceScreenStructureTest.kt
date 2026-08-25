@@ -145,6 +145,22 @@ class SpaceScreenStructureTest {
     }
 
     @Test
+    fun `space official verify follows piliplus multiline badge presentation`() {
+        val source = loadSource("app/src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt")
+        val officialTag = source
+            .substringAfter("private fun SpaceOfficialTag(")
+            .substringBefore("private fun SpaceBadgeChip(")
+
+        assertTrue(source.contains("userInfo.official.spliceTitle.ifBlank"))
+        assertTrue(officialTag.contains("Icons.Outlined.Bolt"))
+        assertTrue(officialTag.contains("Color(0xFFFFCC00)"))
+        assertTrue(officialTag.contains("fontSize = 12.sp"))
+        assertFalse(officialTag.contains("maxLines = 1"))
+        assertFalse(officialTag.contains("TextOverflow.Ellipsis"))
+        assertFalse(officialTag.contains("widthIn("))
+    }
+
+    @Test
     fun `space follow actions share the name and level row`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt")
 

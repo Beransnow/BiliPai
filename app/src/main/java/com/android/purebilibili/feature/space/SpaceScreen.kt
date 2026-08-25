@@ -109,8 +109,8 @@ import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.LocalSharedTransitionEnabled
-import com.android.purebilibili.core.ui.OfficialVerifyBadge
 import com.android.purebilibili.core.ui.OfficialVerifyBadgeSpec
+import com.android.purebilibili.core.ui.OfficialVerifyBadgeTone
 import com.android.purebilibili.core.ui.blur.BlurSurfaceType
 import com.android.purebilibili.core.ui.blur.rememberRecoverableHazeState
 import com.android.purebilibili.core.ui.blur.unifiedBlur
@@ -2224,7 +2224,7 @@ private fun SpaceHeader(
     val officialBadge = remember(userInfo.official) {
         resolveOfficialVerifyBadge(
             type = userInfo.official.type,
-            title = userInfo.official.title,
+            title = userInfo.official.spliceTitle.ifBlank { userInfo.official.title },
             desc = userInfo.official.desc
         )
     }
@@ -4006,8 +4006,44 @@ private fun SpaceCollectionWithPreviewCard(
 }
 
 @Composable
-private fun SpaceOfficialTag(badge: OfficialVerifyBadgeSpec) {
-    OfficialVerifyBadge(badge = badge)
+private fun SpaceOfficialTag(
+    badge: OfficialVerifyBadgeSpec,
+    modifier: Modifier = Modifier,
+) {
+    AppSurface(
+        modifier = modifier,
+        shape = AppShapes.container(ContainerLevel.Pill),
+        color = MaterialTheme.colorScheme.onInverseSurface,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            AppSurface(
+                modifier = Modifier.size(18.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surface,
+            ) {
+                AppIcon(
+                    imageVector = Icons.Outlined.Bolt,
+                    contentDescription = null,
+                    tint = when (badge.tone) {
+                        OfficialVerifyBadgeTone.PERSONAL -> Color(0xFFFFCC00)
+                        OfficialVerifyBadgeTone.ORGANIZATION -> Color(0xFF40C4FF)
+                    },
+                    modifier = Modifier.size(18.dp),
+                )
+            }
+            Spacer(modifier = Modifier.width(4.dp))
+            AppText(
+                text = badge.text,
+                fontSize = 12.sp,
+                lineHeight = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+            )
+        }
+    }
 }
 
 @Composable
