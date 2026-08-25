@@ -81,7 +81,7 @@ internal fun resolveSpaceSecondarySwitchChromeSpec(
     items: List<SpaceSecondarySwitchItem>,
     selectedId: String
 ): SpaceSegmentedTabChromeSpec {
-    val itemWidthDp = resolveSpaceContributionTabItemWidthDp(items.map { it.title })
+    val itemWidthDp = resolveSpaceContributionTabItemWidthDpFromTitles(items.map { it.title })
     return SpaceSegmentedTabChromeSpec(
         selectedIndex = items.indexOfFirst { it.id == selectedId }.coerceAtLeast(0),
         heightDp = AppChromeSizeTokens.MinimumTouchTarget.value.roundToInt(),
@@ -148,10 +148,10 @@ private fun shouldScrollSpaceContributionTabs(tabs: List<SpaceContributionTab>):
 }
 
 internal fun resolveSpaceContributionTabItemWidthDp(tabs: List<SpaceContributionTab>): Int {
-    return resolveSpaceContributionTabItemWidthDp(tabs.map { it.title })
+    return resolveSpaceContributionTabItemWidthDpFromTitles(tabs.map { it.title })
 }
 
-private fun resolveSpaceContributionTabItemWidthDp(titles: List<String>): Int {
+private fun resolveSpaceContributionTabItemWidthDpFromTitles(titles: List<String>): Int {
     val widestTitle = titles.maxOfOrNull(::estimateSpaceContributionTabTitleWidthDp) ?: 0
     return widestTitle.coerceIn(
         SPACE_SCROLLABLE_CONTRIBUTION_ITEM_MIN_WIDTH_DP,
