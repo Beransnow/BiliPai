@@ -309,7 +309,7 @@ fun RowScope.FloatingBottomBarItem(
     val baseContentAlpha = LocalFloatingBottomBarBaseContentAlpha.current
     val activeContent = LocalFloatingBottomBarActiveContent.current
     val contentColor = LocalFloatingBottomBarContentColor.current
-    val selectionScale = remember(itemIndex, indicatorPosition) {
+    val selectionScale = remember(itemIndex, indicatorPosition, iconCrossScaleEnabled) {
         {
             if (!iconCrossScaleEnabled || itemIndex == null) {
                 1f

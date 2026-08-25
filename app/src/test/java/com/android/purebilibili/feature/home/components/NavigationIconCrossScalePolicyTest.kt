@@ -1,8 +1,8 @@
 package com.android.purebilibili.feature.home.components
 
 import com.android.purebilibili.core.store.HomeSettings
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class NavigationIconCrossScalePolicyTest {
@@ -14,8 +14,8 @@ class NavigationIconCrossScalePolicyTest {
     }
 
     @Test
-    fun `cross scale is disabled by default and selected endpoint is one point ten`() {
-        assertFalse(HomeSettings().navigationIconCrossScaleEnabled)
+    fun `cross scale is enabled by default and selected endpoint is one point ten`() {
+        assertTrue(HomeSettings().navigationIconCrossScaleEnabled)
         assertEquals(1f, resolveNavigationIconCrossScale(false, 1f), 0.001f)
         assertEquals(1f, resolveNavigationIconCrossScale(true, 0f), 0.001f)
         assertEquals(1.1f, resolveNavigationIconCrossScale(true, 1f), 0.001f)
