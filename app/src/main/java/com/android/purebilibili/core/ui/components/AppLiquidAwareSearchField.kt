@@ -36,6 +36,7 @@ fun AppLiquidAwareSearchField(
         modifier = modifier,
         backdrop = backdrop,
         reuseEnabled = true,
+        useNeutralLiquidContainer = true,
         drawShellLens = true,
         shellLensIntensity = resolveFloatingDockGeometryScale(
             AppChromeSizeTokens.BottomBarMatchedSegmentedControlHeightDp.toFloat()

@@ -13,6 +13,7 @@ class AppLiquidAwareSearchFieldStructureTest {
 
         assertTrue(source.contains("BottomBarMatchedReusableLiquidDock("))
         assertTrue(source.contains("shape = CircleShape"))
+        assertTrue(source.contains("useNeutralLiquidContainer = true"))
         assertTrue(source.contains("drawShellLens = true"))
         assertTrue(source.contains("shellLensIntensity = resolveFloatingDockGeometryScale("))
         assertTrue(source.contains("BottomBarMatchedSegmentedControlHeightDp.dp"))

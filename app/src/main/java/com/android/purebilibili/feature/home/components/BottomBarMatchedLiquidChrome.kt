@@ -283,6 +283,7 @@ internal fun BottomBarMatchedReusableLiquidDock(
      * Other chrome must leave this false.
      */
     reuseEnabled: Boolean = false,
+    useNeutralLiquidContainer: Boolean = false,
     drawShellLens: Boolean = true,
     shellLensIntensity: Float = 1f,
     isScrollInProgressProvider: () -> Boolean = { false },
@@ -332,15 +333,22 @@ internal fun BottomBarMatchedReusableLiquidDock(
             homeSettings.liquidGlassReadabilityMode,
         )
     }
-    val containerColor = resolveAndroidNativeFloatingBottomBarContainerColor(
-        surfaceColor = AppSurfaceTokens.cardContainer(),
-        tuning = tuning,
-        glassEnabled = glassEnabled,
-        blurEnabled = true,
-        blurIntensity = blurIntensity,
-        liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
-        liquidGlassTuning = liquidGlassTuning
-    )
+    val containerColor = if (useNeutralLiquidContainer && glassEnabled) {
+        resolveBiliPaiBottomBarContainerColor(
+            darkTheme = isDarkTheme,
+            liquidGlassTuning = liquidGlassTuning,
+        )
+    } else {
+        resolveAndroidNativeFloatingBottomBarContainerColor(
+            surfaceColor = AppSurfaceTokens.cardContainer(),
+            tuning = tuning,
+            glassEnabled = glassEnabled,
+            blurEnabled = true,
+            blurIntensity = blurIntensity,
+            liquidGlassPreset = homeSettings.bottomBarLiquidGlassPreset,
+            liquidGlassTuning = liquidGlassTuning,
+        )
+    }
     // 小胶囊关闭 shell lens 时不必做 capture overflow，减少边沿采样产生的亮线。
     val captureSafeInset = if (drawShellLens) {
         resolveBottomBarCaptureSafeInsetDp(
