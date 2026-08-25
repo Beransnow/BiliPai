@@ -111,7 +111,7 @@ import com.android.purebilibili.core.database.entity.SearchHistory
 import com.android.purebilibili.core.ui.LocalGlobalWallpaperBackdropVisible
 import com.android.purebilibili.core.ui.skeleton.ContentMediaListSkeleton
 import com.android.purebilibili.core.ui.skeleton.ContentVideoGridSkeleton
-import com.android.purebilibili.core.ui.OfficialVerifyBadge
+import com.android.purebilibili.core.ui.OfficialVerifyAvatarBadge
 import com.android.purebilibili.core.ui.globalWallpaperAwareBackground
 import com.android.purebilibili.core.ui.resolveGlobalWallpaperProtectiveColor
 import com.android.purebilibili.core.ui.resolveBottomSafeAreaPadding
@@ -128,6 +128,7 @@ import com.android.purebilibili.core.ui.rememberAppClearIcon
 import com.android.purebilibili.core.ui.rememberAppHistoryIcon
 import com.android.purebilibili.core.ui.rememberAppSearchIcon
 import com.android.purebilibili.core.ui.resolveOfficialVerifyBadge
+import com.android.purebilibili.core.ui.components.UserLevelBadge
 import com.android.purebilibili.core.ui.components.UpBadgeName
 import com.android.purebilibili.feature.home.components.cards.ElegantVideoCard  //  使用首页卡片
 import com.android.purebilibili.feature.home.resolveHomeFeedCardLayout
@@ -3073,79 +3074,74 @@ internal fun UpSearchResultCard(
                 }
             } else Modifier
 
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(cleanedItem.upic)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = cleanedItem.uname,
-                modifier = Modifier
-                    .then(avatarModifier)
-                    .size(56.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-                contentScale = ContentScale.Crop
-            )
+            val verifyBadge = cleanedItem.official_verify?.let { verify ->
+                resolveOfficialVerifyBadge(type = verify.type, desc = verify.desc)
+            }
+            Box(modifier = avatarModifier.size(42.dp)) {
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(cleanedItem.upic)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = cleanedItem.uname,
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                    contentScale = ContentScale.Crop
+                )
+                if (verifyBadge != null) {
+                    OfficialVerifyAvatarBadge(
+                        badge = verifyBadge,
+                        modifier = Modifier.align(Alignment.BottomEnd)
+                    )
+                }
+            }
             
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(10.dp))
             
             // UP主信息
             Column(modifier = Modifier.weight(1f)) {
-                // 名称 + 认证标志
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                // 名称 + 官方等级标志
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
                     AppText(
                         text = cleanedItem.uname,
-                        fontSize = 16.sp,
+                        modifier = Modifier.weight(1f, fill = false),
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     
-                    val verifyBadge = cleanedItem.official_verify?.let { verify ->
-                        resolveOfficialVerifyBadge(
-                            type = verify.type,
-                            desc = verify.desc,
-                            compact = true
-                        )
-                    }
-                    if (verifyBadge != null) {
-                        Spacer(modifier = Modifier.width(4.dp))
-                        OfficialVerifyBadge(
-                            badge = verifyBadge,
-                            compact = true
-                        )
-                    }
+                    UserLevelBadge(
+                        level = cleanedItem.level,
+                        isSeniorMember = cleanedItem.is_senior_member == 1
+                    )
                 }
-                
-                // 个性签名
-                if (cleanedItem.usign.isNotBlank()) {
+
+                Spacer(modifier = Modifier.height(2.dp))
+                AppText(
+                    text = "粉丝：${FormatUtils.formatStat(cleanedItem.fans.toLong())}  " +
+                        "视频：${cleanedItem.videos}",
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                if (verifyBadge != null && verifyBadge.text.isNotBlank()) {
                     Spacer(modifier = Modifier.height(2.dp))
                     AppText(
-                        text = cleanedItem.usign,
+                        text = verifyBadge.text,
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                
-                Spacer(modifier = Modifier.height(4.dp))
-                
-                // 粉丝数 + 视频数
-                Row {
-                    AppText(
-                        text = "粉丝 ${FormatUtils.formatStat(cleanedItem.fans.toLong())}",
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    AppText(
-                        text = "视频 ${cleanedItem.videos}",
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
-                    )
-                }
+
             }
         }
     }
