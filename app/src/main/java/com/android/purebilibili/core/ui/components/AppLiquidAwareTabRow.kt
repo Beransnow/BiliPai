@@ -10,14 +10,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
-import com.android.purebilibili.core.theme.AppUiStyle
-import com.android.purebilibili.core.theme.LocalAppUiStyle
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import top.yukonga.miuix.kmp.blur.Backdrop
 
 /**
- * App-wide category/page tab contract: MD3 keeps the animated native underline;
- * Miuix uses the shared moving capsule and participates in global liquid-glass reuse.
+ * App-wide category/page tab contract. The shared renderer keeps MD3's animated underline
+ * while liquid glass is off, and switches every theme to the moving glass capsule when reuse
+ * is enabled. Miuix keeps the capsule presentation in either state.
  */
 @Composable
 fun <T> AppThemeAdaptiveTabRow(
@@ -30,28 +29,16 @@ fun <T> AppThemeAdaptiveTabRow(
     minTabWidth: Dp = 72.dp,
     miuixBackdrop: Backdrop? = null,
 ) {
-    if (LocalAppUiStyle.current == AppUiStyle.MATERIAL3) {
-        AppNativeTabRow(
-            options = options,
-            selectedValue = selectedValue,
-            onSelectionChange = onSelectionChange,
-            modifier = modifier,
-            enabled = enabled,
-            scrollable = scrollable,
-            minTabWidth = minTabWidth,
-        )
-    } else {
-        AppLiquidAwareTabRow(
-            options = options,
-            selectedValue = selectedValue,
-            onSelectionChange = onSelectionChange,
-            modifier = modifier,
-            enabled = enabled,
-            scrollable = scrollable,
-            minTabWidth = minTabWidth,
-            miuixBackdrop = miuixBackdrop,
-        )
-    }
+    AppLiquidAwareTabRow(
+        options = options,
+        selectedValue = selectedValue,
+        onSelectionChange = onSelectionChange,
+        modifier = modifier,
+        enabled = enabled,
+        scrollable = scrollable,
+        minTabWidth = minTabWidth,
+        miuixBackdrop = miuixBackdrop,
+    )
 }
 
 /**
