@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.CircleShape
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.components.AppButton
+import com.android.purebilibili.core.ui.components.AppFilterChip
 import com.android.purebilibili.core.ui.components.AppSurface
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -166,41 +167,51 @@ private fun DayChip(
         day.date
     }
     
-    AppSurface(
+    AppFilterChip(
+        selected = isSelected,
         onClick = onClick,
         shape = AppShapes.container(ContainerLevel.Card),
-        color = when {
-            isSelected -> MaterialTheme.colorScheme.primary
-            isToday -> MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-            else -> MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        }
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
-        ) {
-            AppText(
-                text = if (isToday) "今天" else weekDay,
-                fontSize = 14.sp,
-                fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Normal,
-                color = when {
-                    isSelected -> Color.White
-                    isToday -> MaterialTheme.colorScheme.primary
-                    else -> MaterialTheme.colorScheme.onSurface
-                }
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            AppText(
-                text = displayDate,
-                fontSize = 11.sp,
-                color = when {
-                    isSelected -> Color.White.copy(alpha = 0.8f)
-                    isToday -> MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
-                    else -> MaterialTheme.colorScheme.onSurfaceVariant
-                }
-            )
-        }
-    }
+        colors = FilterChipDefaults.filterChipColors(
+            containerColor = if (isToday) {
+                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+            } else {
+                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            },
+            labelColor = if (isToday) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            },
+            selectedContainerColor = MaterialTheme.colorScheme.primary,
+            selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+        ),
+        border = null,
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+        label = {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                AppText(
+                    text = if (isToday) "今天" else weekDay,
+                    fontSize = 14.sp,
+                    fontWeight = if (isSelected || isToday) FontWeight.Bold else FontWeight.Normal,
+                    color = when {
+                        isSelected -> MaterialTheme.colorScheme.onPrimary
+                        isToday -> MaterialTheme.colorScheme.primary
+                        else -> MaterialTheme.colorScheme.onSurface
+                    }
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                AppText(
+                    text = displayDate,
+                    fontSize = 11.sp,
+                    color = when {
+                        isSelected -> MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                        isToday -> MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
+                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+                )
+            }
+        },
+    )
 }
 
 @Composable
