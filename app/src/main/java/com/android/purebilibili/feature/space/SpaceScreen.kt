@@ -2592,12 +2592,18 @@ private fun SpaceSecondarySwitchRow(
             .fillMaxWidth()
             .padding(horizontal = spec.horizontalPaddingDp.dp, vertical = 6.dp),
     ) {
-        val itemWidthDp = spec.itemWidthDp ?: 104
+        val containerHorizontalPaddingDp = AppSpacingTokens.ExtraSmall.value.roundToInt()
+        val itemWidthDp = resolveSpaceSecondarySwitchAdaptiveItemWidthDp(
+            preferredItemWidthDp = spec.itemWidthDp ?: 104,
+            itemCount = items.size,
+            viewportWidthDp = maxWidth.value.roundToInt(),
+            containerHorizontalPaddingDp = containerHorizontalPaddingDp
+        )
         val useScrollableRail = shouldScrollSpaceSecondarySwitch(
             itemCount = items.size,
             itemWidthDp = itemWidthDp,
             viewportWidthDp = maxWidth.value.roundToInt(),
-            containerHorizontalPaddingDp = AppSpacingTokens.ExtraSmall.value.roundToInt()
+            containerHorizontalPaddingDp = containerHorizontalPaddingDp
         )
         val itemWidth = itemWidthDp.dp
         val viewportWidthPx = with(density) { maxWidth.toPx() }
@@ -2631,7 +2637,7 @@ private fun SpaceSecondarySwitchRow(
             liquidGlassEffectsEnabled = spec.liquidGlassEffectsEnabled,
             dragSelectionEnabled = spec.dragSelectionEnabled && !useScrollableRail,
             longPressDragSelectionEnabled = useScrollableRail,
-            onDragPositionChanged = { position ->
+            onIndicatorPositionChanged = { position ->
                 if (useScrollableRail) {
                     scrollState.dispatchRawDelta(
                         resolveSpaceSecondarySwitchDragScrollDeltaPx(
@@ -2645,7 +2651,6 @@ private fun SpaceSecondarySwitchRow(
                     )
                 }
             },
-            responsiveDragSpringEnabled = true,
             tapPressRefractionEnabled = !useScrollableRail,
             modifier = if (useScrollableRail) {
                 Modifier.horizontalScroll(scrollState)

@@ -30,7 +30,9 @@ internal data class SpaceContributionToolbarSpec(
 
 private const val SPACE_SEGMENTED_TAB_HORIZONTAL_PADDING_DP = 16
 private const val SPACE_SCROLLABLE_CONTRIBUTION_ITEM_MIN_WIDTH_DP = 104
-private const val SPACE_SCROLLABLE_CONTRIBUTION_ITEM_MAX_WIDTH_DP = 112
+private const val SPACE_SCROLLABLE_CONTRIBUTION_ITEM_MAX_WIDTH_DP = 176
+private const val SPACE_SCROLLABLE_CONTRIBUTION_ITEM_EMERGENCY_MIN_WIDTH_DP = 72
+private const val SPACE_SECONDARY_MIN_VISIBLE_ITEM_COUNT = 3
 private const val SPACE_SCROLLABLE_CONTRIBUTION_ITEM_TEXT_PADDING_DP = 44
 private const val SPACE_SCROLLABLE_CONTRIBUTION_CJK_CHAR_WIDTH_DP = 15
 private const val SPACE_SCROLLABLE_CONTRIBUTION_ASCII_CHAR_WIDTH_DP = 8
@@ -167,6 +169,21 @@ internal fun shouldScrollSpaceSecondarySwitch(
 ): Boolean {
     val contentWidthDp = itemCount * itemWidthDp + containerHorizontalPaddingDp * 2
     return itemCount > 1 && contentWidthDp > viewportWidthDp
+}
+
+internal fun resolveSpaceSecondarySwitchAdaptiveItemWidthDp(
+    preferredItemWidthDp: Int,
+    itemCount: Int,
+    viewportWidthDp: Int,
+    containerHorizontalPaddingDp: Int
+): Int {
+    if (itemCount <= 0 || viewportWidthDp <= 0) return preferredItemWidthDp
+    val visibleItemCount = minOf(itemCount, SPACE_SECONDARY_MIN_VISIBLE_ITEM_COUNT)
+    val availableWidthDp =
+        (viewportWidthDp - containerHorizontalPaddingDp * 2).coerceAtLeast(0)
+    val widthForVisibleItemsDp = availableWidthDp / visibleItemCount
+    return minOf(preferredItemWidthDp, widthForVisibleItemsDp)
+        .coerceAtLeast(SPACE_SCROLLABLE_CONTRIBUTION_ITEM_EMERGENCY_MIN_WIDTH_DP)
 }
 
 internal fun resolveSpaceContributionTabCenteredScrollOffsetPx(

@@ -380,9 +380,8 @@ fun FloatingBottomBar(
     isScrollInProgressProvider: () -> Boolean = { false },
     dragSelectionEnabled: Boolean = true,
     longPressDragSelectionEnabled: Boolean = false,
-    onDragPositionChanged: ((Float) -> Unit)? = null,
     dragTrackingMode: DampedDragTrackingMode = DampedDragTrackingMode.SPRING,
-    responsiveDragSpringEnabled: Boolean = false,
+    onIndicatorPositionChanged: ((Float) -> Unit)? = null,
     liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
     content: @Composable RowScope.() -> Unit
 ) {
@@ -507,7 +506,7 @@ fun FloatingBottomBar(
     val maxTabIndex = (safeTabsCount - 1).coerceAtLeast(0)
     val selectedIndexLatest = rememberUpdatedState(selectedIndex)
     val onSelectedLatest = rememberUpdatedState(onSelected)
-    val onDragPositionChangedLatest = rememberUpdatedState(onDragPositionChanged)
+    val onIndicatorPositionChangedLatest = rememberUpdatedState(onIndicatorPositionChanged)
     val indicatorPositionLatest by rememberUpdatedState(indicatorPositionProvider)
     val isScrollInProgressLatest by rememberUpdatedState(isScrollInProgressProvider)
     val pagerFollowGate = remember { ExternalPagerIndicatorFollowGate() }
@@ -525,7 +524,6 @@ fun FloatingBottomBar(
         isLtr,
         matchedGeometry.pressedScale,
         dragTrackingMode,
-        responsiveDragSpringEnabled,
     ) {
         DampedDragAnimation(
             animationScope = animationScope,
@@ -535,7 +533,6 @@ fun FloatingBottomBar(
             initialScale = 1f,
             pressedScale = matchedGeometry.pressedScale,
             trackingMode = dragTrackingMode,
-            responsiveSpring = responsiveDragSpringEnabled,
             canDrag = { offset ->
                 val animation = holder.instance ?: return@DampedDragAnimation true
                 if (tabWidthPx == 0f) return@DampedDragAnimation false
@@ -584,13 +581,16 @@ fun FloatingBottomBar(
                         (targetValue + dragAmount.x / tabWidthPx * if (isLtr) 1f else -1f)
                             .fastCoerceIn(0f, maxTabIndex.toFloat())
                     updateValue(nextPosition)
-                    onDragPositionChangedLatest.value?.invoke(nextPosition)
                     animationScope.launch {
                         offsetAnimation.snapTo(offsetAnimation.value + dragAmount.x)
                     }
                 }
             }
         ).also { holder.instance = it }
+    }
+    LaunchedEffect(dampedDragAnimation) {
+        snapshotFlow { dampedDragAnimation.value }
+            .collect { position -> onIndicatorPositionChangedLatest.value?.invoke(position) }
     }
     val itemAlignmentOffsetProvider: (Int) -> Float = { itemIndex ->
         if (tabWidthPx <= 0f) {
