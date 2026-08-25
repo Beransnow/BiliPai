@@ -37,7 +37,8 @@ import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.components.AppAssistChip
 import com.android.purebilibili.core.ui.components.AppButton
-import com.android.purebilibili.core.ui.components.AppFilterChip
+import com.android.purebilibili.core.ui.components.AppSegmentOption
+import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppSurface
@@ -403,23 +404,18 @@ private fun FavoriteCategoryFilterRow(
     selectedIndex: Int,
     onSelected: (Int) -> Unit,
 ) {
-    FlowRow(
+    val options = remember(labels) {
+        labels.mapIndexed { index, label -> AppSegmentOption(index, label) }
+    }
+    AppThemeAdaptiveTabRow(
+        options = options,
+        selectedValue = selectedIndex.coerceIn(0, labels.lastIndex.coerceAtLeast(0)),
+        onSelectionChange = onSelected,
+        scrollable = labels.size > 4,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = AppSpacingTokens.Medium),
-        horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
-        verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
-    ) {
-        labels.forEach { label ->
-            val index = labels.indexOf(label)
-            AppFilterChip(
-                selected = index == selectedIndex,
-                onClick = { onSelected(index) },
-                label = { AppText(label) },
-                leadingIcon = null,
-            )
-        }
-    }
+    )
 }
 
 @Composable

@@ -60,7 +60,8 @@ import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.components.AppDropdownMenu
 import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import com.android.purebilibili.core.ui.components.AppIconButton
-import com.android.purebilibili.core.ui.components.AppFilterChip
+import com.android.purebilibili.core.ui.components.AppSegmentOption
+import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
 import com.android.purebilibili.core.ui.components.AppSearchField
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppOutlinedButton
@@ -904,27 +905,27 @@ fun WatchLaterScreen(
                         .fillMaxWidth()
                         .padding(horizontal = AppSpacingTokens.Medium),
                 )
-                FlowRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = AppSpacingTokens.Medium),
-                    horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
-                    verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
-                ) {
-                    WatchLaterFilter.entries.forEach { filter ->
-                        AppFilterChip(
-                            selected = state.filter == filter,
-                            enabled = !isBatchMode,
-                            onClick = { viewModel.selectFilter(filter) },
-                            label = {
-                                AppText(
-                                    if (filter == state.filter) "${filter.label}(${state.totalCount})"
-                                    else filter.label
-                                )
+                val watchLaterFilterOptions = remember(state.filter, state.totalCount) {
+                    WatchLaterFilter.entries.map { filter ->
+                        AppSegmentOption(
+                            value = filter,
+                            label = if (filter == state.filter) {
+                                "${filter.label}(${state.totalCount})"
+                            } else {
+                                filter.label
                             },
                         )
                     }
                 }
+                AppThemeAdaptiveTabRow(
+                    options = watchLaterFilterOptions,
+                    selectedValue = state.filter,
+                    onSelectionChange = viewModel::selectFilter,
+                    enabled = !isBatchMode,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = AppSpacingTokens.Medium),
+                )
                 Spacer(modifier = Modifier.height(AppSpacingTokens.Small))
                 }
                 

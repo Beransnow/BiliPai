@@ -19,7 +19,8 @@ import com.android.purebilibili.feature.video.danmaku.mergeDanmakuBlockRuleSecti
 import com.android.purebilibili.feature.video.danmaku.parseDanmakuBlockRules
 import com.android.purebilibili.feature.video.danmaku.partitionDanmakuBlockRules
 import com.android.purebilibili.core.ui.components.AppButton
-import com.android.purebilibili.core.ui.components.AppFilterChip
+import com.android.purebilibili.core.ui.components.AppSegmentOption
+import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppOutlinedButton
 import com.android.purebilibili.core.ui.components.AppOutlinedTextField
@@ -547,17 +548,14 @@ fun DanmakuSettingsPanel(
 
                     if (isFullscreenStyle) {
                         // 横屏分区 Tab：基础 / 高级 / 屏蔽，避免窄侧栏长滚动。
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            listOf("基础", "高级", "屏蔽").forEachIndexed { index, label ->
-                                AppFilterChip(
-                                    selected = fullscreenActiveSection == index,
-                                    onClick = { fullscreenActiveSection = index },
-                                    label = {
-                                        AppText(label, fontSize = 13.sp)
-                                    }
-                                )
-                            }
-                        }
+                        AppThemeAdaptiveTabRow(
+                            options = listOf("基础", "高级", "屏蔽").mapIndexed { index, label ->
+                                AppSegmentOption(index, label)
+                            },
+                            selectedValue = fullscreenActiveSection,
+                            onSelectionChange = { fullscreenActiveSection = it },
+                            modifier = Modifier.fillMaxWidth(),
+                        )
                         Spacer(modifier = Modifier.height(12.dp))
                     }
 
@@ -1346,20 +1344,17 @@ private fun DanmakuBlockManagerDialog(
                     }
                 }
 
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf("关键词", "正则", "UID(hash)").forEachIndexed { index, label ->
-                        AppFilterChip(
-                            selected = selectedTabIndex == index,
-                            onClick = { selectedTabIndex = index },
-                            label = {
-                                AppText(
-                                    resolveDanmakuBlockManagerTabLabel(label, tabCounts[index]),
-                                    fontSize = 12.sp
-                                )
-                            }
+                AppThemeAdaptiveTabRow(
+                    options = listOf("关键词", "正则", "UID(hash)").mapIndexed { index, label ->
+                        AppSegmentOption(
+                            index,
+                            resolveDanmakuBlockManagerTabLabel(label, tabCounts[index]),
                         )
-                    }
-                }
+                    },
+                    selectedValue = selectedTabIndex,
+                    onSelectionChange = { selectedTabIndex = it },
+                    modifier = Modifier.fillMaxWidth(),
+                )
 
                 AppOutlinedTextField(
                     value = inputValue,

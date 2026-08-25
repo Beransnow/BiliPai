@@ -35,7 +35,8 @@ import com.android.purebilibili.core.ui.AdaptivePullToRefreshBox
 import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.components.AppDropdownMenu
 import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
-import com.android.purebilibili.core.ui.components.AppFilterChip
+import com.android.purebilibili.core.ui.components.AppSegmentOption
+import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppOutlinedButton
 import com.android.purebilibili.core.ui.components.AppSurface
@@ -441,26 +442,25 @@ private fun MessageSessionCategoryRow(
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(end = 16.dp)
-        ) {
-            items(items, key = { it.category.name }) { item ->
-                AppFilterChip(
-                    selected = item.category == selectedCategory,
-                    onClick = { onCategoryClick(item.category) },
-                    label = {
-                        AppText(
-                            text = if (item.unreadCount > 0) {
-                                "${item.category.title} ${if (item.unreadCount > 99) "99+" else item.unreadCount}"
-                            } else {
-                                item.category.title
-                            }
-                        )
-                    }
+        val options = remember(items) {
+            items.map { item ->
+                AppSegmentOption(
+                    value = item.category,
+                    label = if (item.unreadCount > 0) {
+                        "${item.category.title} ${if (item.unreadCount > 99) "99+" else item.unreadCount}"
+                    } else {
+                        item.category.title
+                    },
                 )
             }
         }
+        AppThemeAdaptiveTabRow(
+            options = options,
+            selectedValue = selectedCategory,
+            onSelectionChange = onCategoryClick,
+            scrollable = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
 

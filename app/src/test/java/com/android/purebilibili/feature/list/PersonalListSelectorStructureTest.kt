@@ -53,10 +53,10 @@ class PersonalListSelectorStructureTest {
             "app/src/main/java/com/android/purebilibili/feature/profile/ProfileScreen.kt",
         )
 
-        assertTrue(categorySource.contains("FlowRow("))
-        assertFalse(categorySource.contains("LazyRow("))
-        assertTrue(watchLaterSource.contains("WatchLaterFilter.entries.forEach"))
-        assertFalse(watchLaterSource.contains("LazyRow("))
+        assertTrue(categorySource.contains("AppThemeAdaptiveTabRow("))
+        assertFalse(categorySource.contains("AppFilterChip("))
+        assertTrue(watchLaterSource.contains("AppThemeAdaptiveTabRow("))
+        assertFalse(watchLaterSource.contains("AppFilterChip("))
         val profileTabs = profileSource
             .substringAfter("private fun ProfileSpaceTabs(")
             .substringBefore("private fun ProfileSpaceTabBody(")
