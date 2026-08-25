@@ -523,6 +523,7 @@ private fun PageSelectorItem(
             AppText(
                 text = page.part.ifEmpty { "第${page.page}P" },
                 style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 18.sp),
+                minLines = 2,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 color = titleColor.copy(alpha = 0.96f)
