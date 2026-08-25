@@ -1,9 +1,11 @@
 package com.android.purebilibili.core.ui.components
 
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.purebilibili.core.ui.AppSurfaceTokens
@@ -209,6 +211,9 @@ fun <T> AppNativeTabRow(
     onSelectionChange: (T) -> Unit,
 ) {
     if (options.isEmpty()) return
+    val viewportBoundedModifier = modifier.widthIn(
+        max = LocalConfiguration.current.screenWidthDp.dp,
+    )
     val policy = rememberAppSegmentedControlPolicy()
     val materialColors = MaterialTheme.colorScheme
     val colors = resolveAppSegmentedControlColors(
@@ -229,7 +234,7 @@ fun <T> AppNativeTabRow(
             enabled = enabled,
             scrollable = scrollable,
             minTabWidth = minTabWidth,
-            modifier = modifier,
+            modifier = viewportBoundedModifier,
             onSelectionChange = onSelectionChange,
         )
         AppSegmentedRenderer.MIUIX -> AppMiuixTabRow(
@@ -240,7 +245,7 @@ fun <T> AppNativeTabRow(
             minTabWidth = minTabWidth,
             colors = colors,
             preferredCornerRadius = policy.preferredCornerRadius,
-            modifier = modifier,
+            modifier = viewportBoundedModifier,
             onSelectionChange = onSelectionChange,
         )
     }

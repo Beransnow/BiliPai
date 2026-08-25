@@ -6,11 +6,16 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.android.purebilibili.core.store.HomeSettings
+import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import top.yukonga.miuix.kmp.blur.Backdrop
@@ -18,7 +23,7 @@ import top.yukonga.miuix.kmp.blur.Backdrop
 /**
  * App-wide category/page tab contract. The shared renderer keeps MD3's animated underline
  * while liquid glass is off, and switches every theme to the moving glass capsule when reuse
- * is enabled. Miuix keeps the capsule presentation in either state.
+ * is enabled. The disabled path always delegates to the active theme's native tab row.
  */
 @Composable
 fun <T> AppThemeAdaptiveTabRow(
@@ -60,6 +65,24 @@ fun <T> AppLiquidAwareTabRow(
     miuixBackdrop: Backdrop? = null,
 ) {
     if (options.isEmpty()) return
+    val context = LocalContext.current
+    val homeSettings by SettingsManager
+        .getHomeSettings(context)
+        .collectAsStateWithLifecycle(
+            initialValue = HomeSettings(androidNativeLiquidGlassEnabled = true),
+        )
+    if (!homeSettings.androidNativeLiquidGlassEnabled) {
+        AppNativeTabRow(
+            options = options,
+            selectedValue = selectedValue,
+            onSelectionChange = onSelectionChange,
+            modifier = modifier,
+            enabled = enabled,
+            scrollable = scrollable,
+            minTabWidth = minTabWidth,
+        )
+        return
+    }
     val selectedIndex = options.indexOfFirst { it.value == selectedValue }.coerceAtLeast(0)
     if (scrollable) {
         val scrollState = rememberScrollState()
