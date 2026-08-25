@@ -582,6 +582,19 @@ internal fun mergeSpaceVideoPages(
     return merged
 }
 
+internal fun shouldContinueSpaceBangumiPagination(
+    previousItemCount: Int,
+    mergedItemCount: Int,
+    incomingItemCount: Int,
+    responsePage: Int,
+    pageSize: Int,
+    total: Int,
+): Boolean {
+    if (incomingItemCount <= 0 || mergedItemCount <= previousItemCount) return false
+    if (mergedItemCount >= total.coerceAtLeast(0)) return false
+    return responsePage.coerceAtLeast(1) * pageSize.coerceAtLeast(1) < total
+}
+
 private fun mapSpaceAggregateVideoItem(item: SpaceAggregateArchiveItem): SpaceVideoItem {
     return SpaceVideoItem(
         aid = item.aid,

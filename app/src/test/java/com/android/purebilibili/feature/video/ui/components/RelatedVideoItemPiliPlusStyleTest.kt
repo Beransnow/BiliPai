@@ -14,28 +14,27 @@ class RelatedVideoItemPiliPlusStyleTest {
     fun `publish time follows PiliPlus date thresholds`() {
         val now = Instant.parse("2026-08-25T12:00:00Z").toEpochMilli()
         val utc = ZoneId.of("UTC")
-
         assertEquals(
             "昨天 09:30",
-            formatRelatedVideoPublishTime(
+            com.android.purebilibili.core.util.FormatUtils.formatPublishTime(
                 timestampSeconds = Instant.parse("2026-08-24T09:30:00Z").epochSecond,
-                nowMillis = now,
+                nowMs = now,
                 zoneId = utc,
             ),
         )
         assertEquals(
             "08-20",
-            formatRelatedVideoPublishTime(
+            com.android.purebilibili.core.util.FormatUtils.formatPublishTime(
                 timestampSeconds = Instant.parse("2026-08-20T09:30:00Z").epochSecond,
-                nowMillis = now,
+                nowMs = now,
                 zoneId = utc,
             ),
         )
         assertEquals(
             "2025-08-20",
-            formatRelatedVideoPublishTime(
+            com.android.purebilibili.core.util.FormatUtils.formatPublishTime(
                 timestampSeconds = Instant.parse("2025-08-20T09:30:00Z").epochSecond,
-                nowMillis = now,
+                nowMs = now,
                 zoneId = utc,
             ),
         )
@@ -48,7 +47,7 @@ class RelatedVideoItemPiliPlusStyleTest {
             .readText()
 
         assertTrue(source.contains("RELATED_VIDEO_CARD_COVER_ASPECT_RATIO = 16f / 10f"))
-        assertTrue(source.contains("formatRelatedVideoPublishTime(video.pubdate)"))
+        assertTrue(source.contains("FormatUtils.formatPublishTime(video.pubdate)"))
         assertTrue(source.indexOf("text = publishTime") < source.indexOf("name = video.owner.name"))
         assertTrue(source.contains("Icons.Outlined.PlayCircleOutline"))
         assertTrue(source.contains("Icons.Outlined.Subtitles"))

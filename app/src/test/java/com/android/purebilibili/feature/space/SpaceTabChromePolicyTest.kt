@@ -172,6 +172,7 @@ class SpaceTabChromePolicyTest {
 
         assertEquals(1, spec.selectedIndex)
         assertEquals(48, spec.heightDp)
+        assertEquals(30, spec.indicatorHeightDp)
         assertEquals(176, spec.itemWidthDp)
         assertEquals(
             122,

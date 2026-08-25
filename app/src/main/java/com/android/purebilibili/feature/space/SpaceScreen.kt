@@ -2632,7 +2632,7 @@ private fun SpaceSecondarySwitchRow(
             itemWidth = itemWidth.takeIf { useScrollableRail },
             height = spec.heightDp.dp,
             indicatorHeight = spec.indicatorHeightDp.dp,
-            labelFontSize = 13.sp,
+            labelFontSize = 14.sp,
             forceLiquidChrome = true,
             liquidGlassEffectsEnabled = spec.liquidGlassEffectsEnabled,
             dragSelectionEnabled = spec.dragSelectionEnabled && !useScrollableRail,
@@ -2680,7 +2680,12 @@ private fun SpaceMainTabRow(
             items = tabs.map { it.title },
             selectedIndex = selectedIndex,
             onSelected = { index -> tabs.getOrNull(index)?.tab?.let(onSelect) },
+            height = spec.heightDp.dp,
+            indicatorHeight = spec.indicatorHeightDp.dp,
+            labelFontSize = 14.sp,
             forceLiquidChrome = true,
+            liquidGlassEffectsEnabled = spec.liquidGlassEffectsEnabled,
+            dragSelectionEnabled = spec.dragSelectionEnabled,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = spec.horizontalPaddingDp.dp),

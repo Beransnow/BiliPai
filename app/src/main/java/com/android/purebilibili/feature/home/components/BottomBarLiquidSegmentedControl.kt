@@ -401,7 +401,7 @@ fun BottomBarLiquidSegmentedControl(
     val effectiveLabelFontSize = if (labelFontSize.isSpecified) {
         labelFontSize
     } else {
-        MaterialTheme.typography.labelMedium.fontSize
+        MaterialTheme.typography.labelLarge.fontSize
     }
 
     val context = LocalContext.current

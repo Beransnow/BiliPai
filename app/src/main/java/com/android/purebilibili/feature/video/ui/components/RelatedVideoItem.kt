@@ -80,11 +80,6 @@ import androidx.compose.material.icons.outlined.Subtitles
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
-import java.util.Locale
 
 /**
  * PiliPlus horizontal cards use a 16:10 cover.
@@ -92,30 +87,6 @@ import java.util.Locale
 internal const val RELATED_VIDEO_CARD_COVER_ASPECT_RATIO = 16f / 10f
 
 internal const val RELATED_VIDEO_GRID_COLUMNS = 1
-
-internal fun formatRelatedVideoPublishTime(
-    timestampSeconds: Long,
-    nowMillis: Long = System.currentTimeMillis(),
-    zoneId: ZoneId = ZoneId.systemDefault(),
-    locale: Locale = Locale.getDefault(),
-): String {
-    if (timestampSeconds <= 0L) return ""
-    val published = Instant.ofEpochSecond(timestampSeconds).atZone(zoneId)
-    val now = Instant.ofEpochMilli(nowMillis).atZone(zoneId)
-    val elapsedMinutes = ChronoUnit.MINUTES.between(published, now).coerceAtLeast(0L)
-    if (elapsedMinutes < 1L) return "刚刚"
-    if (elapsedMinutes < 60L) return "${elapsedMinutes}分钟前"
-    val elapsedHours = ChronoUnit.HOURS.between(published, now).coerceAtLeast(0L)
-    if (elapsedHours < 24L) return "${elapsedHours}小时前"
-    val elapsedDays = ChronoUnit.DAYS.between(published.toLocalDate(), now.toLocalDate())
-        .coerceAtLeast(0L)
-    if (elapsedDays == 1L) {
-        return "昨天 ${DateTimeFormatter.ofPattern("HH:mm", locale).format(published)}"
-    }
-    if (elapsedDays < 4L) return "${elapsedDays}天前"
-    val pattern = if (published.year == now.year) "MM-dd" else "yyyy-MM-dd"
-    return DateTimeFormatter.ofPattern(pattern, locale).format(published)
-}
 
 /**
  * Related Videos Header
@@ -252,7 +223,7 @@ fun RelatedVideoItem(
                         // Related horizontal card keeps play/danmaku in the info column.
                         infoPresentation = com.android.purebilibili.core.ui.transition
                             .resolveVideoCardSourceInfoPresentation(
-                                publishTimeText = formatRelatedVideoPublishTime(video.pubdate),
+                                publishTimeText = FormatUtils.formatPublishTime(video.pubdate),
                                 showStatsInInfo = true,
                             ),
                         coverUrl = stationaryCoverUrl,
@@ -336,7 +307,7 @@ fun RelatedVideoItem(
                     horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
                 ) {
                     val publishTime = remember(video.pubdate) {
-                        formatRelatedVideoPublishTime(video.pubdate)
+                        FormatUtils.formatPublishTime(video.pubdate)
                     }
                     if (publishTime.isNotBlank()) {
                         AppText(
