@@ -72,6 +72,17 @@ class BottomBarLiquidSegmentedControlStructureTest {
     }
 
     @Test
+    fun `three segment indicator stays aligned with the shell edge`() {
+        val width = resolveSegmentedControlIndicatorWidthDp(
+            slotWidthDp = 180f,
+            indicatorHeightDp = 30f,
+            itemCount = 3,
+        )
+
+        assertEquals(172f, width)
+    }
+
+    @Test
     fun `segmented capture expands past full drag scale lens and panel offset`() {
         assertEquals(
             72f,
