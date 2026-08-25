@@ -13,7 +13,7 @@ import com.android.purebilibili.core.ui.components.AppCardVariant
 import com.android.purebilibili.core.ui.components.AppDropdownMenu
 import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
 import com.android.purebilibili.core.ui.components.AppFilterChip
-import com.android.purebilibili.core.ui.components.AppNativeTabRow
+import com.android.purebilibili.core.ui.components.AppLiquidAwareTabRow
 import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppSmallFloatingActionButton
@@ -1605,7 +1605,7 @@ fun CommonListScreen(
                                 AppSegmentOption(value = section, label = section.label)
                             }
                         }
-                        AppNativeTabRow(
+                        AppLiquidAwareTabRow(
                             options = favoriteSectionOptions,
                             selectedValue = favoriteSection,
                             onSelectionChange = { section ->

@@ -32,6 +32,7 @@ import com.android.purebilibili.core.ui.AppScaffold
 import com.android.purebilibili.core.ui.AppTopBar
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppLiquidAwareTabRow
 import com.android.purebilibili.core.ui.components.AppSearchField
 import com.android.purebilibili.core.ui.components.AppSearchFieldPresentation
 import com.android.purebilibili.core.ui.components.AppSegmentOption
@@ -131,7 +132,7 @@ fun BangumiScreen(
                 .responsiveContentWidth(),
         ) {
             if (state.page != BangumiHubPage.SEARCH) {
-                BangumiLiquidAwareTabRow(
+                AppLiquidAwareTabRow(
                     options = BangumiChannel.entries.map { AppSegmentOption(it, it.label) },
                     selectedValue = state.channel,
                     enabled = !selectionActive,

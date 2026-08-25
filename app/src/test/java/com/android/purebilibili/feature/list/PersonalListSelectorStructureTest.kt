@@ -16,7 +16,8 @@ class PersonalListSelectorStructureTest {
             .substringAfter("if (favoriteViewModel != null) {")
             .substringBefore("if (favoriteViewModel != null && isSearchDestination")
 
-        assertTrue(categorySelector.contains("AppNativeTabRow("))
+        assertTrue(categorySelector.contains("AppLiquidAwareTabRow("))
+        assertFalse(categorySelector.contains("AppNativeTabRow("))
         assertTrue(categorySelector.contains("FavoriteSection.entries.map"))
         assertFalse(categorySelector.contains("LazyRow("))
         assertFalse(source.contains("systemGestureExclusion"))

@@ -70,6 +70,7 @@ import com.android.purebilibili.core.ui.components.AppErrorState
 import com.android.purebilibili.core.ui.components.AppFilterChip
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
+import com.android.purebilibili.core.ui.components.AppLiquidAwareTabRow
 import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppText
@@ -357,7 +358,7 @@ private fun TimelineSection(
                     text = "追番时间表",
                     style = MaterialTheme.typography.titleMedium,
                 )
-                BangumiLiquidAwareTabRow(
+                AppLiquidAwareTabRow(
                     options = state.days.mapIndexed { index, item ->
                         AppSegmentOption(index, resolveBangumiTimelineDayLabel(item))
                     },
@@ -442,7 +443,7 @@ private fun BangumiIndexContent(
                 span = { GridItemSpan(maxLineSpan) },
                 key = "cinema_categories",
             ) {
-                BangumiLiquidAwareTabRow(
+                AppLiquidAwareTabRow(
                     options = CINEMA_INDEX_CATEGORIES.map { AppSegmentOption(it, it.label) },
                     selectedValue = category,
                     scrollable = true,
@@ -582,7 +583,7 @@ private fun BangumiFollowContent(
     val followBackdrop = rememberLayerBackdrop()
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
-            BangumiLiquidAwareTabRow(
+            AppLiquidAwareTabRow(
                 options = BangumiFollowStatus.entries.map { AppSegmentOption(it, it.label) },
                 selectedValue = status,
                 enabled = !state.isMutating,
