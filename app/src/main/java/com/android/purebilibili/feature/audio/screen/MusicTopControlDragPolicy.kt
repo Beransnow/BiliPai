@@ -2,36 +2,47 @@ package com.android.purebilibili.feature.audio.screen
 
 import androidx.compose.runtime.Immutable
 import kotlin.math.abs
-import kotlin.math.sign
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.tanh
 
 @Immutable
 internal data class MusicTopControlTransform(
     val scaleX: Float,
     val scaleY: Float,
-    val pivotFractionX: Float,
-    val pivotFractionY: Float,
+    val translationX: Float,
+    val translationY: Float,
 )
 
-/** Converts drag distance into directional deformation without changing the control's layout position. */
+/** AndroidLiquidGlass LiquidButton interaction preset, adapted without moving layout coordinates. */
 internal fun resolveMusicTopControlTransform(
     dragX: Float,
     dragY: Float,
     maxDragPx: Float,
-    glassProgress: Float,
+    widthPx: Float,
+    heightPx: Float,
+    expansionPx: Float,
 ): MusicTopControlTransform {
     val safeMaxDragPx = maxDragPx.coerceAtLeast(1f)
     val clampedX = dragX.coerceIn(-safeMaxDragPx, safeMaxDragPx)
     val clampedY = dragY.coerceIn(-safeMaxDragPx, safeMaxDragPx)
-    val horizontalPull = abs(clampedX) / safeMaxDragPx
-    val verticalPull = abs(clampedY) / safeMaxDragPx
-    val liveliness = 1f - glassProgress.coerceIn(0f, 1f)
-    val stretch = 0.18f + 0.06f * liveliness
-    val squeeze = 0.05f + 0.02f * liveliness
-    val pivotShift = 0.12f + 0.08f * liveliness
+    val safeWidth = widthPx.coerceAtLeast(1f)
+    val safeHeight = heightPx.coerceAtLeast(1f)
+    val maxOffset = minOf(safeWidth, safeHeight)
+    val maxDimension = maxOf(safeWidth, safeHeight)
+    val dragProgress = maxOf(abs(clampedX), abs(clampedY)) / safeMaxDragPx
+    val scale = 1f + expansionPx / safeHeight * dragProgress
+    val maxDragScale = expansionPx / safeHeight
+    val offsetAngle = atan2(clampedY, clampedX)
     return MusicTopControlTransform(
-        scaleX = 1f + horizontalPull * stretch - verticalPull * squeeze,
-        scaleY = 1f + verticalPull * stretch - horizontalPull * squeeze,
-        pivotFractionX = 0.5f - sign(clampedX) * horizontalPull * pivotShift,
-        pivotFractionY = 0.5f - sign(clampedY) * verticalPull * pivotShift,
+        scaleX = scale +
+            maxDragScale * abs(cos(offsetAngle) * clampedX / maxDimension) *
+            (safeWidth / safeHeight).coerceAtMost(1f),
+        scaleY = scale +
+            maxDragScale * abs(sin(offsetAngle) * clampedY / maxDimension) *
+            (safeHeight / safeWidth).coerceAtMost(1f),
+        translationX = maxOffset * tanh(0.05f * clampedX / maxOffset),
+        translationY = maxOffset * tanh(0.05f * clampedY / maxOffset),
     )
 }

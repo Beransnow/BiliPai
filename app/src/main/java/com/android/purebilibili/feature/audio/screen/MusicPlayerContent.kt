@@ -84,7 +84,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.lerp
@@ -1427,11 +1426,11 @@ private fun GlassIconButton(
     val dragX = remember { Animatable(0f) }
     val dragY = remember { Animatable(0f) }
     val maxDragPx = with(LocalDensity.current) { 36.dp.toPx() }
-    val glassProgress = liquidGlassTuning.progress.coerceIn(0f, 1f)
-    val releaseSpec = remember(glassProgress) {
+    val expansionPx = with(LocalDensity.current) { 4.dp.toPx() }
+    val releaseSpec = remember {
         spring<Float>(
-            dampingRatio = 0.56f + glassProgress * 0.20f,
-            stiffness = 280f + glassProgress * 240f,
+            dampingRatio = 0.5f,
+            stiffness = 300f,
         )
     }
 
@@ -1443,14 +1442,14 @@ private fun GlassIconButton(
                     dragX = dragX.value,
                     dragY = dragY.value,
                     maxDragPx = maxDragPx,
-                    glassProgress = glassProgress,
+                    widthPx = size.width,
+                    heightPx = size.height,
+                    expansionPx = expansionPx,
                 )
                 scaleX = transform.scaleX
                 scaleY = transform.scaleY
-                transformOrigin = TransformOrigin(
-                    pivotFractionX = transform.pivotFractionX,
-                    pivotFractionY = transform.pivotFractionY,
-                )
+                translationX = transform.translationX
+                translationY = transform.translationY
             }
             .pointerInput(maxDragPx, releaseSpec) {
                 detectDragGestures(
