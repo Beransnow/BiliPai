@@ -7241,6 +7241,10 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
     fun switchPage(pageIndex: Int, ignoreSavedProgress: Boolean = false) {
         val current = _uiState.value as? VideoPlaybackUiState.Success ?: return
         val page = current.info.pages.getOrNull(pageIndex) ?: return
+        // The playurl API identifies a part by the bvid/cid pair. Keep both values from the
+        // same detail snapshot so a stale mutable session field cannot request another video's
+        // stream while the UI is already showing the newly loaded detail.
+        val targetBvid = current.info.bvid
         // currentCid used to be changed before the play-url request completed. A second tap was
         // then mistaken for the current page, while concurrent requests could commit/rollback in
         // any order. Keep the committed identity unchanged and allow only the latest request to win.
@@ -7256,9 +7260,9 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
         subtitleLoadToken += 1
         val subtitleClearedState = clearTransientPlaybackPreviewData(clearSubtitleFields(current))
         val previousCid = currentCid
-        if (currentBvid.isNotEmpty() && previousCid > 0L) {
+        if (targetBvid.isNotEmpty() && previousCid > 0L) {
             flushPlaybackHeartbeatSnapshot(reason = "switch_page")
-            playbackUseCase.savePosition(currentBvid, previousCid)
+            playbackUseCase.savePosition(targetBvid, previousCid)
         }
         _uiState.value = subtitleClearedState.copy(
             isQualitySwitching = true,
@@ -7267,7 +7271,7 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
         
         pageSwitchJob = viewModelScope.launch {
             try {
-                val playUrlData = VideoRepository.getPlayUrlData(currentBvid, page.cid, current.currentQuality)
+                val playUrlData = VideoRepository.getPlayUrlData(targetBvid, page.cid, current.currentQuality)
                 if (playUrlData != null) {
                     //  [新增] 获取音频/视频偏好
                     val settingsCodecPreference = appContext?.let { 
@@ -7308,7 +7312,7 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                         isAv1Supported = isAv1Supported
                     )
                     val restoredPosition = resolvePageSwitchStartPositionMs(
-                        cachedPositionMs = playbackUseCase.getCachedPosition(currentBvid, page.cid),
+                        cachedPositionMs = playbackUseCase.getCachedPosition(targetBvid, page.cid),
                         pageDurationSeconds = page.duration,
                         ignoreSavedProgress = ignoreSavedProgress
                     )
@@ -7361,8 +7365,8 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                         monitorPlaybackTransitionPosition(restoredPosition.coerceAtLeast(0L))
                         startHeartbeat()
                         interactiveCurrentEdgeId = 0L
-                        loadPlayerInfo(currentBvid, page.cid)
-                        loadVideoshot(currentBvid, page.cid)
+                        loadPlayerInfo(targetBvid, page.cid)
+                        loadVideoshot(targetBvid, page.cid)
                         toast("\u5df2\u5207\u6362\u81f3 P${pageIndex + 1}")
                         return@launch
                     }
