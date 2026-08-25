@@ -1895,7 +1895,7 @@ private fun MiuixAdaptiveSearchBar(
     onQueryChange: (String) -> Unit,
     modifier: Modifier,
     placeholder: String,
-    @Suppress("UNUSED_PARAMETER") containerColor: Color,
+    containerColor: Color,
     height: androidx.compose.ui.unit.Dp,
     forceExpandedInput: Boolean = false,
     onSearch: () -> Unit = {},
@@ -1912,6 +1912,7 @@ private fun MiuixAdaptiveSearchBar(
                 .fillMaxWidth()
                 .height(height),
             label = placeholder,
+            color = containerColor,
             interactionSource = interactionSource,
         )
         return
@@ -1929,6 +1930,7 @@ private fun MiuixAdaptiveSearchBar(
             .fillMaxWidth()
             .height(height),
         label = placeholder,
+        color = containerColor,
         interactionSource = interactionSource,
     )
 }

@@ -362,6 +362,7 @@ class AdaptiveListComponentPolicyTest {
         val miuixSearchBarEnd = text.indexOf("\n}", miuixSearchBarStart).let { if (it < 0) text.length else it + 2 }
         val miuixSearchBarBlock = text.substring(miuixSearchBarStart, miuixSearchBarEnd)
         assertTrue(miuixSearchBarBlock.contains("InputField("))
+        assertTrue(miuixSearchBarBlock.contains("color = containerColor"))
         assertFalse(miuixSearchBarBlock.contains("BasicTextField("))
     }
 
