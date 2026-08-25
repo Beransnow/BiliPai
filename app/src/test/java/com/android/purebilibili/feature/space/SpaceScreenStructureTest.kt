@@ -8,10 +8,10 @@ import kotlin.test.assertTrue
 class SpaceScreenStructureTest {
 
     @Test
-    fun `space chrome uses native tab rows and piliplus actions`() {
+    fun `space chrome uses liquid tab rows and piliplus actions`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt")
 
-        assertTrue(source.contains("AppNativeTabRow("))
+        assertFalse(source.contains("AppNativeTabRow("))
         assertTrue(source.contains("BottomBarLiquidSegmentedControl("))
         assertTrue(source.contains("forceLiquidChrome = true"))
         assertTrue(source.contains("SpaceSecondarySwitchRow("))
@@ -83,17 +83,19 @@ class SpaceScreenStructureTest {
     }
 
     @Test
-    fun `secondary contribution switch follows the theme native tab row`() {
+    fun `secondary contribution switch uses responsive liquid glass rail`() {
         val source = loadSource("app/src/main/java/com/android/purebilibili/feature/space/SpaceScreen.kt")
         val secondaryRow = source
             .substringAfter("private fun SpaceSecondarySwitchRow(")
             .substringBefore("private fun SpaceMainTabRow(")
 
         assertTrue(source.contains("SpaceSecondarySwitchRow("))
-        assertTrue(secondaryRow.contains("AppNativeTabRow("))
-        assertTrue(secondaryRow.contains("AppSegmentOption(value = item.id, label = item.title)"))
+        assertTrue(secondaryRow.contains("BottomBarLiquidSegmentedControl("))
+        assertTrue(secondaryRow.contains("shouldScrollSpaceSecondarySwitch("))
+        assertTrue(secondaryRow.contains("Modifier.horizontalScroll(scrollState)"))
+        assertTrue(secondaryRow.contains("dragSelectionEnabled = spec.dragSelectionEnabled && !useScrollableRail"))
         assertFalse(secondaryRow.contains("AppFilterChip("))
-        assertFalse(secondaryRow.contains("BottomBarLiquidSegmentedControl("))
+        assertFalse(secondaryRow.contains("AppNativeTabRow("))
         assertFalse(source.contains("rememberTextMeasurer()"))
     }
 

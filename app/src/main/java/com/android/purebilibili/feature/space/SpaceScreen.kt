@@ -159,8 +159,6 @@ import com.android.purebilibili.feature.dynamic.components.DynamicCardV2
 import com.android.purebilibili.feature.dynamic.components.DynamicCommentOverlayHost
 import com.android.purebilibili.feature.dynamic.components.ImagePreviewDialog
 import com.android.purebilibili.feature.dynamic.components.RepostDialog
-import com.android.purebilibili.core.ui.components.AppNativeTabRow
-import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.feature.list.VideoProgressDisplayState
 import com.android.purebilibili.feature.video.controller.PlaybackProgressManager
 import com.android.purebilibili.core.ui.blur.hazeSourceCompat
@@ -2584,19 +2582,60 @@ private fun SpaceSecondarySwitchRow(
     onSelect: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val options = remember(items) {
-        items.map { item -> AppSegmentOption(value = item.id, label = item.title) }
+    val spec = remember(items, selectedId) {
+        resolveSpaceSecondarySwitchChromeSpec(items = items, selectedId = selectedId)
     }
-    AppNativeTabRow(
-        options = options,
-        selectedValue = selectedId,
-        onSelectionChange = onSelect,
-        scrollable = items.size > 4,
-        minTabWidth = 72.dp,
+    val scrollState = rememberScrollState()
+    val density = LocalDensity.current
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp),
-    )
+            .padding(horizontal = spec.horizontalPaddingDp.dp, vertical = 6.dp),
+    ) {
+        val itemWidthDp = spec.itemWidthDp ?: 104
+        val useScrollableRail = shouldScrollSpaceSecondarySwitch(
+            itemCount = items.size,
+            itemWidthDp = itemWidthDp,
+            viewportWidthDp = maxWidth.value.roundToInt(),
+            containerHorizontalPaddingDp = AppSpacingTokens.ExtraSmall.value.roundToInt()
+        )
+        val itemWidth = itemWidthDp.dp
+        val viewportWidthPx = with(density) { maxWidth.toPx() }
+        val itemWidthPx = with(density) { itemWidth.toPx() }
+
+        LaunchedEffect(spec.selectedIndex, useScrollableRail, itemWidthPx, viewportWidthPx) {
+            if (useScrollableRail) {
+                scrollState.animateScrollTo(
+                    resolveSpaceContributionTabCenteredScrollOffsetPx(
+                        selectedIndex = spec.selectedIndex,
+                        itemWidthPx = itemWidthPx,
+                        viewportWidthPx = viewportWidthPx
+                    )
+                )
+            } else {
+                scrollState.scrollTo(0)
+            }
+        }
+
+        BottomBarLiquidSegmentedControl(
+            items = items.map { it.title },
+            selectedIndex = spec.selectedIndex,
+            onSelected = { index -> items.getOrNull(index)?.id?.let(onSelect) },
+            itemWidth = itemWidth.takeIf { useScrollableRail },
+            height = spec.heightDp.dp,
+            indicatorHeight = spec.indicatorHeightDp.dp,
+            labelFontSize = 13.sp,
+            forceLiquidChrome = true,
+            liquidGlassEffectsEnabled = spec.liquidGlassEffectsEnabled,
+            dragSelectionEnabled = spec.dragSelectionEnabled && !useScrollableRail,
+            tapPressRefractionEnabled = !useScrollableRail,
+            modifier = if (useScrollableRail) {
+                Modifier.horizontalScroll(scrollState)
+            } else {
+                Modifier.fillMaxWidth()
+            }
+        )
+    }
 }
 
 @Composable

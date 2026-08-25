@@ -25,7 +25,7 @@ class SpaceTabChromePolicyTest {
         assertFalse(spec.scrollable)
         assertEquals(40, spec.heightDp)
         assertTrue(spec.indicatorHeightDp < spec.heightDp)
-        assertTrue(spec.liquidGlassEffectsEnabled)
+        assertFalse(spec.liquidGlassEffectsEnabled)
         assertTrue(spec.dragSelectionEnabled)
     }
 
@@ -85,7 +85,7 @@ class SpaceTabChromePolicyTest {
         assertTrue((spec.itemWidthDp ?: 0) > 104)
         assertTrue(spec.indicatorHeightDp < spec.heightDp)
         assertEquals(mainSpec.horizontalPaddingDp, spec.horizontalPaddingDp)
-        assertFalse(spec.liquidGlassEffectsEnabled)
+        assertTrue(spec.liquidGlassEffectsEnabled)
         assertFalse(spec.dragSelectionEnabled)
     }
 
@@ -155,6 +155,27 @@ class SpaceTabChromePolicyTest {
         assertFalse(spec.scrollable)
         assertTrue((spec.itemWidthDp ?: 0) > 104)
         assertTrue(spec.dragSelectionEnabled)
+    }
+
+    @Test
+    fun `secondary switch caps long titles and scrolls only when content overflows`() {
+        val items = listOf(
+            SpaceSecondarySwitchItem("video", "视频", SpaceMainTab.CONTRIBUTION),
+            SpaceSecondarySwitchItem(
+                "season",
+                "合集 · 这是一个非常非常长的合集标题",
+                SpaceMainTab.CONTRIBUTION
+            )
+        )
+
+        val spec = resolveSpaceSecondarySwitchChromeSpec(items, selectedId = "season")
+
+        assertEquals(1, spec.selectedIndex)
+        assertEquals(48, spec.heightDp)
+        assertEquals(176, spec.itemWidthDp)
+        assertTrue(spec.liquidGlassEffectsEnabled)
+        assertFalse(shouldScrollSpaceSecondarySwitch(2, 104, 360, 4))
+        assertTrue(shouldScrollSpaceSecondarySwitch(4, 104, 360, 4))
     }
 
     @Test

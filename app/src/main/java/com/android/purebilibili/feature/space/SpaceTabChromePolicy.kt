@@ -30,6 +30,7 @@ internal data class SpaceContributionToolbarSpec(
 
 private const val SPACE_SEGMENTED_TAB_HORIZONTAL_PADDING_DP = 16
 private const val SPACE_SCROLLABLE_CONTRIBUTION_ITEM_MIN_WIDTH_DP = 104
+private const val SPACE_SCROLLABLE_CONTRIBUTION_ITEM_MAX_WIDTH_DP = 176
 private const val SPACE_SCROLLABLE_CONTRIBUTION_ITEM_TEXT_PADDING_DP = 44
 private const val SPACE_SCROLLABLE_CONTRIBUTION_CJK_CHAR_WIDTH_DP = 15
 private const val SPACE_SCROLLABLE_CONTRIBUTION_ASCII_CHAR_WIDTH_DP = 8
@@ -73,6 +74,25 @@ internal fun resolveSpaceContributionTabChromeSpec(
         scrollable = scrollable,
         liquidGlassEffectsEnabled = false,
         dragSelectionEnabled = false
+    )
+}
+
+internal fun resolveSpaceSecondarySwitchChromeSpec(
+    items: List<SpaceSecondarySwitchItem>,
+    selectedId: String
+): SpaceSegmentedTabChromeSpec {
+    val itemWidthDp = resolveSpaceContributionTabItemWidthDp(items.map { it.title })
+    return SpaceSegmentedTabChromeSpec(
+        selectedIndex = items.indexOfFirst { it.id == selectedId }.coerceAtLeast(0),
+        heightDp = AppChromeSizeTokens.MinimumTouchTarget.value.roundToInt(),
+        indicatorHeightDp = com.android.purebilibili.core.ui.roundMatchedLiquidIndicatorHeightDp(
+            AppChromeSizeTokens.MinimumTouchTarget.value
+        ),
+        horizontalPaddingDp = SPACE_SEGMENTED_TAB_HORIZONTAL_PADDING_DP,
+        itemWidthDp = itemWidthDp,
+        scrollable = items.size > 3,
+        liquidGlassEffectsEnabled = true,
+        dragSelectionEnabled = items.size in 2..4
     )
 }
 
@@ -128,8 +148,25 @@ private fun shouldScrollSpaceContributionTabs(tabs: List<SpaceContributionTab>):
 }
 
 internal fun resolveSpaceContributionTabItemWidthDp(tabs: List<SpaceContributionTab>): Int {
-    val widestTitle = tabs.maxOfOrNull { estimateSpaceContributionTabTitleWidthDp(it.title) } ?: 0
-    return widestTitle.coerceAtLeast(SPACE_SCROLLABLE_CONTRIBUTION_ITEM_MIN_WIDTH_DP)
+    return resolveSpaceContributionTabItemWidthDp(tabs.map { it.title })
+}
+
+private fun resolveSpaceContributionTabItemWidthDp(titles: List<String>): Int {
+    val widestTitle = titles.maxOfOrNull(::estimateSpaceContributionTabTitleWidthDp) ?: 0
+    return widestTitle.coerceIn(
+        SPACE_SCROLLABLE_CONTRIBUTION_ITEM_MIN_WIDTH_DP,
+        SPACE_SCROLLABLE_CONTRIBUTION_ITEM_MAX_WIDTH_DP
+    )
+}
+
+internal fun shouldScrollSpaceSecondarySwitch(
+    itemCount: Int,
+    itemWidthDp: Int,
+    viewportWidthDp: Int,
+    containerHorizontalPaddingDp: Int
+): Boolean {
+    val contentWidthDp = itemCount * itemWidthDp + containerHorizontalPaddingDp * 2
+    return itemCount > 1 && contentWidthDp > viewportWidthDp
 }
 
 internal fun resolveSpaceContributionTabCenteredScrollOffsetPx(
