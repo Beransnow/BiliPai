@@ -779,9 +779,22 @@ fun SearchScreen(
         source = entryMotionSource,
         reducedMotionBudget = searchMotionBudget == SearchMotionBudget.REDUCED
     )
-    val exitMotionSpec = remember(entryMotionKey) { entryMotionSpec }
+    val exitMotionSpec = remember(entryMotionKey, configuration.screenHeightDp) {
+        resolveSearchExitMotionSpec(
+            entrySpec = entryMotionSpec,
+            screenHeightDp = configuration.screenHeightDp,
+        )
+    }
     var exitMotionKey by remember { mutableIntStateOf(0) }
     var exitMotionInProgress by remember { mutableStateOf(false) }
+    val exitContentAlpha by animateFloatAsState(
+        targetValue = if (exitMotionInProgress) 0f else 1f,
+        animationSpec = tween(
+            durationMillis = 180,
+            easing = AppMotionEasing.Continuity,
+        ),
+        label = "searchExitContentAlpha",
+    )
     val searchHazeEnabled = shouldEnableSearchHazeSource(
         isSearching = state.isSearching,
         startupSettled = startupSettled
@@ -939,6 +952,7 @@ fun SearchScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        .graphicsLayer { alpha = exitContentAlpha }
                     ) {
                             val searchChromeBackdrop = rememberLayerBackdrop()
                             Spacer(modifier = Modifier.height(contentTopPadding + 8.dp))
@@ -1825,9 +1839,11 @@ fun SearchScreen(
                     },
                     onClearHistory = viewModel::clearHistory,
                     onDeleteHistory = viewModel::deleteHistory,
-                    modifier = Modifier.then(
-                        if (searchHazeEnabled) Modifier.hazeSourceCompat(state = hazeState) else Modifier
-                    )
+                    modifier = Modifier
+                        .graphicsLayer { alpha = exitContentAlpha }
+                        .then(
+                            if (searchHazeEnabled) Modifier.hazeSourceCompat(state = hazeState) else Modifier
+                        )
                 )
             }
 
@@ -2066,8 +2082,7 @@ fun SearchTopBar(
 
     AppSurface(
         modifier = modifier
-            .fillMaxWidth()
-            .then(entryMotionModifier),
+            .fillMaxWidth(),
         color = Color.Transparent,
         shadowElevation = 0.dp
     ) {
@@ -2079,7 +2094,8 @@ fun SearchTopBar(
                     .responsiveContentWidth()
                     .heightIn(min = topBarRowMinHeightDp.dp)
                     .padding(horizontal = 12.dp, vertical = 8.dp)
-                    .padding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal).asPaddingValues()),
+                    .padding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal).asPaddingValues())
+                    .then(entryMotionModifier),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 SearchTopBarIconButton(
