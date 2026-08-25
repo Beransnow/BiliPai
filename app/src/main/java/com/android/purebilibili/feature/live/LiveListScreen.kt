@@ -926,6 +926,7 @@ private fun LiveAreaHomeChipRow(
             options = categoryOptions,
             selectedValue = selectedCategory,
             onSelectionChange = onAreaSelected,
+            scrollable = true,
             minTabWidth = categoryMinWidth,
             modifier = Modifier.weight(1f),
         )
