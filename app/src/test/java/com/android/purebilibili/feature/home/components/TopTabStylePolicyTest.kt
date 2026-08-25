@@ -433,9 +433,9 @@ class TopTabStylePolicyTest {
 
     @Test
     fun `ios top tab icon modes use readable glyph sizes`() {
-        assertEquals(resolveBottomBarSkinDockIconSize().value, resolveTopTabIconSizeDp(labelMode = 0), 0.001f)
-        assertEquals(resolveBottomBarSkinDockIconSize().value, resolveTopTabIconSizeDp(labelMode = 1), 0.001f)
-        assertEquals(resolveBottomBarSkinIconLabelGap().value, resolveTopTabIconTextSpacingDp(labelMode = 0), 0.001f)
+        assertEquals(18f, resolveTopTabIconSizeDp(labelMode = 0), 0.001f)
+        assertEquals(18f, resolveTopTabIconSizeDp(labelMode = 1), 0.001f)
+        assertEquals(6f, resolveTopTabIconTextSpacingDp(labelMode = 0), 0.001f)
         // Must match compact chrome track (HomeTopPresetStyle 36/40) or labels clip to "...".
         assertEquals(36.dp, resolveIosTopTabRowHeight(isFloatingStyle = false))
         assertEquals(40.dp, resolveIosTopTabRowHeight(isFloatingStyle = true))
@@ -484,7 +484,7 @@ class TopTabStylePolicyTest {
         val textSize = resolveTopTabLabelTextSizeSp(labelMode = 0)
         val lineHeight = resolveTopTabLabelLineHeightSp(labelMode = 0)
 
-        assertEquals(resolveBottomBarSkinDockLabelFontSize().value, textSize, 0.001f)
+        assertEquals(15f, textSize, 0.001f)
         assertEquals(20f, lineHeight, 0.001f)
         assertTrue(lineHeight >= textSize)
     }
@@ -496,8 +496,8 @@ class TopTabStylePolicyTest {
         assertEquals(36.dp, spec.rowHeight)
         assertEquals(30.dp, spec.selectedCapsuleHeight)
         assertEquals(9.dp, spec.selectedCapsuleCornerRadius)
-        assertEquals(resolveBottomBarSkinDockIconSize(), spec.iconSize)
-        assertEquals(resolveBottomBarSkinDockLabelFontSize(), spec.labelTextSize)
+        assertEquals(18.dp, spec.iconSize)
+        assertEquals(15.sp, spec.labelTextSize)
         assertEquals(20.sp, spec.labelLineHeight)
         assertEquals(0.dp, spec.iconLabelSpacing)
         assertEquals(10.dp, spec.itemHorizontalPadding)
@@ -514,9 +514,9 @@ class TopTabStylePolicyTest {
 
         assertEquals(56.dp, spec.rowHeight)
         assertEquals(10.dp, spec.itemHorizontalPadding)
-        assertEquals(resolveBottomBarSkinIconLabelGap(), spec.iconLabelSpacing)
-        assertEquals(resolveBottomBarSkinDockIconSize(), spec.iconSize)
-        assertEquals(resolveBottomBarSkinDockLabelFontSize(), spec.labelTextSize)
+        assertEquals(6.dp, spec.iconLabelSpacing)
+        assertEquals(18.dp, spec.iconSize)
+        assertEquals(15.sp, spec.labelTextSize)
         assertTrue(spec.labelLineHeight >= spec.labelTextSize)
     }
 
@@ -532,7 +532,7 @@ class TopTabStylePolicyTest {
         assertEquals(9.dp, spec.selectedCapsuleCornerRadius)
         assertEquals(10.dp, spec.itemHorizontalPadding)
         assertEquals(0.dp, spec.iconLabelSpacing)
-        assertEquals(resolveBottomBarSkinDockLabelFontSize(), spec.labelTextSize)
+        assertEquals(15.sp, spec.labelTextSize)
     }
 
 

@@ -440,13 +440,6 @@ internal fun resolveMd3TopTabVisualSpec(
 ): Md3TopTabVisualSpec {
     val normalizedLabelMode = normalizeTopTabLabelMode(labelMode)
     val showIconAndText = normalizedLabelMode == 0
-    val bottomBarMatchedIconSize = resolveBottomBarSkinDockIconSize()
-    val bottomBarMatchedLabelSize = resolveBottomBarSkinDockLabelFontSize()
-    val bottomBarMatchedIconLabelSpacing = if (showIconAndText) {
-        resolveBottomBarSkinIconLabelGap()
-    } else {
-        0.dp
-    }
     if (presentation == AppTopTabPresentation.TONAL_CAPSULE) {
         return if (isFloatingStyle) {
             Md3TopTabVisualSpec(
@@ -456,10 +449,10 @@ internal fun resolveMd3TopTabVisualSpec(
                 selectedCapsuleTonalElevation = 0.dp,
                 selectedCapsuleShadowElevation = 0.dp,
                 itemHorizontalPadding = 10.dp,
-                iconSize = bottomBarMatchedIconSize,
-                labelTextSize = bottomBarMatchedLabelSize,
+                iconSize = 18.dp,
+                labelTextSize = 15.sp,
                 labelLineHeight = 20.sp,
-                iconLabelSpacing = bottomBarMatchedIconLabelSpacing
+                iconLabelSpacing = if (showIconAndText) 6.dp else 0.dp
             )
         } else {
             Md3TopTabVisualSpec(
@@ -469,10 +462,10 @@ internal fun resolveMd3TopTabVisualSpec(
                 selectedCapsuleTonalElevation = 0.dp,
                 selectedCapsuleShadowElevation = 0.dp,
                 itemHorizontalPadding = 10.dp,
-                iconSize = bottomBarMatchedIconSize,
-                labelTextSize = bottomBarMatchedLabelSize,
+                iconSize = 18.dp,
+                labelTextSize = 15.sp,
                 labelLineHeight = 20.sp,
-                iconLabelSpacing = bottomBarMatchedIconLabelSpacing
+                iconLabelSpacing = if (showIconAndText) 6.dp else 0.dp
             )
         }
     }
@@ -487,10 +480,10 @@ internal fun resolveMd3TopTabVisualSpec(
             selectedCapsuleTonalElevation = 0.dp,
             selectedCapsuleShadowElevation = 0.dp,
             itemHorizontalPadding = 10.dp,
-            iconSize = bottomBarMatchedIconSize,
-            labelTextSize = bottomBarMatchedLabelSize,
+            iconSize = 18.dp,
+            labelTextSize = 15.sp,
             labelLineHeight = 20.sp,
-            iconLabelSpacing = bottomBarMatchedIconLabelSpacing
+            iconLabelSpacing = if (showIconAndText) 6.dp else 0.dp
         )
     } else {
         Md3TopTabVisualSpec(
@@ -500,10 +493,10 @@ internal fun resolveMd3TopTabVisualSpec(
             selectedCapsuleTonalElevation = 0.dp,
             selectedCapsuleShadowElevation = 0.dp,
             itemHorizontalPadding = 10.dp,
-            iconSize = bottomBarMatchedIconSize,
-            labelTextSize = bottomBarMatchedLabelSize,
+            iconSize = 18.dp,
+            labelTextSize = 15.sp,
             labelLineHeight = 20.sp,
-            iconLabelSpacing = bottomBarMatchedIconLabelSpacing
+            iconLabelSpacing = if (showIconAndText) 6.dp else 0.dp
         )
     }
 }
@@ -576,7 +569,12 @@ internal fun shouldUseMd3TopTabMaterialIndicator(
 }
 
 fun resolveTopTabLabelTextSizeSp(labelMode: Int): Float {
-    return resolveBottomBarSkinDockLabelFontSize().value
+    val tuning = resolveTopTabVisualTuning()
+    return when (normalizeTopTabLabelMode(labelMode)) {
+        0 -> resolveMd3TopTabVisualSpec(isFloatingStyle = false, labelMode = labelMode).labelTextSize.value
+        2 -> tuning.tabTextSizeSp
+        else -> tuning.tabTextSizeSp
+    }
 }
 
 fun resolveTopTabLabelLineHeightSp(labelMode: Int): Float {
@@ -605,15 +603,17 @@ fun resolveTopTabContentVerticalPaddingDp(labelMode: Int): Float {
 }
 
 fun resolveTopTabIconSizeDp(labelMode: Int): Float {
+    val tuning = resolveTopTabVisualTuning()
     return when (normalizeTopTabLabelMode(labelMode)) {
-        0, 1 -> resolveBottomBarSkinDockIconSize().value
+        0 -> tuning.tabIconWithTextSizeDp
+        1 -> tuning.tabIconOnlySizeDp
         else -> 0f
     }
 }
 
 fun resolveTopTabIconTextSpacingDp(labelMode: Int): Float {
     return if (normalizeTopTabLabelMode(labelMode) == 0) {
-        resolveBottomBarSkinIconLabelGap().value
+        resolveTopTabVisualTuning().tabIconTextSpacingDp
     } else {
         0f
     }
