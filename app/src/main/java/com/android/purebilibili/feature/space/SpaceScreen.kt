@@ -2585,7 +2585,9 @@ private fun SpaceSecondarySwitchRow(
                 },
                 tapPressRefractionEnabled = !useScrollableRail,
                 modifier = if (useScrollableRail) {
-                    Modifier.horizontalScroll(scrollState)
+                    Modifier
+                        .clip(CircleShape)
+                        .horizontalScroll(scrollState)
                 } else {
                     Modifier.fillMaxWidth()
                 }

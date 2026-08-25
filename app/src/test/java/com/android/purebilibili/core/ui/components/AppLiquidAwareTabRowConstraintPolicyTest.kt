@@ -12,6 +12,7 @@ class AppLiquidAwareTabRowConstraintPolicyTest {
         ).readText()
 
         assertTrue(source.contains("val viewportMaxWidth = LocalConfiguration.current.screenWidthDp.dp"))
-        assertTrue(source.contains("modifier = modifier.widthIn(max = viewportMaxWidth)"))
+        assertTrue(source.contains(".widthIn(max = viewportMaxWidth)"))
+        assertTrue(source.contains(".clip(CircleShape)"))
     }
 }
