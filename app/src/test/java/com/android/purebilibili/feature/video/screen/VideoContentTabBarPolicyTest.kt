@@ -281,9 +281,8 @@ class VideoContentTabBarPolicyTest {
         assertTrue(tabBarBlock.contains("Arrangement.spacedBy(8.dp)"))
         assertTrue(tabBarBlock.contains("indicatorPositionProvider = indicatorPositionProvider"))
         assertTrue(tabBarBlock.contains("dragSelectionEnabled = true"))
-        assertTrue(tabBarBlock.contains("tabSwipeModifier: Modifier = Modifier"))
-        assertTrue(tabBarBlock.contains("modifier = tabSwipeModifier.width("))
-        assertTrue(source.contains("tabSwipeModifier = Modifier.verticalPriorityHorizontalPagerSwipe("))
+        assertFalse(tabBarBlock.contains("tabSwipeModifier"))
+        assertTrue(tabBarBlock.contains("modifier = Modifier.width("))
         assertTrue(source.contains("clip = tabBarCollapseProgress > 0.001f"))
     }
 
