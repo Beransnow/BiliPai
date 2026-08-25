@@ -1759,7 +1759,11 @@ private fun VideoContentTabBar(
             } else {
                 AppPrimaryTabRow(
                     selectedTabIndex = selectedTabIndex,
-                    modifier = Modifier.weight(layoutSpec.tabsRowWeight),
+                    modifier = Modifier.width(
+                        (resolveVideoContentTabBarDockItemWidthDp(
+                            layoutSpec.unselectedTabFontSizeSp,
+                        ) * tabs.size).dp,
+                    ),
                 ) {
                     tabs.forEachIndexed { index, label ->
                         AppTab(

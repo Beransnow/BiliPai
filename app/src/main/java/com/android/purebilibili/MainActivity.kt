@@ -1259,6 +1259,8 @@ open class MainActivity : AppCompatActivity() {
             val appScreenshotCaptureMode = appThemeSettings.appScreenshotCaptureMode
             val blurIntensity by SettingsManager.getBlurIntensity(context)
                 .collectAsStateWithLifecycle(initialValue = BlurIntensity.THIN)
+            val headerBlurEnabled by SettingsManager.getHeaderBlurEnabled(context)
+                .collectAsStateWithLifecycle(initialValue = true)
             val hapticFeedbackEnabled by SettingsManager.getHapticFeedbackEnabled(context)
                 .collectAsStateWithLifecycle(initialValue = true)
             val globalTextTapCopyEnabled by SettingsManager
@@ -1272,6 +1274,7 @@ open class MainActivity : AppCompatActivity() {
                 .collectAsStateWithLifecycle(initialValue = true)
             val appThemeConfig = remember(
                 blurIntensity,
+                headerBlurEnabled,
                 hapticFeedbackEnabled,
                 globalTextTapCopyEnabled,
                 uiEntranceAnimationEnabled,
@@ -1279,6 +1282,7 @@ open class MainActivity : AppCompatActivity() {
             ) {
                 AppThemeConfig(
                     blurIntensity = blurIntensity,
+                    headerBlurEnabled = headerBlurEnabled,
                     hapticFeedbackEnabled = hapticFeedbackEnabled,
                     globalTextTapCopyEnabled = globalTextTapCopyEnabled,
                     uiEntranceAnimationEnabled = uiEntranceAnimationEnabled,

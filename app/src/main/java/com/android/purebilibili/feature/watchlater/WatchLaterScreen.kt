@@ -683,7 +683,10 @@ fun WatchLaterScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .unifiedBlur(hazeState)
+                    .unifiedBlur(
+                        hazeState = hazeState,
+                        surfaceType = com.android.purebilibili.core.ui.blur.BlurSurfaceType.HEADER,
+                    )
             ) {
                 Column {
                 AppTopBar(

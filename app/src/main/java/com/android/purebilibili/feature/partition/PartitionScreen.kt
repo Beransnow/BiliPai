@@ -438,7 +438,8 @@ fun PartitionScreen(
                     scrolledContainerColor = Color.Transparent
                 ),
                 modifier = Modifier.unifiedBlur(
-                    hazeState = hazeState
+                    hazeState = hazeState,
+                    surfaceType = com.android.purebilibili.core.ui.blur.BlurSurfaceType.HEADER,
                 )
             )
         }
