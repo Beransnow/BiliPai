@@ -64,6 +64,7 @@ import com.android.purebilibili.feature.video.ui.components.SeekPreviewBubbleSim
 import com.android.purebilibili.feature.video.ui.components.VideoAspectRatio
 import com.android.purebilibili.feature.video.ui.components.DolbyBadge
 import com.android.purebilibili.feature.video.ui.components.HiResBadge
+import com.android.purebilibili.feature.video.ui.components.NativeDanmakuToggleButton
 import androidx.compose.ui.draw.clip
 import com.android.purebilibili.feature.video.subtitle.SubtitleDisplayMode
 import com.android.purebilibili.feature.video.subtitle.SubtitleTrackOption
@@ -721,41 +722,15 @@ fun BottomControlBar(
                 widthDp = configuration.screenWidthDp
             )
             if (showDanmakuToggle) {
-                val danmakuActiveColor = MaterialTheme.colorScheme.primary
+                val danmakuActiveColor = Color.White.copy(alpha = 0.96f)
                 val danmakuInactiveColor = Color.White.copy(alpha = 0.74f)
-                // Danmaku Switch
-                Row(
-                    modifier = Modifier
-                        .heightIn(min = 40.dp)
-                        .clip(AppShapes.container(ContainerLevel.Dialog))
-                        .background(
-                            if (danmakuEnabled) {
-                                danmakuActiveColor.copy(alpha = 0.22f)
-                            } else {
-                                danmakuInactiveColor.copy(alpha = 0.16f)
-                            }
-                        )
-                        .consumeTap(onDanmakuToggle)
-                        .padding(
-                            horizontal = layoutPolicy.danmakuSwitchHorizontalPaddingDp.dp,
-                            vertical = layoutPolicy.danmakuSwitchVerticalPaddingDp.dp
-                        ),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    AppIcon(
-                        imageVector = if (danmakuEnabled) Icons.Filled.ChatBubble else Icons.Outlined.ChatBubbleOutline,
-                        contentDescription = if (danmakuEnabled) "关闭弹幕" else "开启弹幕",
-                        tint = if (danmakuEnabled) danmakuActiveColor else danmakuInactiveColor,
-                        modifier = Modifier.size(layoutPolicy.danmakuIconSizeDp.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    AppText(
-                        text = if (danmakuEnabled) "开" else "关",
-                        color = if (danmakuEnabled) danmakuActiveColor else danmakuInactiveColor,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
+                NativeDanmakuToggleButton(
+                    enabled = danmakuEnabled,
+                    onToggle = onDanmakuToggle,
+                    activeTint = danmakuActiveColor,
+                    inactiveTint = danmakuInactiveColor,
+                    iconSize = layoutPolicy.danmakuIconSizeDp.dp,
+                )
 
                 AppIconButton(onClick = onDanmakuSettingsClick) {
                     AppIcon(

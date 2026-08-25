@@ -114,6 +114,7 @@ import kotlin.math.abs
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.purebilibili.feature.video.ui.components.AnimatedGesturePercentText
 import com.android.purebilibili.feature.video.ui.components.DanmakuSettingsPanel
+import com.android.purebilibili.feature.video.ui.components.NativeDanmakuToggleButton
 import com.android.purebilibili.feature.video.ui.components.VideoAspectRatio
 import com.android.purebilibili.feature.video.ui.components.PlaybackSpeed
 import com.android.purebilibili.feature.video.ui.components.SpeedSelectionMenuPlacement
@@ -1124,46 +1125,24 @@ fun FullscreenPlayerOverlay(
                         )
                         
                         //  [新增] 弹幕开关按钮
-                        val danmakuToggleInteraction = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-                        val danmakuActiveColor = MaterialTheme.colorScheme.primary
+                        val danmakuActiveColor = Color.White.copy(alpha = 0.96f)
                         val danmakuInactiveColor = Color.White.copy(alpha = 0.74f)
-                        Row(
-                            modifier = Modifier
-                                .clip(AppShapes.container(ContainerLevel.Dialog))
-                                .background(
-                                    if (danmakuEnabled) {
-                                        danmakuActiveColor.copy(alpha = 0.22f)
-                                    } else {
-                                        danmakuInactiveColor.copy(alpha = 0.16f)
-                                    }
+                        NativeDanmakuToggleButton(
+                            enabled = danmakuEnabled,
+                            onToggle = {
+                                val newValue = !danmakuEnabled
+                                danmakuManager.isEnabled = newValue
+                                scope.launch {
+                                    SettingsManager.setDanmakuEnabled(context, newValue, danmakuScope)
+                                }
+                                com.android.purebilibili.core.util.Logger.d(
+                                    "FullscreenDanmaku",
+                                    " Danmaku toggle: $newValue",
                                 )
-                                .clickable(
-                                    interactionSource = danmakuToggleInteraction,
-                                    indication = null,
-                                    onClick = {
-                                        val newValue = !danmakuEnabled
-                                        danmakuManager.isEnabled = newValue
-                                        scope.launch { SettingsManager.setDanmakuEnabled(context, newValue, danmakuScope) }
-                                        com.android.purebilibili.core.util.Logger.d("FullscreenDanmaku", " Danmaku toggle: $newValue")
-                                    }
-                                )
-                                .padding(horizontal = 8.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            AppIcon(
-                                imageVector = if (danmakuEnabled) Icons.Filled.ChatBubble else Icons.Outlined.ChatBubbleOutline,
-                                contentDescription = if (danmakuEnabled) "关闭弹幕" else "开启弹幕",
-                                tint = if (danmakuEnabled) danmakuActiveColor else danmakuInactiveColor,
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            AppText(
-                                text = if (danmakuEnabled) "开" else "关",
-                                color = if (danmakuEnabled) danmakuActiveColor else danmakuInactiveColor,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
+                            },
+                            activeTint = danmakuActiveColor,
+                            inactiveTint = danmakuInactiveColor,
+                        )
                         
                         //  [新增] 弹幕设置按钮
                         AppIconButton(onClick = { showDanmakuSettings = true }) {

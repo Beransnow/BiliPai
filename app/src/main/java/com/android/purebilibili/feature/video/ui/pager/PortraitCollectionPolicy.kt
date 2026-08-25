@@ -39,7 +39,8 @@ internal fun resolvePortraitMultiPageFollowUps(
             pic = info.pic,
             owner = info.owner,
             stat = info.stat,
-            duration = page.duration.toInt().coerceAtLeast(0)
+            duration = page.duration.toInt().coerceAtLeast(0),
+            pubdate = info.pubdate,
         )
     }
 }

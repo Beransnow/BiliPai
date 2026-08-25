@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import com.android.purebilibili.core.ui.AppSurfaceTokens
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppText
@@ -67,28 +67,55 @@ import com.android.purebilibili.data.model.response.RelatedVideo
 import com.android.purebilibili.data.repository.ActionRepository
 import com.android.purebilibili.data.repository.BlockedUpRepository
 import com.android.purebilibili.feature.home.HomeFeedCardLayout
-import com.android.purebilibili.feature.home.components.cards.HORIZONTAL_VIDEO_CARD_COVER_ASPECT_RATIO
 import com.android.purebilibili.feature.home.components.cards.HORIZONTAL_VIDEO_CARD_COVER_INFO_GAP_DP
 import com.android.purebilibili.feature.home.components.cards.HORIZONTAL_VIDEO_CARD_COVER_WIDTH_DP
 import com.android.purebilibili.feature.home.components.cards.HorizontalVideoStatRow
 import com.android.purebilibili.feature.home.resolveHomeFeedCardLayout
 import com.android.purebilibili.feature.video.ui.FollowBadgeTone
-import com.android.purebilibili.feature.video.ui.VideoDetailShapes
 import com.android.purebilibili.feature.video.ui.resolveVideoFollowVisualPolicy
 import com.android.purebilibili.navigation.VideoRoute
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChatBubble
-import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.outlined.PlayCircleOutline
+import androidx.compose.material.icons.outlined.Subtitles
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import java.util.Locale
 
 /**
- * 相关推荐默认跟随首页官方卡片的 4:3 封面；列表会按首页样式设置覆盖。
+ * PiliPlus horizontal cards use a 16:10 cover.
  */
-internal const val RELATED_VIDEO_CARD_COVER_ASPECT_RATIO = 4f / 3f
+internal const val RELATED_VIDEO_CARD_COVER_ASPECT_RATIO = 16f / 10f
 
 internal const val RELATED_VIDEO_GRID_COLUMNS = 1
+
+internal fun formatRelatedVideoPublishTime(
+    timestampSeconds: Long,
+    nowMillis: Long = System.currentTimeMillis(),
+    zoneId: ZoneId = ZoneId.systemDefault(),
+    locale: Locale = Locale.getDefault(),
+): String {
+    if (timestampSeconds <= 0L) return ""
+    val published = Instant.ofEpochSecond(timestampSeconds).atZone(zoneId)
+    val now = Instant.ofEpochMilli(nowMillis).atZone(zoneId)
+    val elapsedMinutes = ChronoUnit.MINUTES.between(published, now).coerceAtLeast(0L)
+    if (elapsedMinutes < 1L) return "刚刚"
+    if (elapsedMinutes < 60L) return "${elapsedMinutes}分钟前"
+    val elapsedHours = ChronoUnit.HOURS.between(published, now).coerceAtLeast(0L)
+    if (elapsedHours < 24L) return "${elapsedHours}小时前"
+    val elapsedDays = ChronoUnit.DAYS.between(published.toLocalDate(), now.toLocalDate())
+        .coerceAtLeast(0L)
+    if (elapsedDays == 1L) {
+        return "昨天 ${DateTimeFormatter.ofPattern("HH:mm", locale).format(published)}"
+    }
+    if (elapsedDays < 4L) return "${elapsedDays}天前"
+    val pattern = if (published.year == now.year) "MM-dd" else "yyyy-MM-dd"
+    return DateTimeFormatter.ofPattern(pattern, locale).format(published)
+}
 
 /**
  * Related Videos Header
@@ -165,7 +192,7 @@ fun RelatedVideoItem(
     video: RelatedVideo,
     isFollowed: Boolean = false,
     showUpBadge: Boolean = true,
-    @Suppress("UNUSED_PARAMETER") coverAspectRatio: Float = RELATED_VIDEO_CARD_COVER_ASPECT_RATIO,
+    coverAspectRatio: Float = RELATED_VIDEO_CARD_COVER_ASPECT_RATIO,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     onMoreClick: (() -> Unit)? = null
@@ -209,7 +236,7 @@ fun RelatedVideoItem(
                     screenWidth = screenWidthPx,
                     screenHeight = screenHeightPx,
                     density = densityValue,
-                    sourceCornerDp = 12,
+                    sourceCornerDp = 0,
                     coverBounds = coverCoordinatesRef.value
                         ?.takeIf { it.isAttached }
                         ?.boundsInRoot(),
@@ -225,7 +252,7 @@ fun RelatedVideoItem(
                         // Related horizontal card keeps play/danmaku in the info column.
                         infoPresentation = com.android.purebilibili.core.ui.transition
                             .resolveVideoCardSourceInfoPresentation(
-                                publishTimeText = "",
+                                publishTimeText = formatRelatedVideoPublishTime(video.pubdate),
                                 showStatsInInfo = true,
                             ),
                         coverUrl = stationaryCoverUrl,
@@ -236,8 +263,7 @@ fun RelatedVideoItem(
         onClick()
         Unit
     }
-    val cardShape = VideoDetailShapes.contentCard()
-    val coverShape = VideoDetailShapes.media()
+    val coverShape = RoundedCornerShape(10.dp)
     val coverWidth = HORIZONTAL_VIDEO_CARD_COVER_WIDTH_DP.dp
     // 排版对齐首页单列卡片:标题用 feed 紧凑级,统计用 labelSmall。
     val contentTypography = com.android.purebilibili.core.ui.feedContentTypography(
@@ -250,10 +276,8 @@ fun RelatedVideoItem(
             .onGloballyPositioned { coordinates ->
                 cardCoordinatesRef.value = coordinates
             }
-            .clip(cardShape)
-            .background(AppSurfaceTokens.cardContainer())
             .clickable(onClick = triggerRelatedVideoClick)
-            .padding(6.dp),
+            .padding(vertical = 5.dp),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -263,7 +287,7 @@ fun RelatedVideoItem(
             Box(
                 modifier = Modifier
                     .width(coverWidth)
-                    .aspectRatio(HORIZONTAL_VIDEO_CARD_COVER_ASPECT_RATIO)
+                    .aspectRatio(coverAspectRatio)
                     .onGloballyPositioned { coordinates ->
                         coverCoordinatesRef.value = coordinates
                     }
@@ -301,62 +325,86 @@ fun RelatedVideoItem(
                 AppText(
                     text = video.title,
                     style = contentTypography.title,
-                    overflow = TextOverflow.Visible,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                UpBadgeName(
-                    name = video.owner.name,
-                    inlineTrailingContent = if (isFollowed) {
-                        {
-                            val followVisualPolicy = resolveVideoFollowVisualPolicy(isFollowing = true, darkTheme = true)
-                            AppText(
-                                text = "已关注",
-                                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
-                                color = when (followVisualPolicy.relatedBadgeTone) {
-                                    FollowBadgeTone.PRIMARY -> MaterialTheme.colorScheme.primary
-                                    null -> MaterialTheme.colorScheme.onSurfaceVariant
-                                }
-                            )
-                        }
-                    } else {
-                        null
-                    },
-                    leadingContent = if (
-                        com.android.purebilibili.core.ui.LocalUpBadgeVisibility.current.showAvatars &&
-                        video.owner.face.isNotEmpty()
-                    ) {
-                        {
-                            AsyncImage(
-                                model = ImageRequest.Builder(context)
-                                    .data(FormatUtils.fixImageUrl(video.owner.face))
-                                    .crossfade(false)
-                                    .build(),
-                                contentDescription = null,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier
-                                    .size(16.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.surfaceVariant)
-                            )
-                        }
-                    } else {
-                        null
-                    },
-                    nameStyle = MaterialTheme.typography.labelMedium,
-                    nameColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    badgeTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
-                    badgeBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
-                    showUpBadge = showUpBadge,
-                    maxLines = Int.MAX_VALUE,
-                    overflow = TextOverflow.Visible,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+                ) {
+                    val publishTime = remember(video.pubdate) {
+                        formatRelatedVideoPublishTime(video.pubdate)
+                    }
+                    if (publishTime.isNotBlank()) {
+                        AppText(
+                            text = publishTime,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            softWrap = false,
+                        )
+                    }
+                    UpBadgeName(
+                        name = video.owner.name,
+                        inlineTrailingContent = if (isFollowed) {
+                            {
+                                val followVisualPolicy = resolveVideoFollowVisualPolicy(
+                                    isFollowing = true,
+                                    darkTheme = true,
+                                )
+                                AppText(
+                                    text = "已关注",
+                                    style = MaterialTheme.typography.labelSmall.copy(
+                                        fontWeight = FontWeight.Medium,
+                                    ),
+                                    color = when (followVisualPolicy.relatedBadgeTone) {
+                                        FollowBadgeTone.PRIMARY -> MaterialTheme.colorScheme.primary
+                                        null -> MaterialTheme.colorScheme.onSurfaceVariant
+                                    },
+                                )
+                            }
+                        } else {
+                            null
+                        },
+                        leadingContent = if (
+                            com.android.purebilibili.core.ui.LocalUpBadgeVisibility.current.showAvatars &&
+                            video.owner.face.isNotEmpty()
+                        ) {
+                            {
+                                AsyncImage(
+                                    model = ImageRequest.Builder(context)
+                                        .data(FormatUtils.fixImageUrl(video.owner.face))
+                                        .crossfade(false)
+                                        .build(),
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier
+                                        .size(16.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                                )
+                            }
+                        } else {
+                            null
+                        },
+                        nameStyle = MaterialTheme.typography.labelMedium,
+                        nameColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        badgeTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
+                        badgeBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+                        showUpBadge = showUpBadge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Clip,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
                 HorizontalVideoStatRow(
                     playText = FormatUtils.formatStat(video.stat.view.toLong()),
                     danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
-                    playIcon = Icons.Filled.PlayArrow,
-                    danmakuIcon = Icons.Filled.ChatBubble,
+                    playIcon = Icons.Outlined.PlayCircleOutline,
+                    danmakuIcon = Icons.Outlined.Subtitles,
                     modifier = Modifier.padding(end = if (onMoreClick != null) 32.dp else 0.dp),
                 )
             }
@@ -417,7 +465,7 @@ internal fun RelatedVideoGridRow(
                 video = video,
                 isFollowed = video.owner.mid in followingMids,
                 showUpBadge = showUpBadge,
-                coverAspectRatio = cardLayout.coverAspectRatio,
+                coverAspectRatio = RELATED_VIDEO_CARD_COVER_ASPECT_RATIO,
                 modifier = Modifier.fillMaxWidth(),
                 onClick = { onVideoClick(video) },
                 onMoreClick = { actionVideo = video }
