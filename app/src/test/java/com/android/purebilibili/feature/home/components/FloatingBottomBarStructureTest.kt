@@ -109,7 +109,7 @@ class FloatingBottomBarStructureTest {
         assertTrue(body.contains("pagerFollowGate.ownedTargetIndex = null"))
         assertTrue(body.contains("onDragStopped = {"))
         assertTrue(body.contains("updateValue("))
-        assertTrue(body.contains("selectedIndexLatest.value().coerceIn(0, maxTabIndex) to"))
+        assertTrue(body.contains("selectedIndexLatest.value().coerceIn(0, maxTabIndex),"))
         assertTrue(body.contains("dampedDragAnimation.isDragging"))
         assertTrue(body.contains("shouldAnimateIndicatorToSelectedIndex("))
         assertTrue(body.contains("shouldSuppressExternalPagerIndicatorFollow("))
@@ -315,7 +315,7 @@ class FloatingBottomBarStructureTest {
         assertTrue(source.contains("LocalFloatingBottomBarIndicatorPosition"))
         assertTrue(source.contains("LocalFloatingBottomBarItemSelectionScale"))
         assertTrue(source.contains("itemIndex: Int? = null"))
-        assertTrue(source.contains("lerp(1f, NavigationSelectionScale, coverage)"))
+        assertTrue(source.contains("resolveNavigationIconCrossScale("))
         assertFalse(body.contains("indicatorSettlePulseKey"))
         assertFalse(body.contains("rememberNavigationIndicatorSettleTransform("))
 
