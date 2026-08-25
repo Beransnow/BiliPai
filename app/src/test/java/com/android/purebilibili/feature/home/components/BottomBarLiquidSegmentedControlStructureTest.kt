@@ -258,6 +258,18 @@ class BottomBarLiquidSegmentedControlStructureTest {
     }
 
     @Test
+    fun `native underline fits segments narrower than its preferred minimum width`() {
+        assertEquals(
+            NativeUnderlineGeometry(offsetDp = 0f, widthDp = 19f),
+            resolveNativeUnderlineGeometry(
+                indicatorPosition = 0f,
+                segmentWidthDp = 19f,
+                labelWidthsDp = listOf(16f, 16f),
+            )
+        )
+    }
+
+    @Test
     fun `native underline stretches between labels during page motion`() {
         val midpoint = resolveNativeUnderlineGeometry(
                 indicatorPosition = 0.5f,

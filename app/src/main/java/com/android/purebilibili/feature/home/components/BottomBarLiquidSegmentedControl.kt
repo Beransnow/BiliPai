@@ -235,11 +235,12 @@ internal fun resolveNativeUnderlineGeometry(
     val endIndex = (startIndex + 1).coerceAtMost(lastIndex)
     val fraction = safePosition - startIndex
     val fallbackWidth = segmentWidthDp * fallbackWidthFraction
+    val effectiveMinimumWidth = minimumWidthDp.coerceAtMost(segmentWidthDp)
 
     fun resolvedWidth(index: Int): Float = labelWidthsDp[index]
         .takeIf { it > 0f }
-        ?.coerceIn(minimumWidthDp, segmentWidthDp)
-        ?: fallbackWidth.coerceIn(minimumWidthDp, segmentWidthDp)
+        ?.coerceIn(effectiveMinimumWidth, segmentWidthDp)
+        ?: fallbackWidth.coerceIn(effectiveMinimumWidth, segmentWidthDp)
 
     val startWidth = resolvedWidth(startIndex)
     val endWidth = resolvedWidth(endIndex)
