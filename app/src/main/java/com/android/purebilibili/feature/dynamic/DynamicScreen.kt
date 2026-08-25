@@ -250,6 +250,9 @@ fun DynamicScreen(
             )
         }
     }
+    val dynamicTabScrollInProgressProvider = remember(pagerState) {
+        { pagerState.isScrollInProgress }
+    }
     val displayedTabIndex = pagerState.settledPage.coerceIn(0, visibleTabs.lastIndex.coerceAtLeast(0))
     val displayedLogicalTab = resolveDynamicSettledLogicalTab(displayedTabIndex, visibleTabs)
         ?: activeSelectedTab
@@ -833,6 +836,7 @@ fun DynamicScreen(
                                     publishSkinDecoration = publishSkinDecoration,
                                     dockBackdrop = dynamicDockBackdrop,
                                     indicatorPositionProvider = dynamicTabIndicatorPositionProvider,
+                                    isScrollInProgressProvider = dynamicTabScrollInProgressProvider,
                                 )
                             }
 
@@ -1028,6 +1032,7 @@ fun DynamicScreen(
                                     publishSkinDecoration = publishSkinDecoration,
                                     dockBackdrop = dynamicDockBackdrop,
                                     indicatorPositionProvider = dynamicTabIndicatorPositionProvider,
+                                    isScrollInProgressProvider = dynamicTabScrollInProgressProvider,
                                 )
                             }
 

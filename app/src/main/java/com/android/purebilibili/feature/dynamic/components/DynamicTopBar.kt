@@ -97,6 +97,7 @@ fun DynamicTopBarWithTabs(
     publishSkinDecoration: DynamicPublishSkinDecoration? = null,
     dockBackdrop: Backdrop? = null,
     indicatorPositionProvider: (() -> Float)? = null,
+    isScrollInProgressProvider: () -> Boolean = { false },
 ) {
     val density = LocalDensity.current
     val context = LocalContext.current
@@ -144,7 +145,7 @@ fun DynamicTopBarWithTabs(
                 labelFontSize = liquidTabSpec.labelFontSizeSp.sp,
                 allowNativeLabelOverflow = true,
                 indicatorPositionProvider = indicatorPositionProvider,
-                isScrollInProgressProvider = { false },
+                isScrollInProgressProvider = isScrollInProgressProvider,
                 forceLiquidChrome = liquidGlassEnabled,
                 liquidGlassEffectsEnabled = liquidGlassEnabled,
                 miuixBackdrop = dockBackdrop.takeIf { liquidGlassEnabled },
