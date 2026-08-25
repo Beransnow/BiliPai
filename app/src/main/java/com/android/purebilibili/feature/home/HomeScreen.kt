@@ -274,25 +274,24 @@ fun HomeScreen(
     val overlayMotionSpec = remember { resolveHomeOverlayMotionSpec() }
     //  [Refactor] Use a map of grid states for each category to support HorizontalPager
     // [Refactor] Use a map of grid states for each category to support HorizontalPager
-    val gridStates = remember { mutableMapOf<HomeCategory, LazyGridState>() }
+    val gridStates = remember { mutableMapOf<HomeCategory, LazyStaggeredGridState>() }
     HomeCategory.entries.forEach { category ->
         gridStates[category] = rememberSaveable(
             category.name,
-            saver = LazyGridState.Saver
+            saver = LazyStaggeredGridState.Saver
         ) {
-            LazyGridState()
+            LazyStaggeredGridState()
         }
     }
-    val popularGridStates = remember { mutableMapOf<PopularSubCategory, LazyGridState>() }
+    val popularGridStates = remember { mutableMapOf<PopularSubCategory, LazyStaggeredGridState>() }
     PopularSubCategory.entries.forEach { subCategory ->
         popularGridStates[subCategory] = rememberSaveable(
             "popular_${subCategory.name}",
-            saver = LazyGridState.Saver
+            saver = LazyStaggeredGridState.Saver
         ) {
-            LazyGridState()
+            LazyStaggeredGridState()
         }
     }
-    val staggeredGridState = rememberLazyStaggeredGridState() // 🌊 瀑布流状态
     var liveScrollToTopRequestId by remember { mutableIntStateOf(0) }
     var bangumiScrollToTopRequestId by remember { mutableIntStateOf(0) }
     var partitionScrollToTopRequestId by remember { mutableIntStateOf(0) }
@@ -318,7 +317,7 @@ fun HomeScreen(
     var topTabsAutoCollapsedByScroll by rememberSaveable { mutableStateOf(false) }
     var headerSettleAnimationJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
     var homeHeaderRevealLock by remember { mutableStateOf(false) }
-    // 离开首页顶层时冻结滚动锚点；返回后校正 LazyGrid 因 contentPadding/重组造成的偏移漂移。
+    // 离开首页顶层时冻结滚动锚点；返回后校正瀑布流因 contentPadding/重组造成的偏移漂移。
     var pendingFeedScrollAnchor by rememberSaveable(stateSaver = HomeFeedScrollAnchorSaver) {
         mutableStateOf<HomeFeedScrollAnchor?>(null)
     }
@@ -1276,7 +1275,7 @@ fun HomeScreen(
     // 兼容代码：为了最小化改动，将 bottomBarVisible 指向全局状态
     // 注意：这里的 bottomBarVisible 现在是只读的，修改必须通过 setBottomBarVisible
     val bottomBarVisible = isGlobalBottomBarVisible
-    // App Shell keeps this stable while the bottom bar animates out, so LazyGrid
+    // App Shell keeps this stable while the bottom bar animates out, so the feed
     // content padding does not shift during tab/detail navigation.
     val homeListBottomPadding = LocalBottomBarContentPadding.current
     
@@ -1572,7 +1571,7 @@ fun HomeScreen(
                 gridStates[currentCategory]
             }
             // Capture before changing chrome/navigation state. Shared-bounds can remeasure the
-            // underlying LazyGrid as soon as navigation starts, which is too late for a clean anchor.
+            // underlying staggered grid as soon as navigation starts, which is too late for a clean anchor.
             if (activeGridState != null) {
                 pendingFeedScrollAnchor = captureHomeFeedScrollAnchor(
                     category = currentCategory,
@@ -1793,9 +1792,9 @@ fun HomeScreen(
                         //  每个页面独立的 GridState
                         //  使用 saveable 记住滚动位置
                         val pageGridState = if (category == HomeCategory.POPULAR) {
-                            popularGridStates[popularSubCategory] ?: rememberLazyGridState()
+                            popularGridStates[popularSubCategory] ?: rememberLazyStaggeredGridState()
                         } else {
-                            gridStates[category] ?: rememberLazyGridState()
+                            gridStates[category] ?: rememberLazyStaggeredGridState()
                         }
                         
                         //  把 GridState 提升给父级用于控制 Header? 
@@ -1900,8 +1899,8 @@ fun HomeScreen(
                              if (category != HomeCategory.POPULAR && categoryState.isLoading && categoryState.videos.isEmpty() && categoryState.liveRooms.isEmpty()) {
                                  // Loading Skeleton per page
                                  val skeletonPulse = rememberHomeFeedSkeletonPulse()
-                                 LazyVerticalGrid(
-                                     columns = GridCells.Fixed(gridColumns),
+                                 LazyVerticalStaggeredGrid(
+                                     columns = StaggeredGridCells.Fixed(gridColumns),
                                      contentPadding = PaddingValues(
                                          bottom = homeListBottomPadding,
                                          start = homeFeedCardLayout.outerPaddingDp.dp,
@@ -1918,7 +1917,7 @@ fun HomeScreen(
                                          item(
                                              key = "home_hero_carousel_skeleton",
                                              contentType = "home_hero_carousel_skeleton",
-                                             span = { GridItemSpan(gridColumns) }
+                                             span = StaggeredGridItemSpan.FullLine
                                          ) {
                                              HomeFeedHeroCarouselSkeleton(
                                                  pulse = skeletonPulse
@@ -1975,7 +1974,7 @@ fun HomeScreen(
 
                                  val renderHomeCategoryPage: @Composable (
                                      CategoryContent,
-                                     LazyGridState,
+                                     LazyStaggeredGridState,
                                      PopularSubCategory,
                                      () -> Unit
                                  ) -> Unit = { pageCategoryState, contentGridState, selectedPopularSubCategory, onPageLoadMore ->
@@ -2083,7 +2082,7 @@ fun HomeScreen(
                                      }
                                      val subCategoryState by subCategoryStateFlow.collectAsStateWithLifecycle()
                                      val subCategoryGridState =
-                                         popularGridStates[popularSubCategory] ?: rememberLazyGridState()
+                                         popularGridStates[popularSubCategory] ?: rememberLazyStaggeredGridState()
                                      renderHomeCategoryPage(
                                          subCategoryState,
                                          subCategoryGridState,
@@ -2579,7 +2578,8 @@ fun HomeScreen(
         } ?: return@LaunchedEffect
         
         snapshotFlow {
-            val lastVisibleIndex = currentGridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1
+            val lastVisibleIndex = currentGridState.layoutInfo.visibleItemsInfo
+                .maxOfOrNull { it.index } ?: -1
             lastVisibleIndex to currentGridState.isScrollInProgress
         }
             .distinctUntilChanged()
