@@ -2418,6 +2418,9 @@ fun AppNavigation(
                                     visibleBottomBarItems.map { it.name }
                                 ),
                                 onFavoriteClick = { navigateFromProfile(ScreenRoutes.Favorite.route) },
+                                onSubscriptionClick = {
+                                    pushNavigation3Key(BiliPaiNavKey.FavoriteSubscribed)
+                                },
                                 onFavoriteFolderClick = { mediaId, ownerMid, title ->
                                     pushNavigation3Key(
                                         BiliPaiNavKey.SeasonSeriesDetail(
@@ -3030,6 +3033,7 @@ fun AppNavigation(
                                     initialSearchQuery = favoriteSearchKey?.query.orEmpty(),
                                     initialFavoriteSearchScope = favoriteSearchKey?.scope
                                         ?: com.android.purebilibili.data.model.response.FavoriteSearchScope.CURRENT_FOLDER,
+                                    initialFavoriteSubscribed = key == BiliPaiNavKey.FavoriteSubscribed,
                                     isSearchDestination = favoriteSearchKey != null,
                                     onOpenSearchDestination = if (favoriteSearchKey == null) {
                                         { query -> pushNavigation3Key(BiliPaiNavKey.FavoriteSearch(query)) }
@@ -3671,6 +3675,10 @@ fun AppNavigation(
                                     forceLowBlurBudget = false,
                                     isFeedScrollInProgress = currentBottomNavItem == BottomNavItem.HOME &&
                                         homeFeedScrollInProgressState.value,
+                                    indicatorPositionProvider =
+                                        mainBottomPagerState.indicatorPositionProvider,
+                                    isPagerScrollInProgressProvider =
+                                        mainBottomPagerState.scrollInProgressProvider,
                                     uiSkinDecoration = bottomBarUiSkinDecoration,
                                     onToggleSidebar = {
                                         coroutineScope.launch {
@@ -3707,6 +3715,10 @@ fun AppNavigation(
                                 forceLowBlurBudget = false,
                                 isFeedScrollInProgress = currentBottomNavItem == BottomNavItem.HOME &&
                                     homeFeedScrollInProgressState.value,
+                                indicatorPositionProvider =
+                                    mainBottomPagerState.indicatorPositionProvider,
+                                isPagerScrollInProgressProvider =
+                                    mainBottomPagerState.scrollInProgressProvider,
                                 uiSkinDecoration = bottomBarUiSkinDecoration,
                                 onToggleSidebar = {
                                     coroutineScope.launch {

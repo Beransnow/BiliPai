@@ -10,13 +10,17 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -30,6 +34,9 @@ import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.skeleton.ContentSkeletonBlock
+import com.android.purebilibili.core.ui.skeleton.rememberContentSkeletonBlockColor
+import com.android.purebilibili.core.ui.skeleton.rememberContentSkeletonPulse
 
 /**
  * Shared visual frame for personal-list media rows.
@@ -133,4 +140,69 @@ internal fun PersonalMediaCardFrame(
 internal object PersonalMediaCardDefaults {
     val selectionOverlayColor: Color
         @Composable get() = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+}
+
+@Composable
+internal fun PersonalMediaCardSkeleton(
+    modifier: Modifier = Modifier,
+    blockColor: Color? = null,
+) {
+    val pulse = if (blockColor == null) rememberContentSkeletonPulse() else 0f
+    val color = blockColor ?: rememberContentSkeletonBlockColor(pulse)
+    val coverHeight = PERSONAL_LIST_BASE_MIN_HEIGHT_DP.dp
+    val coverWidth = coverHeight * PERSONAL_LIST_HORIZONTAL_COVER_ASPECT_RATIO
+    val cardShape = AppShapes.container(ContainerLevel.Card)
+
+    AppSurface(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(coverHeight),
+        shape = cardShape,
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.28f),
+        tonalElevation = AppSpacingTokens.Micro / 2,
+    ) {
+        Row(modifier = Modifier.fillMaxSize()) {
+            ContentSkeletonBlock(
+                color = color,
+                shape = cardShape,
+                modifier = Modifier
+                    .width(coverWidth)
+                    .fillMaxHeight(),
+            )
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(AppSpacingTokens.Medium),
+                verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+            ) {
+                ContentSkeletonBlock(
+                    color = color,
+                    modifier = Modifier
+                        .fillMaxWidth(0.86f)
+                        .height(16.dp),
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                ContentSkeletonBlock(
+                    color = color,
+                    modifier = Modifier
+                        .fillMaxWidth(0.48f)
+                        .height(12.dp),
+                )
+                ContentSkeletonBlock(
+                    color = color,
+                    modifier = Modifier
+                        .fillMaxWidth(0.62f)
+                        .height(12.dp),
+                )
+            }
+            ContentSkeletonBlock(
+                color = color,
+                shape = CircleShape,
+                modifier = Modifier
+                    .padding(end = AppSpacingTokens.Small)
+                    .size(24.dp)
+                    .align(Alignment.CenterVertically),
+            )
+        }
+    }
 }

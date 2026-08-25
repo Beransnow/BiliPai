@@ -35,10 +35,15 @@ class DynamicPublishComposerPolicyTest {
             .substringBefore("verticalArrangement")
 
         assertTrue(dialogText.contains("layerBackdrop(publishChromeBackdrop)"))
+        assertTrue(dialogText.contains(".matchParentSize()\n                            .layerBackdrop(publishChromeBackdrop)"))
         assertTrue(outerColumnHeader.contains("verticalScroll(rememberScrollState())"))
         assertTrue(!outerColumnHeader.contains("layerBackdrop"))
         assertTrue(dialogText.contains("backdrop = publishChromeBackdrop"))
         assertTrue(dialogText.contains("miuixBackdrop = publishChromeBackdrop"))
+        assertTrue(
+            dialogText.indexOf("layerBackdrop(publishChromeBackdrop)") <
+                dialogText.indexOf("backdrop = publishChromeBackdrop")
+        )
     }
 
     private fun loadComposerSource(): String {

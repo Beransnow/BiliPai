@@ -54,6 +54,8 @@ import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppSlider
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppSwitch
+import com.android.purebilibili.core.ui.components.AppWindowAction
+import com.android.purebilibili.core.ui.components.AppWindowActionMenu
 import com.android.purebilibili.core.util.FormatUtils
 import com.android.purebilibili.data.model.response.SponsorProgressMarker
 import com.android.purebilibili.feature.video.progress.PbpRidgeDensity
@@ -898,28 +900,6 @@ fun BottomControlBar(
                     }
                 }
 
-                if (showMoreActionsButton) {
-                    AppText(
-                        text = "更多",
-                        color = if (showMoreActionsPanel) MaterialTheme.colorScheme.primary else Color.White,
-                        fontSize = layoutPolicy.actionTextFontSp.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier
-                            .clip(AppShapes.container(ContainerLevel.Field))
-                            .clickable {
-                                showMoreActionsPanel = !showMoreActionsPanel
-                                if (showMoreActionsPanel) {
-                                    showSubtitlePanel = false
-                                    showVideoEnhancementPanel = false
-                                }
-                            }
-                            .padding(
-                                horizontal = layoutPolicy.actionChipHorizontalPaddingDp.dp,
-                                vertical = layoutPolicy.actionChipVerticalPaddingDp.dp
-                            )
-                    )
-                }
-
                 // 📱 [修复] 竖屏全屏按钮 - 仅在非全屏模式下显示
                 if (!isFullscreen) {
                     AppText(
@@ -1070,114 +1050,71 @@ fun BottomControlBar(
         }
     }
 
-    if (showMoreActionsPanel && showMoreActionsButton && shouldConsumeFloatingPanelBackground) {
-        FloatingControlPanelDialog(
-            onDismissRequest = { showMoreActionsPanel = false },
-            panelModifier = Modifier
-                .padding(
-                    end = moreActionsPanelEndPaddingDp.dp,
-                    bottom = floatingPanelBottomOffsetDp.dp
-                )
-        ) {
-            AppSurface(
-                color = Color.Black.copy(alpha = 0.78f),
-                shape = AppShapes.container(ContainerLevel.Card),
-                border = androidx.compose.foundation.BorderStroke(
-                    width = 1.dp,
-                    color = Color.White.copy(alpha = 0.2f)
-                )
-            ) {
-                FlowRow(
-                    modifier = Modifier
-                        .width(moreActionsPanelWidthDp.dp)
-                        .padding(horizontal = 12.dp, vertical = 10.dp),
-                    maxItemsInEachRow = 2,
-                    horizontalArrangement = Arrangement.spacedBy(
-                        space = 8.dp,
-                        alignment = Alignment.CenterHorizontally
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
+    if (showMoreActionsButton && shouldConsumeFloatingPanelBackground) {
+        AppWindowActionMenu(
+            groups = listOf(
+                listOfNotNull(
                     if (showEpisodeInMoreActions) {
-                        MoreActionTextButton(
-                            label = "分集",
-                            minWidthDp = moreActionItemMinWidthDp,
-                            onClick = {
+                        AppWindowAction(label = "分集", onClick = {
                                 showMoreActionsPanel = false
                                 onEpisodeClick()
-                            }
-                        )
-                    }
+                            })
+                    } else null,
                     if (showNextEpisodeButton) {
-                        MoreActionTextButton(
-                            label = "下集",
-                            minWidthDp = moreActionItemMinWidthDp,
-                            onClick = {
+                        AppWindowAction(label = "下集", onClick = {
                                 showMoreActionsPanel = false
                                 onNextEpisodeClick()
-                            }
-                        )
-                    }
+                            })
+                    } else null,
                     if (showPlaybackOrderLabel) {
-                        MoreActionTextButton(
-                            label = playbackOrderLabel,
-                            minWidthDp = moreActionItemMinWidthDp,
-                            onClick = {
+                        AppWindowAction(label = playbackOrderLabel, selected = playbackOrderLabel != "自动连播", onClick = {
                                 showMoreActionsPanel = false
                                 onPlaybackOrderClick()
-                            }
-                        )
-                    }
+                            })
+                    } else null,
                     if (showAspectRatioButton) {
-                        MoreActionTextButton(
-                            label = currentRatio.displayName,
-                            highlighted = currentRatio != VideoAspectRatio.FIT,
-                            minWidthDp = moreActionItemMinWidthDp,
-                            onClick = {
+                        AppWindowAction(label = currentRatio.displayName, selected = currentRatio != VideoAspectRatio.FIT, onClick = {
                                 showMoreActionsPanel = false
                                 onRatioClick()
-                            }
-                        )
-                    }
+                            })
+                    } else null,
                     if (showPortraitSwitchButton) {
-                        MoreActionTextButton(
-                            label = "竖屏",
-                            minWidthDp = moreActionItemMinWidthDp,
-                            onClick = {
+                        AppWindowAction(label = "竖屏", onClick = {
                                 showMoreActionsPanel = false
                                 onPortraitFullscreen()
-                            }
-                        )
-                    }
+                            })
+                    } else null,
                     if (anime4kAvailable) {
-                        MoreActionTextButton(
-                            label = "画质增强",
-                            highlighted = anime4kEnabled,
-                            minWidthDp = moreActionItemMinWidthDp,
-                            onClick = {
+                        AppWindowAction(label = "画质增强", selected = anime4kEnabled, onClick = {
                                 showMoreActionsPanel = false
                                 showVideoEnhancementPanel = true
-                            }
-                        )
-                    }
+                            })
+                    } else null,
                     if (
                         com.android.purebilibili.feature.video.ui.components.shouldShowDanmakuSendInMoreActions(
                             isFullscreen = isFullscreen,
                             showInlineDanmakuInput = showDanmakuInput
                         )
                     ) {
-                        MoreActionTextButton(
-                            label = if (isLoggedIn) "发弹幕" else "登录发弹幕",
-                            minWidthDp = moreActionItemMinWidthDp,
-                            onClick = {
+                        AppWindowAction(label = if (isLoggedIn) "发弹幕" else "登录发弹幕", onClick = {
                                 showMoreActionsPanel = false
                                 onDanmakuInputClick()
-                            }
-                        )
-                    }
-                }
+                            })
+                    } else null
+                )
+            ),
+            modifier = Modifier.padding(end = moreActionsPanelEndPaddingDp.dp, bottom = floatingPanelBottomOffsetDp.dp),
+            onExpandedChange = { expanded -> showMoreActionsPanel = expanded },
+            content = {
+                AppText(
+                    text = "更多",
+                    color = if (showMoreActionsPanel) MaterialTheme.colorScheme.primary else Color.White,
+                    fontSize = layoutPolicy.actionTextFontSp.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(horizontal = layoutPolicy.actionChipHorizontalPaddingDp.dp, vertical = layoutPolicy.actionChipVerticalPaddingDp.dp)
+                )
             }
-        }
+        )
     }
 
     if (showVideoEnhancementPanel && anime4kAvailable) {

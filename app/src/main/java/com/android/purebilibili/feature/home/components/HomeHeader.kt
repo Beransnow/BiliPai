@@ -2164,7 +2164,9 @@ fun HomeHeader(
             .fillMaxWidth()
             .zIndex(10f)
     ) {
-        // 分栏 tab 最大宽度 = 顶部三控件合计宽度（头像左缘 ~ 设置按钮右缘）。
+        val fullTopDockWidth = maxWidth
+        // Plain/native tabs align to the top controls. The bottom-bar-backed dock uses the
+        // full parent width so its width resolver receives the same constraint as the bottom dock.
         val topControlsContentWidth = resolveHomeTopControlsContentWidthDp(
             containerWidthDp = maxWidth,
             chromePolicy = topChromePolicy
@@ -2342,7 +2344,9 @@ fun HomeHeader(
                         )
                 ) {
                     if (topLayoutOrder == HomeTopLayoutOrder.TABS_THEN_SEARCH) {
-                        topTabsContent(topControlsContentWidth)
+                        topTabsContent(
+                            if (topTabInnerOwnsFloatingDockShell) fullTopDockWidth else topControlsContentWidth
+                        )
                         if (drawTopSearchDivider) {
                             Spacer(modifier = Modifier.height(currentSearchToTabsSpacing))
                             AppHorizontalDivider(
@@ -2876,7 +2880,9 @@ fun HomeHeader(
                             Spacer(modifier = Modifier.height(currentSearchToTabsSpacing))
                         }
 
-                        topTabsContent(topControlsContentWidth)
+                        topTabsContent(
+                            if (topTabInnerOwnsFloatingDockShell) fullTopDockWidth else topControlsContentWidth
+                        )
                     }
                 }
             }

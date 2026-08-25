@@ -326,6 +326,9 @@ private fun FloatingLiquidBottomInputBar(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            // 黑虾线防回归：左右是两个视觉上独立的胶囊，必须分别渲染，不能合成长壳；
+            // 两边都保留 lens，并按 44dp 实际高度缩放折射。直接关 lens 会损失液态玻璃，
+            // 使用满强度 64dp 几何则会让上下 refraction 在短胶囊中线相撞。
             BottomBarMatchedReusableLiquidDock(
                 shape = shellShape,
                 modifier = Modifier
@@ -334,7 +337,6 @@ private fun FloatingLiquidBottomInputBar(
                 backdrop = backdrop,
                 reuseEnabled = true,
                 drawShellLens = true,
-                // 44dp 短胶囊按 64dp 底栏基准缩放折射，保留 lens 并避免上下边沿相撞。
                 shellLensIntensity = resolveFloatingDockGeometryScale(44f),
                 isScrollInProgressProvider = isScrollInProgressProvider,
             ) {

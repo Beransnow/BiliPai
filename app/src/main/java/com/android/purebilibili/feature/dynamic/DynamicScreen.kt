@@ -712,7 +712,7 @@ fun DynamicScreen(
                                 modifier = Modifier
                                     .fillMaxSize()
                                     .layerBackdrop(dynamicDockBackdrop)
-                                    .background(AppSurfaceTokens.background())
+                                    .globalWallpaperAwareBackground(AppSurfaceTokens.background())
                             ) {
                             HorizontalPager(
                                 state = pagerState,
@@ -898,7 +898,7 @@ fun DynamicScreen(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .layerBackdrop(dynamicDockBackdrop)
-                                .background(AppSurfaceTokens.background())
+                                .globalWallpaperAwareBackground(AppSurfaceTokens.background())
                         ) {
                         HorizontalPager(
                             state = pagerState,

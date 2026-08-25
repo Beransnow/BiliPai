@@ -17,6 +17,9 @@ import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.components.AppFilterChip
 import com.android.purebilibili.core.ui.components.AppSurface
+import com.android.purebilibili.core.ui.skeleton.ContentSkeletonBlock
+import com.android.purebilibili.core.ui.skeleton.rememberContentSkeletonBlockColor
+import com.android.purebilibili.core.ui.skeleton.rememberContentSkeletonPulse
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -46,10 +49,7 @@ fun BangumiTimelineContent(
 ) {
     when (timelineState) {
         is TimelineState.Loading -> {
-            com.android.purebilibili.core.ui.skeleton.ContentMediaListSkeleton(
-                modifier = modifier,
-                itemCount = 8,
-            )
+            BangumiTimelineScreenSkeleton(modifier = modifier)
         }
         is TimelineState.Error -> {
             Box(
@@ -74,6 +74,74 @@ fun BangumiTimelineContent(
                 onBangumiClick = onBangumiClick,
                 modifier = modifier
             )
+        }
+    }
+}
+
+@Composable
+private fun BangumiTimelineScreenSkeleton(modifier: Modifier = Modifier) {
+    val blockColor = rememberContentSkeletonBlockColor(rememberContentSkeletonPulse())
+    Column(modifier = modifier.fillMaxSize()) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            repeat(5) {
+                ContentSkeletonBlock(
+                    color = blockColor,
+                    shape = AppShapes.container(ContainerLevel.Pill),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(48.dp),
+                )
+            }
+        }
+        AppHorizontalDivider(
+            thickness = 0.5.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+        )
+        LazyColumn(
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            userScrollEnabled = false,
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            items(7) {
+                AppSurface(
+                    shape = AppShapes.container(ContainerLevel.Card),
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        ContentSkeletonBlock(
+                            color = blockColor,
+                            shape = AppShapes.container(ContainerLevel.Field),
+                            modifier = Modifier.size(80.dp, 60.dp),
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            ContentSkeletonBlock(
+                                color = blockColor,
+                                modifier = Modifier
+                                    .fillMaxWidth(0.82f)
+                                    .height(15.dp),
+                            )
+                            ContentSkeletonBlock(
+                                color = blockColor,
+                                modifier = Modifier
+                                    .fillMaxWidth(0.56f)
+                                    .height(12.dp),
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }

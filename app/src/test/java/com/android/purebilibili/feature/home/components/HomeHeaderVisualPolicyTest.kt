@@ -220,8 +220,8 @@ class HomeHeaderVisualPolicyTest {
         assertEquals(48.dp, resolveHomeTopSearchBarHeight(UiPreset.MD3))
         assertEquals(56.dp, resolveHomeTopTabRowHeight(isTabFloating = true))
         assertEquals(56.dp, resolveHomeTopTabRowHeight(isTabFloating = true, uiPreset = UiPreset.MD3))
-        assertEquals(36.dp, resolveHomeTopTabRowHeight(isTabFloating = false))
-        assertEquals(36.dp, resolveHomeTopTabRowHeight(isTabFloating = false, uiPreset = UiPreset.MD3))
+        assertEquals(56.dp, resolveHomeTopTabRowHeight(isTabFloating = false))
+        assertEquals(56.dp, resolveHomeTopTabRowHeight(isTabFloating = false, uiPreset = UiPreset.MD3))
     }
 
     @Test

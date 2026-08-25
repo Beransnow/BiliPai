@@ -28,13 +28,6 @@ import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FileDownload
-import androidx.compose.material.icons.outlined.PhotoLibrary
-import androidx.compose.material.icons.outlined.Restore
-import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Share
-import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -269,13 +262,13 @@ internal fun LiquidGlassAdjustmentPanel(
                     )
                 },
             ) {
-                Icon(Icons.Outlined.PhotoLibrary, contentDescription = null)
+                Icon(com.android.purebilibili.feature.settings.rememberMaterialSymbol(com.android.purebilibili.R.drawable.ms_photo_library_24), contentDescription = null)
                 Spacer(modifier = Modifier.width(6.dp))
                 AppText(if (previewImageUri == null) "选择相册图片" else "更换图片")
             }
             if (previewImageUri != null) {
                 AppTextButton(onClick = { onPreviewImageChanged(null) }) {
-                    Icon(Icons.Outlined.Restore, contentDescription = null)
+                    Icon(com.android.purebilibili.feature.settings.rememberMaterialSymbol(com.android.purebilibili.R.drawable.ms_restore_24), contentDescription = null)
                     Spacer(modifier = Modifier.width(6.dp))
                     AppText("恢复默认")
                 }
@@ -378,7 +371,7 @@ internal fun LiquidGlassAdjustmentPanel(
                 enabled = !isImportingSettings,
                 modifier = Modifier.weight(1f),
             ) {
-                Icon(Icons.Outlined.FileDownload, contentDescription = null)
+                Icon(com.android.purebilibili.feature.settings.rememberMaterialSymbol(com.android.purebilibili.R.drawable.ms_file_download_24), contentDescription = null)
                 Spacer(modifier = Modifier.width(6.dp))
                 AppText(if (isImportingSettings) "正在读取" else "导入他人设置")
             }
@@ -387,7 +380,7 @@ internal fun LiquidGlassAdjustmentPanel(
                 enabled = !isImportingSettings,
                 modifier = Modifier.weight(1f),
             ) {
-                Icon(Icons.Outlined.Share, contentDescription = null)
+                Icon(com.android.purebilibili.feature.settings.rememberMaterialSymbol(com.android.purebilibili.R.drawable.ms_share_24), contentDescription = null)
                 Spacer(modifier = Modifier.width(6.dp))
                 AppText("分享我的设置")
             }
@@ -400,7 +393,7 @@ internal fun LiquidGlassAdjustmentPanel(
         AppTextButton(
             onClick = { advancedSettingsExpanded = !advancedSettingsExpanded },
         ) {
-            Icon(Icons.Outlined.Tune, contentDescription = null)
+            Icon(com.android.purebilibili.feature.settings.rememberMaterialSymbol(com.android.purebilibili.R.drawable.ms_tune_24), contentDescription = null)
             Spacer(modifier = Modifier.width(6.dp))
             AppText(if (advancedSettingsExpanded) "收起高级调节" else "展开高级调节")
         }
@@ -522,7 +515,7 @@ internal fun LiquidGlassAdjustmentPanel(
                     },
                     enabled = advancedSettings.contentDistortion > 0.001f,
                 ) {
-                    Icon(Icons.Outlined.Restore, contentDescription = null)
+                    Icon(com.android.purebilibili.feature.settings.rememberMaterialSymbol(com.android.purebilibili.R.drawable.ms_restore_24), contentDescription = null)
                     Spacer(modifier = Modifier.width(6.dp))
                     AppText("关闭内容折射")
                 }
@@ -854,7 +847,7 @@ private fun LiquidGlassHomeSample(
                 .padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(Icons.Outlined.Search, contentDescription = null, tint = topContentColor)
+            Icon(com.android.purebilibili.feature.settings.rememberMaterialSymbol(com.android.purebilibili.R.drawable.ms_search_24), contentDescription = null, tint = topContentColor)
             Spacer(modifier = Modifier.width(8.dp))
             AppText(
                 text = "搜索感兴趣的视频",
@@ -924,7 +917,7 @@ private fun LiquidGlassHomeSample(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.Search,
+                        imageVector = com.android.purebilibili.feature.settings.rememberMaterialSymbol(com.android.purebilibili.R.drawable.ms_search_24),
                         contentDescription = "底栏搜索",
                         tint = bottomContentColor,
                     )

@@ -16,6 +16,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material.icons.outlined.PersonOutline
+import androidx.compose.material.icons.outlined.WatchLater
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -44,13 +48,16 @@ import com.android.purebilibili.core.ui.FeedTitleHierarchy
 import com.android.purebilibili.core.ui.LocalAnimatedVisibilityScope
 import com.android.purebilibili.core.ui.LocalSharedTransitionScope
 import com.android.purebilibili.core.ui.MediaContrastPalette
-import com.android.purebilibili.core.ui.components.AppDropdownMenu
-import com.android.purebilibili.core.ui.components.AppDropdownMenuItem
+import com.android.purebilibili.core.ui.components.AppWindowAction
+import com.android.purebilibili.core.ui.components.AppWindowActionMenu
 import com.android.purebilibili.core.ui.components.AppIcon
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppLinearProgressIndicator
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.feedContentTypography
+import com.android.purebilibili.core.ui.skeleton.ContentSkeletonBlock
+import com.android.purebilibili.core.ui.skeleton.rememberContentSkeletonBlockColor
+import com.android.purebilibili.core.ui.skeleton.rememberContentSkeletonPulse
 import com.android.purebilibili.core.ui.transition.LocalVideoCardSharedElementSourceRoute
 import com.android.purebilibili.core.ui.transition.LocalVideoSharedTransitionSpeedSettings
 import com.android.purebilibili.core.ui.transition.VideoCardSourceChromeSnapshot
@@ -84,6 +91,70 @@ internal fun resolveHistoryProgressLabel(progress: Int, duration: Int): String =
 internal fun canAddHistoryToWatchLater(item: HistoryItem): Boolean =
     item.business == HistoryBusiness.ARCHIVE && item.videoItem.id > 0L
 
+@Composable
+internal fun HistoryPersonalCardSkeleton(
+    modifier: Modifier = Modifier,
+    blockColor: Color? = null,
+) {
+    val pulse = if (blockColor == null) rememberContentSkeletonPulse() else 0f
+    val color = blockColor ?: rememberContentSkeletonBlockColor(pulse)
+    val coverWidth = PERSONAL_LIST_HORIZONTAL_COVER_WIDTH_DP.dp
+    val coverHeight =
+        (PERSONAL_LIST_HORIZONTAL_COVER_WIDTH_DP / PERSONAL_LIST_HORIZONTAL_COVER_ASPECT_RATIO).dp
+    val blockShape = AppShapes.container(ContainerLevel.Card)
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 5.dp),
+        verticalAlignment = Alignment.Top,
+    ) {
+        ContentSkeletonBlock(
+            color = color,
+            shape = blockShape,
+            modifier = Modifier
+                .width(coverWidth)
+                .height(coverHeight),
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .height(coverHeight)
+                .padding(end = 4.dp),
+        ) {
+            ContentSkeletonBlock(
+                color = color,
+                modifier = Modifier
+                    .fillMaxWidth(0.92f)
+                    .height(16.dp),
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            ContentSkeletonBlock(
+                color = color,
+                modifier = Modifier
+                    .fillMaxWidth(0.68f)
+                    .height(16.dp),
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            ContentSkeletonBlock(
+                color = color,
+                modifier = Modifier
+                    .fillMaxWidth(0.48f)
+                    .height(12.dp),
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            ContentSkeletonBlock(
+                color = color,
+                modifier = Modifier
+                    .fillMaxWidth(0.34f)
+                    .height(12.dp),
+            )
+        }
+        Spacer(modifier = Modifier.width(29.dp))
+    }
+}
+
 @OptIn(ExperimentalSharedTransitionApi::class, ExperimentalFoundationApi::class)
 @Composable
 internal fun HistoryPersonalCard(
@@ -100,7 +171,6 @@ internal fun HistoryPersonalCard(
 ) {
     val video = item.videoItem
     val context = LocalContext.current
-    var menuExpanded by remember { mutableStateOf(false) }
     val configuration = LocalConfiguration.current
     val density = LocalDensity.current
     val sourceRoute = LocalVideoCardSharedElementSourceRoute.current
@@ -297,8 +367,33 @@ internal fun HistoryPersonalCard(
                     .width(29.dp),
                 contentAlignment = Alignment.BottomCenter,
             ) {
-                AppIconButton(
-                    onClick = { menuExpanded = true },
+                AppWindowActionMenu(
+                    groups = listOf(
+                        buildList {
+                            if (onUpClick != null) {
+                                add(AppWindowAction(
+                                    label = "访问UP主",
+                                    icon = Icons.Outlined.PersonOutline,
+                                    onClick = onUpClick,
+                                ))
+                            }
+                            if (onAddToWatchLater != null) {
+                                add(AppWindowAction(
+                                    label = "加入稍后再看",
+                                    icon = Icons.Outlined.WatchLater,
+                                    onClick = onAddToWatchLater,
+                                ))
+                            }
+                        },
+                        listOf(
+                            AppWindowAction(
+                                label = "删除记录",
+                                icon = Icons.Outlined.DeleteOutline,
+                                iconTint = MaterialTheme.colorScheme.error,
+                                onClick = onDelete,
+                            ),
+                        ),
+                    ),
                     modifier = Modifier.size(29.dp),
                 ) {
                     AppIcon(
@@ -306,36 +401,6 @@ internal fun HistoryPersonalCard(
                         contentDescription = "历史记录操作",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(18.dp),
-                    )
-                }
-                AppDropdownMenu(
-                    expanded = menuExpanded,
-                    onDismissRequest = { menuExpanded = false },
-                ) {
-                    if (onUpClick != null) {
-                        AppDropdownMenuItem(
-                            text = { AppText("访问UP主") },
-                            onClick = {
-                                menuExpanded = false
-                                onUpClick()
-                            },
-                        )
-                    }
-                    if (onAddToWatchLater != null) {
-                        AppDropdownMenuItem(
-                            text = { AppText("加入稍后再看") },
-                            onClick = {
-                                menuExpanded = false
-                                onAddToWatchLater()
-                            },
-                        )
-                    }
-                    AppDropdownMenuItem(
-                        text = { AppText("删除记录", color = MaterialTheme.colorScheme.error) },
-                        onClick = {
-                            menuExpanded = false
-                            onDelete()
-                        },
                     )
                 }
             }

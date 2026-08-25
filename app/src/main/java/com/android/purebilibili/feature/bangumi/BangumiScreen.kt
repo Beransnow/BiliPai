@@ -1,6 +1,7 @@
 package com.android.purebilibili.feature.bangumi
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -125,34 +127,40 @@ fun BangumiScreen(
         },
     ) { contentPadding ->
         val channelBackdrop = rememberLayerBackdrop()
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)
                 .responsiveContentWidth(),
         ) {
-            if (state.page != BangumiHubPage.SEARCH) {
-                AppLiquidAwareTabRow(
-                    options = BangumiChannel.entries.map { AppSegmentOption(it, it.label) },
-                    selectedValue = state.channel,
-                    enabled = !selectionActive,
-                    onSelectionChange = viewModel::selectChannel,
-                    dragSelectionEnabled = true,
-                    tapPressRefractionEnabled = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    miuixBackdrop = channelBackdrop,
-                )
-            }
-
             Box(
                 modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .layerBackdrop(channelBackdrop),
-            ) {
-            BangumiHubContent(
+                    .fillMaxSize()
+                    .layerBackdrop(channelBackdrop)
+                    .background(MaterialTheme.colorScheme.background),
+            )
+            Column(modifier = Modifier.fillMaxSize()) {
+                if (state.page != BangumiHubPage.SEARCH) {
+                    AppLiquidAwareTabRow(
+                        options = BangumiChannel.entries.map { AppSegmentOption(it, it.label) },
+                        selectedValue = state.channel,
+                        enabled = !selectionActive,
+                        onSelectionChange = viewModel::selectChannel,
+                        dragSelectionEnabled = true,
+                        tapPressRefractionEnabled = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                        miuixBackdrop = channelBackdrop,
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
+                ) {
+                    BangumiHubContent(
                 state = state,
                 onBangumiClick = onBangumiClick,
                 onEpisodeClick = onBangumiEpisodeClick,
@@ -186,8 +194,11 @@ fun BangumiScreen(
                         snackbarHostState.showSnackbar(if (saved) "封面已保存" else "保存封面失败")
                     }
                 },
+                // The backdrop source is a sibling behind the content tree. Reusing it
+                // keeps every nested dock correctly tinted without a self-sampling cycle.
                 tabBackdrop = channelBackdrop,
-            )
+                    )
+                }
             }
         }
     }
@@ -223,6 +234,7 @@ private fun BangumiSearchTopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .statusBarsPadding()
             .padding(horizontal = 4.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),

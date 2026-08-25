@@ -549,7 +549,6 @@ private fun PopularSubCategorySegmentedControl(
         stringResource(resolvePopularSubCategoryLabelRes(subCategory))
     }
 
-    val popularBackdrop = rememberLayerBackdrop()
     BottomBarLiquidSegmentedControl(
         items = labels,
         selectedIndex = selectedIndex,
@@ -564,7 +563,7 @@ private fun PopularSubCategorySegmentedControl(
         labelFontSize = MaterialTheme.typography.labelMedium.fontSize,
         containerHorizontalPadding = AppSpacingTokens.ExtraSmall,
         containerVerticalPadding = AppSpacingTokens.ExtraSmall,
-        miuixBackdrop = popularBackdrop,
+        miuixBackdrop = null,
         liquidGlassEffectsEnabled = true,
         tapPressRefractionEnabled = true,
         dragSelectionEnabled = false,
@@ -585,9 +584,6 @@ private fun TodayWatchModeSegmentedControl(
     val labels = modes.map { mode ->
         stringResource(resolveTodayWatchModeLabelRes(mode))
     }
-    val fallbackBackdrop = rememberLayerBackdrop()
-    val backdrop = miuixBackdrop ?: fallbackBackdrop
-
     BottomBarLiquidSegmentedControl(
         items = labels,
         selectedIndex = selectedIndex,
@@ -601,7 +597,7 @@ private fun TodayWatchModeSegmentedControl(
         labelFontSize = MaterialTheme.typography.labelMedium.fontSize,
         containerHorizontalPadding = AppSpacingTokens.ExtraSmall,
         containerVerticalPadding = AppSpacingTokens.ExtraSmall,
-        miuixBackdrop = backdrop,
+        miuixBackdrop = miuixBackdrop,
         liquidGlassEffectsEnabled = true,
         tapPressRefractionEnabled = true,
         dragSelectionEnabled = true,
@@ -652,10 +648,17 @@ private fun TodayWatchPlanCard(
             .fillMaxWidth()
             .padding(horizontal = AppSpacingTokens.Small, vertical = AppSpacingTokens.ExtraSmall)
     ) {
-        Column(
-            modifier = Modifier.padding(AppSpacingTokens.Medium),
-            verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small + AppSpacingTokens.Micro)
-        ) cardBody@ {
+        Box(modifier = Modifier.padding(AppSpacingTokens.Medium)) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .layerBackdrop(todayWatchBackdrop)
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)),
+            )
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small + AppSpacingTokens.Micro)
+            ) cardBody@ {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -719,8 +722,7 @@ private fun TodayWatchPlanCard(
             )
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .layerBackdrop(todayWatchBackdrop),
+                    .fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small + AppSpacingTokens.Micro)
             ) {
             AppText(
@@ -904,6 +906,7 @@ private fun TodayWatchPlanCard(
                             }
                         }
                     }
+            }
             }
             }
         }

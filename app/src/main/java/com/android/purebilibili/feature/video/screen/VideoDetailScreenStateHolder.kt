@@ -56,6 +56,9 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.listSaver
@@ -92,6 +95,7 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.ui.layout.ContentScale
 import androidx.core.view.WindowCompat
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.android.purebilibili.data.model.response.BgmInfo
 import com.android.purebilibili.data.model.CommentFraudStatus
@@ -213,7 +217,6 @@ import com.android.purebilibili.core.ui.rememberAppCollectionIcon
 import com.android.purebilibili.core.ui.rememberAppDownloadIcon
 import com.android.purebilibili.core.ui.rememberAppMusicIcon
 import com.android.purebilibili.core.ui.rememberAppPhotoIcon
-import com.android.purebilibili.core.ui.rememberAppPlayIcon
 import com.android.purebilibili.feature.video.player.MiniPlayerManager
 import com.android.purebilibili.feature.video.player.PlaybackService
 import com.android.purebilibili.feature.video.player.PlaylistItem
@@ -262,30 +265,80 @@ private const val CONTINUOUS_PLAYER_MORPH_DURATION_MILLIS = 280
 private const val VIDEO_DETAIL_COLLAPSE_SIGNAL_IDLE_TIMEOUT_MS = 120L
 
 @Composable
-private fun CollapsedPlayerPlayAction(
-    visible: Boolean,
-    onClick: () -> Unit,
+private fun CollapsedPlayerNavigationBar(
+    scrollRatio: Float,
+    topInset: Dp,
+    onBack: () -> Unit,
+    onHomeClick: () -> Unit,
+    onPlayClick: () -> Unit,
+    onMoreClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    AnimatedVisibility(
-        visible = visible,
-        modifier = modifier,
-        enter = fadeIn(animationSpec = tween(durationMillis = 120)),
-        exit = fadeOut(animationSpec = tween(durationMillis = 90)),
-    ) {
-        AppTextButton(
-            onClick = onClick,
-            modifier = Modifier
+    if (scrollRatio > 0f) {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
                 .fillMaxHeight()
-                .padding(horizontal = 12.dp),
-            contentPadding = PaddingValues(horizontal = 12.dp),
+                .graphicsLayer { alpha = scrollRatio.coerceIn(0f, 1f) }
+                .background(MaterialTheme.colorScheme.surface),
         ) {
-            Icon(
-                imageVector = Icons.Filled.PlayArrow,
-                contentDescription = "立即播放",
+            // PiliPlus: status-bar app bar and kToolbarHeight video header are two siblings.
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(topInset)
+                    .background(MaterialTheme.colorScheme.surface)
             )
-            Spacer(Modifier.width(4.dp))
-            Text("立即播放")
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .clickable(onClick = onPlayClick),
+            ) {
+                Row(
+                    modifier = Modifier.align(Alignment.CenterStart),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    IconButton(onClick = onBack, modifier = Modifier.size(width = 42.dp, height = 34.dp)) {
+                        Icon(
+                            Icons.Filled.ArrowBack,
+                            contentDescription = "返回",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                    IconButton(onClick = onHomeClick, modifier = Modifier.size(width = 42.dp, height = 34.dp)) {
+                        Icon(
+                            Icons.Filled.Home,
+                            contentDescription = "首页",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+                }
+                Row(
+                    modifier = Modifier.align(Alignment.Center),
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.PlayArrow,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                    Text("立即播放", color = MaterialTheme.colorScheme.primary)
+                }
+                IconButton(
+                    onClick = onMoreClick,
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .size(width = 42.dp, height = 34.dp),
+                ) {
+                    Icon(
+                        Icons.Filled.MoreVert,
+                        contentDescription = "更多设置",
+                        tint = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            }
         }
     }
 }
@@ -3537,9 +3590,16 @@ internal fun VideoDetailScreenStateHolder(
                             selectedVideoContentTabIndex,
                             compactInlinePlayerForCommentTab,
                             compactInlinePlayerForIntroScroll,
+                            inlinePortraitScrollEnabled,
                             portraitPlayerCollapseMode
                         ) {
-                            if (!compactInlinePlayerForCommentTab && !compactInlinePlayerForIntroScroll) {
+                            val preserveManualCollapseOnCommentTab =
+                                selectedVideoContentTabIndex == 1 && inlinePortraitScrollEnabled
+                            if (
+                                !compactInlinePlayerForCommentTab &&
+                                !compactInlinePlayerForIntroScroll &&
+                                !preserveManualCollapseOnCommentTab
+                            ) {
                                 inlinePlayerCollapseState.reset()
                             }
                         }
@@ -3770,10 +3830,13 @@ internal fun VideoDetailScreenStateHolder(
                             useOfficialInlinePortraitDetailExperience -> expandedPortraitInlineSpec.heightDp.dp
                             else -> videoHeight
                         }
-                        val collapsedViewportHeight = if (useOfficialInlinePortraitDetailExperience) {
-                            collapsedPortraitInlineSpec.heightDp.dp
-                        } else {
-                            0.dp
+                        // PiliPlus 的 VideoHeader minExtent 始终是 kToolbarHeight；不能在非
+                        // official-inline 路径把播放器收成 0，否则 Overlay 会被父布局裁掉。
+                        val collapsedViewportHeight = when {
+                            portraitPlayerCollapseMode != PortraitPlayerCollapseMode.OFF -> 56.dp
+                            useOfficialInlinePortraitDetailExperience ->
+                                collapsedPortraitInlineSpec.heightDp.dp
+                            else -> 0.dp
                         }
                         val inlineViewportHeight = lerp(
                             expandedViewportHeight,
@@ -3795,14 +3858,31 @@ internal fun VideoDetailScreenStateHolder(
                             collapsedViewportWidth,
                             layoutCollapseProgress
                         )
-                        val inlinePlayerHeight = inlineViewportHeight + playerTopInset
+                        // PiliPlus 使用 MediaQuery.viewPadding.top 作为独立 AppBar 高度。
+                        // Android 侧读取根窗口 ignoringVisibility inset，并用系统 dimen 兜底。
+                        val insetDensity = LocalDensity.current
+                        val collapsedSystemBarInset = remember(view, configuration.densityDpi) {
+                            val rootInsetPx = ViewCompat.getRootWindowInsets(view)
+                                ?.getInsetsIgnoringVisibility(
+                                    WindowInsetsCompat.Type.statusBars() or
+                                        WindowInsetsCompat.Type.displayCutout()
+                                )
+                                ?.top
+                                ?: 0
+                            val statusBarResourceId = context.resources.getIdentifier(
+                                "status_bar_height",
+                                "dimen",
+                                "android",
+                            )
+                            val resourceInsetPx = if (statusBarResourceId != 0) {
+                                context.resources.getDimensionPixelSize(statusBarResourceId)
+                            } else {
+                                0
+                            }
+                            with(insetDensity) { maxOf(rootInsetPx, resourceInsetPx).toDp() }
+                        }
+                        val inlinePlayerHeight = inlineViewportHeight + collapsedSystemBarInset
                         val fullscreenPlayerHeight = screenHeightDp.coerceAtLeast(1.dp)
-
-                        //  注意：移除了状态栏黑色 Spacer
-                        // 播放器将延伸到状态栏下方，共享元素过渡更流畅
-
-                        //  注意：移除了状态栏黑色 Spacer
-                        // 播放器将延伸到状态栏下方，共享元素过渡更流畅
 
                         //  视频播放器区域：状态栏可见时避让，隐藏时让画面沉浸到顶部。
                         //  尝试获取共享元素作用域
@@ -4030,6 +4110,9 @@ internal fun VideoDetailScreenStateHolder(
                                     contentScale = ContentScale.Crop
                                 )
                             }
+                            var collapsedPlayerMoreRequestKey by remember(currentBvid) {
+                                mutableIntStateOf(0)
+                            }
                             Box(
                                 modifier = Modifier
                                     .fillMaxSize()
@@ -4094,6 +4177,7 @@ internal fun VideoDetailScreenStateHolder(
                                 onHomeClick = {
                                     handleTopBarAction(resolveVideoDetailTopBarAction(isHomeButton = true))
                                 },
+                                endDrawerRequestKey = collapsedPlayerMoreRequestKey,
                                 videoPlayerSectionTarget = videoPlayerSectionTarget,
                                 sponsorSegment = sponsorSegment,
                                 showSponsorSkipButton = showSponsorSkipButton,
@@ -4144,18 +4228,20 @@ internal fun VideoDetailScreenStateHolder(
                             )
                             }
                             }
-                            CollapsedPlayerPlayAction(
-                                visible = shouldShowPiliPlusCollapsedPlayAction(
-                                    collapseMode = portraitPlayerCollapseMode,
-                                    isPlaybackPaused = isPlaybackPaused,
-                                    collapseProgress = layoutCollapseProgress,
-                                ),
-                                onClick = {
+                            CollapsedPlayerNavigationBar(
+                                scrollRatio = layoutCollapseProgress,
+                                topInset = collapsedSystemBarInset,
+                                onBack = handleBack,
+                                onHomeClick = {
+                                    handleTopBarAction(resolveVideoDetailTopBarAction(isHomeButton = true))
+                                },
+                                onPlayClick = {
+                                    inlinePlayerCollapseState.restore()
                                     playPlayerFromUserAction(playerState.player)
                                 },
+                                onMoreClick = { collapsedPlayerMoreRequestKey += 1 },
                                 modifier = Modifier
-                                    .align(Alignment.BottomCenter)
-                                    .height(56.dp)
+                                    .matchParentSize()
                                     .zIndex(2f),
                             )
                         }
@@ -4310,7 +4396,6 @@ internal fun VideoDetailScreenStateHolder(
                                         transitionEnabled = detailChildTransitionEnabled,
                                         sourceRouteForSharedElement = sourceRouteForSharedElement,
                                         isPlayerCollapsed = isPlayerCollapsed,
-                                        onRestorePlayer = inlinePlayerCollapseState::restore,
                                         onBgmClick = onBgmClick,
                                         homeUpBadgesVisible = homeUpBadgesVisible,
                                         isVideoPlaying = isVideoPlaying,

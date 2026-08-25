@@ -44,7 +44,9 @@ internal fun shouldRenderGlobalHomeWallpaperBackdrop(
         currentRoute = currentRoute,
         mainHostTabRoute = mainHostTabRoute,
     )
-    if (route.isNullOrBlank()) return false
+    // Navigation3 的部分承载场景（弹层、过渡页及恢复中的 back stack）没有稳定的
+    // currentRoute；GLOBAL 模式下不能因为 route 暂时为空就把根壁纸卸载，否则会出现
+    // “部分场景有、部分场景没有”的闪断。只有明确处于首页时才交给 HomeScreen 自绘。
     return route != HOME_WALLPAPER_HOME_ROUTE_BASE
 }
 

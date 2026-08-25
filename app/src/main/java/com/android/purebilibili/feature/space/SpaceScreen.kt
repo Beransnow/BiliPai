@@ -41,6 +41,7 @@ import androidx.compose.material.icons.outlined.Menu
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.PlayCircleOutline
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Subtitles
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material.icons.outlined.Visibility
@@ -414,7 +415,7 @@ fun SpaceScreen(
                                         ),
                                         AppWindowAction(
                                             label = "分享",
-                                            icon = Icons.Outlined.ChatBubbleOutline,
+                                            icon = Icons.Outlined.Share,
                                             onClick = {
                                                 val shareIntent = Intent(Intent.ACTION_SEND).apply {
                                                     type = "text/plain"
@@ -1155,8 +1156,8 @@ private fun SpaceContent(
             state = gridState,
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
-                start = spaceFeedCardLayout.outerPaddingDp.dp,
-                end = spaceFeedCardLayout.outerPaddingDp.dp,
+                start = maxOf(16, spaceFeedCardLayout.outerPaddingDp).dp,
+                end = maxOf(16, spaceFeedCardLayout.outerPaddingDp).dp,
                 bottom = bottomInset + 24.dp
             ),
             horizontalArrangement = Arrangement.spacedBy(spaceFeedCardLayout.itemSpacingDp.dp),

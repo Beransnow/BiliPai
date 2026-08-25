@@ -88,8 +88,6 @@ import com.android.purebilibili.data.model.response.TimelineDay
 import com.android.purebilibili.data.model.response.TimelineEpisode
 import com.android.purebilibili.feature.bangumi.ui.list.BangumiBadge
 import kotlinx.coroutines.launch
-import top.yukonga.miuix.kmp.blur.layerBackdrop
-import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 import top.yukonga.miuix.kmp.blur.Backdrop
 
 internal const val BANGUMI_POSTER_ASPECT_RATIO = 0.75f
@@ -208,6 +206,7 @@ internal fun BangumiHubContent(
             onMoveSingle = onMoveSingleFollow,
             onUnfollowSingle = onUnfollowSingle,
             listBottomPadding = listBottomPadding,
+            tabBackdrop = tabBackdrop,
         )
 
         BangumiHubPage.SEARCH -> BangumiSearchContent(
@@ -615,10 +614,10 @@ private fun BangumiFollowContent(
     onMoveSingle: (Long, BangumiFollowStatus) -> Unit,
     onUnfollowSingle: (Long) -> Unit,
     listBottomPadding: Dp,
+    tabBackdrop: Backdrop?,
 ) {
     val selectionMode = state.selectedIds.isNotEmpty()
     var menuItem by remember { mutableStateOf<FollowBangumiItem?>(null) }
-    val followBackdrop = rememberLayerBackdrop()
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             AppLiquidAwareTabRow(
@@ -631,14 +630,12 @@ private fun BangumiFollowContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp, vertical = 8.dp),
-                miuixBackdrop = followBackdrop,
+                miuixBackdrop = tabBackdrop,
             )
             AdaptivePullToRefreshBox(
                 isRefreshing = state.content.isRefreshing,
                 onRefresh = onRefresh,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .layerBackdrop(followBackdrop),
+                modifier = Modifier.fillMaxSize(),
             ) {
                 if (state.content.isLoading && state.content.items.isEmpty()) {
                     BangumiFollowManagerSkeleton()

@@ -18,6 +18,7 @@ data class AppThemeConfig(
     val globalTextTapCopyEnabled: Boolean = false,
     val uiEntranceAnimationEnabled: Boolean = true,
     val runtimeVisualGuardEnabled: Boolean = true,
+    val nativeMiuixPopupsEnabled: Boolean = true,
 )
 
 val LocalAppThemeConfig = staticCompositionLocalOf { AppThemeConfig() }

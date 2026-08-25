@@ -71,7 +71,9 @@ private fun VideoStatItem(
             imageVector = icon,
             contentDescription = null,
             tint = contentColor,
-            modifier = Modifier.size(13.dp),
+            // 13dp 会在部分高密度设备和 Miuix Icon 渲染器下把圆形描边量化到
+            // 绘制边界之外，看起来像播放图标缺了一截。16dp 同时保留紧凑度和完整轮廓。
+            modifier = Modifier.size(16.dp),
         )
         AppText(
             text = text,

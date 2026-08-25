@@ -1761,7 +1761,14 @@ private fun LivePrimaryInteractionPanel(
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .layerBackdrop(selectionBackdrop)
+                .background(MaterialTheme.colorScheme.background),
+        )
+        Column(modifier = Modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1795,15 +1802,14 @@ private fun LivePrimaryInteractionPanel(
         }
         HorizontalPager(
             state = pagerState,
-            modifier = Modifier
-                .weight(1f)
-                .layerBackdrop(selectionBackdrop)
+            modifier = Modifier.weight(1f)
         ) { page ->
             when (page) {
                 0 -> Box(modifier = Modifier.fillMaxSize()) { chatContent() }
                 1 -> Box(modifier = Modifier.fillMaxSize()) { superChatContent() }
                 else -> Box(modifier = Modifier.fillMaxSize()) { voteContent() }
             }
+        }
         }
     }
 }

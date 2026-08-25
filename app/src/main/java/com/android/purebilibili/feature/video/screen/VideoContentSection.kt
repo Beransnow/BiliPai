@@ -30,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -49,7 +50,6 @@ import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSw
 import com.android.purebilibili.core.util.ShareUtils
 import com.android.purebilibili.core.ui.rememberBackToTopButtonEnabled
 import com.android.purebilibili.core.ui.rememberAppChevronUpIcon
-import com.android.purebilibili.core.ui.rememberAppPlayIcon
 import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.AppTopTabPresentation
@@ -460,7 +460,6 @@ fun VideoContentSection(
     onFavoriteLongClick: () -> Unit = {},
     // [新增] 恢复播放器 (音频模式 -> 视频模式)
     isPlayerCollapsed: Boolean = false,
-    onRestorePlayer: () -> Unit = {},
     // [新增] AI Summary & BGM
     aiSummary: AiSummaryData? = null,
     aiSummaryPrompt: com.android.purebilibili.feature.video.viewmodel.AiSummaryPromptState? = null,
@@ -565,13 +564,19 @@ fun VideoContentSection(
 
     val onTabSelected: (Int) -> Unit = { index ->
         scope.launch {
-            pagerState.animateScrollToPage(
-                page = index,
-                animationSpec = tween(
-                    durationMillis = tabSwitchAnimationSpec.durationMs,
-                    easing = FastOutSlowInEasing
+            if (pagerState.isScrollInProgress) {
+                // 横向拖拽已经由 Pager 驱动时，不要再次启动一段从 currentPage
+                // 出发的动画；否则 offset 会先归零回弹到左侧，再动画到目标页。
+                pagerState.scrollToPage(index)
+            } else {
+                pagerState.animateScrollToPage(
+                    page = index,
+                    animationSpec = tween(
+                        durationMillis = tabSwitchAnimationSpec.durationMs,
+                        easing = FastOutSlowInEasing
+                    )
                 )
-            )
+            }
         }
     }
     LaunchedEffect(pagerState, tabs.size) {
@@ -729,6 +734,7 @@ fun VideoContentSection(
                         downloadProgress = downloadProgress,
                         isInWatchLater = isInWatchLater,
                         isLoggedIn = isLoggedIn,
+                        isVideoPlaying = isVideoPlaying,
                         onFollowClick = onFollowClick,
                         onFavoriteClick = onFavoriteClick,
                         onLikeClick = onLikeClick,
@@ -844,6 +850,14 @@ fun VideoContentSection(
                 onDanmakuSendClick = onDanmakuSendClick,
                 danmakuEnabled = danmakuEnabled,
                 onDanmakuToggle = onDanmakuToggle,
+                tabSwipeModifier = Modifier.verticalPriorityHorizontalPagerSwipe(
+                    state = pagerState,
+                    enabled = shouldEnableVideoContentHorizontalPagerSwipe(
+                        currentPage = pagerState.currentPage,
+                        commentPageIndex = 1,
+                        isPagerScrollInProgress = pagerState.isScrollInProgress,
+                    ),
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight(unbounded = tabBarMaxHeightPx > 0f)
@@ -861,7 +875,6 @@ fun VideoContentSection(
                         translationY = -tabBarMaxHeightPx * progress * 0.35f
                     },
                 isPlayerCollapsed = isPlayerCollapsed,
-                onRestorePlayer = onRestorePlayer,
                 miuixBackdrop = videoContentMiuixBackdrop,
                 indicatorPositionProvider = {
                     pagerState.currentPage + pagerState.currentPageOffsetFraction
@@ -960,6 +973,7 @@ private fun VideoIntroTab(
     downloadProgress: Float,
     isInWatchLater: Boolean,
     isLoggedIn: Boolean = false,
+    isVideoPlaying: Boolean = false,
     onFollowClick: () -> Unit,
     onFavoriteClick: () -> Unit,
     onLikeClick: () -> Unit,
@@ -1025,6 +1039,7 @@ private fun VideoIntroTab(
                 downloadProgress = downloadProgress,
                 isInWatchLater = isInWatchLater,
                 isLoggedIn = isLoggedIn,
+                isVideoPlaying = isVideoPlaying,
                 onFollowClick = onFollowClick,
                 onFavoriteClick = onFavoriteClick,
                 onLikeClick = onLikeClick,
@@ -1408,8 +1423,28 @@ internal fun LandscapeCommentPanel(
                         modifier = Modifier.padding(horizontal = 8.dp),
                     )
                     Spacer(modifier = Modifier.weight(1f))
-                    AppTextButton(onClick = onSwitchSide) { AppText(if (isOnLeft) "移至右侧" else "移至左侧") }
-                    AppTextButton(onClick = requestDismiss) { AppText("关闭") }
+                    AppTextButton(
+                        onClick = onSwitchSide,
+                        modifier = Modifier.widthIn(min = 76.dp),
+                    ) {
+                        AppText(
+                            text = if (isOnLeft) "移至右侧" else "移至左侧",
+                            maxLines = 1,
+                            softWrap = false,
+                            overflow = TextOverflow.Clip,
+                        )
+                    }
+                    AppTextButton(
+                        onClick = requestDismiss,
+                        modifier = Modifier.widthIn(min = 56.dp),
+                    ) {
+                        AppText(
+                            text = "关闭",
+                            maxLines = 1,
+                            softWrap = false,
+                            overflow = TextOverflow.Clip,
+                        )
+                    }
                 }
                 AppHorizontalDivider(color = commentAppearance.secondaryTextColor.copy(alpha = 0.18f))
                 if (threadContent != null) {
@@ -1485,6 +1520,7 @@ private fun VideoHeaderContent(
     downloadProgress: Float,
     isInWatchLater: Boolean,
     isLoggedIn: Boolean = false,
+    isVideoPlaying: Boolean = false,
     onFollowClick: () -> Unit,
     onFavoriteClick: () -> Unit,
     onLikeClick: () -> Unit,
@@ -1639,6 +1675,7 @@ private fun VideoHeaderContent(
                 ugcSeason = season,
                 currentBvid = info.bvid,
                 currentCid = info.cid,
+                isPlaying = isVideoPlaying,
                 onClick = onOpenCollectionSheet
             )
         }
@@ -1661,8 +1698,8 @@ private fun VideoContentTabBar(
     danmakuEnabled: Boolean,
     onDanmakuToggle: () -> Unit,
     modifier: Modifier = Modifier,
+    tabSwipeModifier: Modifier = Modifier,
     isPlayerCollapsed: Boolean = false,
-    onRestorePlayer: () -> Unit = {},
     miuixBackdrop: MiuixBackdrop? = null,
     indicatorPositionProvider: (() -> Float)? = null,
     isScrollInProgressProvider: () -> Boolean = { false },
@@ -1720,7 +1757,7 @@ private fun VideoContentTabBar(
                 options = tabs.mapIndexed { index, label -> AppSegmentOption(index, label) },
                 selectedValue = selectedTabIndex,
                 onSelectionChange = onTabSelected,
-                modifier = Modifier.width(
+                modifier = tabSwipeModifier.width(
                     (resolveVideoContentTabBarDockItemWidthDp(
                         layoutSpec.unselectedTabFontSizeSp,
                     ) * tabs.size).dp,
@@ -1737,37 +1774,6 @@ private fun VideoContentTabBar(
             )
 
             if (shouldShowVideoContentTabBarDanmakuActions(selectedTabIndex)) {
-                // [新增] 恢复画面按钮 (仅在播放器折叠时显示)
-                AnimatedVisibility(
-                    visible = isPlayerCollapsed,
-                    enter = fadeIn() + expandHorizontally(),
-                    exit = fadeOut() + shrinkHorizontally()
-                ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .padding(end = 8.dp)
-                        .clip(AppShapes.container(ContainerLevel.Card))
-                        .background(MaterialTheme.colorScheme.primary)
-                        .clickable { onRestorePlayer() }
-                        .padding(horizontal = 10.dp, vertical = 6.dp)
-                ) {
-                    AppIcon(
-                        imageVector = rememberAppPlayIcon(),
-                        contentDescription = "恢复画面",
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(12.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    AppText(
-                        text = "恢复画面",
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                }
-
                 Spacer(modifier = Modifier.weight(1f))
 
                 AnimatedVisibility(

@@ -54,6 +54,7 @@ import com.android.purebilibili.feature.video.ui.components.QualitySelectionMenu
 import com.android.purebilibili.feature.video.ui.components.AudioQualitySelectionMenuDialog
 import com.android.purebilibili.feature.video.ui.components.SpeedSelectionMenuDialog
 import com.android.purebilibili.feature.video.ui.components.SpeedSelectionMenuPlacement
+import com.android.purebilibili.feature.video.ui.components.PlayerListPopupPlacement
 import com.android.purebilibili.feature.video.ui.components.DanmakuSettingsPanel
 import com.android.purebilibili.feature.video.ui.components.LandscapeDanmakuComposer
 import com.android.purebilibili.feature.video.ui.components.VideoAspectRatio
@@ -78,6 +79,10 @@ import com.android.purebilibili.feature.common.resolveIndexedVideoLazyKey
 import com.android.purebilibili.feature.video.progress.PbpRidgeSample
 import com.android.purebilibili.feature.anime4k.VideoEnhancementAlgorithm
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
+import com.android.purebilibili.core.plugin.skin.LocalUiSkinState
+import com.android.purebilibili.core.plugin.skin.UiSkinAnimatedAsset
+import com.android.purebilibili.core.plugin.skin.UiSkinSurface
+import com.android.purebilibili.core.plugin.skin.assetPath
 import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.components.AppIconButton
 import com.android.purebilibili.core.ui.components.AppSegmentOption
@@ -423,6 +428,22 @@ internal fun resolveDisplayedOnlineCount(
     showOnlineCount: Boolean
 ): String {
     return if (showOnlineCount) onlineCount else ""
+}
+
+@Composable
+private fun SkinAwareLoadingIndicator(color: Color) {
+    val skinPath = LocalUiSkinState.current.assetPath(UiSkinSurface.LOADING_INDICATOR) {
+        it.loadingAnimation ?: it.loadingFrame
+    }
+    if (skinPath != null) {
+        UiSkinAnimatedAsset(
+            path = skinPath,
+            size = 48.dp,
+            contentDescription = "加载中",
+        )
+    } else {
+        AdaptiveLoadingIndicator(color = color)
+    }
 }
 
 private const val CENTER_PLAY_BUTTON_SEEK_TRANSITION_GRACE_MS = 350L
@@ -1824,9 +1845,7 @@ fun VideoPlayerOverlay(
             enter = fadeIn(tween(200)),
             exit = fadeOut(tween(200))
         ) {
-            AdaptiveLoadingIndicator(
-                color = centerLoadingVisualState.indicatorColor
-            )
+            SkinAwareLoadingIndicator(color = centerLoadingVisualState.indicatorColor)
         }
 
         AnimatedVisibility(
@@ -1848,9 +1867,7 @@ fun VideoPlayerOverlay(
                         vertical = overlayVisualPolicy.qualitySwitchContentVerticalPaddingDp.dp
                     )
                 ) {
-                    AdaptiveLoadingIndicator(
-                        color = centerLoadingVisualState.indicatorColor
-                    )
+                    SkinAwareLoadingIndicator(color = centerLoadingVisualState.indicatorColor)
                     Spacer(modifier = Modifier.height(overlayVisualPolicy.qualitySwitchContentSpacingDp.dp))
                     AppText(
                         text = loadingState.primaryText,
@@ -1890,9 +1907,7 @@ fun VideoPlayerOverlay(
                         vertical = overlayVisualPolicy.qualitySwitchContentVerticalPaddingDp.dp
                     )
                 ) {
-                    AdaptiveLoadingIndicator(
-                        color = centerLoadingVisualState.indicatorColor
-                    )
+                    SkinAwareLoadingIndicator(color = centerLoadingVisualState.indicatorColor)
                     Spacer(modifier = Modifier.height(overlayVisualPolicy.qualitySwitchContentSpacingDp.dp))
                     AppText(
                         text = "正在切换清晰度...",
@@ -1918,7 +1933,8 @@ fun VideoPlayerOverlay(
                     showQualityMenu = false
                 },
                 onDismiss = { showQualityMenu = false },
-                useDialog = true
+                useDialog = true,
+                placement = if (isFullscreen) PlayerListPopupPlacement.END_BOTTOM else PlayerListPopupPlacement.CENTER,
             )
         }
 
@@ -1930,7 +1946,8 @@ fun VideoPlayerOverlay(
                     onAudioQualityChange(preferenceId)
                     showAudioQualityMenu = false
                 },
-                onDismiss = { showAudioQualityMenu = false }
+                onDismiss = { showAudioQualityMenu = false },
+                placement = if (isFullscreen) PlayerListPopupPlacement.END_BOTTOM else PlayerListPopupPlacement.CENTER,
             )
         }
         

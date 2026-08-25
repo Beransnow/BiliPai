@@ -190,6 +190,20 @@ internal fun ListenVideoScreen(
             .statusBarsPadding()
     ) {
         val layout = resolveListenVideoLayout(maxWidth.value.toInt())
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .layerBackdrop(listenBackdrop)
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.34f),
+                            AppSurfaceTokens.chromeBackground(),
+                            AppSurfaceTokens.chromeBackground(),
+                        )
+                    )
+                ),
+        )
         Column(modifier = Modifier.fillMaxSize()) {
             ListenVideoHeader(
                 nowPlaying = nowPlaying,
@@ -224,9 +238,7 @@ internal fun ListenVideoScreen(
             Spacer(modifier = Modifier.height(8.dp))
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier
-                    .weight(1f)
-                    .layerBackdrop(listenBackdrop)
+                modifier = Modifier.weight(1f)
             ) { page ->
                 ListenVideoPage(
                     section = ListenVideoSection.entries[page],

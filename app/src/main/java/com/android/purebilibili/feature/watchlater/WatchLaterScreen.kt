@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import kotlinx.coroutines.channels.Channel
@@ -91,6 +92,7 @@ import com.android.purebilibili.data.repository.WatchLaterRepository
 import com.android.purebilibili.feature.common.resolveIndexedVideoLazyKey
 import com.android.purebilibili.feature.list.resolveHistoryFilterTabChromeSpec
 import com.android.purebilibili.feature.personal.PersonalMediaCardFrame
+import com.android.purebilibili.feature.personal.PersonalMediaCardSkeleton
 import com.android.purebilibili.core.ui.components.VideoStatRow
 import com.android.purebilibili.feature.home.components.biliPaiProgressiveTopBlur
 import com.android.purebilibili.core.util.CardPositionManager
@@ -717,6 +719,12 @@ fun WatchLaterScreen(
                         }
                     )
             ) {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .layerBackdrop(watchLaterChromeBackdrop)
+                        .background(AppSurfaceTokens.groupedListContainer()),
+                )
                 Column {
                 AppTopBar(
                     title = resolveWatchLaterTitle(
@@ -960,15 +968,34 @@ fun WatchLaterScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .layerBackdrop(watchLaterChromeBackdrop)
                 .hazeSourceCompat(state = hazeState) // 内容作为模糊源（全局源由根层提供）
         ) {
             when {
                 state.isLoading -> {
-                    com.android.purebilibili.core.ui.skeleton.ContentMediaListSkeleton(
-                        modifier = Modifier.fillMaxSize(),
-                        itemCount = 8,
-                    )
+                    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                        val skeletonColumns = resolveWatchLaterColumnCount(maxWidth.value)
+                        val skeletonBlockColor = com.android.purebilibili.core.ui.skeleton
+                            .rememberContentSkeletonBlockColor(
+                                com.android.purebilibili.core.ui.skeleton.rememberContentSkeletonPulse()
+                            )
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(skeletonColumns),
+                            contentPadding = PaddingValues(
+                                start = AppSpacingTokens.Medium,
+                                end = AppSpacingTokens.Medium,
+                                top = padding.calculateTopPadding() + AppSpacingTokens.Small,
+                                bottom = bottomContentPadding,
+                            ),
+                            horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Medium),
+                            verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Medium),
+                            userScrollEnabled = false,
+                            modifier = Modifier.fillMaxSize(),
+                        ) {
+                            items(skeletonColumns * 6) {
+                                PersonalMediaCardSkeleton(blockColor = skeletonBlockColor)
+                            }
+                        }
+                    }
                 }
                 state.error != null -> {
                     Column(

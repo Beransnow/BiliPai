@@ -27,7 +27,6 @@ import com.android.purebilibili.core.store.SettingsManager
 import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.feature.home.components.miuix.DampedDragTrackingMode
-import com.android.purebilibili.feature.home.components.liquid.rememberCombinedBackdrop
 import top.yukonga.miuix.kmp.blur.Backdrop
 import top.yukonga.miuix.kmp.blur.layerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
@@ -103,16 +102,13 @@ internal fun BottomBarFloatingSegmentedControl(
         darkTheme = isDarkTheme,
         liquidGlassTuning = liquidGlassTuning,
     )
-    // Reused docks cannot assume that a caller-provided backdrop covers the dock's
-    // window coordinates. Keep a local, full-dock source behind the chrome just as
-    // the home dock keeps its content source behind (and outside) the dock itself.
+    // A supplied page backdrop already contains the pixels behind this dock. Combining it
+    // with a local source can make MIUI's native background-blur graph sample itself when
+    // nested pages mount another backdrop (for example Bangumi/Film), overflowing RenderThread.
+    // Keep the local source strictly as a fallback so visual blur remains real in both paths.
     val localBackdrop = rememberLayerBackdrop()
     val effectiveBackdrop = if (liquidGlassEnabled) {
-        if (miuixBackdrop != null) {
-            rememberCombinedBackdrop(localBackdrop, miuixBackdrop)
-        } else {
-            localBackdrop
-        }
+        miuixBackdrop ?: localBackdrop
     } else {
         null
     }
@@ -150,7 +146,7 @@ internal fun BottomBarFloatingSegmentedControl(
             requestedIndicatorHeightDp = indicatorHeight.value,
             indicatorWidthDp = fittedSegmentedIndicatorWidth.value,
         )
-        if (effectiveBackdrop != null) {
+        if (effectiveBackdrop != null && miuixBackdrop == null) {
             Box(
                 modifier = Modifier
                     .matchParentSize()

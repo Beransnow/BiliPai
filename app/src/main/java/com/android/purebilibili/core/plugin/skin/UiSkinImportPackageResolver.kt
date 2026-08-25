@@ -34,6 +34,11 @@ data class UiSkinImportPackage(
     val packageBytes: ByteArray
 )
 
+enum class UiSkinImportMode {
+    FULL_SKIN,
+    PERSONAL_BACKGROUND_ONLY,
+}
+
 object UiSkinImportPackageResolver {
     private val json = Json { ignoreUnknownKeys = true }
     private val iconMapping = mapOf(
@@ -67,6 +72,46 @@ object UiSkinImportPackageResolver {
                 packageBytes = convertBilibiliThemeArchive(inputBytes, remotePackageFetcher)
             )
         }
+    }
+
+    /** Creates a minimal package that retains only profile background assets. */
+    fun restrictToPersonalBackground(packageBytes: ByteArray): Result<ByteArray> = runCatching {
+        val preview = UiSkinPackageReader.preview(packageBytes).getOrThrow()
+        val profileAssets = preview.manifest.assets.copy(
+            bottomBarTrim = null,
+            drawerBottomTrim = null,
+            topAtmosphere = null,
+            homeTopTabBackground = null,
+            searchCapsuleBackground = null,
+            homeSideBackground = null,
+            homeChannelIcon = null,
+            homeChannelSelectedIcon = null,
+            dynamicPublishIcon = null,
+            dynamicPublishSelectedIcon = null,
+            loadingAnimation = null,
+            loadingFrame = null,
+            likeEffectAnimation = null,
+            likeEffectPreview = null,
+            playerProgressIcon = null,
+            playerProgressDraggingIcon = null,
+            playerProgressStaticIcon = null,
+            bottomBarIcons = emptyMap(),
+        )
+        require(
+            profileAssets.homeProfileBackground != null ||
+                profileAssets.homeProfileSquaredBackground != null ||
+                profileAssets.homeProfileVideoBackground != null
+        ) { "皮肤包不包含个人背景图" }
+        val entries = scanZip(packageBytes, "皮肤包包含非法路径")
+            .filterKeys { it != "skin-manifest.json" }
+            .filterKeys { it in profileAssets.declaredPaths() }
+        buildBpskinPackage(
+            preview.manifest.copy(
+                surfaces = setOf(UiSkinSurface.PROFILE),
+                assets = profileAssets,
+            ),
+            entries,
+        )
     }
 
     fun resolveBilibiliPackageWithMetadata(

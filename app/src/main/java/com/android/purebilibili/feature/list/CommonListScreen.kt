@@ -220,6 +220,7 @@ fun CommonListScreen(
     onFavoriteWebClick: (String, String) -> Unit = { _, _ -> },
     initialSearchQuery: String = "",
     initialFavoriteSearchScope: FavoriteSearchScope = FavoriteSearchScope.CURRENT_FOLDER,
+    initialFavoriteSubscribed: Boolean = false,
     isSearchDestination: Boolean = false,
     onOpenSearchDestination: ((String) -> Unit)? = null,
     onPlayAllAudioClick: ((String, Long) -> Unit)? = null,
@@ -390,7 +391,12 @@ fun CommonListScreen(
         ?: androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
     val favoriteSearchUiState by favoriteViewModel?.searchUiState?.collectAsStateWithLifecycle()
         ?: androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(ListUiState()) }
-    var favoriteBrowseSection by rememberSaveable { androidx.compose.runtime.mutableStateOf(FavoriteBrowseSection.OWNED) }
+    var favoriteBrowseSection by rememberSaveable(initialFavoriteSubscribed) {
+        androidx.compose.runtime.mutableStateOf(
+            if (initialFavoriteSubscribed) FavoriteBrowseSection.SUBSCRIBED
+            else FavoriteBrowseSection.OWNED
+        )
+    }
     var showFavoriteCleanInvalidConfirm by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     var showFavoriteDynamicShareConfirm by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     var favoriteSection by rememberSaveable { androidx.compose.runtime.mutableStateOf(FavoriteSection.VIDEO) }
@@ -405,6 +411,7 @@ fun CommonListScreen(
     var showFavoriteFolderDeleteConfirm by rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
     LaunchedEffect(foldersState.size, subscribedFoldersState.size) {
         favoriteBrowseSection = when {
+            initialFavoriteSubscribed -> FavoriteBrowseSection.SUBSCRIBED
             favoriteBrowseSection == FavoriteBrowseSection.SUBSCRIBED && subscribedFoldersState.isNotEmpty() -> FavoriteBrowseSection.SUBSCRIBED
             foldersState.isNotEmpty() -> FavoriteBrowseSection.OWNED
             subscribedFoldersState.isNotEmpty() -> FavoriteBrowseSection.SUBSCRIBED
@@ -2313,6 +2320,13 @@ private fun CommonListContent(
         .fillMaxSize()
         .padding(top = fixedHeaderInset)
     if (isLoading && items.isEmpty()) {
+        val historySkeletonBlockColor = if (isHistoryPersonalList) {
+            com.android.purebilibili.core.ui.skeleton.rememberContentSkeletonBlockColor(
+                com.android.purebilibili.core.ui.skeleton.rememberContentSkeletonPulse()
+            )
+        } else {
+            null
+        }
         LazyVerticalGrid(
             columns = GridCells.Fixed(columns),
             contentPadding = PaddingValues(
@@ -2326,7 +2340,11 @@ private fun CommonListContent(
             modifier = viewportModifier
         ) {
             items(columns * 4, key = { it }) {
-                VideoGridItemSkeleton(coverAspectRatio = skeletonCoverAspectRatio)
+                if (isHistoryPersonalList) {
+                    HistoryPersonalCardSkeleton(blockColor = historySkeletonBlockColor)
+                } else {
+                    VideoGridItemSkeleton(coverAspectRatio = skeletonCoverAspectRatio)
+                }
             }
         }
     } else if (error != null && items.isEmpty()) {

@@ -265,11 +265,18 @@ fun DynamicCommentSheet(
             onBackCompleted = onDismiss,
         )
         val commentChromeBackdrop = rememberLayerBackdrop()
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight(0.7f)
         ) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .layerBackdrop(commentChromeBackdrop)
+                    .background(AppSurfaceTokens.background())
+            )
+            Column(modifier = Modifier.fillMaxSize()) {
             // 标题、数量和排序保持在同一视觉层级，关闭按钮保留 48dp 触控区。
             Row(
                 modifier = Modifier
@@ -320,16 +327,14 @@ fun DynamicCommentSheet(
                 CommentListSkeleton(
                     modifier = Modifier
                         .weight(1f)
-                        .fillMaxWidth()
-                        .layerBackdrop(commentChromeBackdrop),
+                        .fillMaxWidth(),
                     contentPadding = PaddingValues(vertical = AppSpacingTokens.Small),
                 )
             } else if (comments.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .fillMaxWidth()
-                        .layerBackdrop(commentChromeBackdrop),
+                        .fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
@@ -369,8 +374,7 @@ fun DynamicCommentSheet(
                     state = listState,
                     modifier = Modifier
                         .weight(1f)
-                        .fillMaxWidth()
-                        .layerBackdrop(commentChromeBackdrop),
+                        .fillMaxWidth(),
                     contentPadding = PaddingValues(
                         horizontal = AppSpacingTokens.Large,
                         vertical = AppSpacingTokens.Small,
@@ -430,6 +434,7 @@ fun DynamicCommentSheet(
                         vertical = AppSpacingTokens.Medium,
                     ),
             )
+            }
         }
     }
 }
@@ -492,8 +497,6 @@ fun DynamicInlineCommentHeader(
 ) {
     val sortModes = remember { listOf(CommentSortMode.HOT, CommentSortMode.NEWEST) }
     val sortModeLabels = remember(sortModes) { sortModes.map { it.label } }
-    val fallbackBackdrop = rememberLayerBackdrop()
-    val localBackdrop = miuixBackdrop ?: fallbackBackdrop
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -512,7 +515,10 @@ fun DynamicInlineCommentHeader(
             onSelected = { index ->
                 sortModes.getOrNull(index)?.let(onSortModeChange)
             },
-            miuixBackdrop = localBackdrop,
+            // Null deliberately selects the shared control's mounted local source. Do not
+            // manufacture an unrecorded Backdrop here or sample the LazyColumn containing
+            // this header, which would be invalid/recursive on Xiaomi's native renderer.
+            miuixBackdrop = miuixBackdrop,
         )
     }
     AppHorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))

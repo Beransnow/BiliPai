@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -34,6 +35,7 @@ import com.android.purebilibili.core.ui.AppChromeSizeTokens
 import com.android.purebilibili.core.ui.AppDialogAction
 import com.android.purebilibili.core.ui.AppShapes
 import com.android.purebilibili.core.ui.AppSpacingTokens
+import com.android.purebilibili.core.ui.AppSurfaceTokens
 import com.android.purebilibili.core.ui.ContainerLevel
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppTextButton
@@ -104,22 +106,19 @@ fun DynamicPublishComposer(
                     AppSegmentOption(true, "仅自己可见"),
                 )
             }
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small)
-            ) {
-                // Capture form content as a sibling of the liquid chrome. Putting
-                // layerBackdrop on the parent that also hosts the docks self-samples
-                // and overflows the RenderThread on HyperOS.
+            Box(modifier = Modifier.fillMaxWidth()) {
+                if (liquidGlassEnabled) {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .layerBackdrop(publishChromeBackdrop)
+                            .background(AppSurfaceTokens.background())
+                    )
+                }
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .then(
-                            if (liquidGlassEnabled) Modifier.layerBackdrop(publishChromeBackdrop)
-                            else Modifier
-                        ),
+                        .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small)
                 ) {
                     if (!isEditing) {
@@ -165,7 +164,6 @@ fun DynamicPublishComposer(
                             }
                         }
                     }
-                }
                 if (!isEditing) {
                     BottomBarMatchedReusableLiquidDock(
                         shape = AppShapes.container(ContainerLevel.Pill),
@@ -243,6 +241,7 @@ fun DynamicPublishComposer(
                     }
                 }
                 errorMessage?.let { AppText(it) }
+                }
             }
         },
         confirmButton = {

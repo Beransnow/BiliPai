@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -235,6 +237,7 @@ fun RelatedVideoItem(
     }
     val coverShape = RoundedCornerShape(10.dp)
     val coverWidth = HORIZONTAL_VIDEO_CARD_COVER_WIDTH_DP.dp
+    val coverHeight = coverWidth / coverAspectRatio
     // 排版对齐首页单列卡片:标题用 feed 紧凑级,统计用 labelSmall。
     val contentTypography = com.android.purebilibili.core.ui.feedContentTypography(
         com.android.purebilibili.core.ui.FeedTitleHierarchy.Standard,
@@ -250,7 +253,9 @@ fun RelatedVideoItem(
             .padding(vertical = 5.dp),
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(coverHeight),
             horizontalArrangement = Arrangement.spacedBy(HORIZONTAL_VIDEO_CARD_COVER_INFO_GAP_DP.dp),
             verticalAlignment = Alignment.Top,
         ) {
@@ -289,8 +294,10 @@ fun RelatedVideoItem(
             }
 
             Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.SpaceBetween,
             ) {
                 AppText(
                     text = video.title,
@@ -300,81 +307,85 @@ fun RelatedVideoItem(
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(AppSpacingTokens.ExtraSmall),
                 ) {
-                    val publishTime = remember(video.pubdate) {
-                        FormatUtils.formatPublishTime(video.pubdate)
-                    }
-                    if (publishTime.isNotBlank()) {
-                        AppText(
-                            text = publishTime,
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(AppSpacingTokens.Small),
+                    ) {
+                        val publishTime = remember(video.pubdate) {
+                            FormatUtils.formatPublishTime(video.pubdate)
+                        }
+                        if (publishTime.isNotBlank()) {
+                            AppText(
+                                text = publishTime,
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                softWrap = false,
+                            )
+                        }
+                        UpBadgeName(
+                            name = video.owner.name,
+                            inlineTrailingContent = if (isFollowed) {
+                                {
+                                    val followVisualPolicy = resolveVideoFollowVisualPolicy(
+                                        isFollowing = true,
+                                        darkTheme = true,
+                                    )
+                                    AppText(
+                                        text = "已关注",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontWeight = FontWeight.Medium,
+                                        ),
+                                        color = when (followVisualPolicy.relatedBadgeTone) {
+                                            FollowBadgeTone.PRIMARY -> MaterialTheme.colorScheme.primary
+                                            null -> MaterialTheme.colorScheme.onSurfaceVariant
+                                        },
+                                    )
+                                }
+                            } else {
+                                null
+                            },
+                            leadingContent = if (
+                                com.android.purebilibili.core.ui.LocalUpBadgeVisibility.current.showAvatars &&
+                                video.owner.face.isNotEmpty()
+                            ) {
+                                {
+                                    AsyncImage(
+                                        model = ImageRequest.Builder(context)
+                                            .data(FormatUtils.fixImageUrl(video.owner.face))
+                                            .crossfade(false)
+                                            .build(),
+                                        contentDescription = null,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .size(16.dp)
+                                            .clip(CircleShape)
+                                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                                    )
+                                }
+                            } else {
+                                null
+                            },
+                            nameStyle = MaterialTheme.typography.labelMedium,
+                            nameColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            badgeTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
+                            badgeBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
+                            showUpBadge = showUpBadge,
                             maxLines = 1,
-                            softWrap = false,
+                            overflow = TextOverflow.Clip,
+                            modifier = Modifier.weight(1f),
                         )
                     }
-                    UpBadgeName(
-                        name = video.owner.name,
-                        inlineTrailingContent = if (isFollowed) {
-                            {
-                                val followVisualPolicy = resolveVideoFollowVisualPolicy(
-                                    isFollowing = true,
-                                    darkTheme = true,
-                                )
-                                AppText(
-                                    text = "已关注",
-                                    style = MaterialTheme.typography.labelSmall.copy(
-                                        fontWeight = FontWeight.Medium,
-                                    ),
-                                    color = when (followVisualPolicy.relatedBadgeTone) {
-                                        FollowBadgeTone.PRIMARY -> MaterialTheme.colorScheme.primary
-                                        null -> MaterialTheme.colorScheme.onSurfaceVariant
-                                    },
-                                )
-                            }
-                        } else {
-                            null
-                        },
-                        leadingContent = if (
-                            com.android.purebilibili.core.ui.LocalUpBadgeVisibility.current.showAvatars &&
-                            video.owner.face.isNotEmpty()
-                        ) {
-                            {
-                                AsyncImage(
-                                    model = ImageRequest.Builder(context)
-                                        .data(FormatUtils.fixImageUrl(video.owner.face))
-                                        .crossfade(false)
-                                        .build(),
-                                    contentDescription = null,
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier
-                                        .size(16.dp)
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                                )
-                            }
-                        } else {
-                            null
-                        },
-                        nameStyle = MaterialTheme.typography.labelMedium,
-                        nameColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        badgeTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.85f),
-                        badgeBorderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.35f),
-                        showUpBadge = showUpBadge,
-                        maxLines = 1,
-                        overflow = TextOverflow.Clip,
-                        modifier = Modifier.weight(1f),
+                    VideoStatRow(
+                        playText = FormatUtils.formatStat(video.stat.view.toLong()),
+                        danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
+                        modifier = Modifier.padding(end = if (onMoreClick != null) 32.dp else 0.dp),
                     )
                 }
-                VideoStatRow(
-                    playText = FormatUtils.formatStat(video.stat.view.toLong()),
-                    danmakuText = FormatUtils.formatStat(video.stat.danmaku.toLong()),
-                    modifier = Modifier.padding(end = if (onMoreClick != null) 32.dp else 0.dp),
-                )
             }
         }
 

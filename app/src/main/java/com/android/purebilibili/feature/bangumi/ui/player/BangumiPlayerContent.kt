@@ -7,6 +7,7 @@ import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppHorizontalDivider
 import com.android.purebilibili.core.ui.common.verticalPriorityHorizontalPagerSwipe
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -75,7 +76,14 @@ fun BangumiPlayerContent(
     val subReplyState by commentViewModel.subReplyState.collectAsStateWithLifecycle()
     val commentState by commentViewModel.commentState.collectAsStateWithLifecycle()
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .layerBackdrop(selectionBackdrop)
+                .background(MaterialTheme.colorScheme.background),
+        )
+        Column(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -104,9 +112,7 @@ fun BangumiPlayerContent(
         HorizontalPager(
             state = pagerState,
             userScrollEnabled = false,
-            modifier = Modifier
-                .weight(1f)
-                .layerBackdrop(selectionBackdrop)
+            modifier = Modifier.weight(1f)
                 .verticalPriorityHorizontalPagerSwipe(
                     state = pagerState,
                     enabled = true,
@@ -429,6 +435,7 @@ contentColor = resolveFilledButtonContentColor(MaterialTheme.colorScheme))
         onReplyClick = {},
         onRootCommentClick = {}
     )
+}
 }
 
 /**

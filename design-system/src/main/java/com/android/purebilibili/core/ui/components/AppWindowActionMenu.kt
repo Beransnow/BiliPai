@@ -2,10 +2,20 @@ package com.android.purebilibili.core.ui.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.IconButton
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.android.purebilibili.core.ui.LocalAppThemeConfig
 import top.yukonga.miuix.kmp.basic.DropdownEntry
 import top.yukonga.miuix.kmp.basic.DropdownItem
 import top.yukonga.miuix.kmp.menu.WindowIconDropdownMenu
@@ -42,6 +52,57 @@ fun AppWindowActionMenu(
     onExpandedChange: ((Boolean) -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
+    if (!LocalAppThemeConfig.current.nativeMiuixPopupsEnabled) {
+        var expanded by remember { mutableStateOf(false) }
+        Box(modifier = modifier) {
+            IconButton(
+                onClick = {
+                    expanded = true
+                    onExpandedChange?.invoke(true)
+                },
+                enabled = enabled,
+            ) { content() }
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = {
+                    expanded = false
+                    onExpandedChange?.invoke(false)
+                },
+            ) {
+                groups.filter { it.isNotEmpty() }.forEach { actions ->
+                    actions.forEach { action ->
+                        val visibleActions = if (action.children.isEmpty()) listOf(action) else action.children
+                        visibleActions.forEach { visibleAction ->
+                            DropdownMenuItem(
+                                text = { AppText(visibleAction.label) },
+                                leadingIcon = visibleAction.icon?.let { icon ->
+                                    {
+                                        if (visibleAction.iconTint == null) {
+                                            AppIcon(icon, contentDescription = null)
+                                        } else {
+                                            AppIcon(icon, contentDescription = null, tint = visibleAction.iconTint)
+                                        }
+                                    }
+                                },
+                                trailingIcon = if (visibleAction.selected) {
+                                    { AppText("✓") }
+                                } else null,
+                                enabled = visibleAction.enabled,
+                                onClick = {
+                                    visibleAction.onClick?.invoke()
+                                    expanded = false
+                                    onExpandedChange?.invoke(false)
+                                },
+                                modifier = if (action.children.isNotEmpty()) Modifier.padding(start = 12.dp) else Modifier,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        return
+    }
+
     val entries = groups
         .filter { it.isNotEmpty() }
         .map { actions -> DropdownEntry(items = actions.map(AppWindowAction::toDropdownItem)) }

@@ -24,8 +24,13 @@ class UiSkinEffectHostStructureTest {
         val progressSource = loadSource(
             "app/src/main/java/com/android/purebilibili/feature/video/ui/overlay/BottomControlBar.kt"
         )
+        val playerOverlaySource = loadSource(
+            "app/src/main/java/com/android/purebilibili/feature/video/ui/overlay/VideoPlayerOverlay.kt"
+        )
 
         assertTrue(loadingSource.contains("UiSkinSurface.LOADING_INDICATOR"))
+        assertTrue(playerOverlaySource.contains("SkinAwareLoadingIndicator"))
+        assertTrue(playerOverlaySource.contains("loadingAnimation ?: it.loadingFrame"))
         assertTrue(likeSource.contains("UiSkinSurface.LIKE_EFFECT"))
         assertTrue(progressSource.contains("UiSkinSurface.PLAYER_PROGRESS"))
         assertTrue(progressSource.contains("playerProgressDraggingIcon"))

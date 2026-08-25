@@ -69,7 +69,7 @@ fun LoadingAnimation(
 ) {
     val uiSkinState = LocalUiSkinState.current
     val skinLoadingPath = uiSkinState.assetPath(UiSkinSurface.LOADING_INDICATOR) {
-        it.loadingAnimation
+        it.loadingAnimation ?: it.loadingFrame
     }
     Column(
         modifier = modifier,

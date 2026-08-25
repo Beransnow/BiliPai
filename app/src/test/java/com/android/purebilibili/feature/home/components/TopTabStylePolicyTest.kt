@@ -181,7 +181,7 @@ class TopTabStylePolicyTest {
 
         assertEquals(AppTopTabPresentation.MATERIAL_UNDERLINE, iconAndText.presentation)
         assertEquals(56.dp, iconAndText.tabRowHeightDocked)
-        assertEquals(60.dp, iconAndText.tabRowHeightFloating)
+        assertEquals(56.dp, iconAndText.tabRowHeightFloating)
         assertEquals(30.dp, iconAndText.md3VisualSpec.selectedCapsuleHeight)
         assertEquals(44.dp, iconAndText.actionButtonSizeDocked)
     }
@@ -541,14 +541,14 @@ class TopTabStylePolicyTest {
     }
 
     @Test
-    fun `all three top tab presentations keep compact chrome and content row heights aligned`() {
+    fun `all three top tab presentations use bottom dock shell height`() {
         listOf(
             topStyle(UiPreset.IOS, AndroidNativeVariant.MATERIAL3),
             topStyle(UiPreset.MD3, AndroidNativeVariant.MATERIAL3),
             topStyle(UiPreset.MD3, AndroidNativeVariant.MIUIX)
         ).forEach { style ->
-            assertEquals(36.dp, style.tabRowHeightDocked)
-            assertEquals(40.dp, style.tabRowHeightFloating)
+            assertEquals(resolveBiliPaiBottomBarDockHeight(searchExpanded = false), style.tabRowHeightDocked)
+            assertEquals(resolveBiliPaiBottomBarDockHeight(searchExpanded = false), style.tabRowHeightFloating)
         }
 
         assertEquals(36.dp, resolveIosTopTabRowHeight(isFloatingStyle = false))

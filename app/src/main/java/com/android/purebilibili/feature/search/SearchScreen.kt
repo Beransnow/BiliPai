@@ -970,6 +970,13 @@ fun SearchScreen(
                 .globalWallpaperAwareBackground()
                 .padding(padding)
         ) {
+            val searchChromeBackdrop = rememberLayerBackdrop()
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .layerBackdrop(searchChromeBackdrop)
+                    .globalWallpaperAwareBackground(),
+            )
             // --- 列表内容层 ---
             if (state.showResults) {
                 Column(
@@ -977,7 +984,6 @@ fun SearchScreen(
                         .fillMaxSize()
                         .graphicsLayer { alpha = exitContentAlpha }
                     ) {
-                            val searchChromeBackdrop = rememberLayerBackdrop()
                             Spacer(modifier = Modifier.height(contentTopPadding + 8.dp))
                             //  搜索彩蛋消息横幅
                             val easterEggMsg = state.easterEggMessage
@@ -1089,7 +1095,6 @@ fun SearchScreen(
                             userScrollEnabled = false,
                             modifier = Modifier
                                 .weight(1f)
-                                .layerBackdrop(searchChromeBackdrop)
                                 .verticalPriorityHorizontalPagerSwipe(
                                     state = searchPagerState,
                                     enabled = true,

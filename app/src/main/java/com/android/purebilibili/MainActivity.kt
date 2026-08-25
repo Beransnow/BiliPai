@@ -1274,6 +1274,9 @@ open class MainActivity : AppCompatActivity() {
             val runtimeVisualGuardEnabled by SettingsManager
                 .getRuntimeVisualGuardEnabled(context)
                 .collectAsStateWithLifecycle(initialValue = true)
+            val nativeMiuixPopupsEnabled by com.android.purebilibili.core.store.player.PlayerSettingsStore
+                .getNativeMiuixPlayerPopups(context)
+                .collectAsStateWithLifecycle(initialValue = true)
             val appThemeConfig = remember(
                 blurIntensity,
                 headerBlurEnabled,
@@ -1282,6 +1285,7 @@ open class MainActivity : AppCompatActivity() {
                 globalTextTapCopyEnabled,
                 uiEntranceAnimationEnabled,
                 runtimeVisualGuardEnabled,
+                nativeMiuixPopupsEnabled,
             ) {
                 AppThemeConfig(
                     blurIntensity = blurIntensity,
@@ -1291,6 +1295,7 @@ open class MainActivity : AppCompatActivity() {
                     globalTextTapCopyEnabled = globalTextTapCopyEnabled,
                     uiEntranceAnimationEnabled = uiEntranceAnimationEnabled,
                     runtimeVisualGuardEnabled = runtimeVisualGuardEnabled,
+                    nativeMiuixPopupsEnabled = nativeMiuixPopupsEnabled,
                 )
             }
             

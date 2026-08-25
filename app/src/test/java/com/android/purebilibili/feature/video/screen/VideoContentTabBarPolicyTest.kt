@@ -280,6 +280,9 @@ class VideoContentTabBarPolicyTest {
         assertTrue(tabBarBlock.contains("miuixBackdrop = miuixBackdrop"))
         assertTrue(tabBarBlock.contains("Arrangement.spacedBy(8.dp)"))
         assertTrue(tabBarBlock.contains("indicatorPositionProvider = indicatorPositionProvider"))
+        assertTrue(tabBarBlock.contains("tabSwipeModifier: Modifier = Modifier"))
+        assertTrue(tabBarBlock.contains("modifier = tabSwipeModifier.width("))
+        assertTrue(source.contains("tabSwipeModifier = Modifier.verticalPriorityHorizontalPagerSwipe("))
         assertTrue(source.contains("clip = tabBarCollapseProgress > 0.001f"))
     }
 

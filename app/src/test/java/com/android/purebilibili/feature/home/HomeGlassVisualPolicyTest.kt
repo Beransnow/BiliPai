@@ -236,6 +236,12 @@ class HomeGlassVisualPolicyTest {
             )
         )
         assertTrue(
+            shouldRenderGlobalHomeWallpaperBackdrop(
+                effectScope = HomeWallpaperEffectScope.GLOBAL,
+                currentRoute = null,
+            )
+        )
+        assertTrue(
             shouldExposeGlobalHomeWallpaperChrome(
                 effectScope = HomeWallpaperEffectScope.GLOBAL,
                 hasWallpaperUri = true,
