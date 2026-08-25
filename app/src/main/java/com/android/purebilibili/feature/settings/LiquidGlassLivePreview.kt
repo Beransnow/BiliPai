@@ -81,6 +81,7 @@ import coil.compose.AsyncImage
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import top.yukonga.miuix.kmp.blur.layerBackdrop
+import top.yukonga.miuix.kmp.blur.ProgressiveBlur
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop
 
 @Composable
@@ -409,6 +410,53 @@ internal fun LiquidGlassAdjustmentPanel(
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 LiquidGlassAdvancedSlider(
+                    title = "顶部模糊强度",
+                    description = "数值越高，顶部背景越柔和；0% 关闭顶部模糊",
+                    value = advancedSettings.progressiveBlurRadius,
+                    valueText = if (advancedSettings.progressiveBlurRadius <= 0.001f) {
+                        "关闭"
+                    } else {
+                        "${(advancedSettings.progressiveBlurRadius * 100f).roundToInt()}%"
+                    },
+                    onValueChange = { value ->
+                        val updatedSettings = advancedSettings.copy(
+                            preset = LiquidGlassAdvancedPreset.CUSTOM,
+                            progressiveBlurRadius = value,
+                        )
+                        advancedSettings = updatedSettings
+                        presetSliderValue = liquidGlassPresetSliderValue(updatedSettings)
+                    },
+                    onValueChangeFinished = { onAdvancedSettingsCommitted(advancedSettings) },
+                )
+                LiquidGlassAdvancedSlider(
+                    title = "模糊覆盖范围",
+                    description = "数值越高，顶部有更多区域保持模糊",
+                    value = advancedSettings.progressiveBlurExtent,
+                    onValueChange = { value ->
+                        val updatedSettings = advancedSettings.copy(
+                            preset = LiquidGlassAdvancedPreset.CUSTOM,
+                            progressiveBlurExtent = value,
+                        )
+                        advancedSettings = updatedSettings
+                        presetSliderValue = liquidGlassPresetSliderValue(updatedSettings)
+                    },
+                    onValueChangeFinished = { onAdvancedSettingsCommitted(advancedSettings) },
+                )
+                LiquidGlassAdvancedSlider(
+                    title = "模糊过渡",
+                    description = "向左过渡更快，向右过渡更柔和",
+                    value = advancedSettings.progressiveBlurCurve,
+                    onValueChange = { value ->
+                        val updatedSettings = advancedSettings.copy(
+                            preset = LiquidGlassAdvancedPreset.CUSTOM,
+                            progressiveBlurCurve = value,
+                        )
+                        advancedSettings = updatedSettings
+                        presetSliderValue = liquidGlassPresetSliderValue(updatedSettings)
+                    },
+                    onValueChangeFinished = { onAdvancedSettingsCommitted(advancedSettings) },
+                )
+                LiquidGlassAdvancedSlider(
                     title = "文字清晰度保护",
                     description = "数值越高，越优先保证图标和文字与背景有足够对比度",
                     value = advancedSettings.contentReadability,
@@ -553,6 +601,21 @@ internal fun resolveLiquidGlassPresetSliderSettings(
     }
     return LiquidGlassAdvancedSettings(
         preset = preset,
+        progressiveBlurRadius = lerpLiquidGlassPresetValue(
+            start.progressiveBlurRadius,
+            end.progressiveBlurRadius,
+            fraction,
+        ),
+        progressiveBlurExtent = lerpLiquidGlassPresetValue(
+            start.progressiveBlurExtent,
+            end.progressiveBlurExtent,
+            fraction,
+        ),
+        progressiveBlurCurve = lerpLiquidGlassPresetValue(
+            start.progressiveBlurCurve,
+            end.progressiveBlurCurve,
+            fraction,
+        ),
         contentReadability = lerpLiquidGlassPresetValue(
             start.contentReadability,
             end.contentReadability,
@@ -770,6 +833,7 @@ private fun LiquidGlassHomeSample(
                         previewSearchHeight.value
                     ),
                     liquidGlassTuning = tuning,
+                    progressiveBlurGradient = ProgressiveBlur.Top,
                 )
                 .padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically,

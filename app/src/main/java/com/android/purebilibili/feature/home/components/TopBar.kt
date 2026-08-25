@@ -108,6 +108,7 @@ import com.android.purebilibili.core.ui.adaptive.MotionTier
 import com.android.purebilibili.core.ui.blur.currentUnifiedBlurIntensity
 import com.android.purebilibili.feature.home.components.liquid.rememberCombinedBackdrop as rememberMiuixCombinedBackdrop
 import top.yukonga.miuix.kmp.blur.Backdrop as MiuixBackdrop
+import top.yukonga.miuix.kmp.blur.ProgressiveBlur
 import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
 import dev.chrisbanes.haze.HazeState
@@ -898,6 +899,7 @@ internal fun Modifier.homeTopBottomBarMatchedSurface(
             drawLens = drawShellLens,
             lensIntensity = shellLensIntensity,
             liquidGlassTuning = resolvedLiquidGlassTuning,
+            progressiveBlurGradient = ProgressiveBlur.Top,
         )
     } else {
         this.bottomBarMatchedLiquidDockSurface(

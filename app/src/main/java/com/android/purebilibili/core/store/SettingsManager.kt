@@ -137,6 +137,9 @@ enum class LiquidGlassAdvancedPreset(val value: Int, val label: String) {
 
 data class LiquidGlassAdvancedSettings(
     val preset: LiquidGlassAdvancedPreset = LiquidGlassAdvancedPreset.BALANCED,
+    val progressiveBlurRadius: Float = 0.5f,
+    val progressiveBlurExtent: Float = 0.75f,
+    val progressiveBlurCurve: Float = 0.5f,
     val contentReadability: Float = 0.62f,
     val chromaticAberration: Float = 0.56f,
     val contentDistortion: Float = 0.45f,
@@ -150,18 +153,27 @@ internal fun resolveLiquidGlassAdvancedPreset(
 ): LiquidGlassAdvancedSettings = when (preset) {
     LiquidGlassAdvancedPreset.READABLE -> LiquidGlassAdvancedSettings(
         preset = preset,
+        progressiveBlurRadius = 0.25f,
+        progressiveBlurExtent = 0.6f,
+        progressiveBlurCurve = 0.4f,
         contentReadability = 1f,
         chromaticAberration = 0.08f,
         contentDistortion = 0f,
     )
     LiquidGlassAdvancedPreset.BALANCED -> LiquidGlassAdvancedSettings(
         preset = preset,
+        progressiveBlurRadius = 0.5f,
+        progressiveBlurExtent = 0.75f,
+        progressiveBlurCurve = 0.5f,
         contentReadability = 0.62f,
         chromaticAberration = 0.56f,
         contentDistortion = 0.45f,
     )
     LiquidGlassAdvancedPreset.PRISM -> LiquidGlassAdvancedSettings(
         preset = preset,
+        progressiveBlurRadius = 0.8f,
+        progressiveBlurExtent = 0.9f,
+        progressiveBlurCurve = 0.65f,
         contentReadability = 0.72f,
         chromaticAberration = 0.96f,
         contentDistortion = 0.90f,
@@ -171,6 +183,9 @@ internal fun resolveLiquidGlassAdvancedPreset(
 
 internal fun resolveLiquidGlassAdvancedSettings(
     presetValue: Int?,
+    progressiveBlurRadius: Float? = null,
+    progressiveBlurExtent: Float? = null,
+    progressiveBlurCurve: Float? = null,
     contentReadability: Float?,
     chromaticAberration: Float?,
     contentDistortion: Float?,
@@ -181,6 +196,18 @@ internal fun resolveLiquidGlassAdvancedSettings(
     val defaults = resolveLiquidGlassAdvancedPreset(preset)
     if (preset != LiquidGlassAdvancedPreset.CUSTOM) return defaults
     return defaults.copy(
+        progressiveBlurRadius = normalizeLiquidGlassAdvancedValue(
+            progressiveBlurRadius ?: defaults.progressiveBlurRadius,
+            defaults.progressiveBlurRadius,
+        ),
+        progressiveBlurExtent = normalizeLiquidGlassAdvancedValue(
+            progressiveBlurExtent ?: defaults.progressiveBlurExtent,
+            defaults.progressiveBlurExtent,
+        ),
+        progressiveBlurCurve = normalizeLiquidGlassAdvancedValue(
+            progressiveBlurCurve ?: defaults.progressiveBlurCurve,
+            defaults.progressiveBlurCurve,
+        ),
         contentReadability = normalizeLiquidGlassAdvancedValue(
             contentReadability ?: defaults.contentReadability,
             defaults.contentReadability,
@@ -1506,6 +1533,12 @@ object SettingsManager {
         stringPreferencesKey("liquid_glass_preview_image_uri")
     private val KEY_LIQUID_GLASS_ADVANCED_PRESET =
         intPreferencesKey("liquid_glass_advanced_preset")
+    private val KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_RADIUS =
+        floatPreferencesKey("liquid_glass_progressive_blur_radius")
+    private val KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_EXTENT =
+        floatPreferencesKey("liquid_glass_progressive_blur_extent")
+    private val KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_CURVE =
+        floatPreferencesKey("liquid_glass_progressive_blur_curve")
     private val KEY_LIQUID_GLASS_CONTENT_READABILITY =
         floatPreferencesKey("liquid_glass_content_readability")
     private val KEY_LIQUID_GLASS_CHROMATIC_ABERRATION =
@@ -1583,6 +1616,9 @@ object SettingsManager {
         )
         val liquidGlassAdvancedSettings = resolveLiquidGlassAdvancedSettings(
             presetValue = preferences[KEY_LIQUID_GLASS_ADVANCED_PRESET],
+            progressiveBlurRadius = preferences[KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_RADIUS],
+            progressiveBlurExtent = preferences[KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_EXTENT],
+            progressiveBlurCurve = preferences[KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_CURVE],
             contentReadability = preferences[KEY_LIQUID_GLASS_CONTENT_READABILITY],
             chromaticAberration = preferences[KEY_LIQUID_GLASS_CHROMATIC_ABERRATION],
             contentDistortion = preferences[KEY_LIQUID_GLASS_CONTENT_DISTORTION],
@@ -3906,6 +3942,9 @@ object SettingsManager {
         context.settingsDataStore.data.map { preferences ->
             resolveLiquidGlassAdvancedSettings(
                 presetValue = preferences[KEY_LIQUID_GLASS_ADVANCED_PRESET],
+                progressiveBlurRadius = preferences[KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_RADIUS],
+                progressiveBlurExtent = preferences[KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_EXTENT],
+                progressiveBlurCurve = preferences[KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_CURVE],
                 contentReadability = preferences[KEY_LIQUID_GLASS_CONTENT_READABILITY],
                 chromaticAberration = preferences[KEY_LIQUID_GLASS_CHROMATIC_ABERRATION],
                 contentDistortion = preferences[KEY_LIQUID_GLASS_CONTENT_DISTORTION],
@@ -3918,6 +3957,12 @@ object SettingsManager {
     ) {
         context.settingsDataStore.edit { preferences ->
             preferences[KEY_LIQUID_GLASS_ADVANCED_PRESET] = settings.preset.value
+            preferences[KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_RADIUS] =
+                normalizeLiquidGlassAdvancedValue(settings.progressiveBlurRadius, 0.5f)
+            preferences[KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_EXTENT] =
+                normalizeLiquidGlassAdvancedValue(settings.progressiveBlurExtent, 0.75f)
+            preferences[KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_CURVE] =
+                normalizeLiquidGlassAdvancedValue(settings.progressiveBlurCurve, 0.5f)
             preferences[KEY_LIQUID_GLASS_CONTENT_READABILITY] =
                 normalizeLiquidGlassAdvancedValue(settings.contentReadability, 0.62f)
             preferences[KEY_LIQUID_GLASS_CHROMATIC_ABERRATION] =
@@ -7144,6 +7189,18 @@ object SettingsManager {
                 KEY_LIQUID_GLASS_ADVANCED_PRESET,
                 SettingsShareSection.APPEARANCE,
             ),
+            FloatShareablePreferenceDefinition(
+                KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_RADIUS,
+                SettingsShareSection.APPEARANCE,
+            ),
+            FloatShareablePreferenceDefinition(
+                KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_EXTENT,
+                SettingsShareSection.APPEARANCE,
+            ),
+            FloatShareablePreferenceDefinition(
+                KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_CURVE,
+                SettingsShareSection.APPEARANCE,
+            ),
             IntShareablePreferenceDefinition(
                 liquidGlassReadabilityModePreferencesKey,
                 SettingsShareSection.APPEARANCE,
@@ -7393,6 +7450,9 @@ object SettingsManager {
             KEY_LIQUID_GLASS_STRENGTH.name,
             KEY_LIQUID_GLASS_PROGRESS.name,
             KEY_LIQUID_GLASS_ADVANCED_PRESET.name,
+            KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_RADIUS.name,
+            KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_EXTENT.name,
+            KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_CURVE.name,
             liquidGlassReadabilityModePreferencesKey.name,
             KEY_LIQUID_GLASS_CONTENT_READABILITY.name,
             KEY_LIQUID_GLASS_CHROMATIC_ABERRATION.name,
@@ -7432,6 +7492,9 @@ object SettingsManager {
         )
         val advancedSettings = resolveLiquidGlassAdvancedSettings(
             presetValue = preferences[KEY_LIQUID_GLASS_ADVANCED_PRESET],
+            progressiveBlurRadius = preferences[KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_RADIUS],
+            progressiveBlurExtent = preferences[KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_EXTENT],
+            progressiveBlurCurve = preferences[KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_CURVE],
             contentReadability = preferences[KEY_LIQUID_GLASS_CONTENT_READABILITY],
             chromaticAberration = preferences[KEY_LIQUID_GLASS_CHROMATIC_ABERRATION],
             contentDistortion = preferences[KEY_LIQUID_GLASS_CONTENT_DISTORTION],
@@ -7456,6 +7519,15 @@ object SettingsManager {
             KEY_LIQUID_GLASS_PROGRESS.name to JsonPrimitive(progress),
             KEY_LIQUID_GLASS_ADVANCED_PRESET.name to JsonPrimitive(
                 advancedSettings.preset.value
+            ),
+            KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_RADIUS.name to JsonPrimitive(
+                advancedSettings.progressiveBlurRadius
+            ),
+            KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_EXTENT.name to JsonPrimitive(
+                advancedSettings.progressiveBlurExtent
+            ),
+            KEY_LIQUID_GLASS_PROGRESSIVE_BLUR_CURVE.name to JsonPrimitive(
+                advancedSettings.progressiveBlurCurve
             ),
             liquidGlassReadabilityModePreferencesKey.name to JsonPrimitive(
                 preferences[liquidGlassReadabilityModePreferencesKey]
