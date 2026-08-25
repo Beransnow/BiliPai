@@ -3396,6 +3396,12 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
                         )
                         _uiState.value = readyState
                         publishSubjectSnapshot(readyState)
+                        // Do not wait for the foreground Compose collector to mirror this state.
+                        // Background collection is lifecycle-paused, while playback can still
+                        // advance through a UGC season.
+                        appContext?.let { context ->
+                            MiniPlayerManager.getInstance(context).syncCurrentVideoInfo(readyState)
+                        }
 
                         // Schedule non-blocking HDR auto-upgrade after SDR fast-start
                         val initialDashVideoIds = result.cachedDashVideos

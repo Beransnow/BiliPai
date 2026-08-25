@@ -2521,6 +2521,21 @@ internal fun VideoDetailScreenStateHolder(
     LaunchedEffect(uiState, currentBvid, currentBvidCid, isPortraitFullscreen, bvid, isVisible) {
         if (!isVisible) return@LaunchedEffect
         val success = uiState as? VideoPlaybackUiState.Success ?: return@LaunchedEffect
+        val managerBvid = miniPlayerManager?.currentBvid.orEmpty()
+        val managerCid = miniPlayerManager?.currentCid ?: 0L
+        if (
+            miniPlayerManager?.isActive == true &&
+            managerBvid.isNotBlank() &&
+            managerBvid == success.info.bvid &&
+            (managerCid <= 0L || managerCid == success.info.cid) &&
+            (currentBvid != managerBvid ||
+                (managerCid > 0L && currentBvidCid != managerCid))
+        ) {
+            // Playback may advance while lifecycle-aware UI collection is stopped. Adopt the
+            // manager's live identity before the route/internal-id guard can reload the old item.
+            presentationState.switchVideo(managerBvid, managerCid)
+            return@LaunchedEffect
+        }
         if (!shouldSyncMainPlayerToInternalBvid(
                 isPortraitFullscreen = isPortraitFullscreen,
                 routeBvid = bvid,
