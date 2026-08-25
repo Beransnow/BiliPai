@@ -155,6 +155,8 @@ import com.android.purebilibili.feature.article.ArticleSharedElementSlot
 import com.android.purebilibili.feature.article.resolveHistoryArticleCoverAspectRatio
 import com.android.purebilibili.feature.article.resolveArticleSharedTransitionKey
 import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
+import com.android.purebilibili.feature.home.components.biliPaiProgressiveTopBlur
+import com.android.purebilibili.feature.home.components.shouldUseBiliPaiProgressiveTopBlur
 import com.android.purebilibili.feature.home.components.BottomBarMatchedReusableLiquidDock
 import com.android.purebilibili.feature.home.components.resolveLiquidGlassTuning
 import com.android.purebilibili.feature.space.SeasonSeriesDetailViewModel
@@ -834,7 +836,22 @@ fun CommonListScreen(
     )
 
     // 决定顶栏背景 (使用私有的 localHazeState)
-    val topBarBackgroundModifier = if (historyUsesFloatingLiquidDocks) {
+    val useProgressiveHeaderBlur = shouldUseBiliPaiProgressiveTopBlur(
+        enabled = isHeaderBlurEnabled,
+        hasBackdrop = true,
+    )
+    val topBarBackgroundModifier = if (useProgressiveHeaderBlur) {
+        Modifier
+            .fillMaxWidth()
+            .biliPaiProgressiveTopBlur(
+                backdrop = commonListChromeBackdrop,
+                enabled = true,
+            )
+            .then(
+                if (historyUsesFloatingLiquidDocks) Modifier
+                else Modifier.background(headerBackgroundColor)
+            )
+    } else if (historyUsesFloatingLiquidDocks) {
         // 悬浮 Dock 必须直接采样下方列表；整块顶栏背景会把动态折射退化成纯色壳。
         Modifier.fillMaxWidth()
     } else if (shouldUseHeaderLocalBlur) {

@@ -95,8 +95,6 @@ import top.yukonga.miuix.kmp.icon.extended.Settings
 import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
 import top.yukonga.miuix.kmp.blur.drawBackdrop as miuixDrawBackdrop
-import top.yukonga.miuix.kmp.blur.ProgressiveBlur
-import top.yukonga.miuix.kmp.blur.progressiveTextureBlur
 
 private const val HOME_HEADER_LIQUID_GLASS_ALPHA = 0.10f
 
@@ -1378,21 +1376,15 @@ internal fun Modifier.homeTopChromeSurface(
         HomeTopChromeRenderMode.BLUR -> {
             this
                 .then(
-                    if (
-                        useProgressiveTopBlur &&
-                        miuixBackdrop != null &&
-                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+                    if (shouldUseBiliPaiProgressiveTopBlur(
+                            enabled = useProgressiveTopBlur,
+                            hasBackdrop = miuixBackdrop != null,
+                        )
                     ) {
-                        Modifier.progressiveTextureBlur(
+                        Modifier.biliPaiProgressiveTopBlur(
                             backdrop = miuixBackdrop,
+                            enabled = true,
                             shape = shape,
-                            blurRadius = 24f,
-                            gradient = ProgressiveBlur(
-                                angle = 90f,
-                                startFraction = 0.08f,
-                                endFraction = 0.92f,
-                                curve = 0.72f,
-                            ),
                         )
                     } else if (hazeState != null) {
                         Modifier.unifiedBlur(
