@@ -28,9 +28,9 @@ class HomeHeroCarouselPolicyTest {
     }
 
     @Test
-    fun `visible hero carousel reduces the reserved top gap without affecting other feeds`() {
+    fun `visible hero carousel keeps the reserved top gap without affecting other feeds`() {
         assertEquals(
-            157f,
+            169f,
             resolveHomeFeedTopPaddingDp(
                 reservedTopPaddingDp = 169f,
                 showHeroCarousel = true

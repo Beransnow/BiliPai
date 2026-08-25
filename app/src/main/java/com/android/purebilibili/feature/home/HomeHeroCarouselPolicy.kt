@@ -11,7 +11,10 @@ internal const val HOME_HERO_CAROUSEL_TABLET_BREAKPOINT_DP = 600f
 internal const val HOME_HERO_CAROUSEL_WIDE_BREAKPOINT_DP = 840f
 internal const val HOME_HERO_CAROUSEL_TABLET_MAX_WIDTH_DP = 760f
 internal const val HOME_HERO_CAROUSEL_WIDE_MAX_WIDTH_DP = 980f
-private const val HOME_HERO_CAROUSEL_TOP_GAP_REDUCTION_DP = 12f
+// Keep the hero below the top category dock. The dock's selection indicator can
+// extend beyond its measured bounds, so reducing this reserved gap causes the
+// banner to be covered at the top on the recommendation page.
+private const val HOME_HERO_CAROUSEL_TOP_GAP_REDUCTION_DP = 0f
 
 internal data class HomeHeroCarouselCardTransform(
     val rotationY: Float,
