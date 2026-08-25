@@ -95,6 +95,7 @@ import top.yukonga.miuix.kmp.icon.extended.Settings
 import top.yukonga.miuix.kmp.blur.layerBackdrop as miuixLayerBackdrop
 import top.yukonga.miuix.kmp.blur.rememberLayerBackdrop as rememberMiuixLayerBackdrop
 import top.yukonga.miuix.kmp.blur.drawBackdrop as miuixDrawBackdrop
+import top.yukonga.miuix.kmp.blur.ProgressiveBlur
 
 private const val HOME_HEADER_LIQUID_GLASS_ALPHA = 0.10f
 
@@ -1377,6 +1378,14 @@ internal fun Modifier.homeTopChromeSurface(
                     backdrop = miuixBackdrop,
                     enabled = useProgressiveTopBlur,
                     shape = shape,
+                    blurRadiusDp = liquidGlassTuning?.progressiveBlurRadius
+                        ?: BILIPAI_PROGRESSIVE_TOP_BLUR_RADIUS_DP,
+                    gradient = ProgressiveBlur.Top.copy(
+                        endFraction = liquidGlassTuning?.progressiveBlurEndFraction
+                            ?: ProgressiveBlur.Top.endFraction,
+                        curve = liquidGlassTuning?.progressiveBlurCurve
+                            ?: ProgressiveBlur.Top.curve,
+                    ),
                 )
                 .background(surfaceColor, shape)
         }
@@ -1393,6 +1402,14 @@ internal fun Modifier.homeTopChromeSurface(
                             backdrop = miuixBackdrop,
                             enabled = true,
                             shape = shape,
+                            blurRadiusDp = liquidGlassTuning?.progressiveBlurRadius
+                                ?: BILIPAI_PROGRESSIVE_TOP_BLUR_RADIUS_DP,
+                            gradient = ProgressiveBlur.Top.copy(
+                                endFraction = liquidGlassTuning?.progressiveBlurEndFraction
+                                    ?: ProgressiveBlur.Top.endFraction,
+                                curve = liquidGlassTuning?.progressiveBlurCurve
+                                    ?: ProgressiveBlur.Top.curve,
+                            ),
                         )
                     } else if (hazeState != null) {
                         Modifier.unifiedBlur(
@@ -2012,10 +2029,15 @@ fun HomeHeader(
         tabRowHeight = currentTabHeight,
         searchToTabsSpacing = currentTabToSearchSpacing,
         renderMode = effectiveContinuousSlabRenderMode,
-        // 没有独立轨道时让连续模糊层覆盖标签区域；有轨道时避免重复模糊。
-        includeTabInBlur = !drawTopTabDockChrome,
+        // 连续背景始终覆盖顶部 Dock；独立轨道只负责自身材质与前景可读性。
+        includeTabInBlur = true,
     )
-    val continuousSlabHeight = pinnedChromeLayout.blurHeight
+    val progressiveBlurBottomExtension = resolveProgressiveTopBlurBottomExtension(
+        enabled = homeSettings?.androidNativeLiquidGlassEnabled == true &&
+            liquidGlassTuning.progressiveBlurRadius > 0.001f,
+        endFraction = liquidGlassTuning.progressiveBlurEndFraction,
+    )
+    val continuousSlabHeight = pinnedChromeLayout.blurHeight + progressiveBlurBottomExtension
     val pinnedChromeContentHeight = pinnedChromeLayout.tabTop + currentTabHeight
     val isTopTabViewportSyncEnabled = resolveHomeTopTabViewportSyncEnabled(
         currentTabHeightDp = currentTabHeight.value,

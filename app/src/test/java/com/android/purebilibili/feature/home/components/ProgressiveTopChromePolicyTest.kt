@@ -1,5 +1,6 @@
 package com.android.purebilibili.feature.home.components
 
+import androidx.compose.ui.unit.dp
 import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -25,6 +26,14 @@ class ProgressiveTopChromePolicyTest {
     }
 
     @Test
+    fun progressiveBlurExtendsBelowTheTopDock() {
+        assertEquals(20.dp, resolveProgressiveTopBlurBottomExtension(true, 0f))
+        assertEquals(41.dp, resolveProgressiveTopBlurBottomExtension(true, 0.75f))
+        assertEquals(48.dp, resolveProgressiveTopBlurBottomExtension(true, 1f))
+        assertEquals(0.dp, resolveProgressiveTopBlurBottomExtension(false, 1f))
+    }
+
+    @Test
     fun homeDynamicAndCommonListReuseTheSharedProgressiveTopBlur() {
         val homeHeader = loadSource("feature/home/components/HomeHeader.kt")
         val dynamicTopBar = loadSource("feature/dynamic/components/DynamicTopBar.kt")
@@ -44,7 +53,7 @@ class ProgressiveTopChromePolicyTest {
         val dynamicTopBar = loadSource("feature/dynamic/components/DynamicTopBar.kt")
         val commonList = loadSource("feature/list/CommonListScreen.kt")
 
-        assertTrue(homeHeader.contains("val continuousSlabHeight = pinnedChromeLayout.blurHeight"))
+        assertTrue(homeHeader.contains("pinnedChromeLayout.blurHeight + progressiveBlurBottomExtension"))
         assertTrue(dynamicTopBar.contains("Spacer(modifier = Modifier.height(statusBarHeight))"))
         assertTrue(commonList.contains(".then(topBarBackgroundModifier)"))
     }

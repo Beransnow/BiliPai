@@ -70,6 +70,7 @@ import com.android.purebilibili.core.ui.components.AppSlider
 import com.android.purebilibili.core.ui.components.AppText
 import com.android.purebilibili.core.ui.components.AppTextButton
 import com.android.purebilibili.feature.home.components.biliPaiFloatingDockShell
+import com.android.purebilibili.feature.home.components.biliPaiProgressiveTopBlur
 import com.android.purebilibili.feature.home.components.BottomNavItem
 import com.android.purebilibili.feature.home.components.resolveFloatingDockGeometryScale
 import com.android.purebilibili.feature.home.components.resolveLiquidGlassTuning
@@ -813,6 +814,22 @@ private fun LiquidGlassHomeSample(
             }
         }
 
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .height(132.dp)
+                .biliPaiProgressiveTopBlur(
+                    backdrop = backdrop,
+                    enabled = true,
+                    blurRadiusDp = tuning.progressiveBlurRadius,
+                    gradient = ProgressiveBlur.Top.copy(
+                        endFraction = tuning.progressiveBlurEndFraction,
+                        curve = tuning.progressiveBlurCurve,
+                    ),
+                )
+        )
+
         Row(
             modifier = Modifier
                 .align(Alignment.TopCenter)
@@ -833,7 +850,6 @@ private fun LiquidGlassHomeSample(
                         previewSearchHeight.value
                     ),
                     liquidGlassTuning = tuning,
-                    progressiveBlurGradient = ProgressiveBlur.Top,
                 )
                 .padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically,

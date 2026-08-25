@@ -34,10 +34,8 @@ import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 import top.yukonga.miuix.kmp.blur.Backdrop
-import top.yukonga.miuix.kmp.blur.ProgressiveBlur
 import top.yukonga.miuix.kmp.blur.blur
 import top.yukonga.miuix.kmp.blur.drawBackdrop
-import top.yukonga.miuix.kmp.blur.progressiveBlur
 import top.yukonga.miuix.kmp.blur.highlight.BloomStroke
 import top.yukonga.miuix.kmp.blur.highlight.Highlight
 import top.yukonga.miuix.kmp.blur.highlight.LightPosition
@@ -119,7 +117,6 @@ internal fun Modifier.biliPaiFloatingDockShell(
     drawLens: Boolean = true,
     lensIntensity: Float = 1f,
     liquidGlassTuning: LiquidGlassTuning = resolveLiquidGlassTuning(progress = 0.5f),
-    progressiveBlurGradient: ProgressiveBlur? = null,
 ): Modifier {
     if (!enabled || backdrop == null) {
         return this
@@ -152,29 +149,13 @@ internal fun Modifier.biliPaiFloatingDockShell(
         .drawBackdrop(
             backdrop = backdrop,
             shape = { shape },
-            progressiveGradient = progressiveBlurGradient?.copy(
-                endFraction = liquidGlassTuning.progressiveBlurEndFraction,
-                curve = liquidGlassTuning.progressiveBlurCurve,
-            ),
             effects = {
                 padding = maxOf(padding, effectPaddingDp.dp.toPx())
                 vibrancy(liquidGlassTuning.saturation)
-                val gradient = progressiveBlurGradient
-                if (gradient != null && liquidGlassTuning.progressiveBlurRadius > 0.001f) {
-                    progressiveBlur(
-                        liquidGlassTuning.progressiveBlurRadius.dp.toPx(),
-                        liquidGlassTuning.progressiveBlurRadius.dp.toPx(),
-                        gradient.copy(
-                            endFraction = liquidGlassTuning.progressiveBlurEndFraction,
-                            curve = liquidGlassTuning.progressiveBlurCurve,
-                        ),
-                    )
-                } else {
-                    blur(
-                        liquidGlassTuning.backdropBlurRadius.dp.toPx(),
-                        liquidGlassTuning.backdropBlurRadius.dp.toPx()
-                    )
-                }
+                blur(
+                    liquidGlassTuning.backdropBlurRadius.dp.toPx(),
+                    liquidGlassTuning.backdropBlurRadius.dp.toPx()
+                )
                 if (shouldDrawLens) {
                     lens(
                         refractionHeight = refractionHeightDp.dp.toPx(),
