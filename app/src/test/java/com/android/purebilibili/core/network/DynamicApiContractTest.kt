@@ -185,6 +185,13 @@ class DynamicApiContractTest {
     }
 
     @Test
+    fun dynamicFeedFeatures_includeChargingVideoCardFromApiDocs() {
+        assertTrue(DYNAMIC_FEED_FEATURES.contains("listOnlyfans"))
+        assertTrue(DYNAMIC_FEED_FEATURES.contains("onlyfansAssetsV2"))
+        assertTrue(DYNAMIC_FEED_FEATURES.contains("onlyfansQaCard"))
+    }
+
+    @Test
     fun getDynamicDetailFallback_usesDesktopDetailEndpointAndIdQuery() {
         val method = DynamicApi::class.java.methods.first { it.name == "getDynamicDetailFallback" }
         val get = method.getAnnotation(GET::class.java)
