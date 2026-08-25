@@ -80,9 +80,9 @@ import com.android.purebilibili.feature.anime4k.VideoEnhancementAlgorithm
 import com.android.purebilibili.core.ui.AdaptiveLoadingIndicator
 import com.android.purebilibili.core.ui.components.AppButton
 import com.android.purebilibili.core.ui.components.AppIconButton
-import com.android.purebilibili.core.ui.components.AppPrimaryTabRow
+import com.android.purebilibili.core.ui.components.AppSegmentOption
 import com.android.purebilibili.core.ui.components.AppSurface
-import com.android.purebilibili.core.ui.components.AppTab
+import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
 import com.android.purebilibili.core.ui.components.AppTextButton
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -2810,22 +2810,16 @@ fun LandscapeEndDrawer(
                     }
                     
                     if (hasSeason) {
-                        AppPrimaryTabRow(
-                            selectedTabIndex = selectedTab,
-                            containerColor = Color.Transparent,
-                            contentColor = MaterialTheme.colorScheme.onSurface
-                        ) {
-                            AppTab(
-                                selected = selectedTab == 0,
-                                onClick = { selectedTab = 0 },
-                                text = { AppText("推荐视频", fontSize = layoutPolicy.followButtonFontSp.sp) }
-                            )
-                            AppTab(
-                                selected = selectedTab == 1,
-                                onClick = { selectedTab = 1 },
-                                text = { AppText("合集列表", fontSize = layoutPolicy.followButtonFontSp.sp) }
-                            )
-                        }
+                        AppThemeAdaptiveTabRow(
+                            options = listOf(
+                                AppSegmentOption(0, "推荐视频"),
+                                AppSegmentOption(1, "合集列表"),
+                            ),
+                            selectedValue = selectedTab,
+                            onSelectionChange = { selectedTab = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            labelFontSize = layoutPolicy.followButtonFontSp.sp,
+                        )
                     } else {
                         // 只有推荐，显示标题
                         AppText(

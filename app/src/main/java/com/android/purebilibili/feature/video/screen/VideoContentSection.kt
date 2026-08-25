@@ -57,8 +57,8 @@ import com.android.purebilibili.core.ui.rememberAppPlayerChromeProfile
 import com.android.purebilibili.core.ui.components.AppSmallFloatingActionButton
 import com.android.purebilibili.core.ui.components.AppSurface
 import com.android.purebilibili.core.ui.components.AppTextButton
-import com.android.purebilibili.core.ui.components.AppPrimaryTabRow
-import com.android.purebilibili.core.ui.components.AppTab
+import com.android.purebilibili.core.ui.components.AppSegmentOption
+import com.android.purebilibili.core.ui.components.AppThemeAdaptiveTabRow
 import com.android.purebilibili.core.ui.performance.TrackJankStateFlag
 import com.android.purebilibili.core.ui.performance.TrackScrollJank
 import com.android.purebilibili.core.store.HomeSettings
@@ -72,7 +72,6 @@ import com.android.purebilibili.data.model.response.VideoTag
 import com.android.purebilibili.data.model.response.ViewInfo
 import com.android.purebilibili.data.model.response.BgmInfo
 import com.android.purebilibili.feature.common.resolveIndexedVideoLazyKey
-import com.android.purebilibili.feature.home.components.BottomBarLiquidSegmentedControl
 import com.android.purebilibili.feature.video.ui.section.VideoTitleWithDesc
 import com.android.purebilibili.feature.video.ui.section.UpInfoSection
 import com.android.purebilibili.feature.video.ui.section.ActionButtonsRow
@@ -1717,52 +1716,25 @@ private fun VideoContentTabBar(
                 Arrangement.Start
             }
         ) {
-            if (liquidChromeSpec.reusesLiquidGlassDock) {
-                BottomBarLiquidSegmentedControl(
-                    items = tabs,
-                    selectedIndex = selectedTabIndex,
-                    onSelected = onTabSelected,
-                    modifier = Modifier,
-                    itemWidth = liquidChromeSpec.itemWidthDp?.dp,
-                    height = liquidChromeSpec.segmentedControlHeightDp.dp,
-                    indicatorHeight = liquidChromeSpec.segmentedControlIndicatorHeightDp.dp,
-                    labelFontSize = liquidChromeSpec.labelFontSizeSp.sp,
-                    miuixBackdrop = miuixBackdrop,
-                    liquidGlassEffectsEnabled = liquidChromeSpec.liquidGlassEffectsEnabled,
-                    dragSelectionEnabled = tabs.size > 1,
-                    tapPressRefractionEnabled = true,
-                    indicatorPositionProvider = indicatorPositionProvider,
-                    isScrollInProgressProvider = isScrollInProgressProvider,
-                    externalPagerMotionEffectsEnabled = liquidChromeSpec.reusesLiquidGlassDock,
-                )
-            } else {
-                AppPrimaryTabRow(
-                    selectedTabIndex = selectedTabIndex,
-                    modifier = Modifier.width(
-                        (resolveVideoContentTabBarDockItemWidthDp(
-                            layoutSpec.unselectedTabFontSizeSp,
-                        ) * tabs.size).dp,
-                    ),
-                    indicatorPositionProvider = indicatorPositionProvider,
-                ) {
-                    tabs.forEachIndexed { index, label ->
-                        AppTab(
-                            selected = selectedTabIndex == index,
-                            onClick = { onTabSelected(index) },
-                            text = {
-                                AppText(
-                                    // 评论计数在列表头（「热评 68」）展示，Tab 上不带数字，
-                                    // 避免窄 Tab 下数字换行或被截断
-                                    text = label,
-                                    tapToCopyEnabled = false,
-                                    fontSize = layoutSpec.unselectedTabFontSizeSp.sp,
-                                    maxLines = 1,
-                                )
-                            },
-                        )
-                    }
-                }
-            }
+            AppThemeAdaptiveTabRow(
+                options = tabs.mapIndexed { index, label -> AppSegmentOption(index, label) },
+                selectedValue = selectedTabIndex,
+                onSelectionChange = onTabSelected,
+                modifier = Modifier.width(
+                    (resolveVideoContentTabBarDockItemWidthDp(
+                        layoutSpec.unselectedTabFontSizeSp,
+                    ) * tabs.size).dp,
+                ),
+                height = liquidChromeSpec.segmentedControlHeightDp.dp,
+                indicatorHeight = liquidChromeSpec.segmentedControlIndicatorHeightDp.dp,
+                labelFontSize = liquidChromeSpec.labelFontSizeSp.sp,
+                // 该栏的指示器由 HorizontalPager 实时位置驱动，禁止自身再 settle 一次。
+                dragSelectionEnabled = false,
+                tapPressRefractionEnabled = true,
+                miuixBackdrop = miuixBackdrop,
+                indicatorPositionProvider = indicatorPositionProvider,
+                isScrollInProgressProvider = isScrollInProgressProvider,
+            )
 
             if (shouldShowVideoContentTabBarDanmakuActions(selectedTabIndex)) {
                 // [新增] 恢复画面按钮 (仅在播放器折叠时显示)
