@@ -12,7 +12,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.updateTransition
@@ -85,6 +84,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.lerp
@@ -1426,11 +1426,12 @@ private fun GlassIconButton(
     val scope = rememberCoroutineScope()
     val dragX = remember { Animatable(0f) }
     val dragY = remember { Animatable(0f) }
-    val maxDragPx = with(LocalDensity.current) { 18.dp.toPx() }
-    val releaseSpec = remember {
+    val maxDragPx = with(LocalDensity.current) { 36.dp.toPx() }
+    val glassProgress = liquidGlassTuning.progress.coerceIn(0f, 1f)
+    val releaseSpec = remember(glassProgress) {
         spring<Float>(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessMediumLow,
+            dampingRatio = 0.56f + glassProgress * 0.20f,
+            stiffness = 280f + glassProgress * 240f,
         )
     }
 
@@ -1442,11 +1443,16 @@ private fun GlassIconButton(
                     dragX = dragX.value,
                     dragY = dragY.value,
                     maxDragPx = maxDragPx,
+                    glassProgress = glassProgress,
                 )
                 scaleX = transform.scaleX
                 scaleY = transform.scaleY
+                transformOrigin = TransformOrigin(
+                    pivotFractionX = transform.pivotFractionX,
+                    pivotFractionY = transform.pivotFractionY,
+                )
             }
-            .pointerInput(maxDragPx) {
+            .pointerInput(maxDragPx, releaseSpec) {
                 detectDragGestures(
                     onDragCancel = {
                         scope.launch {

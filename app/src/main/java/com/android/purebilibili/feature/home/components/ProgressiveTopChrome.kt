@@ -8,12 +8,7 @@ import top.yukonga.miuix.kmp.blur.Backdrop
 import top.yukonga.miuix.kmp.blur.ProgressiveBlur
 import top.yukonga.miuix.kmp.blur.progressiveTextureBlur
 
-private val BiliPaiTopChromeGradient = ProgressiveBlur(
-    angle = 90f,
-    startFraction = 0.08f,
-    endFraction = 0.92f,
-    curve = 0.72f,
-)
+internal const val BILIPAI_PROGRESSIVE_TOP_BLUR_RADIUS_DP = 10f
 
 internal fun shouldUseBiliPaiProgressiveTopBlur(
     enabled: Boolean,
@@ -26,13 +21,13 @@ internal fun Modifier.biliPaiProgressiveTopBlur(
     backdrop: Backdrop?,
     enabled: Boolean,
     shape: Shape = RectangleShape,
-    blurRadiusDp: Float = 24f,
+    blurRadiusDp: Float = BILIPAI_PROGRESSIVE_TOP_BLUR_RADIUS_DP,
 ): Modifier {
     if (!shouldUseBiliPaiProgressiveTopBlur(enabled, backdrop != null)) return this
     return progressiveTextureBlur(
         backdrop = requireNotNull(backdrop),
         shape = shape,
         blurRadius = blurRadiusDp,
-        gradient = BiliPaiTopChromeGradient,
+        gradient = ProgressiveBlur.Top,
     )
 }
