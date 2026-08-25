@@ -270,7 +270,7 @@ class FloatingBottomBarStructureTest {
     }
 
     @Test
-    fun `non liquid indicator snaps while liquid glass keeps animated settling`() {
+    fun `all indicator materials keep animated settling`() {
         val source = loadFloatingBottomBarSource()
         val selectionSync = source
             .substringAfter("shouldAnimateIndicatorToSelectedIndex(")
@@ -279,9 +279,8 @@ class FloatingBottomBarStructureTest {
                 missingDelimiterValue = ""
             )
 
-        assertTrue(selectionSync.contains("if (isLiquidGlassMode)"))
         assertTrue(selectionSync.contains("dampedDragAnimation.animateToValue(index.toFloat())"))
-        assertTrue(selectionSync.contains("dampedDragAnimation.snapTo(index.toFloat())"))
+        assertFalse(selectionSync.contains("dampedDragAnimation.snapTo(index.toFloat())"))
         assertTrue(source.contains("dragSelectionEnabled && safeTabsCount > 1 ->"))
         assertTrue(source.contains("dampedDragAnimation.longPressModifier"))
         assertFalse(source.contains("if (isLiquidGlassMode && dragSelectionEnabled"))

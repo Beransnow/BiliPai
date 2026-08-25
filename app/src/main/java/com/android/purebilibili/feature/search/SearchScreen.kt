@@ -779,6 +779,9 @@ fun SearchScreen(
         source = entryMotionSource,
         reducedMotionBudget = searchMotionBudget == SearchMotionBudget.REDUCED
     )
+    val exitMotionSpec = remember(entryMotionKey) { entryMotionSpec }
+    var exitMotionKey by remember { mutableIntStateOf(0) }
+    var exitMotionInProgress by remember { mutableStateOf(false) }
     val searchHazeEnabled = shouldEnableSearchHazeSource(
         isSearching = state.isSearching,
         startupSettled = startupSettled
@@ -843,7 +846,12 @@ fun SearchScreen(
         ) {
             SearchBackAction.LEAVE_SEARCH -> {
                 dismissSearchKeyboardAndFocus()
-                onBack()
+                if (exitMotionSpec != null && !exitMotionInProgress) {
+                    exitMotionInProgress = true
+                    exitMotionKey += 1
+                } else if (!exitMotionInProgress) {
+                    onBack()
+                }
             }
         }
     }
@@ -1853,6 +1861,13 @@ fun SearchScreen(
                 entryMotionSpec = entryMotionSpec,
                 entryMotionKey = entryMotionKey,
                 onEntryMotionFinished = onEntryMotionConsumed,
+                exitMotionSpec = exitMotionSpec,
+                exitMotionKey = exitMotionKey,
+                onExitMotionFinished = { completedKey ->
+                    if (exitMotionInProgress && completedKey == exitMotionKey) {
+                        onBack()
+                    }
+                },
                 isScrollInProgressProvider = { isSearchResultsScrolling },
                 modifier = Modifier
                     .align(Alignment.TopCenter)
@@ -1928,6 +1943,9 @@ fun SearchTopBar(
     entryMotionSpec: SearchEntryMotionSpec? = null,
     entryMotionKey: Int = 0,
     onEntryMotionFinished: (Int) -> Unit = {},
+    exitMotionSpec: SearchEntryMotionSpec? = null,
+    exitMotionKey: Int = 0,
+    onExitMotionFinished: (Int) -> Unit = {},
     isScrollInProgressProvider: () -> Boolean = { false },
     modifier: Modifier = Modifier
 ) {
@@ -1943,6 +1961,8 @@ fun SearchTopBar(
     val clearIcon = rememberAppClearIcon()
     val density = LocalDensity.current
     val entryMotionProgress = remember { Animatable(1f) }
+    val latestOnEntryMotionFinished by rememberUpdatedState(onEntryMotionFinished)
+    val latestOnExitMotionFinished by rememberUpdatedState(onExitMotionFinished)
     val searchIconColor by animateColorAsState(
         targetValue = if (isSearchFieldFocused) {
             MaterialTheme.colorScheme.primary
@@ -2000,7 +2020,23 @@ fun SearchTopBar(
                 )
             )
         }
-        onEntryMotionFinished(entryMotionKey)
+        latestOnEntryMotionFinished(entryMotionKey)
+    }
+    LaunchedEffect(exitMotionKey, exitMotionSpec) {
+        val spec = exitMotionSpec
+        if (exitMotionKey <= 0 || spec == null) return@LaunchedEffect
+        if (spec.durationMillis <= 0) {
+            entryMotionProgress.snapTo(0f)
+        } else {
+            entryMotionProgress.animateTo(
+                targetValue = 0f,
+                animationSpec = tween(
+                    durationMillis = spec.durationMillis,
+                    easing = AppMotionEasing.Continuity
+                )
+            )
+        }
+        latestOnExitMotionFinished(exitMotionKey)
     }
     LaunchedEffect(autoFocusEnabled, focusRequester) {
         if (autoFocusEnabled) {
@@ -2008,10 +2044,11 @@ fun SearchTopBar(
             runCatching { focusRequester.requestFocus() }
         }
     }
-    val entryMotionModifier = if (entryMotionSpec != null) {
+    val activeMotionSpec = entryMotionSpec ?: exitMotionSpec
+    val entryMotionModifier = if (activeMotionSpec != null) {
         Modifier.graphicsLayer {
             val progress = entryMotionProgress.value
-            val spec = entryMotionSpec
+            val spec = activeMotionSpec
             alpha = lerp(spec.initialAlpha, 1f, progress)
             scaleX = lerp(spec.initialScale, 1f, progress)
             scaleY = lerp(spec.initialScale, 1f, progress)

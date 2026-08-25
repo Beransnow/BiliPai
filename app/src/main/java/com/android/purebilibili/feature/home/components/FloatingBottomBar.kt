@@ -620,7 +620,7 @@ fun FloatingBottomBar(
         }
     }
 
-    LaunchedEffect(dampedDragAnimation, maxTabIndex, isLiquidGlassMode) {
+    LaunchedEffect(dampedDragAnimation, maxTabIndex) {
         snapshotFlow {
             selectedIndexLatest.value().coerceIn(0, maxTabIndex) to
                 dampedDragAnimation.isDragging
@@ -634,11 +634,7 @@ fun FloatingBottomBar(
                         ownedTargetIndex = pagerFollowGate.ownedTargetIndex,
                     )
                 ) {
-                    if (isLiquidGlassMode) {
-                        dampedDragAnimation.animateToValue(index.toFloat())
-                    } else {
-                        dampedDragAnimation.snapTo(index.toFloat())
-                    }
+                    dampedDragAnimation.animateToValue(index.toFloat())
                 }
             }
     }

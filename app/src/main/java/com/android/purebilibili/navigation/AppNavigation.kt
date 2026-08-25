@@ -1335,8 +1335,13 @@ fun AppNavigation(
             )
         val bottomBarVisibilityState = remember { MutableTransitionState(finalBottomBarVisible) }
         bottomBarVisibilityState.targetState = finalBottomBarVisible
-        val bottomBarCanMount = bottomBarMountGate &&
-            bottomBarVisibilityMode != SettingsManager.BottomBarVisibilityMode.ALWAYS_HIDDEN
+        val bottomBarCanMount =
+            bottomBarVisibilityMode != SettingsManager.BottomBarVisibilityMode.ALWAYS_HIDDEN &&
+                (
+                    bottomBarMountGate ||
+                        bottomBarVisibilityState.currentState ||
+                        bottomBarVisibilityState.targetState
+                )
         val bottomBarReservesSpace = bottomBarCanMount &&
             (bottomBarVisibilityState.currentState || bottomBarVisibilityState.targetState)
         val bottomBarContentPadding = rememberAppBottomBarContentPadding(
