@@ -1643,7 +1643,7 @@ class HomeHeaderVisualPolicyTest {
             resolveHomeTopContinuousSlabRenderMode(HomeTopChromeRenderMode.BLUR)
         )
         assertEquals(
-            HomeTopChromeRenderMode.PLAIN,
+            HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP,
             resolveHomeTopContinuousSlabRenderMode(HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP)
         )
     }

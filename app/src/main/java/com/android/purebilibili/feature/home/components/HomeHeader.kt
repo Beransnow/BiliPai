@@ -735,7 +735,9 @@ internal fun resolveHomeTopContinuousSlabRenderMode(
 ): HomeTopChromeRenderMode {
     return when (renderMode) {
         HomeTopChromeRenderMode.BLUR -> HomeTopChromeRenderMode.BLUR
-        else -> HomeTopChromeRenderMode.PLAIN
+        HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP -> HomeTopChromeRenderMode.LIQUID_GLASS_BACKDROP
+        HomeTopChromeRenderMode.LIQUID_GLASS_HAZE -> HomeTopChromeRenderMode.LIQUID_GLASS_HAZE
+        HomeTopChromeRenderMode.PLAIN -> HomeTopChromeRenderMode.PLAIN
     }
 }
 

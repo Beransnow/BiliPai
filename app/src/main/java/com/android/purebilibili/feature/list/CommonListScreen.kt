@@ -1558,7 +1558,11 @@ fun CommonListScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(
-                                horizontal = favoriteHeaderLayout.searchBarHorizontalPaddingDp.dp,
+                                horizontal = if (historyViewModel != null && historyFilterChrome.useLiquidDock) {
+                                    historyFilterChrome.horizontalPaddingDp.dp
+                                } else {
+                                    favoriteHeaderLayout.searchBarHorizontalPaddingDp.dp
+                                },
                                 vertical = favoriteHeaderLayout.searchBarVerticalPaddingDp.dp
                             )
                     ) {

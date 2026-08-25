@@ -12,6 +12,8 @@ class ProgressiveTopChromePolicyTest {
         assertEquals(10f, BILIPAI_PROGRESSIVE_TOP_BLUR_RADIUS_DP)
         val source = loadSource("feature/home/components/ProgressiveTopChrome.kt")
         assertTrue(source.contains("gradient = ProgressiveBlur.Top"))
+        assertTrue(source.contains("bottomStart = 28.dp"))
+        assertTrue(source.contains("bottomEnd = 28.dp"))
     }
 
     @Test
