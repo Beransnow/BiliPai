@@ -260,7 +260,7 @@ internal fun resolveTopTabDockWrapWidthDp(
 internal fun resolveTopTabDockItemWidthDp(
     maxWidthDp: Float,
     categoryCount: Int,
-    labelMode: Int,
+    @Suppress("UNUSED_PARAMETER") labelMode: Int,
     isFloatingStyle: Boolean,
     wrapContent: Boolean,
     fillItemWidthDp: Float
@@ -271,19 +271,24 @@ internal fun resolveTopTabDockItemWidthDp(
         wrapContent = true,
         isFloatingStyle = isFloatingStyle
     )
-    val bottomBarMatchedDockWidth = resolveBiliPaiFloatingBottomBarWidth(
-        containerWidth = maxWidthDp.dp,
-        itemCount = categoryCount,
-        minEdgePadding = 0.dp,
-        labelMode = labelMode
-    )
     val bottomBarMatchedItemWidth = resolveBiliPaiBottomBarItemSlotWidth(
-        dockWidth = bottomBarMatchedDockWidth,
+        dockWidth = maxWidthDp.dp,
         horizontalPadding = endInset.dp,
         itemCount = categoryCount
     )
     return bottomBarMatchedItemWidth.value
 }
+
+internal fun resolveTopTabBottomBarMatchedDockWidth(
+    maxWidthDp: Float,
+    categoryCount: Int,
+    labelMode: Int
+): Dp = resolveBiliPaiFloatingBottomBarWidth(
+    containerWidth = maxWidthDp.dp,
+    itemCount = categoryCount,
+    minEdgePadding = resolveBiliPaiFloatingBottomBarMinEdgePadding(),
+    labelMode = labelMode
+)
 
 internal fun resolveTopTabDockIndicatorOffsetPx(
     slotTranslationPx: Float,

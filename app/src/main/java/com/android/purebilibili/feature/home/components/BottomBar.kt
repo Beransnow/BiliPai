@@ -457,6 +457,8 @@ internal data class AndroidNativeIndicatorSpec(
     val captureTintedContentLayer: Boolean
 )
 
+internal fun resolveBiliPaiFloatingBottomBarMinEdgePadding(): Dp = 20.dp
+
 internal fun resolveSharedBottomBarCapsuleShape(): androidx.compose.ui.graphics.Shape =
     RoundedCornerShape(percent = 50)
 
@@ -909,7 +911,7 @@ internal fun resolveAndroidNativeBottomBarTuning(
         shellShadowElevationDp = if (darkTheme) 0.6f else 0.8f,
         shellBlurRadiusDp = if (blurEnabled) 12f else 0f,
         shellSurfaceAlpha = if (blurEnabled) 0.4f else 1f,
-        outerHorizontalPaddingDp = 20f,
+        outerHorizontalPaddingDp = resolveBiliPaiFloatingBottomBarMinEdgePadding().value,
         innerHorizontalPaddingDp = 4f,
         indicatorHeightDp = 56f,
         indicatorLensRadiusDp = 24f

@@ -513,7 +513,7 @@ class TopTabLayoutPolicyTest {
         val preferredDockWidth = resolveBiliPaiFloatingBottomBarWidth(
             containerWidth = 440.dp,
             itemCount = 5,
-            minEdgePadding = 0.dp,
+            minEdgePadding = resolveBiliPaiFloatingBottomBarMinEdgePadding(),
             labelMode = 0
         )
         val preferred = resolveBiliPaiBottomBarItemSlotWidth(
@@ -524,7 +524,7 @@ class TopTabLayoutPolicyTest {
         assertEquals(
             preferred,
             resolveTopTabDockItemWidthDp(
-                maxWidthDp = 440f,
+                maxWidthDp = preferredDockWidth.value,
                 categoryCount = 5,
                 labelMode = 0,
                 isFloatingStyle = true,
@@ -536,7 +536,7 @@ class TopTabLayoutPolicyTest {
         val narrowDockWidth = resolveBiliPaiFloatingBottomBarWidth(
             containerWidth = 300.dp,
             itemCount = 5,
-            minEdgePadding = 0.dp,
+            minEdgePadding = resolveBiliPaiFloatingBottomBarMinEdgePadding(),
             labelMode = 0
         )
         val narrowItemWidth = resolveBiliPaiBottomBarItemSlotWidth(
@@ -548,7 +548,7 @@ class TopTabLayoutPolicyTest {
         assertEquals(
             narrowItemWidth,
             resolveTopTabDockItemWidthDp(
-                maxWidthDp = 300f,
+                maxWidthDp = narrowDockWidth.value,
                 categoryCount = 5,
                 labelMode = 0,
                 isFloatingStyle = true,
@@ -577,7 +577,11 @@ class TopTabLayoutPolicyTest {
         // Stacked icon+text needs the same taller track reserved by HomeTopPresetStyle.
         assertEquals(40f, resolveIosTopTabRowHeight(isFloatingStyle = true, labelMode = 2).value, 0.001f)
         assertEquals(40f, resolveIosTopTabRowHeight(isFloatingStyle = true, labelMode = 1).value, 0.001f)
-        assertEquals(60f, resolveIosTopTabRowHeight(isFloatingStyle = true, labelMode = 0).value, 0.001f)
+        assertEquals(
+            resolveBiliPaiBottomBarDockHeight(searchExpanded = false).value,
+            resolveIosTopTabRowHeight(isFloatingStyle = true, labelMode = 0).value,
+            0.001f
+        )
         assertEquals(56f, resolveIosTopTabRowHeight(isFloatingStyle = false, labelMode = 0).value, 0.001f)
     }
 

@@ -181,7 +181,7 @@ class TopTabStylePolicyTest {
 
         assertEquals(AppTopTabPresentation.MATERIAL_UNDERLINE, iconAndText.presentation)
         assertEquals(56.dp, iconAndText.tabRowHeightDocked)
-        assertEquals(60.dp, iconAndText.tabRowHeightFloating)
+        assertEquals(resolveBiliPaiBottomBarDockHeight(searchExpanded = false), iconAndText.tabRowHeightFloating)
         assertEquals(30.dp, iconAndText.md3VisualSpec.selectedCapsuleHeight)
         assertEquals(44.dp, iconAndText.actionButtonSizeDocked)
     }

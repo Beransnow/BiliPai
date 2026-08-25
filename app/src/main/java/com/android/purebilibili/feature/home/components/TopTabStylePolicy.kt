@@ -169,7 +169,11 @@ internal fun resolveHomeTopPresetStyle(
                     horizontalPadding = HomeTopDpPair(docked = 0.dp, floating = 2.dp),
                     rowHeight = HomeTopDpPair(
                         docked = if (isIconAndText) 56.dp else 36.dp,
-                        floating = if (isIconAndText) 60.dp else 40.dp
+                        floating = if (isIconAndText) {
+                            resolveBiliPaiBottomBarDockHeight(searchExpanded = false)
+                        } else {
+                            40.dp
+                        }
                     ),
                     md3VisualSpec = resolveMd3TopTabVisualSpec(
                         false,
@@ -230,7 +234,11 @@ internal fun resolveHomeTopPresetStyle(
                     horizontalPadding = HomeTopDpPair(docked = 0.dp, floating = 2.dp),
                     rowHeight = HomeTopDpPair(
                         docked = if (isIconAndText) 56.dp else 36.dp,
-                        floating = if (isIconAndText) 60.dp else 40.dp
+                        floating = if (isIconAndText) {
+                            resolveBiliPaiBottomBarDockHeight(searchExpanded = false)
+                        } else {
+                            40.dp
+                        }
                     ),
                     md3VisualSpec = resolveMd3TopTabVisualSpec(
                         false,
@@ -290,7 +298,11 @@ internal fun resolveHomeTopPresetStyle(
                     // Align with resolveMd3TopTabVisualSpec used by the tab row.
                     rowHeight = HomeTopDpPair(
                         docked = if (isIconAndText) 56.dp else 36.dp,
-                        floating = if (isIconAndText) 60.dp else 40.dp
+                        floating = if (isIconAndText) {
+                            resolveBiliPaiBottomBarDockHeight(searchExpanded = false)
+                        } else {
+                            40.dp
+                        }
                     ),
                     md3VisualSpec = resolveMd3TopTabVisualSpec(
                         false,
@@ -450,7 +462,11 @@ internal fun resolveMd3TopTabVisualSpec(
     if (presentation == AppTopTabPresentation.TONAL_CAPSULE) {
         return if (isFloatingStyle) {
             Md3TopTabVisualSpec(
-                rowHeight = if (showIconAndText) 60.dp else 40.dp,
+                rowHeight = if (showIconAndText) {
+                    resolveBiliPaiBottomBarDockHeight(searchExpanded = false)
+                } else {
+                    40.dp
+                },
                 selectedCapsuleHeight = 30.dp,
                 selectedCapsuleCornerRadius = 9.dp,
                 selectedCapsuleTonalElevation = 0.dp,
@@ -481,7 +497,11 @@ internal fun resolveMd3TopTabVisualSpec(
     // Older 54–64dp Material TabRow heights clip inside the 36/40 chrome and collapse labels.
     return if (isFloatingStyle) {
         Md3TopTabVisualSpec(
-            rowHeight = if (showIconAndText) 60.dp else 40.dp,
+            rowHeight = if (showIconAndText) {
+                resolveBiliPaiBottomBarDockHeight(searchExpanded = false)
+            } else {
+                40.dp
+            },
             selectedCapsuleHeight = CompactTopTabIndicatorHeightDp.dp,
             selectedCapsuleCornerRadius = CompactTopTabIndicatorCornerDp.dp,
             selectedCapsuleTonalElevation = 0.dp,
