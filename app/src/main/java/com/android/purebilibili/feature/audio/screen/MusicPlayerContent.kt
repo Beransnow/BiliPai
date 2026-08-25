@@ -11,12 +11,16 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -86,8 +90,10 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -1417,16 +1423,62 @@ private fun GlassIconButton(
     liquidGlassTuning: LiquidGlassTuning,
     onClick: () -> Unit
 ) {
+    val scope = rememberCoroutineScope()
+    val dragX = remember { Animatable(0f) }
+    val dragY = remember { Animatable(0f) }
+    val maxDragPx = with(LocalDensity.current) { 18.dp.toPx() }
+    val releaseSpec = remember {
+        spring<Float>(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMediumLow,
+        )
+    }
+
     AppIconButton(
         onClick = onClick,
-        modifier = Modifier.biliPaiFloatingDockShell(
-            backdrop = miuixBackdrop,
-            containerColor = AppSurfaceTokens.cardContainer(),
-            pressProgress = 0f,
-            shape = CircleShape,
-            enabled = glassEnabled,
-            liquidGlassTuning = liquidGlassTuning,
-        )
+        modifier = Modifier
+            .graphicsLayer {
+                val transform = resolveMusicTopControlTransform(
+                    dragX = dragX.value,
+                    dragY = dragY.value,
+                    maxDragPx = maxDragPx,
+                )
+                translationX = transform.translationX
+                translationY = transform.translationY
+                scaleX = transform.scaleX
+                scaleY = transform.scaleY
+                rotationZ = transform.rotationZ
+            }
+            .pointerInput(maxDragPx) {
+                detectDragGestures(
+                    onDragCancel = {
+                        scope.launch {
+                            launch { dragX.animateTo(0f, releaseSpec) }
+                            launch { dragY.animateTo(0f, releaseSpec) }
+                        }
+                    },
+                    onDragEnd = {
+                        scope.launch {
+                            launch { dragX.animateTo(0f, releaseSpec) }
+                            launch { dragY.animateTo(0f, releaseSpec) }
+                        }
+                    },
+                ) { change, dragAmount ->
+                    change.consume()
+                    scope.launch {
+                        dragX.snapTo((dragX.value + dragAmount.x).coerceIn(-maxDragPx, maxDragPx))
+                        dragY.snapTo((dragY.value + dragAmount.y).coerceIn(-maxDragPx, maxDragPx))
+                    }
+                }
+            }
+            .biliPaiFloatingDockShell(
+                backdrop = miuixBackdrop,
+                containerColor = AppSurfaceTokens.cardContainer(),
+                pressProgress = 0f,
+                shape = CircleShape,
+                enabled = glassEnabled,
+                liquidGlassTuning = liquidGlassTuning,
+            )
     ) {
         AppIcon(
             icon,
